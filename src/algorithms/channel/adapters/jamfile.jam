@@ -1,0 +1,3 @@
+project : build-dir ../../../../build ;
+
+obj channel : channel.cc ;

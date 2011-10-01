@@ -1,0 +1,3 @@
+build-project adapters ;
+build-project gnuradio_blocks ;
+build-project libs ;

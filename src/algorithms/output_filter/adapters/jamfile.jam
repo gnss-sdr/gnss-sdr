@@ -1,0 +1,4 @@
+project : build-dir ../../../../build ;
+
+obj file_output_filter : file_output_filter.cc ;
+obj null_sink_output_filter : null_sink_output_filter.cc ;

@@ -1,0 +1,3 @@
+build-project arithmetic ;
+
+obj test_main : test_main.cc ;

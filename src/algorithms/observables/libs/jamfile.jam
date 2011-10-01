@@ -1,0 +1,3 @@
+project : build-dir ../../../../build ;
+
+obj rinex_2_1_printer : rinex_2_1_printer.cc ;

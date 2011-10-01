@@ -1,0 +1,50 @@
+import testing ;
+
+lib gtest ;
+lib glog ;
+lib gflags ;
+lib gnuradio-core ;
+lib gnuradio-usrp ;
+lib profiler ;
+lib gsl ;
+lib gslcblas ;
+
+project : requirements
+<define>OMNITHREAD_POSIX
+<cxxflags>"-std=c++0x"
+# <include>src/utils
+# <include>src/utils/INIReader
+<include>src/algorithms/acquisition/adapters
+<include>src/algorithms/acquisition/gnuradio_blocks
+<include>src/algorithms/channel/adapters
+<include>src/algorithms/channel/gnuradio_blocks
+<include>src/algorithms/channel/libs
+<include>src/algorithms/conditioner/adapters
+<include>src/algorithms/conditioner/gnuradio_blocks
+<include>src/algorithms/libs
+<include>src/algorithms/observables/adapters
+<include>src/algorithms/observables/gnuradio_blocks
+<include>src/algorithms/observables/libs
+<include>src/algorithms/output_filter/adapters
+<include>src/algorithms/output_filter/gnuradio_blocks
+<include>src/algorithms/PVT/adapters
+<include>src/algorithms/PVT/gnuradio_blocks
+<include>src/algorithms/signal_source/adapters
+<include>src/algorithms/signal_source/gnuradio_blocks
+<include>src/algorithms/telemetry_decoder/adapters
+<include>src/algorithms/telemetry_decoder/gnuradio_blocks
+<include>src/algorithms/telemetry_decoder/libs
+<include>src/algorithms/tracking/adapters
+<include>src/algorithms/tracking/gnuradio_blocks
+<include>src/core/interfaces
+<include>src/core/libs
+<include>src/core/receiver
+<include>src/core/system_parameters
+<include>$GNURADIO_330_ROOT/gr-usrp/src
+<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/runtime
+<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/filter
+<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/io
+<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/general
+<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/gengen ;
+
+build-project src ;

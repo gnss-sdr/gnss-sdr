@@ -1,0 +1,3 @@
+project : build-dir ../../../../build ;
+
+obj gps_l1_ca_dll_pll_tracking_cc : gps_l1_ca_dll_pll_tracking_cc.cc ;

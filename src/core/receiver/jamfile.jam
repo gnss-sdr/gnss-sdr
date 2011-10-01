@@ -1,0 +1,8 @@
+project : build-dir ../../../build ;
+
+obj control_message_factory : control_message_factory.cc ;
+obj control_thread : control_thread.cc ;
+obj file_configuration : file_configuration.cc ;
+obj in_memory_configuration : in_memory_configuration.cc ;
+obj gnss_block_factory : gnss_block_factory.cc ;
+obj gnss_flowgraph : gnss_flowgraph.cc ;

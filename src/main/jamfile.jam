@@ -1,0 +1,49 @@
+project : build-dir ../../build ;
+exe mercurio : main.cc
+../algorithms/acquisition/adapters//gps_l1_ca_gps_sdr_acquisition
+../algorithms/acquisition/adapters//gps_l1_ca_pcps_acquisition
+../algorithms/acquisition/adapters//gps_l1_ca_tong_pcps_acquisition
+../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_gps_sdr_acquisition_cc
+../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_gps_sdr_acquisition_ss
+../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_pcps_acquisition_cc
+../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_tong_pcps_acquisition_cc
+../algorithms/channel/adapters//channel
+../algorithms/channel/libs//gps_l1_ca_channel_fsm
+../algorithms/conditioner/adapters//direct_resampler_conditioner
+../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_cc
+../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_ss
+../algorithms/libs//gps_sdr_signal_processing
+../algorithms/libs//gnss_sdr_valve
+../algorithms/libs//pass_through
+../algorithms/libs//gps_sdr_fft
+../algorithms/libs//gps_sdr_simd
+../algorithms/libs//gps_sdr_x86
+../algorithms/observables/adapters//gps_l1_ca_observables
+../algorithms/observables/gnuradio_blocks//gps_l1_ca_observables_cc
+../algorithms/observables/libs//rinex_2_1_printer
+../algorithms/output_filter/adapters//file_output_filter
+../algorithms/output_filter/adapters//null_sink_output_filter
+../algorithms/signal_source/adapters//file_signal_source
+../algorithms/signal_source/adapters//usrp1_signal_source
+../algorithms/telemetry_decoder/adapters//gps_l1_ca_telemetry_decoder
+../algorithms/telemetry_decoder/gnuradio_blocks//gps_l1_ca_telemetry_decoder_cc
+../algorithms/telemetry_decoder/libs//gps_l1_ca_subframe_fsm
+../algorithms/tracking/adapters//gps_l1_ca_dll_pll_tracking
+../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_pll_tracking_cc
+../core/libs//INIReader
+../core/libs//ini
+../core/libs//string_converter
+../core/receiver//control_message_factory
+../core/receiver//control_thread
+../core/receiver//file_configuration
+../core/receiver//in_memory_configuration
+../core/receiver//gnss_block_factory
+../core/receiver//gnss_flowgraph
+../core/system_parameters//gps_navigation_message
+../core/system_parameters//gps_telemetry
+../..//gflags
+../..//glog
+../..//gnuradio-core
+../..//gnuradio-usrp ;
+
+install ../../install : mercurio ;

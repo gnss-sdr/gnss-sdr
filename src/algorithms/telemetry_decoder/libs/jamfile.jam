@@ -1,0 +1,3 @@
+project : build-dir ../../../../build ;
+
+obj gps_l1_ca_subframe_fsm : gps_l1_ca_subframe_fsm.cc ;

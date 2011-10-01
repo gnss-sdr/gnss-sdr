@@ -1,0 +1,2 @@
+obj INIParser : ini.c ;
+obj INIReader : INIReader.cpp ;

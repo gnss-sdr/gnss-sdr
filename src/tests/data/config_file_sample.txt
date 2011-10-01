@@ -1,0 +1,26 @@
+; Sample for a configuration file for MERCURIO
+
+[mercurio]
+Foo.param1=value
+
+SignalSource.implementation=FileSignalSource
+SignalSource.filename=./data/signal.dat
+SignalSource.item_size=4
+SignalSource.repeat=false
+
+SignalConditioner.implementation=PassThrough
+SignalConditioner.item_type=float
+SignalConditioner.vector_size=1
+
+Channels.count=1
+
+Channel1.implementation=PassThrough
+Channel1.item_type=float
+Channel1.vector_size=1
+
+PVT.implementation=PassThrough
+PVT.item_type=float
+PVT.vector_size=1
+
+OutputFilter.implementation=NullSinkOutputFilter
+OuputFilter.item_size=4

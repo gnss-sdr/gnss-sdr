@@ -1,0 +1,65 @@
+How to set up the compilation environment for Ubuntu 9.10 and 10.04
+
+- Download GNU Radio 3.3.0 from ftp://ftp.gnu.org/gnu/gnuradio
+- Compile and install following the instructions at http://gnuradio.org/redmine/wiki/1/UbuntuInstall
+- Install bjam with the command 'sudo apt-get install bjam'
+- Install Boost.Build with the command 'sudo apt-get install boost-build'
+- Add the system variable GNURADIO_330_ROOT with the location of the sources of gnuradio-3.3.0 
+- Download gtest-1.4.0.tar.gz from http://code.google.com/p/googletest.
+- Unpack gtest-1.4.0.tar.gz into some folder.
+- From the folder containing gtest build the libraries and install them:
+	- GTEST$ ./configure
+	- GTEST$ make
+	- GTEST$ make check
+	- GTEST$ sudo make install
+- Add the following line to your .bashrc:
+	- export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
+- Download glog-0.3.0.tar.gz from http://code.google.com/p/google-glog.
+- Unpack glog-0.3.0.tar.gz into some folder.
+- From the folder containing glog, build and install the libraries:
+	- GLOG$ ./configure
+	- GLOG$ make
+	- GLOG$ sudo make install
+	NOTE: THE LOG FILES ARE STORED BY DEFAULT /TMP/
+- Download gflags-1.3.tar.gz from http://code.google.com/p/google-gflags.
+- Unpack gflags-1.3.tar.gz into some folder.
+- From the folder containing gflags, build the libraries and install them:
+	- GFLAGS$ ./configure
+	- GFLAGS$ make
+	- GFLAGS$ sudo make install
+
+(11/12/2010) GSL AND CBLAS ARITHMETIC
+
+In order to compile the arithmetic tests, the GNU Scientific Library (GSL) library package is needed.
+Install the ubuntu package with:
+
+sudo apt-get install libgsl0ldbl
+
+
+To build the project type call bjam from the project root folder.
+
+PROFILING
+
+In order to do profiling, you'll have to install google-perftools library.
+- Download google-perftools-1.5.tar.gz from http://code.google.com/p/google-perftools.
+- Unpack google-perftools-1.5.tar.gz into some folder.
+- From the folder containing google-perftools, build and install the libraries:
+	- PERFTOOLS$ ./configure
+	- PERFTOOLS$ make
+	- PERFTOOLS$ sudo make install
+	
+Once google-perftools is installed, you can use the script "profiler" which is placed 
+in the root folder of MERCURIO sources. The script must be run as root since it makes use
+of "nice". The result of the profiling are two files, mercurio.cpu.prof and mercurio.head.prof.0001.heap,
+that contain the results for CPU and HEAP profiling. You can use google-perftools' script pprof
+to analyze the recorded data.
+
+(Sample of .bashrc configuration)
+
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
+export GNURADIO_330_ROOT=/home/gnss/sdr/gnuradio-3.3.0
+
+
+
+
+

@@ -1,6 +1,6 @@
 /*!
  * \file gps_navigation_message.h
- * \brief  This class implements GPS L1 C/A navigation message decoding
+ * \brief  Navigation message structure for GPS L1 C/A signal
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -28,6 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
+
 #ifndef GPS_NAVIGATION_MESSAGE_H
 #define GPS_NAVIGATION_MESSAGE_H
 
@@ -44,13 +45,6 @@ using namespace boost::assign;
 
 #include "GPS_L1_CA.h"
 
-/*!
- * \brief  This class implements GPS L1 C/A navigation message decoding
- * and computes satellite position
- *
- * It defines the specific GPS navigation (NAV) data structure,
- * as defined in the document Interface Specification IS-GPS-200 Revision E, Appendix II
- */
 class gps_navigation_message
 {
 
@@ -93,7 +87,7 @@ public:
     double d_TGD;
     double d_IODC;
     //broadcast orbit 7
-    double d_transmission_time;
+
     double d_fit_interval;
     double d_spare1;
     double d_spare2;
@@ -118,12 +112,15 @@ public:
     int d_channel_ID;
     int d_satellite_PRN;
 
+    // time synchro
+    double d_subframe1_timestamp_ms; //[ms]
+
     // public functions
     void reset();
     int subframe_decoder(char *subframe);
-    void master_clock();
+    void master_clock(double transmitTime);
     void satpos();
-    void relativistic_clock_correction();
+    void relativistic_clock_correction(double transmitTime);
     bool satellite_validation();
     gps_navigation_message();
 };

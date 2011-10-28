@@ -61,6 +61,8 @@ public:
   char d_subframe[GPS_SUBFRAME_LENGTH];
   char d_GPS_frame_4bytes[GPS_WORD_LENGTH];
 
+  double d_preamble_time_ms;
+
   void gps_word_to_subframe(int position);
   void gps_subframe_to_nav_msg();
 

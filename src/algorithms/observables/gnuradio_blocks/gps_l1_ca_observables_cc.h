@@ -24,6 +24,7 @@
 #include "gps_navigation_message.h"
 
 #include "rinex_2_1_printer.h"
+#include "gps_l1_ca_ls_pvt.h"
 
 #include "GPS_L1_CA.h"
 
@@ -56,9 +57,13 @@ private:
 
   rinex_printer d_rinex_printer; // RINEX printer class
 
-  double d_inter_frame_sec_counter; // counter for seconds between GPS frames
-
   gps_navigation_message d_last_nav_msg; //last navigation message
+
+  double d_ephemeris_clock_s;
+  double d_ephemeris_timestamp_ms;
+
+  gps_l1_ca_ls_pvt *d_ls_pvt;
+
 
 public:
 

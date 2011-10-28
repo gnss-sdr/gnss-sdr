@@ -40,7 +40,7 @@
 
 
 // SEPARATE FILE GPS.H
-const float GPS_C_m_s= 299792458;    // The speed of light, [m/ms]
+const float GPS_C_m_s= 299792458.0;    // The speed of light, [m/ms]
 const float GPS_STARTOFFSET_ms= 68.802; //[ms] Initial sign. travel time
 const float GPS_PI = 3.1415926535898; // Pi used in the GPS coordinate system
 //-- Constants for satellite position calculation -------------------------
@@ -60,8 +60,7 @@ const double  F              = -4.442807633e-10; // Constant, [sec/(meter)^(1/2)
 
 /*! @ingroup GPS_DEFINES
  *  @brief Navigation message bits slice structure: A portion of bits is indicated by
- *  the start position inside the subframe and the length in number of bits
- */
+ *  the start position inside the subframe and the length in number of bits  */
 typedef struct bits_slice{
         int position;
         int length;
@@ -74,12 +73,12 @@ typedef struct bits_slice{
 
 
 /*! @ingroup GPS_DEFINES
- *  @brief Demodulator gnss_synchro structure, used to feed the pseudorange block
- */
+ *  @brief Demodulator gnss_synchro structure, used to feed the pseudorange block */
+
 typedef struct gnss_synchro
 {
-  unsigned long int last_preamble_index;
-  float prn_delay;
+  float preamble_delay_ms;
+  float prn_delay_ms;
   int satellite_PRN;
   int channel_ID;
   bool valid_word;

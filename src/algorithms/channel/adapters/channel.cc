@@ -128,6 +128,8 @@ void Channel::connect(gr_top_block_sptr top_block)
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0); // channel 1
     top_block->connect(trk_->get_right_block(), 1, nav_->get_left_block(), 1); // channel 2
     top_block->connect(trk_->get_right_block(), 2, nav_->get_left_block(), 2); // channel 3
+    top_block->connect(trk_->get_right_block(), 3, nav_->get_left_block(), 3); // channel 4
+    top_block->connect(trk_->get_right_block(), 4, nav_->get_left_block(), 4); // channel 5
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
     connected_ = true;

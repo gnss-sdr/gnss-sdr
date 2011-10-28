@@ -192,7 +192,7 @@ void rinex_printer::Rinex2ObsHeader()
 
 }
 
-void rinex_printer::LogRinex2Obs(gps_navigation_message nav_msg,double interframe_seconds, std::map<int,float> pseudoranges)
+void rinex_printer::LogRinex2Obs(gps_navigation_message nav_msg,double pseudoranges_clock, std::map<int,float> pseudoranges)
 {
 	int ss;
 	char sat_vis[36];
@@ -224,7 +224,7 @@ void rinex_printer::LogRinex2Obs(gps_navigation_message nav_msg,double interfram
 		double decimalday,daydecimalhour,decimalhour,decimalmin,decimalsec;
 		double day,hour,minutes,seconds,enterseconds,a;
 		double gpstime;
-		gpstime=nav_msg.d_master_clock;
+		gpstime=pseudoranges_clock; //[s]
 		//calculate date of gps time:
 		//Days & weeks between 00h 1 Jan 1970 and 00h 6 Jan 1980
 		//520 weeks and 12 days.
@@ -233,7 +233,7 @@ void rinex_printer::LogRinex2Obs(gps_navigation_message nav_msg,double interfram
 		tmPtr = gmtime(&temps);
 		strftime( cad1, 20, " %y %m %d", tmPtr );
 		strftime( cad2, 20, "  %Y    %m    %d", tmPtr );
-		decimalday=((gpstime+interframe_seconds)/(24*3600));//Dies dins de la semana
+		decimalday=(gpstime/(24*3600));//Dies dins de la semana
 		daydecimalhour=modf(decimalday,&day);//day=#dies sencers, daydecimalhour=porcio de dia
 		daydecimalhour=daydecimalhour*24;//porcio de dia en hores
 		decimalhour=modf(daydecimalhour,&hour);//hour=hora del dia; decimalhour=porcio d'hora

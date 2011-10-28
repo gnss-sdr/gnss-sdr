@@ -1,7 +1,6 @@
 /*!
  * \file gps_telemetry.h
- * \brief  Define low-level constants and functions for GPS L1 C/A
- * navigation message decoding
+ * \brief GPS L1 C/A telemetry processing
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -28,7 +27,6 @@
  *
  * -------------------------------------------------------------------------
  */
-
 #ifndef GPS_TELEMETRY_H_
 #define GPS_TELEMETRY_H_
 

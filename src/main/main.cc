@@ -71,5 +71,5 @@ int main(int argc, char** argv)
     control_thread->run();
 
     delete control_thread;
-    google::ShutDownCommandLineFlags();
+    //google::ShutDownCommandLineFlags();
 }

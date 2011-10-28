@@ -47,7 +47,7 @@ void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items,
 
 gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(unsigned int satellite, long if_freq, long fs_in, unsigned
     int vector_length, gr_msg_queue_sptr queue, bool dump) :
-    gr_block ("gps_navigation_cc", gr_make_io_signature (3, 3, sizeof(float)),
+    gr_block ("gps_navigation_cc", gr_make_io_signature (5, 5, sizeof(float)),
         gr_make_io_signature(1, 1, sizeof(gnss_synchro))) {
   // initialize internal vars
   d_queue = queue;
@@ -106,10 +106,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
   d_sample_counter++; //count for the processed samples
 
   const float **in = (const float **)  &input_items[0]; //Get the input samples pointer
-  //std::cout<<"CH1="<<in[0][0]; // Q
-  //std::cout<<"CH2="<<in[1][0]; // I
-  //std::cout<<"CH3="<<in[2][0]; // Delay
-  //std::cout<<"N_input_streams="<<ninput_items.size();
 
   // TODO Optimize me!
   //******* preamble correlation ********
@@ -123,13 +119,13 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
   }
 
   //******* frame sync ******************
-  if (abs(corr_value)>=153){
+  if (abs(corr_value)>=160){
     //TODO: Rewrite with state machine
     if (d_stat==0)
       {
       d_GPS_FSM.Event_gps_word_preamble();
       d_preamble_index=d_sample_counter;//record the preamble sample stamp
-      std::cout<<"Pre-detection"<<std::endl;
+      std::cout<<"Pre-detection SAT "<<this->d_satellite+1<<std::endl;
       d_symbol_accumulator=0; //sync the symbol to bits integrator
       d_symbol_accumulator_counter=0;
       d_frame_bit_index=8;
@@ -140,15 +136,17 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         if (abs(preamble_diff-6000)<1)
           {
           d_GPS_FSM.Event_gps_word_preamble();
-          d_preamble_index=d_sample_counter;//record the preamble sample stamp
+          d_preamble_index=d_sample_counter;//record the preamble sample stamp (t_P)
+          d_preamble_phase=in[2][0]; //record the PRN start sample index associated to the preamble
+
           if (!d_flag_frame_sync){
             d_flag_frame_sync=true;
-            std::cout<<" Frame sync with phase "<<in[2][0]<<std::endl;
+            std::cout<<" Frame sync SAT "<<this->d_satellite+1<<" with preamble start at "<<in[2][0]<<" [ms]"<<std::endl;
           }
           }else
             {
             if (preamble_diff>7000){
-              std::cout<<"lost of frame sync"<<std::endl;
+              std::cout<<"lost of frame sync SAT "<<this->d_satellite+1<<std::endl;
               d_stat=0; //lost of frame sync
               d_flag_frame_sync=false;
             }
@@ -156,6 +154,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         }
   }
 
+  //******* code error accumulator *****
+  //d_preamble_phase-=in[3][0];
   //******* SYMBOL TO BIT *******
 
   d_symbol_accumulator+=in[1][d_samples_per_bit*8-1]; // accumulate the input value in d_symbol_accumulator
@@ -194,6 +194,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         }
       if (gps_word_parityCheck(d_GPS_frame_4bytes)) {
         memcpy(&d_GPS_FSM.d_GPS_frame_4bytes,&d_GPS_frame_4bytes,sizeof(char)*4);
+        d_GPS_FSM.d_preamble_time_ms=d_preamble_phase;
         d_GPS_FSM.Event_gps_word_valid();
         d_flag_parity=true;
       }else{
@@ -213,8 +214,9 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
   if ((d_sample_counter%NAVIGATION_OUTPUT_RATE_MS)==0)
     {
     gps_synchro.valid_word=(d_flag_frame_sync==true and d_flag_parity==true);
-    gps_synchro.last_preamble_index=d_preamble_index;
-    gps_synchro.prn_delay=in[2][0];
+    //gps_synchro.preamble_delay_ms=(float)d_preamble_index;
+    gps_synchro.preamble_delay_ms=(float)d_preamble_index;
+    gps_synchro.prn_delay_ms=in[3][0];
     gps_synchro.satellite_PRN=d_satellite+1;
     gps_synchro.channel_ID=d_channel;
     *out[0]=gps_synchro;

@@ -195,6 +195,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
         int doppler;
         unsigned int indext = 0;
         float magt = 0.0;
+        float tmp_magt = 0.0;
         const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
         bool positive_acquisition = false;
         int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
@@ -215,8 +216,8 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
         {
             d_input_power += std::abs(in[i]) * std::abs(in[i]);
         }
-        d_input_power = d_input_power / ((float)d_fft_size
-                * (float)d_fft_size);
+        //d_input_power = d_input_power / ((float)d_fft_size * (float)d_fft_size);
+        d_input_power = d_input_power / (float)d_fft_size;
 
         // 2º- Doppler frequency search loop
         for (doppler = (int)(-d_doppler_max); doppler < (int)d_doppler_max; doppler
@@ -238,11 +239,23 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
             }
             d_ifft->execute();
 
-            x86_gr_complex_mag(d_ifft->get_outbuf(), d_fft_size); // d_ifft->get_outbuf()=|abs(·)|^2 and the array is converted from CPX->Float
-            x86_float_max((float*)d_ifft->get_outbuf(), &indext, &magt,
-                    d_fft_size); // find max of |abs(·)|^2 -> index and magt
+            // ASM accelerated version
+            //x86_gr_complex_mag(d_ifft->get_outbuf(), d_fft_size); // d_ifft->get_outbuf()=|abs(·)|^2 and the array is converted from CPX->Float
+            //x86_float_max((float*)d_ifft->get_outbuf(), &indext, &magt,
+            //        d_fft_size); // find max of |abs(·)|^2 -> index and magt
 
-            magt = magt / (float)d_fft_size;
+            // C++ version
+            indext=0;
+            magt=0;
+            for (i = 0; i < d_fft_size; i++)
+            {
+				tmp_magt=std::norm(d_ifft->get_outbuf()[i]);
+				if (tmp_magt>magt){
+					magt=tmp_magt;
+					indext=i;
+				}
+            }
+            //magt = magt / (float)d_fft_size;
             // Record results to files
             if (d_dump)
             {

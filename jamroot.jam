@@ -8,10 +8,12 @@ lib gnuradio-usrp ;
 lib profiler ;
 lib gsl ;
 lib gslcblas ;
+lib itpp ;
 
 project : requirements
 <define>OMNITHREAD_POSIX
-<cxxflags>"-std=c++0x"
+<cxxflags>"-std=c++0x `pkg-config --cflags itpp`"
+<linkflags>"`pkg-config --libs itpp`"
 # <include>src/utils
 # <include>src/utils/INIReader
 <include>src/algorithms/acquisition/adapters

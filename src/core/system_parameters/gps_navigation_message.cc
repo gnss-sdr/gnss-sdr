@@ -1,6 +1,6 @@
 /*!
  * \file gps_navigation_message.cc
- * \brief  Implementation of GPS L1 C/A navigation message decoding
+ * \brief  Navigation message structure for GPS L1 C/A signal
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -30,7 +30,6 @@
 
 #include "gps_navigation_message.h"
 
-//! Sets all the ephemeris parameters to zero
 void gps_navigation_message::reset()
 {
   d_TOW=0;
@@ -65,9 +64,9 @@ void gps_navigation_message::reset()
   d_SV_accuracy=0;
   d_SV_health=0;
   d_TGD=0;
-  d_IODC=0;
+  d_IODC=-1;
   //broadcast orbit 7
-  d_transmission_time=0;
+
   d_fit_interval=0;
   d_spare1=0;
   d_spare2=0;
@@ -89,15 +88,17 @@ void gps_navigation_message::reset()
   // info
   d_channel_ID=0;
   d_satellite_PRN=0;
+
+  // time synchro
+  d_subframe1_timestamp_ms=0;
+
 }
 
-//! Default constructor
 gps_navigation_message::gps_navigation_message()
 {
   reset();
-}
 
-//! Read unsigned values
+}
 unsigned long int gps_navigation_message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
 {
   unsigned long int value;
@@ -117,7 +118,6 @@ unsigned long int gps_navigation_message::read_navigation_unsigned(std::bitset<G
   return value;
 }
 
-//! Read signed values
 signed long int gps_navigation_message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
 {
   signed long int value=0;
@@ -145,13 +145,7 @@ signed long int gps_navigation_message::read_navigation_signed(std::bitset<GPS_S
   return value;
 }
 
-/*!
- * \brief Accounts for beginning or end of week crossover
- *
- * Inspired in a Matlab function by Kai Borre
- * \param[in] time (in seconds)
- * \result Returns corrected time
- */
+
 double gps_navigation_message::check_t(double time)
 {
   /*
@@ -163,6 +157,13 @@ corrTime = check_t(time);
 
    Outputs:
        corrTime    - corrected time (seconds)
+
+Kai Borre 04-01-96
+Copyright (c) by Kai Borre
+
+ CVS record:
+ $Id: check_t.m,v 1.1.1.1.2.4 2006/08/22 13:45:59 dpl Exp $
+==========================================================================
    */
   double corrTime;
   double half_week = 302400;     // seconds
@@ -177,23 +178,21 @@ corrTime = check_t(time);
   return corrTime;
 }
 
-void gps_navigation_message::master_clock()
+void gps_navigation_message::master_clock(double transmitTime)
 {
   double dt;
   double satClkCorr;
   // Find initial satellite clock correction --------------------------------
 
   // --- Find time difference ---------------------------------------------
-  dt = check_t(d_TOW - d_Toc);
+  dt = check_t(transmitTime - d_Toc);
 
   //--- Calculate clock correction ---------------------------------------
   satClkCorr = (d_A_f2 * dt + d_A_f1) * dt +  d_A_f0 - d_TGD;
 
-  d_master_clock = d_TOW - satClkCorr;
+  d_master_clock = transmitTime - satClkCorr;
 }
 
-
-//! Computes satellite position from ephemeris data
 void gps_navigation_message::satpos()
 {
   double tk;
@@ -239,7 +238,7 @@ void gps_navigation_message::satpos()
     E_old   = E;
     E       = M + d_e_eccentricity * sin(E);
     dE      = fmod(E - E_old,2*GPS_PI);
-    std::cout<<"dE="<<dE<<std::endl;
+    //std::cout<<"dE="<<dE<<std::endl;
     if (abs(dE) < 1E-12)
       {
       //Necessary precision is reached, exit from the loop
@@ -289,19 +288,17 @@ void gps_navigation_message::satpos()
   d_satpos_Z = sin(u)*r * sin(i);
 }
 
-void gps_navigation_message::relativistic_clock_correction()
+void gps_navigation_message::relativistic_clock_correction(double transmitTime)
 {
   double dt;
-  // Find initial satellite clock correction --------------------------------
+  // Find final satellite clock correction --------------------------------
 
   // --- Find time difference ---------------------------------------------
-  dt = check_t(d_TOW - d_Toc);
+  dt = check_t(transmitTime - d_Toc);
 
   //Include relativistic correction in clock correction --------------------
   d_satClkCorr = (d_A_f2 * dt + d_A_f1) * dt + d_A_f0 -d_TGD + d_dtr;
 }
-
-//! Subframe decoder
 int gps_navigation_message::subframe_decoder(char *subframe)
 {
   int subframe_ID=0;
@@ -333,7 +330,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     }
    */
   subframe_ID=(int)read_navigation_unsigned(subframe_bits,SUBFRAME_ID,num_of_slices(SUBFRAME_ID));
-  std::cout<<"subframe ID="<<subframe_ID<<std::endl;
+  //std::cout<<"subframe ID="<<subframe_ID<<std::endl;
 
   // Decode all 5 sub-frames
   switch (subframe_ID){
@@ -371,6 +368,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     d_A_f2=d_A_f2*A_F2_LSB;
 
     /* debug print */
+    /*
     std::cout<<"d_TOW="<<d_TOW<<std::endl;
     std::cout<<"GPS week="<<d_GPS_week<<std::endl;
     std::cout<<"SV_accuracy="<<d_SV_accuracy<<std::endl;
@@ -381,7 +379,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     std::cout<<"A_F0="<<d_A_f0<<std::endl;
     std::cout<<"A_F1="<<d_A_f1<<std::endl;
     std::cout<<"A_F2="<<d_A_f2<<std::endl;
-
+*/
     /*
         eph.weekNumber  = bin2dec(subframe(61:70)) + 1024;
         eph.accuracy    = bin2dec(subframe(73:76));
@@ -396,13 +394,10 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     break;
 
   case 2:
-
-    tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
-    tmp_TOW=tmp_TOW*6-6; //we are in the first subframe (need no correction) !
-    std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
+    //tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
+    //std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
     // --- It is subframe 2 -------------------------------------
     // It contains first part of ephemeris parameters
-
     d_IODE_SF2=(double)read_navigation_unsigned(subframe_bits,IODE_SF2,num_of_slices(IODE_SF2));
     d_Crs=(double)read_navigation_signed(subframe_bits,C_RS,num_of_slices(C_RS));
     d_Crs=d_Crs*C_RS_LSB;
@@ -422,6 +417,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     d_Toe=d_Toe*T_OE_LSB;
 
     /* debug print */
+    /*
     std::cout<<"d_IODE_SF2="<<d_IODE_SF2<<std::endl;
     std::cout<<"d_Crs="<<d_Crs<<std::endl;
     std::cout<<"d_Delta_n="<<d_Delta_n<<std::endl;
@@ -431,7 +427,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     std::cout<<"d_Cus="<<d_Cus<<std::endl;
     std::cout<<"d_sqrt_A="<<d_sqrt_A<<std::endl;
     std::cout<<"d_Toe="<<d_Toe<<std::endl;
-
+*/
     break;
     /*
         eph.IODE_sf2    = bin2dec(subframe(61:68));
@@ -445,9 +441,8 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         eph.t_oe        = bin2dec(subframe(271:286)) * 2^4;
      */
   case 3:
-    tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
-    tmp_TOW=tmp_TOW*6-6; //we are in the first subframe (need no correction) !
-    std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
+    //tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
+    //std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
     // --- It is subframe 3 -------------------------------------
     // It contains second part of ephemeris parameters
     d_Cic=(double)read_navigation_signed(subframe_bits,C_IC,num_of_slices(C_IC));
@@ -469,6 +464,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     d_IDOT=d_IDOT*I_DOT_LSB;
 
     /* debug print */
+    /*
     std::cout<<"d_Cic="<<d_Cic<<std::endl;
     std::cout<<"d_OMEGA0="<<d_OMEGA0<<std::endl;
     std::cout<<"d_Cis="<<d_Cis<<std::endl;
@@ -478,6 +474,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     std::cout<<"d_OMEGA_DOT="<<d_OMEGA_DOT<<std::endl;
     std::cout<<"d_IODE_SF3="<<d_IODE_SF3<<std::endl;
     std::cout<<"d_IDOT="<<d_IDOT<<std::endl;
+    */
 
     break;
     /*
@@ -492,9 +489,8 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         eph.iDot        = twosComp2dec(subframe(279:292)) * 2^(-43) * gpsPi;
      */
   case 4:
-    tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
-    tmp_TOW=tmp_TOW*6-6; //we are in the first subframe (need no correction) !
-    std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
+    //tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
+    //std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
     // --- It is subframe 4 -------------------------------------
     // Almanac, ionospheric model, UTC parameters.
     // SV health (PRN: 25-32)
@@ -502,14 +498,14 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     SV_page=(int)read_navigation_unsigned(subframe_bits,SV_PAGE,num_of_slices(SV_PAGE));
 
     /* debug print */
+    /*
     std::cout<<"SF4 SV_data_ID="<<SV_data_ID<<std::endl;
     std::cout<<"SF4 SV_page="<<SV_page<<std::endl;
-
+*/
     break;
   case 5:
-    tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
-    tmp_TOW=tmp_TOW*6-6; //we are in the first subframe (need no correction) !
-    std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
+    //tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
+    //std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
     //--- It is subframe 5 -------------------------------------
     // SV almanac and health (PRN: 1-24).
     // Almanac reference week number and time.
@@ -517,8 +513,10 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     SV_page=(int)read_navigation_unsigned(subframe_bits,SV_PAGE,num_of_slices(SV_PAGE));
 
     /* debug print */
+    /*
     std::cout<<"SF5 SV_data_ID="<<SV_data_ID<<std::endl;
     std::cout<<"SF5 SV_page="<<SV_page<<std::endl;
+    */
     break;
   default:
     break;
@@ -534,7 +532,7 @@ bool gps_navigation_message::satellite_validation()
 
   // first step: check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
   //             and check if the data has been filled (!=0)
-  if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!=0)
+  if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!=-1)
     {
     flag_data_valid=true;
     }

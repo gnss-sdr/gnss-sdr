@@ -45,13 +45,6 @@
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
-/* The extern keyword declares a variable or function and specifies
- * that it has external linkage (its name is visible from files other
- * than the one in which it's defined). When modifying a variable,
- * extern specifies that the variable has static duration (it is allocated
- * when the program begins and deallocated when the program ends).
- * The variable is defined in main.cc
- */
 extern concurrent_queue<gps_navigation_message> global_gps_nav_msg_queue;
 
 using google::LogMessage;

@@ -76,6 +76,8 @@ private:
   int d_satellite;
   int d_channel;
 
+  float d_preamble_phase;
+
   std::string d_dump_filename;
   std::ofstream d_dump_file;
 

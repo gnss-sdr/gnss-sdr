@@ -37,7 +37,7 @@
 
 #include <gnuradio/gr_block.h>
 #include <gnuradio/gr_msg_queue.h>
-#include <gnuradio/gr_sync_decimator.h>
+//#include <gnuradio/gr_sync_decimator.h>
 
 #include "gps_sdr_signal_processing.h"
 
@@ -59,7 +59,8 @@ gps_l1_ca_dll_pll_make_tracking_cc(unsigned int satellite, long if_freq,
                                    int vector_length,
                                    gr_msg_queue_sptr queue, bool dump);
 
-class gps_l1_ca_dll_pll_tracking_cc: public gr_sync_decimator
+//class gps_l1_ca_dll_pll_tracking_cc: public gr_sync_decimator
+class gps_l1_ca_dll_pll_tracking_cc: public gr_block
 {
 
 private:
@@ -143,11 +144,30 @@ private:
     float d_L_I;
     float d_L_Q;
 
-    float d_absolute_code_phase_chips;
+    float d_absolute_code_phase_samples;
+    float d_code_phase_ms;
+
+    unsigned int d_blksize;
 
     unsigned long int d_sample_counter;
     unsigned long int d_acq_sample_stamp;
+    unsigned long int d_loops_count;
+
+    // CN0 estimation and lock detector
+    int d_cn0_estimation_counter;
+    float* d_P_I_buffer;
+    float* d_P_Q_buffer;
+    float d_carrier_lock_test;
+    float d_SNR_SNV;
+    float d_SNR_MM;
+    float d_SNR_SNV_dB_Hz;
+
+    float d_carrier_lock_threshold;
+
+    int d_carrier_lock_fail_counter;
+
     bool d_enable_tracking;
+    bool d_pull_in;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
@@ -181,8 +201,12 @@ public:
     //                  gr_vector_const_void_star &input_items,
     //                gr_vector_void_star &output_items) = 0;
 
-    int work(int noutput_items, gr_vector_const_void_star &input_items,
-             gr_vector_void_star &output_items);
+   //int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
+    int general_work (int noutput_items, gr_vector_int &ninput_items,
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
+    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 };
 

@@ -1,7 +1,6 @@
 /*!
  * \file gps_telemetry.cc
- * \brief  Implementation of low-levels functions for GPS L1 C/A
- * navigation message decoding
+ * \brief GPS L1 C/A telemetry processing
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------

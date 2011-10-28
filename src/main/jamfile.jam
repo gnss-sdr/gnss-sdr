@@ -21,6 +21,7 @@ exe mercurio : main.cc
 ../algorithms/observables/adapters//gps_l1_ca_observables
 ../algorithms/observables/gnuradio_blocks//gps_l1_ca_observables_cc
 ../algorithms/observables/libs//rinex_2_1_printer
+../algorithms/observables/libs//gps_l1_ca_ls_pvt
 ../algorithms/output_filter/adapters//file_output_filter
 ../algorithms/output_filter/adapters//null_sink_output_filter
 ../algorithms/signal_source/adapters//file_signal_source

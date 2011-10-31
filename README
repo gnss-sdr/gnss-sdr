@@ -28,6 +28,15 @@ How to set up the compilation environment for Ubuntu 9.10 and 10.04
 	- GFLAGS$ make
 	- GFLAGS$ sudo make install
 
+- (31/10/2011) Download, compile and install the IT++ library, from http://sourceforge.net/apps/wordpress/itpp/
+	From the folder containing IT++, build and install the library:
+		export CXXFLAGS="-DNDEBUG -O3 -pipe"    (*)
+		./configure
+		make
+		make check
+		sudo make install
+	(*) For more information on the the specific compiler flags for your processor, go to http://itpp.sourceforge.net/devel/installation.html
+
 (11/12/2010) GSL AND CBLAS ARITHMETIC
 
 In order to compile the arithmetic tests, the GNU Scientific Library (GSL) library package is needed.

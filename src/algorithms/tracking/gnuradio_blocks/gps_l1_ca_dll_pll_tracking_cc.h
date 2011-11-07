@@ -1,9 +1,12 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking_cc.h
- * \brief Brief description of the file here
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \brief code DLL + carrier PLL
+ * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Detailed description of the file here if needed.
+ * Code DLL + carrier PLL according to the algorithms described in [1]
+ * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach, Birkha user, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -29,7 +32,6 @@
  *
  * -------------------------------------------------------------------------
  */
-
 #ifndef GPS_L1_CA_DLL_PLL_TRACKING_CC_H
 #define	GPS_L1_CA_DLL_PLL_TRACKING_CC_H
 

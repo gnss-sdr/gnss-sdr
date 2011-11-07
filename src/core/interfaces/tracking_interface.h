@@ -58,8 +58,8 @@ public:
     virtual void start_tracking() = 0;
     virtual void set_satellite(unsigned int satellite) = 0;
     virtual void set_channel(unsigned int channel) = 0;
-    virtual void set_prn_code_phase(signed int phase) = 0;
-    virtual void set_doppler_freq_shift(float phase) = 0;
+    virtual void set_prn_code_phase(signed int phase_samples) = 0;
+    virtual void set_doppler_freq_shift(float doppler_freq_hz) = 0;
     virtual void set_acq_sample_stamp(unsigned long int sample_stamp) = 0;
     virtual void set_channel_queue(concurrent_queue<int> *channel_internal_queue) = 0;
 

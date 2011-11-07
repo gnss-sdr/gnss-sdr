@@ -1,10 +1,12 @@
 /*!
- * \file gnss_tracking_a.cc
- * \brief Brief description of the file here
+ * \file gps_l1_ca_dll_pll_tracking.cc
+ * \brief code DLL + carrier PLL
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Detailed description of the file here if needed.
+ * Code DLL + carrier PLL according to the algorithms described in [1]
+ * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach, Birkha user, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -110,14 +112,14 @@ void GpsL1CaDllPllTracking::set_channel_queue(
     tracking_->set_channel_queue(channel_internal_queue_);
 
 }
-void GpsL1CaDllPllTracking::set_prn_code_phase(signed int phase)
+void GpsL1CaDllPllTracking::set_prn_code_phase(signed int phase_samples)
 {
-    return tracking_->set_acq_code_phase((double)phase);
+    return tracking_->set_acq_code_phase((float)phase_samples);
 }
 
-void GpsL1CaDllPllTracking::set_doppler_freq_shift(float phase)
+void GpsL1CaDllPllTracking::set_doppler_freq_shift(float doppler_freq_hz)
 {
-    return tracking_->set_acq_doppler(phase);
+    return tracking_->set_acq_doppler(doppler_freq_hz);
 }
 
 void GpsL1CaDllPllTracking::set_acq_sample_stamp(

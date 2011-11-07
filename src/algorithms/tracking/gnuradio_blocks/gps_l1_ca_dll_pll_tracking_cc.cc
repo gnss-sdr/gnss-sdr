@@ -1,17 +1,37 @@
-//! Single-delta GPS L1 CA DLL+PLL tracking
 /*!
- * Tracking based on the Kay Borre book MATLAB-based GPS receiver
+ * \file gps_l1_ca_dll_pll_tracking_cc.cc
+ * \brief code DLL + carrier PLL
+ * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ *         Javier Arribas, 2011. jarribas(at)cttc.es
+ *
+ * Code DLL + carrier PLL according to the algorithms described in [1]
+ * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach, Birkha user, 2007
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
-
-/**
- * Copyright notice
- */
-
-/**
- * Author: Javier Arribas, 2011. jarribas(at)cttc.es
- */
-
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -428,7 +448,7 @@ int gps_l1_ca_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_in
 			Psig=Psig/(float)CN0_ESTIMATION_SAMPLES;
 			Psig=Psig*Psig;
 			d_SNR_SNV=Psig/(Ptot/(float)CN0_ESTIMATION_SAMPLES-Psig);
-			d_SNR_SNV_dB_Hz=10*std::log10(d_SNR_SNV)+10*log10(d_fs_in/2)-10*log10(d_code_length);
+			d_SNR_SNV_dB_Hz=10*log10(d_SNR_SNV)+10*log10(d_fs_in/2)-10*log10(d_code_length);
 			NBD=tmp_sum_abs_I*tmp_sum_abs_I+tmp_sum_abs_Q*tmp_sum_abs_Q;
 			NBP=tmp_sum_sqr_I-tmp_sum_sqr_Q;
 			d_carrier_lock_test=NBD/NBP;
@@ -441,7 +461,7 @@ int gps_l1_ca_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_in
         {
              d_carrier_lock_fail_counter++;
         }else{
-        	d_carrier_lock_fail_counter--;
+        	if (d_carrier_lock_fail_counter>0) d_carrier_lock_fail_counter--;
         }
         if (d_carrier_lock_fail_counter>200)
         {
@@ -449,7 +469,7 @@ int gps_l1_ca_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_in
         	tracking_message=3; //loss of lock
         	d_channel_internal_queue->push(tracking_message);
         	d_carrier_lock_fail_counter=0;
-        	d_enable_tracking=false; // TODO: check if disabling tranking is consistent with the channel state machine
+        	d_enable_tracking=false; // TODO: check if disabling tracking is consistent with the channel state machine
 
         }
         //std::cout<<"d_carrier_lock_fail_counter"<<d_carrier_lock_fail_counter<<"\r\n";

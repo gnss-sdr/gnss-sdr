@@ -216,7 +216,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
         {
             d_input_power += std::abs(in[i]) * std::abs(in[i]);
         }
-        //d_input_power = d_input_power / ((float)d_fft_size * (float)d_fft_size);
+
         d_input_power = d_input_power / (float)d_fft_size;
 
         // 2º- Doppler frequency search loop
@@ -255,7 +255,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
 					indext=i;
 				}
             }
-            //magt = magt / (float)d_fft_size;
+
             // Record results to files
             if (d_dump)
             {
@@ -278,7 +278,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
         }
 
         // 5º- Compute the test statistics and compare to the threshold
-        d_test_statistics = d_mag / d_input_power;
+        d_test_statistics = 2*d_fft_size*d_mag / d_input_power;
         // 6º- Declare positive or negative acquisition using a message queue
 
         if (d_test_statistics > d_threshold)

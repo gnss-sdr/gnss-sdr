@@ -1,12 +1,13 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking_cc.h
- * \brief code DLL + carrier PLL
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
+ * \file gps_l1_ca_dll_fll_pll_tracking_cc.h
+ * \brief code DLL + carrier FLL/PLL tracking
+ * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Code DLL + carrier PLL according to the algorithms described in [1]
- * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach, Birkha user, 2007
+ * This file implements the code Delay Locked Loop (DLL) +
+ * carrier Phase Locked Loop (PLL) helped with a carrier Frequency Locked Loop (FLL) stage
+ * according to the algorithms described in [1]
+ * [1] E.D. Kaplan and C. Hegarty, Understanding GPS. Principles and
+ * Applications, Second Edition, Artech House Publishers, 2005.
  *
  * -------------------------------------------------------------------------
  *
@@ -32,8 +33,9 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef GPS_L1_CA_DLL_PLL_TRACKING_CC_H
-#define	GPS_L1_CA_DLL_PLL_TRACKING_CC_H
+
+#ifndef GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H
+#define	GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H
 
 #include <fstream>
 
@@ -42,56 +44,64 @@
 //#include <gnuradio/gr_sync_decimator.h>
 
 #include "gps_sdr_signal_processing.h"
-#include "tracking_2rd_DLL_filter.h"
-#include "tracking_2rd_PLL_filter.h"
+#include "tracking_FLL_PLL_filter.h"
 
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 
-class gps_l1_ca_dll_pll_tracking_cc;
-typedef boost::shared_ptr<gps_l1_ca_dll_pll_tracking_cc>
-        gps_l1_ca_dll_pll_tracking_cc_sptr;
+class gps_l1_ca_dll_fll_pll_tracking_cc;
+typedef boost::shared_ptr<gps_l1_ca_dll_fll_pll_tracking_cc>
+        gps_l1_ca_dll_fll_pll_tracking_cc_sptr;
 
-gps_l1_ca_dll_pll_tracking_cc_sptr
-gps_l1_ca_dll_pll_make_tracking_cc(unsigned int satellite, long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   gr_msg_queue_sptr queue,
-                                   bool dump,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float early_late_space_chips);
+gps_l1_ca_dll_fll_pll_tracking_cc_sptr
+gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
+										long if_freq,
+										long fs_in,
+										unsigned int vector_length,
+										gr_msg_queue_sptr queue,
+										bool dump,
+										int order,
+	                                    float fll_bw_hz,
+	                                    float pll_bw_hz,
+	                                    float dll_bw_hz,
+	                                    float early_late_space_chips);
 
 //class gps_l1_ca_dll_pll_tracking_cc: public gr_sync_decimator
-class gps_l1_ca_dll_pll_tracking_cc: public gr_block
+class gps_l1_ca_dll_fll_pll_tracking_cc: public gr_block
 {
 
 private:
 
-    friend gps_l1_ca_dll_pll_tracking_cc_sptr
-    gps_l1_ca_dll_pll_make_tracking_cc(unsigned int satellite, long if_freq,
-                                       long fs_in, unsigned
-                                       int vector_length,
-                                       gr_msg_queue_sptr queue,
-                                       bool dump,
-                                       float pll_bw_hz,
-                                       float dll_bw_hz,
-                                       float early_late_space_chips);
+    friend gps_l1_ca_dll_fll_pll_tracking_cc_sptr
+    gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
+										   long if_freq,
+										   long fs_in, unsigned
+										   int vector_length,
+										   gr_msg_queue_sptr queue,
+										   bool dump,
+										   int order,
+										   float fll_bw_hz,
+										   float pll_bw_hz,
+										   float dll_bw_hz,
+										   float early_late_space_chips);
 
-    gps_l1_ca_dll_pll_tracking_cc(unsigned int satellite, long if_freq,
-                                  long fs_in, unsigned
-                                  int vector_length,
-                                  gr_msg_queue_sptr queue,
-                                  bool dump,
-                                  float pll_bw_hz,
-                                  float dll_bw_hz,
-                                  float early_late_space_chips);
-    void update_local_code();
-    void update_local_carrier();
+    gps_l1_ca_dll_fll_pll_tracking_cc(unsigned int satellite,
+									  long if_freq,
+									  long fs_in, unsigned
+									  int vector_length,
+									  gr_msg_queue_sptr queue,
+									  bool dump,
+									  int order,
+									  float fll_bw_hz,
+									  float pll_bw_hz,
+									  float dll_bw_hz,
+									  float early_late_space_chips);
 
-    // tracking configuration vars
+    void CN0_estimation_and_lock_detectors();
+
+    // class private vars
     gr_msg_queue_sptr d_queue;
     concurrent_queue<int> *d_channel_internal_queue;
     unsigned int d_vector_length;
@@ -102,44 +112,41 @@ private:
     long d_if_freq;
     long d_fs_in;
 
-    float d_early_late_spc_chips;
-
-    float d_code_phase_step_chips;
-
     gr_complex* d_ca_code;
 
     gr_complex* d_early_code;
     gr_complex* d_late_code;
     gr_complex* d_prompt_code;
+
     gr_complex* d_carr_sign;
 
 	gr_complex d_Early;
 	gr_complex d_Prompt;
+	gr_complex d_Prompt_prev;
 	gr_complex d_Late;
 
-	// remaining code phase and carrier phase between tracking loops
+	float d_early_late_spc_chips;
+
+
+	float d_carrier_doppler_hz;
+	float d_code_freq_hz;
+	int d_current_prn_length_samples;
+	int d_next_prn_length_samples;
+	int d_FLL_wait;
+    float d_rem_carr_phase;
     float d_rem_code_phase_samples;
     float d_next_rem_code_phase_samples;
-    float d_rem_carr_phase_rad;
-
-    // PLL and DLL filter library
-    tracking_2rd_DLL_filter d_code_loop_filter;
-    tracking_2rd_PLL_filter d_carrier_loop_filter;
+    bool d_pull_in;
 
     // acquisition
     float d_acq_code_phase_samples;
     float d_acq_carrier_doppler_hz;
 
-    // tracking vars
-    float d_code_freq_hz;
-    float d_carrier_doppler_hz;
+    // FLL + PLL filter
+    float d_FLL_discriminator_hz; // This is a class variable because FLL needs to have memory
+    tracking_FLL_PLL_filter d_carrier_loop_filter;
     float d_acc_carrier_phase_rad;
 
-    //PRN period in samples
-	int d_current_prn_length_samples;
-	int d_next_prn_length_samples;
-
-	//processing samples counters
     unsigned long int d_sample_counter;
     unsigned long int d_acq_sample_stamp;
 
@@ -148,26 +155,28 @@ private:
     gr_complex* d_Prompt_buffer;
     float d_carrier_lock_test;
     float d_CN0_SNV_dB_Hz;
+
     float d_carrier_lock_threshold;
+
     int d_carrier_lock_fail_counter;
 
-    // control vars
     bool d_enable_tracking;
-    bool d_pull_in;
 
-    // file dump
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
 public:
 
-    ~gps_l1_ca_dll_pll_tracking_cc();
+    ~gps_l1_ca_dll_fll_pll_tracking_cc();
 
     void set_satellite(unsigned int satellite);
     void set_channel(unsigned int channel);
     void set_acq_code_phase(float code_phase);
     void set_acq_doppler(float doppler);
     void start_tracking();
+    void update_local_code();
+    void update_local_carrier();
+    void set_FLL_and_PLL_BW(float fll_bw_hz,float pll_bw_hz);
     void set_acq_sample_stamp(unsigned long int sample_stamp);
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
@@ -189,4 +198,4 @@ public:
 
 };
 
-#endif //GPS_L1_CA_DLL_PLL_TRACKING_CC_H
+#endif //GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H

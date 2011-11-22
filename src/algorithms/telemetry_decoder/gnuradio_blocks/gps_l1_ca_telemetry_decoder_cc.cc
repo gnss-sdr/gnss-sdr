@@ -125,7 +125,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
       {
       d_GPS_FSM.Event_gps_word_preamble();
       d_preamble_index=d_sample_counter;//record the preamble sample stamp
-      std::cout<<"Pre-detection SAT "<<this->d_satellite+1<<std::endl;
+      std::cout<<"Pre-detection SAT "<<this->d_satellite<<std::endl;
       d_symbol_accumulator=0; //sync the symbol to bits integrator
       d_symbol_accumulator_counter=0;
       d_frame_bit_index=8;
@@ -141,12 +141,12 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 
           if (!d_flag_frame_sync){
             d_flag_frame_sync=true;
-            std::cout<<" Frame sync SAT "<<this->d_satellite+1<<" with preamble start at "<<in[2][0]<<" [ms]"<<std::endl;
+            std::cout<<" Frame sync SAT "<<this->d_satellite<<" with preamble start at "<<in[2][0]<<" [ms]"<<std::endl;
           }
           }else
             {
             if (preamble_diff>7000){
-              std::cout<<"lost of frame sync SAT "<<this->d_satellite+1<<std::endl;
+              std::cout<<"lost of frame sync SAT "<<this->d_satellite<<std::endl;
               d_stat=0; //lost of frame sync
               d_flag_frame_sync=false;
             }
@@ -217,7 +217,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //gps_synchro.preamble_delay_ms=(float)d_preamble_index;
     gps_synchro.preamble_delay_ms=(float)d_preamble_index;
     gps_synchro.prn_delay_ms=in[3][0];
-    gps_synchro.satellite_PRN=d_satellite+1;
+    gps_synchro.satellite_PRN=d_satellite;
     gps_synchro.channel_ID=d_channel;
     *out[0]=gps_synchro;
     return 1;

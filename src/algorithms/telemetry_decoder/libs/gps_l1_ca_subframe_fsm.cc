@@ -147,7 +147,7 @@ void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
 
   subframe_ID=d_nav.subframe_decoder(this->d_subframe); //decode the subframe
 
-  d_nav.d_satellite_PRN=d_satellite_PRN+1;
+  d_nav.d_satellite_PRN=d_satellite_PRN;
   d_nav.d_channel_ID=d_channel_ID;
   if (subframe_ID==1) {
     d_nav.d_subframe1_timestamp_ms=this->d_preamble_time_ms-6002;

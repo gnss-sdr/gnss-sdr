@@ -1,12 +1,12 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking.h
- * \brief code DLL + carrier PLL
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
+ * \file gps_l1_ca_dll_fll_pll_tracking.h
+ * \brief code DLL + carrier FLL/PLL tracking
+ * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Code DLL + carrier PLL according to the algorithms described in [1]
- * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach, Birkha user, 2007
+ * This file implements the code Delay Locked Loop (DLL) + carrier Phase Locked Loop (PLL) helped with a carrier Frequency Locked Loop (FLL) stage
+ * according to the algorithms described in [1]
+ * [1] E.D. Kaplan and C. Hegarty, Understanding GPS. Principles and
+ * Applications, Second Edition, Artech House Publishers, 2005.
  *
  * -------------------------------------------------------------------------
  *
@@ -33,30 +33,30 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_L1_CA_DLL_PLL_TRACKING_H_
-#define GPS_L1_CA_DLL_PLL_TRACKING_H_
+#ifndef GPS_L1_CA_DLL_FLL_PLL_TRACKING_H_
+#define GPS_L1_CA_DLL_FLL_PLL_TRACKING_H_
 
 #include "tracking_interface.h"
 
-#include "gps_l1_ca_dll_pll_tracking_cc.h"
+#include "gps_l1_ca_dll_fll_pll_tracking_cc.h"
 
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
 
 
-class GpsL1CaDllPllTracking : public TrackingInterface
+class GpsL1CaDllFllPllTracking : public TrackingInterface
 {
 
 public:
 
-  GpsL1CaDllPllTracking(ConfigurationInterface* configuration,
+  GpsL1CaDllFllPllTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
             gr_msg_queue_sptr queue);
 
-    virtual ~GpsL1CaDllPllTracking();
+    virtual ~GpsL1CaDllFllPllTracking();
 
     std::string role()
     {
@@ -88,7 +88,7 @@ public:
 
 private:
 
-    gps_l1_ca_dll_pll_tracking_cc_sptr tracking_;
+    gps_l1_ca_dll_fll_pll_tracking_cc_sptr tracking_;
     size_t item_size_;
 
     unsigned int satellite_;
@@ -101,4 +101,4 @@ private:
     concurrent_queue<int> *channel_internal_queue_;
 };
 
-#endif // GPS_L1_CA_DLL_PLL_TRACKING_H_
+#endif // GPS_L1_CA_DLL_FLL_PLL_TRACKING_H_

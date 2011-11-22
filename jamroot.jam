@@ -38,6 +38,7 @@ project : requirements
 <include>src/algorithms/telemetry_decoder/libs
 <include>src/algorithms/tracking/adapters
 <include>src/algorithms/tracking/gnuradio_blocks
+<include>src/algorithms/tracking/libs
 <include>src/core/interfaces
 <include>src/core/libs
 <include>src/core/receiver

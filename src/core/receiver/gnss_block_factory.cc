@@ -55,6 +55,7 @@
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_tong_pcps_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
+#include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l1_ca_observables.h"
 
@@ -260,6 +261,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
     {
         block = new GpsL1CaDllPllTracking(configuration, role, in_streams,
+                out_streams, queue);
+    }
+    else if (implementation.compare("GPS_L1_CA_DLL_FLL_PLL_Tracking") == 0)
+    {
+        block = new GpsL1CaDllFllPllTracking(configuration, role, in_streams,
                 out_streams, queue);
     }
     else if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)

@@ -43,7 +43,10 @@
 
 using google::LogMessage;
 
-// TODO: make this queue generic for all the GNSS systems (javi)
+/*!
+ * \todo  make this queue generic for all the GNSS systems (javi)
+ */
+
 /*!
  * \brief Concurrent queue that communicates the Telemetry Decoder
  * to the Observables modules

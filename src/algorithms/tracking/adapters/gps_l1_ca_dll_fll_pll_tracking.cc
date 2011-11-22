@@ -1,12 +1,12 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking.cc
- * \brief code DLL + carrier PLL
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Javier Arribas, 2011. jarribas(at)cttc.es
+ * \file gps_l1_ca_dll_fll_pll_tracking.cc
+ * \brief code DLL + carrier FLL/PLL tracking
+ * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Code DLL + carrier PLL according to the algorithms described in [1]
- * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach, Birkha user, 2007
+ * This file implements the code Delay Locked Loop (DLL) + carrier Phase Locked Loop (PLL) helped with a carrier Frequency Locked Loop (FLL) stage
+ * according to the algorithms described in [1]
+ * [1] E.D. Kaplan and C. Hegarty, Understanding GPS. Principles and
+ * Applications, Second Edition, Artech House Publishers, 2005.
  *
  * -------------------------------------------------------------------------
  *
@@ -33,7 +33,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_dll_pll_tracking.h"
+#include "gps_l1_ca_dll_fll_pll_tracking.h"
 
 #include "configuration_interface.h"
 
@@ -44,7 +44,7 @@
 
 using google::LogMessage;
 
-GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
+GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         gr_msg_queue_sptr queue) :
@@ -65,15 +65,19 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     std::string item_type;
     std::string default_item_type = "gr_complex";
     float pll_bw_hz;
+    float fll_bw_hz;
     float dll_bw_hz;
     float early_late_space_chips;
+    int order;
 
     item_type = configuration->property(role + ".item_type",default_item_type);
     vector_length = configuration->property(role + ".vector_length", 2048);
     fs_in = configuration->property(role + ".fs_in", 2048000);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
+    order = configuration->property(role + ".order", 2);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+    fll_bw_hz = configuration->property(role + ".fll_bw_hz", 100.0);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
 
@@ -85,8 +89,8 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     if (item_type.compare("gr_complex") == 0)
     {
         item_size_ = sizeof(gr_complex);
-        tracking_ = gps_l1_ca_dll_pll_make_tracking_cc(satellite_, f_if,
-                fs_in, vector_length, queue_, dump,pll_bw_hz,dll_bw_hz,early_late_space_chips);
+        tracking_ = gps_l1_ca_dll_fll_pll_make_tracking_cc(satellite_, f_if,
+                fs_in, vector_length, queue_, dump, order, fll_bw_hz, pll_bw_hz,dll_bw_hz,early_late_space_chips);
     }
     else
     {
@@ -96,38 +100,29 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
-GpsL1CaDllPllTracking::~GpsL1CaDllPllTracking()
+GpsL1CaDllFllPllTracking::~GpsL1CaDllFllPllTracking()
 {
 }
 
-void GpsL1CaDllPllTracking::start_tracking()
+void GpsL1CaDllFllPllTracking::start_tracking()
 {
     tracking_->start_tracking();
 }
 
-/*!
- * Set satellite ID
- */
-void GpsL1CaDllPllTracking::set_satellite(unsigned int satellite)
+void GpsL1CaDllFllPllTracking::set_satellite(unsigned int satellite)
 {
     satellite_ = satellite;
     tracking_->set_satellite(satellite);
     DLOG(INFO) << "satellite set to " << satellite_;
 }
 
-/*!
- * Set tracking channel unique ID
- */
-void GpsL1CaDllPllTracking::set_channel(unsigned int channel)
+void GpsL1CaDllFllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
     tracking_->set_channel(channel);
 }
 
-/*!
- * Set tracking channel internal queue
- */
-void GpsL1CaDllPllTracking::set_channel_queue(
+void GpsL1CaDllFllPllTracking::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
@@ -135,44 +130,37 @@ void GpsL1CaDllPllTracking::set_channel_queue(
     tracking_->set_channel_queue(channel_internal_queue_);
 
 }
-/*!
- * Set acquisition code phase in samples
- */
-void GpsL1CaDllPllTracking::set_prn_code_phase(signed int phase_samples)
+void GpsL1CaDllFllPllTracking::set_prn_code_phase(signed int phase_samples)
 {
     return tracking_->set_acq_code_phase((float)phase_samples);
 }
-/*!
- * Set acquisition Doppler frequency in Hz.
- */
-void GpsL1CaDllPllTracking::set_doppler_freq_shift(float doppler_freq_hz)
+
+void GpsL1CaDllFllPllTracking::set_doppler_freq_shift(float doppler_freq_hz)
 {
     return tracking_->set_acq_doppler(doppler_freq_hz);
 }
-/*!
- * Set acquisition sample stamp in samples, in order to detect the delay between acquisition and tracking
- */
-void GpsL1CaDllPllTracking::set_acq_sample_stamp(
+
+void GpsL1CaDllFllPllTracking::set_acq_sample_stamp(
         unsigned long int sample_stamp)
 {
     return tracking_->set_acq_sample_stamp(sample_stamp);
 }
-void GpsL1CaDllPllTracking::connect(gr_top_block_sptr top_block)
+void GpsL1CaDllFllPllTracking::connect(gr_top_block_sptr top_block)
 {
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
-void GpsL1CaDllPllTracking::disconnect(gr_top_block_sptr top_block)
+void GpsL1CaDllFllPllTracking::disconnect(gr_top_block_sptr top_block)
 {
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
-gr_basic_block_sptr GpsL1CaDllPllTracking::get_left_block()
+gr_basic_block_sptr GpsL1CaDllFllPllTracking::get_left_block()
 {
     return tracking_;
 }
 
-gr_basic_block_sptr GpsL1CaDllPllTracking::get_right_block()
+gr_basic_block_sptr GpsL1CaDllFllPllTracking::get_right_block()
 {
     return tracking_;
 }

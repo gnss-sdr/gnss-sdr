@@ -43,10 +43,18 @@
 const float GPS_C_m_s= 299792458.0;    // The speed of light, [m/ms]
 const float GPS_STARTOFFSET_ms= 68.802; //[ms] Initial sign. travel time
 const float GPS_PI = 3.1415926535898; // Pi used in the GPS coordinate system
+// carrier and code frequencies
+const float GPS_L1_FREQ_HZ	= 1.57542e9;
+const float GPS_L2_FREQ_HZ	= 1.22760e9;
+const float GPS_L1_CA_CODE_RATE_HZ = 1.023e6;
+const float GPS_L1_CA_CODE_LENGTH_CHIPS	=	1023.0;
+
+
 //-- Constants for satellite position calculation -------------------------
 const double  OMEGA_EARTH_DOT = 7.2921151467e-5;  // Earth rotation rate, [rad/s]
 const double  GM            = 3.986005e14;      // Universal gravitational constant times the mass of the Earth, [m^3/s^2]
 const double  F              = -4.442807633e-10; // Constant, [sec/(meter)^(1/2)]
+
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
 

@@ -1,0 +1,7 @@
+project : build-dir ../../../../build ;
+
+obj tracking_discriminators : tracking_discriminators.cc ;
+obj CN_estimators : CN_estimators.cc ;
+obj tracking_FLL_PLL_filter	: tracking_FLL_PLL_filter.cc ;
+obj tracking_2rd_PLL_filter	: tracking_2rd_PLL_filter.cc ;
+obj tracking_2rd_DLL_filter	: tracking_2rd_DLL_filter.cc ;

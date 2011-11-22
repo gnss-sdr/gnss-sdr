@@ -30,7 +30,14 @@ exe mercurio : main.cc
 ../algorithms/telemetry_decoder/gnuradio_blocks//gps_l1_ca_telemetry_decoder_cc
 ../algorithms/telemetry_decoder/libs//gps_l1_ca_subframe_fsm
 ../algorithms/tracking/adapters//gps_l1_ca_dll_pll_tracking
+../algorithms/tracking/adapters//gps_l1_ca_dll_fll_pll_tracking
 ../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_pll_tracking_cc
+../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_fll_pll_tracking_cc
+../algorithms/tracking/libs//tracking_discriminators
+../algorithms/tracking/libs//CN_estimators
+../algorithms/tracking/libs//tracking_FLL_PLL_filter
+../algorithms/tracking/libs//tracking_2rd_PLL_filter
+../algorithms/tracking/libs//tracking_2rd_DLL_filter
 ../core/libs//INIReader
 ../core/libs//ini
 ../core/libs//string_converter

@@ -234,16 +234,16 @@ gr_basic_block_sptr FileSignalSource::get_left_block()
 
 gr_basic_block_sptr FileSignalSource::get_right_block()
 {
-    if (dump_==true)
-    {
-    	return file_source_;
-    }else{
-		if (samples_ != 0)
-		{
-			return valve_;
-		}else
+	if (samples_ != 0)
+	{
+		return valve_;
+	}else
+	{
+		if (enable_throttle_control_ == true)
 		{
 			return throttle_;
+		}else{
+			return file_source_;
 		}
-    }
+	}
 }

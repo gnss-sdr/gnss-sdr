@@ -131,7 +131,7 @@ void gps_l1_ca_pcps_acquisition_cc::set_satellite(unsigned int satellite)
     d_satellite = satellite;
     d_code_phase = 0;
     d_doppler_freq = 0;
-    d_mag = 0;
+    d_mag = 0.0;
     d_input_power = 0.0;
 
     // Now the GPS codes are generated on the fly using a custom version of the GPS code generator
@@ -190,6 +190,14 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
     else
     {
         d_sample_counter += d_fft_size; // sample counter
+
+        //restart acquisition variables
+
+        d_code_phase = 0;
+        d_doppler_freq = 0;
+        d_mag = 0.0;
+        d_input_power = 0.0;
+
         // initialize acquisition algorithm
 
         int doppler;
@@ -287,7 +295,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
             d_acq_sample_stamp = d_sample_counter;
             LOG_AT_LEVEL(INFO) << "positive acquisition";
             LOG_AT_LEVEL(INFO) << "satellite " << d_satellite;
-            LOG_AT_LEVEL(INFO) << "sample_stamp" << d_sample_counter;
+            LOG_AT_LEVEL(INFO) << "sample_stamp " << d_sample_counter;
             LOG_AT_LEVEL(INFO) << "test statistics value "
                     << d_test_statistics;
             LOG_AT_LEVEL(INFO) << "test statistics threshold " << d_threshold;
@@ -305,12 +313,10 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
             LOG_AT_LEVEL(INFO) << "test statistics value "
                     << d_test_statistics;
             LOG_AT_LEVEL(INFO) << "test statistics threshold " << d_threshold;
+            LOG_AT_LEVEL(INFO) << "code phase " << d_code_phase;
+            LOG_AT_LEVEL(INFO) << "doppler " << d_doppler_freq;
             LOG_AT_LEVEL(INFO) << "magnitude " << d_mag;
             LOG_AT_LEVEL(INFO) << "input signal power " << d_input_power;
-
-            //restart acquisition variables
-            d_input_power = 0.0;
-            d_mag = 0.0;
 
         }
         d_active = false;

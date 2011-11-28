@@ -49,15 +49,15 @@
 
 #include "armadillo"
 
-using namespace arma;
+//using namespace arma;
 
 //using namespace itpp;
 
 class gps_l1_ca_ls_pvt
 {
 private:
-    vec leastSquarePos(mat satpos, vec obs, mat w);
-    vec e_r_corr(double traveltime, vec X_sat);
+    arma::vec leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w);
+    arma::vec e_r_corr(double traveltime, arma::vec X_sat);
     //void cart2geo();
     //void topocent();
 public:

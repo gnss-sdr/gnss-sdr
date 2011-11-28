@@ -42,7 +42,7 @@
 
 #include "armadillo"
 
-using namespace arma;
+//using namespace arma;
 
 #include "gps_l1_ca_ls_pvt.h"
 
@@ -58,7 +58,7 @@ gps_l1_ca_ls_pvt::~gps_l1_ca_ls_pvt()
     delete d_ephemeris;
 }
 
-vec gps_l1_ca_ls_pvt::e_r_corr(double traveltime, vec X_sat) {
+arma::vec gps_l1_ca_ls_pvt::e_r_corr(double traveltime, arma::vec X_sat) {
     /*
      %E_R_CORR  Returns rotated satellite ECEF coordinates due to Earth
      %rotation during signal travel time
@@ -80,7 +80,7 @@ vec gps_l1_ca_ls_pvt::e_r_corr(double traveltime, vec X_sat) {
     omegatau = Omegae_dot * traveltime;
 
     //--- Make a rotation matrix -----------------------------------------------
-    mat R3=zeros(3,3);
+    arma::mat R3=arma::zeros(3,3);
     R3(0, 0)= cos(omegatau);
     R3(0, 1)= sin(omegatau);
     R3(0, 2)= 0.0;
@@ -91,12 +91,12 @@ vec gps_l1_ca_ls_pvt::e_r_corr(double traveltime, vec X_sat) {
     R3(2, 1)= 0.0;
     R3(2, 2)= 1;
     //--- Do the rotation ------------------------------------------------------
-    vec X_sat_rot;
+    arma::vec X_sat_rot;
     X_sat_rot = R3 * X_sat;
     return X_sat_rot;
 
 }
-vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
+arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w) {
     //Function calculates the Least Square Solution.
 
     //pos= leastSquarePos(satpos, obs, w);
@@ -125,15 +125,15 @@ vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
 
     //nmbOfSatellites = satpos.cols();    //ITPP
     nmbOfSatellites = satpos.n_cols;	//Armadillo
-    vec pos = "0.0 0.0 0.0 0.0";
-    mat A;
-    mat omc;
-    mat az;
-    mat el;
-    A=zeros(nmbOfSatellites,4);
-    omc=zeros(nmbOfSatellites,1);
-    az=zeros(1,nmbOfSatellites);
-    el=zeros(1,nmbOfSatellites);
+    arma::vec pos = "0.0 0.0 0.0 0.0";
+    arma::mat A;
+    arma::mat omc;
+    arma::mat az;
+    arma::mat el;
+    A=arma::zeros(nmbOfSatellites,4);
+    omc=arma::zeros(nmbOfSatellites,1);
+    az=arma::zeros(1,nmbOfSatellites);
+    el=arma::zeros(1,nmbOfSatellites);
     for (int i = 0; i < nmbOfSatellites; i++) {
         for (int j = 0; j < 4; j++) {
             //A.set(i, j, 0.0); //ITPP
@@ -144,13 +144,13 @@ vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
     }
     el = az;
 
-    mat X = satpos;
-    vec Rot_X;
+    arma::mat X = satpos;
+    arma::vec Rot_X;
     double rho2;
     double traveltime;
     double trop;
-    mat mat_tmp;
-    vec x;
+    arma::mat mat_tmp;
+    arma::vec x;
     //=== Iteratively find receiver position ===================================
     for (int iter = 0; iter < nmbOfIterations; iter++) {
         for (int i = 0; i < nmbOfSatellites; i++) {
@@ -183,7 +183,7 @@ vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
             //Armadillo
             A(i,0)=(-(Rot_X(0) - pos(0))) / obs(i);
             A(i,1)=(-(Rot_X(1) - pos(1))) / obs(i);
-	    A(i,2)=(-(Rot_X(2) - pos(2))) / obs(i);
+            A(i,2)=(-(Rot_X(2) - pos(2))) / obs(i);
             A(i,3)=1.0;
         }
 
@@ -196,7 +196,7 @@ vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
 
         //--- Find position update ---------------------------------------------
         // x = ls_solve_od(w*A,w*omc); // ITPP
-        x = solve(w*A,w*omc); // Armadillo
+        x = arma::solve(w*A,w*omc); // Armadillo
 
         //--- Apply position update --------------------------------------------
         pos = pos + x;
@@ -214,9 +214,9 @@ void gps_l1_ca_ls_pvt::get_PVT(std::map<int,float> pseudoranges,double GPS_curre
     //mat satpos=zeros(3,d_nchannels); //satellite positions matrix
 
     // Armadillo
-    mat W=eye(d_nchannels,d_nchannels); //channels weights matrix
-    vec obs=zeros(d_nchannels); // pseudoranges observation vector
-    mat satpos=zeros(3,d_nchannels); //satellite positions matrix
+    arma::mat W=arma::eye(d_nchannels,d_nchannels); //channels weights matrix
+    arma::vec obs=arma::zeros(d_nchannels); // pseudoranges observation vector
+    arma::mat satpos=arma::zeros(3,d_nchannels); //satellite positions matrix
 
     int valid_obs=0; //valid observations counter
     for (int i=0; i<d_nchannels; i++)
@@ -252,7 +252,7 @@ void gps_l1_ca_ls_pvt::get_PVT(std::map<int,float> pseudoranges,double GPS_curre
     std::cout<<"PVT: valid observations="<<valid_obs<<std::endl;
     if (valid_obs>=4)
     {
-        vec mypos;
+        arma::vec mypos;
         mypos=leastSquarePos(satpos,obs,W);
         std::cout << "Position ("<<GPS_current_time<<") ECEF = " << mypos << std::endl;
         cart2geo(mypos(0), mypos(1), mypos(2), 4);

@@ -1,17 +1,48 @@
+/*!
+ * \file gps_l1_ca_ls_pvt.cc
+ * \brief Least Squares Position, Velocity, and Time (PVT) solver, based on
+ * K.Borre Matlab receiver.
+ * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
+/*!
+ * Using ITPP
+ */
+//#include <itpp/itbase.h>
+//#include <itpp/stat/misc_stat.h>
+//#include <itpp/base/matfunc.h>
 
-/**
- * Copyright notice
+//using namespace itpp;
+
+/*!
+ * Using armadillo
  */
 
-/**
- * Author: Javier Arribas, 2011. jarribas(at)cttc.es
- */
+#include "armadillo"
 
-#include <itpp/itbase.h>
-#include <itpp/stat/misc_stat.h>
-#include <itpp/base/matfunc.h>
-
-using namespace itpp;
+using namespace arma;
 
 #include "gps_l1_ca_ls_pvt.h"
 
@@ -91,7 +122,9 @@ vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
     //double dtr = GPS_PI / 180.0;
 
     int nmbOfSatellites;
-    nmbOfSatellites = satpos.cols();
+
+    //nmbOfSatellites = satpos.cols();    //ITPP
+    nmbOfSatellites = satpos.n_cols;	//Armadillo
     vec pos = "0.0 0.0 0.0 0.0";
     mat A;
     mat omc;
@@ -103,14 +136,15 @@ vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
     el=zeros(1,nmbOfSatellites);
     for (int i = 0; i < nmbOfSatellites; i++) {
         for (int j = 0; j < 4; j++) {
-            A.set(i, j, 0.0);
+            //A.set(i, j, 0.0); //ITPP
+        	A(i,j)=0.0; //Armadillo
         }
         omc(i, 0)=0.0;
         az(0, i)=0.0;
     }
     el = az;
-    mat X = satpos;
 
+    mat X = satpos;
     vec Rot_X;
     double rho2;
     double traveltime;
@@ -122,27 +156,35 @@ vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
         for (int i = 0; i < nmbOfSatellites; i++) {
             if (iter == 0) {
                 //--- Initialize variables at the first iteration --------------
-                Rot_X=X.get_col(i);
+                //Rot_X=X.get_col(i); //ITPP
+            	Rot_X=X.col(i); //Armadillo
                 trop = 0.0;
             } else {
                 //--- Update equations -----------------------------------------
                 rho2 = (X(0, i) - pos(0))*(X(0, i) - pos(0))  + (X(1, i) - pos(1))*(X(1, i) - pos(1))+ (X(2,i) - pos(2))*(X(2,i) - pos(2));
                 traveltime = sqrt(rho2) / GPS_C_m_s;
                 //--- Correct satellite position (do to earth rotation) --------
-                Rot_X = e_r_corr(traveltime, X.get_col(i));
-
+                //Rot_X = e_r_corr(traveltime, X.get_col(i)); //ITPP
+                Rot_X = e_r_corr(traveltime, X.col(i)); //armadillo
                 //--- Find the elevation angel of the satellite ----------------
                 //[az(i), el(i), dist] = topocent(pos(1:3, :), Rot_X - pos(1:3, :));
 
             }
-
             //--- Apply the corrections ----------------------------------------
-            omc(i) = (obs(i) - norm(Rot_X - pos.left(3)) - pos(4) - trop);
+            //omc(i) = (obs(i) - norm(Rot_X - pos(3)) - pos(4) - trop); //ITPP
+            omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0,2),2) - pos(3) - trop); // Armadillo
             //--- Construct the A matrix ---------------------------------------
-            A.set(i, 0, (-(Rot_X(0) - pos(0))) / obs(i));
-            A.set(i, 1, (-(Rot_X(1) - pos(1))) / obs(i));
-            A.set(i, 2, (-(Rot_X(2) - pos(2))) / obs(i));
-            A.set(i, 3, 1.0);
+            //ITPP
+            //A.set(i, 0, (-(Rot_X(0) - pos(0))) / obs(i));
+            //A.set(i, 1, (-(Rot_X(1) - pos(1))) / obs(i));
+            //A.set(i, 2, (-(Rot_X(2) - pos(2))) / obs(i));
+            //A.set(i, 3, 1.0);
+
+            //Armadillo
+            A(i,0)=(-(Rot_X(0) - pos(0))) / obs(i);
+            A(i,1)=(-(Rot_X(1) - pos(1))) / obs(i);
+	    A(i,2)=(-(Rot_X(2) - pos(2))) / obs(i);
+            A(i,3)=1.0;
         }
 
 
@@ -153,7 +195,8 @@ vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
         //}
 
         //--- Find position update ---------------------------------------------
-        x = ls_solve_od(w*A,w*omc);
+        // x = ls_solve_od(w*A,w*omc); // ITPP
+        x = solve(w*A,w*omc); // Armadillo
 
         //--- Apply position update --------------------------------------------
         pos = pos + x;
@@ -165,10 +208,16 @@ vec gps_l1_ca_ls_pvt::leastSquarePos(mat satpos, vec obs, mat w) {
 void gps_l1_ca_ls_pvt::get_PVT(std::map<int,float> pseudoranges,double GPS_current_time)
 {
     std::map<int,float>::iterator pseudoranges_iter;
-    mat satpos;
-    mat W=eye(d_nchannels); //channels weights matrix
+    //ITPP
+    //mat W=eye(d_nchannels); //channels weights matrix
+    //vec obs=zeros(d_nchannels); // pseudoranges observation vector
+    //mat satpos=zeros(3,d_nchannels); //satellite positions matrix
+
+    // Armadillo
+    mat W=eye(d_nchannels,d_nchannels); //channels weights matrix
     vec obs=zeros(d_nchannels); // pseudoranges observation vector
-    satpos=zeros(3,d_nchannels); //satellite positions matrix
+    mat satpos=zeros(3,d_nchannels); //satellite positions matrix
+
     int valid_obs=0; //valid observations counter
     for (int i=0; i<d_nchannels; i++)
     {
@@ -254,7 +303,7 @@ void gps_l1_ca_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_selec
        }
     }while (abs(h-oldh) > 1.0e-12);
     d_latitude_d = phi*180.0/GPS_PI;
-    d_longitude_d = lambda*180/pi;
+    d_longitude_d = lambda*180/GPS_PI;
     d_height_m = h;
 }
 

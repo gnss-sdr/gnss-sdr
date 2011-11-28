@@ -1,12 +1,32 @@
-/**
- * Copyright notice
+/*!
+ * \file gps_l1_ca_ls_pvt.h
+ * \brief Least Squares Position, Velocity, and Time (PVT) solver, based on
+ * K.Borre Matlab receiver.
+ * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
-
-/**
- * Author: Javier Arribas, 2011. jarribas(at)cttc.es
- *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
- */
-
 #ifndef GPS_L1_CA_LS_PVT_H_
 #define GPS_L1_CA_LS_PVT_H_
 
@@ -23,11 +43,15 @@
 #include "gps_navigation_message.h"
 #include "GPS_L1_CA.h"
 
-#include <itpp/itbase.h>
-#include <itpp/stat/misc_stat.h>
-#include <itpp/base/matfunc.h>
+//#include <itpp/itbase.h>
+//#include <itpp/stat/misc_stat.h>
+//#include <itpp/base/matfunc.h>
 
-using namespace itpp;
+#include "armadillo"
+
+using namespace arma;
+
+//using namespace itpp;
 
 class gps_l1_ca_ls_pvt
 {

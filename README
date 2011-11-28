@@ -27,16 +27,24 @@ How to set up the compilation environment for Ubuntu 9.10 and 10.04
 	- GFLAGS$ ./configure
 	- GFLAGS$ make
 	- GFLAGS$ sudo make install
-
-- (31/10/2011) Download, compile and install the IT++ library, from http://sourceforge.net/apps/wordpress/itpp/
-	From the folder containing IT++, build and install the library:
-		export CXXFLAGS="-DNDEBUG -O3 -pipe"    (*)
-		./configure
-		make
-		make check
-		sudo make install
-	(*) For more information on the the specific compiler flags for your processor, go to http://itpp.sourceforge.net/devel/installation.html
-
+	
+ - (28/11/2011) Download, compile, and install the Armadillo linear algebra library
+ 	1. Download the latest stable version from http://arma.sourceforge.net/
+ 	2. Unpack it
+ 	3. Open a shell, change into the directory that was
+  	created by unpacking the armadillo archive, and type the following
+  	commands:
+  	cmake .
+  	make 
+ 	The full stop separated from "cmake" by a space is important.
+  	CMake will figure out what other libraries are currently installed
+  	and will modify Armadillo's configuration correspondingly.
+  	CMake will also generate a run-time armadillo library, which is a 
+  	combined alias for all the relevant libraries present on your system
+  	(eg. BLAS, LAPACK and ATLAS).
+  	4. Install the library
+  	sudo make install
+  	
 (11/12/2010) GSL AND CBLAS ARITHMETIC
 
 In order to compile the arithmetic tests, the GNU Scientific Library (GSL) library package is needed.

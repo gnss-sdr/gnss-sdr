@@ -32,17 +32,18 @@
 #ifndef GPS_DEFINES_H
 #define GPS_DEFINES_H
 
-
-#define NAVIGATION_OUTPUT_RATE_MS 600
+#define NAVIGATION_SOLUTION_RATE_MS 1000
 
 // GPS CONSTANTS
 // JAVI: ADD SYSTEM PREFIX
 
 
 // SEPARATE FILE GPS.H
-const float GPS_C_m_s= 299792458.0;    // The speed of light, [m/ms]
+const float GPS_C_m_s= 299792458.0;    // The speed of light, [m/s]
+const float GPS_C_m_ms= 299792.4580;    // The speed of light, [m/ms]
+
 const float GPS_STARTOFFSET_ms= 68.802; //[ms] Initial sign. travel time
-const float GPS_PI = 3.1415926535898; // Pi used in the GPS coordinate system
+const double GPS_PI = 3.1415926535898; // Pi used in the GPS coordinate system
 // carrier and code frequencies
 const float GPS_L1_FREQ_HZ	= 1.57542e9;
 const float GPS_L2_FREQ_HZ	= 1.22760e9;
@@ -59,10 +60,19 @@ const double  F              = -4.442807633e-10; // Constant, [sec/(meter)^(1/2)
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
 
 #define GPS_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
+#define GPS_CA_PREAMBLE_LENGTH_BITS 8
+#define GPS_CA_TELEMETRY_RATE_BITS_SECOND 50
 #define GPS_WORD_LENGTH 4 // CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
 #define GPS_SUBFRAME_LENGTH 40 // GPS_WORD_LENGTH x 10 = 40 bytes
 #define GPS_SUBFRAME_BITS 300
 #define GPS_WORD_BITS 30
+/*!
+ * Maximum Time-Of-Arrival (TOA) difference between satellites for a receiveer operated on Earth surface is 20 ms, according to the GPS orbit model descrived in [1] Pag. 32.
+ * It should be taken into account to set the buffer size for the PRN start timestamp in the pseudorranges block.
+ *
+ * [1] J. Bao-Yen Tsui, Fundamentals of Global Positioning System Receivers. A Software Approach, John Wiley & Sons, Inc., Hoboken, NJ, 2n edition, 2005.
+ */
+#define MAX_TOA_DELAY_MS 20
 
 #define num_of_slices(x) sizeof(x)/sizeof(bits_slice)
 
@@ -85,13 +95,26 @@ typedef struct bits_slice{
 
 typedef struct gnss_synchro
 {
-  float preamble_delay_ms;
-  float prn_delay_ms;
+  double preamble_delay_ms;
+  double prn_delay_ms;
+  double preamble_code_phase_ms;
+  double preamble_code_phase_correction_ms;
   int satellite_PRN;
   int channel_ID;
   bool valid_word;
+  bool flag_preamble;
 } gnss_synchro;
 
+/*! @ingroup GPS_DEFINES
+ *  @brief Observables structure, used to feed the PVT block */
+
+typedef struct gnss_pseudorange
+{
+  double pseudorange_m;
+  double timestamp_ms;
+  int SV_ID;
+  bool valid;
+} gnss_pseudorange;
 
 /* Constants for scaling the ephemeris found in the data message
         the format is the following: TWO_N5 -> 2^-5, TWO_P4 -> 2^4, PI_TWO_N43 -> Pi*2^-43, etc etc

@@ -3,6 +3,7 @@
  * \brief  This class implements a factory that returns instances of GNSS blocks.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * This class encapsulates the complexity behind the instantiation
  * of GNSS blocks.
@@ -58,6 +59,7 @@
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l1_ca_observables.h"
+#include "gps_l1_ca_pvt.h"
 
 using google::LogMessage;
 
@@ -195,9 +197,9 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
         channels->push_back(GetChannel(configuration,
                 acquisition_implementation, tracking, telemetry_decoder, i,
                 queue));
-        std::cout << "getchannel_" << i << ", acq_implementation_name: "
-                << acquisition_implementation_name << ", implementation: "
-                << acquisition_implementation << std::endl;
+        //std::cout << "getchannel_" << i << ", acq_implementation_name: "
+                //<< acquisition_implementation_name << ", implementation: "
+                //<< acquisition_implementation << std::endl;
 
     }
 
@@ -276,6 +278,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_Observables") == 0)
     {
         block = new GpsL1CaObservables(configuration, role, in_streams,
+                out_streams, queue);
+    }
+    else if (implementation.compare("GPS_L1_CA_PVT") == 0)
+    {
+        block = new GpsL1CaPvt(configuration, role, in_streams,
                 out_streams, queue);
     }
     else

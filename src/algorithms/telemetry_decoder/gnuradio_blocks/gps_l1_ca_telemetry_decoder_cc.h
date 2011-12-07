@@ -1,12 +1,31 @@
-
-/**
- * Copyright notice
+/*!
+ * \file gps_l1_ca_telemetry_decoder_cc.h
+ * \brief Navigation message demodulator based on the Kay Borre book MATLAB-based GPS receiver
+ * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
-
-/**
- * Author: Javier Arribas, 2011. jarribas(at)cttc.es
- */
-
 #ifndef GPS_L1_CA_TELEMETRY_DECODER_CC_H
 #define	GPS_L1_CA_TELEMETRY_DECODER_CC_H
 
@@ -63,8 +82,11 @@ private:
   unsigned int d_GPS_frame_4bytes;
   unsigned int d_prev_GPS_frame_4bytes;
   bool d_flag_parity;
+  bool d_flag_preamble;
   int d_word_number;
 
+  long d_fs_in;
+  double d_preamble_duration_seconds;
   // navigation message vars
   gps_navigation_message d_nav;
   GpsL1CaSubframeFsm d_GPS_FSM;
@@ -76,7 +98,10 @@ private:
   int d_satellite;
   int d_channel;
 
-  float d_preamble_phase;
+  //std::deque<double> d_prn_start_sample_history;
+
+  double d_preamble_time_seconds;
+  double d_preamble_code_phase_seconds;
 
   std::string d_dump_filename;
   std::ofstream d_dump_file;

@@ -2,6 +2,8 @@
  * \file gnss_block_factory.h
  * \brief This class implements a factory that returns instances of GNSS blocks.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * This class encapsulates the complexity behind the instantiation
  * of GNSS blocks.

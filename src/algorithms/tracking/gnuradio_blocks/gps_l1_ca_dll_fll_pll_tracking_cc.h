@@ -62,6 +62,7 @@ gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
 										unsigned int vector_length,
 										gr_msg_queue_sptr queue,
 										bool dump,
+										std::string dump_filename,
 										int order,
 	                                    float fll_bw_hz,
 	                                    float pll_bw_hz,
@@ -81,6 +82,7 @@ private:
 										   int vector_length,
 										   gr_msg_queue_sptr queue,
 										   bool dump,
+										   std::string dump_filename,
 										   int order,
 										   float fll_bw_hz,
 										   float pll_bw_hz,
@@ -93,6 +95,7 @@ private:
 									  int vector_length,
 									  gr_msg_queue_sptr queue,
 									  bool dump,
+									  std::string dump_filename,
 									  int order,
 									  float fll_bw_hz,
 									  float pll_bw_hz,
@@ -130,6 +133,7 @@ private:
 
 	float d_carrier_doppler_hz;
 	float d_code_freq_hz;
+	float d_code_phase_samples;
 	int d_current_prn_length_samples;
 	int d_next_prn_length_samples;
 	int d_FLL_wait;
@@ -148,6 +152,8 @@ private:
     float d_acc_carrier_phase_rad;
 
     unsigned long int d_sample_counter;
+    double d_sample_counter_seconds;
+
     unsigned long int d_acq_sample_stamp;
 
     // CN0 estimation and lock detector

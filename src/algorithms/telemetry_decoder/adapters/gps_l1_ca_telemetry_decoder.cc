@@ -66,22 +66,13 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
     DLOG(INFO) << "role " << role;
     DLOG(INFO) << "vector length " << vector_length_;
 
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
-
     vector_length_ = configuration->property(role + ".vector_length", 2048);
     dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename); //unused!
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
+    int fs_in;
+    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
 
-
-    if(item_type_.compare("gr_complex") == 0)
-        {
-            item_size_ = sizeof(gr_complex);
-            telemetry_decoder_ = gps_l1_ca_make_telemetry_decoder_cc(satellite_, 0, 0, vector_length_, queue_, dump_); // TODO fix me
-        }
-    else
-        {
-            LOG_AT_LEVEL(WARNING) << item_type_ << " unknown navigation item type.";
-        }
+    telemetry_decoder_ = gps_l1_ca_make_telemetry_decoder_cc(satellite_, 0, (long)fs_in, vector_length_, queue_, dump_); // TODO fix me
 
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
 

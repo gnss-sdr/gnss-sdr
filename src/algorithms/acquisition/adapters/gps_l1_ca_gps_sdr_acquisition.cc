@@ -30,7 +30,7 @@
  */
 
 #include "gps_l1_ca_gps_sdr_acquisition.h"
-
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 
 #include <gnuradio/gr_io_signature.h>
@@ -63,7 +63,7 @@ GpsL1CaGpsSdrAcquisition::GpsL1CaGpsSdrAcquisition(
     //vector_length_ = configuration->property(role + ".vector_length", 2048);
 
     satellite_ = 0;
-    fs_in_ = configuration->property(role + ".fs_in", 2048000);
+    fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration->property(role + ".ifreq", 0);
     dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = 0;
@@ -74,9 +74,7 @@ GpsL1CaGpsSdrAcquisition::GpsL1CaGpsSdrAcquisition(
     //vector_length_=ceil((float)fs_in_*((float)acquisition_ms_/1000));
 
     //--- Find number of samples per spreading code ----------------------------
-    const int32 _codeFreqBasis = 1023000; //Hz
-    const int32 _codeLength = 1023;
-    vector_length_ = round(fs_in_ / (_codeFreqBasis / _codeLength));
+    vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     printf("vector_length_ %i\n\r", vector_length_);
 

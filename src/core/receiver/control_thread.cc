@@ -47,7 +47,7 @@
 
 using google::LogMessage;
 
-DEFINE_string(config_file, "../conf/mercurio.conf",
+DEFINE_string(config_file, "../conf/gnss-sdr.conf",
         "Path to the file containing the configuration parameters")
 ;
 

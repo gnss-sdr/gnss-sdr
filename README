@@ -66,7 +66,7 @@ In order to do profiling, you'll have to install google-perftools library.
 	- PERFTOOLS$ sudo make install
 	
 Once google-perftools is installed, you can use the script "profiler" which is placed 
-in the root folder of MERCURIO sources. The script must be run as root since it makes use
+in the root folder of GNSS-SDR sources. The script must be run as root since it makes use
 of "nice". The result of the profiling are two files, mercurio.cpu.prof and mercurio.head.prof.0001.heap,
 that contain the results for CPU and HEAP profiling. You can use google-perftools' script pprof
 to analyze the recorded data.

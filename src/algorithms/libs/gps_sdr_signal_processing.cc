@@ -333,7 +333,7 @@ int32 run_agc(CPX *_buff, int32 _samps, int32 _bits, int32 _scale)
 
 	p = (int16 *)&_buff[0];
 
-	val = (1 << _scale - 1);
+	val = (1 << (_scale - 1));
 	max = 1 << _bits;
 	num = 0;
 

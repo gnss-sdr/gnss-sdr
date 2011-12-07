@@ -1,5 +1,5 @@
 project : build-dir ../../build ;
-exe mercurio : main.cc
+exe gnss-sdr : main.cc
 ../algorithms/acquisition/adapters//gps_l1_ca_gps_sdr_acquisition
 ../algorithms/acquisition/adapters//gps_l1_ca_pcps_acquisition
 ../algorithms/acquisition/adapters//gps_l1_ca_tong_pcps_acquisition
@@ -20,8 +20,9 @@ exe mercurio : main.cc
 ../algorithms/libs//gps_sdr_x86
 ../algorithms/observables/adapters//gps_l1_ca_observables
 ../algorithms/observables/gnuradio_blocks//gps_l1_ca_observables_cc
-../algorithms/observables/libs//rinex_2_1_printer
-../algorithms/observables/libs//gps_l1_ca_ls_pvt
+../algorithms/PVT/libs//rinex_2_1_printer
+../algorithms/PVT/libs//kml_printer
+../algorithms/PVT/libs//gps_l1_ca_ls_pvt
 ../algorithms/output_filter/adapters//file_output_filter
 ../algorithms/output_filter/adapters//null_sink_output_filter
 ../algorithms/signal_source/adapters//file_signal_source
@@ -29,6 +30,8 @@ exe mercurio : main.cc
 ../algorithms/telemetry_decoder/adapters//gps_l1_ca_telemetry_decoder
 ../algorithms/telemetry_decoder/gnuradio_blocks//gps_l1_ca_telemetry_decoder_cc
 ../algorithms/telemetry_decoder/libs//gps_l1_ca_subframe_fsm
+../algorithms/PVT/adapters//gps_l1_ca_pvt
+../algorithms/PVT/gnuradio_blocks//gps_l1_ca_pvt_cc
 ../algorithms/tracking/adapters//gps_l1_ca_dll_pll_tracking
 ../algorithms/tracking/adapters//gps_l1_ca_dll_fll_pll_tracking
 ../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_pll_tracking_cc
@@ -36,8 +39,8 @@ exe mercurio : main.cc
 ../algorithms/tracking/libs//tracking_discriminators
 ../algorithms/tracking/libs//CN_estimators
 ../algorithms/tracking/libs//tracking_FLL_PLL_filter
-../algorithms/tracking/libs//tracking_2rd_PLL_filter
-../algorithms/tracking/libs//tracking_2rd_DLL_filter
+../algorithms/tracking/libs//tracking_2nd_PLL_filter
+../algorithms/tracking/libs//tracking_2nd_DLL_filter
 ../core/libs//INIReader
 ../core/libs//ini
 ../core/libs//string_converter
@@ -54,4 +57,4 @@ exe mercurio : main.cc
 ../..//gnuradio-core
 ../..//gnuradio-usrp ;
 
-install ../../install : mercurio ;
+install ../../install : gnss-sdr ;

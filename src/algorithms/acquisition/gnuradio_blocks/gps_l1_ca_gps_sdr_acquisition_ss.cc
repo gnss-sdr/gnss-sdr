@@ -30,10 +30,6 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "gps_l1_ca_gps_sdr_acquisition_ss.h"
 
 #include "gps_sdr_simd.h"
@@ -129,12 +125,12 @@ gps_l1_ca_gps_sdr_acquisition_ss::gps_l1_ca_gps_sdr_acquisition_ss(
 
 gps_l1_ca_gps_sdr_acquisition_ss::~gps_l1_ca_gps_sdr_acquisition_ss()
 {
-    delete d_baseband_signal;
-    delete d_baseband_signal_shift;
-    delete d_sine_if;
-    delete d_sine_250;
-    delete d_sine_500;
-    delete d_sine_750;
+    delete[] d_baseband_signal;
+    delete[] d_baseband_signal_shift;
+    delete[] d_sine_if;
+    delete[] d_sine_250;
+    delete[] d_sine_500;
+    delete[] d_sine_750;
     delete d_pFFT;
     delete d_piFFT;
 

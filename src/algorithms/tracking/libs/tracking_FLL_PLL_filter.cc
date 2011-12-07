@@ -76,7 +76,6 @@ void tracking_FLL_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
 		d_pll_w 		= d_acq_carrier_doppler_hz;
 		d_pll_x 		= 0;
 	}
-	std::cout<<" d_pll_x init = "<<d_pll_x<<"\r\n";
 }
 
 float tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float PLL_discriminator, float correlation_time_s)

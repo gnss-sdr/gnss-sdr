@@ -233,27 +233,28 @@ void gps_navigation_message::satpos()
   E   = M;
 
   // --- Iteratively compute eccentric anomaly ----------------------------
-  for (int ii = 1;ii<11;ii++)
+  //std::cout<<"d_e_eccentricity="<<d_e_eccentricity<<"\r\n";
+  for (int ii = 1;ii<20;ii++)
     {
     E_old   = E;
     E       = M + d_e_eccentricity * sin(E);
     dE      = fmod(E - E_old,2*GPS_PI);
     //std::cout<<"dE="<<dE<<std::endl;
-    if (abs(dE) < 1E-12)
+    if (fabs(dE) < 1e-12)
       {
       //Necessary precision is reached, exit from the loop
+      //std::cout<<"Loop break at ii="<<ii<<"\r\n";
       break;
       }
     }
-
-  // Reduce eccentric anomaly to between 0 and 360 deg
-  E   = fmod((E + 2*GPS_PI),(2*GPS_PI));
 
   // Compute relativistic correction term
   d_dtr = F * d_e_eccentricity * d_sqrt_A * sin(E);
 
   // Calculate the true anomaly
-  nu   = atan2(sqrt(1 - d_e_eccentricity*d_e_eccentricity) * sin(E), cos(E)-d_e_eccentricity);
+  double tmp_Y=sqrt(1.0 - d_e_eccentricity*d_e_eccentricity) * sin(E);
+  double tmp_X=cos(E)-d_e_eccentricity;
+  nu   = atan2(tmp_Y, tmp_X);
 
   // Compute angle phi
   phi = nu + d_OMEGA;
@@ -266,6 +267,8 @@ void gps_navigation_message::satpos()
 
   // Correct radius
   r = a * (1 - d_e_eccentricity*cos(E)) +  d_Crc * cos(2*phi) +  d_Crs * sin(2*phi);
+
+
   // Correct inclination
   i = d_i_0 + d_IDOT * tk + d_Cic * cos(2*phi) +d_Cis * sin(2*phi);
 
@@ -275,12 +278,19 @@ void gps_navigation_message::satpos()
   Omega = fmod((Omega + 2*GPS_PI),(2*GPS_PI));
 
   // debug
-  //std::cout<<"tk"<<tk<<std::endl;
-  //std::cout<<"E="<<E<<std::endl;
-  //std::cout<<"d_dtr="<<d_dtr<<std::endl;
-  //std::cout<<"nu="<<nu<<std::endl;
-  //std::cout<<"phi="<<phi<<std::endl;
-  //std::cout<<"u="<<u<<" r="<<r<<" Omega="<<Omega<<std::endl;
+  /*
+  if (this->d_channel_ID==0){
+	  std::cout<<"tk"<<tk<<std::endl;
+	  std::cout<<"E="<<E<<std::endl;
+	  std::cout<<"d_dtr="<<d_dtr<<std::endl;
+	  std::cout<<"nu="<<nu<<std::endl;
+	  std::cout<<"phi="<<phi<<std::endl;
+	  std::cout<<"u="<<u<<" r="<<r<<" Omega="<<Omega<<std::endl;
+	  std::cout<<"i="<<i<<"\r\n";
+	  std::cout<<"tmp_Y="<<tmp_Y<<"\r\n";
+	  std::cout<<"tmp_X="<<tmp_X<<"\r\n";
+  }
+  */
 
   // --- Compute satellite coordinates ------------------------------------
   d_satpos_X = cos(u)*r * cos(Omega) - sin(u)*r * cos(i)*sin(Omega);
@@ -304,7 +314,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
   int subframe_ID=0;
   int SV_data_ID=0;
   int SV_page=0;
-  double tmp_TOW;
+  //double tmp_TOW;
 
   unsigned int gps_word;
   // UNPACK BYTES TO BITS AND REMOVE THE CRC REDUNDANCE

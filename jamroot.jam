@@ -29,11 +29,11 @@ project : requirements
 <include>src/algorithms/libs
 <include>src/algorithms/observables/adapters
 <include>src/algorithms/observables/gnuradio_blocks
-<include>src/algorithms/observables/libs
 <include>src/algorithms/output_filter/adapters
 <include>src/algorithms/output_filter/gnuradio_blocks
 <include>src/algorithms/PVT/adapters
 <include>src/algorithms/PVT/gnuradio_blocks
+<include>src/algorithms/PVT/libs
 <include>src/algorithms/signal_source/adapters
 <include>src/algorithms/signal_source/gnuradio_blocks
 <include>src/algorithms/telemetry_decoder/adapters

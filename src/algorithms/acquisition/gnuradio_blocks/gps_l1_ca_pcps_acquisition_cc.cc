@@ -31,10 +31,6 @@
  * -------------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "gps_l1_ca_pcps_acquisition_cc.h"
 #include "gps_sdr_signal_processing.h"
 #include "control_message_factory.h"
@@ -117,8 +113,10 @@ gps_l1_ca_pcps_acquisition_cc::gps_l1_ca_pcps_acquisition_cc(
 
 gps_l1_ca_pcps_acquisition_cc::~gps_l1_ca_pcps_acquisition_cc()
 {
-    delete d_sine_if;
-    delete d_fft_codes;
+	delete[] d_sine_if;
+	delete[] d_fft_codes;
+	delete d_ifft;
+	delete d_fft_if;
 
     if (d_dump)
     {

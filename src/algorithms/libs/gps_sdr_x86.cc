@@ -290,7 +290,7 @@ void x86_float_max(float* _A, unsigned int* _index, float* _magt, unsigned int _
 
 	mag = index = 0;
 
-	for(int i=0; i<_cnt; i++) {
+	for(unsigned int i=0; i<_cnt; i++) {
 		if(_A[i] > mag) {
 			index = i;
 			mag = _A[i];

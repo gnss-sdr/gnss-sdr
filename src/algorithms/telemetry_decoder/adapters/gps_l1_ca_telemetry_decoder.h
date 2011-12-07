@@ -79,7 +79,7 @@ public:
 
     size_t item_size()
     {
-        return item_size_;
+        return 0;
     }
 private:
 
@@ -87,7 +87,6 @@ private:
 
     int satellite_;
     int channel_;
-    size_t item_size_;
     unsigned int vector_length_;
     std::string item_type_;
 

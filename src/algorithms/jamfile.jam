@@ -6,4 +6,5 @@ build-project signal_source ;
 build-project tracking ;
 build-project telemetry_decoder ;
 build-project observables ;
+build-project PVT ;
 build-project output_filter ;

@@ -31,7 +31,7 @@
  */
 
 #include "gps_l1_ca_tong_pcps_acquisition.h"
-
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 
 #include <gnuradio/gr_io_signature.h>
@@ -64,7 +64,7 @@ GpsL1CaTongPcpsAcquisition::GpsL1CaTongPcpsAcquisition(
     std::cout << "item type " << item_type_ << std::endl;
 
     satellite_ = 0;
-    fs_in_ = configuration->property(role + ".fs_in", 2048000);
+    fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration->property(role + ".ifreq", 0);
     dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 10);
@@ -73,11 +73,7 @@ GpsL1CaTongPcpsAcquisition::GpsL1CaTongPcpsAcquisition(
             default_dump_filename);
 
     //--- Find number of samples per spreading code ----------------------------
-    const signed int _codeFreqBasis = 1023000; //Hz
-    const signed int _codeLength = 1023;
-    vector_length_ = round(fs_in_ / (_codeFreqBasis / _codeLength));
-
-    printf("vector_length_ %i\n\r", vector_length_);
+    vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     if (item_type_.compare("gr_complex") == 0)
     {

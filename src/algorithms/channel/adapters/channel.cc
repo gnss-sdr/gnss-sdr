@@ -77,7 +77,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     repeat_ = configuration->property("Acquisition" + boost::lexical_cast<
             std::string>(channel_) + ".repeat_satellite", false);
-    std::cout << "Channel " << channel_ << " satellite repeat = " << repeat_
+    DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_
             << std::endl;
 
     acq_->set_channel_queue(&channel_internal_queue_);

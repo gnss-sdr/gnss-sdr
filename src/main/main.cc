@@ -64,6 +64,7 @@ int main(int argc, char** argv)
             +
             "See COPYING file to see a copy of the General Public License\n \n");
 
+    std::cout<<"Initializing GNSS-SDR... Please wait"<<"\r\n";
     google::SetUsageMessage(intro_help);
     google::InitGoogleLogging(argv[0]);
     google::ParseCommandLineFlags(&argc, &argv, true);
@@ -74,5 +75,6 @@ int main(int argc, char** argv)
     control_thread->run();
 
     delete control_thread;
+    std::cout<<"GNSS-SDR program ended"<<"\r\n";
     //google::ShutDownCommandLineFlags();
 }

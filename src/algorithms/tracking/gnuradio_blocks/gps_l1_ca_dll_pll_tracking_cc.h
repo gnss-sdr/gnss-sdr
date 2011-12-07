@@ -42,8 +42,8 @@
 //#include <gnuradio/gr_sync_decimator.h>
 
 #include "gps_sdr_signal_processing.h"
-#include "tracking_2rd_DLL_filter.h"
-#include "tracking_2rd_PLL_filter.h"
+#include "tracking_2nd_DLL_filter.h"
+#include "tracking_2nd_PLL_filter.h"
 
 #include <queue>
 #include <boost/thread/mutex.hpp>
@@ -60,6 +60,7 @@ gps_l1_ca_dll_pll_make_tracking_cc(unsigned int satellite, long if_freq,
                                    int vector_length,
                                    gr_msg_queue_sptr queue,
                                    bool dump,
+                                   std::string dump_filename,
                                    float pll_bw_hz,
                                    float dll_bw_hz,
                                    float early_late_space_chips);
@@ -76,6 +77,7 @@ private:
                                        int vector_length,
                                        gr_msg_queue_sptr queue,
                                        bool dump,
+                                       std::string dump_filename,
                                        float pll_bw_hz,
                                        float dll_bw_hz,
                                        float early_late_space_chips);
@@ -85,6 +87,7 @@ private:
                                   int vector_length,
                                   gr_msg_queue_sptr queue,
                                   bool dump,
+                                  std::string dump_filename,
                                   float pll_bw_hz,
                                   float dll_bw_hz,
                                   float early_late_space_chips);
@@ -123,8 +126,8 @@ private:
     float d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
-    tracking_2rd_DLL_filter d_code_loop_filter;
-    tracking_2rd_PLL_filter d_carrier_loop_filter;
+    tracking_2nd_DLL_filter d_code_loop_filter;
+    tracking_2nd_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     float d_acq_code_phase_samples;
@@ -134,10 +137,12 @@ private:
     float d_code_freq_hz;
     float d_carrier_doppler_hz;
     float d_acc_carrier_phase_rad;
+    float d_code_phase_samples;
 
     //PRN period in samples
 	int d_current_prn_length_samples;
 	int d_next_prn_length_samples;
+	double d_sample_counter_seconds;
 
 	//processing samples counters
     unsigned long int d_sample_counter;

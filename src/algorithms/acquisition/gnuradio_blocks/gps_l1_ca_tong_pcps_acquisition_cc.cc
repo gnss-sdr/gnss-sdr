@@ -29,9 +29,6 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "gps_l1_ca_tong_pcps_acquisition_cc.h"
 #include "gps_sdr_signal_processing.h"
@@ -129,8 +126,11 @@ gps_l1_ca_tong_pcps_acquisition_cc::gps_l1_ca_tong_pcps_acquisition_cc(
 
 gps_l1_ca_tong_pcps_acquisition_cc::~gps_l1_ca_tong_pcps_acquisition_cc()
 {
-    delete d_if_sin;
-    delete d_ca_codes;
+    delete[] d_if_sin;
+    delete[] d_ca_codes;
+    delete[] d_aux_ca_code;
+    delete d_fft_if;
+    delete d_ifft;
 
     if (d_dump)
     {

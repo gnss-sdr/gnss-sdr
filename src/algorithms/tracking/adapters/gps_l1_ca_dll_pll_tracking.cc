@@ -34,7 +34,7 @@
  */
 
 #include "gps_l1_ca_dll_pll_tracking.h"
-
+#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 
 #include <gnuradio/gr_io_signature.h>
@@ -69,24 +69,26 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     float early_late_space_chips;
 
     item_type = configuration->property(role + ".item_type",default_item_type);
-    vector_length = configuration->property(role + ".vector_length", 2048);
-    fs_in = configuration->property(role + ".fs_in", 2048000);
+    //vector_length = configuration->property(role + ".vector_length", 2048);
+    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
 
-    std::string default_dump_filename = "./tracking.dat";
+    std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
+
+    vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
     {
         item_size_ = sizeof(gr_complex);
         tracking_ = gps_l1_ca_dll_pll_make_tracking_cc(satellite_, f_if,
-                fs_in, vector_length, queue_, dump,pll_bw_hz,dll_bw_hz,early_late_space_chips);
+                fs_in, vector_length, queue_, dump, dump_filename, pll_bw_hz,dll_bw_hz,early_late_space_chips);
     }
     else
     {

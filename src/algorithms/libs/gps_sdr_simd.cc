@@ -497,7 +497,7 @@ void sse_cmul(CPX *A, CPX *B, int32 cnt)
 	int32 cnt1;
 	int32 cnt2;
 
-	volatile int32 M[4] = {0xffff0001, 0x00010001, 0xffff0001, 0x00010001}; //{1,-1,1,1,1,-1,1,1};
+	//volatile int32 M[4] = {0xffff0001, 0x00010001, 0xffff0001, 0x00010001}; //{1,-1,1,1,1,-1,1,1};
 
 	cnt1 = cnt/4;
 	cnt2 = cnt-4*cnt1;
@@ -571,7 +571,7 @@ void sse_cmuls(CPX *A, CPX *B, int32 cnt, int32 shift)
 	int32 cnt2;
 	int32 round;
 
-	volatile int32 M[4] = {0xffff0001, 0x00010001, 0xffff0001, 0x00010001}; //{1,-1,1,1,1,-1,1,1};
+	//volatile int32 M[4] = {0xffff0001, 0x00010001, 0xffff0001, 0x00010001}; //{1,-1,1,1,1,-1,1,1};
 
 	cnt1 = cnt/4;
 	cnt2 = cnt-4*cnt1;
@@ -652,7 +652,7 @@ void sse_cmulsc(CPX *A, CPX *B, CPX *C, int32 cnt, int32 shift)
 	int32 cnt2;
 	int32 round;
 
-	volatile int32 M[4] = {0xffff0001, 0x00010001, 0xffff0001, 0x00010001}; //{1,-1,1,1,1,-1,1,1};
+	//volatile int32 M[4] = {0xffff0001, 0x00010001, 0xffff0001, 0x00010001}; //{1,-1,1,1,1,-1,1,1};
 
 	cnt1 = cnt/4;
 	cnt2 = cnt-4*cnt1;

@@ -38,6 +38,8 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
+
 
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -93,6 +95,34 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             = gr_make_file_source(item_size_, filename_.c_str(), repeat_);
     DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
 
+    if (samples_==0)
+    {
+		/*!
+		 * BUG workaround: The GNURadio file source does not stop the receiver after reaching the End of File.
+		 * A possible solution is to compute the file lenght in samples using file size, excluding the last 100 milliseconds, and enable always the
+		 * valve block
+		 */
+		std::ifstream file (filename_.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
+		std::ifstream::pos_type size;
+		if (file.is_open())
+		{
+			size =file.tellg();
+		}else{
+			std::cout<<"file_signal_source: Unable to open the samples file "<<filename_.c_str()<<"\r\n";
+			LOG_AT_LEVEL(WARNING)<<"file_signal_source: Unable to open the samples file "<<filename_.c_str();
+		}
+		std::cout<<std::setprecision(16);
+		std::cout<<"Processing file "<<filename_<<" containing "<<(double)size<<" [bytes] \r\n";
+		if (size>0)
+		{
+			samples_=floor((double)size/(double)item_size())-ceil(0.1*(double)sampling_frequency_); //process all the samples available in the file excluding the last 100 ms
+
+		}
+    }
+    double signal_duration_s;
+    signal_duration_s=(double)samples_*(1/(double)sampling_frequency_);
+    DLOG(INFO)<<"Total samples to be processed="<<samples_<<" GNSS signal duration= "<<signal_duration_s<<" [s]";
+    std::cout<<"GNSS signal recorded time to be processed: "<<signal_duration_s<<" [s]\r\n";
     // if samples != 0 then enable a flow valve to stop the process after n samples
     if (samples_ != 0)
     {

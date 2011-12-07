@@ -76,7 +76,7 @@ std::string FileConfiguration::property(std::string property_name, std::string d
         }
     else
         {
-            return ini_reader_->Get("mercurio", property_name, default_value);
+            return ini_reader_->Get("GNSS-SDR", property_name, default_value);
         }
 }
 

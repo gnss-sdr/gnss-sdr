@@ -253,11 +253,16 @@ void GNSSFlowgraph::connect()
         DLOG(INFO) << "Channel " << i
                 << " connected to observables and ready for acquisition";
     }
-    // TODO: Enable the observables multichannel output connection to PVT when the PVT implementation is ready
+    /*!
+     * Enabled the observables multichannel output connection to PVT
+     */
     try
     {
-        top_block_->connect(observables()->get_right_block(), 0,
-                pvt()->get_left_block(), 0);
+        for (unsigned int i = 0; i < channels_count_; i++)
+        {
+        	top_block_->connect(observables()->get_right_block(), i,
+                pvt()->get_left_block(), i);
+        }
     }
     catch (std::exception& e)
     {
@@ -438,14 +443,14 @@ void GNSSFlowgraph::set_satellites_list()
         }
     }
 
-    std::cout << "Cola de satélites: ";
-    for (std::list<unsigned int>::iterator it =
-            available_GPS_satellites_IDs_->begin(); it
-            != available_GPS_satellites_IDs_->end(); it++)
-    {
-        std::cout << *it << ", ";
-    }
-    std::cout << std::endl;
+//    std::cout << "Cola de satélites: ";
+//    for (std::list<unsigned int>::iterator it =
+//            available_GPS_satellites_IDs_->begin(); it
+//            != available_GPS_satellites_IDs_->end(); it++)
+//    {
+//        std::cout << *it << ", ";
+//    }
+//    std::cout << std::endl;
 
 }
 

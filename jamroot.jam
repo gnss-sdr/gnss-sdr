@@ -14,7 +14,7 @@ lib armadillo ;
 project : requirements
 <define>OMNITHREAD_POSIX
 <cxxflags>"-std=c++0x"
-<linkflags>"-larmadillo"
+<linkflags>"-larmadillo -lboost_thread -llapack -lblas"
 #<cxxflags>"-std=c++0x `pkg-config --cflags itpp`"
 #<linkflags>"`pkg-config --libs itpp`"
 # <include>src/utils
@@ -46,11 +46,11 @@ project : requirements
 <include>src/core/libs
 <include>src/core/receiver
 <include>src/core/system_parameters
-<include>$GNURADIO_330_ROOT/gr-usrp/src
-<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/runtime
-<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/filter
-<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/io
-<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/general
-<include>$GNURADIO_330_ROOT/gnuradio-core/src/lib/gengen ;
+<include>$GNURADIO_ROOT/gr-usrp/src
+<include>$GNURADIO_ROOT/gnuradio-core/src/lib/runtime
+<include>$GNURADIO_ROOT/gnuradio-core/src/lib/filter
+<include>$GNURADIO_ROOT/gnuradio-core/src/lib/io
+<include>$GNURADIO_ROOT/gnuradio-core/src/lib/general
+<include>$GNURADIO_ROOT/gnuradio-core/src/lib/gengen ;
 
 build-project src ;

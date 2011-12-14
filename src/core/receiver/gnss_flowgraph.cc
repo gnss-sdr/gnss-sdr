@@ -36,6 +36,8 @@
 #include <exception>
 #include "unistd.h"
 
+#include <boost/lexical_cast.hpp>
+
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 

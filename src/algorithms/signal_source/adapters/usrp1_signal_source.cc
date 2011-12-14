@@ -121,7 +121,10 @@ Usrp1SignalSource::Usrp1SignalSource(ConfigurationInterface* configuration,
     db_base_sptr subdev = usrp_source_->selected_subdev(usrp_subdev_spec(
             spec_side_, spec_subdev_));
 
-    DLOG(INFO) << "Subdevice name is " << subdev->side_and_name();
+    /*!
+    * The function side_and_name does not work on gnuradio 3.4.2..
+    * DLOG(INFO) << "Subdevice name is " << subdev->side_and_name();
+    */
     DLOG(INFO) << "Subdevice frequency ranges from " << subdev->freq_min()
             << " to " << subdev->freq_max();
 

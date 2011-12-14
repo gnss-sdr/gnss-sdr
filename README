@@ -1,10 +1,10 @@
 How to set up the compilation environment for Ubuntu 9.10 and 10.04
 
-- Download GNU Radio 3.3.0 from ftp://ftp.gnu.org/gnu/gnuradio
+- Download GNU Radio 3.3.0 or GNU Radio 3.4.2 from ftp://ftp.gnu.org/gnu/gnuradio
 - Compile and install following the instructions at http://gnuradio.org/redmine/wiki/1/UbuntuInstall
 - Install bjam with the command 'sudo apt-get install bjam'
 - Install Boost.Build with the command 'sudo apt-get install boost-build'
-- Add the system variable GNURADIO_330_ROOT with the location of the sources of gnuradio-3.3.0 
+- Add the system variable GNURADIO_ROOT with the location of the sources of gnuradio-3.3.0 or gnuradio-3.4.2
 - Download gtest-1.4.0.tar.gz from http://code.google.com/p/googletest.
 - Unpack gtest-1.4.0.tar.gz into some folder.
 - From the folder containing gtest build the libraries and install them:
@@ -74,7 +74,7 @@ to analyze the recorded data.
 (Sample of .bashrc configuration)
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
-export GNURADIO_330_ROOT=/home/gnss/sdr/gnuradio-3.3.0
+export GNURADIO_ROOT=/home/gnss/sdr/gnuradio-3.3.0
 
 
 

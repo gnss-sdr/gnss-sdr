@@ -42,6 +42,7 @@
 #include <iostream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread/thread.hpp>
 
 #include <gnuradio/gr_io_signature.h>
 #include <gnuradio/gr_message.h>

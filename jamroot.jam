@@ -13,12 +13,10 @@ lib armadillo ;
 
 project : requirements
 <define>OMNITHREAD_POSIX
-<cxxflags>"-std=c++0x"
-<linkflags>"-larmadillo -lboost_thread -llapack -lblas"
-#<cxxflags>"-std=c++0x `pkg-config --cflags itpp`"
-#<linkflags>"`pkg-config --libs itpp`"
-# <include>src/utils
-# <include>src/utils/INIReader
+
+<cxxflags>"-std=c++0x -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free"
+<linkflags>"-larmadillo -lboost_thread -llapack -lblas -lprofiler -ltcmalloc"
+
 <include>src/algorithms/acquisition/adapters
 <include>src/algorithms/acquisition/gnuradio_blocks
 <include>src/algorithms/channel/adapters

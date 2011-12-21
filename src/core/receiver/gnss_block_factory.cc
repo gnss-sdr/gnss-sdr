@@ -50,7 +50,7 @@
 #include "null_sink_output_filter.h"
 #include "file_output_filter.h"
 #include "channel.h"
-#include "usrp1_signal_source.h"
+//#include "usrp1_signal_source.h"
 #include "direct_resampler_conditioner.h"
 #include "gps_l1_ca_gps_sdr_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition.h"
@@ -235,11 +235,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         block = new FileOutputFilter(configuration, role, in_streams,
                 out_streams);
     }
-    else if (implementation.compare("USRP1_Signal_Source") == 0)
-    {
-        block = new Usrp1SignalSource(configuration, role, in_streams,
-                out_streams, queue);
-    }
+//    else if (implementation.compare("USRP1_Signal_Source") == 0)
+//    {
+//        block = new Usrp1SignalSource(configuration, role, in_streams,
+//                out_streams, queue);
+//    }
     else if (implementation.compare("Direct_Resampler") == 0)
     {
         block = new DirectResamplerConditioner(configuration, role,

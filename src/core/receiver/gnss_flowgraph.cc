@@ -35,7 +35,7 @@
 
 #include <exception>
 #include "unistd.h"
-
+#include <iostream>
 #include <boost/lexical_cast.hpp>
 
 #include <glog/log_severity.h>

@@ -32,7 +32,7 @@
 
 #include "direct_resampler_conditioner.h"
 
-#include <gnuradio/usrp_source_c.h>
+// #include <gnuradio/usrp_source_c.h>
 #include <gnuradio/gr_file_sink.h>
 
 #include "direct_resampler_conditioner_cc.h"

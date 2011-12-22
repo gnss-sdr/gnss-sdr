@@ -41,6 +41,7 @@ project : requirements
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/filter
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/io
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/general
-<include>$GNURADIO_ROOT/gnuradio-core/src/lib/gengen ;
+<include>$GNURADIO_ROOT/gnuradio-core/src/lib/gengen
+<threading>multi ;
 
 build-project src ;

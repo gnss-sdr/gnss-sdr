@@ -1,14 +1,17 @@
-How to set up the compilation environment and build GNSS-SDR in Ubuntu:
+HOW TO BUILD GNSS-SDR
+----------------------
+
+This document describes how to set up the compilation environment and build GNSS-SDR (tested: Ubuntu 10.04, 10.10, 11.04 and 11.10)
 
 * Install GNU Radio:
 
-- Downloading, building and installing GNU Radio and all its dependencies is not an easy task. We recommend to use Marcus Leech's build-gnuradio script, which automatically does all the work for you. In a terminal, do:
+- Downloading, building and installing GNU Radio and all its dependencies is not a simple task. We recommend to use Marcus Leech's build-gnuradio script, which automatically does all the work for you. In a terminal, do:
 
 $ wget http://www.sbrac.org/files/build-gnuradio
 $ chmod a+x build-gnuradio
 $ ./build-gnuradio
 
-This can take a while (up to two hours to complete, depending on the system), and installs the latest versions of UHD and GNU Radio in your system, including all their dependencies.
+This can take a while (up to two hours to complete, depending on your system), and installs the latest versions of UHD and GNU Radio in your system, including all their dependencies. In case you do not want to use the script and prefer to build and install GNU Radio manually from source, follow instructions in http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide
 
 - Set up some system variables needed by the GNSS-SDR build system:
 
@@ -16,7 +19,7 @@ export PYTHONPATH=/usr/local/lib/python2.7/dist-packages
 export GNURADIO_ROOT=/path/to/gnuradio
 export LD_LIBRARY_PATH=/usr/local/lib
 
-where /path/to/gnuradio is the folder in which you invoked build-gnuradio. In orderto avoid defining these variables each time you enter a session, you may want to add these three lines to your $HOME/.bashrc file.
+where /path/to/gnuradio is the folder in which you invoked build-gnuradio. In order to avoid defining these variables each time you enter a session, you may want to add these three lines to your $HOME/.bashrc file.
 
 * Install other libraries used by GNSS-SDR:
 
@@ -30,6 +33,8 @@ $ make
 $ sudo make install
 
 The full stop separated from "cmake" by a space is important. CMake will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
+
+NOTE: ATLAS version 3.6 is know to cause random crashes and incorrect results under Ubuntu. The minimum recommended version is 3.8. It is a good idea to completely remove ATLAS 3.6 from your system, in case you have it, as it intercepts calls to BLAS and LAPACK. 
 
 - Download, unzip, configure, build and install Google's performance analysis tools, google-perftools:
 
@@ -50,7 +55,7 @@ $ cd gtest-1.6.0
 $ ./configure
 $ make
 
-- Download, unzip, configure, build and install the gflags package, a commandline flags processing module for C++:
+- Download, unzip, configure, build and install Google's gflags package, a commandline flags processing module for C++:
 
 $ wget http://google-gflags.googlecode.com/files/gflags-1.7.tar.gz
 $ tar xvfz gflags-1.7.tar.gz
@@ -59,7 +64,7 @@ $ ./configure
 $ make
 $ sudo make install
 
-- Download, unzip, configure, build and install Google's library that implements application-level logging, glog:
+- Download, unzip, configure, build and install glog, a Google's library that implements application-level logging:
 
 $ wget http://google-glog.googlecode.com/files/glog-0.3.1-1.tar.gz 
 $ tar xvfz glog-0.3.1-1.tar.gz 
@@ -86,15 +91,15 @@ $ bjam
 If everything went fine, a executable will be found at gnss-sdr/trunk/install/gnss-sdr
 
 
-NOTE: If you want to update the master branch of GNU Radio (and test if GNSS-SDR works with it) , go to the gnuradio directory and do:
+NOTE: If, later on, you want to bring your GNU Radio repository up to date with the original repository of GNU Radio (and test if GNSS-SDR works with it), go to the gnuradio directory and do:
 
-sudo make uninstall
-make clean
-git pull
-./configure
-make
-make check
-sudo make install
+$ sudo make uninstall
+$ make clean
+$ git pull
+$ ./configure
+$ make
+$ make check
+$ sudo make install
 
 
 

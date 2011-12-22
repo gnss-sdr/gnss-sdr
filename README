@@ -16,7 +16,7 @@ export PYTHONPATH=/usr/local/lib/python2.7/dist-packages
 export GNURADIO_ROOT=/path/to/gnuradio
 export LD_LIBRARY_PATH=/usr/local/lib
 
-where /path/to/gnuradio is the folder in which you invoked build-gnuradio. If you don't want to define these variables each time you enter a session, you can add these two lines to your $HOME/.bashrc file.
+where /path/to/gnuradio is the folder in which you invoked build-gnuradio. In orderto avoid defining these variables each time you enter a session, you may want to add these three lines to your $HOME/.bashrc file.
 
 * Install other libraries used by GNSS-SDR:
 
@@ -29,7 +29,7 @@ $ cmake .
 $ make
 $ sudo make install
 
-    The full stop separated from "cmake" by a space is important. CMake will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
+The full stop separated from "cmake" by a space is important. CMake will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
 
 - Download, unzip, configure, build and install Google's performance analysis tools, google-perftools:
 
@@ -40,9 +40,9 @@ $ ./configure --enable-frame-pointers
 $ make
 $ sudo make install
 
-NOTE: At this moment, perftools seems to be not working properly in Ubuntu 11.10. See  http://code.google.com/p/google-perftools/issues/detail?id=386
+NOTE: At this moment (Dec. 2011), perftools seems to be not working properly in Ubuntu 11.10. See  http://code.google.com/p/google-perftools/issues/detail?id=386
 
-- Download, unzip, configure, and build Google's framework for writing C++ tests (also known as gtest):
+- Download, unzip, configure, and build Google C++ Testing Framework (also known as Google Test):
 
 $ wget http://googletest.googlecode.com/files/gtest-1.6.0.zip
 $ unzip gtest-1.6.0.zip
@@ -50,7 +50,7 @@ $ cd gtest-1.6.0
 $ ./configure
 $ make
 
-- Download, unzip, configure, build and install Google's library that implements commandline flags processing, gflags:
+- Download, unzip, configure, build and install the gflags package, a commandline flags processing module for C++:
 
 $ wget http://google-gflags.googlecode.com/files/gflags-1.7.tar.gz
 $ tar xvfz gflags-1.7.tar.gz
@@ -72,9 +72,7 @@ $ sudo make install
 
 $ sudo apt-get install subversion
 
-* Check the repository for the latest version of GNSS-SDR:
-
-- Check out the latest version of GNSS-SDR
+* Check out the latest version of GNSS-SDR
 
 $ svn co http://gnss-sdr.svn.sourceforge.net/svnroot/gnss-sdr gnss-sdr
 
@@ -85,7 +83,18 @@ $ svn co http://gnss-sdr.svn.sourceforge.net/svnroot/gnss-sdr gnss-sdr
 $ cd gnss-sdr/trunk
 $ bjam
 
-If everything went fine, a executable will be found at gnss-sdr/trunk/install/gnss-sdr 
+If everything went fine, a executable will be found at gnss-sdr/trunk/install/gnss-sdr
+
+
+NOTE: If you want to update the master branch of GNU Radio (and test if GNSS-SDR works with it) , go to the gnuradio directory and do:
+
+sudo make uninstall
+make clean
+git pull
+./configure
+make
+make check
+sudo make install
 
 
 

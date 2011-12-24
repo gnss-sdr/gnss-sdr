@@ -86,7 +86,7 @@ GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
-    #ifdef USE_BOOST_ROUND
+    #ifdef GNSS_SDR_USE_BOOST_ROUND
     vector_length = round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     #else
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));

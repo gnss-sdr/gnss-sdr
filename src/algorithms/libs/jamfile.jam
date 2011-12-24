@@ -3,8 +3,8 @@ project : build-dir ../../../build ;
 obj gps_sdr_signal_processing : gps_sdr_signal_processing.cc ;
 obj gnss_sdr_valve : gnss_sdr_valve.cc ;
 obj pass_through : pass_through.cc ;
-obj gps_sdr_fft : gps_sdr_fft.cc ;
-obj gps_sdr_simd : gps_sdr_simd.cc ;
+obj gps_sdr_fft : gps_sdr_fft.cc : <toolset>darwin:<define>NO_SIMD ;
+obj gps_sdr_simd : gps_sdr_simd.cc : <toolset>darwin:<define>NO_SIMD ;
 obj gps_sdr_x86 : gps_sdr_x86.cc ;
 
 

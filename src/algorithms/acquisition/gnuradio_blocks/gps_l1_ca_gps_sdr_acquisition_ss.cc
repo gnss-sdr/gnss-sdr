@@ -31,12 +31,15 @@
  * -------------------------------------------------------------------------
  */
 #include "gps_l1_ca_gps_sdr_acquisition_ss.h"
-
-#include "gps_sdr_simd.h"
 #include "gps_sdr_fft.h"
 #include "gps_sdr_prn_codes_short.h"
 #include "control_message_factory.h"
-#include "gps_sdr_x86.h"
+
+#ifdef NO_SIMD
+  #include "gps_sdr_x86.h"
+#else
+  #include "gps_sdr_simd.h"
+#endif
 
 #include <gnuradio/gr_io_signature.h>
 
@@ -179,7 +182,17 @@ int gps_l1_ca_gps_sdr_acquisition_ss::general_work(int noutput_items,
         DLOG(INFO) << "copied " << (d_fft_size * sizeof(CPX))
                 << " bytes into buffer (" << d_fft_size << " samples)";
         memcpy(d_baseband_signal, in, d_fft_size * sizeof(CPX));
+        #ifdef NO_SIMD
+	    x86_cmulsc(d_baseband_signal, d_sine_250,
+                &d_baseband_signal[d_fft_size], d_fft_size, 14);
+        x86_cmulsc(d_baseband_signal, d_sine_500, &d_baseband_signal[2
+                * d_fft_size], d_fft_size, 14);
+        x86_cmulsc(d_baseband_signal, d_sine_750, &d_baseband_signal[3
+                * d_fft_size], d_fft_size, 14);
 
+        x86_cmuls(d_baseband_signal, d_sine_if, d_fft_size, 14);
+
+        #else 
         sse_cmulsc(d_baseband_signal, d_sine_250,
                 &d_baseband_signal[d_fft_size], d_fft_size, 14);
         sse_cmulsc(d_baseband_signal, d_sine_500, &d_baseband_signal[2
@@ -188,7 +201,7 @@ int gps_l1_ca_gps_sdr_acquisition_ss::general_work(int noutput_items,
                 * d_fft_size], d_fft_size, 14);
 
         sse_cmuls(d_baseband_signal, d_sine_if, d_fft_size, 14);
-
+        #endif
         for (unsigned int i = 0; i < d_doppler_resolution; i++)
         {
             d_pFFT->doFFT(&d_baseband_signal[i * d_fft_size], true);
@@ -209,10 +222,19 @@ int gps_l1_ca_gps_sdr_acquisition_ss::general_work(int noutput_items,
         {
             for (unsigned int j = 0; j < d_doppler_resolution; j++)
             {
+
+                #ifdef NO_SIMD
+                x86_cmulsc(&d_baseband_signal_shift[(j * (d_fft_size + 201))
+                        + 100 + i], d_fft_codes[d_satellite], buffer,
+                        d_fft_size, 10);
+
+                #else
                 sse_cmulsc(&d_baseband_signal_shift[(j * (d_fft_size + 201))
                         + 100 + i], d_fft_codes[d_satellite], buffer,
                         d_fft_size, 10);
-                d_piFFT->doiFFT(buffer, true);
+                
+                #endif
+		        d_piFFT->doiFFT(buffer, true);
                 x86_cmag(buffer, d_fft_size);
                 x86_max((unsigned int *)buffer, &indext, &magt, d_fft_size);
 

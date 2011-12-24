@@ -20,6 +20,9 @@ write to the:
 
 Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ************************************************************************************************/
+#ifdef NO_SIMD
+#else
+
 #include "gps_sdr_simd.h"
 
 //	__asm
@@ -1035,7 +1038,7 @@ void sse_prn_accum_new(CPX *A, MIX *E, MIX *P, MIX *L, int32 cnt, CPX_ACCUM *acc
 
 }
 
-
+#endif
 
 
 

@@ -3,12 +3,11 @@ lib gtest ;
 lib glog ;
 lib gflags ;
 lib gnuradio-core ;
-lib armadillo ;
 
 project : requirements
 <define>OMNITHREAD_POSIX
 <cxxflags>"-std=c++0x -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free"
-<linkflags>"-larmadillo -lboost_thread -llapack -lblas -lprofiler -ltcmalloc"
+<linkflags>"-larmadillo -lboost_system -lboost_filesystem -lboost_thread -llapack -lblas -lprofiler -ltcmalloc"
 <include>src/algorithms/acquisition/adapters
 <include>src/algorithms/acquisition/gnuradio_blocks
 <include>src/algorithms/channel/adapters
@@ -42,6 +41,7 @@ project : requirements
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/io
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/general
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/gengen
-<threading>multi ;
+<threading>multi 
+<toolset>darwin:<include>/opt/local/include ;
 
 build-project src ;

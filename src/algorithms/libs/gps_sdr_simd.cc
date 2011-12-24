@@ -20,9 +20,7 @@ write to the:
 
 Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ************************************************************************************************/
-#ifdef NO_SIMD
-#else
-
+#ifdef USE_SIMD
 #include "gps_sdr_simd.h"
 
 //	__asm

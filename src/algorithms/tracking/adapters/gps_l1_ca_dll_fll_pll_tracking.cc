@@ -36,7 +36,9 @@
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
-#include <boost/math/special_functions/round.hpp>
+#ifdef GNSS_SDR_USE_BOOST_ROUND
+  #include <boost/math/special_functions/round.hpp>
+#endif
 #include <gnuradio/gr_io_signature.h>
 
 #include <glog/log_severity.h>
@@ -84,8 +86,12 @@ GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
-
+    #ifdef USE_BOOST_ROUND
     vector_length = round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    #else
+    vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    #endif
+    
 
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)

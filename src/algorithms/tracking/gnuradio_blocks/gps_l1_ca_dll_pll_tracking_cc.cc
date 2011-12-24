@@ -38,7 +38,9 @@
 #include "tracking_discriminators.h"
 #include "CN_estimators.h"
 #include "GPS_L1_CA.h"
-
+#ifdef GNSS_SDR_USE_BOOST_ROUND
+  #include <boost/math/special_functions/round.hpp>
+#endif
 #include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
 #include <iostream>
@@ -159,7 +161,13 @@ void gps_l1_ca_dll_pll_tracking_cc::start_tracking(){
 	T_chip_mod_seconds=1/d_code_freq_hz;
 	T_prn_mod_seconds=T_chip_mod_seconds*GPS_L1_CA_CODE_LENGTH_CHIPS;
 	T_prn_mod_samples=T_prn_mod_seconds*(float)d_fs_in;
-    d_next_prn_length_samples=round(T_prn_mod_samples);
+
+    
+      #ifdef GNSS_SDR_USE_BOOST_ROUND
+      d_next_prn_length_samples=round(T_prn_mod_samples);
+      #else
+      d_next_prn_length_samples=std::round(T_prn_mod_samples); 
+      #endif
 
 
     float T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS/GPS_L1_CA_CODE_RATE_HZ;
@@ -220,6 +228,7 @@ void gps_l1_ca_dll_pll_tracking_cc::update_local_code()
 	tcode_chips=-rem_code_phase_chips;
     for (int i=0;i<d_current_prn_length_samples;i++)
     {
+        #ifdef GNSS_SDR_USE_BOOST_ROUND
         associated_chip_index=1+round(fmod(tcode_chips-d_early_late_spc_chips,code_length_chips));
         d_early_code[i] = d_ca_code[associated_chip_index];
         associated_chip_index = 1+round(fmod(tcode_chips, code_length_chips));
@@ -227,6 +236,15 @@ void gps_l1_ca_dll_pll_tracking_cc::update_local_code()
         associated_chip_index = 1+round(fmod(tcode_chips+d_early_late_spc_chips, code_length_chips));
         d_late_code[i] = d_ca_code[associated_chip_index];
         tcode_chips=tcode_chips+d_code_phase_step_chips;
+        #else
+        associated_chip_index=1+std::round(fmod(tcode_chips-d_early_late_spc_chips,code_length_chips));
+        d_early_code[i] = d_ca_code[associated_chip_index];
+        associated_chip_index = 1+std::round(fmod(tcode_chips, code_length_chips));
+        d_prompt_code[i] = d_ca_code[associated_chip_index];
+        associated_chip_index = 1+std::round(fmod(tcode_chips+d_early_late_spc_chips, code_length_chips));
+        d_late_code[i] = d_ca_code[associated_chip_index];
+        tcode_chips=tcode_chips+d_code_phase_step_chips;
+        #endif
     }
 }
 
@@ -292,8 +310,11 @@ int gps_l1_ca_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_in
 	        acq_to_trk_delay_samples=d_sample_counter-d_acq_sample_stamp;
 	        acq_trk_shif_correction_samples=d_next_prn_length_samples-fmod((float)acq_to_trk_delay_samples,(float)d_next_prn_length_samples);
 	        //std::cout<<"acq_trk_shif_correction="<<acq_trk_shif_correction_samples<<"\r\n";
-
+                #ifdef GNSS_SDR_USE_BOOST_ROUND
 	        samples_offset=round(d_acq_code_phase_samples+acq_trk_shif_correction_samples);
+                #else
+                samples_offset=std::round(d_acq_code_phase_samples+acq_trk_shif_correction_samples);
+                #endif
 	        // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
 	        d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset)/(double)d_fs_in);
 	        d_sample_counter=d_sample_counter+samples_offset; //count for the processed samples
@@ -376,8 +397,11 @@ int gps_l1_ca_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_in
 	    }
 
 	    d_code_phase_samples=fmod(d_code_phase_samples,T_prn_true_samples);
-
+            #ifdef GNSS_SDR_USE_BOOST_ROUND
 	    d_next_prn_length_samples=round(K_blk_samples); //round to a discrete samples
+            #else
+            d_next_prn_length_samples=std::round(K_blk_samples); //round to a discrete samples
+            #endif
 	    d_next_rem_code_phase_samples=K_blk_samples-d_next_prn_length_samples; //rounding error
 
 		/*!

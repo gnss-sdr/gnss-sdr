@@ -38,9 +38,9 @@ NOTE: ATLAS version 3.6 is know to cause random crashes and incorrect results un
 
 - Download, unzip, configure, build and install Google's performance analysis tools, google-perftools:
 
-$ wget http://google-perftools.googlecode.com/files/google-perftools-1.8.3.tar.gz 
-$ tar xvfz google-perftools-1.8.3.tar.gz 
-$ cd  google-perftools-1.8.3
+$ wget http://google-perftools.googlecode.com/files/google-perftools-1.9.tar.gz 
+$ tar xvfz google-perftools-1.9.tar.gz 
+$ cd  google-perftools-1.9
 $ ./configure --enable-frame-pointers
 $ make
 $ sudo make install

@@ -1,7 +1,10 @@
 HOW TO BUILD GNSS-SDR
 ----------------------
 
-This document describes how to set up the compilation environment and build GNSS-SDR (tested: Ubuntu 10.04, 10.10, 11.04 and 11.10)
+This document describes how to set up the compilation environment and build GNSS-SDR 
+
+Ubuntu 10.04, 10.10, 11.04 and 11.10)
+--------------------------------------
 
 * Install GNU Radio:
 
@@ -101,6 +104,105 @@ $ make
 $ make check
 $ sudo make install
 
+
+
+
+Mac OS X 1.6.8 (Snow Leopard)
+------------------------------
+* If you have still not installed Apple's Developer Tools Xcode, do it now from  http://developer.apple.com/technologies/tools/ (it's free)
+
+* Install Macports from  http://www.macports.org/install.php We recommend to install directly the “dmg” disk images for Snow Leopart. GNSS-SDR has not been tested with Leopard or Tiger.
+
+* With your favorite text editor, create a $HOME/user-config.jam file and specify that you want to use the darwin toolset (Apple's version of the GCC toolchain) and doxygen:
+
+using darwin ;
+using doxygen ;
+
+* Install GNU Radio:
+
+$ sudo port install gnuradio-core
+
+* Set some variables:
+
+export DYLD_LIBRARY_PATH=/usr/local/lib
+export GNURADIO_ROOT= /path/to/gnuradio
+
+where /path/to/gnuradio is the root folder where the source code of GNU Radio is. Currently, it is found in
+
+export GNURADIO_ROOT=/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_ports_science_gnuradio-examples/work/gnuradio-3.3.0
+
+In order to avoid defining these variables each time you enter a session, you may want to add these two lines to your $HOME/.bashrc file.
+
+* Create a symbolic link in order to be able to use the gnuradio-core library from /usr/local/lib
+
+$ sudo ln -s /opt/local/lib/libgnuradio-core.dylib /usr/local/lib/libgnuradio-core.dylib
+
+* Install other tools:
+
+$ sudo port install doxygen graphviz subversion 
+
+- Download, compile, and install the Armadillo linear algebra library
+
+$ wget http://sourceforge.net/projects/arma/files/armadillo-2.4.2.tar.gz
+$ tar xvfz armadillo-2.4.2.tar.gz
+$ cd armadillo-2.4.2
+$ cmake .
+$ make
+$ sudo make install
+
+    The full stop separated from "cmake" by a space is important. CMake will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system. The "Accelerate" framework is used for accessing BLAS and LAPACK functions.
+
+- Install Google's performance analysis tools, google-perftools:
+
+$ sudo port install google-perftools
+$ sudo ln -s /opt/local/lib/libprofiler.dylib /usr/local/lib/libprofiler.dylib 
+$ sudo ln -s /opt/local/lib/libtcmalloc.dylib /usr/local/lib/libtcmalloc.dylib
+
+- Download, unzip, configure, and build Google C++ Testing Framework (also known as Google Test):
+
+$ wget http://googletest.googlecode.com/files/gtest-1.6.0.zip
+$ unzip gtest-1.6.0.zip
+$ cd gtest-1.6.0
+$ ./configure
+$ make
+
+- Download, unzip, configure, build and install Google's gflags package, a commandline flags processing module for C++:
+
+$ wget http://google-gflags.googlecode.com/files/gflags-1.7.tar.gz
+$ tar xvfz gflags-1.7.tar.gz
+$ cd gflags-1.7
+$ ./configure
+$ make
+$ sudo make install
+
+- Download, unzip, configure, build and install glog, a Google's library that implements application-level logging:
+
+$ wget http://google-glog.googlecode.com/files/glog-0.3.1-1.tar.gz 
+$ tar xvfz glog-0.3.1-1.tar.gz 
+$ cd  glog-0.3.1
+$ ./configure
+$ make
+$ sudo make install
+
+* Check the repository for the latest version of GNSS-SDR:
+
+- Check out the latest version of GNSS-SDR
+
+$ svn co http://gnss-sdr.svn.sourceforge.net/svnroot/gnss-sdr gnss-sdr
+
+* Build GNSS-SDR
+
+- Go to GNSS-SDR's root directory and compile the program:
+
+$ cd gnss-sdr/trunk
+$ bjam
+
+If everything went fine, a executable will be found at gnss-sdr/trunk/install/gnss-sdr
+
+NOTE: During compilation, you might see a harmless message g++: unrecognized option '-no-cpp-precomp'. You can safely ignore it, and even change darwin toolset configuration to remove it: for OS X 10.6.8 I changed /opt/local/share/boost-build/tools/tools/darwin.jam at line 58 like this
+
+#flags darwin.compile OPTIONS : -no-cpp-precomp ;
+flags darwin.compile OPTIONS : -std=c++0x ;
 
 
 

@@ -63,6 +63,7 @@
 
 using google::LogMessage;
 
+
 GNSSBlockFactory::GNSSBlockFactory()
 {
 }
@@ -76,6 +77,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalSource(
 {
 
     std::string default_implementation = "File_Signal_Source";
+
     std::string implementation = configuration->property(
             "SignalSource.implementation", default_implementation);
 

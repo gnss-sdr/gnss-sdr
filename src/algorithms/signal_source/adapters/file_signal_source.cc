@@ -40,13 +40,17 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-
+#include <gflags/gflags.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
 #include <gnuradio/gr_io_signature.h>
 
 using google::LogMessage;
+
+DEFINE_string(signal_source, "-",
+        "If defined, path to the file containing the signal samples (overrides the configuration file)");
+
 
 FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams, unsigned int out_streams,
@@ -63,6 +67,9 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     sampling_frequency_ = configuration->property(role
             + ".sampling_frequency", 0);
     filename_ = configuration->property(role + ".filename", default_filename);
+    // override value with commandline flag, if present
+    if (FLAGS_signal_source.compare("-") != 0) filename_= FLAGS_signal_source;
+
     item_type_ = configuration->property(role + ".item_type",
             default_item_type);
     repeat_ = configuration->property(role + ".repeat", false);

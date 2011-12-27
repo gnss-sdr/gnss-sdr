@@ -56,11 +56,15 @@ class GNSSFlowgraph
 {
 
 public:
-
+	/*!
+	 * \brief Constructor that initializes the receiver flowgraph
+     */
     GNSSFlowgraph(ConfigurationInterface* configuration,
             gr_msg_queue_sptr queue);
 
-    //! Virtual destructor
+	/*!
+	 * \brief Virtual destructor
+	 */
     virtual ~GNSSFlowgraph();
 
     //! Start the flowgraph
@@ -69,7 +73,11 @@ public:
     //! Stop the flowgraph
     void stop();
 
-    //! Connect the defined flowgraph
+	/*!
+	 * \brief Connects the defined blocks in the flowgraph
+	 *
+	 * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
+	 */
     void connect();
 
     void wait();

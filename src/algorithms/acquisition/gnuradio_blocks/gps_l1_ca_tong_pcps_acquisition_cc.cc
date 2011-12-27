@@ -147,11 +147,12 @@ void gps_l1_ca_tong_pcps_acquisition_cc::set_satellite(unsigned int satellite)
     d_noise_power = 0.0;
 
     // The GPS codes are generated on the fly using a custom version of the GPS code generator
+    //! \TODO In-memory codes instead of generated on the fly
     code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite, d_fs_in, 0);
 
     d_fft_if->execute(); // We need the FFT of GPS C/A code
     //Conjugate the local code
-    //TODO Optimize it !
+    //! \TODO Optimize it ! Try conj() or Armadillo
     for (unsigned int i = 0; i < d_samples; i++)
     {
         d_fft_codes[i] = std::complex<float>(
@@ -210,22 +211,24 @@ int gps_l1_ca_tong_pcps_acquisition_cc::general_work(int noutput_items,
         //            vt = noise_envelope * sqrt( -2 * log( d_pfa ) );
 
 
-        // 1º Compute the input signal power estimation
+        // 1- Compute the input signal power estimation
         for (unsigned int i = 0; i < d_samples; i++)
         {
             d_noise_power += std::abs(in[i]);
         }
         d_noise_power = sqrt(d_noise_power / (float)d_samples);
 
-        //Perform the carrier wipe-off
+        //2. Perform the carrier wipe-off
         sine_gen_complex(d_if_sin, d_freq + d_doppler, d_fs_in, d_samples);
         for (unsigned int i = 0; i < d_samples; i++)
         {
             d_fft_if->get_inbuf()[i] = in[i] * d_if_sin[i];
         }
 
-        //3º- Perform the FFT-based circular convolution (parallel time search)
-        d_fft_if->execute(); //TODO Optimize me
+        //3- Perform the FFT-based circular convolution (parallel time search)
+        d_fft_if->execute();
+
+        //TODO Optimize me: use Armadillo!
         for (unsigned int i = 0; i < d_samples; i++)
         {
             d_ifft->get_inbuf()[i] = d_fft_if->get_outbuf()[i]
@@ -233,6 +236,7 @@ int gps_l1_ca_tong_pcps_acquisition_cc::general_work(int noutput_items,
         }
 
         d_ifft->execute();
+
         x86_gr_complex_mag(d_ifft->get_outbuf(), d_samples); // d_ifft->get_outbuf()=|abs(·)|^2 and the array is converted from CPX->Float
         x86_float_max((float*)d_ifft->get_outbuf(), &d_indext, &magt,
                 d_samples); // find max of |abs(·)|^2 -> index and magt

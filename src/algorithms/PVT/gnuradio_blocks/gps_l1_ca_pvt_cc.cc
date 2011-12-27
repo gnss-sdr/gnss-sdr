@@ -76,7 +76,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
   d_averaging_depth=averaging_depth;
   d_flag_averaging=flag_averaging;
   /*!
-   * \todo Enable RINEX printer: The actual RINEX printer need a complete refactoring and some bug fixing work
+   * \todo Enable RINEX printer: The current RINEX printer need a complete refactoring and some bug fixing work
    */
   //d_rinex_printer.set_headers("GNSS-SDR");
   d_ls_pvt=new gps_l1_ca_ls_pvt(nchannels,d_dump_filename,d_dump);

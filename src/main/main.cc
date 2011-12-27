@@ -30,6 +30,8 @@
  *
  * -------------------------------------------------------------------------
  */
+
+#include <boost/filesystem.hpp>
 #include <gflags/gflags.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -42,6 +44,8 @@
 #include "gps_navigation_message.h"
 
 using google::LogMessage;
+
+DECLARE_string(log_dir);
 
 /*!
  * \todo  make this queue generic for all the GNSS systems (javi)
@@ -68,9 +72,27 @@ int main(int argc, char** argv)
     google::SetUsageMessage(intro_help);
     google::SetVersionString("0.1");
     google::ParseCommandLineFlags(&argc, &argv, true);
-    google::InitGoogleLogging(argv[0]);
 
     std::cout<<"Initializing GNSS-SDR... Please wait"<<std::endl;
+
+    google::InitGoogleLogging(argv[0]);
+    if (FLAGS_log_dir.empty())
+    {
+      std::cout << "Logging will be done at " << boost::filesystem::temp_directory_path() << std::endl
+      << "Use gnss-sdr --log_dir=/path/to/log to change that."<< std::endl;
+    }
+    else
+    {
+        const boost::filesystem::path p (FLAGS_log_dir);
+    	if (!boost::filesystem::exists(p))
+    	{
+    	   std::cout << "The path " << FLAGS_log_dir << " does not exist, attepting to create it" << std::endl;
+    	   boost::filesystem::create_directory(p);
+    	}
+    	std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
+    }
+
+
 
     ControlThread *control_thread = new ControlThread();
 

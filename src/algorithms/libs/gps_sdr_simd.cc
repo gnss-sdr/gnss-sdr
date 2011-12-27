@@ -1,25 +1,37 @@
-/*! \file SSE.cpp
-	SIMD functionality, mainly for 32 bit interleaved complex integer type (CPX)
-*/
+/*!
+ * \file gps_sdr_simd.cc
+ * \brief SIMD functionality, mainly for 32 bit interleaved complex integer type (CPX)
+ * \author Copyright 2008 Gregory W Heckler
+ *
+ * This class implements operations in assembler (SSE technology in Intel processors)
+ * It has been copied from Gregory W Heckler's GPS-SDR Project
+ * Please see http://github.com/gps-sdr/gps-sdr
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
 
-/************************************************************************************************
-Copyright 2008 Gregory W Heckler
-
-This file is part of the GPS Software Defined Radio (GPS-SDR)
-
-The GPS-SDR is free software; you can redistribute it and/or modify it under the terms of the
-GNU General Public License as published by the Free Software Foundation; either version 2 of the
-License, or (at your option) any later version.
-
-The GPS-SDR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with GPS-SDR; if not,
-write to the:
-
-Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-************************************************************************************************/
 #ifdef USE_SIMD
 #include "gps_sdr_simd.h"
 

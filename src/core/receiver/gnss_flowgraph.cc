@@ -51,7 +51,6 @@ using google::LogMessage;
 GNSSFlowgraph::GNSSFlowgraph(ConfigurationInterface *configuration,
         gr_msg_queue_sptr queue)
 {
-
     connected_ = false;
     running_ = false;
     configuration_ = configuration;
@@ -111,7 +110,11 @@ void GNSSFlowgraph::stop()
 
 void GNSSFlowgraph::connect()
 {
-    DLOG(INFO) << "Connecting flowgraph";
+	/* Connects the blocks in the flowgraph
+	 *
+	 * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
+	 */
+	DLOG(INFO) << "Connecting flowgraph";
     if (connected_)
     {
         LOG_AT_LEVEL(WARNING) << "flowgraph already connected";
@@ -255,8 +258,8 @@ void GNSSFlowgraph::connect()
         DLOG(INFO) << "Channel " << i
                 << " connected to observables and ready for acquisition";
     }
-    /*!
-     * Enabled the observables multichannel output connection to PVT
+    /*
+     * Connect the observables output of each channel to the PVT block
      */
     try
     {
@@ -309,7 +312,12 @@ void GNSSFlowgraph::wait()
 
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
-
+	/*!
+	 * \brief Applies an action to the flowgraph
+	 *
+	 * \param[in] who   Who generated the action
+	 * \param[in] what  What is the action 0: acquisition failed
+	 */
     DLOG(INFO) << "received " << what << " from " << who;
 
     switch (what)
@@ -385,7 +393,9 @@ GNSSBlockInterface* GNSSFlowgraph::output_filter()
 
 void GNSSFlowgraph::init()
 {
-
+	/*!
+	 * \brief Instantiates the receiver blocks
+	 */
     blocks_->push_back(
             block_factory_->GetSignalSource(configuration_, queue_));
     blocks_->push_back(block_factory_->GetSignalConditioner(configuration_,
@@ -422,7 +432,15 @@ void GNSSFlowgraph::init()
 void GNSSFlowgraph::set_satellites_list()
 {
 
-    for (unsigned int id = 1; id < 33; id++)
+	/*
+	 * Sets a sequential list of satellites (1...33)
+	 */
+
+	/*!
+	 * \TODO Describe GNSS satellites more nicely, with RINEX notation
+	 * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf (page 5)
+	 */
+	for (unsigned int id = 1; id < 33; id++)
     {
         available_GPS_satellites_IDs_->push_back(id);
     }
@@ -445,7 +463,7 @@ void GNSSFlowgraph::set_satellites_list()
         }
     }
 
-//    std::cout << "Cola de satélites: ";
+//    std::cout << "Satellite queue: ";
 //    for (std::list<unsigned int>::iterator it =
 //            available_GPS_satellites_IDs_->begin(); it
 //            != available_GPS_satellites_IDs_->end(); it++)

@@ -136,7 +136,7 @@ void gps_l1_ca_pcps_acquisition_cc::set_satellite(unsigned int satellite)
     code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite, d_fs_in, 0);
     d_fft_if->execute(); // We need the FFT of GPS C/A code
     //Conjugate the local code
-    //TODO Optimize it !
+    //TODO Optimize it ! try conj()
     for (unsigned int i = 0; i < d_fft_size; i++)
     {
         d_fft_codes[i] = std::complex<float>(
@@ -172,12 +172,12 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
     /*!
      * By J.Arribas
      * Acquisition A strategy (Kay Borre book + CFAR threshold):
-     * 1º- Compute the input signal power estimation
-     * 2º- Doppler serial search loop
-     * 3º- Perform the FFT-based circular convolution (parallel time search)
-     * 4º- record the maximum peak and the associated synchronization parameters
-     * 5º- Compute the test statistics and compare to the threshold
-     * 6º- Declare positive or negative acquisition using a message queue
+     * 1. Compute the input signal power estimation
+     * 2. Doppler serial search loop
+     * 3. Perform the FFT-based circular convolution (parallel time search)
+     * 4. Record the maximum peak and the associated synchronization parameters
+     * 5. Compute the test statistics and compare to the threshold
+     * 6. Declare positive or negative acquisition using a message queue
      */
 
     if (!d_active)
@@ -217,7 +217,8 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
                 << d_threshold << ", doppler_max: " << d_doppler_max
                 << ", doppler_step: " << d_doppler_step;
 
-        // 1º Compute the input signal power estimation
+        // 1- Compute the input signal power estimation
+        //! \TODO try norm()
         for (i = 0; i < d_fft_size; i++)
         {
             d_input_power += std::abs(in[i]) * std::abs(in[i]);
@@ -225,7 +226,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
 
         d_input_power = d_input_power / (float)d_fft_size;
 
-        // 2º- Doppler frequency search loop
+        // 2- Doppler frequency search loop
         for (doppler = (int)(-d_doppler_max); doppler < (int)d_doppler_max; doppler
                 += d_doppler_step)
         { // doppler search steps
@@ -236,8 +237,10 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
                 d_fft_if->get_inbuf()[i] = in[i] * d_sine_if[i];
             }
 
-            //3º- Perform the FFT-based circular convolution (parallel time search)
-            d_fft_if->execute(); //TODO Optimize me
+            //3- Perform the FFT-based circular convolution (parallel time search)
+            d_fft_if->execute();
+
+            //TODO Optimize me
             for (i = 0; i < d_fft_size; i++)
             {
                 d_ifft->get_inbuf()[i] = (d_fft_if->get_outbuf()[i]
@@ -245,7 +248,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
             }
             d_ifft->execute();
 
-            // ASM accelerated version
+            // old version
             //x86_gr_complex_mag(d_ifft->get_outbuf(), d_fft_size); // d_ifft->get_outbuf()=|abs(·)|^2 and the array is converted from CPX->Float
             //x86_float_max((float*)d_ifft->get_outbuf(), &indext, &magt,
             //        d_fft_size); // find max of |abs(·)|^2 -> index and magt
@@ -274,7 +277,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
                 d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(·)|^2 in this Doppler bin
                 d_dump_file.close();
             }
-            // 4º- record the maximum peak and the associated synchronization parameters
+            // 4- record the maximum peak and the associated synchronization parameters
             if (d_mag < magt)
             {
                 d_mag = magt;
@@ -283,9 +286,9 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
             }
         }
 
-        // 5º- Compute the test statistics and compare to the threshold
+        // 5- Compute the test statistics and compare to the threshold
         d_test_statistics = 2*d_fft_size*d_mag / d_input_power;
-        // 6º- Declare positive or negative acquisition using a message queue
+        // 6- Declare positive or negative acquisition using a message queue
 
         if (d_test_statistics > d_threshold)
         { //0.004

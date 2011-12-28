@@ -1,6 +1,6 @@
 /*!
  * \file concurrent_queue.h
- * \brief This class implements a thread-safe std::queue
+ * \brief Interface of a thread-safe std::queue
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -65,9 +65,9 @@ public:
     {
         boost::mutex::scoped_lock lock(the_mutex);
         if(the_queue.empty())
-        {
-            return false;
-        }
+            {
+                return false;
+            }
 
         popped_value=the_queue.front();
         the_queue.pop();
@@ -78,9 +78,9 @@ public:
     {
         boost::mutex::scoped_lock lock(the_mutex);
         while(the_queue.empty())
-        {
-            the_condition_variable.wait(lock);
-        }
+            {
+                the_condition_variable.wait(lock);
+            }
 
         popped_value=the_queue.front();
         the_queue.pop();

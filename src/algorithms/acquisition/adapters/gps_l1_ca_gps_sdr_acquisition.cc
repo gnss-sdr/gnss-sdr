@@ -1,6 +1,8 @@
 /*!
  * \file gps_l1_ca_gps_sdr_acquisition.cc
- * \brief Brief description of the file here
+ * \brief Implementation of an adapter of an acquisition module based
+ * on the method in Gregory Heckler's GPS-SDR (see http://github.com/gps-sdr/gps-sdr)
+ * to an AcquisitionInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
@@ -32,19 +34,17 @@
 #include "gps_l1_ca_gps_sdr_acquisition.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
-
 #include <gnuradio/gr_io_signature.h>
 #include <gnuradio/gr_stream_to_vector.h>
 #include <gnuradio/gr_vector_to_stream.h>
 #include <gnuradio/gr_complex_to_interleaved_short.h>
 #include <gnuradio/gr_interleaved_short_to_complex.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
 using google::LogMessage;
 
-//! Constructor
+// Constructor
 GpsL1CaGpsSdrAcquisition::GpsL1CaGpsSdrAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
@@ -108,11 +108,11 @@ GpsL1CaGpsSdrAcquisition::GpsL1CaGpsSdrAcquisition(
 
 }
 
-//! Destructor
+// Destructor
 GpsL1CaGpsSdrAcquisition::~GpsL1CaGpsSdrAcquisition()
 {}
 
-//! Set satellite
+// Set satellite
 void GpsL1CaGpsSdrAcquisition::set_satellite(unsigned int satellite)
 {
     satellite_ = satellite;
@@ -128,7 +128,7 @@ void GpsL1CaGpsSdrAcquisition::set_satellite(unsigned int satellite)
 }
 
 
-//! Set channel
+// Set channel
 void GpsL1CaGpsSdrAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
@@ -143,7 +143,7 @@ void GpsL1CaGpsSdrAcquisition::set_channel(unsigned int channel)
     }
 }
 
-//! Set acquisition threshold
+// Set acquisition threshold
 void GpsL1CaGpsSdrAcquisition::set_threshold(float threshold)
 {
     threshold_ = threshold;
@@ -158,7 +158,7 @@ void GpsL1CaGpsSdrAcquisition::set_threshold(float threshold)
     }
 }
 
-//! Set maximum Doppler shift
+// Set maximum Doppler shift
 void GpsL1CaGpsSdrAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
@@ -173,7 +173,7 @@ void GpsL1CaGpsSdrAcquisition::set_doppler_max(unsigned int doppler_max)
     }
 }
 
-//! Set Channel Queue
+// Set Channel Queue
 void GpsL1CaGpsSdrAcquisition::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {

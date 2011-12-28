@@ -1,6 +1,7 @@
 /*!
  * \file tracking_discriminators.cc
- * \brief Library with a set of code tracking and carrier tracking discriminators that is used by the tracking algorithms
+ * \brief Implementation of a library with a set of code tracking
+ * and carrier tracking discriminators that is used by the tracking algorithms.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  *
@@ -33,7 +34,7 @@
 #include <math.h>
 
 //  All the outputs are in RADIANS
-/*!
+/*
  * FLL four quadrant arctan discriminator:
  * \f{equation}
  * 	\frac{\phi_2-\phi_1}{t_2-t1}=\frac{ATAN2(cross,dot)}{t_1-t_2},
@@ -45,13 +46,14 @@
 
 float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2,float t1, float t2)
 {
-	float cross,dot;
-	dot=prompt_s1.imag()*prompt_s2.imag()+prompt_s1.real()*prompt_s2.real();
-	cross=prompt_s1.imag()*prompt_s2.real()-prompt_s2.imag()*prompt_s1.real();
-	return atan2(cross,dot)/(t2-t1);
+    float cross,dot;
+    dot=prompt_s1.imag()*prompt_s2.imag()+prompt_s1.real()*prompt_s2.real();
+    cross=prompt_s1.imag()*prompt_s2.real()-prompt_s2.imag()*prompt_s1.real();
+    return atan2(cross,dot)/(t2-t1);
 }
 
-/*!
+
+/*
  * PLL four quadrant arctan discriminator:
  * \f{equation}
  * 	\phi=ATAN2(Q_{PS},I_{PS}),
@@ -60,27 +62,29 @@ float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2,float t1
  */
 float pll_four_quadrant_atan(gr_complex prompt_s1)
 {
-	return atan2(prompt_s1.real(),prompt_s1.imag());
+    return atan2(prompt_s1.real(),prompt_s1.imag());
 }
 
-/*!
+
+/*
  * PLL Costas loop two quadrant arctan discriminator:
  * \f{equation}
  * 	\phi=ATAN\left(\frac{Q_{PS}}{I_{PS}}\right),
  * \f}
  * where \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively. The output is in [radians].
  */
-
 float pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
 {
-	if (prompt_s1.imag()!=0.0)
-	{
-		return atan(prompt_s1.real()/prompt_s1.imag());
-	}else{
-		return 0;
-	}
+    if (prompt_s1.imag()!=0.0)
+        {
+            return atan(prompt_s1.real()/prompt_s1.imag());
+        }else{
+                return 0;
+        }
 }
-/*!
+
+
+/*
  * DLL Noncoherent Early minus Late envelope normalized discriminator:
  * \f{equation}
  * 	error=\frac{E-L}{E+L},
@@ -90,8 +94,8 @@ float pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
  */
 float dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
 {
-	float P_early, P_late;
-	P_early=std::abs(early_s1);
-	P_late=std::abs(late_s1);
-	return (P_early-P_late)/((P_early+P_late));
+    float P_early, P_late;
+    P_early=std::abs(early_s1);
+    P_late=std::abs(late_s1);
+    return (P_early-P_late)/((P_early+P_late));
 }

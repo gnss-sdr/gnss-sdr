@@ -47,7 +47,6 @@
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
  */
-
 class ChannelInterface: public GNSSBlockInterface
 {
 

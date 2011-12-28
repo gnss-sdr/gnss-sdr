@@ -53,7 +53,7 @@ gps_l1_ca_pcps_make_acquisition_cc(unsigned int sampled_ms,
         gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
 
 /*!
- * \brief This class implements a PCPS acquisition block
+ * \brief This class implements a PCPS acquisition block for GPS L1 C/A
  */
 class gps_l1_ca_pcps_acquisition_cc: public gr_block
 {
@@ -130,22 +130,27 @@ public:
     }
 
     void set_satellite(unsigned int satellite);
+
     void set_active(bool active)
     {
         d_active = active;
     }
+
     void set_channel(unsigned int channel)
     {
         d_channel = channel;
     }
+
     void set_threshold(float threshold)
     {
         d_threshold = threshold;
     }
+
     void set_doppler_max(unsigned int doppler_max)
     {
         d_doppler_max = doppler_max;
     }
+
     void set_doppler_step(unsigned int doppler_step)
     {
         d_doppler_step = doppler_step;

@@ -1,6 +1,7 @@
 /*!
  * \file file_configuration.cc
- * \brief This class is an implementation of the interface ConfigurationInterface.
+ * \brief Implementation of the interface ConfigurationInterface that reads the
+ * configuration from a file.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * This implementation has a text file as the source for the values of the parameters.
@@ -35,12 +36,9 @@
 
 
 #include "file_configuration.h"
-
 #include <string>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include "INIReader.h"
 #include "string_converter.h"
 #include "in_memory_configuration.h"

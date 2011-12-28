@@ -82,33 +82,33 @@ void ControlThread::run()
 
     flowgraph_->connect();
     if (flowgraph_->connected())
-    {
-        LOG_AT_LEVEL(INFO) << "Flowgraph connected";
-    }
+        {
+            LOG_AT_LEVEL(INFO) << "Flowgraph connected";
+        }
     else
-    {
-        LOG_AT_LEVEL(ERROR) << "Unable to connect flowgraph";
-        return;
-    }
+        {
+            LOG_AT_LEVEL(ERROR) << "Unable to connect flowgraph";
+            return;
+        }
 
     flowgraph_->start();
     if (flowgraph_->running())
-    {
-        LOG_AT_LEVEL(INFO) << "Flowgraph started";
-    }
+        {
+            LOG_AT_LEVEL(INFO) << "Flowgraph started";
+        }
     else
-    {
-        LOG_AT_LEVEL(ERROR) << "Unable to start flowgraph";
-        return;
-    }
+        {
+            LOG_AT_LEVEL(ERROR) << "Unable to start flowgraph";
+            return;
+        }
 
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
-    {
-        //TODO re-enable the blocking read messages functions and fork the process
-        read_control_messages();
-        if (control_messages_ != 0) process_control_messages();
-    }
+        {
+            //TODO re-enable the blocking read messages functions and fork the process
+            read_control_messages();
+            if (control_messages_ != 0) process_control_messages();
+        }
 
     flowgraph_->stop();
 
@@ -118,11 +118,11 @@ void ControlThread::run()
 void ControlThread::set_control_queue(gr_msg_queue_sptr control_queue)
 {
     if (flowgraph_->running())
-    {
-        LOG_AT_LEVEL(WARNING)
-                << "Unable to set control queue while flowgraph is running";
-        return;
-    }
+        {
+            LOG_AT_LEVEL(WARNING)
+                        << "Unable to set control queue while flowgraph is running";
+            return;
+        }
 
     control_queue_ = control_queue;
 }
@@ -130,7 +130,7 @@ void ControlThread::set_control_queue(gr_msg_queue_sptr control_queue)
 
 void ControlThread::init()
 {
-	// Instantiates a control queue, a GNSS flowgraph, and a control message factory
+    // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = gr_make_msg_queue(0);
     flowgraph_ = new GNSSFlowgraph(configuration_, control_queue_);
     control_message_factory_ = new ControlMessageFactory();
@@ -145,14 +145,14 @@ void ControlThread::read_control_messages()
     DLOG(INFO) << "Reading control messages from queue";
     gr_message_sptr queue_message = control_queue_->delete_head();
     if (queue_message != 0)
-    {
-        control_messages_ = control_message_factory_->GetControlMessages(
-                queue_message);
-    }
+        {
+            control_messages_ = control_message_factory_->GetControlMessages(
+                    queue_message);
+        }
     else
-    {
-        control_messages_ = 0;
-    }
+        {
+            control_messages_ = 0;
+        }
 }
 
 // Apply the corresponding control actions
@@ -161,21 +161,21 @@ void ControlThread::process_control_messages()
 {
 
     for (unsigned int i = 0; i < control_messages_->size(); i++)
-    {
-        if (stop_) break;
-        if (control_messages_->at(i)->who == 200)
         {
-            apply_action(control_messages_->at(i)->what);
-        }
-        else
-        {
-            flowgraph_->apply_action(control_messages_->at(i)->who,
-                    control_messages_->at(i)->what);
-        }
+            if (stop_) break;
+            if (control_messages_->at(i)->who == 200)
+                {
+                    apply_action(control_messages_->at(i)->what);
+                }
+            else
+                {
+                    flowgraph_->apply_action(control_messages_->at(i)->who,
+                            control_messages_->at(i)->what);
+                }
 
-        delete control_messages_->at(i);
-        processed_control_messages_++;
-    }
+            delete control_messages_->at(i);
+            processed_control_messages_++;
+        }
 
     control_messages_->clear();
     delete control_messages_;
@@ -188,13 +188,13 @@ void ControlThread::apply_action(unsigned int what)
 
     switch (what)
     {
-        case 0:
-            DLOG(INFO) << "Received action STOP";
-            stop_ = true;
-            applied_actions_++;
-            break;
-        default:
-            DLOG(INFO) << "Unrecognized action.";
+    case 0:
+        DLOG(INFO) << "Received action STOP";
+        stop_ = true;
+        applied_actions_++;
+        break;
+    default:
+        DLOG(INFO) << "Unrecognized action.";
     }
 
 }

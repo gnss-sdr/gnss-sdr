@@ -1,6 +1,6 @@
 /*!
  * \file channel.h
- * \brief This class represents a GNSS channel.
+ * \brief Interface of a GNSS channel.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
@@ -88,6 +88,11 @@ public:
     void start_acquisition();
     void set_satellite(unsigned int satellite);
     void start();
+
+    /*!
+     * \brief Set stop_ to true and blocks the calling thread until
+     * the thread of the constructor has completed
+     */
     void stop();
 
 private:

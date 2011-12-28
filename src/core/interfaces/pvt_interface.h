@@ -1,9 +1,9 @@
 /*!
  * \file pvt_interface.h
- * \brief This class represents an interface to a PVT gnss block.
+ * \brief This class represents an interface to a PVT block.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Abstract class for pseudorange_intefaces. Since all its methods are virtual,
+ * Abstract class for PVT solvers. Since all its methods are virtual,
  * this class cannot be instantiated directly, and a subclass can only be
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.
@@ -40,9 +40,9 @@
 #include "gnss_block_interface.h"
 
 /*!
- * \brief This class represents an interface to a PVT gnss block.
+ * \brief This class represents an interface to a PVT block.
  *
- * Abstract class for PVT intefaces, derived from GNSSBlockInterface.
+ * Abstract class for PVT interfaces, derived from GNSSBlockInterface.
  * Since all its methods are virtual,
  * this class cannot be instantiated directly, and a subclass can only be
  * instantiated directly if all inherited pure virtual methods have been

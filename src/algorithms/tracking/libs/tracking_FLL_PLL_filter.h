@@ -1,9 +1,7 @@
 /*!
  * \file tracking_FLL_PLL_filter.h
- * \brief Class that implements hybrid FLL and PLL filter for tracking carrier loop
+ * \brief Interface of a hybrid FLL and PLL filter for tracking carrier loop
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *
- * Class that implements hybrid FLL and PLL filter for tracking carrier loop
  *
  * -------------------------------------------------------------------------
  *

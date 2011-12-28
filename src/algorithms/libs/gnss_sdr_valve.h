@@ -1,10 +1,8 @@
 /*!
  * \file gnss_sdr_valve.h
- * \brief  This class implements a GNU Radio block that sends a STOP message to the
+ * \brief  Interface of a GNU Radio block that sends a STOP message to the
  * control queue right after a specific number of samples have passed through it.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -34,8 +32,8 @@
 
 
 
-#ifndef GNSS_SDR_VALVE_H_
-#define GNSS_SDR_VALVE_H_
+#ifndef GNSS_SDR_GNSS_SDR_VALVE_H_
+#define GNSS_SDR_GNSS_SDR_VALVE_H_
 
 #include <cstring>
 #include <gr_sync_block.h>
@@ -66,4 +64,4 @@ public:
               gr_vector_void_star &output_items);
 };
 
-#endif /*GNSS_SDR_VALVE_H_*/
+#endif /*GNSS_SDR_GNSS_SDR_VALVE_H_*/

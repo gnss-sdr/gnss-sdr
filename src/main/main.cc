@@ -3,8 +3,8 @@
  * \brief Main file of the GNSS-SDR program.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
- * It creates a ControlThread object, makes it run, and releases memory
- * back when the main thread has ended.
+ * It sets up the logging system, creates a ControlThread object,
+ * makes it run, and releases memory back when the main thread has ended.
  *
  * -------------------------------------------------------------------------
  *
@@ -51,8 +51,8 @@ DECLARE_string(log_dir);
  * \todo  make this queue generic for all the GNSS systems (javi)
  */
 
-/*!
- * \brief Concurrent queue that communicates the Telemetry Decoder
+/*
+ * Concurrent queue that communicates the Telemetry Decoder
  * to the Observables modules
  */
 concurrent_queue<gps_navigation_message> global_gps_nav_msg_queue;
@@ -61,12 +61,12 @@ int main(int argc, char** argv)
 {
     const std::string intro_help(
             std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n")
-            +
-            "Copyright (C) 2010-2011 (see AUTHORS file for a list of contributors)\n"
-            +
-            "This program comes with ABSOLUTELY NO WARRANTY;\n"
-            +
-            "See COPYING file to see a copy of the General Public License\n \n");
+    +
+    "Copyright (C) 2010-2011 (see AUTHORS file for a list of contributors)\n"
+    +
+    "This program comes with ABSOLUTELY NO WARRANTY;\n"
+    +
+    "See COPYING file to see a copy of the General Public License\n \n");
 
 
     google::SetUsageMessage(intro_help);
@@ -77,20 +77,20 @@ int main(int argc, char** argv)
 
     google::InitGoogleLogging(argv[0]);
     if (FLAGS_log_dir.empty())
-    {
-      std::cout << "Logging will be done at " << boost::filesystem::temp_directory_path() << std::endl
-      << "Use gnss-sdr --log_dir=/path/to/log to change that."<< std::endl;
-    }
+        {
+            std::cout << "Logging will be done at " << boost::filesystem::temp_directory_path() << std::endl
+                    << "Use gnss-sdr --log_dir=/path/to/log to change that."<< std::endl;
+        }
     else
-    {
-        const boost::filesystem::path p (FLAGS_log_dir);
-    	if (!boost::filesystem::exists(p))
-    	{
-    	   std::cout << "The path " << FLAGS_log_dir << " does not exist, attepting to create it" << std::endl;
-    	   boost::filesystem::create_directory(p);
-    	}
-    	std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
-    }
+        {
+            const boost::filesystem::path p (FLAGS_log_dir);
+            if (!boost::filesystem::exists(p))
+                {
+                    std::cout << "The path " << FLAGS_log_dir << " does not exist, attempting to create it" << std::endl;
+                    boost::filesystem::create_directory(p);
+                }
+            std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
+        }
 
 
 

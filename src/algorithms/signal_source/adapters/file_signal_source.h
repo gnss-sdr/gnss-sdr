@@ -1,10 +1,11 @@
 /*!
  * \file file_signal_source.h
- * \brief This class reads signals samples from a file
+ * \brief Interface of a class that reads signals samples from a file
+ * and adapts it to a SignalSourceInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
- * This class represents a file signal source. Internally it uses a GNU Radio's gr_file_source
- * a a connector to the data.
+ * This class represents a file signal source. Internally it uses a GNU Radio's
+ * gr_file_source as a connector to the data.
  *
  * -------------------------------------------------------------------------
  *

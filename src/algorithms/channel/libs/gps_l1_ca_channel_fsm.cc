@@ -1,9 +1,7 @@
 /*!
  * \file gps_l1_ca_channel_fsm.cc
- * \briefState Machine for channel using boost::statechart
+ * \brief Implementation of a State Machine for channel using boost::statechart
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -33,32 +31,31 @@
 #include "gps_l1_ca_channel_fsm.h"
 #include "control_message_factory.h"
 #include "channel.h"
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
 struct Ev_gps_channel_start_acquisition: sc::event<
-        Ev_gps_channel_start_acquisition>
+Ev_gps_channel_start_acquisition>
 {};
 
 struct Ev_gps_channel_valid_acquisition: sc::event<
-        Ev_gps_channel_valid_acquisition>
+Ev_gps_channel_valid_acquisition>
 {};
 
 struct Ev_gps_channel_failed_acquisition_repeat: sc::event<
-        Ev_gps_channel_failed_acquisition_repeat>
+Ev_gps_channel_failed_acquisition_repeat>
 {};
 
 struct Ev_gps_channel_failed_acquisition_no_repeat: sc::event<
-        Ev_gps_channel_failed_acquisition_no_repeat>
+Ev_gps_channel_failed_acquisition_no_repeat>
 {};
 
 struct Ev_gps_channel_failed_tracking: sc::event<
-        Ev_gps_channel_failed_tracking>
+Ev_gps_channel_failed_tracking>
 {};
 
 struct gps_channel_idle_fsm_S0: public sc::state<gps_channel_idle_fsm_S0,
-        GpsL1CaChannelFsm>
+GpsL1CaChannelFsm>
 {
 public:
     // sc::transition(event, next state)
@@ -72,7 +69,7 @@ public:
 };
 
 struct gps_channel_acquiring_fsm_S1: public sc::state<
-        gps_channel_acquiring_fsm_S1, GpsL1CaChannelFsm>
+gps_channel_acquiring_fsm_S1, GpsL1CaChannelFsm>
 {
 public:
     typedef mpl::list<sc::transition<
@@ -81,7 +78,7 @@ public:
             Ev_gps_channel_failed_acquisition_repeat,
             gps_channel_acquiring_fsm_S1>, sc::transition<
             Ev_gps_channel_valid_acquisition, gps_channel_tracking_fsm_S2> >
-            reactions;
+    reactions;
 
     gps_channel_acquiring_fsm_S1(my_context ctx) :
         my_base(ctx)
@@ -92,7 +89,7 @@ public:
 };
 
 struct gps_channel_tracking_fsm_S2: public sc::state<
-        gps_channel_tracking_fsm_S2, GpsL1CaChannelFsm>
+gps_channel_tracking_fsm_S2, GpsL1CaChannelFsm>
 {
 public:
     typedef sc::transition<Ev_gps_channel_failed_tracking,
@@ -107,7 +104,7 @@ public:
 };
 
 struct gps_channel_waiting_fsm_S3: public sc::state<
-        gps_channel_waiting_fsm_S3, GpsL1CaChannelFsm>
+gps_channel_waiting_fsm_S3, GpsL1CaChannelFsm>
 {
 public:
     typedef sc::transition<Ev_gps_channel_start_acquisition,
@@ -127,7 +124,7 @@ GpsL1CaChannelFsm::GpsL1CaChannelFsm()
 }
 
 GpsL1CaChannelFsm::GpsL1CaChannelFsm(AcquisitionInterface *acquisition) :
-    acq_(acquisition)
+                    acq_(acquisition)
 {
     initiate(); //start the FSM
 }
@@ -200,9 +197,9 @@ void GpsL1CaChannelFsm::request_satellite()
 {
     ControlMessageFactory* cmf = new ControlMessageFactory();
     if (queue_ != gr_msg_queue_sptr())
-    {
-        queue_->handle(cmf->GetQueueMessage(channel_, 0));
-    }
+        {
+            queue_->handle(cmf->GetQueueMessage(channel_, 0));
+        }
     delete cmf;
 
 }

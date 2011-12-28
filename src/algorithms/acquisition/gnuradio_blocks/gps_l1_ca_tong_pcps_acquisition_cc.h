@@ -44,10 +44,12 @@
 #include "concurrent_queue.h"
 
 class gps_l1_ca_tong_pcps_acquisition_cc;
+
 typedef boost::shared_ptr<gps_l1_ca_tong_pcps_acquisition_cc>
-        gps_l1_ca_tong_pcps_acquisition_cc_sptr;
+ gps_l1_ca_tong_pcps_acquisition_cc_sptr;
+
 gps_l1_ca_tong_pcps_acquisition_cc_sptr
-gps_l1_ca_tong_pcps_make_acquisition_cc(unsigned int sampled_ms,
+ gps_l1_ca_tong_pcps_make_acquisition_cc(unsigned int sampled_ms,
         unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
         gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
 

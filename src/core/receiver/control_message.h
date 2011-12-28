@@ -1,6 +1,6 @@
 /*!
  * \file control_message.h
- * \brief This class represents the different control messages.
+ * \brief Interface for the different control messages.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * -------------------------------------------------------------------------

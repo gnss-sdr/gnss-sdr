@@ -1,9 +1,8 @@
 /*!
  * \file direct_resampler_conditioner.cc
- * \brief Brief description of the file here
+ * \brief Implementation of an adapter of a direct resampler conditioner block
+ * to a SignalConditionerInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -31,15 +30,11 @@
  */
 
 #include "direct_resampler_conditioner.h"
-
 // #include <gnuradio/usrp_source_c.h>
 #include <gnuradio/gr_file_sink.h>
-
 #include "direct_resampler_conditioner_cc.h"
 #include "direct_resampler_conditioner_ss.h"
-
 #include "configuration_interface.h"
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -48,7 +43,7 @@ using google::LogMessage;
 DirectResamplerConditioner::DirectResamplerConditioner(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_stream, unsigned int out_stream) :
-    role_(role), in_stream_(in_stream), out_stream_(out_stream)
+        role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
 
     std::string default_item_type = "short";
@@ -65,64 +60,62 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             default_dump_file);
 
     if (item_type_.compare("gr_complex") == 0)
-    {
-        item_size_ = sizeof(gr_complex);
-        resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_,
-                sample_freq_out_);
-    }
+        {
+            item_size_ = sizeof(gr_complex);
+            resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_,
+                    sample_freq_out_);
+        }
     else if (item_type_.compare("short") == 0)
-    {
-        item_size_ = sizeof(short);
-        resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_,
-                sample_freq_out_);
-    }
+        {
+            item_size_ = sizeof(short);
+            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_,
+                    sample_freq_out_);
+        }
     else
-    {
-        LOG_AT_LEVEL(WARNING) << item_type_
-                << " unrecognized item type. Using short";
-        item_size_ = sizeof(short);
-    }
+        {
+            LOG_AT_LEVEL(WARNING) << item_type_
+                    << " unrecognized item type. Using short";
+            item_size_ = sizeof(short);
+        }
 
     if (dump_)
-    {
-        DLOG(INFO) << "Dumping output into file " << dump_filename_;
-        file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
-    }
+        {
+            DLOG(INFO) << "Dumping output into file " << dump_filename_;
+            file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+        }
 
     DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
     DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
     DLOG(INFO) << "Item size " << item_size_;
     DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
     if (dump_)
-    {
-        DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
-    }
+        {
+            DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
+        }
 }
-DirectResamplerConditioner::~DirectResamplerConditioner()
-{
-}
+DirectResamplerConditioner::~DirectResamplerConditioner() {}
 
 void DirectResamplerConditioner::connect(gr_top_block_sptr top_block)
 {
 
     if (dump_)
-    {
-        top_block->connect(resampler_, 0, file_sink_, 0);
-        DLOG(INFO) << "connected resampler to file sink";
-    }
+        {
+            top_block->connect(resampler_, 0, file_sink_, 0);
+            DLOG(INFO) << "connected resampler to file sink";
+        }
     else
-    {
-        DLOG(INFO) << "nothing to connect internally";
-    }
+        {
+            DLOG(INFO) << "nothing to connect internally";
+        }
 
 }
 
 void DirectResamplerConditioner::disconnect(gr_top_block_sptr top_block)
 {
     if (dump_)
-    {
-        top_block->disconnect(resampler_, 0, file_sink_, 0);
-    }
+        {
+            top_block->disconnect(resampler_, 0, file_sink_, 0);
+        }
 }
 
 gr_basic_block_sptr DirectResamplerConditioner::get_left_block()

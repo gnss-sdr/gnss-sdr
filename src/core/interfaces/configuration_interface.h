@@ -6,10 +6,6 @@
  * The interface defines an accessor method that gets a parameter name as input
  * and returns the value of this parameter, a string, as output.
  * Property names are defined here. This is an abstract class for interfaces.
- * Since all its methods are virtual,
- * this class cannot be instantiated directly, and a subclass can only be
- * instantiated directly if all inherited pure virtual methods have been
- * implemented by that class or a parent class.
  *
  * -------------------------------------------------------------------------
  *
@@ -69,7 +65,6 @@ public:
             unsigned int default_value) = 0;
     virtual float property(std::string property_name, float default_value) = 0;
     virtual double property(std::string property_name, double default_value) = 0;
-
     virtual void set_property(std::string property_name, std::string value) = 0;
 };
 

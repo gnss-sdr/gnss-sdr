@@ -66,14 +66,14 @@ public:
     //! \brief Virtual destructor. Derived classes must implement the destructor
     virtual ~ControlThread();
 
-	/*! \brief Runs the control thread
-	 *
-	 *  This is the main loop that reads and process the control messages
-	 *  1- Connect the GNSS receiver flowgraph
-	 *  2- Start the GNSS receiver flowgraph
-	 *  while (flowgraph_->running() && !stop)_{
-	 *  3- Read control messages and process them }
-	 */
+    /*! \brief Runs the control thread
+     *
+     *  This is the main loop that reads and process the control messages:
+     *  - Connect the GNSS receiver flowgraph;
+     *  - Start the GNSS receiver flowgraph;
+     *  while (flowgraph_->running() && !stop)_{
+     *  - Read control messages and process them; }
+     */
     void run();
 
     /*!
@@ -101,9 +101,8 @@ public:
      */
     GNSSFlowgraph* flowgraph()
     {
-
         return flowgraph_;
-	}
+    }
 
 
 private:

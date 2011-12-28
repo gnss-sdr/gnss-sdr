@@ -1,6 +1,6 @@
 /*!
  * \file tracking_interface.h
- * \brief This class represents an interface to an tracking GNSS block.
+ * \brief This class represents an interface to a tracking block.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * Abstract class for tracking interfaces. Since all its methods are virtual,

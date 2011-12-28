@@ -1,9 +1,8 @@
 /*!
- * \file
- * \brief Brief description of the file here
+ * \file in_memory_configuration.cc
+ * \brief This implementation accepts configuration parameters upon instantiation and
+ * it is intended to be used in unit testing.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -32,9 +31,7 @@
 
 
 #include "in_memory_configuration.h"
-
 #include <utility>
-
 #include "string_converter.h"
 
 InMemoryConfiguration::InMemoryConfiguration()

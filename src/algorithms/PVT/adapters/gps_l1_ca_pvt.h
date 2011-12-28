@@ -1,6 +1,8 @@
 /*!
  * \file gps_l1_ca_pvt.h
- * \brief Simple Least Squares implementation for GPS L1 C/A Position Velocity and Time
+ * \brief Interface of an adapter of a GPS L1 C/A PVT solver block to a
+ * PVTInterface
+ * Position Velocity and Time
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  *
@@ -48,7 +50,7 @@ class GpsL1CaPvt : public PvtInterface
 
 public:
 
-	GpsL1CaPvt(ConfigurationInterface* configuration,
+    GpsL1CaPvt(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,

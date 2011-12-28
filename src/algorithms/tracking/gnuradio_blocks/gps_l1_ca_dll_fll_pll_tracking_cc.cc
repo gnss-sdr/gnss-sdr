@@ -1,11 +1,12 @@
 /*!
  * \file gps_l1_ca_dll_fll_pll_tracking_cc.cc
- * \brief code DLL + carrier FLL/PLL tracking
+ * \brief Implementation of a code DLL + carrier FLL/PLL tracking block
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * This file implements the code Delay Locked Loop (DLL) + carrier Phase Locked Loop (PLL) helped with a carrier Frequency Locked Loop (FLL) stage
- * according to the algorithms described in [1]
- * [1] E.D. Kaplan and C. Hegarty, Understanding GPS. Principles and
+ * This file implements the code Delay Locked Loop (DLL) + carrier
+ * Phase Locked Loop (PLL) helped with a carrier Frequency Locked Loop (FLL)
+ * according to the algorithms described in:
+ * E.D. Kaplan and C. Hegarty, Understanding GPS. Principles and
  * Applications, Second Edition, Artech House Publishers, 2005.
  *
  * -------------------------------------------------------------------------
@@ -39,16 +40,13 @@
 #include "tracking_discriminators.h"
 #include "CN_estimators.h"
 #include "tracking_FLL_PLL_filter.h"
-
 #include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <sstream>
 #include <cmath>
 #include "math.h"
-
 #include <gnuradio/gr_io_signature.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -124,7 +122,7 @@ gps_l1_ca_dll_fll_pll_tracking_cc::gps_l1_ca_dll_fll_pll_tracking_cc(unsigned in
 
 void gps_l1_ca_dll_fll_pll_tracking_cc::start_tracking(){
 
-	/*!
+	/*
 	 *  correct the code phase according to the delay between acq and trk
 	 */
 	unsigned long int acq_trk_diff_samples;
@@ -242,7 +240,7 @@ gps_l1_ca_dll_fll_pll_tracking_cc::~gps_l1_ca_dll_fll_pll_tracking_cc() {
     delete[] d_Prompt_buffer;
 }
 
-/*! Tracking signal processing
+/* Tracking signal processing
  * Notice that this is a class derived from gr_sync_decimator, so each of the ninput_items has vector_length samples
  */
 
@@ -268,7 +266,7 @@ int gps_l1_ca_dll_fll_pll_tracking_cc::general_work (int noutput_items, gr_vecto
 	d_Late=gr_complex(0,0);
 
 	if (d_enable_tracking==true){
-		/*!
+		/*
 		 * Receiver signal alignment
 		 */
 	    if (d_pull_in==true)
@@ -329,7 +327,7 @@ int gps_l1_ca_dll_fll_pll_tracking_cc::general_work (int noutput_items, gr_vecto
 			d_Late += bb_signal_sample*d_late_code[i];
 		}
 
-		/*!
+		/*
 		 * DLL, FLL, and PLL discriminators
 		 */
 		// Compute DLL error

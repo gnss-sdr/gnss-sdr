@@ -1,12 +1,14 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking.h
- * \brief code DLL + carrier PLL
+ * \brief  Interface of an adapter of a DLL+PLL tracking loop block
+ * for GPS L1 C/A to a TrackingInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Code DLL + carrier PLL according to the algorithms described in [1]
- * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach, Birkha user, 2007
+ * Code DLL + carrier PLL according to the algorithms described in:
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
+ * Approach, Birkha user, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -76,14 +78,37 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
+    /*!
+     * \brief Set satellite ID
+     */
     void set_satellite(unsigned int satellite);
+
+    /*!
+     * \brief Set tracking channel unique ID
+     */
     void set_channel(unsigned int channel);
+
+    /*!
+     * \brief Set acquisition code phase in samples
+     */
     void set_prn_code_phase(signed int phase_samples);
+
+    /*!
+     * \brief Set acquisition Doppler frequency in Hz.
+     */
     void set_doppler_freq_shift(float doppler_freq_hz);
+
+    /*!
+     * \brief Set tracking channel internal queue
+     */
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
     void start_tracking();
 
+    /*!
+     * \brief Set acquisition sample stamp in samples, in order to detect
+     * the delay between acquisition and tracking
+     */
     void set_acq_sample_stamp(unsigned long int sample_stamp);
 
 private:

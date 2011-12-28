@@ -1,6 +1,6 @@
 /*!
  * \file file_configuration.h
- * \brief This class is an implementation of the interface ConfigurationInterface.
+ * \brief A ConfigurationInterface that reads the configuration from a file.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * This implementation has a text file as the source for the values of the parameters.

@@ -59,8 +59,7 @@ struct gps_channel_waiting_fsm_S3;
 /*!
  * \brief This class implements a State Machine for channel using boost::statechart
  */
-class GpsL1CaChannelFsm: public sc::state_machine<GpsL1CaChannelFsm,
-        gps_channel_idle_fsm_S0>
+class GpsL1CaChannelFsm: public sc::state_machine<GpsL1CaChannelFsm,gps_channel_idle_fsm_S0>
 {
 
 public:

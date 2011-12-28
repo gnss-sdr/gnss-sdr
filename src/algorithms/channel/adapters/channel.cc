@@ -4,8 +4,6 @@
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
- * Detailed description of the file here if needed.
- *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
@@ -32,34 +30,30 @@
  */
 
 #include "channel.h"
-
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 #include "configuration_interface.h"
 #include "gnss_flowgraph.h"
-
 #include <iostream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
-
 #include <gnuradio/gr_io_signature.h>
 #include <gnuradio/gr_message.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
 using google::LogMessage;
 
-//! Constructor
+// Constructor
 Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
         GNSSBlockInterface *pass_through, AcquisitionInterface *acq,
         TrackingInterface *trk, TelemetryDecoderInterface *nav,
         std::string role, std::string implementation, gr_msg_queue_sptr queue) :
-    pass_through_(pass_through), acq_(acq), trk_(trk), nav_(nav),
-            role_(role), implementation_(implementation), channel_(channel),
-            queue_(queue)
+        pass_through_(pass_through), acq_(acq), trk_(trk), nav_(nav),
+        role_(role), implementation_(implementation), channel_(channel),
+        queue_(queue)
 
 {
     stop_ = false;
@@ -95,7 +89,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 }
 
 
-//! Destructor
+// Destructor
 Channel::~Channel()
 {
 
@@ -109,10 +103,10 @@ void Channel::connect(gr_top_block_sptr top_block)
 {
 
     if (connected_)
-    {
-        LOG_AT_LEVEL(WARNING) << "channel already connected internally";
-        return;
-    }
+        {
+            LOG_AT_LEVEL(WARNING) << "channel already connected internally";
+            return;
+        }
 
     pass_through_->connect(top_block);
     acq_->connect(top_block);
@@ -140,10 +134,10 @@ void Channel::disconnect(gr_top_block_sptr top_block)
 {
 
     if (!connected_)
-    {
-        LOG_AT_LEVEL(WARNING) << "Channel already disconnected internally";
-        return;
-    }
+        {
+            LOG_AT_LEVEL(WARNING) << "Channel already disconnected internally";
+            return;
+        }
 
     top_block->disconnect(acq_->get_right_block(), 0, trk_->get_left_block(),
             0);
@@ -190,15 +184,15 @@ void Channel::run()
 {
     start_acquisition();
     while (!stop_)
-    {
-        channel_internal_queue_.wait_and_pop(message_);
-        process_channel_messages();
-    }
+        {
+            channel_internal_queue_.wait_and_pop(message_);
+            process_channel_messages();
+        }
 
 }
 
 /*
- * \brief Set stop_ to true and blocks the calling thread until
+ * Set stop_ to true and blocks the calling thread until
  * the thread of the constructor has completed
  */
 void Channel::stop()
@@ -224,46 +218,46 @@ void Channel::process_channel_messages()
 {
     switch (message_)
     {
-        case 0:
+    case 0:
 
-            LOG_AT_LEVEL(INFO) << "Stop channel " << channel_;
+        LOG_AT_LEVEL(INFO) << "Stop channel " << channel_;
 
-            break;
+        break;
 
-        case 1:
+    case 1:
 
-            LOG_AT_LEVEL(INFO) << "Channel " << channel_
-                    << " ACQ SUCCESS satellite " << satellite_;
-            channel_fsm_.Event_gps_valid_acquisition();
+        LOG_AT_LEVEL(INFO) << "Channel " << channel_
+        << " ACQ SUCCESS satellite " << satellite_;
+        channel_fsm_.Event_gps_valid_acquisition();
 
-            break;
+        break;
 
-        case 2:
+    case 2:
 
-            LOG_AT_LEVEL(INFO) << "Channel " << channel_
-                    << " ACQ FAILED satellite " << satellite_;
-            if (repeat_ == true)
+        LOG_AT_LEVEL(INFO) << "Channel " << channel_
+        << " ACQ FAILED satellite " << satellite_;
+        if (repeat_ == true)
             {
                 channel_fsm_.Event_gps_failed_acquisition_repeat();
             }
-            else
+        else
             {
                 channel_fsm_.Event_gps_failed_acquisition_no_repeat();
             }
-            break;
+        break;
 
-        case 3:
-            LOG_AT_LEVEL(INFO) << "Channel " << channel_
-                    << " TRACKING FAILED satellite " << satellite_
-                    << ", reacquisition.";
-            channel_fsm_.Event_gps_failed_tracking();
+    case 3:
+        LOG_AT_LEVEL(INFO) << "Channel " << channel_
+        << " TRACKING FAILED satellite " << satellite_
+        << ", reacquisition.";
+        channel_fsm_.Event_gps_failed_tracking();
 
-            break;
+        break;
 
-        default:
+    default:
 
-            LOG_AT_LEVEL(WARNING) << "Default case, invalid message.";
-            break;
+        LOG_AT_LEVEL(WARNING) << "Default case, invalid message.";
+        break;
     }
 }
 

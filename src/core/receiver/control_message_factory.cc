@@ -29,55 +29,52 @@
  */
 
 #include "control_message_factory.h"
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include <vector>
-
 #include "string.h"
 
 using google::LogMessage;
 
-//! Constructor
+// Constructor
 ControlMessageFactory::ControlMessageFactory()
 {}
 
-//! Destructor
+// Destructor
 ControlMessageFactory::~ControlMessageFactory()
 {}
 
 gr_message_sptr ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what) {
 
-	ControlMessage *control_message = new ControlMessage;
+    ControlMessage *control_message = new ControlMessage;
 
-	control_message->who = who;
-	control_message->what = what;
+    control_message->who = who;
+    control_message->what = what;
 
-	gr_message_sptr queue_message = gr_make_message(0, 0, 0, sizeof(ControlMessage));
-	memcpy(queue_message->msg(), control_message, sizeof(ControlMessage));
+    gr_message_sptr queue_message = gr_make_message(0, 0, 0, sizeof(ControlMessage));
+    memcpy(queue_message->msg(), control_message, sizeof(ControlMessage));
 
-	delete control_message;
+    delete control_message;
 
-	return queue_message;
+    return queue_message;
 }
 
 std::vector<ControlMessage*>* ControlMessageFactory::GetControlMessages(gr_message_sptr queue_message) {
 
-	std::vector<ControlMessage*>* control_messages = new std::vector<ControlMessage*>();
-	unsigned int control_messages_count = queue_message->length() / sizeof(ControlMessage);
-	if(queue_message->length() % sizeof(ControlMessage) != 0) {
-		LOG_AT_LEVEL(WARNING) << "Queue message has size " << queue_message->length() << " which is not" <<
-		" multiple of control message size " << sizeof(ControlMessage);
-		LOG_AT_LEVEL(WARNING) << "Ignoring this queue message to prevent unexpected results.";
-		return control_messages;
-	}
-	for(unsigned int i=0;i<control_messages_count;i++) {
-		control_messages->push_back(new ControlMessage);
-		memcpy(control_messages->at(i), queue_message->msg() + (i*sizeof(ControlMessage)), sizeof(ControlMessage));
-	}
+    std::vector<ControlMessage*>* control_messages = new std::vector<ControlMessage*>();
+    unsigned int control_messages_count = queue_message->length() / sizeof(ControlMessage);
+    if(queue_message->length() % sizeof(ControlMessage) != 0) {
+            LOG_AT_LEVEL(WARNING) << "Queue message has size " << queue_message->length() << " which is not" <<
+                    " multiple of control message size " << sizeof(ControlMessage);
+            LOG_AT_LEVEL(WARNING) << "Ignoring this queue message to prevent unexpected results.";
+            return control_messages;
+    }
+    for(unsigned int i=0;i<control_messages_count;i++) {
+            control_messages->push_back(new ControlMessage);
+            memcpy(control_messages->at(i), queue_message->msg() + (i*sizeof(ControlMessage)), sizeof(ControlMessage));
+    }
 
-	return control_messages;
+    return control_messages;
 }
 
 

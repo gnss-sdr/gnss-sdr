@@ -1,6 +1,7 @@
 /*!
  * \file pass_through.cc
- * \brief Brief description of the file here
+ * \brief Implementation of a block that just puts its input in its
+ *        output.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * Detailed description of the file here if needed.
@@ -33,14 +34,10 @@
 
 
 #include "pass_through.h"
-
 #include <iostream>
-
 #include <gnuradio/gr_io_signature.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include "configuration_interface.h"
 
 using google::LogMessage;

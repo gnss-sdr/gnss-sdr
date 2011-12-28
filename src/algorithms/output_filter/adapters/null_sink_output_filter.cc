@@ -1,9 +1,8 @@
 /*!
  * \file null_sink_output_filter.cc
- * \brief Brief description of the file here
+ * \brief  Implementation of an adapter of a null sink output filter block to an
+ * OutputFilterInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -33,12 +32,9 @@
 
 
 #include "null_sink_output_filter.h"
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include <gr_io_signature.h>
-
 #include "configuration_interface.h"
 
 using google::LogMessage;

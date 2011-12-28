@@ -1,10 +1,12 @@
 /*!
  * \file tracking_2nd_PLL_filter.h
- * \brief Class that implements 2 order PLL filter for carrier tracking loop
+ * \brief Interface of a 2nd order PLL filter for carrier tracking loop
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Class that implements 2 order PLL filter for tracking carrier loop. The algorithm is described in
- * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.~H.~Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
+ * Class that implements 2 order PLL filter for tracking carrier loop.
+ * The algorithm is described in
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H. Jensen,
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
  * Birkhauser, 2007, Applied and Numerical Harmonic Analysis.
  *
  * -------------------------------------------------------------------------

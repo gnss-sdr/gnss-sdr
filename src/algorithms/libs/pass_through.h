@@ -1,6 +1,6 @@
 /*!
  * \file pass_through.h
- * \brief This class represent a block that just puts its input in its
+ * \brief Interface of a block that just puts its input in its
  *        output.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
@@ -33,13 +33,12 @@
 
 
 
-#ifndef PASS_THROUGH_H_
-#define PASS_THROUGH_H_
+#ifndef GNSS_SDR_PASS_THROUGH_H_
+#define GNSS_SDR_PASS_THROUGH_H_
 
 #include <gr_hier_block2.h>
 #include <gr_kludge_copy.h>
 #include <gr_file_sink.h>
-
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
@@ -94,4 +93,4 @@ private:
     size_t item_size_;
 };
 
-#endif /*PASS_THROUGH_H_*/
+#endif /*GNSS_SDR_PASS_THROUGH_H_*/

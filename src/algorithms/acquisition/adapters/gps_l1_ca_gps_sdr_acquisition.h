@@ -1,6 +1,8 @@
 /*!
  * \file gps_l1_ca_gps_sdr_acquisition.h
- * \brief Brief description of the file here
+ * \brief Interface of an adapter of an acquisition module based
+ * on the method in Gregory Heckler's GPS-SDR (see http://github.com/gps-sdr/gps-sdr)
+ * to an AcquisitionInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *

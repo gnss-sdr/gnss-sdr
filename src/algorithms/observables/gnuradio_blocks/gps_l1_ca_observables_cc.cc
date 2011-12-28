@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_observables_cc.cc
- * \brief Pseudorange computation module for GPS L1 C/A
+ * \brief Implementation of the pseudorange computation block for GPS L1 C/A
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -32,17 +32,12 @@
 #include <vector>
 #include <map>
 #include <algorithm>
-# include <bitset>
-
+#include <bitset>
 #include <cmath>
 #include "math.h"
-
 #include "gps_l1_ca_observables_cc.h"
-
 #include "control_message_factory.h"
-
 #include <gnuradio/gr_io_signature.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 

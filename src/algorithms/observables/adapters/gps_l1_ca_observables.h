@@ -1,9 +1,8 @@
 /*!
  * \file gps_l1_ca_observables.h
- * \brief Brief description of the file here
+ * \brief Interface of an adapter of a GPS L1 C/A observables block
+ * to a SignalConditionerInterface
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *

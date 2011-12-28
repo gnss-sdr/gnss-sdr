@@ -34,15 +34,12 @@
  */
 
 #include "gnss_block_factory.h"
-
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <boost/lexical_cast.hpp>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include "configuration_interface.h"
 #include "gnss_block_interface.h"
 #include "pass_through.h"
@@ -169,10 +166,10 @@ GNSSBlockInterface* GNSSBlockFactory::GetChannel(
             "SignalConditioner", "Pass_Through", 1, 1, queue),
             (AcquisitionInterface*)GetBlock(configuration, "Acquisition",
                     acq, 1, 1, queue), (TrackingInterface*)GetBlock(
-                    configuration, "Tracking", trk, 1, 1, queue),
-            (TelemetryDecoderInterface*)GetBlock(configuration,
-                    "TelemetryDecoder", tlm, 1, 1, queue), "Channel",
-            "Channel", queue);
+                            configuration, "Tracking", trk, 1, 1, queue),
+                            (TelemetryDecoderInterface*)GetBlock(configuration,
+                                    "TelemetryDecoder", tlm, 1, 1, queue), "Channel",
+                                    "Channel", queue);
 }
 
 std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
@@ -190,141 +187,143 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
     std::string telemetry_decoder = configuration->property(
             "TelemetryDecoder.implementation", default_implementation);
     for (unsigned int i = 0; i < channel_count; i++)
-    {
+        {
 
-        std::string acquisition_implementation_name = "Acquisition"
-                + boost::lexical_cast<std::string>(i) + ".implementation";
-        std::string acquisition_implementation = configuration->property(
-                acquisition_implementation_name, default_implementation);
-        channels->push_back(GetChannel(configuration,
-                acquisition_implementation, tracking, telemetry_decoder, i,
-                queue));
-        //std::cout << "getchannel_" << i << ", acq_implementation_name: "
-                //<< acquisition_implementation_name << ", implementation: "
-                //<< acquisition_implementation << std::endl;
+            std::string acquisition_implementation_name = "Acquisition"
+                    + boost::lexical_cast<std::string>(i) + ".implementation";
+            std::string acquisition_implementation = configuration->property(
+                    acquisition_implementation_name, default_implementation);
+            channels->push_back(GetChannel(configuration,
+                    acquisition_implementation, tracking, telemetry_decoder, i,
+                    queue));
+            //std::cout << "getchannel_" << i << ", acq_implementation_name: "
+            //<< acquisition_implementation_name << ", implementation: "
+            //<< acquisition_implementation << std::endl;
 
-    }
+        }
 
     DLOG(INFO) << "Getting " << channel_count << " channels";
     return channels;
 
 }
 
+
+
+
+
+    /*
+     * Returns the block with the required configuration and implementation
+     *
+     * PLEASE ADD YOUR NEW BLOCK HERE!!
+     */
 GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         ConfigurationInterface *configuration, std::string role,
         std::string implementation, unsigned int in_streams,
         unsigned int out_streams, gr_msg_queue_sptr queue)
 {
-	/*!
-	* \brief Returns the block with the required configuration and implementation
-	*
-	* PLEASE ADD YOUR NEW BLOCK HERE!!
-    */
-
-
     GNSSBlockInterface* block = NULL; //Change to nullptr when available in compilers (C++11)
 
-    // SIGNAL SOURCES
+    // SIGNAL SOURCES -------------------------------------------------------------
     if (implementation.compare("File_Signal_Source") == 0)
-    {
-        block = new FileSignalSource(configuration, role, in_streams,
-                out_streams, queue);
-    }
+        {
+            block = new FileSignalSource(configuration, role, in_streams,
+                    out_streams, queue);
+        }
 
-//    else if (implementation.compare("USRP1_Signal_Source") == 0)
-//    {
-//        block = new Usrp1SignalSource(configuration, role, in_streams,
-//                out_streams, queue);
-//    }
+    //    else if (implementation.compare("USRP1_Signal_Source") == 0)
+    //    {
+    //        block = new Usrp1SignalSource(configuration, role, in_streams,
+    //                out_streams, queue);
+    //    }
 
     //! \todo Create a UHD block
 
-    // SIGNAL CONDITIONERS
+    // SIGNAL CONDITIONERS ---------------------------------------------------------
 
     else if (implementation.compare("Pass_Through") == 0)
-    {
-        block = new PassThrough(configuration, role, in_streams, out_streams);
+        {
+            block = new PassThrough(configuration, role, in_streams, out_streams);
 
-    }
+        }
 
     else if (implementation.compare("Direct_Resampler") == 0)
-    {
-        block = new DirectResamplerConditioner(configuration, role,
-                in_streams, out_streams);
-    }
+        {
+            block = new DirectResamplerConditioner(configuration, role,
+                    in_streams, out_streams);
+        }
 
-    // ACQUISITION BLOCKS
+    // ACQUISITION BLOCKS ---------------------------------------------------------
 
     else if (implementation.compare("GPS_L1_CA_GPS_SDR_Acquisition") == 0)
-    {
-        block = new GpsL1CaGpsSdrAcquisition(configuration, role, in_streams,
-                out_streams, queue);
-    }
+        {
+            block = new GpsL1CaGpsSdrAcquisition(configuration, role, in_streams,
+                    out_streams, queue);
+        }
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
-    {
-        block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
-                out_streams, queue);
-    }
+        {
+            block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
+                    out_streams, queue);
+        }
     else if (implementation.compare("GPS_L1_CA_TONG_PCPS_Acquisition") == 0)
-    {
-        block = new GpsL1CaTongPcpsAcquisition(configuration, role,
-                in_streams, out_streams, queue);
-    }
+        {
+            block = new GpsL1CaTongPcpsAcquisition(configuration, role,
+                    in_streams, out_streams, queue);
+        }
 
-    // TRACKING BLOCKS
+    // TRACKING BLOCKS -------------------------------------------------------------
 
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
-    {
-        block = new GpsL1CaDllPllTracking(configuration, role, in_streams,
-                out_streams, queue);
-    }
+        {
+            block = new GpsL1CaDllPllTracking(configuration, role, in_streams,
+                    out_streams, queue);
+        }
     else if (implementation.compare("GPS_L1_CA_DLL_FLL_PLL_Tracking") == 0)
-    {
-        block = new GpsL1CaDllFllPllTracking(configuration, role, in_streams,
-                out_streams, queue);
-    }
+        {
+            block = new GpsL1CaDllFllPllTracking(configuration, role, in_streams,
+                    out_streams, queue);
+        }
 
-    // TELEMETRY DECODERS
+    // TELEMETRY DECODERS ----------------------------------------------------------
 
     else if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)
-    {
-        block = new GpsL1CaTelemetryDecoder(configuration, role, in_streams,
-                out_streams, queue);
-    }
+        {
+            block = new GpsL1CaTelemetryDecoder(configuration, role, in_streams,
+                    out_streams, queue);
+        }
 
-    // OBSERVABLES
+    // OBSERVABLES -----------------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_Observables") == 0)
-    {
-        block = new GpsL1CaObservables(configuration, role, in_streams,
-                out_streams, queue);
-    }
+        {
+            block = new GpsL1CaObservables(configuration, role, in_streams,
+                    out_streams, queue);
+        }
 
-    // PVT
+    // PVT -------------------------------------------------------------------------
 
     else if (implementation.compare("GPS_L1_CA_PVT") == 0)
-    {
-        block = new GpsL1CaPvt(configuration, role, in_streams,
-                out_streams, queue);
-    }
+        {
+            block = new GpsL1CaPvt(configuration, role, in_streams,
+                    out_streams, queue);
+        }
 
-    // OUTPUT FILTERS
+    // OUTPUT FILTERS --------------------------------------------------------------
     else if (implementation.compare("Null_Sink_Output_Filter") == 0)
-    {
-        block = new NullSinkOutputFilter(configuration, role, in_streams,
-                out_streams);
-    }
+        {
+            block = new NullSinkOutputFilter(configuration, role, in_streams,
+                    out_streams);
+        }
     else if (implementation.compare("File_Output_Filter") == 0)
-    {
-        block = new FileOutputFilter(configuration, role, in_streams,
-                out_streams);
-    }
+        {
+            block = new FileOutputFilter(configuration, role, in_streams,
+                    out_streams);
+        }
 
     else
-    {
-        // Log fatal. This causes execution to stop.
-        LOG_AT_LEVEL(ERROR) << implementation
-                << ": Undefined implementation for block";
-    }
+        {
+            // Log fatal. This causes execution to stop.
+            LOG_AT_LEVEL(ERROR) << implementation
+                    << ": Undefined implementation for block";
+        }
 
     return block;
 }

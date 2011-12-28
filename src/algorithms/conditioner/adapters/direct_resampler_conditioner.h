@@ -1,9 +1,8 @@
 /*!
  * \file direct_resampler_conditioner.h
- * \brief This class represents a direct resampler.
+ * \brief Interface of an adapter of a direct resampler conditioner block
+ * to a SignalConditionerInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -42,9 +41,10 @@ class DirectResamplerConditioner: public GNSSBlockInterface
 {
 
 public:
-            DirectResamplerConditioner(ConfigurationInterface* configuration,
-                    std::string role, unsigned int in_stream,
-                    unsigned int out_stream);
+    DirectResamplerConditioner(ConfigurationInterface* configuration,
+            std::string role, unsigned int in_stream,
+            unsigned int out_stream);
+
     virtual ~DirectResamplerConditioner();
 
     std::string role()
@@ -70,7 +70,6 @@ private:
     std::string role_;
     unsigned int in_stream_;
     unsigned int out_stream_;
-
     std::string item_type_;
     size_t item_size_;
     long samples_;
@@ -78,7 +77,6 @@ private:
     std::string dump_filename_;
     double sample_freq_in_;
     double sample_freq_out_;
-
     gr_block_sptr resampler_;
     gr_block_sptr file_sink_;
 };

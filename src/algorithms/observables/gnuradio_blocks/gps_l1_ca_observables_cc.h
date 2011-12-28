@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_observables_cc.h
- * \brief Interface of the pseudorange computation module for GPS L1 C/A
+ * \brief Interface of the pseudorange computation block for GPS L1 C/A
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *

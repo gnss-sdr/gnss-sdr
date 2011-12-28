@@ -1,6 +1,6 @@
 /*!
  * \file control_message_factory.h
- * \brief This class implements a factory for control messages.
+ * \brief Interface of a factory for control messages.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * -------------------------------------------------------------------------

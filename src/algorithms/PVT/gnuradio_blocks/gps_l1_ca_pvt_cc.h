@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_pvt_cc.h
- * \brief Position Velocity and Time computation for GPS L1 C/A
+ * \brief Interface of a Position Velocity and Time computation block for GPS L1 C/A
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *

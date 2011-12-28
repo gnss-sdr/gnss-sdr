@@ -1,7 +1,7 @@
 /*!
  * \file gps_l1_ca_ls_pvt.h
- * \brief Least Squares Position, Velocity, and Time (PVT) solver, based on
- * K.Borre Matlab receiver.
+ * \brief Interface of a Least Squares Position, Velocity, and Time (PVT)
+ * solver, based on K.Borre's Matlab receiver.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *

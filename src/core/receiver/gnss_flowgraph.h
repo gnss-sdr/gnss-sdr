@@ -1,6 +1,6 @@
 /*!
  * \file gnss_flowgraph.h
- * \brief This class represents a GNSS flowgraph.
+ * \brief Interface of a GNSS receiver flowgraph.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
@@ -55,15 +55,15 @@ class GNSSFlowgraph
 {
 
 public:
-	/*!
-	 * \brief Constructor that initializes the receiver flowgraph
+    /*!
+     * \brief Constructor that initializes the receiver flowgraph
      */
     GNSSFlowgraph(ConfigurationInterface* configuration,
             gr_msg_queue_sptr queue);
 
-	/*!
-	 * \brief Virtual destructor
-	 */
+    /*!
+     * \brief Virtual destructor
+     */
     virtual ~GNSSFlowgraph();
 
     //! \brief Start the flowgraph
@@ -72,15 +72,21 @@ public:
     //! \brief Stop the flowgraph
     void stop();
 
-	/*!
-	 * \brief Connects the defined blocks in the flowgraph
-	 *
-	 * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
-	 */
+    /*!
+     * \brief Connects the defined blocks in the flowgraph
+     *
+     * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
+     */
     void connect();
 
     void wait();
 
+    /*!
+     * \brief Applies an action to the flowgraph
+     *
+     * \param[in] who   Who generated the action
+     * \param[in] what  What is the action 0: acquisition failed
+     */
     void apply_action(unsigned int who, unsigned int what);
 
     void set_configuration(ConfigurationInterface* configuration);

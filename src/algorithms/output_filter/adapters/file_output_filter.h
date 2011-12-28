@@ -1,9 +1,8 @@
 /*!
  * \file file_output_filter.h
- * \brief This class represents an output filter that sends its output
- *        to a file without any change in the data format.
+ * \brief Interface of an adapter of a file output filter block to an
+ * OutputFilterInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *
  *
  *
  * -------------------------------------------------------------------------
@@ -41,6 +40,10 @@
 
 class ConfigurationInterface;
 
+/*!
+ * \brief An output filter that sends its output
+ *  to a file without any change in the data format.
+ */
 class FileOutputFilter : public GNSSBlockInterface
 {
 
@@ -74,7 +77,6 @@ private:
 
     gr_file_sink_sptr file_sink_;
     size_t item_size_;
-
     std::string filename_;
     std::string item_type_;
     std::string role_;

@@ -1,6 +1,6 @@
 /*!
  * \file in_memory_configuration.h
- * \brief  This class is an implementation of the interface ConfigurationInterface.
+ * \brief  A ConfigurationInterface for testing purposes.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * This implementation accepts configuration parameters upon instantiation and

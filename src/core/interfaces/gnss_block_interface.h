@@ -59,7 +59,6 @@ public:
     virtual std::string role() = 0;
     virtual std::string implementation() = 0;
     virtual size_t item_size() = 0;
-
     virtual void connect(gr_top_block_sptr top_block) = 0;
     virtual void disconnect(gr_top_block_sptr top_block) = 0;
     virtual gr_basic_block_sptr get_left_block() = 0;

@@ -1,6 +1,7 @@
 /*!
  * \file null_sink_output_filter.h
- * \brief Interface of a null sink output filter
+ * \brief Interface of an adapter of a null sink output filter block to an
+ * OutputFilterInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * This class represents an implementation of an output filter that

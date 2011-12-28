@@ -1,12 +1,13 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking_cc.cc
- * \brief code DLL + carrier PLL
+ * \brief Implementation of a code DLL + carrier PLL tracking block
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Code DLL + carrier PLL according to the algorithms described in [1]
+ * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach, Birkha user, 2007
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
+ * Approach, Birkha user, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -139,7 +140,7 @@ gps_l1_ca_dll_pll_tracking_cc::gps_l1_ca_dll_pll_tracking_cc(unsigned int satell
 }
 
 void gps_l1_ca_dll_pll_tracking_cc::start_tracking(){
-	/*!
+	/*
 	 *  correct the code phase according to the delay between acq and trk
 	 */
 	unsigned long int acq_trk_diff_samples;
@@ -270,7 +271,7 @@ gps_l1_ca_dll_pll_tracking_cc::~gps_l1_ca_dll_pll_tracking_cc() {
     delete[] d_Prompt_buffer;
 }
 
-/*! Tracking signal processing
+/* Tracking signal processing
  * Notice that this is a class derived from gr_sync_decimator, so each of the ninput_items has vector_length samples
  */
 
@@ -295,7 +296,7 @@ int gps_l1_ca_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_in
 	d_Late=gr_complex(0,0);
 
 	if (d_enable_tracking==true){
-		/*!
+		/*
 		 * Receiver signal alignment
 		 */
 	    if (d_pull_in==true)

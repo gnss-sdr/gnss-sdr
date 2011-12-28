@@ -1,6 +1,6 @@
 /*!
  * \file gnss_flowgraph.cc
- * \brief Brief description of the file here
+ * \brief Implementation of a GNSS receiver flowgraph
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
@@ -64,9 +64,9 @@ GNSSFlowgraph::~GNSSFlowgraph()
     delete block_factory_;
 
     for (unsigned int i = 0; i < blocks_->size(); i++)
-    {
-        delete blocks_->at(i);
-    }
+        {
+            delete blocks_->at(i);
+        }
     blocks_->clear();
 
     delete blocks_;
@@ -75,20 +75,20 @@ GNSSFlowgraph::~GNSSFlowgraph()
 void GNSSFlowgraph::start()
 {
     if (running_)
-    {
-        LOG_AT_LEVEL(WARNING) << "Already running";
-        return;
-    }
+        {
+            LOG_AT_LEVEL(WARNING) << "Already running";
+            return;
+        }
 
     try
     {
-        top_block_->start();
+            top_block_->start();
     }
     catch (std::exception& e)
     {
-        LOG_AT_LEVEL(ERROR) << "Unable to start flowgraph";
-        LOG_AT_LEVEL(ERROR) << e.what();
-        return;
+            LOG_AT_LEVEL(ERROR) << "Unable to start flowgraph";
+            LOG_AT_LEVEL(ERROR) << e.what();
+            return;
     }
 
     running_ = true;
@@ -97,9 +97,9 @@ void GNSSFlowgraph::start()
 void GNSSFlowgraph::stop()
 {
     for (unsigned int i = 0; i < channels_count_; i++)
-    {
-        channel(i)->stop();
-    }
+        {
+            channel(i)->stop();
+        }
     DLOG(INFO) << "Threads finished. Return to main program.";
     top_block_->stop();
     running_ = false;
@@ -107,184 +107,184 @@ void GNSSFlowgraph::stop()
 
 void GNSSFlowgraph::connect()
 {
-	/* Connects the blocks in the flowgraph
-	 *
-	 * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
-	 */
-	DLOG(INFO) << "Connecting flowgraph";
+    /* Connects the blocks in the flowgraph
+     *
+     * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
+     */
+    DLOG(INFO) << "Connecting flowgraph";
     if (connected_)
-    {
-        LOG_AT_LEVEL(WARNING) << "flowgraph already connected";
-        return;
-    }
+        {
+            LOG_AT_LEVEL(WARNING) << "flowgraph already connected";
+            return;
+        }
 
     // Connect GNSS block internally
     try
     {
-        signal_source()->connect(top_block_);
+            signal_source()->connect(top_block_);
     }
     catch (std::exception& e)
     {
-        LOG_AT_LEVEL(ERROR) << "Can't connect signal source block internally";
-        LOG_AT_LEVEL(ERROR) << e.what();
-        top_block_->disconnect_all();
-        return;
-    }
-
-    try
-    {
-        signal_conditioner()->connect(top_block_);
-    }
-    catch (std::exception& e)
-    {
-        LOG_AT_LEVEL(ERROR)
-                << "Can't connect signal conditioner block internally";
-        LOG_AT_LEVEL(ERROR) << e.what();
-        top_block_->disconnect_all();
-        return;
-    }
-
-    for (unsigned int i = 0; i < channels_count_; i++)
-    {
-        try
-        {
-            channel(i)->connect(top_block_);
-        }
-        catch (std::exception& e)
-        {
-            LOG_AT_LEVEL(ERROR) << "Can't connect channel " << i
-                    << " internally";
+            LOG_AT_LEVEL(ERROR) << "Can't connect signal source block internally";
             LOG_AT_LEVEL(ERROR) << e.what();
             top_block_->disconnect_all();
             return;
+    }
+
+    try
+    {
+            signal_conditioner()->connect(top_block_);
+    }
+    catch (std::exception& e)
+    {
+            LOG_AT_LEVEL(ERROR)
+                                << "Can't connect signal conditioner block internally";
+            LOG_AT_LEVEL(ERROR) << e.what();
+            top_block_->disconnect_all();
+            return;
+    }
+
+    for (unsigned int i = 0; i < channels_count_; i++)
+        {
+            try
+            {
+                    channel(i)->connect(top_block_);
+            }
+            catch (std::exception& e)
+            {
+                    LOG_AT_LEVEL(ERROR) << "Can't connect channel " << i
+                            << " internally";
+                    LOG_AT_LEVEL(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+            }
         }
+
+    try
+    {
+            observables()->connect(top_block_);
+    }
+    catch (std::exception& e)
+    {
+            LOG_AT_LEVEL(ERROR) << "Can't connect observables block internally";
+            LOG_AT_LEVEL(ERROR) << e.what();
+            top_block_->disconnect_all();
+            return;
     }
 
     try
     {
-        observables()->connect(top_block_);
+            pvt()->connect(top_block_);
     }
     catch (std::exception& e)
     {
-        LOG_AT_LEVEL(ERROR) << "Can't connect observables block internally";
-        LOG_AT_LEVEL(ERROR) << e.what();
-        top_block_->disconnect_all();
-        return;
+            LOG_AT_LEVEL(ERROR) << "Can't connect PVT block internally";
+            LOG_AT_LEVEL(ERROR) << e.what();
+            top_block_->disconnect_all();
+            return;
     }
 
     try
     {
-        pvt()->connect(top_block_);
+            output_filter()->connect(top_block_);
     }
     catch (std::exception& e)
     {
-        LOG_AT_LEVEL(ERROR) << "Can't connect PVT block internally";
-        LOG_AT_LEVEL(ERROR) << e.what();
-        top_block_->disconnect_all();
-        return;
-    }
-
-    try
-    {
-        output_filter()->connect(top_block_);
-    }
-    catch (std::exception& e)
-    {
-        LOG_AT_LEVEL(ERROR) << "Can't connect output filter block internally";
-        LOG_AT_LEVEL(ERROR) << e.what();
-        top_block_->disconnect_all();
-        return;
+            LOG_AT_LEVEL(ERROR) << "Can't connect output filter block internally";
+            LOG_AT_LEVEL(ERROR) << e.what();
+            top_block_->disconnect_all();
+            return;
     }
 
     DLOG(INFO) << "blocks connected internally";
 
     try
     {
-        top_block_->connect(signal_source()->get_right_block(), 0,
-                signal_conditioner()->get_left_block(), 0);
+            top_block_->connect(signal_source()->get_right_block(), 0,
+                    signal_conditioner()->get_left_block(), 0);
     }
     catch (std::exception& e)
     {
-        LOG_AT_LEVEL(ERROR)
-                << "Can't connect signal source to signal conditioner";
-        LOG_AT_LEVEL(ERROR) << e.what();
-        top_block_->disconnect_all();
-        return;
+            LOG_AT_LEVEL(ERROR)
+                                << "Can't connect signal source to signal conditioner";
+            LOG_AT_LEVEL(ERROR) << e.what();
+            top_block_->disconnect_all();
+            return;
     }
     DLOG(INFO) << "Signal source connected to signal conditioner";
 
     for (unsigned int i = 0; i < channels_count_; i++)
-    {
-        try
         {
-            top_block_->connect(signal_conditioner()->get_right_block(), 0,
-                    channel(i)->get_left_block(), 0);
-        }
-        catch (std::exception& e)
-        {
-            LOG_AT_LEVEL(ERROR)
-                    << "Can't connect signal conditioner to channel " << i;
-            LOG_AT_LEVEL(ERROR) << e.what();
-            top_block_->disconnect_all();
-            return;
-        }
+            try
+            {
+                    top_block_->connect(signal_conditioner()->get_right_block(), 0,
+                            channel(i)->get_left_block(), 0);
+            }
+            catch (std::exception& e)
+            {
+                    LOG_AT_LEVEL(ERROR)
+                                    << "Can't connect signal conditioner to channel " << i;
+                    LOG_AT_LEVEL(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+            }
 
-        DLOG(INFO) << "signal conditioner connected to channel " << i;
+            DLOG(INFO) << "signal conditioner connected to channel " << i;
 
-        try
-        {
-            top_block_->connect(channel(i)->get_right_block(), 0,
-                    observables()->get_left_block(), i);
+            try
+            {
+                    top_block_->connect(channel(i)->get_right_block(), 0,
+                            observables()->get_left_block(), i);
+            }
+            catch (std::exception& e)
+            {
+                    LOG_AT_LEVEL(ERROR) << "Can't connect channel " << i
+                            << " to observables";
+                    LOG_AT_LEVEL(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+            }
+
+            channel(i)->set_satellite(available_GPS_satellites_IDs_->front());
+            std::cout << "Channel " << i << " satellite "
+                    << available_GPS_satellites_IDs_->front() << std::endl;
+            available_GPS_satellites_IDs_->pop_front();
+            channel(i)->start();
+            //channel(i)->start_acquisition();
+
+            DLOG(INFO) << "Channel " << i
+                    << " connected to observables and ready for acquisition";
         }
-        catch (std::exception& e)
-        {
-            LOG_AT_LEVEL(ERROR) << "Can't connect channel " << i
-                    << " to observables";
-            LOG_AT_LEVEL(ERROR) << e.what();
-            top_block_->disconnect_all();
-            return;
-        }
-
-        channel(i)->set_satellite(available_GPS_satellites_IDs_->front());
-        std::cout << "Channel " << i << " satellite "
-                << available_GPS_satellites_IDs_->front() << std::endl;
-        available_GPS_satellites_IDs_->pop_front();
-        channel(i)->start();
-        //channel(i)->start_acquisition();
-
-        DLOG(INFO) << "Channel " << i
-                << " connected to observables and ready for acquisition";
-    }
     /*
      * Connect the observables output of each channel to the PVT block
      */
     try
     {
-        for (unsigned int i = 0; i < channels_count_; i++)
-        {
-        	top_block_->connect(observables()->get_right_block(), i,
-                pvt()->get_left_block(), i);
-        }
+            for (unsigned int i = 0; i < channels_count_; i++)
+                {
+                    top_block_->connect(observables()->get_right_block(), i,
+                            pvt()->get_left_block(), i);
+                }
     }
     catch (std::exception& e)
     {
-        LOG_AT_LEVEL(ERROR) << "Can't connect observables to PVT";
-        LOG_AT_LEVEL(ERROR) << e.what();
-        top_block_->disconnect_all();
-        return;
+            LOG_AT_LEVEL(ERROR) << "Can't connect observables to PVT";
+            LOG_AT_LEVEL(ERROR) << e.what();
+            top_block_->disconnect_all();
+            return;
     }
 
     try
     {
-        top_block_->connect(pvt()->get_right_block(), 0,
-                output_filter()->get_left_block(), 0);
+            top_block_->connect(pvt()->get_right_block(), 0,
+                    output_filter()->get_left_block(), 0);
     }
     catch (std::exception& e)
     {
-        LOG_AT_LEVEL(ERROR) << "Can't connect PVT to output filter";
-        LOG_AT_LEVEL(ERROR) << e.what();
-        top_block_->disconnect_all();
-        return;
+            LOG_AT_LEVEL(ERROR) << "Can't connect PVT to output filter";
+            LOG_AT_LEVEL(ERROR) << e.what();
+            top_block_->disconnect_all();
+            return;
     }
 
     DLOG(INFO) << "PVT connected to output filter";
@@ -298,42 +298,42 @@ void GNSSFlowgraph::connect()
 void GNSSFlowgraph::wait()
 {
     if (!running_)
-    {
-        LOG_AT_LEVEL(WARNING) << "Can't apply wait. Flowgraph is not running";
-        return;
-    }
+        {
+            LOG_AT_LEVEL(WARNING) << "Can't apply wait. Flowgraph is not running";
+            return;
+        }
     top_block_->wait();
     DLOG(INFO) << "Flowgraph finished calculations";
     running_ = false;
 }
 
+/*
+ * Applies an action to the flowgraph
+ *
+ * \param[in] who   Who generated the action
+ * \param[in] what  What is the action 0: acquisition failed
+ */
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
-	/*!
-	 * \brief Applies an action to the flowgraph
-	 *
-	 * \param[in] who   Who generated the action
-	 * \param[in] what  What is the action 0: acquisition failed
-	 */
     DLOG(INFO) << "received " << what << " from " << who;
 
     switch (what)
     {
-        case 0:
+    case 0:
 
-            LOG_AT_LEVEL(INFO) << "Channel " << who
-                    << " ACQ FAILED satellite " << channel(who)->satellite();
-            available_GPS_satellites_IDs_->push_back(
-                    channel(who)->satellite());
-            channel(who)->set_satellite(
-                    available_GPS_satellites_IDs_->front());
-            available_GPS_satellites_IDs_->pop_front();
-            channel(who)->start_acquisition();
-            break;
-            // TODO: Tracking messages
+        LOG_AT_LEVEL(INFO) << "Channel " << who
+        << " ACQ FAILED satellite " << channel(who)->satellite();
+        available_GPS_satellites_IDs_->push_back(
+                channel(who)->satellite());
+        channel(who)->set_satellite(
+                available_GPS_satellites_IDs_->front());
+        available_GPS_satellites_IDs_->pop_front();
+        channel(who)->start_acquisition();
+        break;
+        // TODO: Tracking messages
 
-        default:
-            break;
+    default:
+        break;
     }
 
     DLOG(INFO) << "available channels "
@@ -343,17 +343,17 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 void GNSSFlowgraph::set_configuration(ConfigurationInterface* configuration)
 {
     if (running_)
-    {
-        LOG_AT_LEVEL(WARNING)
-                << "Unable to update configuration while flowgraph running";
-        return;
-    }
+        {
+            LOG_AT_LEVEL(WARNING)
+                                << "Unable to update configuration while flowgraph running";
+            return;
+        }
 
     if (connected_)
-    {
-        LOG_AT_LEVEL(WARNING)
-                << "Unable to update configuration while flowgraph connected";
-    }
+        {
+            LOG_AT_LEVEL(WARNING)
+                                << "Unable to update configuration while flowgraph connected";
+        }
 
     configuration_ = configuration;
 }
@@ -390,9 +390,9 @@ GNSSBlockInterface* GNSSFlowgraph::output_filter()
 
 void GNSSFlowgraph::init()
 {
-	/*!
-	 * \brief Instantiates the receiver blocks
-	 */
+    /*
+     *  Instantiates the receiver blocks
+     */
     blocks_->push_back(
             block_factory_->GetSignalSource(configuration_, queue_));
     blocks_->push_back(block_factory_->GetSignalConditioner(configuration_,
@@ -408,9 +408,9 @@ void GNSSFlowgraph::init()
     channels_count_ = channels->size();
 
     for (unsigned int i = 0; i < channels_count_; i++)
-    {
-        blocks_->push_back(channels->at(i));
-    }
+        {
+            blocks_->push_back(channels->at(i));
+        }
 
     top_block_ = gr_make_top_block("GNSSFlowgraph");
 
@@ -429,45 +429,45 @@ void GNSSFlowgraph::init()
 void GNSSFlowgraph::set_satellites_list()
 {
 
-	/*
-	 * Sets a sequential list of satellites (1...33)
-	 */
+    /*
+     * Sets a sequential list of satellites (1...33)
+     */
 
-	/*!
-	 * \TODO Describe GNSS satellites more nicely, with RINEX notation
-	 * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf (page 5)
-	 */
-	for (unsigned int id = 1; id < 33; id++)
-    {
-        available_GPS_satellites_IDs_->push_back(id);
-    }
+    /*!
+     * \TODO Describe GNSS satellites more nicely, with RINEX notation
+     * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf (page 5)
+     */
+    for (unsigned int id = 1; id < 33; id++)
+        {
+            available_GPS_satellites_IDs_->push_back(id);
+        }
 
     std::list<unsigned int>::iterator it =
             available_GPS_satellites_IDs_->begin();
 
     for (unsigned int i = 0; i < channels_count_; i++)
-    {
-        unsigned int sat = configuration_->property("Acquisition"
-                + boost::lexical_cast<std::string>(i) + ".satellite", 0);
-        if ((sat == 0) || (sat==*it)) // 0 = not PRN in configuration file
         {
-            it++;
+            unsigned int sat = configuration_->property("Acquisition"
+                    + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+            if ((sat == 0) || (sat==*it)) // 0 = not PRN in configuration file
+                {
+                    it++;
+                }
+            else
+                {
+                    available_GPS_satellites_IDs_->remove(sat);
+                    available_GPS_satellites_IDs_->insert(it, sat);
+                }
         }
-        else
-        {
-            available_GPS_satellites_IDs_->remove(sat);
-            available_GPS_satellites_IDs_->insert(it, sat);
-        }
-    }
 
-//    std::cout << "Satellite queue: ";
-//    for (std::list<unsigned int>::iterator it =
-//            available_GPS_satellites_IDs_->begin(); it
-//            != available_GPS_satellites_IDs_->end(); it++)
-//    {
-//        std::cout << *it << ", ";
-//    }
-//    std::cout << std::endl;
+    //    std::cout << "Satellite queue: ";
+    //    for (std::list<unsigned int>::iterator it =
+    //            available_GPS_satellites_IDs_->begin(); it
+    //            != available_GPS_satellites_IDs_->end(); it++)
+    //    {
+    //        std::cout << *it << ", ";
+    //    }
+    //    std::cout << std::endl;
 
 }
 

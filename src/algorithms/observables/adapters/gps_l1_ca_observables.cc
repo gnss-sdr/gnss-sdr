@@ -1,9 +1,8 @@
 /*!
  * \file gps_l1_ca_observables.cc
- * \brief Brief description of the file here
+ * \brief Implementation of an adapter of a GPS L1 C/A observables block
+ * to a SignalConditionerInterface
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -31,17 +30,12 @@
  */
 
 
-
 #include "gps_l1_ca_observables.h"
-
 #include "configuration_interface.h"
-
 #include "gps_l1_ca_observables_cc.h"
-
 #include <gnuradio/gr_io_signature.h>
 #include <gnuradio/gr_stream_to_vector.h>
 #include <gnuradio/gr_vector_to_stream.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -60,8 +54,8 @@ GpsL1CaObservables::GpsL1CaObservables(ConfigurationInterface* configuration,
         queue_(queue)
 {
 
-	int output_rate_ms;
-	output_rate_ms=configuration->property(role + ".output_rate_ms", 500);
+    int output_rate_ms;
+    output_rate_ms=configuration->property(role + ".output_rate_ms", 500);
 
     std::string default_dump_filename = "./observables.dat";
 
@@ -74,8 +68,8 @@ GpsL1CaObservables::GpsL1CaObservables(ConfigurationInterface* configuration,
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
 
-	observables_ = gps_l1_ca_make_observables_cc(in_streams_, queue_, dump_,dump_filename_,output_rate_ms,flag_averaging);
-	observables_->set_fs_in(fs_in_);
+    observables_ = gps_l1_ca_make_observables_cc(in_streams_, queue_, dump_,dump_filename_,output_rate_ms,flag_averaging);
+    observables_->set_fs_in(fs_in_);
 
     DLOG(INFO) << "pseudorange(" << observables_->unique_id() << ")";
     // set the navigation msg queue;

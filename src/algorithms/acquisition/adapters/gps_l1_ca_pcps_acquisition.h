@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_pcps_acquisition.h
- * \brief Brief description of the file here
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for GPS L1 C/A
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *

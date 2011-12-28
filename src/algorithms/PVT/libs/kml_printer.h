@@ -1,6 +1,6 @@
 /*!
  * \file kml_printer.h
- * \brief Prints PVT information to a GoogleEarth kml file
+ * \brief Interface of a class that prints PVT information to a kml file
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  *

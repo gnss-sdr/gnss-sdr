@@ -1,11 +1,13 @@
 /*!
  * \file gps_l1_ca_dll_fll_pll_tracking.cc
- * \brief code DLL + carrier FLL/PLL tracking
+ * \brief Implementation of an adapter of a code DLL + carrier FLL/PLL tracking
+ * loop for GPS L1 C/A to a TrackingInterface
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * This file implements the code Delay Locked Loop (DLL) + carrier Phase Locked Loop (PLL) helped with a carrier Frequency Locked Loop (FLL) stage
- * according to the algorithms described in [1]
- * [1] E.D. Kaplan and C. Hegarty, Understanding GPS. Principles and
+ * This file implements the code Delay Locked Loop (DLL) + carrier Phase
+ * Locked Loop (PLL) helped with a carrier Frequency Locked Loop (FLL)
+ * according to the algorithms described in:
+ * E.D. Kaplan and C. Hegarty, Understanding GPS. Principles and
  * Applications, Second Edition, Artech House Publishers, 2005.
  *
  * -------------------------------------------------------------------------
@@ -40,18 +42,21 @@
   #include <boost/math/special_functions/round.hpp>
 #endif
 #include <gnuradio/gr_io_signature.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
 using google::LogMessage;
 
 GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
-        ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
+        ConfigurationInterface* configuration,
+        std::string role,
+        unsigned int in_streams, unsigned int
+        out_streams,
         gr_msg_queue_sptr queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(
-            queue)
+        role_(role),
+        in_streams_(in_streams),
+        out_streams_(out_streams),
+        queue_(queue)
 {
 
     DLOG(INFO) << "role " << role;

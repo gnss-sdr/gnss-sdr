@@ -1,6 +1,6 @@
 /*!
  * \file gnss_block_factory.h
- * \brief This class implements a factory that returns instances of GNSS blocks.
+ * \brief Interface of a factory that returns instances of GNSS blocks.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
@@ -38,7 +38,6 @@
 
 #include <vector>
 #include <string>
-
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
@@ -67,6 +66,10 @@ public:
             gr_msg_queue_sptr queue);
     std::vector<GNSSBlockInterface*>* GetChannels(
             ConfigurationInterface *configuration, gr_msg_queue_sptr queue);
+
+    /*
+     * \brief Returns the block with the required configuration and implementation
+     */
     GNSSBlockInterface* GetBlock(ConfigurationInterface* configuration,
             std::string role, std::string implementation,
             unsigned int in_streams, unsigned int out_streams,

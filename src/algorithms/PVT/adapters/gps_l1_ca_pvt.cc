@@ -1,6 +1,7 @@
 /*!
  * \file gps_l1_ca_pvt.cc
- * \brief Simple Least Squares implementation for GPS L1 C/A Position Velocity and Time
+ * \brief  Implementation of an adapter of a GPS L1 C/A PVT solver block to a
+ * PVTInterface
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  *
@@ -56,8 +57,8 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
 
     DLOG(INFO) << "role " << role;
 
-	int averaging_depth;
-	averaging_depth=configuration->property(role + ".averaging_depth", 10);
+    int averaging_depth;
+    averaging_depth=configuration->property(role + ".averaging_depth", 10);
 
     bool flag_averaging;
     flag_averaging=configuration->property(role + ".flag_averaging", false);
@@ -65,7 +66,7 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-	pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging);
+    pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging);
 
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     // set the navigation msg queue;

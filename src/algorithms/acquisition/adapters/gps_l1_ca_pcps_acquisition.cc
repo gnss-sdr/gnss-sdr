@@ -1,10 +1,8 @@
 /*!
  * \file gps_l1_ca_pcps_acquisition.cc
- * \brief Brief description of the file here
+ * \brief Adapts a PCPS acquisition block for GPS L1 C/A to an AcquisitionInterface
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -40,7 +38,6 @@
 #include <gnuradio/gr_vector_to_stream.h>
 #include <gnuradio/gr_complex_to_interleaved_short.h>
 #include <gnuradio/gr_interleaved_short_to_complex.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 

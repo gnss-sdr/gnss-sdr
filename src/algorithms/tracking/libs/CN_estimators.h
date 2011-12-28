@@ -1,9 +1,8 @@
 /*!
  * \file CN_estimators.h
- * \brief Library with a set of Carrier to Noise estimators and lock detectors
+ * \brief Interface of a library with a set of Carrier to Noise
+ * estimators and lock detectors.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *
- * Library with a set of Carrier to Noise estimators and lock detectors
  *
  * -------------------------------------------------------------------------
  *
@@ -35,8 +34,43 @@
 
 #include <gnuradio/gr_complex.h>
 
+/*! brief SNV_CN0 is a Carrier-to-Noise (CN0) estimator
+ * based on the Signal-to-Noise Variance (SNV) estimator
+ *
+ * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Signal-to-Noise Variance (SNV) estimator:
+ * \f{equation}
+ * 	\hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\hat{P}_s}{\hat{P}_{tot}-\hat{P}_s},
+ * \f}
+ *  where \f$\hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2\f$ is the estimation of the signal power,
+ * \f$\hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2\f$ is the estimator of the total power, \f$|\cdot|\f$ is the absolute value,
+ * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
+ *
+ * The SNR value is converted to CN0 [dB-Hz], taking to account the receiver bandwidth and the PRN code gain, using the following formula:
+ * \f{equation}
+ * 	CN0_{dB}=10*log(\hat{\rho})+10*log(\frac{f_s}{2})-10*log(L_{PRN}),
+ * \f}
+ * where \f$f_s\f$ is the sampling frequency and \f$L_{PRN}\f$ is the PRN sequence length.
+ * Ref: Marco Pini, Emanuela Falletti and Maurizio Fantino, "Performance
+ * Evaluation of C/N0 Estimators using a Real Time GNSS Software Receiver,"
+ * IEEE 10th International Symposium on Spread Spectrum Techniques and
+ * Applications, pp.28-30, August 2008.
+ */
 float gps_l1_ca_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in);
 
+/*! \brief A carrier lock detector
+ *
+ * The Carrier Phase Lock Detector block uses the normalised estimate of the cosine of twice the carrier phase error is given by
+ * \f{equation}
+ * 	C2\phi=\frac{NBD}{NBP},
+ * \f}
+ *  where \f$NBD=(\sum^{N-1}_{i=0}|Im(Pc(i))|)^2+(\sum^{N-1}_{i=0}|Re(Pc(i))|)^2\f$,
+ *  \f$NBP=\sum^{N-1}_{i=0}Im(Pc(i))^2-\sum^{N-1}_{i=0}Re(Pc(i))^2\f$, and
+ *  \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
+ * Ref: Van Dierendonck, A.J. (1996), Global Positioning System: Theory and
+ * Applications,
+ * Volume I, Chapter 8: GPS Receivers, AJ Systems, Los Altos, CA 94024.
+ * Inc.: 329-407.
+ */
 float carrier_lock_detector(gr_complex* Prompt_buffer, int length);
 
 #endif

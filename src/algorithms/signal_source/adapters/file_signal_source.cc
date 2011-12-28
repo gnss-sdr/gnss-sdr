@@ -1,10 +1,9 @@
 /*!
  * \file file_signal_source.cc
- * \brief Brief description of the file here
+ * \brief Implementation of a class that reads signals samples from a file
+ * and adapts it to a SignalSourceInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011 jarribas(at)cttc.es
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -32,10 +31,8 @@
  */
 
 #include "file_signal_source.h"
-
 #include "gnss_sdr_valve.h"
 #include "configuration_interface.h"
-
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -43,7 +40,6 @@
 #include <gflags/gflags.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include <gnuradio/gr_io_signature.h>
 
 using google::LogMessage;
@@ -106,7 +102,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     {
 		/*!
 		 * BUG workaround: The GNURadio file source does not stop the receiver after reaching the End of File.
-		 * A possible solution is to compute the file lenght in samples using file size, excluding the last 100 milliseconds, and enable always the
+		 * A possible solution is to compute the file length in samples using file size, excluding the last 100 milliseconds, and enable always the
 		 * valve block
 		 */
 		std::ifstream file (filename_.c_str(), std::ios::in|std::ios::binary|std::ios::ate);

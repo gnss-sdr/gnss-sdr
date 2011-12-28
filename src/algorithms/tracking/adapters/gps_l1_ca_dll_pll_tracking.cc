@@ -1,12 +1,14 @@
 /*!
  * \file gps_l1_ca_dll_pll_tracking.cc
- * \brief code DLL + carrier PLL
+ * \brief Implementation of an adapter of a DLL+PLL tracking loop block
+ * for GPS L1 C/A to a TrackingInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Code DLL + carrier PLL according to the algorithms described in [1]
- * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach, Birkha user, 2007
+ * Code DLL + carrier PLL according to the algorithms described in:
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+ * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -40,7 +42,6 @@
   #include <boost/math/special_functions/round.hpp>
 #endif
 #include <gnuradio/gr_io_signature.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -50,8 +51,8 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         gr_msg_queue_sptr queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(
-            queue)
+        role_(role), in_streams_(in_streams), out_streams_(out_streams),
+        queue_(queue)
 {
 
     DLOG(INFO) << "role " << role;
@@ -82,22 +83,22 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
-    #ifdef GNSS_SDR_USE_BOOST_ROUND
+#ifdef GNSS_SDR_USE_BOOST_ROUND
     vector_length = round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-    #else
+#else
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-    #endif
+#endif
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
-    {
-        item_size_ = sizeof(gr_complex);
-        tracking_ = gps_l1_ca_dll_pll_make_tracking_cc(satellite_, f_if,
-                fs_in, vector_length, queue_, dump, dump_filename, pll_bw_hz,dll_bw_hz,early_late_space_chips);
-    }
+        {
+            item_size_ = sizeof(gr_complex);
+            tracking_ = gps_l1_ca_dll_pll_make_tracking_cc(satellite_, f_if,
+                    fs_in, vector_length, queue_, dump, dump_filename, pll_bw_hz,dll_bw_hz,early_late_space_chips);
+        }
     else
-    {
-        LOG_AT_LEVEL(WARNING) << item_type << " unknown tracking item type.";
-    }
+        {
+            LOG_AT_LEVEL(WARNING) << item_type << " unknown tracking item type.";
+        }
 
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
@@ -111,7 +112,7 @@ void GpsL1CaDllPllTracking::start_tracking()
     tracking_->start_tracking();
 }
 
-/*!
+/*
  * Set satellite ID
  */
 void GpsL1CaDllPllTracking::set_satellite(unsigned int satellite)
@@ -121,7 +122,7 @@ void GpsL1CaDllPllTracking::set_satellite(unsigned int satellite)
     DLOG(INFO) << "satellite set to " << satellite_;
 }
 
-/*!
+/*
  * Set tracking channel unique ID
  */
 void GpsL1CaDllPllTracking::set_channel(unsigned int channel)
@@ -130,7 +131,7 @@ void GpsL1CaDllPllTracking::set_channel(unsigned int channel)
     tracking_->set_channel(channel);
 }
 
-/*!
+/*
  * Set tracking channel internal queue
  */
 void GpsL1CaDllPllTracking::set_channel_queue(
@@ -141,21 +142,24 @@ void GpsL1CaDllPllTracking::set_channel_queue(
     tracking_->set_channel_queue(channel_internal_queue_);
 
 }
-/*!
+
+/*
  * Set acquisition code phase in samples
  */
 void GpsL1CaDllPllTracking::set_prn_code_phase(signed int phase_samples)
 {
     return tracking_->set_acq_code_phase((float)phase_samples);
 }
-/*!
+
+/*
  * Set acquisition Doppler frequency in Hz.
  */
 void GpsL1CaDllPllTracking::set_doppler_freq_shift(float doppler_freq_hz)
 {
     return tracking_->set_acq_doppler(doppler_freq_hz);
 }
-/*!
+
+/*
  * Set acquisition sample stamp in samples, in order to detect the delay between acquisition and tracking
  */
 void GpsL1CaDllPllTracking::set_acq_sample_stamp(
@@ -163,6 +167,7 @@ void GpsL1CaDllPllTracking::set_acq_sample_stamp(
 {
     return tracking_->set_acq_sample_stamp(sample_stamp);
 }
+
 void GpsL1CaDllPllTracking::connect(gr_top_block_sptr top_block)
 {
     //nothing to connect, now the tracking uses gr_sync_decimator

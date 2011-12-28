@@ -1,9 +1,9 @@
 /*!
  * \file navigation_interface.h
- * \brief This class represents an interface to a navigation GNSS block.
+ * \brief This class represents an interface to a telemetry decoder block.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Abstract class for navigation interfaces. Since all its methods are virtual,
+ * Abstract class for telemetry decoders. Since all its methods are virtual,
  * this class cannot be instantiated directly, and a subclass can only be
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.

@@ -1,9 +1,9 @@
 /*!
  * \file gnss_sdr_valve.cc
- * \brief Brief description of the file here
+ * \brief Implementation of a GNU Radio block that sends a STOP message to the
+ * control queue right after a specific number of samples have passed through it.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -31,11 +31,8 @@
  */
 
 #include "gnss_sdr_valve.h"
-
 #include <gnuradio/gr_io_signature.h>
-
 #include "control_message_factory.h"
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 

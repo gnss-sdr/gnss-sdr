@@ -40,18 +40,18 @@
 #include <gr_msg_queue.h>
 
 gr_block_sptr gnss_sdr_make_valve (size_t sizeof_stream_item,
-                                   int nitems,
-                                   gr_msg_queue_sptr queue);
+        int nitems,
+        gr_msg_queue_sptr queue);
 
 class gnss_sdr_valve : public gr_sync_block
 {
 
     friend gr_block_sptr gnss_sdr_make_valve(size_t sizeof_stream_item,
-                                             int nitems,
-                                             gr_msg_queue_sptr queue);
+            int nitems,
+            gr_msg_queue_sptr queue);
     gnss_sdr_valve (size_t sizeof_stream_item,
-                    int nitems,
-                    gr_msg_queue_sptr queue);
+            int nitems,
+            gr_msg_queue_sptr queue);
 
     int	d_nitems;
     int	d_ncopied_items;
@@ -60,8 +60,8 @@ class gnss_sdr_valve : public gr_sync_block
 public:
 
     int work (int noutput_items,
-              gr_vector_const_void_star &input_items,
-              gr_vector_void_star &output_items);
+            gr_vector_const_void_star &input_items,
+            gr_vector_void_star &output_items);
 };
 
 #endif /*GNSS_SDR_GNSS_SDR_VALVE_H_*/

@@ -78,8 +78,9 @@ int main(int argc, char** argv)
     google::InitGoogleLogging(argv[0]);
     if (FLAGS_log_dir.empty())
         {
-            std::cout << "Logging will be done at " << boost::filesystem::temp_directory_path() << std::endl
-                    << "Use gnss-sdr --log_dir=/path/to/log to change that."<< std::endl;
+            // temp_directory_path() is only available from Boost 1.45. Ubuntu 10.10 ships with 1.42
+            //std::cout << "Logging will be done at " << boost::filesystem::temp_directory_path() << std::endl
+            //        << "Use gnss-sdr --log_dir=/path/to/log to change that."<< std::endl;
         }
     else
         {

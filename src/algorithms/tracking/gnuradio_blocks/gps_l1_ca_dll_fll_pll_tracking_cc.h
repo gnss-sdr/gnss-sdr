@@ -50,21 +50,21 @@
 
 class gps_l1_ca_dll_fll_pll_tracking_cc;
 typedef boost::shared_ptr<gps_l1_ca_dll_fll_pll_tracking_cc>
-        gps_l1_ca_dll_fll_pll_tracking_cc_sptr;
+gps_l1_ca_dll_fll_pll_tracking_cc_sptr;
 
 gps_l1_ca_dll_fll_pll_tracking_cc_sptr
 gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
-										long if_freq,
-										long fs_in,
-										unsigned int vector_length,
-										gr_msg_queue_sptr queue,
-										bool dump,
-										std::string dump_filename,
-										int order,
-	                                    float fll_bw_hz,
-	                                    float pll_bw_hz,
-	                                    float dll_bw_hz,
-	                                    float early_late_space_chips);
+        long if_freq,
+        long fs_in,
+        unsigned int vector_length,
+        gr_msg_queue_sptr queue,
+        bool dump,
+        std::string dump_filename,
+        int order,
+        float fll_bw_hz,
+        float pll_bw_hz,
+        float dll_bw_hz,
+        float early_late_space_chips);
 
 //class gps_l1_ca_dll_pll_tracking_cc: public gr_sync_decimator
 
@@ -78,30 +78,30 @@ private:
 
     friend gps_l1_ca_dll_fll_pll_tracking_cc_sptr
     gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
-										   long if_freq,
-										   long fs_in, unsigned
-										   int vector_length,
-										   gr_msg_queue_sptr queue,
-										   bool dump,
-										   std::string dump_filename,
-										   int order,
-										   float fll_bw_hz,
-										   float pll_bw_hz,
-										   float dll_bw_hz,
-										   float early_late_space_chips);
+            long if_freq,
+            long fs_in, unsigned
+            int vector_length,
+            gr_msg_queue_sptr queue,
+            bool dump,
+            std::string dump_filename,
+            int order,
+            float fll_bw_hz,
+            float pll_bw_hz,
+            float dll_bw_hz,
+            float early_late_space_chips);
 
     gps_l1_ca_dll_fll_pll_tracking_cc(unsigned int satellite,
-									  long if_freq,
-									  long fs_in, unsigned
-									  int vector_length,
-									  gr_msg_queue_sptr queue,
-									  bool dump,
-									  std::string dump_filename,
-									  int order,
-									  float fll_bw_hz,
-									  float pll_bw_hz,
-									  float dll_bw_hz,
-									  float early_late_space_chips);
+            long if_freq,
+            long fs_in, unsigned
+            int vector_length,
+            gr_msg_queue_sptr queue,
+            bool dump,
+            std::string dump_filename,
+            int order,
+            float fll_bw_hz,
+            float pll_bw_hz,
+            float dll_bw_hz,
+            float early_late_space_chips);
 
     void CN0_estimation_and_lock_detectors();
 
@@ -124,20 +124,20 @@ private:
 
     gr_complex* d_carr_sign;
 
-	gr_complex d_Early;
-	gr_complex d_Prompt;
-	gr_complex d_Prompt_prev;
-	gr_complex d_Late;
+    gr_complex d_Early;
+    gr_complex d_Prompt;
+    gr_complex d_Prompt_prev;
+    gr_complex d_Late;
 
-	float d_early_late_spc_chips;
+    float d_early_late_spc_chips;
 
 
-	float d_carrier_doppler_hz;
-	float d_code_freq_hz;
-	float d_code_phase_samples;
-	int d_current_prn_length_samples;
-	int d_next_prn_length_samples;
-	int d_FLL_wait;
+    float d_carrier_doppler_hz;
+    float d_code_freq_hz;
+    float d_code_phase_samples;
+    int d_current_prn_length_samples;
+    int d_next_prn_length_samples;
+    int d_FLL_wait;
     float d_rem_carr_phase;
     float d_rem_code_phase_samples;
     float d_next_rem_code_phase_samples;
@@ -196,10 +196,10 @@ public:
     //                  gr_vector_const_void_star &input_items,
     //                gr_vector_void_star &output_items) = 0;
 
-   //int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    //int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 

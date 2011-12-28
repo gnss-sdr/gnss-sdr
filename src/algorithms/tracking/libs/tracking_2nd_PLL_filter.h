@@ -1,11 +1,10 @@
 /*!
  * \file tracking_2nd_PLL_filter.h
- * \brief Class that implements 2 order PLL filter for tracking carrier loop
+ * \brief Class that implements 2 order PLL filter for carrier tracking loop
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Class that implements 2 order PLL filter for tracking carrier loop. The algorithm is described in [1]
- *
- * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.~H.~Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
+ * Class that implements 2 order PLL filter for tracking carrier loop. The algorithm is described in
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.~H.~Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
  * Birkhauser, 2007, Applied and Numerical Harmonic Analysis.
  *
  * -------------------------------------------------------------------------
@@ -33,9 +32,16 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef TRACKING_2ND_PLL_FILTER_H_
-#define TRACKING_2ND_PLL_FILTER_H_
+#ifndef GNSS_SDR_TRACKING_2ND_PLL_FILTER_H_
+#define GNSS_SDR_TRACKING_2ND_PLL_FILTER_H_
 
+/*!
+ * \brief This class implements a 2nd order PLL filter for carrier tracking loop.
+ *
+ * The algorithm is described in:
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S. H. Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
+ * Birkhauser, 2007, Applied and Numerical Harmonic Analysis.
+ */
 class tracking_2nd_PLL_filter
 {
 private:
@@ -52,7 +58,7 @@ private:
 
     void calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k);
 public:
-	void set_PLL_BW(float pll_bw_hz);
+	void set_PLL_BW(float pll_bw_hz);  //! Set PLL loop bandwidth [Hz]
 	void initialize(float d_acq_carrier_doppler_hz);
 	float get_carrier_nco(float PLL_discriminator);
 	tracking_2nd_PLL_filter();

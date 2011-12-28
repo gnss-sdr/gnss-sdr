@@ -38,7 +38,6 @@
 #include <string>
 #include <vector>
 #include <queue>
-
 #include <gnuradio/gr_top_block.h>
 #include <gnuradio/gr_msg_queue.h>
 
@@ -47,7 +46,7 @@ class ChannelInterface;
 class ConfigurationInterface;
 class GNSSBlockFactory;
 
-/* \brief This class represents a GNSS flowgraph.
+/*! \brief This class represents a GNSS flowgraph.
  *
  * It contains a signal source,
  * a signal conditioner, a set of channels, a PVT and an output filter.
@@ -67,10 +66,10 @@ public:
 	 */
     virtual ~GNSSFlowgraph();
 
-    //! Start the flowgraph
+    //! \brief Start the flowgraph
     void start();
 
-    //! Stop the flowgraph
+    //! \brief Stop the flowgraph
     void stop();
 
 	/*!

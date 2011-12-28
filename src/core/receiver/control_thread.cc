@@ -33,16 +33,11 @@
  */
 
 #include "control_thread.h"
-
 #include <unistd.h>
-
 #include <gnuradio/gr_message.h>
-
 #include <gflags/gflags.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include "gnss_flowgraph.h"
 #include "file_configuration.h"
 #include "control_message_factory.h"
@@ -73,18 +68,18 @@ ControlThread::~ControlThread()
     delete control_message_factory_;
 }
 
-
+/*
+ * Runs the control thread that manages the receiver control plane
+ *
+ * This is the main loop that reads and process the control messages
+ * 1- Connect the GNSS receiver flowgraph
+ * 2- Start the GNSS receiver flowgraph
+ *    while (flowgraph_->running() && !stop)_{
+ * 3- Read control messages and process them }
+ */
 void ControlThread::run()
 {
-	/* Runs the control thread
-	 *
-	 *  This is the main loop that reads and process the control messages
-	 *
-	 *  1- Connect the GNSS receiver flowgraph
-	 *  2- Start the GNSS receiver flowgraph
-	 *  while (flowgraph_->running() && !stop)_{
-	 *  3- Read control messages and process them }
-	 */
+
     flowgraph_->connect();
     if (flowgraph_->connected())
     {

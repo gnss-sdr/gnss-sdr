@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_pvt_cc.cc
- * \brief Position Velocity and Time computation for GPS L1 C/A using Least Squares algorithm
+ * \brief Position Velocity and Time computation for GPS L1 C/A
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -33,22 +33,16 @@
 #include <map>
 #include <algorithm>
 #include <bitset>
-
 #include <cmath>
 #include "math.h"
-
-#include "gps_l1_ca_pvt_cc.h"
-
-#include "control_message_factory.h"
-
 #include <gnuradio/gr_io_signature.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include "gps_l1_ca_pvt_cc.h"
+#include "control_message_factory.h"
+
 
 using google::LogMessage;
-
-using namespace std;
 
 
 gps_l1_ca_pvt_cc_sptr
@@ -91,7 +85,7 @@ gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc() {
     delete d_ls_pvt;
 }
 
-bool pseudoranges_pairCompare_min( pair<int,gnss_pseudorange> a, pair<int,gnss_pseudorange> b)
+bool pseudoranges_pairCompare_min( std::pair<int,gnss_pseudorange> a, std::pair<int,gnss_pseudorange> b)
 {
   return (a.second.pseudorange_m) < (b.second.pseudorange_m);
 }
@@ -101,8 +95,8 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 
 	d_sample_counter++;
 
-	map<int,gnss_pseudorange> gnss_pseudoranges_map;
-	map<int,gnss_pseudorange>::iterator gnss_pseudoranges_iter;
+	std::map<int,gnss_pseudorange> gnss_pseudoranges_map;
+	std::map<int,gnss_pseudorange>::iterator gnss_pseudoranges_iter;
 
 	gnss_pseudorange **in = (gnss_pseudorange **)  &input_items[0]; //Get the input pointer
 
@@ -110,28 +104,28 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 	{
 		if (in[i][0].valid==true)
 		{
-			gnss_pseudoranges_map.insert(pair<int,gnss_pseudorange>(in[i][0].SV_ID,in[i][0])); //record the valid psudorrange in a map
+			gnss_pseudoranges_map.insert(std::pair<int,gnss_pseudorange>(in[i][0].SV_ID,in[i][0])); //record the valid pseudorange in a map
 		}
 	}
 
 	//debug print
-	cout << setprecision(16);
+	std::cout << std::setprecision(16);
 	for(gnss_pseudoranges_iter = gnss_pseudoranges_map.begin();
 			gnss_pseudoranges_iter != gnss_pseudoranges_map.end();
 			gnss_pseudoranges_iter++)
 	{
-		cout<<"Pseudoranges(SV ID,pseudorange [m]) =("<<gnss_pseudoranges_iter->first<<","<<gnss_pseudoranges_iter->second.pseudorange_m<<")"<<endl;
+		std::cout<<"Pseudoranges(SV ID,pseudorange [m]) =("<<gnss_pseudoranges_iter->first<<","<<gnss_pseudoranges_iter->second.pseudorange_m<<")"<<std::endl;
 	}
 
 
 	// ############ 1. READ EPHEMERIS FROM QUEUE ######################
     // find the minimum index (nearest satellite, will be the reference)
-	gnss_pseudoranges_iter=min_element(gnss_pseudoranges_map.begin(),gnss_pseudoranges_map.end(),pseudoranges_pairCompare_min);
+	gnss_pseudoranges_iter=std::min_element(gnss_pseudoranges_map.begin(),gnss_pseudoranges_map.end(),pseudoranges_pairCompare_min);
 
 	gps_navigation_message nav_msg;
 	while (d_nav_queue->try_pop(nav_msg)==true)
 	{
-		cout<<"New ephemeris record has arrived from SAT ID "<<nav_msg.d_satellite_PRN<<endl;
+		std::cout<<"New ephemeris record has arrived from SAT ID "<<nav_msg.d_satellite_PRN<<std::endl;
 		d_last_nav_msg=nav_msg;
 		d_ls_pvt->d_ephemeris[nav_msg.d_channel_ID]=nav_msg;
 		// **** update pseudoranges clock ****

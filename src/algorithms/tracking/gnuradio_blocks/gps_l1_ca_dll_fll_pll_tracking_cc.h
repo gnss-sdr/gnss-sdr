@@ -34,18 +34,15 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H
-#define	GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H
+#define	GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H
 
 #include <fstream>
-
 #include <gnuradio/gr_block.h>
 #include <gnuradio/gr_msg_queue.h>
 //#include <gnuradio/gr_sync_decimator.h>
-
 #include "gps_sdr_signal_processing.h"
 #include "tracking_FLL_PLL_filter.h"
-
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
@@ -70,6 +67,10 @@ gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
 	                                    float early_late_space_chips);
 
 //class gps_l1_ca_dll_pll_tracking_cc: public gr_sync_decimator
+
+/*!
+ * \brief This class implements a DLL and a FLL assisted PLL tracking loop block
+ */
 class gps_l1_ca_dll_fll_pll_tracking_cc: public gr_block
 {
 
@@ -204,4 +205,4 @@ public:
 
 };
 
-#endif //GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H
+#endif //GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H

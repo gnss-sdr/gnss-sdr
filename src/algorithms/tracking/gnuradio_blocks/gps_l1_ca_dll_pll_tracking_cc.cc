@@ -47,9 +47,7 @@
 #include <sstream>
 #include <cmath>
 #include "math.h"
-
 #include <gnuradio/gr_io_signature.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 

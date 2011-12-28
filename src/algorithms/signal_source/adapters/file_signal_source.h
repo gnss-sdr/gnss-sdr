@@ -1,6 +1,6 @@
 /*!
  * \file file_signal_source.h
- * \brief Brief description of the file here
+ * \brief This class reads signals samples from a file
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * This class represents a file signal source. Internally it uses a GNU Radio's gr_file_source
@@ -31,11 +31,10 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef FILE_SIGNAL_SOURCE_H_
-#define FILE_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_FILE_SIGNAL_SOURCE_H_
+#define GNSS_SDR_FILE_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
-
 #include <gnuradio/gr_file_source.h>
 #include <gnuradio/gr_file_sink.h>
 #include <gnuradio/gr_throttle.h>
@@ -44,6 +43,9 @@
 
 class ConfigurationInterface;
 
+/*!
+ * \brief This class reads samples from a file.
+ */
 class FileSignalSource: public GNSSBlockInterface
 {
 
@@ -120,4 +122,4 @@ private:
     bool enable_throttle_control_;
 };
 
-#endif /*FILE_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_FILE_SIGNAL_SOURCE_H_*/

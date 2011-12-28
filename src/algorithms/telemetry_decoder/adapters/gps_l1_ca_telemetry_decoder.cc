@@ -1,6 +1,6 @@
 /*!
- * \file gps_navigation.cc
- * \brief Brief description of the file here
+ * \file gps_l1_ca_telemetry_decoder.cc
+ * \brief This class implements a NAV data decoder for GPS L1 C/A
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Detailed description of the file here if needed.
@@ -33,15 +33,11 @@
 
 
 #include "gps_l1_ca_telemetry_decoder.h"
-
 #include "configuration_interface.h"
-
 #include "gps_l1_ca_telemetry_decoder_cc.h"
-
 #include <gnuradio/gr_io_signature.h>
 #include <gnuradio/gr_stream_to_vector.h>
 #include <gnuradio/gr_vector_to_stream.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 

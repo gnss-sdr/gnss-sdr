@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef CN_ESTIMATORS_H_
-#define CN_ESTIMATORS_H_
+#ifndef GNSS_SDR_CN_ESTIMATORS_H_
+#define GNSS_SDR_CN_ESTIMATORS_H_
 
 #include <gnuradio/gr_complex.h>
 

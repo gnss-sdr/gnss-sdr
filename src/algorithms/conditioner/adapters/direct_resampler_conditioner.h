@@ -30,11 +30,10 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef DIRECT_RESAMPLER_CONDITIONER_H_
-#define DIRECT_RESAMPLER_CONDITIONER_H_
+#ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_
+#define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_
 
 #include <gnuradio/gr_hier_block2.h>
-
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
@@ -84,4 +83,4 @@ private:
     gr_block_sptr file_sink_;
 };
 
-#endif /*DIRECT_RESAMPLER_CONDITIONER_H_*/
+#endif /*GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_*/

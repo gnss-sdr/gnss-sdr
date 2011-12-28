@@ -33,18 +33,18 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_L1_CA_DLL_PLL_TRACKING_H_
-#define GPS_L1_CA_DLL_PLL_TRACKING_H_
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_H_
+#define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_H_
 
 #include "tracking_interface.h"
-
 #include "gps_l1_ca_dll_pll_tracking_cc.h"
-
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
 
-
+/*!
+ * \brief This class implements a code DLL + carrier PLL tracking loop
+ */
 class GpsL1CaDllPllTracking : public TrackingInterface
 {
 
@@ -101,4 +101,4 @@ private:
     concurrent_queue<int> *channel_internal_queue_;
 };
 
-#endif // GPS_L1_CA_DLL_PLL_TRACKING_H_
+#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_H_

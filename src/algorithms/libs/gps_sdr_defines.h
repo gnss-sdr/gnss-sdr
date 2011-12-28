@@ -122,7 +122,7 @@ typedef unsigned int		uint32;
 /* PVT Stuff */
 /*----------------------------------------------------------------------------------------------*/
 #define GRAVITY_CONSTANT		(3.986005e14)				//!< Earth's WGS-84 gravitational constant (m^3/s^2) as specified in IS-GPS-200D
-#define WGS84OE					(7.2921151467e-5)			//!< Earth's WGS-84 rotation rate (rads/s) as specified in IS-GPS-200D
+const double WGS84OE = 7.2921151467e-5;                     //!< Earth's WGS-84 rotation rate (rads/s) as specified in IS-GPS-200D
 #define WGS84_MAJOR_AXIS		(6378137.0)					//!< Earth's WGS-84 ellipsoid's major axis
 #define WGS84_MINOR_AXIS		(6356752.314245)			//!< Earth's WGS-84 ellipsoid's minor axis
 #define SECONDS_IN_1024_WEEKS	(619315200.0)				//!< Number of seconds in 1024 weeks

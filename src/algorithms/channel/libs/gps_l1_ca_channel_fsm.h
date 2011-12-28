@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_channel_fsm.h
- * \brief State Machine for channel using boost::statechart
+ * \brief Interface of the State Machine for channel using boost::statechart
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
  *
@@ -41,12 +41,10 @@
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 #include <gnuradio/gr_msg_queue.h>
-
 #include <iostream>
 #include <cstring>
 

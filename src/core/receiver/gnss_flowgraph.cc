@@ -32,15 +32,12 @@
  */
 
 #include "gnss_flowgraph.h"
-
 #include <exception>
 #include "unistd.h"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include "configuration_interface.h"
 #include "gnss_block_interface.h"
 #include "channel_interface.h"

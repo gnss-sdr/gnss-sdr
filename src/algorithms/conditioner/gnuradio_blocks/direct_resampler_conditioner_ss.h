@@ -4,8 +4,6 @@
  *        short input and short output
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
- * Detailed description of the file here if needed.
- *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
@@ -31,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_DIRECT_RESAMPLER_CONDITIONER_SS_H
-#define	INCLUDED_DIRECT_RESAMPLER_CONDITIONER_SS_H
+#ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_SS_H
+#define	GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_SS_H
 
 #include <gnuradio/gr_block.h>
 
@@ -42,7 +40,11 @@ typedef boost::shared_ptr<direct_resampler_conditioner_ss>
 direct_resampler_conditioner_ss_sptr
 direct_resampler_make_conditioner_ss(double sample_freq_in,
         double sample_freq_out);
-
+/*!
+ * \brief This class implements a direct resampler conditioner for shorts
+ *
+ * Direct resampling without interpolation
+ */
 class direct_resampler_conditioner_ss: public gr_block
 {
 
@@ -80,4 +82,4 @@ public:
             gr_vector_void_star &output_items);
 };
 
-#endif /* INCLUDED_DIRECT_RESAMPLER_CONDITIONER_SS_H */
+#endif /* GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_SS_H */

@@ -30,16 +30,14 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_L1_CA_TONG_PCPS_ACQUISITION_CC_H
-#define GPS_L1_CA_TONG_PCPS_ACQUISITION_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_TONG_PCPS_ACQUISITION_CC_H
+#define GNSS_SDR_GPS_L1_CA_TONG_PCPS_ACQUISITION_CC_H
 
 #include <fstream>
-
 #include <gnuradio/gr_block.h>
 #include <gnuradio/gr_msg_queue.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/gri_fft.h>
-
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
@@ -183,4 +181,4 @@ public:
             gr_vector_void_star &output_items);
 };
 
-#endif /* GPS_L1_CA_TONG_PCPS_ACQUISITION_CC_H*/
+#endif /* GNSS_SDR_GPS_L1_CA_TONG_PCPS_ACQUISITION_CC_H*/

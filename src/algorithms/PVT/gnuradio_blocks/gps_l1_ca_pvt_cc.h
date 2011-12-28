@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_pvt_cc.h
- * \brief Position Velocity and Time computation for GPS L1 C/A using Least Squares algorithm
+ * \brief Position Velocity and Time computation for GPS L1 C/A
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -27,26 +27,20 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_L1_CA_PVT_CC_H
-#define	GPS_L1_CA_PVT_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_PVT_CC_H
+#define	GNSS_SDR_GPS_L1_CA_PVT_CC_H
 
 #include <fstream>
-
 #include <gnuradio/gr_block.h>
 #include <gnuradio/gr_msg_queue.h>
-
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-
 #include "concurrent_queue.h"
-
 #include "gps_navigation_message.h"
 #include "kml_printer.h"
-
 #include "rinex_2_1_printer.h"
 #include "gps_l1_ca_ls_pvt.h"
-
 #include "GPS_L1_CA.h"
 
 class gps_l1_ca_pvt_cc;
@@ -54,7 +48,9 @@ typedef boost::shared_ptr<gps_l1_ca_pvt_cc> gps_l1_ca_pvt_cc_sptr;
 gps_l1_ca_pvt_cc_sptr
 gps_l1_ca_make_pvt_cc(unsigned int n_channels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging);
 
-
+/*!
+ * \brief This class implements a block that computes the PVT solution
+ */
 class gps_l1_ca_pvt_cc : public gr_block {
 
 private:

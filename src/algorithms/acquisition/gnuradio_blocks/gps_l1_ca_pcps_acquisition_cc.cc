@@ -35,11 +35,8 @@
 #include "gps_sdr_signal_processing.h"
 #include "control_message_factory.h"
 #include "gps_sdr_x86.h"
-
 #include <gnuradio/gr_io_signature.h>
-
 #include <sstream>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 

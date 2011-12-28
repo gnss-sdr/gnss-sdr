@@ -38,12 +38,11 @@
 
 #include <map>
 #include <string>
-
 #include "configuration_interface.h"
 
 class StringConverter;
 
-/*
+/*!
  * \brief  This class is an implementation of the interface ConfigurationInterface.
  *
  * This implementation accepts configuration parameters upon instantiation and

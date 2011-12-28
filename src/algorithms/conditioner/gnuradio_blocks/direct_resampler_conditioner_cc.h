@@ -5,16 +5,11 @@
  *        gr_complex input and gr_complex output
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
- * Detailed description of the file here if needed.
- *
  * This block takes in a signal stream and performs direct
  * resampling.
- *
  * The theory behind this block can be found in Chapter 7.5 of
  * the following book.
  *
- * \param sample_freq_in  (double) Specifies the sampling frequency of the input signal
- * \param sample_freq_out  (double) Specifies the sampling frequency of the output signal
  *
  * -------------------------------------------------------------------------
  *
@@ -41,8 +36,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_DIRECT_RESAMPLER_CONDITIONER_CC_H
-#define	INCLUDED_DIRECT_RESAMPLER_CONDITIONER_CC_H
+#ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H
+#define	GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H
 
 #include <gnuradio/gr_block.h>
 
@@ -53,6 +48,11 @@ direct_resampler_conditioner_cc_sptr
 direct_resampler_make_conditioner_cc(double sample_freq_in,
         double sample_freq_out);
 
+/*!
+ * \brief This class implements a direct resampler conditioner for complex data
+ *
+ * Direct resampling without interpolation
+ */
 class direct_resampler_conditioner_cc: public gr_block
 {
 
@@ -62,8 +62,8 @@ private:
     direct_resampler_make_conditioner_cc(double sample_freq_in,
             double sample_freq_out);
 
-    double d_sample_freq_in;
-    double d_sample_freq_out;
+    double d_sample_freq_in;  //! Specifies the sampling frequency of the input signal
+    double d_sample_freq_out; //! Specifies the sampling frequency of the output signal
     unsigned int d_phase;
     unsigned int d_lphase;
     unsigned int d_phase_step;
@@ -90,4 +90,4 @@ public:
             gr_vector_void_star &output_items);
 };
 
-#endif /* INCLUDED_DIRECT_RESAMPLER_CONDITIONER_CC_H */
+#endif /* GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H */

@@ -27,8 +27,8 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef GPS_L1_CA_LS_PVT_H_
-#define GPS_L1_CA_LS_PVT_H_
+#ifndef GNSS_SDR_GPS_L1_CA_LS_PVT_H_
+#define GNSS_SDR_GPS_L1_CA_LS_PVT_H_
 
 #include <fstream>
 #include <string>
@@ -43,17 +43,11 @@
 #include <algorithm>
 #include "gps_navigation_message.h"
 #include "GPS_L1_CA.h"
-
-//#include <itpp/itbase.h>
-//#include <itpp/stat/misc_stat.h>
-//#include <itpp/base/matfunc.h>
-
 #include "armadillo"
 
-//using namespace arma;
-
-//using namespace itpp;
-
+/*!
+ * \brief This class implements a simple PVT Least Squares solution
+ */
 class gps_l1_ca_ls_pvt
 {
 private:
@@ -62,21 +56,21 @@ private:
     //void cart2geo();
     //void topocent();
 public:
-    int d_nchannels;
+    int d_nchannels;      //! Number of available channels for positioning
     gps_navigation_message* d_ephemeris;
     double d_pseudoranges_time_ms;
-    double d_latitude_d;
-    double d_longitude_d;
-    double d_height_m;
+    double d_latitude_d;  //! Latitude in degrees
+    double d_longitude_d; //! Longitude in degrees
+    double d_height_m;    //! Height [m]
     //averaging
     std::deque<double> d_hist_latitude_d;
     std::deque<double> d_hist_longitude_d;
     std::deque<double> d_hist_height_m;
-    int d_averaging_depth;
+    int d_averaging_depth;    //! Length of averaging window
 
-    double d_avg_latitude_d;
-    double d_avg_longitude_d;
-    double d_avg_height_m;
+    double d_avg_latitude_d;  //! Averaged latitude in degrees
+    double d_avg_longitude_d; //! Averaged longitude in degrees
+    double d_avg_height_m;    //! Averaged height [m]
 
     double d_x_m;
     double d_y_m;
@@ -92,6 +86,22 @@ public:
     ~gps_l1_ca_ls_pvt();
 
     bool get_PVT(std::map<int,gnss_pseudorange> pseudoranges,double GPS_current_time,bool flag_averaging);
+
+    /*!
+     * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical
+     * coordinates (d_latitude_d, d_longitude_d, d_height_m) on a selected reference ellipsoid.
+     *
+     * \param[in] X [m] Cartesian coordinate
+     * \param[in] Y [m] Cartesian coordinate
+     * \param[in] Z [m] Cartesian coordinate
+     * \param[in] elipsoid_selection Choices of Reference Ellipsoid for Geographical Coordinates
+     * 0 - International Ellipsoid 1924
+     * 1 - International Ellipsoid 1967
+     * 2 - World Geodetic System 1972
+     * 3 - Geodetic Reference System 1980
+     * 4 - World Geodetic System 1984
+     *
+     */
     void cart2geo(double X, double Y, double Z, int elipsoid_selection);
 };
 

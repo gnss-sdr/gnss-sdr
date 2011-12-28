@@ -32,12 +32,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef CHANNEL_H_
-#define CHANNEL_H_
+#ifndef GNSS_SDR_CHANNEL_H_
+#define GNSS_SDR_CHANNEL_H_
 
 #include <gnuradio/gr_null_sink.h>
 #include <gnuradio/gr_msg_queue.h>
-
 #include "channel_interface.h"
 #include "gps_l1_ca_channel_fsm.h"
 #include "control_message_factory.h"
@@ -118,4 +117,4 @@ private:
 
 };
 
-#endif /*CHANNEL_H_*/
+#endif /*GNSS_SDR_CHANNEL_H_*/

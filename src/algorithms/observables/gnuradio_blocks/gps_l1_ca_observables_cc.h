@@ -1,6 +1,6 @@
 /*!
  * \file gps_l1_ca_observables_cc.h
- * \brief Pseudorange computation module for GPS L1 C/A
+ * \brief Interface of the pseudorange computation module for GPS L1 C/A
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -28,24 +28,18 @@
  */
 
 
-#ifndef GPS_L1_CA_OBSERVABLES_CC_H
-#define	GPS_L1_CA_OBSERVABLES_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_OBSERVABLES_CC_H
+#define	GNSS_SDR_GPS_L1_CA_OBSERVABLES_CC_H
 
 #include <fstream>
-
 #include <gnuradio/gr_block.h>
 #include <gnuradio/gr_msg_queue.h>
-
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-
 #include "concurrent_queue.h"
-
 #include "gps_navigation_message.h"
-
 #include "rinex_2_1_printer.h"
-
 #include "GPS_L1_CA.h"
 
 class gps_l1_ca_observables_cc;
@@ -53,7 +47,9 @@ typedef boost::shared_ptr<gps_l1_ca_observables_cc> gps_l1_ca_observables_cc_spt
 gps_l1_ca_observables_cc_sptr
 gps_l1_ca_make_observables_cc(unsigned int n_channels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
-
+/*!
+ * \brief This class implements a block that computes GPS L1 C/A observables
+ */
 class gps_l1_ca_observables_cc : public gr_block {
 
 private:

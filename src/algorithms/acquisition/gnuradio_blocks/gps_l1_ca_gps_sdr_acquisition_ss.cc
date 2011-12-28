@@ -180,7 +180,7 @@ int gps_l1_ca_gps_sdr_acquisition_ss::general_work(int noutput_items,
                 << " bytes into buffer (" << d_fft_size << " samples)";
         memcpy(d_baseband_signal, in, d_fft_size * sizeof(CPX));
         #ifdef NO_SIMD
-	x86_cmulsc(d_baseband_signal, d_sine_250,
+	    x86_cmulsc(d_baseband_signal, d_sine_250,
                 &d_baseband_signal[d_fft_size], d_fft_size, 14);
         x86_cmulsc(d_baseband_signal, d_sine_500, &d_baseband_signal[2
                 * d_fft_size], d_fft_size, 14);
@@ -226,7 +226,7 @@ int gps_l1_ca_gps_sdr_acquisition_ss::general_work(int noutput_items,
                         + 100 + i], d_fft_codes[d_satellite], buffer,
                         d_fft_size, 10);        
                 #endif
-		d_piFFT->doiFFT(buffer, true);
+		        d_piFFT->doiFFT(buffer, true);
                 x86_cmag(buffer, d_fft_size);
                 x86_max((unsigned int *)buffer, &indext, &magt, d_fft_size);
 

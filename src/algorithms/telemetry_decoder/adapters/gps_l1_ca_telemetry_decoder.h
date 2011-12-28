@@ -1,9 +1,7 @@
 /*!
- * \file gps_navigation.h
- * \brief Brief description of the file here
+ * \file gps_l1_ca_telemetry_decoder.h
+ * \brief This class implements a NAV data decoder for GPS L1 C/A
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -31,17 +29,18 @@
  */
 
 
-#ifndef GPS_L1_CA_TELEMETRY_DECODER_H_
-#define GPS_L1_CA_TELEMETRY_DECODER_H_
+#ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_H_
+#define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_H_
 
 #include "telemetry_decoder_interface.h"
-
 #include "gps_l1_ca_telemetry_decoder_cc.h"
-
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
 
+/*!
+ * \brief This class implements a NAV data decoder for GPS L1 C/A
+ */
 class GpsL1CaTelemetryDecoder : public TelemetryDecoderInterface
 {
 

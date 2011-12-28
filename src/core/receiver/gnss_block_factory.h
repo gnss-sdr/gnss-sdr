@@ -33,8 +33,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_BLOCK_FACTORY_H_
-#define GNSS_BLOCK_FACTORY_H_
+#ifndef GNSS_SDR_BLOCK_FACTORY_H_
+#define GNSS_SDR_BLOCK_FACTORY_H_
 
 #include <vector>
 #include <string>
@@ -74,4 +74,4 @@ public:
 
 };
 
-#endif /*GNSS_BLOCK_FACTORY_H_*/
+#endif /*GNSS_SDR_BLOCK_FACTORY_H_*/

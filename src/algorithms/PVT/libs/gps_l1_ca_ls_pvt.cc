@@ -27,24 +27,10 @@
  *
  * -------------------------------------------------------------------------
  */
-/*!
- * Using ITPP
- */
-//#include <itpp/itbase.h>
-//#include <itpp/stat/misc_stat.h>
-//#include <itpp/base/matfunc.h>
-
-//using namespace itpp;
-
-/*!
- * Using armadillo
- */
 
 #include "armadillo"
-
-//using namespace arma;
-
 #include "gps_l1_ca_ls_pvt.h"
+#include "GPS_L1_CA.h"
 
 
 gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file)
@@ -87,24 +73,22 @@ gps_l1_ca_ls_pvt::~gps_l1_ca_ls_pvt()
 
 arma::vec gps_l1_ca_ls_pvt::e_r_corr(double traveltime, arma::vec X_sat) {
     /*
-     %E_R_CORR  Returns rotated satellite ECEF coordinates due to Earth
-     %rotation during signal travel time
-     %
-     %X_sat_rot = e_r_corr(traveltime, X_sat);
-     %
-     %   Inputs:
-     %       travelTime  - signal travel time
-     %       X_sat       - satellite's ECEF coordinates
-     %
-     %   Outputs:
-     %       X_sat_rot   - rotated satellite's coordinates (ECEF)
+     *  Returns rotated satellite ECEF coordinates due to Earth
+     * rotation during signal travel time
+     *
+     *   Inputs:
+     *       travelTime  - signal travel time
+     *       X_sat       - satellite's ECEF coordinates
+     *
+     *   Returns:
+     *       X_sat_rot   - rotated satellite's coordinates (ECEF)
      */
 
-    double Omegae_dot = 7.292115147e-5; //  rad/sec
+    //const double Omegae_dot = 7.292115147e-5; //  rad/sec
 
     //--- Find rotation angle --------------------------------------------------
     double omegatau;
-    omegatau = Omegae_dot * traveltime;
+    omegatau = OMEGA_EARTH_DOT * traveltime;
 
     //--- Make a rotation matrix -----------------------------------------------
     arma::mat R3=arma::zeros(3,3);
@@ -124,24 +108,17 @@ arma::vec gps_l1_ca_ls_pvt::e_r_corr(double traveltime, arma::vec X_sat) {
 
 }
 arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w) {
-    //Function calculates the Least Square Solution.
-
-    //pos= leastSquarePos(satpos, obs, w);
-
-    //   Inputs:
-    //       satpos      - Satellites positions (in ECEF system: [X; Y; Z;]
-    //       obs         - Observations - the pseudorange measurements to each
-    //                   satellite
-    //       w           - weigths vector
-
-    //   Outputs:
-    //       pos         - receiver position and receiver clock error
-    //                   (in ECEF system: [X, Y, Z, dt])
-
-    //////////////////////////////////////////////////////////////////////////
-    //       el          - Satellites elevation angles (degrees)
-    //       az          - Satellites azimuth angles (degrees)
-    //       dop         - Dilutions Of Precision ([GDOP PDOP HDOP VDOP TDOP])
+    /*Function calculates the Least Square Solution.
+     *   Inputs:
+     *       satpos      - Satellites positions in ECEF system: [X; Y; Z;]
+     *       obs         - Observations - the pseudorange measurements to each
+     *                   satellite
+     *       w           - weigths vector
+     *
+     *   Returns:
+     *       pos         - receiver position and receiver clock error
+     *                   (in ECEF system: [X, Y, Z, dt])
+     */
 
     //=== Initialization =======================================================
     int nmbOfIterations = 10; // TODO: include in config
@@ -150,7 +127,6 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
 
     int nmbOfSatellites;
 
-    //nmbOfSatellites = satpos.cols();    //ITPP
     nmbOfSatellites = satpos.n_cols;	//Armadillo
     arma::vec pos = "0.0 0.0 0.0 0.0";
     arma::mat A;
@@ -183,7 +159,6 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
         for (int i = 0; i < nmbOfSatellites; i++) {
             if (iter == 0) {
                 //--- Initialize variables at the first iteration --------------
-                //Rot_X=X.get_col(i); //ITPP
             	Rot_X=X.col(i); //Armadillo
                 trop = 0.0;
             } else {
@@ -191,22 +166,16 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                 rho2 = (X(0, i) - pos(0))*(X(0, i) - pos(0))  + (X(1, i) - pos(1))*(X(1, i) - pos(1))+ (X(2,i) - pos(2))*(X(2,i) - pos(2));
                 traveltime = sqrt(rho2) / GPS_C_m_s;
                 //--- Correct satellite position (do to earth rotation) --------
-                //Rot_X = e_r_corr(traveltime, X.get_col(i)); //ITPP
+
                 Rot_X = e_r_corr(traveltime, X.col(i)); //armadillo
                 //--- Find the elevation angel of the satellite ----------------
                 //[az(i), el(i), dist] = topocent(pos(1:3, :), Rot_X - pos(1:3, :));
 
             }
             //--- Apply the corrections ----------------------------------------
-            //omc(i) = (obs(i) - norm(Rot_X - pos(3)) - pos(4) - trop); //ITPP
             omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0,2),2) - pos(3) - trop); // Armadillo
-            //--- Construct the A matrix ---------------------------------------
-            //ITPP
-            //A.set(i, 0, (-(Rot_X(0) - pos(0))) / obs(i));
-            //A.set(i, 1, (-(Rot_X(1) - pos(1))) / obs(i));
-            //A.set(i, 2, (-(Rot_X(2) - pos(2))) / obs(i));
-            //A.set(i, 3, 1.0);
 
+            //--- Construct the A matrix ---------------------------------------
             //Armadillo
             A(i,0)=(-(Rot_X(0) - pos(0))) / obs(i);
             A(i,1)=(-(Rot_X(1) - pos(1))) / obs(i);
@@ -222,7 +191,6 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
         //}
 
         //--- Find position update ---------------------------------------------
-        // x = ls_solve_od(w*A,w*omc); // ITPP
         x = arma::solve(w*A,w*omc); // Armadillo
 
         //--- Apply position update --------------------------------------------
@@ -235,12 +203,7 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
 bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_map,double GPS_current_time,bool flag_averaging)
 {
     std::map<int,gnss_pseudorange>::iterator gnss_pseudoranges_iter;
-    //ITPP
-    //mat W=eye(d_nchannels); //channels weights matrix
-    //vec obs=zeros(d_nchannels); // pseudoranges observation vector
-    //mat satpos=zeros(3,d_nchannels); //satellite positions matrix
 
-    // Armadillo
     arma::mat W=arma::eye(d_nchannels,d_nchannels); //channels weights matrix
     arma::vec obs=arma::zeros(d_nchannels); // pseudoranges observation vector
     arma::mat satpos=arma::zeros(3,d_nchannels); //satellite positions matrix
@@ -288,7 +251,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
         mypos=leastSquarePos(satpos,obs,W);
         std::cout << "Position at TOW="<<GPS_current_time<<" is ECEF (X,Y,Z) = " << mypos << std::endl;
         cart2geo(mypos(0), mypos(1), mypos(2), 4);
-        std::cout << "Position at TOW="<<GPS_current_time<<" is Lat = " << d_latitude_d << " [ยบ] Long ="<< d_longitude_d <<" [ยบ] Height="<<d_height_m<<" [m]\r\n";
+        std::cout << "Position at TOW="<<GPS_current_time<<" is Lat = " << d_latitude_d << " [ผ] Long = "<< d_longitude_d <<" [ผ] Height= "<<d_height_m<<" [m]" <<std::endl;
         // ######## LOG FILE #########
     	if(d_flag_dump_enabled==true) {
     		// MULTIPLEXED FILE RECORDING - Record results to file
@@ -385,21 +348,19 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
 }
 void gps_l1_ca_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_selection)
 {
-    //function [phi, lambda, h] = cart2geo(X, Y, Z, i)
-    //CART2GEO Conversion of Cartesian coordinates (X,Y,Z) to geographical
-    //coordinates (phi, lambda, h) on a selected reference ellipsoid.
+    // Conversion of Cartesian coordinates (X,Y,Z) to geographical
+    // coordinates (latitude, longitude, h) on a selected reference ellipsoid.
     //
-    //[phi, lambda, h] = cart2geo(X, Y, Z, i);
     //
-    //   Choices i of Reference Ellipsoid for Geographical Coordinates
+    //   Choices of Reference Ellipsoid for Geographical Coordinates
     //             0. International Ellipsoid 1924
     //             1. International Ellipsoid 1967
     //             2. World Geodetic System 1972
     //             3. Geodetic Reference System 1980
     //             4. World Geodetic System 1984
 
-    double a[5] = {6378388, 6378160, 6378135, 6378137, 6378137};
-    double f[5] = {1/297, 1/298.247, 1/298.26, 1/298.257222101, 1/298.257223563};
+    const double a[5] = {6378388, 6378160, 6378135, 6378137, 6378137};
+    const double f[5] = {1/297, 1/298.247, 1/298.26, 1/298.257222101, 1/298.257223563};
 
     double lambda;
     lambda = atan2(Y,X);

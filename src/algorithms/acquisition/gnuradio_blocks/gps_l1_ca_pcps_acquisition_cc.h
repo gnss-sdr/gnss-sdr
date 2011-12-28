@@ -31,16 +31,14 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_L1_CA_PCPS_ACQUISITION_A_CC_H
-#define	GPS_L1_CA_PCPS_ACQUISITION_A_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_A_CC_H
+#define	GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_A_CC_H
 
 #include <fstream>
-
 #include <gnuradio/gr_block.h>
 #include <gnuradio/gr_msg_queue.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/gri_fft.h>
-
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
@@ -54,6 +52,9 @@ gps_l1_ca_pcps_make_acquisition_cc(unsigned int sampled_ms,
         unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
         gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
 
+/*!
+ * \brief This class implements a PCPS acquisition block
+ */
 class gps_l1_ca_pcps_acquisition_cc: public gr_block
 {
 
@@ -160,4 +161,4 @@ public:
             gr_vector_void_star &output_items);
 };
 
-#endif /* GPS_L1_CA_PCPS_ACQUISITION_CC_H*/
+#endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_CC_H*/

@@ -27,8 +27,8 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef GPS_TELEMETRY_H_
-#define GPS_TELEMETRY_H_
+#ifndef GNSS_SDR_GPS_TELEMETRY_H_
+#define GNSS_SDR_GPS_TELEMETRY_H_
 
 #define _lrotl(X,N)             ((X << N) ^ (X >> (32-N)))      //!< Used in the parity check algorithm
 

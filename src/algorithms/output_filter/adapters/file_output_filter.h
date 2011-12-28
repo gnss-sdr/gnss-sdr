@@ -37,7 +37,6 @@
 #define GNSS_SDR_FILE_OUTPUT_FILTER_H_
 
 #include "gnss_block_interface.h"
-
 #include <gr_file_sink.h>
 
 class ConfigurationInterface;

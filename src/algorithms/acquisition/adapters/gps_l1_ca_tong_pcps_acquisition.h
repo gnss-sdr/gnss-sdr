@@ -30,13 +30,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_L1_CA_TONG_PCPS_ACQUISITION_H_
-#define GPS_L1_CA_TONG_PCPS_ACQUISITION_H_
+#ifndef GNSS_SDR_L1_CA_TONG_PCPS_ACQUISITION_H_
+#define GNSS_SDR_L1_CA_TONG_PCPS_ACQUISITION_H_
 
 #include "acquisition_interface.h"
-
 #include "gps_l1_ca_tong_pcps_acquisition_cc.h"
-
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
@@ -72,10 +70,7 @@ public:
 
     void set_satellite(unsigned int satellite);
     void set_channel(unsigned int channel);
-    void set_threshold(float threshold)
-    {
-    }
-    ;
+    void set_threshold(float threshold){};
     void set_doppler_max(unsigned int doppler_max);
     void set_doppler_step(unsigned int doppler_step);
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
@@ -116,4 +111,4 @@ private:
 
 };
 
-#endif /* GPS_L1_CA_TONG_PCPS_ACQUISITION_H_ */
+#endif /* GNSS_SDR_L1_CA_TONG_PCPS_ACQUISITION_H_ */

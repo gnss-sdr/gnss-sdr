@@ -30,14 +30,16 @@
  */
 
 
-#ifndef KML_PRINTER_H_
-#define	KML_PRINTER_H_
+#ifndef GNSS_SDR_KML_PRINTER_H_
+#define	GNSS_SDR_KML_PRINTER_H_
 
 #include <iostream>
 #include <fstream>
-
 #include "gps_l1_ca_ls_pvt.h"
 
+/*!
+ * \brief Prints PVT information to a GoogleEarth .kml file
+ */
 class kml_printer
 {
 private:

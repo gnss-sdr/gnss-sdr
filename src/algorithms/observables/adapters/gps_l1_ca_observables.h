@@ -31,13 +31,11 @@
  */
 
 
-#ifndef GPS_L1_CA_OBSERVABLES_H_
-#define GPS_L1_CA_OBSERVABLES_H_
+#ifndef GNSS_SDR_GPS_L1_CA_OBSERVABLES_H_
+#define GNSS_SDR_GPS_L1_CA_OBSERVABLES_H_
 
 #include "observables_interface.h"
-
 #include "gps_l1_ca_observables_cc.h"
-
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;

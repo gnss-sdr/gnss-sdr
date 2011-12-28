@@ -33,13 +33,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_L1_CA_DLL_FLL_PLL_TRACKING_H_
-#define GPS_L1_CA_DLL_FLL_PLL_TRACKING_H_
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_H_
+#define GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_H_
 
 #include "tracking_interface.h"
-
 #include "gps_l1_ca_dll_fll_pll_tracking_cc.h"
-
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;

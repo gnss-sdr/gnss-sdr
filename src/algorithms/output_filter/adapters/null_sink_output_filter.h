@@ -1,6 +1,6 @@
 /*!
  * \file null_sink_output_filter.h
- * \brief Brief description of the file here
+ * \brief Interface of a null sink output filter
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  * This class represents an implementation of an output filter that
@@ -33,15 +33,17 @@
 
 
 
-#ifndef NULL_SINK_OUTPUT_FILTER_H_
-#define NULL_SINK_OUTPUT_FILTER_H_
+#ifndef GNSS_SDR_NULL_SINK_OUTPUT_FILTER_H_
+#define GNSS_SDR_NULL_SINK_OUTPUT_FILTER_H_
 
 #include "gnss_block_interface.h"
-
 #include <gr_null_sink.h>
 
 class ConfigurationInterface;
 
+/*!
+ * \brief This class implements a null sink output filter
+ */
 class NullSinkOutputFilter : public GNSSBlockInterface
 {
 
@@ -87,4 +89,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif /*NULL_SINK_OUTPUT_FILTER_H_*/
+#endif /*GNSS_SDR_NULL_SINK_OUTPUT_FILTER_H_*/

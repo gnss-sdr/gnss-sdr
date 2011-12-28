@@ -3,9 +3,8 @@
  * \brief Class that implements 2 order DLL filter for code tracking loop.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * Class that implements 2 order PLL filter for code tracking loop. The algorithm is described in [1]
- *
- * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.~H.~Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
+ * Class that implements 2 order PLL filter for code tracking loop. The algorithm is described in:
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S. H. Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
  * Birkhauser, 2007, Applied and Numerical Harmonic Analysis.
  *
  * -------------------------------------------------------------------------
@@ -33,9 +32,16 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef TRACKING_2ND_DLL_FILTER_H_
-#define TRACKING_2ND_DLL_FILTER_H_
+#ifndef GNSS_SDR_TRACKING_2ND_DLL_FILTER_H_
+#define GNSS_SDR_TRACKING_2ND_DLL_FILTER_H_
 
+/*!
+ * \brief This class implements a 2nd order DLL filter for code tracking loop.
+ *
+ * The algorithm is described in:
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S. H. Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
+ * Birkhauser, 2007, Applied and Numerical Harmonic Analysis.
+ */
 class tracking_2nd_DLL_filter
 {
 private:
@@ -51,7 +57,7 @@ private:
 
     void calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k);
 public:
-	void set_DLL_BW(float dll_bw_hz);
+	void set_DLL_BW(float dll_bw_hz); //! Set DLL loop bandwidth [Hz]
 	void initialize(float d_acq_code_phase_samples);
 	float get_code_nco(float DLL_discriminator);
 	tracking_2nd_DLL_filter();

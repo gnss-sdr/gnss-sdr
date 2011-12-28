@@ -26,30 +26,32 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifndef GPS_L1_CA_TELEMETRY_DECODER_CC_H
-#define	GPS_L1_CA_TELEMETRY_DECODER_CC_H
+
+#ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
+#define	GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
 
 #include <fstream>
-
+#include <bitset>
 #include <gnuradio/gr_block.h>
 //#include <gnuradio/gr_sync_block.h>
 #include <gnuradio/gr_msg_queue.h>
-
-#include <bitset>
-
 #include "GPS_L1_CA.h"
 #include "gps_telemetry.h"
 #include "gps_l1_ca_subframe_fsm.h"
-
 #include "concurrent_queue.h"
 
 class gps_l1_ca_telemetry_decoder_cc;
+
 typedef boost::shared_ptr<gps_l1_ca_telemetry_decoder_cc> gps_l1_ca_telemetry_decoder_cc_sptr;
+
 gps_l1_ca_telemetry_decoder_cc_sptr
 gps_l1_ca_make_telemetry_decoder_cc(unsigned int satellite, long if_freq, long fs_in, unsigned
     int vector_length, gr_msg_queue_sptr queue, bool dump);
 
-
+/*!
+ * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
+ *
+ */
 class gps_l1_ca_telemetry_decoder_cc : public gr_block {
 
 private:

@@ -31,17 +31,18 @@
 
 
 
-#ifndef GPS_L1_CA_PVT_H_
-#define GPS_L1_CA_PVT_H_
+#ifndef GNSS_SDR_GPS_L1_CA_PVT_H_
+#define GNSS_SDR_GPS_L1_CA_PVT_H_
 
 #include "pvt_interface.h"
-
 #include "gps_l1_ca_pvt_cc.h"
-
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
 
+/*!
+ * \brief This class implements a PVT interface for GPS L1 C/A
+ */
 class GpsL1CaPvt : public PvtInterface
 {
 

@@ -30,9 +30,12 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef TRACKING_FLL_PLL_FILTER_H_
-#define TRACKING_FLL_PLL_FILTER_H_
+#ifndef GNSS_SDR_TRACKING_FLL_PLL_FILTER_H_
+#define GNSS_SDR_TRACKING_FLL_PLL_FILTER_H_
 
+/*!
+ * \brief This class implements a hybrid FLL and PLL filter for tracking carrier loop
+ */
 class tracking_FLL_PLL_filter
 {
 private:

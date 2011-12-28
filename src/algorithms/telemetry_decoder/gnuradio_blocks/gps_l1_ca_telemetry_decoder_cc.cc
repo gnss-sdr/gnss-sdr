@@ -29,20 +29,19 @@
  */
 
 /*!
- * \todo Clean this code and move the telemetri definitions to GPS_L1_CA system definitions file
+ * \todo Clean this code and move the telemetry definitions to GPS_L1_CA system definitions file
  */
-#include "gps_l1_ca_telemetry_decoder_cc.h"
-
-#include "control_message_factory.h"
 
 #include <iostream>
 #include <sstream>
 #include <bitset>
-
 #include <gnuradio/gr_io_signature.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include "gps_l1_ca_telemetry_decoder_cc.h"
+#include "control_message_factory.h"
+
+
 
 
 using google::LogMessage;

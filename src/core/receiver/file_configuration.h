@@ -38,7 +38,6 @@
 #define GNSS_SDR_FILE_CONFIGURATION_H_
 
 #include "configuration_interface.h"
-
 #include <string>
 
 class INIReader;

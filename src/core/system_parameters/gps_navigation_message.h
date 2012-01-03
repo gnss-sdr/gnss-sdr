@@ -58,6 +58,7 @@ private:
   unsigned long int read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices);
   signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices);
   bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices);
+  void print_gps_word_bytes(unsigned int GPS_word);
 
   /*
    * Accounts for the beginning or end of week crossover

@@ -76,7 +76,7 @@ const int GPS_WORD_BITS=30;                    //!< Number of bits per word in t
 
 
 
-#define num_of_slices(x) sizeof(x)/sizeof(bits_slice)
+
 
 /*!
  *  \brief Navigation message bits slice structure: A portion of bits is indicated by

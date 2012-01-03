@@ -31,15 +31,17 @@
 #ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
 #define	GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
 
+
+#include "GPS_L1_CA.h"
+#include "gps_l1_ca_subframe_fsm.h"
+#include "concurrent_queue.h"
 #include <fstream>
 #include <bitset>
 #include <gnuradio/gr_block.h>
-//#include <gnuradio/gr_sync_block.h>
 #include <gnuradio/gr_msg_queue.h>
-#include "GPS_L1_CA.h"
-#include "gps_telemetry.h"
-#include "gps_l1_ca_subframe_fsm.h"
-#include "concurrent_queue.h"
+//#include <gnuradio/gr_sync_block.h>
+
+
 
 class gps_l1_ca_telemetry_decoder_cc;
 
@@ -63,6 +65,8 @@ private:
 
   gps_l1_ca_telemetry_decoder_cc(unsigned int satellite, long if_freq, long fs_in,unsigned
       int vector_length, gr_msg_queue_sptr queue, bool dump);
+
+  bool gps_word_parityCheck(unsigned int gpsword);
 
   // constants
   unsigned short int d_preambles_bits[8];

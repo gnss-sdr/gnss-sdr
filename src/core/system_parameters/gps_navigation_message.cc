@@ -32,6 +32,10 @@
 
 #include "gps_navigation_message.h"
 
+
+#define num_of_slices(x) sizeof(x)/sizeof(bits_slice)
+
+
 void gps_navigation_message::reset()
 {
     d_TOW=0;
@@ -129,6 +133,13 @@ gps_navigation_message::gps_navigation_message()
 
 
 
+void gps_navigation_message::print_gps_word_bytes(unsigned int GPS_word)
+{
+  std::cout << " Word =";
+  std::cout<<std::bitset<32>(GPS_word);
+  std::cout<<std::endl;
+}
+
 
 
 bool gps_navigation_message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices)
@@ -154,6 +165,7 @@ bool gps_navigation_message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS>
 unsigned long int gps_navigation_message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
 {
     unsigned long int value;
+
     value=0;
     for (int i=0;i<num_of_slices;i++)
         {

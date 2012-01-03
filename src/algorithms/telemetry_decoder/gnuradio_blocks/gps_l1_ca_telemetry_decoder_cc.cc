@@ -33,16 +33,16 @@
  * \todo Clean this code and move the telemetry definitions to GPS_L1_CA system definitions file
  */
 
+#include "gps_l1_ca_telemetry_decoder_cc.h"
 #include <iostream>
 #include <sstream>
 #include <bitset>
 #include <gnuradio/gr_io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include "gps_l1_ca_telemetry_decoder_cc.h"
 #include "control_message_factory.h"
 
-
+#define _lrotl(X,N)             ((X << N) ^ (X >> (32-N)))      //!< Used in the parity check algorithm
 
 
 using google::LogMessage;
@@ -118,6 +118,38 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(unsigned int sate
 gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc() {
   delete d_preambles_symbols;
   d_dump_file.close();
+
+}
+
+
+
+bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
+{
+  unsigned int d1,d2,d3,d4,d5,d6,d7,t,parity;
+
+  /* XOR as many bits in parallel as possible.  The magic constants pick
+       up bits which are to be XOR'ed together to implement the GPS parity
+       check algorithm described in IS-GPS-200E.  This avoids lengthy shift-
+       and-xor loops. */
+
+  d1 = gpsword & 0xFBFFBF00;
+  d2 = _lrotl(gpsword,1) & 0x07FFBF01;
+  d3 = _lrotl(gpsword,2) & 0xFC0F8100;
+  d4 = _lrotl(gpsword,3) & 0xF81FFE02;
+  d5 = _lrotl(gpsword,4) & 0xFC00000E;
+  d6 = _lrotl(gpsword,5) & 0x07F00001;
+  d7 = _lrotl(gpsword,6) & 0x00003000;
+
+  t = d1 ^ d2 ^ d3 ^ d4 ^ d5 ^ d6 ^ d7;
+
+  // Now XOR the 5 6-bit fields together to produce the 6-bit final result.
+
+  parity = t ^ _lrotl(t,6) ^ _lrotl(t,12) ^ _lrotl(t,18) ^ _lrotl(t,24);
+  parity = parity & 0x3F;
+  if (parity == (gpsword&0x3F))
+    return(true);
+  else
+    return(false);
 
 }
 
@@ -247,7 +279,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         {
         d_GPS_frame_4bytes ^= 0x3FFFFFC0; // invert the data bits (using XOR)
         }
-      if (gps_word_parityCheck(d_GPS_frame_4bytes)) {
+      if (gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(d_GPS_frame_4bytes)) {
         memcpy(&d_GPS_FSM.d_GPS_frame_4bytes,&d_GPS_frame_4bytes,sizeof(char)*4);
         d_GPS_FSM.d_preamble_time_ms=d_preamble_time_seconds*1000.0;
         d_GPS_FSM.Event_gps_word_valid();

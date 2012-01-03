@@ -45,7 +45,6 @@
 #include <iostream>
 #include <cstring>
 #include "GPS_L1_CA.h"
-#include "gps_telemetry.h"
 #include "gps_navigation_message.h"
 
 namespace sc = boost::statechart;

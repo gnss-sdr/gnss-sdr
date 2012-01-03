@@ -30,16 +30,10 @@
  * -------------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "direct_resampler_conditioner_cc.h"
-
 #include <iostream>
-
 #include <gnuradio/gr_io_signature.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,7 +38,9 @@
 #include "gps_l1_ca_ls_pvt.h"
 
 /*!
- * \brief Prints PVT information to a GoogleEarth .kml file
+ * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
+ *
+ * See http://www.opengeospatial.org/standards/kml
  */
 class kml_printer
 {

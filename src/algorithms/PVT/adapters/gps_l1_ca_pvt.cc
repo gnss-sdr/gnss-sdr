@@ -1,7 +1,7 @@
 /*!
  * \file gps_l1_ca_pvt.cc
  * \brief  Implementation of an adapter of a GPS L1 C/A PVT solver block to a
- * PVTInterface
+ * PvtInterface
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  *

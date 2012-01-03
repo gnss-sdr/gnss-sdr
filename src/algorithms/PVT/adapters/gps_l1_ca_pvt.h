@@ -1,7 +1,7 @@
 /*!
  * \file gps_l1_ca_pvt.h
  * \brief Interface of an adapter of a GPS L1 C/A PVT solver block to a
- * PVTInterface
+ * PvtInterface
  * Position Velocity and Time
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *

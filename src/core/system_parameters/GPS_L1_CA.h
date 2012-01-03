@@ -1,11 +1,11 @@
 /*!
  * \file GPS_L1_CA.h
- * \brief  Defines system parameters for GPS L1 C/A signal
+ * \brief  Defines system parameters for GPS L1 C/A signal and NAV data
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,38 +32,20 @@
 #ifndef GNSS_SDR_GPS_L1_CA_H_
 #define GNSS_SDR_GPS_L1_CA_H_
 
-#define NAVIGATION_SOLUTION_RATE_MS 1000
-
-
-const float GPS_C_m_s  = 299792458.0;    //!< The speed of light, [m/s]
-const float GPS_C_m_ms = 299792.4580;    //!< The speed of light, [m/ms]
-
-const float GPS_STARTOFFSET_ms= 68.802; //[ms] Initial sign. travel time
-const double GPS_PI = 3.1415926535898;  //!< Pi used in the GPS coordinate system
+// Physical constants
+const float GPS_C_m_s        = 299792458.0;      //!< The speed of light, [m/s]
+const float GPS_C_m_ms       = 299792.4580;      //!< The speed of light, [m/ms]
+const double GPS_PI          = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
+const double OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
+const double GM              = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
+const double F               = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 
 
 // carrier and code frequencies
-const float GPS_L1_FREQ_HZ	        = 1.57542e9;
-const float GPS_L2_FREQ_HZ	        = 1.22760e9;
-const float GPS_L1_CA_CODE_RATE_HZ      = 1.023e6;
-const float GPS_L1_CA_CODE_LENGTH_CHIPS	= 1023.0;
+const float GPS_L1_FREQ_HZ	        = 1.57542e9; //!< L1 [Hz]
+const float GPS_L1_CA_CODE_RATE_HZ      = 1.023e6;   //!< GPS L1 C/A code rate [chips/s]
+const float GPS_L1_CA_CODE_LENGTH_CHIPS	= 1023.0;    //!< GPS L1 C/A code length [chips]
 
-
-//-- Constants for satellite position calculation -------------------------
-const double  OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
-const double  GM              = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-const double  F               = -4.442807633e-10; //!< Constant, [sec/(meter)^(1/2)]
-
-
-// NAVIGATION MESSAGE DEMODULATION AND DECODING
-
-#define GPS_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
-#define GPS_CA_PREAMBLE_LENGTH_BITS 8
-#define GPS_CA_TELEMETRY_RATE_BITS_SECOND 50
-#define GPS_WORD_LENGTH 4 // CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
-#define GPS_SUBFRAME_LENGTH 40 // GPS_WORD_LENGTH x 10 = 40 bytes
-#define GPS_SUBFRAME_BITS 300
-#define GPS_WORD_BITS 30
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms
  *
@@ -73,6 +55,26 @@ const double  F               = -4.442807633e-10; //!< Constant, [sec/(meter)^(1
  * Inc., Hoboken, NJ, 2nd edition, 2005.
  */
 const double MAX_TOA_DELAY_MS=20;
+
+
+
+#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
+const float GPS_STARTOFFSET_ms= 68.802; //[ms] Initial sign. travel time (this cannot go here)
+
+
+// NAVIGATION MESSAGE DEMODULATION AND DECODING
+
+#define GPS_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
+#define GPS_CA_PREAMBLE_LENGTH_BITS 8
+#define GPS_CA_TELEMETRY_RATE_BITS_SECOND 50   //!< NAV message bit rate [bits/s]
+#define GPS_WORD_LENGTH 4                      // CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
+#define GPS_SUBFRAME_LENGTH 40                 // GPS_WORD_LENGTH x 10 = 40 bytes
+const int GPS_SUBFRAME_BITS=300;               //!< Number of bits per subframe in the NAV message [bits]
+const int GPS_WORD_BITS=30;                    //!< Number of bits per word in the NAV message [bits]
+
+
+
+
 
 #define num_of_slices(x) sizeof(x)/sizeof(bits_slice)
 

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -47,7 +47,7 @@
 
 
 /*!
- * \brief This class represents a GPS NAV Data as described in IS-GPS-200E
+ * \brief This class decodes a GPS NAV Data message as described in IS-GPS-200E
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
@@ -59,7 +59,7 @@ private:
   signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices);
   bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices);
 
-  /*!
+  /*
    * Accounts for the beginning or end of week crossover
    *
    * See paragraph 20.3.3.3.3.1 (IS-GPS-200E)
@@ -75,7 +75,7 @@ public:
     double d_IODE_SF3;
     double d_Crs;            //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
     double d_Delta_n;        //!< Mean Motion Difference From Computed Value [semi-circles/s]
-    double d_M_0;            //!<  Mean Anomaly at Reference Time [semi-circles]
+    double d_M_0;            //!< Mean Anomaly at Reference Time [semi-circles]
     //broadcast orbit 2
     double d_Cuc;            //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_e_eccentricity; //!< Eccentricity [dimensionless]
@@ -98,10 +98,10 @@ public:
     double d_GPS_week;       //!< GPS week number, aka WN [week]
     bool   b_L2_P_data_flag; //!< When true, indicates that the NAV data stream was commanded OFF on the P-code of the L2 channel
     //broadcast orbit 6
-    double d_SV_accuracy;   //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
+    double d_SV_accuracy;    //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
     double d_SV_health;
-    double d_TGD;           //!< Estimated Group Delay Differential: L1-L2 correction term for the benefit of "L1 only" or "L2 only" users [s]
-    double d_IODC;          //!< Issue of Data, Clock
+    double d_TGD;            //!< Estimated Group Delay Differential: L1-L2 correction term for the benefit of "L1 only" or "L2 only" users [s]
+    double d_IODC;           //!< Issue of Data, Clock
     //broadcast orbit 7
 
     double d_fit_interval;
@@ -127,7 +127,7 @@ public:
     bool b_integrity_status_flag;
 
     bool b_alert_flag;      //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
-    bool b_antispoofing_flag;  //<!  If true, the AntiSpoofing mode is ON in that SV
+    bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
 
 
     // clock terms
@@ -136,9 +136,9 @@ public:
     double d_dtr;            // relativistic clock correction term
 
     // satellite positions
-    double d_satpos_X;       //<! Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
-    double d_satpos_Y;       //<! Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
-    double d_satpos_Z;       //<! Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
+    double d_satpos_X;       //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
+    double d_satpos_Y;       //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
+    double d_satpos_Z;       //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
 
     // satellite identification info
 
@@ -194,6 +194,10 @@ public:
     void satpos();
     void relativistic_clock_correction(double transmitTime);
     bool satellite_validation();
+
+    /*!
+     * Default constructor
+     */
     gps_navigation_message();
 };
 

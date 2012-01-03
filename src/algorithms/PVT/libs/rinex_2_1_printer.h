@@ -45,8 +45,7 @@ private:
     std::ofstream navFile ;
     std::ofstream obsFile ;
 
-    /*!
-     * \brief Creates RINEX file names according to the naming convention
+    /* Creates RINEX file names according to the naming convention
      *
      * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf
      * Section 4, page 6
@@ -64,18 +63,18 @@ private:
      */
     std::string createFilename(std::string type);
 
-    /*!
-     * \brief Generates the data for the PGM / RUN BY / DATE line
+    /*
+     * Generates the data for the PGM / RUN BY / DATE line
      */
     std::string getLocalTime();
 
-    /*!
-     * \brief Checks that the line is 80 characters length
+    /*
+     *  Checks that the line is 80 characters length
      */
     void lengthCheck(std::string line);
 
-    /*!
-     * \brief  If the string is bigger than length, truncate it from the right.
+    /*
+     * If the string is bigger than length, truncate it from the right.
      * otherwise, add pad characters to its right.
      *
      * Left-justifies the input in a string of the specified
@@ -91,8 +90,8 @@ private:
             const std::string::size_type length,
             const char pad = ' ');
 
-    /*!
-     * \brief  If the string is bigger than length, truncate it from the right.
+    /*
+     * If the string is bigger than length, truncate it from the right.
      * otherwise, add pad characters to its right.
      *
      * Left-justifies the receiver in a string of the specified
@@ -111,18 +110,18 @@ private:
 
 
 
-    /*!
-     * \brief Generates the Navigation Data header
+    /*
+     *  Generates the Navigation Data header
      */
     void Rinex2NavHeader(std::ofstream& out);
 
-    /*!
-     * \brief Generates the Observation data header
+    /*
+     *  Generates the Observation data header
      */
     void Rinex2ObsHeader(std::ofstream& out);
 
-    /*!
-     * \brief Generation of RINEX signal strength indicators
+    /*
+     * Generation of RINEX signal strength indicators
      */
     int signalStrength(double snr);
 

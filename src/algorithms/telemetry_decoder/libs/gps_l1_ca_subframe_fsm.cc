@@ -1,5 +1,35 @@
+/*!
+ * \file gps_l1_ca_subframe_fsm.cc
+ * \brief  Implementation of a GPS NAV message word-to-subframe decoder state machine
+ * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
 
 #include "gps_l1_ca_subframe_fsm.h"
+
 
 //************ GPS WORD TO SUBFRAME DECODER STATE MACHINE **********
 
@@ -15,6 +45,10 @@ public:
     //std::cout<<"Enter S0 "<<std::endl;
   }
 };
+
+
+
+
 struct gps_subframe_fsm_S1: public sc::state<gps_subframe_fsm_S1, GpsL1CaSubframeFsm > {
 public:
   typedef mpl::list<sc::transition< Ev_gps_word_invalid, gps_subframe_fsm_S0 >,
@@ -24,6 +58,9 @@ public:
     //std::cout<<"Enter S1 "<<std::endl;
   }
 };
+
+
+
 
 struct gps_subframe_fsm_S2: public sc::state<gps_subframe_fsm_S2, GpsL1CaSubframeFsm > {
 public:
@@ -35,6 +72,10 @@ public:
     context< GpsL1CaSubframeFsm >().gps_word_to_subframe(0);
   }
 };
+
+
+
+
 struct gps_subframe_fsm_S3: public sc::state<gps_subframe_fsm_S3, GpsL1CaSubframeFsm > {
 public:
   typedef mpl::list<sc::transition< Ev_gps_word_invalid, gps_subframe_fsm_S0 >,
@@ -45,6 +86,10 @@ public:
     context< GpsL1CaSubframeFsm >().gps_word_to_subframe(1);
   }
 };
+
+
+
+
 struct gps_subframe_fsm_S4: public sc::state<gps_subframe_fsm_S4, GpsL1CaSubframeFsm > {
 public:
   typedef mpl::list<sc::transition< Ev_gps_word_invalid, gps_subframe_fsm_S0 >,
@@ -55,6 +100,10 @@ public:
     context< GpsL1CaSubframeFsm >().gps_word_to_subframe(2);
   }
 };
+
+
+
+
 struct gps_subframe_fsm_S5: public sc::state<gps_subframe_fsm_S5, GpsL1CaSubframeFsm > {
 public:
   typedef mpl::list<sc::transition< Ev_gps_word_invalid, gps_subframe_fsm_S0 >,
@@ -65,6 +114,11 @@ public:
     context< GpsL1CaSubframeFsm >().gps_word_to_subframe(3);
   }
 };
+
+
+
+
+
 struct gps_subframe_fsm_S6: public sc::state<gps_subframe_fsm_S6, GpsL1CaSubframeFsm > {
 public:
   typedef mpl::list<sc::transition< Ev_gps_word_invalid, gps_subframe_fsm_S0 >,
@@ -75,6 +129,9 @@ public:
     context< GpsL1CaSubframeFsm >().gps_word_to_subframe(4);
   }
 };
+
+
+
 struct gps_subframe_fsm_S7: public sc::state<gps_subframe_fsm_S7, GpsL1CaSubframeFsm > {
 public:
   typedef mpl::list<sc::transition< Ev_gps_word_invalid, gps_subframe_fsm_S0 >,
@@ -85,6 +142,9 @@ public:
     context< GpsL1CaSubframeFsm >().gps_word_to_subframe(5);
   }
 };
+
+
+
 struct gps_subframe_fsm_S8: public sc::state<gps_subframe_fsm_S8, GpsL1CaSubframeFsm > {
 public:
   typedef mpl::list<sc::transition< Ev_gps_word_invalid, gps_subframe_fsm_S0 >,
@@ -95,6 +155,10 @@ public:
     context< GpsL1CaSubframeFsm >().gps_word_to_subframe(6);
   }
 };
+
+
+
+
 struct gps_subframe_fsm_S9: public sc::state<gps_subframe_fsm_S9, GpsL1CaSubframeFsm > {
 public:
   typedef mpl::list<sc::transition< Ev_gps_word_invalid, gps_subframe_fsm_S0 >,
@@ -105,6 +169,9 @@ public:
     context< GpsL1CaSubframeFsm >().gps_word_to_subframe(7);
   }
 };
+
+
+
 struct gps_subframe_fsm_S10: public sc::state<gps_subframe_fsm_S10, GpsL1CaSubframeFsm > {
 public:
   typedef mpl::list<sc::transition< Ev_gps_word_invalid, gps_subframe_fsm_S0 >,
@@ -115,6 +182,9 @@ public:
     context< GpsL1CaSubframeFsm >().gps_word_to_subframe(8);
   }
 };
+
+
+
 struct gps_subframe_fsm_S11: public sc::state<gps_subframe_fsm_S11, GpsL1CaSubframeFsm > {
 public:
   typedef sc::transition< Ev_gps_word_preamble, gps_subframe_fsm_S1 > reactions;
@@ -128,17 +198,27 @@ public:
   }
 };
 
+
+
+
 GpsL1CaSubframeFsm::GpsL1CaSubframeFsm()
 {
   d_nav.reset();
   initiate(); //start the FSM
 }
 
+
+
+
 void GpsL1CaSubframeFsm::gps_word_to_subframe(int position)
 {
   // insert the word in the correct position of the subframe
   std::memcpy(&d_subframe[position*GPS_WORD_LENGTH],&d_GPS_frame_4bytes,sizeof(char)*GPS_WORD_LENGTH);
 }
+
+
+
+
 
 void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
 {
@@ -165,15 +245,23 @@ void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
 
 }
 
+
+
+
 void GpsL1CaSubframeFsm::Event_gps_word_valid()
 {
   this->process_event(Ev_gps_word_valid());
 }
 
+
+
+
 void GpsL1CaSubframeFsm::Event_gps_word_invalid()
 {
   this->process_event(Ev_gps_word_invalid());
 }
+
+
 
 void GpsL1CaSubframeFsm::Event_gps_word_preamble()
 {

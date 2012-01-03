@@ -55,6 +55,8 @@ rinex_printer::rinex_printer()
 
 }
 
+
+
 rinex_printer::~rinex_printer()
 {
     // close RINEX files
@@ -613,9 +615,6 @@ int rinex_printer::signalStrength(double snr)
 
 
 /*
-
-
-
 
 enum RINEX_enumObservationType
 {

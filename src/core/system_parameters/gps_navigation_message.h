@@ -95,23 +95,30 @@ public:
     double d_OMEGA_DOT;      //!< Rate of Right Ascension [semi-circles/s]
     //broadcast orbit 5
     double d_IDOT;           //!< Rate of Inclination Angle [semi-circles/s]
-    double d_codes_on_L2;    //!<
-    double d_GPS_week;       //!< GPS week number, aka WN [week]
+    int i_code_on_L2;        //!< If 1, P code ON in L2;  if 2, C/A code ON in L2;
+    int i_GPS_week;          //!< GPS week number, aka WN [week]
     bool   b_L2_P_data_flag; //!< When true, indicates that the NAV data stream was commanded OFF on the P-code of the L2 channel
     //broadcast orbit 6
-    double d_SV_accuracy;    //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
-    double d_SV_health;
+    int i_SV_accuracy;       //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
+    int i_SV_health;
     double d_TGD;            //!< Estimated Group Delay Differential: L1-L2 correction term for the benefit of "L1 only" or "L2 only" users [s]
     double d_IODC;           //!< Issue of Data, Clock
     //broadcast orbit 7
+    int i_AODO;              //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
-    double d_fit_interval;
+    bool b_fit_interval_flag;//!< indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
     double d_spare1;
     double d_spare2;
 
     double d_A_f0;          //!< Coefficient 0 of code phase offset model [s]
     double d_A_f1;          //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;          //!< Coefficient 2 of code phase offset model [s/s^2]
+
+
+    // Almanac
+    double d_Toa;           //!< Almanac reference time [s]
+    int i_WN_A;             //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
+    std::map<int,int> almanacHealth;
 
     // Flags
 
@@ -165,10 +172,10 @@ public:
     double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
     double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
-    double d_WN_T;        //!< UTC reference week number [weeks]
+    int i_WN_T;           //!< UTC reference week number [weeks]
     double d_DeltaT_LS;   //!< delta time due to leap seconds [s]
-    double d_WN_LSF;      //!< Week number at the end of which the leap second becomes effective [weeks]
-    double d_DN;          //!< Day number (DN) at the end of which the leap second becomes effective [days]
+    int i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
+    int i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
 

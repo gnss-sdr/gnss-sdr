@@ -223,6 +223,9 @@ const bits_slice SQRT_A[]= {{227,8},{241,24}};
 const double SQRT_A_LSB=TWO_N19;
 const bits_slice T_OE[]= {{271,16}};
 const double T_OE_LSB=TWO_P4;
+const bits_slice FIT_INTERVAL_FLAG[]= {{271,1}};
+const bits_slice AODO[] = {{272,5}};
+const int AODO_LSB = 900;
 
 // SUBFRAME 3
 
@@ -289,9 +292,55 @@ const double DN_LSB = 1;
 const bits_slice DELTAT_LSF[]= {{271,8}};
 const double DELTAT_LSF_LSB = 1;
 
+// Page 25 - Antispoofing, SV config and SV health (PRN 25 -32)
+const bits_slice HEALTH_SV25[]={{229,6}};
+const bits_slice HEALTH_SV26[]={{241,6}};
+const bits_slice HEALTH_SV27[]={{247,6}};
+const bits_slice HEALTH_SV28[]={{253,6}};
+const bits_slice HEALTH_SV29[]={{259,6}};
+const bits_slice HEALTH_SV30[]={{271,6}};
+const bits_slice HEALTH_SV31[]={{277,6}};
+const bits_slice HEALTH_SV32[]={{283,6}};
+
+
+
 
 
 // SUBFRAME 5
 //! \todo read all pages of subframe 5
+
+
+// page 25 - Health (PRN 1 - 24)
+const bits_slice T_OA[]={{69,8}};
+const double T_OA_LSB = TWO_P12;
+const bits_slice WN_A[]={{77,8}};
+const bits_slice HEALTH_SV1[]={{91,6}};
+const bits_slice HEALTH_SV2[]={{97,6}};
+const bits_slice HEALTH_SV3[]={{103,6}};
+const bits_slice HEALTH_SV4[]={{109,6}};
+const bits_slice HEALTH_SV5[]={{121,6}};
+const bits_slice HEALTH_SV6[]={{127,6}};
+const bits_slice HEALTH_SV7[]={{133,6}};
+const bits_slice HEALTH_SV8[]={{139,6}};
+const bits_slice HEALTH_SV9[]={{151,6}};
+const bits_slice HEALTH_SV10[]={{157,6}};
+const bits_slice HEALTH_SV11[]={{163,6}};
+const bits_slice HEALTH_SV12[]={{169,6}};
+const bits_slice HEALTH_SV13[]={{181,6}};
+const bits_slice HEALTH_SV14[]={{187,6}};
+const bits_slice HEALTH_SV15[]={{193,6}};
+const bits_slice HEALTH_SV16[]={{199,6}};
+const bits_slice HEALTH_SV17[]={{211,6}};
+const bits_slice HEALTH_SV18[]={{217,6}};
+const bits_slice HEALTH_SV19[]={{223,6}};
+const bits_slice HEALTH_SV20[]={{229,6}};
+const bits_slice HEALTH_SV21[]={{241,6}};
+const bits_slice HEALTH_SV22[]={{247,6}};
+const bits_slice HEALTH_SV23[]={{253,6}};
+const bits_slice HEALTH_SV24[]={{259,6}};
+
+
+
+
 
 #endif /* GNSS_SDR_GPS_L1_CA_H_ */

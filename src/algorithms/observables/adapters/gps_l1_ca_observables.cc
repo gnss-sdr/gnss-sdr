@@ -1,12 +1,12 @@
 /*!
  * \file gps_l1_ca_observables.cc
  * \brief Implementation of an adapter of a GPS L1 C/A observables block
- * to a SignalConditionerInterface
+ * to a ObservablesInterface
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

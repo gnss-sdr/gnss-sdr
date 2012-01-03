@@ -32,48 +32,41 @@
 
 #include "gps_navigation_message.h"
 
-
 #define num_of_slices(x) sizeof(x)/sizeof(bits_slice)
 
 
 void gps_navigation_message::reset()
 {
     d_TOW=0;
-    //broadcast orbit 1
     d_IODE_SF2=0;
     d_IODE_SF3=0;
     d_Crs=0;
     d_Delta_n=0;
     d_M_0=0;
-    //broadcast orbit 2
     d_Cuc=0;
     d_e_eccentricity=0;
     d_Cus=0;
     d_sqrt_A=0;
-    //broadcast orbit 3
     d_Toe=0;
     d_Toc=0;
     d_Cic=0;
     d_OMEGA0=0;
     d_Cis=0;
-    //broadcast orbit 4
     d_i_0=0;
     d_Crc=0;
     d_OMEGA=0;
     d_OMEGA_DOT=0;
-    //broadcast orbit 5
     d_IDOT=0;
-    d_codes_on_L2=0;
-    d_GPS_week=0;
+    i_code_on_L2=0;
+    i_GPS_week=0;
     b_L2_P_data_flag=false;
-    //broadcast orbit 6
-    d_SV_accuracy=0;
-    d_SV_health=0;
+    i_SV_accuracy=0;
+    i_SV_health=0;
     d_TGD=0;
     d_IODC=-1;
-    //broadcast orbit 7
+    i_AODO=0;
 
-    d_fit_interval=0;
+    b_fit_interval_flag=false;
     d_spare1=0;
     d_spare2=0;
 
@@ -116,12 +109,20 @@ void gps_navigation_message::reset()
     d_A1=0;
     d_A0=0;
     d_t_OT=0;
-    d_WN_T=0;
+    i_WN_T=0;
     d_DeltaT_LS=0;
-    d_WN_LSF=0;
-    d_DN=0;
+    i_WN_LSF=0;
+    i_DN=0;
     d_DeltaT_LSF=0;
 
+
+    //Almanac
+    d_Toa = 0;
+    i_WN_A = 0;
+    for (int i=1; i < 32; i++ )
+        {
+            almanacHealth[i]=0;
+        }
 }
 
 
@@ -430,12 +431,12 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
 
         // It contains WN, SV clock corrections, health and accuracy
-        d_GPS_week = (double)read_navigation_unsigned(subframe_bits,GPS_WEEK,num_of_slices(GPS_WEEK));
-        d_SV_accuracy = (double)read_navigation_unsigned(subframe_bits,SV_ACCURACY,num_of_slices(SV_ACCURACY));  //should be an int (20.3.3.3.1.3)
-        d_SV_health = (double)read_navigation_unsigned(subframe_bits,SV_HEALTH,num_of_slices(SV_HEALTH));
+        i_GPS_week = (int)read_navigation_unsigned(subframe_bits,GPS_WEEK,num_of_slices(GPS_WEEK));
+        i_SV_accuracy = (int)read_navigation_unsigned(subframe_bits,SV_ACCURACY,num_of_slices(SV_ACCURACY));  // (20.3.3.3.1.3)
+        i_SV_health = (int)read_navigation_unsigned(subframe_bits,SV_HEALTH,num_of_slices(SV_HEALTH));
 
         b_L2_P_data_flag = read_navigation_bool(subframe_bits,L2_P_DATA_FLAG); //
-        d_codes_on_L2 = (double)read_navigation_unsigned(subframe_bits,CA_OR_P_ON_L2,num_of_slices(CA_OR_P_ON_L2));
+        i_code_on_L2 = (int)read_navigation_unsigned(subframe_bits,CA_OR_P_ON_L2,num_of_slices(CA_OR_P_ON_L2));
         d_TGD = (double)read_navigation_signed(subframe_bits,T_GD,num_of_slices(T_GD));
         d_TGD = d_TGD*T_GD_LSB;
         d_IODC = (double)read_navigation_unsigned(subframe_bits,IODC,num_of_slices(IODC));
@@ -462,15 +463,11 @@ int gps_navigation_message::subframe_decoder(char *subframe)
          */
         break;
 
-    case 2:
-        //tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
-        //std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
+    case 2:  //--- It is subframe 2 -------------------
 
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        // --- It is subframe 2 -------------------------------------
-        // It contains first part of ephemeris parameters
         d_IODE_SF2 = (double)read_navigation_unsigned(subframe_bits,IODE_SF2,num_of_slices(IODE_SF2));
         d_Crs = (double)read_navigation_signed(subframe_bits,C_RS,num_of_slices(C_RS));
         d_Crs =d_Crs * C_RS_LSB;
@@ -488,6 +485,10 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         d_sqrt_A = d_sqrt_A * SQRT_A_LSB;
         d_Toe = (double)read_navigation_unsigned(subframe_bits,T_OE,num_of_slices(T_OE));
         d_Toe = d_Toe * T_OE_LSB;
+        b_fit_interval_flag = read_navigation_bool(subframe_bits, FIT_INTERVAL_FLAG);
+
+        i_AODO = (int)read_navigation_unsigned(subframe_bits,AODO,num_of_slices(AODO));
+        i_AODO = i_AODO * AODO_LSB;
 
         break;
         /*
@@ -501,14 +502,12 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         eph.sqrtA       = bin2dec([subframe(227:234) subframe(241:264)])* 2^(-19);
         eph.t_oe        = bin2dec(subframe(271:286)) * 2^4;
          */
-    case 3:
+    case 3: // --- It is subframe 3 -------------------------------------
         //tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
         //std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        // --- It is subframe 3 -------------------------------------
-        // It contains second part of ephemeris parameters
         d_Cic = (double)read_navigation_signed(subframe_bits,C_IC,num_of_slices(C_IC));
         d_Cic = d_Cic * C_IC_LSB;
         d_OMEGA0 = (double)read_navigation_signed(subframe_bits,OMEGA_0,num_of_slices(OMEGA_0));
@@ -539,19 +538,21 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         eph.IODE_sf3    = bin2dec(subframe(271:278));
         eph.iDot        = twosComp2dec(subframe(279:292)) * 2^(-43) * gpsPi;
          */
-    case 4:
-        //tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
-        //std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
+    case 4: // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
+
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-        // --- It is subframe 4 -------------------------------------
-        // Almanac, ionospheric model, UTC parameters.
-        // SV health (PRN: 25-32)
+
         SV_data_ID = (int)read_navigation_unsigned(subframe_bits,SV_DATA_ID,num_of_slices(SV_DATA_ID));
         SV_page = (int)read_navigation_unsigned(subframe_bits,SV_PAGE,num_of_slices(SV_PAGE));
 
-        if (SV_page == 4)
+        if (SV_page == 13)
+            {
+                //! \TODO read Estimated Range Deviation (ERD) values
+            }
+
+        if (SV_page == 18)
             {
                 // Page 18 - Ionospheric and UTC data
 
@@ -577,25 +578,75 @@ int gps_navigation_message::subframe_decoder(char *subframe)
                 d_A0 = d_A0 * A_0_LSB;
                 d_t_OT = (double)read_navigation_unsigned(subframe_bits, T_OT,num_of_slices(T_OT));
                 d_t_OT = d_t_OT * T_OT_LSB;
-                d_WN_T = (double)read_navigation_unsigned(subframe_bits, WN_T,num_of_slices(WN_T));
+                i_WN_T = (int)read_navigation_unsigned(subframe_bits, WN_T,num_of_slices(WN_T));
                 d_DeltaT_LS = (double)read_navigation_signed(subframe_bits, DELTAT_LS,num_of_slices(DELTAT_LS));
-                d_WN_LSF = (double)read_navigation_unsigned(subframe_bits, WN_LSF,num_of_slices(WN_LSF));
-                d_DN = (double)read_navigation_unsigned(subframe_bits, DN,num_of_slices(DN));;  // Right-justified ?
+                i_WN_LSF = (int)read_navigation_unsigned(subframe_bits, WN_LSF,num_of_slices(WN_LSF));
+                i_DN = (int)read_navigation_unsigned(subframe_bits, DN,num_of_slices(DN));;  // Right-justified ?
                 d_DeltaT_LSF = (double)read_navigation_signed(subframe_bits, DELTAT_LSF,num_of_slices(DELTAT_LSF));
+
+            }
+
+        if (SV_page == 25)
+            {
+                // Page 25 Anti-Spoofing, SV config and almanac health (PRN: 25-32)
+                //! \TODO Read Anti-Spoofing, SV config
+                almanacHealth[25] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV25,num_of_slices(HEALTH_SV25));
+                almanacHealth[26] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV26,num_of_slices(HEALTH_SV26));
+                almanacHealth[27] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV27,num_of_slices(HEALTH_SV27));
+                almanacHealth[28] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV28,num_of_slices(HEALTH_SV28));
+                almanacHealth[29] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV29,num_of_slices(HEALTH_SV29));
+                almanacHealth[30] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV30,num_of_slices(HEALTH_SV30));
+                almanacHealth[31] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV31,num_of_slices(HEALTH_SV31));
+                almanacHealth[32] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV32,num_of_slices(HEALTH_SV32));
+
 
             }
 
         break;
 
-    case 5:
-        //tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
-        //std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
-        //--- It is subframe 5 -------------------------------------
-        // SV almanac and health (PRN: 1-24).
-        // Almanac reference week number and time.
+    case 5://--- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
+        b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
+        b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
+        b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
         SV_data_ID = (int)read_navigation_unsigned(subframe_bits,SV_DATA_ID,num_of_slices(SV_DATA_ID));
         SV_page = (int)read_navigation_unsigned(subframe_bits,SV_PAGE,num_of_slices(SV_PAGE));
 
+        if (SV_page < 25)
+                {
+                     //! \TODO read almanac
+                }
+        if (SV_page == 25)
+            {
+                d_Toa = (double)read_navigation_unsigned(subframe_bits,T_OA,num_of_slices(T_OA));
+                d_Toa = d_Toa * T_OA_LSB;
+                i_WN_A = (int)read_navigation_unsigned(subframe_bits,WN_A,num_of_slices(WN_A));
+
+                almanacHealth[1] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV1,num_of_slices(HEALTH_SV1));
+                almanacHealth[2] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV2,num_of_slices(HEALTH_SV2));
+                almanacHealth[3] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV3,num_of_slices(HEALTH_SV3));
+                almanacHealth[4] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV4,num_of_slices(HEALTH_SV4));
+                almanacHealth[5] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV5,num_of_slices(HEALTH_SV5));
+                almanacHealth[6] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV6,num_of_slices(HEALTH_SV6));
+                almanacHealth[7] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV7,num_of_slices(HEALTH_SV7));
+                almanacHealth[8] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV8,num_of_slices(HEALTH_SV8));
+                almanacHealth[9] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV9,num_of_slices(HEALTH_SV9));
+                almanacHealth[10] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV10,num_of_slices(HEALTH_SV10));
+                almanacHealth[11] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV11,num_of_slices(HEALTH_SV11));
+                almanacHealth[12] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV12,num_of_slices(HEALTH_SV12));
+                almanacHealth[13] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV13,num_of_slices(HEALTH_SV13));
+                almanacHealth[14] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV14,num_of_slices(HEALTH_SV14));
+                almanacHealth[15] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV15,num_of_slices(HEALTH_SV15));
+                almanacHealth[16] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV16,num_of_slices(HEALTH_SV16));
+                almanacHealth[17] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV17,num_of_slices(HEALTH_SV17));
+                almanacHealth[18] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV18,num_of_slices(HEALTH_SV18));
+                almanacHealth[19] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV19,num_of_slices(HEALTH_SV19));
+                almanacHealth[20] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV20,num_of_slices(HEALTH_SV20));
+                almanacHealth[21] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV21,num_of_slices(HEALTH_SV21));
+                almanacHealth[22] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV22,num_of_slices(HEALTH_SV22));
+                almanacHealth[23] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV23,num_of_slices(HEALTH_SV23));
+                almanacHealth[24] = (int)read_navigation_unsigned(subframe_bits,HEALTH_SV24,num_of_slices(HEALTH_SV24));
+
+            }
         break;
     default:
         break;
@@ -613,6 +664,7 @@ bool gps_navigation_message::satellite_validation()
 
     bool flag_data_valid = false;
 
+    // First Step:
     // check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
     // and check if the data have been filled (!=0)
     if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!=-1)

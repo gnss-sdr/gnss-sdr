@@ -1,60 +1,269 @@
+/*!
+ * \file rinex_2_1_printer.cc (temporal name)
+ * \brief Implementation of a RINEX 3.01 printer
+ * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf
+ * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
+
 #include "rinex_2_1_printer.h"
+#include <map>
+#include <ostream>
+#include <fstream>
+#include <stdlib.h> // for getenv()
+#include "boost/date_time/time_zone_base.hpp"
+#include "boost/date_time/gregorian/gregorian.hpp"
+#include "boost/date_time/local_time/local_time.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include <glog/log_severity.h>
+#include <glog/logging.h>
+#include <gflags/gflags.h>
 
 
-void rinex_printer::set_headers(std::string file_name)
+
+using google::LogMessage;
+
+
+rinex_printer::rinex_printer()
 {
 
-        correccio_primera_obs=1;
-
-        fp_rin = fopen((file_name+".09o").c_str(),"wt");
-        fp_rin_end = ftell(fp_rin);
-
-        fp_rin2 = fopen((file_name+".09n").c_str(),"wt");
-        fp_rin_end2 = ftell(fp_rin2);
-
-        // write RINEX headers
-        Rinex2ObsHeader();
-        Rinex2NavHeader();
+    rinex_printer::navFile.open(rinex_printer::createFilename("RINEX_FILE_TYPE_GPS_NAV"));
+    rinex_printer::obsFile.open(rinex_printer::createFilename("RINEX_FILE_TYPE_OBS"));
+    rinex_printer::Rinex2NavHeader(rinex_printer::navFile);
 
 }
 
-rinex_printer::rinex_printer ()
+rinex_printer::~rinex_printer()
 {
+    // close RINEX files
+    rinex_printer::navFile.close();
+    rinex_printer::obsFile.close();
 }
 
-rinex_printer::~rinex_printer ()
+
+
+
+void rinex_printer::lengthCheck(std::string line)
 {
-        fclose(fp_rin);
-        fclose(fp_rin2);
+    if (line.length() != 80)
+        {
+            LOG_AT_LEVEL(ERROR) << "Bad defined RINEX line: "
+                    << line.length() << " characters (must be 80)"<< std::endl
+                    << line << std::endl
+                    << "----|---1|0---|---2|0---|---3|0---|---4|0---|---5|0---|---6|0---|---7|0---|---8|"<< std::endl;
+        }
 }
 
-void rinex_printer::Rinex2NavHeader()
+
+std::string rinex_printer::createFilename(std::string type){
+    const std::string stationName = "GSDR"; // 4-character station name designator
+    boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+    const int dayOfTheYear = today.day_of_year();
+    std::stringstream strm0;
+    if (dayOfTheYear<100) strm0 << "0"; // three digits for day of the year
+    if (dayOfTheYear<10) strm0 << "0"; // three digits for day of the year
+    strm0 << dayOfTheYear;
+    std::string dayOfTheYearTag=strm0.str();
+
+
+    std::map<std::string, std::string> fileType;
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_OBS","O"));        // O - Observation file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_GPS_NAV","N"));    // N - GPS navigation message file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_MET","M"));        // M - Meteorological data file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_GLO_NAV","G"));    // G - GLONASS navigation file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_GAL_NAV","L"));    // L - Galileo navigation message file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_MIXED_NAV","P"));  // P - Mixed GNSS navigation message file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_GEO_NAV","H"));    // H - SBAS Payload navigation message file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_SBAS","B"));       // B - SBAS broadcast data file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_CLK","C"));        // C - Clock file.
+    fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_SUMMARY","S"));    // S - Summary file (used e.g., by IGS, not a standard!).
+
+    boost::posix_time::ptime pt=boost::posix_time::second_clock::local_time();
+    tm pt_tm=boost::posix_time::to_tm(pt);
+    int local_hour=pt_tm.tm_hour;
+    std::stringstream strm;
+    strm << local_hour;
+
+    std::map<std::string, std::string> Hmap;
+
+    Hmap.insert(std::pair<std::string, std::string>("0","a"));
+    Hmap.insert(std::pair<std::string, std::string>("1","b"));
+    Hmap.insert(std::pair<std::string, std::string>("2","c"));
+    Hmap.insert(std::pair<std::string, std::string>("3","d"));
+    Hmap.insert(std::pair<std::string, std::string>("4","e"));
+    Hmap.insert(std::pair<std::string, std::string>("5","f"));
+    Hmap.insert(std::pair<std::string, std::string>("6","g"));
+    Hmap.insert(std::pair<std::string, std::string>("7","h"));
+    Hmap.insert(std::pair<std::string, std::string>("8","i"));
+    Hmap.insert(std::pair<std::string, std::string>("9","j"));
+    Hmap.insert(std::pair<std::string, std::string>("10","k"));
+    Hmap.insert(std::pair<std::string, std::string>("11","l"));
+    Hmap.insert(std::pair<std::string, std::string>("12","m"));
+    Hmap.insert(std::pair<std::string, std::string>("13","n"));
+    Hmap.insert(std::pair<std::string, std::string>("14","o"));
+    Hmap.insert(std::pair<std::string, std::string>("15","p"));
+    Hmap.insert(std::pair<std::string, std::string>("16","q"));
+    Hmap.insert(std::pair<std::string, std::string>("17","r"));
+    Hmap.insert(std::pair<std::string, std::string>("8","s"));
+    Hmap.insert(std::pair<std::string, std::string>("19","t"));
+    Hmap.insert(std::pair<std::string, std::string>("20","u"));
+    Hmap.insert(std::pair<std::string, std::string>("21","v"));
+    Hmap.insert(std::pair<std::string, std::string>("22","w"));
+    Hmap.insert(std::pair<std::string, std::string>("23","x"));
+
+    std::string hourTag = Hmap[strm.str()];
+
+    int local_minute=pt_tm.tm_min;
+    std::stringstream strm2;
+    if (local_minute<10) strm2 << "0"; // at least two digits for minutes
+    strm2 << local_minute;
+
+    std::string minTag = strm2.str();
+
+    int local_year=pt_tm.tm_year-100; // 2012 is 112
+    std::stringstream strm3;
+    strm3 << local_year;
+    std::string yearTag = strm3.str();
+
+    std::string typeOfFile=fileType[type];
+
+    std::string filename(stationName +dayOfTheYearTag+ hourTag + minTag + "." + yearTag + typeOfFile);
+    return filename;
+}
+
+
+std::string rinex_printer::getLocalTime()
+{
+    std::string line;
+    line +=std::string("GNSS-SDR");
+    line +=std::string(12,' ');
+    line += rinex_printer::leftJustify("CTTC", 20);//put a flag to let the user change this
+    boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+    line +=boost::gregorian::to_iso_string(today);
+    line +=std::string(1,' ');
+
+
+    boost::local_time::time_zone_ptr zone(new boost::local_time::posix_time_zone("UTC"));
+    boost::local_time::local_date_time pt = boost::local_time::local_sec_clock::local_time(zone);
+    tm pt_tm=boost::local_time::to_tm(pt);
+
+    std::stringstream strm0;
+    int utc_hour=pt_tm.tm_hour;
+    if (utc_hour<10) strm0 << "0"; //  two digits for hours
+    strm0 << utc_hour;
+    line += strm0.str();
+
+    std::stringstream strm1;
+    int utc_minute=pt_tm.tm_min;
+    if (utc_minute<10) strm1 << "0"; //  two digits for minutes
+    strm1 << utc_minute;
+    line += strm1.str();
+
+    std::stringstream strm2;
+    int utc_seconds=pt_tm.tm_sec;
+    if (utc_seconds<10) strm2 << "0"; //  two digits for seconds
+    strm2 << utc_seconds;
+    line += strm2.str();
+    line +=std::string(1,' ');
+    line +=std::string("UTC");
+    line +=std::string(1,' ');
+    return line;
+}
+
+
+void rinex_printer::Rinex2NavHeader(std::ofstream& out)
 {
 
-	if(fp_rin2 != NULL)
-	{
-		//calculate UTC_TIME
-		time_t tiempo;
-		char cad[80];
-		struct tm *tmPtr;
-		tiempo = time(NULL);
-		tmPtr = gmtime(&tiempo);
-		strftime( cad, 20, "%d-%b-%y %H:%M", tmPtr );
+    std::string line;
 
-		fseek(fp_rin2, fp_rin_end2, SEEK_SET);
-		//fprintf(fp_rin2,"----|---1|0---|---2|0---|---3|0---|---4|0---|---5|0---|---6|0---|---7|0---|---8|\n\n");
-		fprintf(fp_rin2,"     2.10           NAVIGATION DATA                         RINEX VERSION / TYPE\n");
-		fprintf(fp_rin2,"GNSS-SDR-mercurio         CTTC           %s    PGM / RUN BY / DATE\n",cad);
-		//fprintf(fp_rin2,"CTTC                                                         MARKER NAME\n");
-		//fprintf(fp_rin2,"0000                                                         MARKERNUMBER\n");
-		fp_rin_end2 = ftell(fp_rin2);
-		correccio_primera_obs=1;
-	}
+    // -------- Line 1
+    std::string version="3.01";
+    line = std::string(5,' ');
+    line += version;
+    line +=std::string(11,' ');
+    line +=std::string("N: GNSS NAV DATA");
+    line +=std::string(4,' ');
+    //! \todo Add here other systems...
+    line +=std::string("G: GPS");
+    line +=std::string(14,' ');
+    // ...
+    line +=std::string("RINEX VERSION / TYPE");
+    rinex_printer::lengthCheck(line);
+
+    out << line << std::endl;
+    // -------- Line 2
+    line.clear();
+    line +=rinex_printer::getLocalTime();
+    line +=std::string("PGM / RUN BY / DATE");
+    line +=std::string(1,' ');
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+    // -------- Line 3
+    line.clear();
+    line += rinex_printer::leftJustify("GPS NAVIGATION MESSAGE FILE GENERATED BY GNSS-SDR",60);
+    line += rinex_printer::leftJustify("COMMENT",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+    // -------- Line 4 ionospheric info
+    line.clear();
+    line +=std::string("GPSA");
+    line +=std::string(4,' ');
+
+    // IONOSPHERIC INFORMATION
+
+    // For leap second information, see See http://www.endruntechnologies.com/leap.htm
+    line.clear();
+    line +=std::string(4,' ');
+    line +=std::string("15");  // Page 18 of subframe 4  Delta_T_LSF
+    line +=std::string(54,' ');
+    line +=std::string("LEAP SECONDS");
+    line +=std::string(8,' ');
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+
+
+    // -------- End of Header
+    line.clear();
+    line +=std::string(60,' ');
+    line += rinex_printer::leftJustify("END OF HEADER",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
 }
+
+
+
+
+
+
+
+
+
 
 void rinex_printer::LogRinex2Nav(gps_navigation_message nav_msg){
 
-
+/*
 	if(fp_rin2 != NULL)
 	{
 		//double decimalday,daydecimalhour,decimalhour,decimalmin,decimalsec;
@@ -85,9 +294,9 @@ void rinex_printer::LogRinex2Nav(gps_navigation_message nav_msg){
 			fseek(fp_rin2, fp_rin_end2, SEEK_SET);
 			char correction[256],correction2[256];
 			double A0,A1;
-			/* 8.3819D-09 -7.4506D-09 -5.9605D-08  5.9605D-08           ION ALPHA
-	   8.8                             064D+04 -3.2768D+04 -1.9661D+05  1.9661D+05           ION BETA
-	    5.                             587935447693D-09 8.881784197001D-15   233472     1518 DELTA-UTC: A0,A1,T,W*/
+			//  8.3819D-09 -7.4506D-09 -5.9605D-08  5.9605D-08           ION ALPHA
+	   //8.8                             064D+04 -3.2768D+04 -1.9661D+05  1.9661D+05           ION BETA
+	   // 5.                             587935447693D-09 8.881784197001D-15   233472     1518 DELTA-UTC: A0,A1,T,W
 			A0=587.935447693E-09;
 			A1=8.881784197001E-15;
 			sprintf(correction,"%19.12E",A0);
@@ -149,52 +358,135 @@ void rinex_printer::LogRinex2Nav(gps_navigation_message nav_msg){
 
 		fprintf(fp_rin2,"   %s\n",linia7);
 		fp_rin_end2 = ftell(fp_rin2);
-	}
+	}*/
 
 }
 
-void rinex_printer::Rinex2ObsHeader()
+void rinex_printer::Rinex2ObsHeader(std::ofstream& out)
 {
-	//Clock_S				*pClock		= &tNav.master_clock;			/* Clock solution */
-	if(fp_rin != NULL)
-	{
-		//calculate UTC_TIME
-		time_t tiempo;
-		char cad[80];
-		struct tm *tmPtr;
-		tiempo = time(NULL);
-		tmPtr = gmtime(&tiempo);
-		strftime( cad, 24, "%d/%m/%Y %H:%M:%S", tmPtr );
+    std::map<std::string, std::string> satelliteSystem;
+    satelliteSystem.insert(std::pair<std::string, std::string>("GPS","G"));
+    satelliteSystem.insert(std::pair<std::string, std::string>("GLONASS","R"));
+    satelliteSystem.insert(std::pair<std::string, std::string>("Galileo","E"));
+    satelliteSystem.insert(std::pair<std::string, std::string>("SBAS payload","S"));
+    satelliteSystem.insert(std::pair<std::string, std::string>("Mixed","M"));
+    satelliteSystem.insert(std::pair<std::string, std::string>("Compass","C"));
 
-		fseek(fp_rin, fp_rin_end, SEEK_SET);
-		//fprintf(fp_rin,"----|---1|0---|---2|0---|---3|0---|---4|0---|---5|0---|---6|0---|---7|0---|---8|\n\n");
-		fprintf(fp_rin,"     2.10           Observation         G (GPS)             RINEX VERSION / TYPE\n");
-		fprintf(fp_rin,"GNSS-SDR-mercurio        CTTC           %s PGM / RUN BY / DATE\n",cad);
-		fprintf(fp_rin,"CTTC                                                        MARKER NAME\n");
-		//fprintf(fp_rin,"0000                                                        MARKERNUMBER\n");
+    std::string line;
 
-		fprintf(fp_rin,"JAVIER ARRIBAS           CTTC                               OBSERVER / AGENCY\n");
-		fprintf(fp_rin,"GNSS-SDR-mercurio         SDR            1.0                REC # / TYPE / VERS\n");
-		fprintf(fp_rin,"0000000000          CTTC00000.00                            ANT # / TYPE\n");
-		fprintf(fp_rin,"  4797642.2790   166436.1500  4185504.6370                  APPROX POSITION XYZ\n");
-		fprintf(fp_rin,"        0.0000        0.0000        0.0000                  ANTENNA: DELTA H/E/N\n");
-		fprintf(fp_rin,"     1     0                                                WAVELENGTH FACT L1/2\n");
-		fprintf(fp_rin,"     2    C1    L1                                          # / TYPES OF OBSERV\n");
+    // -------- Line 1
+    std::string version="3.01";
+    line = std::string(5,' ');
+    line += version;
+    line +=std::string(11,' ');
+    line += rinex_printer::leftJustify("OBSERVATION DATA",20);
+    line +=satelliteSystem["GPS"];
+    line +=std::string(19,' ');
+    line +=std::string("RINEX VERSION / TYPE");
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
 
-		fprintf(fp_rin,"     0.1000                                                 INTERVAL\n");
-		//INTRODUIR HORA PRIMERA OBSERVACIO
-		//ho escriure un cop hagi adquirit dades
-		//fprintf(fp_rin,"  2001     3    24    13    10   36.0000000                TIME OF FIRST OBS\n");
-		//fprintf(fp_rin,"                                                           END OF HEADER\n");
-		fp_rin_end = ftell(fp_rin);
-		temps_primera_obs=1;
-	}
+    // -------- Line 2
+    line.clear();
+    line += rinex_printer::leftJustify("G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED",60);
+    line += rinex_printer::leftJustify("COMMENT",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
 
+    // -------- Line 3
+    line.clear();
+    line += rinex_printer::getLocalTime();
+    line +=std::string("PGM / RUN BY / DATE");
+    line +=std::string(1,' ');
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+
+    // -------- Line 4
+    line.clear();
+    line += rinex_printer::leftJustify("GPS OBSERVATION DATA FILE GENERATED BY GNSS-SDR",60);
+    line += rinex_printer::leftJustify("COMMENT",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+    // -------- Line 5
+    line.clear();
+    line += rinex_printer::leftJustify("DEFAULT MARKER NAME",60); // put a flag or a property,
+    line += rinex_printer::leftJustify("MARKER NAME",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+
+    line.clear();
+    line += rinex_printer::leftJustify("GROUND_CRAFT",20); // put a flag or a property
+    line +=std::string(40,' ');
+    line += rinex_printer::leftJustify("MARKER TYPE",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+
+
+    // -------- Line 6
+    line.clear();
+    std::string username=getenv("USER");
+    line += leftJustify(username,20);
+    line += rinex_printer::leftJustify("CTTC",40); // add flag and property
+    line += rinex_printer::leftJustify("OBSERVER / AGENCY",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+
+
+
+    // -------- Line 6 REC / TYPE VERS
+    line.clear();
+    line += rinex_printer::leftJustify("GNSS-SDR",20); // add flag and property
+    line += rinex_printer::leftJustify("Software Receiver",20); // add flag and property
+    line += rinex_printer::leftJustify(google::VersionString(),20); // add flag and property
+    line += rinex_printer::leftJustify("REC # / TYPE / VERS",20);
+    lengthCheck(line);
+    out << line << std::endl;
+
+    // -------- ANTENNA TYPE
+    line.clear();
+    line += rinex_printer::leftJustify("Antenna number",20);  // add flag and property
+    line += rinex_printer::leftJustify("Antenna type",20);  // add flag and property
+    line +=std::string(20,' ');
+    line += rinex_printer::leftJustify("ANT # / TYPE",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+
+    // -------- APPROX POSITION  (optional for moving platforms)
+
+
+    // -------- ANTENNA: DELTA H/E/N
+
+
+    // -------- SYS / OBS TYPES
+
+    // -------- Signal Strength units
+    line.clear();
+    line += rinex_printer::leftJustify("DBHZ",20);
+    line +=std::string(40,' ');
+    line += rinex_printer::leftJustify("SIGNAL STRENGTH UNIT",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+
+    // -------- TIME OF FIRST OBS
+
+
+    // -------- SYS /PHASE SHIFTS
+
+
+    // -------- end of header
+    line.clear();
+    line +=std::string(60,' ');
+    line += rinex_printer::leftJustify("END OF HEADER",20);
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
 }
+
+
+
 
 void rinex_printer::LogRinex2Obs(gps_navigation_message nav_msg,double pseudoranges_clock, std::map<int,float> pseudoranges)
 {
-	int ss;
+	/* int ss;
 	char sat_vis[36];
 	for(int i=0;i<36;i++) sat_vis[i]=' ';
 	char packet[80];
@@ -294,21 +586,221 @@ void rinex_printer::LogRinex2Obs(gps_navigation_message nav_msg,double pseudoran
 			fprintf(fp_rin,"%14.3f  %14.3f %d\n",pseudoranges_iter->second,0.0,ss); //TODO: include the carrier phase
 			fp_rin_end = ftell(fp_rin);
 		}
-	}
+	}*/
 
 }
 
-int rinex_printer::signalstrength( double snr)
+
+
+
+
+int rinex_printer::signalStrength(double snr)
 {
-	int ss;
-	if(snr<=12.00) ss=1;
-	else if(snr>12.00 && snr<=18.00) ss=2;
-	else if(snr>18.00 && snr<=24.00) ss=3;
-	else if(snr>24.00 && snr<=30.00) ss=4;
-	else if(snr>30.00 && snr<=36.00) ss=5;
-	else if(snr>36.00 && snr<=42.00) ss=6;
-	else if(snr>42.00 && snr<=48.00) ss=7;
-	else if(snr>48.00 && snr<=54) ss=8;
-	else if(snr>=54.00)   ss=9;
-	return (ss);
+    int ss;
+    if(snr<12.00) ss=1;
+    else if(snr>=12.00 && snr<18.00) ss=2;
+    else if(snr>=18.00 && snr<24.00) ss=3;
+    else if(snr>=24.00 && snr<30.00) ss=4;
+    else if(snr>=30.00 && snr<36.00) ss=5;
+    else if(snr>=36.00 && snr<42.00) ss=6;
+    else if(snr>=42.00 && snr<48.00) ss=7;
+    else if(snr>=48.00 && snr<54) ss=8;
+    else if(snr>=54.00)   ss=9;
+    return (ss);
 }
+
+
+
+
+/*
+
+
+
+
+enum RINEX_enumObservationType
+{
+    RINEX_OBS_TYPE_PSEUDORANGE     = 'C', //!< 'C' Pseudorange observation
+    RINEX_OBS_TYPE_CARRIER_PHASE   = 'L', //!< 'L' Carrier Phase observation
+    RINEX_OBS_TYPE_DOPPLER         = 'D', //!< 'L' Doppler observation
+    RINEX_OBS_TYPE_SIGNAL_STRENGTH = 'S' //!< 'S' Signal strength observation
+} ;
+
+enum  RINEX_enumBand
+{
+    RINEX_BAND_1 = 1,
+    RINEX_BAND_2 = 2,
+    RINEX_BAND_3 = 3,
+    RINEX_BAND_4 = 4,
+    RINEX_BAND_5 = 5,
+    RINEX_BAND_6 = 6,
+    RINEX_BAND_7 = 7,
+    RINEX_BAND_8 = 8
+};
+
+
+enum RINEX_enumChannel
+{
+    RINEX_GPS_L1_CA = "1C",              //!< "1C" GPS L1 C/A
+    RINEX_GPS_L1_P = "1P",               //!< "1P" GPS L1 P
+    RINEX_GPS_L1_Z_TRACKING = "1W",      //!< "1W" GPS L1 Z-tracking and similar (AS on)
+    RINEX_GPS_L1_Y = "1Y",               //!< "1Y" GPS L1 Y
+    RINEX_GPS_L1_M = "1M",               //!< "1M" GPS L1 M
+    RINEX_GPS_L1_CODELESS = "1N",        //!< "1N" GPS L1 codeless
+    RINEX_GPS_L2_CA = "2C",              //!< "2C" GPS L2 C/A
+    RINEX_GPS_L2_SEMI_CODELESS = "2D",   //!< "2D" GPS L2 L1(C/A)+(P2-P1) semi-codeless
+    RINEX_GPS_L2_L2CM = "2S",            //!< "2S" GPS L2 L2C (M)
+    RINEX_GPS_L2_L2CL = "2L",            //!< "2L" GPS L2 L2C (L)
+    RINEX_GPS_L2_L2CML = "2X",           //!< "2X" GPS L2 L2C (M+L)
+    RINEX_GPS_L2_P = "2P",               //!< "2P" GPS L2 P
+    RINEX_GPS_L2_Z_TRACKING = "2W",      //!< "2W" GPS L2 Z-tracking and similar (AS on)
+    RINEX_GPS_L2_Y = "2Y",               //!< "2Y" GPS L2 Y
+    RINEX_GPS_L2_M = "2M",               //!< "2M" GPS GPS L2 M
+    RINEX_GPS_L2_codeless = "2N",        //!< "2N" GPS L2 codeless
+    RINEX_GPS_L5_I = "5I",               //!< "5I" GPS L5 I
+    RINEX_GPS_L5_Q = "5Q",               //!< "5Q" GPS L5 Q
+    RINEX_GPS_L5_IQ = "5X",              //!< "5X" GPS L5 I+Q
+    RINEX_GLONASS_G1_CA = "1C",          //!< "1C" GLONASS G1 C/A
+    RINEX_GLONASS_G1_P= "1P",            //!< "1P" GLONASS G1 P
+    RINEX_GLONASS_G2_CA= "2C",           //!< "2C" GLONASS G2 C/A  (Glonass M)
+    RINEX_GLONASS_G2_P= "2P",            //!< "2P" GLONASS G2 P
+    RINEX_GALILEO_E1_A= "1A",            //!< "1A" GALILEO E1 A (PRS)
+    RINEX_GALILEO_E1_B= "1B",            //!< "1B" GALILEO E1 B (I/NAV OS/CS/SoL)
+    RINEX_GALILEO_E1_C= "1C",            //!< "1C" GALILEO E1 C (no data)
+    RINEX_GALILEO_E1_BC= "1X",           //!< "1X" GALILEO E1 B+C
+    RINEX_GALILEO_E1_ABC= "1Z",          //!< "1Z" GALILEO E1 A+B+C
+    RINEX_GALILEO_E5a_I= "5I",           //!< "5I" GALILEO E5a I (F/NAV OS)
+    RINEX_GALILEO_E5a_Q= "5Q",           //!< "5Q" GALILEO E5a Q  (no data)
+    RINEX_GALILEO_E5aIQ= "5X",           //!< "5X" GALILEO E5a I+Q
+    RINEX_GALILEO_E5b_I= "7I",           //!< "7I" GALILEO E5b I
+    RINEX_GALILEO_E5b_Q= "7Q",           //!< "7Q" GALILEO E5b Q
+    RINEX_GALILEO_E5b_IQ= "7X",          //!< "7X" GALILEO E5b I+Q
+    RINEX_GALILEO_E5_I= "8I",            //!< "8I" GALILEO E5 I
+    RINEX_GALILEO_E5_Q= "8Q",            //!< "8Q" GALILEO E5 Q
+    RINEX_GALILEO_E5_IQ= "8X",           //!< "8X" GALILEO E5 I+Q
+    RINEX_GALILEO_E56_A= "6A",           //!< "6A" GALILEO E6 A
+    RINEX_GALILEO_E56_B = "6B",          //!< "6B" GALILEO E6 B
+    RINEX_GALILEO_E56_B = "6C",          //!< "6C" GALILEO E6 C
+    RINEX_GALILEO_E56_BC = "6X",         //!< "6X" GALILEO E6 B+C
+    RINEX_GALILEO_E56_ABC = "6Z",        //!< "6Z" GALILEO E6 A+B+C
+    RINEX_SBAS_L1_CA = "1C",             //!< "1C" SBAS L1 C/A
+    RINEX_SBAS_L5_I = "5I",              //!< "5I" SBAS L5 I
+    RINEX_SBAS_L5_Q = "5Q",              //!< "5Q" SBAS L5 Q
+    RINEX_SBAS_L5_IQ = "5X"            //!< "5X" SBAS L5 I+Q
+} ;
+
+enum RINEX_enumMarkerType {
+    GEODETIC,      //!< GEODETIC Earth-fixed, high-precision monumentation
+    NON_GEODETIC,  //!< NON_GEODETIC Earth-fixed, low-precision monumentation
+    SPACEBORNE,    //!< SPACEBORNE Orbiting space vehicle
+    AIRBORNE ,     //!< AIRBORNE Aircraft, balloon, etc.
+    WATER_CRAFT,   //!< WATER_CRAFT Mobile water craft
+    GROUND_CRAFT,  //!< GROUND_CRAFT Mobile terrestrial vehicle
+    FIXED_BUOY,    //!< FIXED_BUOY "Fixed" on water surface
+    FLOATING_BUOY, //!< FLOATING_BUOY Floating on water surface
+    FLOATING_ICE,  //!< FLOATING_ICE Floating ice sheet, etc.
+    GLACIER,       //!< GLACIER "Fixed" on a glacier
+    BALLISTIC,     //!< BALLISTIC Rockets, shells, etc
+    ANIMAL,        //!< ANIMAL Animal carrying a receiver
+    HUMAN          //!< HUMAN Human being
+};
+
+*/
+
+
+
+/*
+
+
+    / ** @name Rinex3ObsHeaderValues
+     * /
+    //@{
+    double version;                                 ///< RINEX 3 version/type
+    std::string fileType,                           ///< RINEX 3 file type
+                satSys;                             ///< RINEX 3 satellite system
+    std::string system;                              ///< RINEX satellite system (enum)
+    std::string fileProgram,                        ///< program used to generate file
+                fileAgency,                         ///< who ran program
+                date;                               ///< when program was run
+    std::vector<std::string> commentList;           ///< comments in header             (optional)
+    std::string markerName,                         ///< MARKER NAME
+                markerNumber,                       ///< MARKER NUMBER                  (optional)
+                markerType;                         ///< MARKER TYPE
+    std::string observer,                           ///< who collected the data
+                agency;                             ///< observer's agency
+    std::string recNo,                              ///< receiver number
+                recType,                            ///< receiver type
+                recVers;                            ///< receiver version
+    std::string antNo,                              ///< antenna number
+                antType;                            ///< antenna type
+    std::vector<double> antennaPosition,                  ///< APPROX POSITION XYZ            (optional if moving)
+                        antennaDeltaHEN,                  ///< ANTENNA: DELTA H/E/N
+                        antennaDeltaXYZ;                  ///< ANTENNA: DELTA X/Y/Z           (optional)
+    std::string antennaSatSys,                      ///< ANTENNA P.CTR BLOCK: SAT SYS   (optional)
+                antennaObsCode;                     ///< ANTENNA P.CTR BLOCK: OBS CODE  (optional)
+    std::vector<double> antennaPhaseCtr;                  ///< ANTENNA P.CTR BLOCK: PCTR POS  (optional)
+    std::vector<double> antennaBsightXYZ;                 ///< ANTENNA B.SIGHT XYZ            (optional)
+    double        antennaZeroDirAzi;                ///< ANTENNA ZERODIR AZI            (optional)
+    std::vector<double> antennaZeroDirXYZ;                ///< ANTENNA ZERODIR XYZ            (optional)
+    std::vector<double> centerOfMass;                     ///< vehicle CENTER OF MASS: XYZ    (optional)
+    std::vector<std::string> obsTypeList;                 ///< number & types of observations
+    map<std::string,std::vector<std::string> > mapObsTypes;    ///< map for different sat. systems
+    std::string sigStrengthUnit;                    ///< SIGNAL STRENGTH UNIT           (optional)
+    std::vector<double> interval;                                ///< INTERVAL                       (optional)
+    boost::gregorian::date firstObs,                ///< TIME OF FIRST OBS
+                           lastObs;                             ///< TIME OF LAST OBS               (optional)
+    int receiverOffset;                             ///< RCV CLOCK OFFS APPL            (optional)
+    std::vector<std::string> infoDCBS;           ///< DCBS INFO                      (optional)
+    std::vector<std::string> infoPCVS;           ///< PCVS INFO                      (optional)
+    int factor, factorPrev;                         ///< scale factor (temp holders)
+    int leapSeconds;                                ///< LEAP SECONDS                   (optional)
+    short numSVs;                                   ///< # OF SATELLITES                (optional)
+    std::map<std::string,vector<int> > numObsForSat; ///< PRN / # OF OBS                 (optional)
+    unsigned long valid;                            ///< bits set when header members present & valid
+    std::string satSysTemp,                         ///< used to save the Sat Sys char while reading Scale Factor lines
+                satSysPrev;                         ///< used to recall the previous sat. sys for continuation lines
+    int numObs,                                     ///< used to save number of obs on # / TYPES and Sys / SCALE FACTOR continuation lines
+        numObsPrev;                                 ///< used to recall the previous # obs for continuation lines
+    std::string lastPRN;                             ///< used to save current PRN while reading PRN/OBS continuation lines
+    //@}
+
+    /// Converts the daytime \a dt into a Rinex Obs time string for the header
+
+    std::string writeTime(const boost::gregorian::date& date) const;
+
+
+
+    /// Enum of Time System Correction types.
+    enum
+    {
+        GAUT,  /// GAL  to UTC using A0, A1
+        GPUT,  /// GPS  to UTC using A0, A1
+        SBUT,  /// SBAS to UTC using A0, A1
+        GLUT,  /// GLO  to UTC using A0 = TauC  , A1 = 0
+        GPGA,  /// GPS  to GAL using A0 = A0G   , A1 = A1G
+        GLGP   /// GLO  to GPS using A0 = TauGPS, A1 = 0
+    } TimeSysCorrEnum;
+    std::string ionoCorrType;
+    double ionoParam1[4], ionoParam2[4], ionoParamGal[3];
+    long leapSeconds;
+    std::string timeSysCorrType;
+    TimeSysCorrEnum timeSysCorrEnum;
+    double A0, A1;
+    long timeSysRefTime, timeSysRefWeek;
+    std::string timeSysCorrSBAS;
+    long timeSysUTCid;
+    struct TimeSysCorrInfo
+    {
+        std::string timeSysCorrType;
+        double A0, A1;
+        long timeSysRefTime, timeSysRefWeek;
+        std::string timeSysCorrSBAS;
+        long timeSysUTCid;
+    };
+    //@}
+
+    /// Map for Time System Correction info.
+    typedef std::map<TimeSysCorrEnum, TimeSysCorrInfo> TimeSysCorrMap;
+
+    /// Instance of the map.
+    TimeSysCorrMap tscMap; */
+

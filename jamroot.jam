@@ -7,7 +7,7 @@ lib gnuradio-core ;
 project : requirements
 <define>OMNITHREAD_POSIX
 <cxxflags>"-std=c++0x -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free"
-<linkflags>"-larmadillo -lboost_system -lboost_filesystem -lboost_thread -llapack -lblas -lprofiler -ltcmalloc"
+<linkflags>"-larmadillo -lboost_system -lboost_filesystem -lboost_thread -lboost_date_time -llapack -lblas -lprofiler -ltcmalloc"
 <include>src/algorithms/acquisition/adapters
 <include>src/algorithms/acquisition/gnuradio_blocks
 <include>src/algorithms/channel/adapters

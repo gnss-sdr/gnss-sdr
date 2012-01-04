@@ -75,7 +75,7 @@ void gps_navigation_message::reset()
     d_A_f2=0;
 
     //clock terms
-    d_master_clock=0;
+    //d_master_clock=0;
     d_dtr=0;
     d_satClkCorr=0;
 
@@ -233,7 +233,7 @@ double gps_navigation_message::check_t(double time)
 }
 
 
-
+/*
 void gps_navigation_message::master_clock(double transmitTime)
 {
     double dt;
@@ -249,9 +249,21 @@ void gps_navigation_message::master_clock(double transmitTime)
     d_master_clock = transmitTime - satClkCorr;
 }
 
+*/
+
+// 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
+void gps_navigation_message::sv_clock_correction(double transmitTime)
+{
+    double dt;
+    dt = check_t(transmitTime - d_Toc);
+    d_satClkCorr = (d_A_f2 * dt + d_A_f1) * dt + d_A_f0 + d_dtr;
+}
 
 
-void gps_navigation_message::satpos()
+
+
+
+void gps_navigation_message::satellitePosition(double transmitTime)
 {
     double tk;
     double a;
@@ -274,7 +286,7 @@ void gps_navigation_message::satpos()
     a   = d_sqrt_A*d_sqrt_A;
 
     // Time correction
-    tk  = check_t(d_master_clock - d_Toe);
+    tk  = check_t(transmitTime - d_Toe);
 
     // Initial mean motion
     n0  = sqrt(GM / (a*a*a));
@@ -356,20 +368,6 @@ void gps_navigation_message::satpos()
 
 
 
-
-
-
-void gps_navigation_message::relativistic_clock_correction(double transmitTime)
-{
-    double dt;
-    // Find final satellite clock correction --------------------------------
-
-    // --- Find time difference ---------------------------------------------
-    dt = check_t(transmitTime - d_Toc);
-
-    //Include relativistic correction in clock correction --------------------
-    d_satClkCorr = (d_A_f2 * dt + d_A_f1) * dt + d_A_f0 -d_TGD + d_dtr;
-}
 
 
 

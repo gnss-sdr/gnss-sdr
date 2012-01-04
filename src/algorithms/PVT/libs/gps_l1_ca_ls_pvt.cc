@@ -5,7 +5,7 @@
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,11 +31,15 @@
 #include "armadillo"
 #include "gps_l1_ca_ls_pvt.h"
 #include "GPS_L1_CA.h"
+#include <glog/log_severity.h>
+#include <glog/logging.h>
 
+
+using google::LogMessage;
 
 gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file)
 {
-    // init empty ephemerids for all the available GNSS channels
+    // init empty ephemeris for all the available GNSS channels
     d_nchannels=nchannels;
     d_ephemeris=new gps_navigation_message[nchannels];
     d_dump_filename=dump_filename;
@@ -220,15 +224,17 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                              */
                             W(i,i)=1;
                             // compute the GPS master clock
-                            d_ephemeris[i].master_clock(GPS_current_time);
+                            // d_ephemeris[i].master_clock(GPS_current_time); ?????
+
+                             // compute the clock error including relativistic effects
+                            d_ephemeris[i].sv_clock_correction(GPS_current_time);
                             // compute the satellite current ECEF position
-                            d_ephemeris[i].satpos();
-                            // compute the clock error including relativistic effects
-                            d_ephemeris[i].relativistic_clock_correction(GPS_current_time);
+                            d_ephemeris[i].satellitePosition(GPS_current_time);
+
                             satpos(0,i)=d_ephemeris[i].d_satpos_X;
                             satpos(1,i)=d_ephemeris[i].d_satpos_Y;
                             satpos(2,i)=d_ephemeris[i].d_satpos_Z;
-                            std::cout<<"ECEF satellite SV ID="<<d_ephemeris[i].d_satellite_PRN<<" X="<<d_ephemeris[i].d_satpos_X
+                            LOG_AT_LEVEL(INFO)<<"ECEF satellite SV ID="<<d_ephemeris[i].d_satellite_PRN<<" X="<<d_ephemeris[i].d_satpos_X
                                     <<" [m] Y="<<d_ephemeris[i].d_satpos_Y<<" [m] Z="<<d_ephemeris[i].d_satpos_Z<<" [m]\r\n";
                             obs(i)=gnss_pseudoranges_iter->second.pseudorange_m+d_ephemeris[i].d_satClkCorr*GPS_C_m_s;
                             valid_obs++;
@@ -248,9 +254,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
         {
             arma::vec mypos;
             mypos=leastSquarePos(satpos,obs,W);
-            std::cout << "Position at TOW="<<GPS_current_time<<" is ECEF (X,Y,Z) = " << mypos << std::endl;
+            LOG_AT_LEVEL(INFO) << "Position at TOW="<<GPS_current_time<<" in ECEF (X,Y,Z) = " << mypos << std::endl;
             cart2geo(mypos(0), mypos(1), mypos(2), 4);
-            std::cout << "Position at TOW="<<GPS_current_time<<" is Lat = " << d_latitude_d << " [¼] Long = "<< d_longitude_d <<" [¼] Height= "<<d_height_m<<" [m]" <<std::endl;
+            std::cout << "Position at TOW="<<GPS_current_time<<" is Lat = " << d_latitude_d << " [deg] Long = "<< d_longitude_d <<" [deg] Height= "<<d_height_m<<" [m]" <<std::endl;
             // ######## LOG FILE #########
             if(d_flag_dump_enabled==true) {
                     // MULTIPLEXED FILE RECORDING - Record results to file

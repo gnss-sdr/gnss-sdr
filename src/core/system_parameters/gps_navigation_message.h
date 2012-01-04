@@ -101,7 +101,7 @@ public:
     //broadcast orbit 6
     int i_SV_accuracy;       //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
     int i_SV_health;
-    double d_TGD;            //!< Estimated Group Delay Differential: L1-L2 correction term for the benefit of "L1 only" or "L2 only" users [s]
+    double d_TGD;            //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
     double d_IODC;           //!< Issue of Data, Clock
     //broadcast orbit 7
     int i_AODO;              //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
@@ -139,7 +139,7 @@ public:
 
 
     // clock terms
-    double d_master_clock;   // GPS transmission time
+    //double d_master_clock;   // GPS transmission time
     double d_satClkCorr;     // GPS clock error
     double d_dtr;            // relativistic clock correction term
 
@@ -173,7 +173,7 @@ public:
     double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
     double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
     int i_WN_T;           //!< UTC reference week number [weeks]
-    double d_DeltaT_LS;   //!< delta time due to leap seconds [s]
+    double d_DeltaT_LS;   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
     int i_WN_LSF;         //!< Week number at the end of which the leap second becomes effective [weeks]
     int i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
@@ -187,20 +187,26 @@ public:
      */
     int subframe_decoder(char *subframe);
 
-    /*!
-     * \brief User Algorithm for SV Clock Correction
+    /*
+     *  User Algorithm for SV Clock Correction
      *
      * Implementation of paragraph 20.3.3.3.3.1 (IS-GPS-200E)
      */
-    void master_clock(double transmitTime);
+    //void master_clock(double transmitTime);
 
     /*!
      * \brief Computes the position of the satellite
      *
      * Implementation of Table 20-IV (IS-GPS-200E)
      */
-    void satpos();
-    void relativistic_clock_correction(double transmitTime);
+    void satellitePosition(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_satClkCorr) according to the User Algorithm for SV Clock Correction (IS-GPS-200E,  20.3.3.3.3.1)
+     */
+    void sv_clock_correction(double transmitTime);
+
+
     bool satellite_validation();
 
     /*!

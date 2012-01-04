@@ -109,13 +109,14 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
         }
 
     //debug print
-    std::cout << std::setprecision(16);
+    /*std::cout << std::setprecision(16);
     for(gnss_pseudoranges_iter = gnss_pseudoranges_map.begin();
             gnss_pseudoranges_iter != gnss_pseudoranges_map.end();
             gnss_pseudoranges_iter++)
         {
-            std::cout<<"Pseudoranges(SV ID,pseudorange [m]) =("<<gnss_pseudoranges_iter->first<<","<<gnss_pseudoranges_iter->second.pseudorange_m<<")"<<std::endl;
-        }
+            std::cout << "Pseudoranges(SV ID,pseudorange [m]) =(" << gnss_pseudoranges_iter->first << ","
+                     << gnss_pseudoranges_iter->second.pseudorange_m << ")" <<std::endl;
+        } */
 
 
     // ############ 1. READ EPHEMERIS FROM QUEUE ######################

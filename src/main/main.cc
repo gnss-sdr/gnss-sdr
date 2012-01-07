@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 
 
     google::SetUsageMessage(intro_help);
-    google::SetVersionString("0.1");
+    //google::SetVersionString("0.1");
     google::ParseCommandLineFlags(&argc, &argv, true);
 
     std::cout<<"Initializing GNSS-SDR... Please wait"<<std::endl;

@@ -555,7 +555,8 @@ void rinex_printer::Rinex2ObsHeader(std::ofstream& out, gps_navigation_message n
     line.clear();
     line += rinex_printer::leftJustify("GNSS-SDR",20); // add flag and property
     line += rinex_printer::leftJustify("Software Receiver",20); // add flag and property
-    line += rinex_printer::leftJustify(google::VersionString(),20); // add flag and property
+    //line += rinex_printer::leftJustify(google::VersionString(),20); // add flag and property
+    line += rinex_printer::leftJustify("0.1",20);
     line += rinex_printer::leftJustify("REC # / TYPE / VERS",20);
     lengthCheck(line);
     out << line << std::endl;

@@ -1,6 +1,6 @@
 /*!
  * \file gps_navigation_message.cc
- * \brief  Implementation of a GPS NAV Data message decoder
+ * \brief  Implementation of a GPS NAV Data message decoder as described in IS-GPS-200E
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
@@ -31,6 +31,8 @@
  */
 
 #include "gps_navigation_message.h"
+#include <math.h>
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 #define num_of_slices(x) sizeof(x)/sizeof(bits_slice)
 
@@ -252,11 +254,13 @@ void gps_navigation_message::master_clock(double transmitTime)
 */
 
 // 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
-void gps_navigation_message::sv_clock_correction(double transmitTime)
+double gps_navigation_message::sv_clock_correction(double transmitTime)
 {
     double dt;
     dt = check_t(transmitTime - d_Toc);
     d_satClkCorr = (d_A_f2 * dt + d_A_f1) * dt + d_A_f0 + d_dtr;
+    double correctedTime = transmitTime - d_satClkCorr;
+    return correctedTime;
 }
 
 
@@ -285,18 +289,19 @@ void gps_navigation_message::satellitePosition(double transmitTime)
     // Restore semi-major axis
     a   = d_sqrt_A*d_sqrt_A;
 
-    // Time correction
+    // Time from ephemeris reference epoch
     tk  = check_t(transmitTime - d_Toe);
 
-    // Initial mean motion
+    // Computed mean motion
     n0  = sqrt(GM / (a*a*a));
-    // Mean motion
+
+    // Corrected mean motion
     n   = n0 + d_Delta_n;
 
     // Mean anomaly
     M   = d_M_0 + n * tk;
-    // Reduce mean anomaly to between 0 and 360 deg
 
+    // Reduce mean anomaly to between 0 and 2pi
     M   = fmod((M + 2*GPS_PI),(2*GPS_PI));
 
     // Initial guess of eccentric anomaly
@@ -318,12 +323,12 @@ void gps_navigation_message::satellitePosition(double transmitTime)
     // Compute relativistic correction term
     d_dtr = F * d_e_eccentricity * d_sqrt_A * sin(E);
 
-    // Calculate the true anomaly
+    // Compute the true anomaly
     double tmp_Y=sqrt(1.0 - d_e_eccentricity*d_e_eccentricity) * sin(E);
     double tmp_X=cos(E)-d_e_eccentricity;
     nu   = atan2(tmp_Y, tmp_X);
 
-    // Compute angle phi
+    // Compute angle phi (argument of Latitude)
     phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
@@ -337,10 +342,11 @@ void gps_navigation_message::satellitePosition(double transmitTime)
 
 
     // Correct inclination
-    i = d_i_0 + d_IDOT * tk + d_Cic * cos(2*phi) +d_Cis * sin(2*phi);
+    i = d_i_0 + d_IDOT * tk + d_Cic * cos(2*phi) + d_Cis * sin(2*phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
     Omega = d_OMEGA0 + (d_OMEGA_DOT - OMEGA_EARTH_DOT)*tk - OMEGA_EARTH_DOT * d_Toe;
+
     // Reduce to between 0 and 2*pi rad
     Omega = fmod((Omega + 2*GPS_PI),(2*GPS_PI));
 
@@ -359,7 +365,7 @@ void gps_navigation_message::satellitePosition(double transmitTime)
      }
      */
 
-    // --- Compute satellite coordinates ------------------------------------
+    // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u)*r * cos(Omega) - sin(u)*r * cos(i)*sin(Omega);
     d_satpos_Y = cos(u)*r * sin(Omega) + sin(u)*r * cos(i)*cos(Omega);
     d_satpos_Z = sin(u)*r * sin(i);
@@ -651,6 +657,79 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     } // switch subframeID ...
 
     return subframe_ID;
+}
+
+
+double gps_navigation_message::utc_time(double gpstime_corrected)
+{
+    double t_utc;
+    double t_utc_daytime;
+    double Delta_t_UTC =  d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 *(double)(i_GPS_week - i_WN_T));
+
+    // Determine if the effectivity time of the leap second event is in the past
+    int  weeksToLeapSecondEvent = i_WN_LSF-i_GPS_week;
+
+    if ((weeksToLeapSecondEvent) >= 0) // is not in the past
+        {
+            //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
+            int secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
+
+            if (weeksToLeapSecondEvent > 0)
+                {
+                    t_utc_daytime=fmod(gpstime_corrected-Delta_t_UTC,86400);
+                }
+            else //we are in the same week than the leap second event
+                {
+
+
+                    if  (abs(gpstime_corrected-secondOfLeapSecondEvent) > 21600)
+                        {
+                            /* 20.3.3.5.2.4a
+                             * Whenever the effectivity time indicated by the WN_LSF and the DN values
+                             * is not in the past (relative to the user's present time), and the user's
+                             * present time does not fall in the time span which starts at six hours prior
+                             * to the effectivity time and ends at six hours after the effectivity time,
+                             * the UTC/GPS-time relationship is given by
+                             */
+
+                            t_utc_daytime=fmod(gpstime_corrected-Delta_t_UTC,86400);
+                        }
+                    else
+                        {
+                            /* 20.3.3.5.2.4b
+                             * Whenever the user's current time falls within the time span of six hours
+                             * prior to the effectivity time to six hours after the effectivity time,
+                             * proper accommodation of the leap second event with a possible week number
+                             * transition is provided by the following expression for UTC:
+                             */
+
+                            int W = fmod(gpstime_corrected-Delta_t_UTC-43200,86400)+43200;
+                            t_utc_daytime =fmod(W,86400+d_DeltaT_LSF-d_DeltaT_LS);
+
+                            //implement something to handle a leap second event!
+                        }
+                    if (  (gpstime_corrected  - secondOfLeapSecondEvent )  > 21600)
+                        {
+                            Delta_t_UTC =  d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 *(double)(i_GPS_week - i_WN_T));
+                            t_utc_daytime=fmod(gpstime_corrected-Delta_t_UTC,86400);
+                        }
+                }
+        }
+    else // the effectivity time is in the past
+        {
+            /* 20.3.3.5.2.4c
+             * Whenever the effectivity time of the leap second event, as indicated by the
+             * WNLSF and DN values, is in the "past" (relative to the user's current time),
+             * and the user’s current time does not fall in the time span as given above
+             * in 20.3.3.5.2.4b,*/
+            Delta_t_UTC =  d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 *(double)(i_GPS_week - i_WN_T));
+            t_utc_daytime=fmod(gpstime_corrected-Delta_t_UTC,86400);
+        }
+
+    double secondsOfWeekBeforeToday= 43200*floor(gpstime_corrected/43200);
+    t_utc = secondsOfWeekBeforeToday+t_utc_daytime;
+    return t_utc;
+
 }
 
 

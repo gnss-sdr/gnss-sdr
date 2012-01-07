@@ -230,7 +230,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
 
 		  for(gps_words_iter = gps_words.begin(); gps_words_iter != gps_words.end(); gps_words_iter++)
 			{
-			// #### compute the pseudorrange for this satellite ###
+			// #### compute the pseudorange for this satellite ###
 
 		    current_prn_delay_ms=current_prn_timestamps_ms.at(gps_words_iter->second.channel_ID);
 			traveltime_ms=current_prn_delay_ms-actual_min_prn_delay_ms+GPS_STARTOFFSET_ms; //[ms]
@@ -271,6 +271,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
 		  }
 	}
   consume_each(1); //one by one
+
   if ((d_sample_counter%d_output_rate_ms)==0)
     {
 	  return 1; //Output the observables

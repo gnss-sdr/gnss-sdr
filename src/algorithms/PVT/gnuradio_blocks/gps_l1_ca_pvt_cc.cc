@@ -40,7 +40,7 @@
 #include <glog/logging.h>
 #include "gps_l1_ca_pvt_cc.h"
 #include "control_message_factory.h"
-
+#include "rinex_2_1_printer.h"
 
 using google::LogMessage;
 
@@ -78,11 +78,20 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
     d_ephemeris_clock_s=0.0;
 
     d_sample_counter=0;
+
+    b_rinex_header_writen = false;
+    rp = new rinex_printer();
+
+    //rp->navFile.open(rp->createFilename("RINEX_FILE_TYPE_GPS_NAV"), std::ios::out | std::ios::app);
+    //rp->obsFile.open(rp->createFilename("RINEX_FILE_TYPE_OBS"), std::ios::out | std::ios::app);
+    //Rinex_Nav_File=rp.getNavFileStream();
+    //Rinex_Obs_File=rp.getObsFileStream();
 }
 
 gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc() {
     d_kml_dump.close_file();
     delete d_ls_pvt;
+    delete rp;
 }
 
 bool pseudoranges_pairCompare_min( std::pair<int,gnss_pseudorange> a, std::pair<int,gnss_pseudorange> b)
@@ -146,12 +155,19 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
         {
             //d_rinex_printer.LogRinex2Obs(d_last_nav_msg,d_ephemeris_clock_s+((double)pseudoranges_timestamp_ms-d_ephemeris_timestamp_ms)/1000.0,pseudoranges);
             // compute on the fly PVT solution
-            //std::cout<<"diff_clock_ephemerids="<<(gnss_pseudoranges_iter->second.timestamp_ms-d_ephemeris_timestamp_ms)/1000.0<<"\r\n";
+            //std::cout<<"diff_clock_ephemeris="<<(gnss_pseudoranges_iter->second.timestamp_ms-d_ephemeris_timestamp_ms)/1000.0<<"\r\n";
             if (d_ls_pvt->get_PVT(gnss_pseudoranges_map,
                     d_ephemeris_clock_s+(gnss_pseudoranges_iter->second.timestamp_ms-d_ephemeris_timestamp_ms)/1000.0,
                     d_flag_averaging)==true)
                 {
                     d_kml_dump.print_position(d_ls_pvt,d_flag_averaging);
+                    if (!b_rinex_header_writen) //  & we have utc data in nav message!
+                        {
+                           // rinex_printer rinex_printer(d_last_nav_msg);
+                            rp->Rinex2NavHeader(rp->navFile, d_last_nav_msg);
+                            rp->Rinex2ObsHeader(rp->obsFile, d_last_nav_msg);
+                            b_rinex_header_writen=true; // do not write header anymore
+                        }
                 }
         }
 

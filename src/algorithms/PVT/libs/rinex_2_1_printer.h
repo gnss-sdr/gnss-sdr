@@ -37,6 +37,7 @@
 #include <sstream>  // for stringstream
 #include <iomanip> // for setprecision
 #include "gps_navigation_message.h"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 /*!
  * \brief Class that handles the generation of Receiver
@@ -45,18 +46,9 @@
 class rinex_printer
 {
 private:
-    std::ofstream navFile ;
-    std::ofstream obsFile ;
 
-    /*
-     *  Generates the Navigation Data header
-     */
-    void Rinex2NavHeader(std::ofstream& out, gps_navigation_message nav);
 
-    /*
-     *  Generates the Observation data header
-     */
-    void Rinex2ObsHeader(std::ofstream& out, gps_navigation_message nav);
+
 
     /*
      * Generation of RINEX signal strength indicators
@@ -262,12 +254,27 @@ private:
 
 
 
-
 public:
     /*!
      * \brief Default constructor. Creates GPS Navigation and Observables RINEX files and their headers
      */
     rinex_printer();
+
+    std::ofstream obsFile ;
+    std::ofstream navFile ;
+
+
+    /*!
+     *  \brief Generates the Navigation Data header
+     */
+    void Rinex2NavHeader(std::ofstream& out, gps_navigation_message nav);
+
+    /*!
+     *  \brief Generates the Observation data header
+     */
+    void Rinex2ObsHeader(std::ofstream& out, gps_navigation_message nav);
+
+    boost::posix_time::ptime computeTime(gps_navigation_message nav_msg);
 
     /*!
      * \brief Default destructor. Closes GPS Navigation and Observables RINEX files

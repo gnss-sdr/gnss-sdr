@@ -33,7 +33,7 @@
 #include "GPS_L1_CA.h"
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 using google::LogMessage;
 
@@ -211,6 +211,10 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
     arma::vec obs=arma::zeros(d_nchannels); // pseudoranges observation vector
     arma::mat satpos=arma::zeros(3,d_nchannels); //satellite positions matrix
 
+    int GPS_week;
+    double GPS_corrected_time;
+    double utc;
+
     int valid_obs=0; //valid observations counter
     for (int i=0; i<d_nchannels; i++)
         {
@@ -227,9 +231,13 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                             // d_ephemeris[i].master_clock(GPS_current_time); ?????
 
                              // compute the clock error including relativistic effects
-                            d_ephemeris[i].sv_clock_correction(GPS_current_time);
+                            GPS_corrected_time = d_ephemeris[i].sv_clock_correction(GPS_current_time);
+                            GPS_week = d_ephemeris[i].i_GPS_week;
+
+                            utc =d_ephemeris[i].utc_time(GPS_corrected_time);
+
                             // compute the satellite current ECEF position
-                            d_ephemeris[i].satellitePosition(GPS_current_time);
+                            d_ephemeris[i].satellitePosition(GPS_corrected_time);
 
                             satpos(0,i)=d_ephemeris[i].d_satpos_X;
                             satpos(1,i)=d_ephemeris[i].d_satpos_Y;
@@ -256,7 +264,11 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
             mypos=leastSquarePos(satpos,obs,W);
             LOG_AT_LEVEL(INFO) << "Position at TOW="<<GPS_current_time<<" in ECEF (X,Y,Z) = " << mypos << std::endl;
             cart2geo(mypos(0), mypos(1), mypos(2), 4);
-            std::cout << "Position at TOW="<<GPS_current_time<<" is Lat = " << d_latitude_d << " [deg] Long = "<< d_longitude_d <<" [deg] Height= "<<d_height_m<<" [m]" <<std::endl;
+
+            // Compute UTC time and print PVT solution
+            boost::posix_time::time_duration t = boost::posix_time::seconds(utc + 604800*(double)GPS_week);
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999,8,22),t);
+            std::cout << "Position at "<<boost::posix_time::to_simple_string(p_time)<<" is Lat = " << d_latitude_d << " [deg] Long = "<< d_longitude_d <<" [deg] Height= "<<d_height_m<<" [m]" <<std::endl;
             // ######## LOG FILE #########
             if(d_flag_dump_enabled==true) {
                     // MULTIPLEXED FILE RECORDING - Record results to file

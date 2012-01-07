@@ -46,12 +46,23 @@
 using google::LogMessage;
 
 
+//std::ofstream getNavFileStream() {
+//    return navFile;
+//}
+
+//std::ofstream getObsFileStream() {
+ //   return obsFile;
+//}
+
+std::ofstream getObsFileStream() ;
+
 rinex_printer::rinex_printer()
 {
 
-    rinex_printer::navFile.open(rinex_printer::createFilename("RINEX_FILE_TYPE_GPS_NAV"));
-    rinex_printer::obsFile.open(rinex_printer::createFilename("RINEX_FILE_TYPE_OBS"));
-    //rinex_printer::Rinex2NavHeader(rinex_printer::navFile, gps_navigation_message nav);
+    rinex_printer::navFile.open(rinex_printer::createFilename("RINEX_FILE_TYPE_GPS_NAV"), std::ios::out | std::ios::app);
+    rinex_printer::obsFile.open(rinex_printer::createFilename("RINEX_FILE_TYPE_OBS"), std::ios::out | std::ios::app);
+    //rinex_printer::Rinex2NavHeader(rinex_printer::navFile, nav);
+    //rinex_printer::Rinex2ObsHeader(rinex_printer::navFile, nav);
 
     satelliteSystem["GPS"]="G";
     satelliteSystem["GLONASS"]="R";
@@ -62,7 +73,7 @@ rinex_printer::rinex_printer()
     observationCode["GPS_L1_CA"] = "1C";             //!< "1C" GPS L1 C/A
     observationCode["GPS_L1_P"] = "1P";               //!< "1P" GPS L1 P
     observationCode["GPS_L1_Z_TRACKING"] = "1W";      //!< "1W" GPS L1 Z-tracking and similar (AS on)
-    observationCode["RINEX_GPS_L1_Y"] = "1Y";               //!< "1Y" GPS L1 Y
+    observationCode["GPS_L1_Y"] = "1Y";               //!< "1Y" GPS L1 Y
     observationCode["GPS_L1_M "]= "1M";               //!< "1M" GPS L1 M
     observationCode["GPS_L1_CODELESS"] = "1N";       //!< "1N" GPS L1 codeless
     observationCode["GPS_L2_CA"]= "2C";             //!< "2C" GPS L2 C/A
@@ -529,7 +540,7 @@ void rinex_printer::Rinex2ObsHeader(std::ofstream& out, gps_navigation_message n
     out << line << std::endl;
 
 
-    // -------- Line 6
+    // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username=getenv("USER");
     line += leftJustify(username,20);
@@ -540,7 +551,7 @@ void rinex_printer::Rinex2ObsHeader(std::ofstream& out, gps_navigation_message n
 
 
 
-    // -------- Line 6 REC / TYPE VERS
+    // -------- Line  REC / TYPE VERS
     line.clear();
     line += rinex_printer::leftJustify("GNSS-SDR",20); // add flag and property
     line += rinex_printer::leftJustify("Software Receiver",20); // add flag and property
@@ -608,23 +619,22 @@ void rinex_printer::Rinex2ObsHeader(std::ofstream& out, gps_navigation_message n
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    line += std::string("GPS");
-    line += std::string(5,' ');
+
 
      ///////////////////////////////////////////
     // 4-digit-year, month,day,hour,min,sec
-    double year=2012;
-    double month=1;
-    double day=4;
-    double hour=8;
-    double minute =43;
-    double second = GPS_PI;
-    line += rightJustify(asString<short>(year),  6);
-    line += rightJustify(asString<short>(month),  6);
-    line += rightJustify(asString<short>(day),  6);
-    line += rightJustify(asString<short>(hour),  6);
-    line += rightJustify(asString<short>(minute),  6);
-    line += rightJustify(asString(second,7), 13);
+    boost::posix_time::ptime p_utc_time = rinex_printer::computeTime(nav_msg);
+
+    tm pt_utc_tm=boost::posix_time::to_tm(p_utc_time);
+
+    double seconds =(double)(pt_utc_tm.tm_sec);
+
+    line += rightJustify(asString<short>(pt_utc_tm.tm_year+1900),  6);
+    line += rightJustify(asString<short>(pt_utc_tm.tm_mon),  6);
+    line += rightJustify(asString<short>(pt_utc_tm.tm_mday),  6);
+    line += rightJustify(asString<short>(pt_utc_tm.tm_hour),  6);
+    line += rightJustify(asString<short>(pt_utc_tm.tm_min),  6);
+    line += rightJustify(asString(seconds,7), 13);
     line += rightJustify(std::string("GPS"),  8);
 
     line += rinex_printer::leftJustify("TIME OF FIRST OBS",20);
@@ -770,7 +780,15 @@ int rinex_printer::signalStrength(double snr)
 }
 
 
-
+boost::posix_time::ptime rinex_printer::computeTime(gps_navigation_message nav_msg)
+{
+    // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
+    //: idea resolve the ambiguity with the leap second  http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm
+    double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
+    boost::posix_time::time_duration t = boost::posix_time::seconds(utc_t+ 604800*(double)(nav_msg.i_GPS_week));// should be i_WN_T?
+    boost::posix_time::ptime p_time(boost::gregorian::date(1999,8,22),t);
+    return p_time;
+}
 
 /*
 

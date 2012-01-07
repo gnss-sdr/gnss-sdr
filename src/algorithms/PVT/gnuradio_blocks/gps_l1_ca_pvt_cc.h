@@ -63,6 +63,10 @@ private:
   // class private vars
   gr_msg_queue_sptr d_queue;
   bool d_dump;
+  bool b_rinex_header_writen;
+  //std::ofstream Rinex_Nav_File;
+  //std::ofstream Rinex_Obs_File;
+  rinex_printer *rp;
 
   unsigned int d_nchannels;
 

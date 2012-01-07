@@ -36,6 +36,7 @@
 #include <iostream>
 #include <fstream>
 #include "gps_l1_ca_ls_pvt.h"
+#include "gps_navigation_message.h"
 
 /*!
  * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)

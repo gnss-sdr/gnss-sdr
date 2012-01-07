@@ -118,7 +118,7 @@ public:
     // Almanac
     double d_Toa;           //!< Almanac reference time [s]
     int i_WN_A;             //!< Modulo 256 of the GPS week number to which the almanac reference time (d_Toa) is referenced
-    std::map<int,int> almanacHealth;
+    std::map<int,int> almanacHealth; //!< Map that stores the health information stored in the almanac
 
     // Flags
 
@@ -139,7 +139,7 @@ public:
 
 
     // clock terms
-    //double d_master_clock;   // GPS transmission time
+    //double d_master_clock;  // GPS transmission time
     double d_satClkCorr;     // GPS clock error
     double d_dtr;            // relativistic clock correction term
 
@@ -187,12 +187,6 @@ public:
      */
     int subframe_decoder(char *subframe);
 
-    /*
-     *  User Algorithm for SV Clock Correction
-     *
-     * Implementation of paragraph 20.3.3.3.3.1 (IS-GPS-200E)
-     */
-    //void master_clock(double transmitTime);
 
     /*!
      * \brief Computes the position of the satellite
@@ -202,10 +196,16 @@ public:
     void satellitePosition(double transmitTime);
 
     /*!
-     * \brief Sets (\a d_satClkCorr) according to the User Algorithm for SV Clock Correction (IS-GPS-200E,  20.3.3.3.3.1)
+     * \brief Sets (\a d_satClkCorr) according to the User Algorithm for SV Clock Correction
+     * and returns the corrected clock (IS-GPS-200E,  20.3.3.3.3.1)
      */
-    void sv_clock_correction(double transmitTime);
+    double sv_clock_correction(double transmitTime);
 
+    /*!
+     * \brief Computes the Coordinated Universal Time (UTC) and
+     * returns it in [s] (IS-GPS-200E, 20.3.3.5.2.4)
+     */
+    double utc_time(double gpstime_corrected);
 
     bool satellite_validation();
 

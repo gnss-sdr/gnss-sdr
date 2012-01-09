@@ -280,7 +280,7 @@ public:
      * \brief Default destructor. Closes GPS Navigation and Observables RINEX files
      */
     ~rinex_printer();
-    void LogRinex2Nav(gps_navigation_message nav_msg);
+    void LogRinex2Nav(std::ofstream& out, gps_navigation_message nav_msg);
     void LogRinex2Obs(gps_navigation_message nav_msg, double interframe_seconds, std::map<int,float> pseudoranges);
 
     std::map<std::string,std::string> satelliteSystem;

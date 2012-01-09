@@ -117,7 +117,6 @@ void gps_navigation_message::reset()
     i_DN=0;
     d_DeltaT_LSF=0;
 
-
     //Almanac
     d_Toa = 0;
     i_WN_A = 0;

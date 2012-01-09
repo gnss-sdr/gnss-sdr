@@ -33,6 +33,10 @@
 #include <ostream>
 #include <fstream>
 #include <stdlib.h> // for getenv()
+#include <iostream>
+#include <string>
+#include <math.h>  // for floor
+#include <algorithm> // for min and max
 #include "boost/date_time/time_zone_base.hpp"
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/local_time/local_time.hpp"
@@ -46,23 +50,11 @@
 using google::LogMessage;
 
 
-//std::ofstream getNavFileStream() {
-//    return navFile;
-//}
-
-//std::ofstream getObsFileStream() {
- //   return obsFile;
-//}
-
-std::ofstream getObsFileStream() ;
-
 rinex_printer::rinex_printer()
 {
 
     rinex_printer::navFile.open(rinex_printer::createFilename("RINEX_FILE_TYPE_GPS_NAV"), std::ios::out | std::ios::app);
     rinex_printer::obsFile.open(rinex_printer::createFilename("RINEX_FILE_TYPE_OBS"), std::ios::out | std::ios::app);
-    //rinex_printer::Rinex2NavHeader(rinex_printer::navFile, nav);
-    //rinex_printer::Rinex2ObsHeader(rinex_printer::navFile, nav);
 
     satelliteSystem["GPS"]="G";
     satelliteSystem["GLONASS"]="R";
@@ -337,9 +329,9 @@ void rinex_printer::Rinex2NavHeader(std::ofstream& out, gps_navigation_message n
     line += std::string("GPUT");
     line += std::string(1,' ');
     line += rinex_printer::doub2for(nav_msg.d_A0, 17, 2);
-    line += rinex_printer::doub2for(nav_msg.d_A0, 16, 2);
-    line += rinex_printer::rightJustify(rinex_printer::asString(nav_msg.d_t_OT),7);
-    line += rinex_printer::rightJustify(rinex_printer::asString(nav_msg.i_WN_T),5);
+    line += rinex_printer::doub2for(nav_msg.d_A1, 16, 2);
+    line += rinex_printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.d_t_OT),7);
+    line += rinex_printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.i_WN_T),5);
     /*  if ( SBAS )
         {
           line += string(1, ' ');
@@ -357,12 +349,12 @@ void rinex_printer::Rinex2NavHeader(std::ofstream& out, gps_navigation_message n
 
     // -------- Line 6 leap seconds
 
-    // For leap second information, see See http://www.endruntechnologies.com/leap.htm
+    // For leap second information, see http://www.endruntechnologies.com/leap.htm
     line.clear();
-    line  = rinex_printer::rightJustify(rinex_printer::asString(nav_msg.d_DeltaT_LS),6);
-    line  = rinex_printer::rightJustify(rinex_printer::asString(nav_msg.d_DeltaT_LSF),6);
-    line  = rinex_printer::rightJustify(rinex_printer::asString(nav_msg.i_WN_LSF),6);
-    line  = rinex_printer::rightJustify(rinex_printer::asString(nav_msg.i_DN),6);
+    line += rinex_printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.d_DeltaT_LS),6);
+    line += rinex_printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.d_DeltaT_LSF),6);
+    line += rinex_printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.i_WN_LSF),6);
+    line += rinex_printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.i_DN),6);
     line += std::string(36, ' ');
     line += rinex_printer::leftJustify("LEAP SECONDS",20);
     rinex_printer::lengthCheck(line);
@@ -386,68 +378,11 @@ void rinex_printer::Rinex2NavHeader(std::ofstream& out, gps_navigation_message n
 
 
 
-void rinex_printer::LogRinex2Nav(gps_navigation_message nav_msg){
+void rinex_printer::LogRinex2Nav(std::ofstream& out, gps_navigation_message nav_msg){
 
-/*
+    /*
 	if(fp_rin2 != NULL)
 	{
-		//double decimalday,daydecimalhour,decimalhour,decimalmin,decimalsec;
-		//double day,hour,minutes,seconds,enterseconds,a;
-		double gpstime;
-		struct tm *tmPtr;
-		time_t temps;
-		//1-Calcul data i hora gps
-		//Calculo el any,mes i dia a partir de l'hora UTC
-		//calculate UTC_TIME
-		char cad1[80];
-		char cad2[80];
-		//calculate date of gps time:
-		double setmanes=nav_msg.d_GPS_week+1024;
-		//Days & weeks between 00h 1 Jan 1970 and 00h 6 Jan 1980
-		//520 weeks and 12 days.
-		gpstime=nav_msg.d_master_clock;
-		temps=(520+setmanes)*7*24*3600+gpstime+17*24*3600;
-
-		tmPtr = gmtime(&temps);
-		strftime( cad1, 20, "%y %m %d", tmPtr );
-		//std::cout<<"gps_time="<<cad1<<std::endl;
-
-		sprintf(cad2,"%2.0f %2.0f %3.1f",(double)tmPtr->tm_hour,(double)tmPtr->tm_min,(double)tmPtr->tm_sec);
-
-		if(correccio_primera_obs==1){
-			//Escriure CORRECCIO DE TEMPS GPS a0 i a1;
-			fseek(fp_rin2, fp_rin_end2, SEEK_SET);
-			char correction[256],correction2[256];
-			double A0,A1;
-			//  8.3819D-09 -7.4506D-09 -5.9605D-08  5.9605D-08           ION ALPHA
-	   //8.8                             064D+04 -3.2768D+04 -1.9661D+05  1.9661D+05           ION BETA
-	   // 5.                             587935447693D-09 8.881784197001D-15   233472     1518 DELTA-UTC: A0,A1,T,W
-			A0=587.935447693E-09;
-			A1=8.881784197001E-15;
-			sprintf(correction,"%19.12E",A0);
-			sprintf(correction2,"%19.12E",A1);
-			double alpha0,alpha1,alpha2,alpha3,beta0,beta1,beta2,beta3;
-			alpha0=8.3819E-09;
-			alpha1=-7.4506E-09;
-			alpha2=-5.9605E-08;
-			alpha3=5.9605E-08;
-			beta0=064E+04;
-			beta1=-3.2768E+04;
-			beta2=-1.9661E+05;
-			beta3= 1.9661E+05;
-			//Format(&correction[0],1);
-			//Format(&correction2[0],1);
-			//fp_rin_correction_time = ftell(fp_rin2);
-			// fprintf(fp_rin2,"  %12.4E%12.4E%12.4E%12.4E          ION ALPHA\n",alpha0,alpha1,alpha2,alpha3);
-			// fprintf(fp_rin2,"  %12.4E%12.4E%12.4E%12.4E          ION BETA\n",beta0,beta1,beta2,beta3);
-			fprintf(fp_rin2,"   %s%s%9.0f%9d DELTA-UTC: A0,A1,T,W\n",correction,correction2,gpstime,(int)nav_msg.d_GPS_week+1024);
-			fprintf(fp_rin2,"    15                                                      LEAP SECONDS\n");
-
-			fprintf(fp_rin2,"                                                            END OF HEADER\n");
-			fp_rin_end2 = ftell(fp_rin2);
-			correccio_primera_obs=0;
-
-		}
 
 		//preparacio lines de efemerides per imprimir!!!
 		char linia0[256],linia1[256],linia2[256],linia3[256],linia4[256],linia5[256],linia6[256],linia7[256];
@@ -608,8 +543,9 @@ void rinex_printer::Rinex2ObsHeader(std::ofstream& out, gps_navigation_message n
 
     line +=std::string(60-line.size(),' ');
     line += rinex_printer::leftJustify("SYS / # / OBS TYPES",20);
-       rinex_printer::lengthCheck(line);
-       out << line << std::endl;
+    rinex_printer::lengthCheck(line);
+    out << line << std::endl;
+
     // -------- Signal Strength units
     line.clear();
     line += rinex_printer::leftJustify("DBHZ",20);
@@ -620,29 +556,28 @@ void rinex_printer::Rinex2ObsHeader(std::ofstream& out, gps_navigation_message n
 
     // -------- TIME OF FIRST OBS
     line.clear();
-
-
-     ///////////////////////////////////////////
-    // 4-digit-year, month,day,hour,min,sec
     boost::posix_time::ptime p_utc_time = rinex_printer::computeTime(nav_msg);
-
-    tm pt_utc_tm=boost::posix_time::to_tm(p_utc_time);
-
-    double seconds =(double)(pt_utc_tm.tm_sec);
-
-    line += rightJustify(asString<short>(pt_utc_tm.tm_year+1900),  6);
-    line += rightJustify(asString<short>(pt_utc_tm.tm_mon),  6);
-    line += rightJustify(asString<short>(pt_utc_tm.tm_mday),  6);
-    line += rightJustify(asString<short>(pt_utc_tm.tm_hour),  6);
-    line += rightJustify(asString<short>(pt_utc_tm.tm_min),  6);
+    std::string timestring=boost::posix_time::to_iso_string(p_utc_time);
+    std::string year (timestring,0,4);
+    std::string month (timestring,4,2);
+    std::string day (timestring,6,2);
+    std::string hour (timestring,9,2);
+    std::string minutes (timestring,11,2);
+    double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
+    double seconds = fmod(utc_t,60);
+    line += rightJustify(year,  6);
+    line += rightJustify(month,  6);
+    line += rightJustify(day,  6);
+    line += rightJustify(hour,  6);
+    line += rightJustify(minutes,  6);
     line += rightJustify(asString(seconds,7), 13);
     line += rightJustify(std::string("GPS"),  8);
-
+    line +=std::string(9,' ');
     line += rinex_printer::leftJustify("TIME OF FIRST OBS",20);
     rinex_printer::lengthCheck(line);
     out << line << std::endl;
-    // -------- SYS /PHASE SHIFTS
 
+    // -------- SYS /PHASE SHIFTS
 
     // -------- end of header
     line.clear();
@@ -657,7 +592,7 @@ void rinex_printer::Rinex2ObsHeader(std::ofstream& out, gps_navigation_message n
 
 void rinex_printer::LogRinex2Obs(gps_navigation_message nav_msg,double pseudoranges_clock, std::map<int,float> pseudoranges)
 {
-	/* int ss;
+    /* int ss;
 	char sat_vis[36];
 	for(int i=0;i<36;i++) sat_vis[i]=' ';
 	char packet[80];
@@ -767,16 +702,9 @@ void rinex_printer::LogRinex2Obs(gps_navigation_message nav_msg,double pseudoran
 
 int rinex_printer::signalStrength(double snr)
 {
+
     int ss;
-    if(snr<12.00) ss=1;
-    else if(snr>=12.00 && snr<18.00) ss=2;
-    else if(snr>=18.00 && snr<24.00) ss=3;
-    else if(snr>=24.00 && snr<30.00) ss=4;
-    else if(snr>=30.00 && snr<36.00) ss=5;
-    else if(snr>=36.00 && snr<42.00) ss=6;
-    else if(snr>=42.00 && snr<48.00) ss=7;
-    else if(snr>=48.00 && snr<54) ss=8;
-    else if(snr>=54.00)   ss=9;
+    ss= int (std::min(std::max(int (floor(snr/6)) ,1),9));
     return (ss);
 }
 
@@ -786,7 +714,7 @@ boost::posix_time::ptime rinex_printer::computeTime(gps_navigation_message nav_m
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     //: idea resolve the ambiguity with the leap second  http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm
     double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
-    boost::posix_time::time_duration t = boost::posix_time::seconds(utc_t+ 604800*(double)(nav_msg.i_GPS_week));// should be i_WN_T?
+    boost::posix_time::time_duration t = boost::posix_time::millisec((utc_t+ 604800*(double)(nav_msg.i_GPS_week))*1000);
     boost::posix_time::ptime p_time(boost::gregorian::date(1999,8,22),t);
     return p_time;
 }
@@ -801,68 +729,9 @@ enum RINEX_enumObservationType
     RINEX_OBS_TYPE_SIGNAL_STRENGTH = 'S' //!< 'S' Signal strength observation
 } ;
 
-enum  RINEX_enumBand
-{
-    RINEX_BAND_1 = 1,
-    RINEX_BAND_2 = 2,
-    RINEX_BAND_3 = 3,
-    RINEX_BAND_4 = 4,
-    RINEX_BAND_5 = 5,
-    RINEX_BAND_6 = 6,
-    RINEX_BAND_7 = 7,
-    RINEX_BAND_8 = 8
-};
 
 
-enum RINEX_enumChannel
-{
-    RINEX_GPS_L1_CA = "1C",              //!< "1C" GPS L1 C/A
-    RINEX_GPS_L1_P = "1P",               //!< "1P" GPS L1 P
-    RINEX_GPS_L1_Z_TRACKING = "1W",      //!< "1W" GPS L1 Z-tracking and similar (AS on)
-    RINEX_GPS_L1_Y = "1Y",               //!< "1Y" GPS L1 Y
-    RINEX_GPS_L1_M = "1M",               //!< "1M" GPS L1 M
-    RINEX_GPS_L1_CODELESS = "1N",        //!< "1N" GPS L1 codeless
-    RINEX_GPS_L2_CA = "2C",              //!< "2C" GPS L2 C/A
-    RINEX_GPS_L2_SEMI_CODELESS = "2D",   //!< "2D" GPS L2 L1(C/A)+(P2-P1) semi-codeless
-    RINEX_GPS_L2_L2CM = "2S",            //!< "2S" GPS L2 L2C (M)
-    RINEX_GPS_L2_L2CL = "2L",            //!< "2L" GPS L2 L2C (L)
-    RINEX_GPS_L2_L2CML = "2X",           //!< "2X" GPS L2 L2C (M+L)
-    RINEX_GPS_L2_P = "2P",               //!< "2P" GPS L2 P
-    RINEX_GPS_L2_Z_TRACKING = "2W",      //!< "2W" GPS L2 Z-tracking and similar (AS on)
-    RINEX_GPS_L2_Y = "2Y",               //!< "2Y" GPS L2 Y
-    RINEX_GPS_L2_M = "2M",               //!< "2M" GPS GPS L2 M
-    RINEX_GPS_L2_codeless = "2N",        //!< "2N" GPS L2 codeless
-    RINEX_GPS_L5_I = "5I",               //!< "5I" GPS L5 I
-    RINEX_GPS_L5_Q = "5Q",               //!< "5Q" GPS L5 Q
-    RINEX_GPS_L5_IQ = "5X",              //!< "5X" GPS L5 I+Q
-    RINEX_GLONASS_G1_CA = "1C",          //!< "1C" GLONASS G1 C/A
-    RINEX_GLONASS_G1_P= "1P",            //!< "1P" GLONASS G1 P
-    RINEX_GLONASS_G2_CA= "2C",           //!< "2C" GLONASS G2 C/A  (Glonass M)
-    RINEX_GLONASS_G2_P= "2P",            //!< "2P" GLONASS G2 P
-    RINEX_GALILEO_E1_A= "1A",            //!< "1A" GALILEO E1 A (PRS)
-    RINEX_GALILEO_E1_B= "1B",            //!< "1B" GALILEO E1 B (I/NAV OS/CS/SoL)
-    RINEX_GALILEO_E1_C= "1C",            //!< "1C" GALILEO E1 C (no data)
-    RINEX_GALILEO_E1_BC= "1X",           //!< "1X" GALILEO E1 B+C
-    RINEX_GALILEO_E1_ABC= "1Z",          //!< "1Z" GALILEO E1 A+B+C
-    RINEX_GALILEO_E5a_I= "5I",           //!< "5I" GALILEO E5a I (F/NAV OS)
-    RINEX_GALILEO_E5a_Q= "5Q",           //!< "5Q" GALILEO E5a Q  (no data)
-    RINEX_GALILEO_E5aIQ= "5X",           //!< "5X" GALILEO E5a I+Q
-    RINEX_GALILEO_E5b_I= "7I",           //!< "7I" GALILEO E5b I
-    RINEX_GALILEO_E5b_Q= "7Q",           //!< "7Q" GALILEO E5b Q
-    RINEX_GALILEO_E5b_IQ= "7X",          //!< "7X" GALILEO E5b I+Q
-    RINEX_GALILEO_E5_I= "8I",            //!< "8I" GALILEO E5 I
-    RINEX_GALILEO_E5_Q= "8Q",            //!< "8Q" GALILEO E5 Q
-    RINEX_GALILEO_E5_IQ= "8X",           //!< "8X" GALILEO E5 I+Q
-    RINEX_GALILEO_E56_A= "6A",           //!< "6A" GALILEO E6 A
-    RINEX_GALILEO_E56_B = "6B",          //!< "6B" GALILEO E6 B
-    RINEX_GALILEO_E56_B = "6C",          //!< "6C" GALILEO E6 C
-    RINEX_GALILEO_E56_BC = "6X",         //!< "6X" GALILEO E6 B+C
-    RINEX_GALILEO_E56_ABC = "6Z",        //!< "6Z" GALILEO E6 A+B+C
-    RINEX_SBAS_L1_CA = "1C",             //!< "1C" SBAS L1 C/A
-    RINEX_SBAS_L5_I = "5I",              //!< "5I" SBAS L5 I
-    RINEX_SBAS_L5_Q = "5Q",              //!< "5Q" SBAS L5 Q
-    RINEX_SBAS_L5_IQ = "5X"            //!< "5X" SBAS L5 I+Q
-} ;
+
 
 enum RINEX_enumMarkerType {
     GEODETIC,      //!< GEODETIC Earth-fixed, high-precision monumentation
@@ -880,103 +749,6 @@ enum RINEX_enumMarkerType {
     HUMAN          //!< HUMAN Human being
 };
 
-*/
+ */
 
-
-
-/*
-
-
-    / ** @name Rinex3ObsHeaderValues
-     * /
-    //@{
-    double version;                                 ///< RINEX 3 version/type
-    std::string fileType,                           ///< RINEX 3 file type
-                satSys;                             ///< RINEX 3 satellite system
-    std::string system;                              ///< RINEX satellite system (enum)
-    std::string fileProgram,                        ///< program used to generate file
-                fileAgency,                         ///< who ran program
-                date;                               ///< when program was run
-    std::vector<std::string> commentList;           ///< comments in header             (optional)
-    std::string markerName,                         ///< MARKER NAME
-                markerNumber,                       ///< MARKER NUMBER                  (optional)
-                markerType;                         ///< MARKER TYPE
-    std::string observer,                           ///< who collected the data
-                agency;                             ///< observer's agency
-    std::string recNo,                              ///< receiver number
-                recType,                            ///< receiver type
-                recVers;                            ///< receiver version
-    std::string antNo,                              ///< antenna number
-                antType;                            ///< antenna type
-    std::vector<double> antennaPosition,                  ///< APPROX POSITION XYZ            (optional if moving)
-                        antennaDeltaHEN,                  ///< ANTENNA: DELTA H/E/N
-                        antennaDeltaXYZ;                  ///< ANTENNA: DELTA X/Y/Z           (optional)
-    std::string antennaSatSys,                      ///< ANTENNA P.CTR BLOCK: SAT SYS   (optional)
-                antennaObsCode;                     ///< ANTENNA P.CTR BLOCK: OBS CODE  (optional)
-    std::vector<double> antennaPhaseCtr;                  ///< ANTENNA P.CTR BLOCK: PCTR POS  (optional)
-    std::vector<double> antennaBsightXYZ;                 ///< ANTENNA B.SIGHT XYZ            (optional)
-    double        antennaZeroDirAzi;                ///< ANTENNA ZERODIR AZI            (optional)
-    std::vector<double> antennaZeroDirXYZ;                ///< ANTENNA ZERODIR XYZ            (optional)
-    std::vector<double> centerOfMass;                     ///< vehicle CENTER OF MASS: XYZ    (optional)
-    std::vector<std::string> obsTypeList;                 ///< number & types of observations
-    map<std::string,std::vector<std::string> > mapObsTypes;    ///< map for different sat. systems
-    std::string sigStrengthUnit;                    ///< SIGNAL STRENGTH UNIT           (optional)
-    std::vector<double> interval;                                ///< INTERVAL                       (optional)
-    boost::gregorian::date firstObs,                ///< TIME OF FIRST OBS
-                           lastObs;                             ///< TIME OF LAST OBS               (optional)
-    int receiverOffset;                             ///< RCV CLOCK OFFS APPL            (optional)
-    std::vector<std::string> infoDCBS;           ///< DCBS INFO                      (optional)
-    std::vector<std::string> infoPCVS;           ///< PCVS INFO                      (optional)
-    int factor, factorPrev;                         ///< scale factor (temp holders)
-    int leapSeconds;                                ///< LEAP SECONDS                   (optional)
-    short numSVs;                                   ///< # OF SATELLITES                (optional)
-    std::map<std::string,vector<int> > numObsForSat; ///< PRN / # OF OBS                 (optional)
-    unsigned long valid;                            ///< bits set when header members present & valid
-    std::string satSysTemp,                         ///< used to save the Sat Sys char while reading Scale Factor lines
-                satSysPrev;                         ///< used to recall the previous sat. sys for continuation lines
-    int numObs,                                     ///< used to save number of obs on # / TYPES and Sys / SCALE FACTOR continuation lines
-        numObsPrev;                                 ///< used to recall the previous # obs for continuation lines
-    std::string lastPRN;                             ///< used to save current PRN while reading PRN/OBS continuation lines
-    //@}
-
-    /// Converts the daytime \a dt into a Rinex Obs time string for the header
-
-    std::string writeTime(const boost::gregorian::date& date) const;
-
-
-
-    /// Enum of Time System Correction types.
-    enum
-    {
-        GAUT,  /// GAL  to UTC using A0, A1
-        GPUT,  /// GPS  to UTC using A0, A1
-        SBUT,  /// SBAS to UTC using A0, A1
-        GLUT,  /// GLO  to UTC using A0 = TauC  , A1 = 0
-        GPGA,  /// GPS  to GAL using A0 = A0G   , A1 = A1G
-        GLGP   /// GLO  to GPS using A0 = TauGPS, A1 = 0
-    } TimeSysCorrEnum;
-    std::string ionoCorrType;
-    double ionoParam1[4], ionoParam2[4], ionoParamGal[3];
-    long leapSeconds;
-    std::string timeSysCorrType;
-    TimeSysCorrEnum timeSysCorrEnum;
-    double A0, A1;
-    long timeSysRefTime, timeSysRefWeek;
-    std::string timeSysCorrSBAS;
-    long timeSysUTCid;
-    struct TimeSysCorrInfo
-    {
-        std::string timeSysCorrType;
-        double A0, A1;
-        long timeSysRefTime, timeSysRefWeek;
-        std::string timeSysCorrSBAS;
-        long timeSysUTCid;
-    };
-    //@}
-
-    /// Map for Time System Correction info.
-    typedef std::map<TimeSysCorrEnum, TimeSysCorrInfo> TimeSysCorrMap;
-
-    /// Instance of the map.
-    TimeSysCorrMap tscMap; */
 

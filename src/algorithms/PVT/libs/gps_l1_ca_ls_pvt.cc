@@ -211,9 +211,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
     arma::vec obs=arma::zeros(d_nchannels); // pseudoranges observation vector
     arma::mat satpos=arma::zeros(3,d_nchannels); //satellite positions matrix
 
-    int GPS_week;
-    double GPS_corrected_time;
-    double utc;
+    int GPS_week = 0;
+    double GPS_corrected_time = 0;
+    double utc = 0;
 
     int valid_obs=0; //valid observations counter
     for (int i=0; i<d_nchannels; i++)
@@ -300,7 +300,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                     }
                     catch (std::ifstream::failure e) {
-                            std::cout << "Exception writing PVT lib dump file "<<e.what()<<"\r\n";
+                            std::cout << "Exception writing PVT LS dump file "<<e.what()<<"\r\n";
                     }
             }
 
@@ -363,6 +363,8 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                 return false;
         }
 }
+
+
 void gps_l1_ca_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_selection)
 {
     // Conversion of Cartesian coordinates (X,Y,Z) to geographical

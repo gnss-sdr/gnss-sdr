@@ -69,10 +69,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
 
     d_averaging_depth=averaging_depth;
     d_flag_averaging=flag_averaging;
-    /*!
-     * \todo Enable RINEX printer: The current RINEX printer need a complete refactoring and some bug fixing work
-     */
-    //d_rinex_printer.set_headers("GNSS-SDR");
+
     d_ls_pvt=new gps_l1_ca_ls_pvt(nchannels,d_dump_filename,d_dump);
     d_ls_pvt->set_averaging_depth(d_averaging_depth);
     d_ephemeris_clock_s=0.0;
@@ -81,11 +78,6 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
 
     b_rinex_header_writen = false;
     rp = new rinex_printer();
-
-    //rp->navFile.open(rp->createFilename("RINEX_FILE_TYPE_GPS_NAV"), std::ios::out | std::ios::app);
-    //rp->obsFile.open(rp->createFilename("RINEX_FILE_TYPE_OBS"), std::ios::out | std::ios::app);
-    //Rinex_Nav_File=rp.getNavFileStream();
-    //Rinex_Obs_File=rp.getObsFileStream();
 }
 
 gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc() {

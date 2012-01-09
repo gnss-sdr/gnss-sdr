@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -45,7 +45,7 @@ bool kml_printer::set_headers(std::string filename)
     kml_file.open(filename.c_str());
     if (kml_file.is_open())
         {
-            DLOG(INFO)<<"KML printer writting on "<<filename.c_str();
+            DLOG(INFO)<<"KML printer writing on "<<filename.c_str();
             kml_file<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
                     <<"<kml xmlns=\"http://www.opengis.net/kml/2.2\">\r\n"
                     <<"	<Document>\r\n"
@@ -71,8 +71,10 @@ bool kml_printer::set_headers(std::string filename)
                     <<"<altitudeMode>absolute</altitudeMode>\r\n"
                     <<"<coordinates>\r\n";
             return true;
-        }else{
-                return false;
+        }
+    else
+        {
+            return false;
         }
 }
 
@@ -87,19 +89,22 @@ bool kml_printer::print_position(gps_l1_ca_ls_pvt* position,bool print_average_v
             latitude=position->d_latitude_d;
             longitude=position->d_longitude_d;
             height=position->d_height_m;
-        }else{
-                latitude=position->d_avg_latitude_d;
-                longitude=position->d_avg_longitude_d;
-                height=position->d_avg_height_m;
+        }
+    else
+        {
+            latitude=position->d_avg_latitude_d;
+            longitude=position->d_avg_longitude_d;
+            height=position->d_avg_height_m;
         }
     if (kml_file.is_open())
         {
             kml_file<<longitude<<","<<latitude<<","<<height<<"\r\n";
             return true;
-        }else
-            {
-                return false;
-            }
+        }
+    else
+        {
+            return false;
+        }
 }
 
 bool kml_printer::close_file()
@@ -113,8 +118,10 @@ bool kml_printer::close_file()
                     <<"</kml>";
             kml_file.close();
             return true;
-        }else{
-                return false;
+        }
+    else
+        {
+            return false;
         }
 }
 

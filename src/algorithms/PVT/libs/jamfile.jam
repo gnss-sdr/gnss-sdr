@@ -1,5 +1,5 @@
 project : build-dir ../../../../build ;
 
-obj rinex_2_1_printer : rinex_2_1_printer.cc ;
+obj rinex_printer : rinex_printer.cc ;
 obj gps_l1_ca_ls_pvt : gps_l1_ca_ls_pvt.cc ;
 obj kml_printer : kml_printer.cc ;

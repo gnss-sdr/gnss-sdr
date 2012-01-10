@@ -1,7 +1,27 @@
 /*!
- * \file rinex_2_1_printer.h  (temporal name)
- * \brief Interface of a RINEX 3.01 printer
+ * \file rinex_printer.h
+ * \brief Interface of a RINEX 2.11 / 3.01 printer
  * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf
+ *
+ * Receiver Independent EXchange Format (RINEX):
+ * The first proposal for the Receiver Independent Exchange Format RINEX
+ * was developed by the Astronomical Institute of the University of Berne
+ * for the easy exchange of the GPS data to be collected during the large
+ * European GPS campaign EUREF 89, which involved more than 60 GPS receivers
+ * of 4 different manufacturers.
+ * The governing aspect during the development was the fact that most geodetic
+ * processing software for GPS data use a well-defined set of observables:
+ * 1) The carrier-phase measurement at one or both carriers (actually being a
+ * measurement on the beat frequency between the received carrier of the
+ * satellite signal and a receiver-generated reference frequency).
+ * 2) The pseudorange (code) measuremen , equivalent to the difference
+ * of the time of reception (expressed in the time frame of the receiver)
+ * and the time of transmission (expressed in the time frame of the satellite)
+ * of a distinct satellite signal.
+ * 3) The observation time being the reading of the receiver clock at the
+ * instant of validity of the carrier-phase and/or the code measurements.
+ * Note: A collection of the formats currently used by the IGS can be found
+ * here: http://igscb.jpl.nasa.gov/components/formats.html
  * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -43,11 +63,52 @@
  * \brief Class that handles the generation of Receiver
  * INdependent EXchange format (RINEX) files
  */
-class rinex_printer
+class Rinex_Printer
 {
+
+
+public:
+    /*!
+     * \brief Default constructor. Creates GPS Navigation and Observables RINEX files and their headers
+     */
+    Rinex_Printer();
+
+    /*!
+     * \brief Default destructor. Closes GPS Navigation and Observables RINEX files
+     */
+    ~Rinex_Printer();
+
+    std::ofstream obsFile ;
+    std::ofstream navFile ;
+
+    /*!
+     *  \brief Generates the Navigation Data header
+     */
+    void RinexNavHeader(std::ofstream& out, gps_navigation_message nav);
+
+    /*!
+     *  \brief Generates the Observation data header
+     */
+    void RinexObsHeader(std::ofstream& out, gps_navigation_message nav);
+
+    boost::posix_time::ptime computeTime(gps_navigation_message nav_msg);
+
+    void LogRinexNav(std::ofstream& out, gps_navigation_message nav_msg);
+    void LogRinexObs(gps_navigation_message nav_msg, double interframe_seconds, std::map<int,float> pseudoranges);
+
+    std::map<std::string,std::string> satelliteSystem;
+    std::map<std::string,std::string> observationType;
+    std::map<std::string,std::string> observationCode;
+
+
+    std::string stringVersion; //<! RINEX version (2.11 or 3.01)
+
+
+
+
 private:
 
-
+    int version ;  // RINEX version (2 for 2.11 and 3 for 3.01)
 
 
     /*
@@ -176,11 +237,11 @@ private:
      * produce an exponential with an E instead of a D, and always have a leading
      * zero.  For example -> 0.87654E-0004 or -0.1234E00005.
      */
- inline std::string& sci2for(std::string& aStr,
-                             const std::string::size_type startPos = 0,
-                             const std::string::size_type length = std::string::npos,
-                             const std::string::size_type expLen = 3,
-                             const bool checkSwitch = true);
+    inline std::string& sci2for(std::string& aStr,
+            const std::string::size_type startPos = 0,
+            const std::string::size_type length = std::string::npos,
+            const std::string::size_type expLen = 3,
+            const bool checkSwitch = true);
 
 
 
@@ -250,50 +311,13 @@ private:
     template <class X>
     inline std::string asString(const X x);
 
-
-
-
-
-public:
-    /*!
-     * \brief Default constructor. Creates GPS Navigation and Observables RINEX files and their headers
-     */
-    rinex_printer();
-
-    std::ofstream obsFile ;
-    std::ofstream navFile ;
-
-
-    /*!
-     *  \brief Generates the Navigation Data header
-     */
-    void Rinex2NavHeader(std::ofstream& out, gps_navigation_message nav);
-
-    /*!
-     *  \brief Generates the Observation data header
-     */
-    void Rinex2ObsHeader(std::ofstream& out, gps_navigation_message nav);
-
-    boost::posix_time::ptime computeTime(gps_navigation_message nav_msg);
-
-    /*!
-     * \brief Default destructor. Closes GPS Navigation and Observables RINEX files
-     */
-    ~rinex_printer();
-    void LogRinex2Nav(std::ofstream& out, gps_navigation_message nav_msg);
-    void LogRinex2Obs(gps_navigation_message nav_msg, double interframe_seconds, std::map<int,float> pseudoranges);
-
-    std::map<std::string,std::string> satelliteSystem;
-    std::map<std::string,std::string> observationType;
-    std::map<std::string,std::string> observationCode;
-
 };
 
 
 
-// Implementation of inline functions
+// Implementation of inline functions (modified versions from GPSTk http://www.gpstk.org)
 
-inline std::string& rinex_printer::leftJustify(std::string& s,
+inline std::string& Rinex_Printer::leftJustify(std::string& s,
         const std::string::size_type length,
         const char pad)
 {
@@ -312,7 +336,7 @@ inline std::string& rinex_printer::leftJustify(std::string& s,
 
 // if the string is bigger than length, truncate it from the left.
 // otherwise, add pad characters to its left.
-inline std::string& rinex_printer::rightJustify(std::string& s,
+inline std::string& Rinex_Printer::rightJustify(std::string& s,
         const std::string::size_type length,
         const char pad)
 {
@@ -331,7 +355,7 @@ inline std::string& rinex_printer::rightJustify(std::string& s,
 
 
 
-inline std::string rinex_printer::doub2for(const double& d,
+inline std::string Rinex_Printer::doub2for(const double& d,
         const std::string::size_type length,
         const std::string::size_type expLen,
         const bool checkSwitch)
@@ -351,7 +375,7 @@ inline std::string rinex_printer::doub2for(const double& d,
 }
 
 
-inline std::string rinex_printer::doub2sci(const double& d,
+inline std::string Rinex_Printer::doub2sci(const double& d,
         const std::string::size_type length,
         const std::string::size_type expLen,
         const bool showSign,
@@ -381,7 +405,7 @@ inline std::string rinex_printer::doub2sci(const double& d,
     return toReturn;
 }
 
-inline std::string& rinex_printer::sci2for(std::string& aStr,
+inline std::string& Rinex_Printer::sci2for(std::string& aStr,
         const std::string::size_type startPos,
         const std::string::size_type length,
         const std::string::size_type expLen,
@@ -450,7 +474,7 @@ inline std::string& rinex_printer::sci2for(std::string& aStr,
                 }
             else
                 aStr += "+";
-            aStr += rinex_printer::rightJustify(asString(iexp),expLen,'0');
+            aStr += Rinex_Printer::rightJustify(asString(iexp),expLen,'0');
 
         }
 
@@ -484,7 +508,7 @@ inline std::string asString(const long double x, const std::string::size_type pr
 
 
 
-inline std::string rinex_printer::asString(const double x, const std::string::size_type precision)
+inline std::string Rinex_Printer::asString(const double x, const std::string::size_type precision)
 {
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(precision) << x;
@@ -492,7 +516,7 @@ inline std::string rinex_printer::asString(const double x, const std::string::si
 }
 
 template<class X>
-inline std::string rinex_printer::asString(const X x)
+inline std::string Rinex_Printer::asString(const X x)
 {
     std::ostringstream ss;
     ss << x;

@@ -39,7 +39,7 @@
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 #include "gps_navigation_message.h"
-#include "rinex_2_1_printer.h"
+#include "rinex_printer.h"
 #include "GPS_L1_CA.h"
 
 class gps_l1_ca_observables_cc;

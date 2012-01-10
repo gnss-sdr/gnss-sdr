@@ -4,7 +4,7 @@
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,6 +27,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gps_l1_ca_pvt_cc.h"
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -38,9 +39,8 @@
 #include <gnuradio/gr_io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include "gps_l1_ca_pvt_cc.h"
 #include "control_message_factory.h"
-#include "rinex_2_1_printer.h"
+
 
 using google::LogMessage;
 
@@ -77,7 +77,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
     d_sample_counter=0;
 
     b_rinex_header_writen = false;
-    rp = new rinex_printer();
+    rp = new Rinex_Printer();
 }
 
 gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc() {
@@ -127,25 +127,28 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     gps_navigation_message nav_msg;
     while (d_nav_queue->try_pop(nav_msg)==true)
         {
-            std::cout<<"New ephemeris record has arrived from SAT ID "<<nav_msg.d_satellite_PRN<<std::endl;
+            std::cout<<"New ephemeris record has arrived from SAT ID "<<nav_msg.i_satellite_PRN<< " (Block " <<  nav_msg.satelliteBlock[nav_msg.i_satellite_PRN] << ")" << std::endl;
             d_last_nav_msg=nav_msg;
-            d_ls_pvt->d_ephemeris[nav_msg.d_channel_ID]=nav_msg;
+            d_ls_pvt->d_ephemeris[nav_msg.i_channel_ID]=nav_msg;
             // **** update pseudoranges clock ****
-            if (nav_msg.d_satellite_PRN==gnss_pseudoranges_iter->second.SV_ID)
+            if (nav_msg.i_satellite_PRN==gnss_pseudoranges_iter->second.SV_ID)
                 {
                     d_ephemeris_clock_s=d_last_nav_msg.d_TOW;
                     d_ephemeris_timestamp_ms=d_last_nav_msg.d_subframe1_timestamp_ms;
                 }
-            // **** write ephemeris to RINES NAV file
-            //d_rinex_printer.LogRinex2Nav(nav_msg);
+            // write ephemeris to RINES NAV file, if created. Put here another condition to separate anotations
+            if(b_rinex_header_writen)
+                {
+                    rp->LogRinexNav(rp->navFile, d_last_nav_msg);
+                }
         }
 
     // ############ 2. COMPUTE THE PVT ################################
     // write the pseudoranges to RINEX OBS file
     // 1- need a valid clock
-    if (d_ephemeris_clock_s>0 and d_last_nav_msg.d_satellite_PRN>0)
+    if (d_ephemeris_clock_s>0 and d_last_nav_msg.i_satellite_PRN>0)
         {
-            //d_rinex_printer.LogRinex2Obs(d_last_nav_msg,d_ephemeris_clock_s+((double)pseudoranges_timestamp_ms-d_ephemeris_timestamp_ms)/1000.0,pseudoranges);
+            //d_Rinex_Printer.LogRinex2Obs(d_last_nav_msg,d_ephemeris_clock_s+((double)pseudoranges_timestamp_ms-d_ephemeris_timestamp_ms)/1000.0,pseudoranges);
             // compute on the fly PVT solution
             //std::cout<<"diff_clock_ephemeris="<<(gnss_pseudoranges_iter->second.timestamp_ms-d_ephemeris_timestamp_ms)/1000.0<<"\r\n";
             if (d_ls_pvt->get_PVT(gnss_pseudoranges_map,
@@ -155,11 +158,11 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                     d_kml_dump.print_position(d_ls_pvt,d_flag_averaging);
                     if (!b_rinex_header_writen) //  & we have utc data in nav message!
                         {
-                           // rinex_printer rinex_printer(d_last_nav_msg);
-                            rp->Rinex2NavHeader(rp->navFile, d_last_nav_msg);
-                            rp->Rinex2ObsHeader(rp->obsFile, d_last_nav_msg);
+                            rp->RinexNavHeader(rp->navFile, d_last_nav_msg);
+                            rp->RinexObsHeader(rp->obsFile, d_last_nav_msg);
                             b_rinex_header_writen=true; // do not write header anymore
                         }
+
                 }
         }
 

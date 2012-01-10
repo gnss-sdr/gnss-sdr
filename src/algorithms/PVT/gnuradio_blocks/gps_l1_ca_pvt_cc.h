@@ -4,7 +4,7 @@
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,7 +39,7 @@
 #include "concurrent_queue.h"
 #include "gps_navigation_message.h"
 #include "kml_printer.h"
-#include "rinex_2_1_printer.h"
+#include "rinex_printer.h"
 #include "gps_l1_ca_ls_pvt.h"
 #include "GPS_L1_CA.h"
 
@@ -66,7 +66,7 @@ private:
   bool b_rinex_header_writen;
   //std::ofstream Rinex_Nav_File;
   //std::ofstream Rinex_Obs_File;
-  rinex_printer *rp;
+  Rinex_Printer *rp;
 
   unsigned int d_nchannels;
 
@@ -86,7 +86,7 @@ private:
   double d_ephemeris_clock_s;
   double d_ephemeris_timestamp_ms;
   gps_l1_ca_ls_pvt *d_ls_pvt;
-  //rinex_printer d_rinex_printer; // RINEX printer class
+
 
 public:
 

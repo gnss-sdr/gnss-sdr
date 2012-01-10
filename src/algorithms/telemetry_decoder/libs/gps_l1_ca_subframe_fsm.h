@@ -69,8 +69,8 @@ private:
 public:
 
   // channel and satellite info
-  int d_channel_ID;
-  int d_satellite_PRN;
+  int i_channel_ID;
+  int i_satellite_PRN;
 
   // ephemeris queue
   concurrent_queue<gps_navigation_message> *d_nav_queue;

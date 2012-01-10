@@ -87,8 +87,8 @@ void gps_navigation_message::reset()
     d_satpos_Z=0;
 
     // info
-    d_channel_ID=0;
-    d_satellite_PRN=0;
+    i_channel_ID=0;
+    i_satellite_PRN=0;
 
     // time synchro
     d_subframe1_timestamp_ms=0;
@@ -129,6 +129,45 @@ void gps_navigation_message::reset()
     d_satvel_X=0;
     d_satvel_Y=0;
     d_satvel_Z=0;
+
+    //Plane A (info from http://www.navcen.uscg.gov/?Do=constellationStatus)
+    satelliteBlock[9] = "IIA";
+    satelliteBlock[31] = "IIR-M";
+    satelliteBlock[8] = "IIA";
+    satelliteBlock[7] = "IIR-M";
+    satelliteBlock[27] = "IIA";
+                   //Plane B
+    satelliteBlock[16] = "IIR";
+    satelliteBlock[25] = "IIF";
+    satelliteBlock[28] = "IIR";
+    satelliteBlock[12] = "IIR-M";
+    satelliteBlock[30] = "IIA";
+                   //Plane C
+    satelliteBlock[29] = "IIR-M";
+    satelliteBlock[3] = "IIA";
+    satelliteBlock[19] = "IIR";
+    satelliteBlock[17] = "IIR-M";
+    satelliteBlock[6] = "IIA";
+                   //Plane D
+    satelliteBlock[2] = "IIR";
+    satelliteBlock[1] = "IIF";
+    satelliteBlock[21] = "IIR";
+    satelliteBlock[4] = "IIA";
+    satelliteBlock[11] = "IIR";
+    satelliteBlock[24] = "IIA"; // Decommissioned from active service on 04 Nov 2011
+                   //Plane E
+    satelliteBlock[20] = "IIR";
+    satelliteBlock[22] = "IIR";
+    satelliteBlock[5] = "IIR-M";
+    satelliteBlock[18] = "IIR";
+    satelliteBlock[32] = "IIA";
+    satelliteBlock[10] = "IIA";
+                   //Plane F
+    satelliteBlock[14] = "IIR";
+    satelliteBlock[15] = "IIR-M";
+    satelliteBlock[13] = "IIR";
+    satelliteBlock[23] = "IIR";
+    satelliteBlock[26] = "IIA";
 }
 
 
@@ -340,7 +379,7 @@ void gps_navigation_message::satellitePosition(double transmitTime)
 
     // debug
     /*
-    if (this->d_channel_ID==0){
+    if (this->i_channel_ID==0){
 	  std::cout<<"tk"<<tk<<std::endl;
 	  std::cout<<"E="<<E<<std::endl;
 	  std::cout<<"d_dtr="<<d_dtr<<std::endl;
@@ -362,9 +401,7 @@ void gps_navigation_message::satellitePosition(double transmitTime)
     /* Satellite's velocity. Can be useful for Vector Tracking loops */
     double Omega_dot = d_OMEGA_DOT - OMEGA_EARTH_DOT;
     d_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
-
     d_satvel_Y = Omega_dot * (cos(u) * r *  cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
-
     d_satvel_Z = d_satpos_Y * sin(i);
 
 

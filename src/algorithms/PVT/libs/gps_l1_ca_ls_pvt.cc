@@ -220,7 +220,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
         {
             if (d_ephemeris[i].satellite_validation()==true)
                 {
-                    gnss_pseudoranges_iter=gnss_pseudoranges_map.find(d_ephemeris[i].d_satellite_PRN);
+                    gnss_pseudoranges_iter=gnss_pseudoranges_map.find(d_ephemeris[i].i_satellite_PRN);
                     if (gnss_pseudoranges_iter!=gnss_pseudoranges_map.end())
                         {
                             /*!
@@ -242,7 +242,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                             satpos(0,i)=d_ephemeris[i].d_satpos_X;
                             satpos(1,i)=d_ephemeris[i].d_satpos_Y;
                             satpos(2,i)=d_ephemeris[i].d_satpos_Z;
-                            LOG_AT_LEVEL(INFO)<<"ECEF satellite SV ID="<<d_ephemeris[i].d_satellite_PRN<<" X="<<d_ephemeris[i].d_satpos_X
+                            LOG_AT_LEVEL(INFO)<<"ECEF satellite SV ID="<<d_ephemeris[i].i_satellite_PRN<<" X="<<d_ephemeris[i].d_satpos_X
                                     <<" [m] Y="<<d_ephemeris[i].d_satpos_Y<<" [m] Z="<<d_ephemeris[i].d_satpos_Z<<" [m]\r\n";
                             obs(i)=gnss_pseudoranges_iter->second.pseudorange_m+d_ephemeris[i].d_satClkCorr*GPS_C_m_s;
                             valid_obs++;

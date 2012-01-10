@@ -124,6 +124,11 @@ void gps_navigation_message::reset()
         {
             almanacHealth[i]=0;
         }
+
+    // Satellite velocity
+    d_satvel_X=0;
+    d_satvel_Y=0;
+    d_satvel_Z=0;
 }
 
 
@@ -234,23 +239,7 @@ double gps_navigation_message::check_t(double time)
 }
 
 
-/*
-void gps_navigation_message::master_clock(double transmitTime)
-{
-    double dt;
-    double satClkCorr;
-    // Find initial satellite clock correction --------------------------------
 
-    // --- Find time difference ---------------------------------------------
-    dt = check_t(transmitTime - d_Toc);
-
-    //--- Calculate clock correction ---------------------------------------
-    satClkCorr = (d_A_f2 * dt + d_A_f1) * dt +  d_A_f0 - d_TGD;
-
-    d_master_clock = transmitTime - satClkCorr;
-}
-
-*/
 
 // 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
 double gps_navigation_message::sv_clock_correction(double transmitTime)
@@ -365,9 +354,23 @@ void gps_navigation_message::satellitePosition(double transmitTime)
      */
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
-    d_satpos_X = cos(u)*r * cos(Omega) - sin(u)*r * cos(i)*sin(Omega);
-    d_satpos_Y = cos(u)*r * sin(Omega) + sin(u)*r * cos(i)*cos(Omega);
-    d_satpos_Z = sin(u)*r * sin(i);
+    d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
+    d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega);
+    d_satpos_Z = sin(u) * r * sin(i);
+
+
+    /* Satellite's velocity. Can be useful for Vector Tracking loops */
+    double Omega_dot = d_OMEGA_DOT - OMEGA_EARTH_DOT;
+    d_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
+
+    d_satvel_Y = Omega_dot * (cos(u) * r *  cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
+
+    d_satvel_Z = d_satpos_Y * sin(i);
+
+
+
+
+
 }
 
 

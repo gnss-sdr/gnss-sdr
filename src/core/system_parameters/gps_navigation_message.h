@@ -178,6 +178,10 @@ public:
     int i_DN;             //!< Day number (DN) at the end of which the leap second becomes effective [days]
     double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
+    // Satellite velocity
+    double d_satvel_X;
+    double d_satvel_Y;
+    double d_satvel_Z;
 
     // public functions
     void reset();

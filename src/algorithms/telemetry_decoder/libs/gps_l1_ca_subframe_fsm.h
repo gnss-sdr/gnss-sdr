@@ -63,7 +63,8 @@ struct gps_subframe_fsm_S9;
 struct gps_subframe_fsm_S10;
 struct gps_subframe_fsm_S11;
 
-class GpsL1CaSubframeFsm : public sc::state_machine< GpsL1CaSubframeFsm, gps_subframe_fsm_S0 >{
+class GpsL1CaSubframeFsm : public sc::state_machine< GpsL1CaSubframeFsm, gps_subframe_fsm_S0 >
+{
 private:
 
 public:
@@ -91,7 +92,6 @@ public:
   void Event_gps_word_preamble();
 
   GpsL1CaSubframeFsm();
-
 };
 
 #endif

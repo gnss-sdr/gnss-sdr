@@ -42,7 +42,6 @@
 #include <math.h>
 #include "GPS_L1_CA.h"
 
-//using namespace boost::assign;
 
 
 

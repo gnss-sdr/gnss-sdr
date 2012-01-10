@@ -60,12 +60,9 @@ private:
 
   gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging);
 
-  // class private vars
   gr_msg_queue_sptr d_queue;
   bool d_dump;
   bool b_rinex_header_writen;
-  //std::ofstream Rinex_Nav_File;
-  //std::ofstream Rinex_Obs_File;
   Rinex_Printer *rp;
 
   unsigned int d_nchannels;
@@ -81,7 +78,7 @@ private:
   kml_printer d_kml_dump;
 
   concurrent_queue<gps_navigation_message> *d_nav_queue; // Navigation ephemeris queue
-  gps_navigation_message d_last_nav_msg; //last navigation message
+  gps_navigation_message d_last_nav_msg;                 // Last navigation message
 
   double d_ephemeris_clock_s;
   double d_ephemeris_timestamp_ms;

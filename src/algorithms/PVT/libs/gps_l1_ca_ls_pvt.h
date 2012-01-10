@@ -5,7 +5,7 @@
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -53,7 +53,6 @@ class gps_l1_ca_ls_pvt
 private:
     arma::vec leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w);
     arma::vec e_r_corr(double traveltime, arma::vec X_sat);
-    //void cart2geo();
     //void topocent();
 public:
     int d_nchannels;      //! Number of available channels for positioning
@@ -94,12 +93,12 @@ public:
      * \param[in] X [m] Cartesian coordinate
      * \param[in] Y [m] Cartesian coordinate
      * \param[in] Z [m] Cartesian coordinate
-     * \param[in] elipsoid_selection Choices of Reference Ellipsoid for Geographical Coordinates
-     * 0 - International Ellipsoid 1924
-     * 1 - International Ellipsoid 1967
-     * 2 - World Geodetic System 1972
-     * 3 - Geodetic Reference System 1980
-     * 4 - World Geodetic System 1984
+     * \param[in] elipsoid_selection Choices of Reference Ellipsoid for Geographical Coordinates:
+     * 0 - International Ellipsoid 1924.
+     * 1 - International Ellipsoid 1967.
+     * 2 - World Geodetic System 1972.
+     * 3 - Geodetic Reference System 1980.
+     * 4 - World Geodetic System 1984.
      *
      */
     void cart2geo(double X, double Y, double Z, int elipsoid_selection);

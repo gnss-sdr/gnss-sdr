@@ -85,19 +85,19 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     connected_ = false;
     message_ = 0;
-
 }
 
 
 // Destructor
 Channel::~Channel()
 {
-
     delete acq_;
     delete trk_;
     delete nav_;
     delete pass_through_;
 }
+
+
 
 void Channel::connect(gr_top_block_sptr top_block)
 {
@@ -130,19 +130,17 @@ void Channel::connect(gr_top_block_sptr top_block)
     connected_ = true;
 }
 
+
 void Channel::disconnect(gr_top_block_sptr top_block)
 {
-
     if (!connected_)
         {
             LOG_AT_LEVEL(WARNING) << "Channel already disconnected internally";
             return;
         }
 
-    top_block->disconnect(acq_->get_right_block(), 0, trk_->get_left_block(),
-            0);
-    top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(),
-            0);
+    top_block->disconnect(acq_->get_right_block(), 0, trk_->get_left_block(),0);
+    top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(),0);
 
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);
@@ -151,16 +149,22 @@ void Channel::disconnect(gr_top_block_sptr top_block)
     connected_ = false;
 }
 
+
+
 gr_basic_block_sptr Channel::get_left_block()
 {
     return pass_through_->get_left_block();
 }
+
+
 
 gr_basic_block_sptr Channel::get_right_block()
 {
 
     return nav_->get_right_block();
 }
+
+
 
 void Channel::set_satellite(unsigned int satellite)
 {
@@ -170,15 +174,21 @@ void Channel::set_satellite(unsigned int satellite)
     nav_->set_satellite(satellite);
 }
 
+
+
 void Channel::start_acquisition()
 {
     channel_fsm_.Event_gps_start_acquisition();
 }
 
+
+
 void Channel::start()
 {
     ch_thread_ = boost::thread(&Channel::run, this);
 }
+
+
 
 void Channel::run()
 {
@@ -221,7 +231,6 @@ void Channel::process_channel_messages()
     case 0:
 
         LOG_AT_LEVEL(INFO) << "Stop channel " << channel_;
-
         break;
 
     case 1:
@@ -229,7 +238,6 @@ void Channel::process_channel_messages()
         LOG_AT_LEVEL(INFO) << "Channel " << channel_
         << " ACQ SUCCESS satellite " << satellite_;
         channel_fsm_.Event_gps_valid_acquisition();
-
         break;
 
     case 2:
@@ -251,11 +259,9 @@ void Channel::process_channel_messages()
         << " TRACKING FAILED satellite " << satellite_
         << ", reacquisition.";
         channel_fsm_.Event_gps_failed_tracking();
-
         break;
 
     default:
-
         LOG_AT_LEVEL(WARNING) << "Default case, invalid message.";
         break;
     }

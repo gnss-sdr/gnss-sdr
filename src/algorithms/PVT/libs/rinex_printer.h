@@ -78,8 +78,8 @@ public:
      */
     ~Rinex_Printer();
 
-    std::ofstream obsFile ;
-    std::ofstream navFile ;
+    std::ofstream obsFile ; //<! Output file stream for RINEX observation file
+    std::ofstream navFile ; //<! Output file stream for RINEX navigation data file
 
     /*!
      *  \brief Generates the Navigation Data header
@@ -91,14 +91,24 @@ public:
      */
     void RinexObsHeader(std::ofstream& out, gps_navigation_message nav);
 
+    /*!
+     *  \brief Computes the UTC time and returns a boost::posix_time::ptime object
+     */
     boost::posix_time::ptime computeTime(gps_navigation_message nav_msg);
 
+    /*!
+     *  \brief Writes data from the navigation message into the RINEX file
+     */
     void LogRinexNav(std::ofstream& out, gps_navigation_message nav_msg);
+
+    /*!
+     *  \brief Writes observables into the RINEX file
+     */
     void LogRinexObs(gps_navigation_message nav_msg, double interframe_seconds, std::map<int,float> pseudoranges);
 
-    std::map<std::string,std::string> satelliteSystem;
-    std::map<std::string,std::string> observationType;
-    std::map<std::string,std::string> observationCode;
+    std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
+    std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
+    std::map<std::string,std::string> observationCode; //<! GNSS observation descriptors
 
 
     std::string stringVersion; //<! RINEX version (2.11 or 3.01)

@@ -46,7 +46,8 @@ using google::LogMessage;
 
 
 gps_l1_ca_pvt_cc_sptr
-gps_l1_ca_make_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging) {
+gps_l1_ca_make_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging)
+{
 
     return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging));
 }
@@ -54,7 +55,8 @@ gps_l1_ca_make_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump
 
 gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging) :
 		                gr_block ("gps_l1_ca_pvt_cc", gr_make_io_signature (nchannels, nchannels,  sizeof(gnss_pseudorange)),
-		                        gr_make_io_signature(1, 1, sizeof(gr_complex))) {
+		                        gr_make_io_signature(1, 1, sizeof(gr_complex)))
+{
 
     // initialize internal vars
     d_queue = queue;

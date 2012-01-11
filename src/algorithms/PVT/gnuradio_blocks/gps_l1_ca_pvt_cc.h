@@ -44,14 +44,17 @@
 #include "GPS_L1_CA.h"
 
 class gps_l1_ca_pvt_cc;
+
 typedef boost::shared_ptr<gps_l1_ca_pvt_cc> gps_l1_ca_pvt_cc_sptr;
+
 gps_l1_ca_pvt_cc_sptr
 gps_l1_ca_make_pvt_cc(unsigned int n_channels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging);
 
 /*!
  * \brief This class implements a block that computes the PVT solution
  */
-class gps_l1_ca_pvt_cc : public gr_block {
+class gps_l1_ca_pvt_cc : public gr_block
+{
 
 private:
 
@@ -87,12 +90,15 @@ private:
 
 public:
 
-  ~gps_l1_ca_pvt_cc ();
+  ~gps_l1_ca_pvt_cc (); //!< Default destructor
 
+  /*!
+   * \brief Set the queue for getting navigation messages from the GpsL1CaTelemetryDecoder
+   */
   void set_navigation_queue(concurrent_queue<gps_navigation_message> *nav_queue){d_nav_queue=nav_queue;}
 
   int general_work (int noutput_items, gr_vector_int &ninput_items,
-      gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+      gr_vector_const_void_star &input_items, gr_vector_void_star &output_items); //!< PVT Signal Processing
 };
 
 #endif

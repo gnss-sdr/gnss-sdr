@@ -33,8 +33,8 @@
 #define GNSS_SDR_GPS_L1_CA_H_
 
 // Physical constants
-const float GPS_C_m_s        = 299792458.0;      //!< The speed of light, [m/s]
-const float GPS_C_m_ms       = 299792.4580;      //!< The speed of light, [m/ms]
+const double GPS_C_m_s        = 299792458.0;      //!< The speed of light, [m/s]
+const double GPS_C_m_ms       = 299792.4580;      //!< The speed of light, [m/ms]
 const double GPS_PI          = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
 const double OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
 const double GM              = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]

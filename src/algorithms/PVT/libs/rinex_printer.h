@@ -55,9 +55,10 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>  // for stringstream
-#include <iomanip> // for setprecision
+#include <iomanip>  // for setprecision
 #include "gps_navigation_message.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include "GPS_L1_CA.h"
 
 /*!
  * \brief Class that handles the generation of Receiver
@@ -84,27 +85,27 @@ public:
     /*!
      *  \brief Generates the Navigation Data header
      */
-    void RinexNavHeader(std::ofstream& out, gps_navigation_message nav);
+    void rinex_nav_header(std::ofstream& out, gps_navigation_message nav);
 
     /*!
      *  \brief Generates the Observation data header
      */
-    void RinexObsHeader(std::ofstream& out, gps_navigation_message nav);
+    void rinex_obs_header(std::ofstream& out, gps_navigation_message nav);
 
     /*!
      *  \brief Computes the UTC time and returns a boost::posix_time::ptime object
      */
-    boost::posix_time::ptime computeTime(gps_navigation_message nav_msg);
+    boost::posix_time::ptime compute_time(gps_navigation_message nav_msg);
 
     /*!
      *  \brief Writes data from the navigation message into the RINEX file
      */
-    void LogRinexNav(std::ofstream& out, gps_navigation_message nav_msg);
+    void log_rinex_nav(std::ofstream& out, gps_navigation_message nav_msg);
 
     /*!
      *  \brief Writes observables into the RINEX file
      */
-    void LogRinexObs(gps_navigation_message nav_msg, double interframe_seconds, std::map<int,float> pseudoranges);
+    void log_rinex_obs(std::ofstream& out, gps_navigation_message nav_msg,  std::map<int,float> pseudoranges);
 
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
@@ -119,6 +120,8 @@ public:
 private:
 
     int version ;  // RINEX version (2 for 2.11 and 3 for 3.01)
+
+    int numberTypesObservations; // Number of available types of observable in the system. Should be public?
 
 
     /*
@@ -320,7 +323,6 @@ private:
      */
     template <class X>
     inline std::string asString(const X x);
-
 };
 
 
@@ -434,7 +436,6 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
     if ((idx == 0) || (idx >= (startPos + length - expLen - 1)))
         {
             //StringException e("sci2for: no decimal point in string");
-            //GPSTK_THROW(e);
         }
 
     // Here, account for the possibility that there are
@@ -463,6 +464,7 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
                     //GPSTK_THROW(e);
                 }
         }
+
     // Change the exponent character to D normally, or E of checkSwitch is false.
     if (checkSwitch)
         aStr[idx] = 'D';
@@ -485,7 +487,6 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
             else
                 aStr += "+";
             aStr += Rinex_Printer::rightJustify(asString(iexp),expLen,'0');
-
         }
 
     // if the number is positive, append a space
@@ -524,6 +525,7 @@ inline std::string Rinex_Printer::asString(const double x, const std::string::si
     ss << std::fixed << std::setprecision(precision) << x;
     return ss.str();
 }
+
 
 template<class X>
 inline std::string Rinex_Printer::asString(const X x)

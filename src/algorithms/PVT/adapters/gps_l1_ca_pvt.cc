@@ -58,10 +58,10 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     DLOG(INFO) << "role " << role;
 
     int averaging_depth;
-    averaging_depth=configuration->property(role + ".averaging_depth", 10);
+    averaging_depth = configuration->property(role + ".averaging_depth", 10);
 
     bool flag_averaging;
-    flag_averaging=configuration->property(role + ".flag_averaging", false);
+    flag_averaging = configuration->property(role + ".flag_averaging", false);
 
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
@@ -73,7 +73,7 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
 
     pvt_->set_navigation_queue(&global_gps_nav_msg_queue);
 
-    DLOG(INFO) << "global navigation message queue assigned to pvt ("<< pvt_->unique_id() << ")";
+    DLOG(INFO) << "global navigation message queue assigned to pvt (" << pvt_->unique_id() << ")";
 
 }
 

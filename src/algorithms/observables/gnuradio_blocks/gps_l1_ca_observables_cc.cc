@@ -61,23 +61,23 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, gr_ms
     d_queue = queue;
     d_dump = dump;
     d_nchannels = nchannels;
-    d_output_rate_ms=output_rate_ms;
-    d_history_prn_delay_ms= new std::deque<double>[d_nchannels];
-    d_dump_filename=dump_filename;
-    d_flag_averaging=flag_averaging;
+    d_output_rate_ms = output_rate_ms;
+    d_history_prn_delay_ms = new std::deque<double>[d_nchannels];
+    d_dump_filename = dump_filename;
+    d_flag_averaging = flag_averaging;
 
     // ############# ENABLE DATA FILE LOG #################
-    if (d_dump==true)
+    if (d_dump == true)
         {
-            if (d_dump_file.is_open()==false)
+            if (d_dump_file.is_open() == false)
                 {
                     try {
-                            d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+                            d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout<<"Observables dump enabled Log file: "<<d_dump_filename.c_str()<<std::endl;
+                            std::cout << "Observables dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
                     }
                     catch (std::ifstream::failure e) {
-                            std::cout << "Exception opening observables dump file "<<e.what()<<"\r\n";
+                            std::cout << "Exception opening observables dump file " << e.what() << std::endl;
                     }
                 }
         }
@@ -103,7 +103,7 @@ bool pairCompare_double( std::pair<int,double> a, std::pair<int,double> b)
 void clearQueue( std::deque<double> &q )
 {
     std::deque<double> empty;
-    std::swap( q, empty );
+    std::swap(q, empty);
 }
 
 
@@ -127,18 +127,18 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
     double pseudoranges_timestamp_ms;
     double traveltime_ms;
     double pseudorange_m;
-    int history_shift=0;
+    int history_shift = 0;
     double delta_timestamp_ms;
     double min_delta_timestamp_ms;
     double actual_min_prn_delay_ms;
     double current_prn_delay_ms;
 
-    int pseudoranges_reference_sat_ID=0;
-    unsigned int pseudoranges_reference_sat_channel_ID=0;
+    int pseudoranges_reference_sat_ID = 0;
+    unsigned int pseudoranges_reference_sat_channel_ID = 0;
 
     d_sample_counter++; //count for the processed samples
 
-    bool flag_history_ok=true; //flag to indicate that all the queues have filled their timestamp history
+    bool flag_history_ok = true; //flag to indicate that all the queues have filled their timestamp history
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels to obtain the preamble timestamp, current PRN start time and accumulated carrier phase
      */
@@ -146,12 +146,12 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
         {
             if (in[i][0].valid_word) //if this channel have valid word
                 {
-                    gps_words.insert(std::pair<int,gnss_synchro>(in[i][0].channel_ID,in[i][0])); //record the word structure in a map for pseudoranges
+                    gps_words.insert(std::pair<int,gnss_synchro>(in[i][0].channel_ID, in[i][0])); //record the word structure in a map for pseudoranges
                     // RECORD PRN start timestamps history
                     if (d_history_prn_delay_ms[i].size()<MAX_TOA_DELAY_MS)
                         {
                             d_history_prn_delay_ms[i].push_front(in[i][0].prn_delay_ms);
-                            flag_history_ok=false; // at least one channel need more samples
+                            flag_history_ok = false; // at least one channel need more samples
                         }
                     else
                         {
@@ -167,34 +167,34 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
      */
     for (unsigned int i=0; i<d_nchannels ; i++)
         {
-            current_gnss_pseudorange.valid=false;
-            current_gnss_pseudorange.SV_ID=0;
-            current_gnss_pseudorange.pseudorange_m=0;
-            current_gnss_pseudorange.timestamp_ms=0;
-            *out[i]=current_gnss_pseudorange;
+            current_gnss_pseudorange.valid = false;
+            current_gnss_pseudorange.SV_ID = 0;
+            current_gnss_pseudorange.pseudorange_m = 0;
+            current_gnss_pseudorange.timestamp_ms = 0;
+            *out[i] = current_gnss_pseudorange;
         }
     /*
      * 2. Compute RAW pseudorranges: Use only the valid channels (channels that are tracking a satellite)
      */
-    if(gps_words.size()>0 and flag_history_ok==true)
+    if(gps_words.size() > 0 and flag_history_ok == true)
         {
             /*
              *  2.1 find the minimum preamble timestamp (nearest satellite, will be the reference)
              */
             // The nearest satellite, first preamble to arrive
-            gps_words_iter=min_element(gps_words.begin(),gps_words.end(),pairCompare_gnss_synchro);
-            min_preamble_delay_ms=gps_words_iter->second.preamble_delay_ms; //[ms]
+            gps_words_iter = min_element(gps_words.begin(), gps_words.end(), pairCompare_gnss_synchro);
+            min_preamble_delay_ms = gps_words_iter->second.preamble_delay_ms; //[ms]
 
-            pseudoranges_reference_sat_ID=gps_words_iter->second.satellite_PRN; // it is the reference!
-            pseudoranges_reference_sat_channel_ID=gps_words_iter->second.channel_ID;
+            pseudoranges_reference_sat_ID = gps_words_iter->second.satellite_PRN; // it is the reference!
+            pseudoranges_reference_sat_channel_ID = gps_words_iter->second.channel_ID;
 
             // The farthest satellite, last preamble to arrive
-            gps_words_iter=max_element(gps_words.begin(),gps_words.end(),pairCompare_gnss_synchro);
-            max_preamble_delay_ms=gps_words_iter->second.preamble_delay_ms;
-            min_delta_timestamp_ms=gps_words_iter->second.prn_delay_ms-max_preamble_delay_ms; //[ms]
+            gps_words_iter = max_element(gps_words.begin(), gps_words.end(), pairCompare_gnss_synchro);
+            max_preamble_delay_ms = gps_words_iter->second.preamble_delay_ms;
+            min_delta_timestamp_ms = gps_words_iter->second.prn_delay_ms - max_preamble_delay_ms; //[ms]
 
             // check if this is a valid set of observations
-            if ((max_preamble_delay_ms-min_preamble_delay_ms)<MAX_TOA_DELAY_MS)
+            if ((max_preamble_delay_ms - min_preamble_delay_ms) < MAX_TOA_DELAY_MS)
                 {
                     // Now we have to determine were we are in time, compared with the last preamble! -> we select the corresponding history
                     /*!
@@ -204,10 +204,10 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     // find again the minimum CURRENT minimum preamble time, taking into account the preamble timeshift
                     for(gps_words_iter = gps_words.begin(); gps_words_iter != gps_words.end(); gps_words_iter++)
                         {
-                            delta_timestamp_ms=(gps_words_iter->second.prn_delay_ms-gps_words_iter->second.preamble_delay_ms)-min_delta_timestamp_ms;
-                            history_shift=round(delta_timestamp_ms);
+                            delta_timestamp_ms = (gps_words_iter->second.prn_delay_ms - gps_words_iter->second.preamble_delay_ms) - min_delta_timestamp_ms;
+                            history_shift = round(delta_timestamp_ms);
                             //std::cout<<"history_shift="<<history_shift<<"\r\n";
-                            current_prn_timestamps_ms.insert(std::pair<int,double>(gps_words_iter->second.channel_ID,d_history_prn_delay_ms[gps_words_iter->second.channel_ID][history_shift]));
+                            current_prn_timestamps_ms.insert(std::pair<int,double>(gps_words_iter->second.channel_ID, d_history_prn_delay_ms[gps_words_iter->second.channel_ID][history_shift]));
                             // debug: preamble position test
                             //if ((d_history_prn_delay_ms[gps_words_iter->second.channel_ID][history_shift]-gps_words_iter->second.preamble_delay_ms)<0.1)
                             //{std::cout<<"ch "<<gps_words_iter->second.channel_ID<<" current_prn_time-last_preamble_prn_time="<<
@@ -221,13 +221,12 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     //{
                     //std::cout<<"PREAMBLE NAVIGATION NOW!\r\n";
                     //d_sample_counter=0;
-
                     //}
-                    current_prn_timestamps_ms_iter=min_element(current_prn_timestamps_ms.begin(),current_prn_timestamps_ms.end(),pairCompare_double);
+                    current_prn_timestamps_ms_iter = min_element(current_prn_timestamps_ms.begin(), current_prn_timestamps_ms.end(), pairCompare_double);
 
-                    actual_min_prn_delay_ms=current_prn_timestamps_ms_iter->second;
+                    actual_min_prn_delay_ms = current_prn_timestamps_ms_iter->second;
 
-                    pseudoranges_timestamp_ms=actual_min_prn_delay_ms; //save the shortest pseudorange timestamp to compute the current GNSS timestamp
+                    pseudoranges_timestamp_ms = actual_min_prn_delay_ms; //save the shortest pseudorange timestamp to compute the current GNSS timestamp
                     /*
                      * 2.2 compute the pseudoranges
                      */
@@ -236,53 +235,54 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                         {
                             // #### compute the pseudorange for this satellite ###
 
-                            current_prn_delay_ms=current_prn_timestamps_ms.at(gps_words_iter->second.channel_ID);
-                            traveltime_ms=current_prn_delay_ms-actual_min_prn_delay_ms+GPS_STARTOFFSET_ms; //[ms]
+                            current_prn_delay_ms = current_prn_timestamps_ms.at(gps_words_iter->second.channel_ID);
+                            traveltime_ms = current_prn_delay_ms - actual_min_prn_delay_ms + GPS_STARTOFFSET_ms; //[ms]
                             //std::cout<<"delta_time_ms="<<current_prn_delay_ms-actual_min_prn_delay_ms<<"\r\n";
-                            pseudorange_m=traveltime_ms*GPS_C_m_ms; // [m]
+                            pseudorange_m = traveltime_ms*GPS_C_m_ms; // [m]
 
                             // update the pseudorange object
-                            current_gnss_pseudorange.pseudorange_m=pseudorange_m;
-                            current_gnss_pseudorange.timestamp_ms=pseudoranges_timestamp_ms;
-                            current_gnss_pseudorange.SV_ID=gps_words_iter->second.satellite_PRN;
-                            current_gnss_pseudorange.valid=true;
+                            current_gnss_pseudorange.pseudorange_m = pseudorange_m;
+                            current_gnss_pseudorange.timestamp_ms = pseudoranges_timestamp_ms;
+                            current_gnss_pseudorange.SV_ID = gps_words_iter->second.satellite_PRN;
+                            current_gnss_pseudorange.valid = true;
                             // #### write the pseudorrange block output for this satellite ###
-                            *out[gps_words_iter->second.channel_ID]=current_gnss_pseudorange;
+                            *out[gps_words_iter->second.channel_ID] = current_gnss_pseudorange;
                         }
                 }
         }
 
-    if(d_dump==true) {
+    if(d_dump == true) {
             // MULTIPLEXED FILE RECORDING - Record results to file
             try {
                     double tmp_double;
                     for (unsigned int i=0; i<d_nchannels ; i++)
                         {
-                            tmp_double=in[i][0].preamble_delay_ms;
+                            tmp_double = in[i][0].preamble_delay_ms;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double=in[i][0].prn_delay_ms;
+                            tmp_double = in[i][0].prn_delay_ms;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double=out[i][0].pseudorange_m;
+                            tmp_double = out[i][0].pseudorange_m;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double=out[i][0].timestamp_ms;
+                            tmp_double = out[i][0].timestamp_ms;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double=out[i][0].SV_ID;
+                            tmp_double = out[i][0].SV_ID;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                         }
             }
-            catch (std::ifstream::failure e) {
-                    std::cout << "Exception writing observables dump file "<<e.what()<<"\r\n";
+            catch (std::ifstream::failure e)
+            {
+                    std::cout << "Exception writing observables dump file "<< e.what() << std::endl;
             }
     }
     consume_each(1); //one by one
 
-    if ((d_sample_counter%d_output_rate_ms)==0)
+    if ((d_sample_counter % d_output_rate_ms) == 0)
         {
             return 1; //Output the observables
         }
     else
         {
-                return 0;//hold on
+            return 0; //hold on
         }
 }
 

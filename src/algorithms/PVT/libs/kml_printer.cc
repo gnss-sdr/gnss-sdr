@@ -45,31 +45,31 @@ bool kml_printer::set_headers(std::string filename)
     kml_file.open(filename.c_str());
     if (kml_file.is_open())
         {
-            DLOG(INFO)<<"KML printer writing on "<<filename.c_str();
-            kml_file<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
-                    <<"<kml xmlns=\"http://www.opengis.net/kml/2.2\">\r\n"
-                    <<"	<Document>\r\n"
-                    <<"	<name>GNSS Track</name>\r\n"
-                    <<"	<description>GNSS-SDR Receiver position log file created at "<<asctime (timeinfo)
-                    <<"	</description>\r\n"
-                    <<"<Style id=\"yellowLineGreenPoly\">\r\n"
-                    <<" <LineStyle>\r\n"
-                    <<" 	<color>7f00ffff</color>\r\n"
-                    <<"		<width>1</width>\r\n"
-                    <<"	</LineStyle>\r\n"
-                    <<"<PolyStyle>\r\n"
-                    <<"	<color>7f00ff00</color>\r\n"
-                    <<"</PolyStyle>\r\n"
-                    <<"</Style>\r\n"
-                    <<"<Placemark>\r\n"
-                    <<"<name>GNSS-SDR PVT</name>\r\n"
-                    <<"<description>GNSS-SDR position log</description>\r\n"
-                    <<"<styleUrl>#yellowLineGreenPoly</styleUrl>\r\n"
-                    <<"<LineString>\r\n"
-                    <<"<extrude>0</extrude>\r\n"
-                    <<"<tessellate>1</tessellate>\r\n"
-                    <<"<altitudeMode>absolute</altitudeMode>\r\n"
-                    <<"<coordinates>\r\n";
+            DLOG(INFO) << "KML printer writing on " << filename.c_str();
+            kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
+                    << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
+                    << "	<Document>" << std::endl
+                    << "	<name>GNSS Track</name>" << std::endl
+                    << "	<description>GNSS-SDR Receiver position log file created at " << asctime (timeinfo)
+                    << "	</description>" << std::endl
+                    << "<Style id=\"yellowLineGreenPoly\">" << std::endl
+                    << " <LineStyle>" << std::endl
+                    << " 	<color>7f00ffff</color>" << std::endl
+                    << "		<width>1</width>" << std::endl
+                    << "	</LineStyle>" << std::endl
+                    << "<PolyStyle>" << std::endl
+                    << "	<color>7f00ff00</color>" << std::endl
+                    << "</PolyStyle>" << std::endl
+                    << "</Style>" << std::endl
+                    << "<Placemark>" << std::endl
+                    << "<name>GNSS-SDR PVT</name>" << std::endl
+                    << "<description>GNSS-SDR position log</description>" << std::endl
+                    << "<styleUrl>#yellowLineGreenPoly</styleUrl>" << std::endl
+                    << "<LineString>" << std::endl
+                    << "<extrude>0</extrude>" << std::endl
+                    << "<tessellate>1</tessellate>" << std::endl
+                    << "<altitudeMode>absolute</altitudeMode>" << std::endl
+                    << "<coordinates>" << std::endl;
             return true;
         }
     else
@@ -84,7 +84,7 @@ bool kml_printer::print_position(gps_l1_ca_ls_pvt* position,bool print_average_v
     double latitude;
     double longitude;
     double height;
-    if (print_average_values==false)
+    if (print_average_values == false)
         {
             latitude=position->d_latitude_d;
             longitude=position->d_longitude_d;
@@ -96,9 +96,10 @@ bool kml_printer::print_position(gps_l1_ca_ls_pvt* position,bool print_average_v
             longitude=position->d_avg_longitude_d;
             height=position->d_avg_height_m;
         }
+
     if (kml_file.is_open())
         {
-            kml_file<<longitude<<","<<latitude<<","<<height<<"\r\n";
+            kml_file << longitude << "," << latitude << "," << height << std::endl;
             return true;
         }
     else
@@ -111,10 +112,10 @@ bool kml_printer::close_file()
 {
     if (kml_file.is_open())
         {
-            kml_file<<"</coordinates>\r\n"
-                    <<"</LineString>\r\n"
-                    <<"</Placemark>\r\n"
-                    <<"</Document>\r\n"
+            kml_file<<"</coordinates>" << std::endl
+                    <<"</LineString>" << std::endl
+                    <<"</Placemark>" << std::endl
+                    <<"</Document>" << std::endl
                     <<"</kml>";
             kml_file.close();
             return true;

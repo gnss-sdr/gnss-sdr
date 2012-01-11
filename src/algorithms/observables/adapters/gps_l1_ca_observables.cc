@@ -55,14 +55,14 @@ GpsL1CaObservables::GpsL1CaObservables(ConfigurationInterface* configuration,
 {
 
     int output_rate_ms;
-    output_rate_ms=configuration->property(role + ".output_rate_ms", 500);
+    output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
 
     std::string default_dump_filename = "./observables.dat";
 
     DLOG(INFO) << "role " << role;
 
     bool flag_averaging;
-    flag_averaging=configuration->property(role + ".flag_averaging", false);
+    flag_averaging = configuration->property(role + ".flag_averaging", false);
 
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);

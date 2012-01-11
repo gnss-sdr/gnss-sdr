@@ -40,26 +40,26 @@ using google::LogMessage;
 gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file)
 {
     // init empty ephemeris for all the available GNSS channels
-    d_nchannels=nchannels;
-    d_ephemeris=new gps_navigation_message[nchannels];
-    d_dump_filename=dump_filename;
-    d_flag_dump_enabled=flag_dump_to_file;
-    d_averaging_depth=0;
+    d_nchannels = nchannels;
+    d_ephemeris = new gps_navigation_message[nchannels];
+    d_dump_filename = dump_filename;
+    d_flag_dump_enabled = flag_dump_to_file;
+    d_averaging_depth = 0;
 
     // ############# ENABLE DATA FILE LOG #################
-    if (d_flag_dump_enabled==true)
+    if (d_flag_dump_enabled == true)
         {
-            if (d_dump_file.is_open()==false)
+            if (d_dump_file.is_open() == false)
                 {
                     try
                     {
-                            d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+                            d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout<<"PVT lib dump enabled Log file: "<<d_dump_filename.c_str()<<std::endl;
+                            std::cout << "PVT lib dump enabled Log file: "<< d_dump_filename.c_str() << std::endl;
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "Exception opening PVT lib dump file "<<e.what()<<"\r\n";
+                            std::cout << "Exception opening PVT lib dump file "<< e.what() << std::endl;
                     }
                 }
         }
@@ -68,7 +68,7 @@ gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool
 
 void gps_l1_ca_ls_pvt::set_averaging_depth(int depth)
 {
-    d_averaging_depth=depth;
+    d_averaging_depth = depth;
 }
 
 
@@ -100,16 +100,16 @@ arma::vec gps_l1_ca_ls_pvt::e_r_corr(double traveltime, arma::vec X_sat)
     omegatau = OMEGA_EARTH_DOT * traveltime;
 
     //--- Make a rotation matrix -----------------------------------------------
-    arma::mat R3=arma::zeros(3,3);
-    R3(0, 0)= cos(omegatau);
-    R3(0, 1)= sin(omegatau);
-    R3(0, 2)= 0.0;
-    R3(1, 0)=-sin(omegatau);
-    R3(1, 1)= cos(omegatau);
-    R3(1, 2)=0.0;
-    R3(2, 0)= 0.0;
-    R3(2, 1)= 0.0;
-    R3(2, 2)= 1;
+    arma::mat R3 = arma::zeros(3,3);
+    R3(0, 0) = cos(omegatau);
+    R3(0, 1) = sin(omegatau);
+    R3(0, 2) = 0.0;
+    R3(1, 0) = -sin(omegatau);
+    R3(1, 1) = cos(omegatau);
+    R3(1, 2) = 0.0;
+    R3(2, 0) = 0.0;
+    R3(2, 1) = 0.0;
+    R3(2, 2) = 1;
     //--- Do the rotation ------------------------------------------------------
     arma::vec X_sat_rot;
     X_sat_rot = R3 * X_sat;
@@ -144,18 +144,18 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
     arma::mat omc;
     arma::mat az;
     arma::mat el;
-    A=arma::zeros(nmbOfSatellites,4);
-    omc=arma::zeros(nmbOfSatellites,1);
-    az=arma::zeros(1,nmbOfSatellites);
-    el=arma::zeros(1,nmbOfSatellites);
+    A=arma::zeros(nmbOfSatellites, 4);
+    omc=arma::zeros(nmbOfSatellites, 1);
+    az=arma::zeros(1, nmbOfSatellites);
+    el=arma::zeros(1, nmbOfSatellites);
     for (int i = 0; i < nmbOfSatellites; i++)
         {
             for (int j = 0; j < 4; j++)
                 {
-                    A(i,j)=0.0; //Armadillo
+                    A(i, j) = 0.0; //Armadillo
                 }
-            omc(i, 0)=0.0;
-            az(0, i)=0.0;
+            omc(i, 0) = 0.0;
+            az(0, i)= 0.0;
         }
     el = az;
 
@@ -174,7 +174,7 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                     if (iter == 0)
                         {
                             //--- Initialize variables at the first iteration --------------
-                            Rot_X=X.col(i); //Armadillo
+                            Rot_X = X.col(i); //Armadillo
                             trop = 0.0;
                         }
                     else
@@ -194,10 +194,10 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
 
                     //--- Construct the A matrix ---------------------------------------
                     //Armadillo
-                    A(i,0)=(-(Rot_X(0) - pos(0))) / obs(i);
-                    A(i,1)=(-(Rot_X(1) - pos(1))) / obs(i);
-                    A(i,2)=(-(Rot_X(2) - pos(2))) / obs(i);
-                    A(i,3)=1.0;
+                    A(i,0) = (-(Rot_X(0) - pos(0))) / obs(i);
+                    A(i,1) = (-(Rot_X(1) - pos(1))) / obs(i);
+                    A(i,2) = (-(Rot_X(2) - pos(2))) / obs(i);
+                    A(i,3) = 1.0;
                 }
 
 
@@ -208,7 +208,7 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
             //}
 
             //--- Find position update ---------------------------------------------
-            x = arma::solve(w*A,w*omc); // Armadillo
+            x = arma::solve(w*A, w*omc); // Armadillo
 
             //--- Apply position update --------------------------------------------
             pos = pos + x;
@@ -221,9 +221,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
 {
     std::map<int,gnss_pseudorange>::iterator gnss_pseudoranges_iter;
 
-    arma::mat W=arma::eye(d_nchannels,d_nchannels); //channels weights matrix
-    arma::vec obs=arma::zeros(d_nchannels); // pseudoranges observation vector
-    arma::mat satpos=arma::zeros(3,d_nchannels); //satellite positions matrix
+    arma::mat W = arma::eye(d_nchannels,d_nchannels); //channels weights matrix
+    arma::vec obs = arma::zeros(d_nchannels); // pseudoranges observation vector
+    arma::mat satpos = arma::zeros(3,d_nchannels); //satellite positions matrix
 
     int GPS_week = 0;
     double GPS_corrected_time = 0;
@@ -232,15 +232,15 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
     int valid_obs=0; //valid observations counter
     for (int i=0; i<d_nchannels; i++)
         {
-            if (d_ephemeris[i].satellite_validation()==true)
+            if (d_ephemeris[i].satellite_validation() == true)
                 {
-                    gnss_pseudoranges_iter=gnss_pseudoranges_map.find(d_ephemeris[i].i_satellite_PRN);
-                    if (gnss_pseudoranges_iter!=gnss_pseudoranges_map.end())
+                    gnss_pseudoranges_iter = gnss_pseudoranges_map.find(d_ephemeris[i].i_satellite_PRN);
+                    if (gnss_pseudoranges_iter != gnss_pseudoranges_map.end())
                         {
                             /*!
                              * \todo Place here the satellite CN0 (power level, or weight factor)
                              */
-                            W(i,i)=1;
+                            W(i,i) = 1;
                             // compute the GPS master clock
                             // d_ephemeris[i].master_clock(GPS_current_time); ?????
 
@@ -248,31 +248,31 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                             GPS_corrected_time = d_ephemeris[i].sv_clock_correction(GPS_current_time);
                             GPS_week = d_ephemeris[i].i_GPS_week;
 
-                            utc =d_ephemeris[i].utc_time(GPS_corrected_time);
+                            utc = d_ephemeris[i].utc_time(GPS_corrected_time);
 
                             // compute the satellite current ECEF position
                             d_ephemeris[i].satellitePosition(GPS_corrected_time);
 
-                            satpos(0,i)=d_ephemeris[i].d_satpos_X;
-                            satpos(1,i)=d_ephemeris[i].d_satpos_Y;
-                            satpos(2,i)=d_ephemeris[i].d_satpos_Z;
-                            LOG_AT_LEVEL(INFO)<<"ECEF satellite SV ID="<<d_ephemeris[i].i_satellite_PRN<<" X="<<d_ephemeris[i].d_satpos_X
-                                    <<" [m] Y="<<d_ephemeris[i].d_satpos_Y<<" [m] Z="<<d_ephemeris[i].d_satpos_Z<<" [m]\r\n";
-                            obs(i)=gnss_pseudoranges_iter->second.pseudorange_m+d_ephemeris[i].d_satClkCorr*GPS_C_m_s;
+                            satpos(0,i) = d_ephemeris[i].d_satpos_X;
+                            satpos(1,i) = d_ephemeris[i].d_satpos_Y;
+                            satpos(2,i) = d_ephemeris[i].d_satpos_Z;
+                            LOG_AT_LEVEL(INFO) << "ECEF satellite SV ID=" << d_ephemeris[i].i_satellite_PRN <<" X=" << d_ephemeris[i].d_satpos_X
+                                    << " [m] Y=" << d_ephemeris[i].d_satpos_Y << " [m] Z=" << d_ephemeris[i].d_satpos_Z << " [m]" << std::endl;
+                            obs(i) = gnss_pseudoranges_iter->second.pseudorange_m + d_ephemeris[i].d_satClkCorr*GPS_C_m_s;
                             valid_obs++;
                         }
                     else
                         {
                             // no valid pseudorange for the current channel
-                            W(i,i)=0; // channel de-activated
-                            obs(i)=1; // to avoid algorithm problems (divide by zero)
+                            W(i,i) = 0; // channel de-activated
+                            obs(i) = 1; // to avoid algorithm problems (divide by zero)
                         }
                 }
             else
                 {
                     // no valid ephemeris for the current channel
-                    W(i,i)=0; // channel de-activated
-                    obs(i)=1; // to avoid algorithm problems (divide by zero)
+                    W(i,i) = 0; // channel de-activated
+                    obs(i) = 1; // to avoid algorithm problems (divide by zero)
                 }
         }
     std::cout<<"PVT: valid observations="<<valid_obs<<std::endl;
@@ -280,43 +280,43 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
         {
             arma::vec mypos;
             mypos=leastSquarePos(satpos,obs,W);
-            LOG_AT_LEVEL(INFO) << "Position at TOW="<<GPS_current_time<<" in ECEF (X,Y,Z) = " << mypos << std::endl;
+            LOG_AT_LEVEL(INFO) << "Position at TOW="<< GPS_current_time << " in ECEF (X,Y,Z) = " << mypos << std::endl;
             cart2geo(mypos(0), mypos(1), mypos(2), 4);
 
             // Compute UTC time and print PVT solution
             boost::posix_time::time_duration t = boost::posix_time::seconds(utc + 604800*(double)GPS_week);
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999,8,22),t);
-            std::cout << "Position at "<<boost::posix_time::to_simple_string(p_time)<<" is Lat = " << d_latitude_d << " [deg] Long = "<< d_longitude_d <<" [deg] Height= "<<d_height_m<<" [m]" <<std::endl;
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+            std::cout << "Position at " << boost::posix_time::to_simple_string(p_time) <<" is Lat = " << d_latitude_d << " [deg] Long = " << d_longitude_d << " [deg] Height= " << d_height_m << " [m]" << std::endl;
             // ######## LOG FILE #########
-            if(d_flag_dump_enabled==true)
+            if(d_flag_dump_enabled == true)
                 {
                     // MULTIPLEXED FILE RECORDING - Record results to file
                     try
                     {
                             double tmp_double;
                             //  PVT GPS time
-                            tmp_double=GPS_current_time;
+                            tmp_double = GPS_current_time;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             // ECEF User Position East [m]
-                            tmp_double=mypos(0);
+                            tmp_double = mypos(0);
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             // ECEF User Position North [m]
-                            tmp_double=mypos(1);
+                            tmp_double = mypos(1);
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             // ECEF User Position Up [m]
-                            tmp_double=mypos(2);
+                            tmp_double = mypos(2);
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             // User clock offset [s]
-                            tmp_double=mypos(3);
+                            tmp_double = mypos(3);
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             // GEO user position Latitude [deg]
-                            tmp_double=d_latitude_d;
+                            tmp_double = d_latitude_d;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             // GEO user position Longitude [deg]
-                            tmp_double=d_longitude_d;
+                            tmp_double = d_longitude_d;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             // GEO user position Height [m]
-                            tmp_double=d_height_m;
+                            tmp_double = d_height_m;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                     }
                     catch (std::ifstream::failure e)
@@ -326,9 +326,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                 }
 
             // MOVING AVERAGE PVT
-            if (flag_averaging==true)
+            if (flag_averaging == true)
                 {
-                    if (d_hist_longitude_d.size()==(unsigned int)d_averaging_depth)
+                    if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
                         {
                             // Pop oldest value
                             d_hist_longitude_d.pop_back();
@@ -339,18 +339,18 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                             d_hist_latitude_d.push_front(d_latitude_d);
                             d_hist_height_m.push_front(d_height_m);
 
-                            d_avg_latitude_d=0;
-                            d_avg_longitude_d=0;
-                            d_avg_height_m=0;
-                            for (unsigned int i=0;i<d_hist_longitude_d.size();i++)
+                            d_avg_latitude_d = 0;
+                            d_avg_longitude_d = 0;
+                            d_avg_height_m = 0;
+                            for (unsigned int i=0; i<d_hist_longitude_d.size(); i++)
                                 {
-                                    d_avg_latitude_d=d_avg_latitude_d+d_hist_latitude_d.at(i);
-                                    d_avg_longitude_d=d_avg_longitude_d+d_hist_longitude_d.at(i);
-                                    d_avg_height_m=d_avg_height_m+d_hist_height_m.at(i);
+                                    d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
+                                    d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
+                                    d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
                                 }
-                            d_avg_latitude_d=d_avg_latitude_d/(double)d_averaging_depth;
-                            d_avg_longitude_d=d_avg_longitude_d/(double)d_averaging_depth;
-                            d_avg_height_m=d_avg_height_m/(double)d_averaging_depth;
+                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
+                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
+                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
                             return true; //indicates that the returned position is valid
                         }
                     else
@@ -361,9 +361,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                             d_hist_latitude_d.push_front(d_latitude_d);
                             d_hist_height_m.push_front(d_height_m);
 
-                            d_avg_latitude_d=d_latitude_d;
-                            d_avg_longitude_d=d_longitude_d;
-                            d_avg_height_m=d_height_m;
+                            d_avg_latitude_d = d_latitude_d;
+                            d_avg_longitude_d = d_longitude_d;
+                            d_avg_height_m = d_height_m;
                             return false;//indicates that the returned position is not valid yet
                             // output the average, although it will not have the full historic available
                             //    			d_avg_latitude_d=0;
@@ -411,11 +411,11 @@ void gps_l1_ca_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_selec
     double lambda;
     lambda = atan2(Y,X);
     double ex2;
-    ex2 = (2-f[elipsoid_selection])*f[elipsoid_selection]/((1-f[elipsoid_selection])*(1-f[elipsoid_selection]));
+    ex2 = (2 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1 - f[elipsoid_selection])*(1 -f[elipsoid_selection]));
     double c;
-    c = a[elipsoid_selection]*sqrt(1+ex2);
+    c = a[elipsoid_selection] * sqrt(1+ex2);
     double phi;
-    phi = atan(Z/((sqrt(X*X+Y*Y)*(1-(2-f[elipsoid_selection]))*f[elipsoid_selection])));
+    phi = atan(Z / ((sqrt(X*X + Y*Y)*(1 - (2 - f[elipsoid_selection])) * f[elipsoid_selection])));
 
     double h = 0.1;
     double oldh = 0;
@@ -424,19 +424,19 @@ void gps_l1_ca_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_selec
     do
         {
             oldh = h;
-            N = c/sqrt(1+ex2*(cos(phi)*cos(phi)));
-            phi = atan(Z/((sqrt(X*X+Y*Y)*(1-(2-f[elipsoid_selection])*f[elipsoid_selection]*N/(N+h)))));
-            h = sqrt(X*X+Y*Y)/cos(phi)-N;
+            N = c / sqrt(1 + ex2 * (cos(phi) * cos(phi)));
+            phi = atan(Z / ((sqrt(X*X + Y*Y) * (1 - (2 -f[elipsoid_selection]) * f[elipsoid_selection] *N / (N + h) ))));
+            h = sqrt(X*X + Y*Y) / cos(phi) - N;
             iterations = iterations + 1;
             if (iterations > 100)
                 {
-                    std::cout<<"Failed to approximate h with desired precision. h-oldh= "<<h-oldh<<std::endl;
+                    std::cout << "Failed to approximate h with desired precision. h-oldh= " << h-oldh << std::endl;
                     break;
                 }
         }
-    while (abs(h-oldh) > 1.0e-12);
-    d_latitude_d = phi*180.0/GPS_PI;
-    d_longitude_d = lambda*180/GPS_PI;
+    while (abs(h - oldh) > 1.0e-12);
+    d_latitude_d = phi * 180.0 / GPS_PI;
+    d_longitude_d = lambda * 180 / GPS_PI;
     d_height_m = h;
 }
 

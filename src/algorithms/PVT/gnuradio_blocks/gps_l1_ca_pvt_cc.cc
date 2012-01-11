@@ -98,8 +98,8 @@ bool pseudoranges_pairCompare_min( std::pair<int,gnss_pseudorange> a, std::pair<
 
 
 int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items) {
-
+        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+{
     d_sample_counter++;
 
     std::map<int,gnss_pseudorange> gnss_pseudoranges_map;

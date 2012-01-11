@@ -180,9 +180,9 @@ public:
     double d_DeltaT_LSF;  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
     // Satellite velocity
-    double d_satvel_X;
-    double d_satvel_Y;
-    double d_satvel_Z;
+    double d_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
+    double d_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
+    double d_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
 
     // public functions
     void reset();

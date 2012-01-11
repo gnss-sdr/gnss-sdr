@@ -264,12 +264,12 @@ std::string Rinex_Printer::getLocalTime()
 
     std::stringstream strmHour;
     int utc_hour = pt_tm.tm_hour;
-    if (utc_hour<10) strmHour << "0"; //  two digits for hours
+    if (utc_hour < 10) strmHour << "0"; //  two digits for hours
     strmHour << utc_hour;
 
     std::stringstream strmMin;
     int utc_minute = pt_tm.tm_min;
-    if (utc_minute<10) strmMin << "0"; //  two digits for minutes
+    if (utc_minute < 10) strmMin << "0"; //  two digits for minutes
     strmMin << utc_minute;
 
     if (version == 2)
@@ -371,7 +371,7 @@ void Rinex_Printer::rinex_nav_header(std::ofstream& out, gps_navigation_message 
     // -------- Line COMMENT
     line.clear();
     line += Rinex_Printer::leftJustify("See http://gnss-sdr.org", 60);
-    line += Rinex_Printer::leftJustify("COMMENT",20);
+    line += Rinex_Printer::leftJustify("COMMENT", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
@@ -547,7 +547,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, gps_navigation_message nav
             line += satelliteSystem["GPS"];
             if (nav_msg.i_satellite_PRN < 10)  line += std::string("0");
             line += boost::lexical_cast<std::string>(nav_msg.i_satellite_PRN);
-            std::string year (timestring,0,4);
+            std::string year (timestring, 0, 4);
             line += std::string(1, ' ');
             line += year;
             line += std::string(1, ' ');
@@ -932,13 +932,13 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, gps_navigation_message 
     std::string hour (timestring, 9, 2);
     std::string minutes (timestring, 11, 2);
     double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
-    double seconds = fmod(utc_t,60);
+    double seconds = fmod(utc_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
     line += Rinex_Printer::rightJustify(hour, 6);
     line += Rinex_Printer::rightJustify(minutes, 6);
-    line += Rinex_Printer::rightJustify(asString(seconds,7), 13);
+    line += Rinex_Printer::rightJustify(asString(seconds, 7), 13);
     line += Rinex_Printer::rightJustify(std::string("GPS"), 8);
     line += std::string(9, ' ');
     line += Rinex_Printer::leftJustify("TIME OF FIRST OBS", 20);
@@ -965,7 +965,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, gps_navigation_message nav
     if (version == 2)
         {
             line += "OBSERVATION DATA FILE FOR VERSION 2.11 STILL NOT IMPLEMENTED";
-            line += std::string(80-line.size(), ' ');
+            line += std::string(80 - line.size(), ' ');
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
         }
@@ -995,7 +995,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, gps_navigation_message nav
 
             line += std::string(1, ' ');
             double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
-            line += Rinex_Printer::asString(fmod(utc_t,60), 7);
+            line += Rinex_Printer::asString(fmod(utc_t, 60), 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
             line += std::string(1, '0');
@@ -1051,7 +1051,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, gps_navigation_message nav
                         {
                             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(ssi), 1);
                         }
-                    if (lineObs.size()<80) lineObs += std::string(80 - lineObs.size(), ' ');
+                    if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
                     out << lineObs << std::endl;
                 }
         }

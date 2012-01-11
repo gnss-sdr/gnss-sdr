@@ -47,9 +47,9 @@
 float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2,float t1, float t2)
 {
     float cross,dot;
-    dot=prompt_s1.imag()*prompt_s2.imag()+prompt_s1.real()*prompt_s2.real();
-    cross=prompt_s1.imag()*prompt_s2.real()-prompt_s2.imag()*prompt_s1.real();
-    return atan2(cross,dot)/(t2-t1);
+    dot = prompt_s1.imag()*prompt_s2.imag() + prompt_s1.real()*prompt_s2.real();
+    cross = prompt_s1.imag()*prompt_s2.real() - prompt_s2.imag()*prompt_s1.real();
+    return atan2(cross, dot) / (t2-t1);
 }
 
 
@@ -62,7 +62,7 @@ float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2,float t1
  */
 float pll_four_quadrant_atan(gr_complex prompt_s1)
 {
-    return atan2(prompt_s1.real(),prompt_s1.imag());
+    return atan2(prompt_s1.real(), prompt_s1.imag());
 }
 
 
@@ -75,11 +75,13 @@ float pll_four_quadrant_atan(gr_complex prompt_s1)
  */
 float pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
 {
-    if (prompt_s1.imag()!=0.0)
+    if (prompt_s1.imag() != 0.0)
         {
-            return atan(prompt_s1.real()/prompt_s1.imag());
-        }else{
-                return 0;
+            return atan(prompt_s1.real() / prompt_s1.imag());
+        }
+    else
+        {
+            return 0;
         }
 }
 
@@ -95,7 +97,7 @@ float pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
 float dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
 {
     float P_early, P_late;
-    P_early=std::abs(early_s1);
-    P_late=std::abs(late_s1);
-    return (P_early-P_late)/((P_early+P_late));
+    P_early = std::abs(early_s1);
+    P_late  = std::abs(late_s1);
+    return (P_early - P_late) / ((P_early + P_late));
 }

@@ -72,6 +72,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     repeat_ = configuration->property("Acquisition" + boost::lexical_cast<
             std::string>(channel_) + ".repeat_satellite", false);
+
     DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_
             << std::endl;
 
@@ -139,8 +140,8 @@ void Channel::disconnect(gr_top_block_sptr top_block)
             return;
         }
 
-    top_block->disconnect(acq_->get_right_block(), 0, trk_->get_left_block(),0);
-    top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(),0);
+    top_block->disconnect(acq_->get_right_block(), 0, trk_->get_left_block(), 0);
+    top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
 
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);
@@ -160,7 +161,6 @@ gr_basic_block_sptr Channel::get_left_block()
 
 gr_basic_block_sptr Channel::get_right_block()
 {
-
     return nav_->get_right_block();
 }
 

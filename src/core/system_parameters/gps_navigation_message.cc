@@ -333,17 +333,17 @@ void gps_navigation_message::satellitePosition(double transmitTime)
     M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2*GPS_PI),(2*GPS_PI));
+    M = fmod((M + 2*GPS_PI), (2*GPS_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1;ii<20;ii++)
+    for (int ii = 1; ii<20; ii++)
         {
             E_old   = E;
             E       = M + d_e_eccentricity * sin(E);
-            dE      = fmod(E - E_old,2*GPS_PI);
+            dE      = fmod(E - E_old, 2*GPS_PI);
             if (fabs(dE) < 1e-12)
                 {
                     //Necessary precision is reached, exit from the loop
@@ -357,20 +357,19 @@ void gps_navigation_message::satellitePosition(double transmitTime)
     // Compute the true anomaly
     double tmp_Y = sqrt(1.0 - d_e_eccentricity*d_e_eccentricity) * sin(E);
     double tmp_X = cos(E) - d_e_eccentricity;
-    nu   = atan2(tmp_Y, tmp_X);
+    nu = atan2(tmp_Y, tmp_X);
 
     // Compute angle phi (argument of Latitude)
     phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi),(2*GPS_PI));
+    phi = fmod((phi), (2*GPS_PI));
 
     // Correct argument of latitude
     u = phi + d_Cuc * cos(2*phi) +  d_Cus * sin(2*phi);
 
     // Correct radius
     r = a * (1 - d_e_eccentricity*cos(E)) +  d_Crc * cos(2*phi) +  d_Crs * sin(2*phi);
-
 
     // Correct inclination
     i = d_i_0 + d_IDOT * tk + d_Cic * cos(2*phi) + d_Cis * sin(2*phi);
@@ -379,33 +378,17 @@ void gps_navigation_message::satellitePosition(double transmitTime)
     Omega = d_OMEGA0 + (d_OMEGA_DOT - OMEGA_EARTH_DOT)*tk - OMEGA_EARTH_DOT * d_Toe;
 
     // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2*GPS_PI),(2*GPS_PI));
-
-    // debug
-    /*
-    if (this->i_channel_ID==0){
-	  std::cout<<"tk"<<tk<<std::endl;
-	  std::cout<<"E="<<E<<std::endl;
-	  std::cout<<"d_dtr="<<d_dtr<<std::endl;
-	  std::cout<<"nu="<<nu<<std::endl;
-	  std::cout<<"phi="<<phi<<std::endl;
-	  std::cout<<"u="<<u<<" r="<<r<<" Omega="<<Omega<<std::endl;
-	  std::cout<<"i="<<i<<"\r\n";
-	  std::cout<<"tmp_Y="<<tmp_Y<<"\r\n";
-	  std::cout<<"tmp_X="<<tmp_X<<"\r\n";
-     }
-     */
+    Omega = fmod((Omega + 2*GPS_PI), (2*GPS_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
     d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega);
     d_satpos_Z = sin(u) * r * sin(i);
 
-
-    /* Satellite's velocity. Can be useful for Vector Tracking loops */
+    // Satellite's velocity. Can be useful for Vector Tracking loops
     double Omega_dot = d_OMEGA_DOT - OMEGA_EARTH_DOT;
     d_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
-    d_satvel_Y = Omega_dot * (cos(u) * r *  cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
+    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
 }
 
@@ -433,7 +416,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     std::bitset<GPS_WORD_BITS+2> word_bits;
     for (int i=0; i<10; i++)
         {
-            memcpy(&gps_word,&subframe[i*4], sizeof(char)*4);
+            memcpy(&gps_word, &subframe[i*4], sizeof(char)*4);
             word_bits = std::bitset<(GPS_WORD_BITS+2)>(gps_word);
             for (int j=0; j<GPS_WORD_BITS; j++)
                 {
@@ -441,17 +424,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
                 }
         }
 
-    // *** DEBUG
-    //std::cout<<"bitset subframe="<<subframe_bits<<std::endl;
-    /*
-    for (int i=0; i<10;i++)
-    {
-    memcpy(&gps_word,&d_subframe[i*4],sizeof(char)*4);
-    print_gps_word_bytes(gps_word);
-    }
-     */
     subframe_ID = (int)read_navigation_unsigned(subframe_bits, SUBFRAME_ID, num_of_slices(SUBFRAME_ID));
-    //std::cout<<"subframe ID="<<subframe_ID<<std::endl;
 
     // Decode all 5 sub-frames
     switch (subframe_ID)
@@ -460,7 +433,6 @@ int gps_navigation_message::subframe_decoder(char *subframe)
     // ICD (IS-GPS-200E Appendix II). http://www.losangeles.af.mil/shared/media/document/AFD-100813-045.pdf
     case 1:
         //--- It is subframe 1 -------------------------------------
-
         // Compute the time of week (TOW) of the first sub-frames in the array ====
         // Also correct the TOW. The transmitted TOW is actual TOW of the next
         // subframe and we need the TOW of the first subframe in this data block
@@ -468,16 +440,12 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         //TOW = bin2dec(subframe(31:47)) * 6 - 30;
         d_TOW = (double)read_navigation_unsigned(subframe_bits, TOW, num_of_slices(TOW));
         d_TOW = d_TOW*6-6; //we are in the first subframe (the transmitted TOW is the start time of the next subframe, thus we need to substract one subframe (6 seconds)) !
-
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-
-        // It contains WN, SV clock corrections, health and accuracy
         i_GPS_week = (int)read_navigation_unsigned(subframe_bits, GPS_WEEK, num_of_slices(GPS_WEEK));
         i_SV_accuracy = (int)read_navigation_unsigned(subframe_bits, SV_ACCURACY, num_of_slices(SV_ACCURACY));  // (20.3.3.3.1.3)
         i_SV_health = (int)read_navigation_unsigned(subframe_bits, SV_HEALTH, num_of_slices(SV_HEALTH));
-
         b_L2_P_data_flag = read_navigation_bool(subframe_bits, L2_P_DATA_FLAG); //
         i_code_on_L2 = (int)read_navigation_unsigned(subframe_bits, CA_OR_P_ON_L2, num_of_slices(CA_OR_P_ON_L2));
         d_TGD = (double)read_navigation_signed(subframe_bits, T_GD, num_of_slices(T_GD));
@@ -492,22 +460,9 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         d_A_f2 = (double)read_navigation_signed(subframe_bits, A_F2, num_of_slices(A_F2));
         d_A_f2 = d_A_f2*A_F2_LSB;
 
-
-        /*
-        eph.weekNumber  = bin2dec(subframe(61:70)) + 1024;
-        eph.accuracy    = bin2dec(subframe(73:76));
-        eph.health      = bin2dec(subframe(77:82));
-        eph.T_GD        = twosComp2dec(subframe(197:204)) * 2^(-31);
-        eph.IODC        = bin2dec([subframe(83:84) subframe(197:204)]);
-        eph.t_oc        = bin2dec(subframe(219:234)) * 2^4;
-        eph.a_f2        = twosComp2dec(subframe(241:248)) * 2^(-55);
-        eph.a_f1        = twosComp2dec(subframe(249:264)) * 2^(-43);
-        eph.a_f0        = twosComp2dec(subframe(271:292)) * 2^(-31);
-         */
         break;
 
     case 2:  //--- It is subframe 2 -------------------
-
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -529,25 +484,12 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         d_Toe = (double)read_navigation_unsigned(subframe_bits, T_OE, num_of_slices(T_OE));
         d_Toe = d_Toe * T_OE_LSB;
         b_fit_interval_flag = read_navigation_bool(subframe_bits, FIT_INTERVAL_FLAG);
-
         i_AODO = (int)read_navigation_unsigned(subframe_bits, AODO, num_of_slices(AODO));
         i_AODO = i_AODO * AODO_LSB;
 
         break;
-        /*
-        eph.IODE_sf2    = bin2dec(subframe(61:68));
-        eph.C_rs        = twosComp2dec(subframe(69: 84)) * 2^(-5);
-        eph.deltan      = twosComp2dec(subframe(91:106)) * 2^(-43) * gpsPi;
-        eph.M_0         = twosComp2dec([subframe(107:114) subframe(121:144)])* 2^(-31) * gpsPi;
-        eph.C_uc        = twosComp2dec(subframe(151:166)) * 2^(-29);
-        eph.e           = bin2dec([subframe(167:174) subframe(181:204)])* 2^(-33);
-        eph.C_us        = twosComp2dec(subframe(211:226)) * 2^(-29);
-        eph.sqrtA       = bin2dec([subframe(227:234) subframe(241:264)])* 2^(-19);
-        eph.t_oe        = bin2dec(subframe(271:286)) * 2^4;
-         */
+
     case 3: // --- It is subframe 3 -------------------------------------
-        //tmp_TOW=(double)read_navigation_unsigned(subframe_bits,TOW,num_of_slices(TOW));
-        //std::cout<<"tmp_TOW="<<tmp_TOW<<std::endl;
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -570,23 +512,11 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         d_IDOT = d_IDOT*I_DOT_LSB;
 
         break;
-        /*
-        eph.C_ic        = twosComp2dec(subframe(61:76)) * 2^(-29);
-        eph.omega_0     = twosComp2dec([subframe(77:84) subframe(91:114)])* 2^(-31) * gpsPi;
-        eph.C_is        = twosComp2dec(subframe(121:136)) * 2^(-29);
-        eph.i_0         = twosComp2dec([subframe(137:144) subframe(151:174)])* 2^(-31) * gpsPi;
-        eph.C_rc        = twosComp2dec(subframe(181:196)) * 2^(-5);
-        eph.omega       = twosComp2dec([subframe(197:204) subframe(211:234)])* 2^(-31) * gpsPi;
-        eph.omegaDot    = twosComp2dec(subframe(241:264)) * 2^(-43) * gpsPi;
-        eph.IODE_sf3    = bin2dec(subframe(271:278));
-        eph.iDot        = twosComp2dec(subframe(279:292)) * 2^(-43) * gpsPi;
-         */
-    case 4: // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
 
+    case 4: // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
-
         SV_data_ID = (int)read_navigation_unsigned(subframe_bits, SV_DATA_ID, num_of_slices(SV_DATA_ID));
         SV_page = (int)read_navigation_unsigned(subframe_bits, SV_PAGE, num_of_slices(SV_PAGE));
 
@@ -649,7 +579,6 @@ int gps_navigation_message::subframe_decoder(char *subframe)
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
         SV_data_ID = (int)read_navigation_unsigned(subframe_bits, SV_DATA_ID, num_of_slices(SV_DATA_ID));
         SV_page = (int)read_navigation_unsigned(subframe_bits, SV_PAGE, num_of_slices(SV_PAGE));
-
         if (SV_page < 25)
                 {
                      //! \TODO read almanac
@@ -659,7 +588,6 @@ int gps_navigation_message::subframe_decoder(char *subframe)
                 d_Toa = (double)read_navigation_unsigned(subframe_bits,T_OA,num_of_slices(T_OA));
                 d_Toa = d_Toa * T_OA_LSB;
                 i_WN_A = (int)read_navigation_unsigned(subframe_bits,WN_A,num_of_slices(WN_A));
-
                 almanacHealth[1] = (int)read_navigation_unsigned(subframe_bits, HEALTH_SV1, num_of_slices(HEALTH_SV1));
                 almanacHealth[2] = (int)read_navigation_unsigned(subframe_bits, HEALTH_SV2, num_of_slices(HEALTH_SV2));
                 almanacHealth[3] = (int)read_navigation_unsigned(subframe_bits, HEALTH_SV3, num_of_slices(HEALTH_SV3));
@@ -684,7 +612,6 @@ int gps_navigation_message::subframe_decoder(char *subframe)
                 almanacHealth[22] = (int)read_navigation_unsigned(subframe_bits, HEALTH_SV22, num_of_slices(HEALTH_SV22));
                 almanacHealth[23] = (int)read_navigation_unsigned(subframe_bits, HEALTH_SV23, num_of_slices(HEALTH_SV23));
                 almanacHealth[24] = (int)read_navigation_unsigned(subframe_bits, HEALTH_SV24, num_of_slices(HEALTH_SV24));
-
             }
         break;
     default:
@@ -695,11 +622,13 @@ int gps_navigation_message::subframe_decoder(char *subframe)
 }
 
 
+
+
 double gps_navigation_message::utc_time(double gpstime_corrected)
 {
     double t_utc;
     double t_utc_daytime;
-    double Delta_t_UTC =  d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 *(double)(i_GPS_week - i_WN_T));
+    double Delta_t_UTC =  d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * (double)(i_GPS_week - i_WN_T));
 
     // Determine if the effectivity time of the leap second event is in the past
     int  weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
@@ -708,15 +637,12 @@ double gps_navigation_message::utc_time(double gpstime_corrected)
         {
             //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
             int secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
-
             if (weeksToLeapSecondEvent > 0)
                 {
                     t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
                 }
             else //we are in the same week than the leap second event
                 {
-
-
                     if  (abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
                             /* 20.3.3.5.2.4a
@@ -726,7 +652,6 @@ double gps_navigation_message::utc_time(double gpstime_corrected)
                              * to the effectivity time and ends at six hours after the effectivity time,
                              * the UTC/GPS-time relationship is given by
                              */
-
                             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
                         }
                     else
@@ -737,13 +662,11 @@ double gps_navigation_message::utc_time(double gpstime_corrected)
                              * proper accommodation of the leap second event with a possible week number
                              * transition is provided by the following expression for UTC:
                              */
-
                             int W = fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400) + 43200;
                             t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
-
                             //implement something to handle a leap second event!
                         }
-                    if (  (gpstime_corrected - secondOfLeapSecondEvent) > 21600)
+                    if ( (gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
                             Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800*(double)(i_GPS_week - i_WN_T));
                             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
@@ -757,11 +680,11 @@ double gps_navigation_message::utc_time(double gpstime_corrected)
              * WNLSF and DN values, is in the "past" (relative to the user's current time),
              * and the user’s current time does not fall in the time span as given above
              * in 20.3.3.5.2.4b,*/
-            Delta_t_UTC =  d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 *(double)(i_GPS_week - i_WN_T));
+            Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * (double)(i_GPS_week - i_WN_T));
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
         }
 
-    double secondsOfWeekBeforeToday= 43200 * floor(gpstime_corrected / 43200);
+    double secondsOfWeekBeforeToday = 43200 * floor(gpstime_corrected / 43200);
     t_utc = secondsOfWeekBeforeToday + t_utc_daytime;
     return t_utc;
 }

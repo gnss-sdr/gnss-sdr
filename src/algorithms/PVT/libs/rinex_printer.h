@@ -100,7 +100,7 @@ public:
     /*!
      *  \brief Writes data from the navigation message into the RINEX file
      */
-    void log_rinex_nav(std::ofstream& out, gps_navigation_message nav_msg);
+    void log_rinex_nav(std::ofstream& out, std::map<int,gps_navigation_message> nav_msg);
 
     /*!
      *  \brief Writes observables into the RINEX file

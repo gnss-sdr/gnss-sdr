@@ -77,6 +77,11 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
 
     b_rinex_header_writen = false;
     rp = new Rinex_Printer();
+
+    for (unsigned int i=0; i<nchannels; i++)
+        {
+            nav_data_map[i] = gps_navigation_message();
+        }
 }
 
 
@@ -139,6 +144,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                     << ")" << std::endl;
             d_last_nav_msg = nav_msg;
             d_ls_pvt->d_ephemeris[nav_msg.i_channel_ID] = nav_msg;
+            nav_data_map[nav_msg.i_channel_ID] = nav_msg;
 
             // **** update pseudoranges clock ****
             if (nav_msg.i_satellite_PRN == gnss_pseudoranges_iter->second.SV_ID)
@@ -166,9 +172,9 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                             rp->rinex_obs_header(rp->obsFile, d_last_nav_msg);
                             b_rinex_header_writen = true; // do not write header anymore
                         }
-                    if(b_rinex_header_writen) // Put here another condition to separate annotations
+                    if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
                         {
-                            rp->log_rinex_nav(rp->navFile, d_last_nav_msg);
+                            rp->log_rinex_nav(rp->navFile, nav_data_map);
                             rp->log_rinex_obs(rp->obsFile, d_last_nav_msg, pseudoranges);
                         }
                 }

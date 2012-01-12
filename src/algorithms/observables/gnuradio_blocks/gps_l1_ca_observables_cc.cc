@@ -71,7 +71,8 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, gr_ms
         {
             if (d_dump_file.is_open() == false)
                 {
-                    try {
+                    try
+                    {
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             std::cout << "Observables dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
@@ -81,8 +82,10 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, gr_ms
                     }
                 }
         }
-
 }
+
+
+
 
 gps_l1_ca_observables_cc::~gps_l1_ca_observables_cc()
 {
@@ -90,21 +93,37 @@ gps_l1_ca_observables_cc::~gps_l1_ca_observables_cc()
     delete[] d_history_prn_delay_ms;
 }
 
+
+
+
+
 bool pairCompare_gnss_synchro( std::pair<int,gnss_synchro> a, std::pair<int,gnss_synchro> b)
 {
     return (a.second.preamble_delay_ms) < (b.second.preamble_delay_ms);
 }
+
+
+
+
 
 bool pairCompare_double( std::pair<int,double> a, std::pair<int,double> b)
 {
     return (a.second) < (b.second);
 }
 
+
+
+
+
+
 void clearQueue( std::deque<double> &q )
 {
     std::deque<double> empty;
     std::swap(q, empty);
 }
+
+
+
 
 
 int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
@@ -117,22 +136,20 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
 
     std::map<int,gnss_synchro> gps_words;
     std::map<int,gnss_synchro>::iterator gps_words_iter;
-
     std::map<int,double>::iterator current_prn_timestamps_ms_iter;
     std::map<int,double> current_prn_timestamps_ms;
 
     double min_preamble_delay_ms;
     double max_preamble_delay_ms;
-
     double pseudoranges_timestamp_ms;
     double traveltime_ms;
     double pseudorange_m;
-    int history_shift = 0;
     double delta_timestamp_ms;
     double min_delta_timestamp_ms;
     double actual_min_prn_delay_ms;
     double current_prn_delay_ms;
 
+    int history_shift = 0;
     int pseudoranges_reference_sat_ID = 0;
     unsigned int pseudoranges_reference_sat_channel_ID = 0;
 
@@ -251,9 +268,11 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                 }
         }
 
-    if(d_dump == true) {
+    if(d_dump == true)
+        {
             // MULTIPLEXED FILE RECORDING - Record results to file
-            try {
+            try
+            {
                     double tmp_double;
                     for (unsigned int i=0; i<d_nchannels ; i++)
                         {
@@ -271,9 +290,10 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             }
             catch (std::ifstream::failure e)
             {
-                    std::cout << "Exception writing observables dump file "<< e.what() << std::endl;
+                    std::cout << "Exception writing observables dump file " << e.what() << std::endl;
             }
-    }
+        }
+
     consume_each(1); //one by one
 
     if ((d_sample_counter % d_output_rate_ms) == 0)

@@ -70,7 +70,8 @@ public:
     {
         return;
     };
-    // all blocks must have an intem_size() function implementation
+
+    //!< All blocks must have an item_size() function implementation
     size_t item_size()
     {
         return sizeof(gr_complex);

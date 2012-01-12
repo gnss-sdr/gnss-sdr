@@ -87,6 +87,7 @@ private:
   double d_ephemeris_timestamp_ms;
   gps_l1_ca_ls_pvt *d_ls_pvt;
 
+  std::map<int,gps_navigation_message> nav_data_map;
 
 public:
 

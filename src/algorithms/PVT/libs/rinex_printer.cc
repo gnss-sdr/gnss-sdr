@@ -432,24 +432,22 @@ void Rinex_Printer::rinex_nav_header(std::ofstream& out, Gps_Navigation_Message 
     line.clear();
     if (version == 2)
         {
-            line += std::string(4, ' ');
-            line += Rinex_Printer::doub2for(nav_msg.d_A0, 18, 2);
-            line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(nav_msg.d_A1, 18, 2);
+            line += std::string(3, ' ');
+            line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(nav_msg.d_A0, 18, 2), 19);
+            line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(nav_msg.d_A1, 18, 2), 19);
             line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.d_t_OT), 9);
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.i_WN_T), 9);
+            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.i_WN_T + 1024), 9); // valid until 2019
             line += std::string(1, ' ');
             line += Rinex_Printer::leftJustify("DELTA-UTC: A0,A1,T,W", 20);
-
         }
+
     if (version == 3)
         {
             line += std::string("GPUT");
-            line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(nav_msg.d_A0, 17, 2);
-            line += Rinex_Printer::doub2for(nav_msg.d_A1, 16, 2);
+            line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(nav_msg.d_A0, 16, 2), 18);
+            line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(nav_msg.d_A1, 15, 2), 16);
             line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.d_t_OT), 7);
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.i_WN_T), 5);
+            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(nav_msg.i_WN_T + 1024), 5);  // valid until 2019
             /*  if ( SBAS )
         {
           line += string(1, ' ');
@@ -973,25 +971,115 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
 {
     std::string line;
 
+    // Should look at the pseudoranges timestamp gnss_pseudorange.timestamp_ms!!!
+    boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_time(nav_msg);
+    std::string timestring=boost::posix_time::to_iso_string(p_utc_time);
+    double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
+    std::string month (timestring, 4, 2);
+    std::string day (timestring, 6, 2);
+    std::string hour (timestring, 9, 2);
+    std::string minutes (timestring, 11, 2);
+
     if (version == 2)
         {
-            line += "OBSERVATION DATA FILE FOR VERSION 2.11 STILL NOT IMPLEMENTED";
+            line.clear();
+            std::string year (timestring, 2, 2);
+            line += std::string(1, ' ');
+            line += year;
+            LOG_AT_LEVEL(INFO) << "year:" << year;
+            line += std::string(1, ' ');
+            if (month.compare(0, 1 , "0") == 0)
+                {
+                    line += std::string(1, ' ');
+                    line += month.substr(1, 1);
+                }
+            else
+                {
+                    line += month;
+                }
+            LOG_AT_LEVEL(INFO) << "line:" << line;
+            line += std::string(1, ' ');
+            if (day.compare(0, 1 , "0") == 0)
+                {
+                    line += std::string(1, ' ');
+                    line += day.substr(1, 1);
+                }
+            else
+                {
+                    line += day;
+                }
+            line += std::string(1, ' ');
+            line += hour;
+            line += std::string(1, ' ');
+            line += minutes;
+            line += std::string(1, ' ');
+            line += Rinex_Printer::asString(fmod(utc_t, 60), 7);
+            line += std::string(2, ' ');
+            // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
+            line += std::string(1, '0');
+            line += std::string(2, ' ');
+            //Number of satellites observed in current epoch
+            int numSatellitesObserved = 0;
+            std::map<int,float>::iterator pseudoranges_iter;
+            for(pseudoranges_iter = pseudoranges.begin();
+                    pseudoranges_iter != pseudoranges.end();
+                    pseudoranges_iter++)
+                {
+                    numSatellitesObserved++;
+                }
+            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
+            for(pseudoranges_iter = pseudoranges.begin();
+                    pseudoranges_iter != pseudoranges.end();
+                    pseudoranges_iter++)
+                {
+                    line += satelliteSystem["GPS"];
+                    if ((int)pseudoranges_iter->first < 10) line += std::string(1, '0');
+                    line += boost::lexical_cast<std::string>((int)pseudoranges_iter->first);
+                }
+            // Receiver clock offset (optional)
+            //line += rightJustify(asString(clockOffset, 12), 15);
             line += std::string(80 - line.size(), ' ');
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
+
+
+            for(pseudoranges_iter = pseudoranges.begin();
+                    pseudoranges_iter != pseudoranges.end();
+                    pseudoranges_iter++)
+                {
+                    std::string lineObs;
+                    lineObs.clear();
+                    line.clear();
+                    line += std::string(2, ' ');
+                    lineObs += Rinex_Printer::rightJustify(asString((double)pseudoranges_iter->second, 3), 14);
+
+                    //Loss of lock indicator (LLI)
+                    int lli = 0; // Include in the observation!!
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+                    int ssi=signalStrength(54.0); // TODO: include estimated signal strength
+                    if (ssi == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(ssi), 1);
+                        }
+                    if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
+                    out << lineObs << std::endl;
+                }
         }
 
     if (version == 3)
         {
-            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_time(nav_msg);
-            std::string timestring=boost::posix_time::to_iso_string(p_utc_time);
             std::string year (timestring, 0, 4);
-            std::string month (timestring, 4, 2);
-            std::string day (timestring, 6, 2);
-            std::string hour (timestring, 9, 2);
-            std::string minutes (timestring, 11, 2);
-
-            // Should look at the pseudoranges timestamp gnss_pseudorange.timestamp_ms!!!
             line += std::string(1, '>');
             line += std::string(1, ' ');
             line += year;
@@ -1005,7 +1093,6 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
             line += minutes;
 
             line += std::string(1, ' ');
-            double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
             line += Rinex_Printer::asString(fmod(utc_t, 60), 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
@@ -1020,7 +1107,6 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
                 {
                     numSatellitesObserved++;
                 }
-
             line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
 
 

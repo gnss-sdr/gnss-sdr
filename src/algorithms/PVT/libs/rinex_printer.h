@@ -112,14 +112,14 @@ public:
     std::map<std::string,std::string> observationCode; //<! GNSS observation descriptors
 
 
-    std::string stringVersion; //<! RINEX version (2.11 or 3.01)
+    std::string stringVersion; //<! RINEX version (2.10/2.11 or 3.01)
 
 
 
 
 private:
 
-    int version ;  // RINEX version (2 for 2.11 and 3 for 3.01)
+    int version ;  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
 
     int numberTypesObservations; // Number of available types of observable in the system. Should be public?
 

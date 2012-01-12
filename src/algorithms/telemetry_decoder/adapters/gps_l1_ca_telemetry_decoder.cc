@@ -39,7 +39,7 @@
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
-extern concurrent_queue<gps_navigation_message> global_gps_nav_msg_queue;
+extern concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
 
 using google::LogMessage;
 

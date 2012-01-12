@@ -80,14 +80,14 @@ private:
 
   kml_printer d_kml_dump;
 
-  concurrent_queue<gps_navigation_message> *d_nav_queue; // Navigation ephemeris queue
-  gps_navigation_message d_last_nav_msg;                 // Last navigation message
+  concurrent_queue<Gps_Navigation_Message> *d_nav_queue; // Navigation ephemeris queue
+  Gps_Navigation_Message d_last_nav_msg;                 // Last navigation message
 
   double d_ephemeris_clock_s;
   double d_ephemeris_timestamp_ms;
   gps_l1_ca_ls_pvt *d_ls_pvt;
 
-  std::map<int,gps_navigation_message> nav_data_map;
+  std::map<int,Gps_Navigation_Message> nav_data_map;
 
 public:
 
@@ -96,7 +96,7 @@ public:
   /*!
    * \brief Set the queue for getting navigation messages from the GpsL1CaTelemetryDecoder
    */
-  void set_navigation_queue(concurrent_queue<gps_navigation_message> *nav_queue){d_nav_queue=nav_queue;}
+  void set_navigation_queue(concurrent_queue<Gps_Navigation_Message> *nav_queue){d_nav_queue=nav_queue;}
 
   int general_work (int noutput_items, gr_vector_int &ninput_items,
       gr_vector_const_void_star &input_items, gr_vector_void_star &output_items); //!< PVT Signal Processing

@@ -56,7 +56,7 @@ private:
     //void topocent();
 public:
     int d_nchannels;      //! Number of available channels for positioning
-    gps_navigation_message* d_ephemeris;
+    Gps_Navigation_Message* d_ephemeris;
     double d_pseudoranges_time_ms;
     double d_latitude_d;  //! Latitude in degrees
     double d_longitude_d; //! Longitude in degrees

@@ -41,7 +41,7 @@ gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_ephemeris = new gps_navigation_message[nchannels];
+    d_ephemeris = new Gps_Navigation_Message[nchannels];
     d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
     d_averaging_depth = 0;

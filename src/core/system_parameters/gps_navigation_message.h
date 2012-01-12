@@ -50,7 +50,7 @@
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
-class gps_navigation_message
+class Gps_Navigation_Message
 {
 
 private:
@@ -217,7 +217,7 @@ public:
     /*!
      * Default constructor
      */
-    gps_navigation_message();
+    Gps_Navigation_Message();
 };
 
 #endif

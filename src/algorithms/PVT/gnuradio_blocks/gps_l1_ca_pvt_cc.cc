@@ -80,7 +80,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
 
     for (unsigned int i=0; i<nchannels; i++)
         {
-            nav_data_map[i] = gps_navigation_message();
+            nav_data_map[i] = Gps_Navigation_Message();
         }
 }
 
@@ -135,7 +135,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     // find the minimum index (nearest satellite, will be the reference)
     gnss_pseudoranges_iter = std::min_element(gnss_pseudoranges_map.begin(), gnss_pseudoranges_map.end(), pseudoranges_pairCompare_min);
 
-    gps_navigation_message nav_msg;
+    Gps_Navigation_Message nav_msg;
     while (d_nav_queue->try_pop(nav_msg) == true)
         {
             std::cout<<"New ephemeris record has arrived from SAT ID "

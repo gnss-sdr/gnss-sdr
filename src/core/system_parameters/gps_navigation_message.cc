@@ -37,7 +37,7 @@
 #define num_of_slices(x) sizeof(x)/sizeof(bits_slice)
 
 
-void gps_navigation_message::reset()
+void Gps_Navigation_Message::reset()
 {
     d_TOW = 0;
     d_IODE_SF2 = 0;
@@ -172,14 +172,14 @@ void gps_navigation_message::reset()
 
 
 
-gps_navigation_message::gps_navigation_message()
+Gps_Navigation_Message::Gps_Navigation_Message()
 {
     reset();
 }
 
 
 
-void gps_navigation_message::print_gps_word_bytes(unsigned int GPS_word)
+void Gps_Navigation_Message::print_gps_word_bytes(unsigned int GPS_word)
 {
   std::cout << " Word =";
   std::cout << std::bitset<32>(GPS_word);
@@ -188,7 +188,7 @@ void gps_navigation_message::print_gps_word_bytes(unsigned int GPS_word)
 
 
 
-bool gps_navigation_message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices)
+bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices)
 {
     bool value;
 
@@ -208,7 +208,7 @@ bool gps_navigation_message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS>
 
 
 
-unsigned long int gps_navigation_message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
+unsigned long int Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
 {
     unsigned long int value;
 
@@ -232,7 +232,7 @@ unsigned long int gps_navigation_message::read_navigation_unsigned(std::bitset<G
 
 
 
-signed long int gps_navigation_message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
+signed long int Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
 {
     signed long int value = 0;
 
@@ -265,7 +265,7 @@ signed long int gps_navigation_message::read_navigation_signed(std::bitset<GPS_S
 
 
 
-double gps_navigation_message::check_t(double time)
+double Gps_Navigation_Message::check_t(double time)
 {
     double corrTime;
     double half_week = 302400;     // seconds
@@ -285,7 +285,7 @@ double gps_navigation_message::check_t(double time)
 
 
 // 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
-double gps_navigation_message::sv_clock_correction(double transmitTime)
+double Gps_Navigation_Message::sv_clock_correction(double transmitTime)
 {
     double dt;
     dt = check_t(transmitTime - d_Toc);
@@ -298,7 +298,7 @@ double gps_navigation_message::sv_clock_correction(double transmitTime)
 
 
 
-void gps_navigation_message::satellitePosition(double transmitTime)
+void Gps_Navigation_Message::satellitePosition(double transmitTime)
 {
     double tk;
     double a;
@@ -402,7 +402,7 @@ void gps_navigation_message::satellitePosition(double transmitTime)
 
 
 
-int gps_navigation_message::subframe_decoder(char *subframe)
+int Gps_Navigation_Message::subframe_decoder(char *subframe)
 {
     int subframe_ID = 0;
     int SV_data_ID = 0;
@@ -624,7 +624,7 @@ int gps_navigation_message::subframe_decoder(char *subframe)
 
 
 
-double gps_navigation_message::utc_time(double gpstime_corrected)
+double Gps_Navigation_Message::utc_time(double gpstime_corrected)
 {
     double t_utc;
     double t_utc_daytime;
@@ -693,7 +693,7 @@ double gps_navigation_message::utc_time(double gpstime_corrected)
 
 
 
-bool gps_navigation_message::satellite_validation()
+bool Gps_Navigation_Message::satellite_validation()
 {
 
     bool flag_data_valid = false;

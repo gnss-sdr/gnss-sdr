@@ -85,27 +85,27 @@ public:
     /*!
      *  \brief Generates the Navigation Data header
      */
-    void rinex_nav_header(std::ofstream& out, gps_navigation_message nav);
+    void rinex_nav_header(std::ofstream& out, Gps_Navigation_Message nav);
 
     /*!
      *  \brief Generates the Observation data header
      */
-    void rinex_obs_header(std::ofstream& out, gps_navigation_message nav);
+    void rinex_obs_header(std::ofstream& out, Gps_Navigation_Message nav);
 
     /*!
      *  \brief Computes the UTC time and returns a boost::posix_time::ptime object
      */
-    boost::posix_time::ptime compute_time(gps_navigation_message nav_msg);
+    boost::posix_time::ptime compute_time(Gps_Navigation_Message nav_msg);
 
     /*!
      *  \brief Writes data from the navigation message into the RINEX file
      */
-    void log_rinex_nav(std::ofstream& out, std::map<int,gps_navigation_message> nav_msg);
+    void log_rinex_nav(std::ofstream& out, std::map<int,Gps_Navigation_Message> nav_msg);
 
     /*!
      *  \brief Writes observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, gps_navigation_message nav_msg,  std::map<int,float> pseudoranges);
+    void log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg,  std::map<int,float> pseudoranges);
 
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH

@@ -95,7 +95,7 @@ private:
   long d_fs_in;
   double d_preamble_duration_seconds;
   // navigation message vars
-  gps_navigation_message d_nav;
+  Gps_Navigation_Message d_nav;
   GpsL1CaSubframeFsm d_GPS_FSM;
 
 
@@ -120,7 +120,7 @@ public:
   void set_satellite(int satellite);
   void set_channel(int channel);
 
-  void set_navigation_queue(concurrent_queue<gps_navigation_message> *nav_queue){d_GPS_FSM.d_nav_queue=nav_queue;}
+  void set_navigation_queue(concurrent_queue<Gps_Navigation_Message> *nav_queue){d_GPS_FSM.d_nav_queue=nav_queue;}
 
   int general_work (int noutput_items, gr_vector_int &ninput_items,
       gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);

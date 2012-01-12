@@ -322,7 +322,7 @@ std::string Rinex_Printer::getLocalTime()
 }
 
 
-void Rinex_Printer::rinex_nav_header(std::ofstream& out, gps_navigation_message nav_msg)
+void Rinex_Printer::rinex_nav_header(std::ofstream& out, Gps_Navigation_Message nav_msg)
 {
 
     std::string line;
@@ -498,7 +498,7 @@ void Rinex_Printer::rinex_nav_header(std::ofstream& out, gps_navigation_message 
 
 
 
-void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,gps_navigation_message> nav_msg)
+void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Navigation_Message> nav_msg)
 {
     std::string line;
     for (int i=0; i < (int)nav_msg.size(); i++)
@@ -789,7 +789,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,gps_navigatio
 
 
 
-void Rinex_Printer::rinex_obs_header(std::ofstream& out, gps_navigation_message nav_msg)
+void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Navigation_Message nav_msg)
 {
 
     std::string line;
@@ -969,7 +969,7 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, gps_navigation_message 
 
 
 
-void Rinex_Printer::log_rinex_obs(std::ofstream& out, gps_navigation_message nav_msg, std::map<int,float> pseudoranges)
+void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg, std::map<int,float> pseudoranges)
 {
     std::string line;
 
@@ -1081,7 +1081,7 @@ int Rinex_Printer::signalStrength(double snr)
 
 
 
-boost::posix_time::ptime Rinex_Printer::compute_time(gps_navigation_message nav_msg)
+boost::posix_time::ptime Rinex_Printer::compute_time(Gps_Navigation_Message nav_msg)
 {
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     //: idea resolve the ambiguity with the leap second  http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm

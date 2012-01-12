@@ -55,7 +55,7 @@ DECLARE_string(log_dir);
  * Concurrent queue that communicates the Telemetry Decoder
  * to the Observables modules
  */
-concurrent_queue<gps_navigation_message> global_gps_nav_msg_queue;
+concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
 
 int main(int argc, char** argv)
 {

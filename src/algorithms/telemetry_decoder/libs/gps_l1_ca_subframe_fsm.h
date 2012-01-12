@@ -74,9 +74,9 @@ public:
   int i_satellite_PRN;
 
   // ephemeris queue
-  concurrent_queue<gps_navigation_message> *d_nav_queue;
+  concurrent_queue<Gps_Navigation_Message> *d_nav_queue;
   // navigation message class
-  gps_navigation_message d_nav;
+  Gps_Navigation_Message d_nav;
 
   char d_subframe[GPS_SUBFRAME_LENGTH];
   char d_GPS_frame_4bytes[GPS_WORD_LENGTH];

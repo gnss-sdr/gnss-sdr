@@ -43,47 +43,49 @@
 #include "GPS_L1_CA.h"
 
 class gps_l1_ca_observables_cc;
+
 typedef boost::shared_ptr<gps_l1_ca_observables_cc> gps_l1_ca_observables_cc_sptr;
+
 gps_l1_ca_observables_cc_sptr
 gps_l1_ca_make_observables_cc(unsigned int n_channels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
 /*!
  * \brief This class implements a block that computes GPS L1 C/A observables
  */
-class gps_l1_ca_observables_cc : public gr_block {
-
-private:
-
-  friend gps_l1_ca_observables_cc_sptr
-  gps_l1_ca_make_observables_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
-  gps_l1_ca_observables_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
-
-  // class private vars
-  gr_msg_queue_sptr d_queue;
-  bool d_dump;
-  bool d_flag_averaging;
-  long int d_sample_counter;
-  unsigned int d_nchannels;
-  unsigned long int d_fs_in;
-  int d_output_rate_ms;
-  std::string d_dump_filename;
-  std::ofstream d_dump_file;
-
-  std::deque<double> *d_history_prn_delay_ms;
-
-  concurrent_queue<gps_navigation_message> *d_nav_queue; // Navigation ephemeris queue
+class gps_l1_ca_observables_cc : public gr_block
+{
 
 public:
 
-  ~gps_l1_ca_observables_cc ();
+    ~gps_l1_ca_observables_cc ();
 
-  void set_navigation_queue(concurrent_queue<gps_navigation_message> *nav_queue){d_nav_queue=nav_queue;}
+    void set_navigation_queue(concurrent_queue<Gps_Navigation_Message> *nav_queue){d_nav_queue=nav_queue;}
 
-  void set_fs_in(unsigned long int fs_in) {d_fs_in=fs_in;};
+    void set_fs_in(unsigned long int fs_in) {d_fs_in=fs_in;};
 
-  int general_work (int noutput_items, gr_vector_int &ninput_items,
-      gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    int general_work (int noutput_items, gr_vector_int &ninput_items,
+            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
+private:
+
+    friend gps_l1_ca_observables_cc_sptr
+    gps_l1_ca_make_observables_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+    gps_l1_ca_observables_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+
+    // class private vars
+    gr_msg_queue_sptr d_queue;
+    bool d_dump;
+    bool d_flag_averaging;
+    long int d_sample_counter;
+    unsigned int d_nchannels;
+    unsigned long int d_fs_in;
+    int d_output_rate_ms;
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+
+    std::deque<double> *d_history_prn_delay_ms;
+
+    concurrent_queue<Gps_Navigation_Message> *d_nav_queue; // Navigation ephemeris queue
 };
 
 #endif

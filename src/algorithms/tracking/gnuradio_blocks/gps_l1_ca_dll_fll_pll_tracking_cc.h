@@ -48,8 +48,8 @@
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 
-class gps_l1_ca_dll_fll_pll_tracking_cc;
-typedef boost::shared_ptr<gps_l1_ca_dll_fll_pll_tracking_cc>
+class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc;
+typedef boost::shared_ptr<Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc>
 gps_l1_ca_dll_fll_pll_tracking_cc_sptr;
 
 gps_l1_ca_dll_fll_pll_tracking_cc_sptr
@@ -71,7 +71,7 @@ gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
 /*!
  * \brief This class implements a DLL and a FLL assisted PLL tracking loop block
  */
-class gps_l1_ca_dll_fll_pll_tracking_cc: public gr_block
+class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc: public gr_block
 {
 
 private:
@@ -90,7 +90,7 @@ private:
             float dll_bw_hz,
             float early_late_space_chips);
 
-    gps_l1_ca_dll_fll_pll_tracking_cc(unsigned int satellite,
+    Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(unsigned int satellite,
             long if_freq,
             long fs_in, unsigned
             int vector_length,
@@ -149,7 +149,7 @@ private:
 
     // FLL + PLL filter
     float d_FLL_discriminator_hz; // This is a class variable because FLL needs to have memory
-    tracking_FLL_PLL_filter d_carrier_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
     float d_acc_carrier_phase_rad;
 
     unsigned long int d_sample_counter;
@@ -174,7 +174,7 @@ private:
 
 public:
 
-    ~gps_l1_ca_dll_fll_pll_tracking_cc();
+    ~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc();
 
     void set_satellite(unsigned int satellite);
     void set_channel(unsigned int channel);

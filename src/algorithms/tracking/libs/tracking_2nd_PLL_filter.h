@@ -44,7 +44,7 @@
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S. H. Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
  * Birkhauser, 2007, Applied and Numerical Harmonic Analysis.
  */
-class tracking_2nd_PLL_filter
+class Tracking_2nd_PLL_filter
 {
 private:
     // PLL filter parameters
@@ -63,8 +63,8 @@ public:
 	void set_PLL_BW(float pll_bw_hz);  //! Set PLL loop bandwidth [Hz]
 	void initialize(float d_acq_carrier_doppler_hz);
 	float get_carrier_nco(float PLL_discriminator);
-	tracking_2nd_PLL_filter();
-	~tracking_2nd_PLL_filter();
+	Tracking_2nd_PLL_filter();
+	~Tracking_2nd_PLL_filter();
 };
 
 #endif

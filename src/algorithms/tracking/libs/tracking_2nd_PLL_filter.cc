@@ -37,45 +37,57 @@
 #include "tracking_2nd_PLL_filter.h"
 
 
-void tracking_2nd_PLL_filter::calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k){
-	// Solve natural frequency
-	float Wn;
-	Wn = lbw*8*zeta / (4*zeta*zeta + 1);
-	// solve for t1 & t2
-	*tau1 = k / (Wn * Wn);
-	*tau2 = (2.0 * zeta) / Wn;
+void Tracking_2nd_PLL_filter::calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k)
+{
+    // Solve natural frequency
+    float Wn;
+    Wn = lbw*8*zeta / (4*zeta*zeta + 1);
+    // solve for t1 & t2
+    *tau1 = k / (Wn * Wn);
+    *tau2 = (2.0 * zeta) / Wn;
 }
 
-void tracking_2nd_PLL_filter::set_PLL_BW(float pll_bw_hz)
+
+
+void Tracking_2nd_PLL_filter::set_PLL_BW(float pll_bw_hz)
 {
-	//Calculate filter coefficient values
-	d_pllnoisebandwidth=pll_bw_hz;
-	calculate_lopp_coef(&d_tau1_carr, &d_tau2_carr, d_pllnoisebandwidth, d_plldampingratio,0.25);// Calculate filter coefficient values
+    //Calculate filter coefficient values
+    d_pllnoisebandwidth = pll_bw_hz;
+    calculate_lopp_coef(&d_tau1_carr, &d_tau2_carr, d_pllnoisebandwidth, d_plldampingratio, 0.25);// Calculate filter coefficient values
 }
-void tracking_2nd_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
+
+
+
+void Tracking_2nd_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
 {
     // carrier/Costas loop parameters
     d_old_carr_nco   = 0.0;
     d_old_carr_error = 0.0;
 }
 
-float tracking_2nd_PLL_filter::get_carrier_nco(float PLL_discriminator)
+
+
+
+float Tracking_2nd_PLL_filter::get_carrier_nco(float PLL_discriminator)
 {
-	float carr_nco;
-	carr_nco = d_old_carr_nco+(d_tau2_carr/d_tau1_carr)*(PLL_discriminator - d_old_carr_error) + PLL_discriminator * (d_pdi_carr/d_tau1_carr);
-	d_old_carr_nco   = carr_nco;
-	d_old_carr_error = PLL_discriminator;
-	return carr_nco;
+    float carr_nco;
+    carr_nco = d_old_carr_nco+(d_tau2_carr/d_tau1_carr)*(PLL_discriminator - d_old_carr_error) + PLL_discriminator * (d_pdi_carr/d_tau1_carr);
+    d_old_carr_nco   = carr_nco;
+    d_old_carr_error = PLL_discriminator;
+    return carr_nco;
 }
 
-tracking_2nd_PLL_filter::tracking_2nd_PLL_filter ()
+
+
+Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter ()
 {
-	//--- PLL variables --------------------------------------------------------
-	d_pdi_carr = 0.001;// Summation interval for carrier
-	d_plldampingratio=0.65;
+    //--- PLL variables --------------------------------------------------------
+    d_pdi_carr = 0.001;// Summation interval for carrier
+    d_plldampingratio=0.65;
 }
 
-tracking_2nd_PLL_filter::~tracking_2nd_PLL_filter ()
-{
 
-}
+
+
+Tracking_2nd_PLL_filter::~Tracking_2nd_PLL_filter ()
+{}

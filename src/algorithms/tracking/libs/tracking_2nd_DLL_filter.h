@@ -44,7 +44,7 @@
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S. H. Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
  * Birkhauser, 2007, Applied and Numerical Harmonic Analysis.
  */
-class tracking_2nd_DLL_filter
+class Tracking_2nd_DLL_filter
 {
 private:
     // PLL filter parameters
@@ -58,12 +58,13 @@ private:
     float d_old_code_nco;
 
     void calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k);
+
 public:
 	void set_DLL_BW(float dll_bw_hz); //! Set DLL loop bandwidth [Hz]
 	void initialize(float d_acq_code_phase_samples);
 	float get_code_nco(float DLL_discriminator);
-	tracking_2nd_DLL_filter();
-	~tracking_2nd_DLL_filter();
+	Tracking_2nd_DLL_filter();
+	~Tracking_2nd_DLL_filter();
 };
 
 #endif

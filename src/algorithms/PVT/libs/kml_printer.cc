@@ -34,7 +34,7 @@
 #include <glog/logging.h>
 #include <time.h>
 
-bool kml_printer::set_headers(std::string filename)
+bool Kml_Printer::set_headers(std::string filename)
 {
     time_t rawtime;
     struct tm * timeinfo;
@@ -79,7 +79,7 @@ bool kml_printer::set_headers(std::string filename)
 }
 
 
-bool kml_printer::print_position(gps_l1_ca_ls_pvt* position,bool print_average_values)
+bool Kml_Printer::print_position(gps_l1_ca_ls_pvt* position,bool print_average_values)
 {
     double latitude;
     double longitude;
@@ -108,7 +108,9 @@ bool kml_printer::print_position(gps_l1_ca_ls_pvt* position,bool print_average_v
         }
 }
 
-bool kml_printer::close_file()
+
+
+bool Kml_Printer::close_file()
 {
     if (kml_file.is_open())
         {
@@ -126,6 +128,11 @@ bool kml_printer::close_file()
         }
 }
 
-kml_printer::kml_printer () {}
 
-kml_printer::~kml_printer () {}
+
+Kml_Printer::Kml_Printer () {}
+
+
+
+Kml_Printer::~Kml_Printer () {}
+

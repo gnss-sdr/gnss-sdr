@@ -43,7 +43,7 @@
  *
  * See http://www.opengeospatial.org/standards/kml
  */
-class kml_printer
+class Kml_Printer
 {
 private:
 
@@ -57,8 +57,8 @@ public:
 
 	bool close_file();
 
-	kml_printer();
-	~kml_printer();
+	Kml_Printer();
+	~Kml_Printer();
 };
 
 #endif

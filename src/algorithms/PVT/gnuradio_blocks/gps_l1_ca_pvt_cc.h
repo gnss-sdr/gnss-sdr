@@ -78,7 +78,7 @@ private:
 
   long unsigned int d_sample_counter;
 
-  kml_printer d_kml_dump;
+  Kml_Printer d_kml_dump;
 
   concurrent_queue<Gps_Navigation_Message> *d_nav_queue; // Navigation ephemeris queue
   Gps_Navigation_Message d_last_nav_msg;                 // Last navigation message

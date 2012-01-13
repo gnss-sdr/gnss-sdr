@@ -55,7 +55,6 @@ DEFINE_string(RINEX_version, "3.01", "Specifies the RINEX version (2.11 or 3.01)
 
 Rinex_Printer::Rinex_Printer()
 {
-
     Rinex_Printer::navFile.open(Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV"), std::ios::out | std::ios::app);
     Rinex_Printer::obsFile.open(Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS"), std::ios::out | std::ios::app);
 
@@ -986,7 +985,6 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
             std::string year (timestring, 2, 2);
             line += std::string(1, ' ');
             line += year;
-            LOG_AT_LEVEL(INFO) << "year:" << year;
             line += std::string(1, ' ');
             if (month.compare(0, 1 , "0") == 0)
                 {
@@ -997,7 +995,6 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
                 {
                     line += month;
                 }
-            LOG_AT_LEVEL(INFO) << "line:" << line;
             line += std::string(1, ' ');
             if (day.compare(0, 1 , "0") == 0)
                 {

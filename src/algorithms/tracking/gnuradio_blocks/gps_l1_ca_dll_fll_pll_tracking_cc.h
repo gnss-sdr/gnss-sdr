@@ -73,6 +73,37 @@ gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
  */
 class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc: public gr_block
 {
+public:
+
+    ~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc();
+
+    void set_satellite(unsigned int satellite);
+    void set_channel(unsigned int channel);
+    void set_acq_code_phase(float code_phase);
+    void set_acq_doppler(float doppler);
+    void start_tracking();
+    void update_local_code();
+    void update_local_carrier();
+    void set_FLL_and_PLL_BW(float fll_bw_hz,float pll_bw_hz);
+    void set_acq_sample_stamp(unsigned long int sample_stamp);
+    void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
+
+    /*
+     * \brief just like gr_block::general_work, only this arranges to call consume_each for you
+     *
+     * The user must override work to define the signal processing code
+     */
+    //virtual int work (int noutput_items,
+    //                  gr_vector_const_void_star &input_items,
+    //                gr_vector_void_star &output_items) = 0;
+
+    //int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
+    int general_work (int noutput_items, gr_vector_int &ninput_items,
+            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
+    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+
 
 private:
 
@@ -171,38 +202,6 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-
-public:
-
-    ~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc();
-
-    void set_satellite(unsigned int satellite);
-    void set_channel(unsigned int channel);
-    void set_acq_code_phase(float code_phase);
-    void set_acq_doppler(float doppler);
-    void start_tracking();
-    void update_local_code();
-    void update_local_carrier();
-    void set_FLL_and_PLL_BW(float fll_bw_hz,float pll_bw_hz);
-    void set_acq_sample_stamp(unsigned long int sample_stamp);
-    void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
-
-    /*!
-     * \brief just like gr_block::general_work, only this arranges to call consume_each for you
-     *
-     * The user must override work to define the signal processing code
-     */
-    //virtual int work (int noutput_items,
-    //                  gr_vector_const_void_star &input_items,
-    //                gr_vector_void_star &output_items) = 0;
-
-    //int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-
-    int general_work (int noutput_items, gr_vector_int &ninput_items,
-            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
 };
 
 #endif //GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H

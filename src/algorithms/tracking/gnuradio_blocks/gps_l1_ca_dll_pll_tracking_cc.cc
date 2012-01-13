@@ -212,7 +212,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
 
     // DEBUG OUTPUT
     std::cout << "Tracking start on channel " << d_channel << " for satellite ID* " << this->d_satellite << std::endl;
-    DLOG(INFO) << "Start tracking for satellite "<< this->d_satellite << " received" << std::endl;
+    DLOG(INFO) << "Start tracking for satellite " << this->d_satellite << " received" << std::endl;
 
     // enable tracking
     d_pull_in = true;

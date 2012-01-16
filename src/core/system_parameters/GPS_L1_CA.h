@@ -342,7 +342,7 @@ const bits_slice HEALTH_SV22[]={{247,6}};
 const bits_slice HEALTH_SV23[]={{253,6}};
 const bits_slice HEALTH_SV24[]={{259,6}};
 
-
+/*
 
 inline void ca_code_generator_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
 {
@@ -355,14 +355,14 @@ inline void ca_code_generator_complex(std::complex<float>* _dest, signed int _pr
         unsigned int delay;
         signed int prn = _prn-1; //Move the PRN code to fit an array indices
 
-        /* G2 Delays as defined in IS-GPS-200E */
+        // G2 Delays as defined in IS-GPS-200E
         signed int delays[32] = {5, 6, 7, 8, 17, 18, 139, 140, 141, 251,
                 252, 254, 255, 256, 257, 258, 469, 470, 471, 472,
                 473, 474, 509, 512, 513, 514, 515, 516, 859, 860,
                 861, 862};
         // PRN sequences 33 through 37 are reserved for other uses (e.g. ground transmitters)
 
-        /* A simple error check */
+        // A simple error check
         if((prn < 0) || (prn > 32))
                 return;
 
@@ -372,7 +372,7 @@ inline void ca_code_generator_complex(std::complex<float>* _dest, signed int _pr
                 G2_register[lcv] = 1;
         }
 
-        /* Generate G1 & G2 Register */
+        // Generate G1 & G2 Register
         for(lcv = 0; lcv < 1023; lcv++)
         {
                 G1[lcv] = G1_register[0];
@@ -391,11 +391,11 @@ inline void ca_code_generator_complex(std::complex<float>* _dest, signed int _pr
                 G2_register[9] = feedback2;
         }
 
-        /* Set the delay */
+        // Set the delay
         delay = 1023 - delays[prn];
         delay += _chip_shift;
         delay %= 1023;
-        /* Generate PRN from G1 and G2 Registers */
+        // Generate PRN from G1 and G2 Registers
         for(lcv = 0; lcv < 1023; lcv++)
         {
                 _dest[lcv] = std::complex<float>(G1[(lcv +  _chip_shift)%1023]^G2[delay], 0);
@@ -409,7 +409,7 @@ inline void ca_code_generator_complex(std::complex<float>* _dest, signed int _pr
         }
 }
 
-
+*/
 
 
 #endif /* GNSS_SDR_GPS_L1_CA_H_ */

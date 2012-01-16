@@ -51,6 +51,7 @@ exe gnss-sdr : main.cc
 ../core/receiver//gnss_block_factory
 ../core/receiver//gnss_flowgraph
 ../core/system_parameters//gps_navigation_message
+../core/system_parameters//gnss_satellite
 ../..//gflags
 ../..//glog
 ../..//gnuradio-core ;

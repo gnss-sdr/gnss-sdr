@@ -70,7 +70,7 @@ private:
 
 public:
     //broadcast orbit 1
-    double d_TOW;
+    double d_TOW;            //!< Time of GPS Week [s]
     double d_IODE_SF2;
     double d_IODE_SF3;
     double d_Crs;            //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]

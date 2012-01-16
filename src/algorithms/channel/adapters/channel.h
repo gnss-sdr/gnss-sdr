@@ -71,19 +71,19 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
-    std::string role(){ return role_;}
+    std::string role(){ return role_; }
 
-    std::string implementation(){ return "Channel";}
+    std::string implementation(){ return "Channel"; }
 
-    size_t item_size(){ return 0;}
+    size_t item_size(){ return 0; }
 
-    unsigned int satellite(){ return satellite_;}
+    unsigned int satellite(){ return satellite_; }
 
-    AcquisitionInterface* acquisition(){ return acq_;}
+    AcquisitionInterface* acquisition(){ return acq_; }
 
-    TrackingInterface* tracking(){ return trk_;}
+    TrackingInterface* tracking(){ return trk_; }
 
-    TelemetryDecoderInterface* telemetry(){ return nav_;}
+    TelemetryDecoderInterface* telemetry(){ return nav_; }
 
     void start_acquisition();
     void set_satellite(unsigned int satellite);

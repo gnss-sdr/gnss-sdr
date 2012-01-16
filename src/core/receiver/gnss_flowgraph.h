@@ -40,6 +40,7 @@
 #include <queue>
 #include <gnuradio/gr_top_block.h>
 #include <gnuradio/gr_msg_queue.h>
+#include "GPS_L1_CA.h"
 
 class GNSSBlockInterface;
 class ChannelInterface;

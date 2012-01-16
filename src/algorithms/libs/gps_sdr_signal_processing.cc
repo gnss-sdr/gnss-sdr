@@ -7,18 +7,19 @@
 /*!
  * The SV ID is _prn=ID -1
  */
-void code_gen_conplex(std::complex<float>* _dest, int32 _prn, unsigned int _chip_shift) {
+void code_gen_conplex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
+{
 
-	uint32 G1[1023];
-	uint32 G2[1023];
-	uint32 G1_register[10], G2_register[10];
-	uint32 feedback1, feedback2;
-	uint32 lcv, lcv2;
-	uint32 delay;
-	int32 prn = _prn-1; //Move the PRN code to fit an array indices
+	unsigned int G1[1023];
+	unsigned int G2[1023];
+	unsigned int G1_register[10], G2_register[10];
+	unsigned int feedback1, feedback2;
+	unsigned int lcv, lcv2;
+	unsigned int delay;
+	signed int prn = _prn-1; //Move the PRN code to fit an array indices
 
 	/* G2 Delays as defined in GPS-ISD-200D */
-	int32 delays[51] = {5, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254 ,255, 256, 257, 258, 469, 470, 471, 472,
+	signed int delays[51] = {5, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254 ,255, 256, 257, 258, 469, 470, 471, 472,
 		473, 474, 509, 512, 513, 514, 515, 516, 859, 860, 861, 862, 145, 175, 52, 21, 237, 235, 886, 657, 634, 762,
 		355, 1012, 176, 603, 130, 359, 595, 68, 386};
 
@@ -43,8 +44,8 @@ void code_gen_conplex(std::complex<float>* _dest, int32 _prn, unsigned int _chip
 
 		for(lcv2 = 0; lcv2 < 9; lcv2++)
 		{
-			G1_register[lcv2] = G1_register[lcv2+1];
-			G2_register[lcv2] = G2_register[lcv2+1];
+			G1_register[lcv2] = G1_register[lcv2 + 1];
+			G2_register[lcv2] = G2_register[lcv2 + 1];
 		}
 
 		G1_register[9] = feedback1;
@@ -53,13 +54,13 @@ void code_gen_conplex(std::complex<float>* _dest, int32 _prn, unsigned int _chip
 
 	/* Set the delay */
 	delay = 1023 - delays[prn];
-	delay+=_chip_shift;
+	delay += _chip_shift;
 	delay %= 1023;
 	/* Generate PRN from G1 and G2 Registers */
 	for(lcv = 0; lcv < 1023; lcv++)
 	{
-		_dest[lcv] = std::complex<float>(G1[(lcv+_chip_shift)%1023]^G2[delay], 0);
-		if(_dest[lcv].real()==0.0) //javi
+		_dest[lcv] = std::complex<float>(G1[(lcv +  _chip_shift)%1023]^G2[delay], 0);
+		if(_dest[lcv].real() == 0.0) //javi
 		{
 			_dest[lcv].real(-1.0);
 		}
@@ -75,19 +76,19 @@ void code_gen_conplex(std::complex<float>* _dest, int32 _prn, unsigned int _chip
 /*!
  * code_gen, generate the given prn code
  * */
-int32 code_gen(CPX *_dest, int32 _prn)
+signed int code_gen(CPX *_dest, signed int _prn)
 {
 
-	uint32 G1[1023];
-	uint32 G2[1023];
-	uint32 G1_register[10], G2_register[10];
-	uint32 feedback1, feedback2;
-	uint32 lcv, lcv2;
-	uint32 delay;
-    int32 prn = _prn-1; //Move the PRN code to fit an array indices
+	unsigned int G1[1023];
+	unsigned int G2[1023];
+	unsigned int G1_register[10], G2_register[10];
+	unsigned int feedback1, feedback2;
+	unsigned int lcv, lcv2;
+	unsigned int delay;
+    signed int prn = _prn-1; //Move the PRN code to fit an array indices
 
 	/* G2 Delays as defined in GPS-ISD-200D */
-	int32 delays[51] = {5, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254 ,255, 256, 257, 258, 469, 470, 471, 472,
+	signed int delays[51] = {5, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254 ,255, 256, 257, 258, 469, 470, 471, 472,
 		473, 474, 509, 512, 513, 514, 515, 516, 859, 860, 861, 862, 145, 175, 52, 21, 237, 235, 886, 657, 634, 762,
 		355, 1012, 176, 603, 130, 359, 595, 68, 386};
 
@@ -143,15 +144,15 @@ int32 code_gen(CPX *_dest, int32 _prn)
 /*!
  * code_gen_complex_sampled, generate GPS L1 C/A code complex for the desired SV ID and sampled to specific sampling frequency
  */
-void code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, int32 _fs, unsigned int _chip_shift)
+void code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift)
 {
 	// This function is based on the GNU software GPS for MATLAB in the Kay Borre book
 	std::complex<float> _code[1023];
-	int32 _samplesPerCode,_codeValueIndex;
+	signed int _samplesPerCode,_codeValueIndex;
 	float _ts;
 	float _tc;
-	const int32 _codeFreqBasis=1023000; //Hz
-	const int32 _codeLength=1023;
+	const signed int _codeFreqBasis=1023000; //Hz
+	const signed int _codeLength=1023;
 
 	//--- Find number of samples per spreading code ----------------------------
 	_samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
@@ -163,7 +164,7 @@ void code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, int
 	//std::cout<<"ts="<<_ts<<std::endl;
 	//std::cout<<"tc="<<_tc<<std::endl;
 	//std::cout<<"sv="<<_prn<<std::endl;
-	for (int32 i=0;i<_samplesPerCode;i++)
+	for (signed int i=0;i<_samplesPerCode;i++)
 	{
 	    //=== Digitizing =======================================================
 
@@ -235,10 +236,10 @@ void sine_gen_complex(std::complex<float>* _dest, double _f, double _fs, unsigne
 
 
 /*----------------------------------------------------------------------------------------------*/
-void sine_gen(CPX *_dest, double _f, double _fs, int32 _samps, double _p)
+void sine_gen(CPX *_dest, double _f, double _fs, signed int _samps, double _p)
 {
 
-	int32 lcv;
+	signed int lcv;
 	int16 c, s;
 	double phase, phase_step;
 
@@ -263,10 +264,10 @@ void sine_gen(CPX *_dest, double _f, double _fs, int32 _samps, double _p)
 /*!
  * wipeoff_gen, generate a full scale sinusoid of frequency f with sampling frequency fs for _samps samps and put it into _dest
  * */
-void wipeoff_gen(MIX *_dest, double _f, double _fs, int32 _samps)
+void wipeoff_gen(MIX *_dest, double _f, double _fs, signed int _samps)
 {
 
-	int32 lcv;
+	signed int lcv;
 	int16 c, s;
 	double phase, phase_step;
 
@@ -289,14 +290,14 @@ void wipeoff_gen(MIX *_dest, double _f, double _fs, int32 _samps)
 
 
 /*----------------------------------------------------------------------------------------------*/
-void downsample(CPX *_dest, CPX *_source, double _fdest, double _fsource, int32 _samps)
+void downsample(CPX *_dest, CPX *_source, double _fdest, double _fsource, signed int _samps)
 {
 
-	int32 lcv, k;
-	uint32 phase_step;
-	uint32 lphase, phase;
+	signed int lcv, k;
+	unsigned int phase_step;
+	unsigned int lphase, phase;
 
-	phase_step = (uint32)floor((double)4294967296.0*_fdest/_fsource);
+	phase_step = (unsigned int)floor((double)4294967296.0*_fdest/_fsource);
 
 	k = lphase = phase = 0;
 
@@ -325,9 +326,9 @@ void downsample(CPX *_dest, CPX *_source, double _fdest, double _fsource, int32 
 /*!
  * Gather statistics and run AGC
  * */
-int32 run_agc(CPX *_buff, int32 _samps, int32 _bits, int32 _scale)
+signed int run_agc(CPX *_buff, signed int _samps, signed int _bits, signed int _scale)
 {
-	int32 lcv, num;
+	signed int lcv, num;
 	int16 max, *p;
 	int16 val;
 
@@ -366,11 +367,11 @@ int32 run_agc(CPX *_buff, int32 _samps, int32 _bits, int32 _scale)
 /*!
  * Get a rough first guess of scale value to quickly initialize agc
  * */
-void init_agc(CPX *_buff, int32 _samps, int32 bits, int32 *scale)
+void init_agc(CPX *_buff, signed int _samps, signed int bits, signed int *scale)
 {
-	int32 lcv;
+	signed int lcv;
 	int16 *p;
-	int32 max;
+	signed int max;
 
 	p = (int16 *)&_buff[0];
 

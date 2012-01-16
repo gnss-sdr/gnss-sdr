@@ -32,19 +32,21 @@
 #ifndef GNSS_SDR_GPS_L1_CA_H_
 #define GNSS_SDR_GPS_L1_CA_H_
 
+#include <complex>
+
 // Physical constants
 const double GPS_C_m_s        = 299792458.0;      //!< The speed of light, [m/s]
 const double GPS_C_m_ms       = 299792.4580;      //!< The speed of light, [m/ms]
-const double GPS_PI          = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
-const double OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
-const double GM              = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-const double F               = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
+const double GPS_PI           = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
+const double OMEGA_EARTH_DOT  = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
+const double GM               = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
+const double F                = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 
 
 // carrier and code frequencies
-const float GPS_L1_FREQ_HZ	        = 1.57542e9; //!< L1 [Hz]
-const float GPS_L1_CA_CODE_RATE_HZ      = 1.023e6;   //!< GPS L1 C/A code rate [chips/s]
-const float GPS_L1_CA_CODE_LENGTH_CHIPS	= 1023.0;    //!< GPS L1 C/A code length [chips]
+const double  GPS_L1_FREQ_HZ	                = 1.57542e9; //!< L1 [Hz]
+const double  GPS_L1_CA_CODE_RATE_HZ            = 1.023e6;   //!< GPS L1 C/A code rate [chips/s]
+const double  GPS_L1_CA_CODE_LENGTH_CHIPS	= 1023.0;    //!< GPS L1 C/A code length [chips]
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms
@@ -54,19 +56,19 @@ const float GPS_L1_CA_CODE_LENGTH_CHIPS	= 1023.0;    //!< GPS L1 C/A code length
  * [1] J. Bao-Yen Tsui, Fundamentals of Global Positioning System Receivers. A Software Approach, John Wiley & Sons,
  * Inc., Hoboken, NJ, 2nd edition, 2005.
  */
-const double MAX_TOA_DELAY_MS=20;
+const double MAX_TOA_DELAY_MS = 20;
 
 
 
 #define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
-const float GPS_STARTOFFSET_ms= 68.802; //[ms] Initial sign. travel time (this cannot go here)
+const float GPS_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)
 
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
 
 #define GPS_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
-#define GPS_CA_PREAMBLE_LENGTH_BITS 8
-#define GPS_CA_TELEMETRY_RATE_BITS_SECOND 50   //!< NAV message bit rate [bits/s]
+const int GPS_CA_PREAMBLE_LENGTH_BITS = 8;
+const int GPS_CA_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
 #define GPS_WORD_LENGTH 4                      // CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
 #define GPS_SUBFRAME_LENGTH 40                 // GPS_WORD_LENGTH x 10 = 40 bytes
 const int GPS_SUBFRAME_BITS=300;               //!< Number of bits per subframe in the NAV message [bits]
@@ -81,14 +83,15 @@ const int GPS_WORD_BITS=30;                    //!< Number of bits per word in t
 /*!
  *  \brief Navigation message bits slice structure: A portion of bits is indicated by
  *  the start position inside the subframe and the length in number of bits  */
-typedef struct bits_slice{
-        int position;
-        int length;
-        bits_slice(int p,int l)
-        {
-                position=p;
-                length=l;
-        }
+typedef struct bits_slice
+{
+    int position;
+    int length;
+    bits_slice(int p,int l)
+    {
+        position=p;
+        length=l;
+    }
 } bits_slice;
 
 
@@ -339,6 +342,72 @@ const bits_slice HEALTH_SV22[]={{247,6}};
 const bits_slice HEALTH_SV23[]={{253,6}};
 const bits_slice HEALTH_SV24[]={{259,6}};
 
+
+
+inline void ca_code_generator_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
+{
+
+        unsigned int G1[1023];
+        unsigned int G2[1023];
+        unsigned int G1_register[10], G2_register[10];
+        unsigned int feedback1, feedback2;
+        unsigned int lcv, lcv2;
+        unsigned int delay;
+        signed int prn = _prn-1; //Move the PRN code to fit an array indices
+
+        /* G2 Delays as defined in IS-GPS-200E */
+        signed int delays[32] = {5, 6, 7, 8, 17, 18, 139, 140, 141, 251,
+                252, 254, 255, 256, 257, 258, 469, 470, 471, 472,
+                473, 474, 509, 512, 513, 514, 515, 516, 859, 860,
+                861, 862};
+        // PRN sequences 33 through 37 are reserved for other uses (e.g. ground transmitters)
+
+        /* A simple error check */
+        if((prn < 0) || (prn > 32))
+                return;
+
+        for(lcv = 0; lcv < 10; lcv++)
+        {
+                G1_register[lcv] = 1;
+                G2_register[lcv] = 1;
+        }
+
+        /* Generate G1 & G2 Register */
+        for(lcv = 0; lcv < 1023; lcv++)
+        {
+                G1[lcv] = G1_register[0];
+                G2[lcv] = G2_register[0];
+
+                feedback1 = G1_register[7]^G1_register[0];
+                feedback2 = (G2_register[8] + G2_register[7] + G2_register[4] + G2_register[2] + G2_register[1] + G2_register[0]) & 0x1;
+
+                for(lcv2 = 0; lcv2 < 9; lcv2++)
+                {
+                        G1_register[lcv2] = G1_register[lcv2 + 1];
+                        G2_register[lcv2] = G2_register[lcv2 + 1];
+                }
+
+                G1_register[9] = feedback1;
+                G2_register[9] = feedback2;
+        }
+
+        /* Set the delay */
+        delay = 1023 - delays[prn];
+        delay += _chip_shift;
+        delay %= 1023;
+        /* Generate PRN from G1 and G2 Registers */
+        for(lcv = 0; lcv < 1023; lcv++)
+        {
+                _dest[lcv] = std::complex<float>(G1[(lcv +  _chip_shift)%1023]^G2[delay], 0);
+                if(_dest[lcv].real() == 0.0) //javi
+                {
+                        _dest[lcv].real(-1.0);
+                }
+                delay++;
+                delay %= 1023;
+                //std::cout<<_dest[lcv].real(); //OK
+        }
+}
 
 
 

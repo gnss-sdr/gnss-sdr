@@ -55,6 +55,7 @@ GNSSFlowgraph::GNSSFlowgraph(ConfigurationInterface *configuration,
     block_factory_ = new GNSSBlockFactory();
     queue_ = queue;
     available_GPS_satellites_IDs_ = new std::list<unsigned int>();
+
     init();
 }
 
@@ -109,7 +110,7 @@ void GNSSFlowgraph::connect()
 {
     /* Connects the blocks in the flowgraph
      *
-     * Signal Source > Signal conditioner > Channels >> Observables >> PVT > Output filter
+     * Signal Source > Signal conditioner >> Channels >> Observables >> PVT > Output filter
      */
     DLOG(INFO) << "Connecting flowgraph";
     if (connected_)
@@ -118,7 +119,7 @@ void GNSSFlowgraph::connect()
             return;
         }
 
-    // Connect GNSS block internally
+
     try
     {
             signal_source()->connect(top_block_);
@@ -131,6 +132,7 @@ void GNSSFlowgraph::connect()
             return;
     }
 
+    // Signal Source > Signal conditioner >
     try
     {
             signal_conditioner()->connect(top_block_);
@@ -143,6 +145,7 @@ void GNSSFlowgraph::connect()
             top_block_->disconnect_all();
             return;
     }
+
 
     for (unsigned int i = 0; i < channels_count_; i++)
         {
@@ -160,6 +163,7 @@ void GNSSFlowgraph::connect()
             }
         }
 
+
     try
     {
             observables()->connect(top_block_);
@@ -172,6 +176,7 @@ void GNSSFlowgraph::connect()
             return;
     }
 
+    // Signal Source > Signal conditioner >> Channels >> Observables > PVT
     try
     {
             pvt()->connect(top_block_);
@@ -184,6 +189,7 @@ void GNSSFlowgraph::connect()
             return;
     }
 
+    // Signal Source > Signal conditioner >> Channels >> Observables > PVT > Output Filter
     try
     {
             output_filter()->connect(top_block_);
@@ -198,6 +204,7 @@ void GNSSFlowgraph::connect()
 
     DLOG(INFO) << "blocks connected internally";
 
+    // Signal Source >  Signal conditioner >
     try
     {
             top_block_->connect(signal_source()->get_right_block(), 0,
@@ -213,6 +220,7 @@ void GNSSFlowgraph::connect()
     }
     DLOG(INFO) << "Signal source connected to signal conditioner";
 
+    // Signal Source > Signal conditioner >> channels_count_ number of Channels in parallel
     for (unsigned int i = 0; i < channels_count_; i++)
         {
             try
@@ -231,6 +239,7 @@ void GNSSFlowgraph::connect()
 
             DLOG(INFO) << "signal conditioner connected to channel " << i;
 
+            // Signal Source > Signal conditioner >> Channels >> Observables
             try
             {
                     top_block_->connect(channel(i)->get_right_block(), 0,
@@ -388,10 +397,13 @@ GNSSBlockInterface* GNSSFlowgraph::output_filter()
     return blocks_->at(4);
 }
 
+
+
+
 void GNSSFlowgraph::init()
 {
     /*
-     *  Instantiates the receiver blocks
+     * Instantiates the receiver blocks
      */
     blocks_->push_back(
             block_factory_->GetSignalSource(configuration_, queue_));

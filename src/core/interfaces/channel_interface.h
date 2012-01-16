@@ -42,7 +42,7 @@
 /*!
  * \brief This abstract class represents an interface to a channel GNSS block.
  *
- * Abstract class for channel blocks. Since all its methods are virtual,
+ * Abstract class for channel blocks. Since all its methods are pure virtual,
  * this class cannot be instantiated directly, and a subclass can only be
  * instantiated directly if all inherited pure virtual methods have been
  * implemented by that class or a parent class.

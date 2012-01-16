@@ -57,6 +57,24 @@ gps_l1_ca_make_telemetry_decoder_cc(unsigned int satellite, long if_freq, long f
  */
 class gps_l1_ca_telemetry_decoder_cc : public gr_block {
 
+public:
+
+  ~gps_l1_ca_telemetry_decoder_cc();
+
+  void set_satellite(int satellite);  //!< Set satellite PRN
+  void set_channel(int channel);      //!< Set receiver's channel
+
+  /*!
+   * \brief Set the navigation queue
+   */
+  void set_navigation_queue(concurrent_queue<Gps_Navigation_Message> *nav_queue){d_GPS_FSM.d_nav_queue=nav_queue;}
+
+  int general_work (int noutput_items, gr_vector_int &ninput_items,
+      gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
+  void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+
+
 private:
 
   friend gps_l1_ca_telemetry_decoder_cc_sptr
@@ -112,20 +130,6 @@ private:
 
   std::string d_dump_filename;
   std::ofstream d_dump_file;
-
-public:
-
-  ~gps_l1_ca_telemetry_decoder_cc();
-
-  void set_satellite(int satellite);
-  void set_channel(int channel);
-
-  void set_navigation_queue(concurrent_queue<Gps_Navigation_Message> *nav_queue){d_GPS_FSM.d_nav_queue=nav_queue;}
-
-  int general_work (int noutput_items, gr_vector_int &ninput_items,
-      gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-  void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
 };
 
 #endif

@@ -83,8 +83,8 @@ public:
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
     void start_tracking();
-
     void set_acq_sample_stamp(unsigned long int sample_stamp);
+
 
 private:
 

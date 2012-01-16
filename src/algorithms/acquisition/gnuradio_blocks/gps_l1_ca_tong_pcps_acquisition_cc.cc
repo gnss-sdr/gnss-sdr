@@ -157,10 +157,15 @@ void gps_l1_ca_tong_pcps_acquisition_cc::set_satellite(unsigned int satellite)
                     -d_fft_if->get_outbuf()[i].imag());
         }
 }
+
+
+
 signed int gps_l1_ca_tong_pcps_acquisition_cc::prn_code_phase()
 {
     return d_code_phase;
 }
+
+
 
 int gps_l1_ca_tong_pcps_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,

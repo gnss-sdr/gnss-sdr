@@ -42,7 +42,7 @@
 #include <glog/logging.h>
 #include "control_message_factory.h"
 
-#define _lrotl(X,N)             ((X << N) ^ (X >> (32-N)))      //!< Used in the parity check algorithm
+#define _lrotl(X,N)  ((X << N) ^ (X >> (32-N)))  // Used in the parity check algorithm
 
 
 using google::LogMessage;
@@ -80,19 +80,19 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(unsigned int sate
     d_dump = dump;
     d_satellite = satellite;
     d_vector_length = vector_length;
-    d_samples_per_bit = 20; // it is exactly 1000*(1/50)=20
+    d_samples_per_bit = ( GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS ) / GPS_CA_TELEMETRY_RATE_BITS_SECOND;
     d_fs_in = fs_in;
-    d_preamble_duration_seconds = (1.0/(float)GPS_CA_TELEMETRY_RATE_BITS_SECOND)*(float)GPS_CA_PREAMBLE_LENGTH_BITS;
+    d_preamble_duration_seconds = (1.0 / GPS_CA_TELEMETRY_RATE_BITS_SECOND) * GPS_CA_PREAMBLE_LENGTH_BITS;
     //std::cout<<"d_preamble_duration_seconds="<<d_preamble_duration_seconds<<"\r\n";
     // set the preamble
-    unsigned short int preambles_bits[8] = GPS_PREAMBLE;
+    unsigned short int preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
 
-    memcpy((unsigned short int*)this->d_preambles_bits, (unsigned short int*)preambles_bits, 8*sizeof(unsigned short int));
+    memcpy((unsigned short int*)this->d_preambles_bits, (unsigned short int*)preambles_bits, GPS_CA_PREAMBLE_LENGTH_BITS*sizeof(unsigned short int));
 
     // preamble bits to sampled symbols
-    d_preambles_symbols = (signed int*)malloc(sizeof(signed int)*8*d_samples_per_bit);
+    d_preambles_symbols = (signed int*)malloc(sizeof(signed int) * GPS_CA_PREAMBLE_LENGTH_BITS * d_samples_per_bit);
     int n = 0;
-    for (int i=0; i<8; i++)
+    for (int i=0; i<GPS_CA_PREAMBLE_LENGTH_BITS; i++)
         {
             for (unsigned int j=0; j<d_samples_per_bit; j++)
                 {
@@ -219,7 +219,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 {
                     d_GPS_FSM.Event_gps_word_preamble();
                     d_preamble_index = d_sample_counter;//record the preamble sample stamp
-                    std::cout << "Preamble detection for SAT " << d_satellite<< std::endl;
+                    std::cout << "Preamble detection for SAT " << d_satellite << std::endl;
                     d_symbol_accumulator = 0; //sync the symbol to bits integrator
                     d_symbol_accumulator_counter = 0;
                     d_frame_bit_index = 8;
@@ -227,12 +227,12 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 }
             else if (d_stat == 1) //check 6 seconds of preample separation
                 {
-                    preamble_diff=abs(d_sample_counter-d_preamble_index);
+                    preamble_diff = abs(d_sample_counter - d_preamble_index);
                     if (abs(preamble_diff - 6000) < 1)
                         {
                             d_GPS_FSM.Event_gps_word_preamble();
                             d_flag_preamble = true;
-                            d_preamble_index = d_sample_counter;//record the preamble sample stamp (t_P)
+                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
                             d_preamble_time_seconds = in[2][0] - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
                             d_preamble_code_phase_seconds = in[4][0];
 
@@ -285,11 +285,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     // prepare the extended frame [-2 -1 0 ... 30]
                     if (d_prev_GPS_frame_4bytes & 0x00000001)
                         {
-                            d_GPS_frame_4bytes = d_GPS_frame_4bytes|0x40000000;
+                            d_GPS_frame_4bytes = d_GPS_frame_4bytes | 0x40000000;
                         }
                     if (d_prev_GPS_frame_4bytes & 0x00000002)
                         {
-                            d_GPS_frame_4bytes = d_GPS_frame_4bytes|0x80000000;
+                            d_GPS_frame_4bytes = d_GPS_frame_4bytes | 0x80000000;
                         }
                     /* Check that the 2 most recently logged words pass parity. Have to first
                      invert the data bits according to bit 30 of the previous word. */
@@ -299,7 +299,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                         }
                     if (gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(d_GPS_frame_4bytes))
                         {
-                            memcpy(&d_GPS_FSM.d_GPS_frame_4bytes,&d_GPS_frame_4bytes,sizeof(char)*4);
+                            memcpy(&d_GPS_FSM.d_GPS_frame_4bytes, &d_GPS_frame_4bytes, sizeof(char)*4);
                             d_GPS_FSM.d_preamble_time_ms = d_preamble_time_seconds*1000.0;
                             d_GPS_FSM.Event_gps_word_valid();
                             d_flag_parity = true;
@@ -321,6 +321,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     // output the frame
     consume_each(1); //one by one
 
+
+    //! \todo This has to be documented and included in the header!!!!
     gps_synchro.valid_word = (d_flag_frame_sync == true and d_flag_parity == true);
     gps_synchro.flag_preamble = d_flag_preamble;
     gps_synchro.preamble_delay_ms = d_preamble_time_seconds*1000.0;

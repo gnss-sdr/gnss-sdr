@@ -115,9 +115,9 @@ void GpsL1CaDllPllTracking::start_tracking()
 /*
  * Set satellite ID
  */
-void GpsL1CaDllPllTracking::set_satellite(unsigned int satellite)
+void GpsL1CaDllPllTracking::set_satellite(Gnss_Satellite satellite)
 {
-    satellite_ = satellite;
+    satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     tracking_->set_satellite(satellite);
     DLOG(INFO) << "satellite set to " << satellite_;
 }

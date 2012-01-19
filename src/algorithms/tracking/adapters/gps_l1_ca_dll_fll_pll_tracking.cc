@@ -122,9 +122,9 @@ void GpsL1CaDllFllPllTracking::start_tracking()
     tracking_->start_tracking();
 }
 
-void GpsL1CaDllFllPllTracking::set_satellite(unsigned int satellite)
+void GpsL1CaDllFllPllTracking::set_satellite(Gnss_Satellite satellite)
 {
-    satellite_ = satellite;
+    satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     tracking_->set_satellite(satellite);
     DLOG(INFO) << "satellite set to " << satellite_;
 }

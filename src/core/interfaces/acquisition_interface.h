@@ -56,7 +56,7 @@ class AcquisitionInterface: public GNSSBlockInterface
 public:
 
     //virtual void set_active(bool active) = 0;
-	virtual void set_satellite(Gnss_Satellite sat) = 0;
+    virtual void set_satellite(Gnss_Satellite sat) = 0;
     virtual void set_channel(unsigned int channel) = 0;
     virtual void set_threshold(float threshold) = 0;
     virtual void set_doppler_max(unsigned int doppler_max) = 0;

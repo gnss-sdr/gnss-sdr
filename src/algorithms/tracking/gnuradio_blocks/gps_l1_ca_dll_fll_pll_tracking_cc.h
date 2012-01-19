@@ -38,15 +38,18 @@
 #define	GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H
 
 #include <fstream>
-#include <gnuradio/gr_block.h>
-#include <gnuradio/gr_msg_queue.h>
-//#include <gnuradio/gr_sync_decimator.h>
-#include "gps_sdr_signal_processing.h"
-#include "tracking_FLL_PLL_filter.h"
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
+#include <gnuradio/gr_block.h>
+#include <gnuradio/gr_msg_queue.h>
+//#include <gnuradio/gr_sync_decimator.h>
 #include "concurrent_queue.h"
+#include "gps_sdr_signal_processing.h"
+#include "gnss_satellite.h"
+#include "tracking_FLL_PLL_filter.h"
+
+
 //#include "GPS_L1_CA.h"
 
 class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc;
@@ -54,7 +57,7 @@ typedef boost::shared_ptr<Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc>
 gps_l1_ca_dll_fll_pll_tracking_cc_sptr;
 
 gps_l1_ca_dll_fll_pll_tracking_cc_sptr
-gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
+gps_l1_ca_dll_fll_pll_make_tracking_cc(Gnss_Satellite satellite,
         long if_freq,
         long fs_in,
         unsigned int vector_length,
@@ -78,7 +81,7 @@ public:
 
     ~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc();
 
-    void set_satellite(unsigned int satellite);
+    void set_satellite(Gnss_Satellite satellite);
     void set_channel(unsigned int channel);
     void set_acq_code_phase(float code_phase);
     void set_acq_doppler(float doppler);
@@ -109,7 +112,7 @@ public:
 private:
 
     friend gps_l1_ca_dll_fll_pll_tracking_cc_sptr
-    gps_l1_ca_dll_fll_pll_make_tracking_cc(unsigned int satellite,
+    gps_l1_ca_dll_fll_pll_make_tracking_cc(Gnss_Satellite satellite,
             long if_freq,
             long fs_in, unsigned
             int vector_length,
@@ -122,7 +125,7 @@ private:
             float dll_bw_hz,
             float early_late_space_chips);
 
-    Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(unsigned int satellite,
+    Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(Gnss_Satellite satellite,
             long if_freq,
             long fs_in, unsigned
             int vector_length,
@@ -142,7 +145,7 @@ private:
     concurrent_queue<int> *d_channel_internal_queue;
     unsigned int d_vector_length;
     bool d_dump;
-    unsigned int d_satellite;
+    Gnss_Satellite d_satellite;
     unsigned int d_channel;
     int d_last_seg;
     long d_if_freq;

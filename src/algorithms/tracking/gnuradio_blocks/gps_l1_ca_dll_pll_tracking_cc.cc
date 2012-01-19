@@ -63,7 +63,7 @@
 using google::LogMessage;
 
 gps_l1_ca_dll_pll_tracking_cc_sptr
-gps_l1_ca_dll_pll_make_tracking_cc(unsigned int satellite, long if_freq, long fs_in, unsigned
+gps_l1_ca_dll_pll_make_tracking_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
 			int vector_length, gr_msg_queue_sptr queue, bool dump, std::string dump_filename,
 			float pll_bw_hz, float dll_bw_hz, float early_late_space_chips)
 {
@@ -81,7 +81,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::forecast (int noutput_items,
 
 
 
-Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(unsigned int satellite, long if_freq, long fs_in, unsigned
+Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
         int vector_length, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, float pll_bw_hz, float dll_bw_hz, float early_late_space_chips) :
         gr_block ("Gps_L1_Ca_Dll_Pll_Tracking_cc", gr_make_io_signature (1, 1, sizeof(gr_complex)),
                 gr_make_io_signature(5, 5, sizeof(double)))
@@ -92,7 +92,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(unsigned int satell
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
-    d_satellite = satellite;
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_if_freq = if_freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
@@ -197,7 +197,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_code_loop_filter.initialize(d_acq_code_phase_samples); //initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    code_gen_conplex(&d_ca_code[1], d_satellite, 0);
+    code_gen_conplex(&d_ca_code[1], d_satellite.get_PRN(), 0);
     d_ca_code[0] = d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS];
     d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 1] = d_ca_code[1];
 
@@ -211,7 +211,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_code_phase_samples = d_acq_code_phase_samples;
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite ID* " << this->d_satellite << std::endl;
+    std::cout << "Tracking start on channel " << d_channel << " for satellite " << this->d_satellite << std::endl;
     DLOG(INFO) << "Start tracking for satellite " << this->d_satellite << " received" << std::endl;
 
     // enable tracking
@@ -606,9 +606,9 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_acq_doppler(float doppler)
 
 
 
-void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_satellite(unsigned int satellite)
+void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_satellite(Gnss_Satellite satellite)
 {
-	d_satellite = satellite;
+	d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
 	LOG_AT_LEVEL(INFO) << "Tracking Satellite set to " << d_satellite;
 }
 

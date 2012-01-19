@@ -81,7 +81,7 @@ public:
     /*!
      * \brief Set satellite ID
      */
-    void set_satellite(unsigned int satellite);
+    void set_satellite(Gnss_Satellite satellite);
 
     /*!
      * \brief Set tracking channel unique ID
@@ -116,7 +116,7 @@ private:
     gps_l1_ca_dll_pll_tracking_cc_sptr tracking_;
     size_t item_size_;
 
-    unsigned int satellite_;
+    Gnss_Satellite satellite_;
     unsigned int channel_;
 
     std::string role_;

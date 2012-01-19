@@ -43,6 +43,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
+#include "gnss_satellite.h"
 
 class gps_l1_ca_gps_sdr_acquisition_cc;
 typedef boost::shared_ptr<gps_l1_ca_gps_sdr_acquisition_cc>
@@ -72,7 +73,7 @@ private:
     long d_fs_in;
     long d_freq;
     int d_samples_per_ms;
-    unsigned int d_satellite;
+    Gnss_Satellite d_satellite;
     float d_threshold;
     std::string d_satellite_str;
     unsigned int d_doppler_max;
@@ -133,7 +134,7 @@ public:
         return d_acq_sample_stamp;
     }
 
-    void set_satellite(unsigned int satellite);
+    void set_satellite(Gnss_Satellite satellite);
     void set_active(bool active)
     {
         d_active = active;

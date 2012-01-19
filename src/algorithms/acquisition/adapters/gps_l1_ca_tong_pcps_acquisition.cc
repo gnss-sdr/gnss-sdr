@@ -63,7 +63,7 @@ GpsL1CaTongPcpsAcquisition::GpsL1CaTongPcpsAcquisition(
 
     std::cout << "item type " << item_type_ << std::endl;
 
-    satellite_ = 0;
+    satellite_ = Gnss_Satellite();
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration->property(role + ".ifreq", 0);
     dump_ = configuration->property(role + ".dump", false);
@@ -98,9 +98,9 @@ GpsL1CaTongPcpsAcquisition::~GpsL1CaTongPcpsAcquisition()
 {
 }
 
-void GpsL1CaTongPcpsAcquisition::set_satellite(unsigned int satellite)
+void GpsL1CaTongPcpsAcquisition::set_satellite(Gnss_Satellite satellite)
 {
-    satellite_ = satellite;
+    satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
 
     if (item_type_.compare("gr_complex") == 0)
     {

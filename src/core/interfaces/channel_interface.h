@@ -53,7 +53,7 @@ class ChannelInterface: public GNSSBlockInterface
 
 public:
 
-    virtual Gnss_Satellite satellite() const = 0;
+    virtual Gnss_Satellite get_satellite() const = 0;
     virtual void start_acquisition() = 0;
     virtual void set_satellite(Gnss_Satellite) = 0;
     virtual void start() = 0;

@@ -42,6 +42,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
+#include "gnss_satellite.h"
 
 class gps_l1_ca_tong_pcps_acquisition_cc;
 
@@ -74,7 +75,7 @@ private:
     long d_doppler;
     int d_samples_per_ms;
     unsigned int d_doppler_resolution;
-    unsigned int d_satellite;
+    Gnss_Satellite d_satellite;
     std::string d_satellite_str;
     unsigned int d_doppler_max;
     unsigned int d_doppler_step;
@@ -138,7 +139,7 @@ public:
         return d_acq_sample_stamp;
     }
 
-    void set_satellite(unsigned int satellite);
+    void set_satellite(Gnss_Satellite satellite);
 
     void set_active(bool active)
     {

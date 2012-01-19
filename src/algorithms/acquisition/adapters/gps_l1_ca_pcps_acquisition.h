@@ -69,7 +69,7 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
-    void set_satellite(unsigned int satellite);
+    void set_satellite(Gnss_Satellite satellite);
     void set_channel(unsigned int channel);
     void set_threshold(float threshold);
     void set_doppler_max(unsigned int doppler_max);
@@ -92,7 +92,8 @@ private:
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
-    unsigned int satellite_;
+    Gnss_Satellite gnss_satellite_;
+    //unsigned int satellite_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;

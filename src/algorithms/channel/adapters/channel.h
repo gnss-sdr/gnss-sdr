@@ -78,7 +78,7 @@ public:
 
     size_t item_size(){ return 0; }
 
-    Gnss_Satellite satellite() const { return gnss_satellite_; }
+    Gnss_Satellite get_satellite() const { return gnss_satellite_; }
 
     AcquisitionInterface* acquisition(){ return acq_; }
 

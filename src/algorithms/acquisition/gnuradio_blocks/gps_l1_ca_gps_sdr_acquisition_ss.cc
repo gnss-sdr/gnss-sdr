@@ -77,7 +77,7 @@ gps_l1_ca_gps_sdr_acquisition_ss::gps_l1_ca_gps_sdr_acquisition_ss(
     d_samples_per_ms = samples_per_ms;
     d_doppler_resolution = 4;
     d_freq = freq;
-    d_satellite = 0;
+    d_satellite = Gnss_Satellite();
     d_doppler_max = 0;
     d_sampled_ms = sampled_ms;
     d_fft_size = d_sampled_ms * d_samples_per_ms;
@@ -140,9 +140,9 @@ gps_l1_ca_gps_sdr_acquisition_ss::~gps_l1_ca_gps_sdr_acquisition_ss()
     }
 }
 
-void gps_l1_ca_gps_sdr_acquisition_ss::set_satellite(unsigned int satellite)
+void gps_l1_ca_gps_sdr_acquisition_ss::set_satellite(Gnss_Satellite satellite)
 {
-    d_satellite = satellite;
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_prn_code_phase = 0;
     d_doppler_freq_shift = 0;
     d_mag = 0;
@@ -223,7 +223,7 @@ int gps_l1_ca_gps_sdr_acquisition_ss::general_work(int noutput_items,
                         d_fft_size, 10);
                 #else
                 sse_cmulsc(&d_baseband_signal_shift[(j * (d_fft_size + 201))
-                        + 100 + i], d_fft_codes[d_satellite], buffer,
+                        + 100 + i], d_fft_codes[d_satellite.get_PRN()], buffer,
                         d_fft_size, 10);        
                 #endif
 		        d_piFFT->doiFFT(buffer, true);

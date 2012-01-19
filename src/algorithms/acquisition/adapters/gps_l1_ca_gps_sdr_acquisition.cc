@@ -62,7 +62,7 @@ GpsL1CaGpsSdrAcquisition::GpsL1CaGpsSdrAcquisition(
             default_item_type);
     //vector_length_ = configuration->property(role + ".vector_length", 2048);
 
-    satellite_ = 0;
+    gnss_satellite_ = Gnss_Satellite();
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration->property(role + ".ifreq", 0);
     dump_ = configuration->property(role + ".dump", false);
@@ -113,17 +113,17 @@ GpsL1CaGpsSdrAcquisition::~GpsL1CaGpsSdrAcquisition()
 {}
 
 // Set satellite
-void GpsL1CaGpsSdrAcquisition::set_satellite(unsigned int satellite)
+void GpsL1CaGpsSdrAcquisition::set_satellite(Gnss_Satellite satellite)
 {
-    satellite_ = satellite;
+    gnss_satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
 
     if (item_type_.compare("gr_complex") == 0)
     {
-        acquisition_cc_->set_satellite(satellite_);
+        acquisition_cc_->set_satellite(gnss_satellite_);
     }
     else
     {
-        acquisition_ss_->set_satellite(satellite_);
+        acquisition_ss_->set_satellite(gnss_satellite_);
     }
 }
 

@@ -333,9 +333,9 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     case 0:
 
         LOG_AT_LEVEL(INFO) << "Channel " << who
-        << " ACQ FAILED satellite " << channel(who)->satellite();
+        << " ACQ FAILED satellite " << channel(who)->get_satellite();
         available_GPS_satellites_IDs_->push_back(
-                channel(who)->satellite());
+                channel(who)->get_satellite());
         channel(who)->set_satellite(
                 available_GPS_satellites_IDs_->front());
         available_GPS_satellites_IDs_->pop_front();
@@ -464,14 +464,8 @@ void GNSSFlowgraph::set_satellites_list()
             available_gps_prn_iter++)
         {
             sv = Gnss_Satellite(std::string("GPS"), *available_gps_prn_iter);
-            std::cout << *available_gps_prn_iter << std::endl;
             available_GPS_satellites_IDs_->push_back(sv);
         }
-
-   // for (unsigned int id = 1; id < 33; id++)
-   //     {
-       //     available_GPS_satellites_IDs_->push_back(id);
-   //     }
 
     std::list<Gnss_Satellite>::iterator it =
             available_GPS_satellites_IDs_->begin();

@@ -77,7 +77,7 @@ gps_l1_ca_gps_sdr_acquisition_cc::gps_l1_ca_gps_sdr_acquisition_cc(
 
     d_doppler_max = 0;
 
-    d_satellite = 0;
+    d_satellite = Gnss_Satellite();
 
     d_fft_size = d_sampled_ms * d_samples_per_ms;
 
@@ -139,14 +139,14 @@ gps_l1_ca_gps_sdr_acquisition_cc::~gps_l1_ca_gps_sdr_acquisition_cc()
     }
 }
 
-void gps_l1_ca_gps_sdr_acquisition_cc::set_satellite(unsigned int satellite)
+void gps_l1_ca_gps_sdr_acquisition_cc::set_satellite(Gnss_Satellite satellite)
 {
-    d_satellite = satellite;
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_prn_code_phase = 0;
     d_doppler_freq_phase = 0;
     d_mag = 0;
     // Now the GPS codes are generated on the fly using a custom version of the GPS code generator
-    code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite, d_fs_in, 0);
+    code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite.get_PRN(), d_fs_in, 0);
     d_fft_if->execute(); // We need the FFT of GPS C/A code
     memcpy(d_fft_codes, d_fft_if->get_outbuf(), sizeof(gr_complex)
             * d_samples_per_ms);
@@ -292,7 +292,7 @@ void gps_l1_ca_gps_sdr_acquisition_cc::calculate_magnitudes(
     d_ifft->execute(); // inverse FFT of the result = convolution in time
 
     x86_gr_complex_mag(d_ifft->get_outbuf(), d_fft_size); // d_ifft->get_outbuf()=|abs(Â·)|^2
-    x86_float_max((float*)d_ifft->get_outbuf(), &indext, &magt, d_fft_size); // find max of |abs(á)|^2 -> index and magt
+    x86_float_max((float*)d_ifft->get_outbuf(), &indext, &magt, d_fft_size); // find max of |abs(ï¿½)|^2 -> index and magt
 
     if (magt > d_mag)
     { // if the magnitude is > threshold

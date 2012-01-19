@@ -77,7 +77,7 @@ gps_l1_ca_tong_pcps_acquisition_cc::gps_l1_ca_tong_pcps_acquisition_cc(
 
     d_doppler_max = doppler_max;
 
-    d_satellite = 0;
+    d_satellite = Gnss_Satellite();
 
     d_samples = d_sampled_ms * d_samples_per_ms;
 
@@ -135,9 +135,9 @@ gps_l1_ca_tong_pcps_acquisition_cc::~gps_l1_ca_tong_pcps_acquisition_cc()
         }
 }
 
-void gps_l1_ca_tong_pcps_acquisition_cc::set_satellite(unsigned int satellite)
+void gps_l1_ca_tong_pcps_acquisition_cc::set_satellite(Gnss_Satellite satellite)
 {
-    d_satellite = satellite;
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_mag = 0.0;
@@ -145,7 +145,7 @@ void gps_l1_ca_tong_pcps_acquisition_cc::set_satellite(unsigned int satellite)
 
     // The GPS codes are generated on the fly using a custom version of the GPS code generator
     //! \TODO In-memory codes instead of generated on the fly
-    code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite, d_fs_in, 0);
+    code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite.get_PRN(), d_fs_in, 0);
 
     d_fft_if->execute(); // We need the FFT of GPS C/A code
     //Conjugate the local code

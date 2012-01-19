@@ -171,7 +171,7 @@ gr_basic_block_sptr Channel::get_right_block()
 void Channel::set_satellite(Gnss_Satellite satellite)
 {
     gnss_satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    acq_->set_satellite(satellite.get_PRN());
+    acq_->set_satellite(gnss_satellite_);
     trk_->set_satellite(satellite.get_PRN());
     nav_->set_satellite(satellite.get_PRN());
 }

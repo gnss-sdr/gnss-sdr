@@ -42,7 +42,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
-
+#include "gnss_satellite.h"
 
 class FFT;
 
@@ -71,7 +71,7 @@ private:
     long d_fs_in;
     long d_freq;
     int d_samples_per_ms;
-    unsigned int d_satellite;
+    Gnss_Satellite d_satellite;
     float d_threshold;
     unsigned int d_doppler_max;
     unsigned int d_doppler_resolution;
@@ -122,7 +122,7 @@ public:
         return d_acq_sample_stamp;
     }
 
-    void set_satellite(unsigned int satellite);
+    void set_satellite(Gnss_Satellite satellite);
     void set_active(bool active)
     {
         d_active = active;

@@ -69,7 +69,7 @@ gps_l1_ca_pcps_acquisition_cc::gps_l1_ca_pcps_acquisition_cc(
     d_samples_per_ms = samples_per_ms;
     d_sampled_ms = sampled_ms;
     d_doppler_max = doppler_max;
-    d_satellite = 0;
+    d_satellite = Gnss_Satellite();
     d_fft_size = d_sampled_ms * d_samples_per_ms;
     d_doppler_freq = 0.0;
     d_code_phase = 0;
@@ -116,16 +116,16 @@ gps_l1_ca_pcps_acquisition_cc::~gps_l1_ca_pcps_acquisition_cc()
 
 
 
-void gps_l1_ca_pcps_acquisition_cc::set_satellite(unsigned int satellite)
+void gps_l1_ca_pcps_acquisition_cc::set_satellite(Gnss_Satellite satellite)
 {
-    d_satellite = satellite;
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_mag = 0.0;
     d_input_power = 0.0;
 
     // Now the GPS codes are generated on the fly using a custom version of the GPS code generator
-    code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite, d_fs_in, 0);
+    code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite.get_PRN(), d_fs_in, 0);
     d_fft_if->execute(); // We need the FFT of GPS C/A code
     //Conjugate the local code
     //TODO Optimize it ! try conj()
@@ -266,7 +266,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
                             std::cout << ".\n";
                             d_dump_file.open(filename.str().c_str(), std::ios::out
                                     | std::ios::binary);
-                            d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(á)|^2 in this Doppler bin?
+                            d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(ï¿½)|^2 in this Doppler bin?
                             d_dump_file.close();
                         }
 

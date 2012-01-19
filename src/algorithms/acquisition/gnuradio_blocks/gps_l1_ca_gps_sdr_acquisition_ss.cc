@@ -39,9 +39,7 @@
   #include "gps_sdr_simd.h"
 #endif
 #include <gnuradio/gr_io_signature.h>
-
 #include <sstream>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -219,7 +217,7 @@ int gps_l1_ca_gps_sdr_acquisition_ss::general_work(int noutput_items,
 
                 #ifdef NO_SIMD
                 x86_cmulsc(&d_baseband_signal_shift[(j * (d_fft_size + 201))
-                        + 100 + i], d_fft_codes[d_satellite], buffer,
+                        + 100 + i], d_fft_codes[d_satellite.get_PRN()], buffer,
                         d_fft_size, 10);
                 #else
                 sse_cmulsc(&d_baseband_signal_shift[(j * (d_fft_size + 201))

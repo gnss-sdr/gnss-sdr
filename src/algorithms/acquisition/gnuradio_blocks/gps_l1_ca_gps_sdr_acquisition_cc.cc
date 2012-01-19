@@ -292,7 +292,7 @@ void gps_l1_ca_gps_sdr_acquisition_cc::calculate_magnitudes(
     d_ifft->execute(); // inverse FFT of the result = convolution in time
 
     x86_gr_complex_mag(d_ifft->get_outbuf(), d_fft_size); // d_ifft->get_outbuf()=|abs(·)|^2
-    x86_float_max((float*)d_ifft->get_outbuf(), &indext, &magt, d_fft_size); // find max of |abs(·)|^2 -> index and magt
+    x86_float_max((float*)d_ifft->get_outbuf(), &indext, &magt, d_fft_size); // find max of |abs(�)|^2 -> index and magt
 
     if (magt > d_mag)
     { // if the magnitude is > threshold
@@ -306,7 +306,7 @@ void gps_l1_ca_gps_sdr_acquisition_cc::calculate_magnitudes(
         memcpy(d_best_magnitudes, d_ifft->get_outbuf(), sizeof(float)
                 * d_fft_size);
 
-        // Remove the maximum and its neighbours to calculate the mean
+        // Remove the maximum and its neighbors to calculate the mean
         ((float*)d_ifft->get_outbuf())[indext] = 0.0;
         if (indext != 0)
         {

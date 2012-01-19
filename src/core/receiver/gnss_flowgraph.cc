@@ -38,10 +38,12 @@
 #include <boost/lexical_cast.hpp>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include <set>
 #include "configuration_interface.h"
 #include "gnss_block_interface.h"
 #include "channel_interface.h"
 #include "gnss_block_factory.h"
+
 
 using google::LogMessage;
 
@@ -54,7 +56,7 @@ GNSSFlowgraph::GNSSFlowgraph(ConfigurationInterface *configuration,
     blocks_ = new std::vector<GNSSBlockInterface*>();
     block_factory_ = new GNSSBlockFactory();
     queue_ = queue;
-    available_GPS_satellites_IDs_ = new std::list<unsigned int>();
+    available_GPS_satellites_IDs_ = new std::list<Gnss_Satellite>();
 
     init();
 }
@@ -449,26 +451,43 @@ void GNSSFlowgraph::set_satellites_list()
      * \TODO Describe GNSS satellites more nicely, with RINEX notation
      * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf (page 5)
      */
-    for (unsigned int id = 1; id < 33; id++)
+    std::set<unsigned int> available_gps_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                                            11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                                            21, 22, 23    , 25, 26, 27, 28, 29, 30,
+                                            31, 32};
+
+
+    std::set<unsigned int>::iterator available_gps_prn_iter;
+
+    for (available_gps_prn_iter = available_gps_prn.begin();
+            available_gps_prn_iter != available_gps_prn.end();
+            available_gps_prn_iter++)
         {
-            available_GPS_satellites_IDs_->push_back(id);
+            sv = Gnss_Satellite(std::string("GPS"), *available_gps_prn_iter);
+            std::cout << *available_gps_prn_iter << std::endl;
+            available_GPS_satellites_IDs_->push_back(sv);
         }
 
-    std::list<unsigned int>::iterator it =
+   // for (unsigned int id = 1; id < 33; id++)
+   //     {
+       //     available_GPS_satellites_IDs_->push_back(id);
+   //     }
+
+    std::list<Gnss_Satellite>::iterator it =
             available_GPS_satellites_IDs_->begin();
 
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            unsigned int sat = configuration_->property("Acquisition"
-                    + boost::lexical_cast<std::string>(i) + ".satellite", 0);
-            if ((sat == 0) || (sat==*it)) // 0 = not PRN in configuration file
+            unsigned int sat = configuration_->property("Acquisition" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
+            if ((sat == 0) || (sat == it->get_PRN())) // 0 = not PRN in configuration file
                 {
                     it++;
                 }
             else
                 {
-                    available_GPS_satellites_IDs_->remove(sat);
-                    available_GPS_satellites_IDs_->insert(it, sat);
+                    sv = Gnss_Satellite(std::string("GPS"), it->get_PRN());
+                    available_GPS_satellites_IDs_->remove(sv);
+                    available_GPS_satellites_IDs_->insert(it, sv);
                 }
         }
 

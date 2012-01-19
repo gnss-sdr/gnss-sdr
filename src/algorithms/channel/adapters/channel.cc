@@ -86,6 +86,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     connected_ = false;
     message_ = 0;
+    gnss_satellite_ = Gnss_Satellite();
 }
 
 
@@ -96,6 +97,7 @@ Channel::~Channel()
     delete trk_;
     delete nav_;
     delete pass_through_;
+    //delete gnss_satellite_;
 }
 
 
@@ -166,12 +168,12 @@ gr_basic_block_sptr Channel::get_right_block()
 
 
 
-void Channel::set_satellite(unsigned int satellite)
+void Channel::set_satellite(Gnss_Satellite satellite)
 {
-    satellite_ = satellite;
-    acq_->set_satellite(satellite);
-    trk_->set_satellite(satellite);
-    nav_->set_satellite(satellite);
+    gnss_satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    acq_->set_satellite(satellite.get_PRN());
+    trk_->set_satellite(satellite.get_PRN());
+    nav_->set_satellite(satellite.get_PRN());
 }
 
 
@@ -236,14 +238,14 @@ void Channel::process_channel_messages()
     case 1:
 
         LOG_AT_LEVEL(INFO) << "Channel " << channel_
-        << " ACQ SUCCESS satellite " << satellite_;
+        << " ACQ SUCCESS satellite " << gnss_satellite_;
         channel_fsm_.Event_gps_valid_acquisition();
         break;
 
     case 2:
 
         LOG_AT_LEVEL(INFO) << "Channel " << channel_
-        << " ACQ FAILED satellite " << satellite_;
+        << " ACQ FAILED satellite " << gnss_satellite_;
         if (repeat_ == true)
             {
                 channel_fsm_.Event_gps_failed_acquisition_repeat();
@@ -256,7 +258,7 @@ void Channel::process_channel_messages()
 
     case 3:
         LOG_AT_LEVEL(INFO) << "Channel " << channel_
-        << " TRACKING FAILED satellite " << satellite_
+        << " TRACKING FAILED satellite " << gnss_satellite_
         << ", reacquisition.";
         channel_fsm_.Event_gps_failed_tracking();
         break;

@@ -42,6 +42,7 @@
 #include "control_message_factory.h"
 #include "concurrent_queue.h"
 
+
 class ConfigurationInterface;
 class AcquisitionInterface;
 class TrackingInterface;
@@ -77,7 +78,7 @@ public:
 
     size_t item_size(){ return 0; }
 
-    unsigned int satellite(){ return satellite_; }
+    Gnss_Satellite satellite() const { return gnss_satellite_; }
 
     AcquisitionInterface* acquisition(){ return acq_; }
 
@@ -86,7 +87,7 @@ public:
     TelemetryDecoderInterface* telemetry(){ return nav_; }
 
     void start_acquisition();
-    void set_satellite(unsigned int satellite);
+    void set_satellite(Gnss_Satellite satellite);
     void start();
 
     /*!
@@ -106,7 +107,7 @@ private:
     std::string implementation_;
 
     unsigned int channel_;
-    unsigned int satellite_;
+    Gnss_Satellite gnss_satellite_;
     bool connected_;
     bool stop_;
     int message_;

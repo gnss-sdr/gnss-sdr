@@ -41,6 +41,7 @@
 #include <gnuradio/gr_top_block.h>
 #include <gnuradio/gr_msg_queue.h>
 #include "GPS_L1_CA.h"
+#include "gnss_satellite.h"
 
 class GNSSBlockInterface;
 class ChannelInterface;
@@ -133,8 +134,10 @@ private:
     gr_top_block_sptr top_block_;
     gr_msg_queue_sptr queue_;
 
-    std::list<unsigned int>* available_GPS_satellites_IDs_;
+    std::list<Gnss_Satellite>* available_GPS_satellites_IDs_;
     std::queue<unsigned int>* available_Galileo_satellites_IDs_;
+
+    Gnss_Satellite sv;
 };
 
 #endif /*GNSS_SDR_GNSS_FLOWGRAPH_H_*/

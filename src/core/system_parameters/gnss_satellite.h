@@ -34,6 +34,7 @@
 
 #include <string>
 #include <set>
+#include <iostream>
 
 /*
  * \brief This class represents a GNSS satellite.
@@ -47,18 +48,21 @@ public:
     Gnss_Satellite();                    //!< Default Constructor.
     Gnss_Satellite(std::string system_, unsigned int PRN_); //!< Concrete GNSS satellite Constructor.
     ~Gnss_Satellite();                   //!< Default Destructor.
-    unsigned int get_PRN();              //!< Gets satellite's PRN
-    std::string get_system();            //!< Gets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
-    std::string get_block();             //!< Gets the satellite block. If GPS, returns {"IIA", "IIR", "IIR-M", "IIF"}
-
+    unsigned int get_PRN() const;              //!< Gets satellite's PRN
+    std::string get_system() const;            //!< Gets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
+    std::string get_block() const;             //!< Gets the satellite block. If GPS, returns {"IIA", "IIR", "IIR-M", "IIF"}
+    friend bool operator== (const Gnss_Satellite &, const Gnss_Satellite &);  // operator== for comparison
+    friend std::ostream& operator<<(std::ostream &, const Gnss_Satellite &); // operator<< for pretty printing
 private:
     unsigned int PRN;
     std::string system;
     std::string block;
+    signed int rf_link;
     void set_system(std::string system);  // Sets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}. Returns 1 if success.
     void set_PRN(unsigned int PRN);       // Sets satellite's PRN
     void set_block(std::string system_, unsigned int PRN_ );
     std::set<std::string> system_set;     // = {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"};
     void reset();
+
 };
 #endif

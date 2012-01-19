@@ -27,6 +27,7 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #include "gnss_satellite.h"
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -65,10 +66,31 @@ void Gnss_Satellite::reset()
     PRN = 0;
     system = std::string("");
     block = std::string("");
+    rf_link = 0;
 }
 
 
 
+std::ostream& operator<<(std::ostream &out, const Gnss_Satellite &sat) // output
+{
+    //std::string psystem = sat::get_system()
+    out << sat.get_system() << " PRN " << sat.get_PRN() << " (Block " << sat.get_block() << ")";
+    return out;
+}
+
+
+bool operator== (const Gnss_Satellite &sat1, const Gnss_Satellite &sat2)
+{
+    bool equal = false;
+    if (sat1.get_system().compare(sat2.get_system()) == 0)
+        {
+            if (sat1.get_PRN() == (sat2.get_PRN()))
+                {
+                    equal = true;
+                }
+        }
+    return equal;
+}
 
 
 void Gnss_Satellite::set_system(std::string system_)
@@ -158,7 +180,7 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
 
 
 
-unsigned int Gnss_Satellite::get_PRN()
+unsigned int Gnss_Satellite::get_PRN() const
 {
     // Get satellite's PRN
     unsigned int PRN_;
@@ -171,7 +193,7 @@ unsigned int Gnss_Satellite::get_PRN()
 
 
 
-std::string Gnss_Satellite::get_system()
+std::string Gnss_Satellite::get_system() const
 {
     // Get the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
     std::string system_;
@@ -183,7 +205,7 @@ std::string Gnss_Satellite::get_system()
 
 
 
-std::string Gnss_Satellite::get_block()
+std::string Gnss_Satellite::get_block() const
 {
     // Get the satellite block
     std::string block_;
@@ -312,78 +334,103 @@ void Gnss_Satellite::set_block(std::string system_, unsigned int PRN_ )
             switch ( PRN_ )
             {
             // info from http://www.sdcm.ru/smglo/grupglo?version=eng&site=extern
+            // See also http://www.glonass-center.ru/en/GLONASS/
 
             case 1 :
                 block = std::string("1");   //Plane 1
+                rf_link = 1;
                 break;
             case 2 :
                 block = std::string("-4");  //Plane 1
+                rf_link = -4;
                 break;
             case 3 :
                 block = std::string("5");   //Plane 1
+                rf_link = 5;
                 break;
             case 4 :
                 block = std::string("6");   //Plane 1
+                rf_link = 6;
                 break;
             case 5 :
                 block = std::string("1");   //Plane 1
+                rf_link = 1;
                 break;
             case 6 :
                 block = std::string("-4");  //Plane 1
+                rf_link = -4;
                 break;
             case 7 :
                 block = std::string("5");   //Plane 1
+                rf_link = 5;
                 break;
             case 8 :
                 block = std::string("6");   //Plane 1
+                rf_link = 6;
                 break;
             case 9 :
                 block = std::string("-2");  //Plane 2
+                rf_link = -2;
                 break;
             case 10 :
                 block = std::string("-7");  //Plane 2
+                rf_link = -7;
                 break;
             case 11 :
                 block = std::string("0");   //Plane 2
+                rf_link = 0;
                 break;
             case 12 :
                 block = std::string("-1");  //Plane 2
+                rf_link = -1;
                 break;
             case 13 :
                 block = std::string("-2");  //Plane 2
+                rf_link = -2;
                 break;
             case 14 :
                 block = std::string("-7");  //Plane 2
+                rf_link = -7;
                 break;
             case 15 :
                 block = std::string("0");   //Plane 2
+                rf_link = 0;
                 break;
             case 16 :
                 block = std::string("-1");  //Plane 2
+                rf_link = -1;
                 break;
             case 17 :
                 block = std::string("4");   //Plane 3
+                rf_link = 4;
                 break;
             case 18 :
                 block = std::string("-3");  //Plane 3
+                rf_link = -3;
                 break;
             case 19 :
                 block = std::string("3");   //Plane 3
+                rf_link = 3;
                 break;
             case 20 :
                 block = std::string("2");   //Plane 3
+                rf_link = 2;
                 break;
             case 21 :
                 block = std::string("4");   //Plane 3
+                rf_link = 4;
                 break;
             case 22 :
                 block = std::string("-3");  //Plane 3
+                rf_link = -3;
                 break;
             case 23 :
                 block = std::string("3");   //Plane 3
+                rf_link = 3;
                 break;
             case 24 :
                 block = std::string("2");   //Plane 3
+                rf_link = 2;
                 break;
             default :
                 block = std::string("Unknown");
@@ -416,8 +463,10 @@ void Gnss_Satellite::set_block(std::string system_, unsigned int PRN_ )
             switch ( PRN_ )
             {
             case 11 :
-                block = std::string("IOV"); // Launched from French Guiana at 10:30 GMT on October 21, 2011
+                block = std::string("IOV"); //  PFM, the ProtoFlight Model (GSAT0101), launched from French Guiana at 10:30 GMT on October 21, 2011
                 break;
+            case 12 :
+                block =std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, launched the same day
             default:
                 block = std::string("Unknown");
             }

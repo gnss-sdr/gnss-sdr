@@ -69,7 +69,7 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
-    void set_satellite(int satellite){telemetry_decoder_->set_satellite(satellite);};
+    void set_satellite(Gnss_Satellite satellite);
     void set_channel(int channel){telemetry_decoder_->set_channel(channel);};
 
     void reset()
@@ -85,7 +85,7 @@ private:
 
     gps_l1_ca_telemetry_decoder_cc_sptr telemetry_decoder_;
 
-    int satellite_;
+    Gnss_Satellite satellite_;
     int channel_;
     unsigned int vector_length_;
     std::string item_type_;

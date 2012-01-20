@@ -118,8 +118,8 @@ void GpsL1CaDllPllTracking::start_tracking()
 void GpsL1CaDllPllTracking::set_satellite(Gnss_Satellite satellite)
 {
     satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    tracking_->set_satellite(satellite);
-    DLOG(INFO) << "satellite set to " << satellite_;
+    tracking_->set_satellite(satellite_);
+    DLOG(INFO) << "DLL - PLL Tracking block now tracks satellite " << satellite_;
 }
 
 /*

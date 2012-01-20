@@ -40,6 +40,7 @@
 #include <gnuradio/gr_block.h>
 #include <gnuradio/gr_msg_queue.h>
 //#include <gnuradio/gr_sync_block.h>
+#include "gnss_satellite.h"
 
 
 
@@ -48,7 +49,7 @@ class gps_l1_ca_telemetry_decoder_cc;
 typedef boost::shared_ptr<gps_l1_ca_telemetry_decoder_cc> gps_l1_ca_telemetry_decoder_cc_sptr;
 
 gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(unsigned int satellite, long if_freq, long fs_in, unsigned
+gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
     int vector_length, gr_msg_queue_sptr queue, bool dump);
 
 /*!
@@ -61,8 +62,8 @@ public:
 
   ~gps_l1_ca_telemetry_decoder_cc();
 
-  void set_satellite(int satellite);  //!< Set satellite PRN
-  void set_channel(int channel);      //!< Set receiver's channel
+  void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
+  void set_channel(int channel);                 //!< Set receiver's channel
 
   /*!
    * \brief Set the navigation queue
@@ -78,10 +79,10 @@ public:
 private:
 
   friend gps_l1_ca_telemetry_decoder_cc_sptr
-  gps_l1_ca_make_telemetry_decoder_cc(unsigned int satellite, long if_freq, long fs_in,unsigned
+  gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
       int vector_length, gr_msg_queue_sptr queue, bool dump);
 
-  gps_l1_ca_telemetry_decoder_cc(unsigned int satellite, long if_freq, long fs_in,unsigned
+  gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
       int vector_length, gr_msg_queue_sptr queue, bool dump);
 
   bool gps_word_parityCheck(unsigned int gpsword);
@@ -120,7 +121,7 @@ private:
   gr_msg_queue_sptr d_queue;
   unsigned int d_vector_length;
   bool d_dump;
-  int d_satellite;
+  Gnss_Satellite d_satellite;
   int d_channel;
 
   //std::deque<double> d_prn_start_sample_history;

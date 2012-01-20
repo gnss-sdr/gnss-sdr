@@ -92,6 +92,24 @@ bool operator== (const Gnss_Satellite &sat1, const Gnss_Satellite &sat2)
     return equal;
 }
 
+/*
+Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite &rhs) {
+
+    // Only do assignment if RHS is a different object from this.
+    if (this != &rhs) {
+            // Deallocate, allocate new space, copy values...
+            const std::string system_ = rhs.get_system();
+            const unsigned int PRN_ = rhs.get_PRN();
+            const std::string block_ = rhs.get_block();
+           // const signed int rf_link_ = 0;
+            this->set_system(system_);
+            this->set_PRN(PRN_);
+            this->set_block(system_, PRN_);
+            //this.rf_link = rf_link_;
+    }
+    return *this;
+}*/
+
 
 void Gnss_Satellite::set_system(std::string system_)
 {
@@ -104,7 +122,7 @@ void Gnss_Satellite::set_system(std::string system_)
         }
     else
         {
-            LOG_AT_LEVEL(ERROR) << "System " << system_ << " is not defined {GPS, GLONASS, SBAS, Galileo, Compass}";
+            DLOG(INFO) << "System " << system_ << " is not defined {GPS, GLONASS, SBAS, Galileo, Compass}. Initialization?";
             system =  std::string("");
         }
 }
@@ -117,14 +135,14 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
     // Set satellite's PRN
     if (system.compare("") == 0)
         {
-            LOG_AT_LEVEL(ERROR) << "Trying to define PRN while system is not defined";
+            DLOG(INFO) << "Trying to define PRN while system is not defined";
             PRN = 0;
         }
     if (system.compare("GPS") == 0)
         {
             if (PRN_ < 1 or PRN > 32)
                 {
-                    LOG_AT_LEVEL(ERROR) << "This PRN is not defined";
+                    DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
                 }
             else
@@ -136,7 +154,7 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
            {
                if (PRN_ < 1 or PRN > 24)
                    {
-                       LOG_AT_LEVEL(ERROR) << "This PRN is not defined";
+                       DLOG(INFO) << "This PRN is not defined";
                        PRN = 0;
                    }
                else
@@ -153,7 +171,7 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
             else if (PRN_ == 126){ PRN = PRN_; }   // EGNOS IOR-W  currently used by Industry to perform various tests on the system.
             else
                 {
-                    LOG_AT_LEVEL(ERROR) << "This PRN is not defined";
+                    DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
                 }
         }
@@ -165,13 +183,13 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
                     }
                 else
                     {
-                        LOG_AT_LEVEL(ERROR) << "This PRN is not defined";
+                        DLOG(INFO) << "This PRN is not defined";
                         PRN = 0;
                     }
             }
     else
         {
-            LOG_AT_LEVEL(ERROR) << "System " << system << " is not defined";
+            DLOG(INFO) << "System " << system << " is not defined";
             PRN = 0;
         }
 }

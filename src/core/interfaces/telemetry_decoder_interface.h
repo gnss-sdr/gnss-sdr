@@ -38,6 +38,7 @@
 #define GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H_
 
 #include "gnss_block_interface.h"
+#include "gnss_satellite.h"
 
 /*!
  * \brief This abstract class represents an interface to a navigation GNSS block.
@@ -53,7 +54,7 @@ class TelemetryDecoderInterface : public GNSSBlockInterface
 public:
 
     virtual void reset() = 0;
-    virtual void set_satellite(int satellite) = 0;
+    virtual void set_satellite(Gnss_Satellite sat) = 0;
     virtual void set_channel(int channel) = 0;
 };
 

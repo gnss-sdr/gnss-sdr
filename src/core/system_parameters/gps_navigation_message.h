@@ -152,7 +152,7 @@ public:
     // satellite identification info
 
     int i_channel_ID;
-    int i_satellite_PRN;
+    unsigned int i_satellite_PRN;
 
     // time synchro
     double d_subframe1_timestamp_ms; //[ms]

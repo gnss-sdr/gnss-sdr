@@ -347,7 +347,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         break;
     }
 
-    DLOG(INFO) << "available channels "
+    DLOG(INFO) << "Number of available satellites: "
             << available_GPS_satellites_IDs_->size();
 }
 
@@ -355,15 +355,13 @@ void GNSSFlowgraph::set_configuration(ConfigurationInterface* configuration)
 {
     if (running_)
         {
-            LOG_AT_LEVEL(WARNING)
-                                << "Unable to update configuration while flowgraph running";
+            LOG_AT_LEVEL(WARNING) << "Unable to update configuration while flowgraph running";
             return;
         }
 
     if (connected_)
         {
-            LOG_AT_LEVEL(WARNING)
-                                << "Unable to update configuration while flowgraph connected";
+            LOG_AT_LEVEL(WARNING) << "Unable to update configuration while flowgraph connected";
         }
 
     configuration_ = configuration;

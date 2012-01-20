@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,11 +30,6 @@
  * -------------------------------------------------------------------------
  */
 
-/*!
- * \brief High optimized vector correlator class
- *
- */
-
 #include <iostream>
 #include <gnuradio/gr_block.h>
 #include "correlator.h"
@@ -52,6 +47,8 @@ unsigned long correlator::next_power_2(unsigned long v)
 }
 
 
+
+
 void correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out)
 {
     gr_complex bb_signal_sample(0,0);
@@ -62,7 +59,7 @@ void correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const
     *P_out=0;
     *L_out=0;
     // perform Early, Prompt and Late correlation
-    for(int i=0; i<signal_length_samples; i++)
+    for(int i=0; i<signal_length_samples; ++i)
         {
             //Perform the carrier wipe-off
             bb_signal_sample = input[i] * carrier[i];
@@ -74,96 +71,119 @@ void correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const
 }
 
 
+
+
 void correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out)
 {
     gr_complex* bb_signal;
     gr_complex* input_aligned;
     //gr_complex* carrier_aligned;
 
-   // signal_length_samples=next_power_2(signal_length_samples);
+    // signal_length_samples=next_power_2(signal_length_samples);
     //std::cout<<"length="<<signal_length_samples<<std::endl;
 
     //long int new_length=next_power_2(signal_length_samples);
 
-    posix_memalign((void**)&bb_signal, 16, signal_length_samples*sizeof(gr_complex));
-    posix_memalign((void**)&input_aligned, 16, signal_length_samples*sizeof(gr_complex));
+    posix_memalign((void**)&bb_signal, 16, signal_length_samples * sizeof(gr_complex));
+    posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex));
     //posix_memalign((void**)&carrier_aligned, 16, new_length*sizeof(gr_complex));
 
     memcpy(input_aligned,input,signal_length_samples*sizeof(gr_complex));
     //memcpy(carrier_aligned,carrier,signal_length_samples*sizeof(gr_complex));
 
-	volk_32fc_x2_multiply_32fc_a_manual(bb_signal, input_aligned, carrier, signal_length_samples,  volk_32fc_x2_multiply_32fc_a_best_arch.c_str());
-	volk_32fc_x2_dot_prod_32fc_a_manual(E_out, bb_signal, E_code, signal_length_samples*sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
-	volk_32fc_x2_dot_prod_32fc_a_manual(P_out, bb_signal, P_code, signal_length_samples*sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
-	volk_32fc_x2_dot_prod_32fc_a_manual(L_out, bb_signal, L_code, signal_length_samples*sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+    volk_32fc_x2_multiply_32fc_a_manual(bb_signal, input_aligned, carrier, signal_length_samples,  volk_32fc_x2_multiply_32fc_a_best_arch.c_str());
+    volk_32fc_x2_dot_prod_32fc_a_manual(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+    volk_32fc_x2_dot_prod_32fc_a_manual(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+    volk_32fc_x2_dot_prod_32fc_a_manual(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
 
-	free(bb_signal);
-	free(input_aligned);
-	//free(carrier_aligned);
+    free(bb_signal);
+    free(input_aligned);
+    //free(carrier_aligned);
 }
+
+
+
 
 void correlator::cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a()
 {
-	//
-		struct volk_func_desc desc=volk_32fc_x2_dot_prod_32fc_a_get_func_desc();
-		std::vector<std::string> arch_list;
+    //
+    struct volk_func_desc desc=volk_32fc_x2_dot_prod_32fc_a_get_func_desc();
+    std::vector<std::string> arch_list;
 
-	    for(int i = 0; i < desc.n_archs; i++) {
-	        //if(!(archs[i+1] & volk_get_lvarch())) continue; //this arch isn't available on this pc
-	    	arch_list.push_back(std::string(desc.indices[i]));
-	    }
+    for(int i = 0; i < desc.n_archs; ++i)
+        {
+            //if(!(archs[i+1] & volk_get_lvarch())) continue; //this arch isn't available on this pc
+            arch_list.push_back(std::string(desc.indices[i]));
+        }
 
 
-	    //first let's get a list of available architectures for the test
-	    if(arch_list.size() < 2) {
-	        std::cout << "no architectures to test" << std::endl;
-	        this->volk_32fc_x2_dot_prod_32fc_a_best_arch="generic";
-	    }else{
-	    	std::cout << "Detected architectures in this machine for volk_32fc_x2_dot_prod_32fc_a:" << std::endl;
-	    	for (unsigned int i=0;i<arch_list.size();i++)
-	    	{
-	    		std::cout<<"Arch "<<i<<":"<<arch_list.at(i)<< std::endl;
-	    	}
-	    	// TODO: Make a test to find the best architecture
-		    this->volk_32fc_x2_dot_prod_32fc_a_best_arch=arch_list.at(arch_list.size()-1);
-	    }
+    //first let's get a list of available architectures for the test
+    if(arch_list.size() < 2)
+        {
+            std::cout << "no architectures to test" << std::endl;
+            this->volk_32fc_x2_dot_prod_32fc_a_best_arch = "generic";
+        }
+    else
+        {
+            std::cout << "Detected architectures in this machine for volk_32fc_x2_dot_prod_32fc_a:" << std::endl;
+            for (unsigned int i=0; i<arch_list.size(); ++i)
+                {
+                    std::cout << "Arch " << i << ":" << arch_list.at(i) << std::endl;
+                }
+            // TODO: Make a test to find the best architecture
+            this->volk_32fc_x2_dot_prod_32fc_a_best_arch = arch_list.at(arch_list.size() - 1);
+        }
 }
+
+
+
+
+
 
 void correlator::cpu_arch_test_volk_32fc_x2_multiply_32fc_a()
 {
-	//
-		struct volk_func_desc desc=volk_32fc_x2_multiply_32fc_a_get_func_desc();
-		std::vector<std::string> arch_list;
+    //
+    struct volk_func_desc desc = volk_32fc_x2_multiply_32fc_a_get_func_desc();
+    std::vector<std::string> arch_list;
 
-	    for(int i = 0; i < desc.n_archs; i++) {
-	        //if(!(archs[i+1] & volk_get_lvarch())) continue; //this arch isn't available on this pc
-	    	arch_list.push_back(std::string(desc.indices[i]));
-	    }
+    for(int i = 0; i < desc.n_archs; ++i)
+        {
+            //if(!(archs[i+1] & volk_get_lvarch())) continue; //this arch isn't available on this pc
+            arch_list.push_back(std::string(desc.indices[i]));
+        }
 
-	    this->volk_32fc_x2_multiply_32fc_a_best_arch="generic";
-	    //first let's get a list of available architectures for the test
-	    if(arch_list.size() < 2) {
-	        std::cout << "no architectures to test" << std::endl;
-	    }else{
-	    	std::cout << "Detected architectures in this machine for volk_32fc_x2_multiply_32fc_a:" << std::endl;
-	    	for (unsigned int i=0;i<arch_list.size();i++)
-	    	{
-	    		std::cout<<"Arch "<<i<<":"<<arch_list.at(i)<< std::endl;
-	    		if (arch_list.at(i).compare("sse3")==1)
-	    		{
-	    	    	// TODO: Make a test to find the best architecture
-	    		    this->volk_32fc_x2_multiply_32fc_a_best_arch="sse3";
-	    		}
-	    	}
-
-	    }
+    this->volk_32fc_x2_multiply_32fc_a_best_arch = "generic";
+    //first let's get a list of available architectures for the test
+    if(arch_list.size() < 2)
+        {
+            std::cout << "no architectures to test" << std::endl;
+        }
+    else
+        {
+            std::cout << "Detected architectures in this machine for volk_32fc_x2_multiply_32fc_a:" << std::endl;
+            for (unsigned int i=0; i < arch_list.size(); ++i)
+                {
+                    std::cout << "Arch " << i << ":" << arch_list.at(i) << std::endl;
+                    if (arch_list.at(i).compare("sse3") == 1)
+                        {
+                            // TODO: Make a test to find the best architecture
+                            this->volk_32fc_x2_multiply_32fc_a_best_arch = "sse3";
+                        }
+                }
+        }
 }
+
+
+
 
 correlator::correlator ()
 {
-	cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a();
-	cpu_arch_test_volk_32fc_x2_multiply_32fc_a();
+    cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a();
+    cpu_arch_test_volk_32fc_x2_multiply_32fc_a();
 }
+
+
+
 
 
 correlator::~correlator ()

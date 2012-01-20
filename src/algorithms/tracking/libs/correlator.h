@@ -1,13 +1,14 @@
 /*!
  * \file correlator.h
  * \brief High optimized vector correlator class
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \author Javier Arribas, 2012. jarribas(at)cttc.es
  *
- * Class that implements a high optimized vector correlator class.
+ * Class that implements a high optimized vector correlator class
+ * using the volk library
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,29 +31,30 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef CORRELATOR_H_
-#define CORRELATOR_H_
+#ifndef GNSS_SDR_CORRELATOR_H_
+#define GNSS_SDR_CORRELATOR_H_
+
+#include <volk/volk.h>
+#include <gnuradio/gr_block.h>
+
+
 /*!
  * \brief High optimized vector correlator class
  *
  */
-
-#include <volk/volk.h>
-#include <gnuradio/gr_block.h>
 class correlator
 {
+public:
+    void Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
+    void Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
+    correlator();
+    ~correlator();
 private:
-	std::string volk_32fc_x2_multiply_32fc_a_best_arch;
-	std::string volk_32fc_x2_dot_prod_32fc_a_best_arch;
-
-	unsigned long next_power_2(unsigned long v);
-	void cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a();
-	void cpu_arch_test_volk_32fc_x2_multiply_32fc_a();
-
-	public:
-	void Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
-	void Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
-	correlator();
-	~correlator();
+    std::string volk_32fc_x2_multiply_32fc_a_best_arch;
+    std::string volk_32fc_x2_dot_prod_32fc_a_best_arch;
+    unsigned long next_power_2(unsigned long v);
+    void cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a();
+    void cpu_arch_test_volk_32fc_x2_multiply_32fc_a();
 };
 #endif
+

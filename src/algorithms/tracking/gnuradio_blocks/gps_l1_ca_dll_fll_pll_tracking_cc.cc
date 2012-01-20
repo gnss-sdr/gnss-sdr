@@ -189,7 +189,7 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::start_tracking()
     d_FLL_wait = 1;
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    code_gen_conplex(&d_ca_code[1], d_satellite.get_PRN(), 0);
+    code_gen_conplex(&d_ca_code[1], this->d_satellite.get_PRN(), 0);
 
     d_ca_code[0] = d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS];
     d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 1] = d_ca_code[1];
@@ -496,8 +496,8 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     if (floor(d_sample_counter/d_fs_in) != d_last_seg)
                         {
                             d_last_seg = floor(d_sample_counter/d_fs_in);
-                            std::cout << "Current input signal time=" << d_last_seg << " [s]" << std::endl;
-                            std::cout << "Tracking CH "<< d_channel << " CN0=" << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                            std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
+                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << this->d_satellite << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
                             //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
                             //if (d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
                         }
@@ -507,7 +507,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     if (floor(d_sample_counter/d_fs_in) != d_last_seg)
                         {
                             d_last_seg = floor(d_sample_counter/d_fs_in);
-                            std::cout << "Tracking CH " << d_channel << " CN0=" << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << this->d_satellite << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
                             //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
                         }
                 }

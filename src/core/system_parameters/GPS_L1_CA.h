@@ -33,6 +33,7 @@
 #define GNSS_SDR_GPS_L1_CA_H_
 
 #include <complex>
+#include <gnss_satellite.h>
 
 // Physical constants
 const double GPS_C_m_s        = 299792458.0;      //!< The speed of light, [m/s]
@@ -120,7 +121,7 @@ typedef struct gnss_pseudorange
 {
   double pseudorange_m;
   double timestamp_ms;
-  int SV_ID;
+  unsigned int SV_ID;
   bool valid;
 } gnss_pseudorange;
 

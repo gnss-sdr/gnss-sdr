@@ -286,7 +286,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
             // Compute UTC time and print PVT solution
             boost::posix_time::time_duration t = boost::posix_time::seconds(utc + 604800*(double)GPS_week);
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-            std::cout << "Position at " << boost::posix_time::to_simple_string(p_time) <<" is Lat = " << d_latitude_d << " [deg] Long = " << d_longitude_d << " [deg] Height= " << d_height_m << " [m]" << std::endl;
+            std::cout << "Position at " << boost::posix_time::to_simple_string(p_time)
+            << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+            << " [deg], Height= " << d_height_m << " [m]" << std::endl;
             // ######## LOG FILE #########
             if(d_flag_dump_enabled == true)
                 {

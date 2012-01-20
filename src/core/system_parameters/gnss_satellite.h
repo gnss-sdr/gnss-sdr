@@ -53,12 +53,13 @@ public:
     std::string get_block() const;             //!< Gets the satellite block. If GPS, returns {"IIA", "IIR", "IIR-M", "IIF"}
     friend bool operator== (const Gnss_Satellite &, const Gnss_Satellite &);  // operator== for comparison
     friend std::ostream& operator<<(std::ostream &, const Gnss_Satellite &); // operator<< for pretty printing
+    //Gnss_Satellite& operator=(const Gnss_Satellite &);
 private:
     unsigned int PRN;
     std::string system;
     std::string block;
     signed int rf_link;
-    void set_system(std::string system);  // Sets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}. Returns 1 if success.
+    void set_system(std::string system);  // Sets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}.
     void set_PRN(unsigned int PRN);       // Sets satellite's PRN
     void set_block(std::string system_, unsigned int PRN_ );
     std::set<std::string> system_set;     // = {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"};

@@ -50,7 +50,7 @@ using google::LogMessage;
  * \todo name and move the magic numbers to GPS_L1_CA.h
  */
 gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(unsigned int satellite, long if_freq, long fs_in, unsigned
+gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
         int vector_length, gr_msg_queue_sptr queue, bool dump)
 {
 
@@ -70,7 +70,7 @@ void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int 
 
 
 
-gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(unsigned int satellite, long if_freq, long fs_in, unsigned
+gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
         int vector_length, gr_msg_queue_sptr queue, bool dump) :
         gr_block ("gps_navigation_cc", gr_make_io_signature (5, 5, sizeof(double)),
                 gr_make_io_signature(1, 1, sizeof(gnss_synchro)))
@@ -78,7 +78,8 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(unsigned int sate
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
-    d_satellite = satellite;
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    DLOG(INFO) << "TELEMETRY PROCESSING: satellite " << d_satellite;
     d_vector_length = vector_length;
     d_samples_per_bit = ( GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS ) / GPS_CA_TELEMETRY_RATE_BITS_SECOND;
     d_fs_in = fs_in;
@@ -170,6 +171,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     gnss_synchro **out = (gnss_synchro **) &output_items[0];
     d_sample_counter++; //count for the processed samples
 
+    DLOG(INFO) << "Sample counter: " << d_sample_counter;
+
     const double **in = (const double **)  &input_items[0]; //Get the input samples pointer
     // ########### Output the tracking data to navigation and PVT ##########
     // Output channel 0: Prompt correlator output Q
@@ -219,7 +222,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 {
                     d_GPS_FSM.Event_gps_word_preamble();
                     d_preamble_index = d_sample_counter;//record the preamble sample stamp
-                    std::cout << "Preamble detection for SAT " << d_satellite << std::endl;
+                    std::cout << "Preamble detection for SAT " << this->d_satellite << std::endl;
                     d_symbol_accumulator = 0; //sync the symbol to bits integrator
                     d_symbol_accumulator_counter = 0;
                     d_frame_bit_index = 8;
@@ -239,7 +242,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
-                                    std::cout <<" Frame sync SAT " << d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]" << std::endl;
+                                    std::cout <<" Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]" << std::endl;
                                 }
                         }
                 }
@@ -320,26 +323,27 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 
     // output the frame
     consume_each(1); //one by one
+    DLOG(INFO) << "TELEMETRY PROCESSED for satellite " << this->d_satellite;
 
-
-    //! \todo This has to be documented and included in the header!!!!
+    //! \todo This has to be documented!!!!
     gps_synchro.valid_word = (d_flag_frame_sync == true and d_flag_parity == true);
     gps_synchro.flag_preamble = d_flag_preamble;
     gps_synchro.preamble_delay_ms = d_preamble_time_seconds*1000.0;
     gps_synchro.prn_delay_ms = (in[2][0] - d_preamble_duration_seconds)*1000.0;
     gps_synchro.preamble_code_phase_ms = d_preamble_code_phase_seconds*1000.0;
     gps_synchro.preamble_code_phase_correction_ms = (in[4][0] - d_preamble_code_phase_seconds)*1000.0;
-    gps_synchro.satellite_PRN = d_satellite;
+    gps_synchro.satellite_PRN = this->d_satellite.get_PRN();
     gps_synchro.channel_ID = d_channel;
     *out[0] = gps_synchro;
     return 1;
 }
 
 
-void gps_l1_ca_telemetry_decoder_cc::set_satellite(int satellite)
+void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
-    d_satellite = satellite;
-    d_GPS_FSM.i_satellite_PRN = satellite;
+    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    LOG_AT_LEVEL(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
+    d_GPS_FSM.i_satellite_PRN = d_satellite.get_PRN();
     LOG_AT_LEVEL(INFO) << "Navigation Satellite set to " << d_satellite;
 }
 

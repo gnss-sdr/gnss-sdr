@@ -214,7 +214,7 @@ GpsL1CaSubframeFsm::GpsL1CaSubframeFsm()
 void GpsL1CaSubframeFsm::gps_word_to_subframe(int position)
 {
   // insert the word in the correct position of the subframe
-  std::memcpy(&d_subframe[position*GPS_WORD_LENGTH],&d_GPS_frame_4bytes,sizeof(char)*GPS_WORD_LENGTH);
+  std::memcpy(&d_subframe[position*GPS_WORD_LENGTH], &d_GPS_frame_4bytes, sizeof(char)*GPS_WORD_LENGTH);
 }
 
 
@@ -225,19 +225,20 @@ void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
 {
     int subframe_ID;
     // NEW GPS SUBFRAME HAS ARRIVED!
-    subframe_ID=d_nav.subframe_decoder(this->d_subframe); //decode the subframe
-    std::cout<<"NAVIGATION FSM: received subframe "<<subframe_ID<<" for satellite "<<d_nav.i_satellite_PRN<<std::endl;
-    d_nav.i_satellite_PRN=i_satellite_PRN;
-    d_nav.i_channel_ID=i_channel_ID;
-    if (subframe_ID==1)
+    subframe_ID = d_nav.subframe_decoder(this->d_subframe); //decode the subframe
+    //std::cout<<"Detected PRN: " << d_nav.i_satellite_PRN << "  for satellite " <<
+    std::cout << "NAVIGATION FSM: received subframe " << subframe_ID << " for satellite " << Gnss_Satellite(std::string("GPS"), i_satellite_PRN) << std::endl;
+    d_nav.i_satellite_PRN = i_satellite_PRN;
+    d_nav.i_channel_ID = i_channel_ID;
+    if (subframe_ID == 1)
         {
-            d_nav.d_subframe1_timestamp_ms=this->d_preamble_time_ms;
+            d_nav.d_subframe1_timestamp_ms = this->d_preamble_time_ms;
             //std::cout<<"NAVIGATION FSM: set subframe 1 preamble timestamp for satellite "<<d_nav.i_satellite_PRN<<std::endl;
         }
     /*!
      * \todo change satellite validation to subframe 5 because it will have a complete set of ephemeris parameters
      */
-    if (subframe_ID==3)
+    if (subframe_ID == 3)
         { // if the subframe is the 5th, then
             if (d_nav.satellite_validation()) // if all the satellite ephemeris parameters are good, then
                 {

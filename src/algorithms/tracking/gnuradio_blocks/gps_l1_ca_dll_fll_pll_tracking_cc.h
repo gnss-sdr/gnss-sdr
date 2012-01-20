@@ -51,6 +51,7 @@
 
 
 //#include "GPS_L1_CA.h"
+#include "correlator.h"
 
 class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc;
 typedef boost::shared_ptr<Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc>
@@ -181,6 +182,9 @@ private:
     // acquisition
     float d_acq_code_phase_samples;
     float d_acq_carrier_doppler_hz;
+
+    // correlator
+    correlator d_correlator;
 
     // FLL + PLL filter
     float d_FLL_discriminator_hz; // This is a class variable because FLL needs to have memory

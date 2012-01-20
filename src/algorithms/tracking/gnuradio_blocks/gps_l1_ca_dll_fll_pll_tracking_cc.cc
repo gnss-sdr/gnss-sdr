@@ -51,6 +51,8 @@
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
+
+
 /*!
  * \todo Include in definition header file
  */
@@ -106,12 +108,18 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(Gnss_Satell
 
     // Get space for a vector with the C/A code replica sampled 1x/chip
     d_ca_code = new gr_complex[(int)GPS_L1_CA_CODE_LENGTH_CHIPS+2];
+
     // Get space for the resampled early / prompt / late local replicas
-    d_early_code = new gr_complex[d_vector_length*2];
-    d_prompt_code = new gr_complex[d_vector_length*2];
-    d_late_code = new gr_complex[d_vector_length*2];
+    //d_early_code = new gr_complex[d_vector_length*2];
+    //d_prompt_code = new gr_complex[d_vector_length*2];
+    //d_late_code = new gr_complex[d_vector_length*2];
     // space for carrier wipeoff LO vector
-    d_carr_sign = new gr_complex[d_vector_length*2];
+    //d_carr_sign = new gr_complex[d_vector_length*2];
+
+    posix_memalign((void**)&d_early_code, 16, d_vector_length*sizeof(gr_complex)*2);
+    posix_memalign((void**)&d_late_code, 16, d_vector_length*sizeof(gr_complex)*2);
+    posix_memalign((void**)&d_prompt_code, 16, d_vector_length*sizeof(gr_complex)*2);
+    posix_memalign((void**)&d_carr_sign,16, d_vector_length*sizeof(gr_complex)*2);
 
     // sample synchronization
     d_sample_counter = 0;
@@ -251,7 +259,7 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_carrier()
             phase += phase_step;
         }
     d_rem_carr_phase = fmod(phase, TWO_PI);
-    d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + d_rem_carr_phase;
+    d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + phase;
 }
 
 
@@ -262,10 +270,16 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc()
 {
     d_dump_file.close();
     delete[] d_ca_code;
-    delete[] d_early_code;
-    delete[] d_prompt_code;
-    delete[] d_late_code;
-    delete[] d_carr_sign;
+
+    //delete[] d_early_code;
+    //delete[] d_prompt_code;
+    //delete[] d_late_code;
+    //delete[] d_carr_sign;
+    free(d_prompt_code);
+    free(d_late_code);
+    free(d_early_code);
+    free(d_carr_sign);
+
     delete[] d_Prompt_buffer;
 }
 
@@ -345,12 +359,34 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             update_local_code();
             update_local_carrier();
 
-            gr_complex bb_signal_sample(0,0);
+
+            gr_complex* E_out;
+            gr_complex* P_out;
+            gr_complex* L_out;
+
+            posix_memalign((void**)&E_out, 16, 8);
+            posix_memalign((void**)&P_out, 16, 8);
+            posix_memalign((void**)&L_out, 16, 8);
 
             // perform Early, Prompt and Late correlation
-            /*!
-             * \todo Use SIMD-enabled correlators
-             */
+            d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
+            		in,
+            		d_carr_sign,
+            		d_early_code,
+            		d_prompt_code,
+            		d_late_code,
+            		E_out,
+            		P_out,
+            		L_out);
+
+            d_Early=E_out[0];
+            d_Prompt=P_out[0];
+            d_Late=L_out[0];
+            free(E_out);
+            free(P_out);
+            free(L_out);
+            /*
+            gr_complex bb_signal_sample(0,0);
             for(int i=0; i<d_current_prn_length_samples; i++)
                 {
                     //Perform the carrier wipe-off
@@ -360,7 +396,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     d_Prompt += bb_signal_sample * d_prompt_code[i];
                     d_Late += bb_signal_sample * d_late_code[i];
                 }
-
+*/
             /*
              * DLL, FLL, and PLL discriminators
              */

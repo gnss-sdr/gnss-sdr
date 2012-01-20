@@ -5,3 +5,4 @@ obj CN_estimators : CN_estimators.cc ;
 obj tracking_FLL_PLL_filter	: tracking_FLL_PLL_filter.cc ;
 obj tracking_2nd_PLL_filter	: tracking_2nd_PLL_filter.cc ;
 obj tracking_2nd_DLL_filter	: tracking_2nd_DLL_filter.cc ;
+obj correlator : correlator.cc ;

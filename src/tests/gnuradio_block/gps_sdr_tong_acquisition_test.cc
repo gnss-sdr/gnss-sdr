@@ -49,21 +49,21 @@ DEFINE_int32(B_value, 2, "Value of the initial K variable in Tong algorithm");
 
 int main(int argc, char** argv) {
 
-	google::InitGoogleLogging(argv[0]);
-	google::ParseCommandLineFlags(&argc, &argv, true);
+    google::InitGoogleLogging(argv[0]);
+    google::ParseCommandLineFlags(&argc, &argv, true);
 
-	gr_msg_queue_sptr queue = gr_msg_queue_sptr();
+    gr_msg_queue_sptr queue = gr_msg_queue_sptr();
 
-	int samples_per_ms = ceil(FLAGS_fs_in/1000);
-	gr_complex div = 0.001;
+    int samples_per_ms = ceil(FLAGS_fs_in/1000);
+    gr_complex div = 0.001;
 
-	LOG_AT_LEVEL(INFO) << "fs_in " << FLAGS_fs_in;
-	LOG_AT_LEVEL(INFO) << "if_freq " << FLAGS_if_freq;
-	LOG_AT_LEVEL(INFO) << "satellite " << FLAGS_satellite;
-//	LOG_AT_LEVEL(INFO) << "max_dwells " << FLAGS_max_dwells;
-	LOG_AT_LEVEL(INFO) << "threshold " << FLAGS_acquisition_threshold;
-	LOG_AT_LEVEL(INFO) << "A_value " << FLAGS_A_value;
-	LOG_AT_LEVEL(INFO) << "B_value " << FLAGS_B_value;
+    LOG_AT_LEVEL(INFO) << "fs_in " << FLAGS_fs_in;
+    LOG_AT_LEVEL(INFO) << "if_freq " << FLAGS_if_freq;
+    LOG_AT_LEVEL(INFO) << "satellite " << FLAGS_satellite;
+    //	LOG_AT_LEVEL(INFO) << "max_dwells " << FLAGS_max_dwells;
+    LOG_AT_LEVEL(INFO) << "threshold " << FLAGS_acquisition_threshold;
+    LOG_AT_LEVEL(INFO) << "A_value " << FLAGS_A_value;
+    LOG_AT_LEVEL(INFO) << "B_value " << FLAGS_B_value;
 
 
     gr_top_block_sptr top_block = gr_make_top_block("gps_sdr_tong_acquisition_test");
@@ -81,14 +81,14 @@ int main(int argc, char** argv) {
     top_block->connect(stream_to_vector, 0 , acquisition, 0);
     top_block->connect(acquisition, 0, null_sink, 0);
 
-	LOG_AT_LEVEL(INFO) << "Run";
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
-	top_block->run(); // Start threads and wait
-	gettimeofday(&tv, NULL);
-	long long int end = tv.tv_sec *1000000 + tv.tv_usec;
-	LOG_AT_LEVEL(INFO) << "Finished in " << (end - begin) << " microseconds";
-	std::cout << (end - begin) << std::endl;
-	top_block->stop();
+    LOG_AT_LEVEL(INFO) << "Run";
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    top_block->run(); // Start threads and wait
+    gettimeofday(&tv, NULL);
+    long long int end = tv.tv_sec *1000000 + tv.tv_usec;
+    LOG_AT_LEVEL(INFO) << "Finished in " << (end - begin) << " microseconds";
+    std::cout << (end - begin) << std::endl;
+    top_block->stop();
 }

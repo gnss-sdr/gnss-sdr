@@ -43,16 +43,16 @@
 
 class ConfigurationInterface;
 
-class PassThrough : public GNSSBlockInterface
+class Pass_Through : public GNSSBlockInterface
 {
 
 public:
-    PassThrough(ConfigurationInterface* configuration,
+    Pass_Through(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_stream,
             unsigned int out_stream);
 
-    virtual ~PassThrough();
+    virtual ~Pass_Through();
 
     std::string role()
     {

@@ -3,11 +3,14 @@
 
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
+#include "control_message_factory.h"
 #include <gr_complex_to_interleaved_short.h>
-#include <gr_file_source.h>
-#include <gr_file_sink.h>
+#include <gnuradio/gr_file_source.h>
+#include <gnuradio/gr_file_sink.h>
 #include <gr_top_block.h>
+#include <gnuradio/gr_io_signature.h>
+#include <gnuradio/gr_sync_block.h>
+
 
 using google::LogMessage;
 

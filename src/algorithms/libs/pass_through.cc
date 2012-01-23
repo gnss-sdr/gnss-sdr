@@ -42,7 +42,7 @@
 
 using google::LogMessage;
 
-PassThrough::PassThrough(ConfigurationInterface* configuration,	std::string role,
+Pass_Through::Pass_Through(ConfigurationInterface* configuration,	std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
         role_(role),
@@ -77,25 +77,25 @@ PassThrough::PassThrough(ConfigurationInterface* configuration,	std::string role
     DLOG(INFO) << "kludge_copy(" << kludge_copy_->unique_id() << ")";
 }
 
-PassThrough::~PassThrough()
+Pass_Through::~Pass_Through()
 {}
 
-void PassThrough::connect(gr_top_block_sptr top_block)
+void Pass_Through::connect(gr_top_block_sptr top_block)
 {
     DLOG(INFO) << "nothing to connect internally";
 }
 
-void PassThrough::disconnect(gr_top_block_sptr top_block)
+void Pass_Through::disconnect(gr_top_block_sptr top_block)
 {
     // Nothing to disconnect
 }
 
-gr_basic_block_sptr PassThrough::get_left_block()
+gr_basic_block_sptr Pass_Through::get_left_block()
 {
     return kludge_copy_;
 }
 
-gr_basic_block_sptr PassThrough::get_right_block()
+gr_basic_block_sptr Pass_Through::get_right_block()
 {
     return kludge_copy_;
 }

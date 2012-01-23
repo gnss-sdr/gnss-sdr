@@ -176,7 +176,7 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
         ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
 {
 
-    std::string default_implementation = "PassThrough";
+    std::string default_implementation = "Pass_Through";
     unsigned int channel_count =
             configuration->property("Channels.count", 12);
     std::vector<GNSSBlockInterface*>* channels = new std::vector<
@@ -242,7 +242,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 
     else if (implementation.compare("Pass_Through") == 0)
         {
-            block = new PassThrough(configuration, role, in_streams, out_streams);
+            block = new Pass_Through(configuration, role, in_streams, out_streams);
 
         }
 

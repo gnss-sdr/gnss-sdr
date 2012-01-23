@@ -13,34 +13,32 @@
  */
 
 #include <gtest/gtest.h>
-
 #include <gr_msg_queue.h>
-
 #include "control_thread.h"
 #include "in_memory_configuration.h"
 
 
-TEST(ControlThread, InstantiateRunControlMessages) {
+TEST(Control_Thread_Test, InstantiateRunControlMessages) {
 
 	InMemoryConfiguration *config = new InMemoryConfiguration();
-	config->set_property("SignalSource.implementation", "FileSignalSource");
-	config->set_property("SignalSource.filename", "./signal_samples/signal.dat");
-	config->set_property("SignalSource.item_type", "gr_complex");
-	config->set_property("SignalConditioner.implementation", "PassThrough");
-	config->set_property("SignalConditioner.item_type", "gr_complex");
-	config->set_property("Channels.count", "12");
-	config->set_property("Acquisition.implementation", "PassThrough");
-	config->set_property("Acquisition.item_type", "gr_complex");
-	config->set_property("Tracking.implementation", "PassThrough");
-	config->set_property("Tracking.item_type", "gr_complex");
-	config->set_property("Navigation.implementation", "PassThrough");
-	config->set_property("Navigation.item_type", "gr_complex");
-	config->set_property("Pseudorange.implementation", "PassThrough");
-	config->set_property("Pseudorange.item_type", "gr_complex");
-	config->set_property("PVT.implementation", "Adder");
-	config->set_property("PVT.item_type", "gr_complex");
-	config->set_property("OutputFilter.implementation", "NullSinkOutputFilter");
-	config->set_property("OutputFilter.item_type", "gr_complex");
+        config->set_property("SignalSource.implementation", "File_Signal_Source");
+        config->set_property("SignalSource.filename", "/Users/carlesfernandez/Documents/workspace/gnss-sdr/trunk/data/sc2_d16.dat");
+        config->set_property("SignalSource.item_type", "gr_complex");
+        config->set_property("SignalConditioner.implementation", "Pass_Through");
+        config->set_property("SignalConditioner.item_type", "gr_complex");
+        config->set_property("Channels.count", "12");
+        config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
+        config->set_property("Acquisition.item_type", "gr_complex");
+        config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
+        config->set_property("Tracking.item_type", "gr_complex");
+        config->set_property("Navigation.implementation", "GPS_L1_CA_Telemetry_Decoder");
+        config->set_property("Navigation.item_type", "gr_complex");
+        config->set_property("Pseudorange.implementation", "GPS_L1_CA_Observables");
+        config->set_property("Pseudorange.item_type", "gr_complex");
+        config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+        config->set_property("PVT.item_type", "gr_complex");
+        config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
+        config->set_property("OutputFilter.item_type", "gr_complex");
 
 	ControlThread *control_thread = new ControlThread(config);
 
@@ -78,26 +76,30 @@ TEST(ControlThread, InstantiateRunControlMessages) {
 	delete control_msg_factory;
 }
 
-TEST(ControlThread, InstantiateRunControlMessages2) {
+
+
+
+
+TEST(Control_Thread_Test, InstantiateRunControlMessages2) {
 
 	InMemoryConfiguration *config = new InMemoryConfiguration();
-	config->set_property("SignalSource.implementation", "FileSignalSource");
-	config->set_property("SignalSource.filename", "./signal_samples/signal.dat");
+	config->set_property("SignalSource.implementation", "File_Signal_Source");
+	config->set_property("SignalSource.filename", "/Users/carlesfernandez/Documents/workspace/gnss-sdr/trunk/data/sc2_d16.dat");
 	config->set_property("SignalSource.item_type", "gr_complex");
-	config->set_property("SignalConditioner.implementation", "PassThrough");
+	config->set_property("SignalConditioner.implementation", "Pass_Through");
 	config->set_property("SignalConditioner.item_type", "gr_complex");
 	config->set_property("Channels.count", "12");
-	config->set_property("Acquisition.implementation", "PassThrough");
+	config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
 	config->set_property("Acquisition.item_type", "gr_complex");
-	config->set_property("Tracking.implementation", "PassThrough");
+	config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
 	config->set_property("Tracking.item_type", "gr_complex");
-	config->set_property("Navigation.implementation", "PassThrough");
+	config->set_property("Navigation.implementation", "GPS_L1_CA_Telemetry_Decoder");
 	config->set_property("Navigation.item_type", "gr_complex");
-	config->set_property("Pseudorange.implementation", "PassThrough");
+	config->set_property("Pseudorange.implementation", "GPS_L1_CA_Observables");
 	config->set_property("Pseudorange.item_type", "gr_complex");
-	config->set_property("PVT.implementation", "Adder");
+	config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
 	config->set_property("PVT.item_type", "gr_complex");
-	config->set_property("OutputFilter.implementation", "NullSinkOutputFilter");
+	config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
 	config->set_property("OutputFilter.item_type", "gr_complex");
 
 	ControlThread *control_thread = new ControlThread(config);

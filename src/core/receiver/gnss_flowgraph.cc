@@ -442,10 +442,10 @@ void GNSSFlowgraph::set_satellites_list()
 {
 
     /*
-     * Sets a sequential list of satellites (1...33)
+     * Sets a sequential list of satellites (1...32)
      */
 
-    /*!
+    /*
      * \TODO Describe GNSS satellites more nicely, with RINEX notation
      * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf (page 5)
      */

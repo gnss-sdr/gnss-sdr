@@ -146,50 +146,50 @@ signed int code_gen(CPX *_dest, signed int _prn)
  */
 void code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift)
 {
-	// This function is based on the GNU software GPS for MATLAB in the Kay Borre book
-	std::complex<float> _code[1023];
-	signed int _samplesPerCode,_codeValueIndex;
-	float _ts;
-	float _tc;
-	const signed int _codeFreqBasis=1023000; //Hz
-	const signed int _codeLength=1023;
+    // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
+    std::complex<float> _code[1023];
+    signed int _samplesPerCode, _codeValueIndex;
+    float _ts;
+    float _tc;
+    const signed int _codeFreqBasis = 1023000; //Hz
+    const signed int _codeLength = 1023;
 
-	//--- Find number of samples per spreading code ----------------------------
-	_samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
+    //--- Find number of samples per spreading code ----------------------------
+    _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
 
-	//--- Find time constants --------------------------------------------------
-	_ts = 1/(float)_fs;   // Sampling period in sec
-	_tc = 1/(float)_codeFreqBasis;  // C/A chip period in sec
-	code_gen_conplex(_code,_prn,_chip_shift); //generate C/A code 1 sample per chip
-	//std::cout<<"ts="<<_ts<<std::endl;
-	//std::cout<<"tc="<<_tc<<std::endl;
-	//std::cout<<"sv="<<_prn<<std::endl;
-	for (signed int i=0;i<_samplesPerCode;i++)
-	{
-	    //=== Digitizing =======================================================
+    //--- Find time constants --------------------------------------------------
+    _ts = 1/(float)_fs;   // Sampling period in sec
+    _tc = 1/(float)_codeFreqBasis;  // C/A chip period in sec
+    code_gen_conplex(_code,_prn, _chip_shift); //generate C/A code 1 sample per chip
+    //std::cout<<"ts="<<_ts<<std::endl;
+    //std::cout<<"tc="<<_tc<<std::endl;
+    //std::cout<<"sv="<<_prn<<std::endl;
+    for (signed int i=0; i<_samplesPerCode; i++)
+        {
+            //=== Digitizing =======================================================
 
-	    //--- Make index array to read C/A code values -------------------------
-	    // The length of the index array depends on the sampling frequency -
-	    // number of samples per millisecond (because one C/A code period is one
-	    // millisecond).
+            //--- Make index array to read C/A code values -------------------------
+            // The length of the index array depends on the sampling frequency -
+            // number of samples per millisecond (because one C/A code period is one
+            // millisecond).
 
 
-	    _codeValueIndex = ceil((_ts * ((float)i+1)) / _tc)-1;
+            _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
 
-	    //--- Make the digitized version of the C/A code -----------------------
-	    // The "upsampled" code is made by selecting values form the CA code
-	    // chip array (caCode) for the time instances of each sample.
-	    if (i==_samplesPerCode-1){
-	        //--- Correct the last index (due to number rounding issues) -----------
-	    	_dest[i] = _code[_codeLength-1];
+            //--- Make the digitized version of the C/A code -----------------------
+            // The "upsampled" code is made by selecting values form the CA code
+            // chip array (caCode) for the time instances of each sample.
+            if (i == _samplesPerCode - 1)
+                {
+                    //--- Correct the last index (due to number rounding issues) -----------
+                    _dest[i] = _code[_codeLength - 1];
 
-	    }else{
-	    	_dest[i] = _code[_codeValueIndex]; //repeat the chip -> upsample
-	    }
-	    //std::cout<<_codeValueIndex;
-
-	}
-
+                }
+            else
+                {
+                    _dest[i] = _code[_codeValueIndex]; //repeat the chip -> upsample
+                }
+        }
 }
 
 

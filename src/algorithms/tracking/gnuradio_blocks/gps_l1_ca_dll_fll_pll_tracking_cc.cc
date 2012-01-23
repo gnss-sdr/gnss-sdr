@@ -107,7 +107,7 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(Gnss_Satell
     d_carrier_loop_filter.set_params(fll_bw_hz,pll_bw_hz,order);
 
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = new gr_complex[(int)GPS_L1_CA_CODE_LENGTH_CHIPS+2];
+    d_ca_code = new gr_complex[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 2];
 
     // Get space for the resampled early / prompt / late local replicas
     //d_early_code = new gr_complex[d_vector_length*2];
@@ -116,10 +116,16 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(Gnss_Satell
     // space for carrier wipeoff LO vector
     //d_carr_sign = new gr_complex[d_vector_length*2];
 
-    posix_memalign((void**)&d_early_code, 16, d_vector_length*sizeof(gr_complex)*2);
-    posix_memalign((void**)&d_late_code, 16, d_vector_length*sizeof(gr_complex)*2);
-    posix_memalign((void**)&d_prompt_code, 16, d_vector_length*sizeof(gr_complex)*2);
-    posix_memalign((void**)&d_carr_sign,16, d_vector_length*sizeof(gr_complex)*2);
+    /* If an array is partitioned for more than one thread to operate on,
+     * having the sub-array boundaries unaligned to cache lines could lead
+     * to performance degradation. Here we allocate memory
+     * (gr_comlex array of size 2*d_vector_length) aligned to cache of 16 bytes
+     */
+    // todo: do something if posix_memalign fails
+    if (posix_memalign((void**)&d_early_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
+    if (posix_memalign((void**)&d_late_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
+    if (posix_memalign((void**)&d_prompt_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
+    if (posix_memalign((void**)&d_carr_sign, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
 
     // sample synchronization
     d_sample_counter = 0;
@@ -138,7 +144,6 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(Gnss_Satell
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = 5;
-
 }
 
 
@@ -213,7 +218,9 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::start_tracking()
     d_pull_in = true;
     d_enable_tracking = true;
 
-    std::cout << "PULL-IN Doppler [Hz]= " << d_carrier_doppler_hz << " Code Phase correction [samples]=" << delay_correction_samples << " PULL-IN Code Phase [samples]= " << d_acq_code_phase_samples << std::endl;
+    std::cout << "PULL-IN Doppler [Hz]= " << d_carrier_doppler_hz
+            << " Code Phase correction [samples]=" << delay_correction_samples
+            << " PULL-IN Code Phase [samples]= " << d_acq_code_phase_samples << std::endl;
 }
 
 
@@ -271,10 +278,6 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc()
     d_dump_file.close();
     delete[] d_ca_code;
 
-    //delete[] d_early_code;
-    //delete[] d_prompt_code;
-    //delete[] d_late_code;
-    //delete[] d_carr_sign;
     free(d_prompt_code);
     free(d_late_code);
     free(d_early_code);
@@ -292,14 +295,6 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc()
 int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    //	if ((unsigned int)ninput_items[0]<(d_vector_length*2))
-    //	{
-    //		std::cout<<"End of signal detected\r\n";
-    //		const int samples_available = ninput_items[0];
-    //		consume_each(samples_available);
-    //		return 0;
-    //	}
-    // process vars
     float code_error_chips = 0;
     float correlation_time_s = 0;
     float PLL_discriminator_hz = 0;
@@ -318,26 +313,21 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             if (d_pull_in == true)
                 {
                     int samples_offset;
-
-                    // 28/11/2011 ACQ to TRK transition BUG CORRECTION
                     float acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter-d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_next_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_next_prn_length_samples);
-                    //std::cout<<"acq_trk_shif_correction="<<acq_trk_shif_correction_samples<<"\r\n";
-
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
                     d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset)/(double)d_fs_in);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
-                    //std::cout<<" samples_offset="<<samples_offset<<"\r\n";
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     return 1;
                 }
             // get the sample in and out pointers
             const gr_complex* in = (gr_complex*) input_items[0]; //block input samples pointer
-            double **out = (double **) &output_items[0]; //block output streams pointer
+            double **out = (double **) &output_items[0];         //block output streams pointer
 
             // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
             for(int i=0; i<d_current_prn_length_samples; i++)
@@ -359,14 +349,14 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             update_local_code();
             update_local_carrier();
 
-
             gr_complex* E_out;
             gr_complex* P_out;
             gr_complex* L_out;
 
-            posix_memalign((void**)&E_out, 16, 8);
-            posix_memalign((void**)&P_out, 16, 8);
-            posix_memalign((void**)&L_out, 16, 8);
+            // TODO: do something if posix_memalign fails
+            if (posix_memalign((void**)&E_out, 16, 8) == 0){};
+            if (posix_memalign((void**)&P_out, 16, 8) == 0){};
+            if (posix_memalign((void**)&L_out, 16, 8) == 0){};
 
             // perform Early, Prompt and Late correlation
             d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
@@ -385,18 +375,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             free(E_out);
             free(P_out);
             free(L_out);
-            /*
-            gr_complex bb_signal_sample(0,0);
-            for(int i=0; i<d_current_prn_length_samples; i++)
-                {
-                    //Perform the carrier wipe-off
-                    bb_signal_sample = in[i] * d_carr_sign[i];
-                    // Now get early, late, and prompt correlation values
-                    d_Early += bb_signal_sample * d_early_code[i];
-                    d_Prompt += bb_signal_sample * d_prompt_code[i];
-                    d_Late += bb_signal_sample * d_late_code[i];
-                }
-*/
+
             /*
              * DLL, FLL, and PLL discriminators
              */
@@ -418,16 +397,16 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                 }
 
             // Compute PLL error
-            PLL_discriminator_hz = pll_cloop_two_quadrant_atan(d_Prompt)/(float)TWO_PI;
+            PLL_discriminator_hz = pll_cloop_two_quadrant_atan(d_Prompt) / (float)TWO_PI;
 
-            /*!
+            /*
              * \todo Update FLL assistance algorithm!
              */
-            if (((float)d_sample_counter - (float)d_acq_sample_stamp)/(float)d_fs_in>3)
+            if ((((float)d_sample_counter - (float)d_acq_sample_stamp) / (float)d_fs_in) > 3)
                 {
                     d_FLL_discriminator_hz = 0; //disconnect the FLL after the initial lock
                 }
-            /*!
+            /*
              * DLL and FLL+PLL filter and get current carrier Doppler and code frequency
              */
             carr_nco_hz = d_carrier_loop_filter.get_carrier_error(d_FLL_discriminator_hz, PLL_discriminator_hz, correlation_time_s);
@@ -466,9 +445,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                             d_channel_internal_queue->push(tracking_message);
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
-
                         }
-                    //std::cout<<"d_carrier_lock_fail_counter"<<d_carrier_lock_fail_counter<<"\r\n";
                 }
 
             /*!

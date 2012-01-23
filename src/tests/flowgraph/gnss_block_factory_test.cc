@@ -26,10 +26,10 @@ TEST(GNSSBlockFactory, InstantiateChannels) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("Channels.count", "2");
-	configuration->set_property("Channel1.implementation", "PassThrough");
+	configuration->set_property("Channel1.implementation", "Pass_Through");
 	configuration->set_property("Channel1.item_type", "float");
 	configuration->set_property("Channel1.vector_size", "1");
-	configuration->set_property("Channel2.implementation", "PassThrough");
+	configuration->set_property("Channel2.implementation", "Pass_Through");
 	configuration->set_property("Channel2.item_type", "float");
 	configuration->set_property("Channel2.vector_size", "1");
 
@@ -84,7 +84,7 @@ TEST(GNSSBlockFactory, InstantiateWrongSignalSource) {
 TEST(GNSSBlockFactory, InstantiateSignalConditioner) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
-	configuration->set_property("SignalConditioner.implementation", "PassThrough");
+	configuration->set_property("SignalConditioner.implementation", "Pass_Through");
 
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
@@ -117,7 +117,7 @@ TEST(GNSSBlockFactory, InstantiateWrongSignalConditioner) {
 TEST(GNSSBlockFactory, InstantiatePVT) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
-	configuration->set_property("PVT.implementation", "PassThrough");
+	configuration->set_property("PVT.implementation", "Pass_Through");
 
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 

@@ -126,6 +126,10 @@ void gps_l1_ca_pcps_acquisition_cc::set_satellite(Gnss_Satellite satellite)
 
     // Now the GPS codes are generated on the fly using a custom version of the GPS code generator
     code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite.get_PRN(), d_fs_in, 0);
+
+
+
+
     d_fft_if->execute(); // We need the FFT of GPS C/A code
     //Conjugate the local code
     //TODO Optimize it ! try conj()

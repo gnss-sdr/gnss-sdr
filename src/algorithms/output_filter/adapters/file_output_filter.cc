@@ -46,7 +46,7 @@ FileOutputFilter::FileOutputFilter(ConfigurationInterface* configuration,
         out_streams_(out_streams)
 {
 
-    std::string default_filename = "./data/signal.dat";
+    std::string default_filename = "./output.dat";
     std::string default_item_type = "short";
 
     filename_ = configuration->property(role + ".filename", default_filename);

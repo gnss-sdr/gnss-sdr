@@ -64,9 +64,9 @@ void correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const
             //Perform the carrier wipe-off
             bb_signal_sample = input[i] * carrier[i];
             // Now get early, late, and prompt values for each
-            *E_out += bb_signal_sample*E_code[i];
-            *P_out += bb_signal_sample*P_code[i];
-            *L_out += bb_signal_sample*L_code[i];
+            *E_out += bb_signal_sample * E_code[i];
+            *P_out += bb_signal_sample * P_code[i];
+            *L_out += bb_signal_sample * L_code[i];
         }
 }
 
@@ -83,12 +83,12 @@ void correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr
     //std::cout<<"length="<<signal_length_samples<<std::endl;
 
     //long int new_length=next_power_2(signal_length_samples);
-
-    posix_memalign((void**)&bb_signal, 16, signal_length_samples * sizeof(gr_complex));
-    posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex));
+    //todo: do something if posix_memalign fails
+    if (posix_memalign((void**)&bb_signal, 16, signal_length_samples * sizeof(gr_complex)) == 0) {};
+    if (posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex)) == 0){};
     //posix_memalign((void**)&carrier_aligned, 16, new_length*sizeof(gr_complex));
 
-    memcpy(input_aligned,input,signal_length_samples*sizeof(gr_complex));
+    memcpy(input_aligned,input,signal_length_samples * sizeof(gr_complex));
     //memcpy(carrier_aligned,carrier,signal_length_samples*sizeof(gr_complex));
 
     volk_32fc_x2_multiply_32fc_a_manual(bb_signal, input_aligned, carrier, signal_length_samples,  volk_32fc_x2_multiply_32fc_a_best_arch.c_str());

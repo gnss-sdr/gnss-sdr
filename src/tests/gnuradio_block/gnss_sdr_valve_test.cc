@@ -33,7 +33,7 @@
 
 #include <gtest/gtest.h>
 #include <gr_top_block.h>
-#include <gr_sig_source_f.h>
+#include <gnuradio/gr_sig_source_f.h>
 #include <gr_null_sink.h>
 #include <gr_msg_queue.h>
 #include "gnss_sdr_valve.h"

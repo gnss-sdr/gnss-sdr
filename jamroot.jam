@@ -1,5 +1,15 @@
+import os ;
 
-lib gtest ;
+local GTEST_DIR = [ os.environ GTEST_DIR ] ;
+project gtest : source-location $(GTEST_DIR)/src : build-dir ../../build ; 
+
+lib gtest
+   : gtest-all.cc               # sources
+   : <include>$(GTEST_DIR)      # requirements
+     <include>$(GTEST_DIR)/include 
+     <link>static ;
+
+
 lib glog ;
 lib gflags ;
 lib gnuradio-core ;
@@ -42,6 +52,7 @@ project : requirements
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/general
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/gengen
 <include>$GNURADIO_ROOT/volk/lib
+<include>$(GTEST_DIR)/include
 <threading>multi 
 <toolset>darwin:<include>/opt/local/include ;
 

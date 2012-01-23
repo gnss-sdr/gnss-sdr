@@ -1,8 +1,5 @@
-lib gtest ;
-
-obj test_main : test_main.cc  ;
-
 project : build-dir ../../build ;
+
 exe run_tests : test_main.cc 
 ../algorithms/acquisition/adapters//gps_l1_ca_gps_sdr_acquisition
 ../algorithms/acquisition/adapters//gps_l1_ca_pcps_acquisition
@@ -59,7 +56,7 @@ exe run_tests : test_main.cc
 ../core/system_parameters//gnss_satellite
 ../..//gflags
 ../..//glog
-../..//gnuradio-core
-../..//gtest ;
+../..//gnuradio-core 
+../..//gtest : <include>$(GTEST_DIR)/include ;
 
 install ../../install : run_tests ;

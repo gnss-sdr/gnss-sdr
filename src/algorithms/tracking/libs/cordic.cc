@@ -1,3 +1,36 @@
+/*!
+ * \file cordic.cc
+ * \brief Implementation of the CORDIC (COordinate Rotation DIgital Computer) algorithm
+ * \author Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
+ *
+ * This is a modified implementation of the one found at
+ * http://www.dspguru.com/dsp/faqs/cordic
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
+
 #include <stdlib.h>
 #include <math.h>
 #include "cordic.h"
@@ -13,9 +46,8 @@ Cordic::Cordic(int max_L)
 {
     double K, dummy;
     int L;
-
-    //CORDIC_TABLE *mp_cordic_table = NULL;
-    mp_cordic_table = (CORDIC_TABLE *) calloc(max_L + 1, sizeof(CORDIC_TABLE));
+    //mp_cordic_table = (CORDIC_TABLE *) calloc(max_L + 1, sizeof(CORDIC_TABLE));
+    mp_cordic_table = (CORDIC_TABLE *) malloc((max_L + 1) * sizeof(CORDIC_TABLE));
     if (!mp_cordic_table)
         {
              /* failed to calloc table */
@@ -43,7 +75,6 @@ Cordic::Cordic(int max_L)
 Cordic::~Cordic ()
 {
     free(mp_cordic_table);
-    //mp_cordic_table = ((void *) 0); // nullptr
     m_max_L = INVALID_K;
 }
 

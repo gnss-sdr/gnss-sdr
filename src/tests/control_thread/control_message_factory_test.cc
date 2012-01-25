@@ -45,8 +45,9 @@ TEST(Control_Message_Factory_Test, GetQueueMessage)
     gr_message_sptr queue_message = factory->GetQueueMessage(0, 0);
     ControlMessage *control_message = (ControlMessage*)queue_message->msg();
 
-    EXPECT_EQ(0, control_message->who);
-    EXPECT_EQ(0, control_message->what);
+    unsigned int expected0 = 0;
+    EXPECT_EQ(expected0, control_message->who);
+    EXPECT_EQ(expected0, control_message->what);
     EXPECT_EQ(sizeof(ControlMessage), queue_message->length());
 
     delete factory;
@@ -67,9 +68,11 @@ TEST(Control_Message_Factory_Test, GetControlMessages)
     memcpy(queue_message->msg(), control_message, sizeof(ControlMessage));
     std::vector<ControlMessage*> *control_messages = factory->GetControlMessages(queue_message);
 
-    EXPECT_EQ(1, control_messages->size());
-    EXPECT_EQ(1, control_messages->at(0)->who);
-    EXPECT_EQ(4, control_messages->at(0)->what);
+    unsigned int expected1 = 1;
+    unsigned int expected4 = 4;
+    EXPECT_EQ(expected1, control_messages->size());
+    EXPECT_EQ(expected1, control_messages->at(0)->who);
+    EXPECT_EQ(expected4, control_messages->at(0)->what);
 
     delete control_message;
     delete control_messages;
@@ -93,7 +96,8 @@ TEST(Control_Message_Factory_Test, GetControlMessagesWrongSize)
     memcpy(queue_message->msg() + sizeof(ControlMessage), &another_int, sizeof(int));
     std::vector<ControlMessage*> *control_messages = factory->GetControlMessages(queue_message);
 
-    EXPECT_EQ(0, control_messages->size());
+    unsigned int expected0 = 0;
+    EXPECT_EQ(expected0, control_messages->size());
 
     delete control_message;
     delete control_messages;

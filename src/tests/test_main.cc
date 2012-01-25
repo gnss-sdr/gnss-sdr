@@ -46,12 +46,12 @@
 #include "control_thread.h"
 
 
-//#include "control_thread/control_message_factory_test.cc"
+#include "control_thread/control_message_factory_test.cc"
 //#include "control_thread/control_thread_test.cc"
 #include "configuration/file_configuration_test.cc"
 //#include "flowgraph/file_output_filter_test.cc"
 //#include "flowgraph/file_signal_source_test.cc"
-//#include "flowgraph/pass_through_test.cc"
+#include "flowgraph/pass_through_test.cc"
 //#include "flowgraph/gnss_flowgraph_test.cc"
 //#include "gnss_block/file_output_filter_test.cc"
 //#include "gnss_block/gnss_block_factory_test.cc"

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,92 +34,124 @@
 #include <sstream>
 #include <iostream>
 
-StringConverter::StringConverter() {
-}
+StringConverter::StringConverter()
+{}
 
-StringConverter::~StringConverter() {
-}
+StringConverter::~StringConverter()
+{}
 
-bool StringConverter::convert(std::string value, bool default_value) {
-
-    if(value.compare("true") == 0) {
+bool StringConverter::convert(std::string value, bool default_value)
+{
+    if(value.compare("true") == 0)
+        {
             return true;
-    } else if(value.compare("false") == 0) {
+        }
+    else if(value.compare("false") == 0)
+        {
             return false;
-    } else {
+        }
+    else
+        {
             return default_value;
-    }
+        }
 }
 
 
-long StringConverter::convert(std::string value, long default_value) {
-
+long StringConverter::convert(std::string value, long default_value)
+{
     std::stringstream stream(value);
 
     long result;
     stream >> result;
 
-    if(stream.fail()) {
+    if(stream.fail())
+        {
             return default_value;
-    } else {
+        }
+    else
+        {
             return result;
-    }
+        }
 }
 
-int StringConverter::convert(std::string value, int default_value) {
+
+int StringConverter::convert(std::string value, int default_value)
+{
 
     std::stringstream stream(value);
 
     int result;
     stream >> result;
 
-    if(stream.fail()) {
+    if(stream.fail())
+        {
             return default_value;
-    } else {
+        }
+    else
+        {
             return result;
-    }
+        }
 }
 
-unsigned int StringConverter::convert(std::string value, unsigned int default_value) {
 
+
+unsigned int StringConverter::convert(std::string value, unsigned int default_value)
+{
     std::stringstream stream(value);
 
     unsigned int result;
     stream >> result;
 
-    if(stream.fail()) {
+    if(stream.fail())
+        {
             return default_value;
-    } else {
+        }
+    else
+        {
             return result;
-    }
+        }
 }
 
-float StringConverter::convert(std::string value, float default_value) {
+
+
+
+float StringConverter::convert(std::string value, float default_value)
+{
 
     std::stringstream stream(value);
 
     float result;
     stream >> result;
 
-    if(stream.fail()) {
+    if(stream.fail())
+        {
             return default_value;
-    } else {
+        }
+    else
+        {
             return result;
-    }
+        }
 }
 
-double StringConverter::convert(std::string value, double default_value) {
+
+
+
+double StringConverter::convert(std::string value, double default_value)
+{
 
     std::stringstream stream(value);
 
     double result;
     stream >> result;
 
-    if(stream.fail()) {
+    if(stream.fail())
+        {
             return default_value;
-    } else {
+        }
+    else
+        {
             return result;
-    }
+        }
 }
 
 

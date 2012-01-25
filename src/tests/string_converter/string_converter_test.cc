@@ -37,20 +37,21 @@
 
 TEST(String_Converter_Test, StringToBool)
 {
-    StringConverter *converter = new StringConverter();
+    StringConverter* converter;
+    converter = new StringConverter();
     bool conversion_result = converter->convert("false", true);
     EXPECT_EQ(false, conversion_result);
     delete converter;
 }
 
 
-
-
 TEST(String_Converter_Test, StringToSizeT)
 {
-    StringConverter *converter = new StringConverter();
+    StringConverter* converter;
+    converter = new StringConverter();
     size_t conversion_result = converter->convert("8", 1);
-    EXPECT_EQ(8, conversion_result);
+    unsigned int expected = 8;
+    EXPECT_EQ(expected, conversion_result);
     delete converter;
 }
 
@@ -59,7 +60,8 @@ TEST(String_Converter_Test, StringToSizeT)
 
 TEST(String_Converter_Test, StringToBoolFail)
 {
-    StringConverter *converter = new StringConverter();
+    StringConverter* converter;
+    converter = new StringConverter();
     bool conversion_result = converter->convert("lse", true);
     EXPECT_EQ(true, conversion_result);
     delete converter;
@@ -70,8 +72,10 @@ TEST(String_Converter_Test, StringToBoolFail)
 
 TEST(String_Converter_Test, StringToSizeTFail)
 {
-    StringConverter *converter = new StringConverter();
+    StringConverter* converter;
+    converter = new StringConverter();
     size_t conversion_result = converter->convert("false", 1);
-    EXPECT_EQ(1, conversion_result);
+    unsigned int expected1 = 1;
+    EXPECT_EQ(expected1, conversion_result);
     delete converter;
 }

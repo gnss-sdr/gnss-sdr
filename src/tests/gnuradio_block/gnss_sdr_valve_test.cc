@@ -37,10 +37,6 @@
 #include <gr_null_sink.h>
 #include <gr_msg_queue.h>
 #include "gnss_sdr_valve.h"
-//#include <glog/log_severity.h>
-//#include <glog/logging.h>
-
-//using google::LogMessage;
 
 TEST(Valve_Test, CheckEventSentAfter100Samples)
 {
@@ -51,8 +47,8 @@ TEST(Valve_Test, CheckEventSentAfter100Samples)
     gr_sig_source_f_sptr source = gr_make_sig_source_f(100, GR_CONST_WAVE, 100, 1, 0);
     gr_block_sptr sink = gr_make_null_sink(sizeof(float));
 
-    //LOG_AT_LEVEL(INFO)  << "Queue count is " << queue->count();
-    EXPECT_EQ(0, queue->count());
+    unsigned int expected0 = 0;
+    EXPECT_EQ(expected0, queue->count());
 
     top_block->connect(source, 0, valve, 0);
     top_block->connect(valve, 0, sink, 0);
@@ -60,6 +56,6 @@ TEST(Valve_Test, CheckEventSentAfter100Samples)
     top_block->run();
     top_block->stop();
 
-    //LOG_AT_LEVEL(INFO)  << "Queue count is " << queue->count();
-    EXPECT_EQ(1, queue->count());
+    unsigned int expected1 = 1;
+    EXPECT_EQ(expected1, queue->count());
 }

@@ -76,8 +76,8 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     gettimeofday(&tv, NULL);
     long long int end2 = tv.tv_sec *1000000 + tv.tv_usec;
 
-    std::cout << "CORDIC sin =" << sin_phase1 << " computed " << niter << " times in " << (end1-begin1) << " microseconds" << std::endl;
-    std::cout << "STD    sin =" << sin_phase2 << " computed " << niter << " times in "  << (end2-begin2) << " microseconds" << std::endl;
+    std::cout << "CORDIC sin =" << sin_phase1 << ", cos =" << cos_phase1 << " computed " << niter << " times in " << (end1-begin1) << " microseconds" << std::endl;
+    std::cout << "STD    sin =" << sin_phase2 << ", cos =" << cos_phase2 << " computed " << niter << " times in "  << (end2-begin2) << " microseconds" << std::endl;
 
     EXPECT_TRUE((end2-begin2) < (end1-begin1));
 }

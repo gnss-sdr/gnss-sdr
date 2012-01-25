@@ -139,7 +139,7 @@ where /path/to/gnuradio is the root folder where the source code of GNU Radio is
 
 export GNURADIO_ROOT=/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_ports_science_gnuradio-examples/work/gnuradio-3.3.0
 
-In order to avoid defining these variables each time you enter a session, you may want to add these two lines to your $HOME/.bashrc file.
+In order to avoid defining these variables each time you enter a session, you may want to add these two lines to your $HOME/.bash_profile file.
 
 * Create a symbolic link in order to be able to use the gnuradio-core library from /usr/local/lib
 
@@ -173,6 +173,12 @@ $ unzip gtest-1.6.0.zip
 $ cd gtest-1.6.0
 $ ./configure
 $ make
+
+Please DO NOT install gtest (do not do "sudo make install"). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of #if in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of gtest its own tests; it is only required that you tell the system where the gtest folder that you downloaded resides. Just add to your $HOME/.bash_profile file the following line:
+
+export GTEST_DIR=/Users/username/gtest-1.6.0
+
+changing /Users/username/gtest-1.6.0 by the actual directory where you unziped gtest. 
 
 - Download, unzip, configure, build and install Google's gflags package, a commandline flags processing module for C++:
 

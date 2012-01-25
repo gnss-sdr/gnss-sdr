@@ -369,9 +369,9 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             		P_out,
             		L_out);
 
-            d_Early=E_out[0];
-            d_Prompt=P_out[0];
-            d_Late=L_out[0];
+            d_Early = E_out[0];
+            d_Prompt = P_out[0];
+            d_Late = L_out[0];
             free(E_out);
             free(P_out);
             free(L_out);

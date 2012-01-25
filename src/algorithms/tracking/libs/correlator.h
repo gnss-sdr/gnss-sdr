@@ -42,13 +42,13 @@
  * \brief High optimized vector correlator class
  *
  */
-class correlator
+class Correlator
 {
 public:
     void Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
     void Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
-    correlator();
-    ~correlator();
+    Correlator();
+    ~Correlator();
 private:
     std::string volk_32fc_x2_multiply_32fc_a_best_arch;
     std::string volk_32fc_x2_dot_prod_32fc_a_best_arch;

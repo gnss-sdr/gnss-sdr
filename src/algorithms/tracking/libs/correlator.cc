@@ -34,7 +34,7 @@
 #include <gnuradio/gr_block.h>
 #include "correlator.h"
 
-unsigned long correlator::next_power_2(unsigned long v)
+unsigned long Correlator::next_power_2(unsigned long v)
 {
     v--;
     v |= v >> 1;
@@ -49,7 +49,7 @@ unsigned long correlator::next_power_2(unsigned long v)
 
 
 
-void correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out)
+void Correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out)
 {
     gr_complex bb_signal_sample(0,0);
 
@@ -73,7 +73,7 @@ void correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const
 
 
 
-void correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out)
+void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out)
 {
     gr_complex* bb_signal;
     gr_complex* input_aligned;
@@ -104,7 +104,7 @@ void correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr
 
 
 
-void correlator::cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a()
+void Correlator::cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a()
 {
     //
     struct volk_func_desc desc=volk_32fc_x2_dot_prod_32fc_a_get_func_desc();
@@ -140,7 +140,7 @@ void correlator::cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a()
 
 
 
-void correlator::cpu_arch_test_volk_32fc_x2_multiply_32fc_a()
+void Correlator::cpu_arch_test_volk_32fc_x2_multiply_32fc_a()
 {
     //
     struct volk_func_desc desc = volk_32fc_x2_multiply_32fc_a_get_func_desc();
@@ -176,7 +176,7 @@ void correlator::cpu_arch_test_volk_32fc_x2_multiply_32fc_a()
 
 
 
-correlator::correlator ()
+Correlator::Correlator ()
 {
     cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a();
     cpu_arch_test_volk_32fc_x2_multiply_32fc_a();
@@ -186,5 +186,5 @@ correlator::correlator ()
 
 
 
-correlator::~correlator ()
+Correlator::~Correlator ()
 {}

@@ -53,7 +53,7 @@ public:
 
 	bool set_headers(std::string filename);
 
-	bool print_position(gps_l1_ca_ls_pvt* position,bool print_average_values);
+	bool print_position(gps_l1_ca_ls_pvt* position, bool print_average_values);
 
 	bool close_file();
 

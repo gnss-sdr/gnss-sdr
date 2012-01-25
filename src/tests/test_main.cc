@@ -46,19 +46,20 @@
 #include "control_thread.h"
 
 
-#include "control_thread/control_message_factory_test.cc"
+//#include "control_thread/control_message_factory_test.cc"
 //#include "control_thread/control_thread_test.cc"
 #include "configuration/file_configuration_test.cc"
 //#include "flowgraph/file_output_filter_test.cc"
 //#include "flowgraph/file_signal_source_test.cc"
-#include "flowgraph/pass_through_test.cc"
+//#include "flowgraph/pass_through_test.cc"
 //#include "flowgraph/gnss_flowgraph_test.cc"
 //#include "gnss_block/file_output_filter_test.cc"
+//#include "gnss_block/gnss_block_factory_test.cc"
 #include "gnuradio_block/gnss_sdr_valve_test.cc"
 #include "string_converter/string_converter_test.cc"
 #include "arithmetic/complex_arithmetic_libc.cc"
 #include "arithmetic/correlations_libc.cc"
-
+#include "arithmetic/cordic_test.cc"
 
 
 concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;

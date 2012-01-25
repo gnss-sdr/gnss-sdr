@@ -42,6 +42,7 @@ exe gnss-sdr : main.cc
 ../algorithms/tracking/libs//tracking_2nd_PLL_filter
 ../algorithms/tracking/libs//tracking_2nd_DLL_filter
 ../algorithms/tracking/libs//correlator
+../algorithms/tracking/libs//cordic
 ../core/libs//INIReader
 ../core/libs//ini
 ../core/libs//string_converter

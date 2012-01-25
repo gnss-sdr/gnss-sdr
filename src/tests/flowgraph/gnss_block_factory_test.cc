@@ -11,26 +11,23 @@
  * This class implements a Unit Test for the class GNSSBlockFactory.
  *
  */
-
-#include <gr_msg_queue.h>
-
-#include <vector>
-
 #include <gtest/gtest.h>
-
+#include <gnuradio/gr_msg_queue.h>
+#include <vector>
 #include "in_memory_configuration.h"
 #include "gnss_block_interface.h"
 #include "gnss_block_factory.h"
 
-TEST(GNSSBlockFactory, InstantiateChannels) {
+TEST(GNSSBlockFactory, InstantiateChannels)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("Channels.count", "2");
 	configuration->set_property("Channel1.implementation", "Pass_Through");
-	configuration->set_property("Channel1.item_type", "float");
+	configuration->set_property("Channel1.item_type", "gr_complex");
 	configuration->set_property("Channel1.vector_size", "1");
 	configuration->set_property("Channel2.implementation", "Pass_Through");
-	configuration->set_property("Channel2.item_type", "float");
+	configuration->set_property("Channel2.item_type", "gr_complex");
 	configuration->set_property("Channel2.vector_size", "1");
 
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
@@ -48,7 +45,8 @@ TEST(GNSSBlockFactory, InstantiateChannels) {
 	delete channels;
 }
 
-TEST(GNSSBlockFactory, InstantiateSignalSource) {
+TEST(GNSSBlockFactory, InstantiateSignalSource)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("SignalSource.implementation", "FileSignalSource");

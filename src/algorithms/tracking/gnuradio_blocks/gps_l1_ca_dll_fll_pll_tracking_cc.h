@@ -184,7 +184,7 @@ private:
     float d_acq_carrier_doppler_hz;
 
     // correlator
-    correlator d_correlator;
+    Correlator d_correlator;
 
     // FLL + PLL filter
     float d_FLL_discriminator_hz; // This is a class variable because FLL needs to have memory

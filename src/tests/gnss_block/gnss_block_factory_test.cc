@@ -13,16 +13,13 @@
  */
 
 #include <gr_msg_queue.h>
-
 #include <vector>
-
 #include <gtest/gtest.h>
-
 #include "in_memory_configuration.h"
 #include "gnss_block_interface.h"
 #include "gnss_block_factory.h"
 
-TEST(GNSSBlockFactory, InstantiateChannels) {
+TEST(GNSS_Block_Factory_Test, InstantiateChannels) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("Channels.count", "2");
@@ -48,7 +45,7 @@ TEST(GNSSBlockFactory, InstantiateChannels) {
 	delete channels;
 }
 
-TEST(GNSSBlockFactory, InstantiateSignalSource) {
+TEST(GNSS_Block_Factory_Test, InstantiateSignalSource) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("SignalSource.implementation", "File_Signal_Source");
@@ -65,7 +62,7 @@ TEST(GNSSBlockFactory, InstantiateSignalSource) {
 	delete signal_source;
 }
 
-TEST(GNSSBlockFactory, InstantiateWrongSignalSource) {
+TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalSource) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("SignalSource.implementation", "Pepito");
@@ -81,7 +78,7 @@ TEST(GNSSBlockFactory, InstantiateWrongSignalSource) {
 	delete factory;
 }
 
-TEST(GNSSBlockFactory, InstantiateSignalConditioner) {
+TEST(GNSS_Block_Factory_Test, InstantiateSignalConditioner) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("SignalConditioner.implementation", "Pass_Through");
@@ -98,7 +95,7 @@ TEST(GNSSBlockFactory, InstantiateSignalConditioner) {
 	delete signal_conditioner;
 }
 
-TEST(GNSSBlockFactory, InstantiateWrongSignalConditioner) {
+TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalConditioner) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("SignalConditioner.implementation", "Pepito");
@@ -114,7 +111,7 @@ TEST(GNSSBlockFactory, InstantiateWrongSignalConditioner) {
 	delete factory;
 }
 
-TEST(GNSSBlockFactory, InstantiatePVT) {
+TEST(GNSS_Block_Factory_Test, InstantiatePVT) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("PVT.implementation", "PassThrough");
@@ -131,7 +128,7 @@ TEST(GNSSBlockFactory, InstantiatePVT) {
 	delete pvt;
 }
 
-TEST(GNSSBlockFactory, InstantiateWrongPVT) {
+TEST(GNSS_Block_Factory_Test, InstantiateWrongPVT) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("PVT.implementation", "Pepito");
@@ -147,7 +144,7 @@ TEST(GNSSBlockFactory, InstantiateWrongPVT) {
 	delete factory;
 }
 
-TEST(GNSSBlockFactory, InstantiateOutputFilter) {
+TEST(GNSS_Block_Factory_Test, InstantiateOutputFilter) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("OutputFilter.implementation", "NullSinkOutputFilter");
@@ -164,7 +161,7 @@ TEST(GNSSBlockFactory, InstantiateOutputFilter) {
 	delete output_filter;
 }
 
-TEST(GNSSBlockFactory, InstantiateWrongOutputFilter) {
+TEST(GNSS_Block_Factory_Test, InstantiateWrongOutputFilter) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("OutputFilter.implementation", "Pepito");

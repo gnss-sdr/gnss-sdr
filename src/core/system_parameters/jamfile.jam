@@ -2,3 +2,5 @@ project : build-dir ../../../build ;
 
 obj gps_navigation_message : gps_navigation_message.cc ;
 obj gnss_satellite : gnss_satellite.cc ;
+obj gnss_signal : gnss_signal.cc ;
+obj gnss_synchro : gnss_synchro.cc ; 

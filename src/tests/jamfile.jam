@@ -55,6 +55,8 @@ exe run_tests : test_main.cc
 ../core/receiver//gnss_flowgraph
 ../core/system_parameters//gps_navigation_message
 ../core/system_parameters//gnss_satellite
+../core/system_parameters//gnss_signal
+../core/system_parameters//gnss_synchro
 ../..//gflags
 ../..//glog
 ../..//gnuradio-core 

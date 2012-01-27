@@ -41,6 +41,7 @@
 #include "gps_l1_ca_channel_fsm.h"
 #include "control_message_factory.h"
 #include "concurrent_queue.h"
+#include "gnss_signal.h"
 
 
 class ConfigurationInterface;
@@ -78,7 +79,7 @@ public:
 
     size_t item_size(){ return 0; }
 
-    Gnss_Satellite get_satellite() const { return gnss_satellite_; }
+    Gnss_Signal get_signal() const { return gnss_signal_; }
 
     AcquisitionInterface* acquisition(){ return acq_; }
 
@@ -87,7 +88,7 @@ public:
     TelemetryDecoderInterface* telemetry(){ return nav_; }
 
     void start_acquisition();
-    void set_satellite(Gnss_Satellite satellite);
+    void set_signal(Gnss_Signal gnss_signal_);
     void start();
 
     /*!
@@ -108,6 +109,7 @@ private:
 
     unsigned int channel_;
     Gnss_Satellite gnss_satellite_;
+    Gnss_Signal gnss_signal_;
     bool connected_;
     bool stop_;
     int message_;

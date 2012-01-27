@@ -87,6 +87,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     connected_ = false;
     message_ = 0;
     gnss_satellite_ = Gnss_Satellite();
+    gnss_signal_ = Gnss_Signal();
 }
 
 
@@ -168,9 +169,9 @@ gr_basic_block_sptr Channel::get_right_block()
 
 
 
-void Channel::set_satellite(Gnss_Satellite satellite)
+void Channel::set_signal(Gnss_Signal gnss_signal)
 {
-    gnss_satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+	gnss_satellite_ = gnss_signal.get_satellite();
     acq_->set_satellite(gnss_satellite_);
     trk_->set_satellite(gnss_satellite_);
     nav_->set_satellite(gnss_satellite_);

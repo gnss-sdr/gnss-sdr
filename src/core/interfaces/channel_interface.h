@@ -38,7 +38,7 @@
 #define GNSS_SDR_CHANNEL_INTERFACE_H_
 
 #include "gnss_block_interface.h"
-#include "gnss_satellite.h"
+#include "gnss_signal.h"
 
 /*!
  * \brief This abstract class represents an interface to a channel GNSS block.
@@ -53,9 +53,9 @@ class ChannelInterface: public GNSSBlockInterface
 
 public:
 
-    virtual Gnss_Satellite get_satellite() const = 0;
+    virtual Gnss_Signal get_signal() const = 0;
     virtual void start_acquisition() = 0;
-    virtual void set_satellite(Gnss_Satellite) = 0;
+    virtual void set_signal(Gnss_Signal) = 0;
     virtual void start() = 0;
     virtual void stop() = 0;
 };

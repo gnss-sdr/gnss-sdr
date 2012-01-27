@@ -71,10 +71,12 @@ gps_l1_ca_pcps_acquisition_cc::gps_l1_ca_pcps_acquisition_cc(
     d_doppler_max = doppler_max;
     d_satellite = Gnss_Satellite();
     d_fft_size = d_sampled_ms * d_samples_per_ms;
-    d_doppler_freq = 0.0;
-    d_code_phase = 0;
+    //d_doppler_freq = 0.0;
+    //d_code_phase = 0;
     d_mag = 0;
     d_input_power = 0.0;
+
+    d_gnss_synchro = new Gnss_Synchro();
 
     d_sine_if = new gr_complex[d_fft_size];
 
@@ -102,10 +104,12 @@ gps_l1_ca_pcps_acquisition_cc::gps_l1_ca_pcps_acquisition_cc(
 
 gps_l1_ca_pcps_acquisition_cc::~gps_l1_ca_pcps_acquisition_cc()
 {
+	delete d_gnss_synchro;
 	delete[] d_sine_if;
 	delete[] d_fft_codes;
 	delete d_ifft;
 	delete d_fft_if;
+
 
     if (d_dump)
     {
@@ -119,8 +123,11 @@ gps_l1_ca_pcps_acquisition_cc::~gps_l1_ca_pcps_acquisition_cc()
 void gps_l1_ca_pcps_acquisition_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    d_code_phase = 0;
-    d_doppler_freq = 0;
+    // ¿qué diferencia hay con d_satellite=satellite; ?
+    d_gnss_synchro->Acq_delay_samples=0.0;
+    d_gnss_synchro->Acq_doppler_hz=0.0;
+    //d_code_phase = 0;
+    //d_doppler_freq = 0;
     d_mag = 0.0;
     d_input_power = 0.0;
 
@@ -135,9 +142,6 @@ void gps_l1_ca_pcps_acquisition_cc::set_satellite(Gnss_Satellite satellite)
     //TODO Optimize it ! try conj()
     for (unsigned int i = 0; i < d_fft_size; i++)
     {
-        //d_fft_codes[i] = std::complex<float>(
-        //        d_fft_if->get_outbuf()[i].real(),
-        //        -d_fft_if->get_outbuf()[i].imag());
         d_fft_codes[i] = std::complex<float>(conj(d_fft_if->get_outbuf()[i]));
         d_fft_codes[i] = d_fft_codes[i] / (float)d_fft_size; //to correct the scale factor introduced by FFTW
     }
@@ -159,12 +163,6 @@ void gps_l1_ca_pcps_acquisition_cc::set_satellite(Gnss_Satellite satellite)
 }
 
 
-
-
-signed int gps_l1_ca_pcps_acquisition_cc::prn_code_phase()
-{
-    return d_code_phase;
-}
 
 int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -193,8 +191,10 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
 
             //restart acquisition variables
 
-            d_code_phase = 0;
-            d_doppler_freq = 0;
+            d_gnss_synchro->Acq_delay_samples=0.0;
+            d_gnss_synchro->Acq_doppler_hz=0.0;
+            //d_code_phase = 0;
+            //d_doppler_freq = 0;
             d_mag = 0.0;
             d_input_power = 0.0;
 
@@ -278,8 +278,10 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
                     if (d_mag < magt)
                         {
                             d_mag = magt;
-                            d_code_phase = indext;
-                            d_doppler_freq = doppler;
+                            d_gnss_synchro->Acq_delay_samples= (double)indext;
+                            d_gnss_synchro->Acq_doppler_hz= (double)doppler;
+                            //d_code_phase = indext;
+                            //d_doppler_freq = doppler;
                         }
                 }
 
@@ -299,8 +301,8 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
                     DLOG(INFO) << "sample_stamp " << d_sample_counter;
                     DLOG(INFO) << "test statistics value " << d_test_statistics;
                     DLOG(INFO) << "test statistics threshold " << d_threshold;
-                    DLOG(INFO) << "code phase " << d_code_phase;
-                    DLOG(INFO) << "doppler " << d_doppler_freq;
+                    DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
+                    DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                     DLOG(INFO) << "magnitude " << d_mag;
                     DLOG(INFO) << "input signal power " << d_input_power;
                 }
@@ -311,8 +313,8 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
                     DLOG(INFO) << "sample_stamp " << d_sample_counter;
                     DLOG(INFO) << "test statistics value " << d_test_statistics;
                     DLOG(INFO) << "test statistics threshold " << d_threshold;
-                    DLOG(INFO) << "code phase " << d_code_phase;
-                    DLOG(INFO) << "doppler " << d_doppler_freq;
+                    DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
+                    DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
                     DLOG(INFO) << "magnitude " << d_mag;
                     DLOG(INFO) << "input signal power " << d_input_power;
                 }

@@ -34,6 +34,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gnss_synchro.h"
 #include "gps_l1_ca_dll_pll_tracking_cc.h"
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"
@@ -63,11 +64,18 @@
 using google::LogMessage;
 
 gps_l1_ca_dll_pll_tracking_cc_sptr
-gps_l1_ca_dll_pll_make_tracking_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-			int vector_length, gr_msg_queue_sptr queue, bool dump, std::string dump_filename,
-			float pll_bw_hz, float dll_bw_hz, float early_late_space_chips)
+gps_l1_ca_dll_pll_make_tracking_cc(
+		long if_freq,
+		long fs_in,
+		unsigned int vector_length,
+		gr_msg_queue_sptr queue,
+		bool dump,
+		std::string dump_filename,
+		float pll_bw_hz,
+		float dll_bw_hz,
+		float early_late_space_chips)
 {
-	return gps_l1_ca_dll_pll_tracking_cc_sptr(new Gps_L1_Ca_Dll_Pll_Tracking_cc(satellite, if_freq,
+	return gps_l1_ca_dll_pll_tracking_cc_sptr(new Gps_L1_Ca_Dll_Pll_Tracking_cc(if_freq,
 			fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
 }
 
@@ -81,10 +89,18 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::forecast (int noutput_items,
 
 
 
-Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-        int vector_length, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, float pll_bw_hz, float dll_bw_hz, float early_late_space_chips) :
+Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
+		long if_freq,
+		long fs_in,
+		unsigned int vector_length,
+		gr_msg_queue_sptr queue,
+		bool dump,
+		std::string dump_filename,
+		float pll_bw_hz,
+		float dll_bw_hz,
+		float early_late_space_chips) :
         gr_block ("Gps_L1_Ca_Dll_Pll_Tracking_cc", gr_make_io_signature (1, 1, sizeof(gr_complex)),
-                gr_make_io_signature(5, 5, sizeof(double)))
+                gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
 {
 
     //gr_sync_decimator ("Gps_L1_Ca_Dll_Pll_Tracking_cc", gr_make_io_signature (1, 1, sizeof(gr_complex)),
@@ -92,7 +108,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(Gnss_Satellite sate
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_if_freq = if_freq;
     d_fs_in = fs_in;
     d_vector_length = vector_length;
@@ -151,6 +166,11 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     /*
      *  correct the code phase according to the delay between acq and trk
      */
+
+	d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
+	d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
+	d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+
     unsigned long int acq_trk_diff_samples;
     float acq_trk_diff_seconds;
     acq_trk_diff_samples = d_sample_counter - d_acq_sample_stamp;//-d_vector_length;
@@ -197,7 +217,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_code_loop_filter.initialize(d_acq_code_phase_samples); //initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    code_gen_conplex(&d_ca_code[1], d_satellite.get_PRN(), 0);
+    code_gen_conplex(&d_ca_code[1], d_acquisition_gnss_synchro->PRN, 0);
     d_ca_code[0] = d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS];
     d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 1] = d_ca_code[1];
 
@@ -211,8 +231,8 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_code_phase_samples = d_acq_code_phase_samples;
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << this->d_satellite << std::endl;
-    DLOG(INFO) << "Start tracking for satellite " << this->d_satellite << " received" << std::endl;
+    std::cout << "Tracking start on channel " << d_channel << " for satellite " << d_acquisition_gnss_synchro->System << " "<< d_acquisition_gnss_synchro->PRN << std::endl;
+    DLOG(INFO) << "Start tracking for satellite " << d_acquisition_gnss_synchro->System << " "<< d_acquisition_gnss_synchro->PRN  << " received" << std::endl;
 
     // enable tracking
     d_pull_in = true;
@@ -347,8 +367,13 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     return 1;
                 }
 
+        	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+        	Gnss_Synchro current_synchro_data;
+            // Fill the acquisition data
+            current_synchro_data=*d_acquisition_gnss_synchro;
+
             const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignement
-            double **out = (double **) &output_items[0];
+            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
             // check for samples consistency
             for(int i=0; i<d_current_prn_length_samples; i++)
@@ -468,20 +493,26 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     //std::cout<<"d_carrier_lock_fail_counter"<<d_carrier_lock_fail_counter<<"\r\n";
                 }
 
-            /*!
-             * \todo Output the CN0
-             */
             // ########### Output the tracking data to navigation and PVT ##########
-            // Output channel 0: Prompt correlator output Q
-            *out[0] = (double)d_Prompt.real();
-            // Output channel 1: Prompt correlator output I
-            *out[1] = (double)d_Prompt.imag();
-            // Output channel 2: PRN absolute delay [s]
-            *out[2] = d_sample_counter_seconds;
-            // Output channel 3: d_acc_carrier_phase_rad [rad]
-            *out[3] = (double)d_acc_carrier_phase_rad;
-            // Output channel 4: PRN code phase [s]
-            *out[4] = (double)d_code_phase_samples * (1 / (float)d_fs_in);
+//            // Output channel 0: Prompt correlator output Q
+//            *out[0] = (double)d_Prompt.real();
+//            // Output channel 1: Prompt correlator output I
+//            *out[1] = (double)d_Prompt.imag();
+//            // Output channel 2: PRN absolute delay [s]
+//            *out[2] = d_sample_counter_seconds;
+//            // Output channel 3: d_acc_carrier_phase_rad [rad]
+//            *out[3] = (double)d_acc_carrier_phase_rad;
+//            // Output channel 4: PRN code phase [s]
+//            *out[4] = (double)d_code_phase_samples * (1/(float)d_fs_in);
+
+
+            current_synchro_data.Prompt_I=(double)d_Prompt.real();
+            current_synchro_data.Prompt_Q=(double)d_Prompt.imag();
+            current_synchro_data.Tracking_timestamp_secs=d_sample_counter_seconds;
+            current_synchro_data.Carrier_phase_rads=(double)d_acc_carrier_phase_rad;
+            current_synchro_data.Code_phase_secs=(double)d_code_phase_samples * (1/(float)d_fs_in);
+            current_synchro_data.CN0_dB_hz=(double)d_CN0_SNV_dB_Hz;
+            *out[0]=current_synchro_data;
 
             // ########## DEBUG OUTPUT
             /*!
@@ -494,7 +525,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
                             std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << this->d_satellite << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << d_acquisition_gnss_synchro->System << " "<< d_acquisition_gnss_synchro->PRN  << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
                             //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
                             //if (d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
                         }
@@ -504,19 +535,32 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     if (floor(d_sample_counter / d_fs_in) != d_last_seg)
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << this->d_satellite << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << d_acquisition_gnss_synchro->System << " "<< d_acquisition_gnss_synchro->PRN << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
                             //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
                         }
                 }
         }
     else
         {
-            double **out = (double **) &output_items[0]; //block output streams pointer
-            *out[0] = 0;
-            *out[1] = 0;
-            *out[2] = 0;
-            *out[3] = 0;
-            *out[4] = 0;
+			Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
+			//std::cout<<output_items.size()<<std::endl;
+        	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+        	Gnss_Synchro current_synchro_data;
+        	//void* current_synchro_data_b;
+        	//char* p = (char*)malloc(sizeof(Gnss_Synchro));
+        	//current_synchro_data_b= (void*) new (p) Gnss_Synchro();
+        	//*((Gnss_Synchro*)current_synchro_data_b)=current_synchro_data;
+        	//free(p);
+            //current_synchro_data.Acq_delay_samples=d_acquisition_gnss_synchro->Acq_delay_samples;
+            //current_synchro_data.Acq_doppler_hz=d_acquisition_gnss_synchro->Acq_doppler_hz;
+            //current_synchro_data.Acq_samplestamp_samples=d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+            //current_synchro_data.Signal=d_acquisition_gnss_synchro->Signal; //copy the object signal
+			//std::cout<<noutput_items<<std::endl;
+			//std::cout<<"size of sizeof(Gnss_Synchro)="<<sizeof(Gnss_Synchro)<<std::endl;
+
+			*out[0]=current_synchro_data;
+
+
         }
 
     if(d_dump)
@@ -581,41 +625,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
 
 
 
-
-
-
-
-void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_acq_code_phase(float code_phase)
-{
-	d_acq_code_phase_samples = code_phase;
-	LOG_AT_LEVEL(INFO) << "Tracking code phase set to " << d_acq_code_phase_samples;
-}
-
-
-
-
-
-
-void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_acq_doppler(float doppler)
-{
-	d_acq_carrier_doppler_hz = doppler;
-	LOG_AT_LEVEL(INFO) << "Tracking carrier doppler set to " << d_acq_carrier_doppler_hz;
-}
-
-
-
-
-
-void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_satellite(Gnss_Satellite satellite)
-{
-	d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-	LOG_AT_LEVEL(INFO) << "Tracking Satellite set to " << d_satellite;
-}
-
-
-
-
-
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
 {
     d_channel = channel;
@@ -643,15 +652,18 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
 
 
 
-void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_acq_sample_stamp(unsigned long int sample_stamp)
-{
-    d_acq_sample_stamp = sample_stamp;
-}
-
-
-
-
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
 {
     d_channel_internal_queue = channel_internal_queue;
+}
+
+void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+{
+	d_acquisition_gnss_synchro=p_gnss_synchro;
+
+    //	Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
+    //DLOG(INFO) << "Tracking code phase set to " << d_acq_code_phase_samples;
+    //DLOG(INFO) << "Tracking carrier doppler set to " << d_acq_carrier_doppler_hz;
+    //DLOG(INFO) << "Tracking Satellite set to " << d_satellite;
+
 }

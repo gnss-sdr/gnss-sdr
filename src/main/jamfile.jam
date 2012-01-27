@@ -1,12 +1,12 @@
 project : build-dir ../../build ;
 exe gnss-sdr : main.cc
-../algorithms/acquisition/adapters//gps_l1_ca_gps_sdr_acquisition
+#../algorithms/acquisition/adapters//gps_l1_ca_gps_sdr_acquisition
 ../algorithms/acquisition/adapters//gps_l1_ca_pcps_acquisition
-../algorithms/acquisition/adapters//gps_l1_ca_tong_pcps_acquisition
-../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_gps_sdr_acquisition_cc
-../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_gps_sdr_acquisition_ss
+#../algorithms/acquisition/adapters//gps_l1_ca_tong_pcps_acquisition
+#../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_gps_sdr_acquisition_cc
+#../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_gps_sdr_acquisition_ss
 ../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_pcps_acquisition_cc
-../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_tong_pcps_acquisition_cc
+#../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_tong_pcps_acquisition_cc
 ../algorithms/channel/adapters//channel
 ../algorithms/channel/libs//gps_l1_ca_channel_fsm
 ../algorithms/conditioner/adapters//direct_resampler_conditioner

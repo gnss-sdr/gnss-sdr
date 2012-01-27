@@ -48,6 +48,7 @@
 #include "gps_sdr_signal_processing.h"
 #include "gnss_satellite.h"
 #include "tracking_FLL_PLL_filter.h"
+#include "gnss_synchro.h"
 
 
 //#include "GPS_L1_CA.h"
@@ -58,7 +59,7 @@ typedef boost::shared_ptr<Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc>
 gps_l1_ca_dll_fll_pll_tracking_cc_sptr;
 
 gps_l1_ca_dll_fll_pll_tracking_cc_sptr
-gps_l1_ca_dll_fll_pll_make_tracking_cc(Gnss_Satellite satellite,
+gps_l1_ca_dll_fll_pll_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
@@ -82,15 +83,12 @@ public:
 
     ~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc();
 
-    void set_satellite(Gnss_Satellite satellite);
     void set_channel(unsigned int channel);
-    void set_acq_code_phase(float code_phase);
-    void set_acq_doppler(float doppler);
     void start_tracking();
     void update_local_code();
     void update_local_carrier();
     void set_FLL_and_PLL_BW(float fll_bw_hz,float pll_bw_hz);
-    void set_acq_sample_stamp(unsigned long int sample_stamp);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
     /*
@@ -113,7 +111,7 @@ public:
 private:
 
     friend gps_l1_ca_dll_fll_pll_tracking_cc_sptr
-    gps_l1_ca_dll_fll_pll_make_tracking_cc(Gnss_Satellite satellite,
+    gps_l1_ca_dll_fll_pll_make_tracking_cc(
             long if_freq,
             long fs_in, unsigned
             int vector_length,
@@ -126,7 +124,7 @@ private:
             float dll_bw_hz,
             float early_late_space_chips);
 
-    Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(Gnss_Satellite satellite,
+    Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
             long if_freq,
             long fs_in, unsigned
             int vector_length,
@@ -142,11 +140,11 @@ private:
     void CN0_estimation_and_lock_detectors();
 
     // class private vars
+    Gnss_Synchro *d_acquisition_gnss_synchro;
     gr_msg_queue_sptr d_queue;
     concurrent_queue<int> *d_channel_internal_queue;
     unsigned int d_vector_length;
     bool d_dump;
-    Gnss_Satellite d_satellite;
     unsigned int d_channel;
     int d_last_seg;
     long d_if_freq;

@@ -1,6 +1,6 @@
 project : build-dir ../../../../build ;
 
-obj gps_l1_ca_gps_sdr_acquisition_cc : gps_l1_ca_gps_sdr_acquisition_cc.cc ;
-obj gps_l1_ca_gps_sdr_acquisition_ss : gps_l1_ca_gps_sdr_acquisition_ss.cc :  <toolset>darwin:<define>NO_SIMD <toolset>gcc:<define>USE_SIMD ;
+#obj gps_l1_ca_gps_sdr_acquisition_cc : gps_l1_ca_gps_sdr_acquisition_cc.cc ;
+#obj gps_l1_ca_gps_sdr_acquisition_ss : gps_l1_ca_gps_sdr_acquisition_ss.cc :  <toolset>darwin:<define>NO_SIMD <toolset>gcc:<define>USE_SIMD ;
 obj gps_l1_ca_pcps_acquisition_cc : gps_l1_ca_pcps_acquisition_cc.cc ;
-obj gps_l1_ca_tong_pcps_acquisition_cc : gps_l1_ca_tong_pcps_acquisition_cc.cc ;
+#obj gps_l1_ca_tong_pcps_acquisition_cc : gps_l1_ca_tong_pcps_acquisition_cc.cc ;

@@ -63,6 +63,13 @@ Gnss_Satellite::~Gnss_Satellite()
 void Gnss_Satellite::reset()
 {
     system_set = {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"};
+
+    satelliteSystem["GPS"] = "G";
+    satelliteSystem["GLONASS"] = "R";
+    satelliteSystem["SBAS"] = "S";
+    satelliteSystem["Galileo"] = "E";
+    satelliteSystem["Compass"] = "C";
+
     PRN = 0;
     system = std::string("");
     block = std::string("");
@@ -219,6 +226,12 @@ std::string Gnss_Satellite::get_system() const
     return system_;
 }
 
+std::string Gnss_Satellite::get_system_short() const
+{
+    // Get the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
+
+    return satelliteSystem.at(system);
+}
 
 
 

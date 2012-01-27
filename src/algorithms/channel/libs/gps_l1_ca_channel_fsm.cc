@@ -191,16 +191,16 @@ void GpsL1CaChannelFsm::start_acquisition()
 
 void GpsL1CaChannelFsm::start_tracking()
 {
-    LOG_AT_LEVEL(INFO) << "Channel " << channel_
-            << " passing prn code phase " << acq_->prn_code_phase();
-    LOG_AT_LEVEL(INFO) << "Channel " << channel_
-            << " passing doppler freq shift " << acq_->doppler_freq_shift();
-    LOG_AT_LEVEL(INFO) << "Channel " << channel_
-            << " passing acquisition sample stamp "
-            << acq_->get_sample_stamp();
-    trk_->set_prn_code_phase(acq_->prn_code_phase());
-    trk_->set_doppler_freq_shift(acq_->doppler_freq_shift());
-    trk_->set_acq_sample_stamp(acq_->get_sample_stamp());
+    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
+            //<< " passing prn code phase " << acq_->prn_code_phase();
+    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
+            //<< " passing doppler freq shift " << acq_->doppler_freq_shift();
+    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
+            //<< " passing acquisition sample stamp "
+            //<< acq_->get_sample_stamp();
+    //trk_->set_prn_code_phase(acq_->prn_code_phase());
+    //trk_->set_doppler_freq_shift(acq_->doppler_freq_shift());
+    //trk_->set_acq_sample_stamp(acq_->get_sample_stamp());
     trk_->start_tracking();
 }
 

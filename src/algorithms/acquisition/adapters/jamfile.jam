@@ -1,5 +1,5 @@
 project : build-dir ../../../../build ;
 
-obj gps_l1_ca_gps_sdr_acquisition : gps_l1_ca_gps_sdr_acquisition.cc ;
+#obj gps_l1_ca_gps_sdr_acquisition : gps_l1_ca_gps_sdr_acquisition.cc ;
 obj gps_l1_ca_pcps_acquisition : gps_l1_ca_pcps_acquisition.cc ;
-obj gps_l1_ca_tong_pcps_acquisition : gps_l1_ca_tong_pcps_acquisition.cc ;
+#obj gps_l1_ca_tong_pcps_acquisition : gps_l1_ca_tong_pcps_acquisition.cc ;

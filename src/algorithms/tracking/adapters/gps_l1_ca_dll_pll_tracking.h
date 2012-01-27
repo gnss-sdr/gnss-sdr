@@ -78,10 +78,6 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
-    /*!
-     * \brief Set satellite ID
-     */
-    void set_satellite(Gnss_Satellite satellite);
 
     /*!
      * \brief Set tracking channel unique ID
@@ -89,14 +85,10 @@ public:
     void set_channel(unsigned int channel);
 
     /*!
-     * \brief Set acquisition code phase in samples
+     * \brief Set acquisition/tracking common Gnss_Synchro object pointer
+     * to efficiently exchange synchronization data between acquisition and tracking blocks
      */
-    void set_prn_code_phase(signed int phase_samples);
-
-    /*!
-     * \brief Set acquisition Doppler frequency in Hz.
-     */
-    void set_doppler_freq_shift(float doppler_freq_hz);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
 
     /*!
      * \brief Set tracking channel internal queue
@@ -105,18 +97,11 @@ public:
 
     void start_tracking();
 
-    /*!
-     * \brief Set acquisition sample stamp in samples, in order to detect
-     * the delay between acquisition and tracking
-     */
-    void set_acq_sample_stamp(unsigned long int sample_stamp);
-
 private:
 
     gps_l1_ca_dll_pll_tracking_cc_sptr tracking_;
     size_t item_size_;
 
-    Gnss_Satellite satellite_;
     unsigned int channel_;
 
     std::string role_;

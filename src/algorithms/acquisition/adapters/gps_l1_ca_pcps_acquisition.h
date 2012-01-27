@@ -34,6 +34,7 @@
 #ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_
 
+#include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "gps_l1_ca_pcps_acquisition_cc.h"
 #include <gnuradio/gr_msg_queue.h>
@@ -69,18 +70,14 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
-    void set_synchro(Gnss_Synchro p_gnss_synchro);
-    void set_satellite(Gnss_Satellite satellite);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void set_channel(unsigned int channel);
     void set_threshold(float threshold);
     void set_doppler_max(unsigned int doppler_max);
     void set_doppler_step(unsigned int doppler_step);
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
-    signed int prn_code_phase();
-    float doppler_freq_shift();
 
-    unsigned long int get_sample_stamp();
-
+    void init();
     signed int mag();
     void reset();
 
@@ -93,8 +90,7 @@ private:
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
-    Gnss_Synchro* gnss_synchro_;
-    Gnss_Satellite gnss_satellite_;
+
     //unsigned int satellite_;
     unsigned int channel_;
     float threshold_;

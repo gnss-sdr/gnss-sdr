@@ -39,7 +39,7 @@
 #define GNSS_SDR_ACQUISITION_INTERFACE_H_
 
 #include "gnss_block_interface.h"
-#include "gnss_satellite.h"
+#include "gnss_synchro.h"
 
 template<typename Data>class concurrent_queue;
 
@@ -56,17 +56,15 @@ class AcquisitionInterface: public GNSSBlockInterface
 public:
 
     //virtual void set_active(bool active) = 0;
-    virtual void set_satellite(Gnss_Satellite sat) = 0;
+	virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
     virtual void set_channel(unsigned int channel) = 0;
     virtual void set_threshold(float threshold) = 0;
     virtual void set_doppler_max(unsigned int doppler_max) = 0;
     virtual void set_doppler_step(unsigned int doppler_step) = 0;
     virtual void set_channel_queue(concurrent_queue<int> *channel_internal_queue) = 0;
-    virtual signed int prn_code_phase() = 0;
-    virtual float doppler_freq_shift() = 0;
+    virtual void init() = 0;
     virtual signed int mag() = 0;
     virtual void reset() = 0;
-    virtual unsigned long int get_sample_stamp() = 0;
 
 };
 

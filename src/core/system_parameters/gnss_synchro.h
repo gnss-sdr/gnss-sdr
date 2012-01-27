@@ -42,7 +42,11 @@ public:
 	Gnss_Synchro();
 	~Gnss_Synchro();
 
-	Gnss_Signal Signal;
+	//Gnss_Signal Signal;
+	// Satellite and signal info
+	char System;
+	char Signal[3];
+	unsigned int PRN;
 	// Acquisition
 	double Acq_delay_samples;
 	double Acq_doppler_hz;

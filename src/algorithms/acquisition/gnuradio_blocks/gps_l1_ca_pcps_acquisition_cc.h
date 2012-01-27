@@ -43,7 +43,6 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
-#include "gnss_satellite.h"
 #include "gnss_synchro.h"
 
 class gps_l1_ca_pcps_acquisition_cc;
@@ -79,7 +78,6 @@ private:
 	long d_freq;
 	int d_samples_per_ms;
 	unsigned int d_doppler_resolution;
-	Gnss_Satellite d_satellite;
 	float d_threshold;
 	std::string d_satellite_str;
 	unsigned int d_doppler_max;
@@ -87,7 +85,6 @@ private:
 	unsigned int d_sampled_ms;
 	unsigned int d_fft_size;
 	unsigned long int d_sample_counter;
-	unsigned long int d_acq_sample_stamp;
 	gr_complex* d_sine_if;
 
 	gr_complex* d_fft_codes;
@@ -120,25 +117,13 @@ public:
 	{
 		d_gnss_synchro = p_gnss_synchro;
 	}
-	signed int prn_code_phase()
-	{
-		return d_code_phase;
-	}
-	float doppler_freq()
-	{
-		return d_doppler_freq;
-	}
+
 	unsigned int mag()
 	{
 		return d_mag;
 	}
 
-	unsigned long int get_sample_stamp()
-	{
-		return d_acq_sample_stamp;
-	}
-
-	void set_satellite(Gnss_Satellite satellite);
+	void init();
 
 	void set_active(bool active)
 	{

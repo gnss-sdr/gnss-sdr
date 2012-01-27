@@ -102,8 +102,18 @@ GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
     if (item_type.compare("gr_complex") == 0)
     {
         item_size_ = sizeof(gr_complex);
-        tracking_ = gps_l1_ca_dll_fll_pll_make_tracking_cc(satellite_, f_if,
-                fs_in, vector_length, queue_, dump, dump_filename, order, fll_bw_hz, pll_bw_hz,dll_bw_hz,early_late_space_chips);
+        tracking_ = gps_l1_ca_dll_fll_pll_make_tracking_cc(
+        		f_if,
+                fs_in,
+                vector_length,
+                queue_,
+                dump,
+                dump_filename,
+                order,
+                fll_bw_hz,
+                pll_bw_hz,
+                dll_bw_hz,
+                early_late_space_chips);
     }
     else
     {
@@ -122,13 +132,6 @@ void GpsL1CaDllFllPllTracking::start_tracking()
     tracking_->start_tracking();
 }
 
-void GpsL1CaDllFllPllTracking::set_satellite(Gnss_Satellite satellite)
-{
-    satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    tracking_->set_satellite(satellite_);
-    DLOG(INFO) << "DLL - PLL/FLL Tracking block now tracks satellite " << satellite_;
-}
-
 void GpsL1CaDllFllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
@@ -143,21 +146,12 @@ void GpsL1CaDllFllPllTracking::set_channel_queue(
     tracking_->set_channel_queue(channel_internal_queue_);
 
 }
-void GpsL1CaDllFllPllTracking::set_prn_code_phase(signed int phase_samples)
+
+void GpsL1CaDllFllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    return tracking_->set_acq_code_phase((float)phase_samples);
+    return tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
-void GpsL1CaDllFllPllTracking::set_doppler_freq_shift(float doppler_freq_hz)
-{
-    return tracking_->set_acq_doppler(doppler_freq_hz);
-}
-
-void GpsL1CaDllFllPllTracking::set_acq_sample_stamp(
-        unsigned long int sample_stamp)
-{
-    return tracking_->set_acq_sample_stamp(sample_stamp);
-}
 void GpsL1CaDllFllPllTracking::connect(gr_top_block_sptr top_block)
 {
     //nothing to connect, now the tracking uses gr_sync_decimator

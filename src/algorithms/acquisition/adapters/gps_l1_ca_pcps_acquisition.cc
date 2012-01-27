@@ -59,7 +59,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     item_type_ = configuration->property(role + ".item_type",
             default_item_type);
 
-    gnss_satellite_ = Gnss_Satellite();
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration->property(role + ".ifreq", 0);
     dump_ = configuration->property(role + ".dump", false);
@@ -94,15 +93,6 @@ GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition()
 {
 }
 
-void GpsL1CaPcpsAcquisition::set_satellite(Gnss_Satellite satellite)
-{
-    gnss_satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-
-    if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_satellite(gnss_satellite_);
-    }
-}
 
 void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
 {
@@ -157,40 +147,11 @@ void GpsL1CaPcpsAcquisition::set_channel_queue(
     }
 }
 
-signed int GpsL1CaPcpsAcquisition::prn_code_phase()
-{
-
-    if (item_type_.compare("gr_complex") == 0)
-    {
-        return acquisition_cc_->prn_code_phase();
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-unsigned long int GpsL1CaPcpsAcquisition::get_sample_stamp()
+void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     if (item_type_.compare("gr_complex") == 0)
     {
-        return acquisition_cc_->get_sample_stamp();
-    }
-    else
-    {
-        return 0;
-    }
-}
-float GpsL1CaPcpsAcquisition::doppler_freq_shift()
-{
-
-    if (item_type_.compare("gr_complex") == 0)
-    {
-        return acquisition_cc_->doppler_freq();
-    }
-    else
-    {
-        return 0;
+        acquisition_cc_->set_gnss_synchro(gnss_synchro);
     }
 }
 
@@ -206,6 +167,12 @@ signed int GpsL1CaPcpsAcquisition::mag()
     }
 }
 
+void GpsL1CaPcpsAcquisition::init(){
+    if (item_type_.compare("gr_complex") == 0)
+    {
+        acquisition_cc_->init();
+    }
+}
 void GpsL1CaPcpsAcquisition::reset()
 {
 

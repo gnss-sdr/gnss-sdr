@@ -33,6 +33,10 @@
 
 Gnss_Synchro::Gnss_Synchro()
 {
+	// Satellite and signal info
+	//System=" ";
+	//Signal="  ";
+	PRN=0;
 	// Acquisition
 	Acq_delay_samples=0.0;
 	Acq_doppler_hz=0.0;

@@ -100,7 +100,7 @@ private:
   bool d_flag_frame_sync;
 
   // symbols
-  int d_symbol_accumulator;
+  double d_symbol_accumulator;
   short int d_symbol_accumulator_counter;
 
   //bits and frame

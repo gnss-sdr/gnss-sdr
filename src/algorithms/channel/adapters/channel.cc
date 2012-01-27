@@ -61,6 +61,11 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     trk_->set_channel(channel_);
     nav_->set_channel(channel_);
 
+    gnss_synchro_.Channel_ID=channel_;
+
+    acq_->set_gnss_synchro(&gnss_synchro_);
+    trk_->set_gnss_synchro(&gnss_synchro_);
+
     acq_->set_threshold(configuration->property("Acquisition"
             + boost::lexical_cast<std::string>(channel_) + ".threshold", 0.0));
     acq_->set_doppler_max(configuration->property("Acquisition"
@@ -86,7 +91,6 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     connected_ = false;
     message_ = 0;
-    gnss_satellite_ = Gnss_Satellite();
     gnss_signal_ = Gnss_Signal();
 }
 
@@ -98,7 +102,6 @@ Channel::~Channel()
     delete trk_;
     delete nav_;
     delete pass_through_;
-    //delete gnss_satellite_;
 }
 
 
@@ -124,11 +127,7 @@ void Channel::connect(gr_top_block_sptr top_block)
     top_block->connect(pass_through_->get_right_block(), 0,
             trk_->get_left_block(), 0);
     DLOG(INFO) << "pass_through_ -> tracking";
-    top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0); // channel 1
-    top_block->connect(trk_->get_right_block(), 1, nav_->get_left_block(), 1); // channel 2
-    top_block->connect(trk_->get_right_block(), 2, nav_->get_left_block(), 2); // channel 3
-    top_block->connect(trk_->get_right_block(), 3, nav_->get_left_block(), 3); // channel 4
-    top_block->connect(trk_->get_right_block(), 4, nav_->get_left_block(), 4); // channel 5
+    top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
     connected_ = true;
@@ -171,10 +170,13 @@ gr_basic_block_sptr Channel::get_right_block()
 
 void Channel::set_signal(Gnss_Signal gnss_signal)
 {
-	gnss_satellite_ = gnss_signal.get_satellite();
-    acq_->set_satellite(gnss_satellite_);
-    trk_->set_satellite(gnss_satellite_);
-    nav_->set_satellite(gnss_satellite_);
+	Gnss_Satellite gnss_satellite;
+	gnss_satellite = gnss_signal.get_satellite();
+	gnss_signal.get_signal().copy(gnss_synchro_.Signal,2,0);
+	gnss_synchro_.PRN=gnss_signal.get_satellite().get_PRN();
+	gnss_synchro_.System=gnss_signal.get_satellite().get_system_short().c_str()[0];
+	acq_->init();
+    nav_->set_satellite(gnss_satellite);
 }
 
 
@@ -239,14 +241,14 @@ void Channel::process_channel_messages()
     case 1:
 
         LOG_AT_LEVEL(INFO) << "Channel " << channel_
-        << " ACQ SUCCESS satellite " << gnss_satellite_;
+        << " ACQ SUCCESS satellite " << gnss_synchro_.System << " "<< gnss_synchro_.PRN;
         channel_fsm_.Event_gps_valid_acquisition();
         break;
 
     case 2:
 
         LOG_AT_LEVEL(INFO) << "Channel " << channel_
-        << " ACQ FAILED satellite " << gnss_satellite_;
+        << " ACQ FAILED satellite " << gnss_synchro_.System << " "<< gnss_synchro_.PRN;
         if (repeat_ == true)
             {
                 channel_fsm_.Event_gps_failed_acquisition_repeat();
@@ -259,7 +261,7 @@ void Channel::process_channel_messages()
 
     case 3:
         LOG_AT_LEVEL(INFO) << "Channel " << channel_
-        << " TRACKING FAILED satellite " << gnss_satellite_
+        << " TRACKING FAILED satellite " << gnss_synchro_.System << " "<< gnss_synchro_.PRN
         << ", reacquisition.";
         channel_fsm_.Event_gps_failed_tracking();
         break;

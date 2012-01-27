@@ -254,21 +254,21 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 
     // ACQUISITION BLOCKS ---------------------------------------------------------
 
-    else if (implementation.compare("GPS_L1_CA_GPS_SDR_Acquisition") == 0)
-        {
-            block = new GpsL1CaGpsSdrAcquisition(configuration, role, in_streams,
-                    out_streams, queue);
-        }
+//    else if (implementation.compare("GPS_L1_CA_GPS_SDR_Acquisition") == 0)
+//        {
+//            block = new GpsL1CaGpsSdrAcquisition(configuration, role, in_streams,
+//                    out_streams, queue);
+//        }
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
             block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
                     out_streams, queue);
         }
-    else if (implementation.compare("GPS_L1_CA_TONG_PCPS_Acquisition") == 0)
-        {
-            block = new GpsL1CaTongPcpsAcquisition(configuration, role,
-                    in_streams, out_streams, queue);
-        }
+//    else if (implementation.compare("GPS_L1_CA_TONG_PCPS_Acquisition") == 0)
+//        {
+//            block = new GpsL1CaTongPcpsAcquisition(configuration, role,
+//                    in_streams, out_streams, queue);
+//        }
 
     // TRACKING BLOCKS -------------------------------------------------------------
 

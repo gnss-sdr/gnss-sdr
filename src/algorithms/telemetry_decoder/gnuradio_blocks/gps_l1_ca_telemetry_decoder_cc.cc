@@ -33,6 +33,7 @@
  * \todo Clean this code and move the telemetry definitions to GPS_L1_CA system definitions file
  */
 
+#include "gnss_synchro.h"
 #include "gps_l1_ca_telemetry_decoder_cc.h"
 #include <iostream>
 #include <sstream>
@@ -70,9 +71,15 @@ void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int 
 
 
 
-gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-        int vector_length, gr_msg_queue_sptr queue, bool dump) :
-        gr_block ("gps_navigation_cc", gr_make_io_signature (5, 5, sizeof(double)),
+gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
+		Gnss_Satellite satellite,
+		long if_freq,
+		long fs_in,
+		unsigned
+        int vector_length,
+        gr_msg_queue_sptr queue,
+        bool dump) :
+        gr_block ("gps_navigation_cc", gr_make_io_signature (1, 1, sizeof(Gnss_Synchro)),
                 gr_make_io_signature(1, 1, sizeof(gnss_synchro)))
 {
     // initialize internal vars
@@ -112,6 +119,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite sa
     d_preamble_code_phase_seconds = 0;
     d_stat = 0;
     d_preamble_index = 0;
+    d_symbol_accumulator=0;
     d_symbol_accumulator_counter = 0;
     d_frame_bit_index = 0;
 
@@ -168,12 +176,16 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     int preamble_diff;
 
     gnss_synchro gps_synchro; //structure to save the synchronization information
+
+
     gnss_synchro **out = (gnss_synchro **) &output_items[0];
+
+
     d_sample_counter++; //count for the processed samples
 
     DLOG(INFO) << "Sample counter: " << d_sample_counter;
 
-    const double **in = (const double **)  &input_items[0]; //Get the input samples pointer
+    const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
     // ########### Output the tracking data to navigation and PVT ##########
     // Output channel 0: Prompt correlator output Q
     //	*out[0]=(double)d_Prompt.real();
@@ -204,7 +216,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //******* preamble correlation ********
     for (unsigned int i=0; i<d_samples_per_bit*8; i++)
         {
-            if (in[1][i] < 0)	// symbols clipping
+            if (in[0][i].Prompt_Q < 0)	// symbols clipping
                 {
                     corr_value -= d_preambles_symbols[i];
                 }
@@ -236,8 +248,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                             d_GPS_FSM.Event_gps_word_preamble();
                             d_flag_preamble = true;
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
-                            d_preamble_time_seconds = in[2][0] - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
-                            d_preamble_code_phase_seconds = in[4][0];
+                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
+                            d_preamble_code_phase_seconds = in[0][0].Code_phase_secs;
 
                             if (!d_flag_frame_sync)
                                 {
@@ -265,7 +277,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //d_preamble_phase-=in[3][0];
     //******* SYMBOL TO BIT *******
 
-    d_symbol_accumulator += in[1][d_samples_per_bit*8 - 1]; // accumulate the input value in d_symbol_accumulator
+    d_symbol_accumulator += in[0][d_samples_per_bit*8 - 1].Prompt_Q; // accumulate the input value in d_symbol_accumulator
     d_symbol_accumulator_counter++;
     if (d_symbol_accumulator_counter == 20)
         {
@@ -329,9 +341,9 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     gps_synchro.valid_word = (d_flag_frame_sync == true and d_flag_parity == true);
     gps_synchro.flag_preamble = d_flag_preamble;
     gps_synchro.preamble_delay_ms = d_preamble_time_seconds*1000.0;
-    gps_synchro.prn_delay_ms = (in[2][0] - d_preamble_duration_seconds)*1000.0;
+    gps_synchro.prn_delay_ms = (in[0][0].Tracking_timestamp_secs - d_preamble_duration_seconds)*1000.0;
     gps_synchro.preamble_code_phase_ms = d_preamble_code_phase_seconds*1000.0;
-    gps_synchro.preamble_code_phase_correction_ms = (in[4][0] - d_preamble_code_phase_seconds)*1000.0;
+    gps_synchro.preamble_code_phase_correction_ms = (in[0][0].Code_phase_secs - d_preamble_code_phase_seconds)*1000.0;
     gps_synchro.satellite_PRN = this->d_satellite.get_PRN();
     gps_synchro.channel_ID = d_channel;
     *out[0] = gps_synchro;

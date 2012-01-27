@@ -42,6 +42,7 @@
 #include "control_message_factory.h"
 #include "concurrent_queue.h"
 #include "gnss_signal.h"
+#include "gnss_synchro.h"
 
 
 class ConfigurationInterface;
@@ -108,7 +109,8 @@ private:
     std::string implementation_;
 
     unsigned int channel_;
-    Gnss_Satellite gnss_satellite_;
+
+    Gnss_Synchro gnss_synchro_;
     Gnss_Signal gnss_signal_;
     bool connected_;
     bool stop_;

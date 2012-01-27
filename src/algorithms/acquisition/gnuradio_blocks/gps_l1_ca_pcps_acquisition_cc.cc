@@ -69,14 +69,12 @@ gps_l1_ca_pcps_acquisition_cc::gps_l1_ca_pcps_acquisition_cc(
     d_samples_per_ms = samples_per_ms;
     d_sampled_ms = sampled_ms;
     d_doppler_max = doppler_max;
-    d_satellite = Gnss_Satellite();
     d_fft_size = d_sampled_ms * d_samples_per_ms;
     //d_doppler_freq = 0.0;
     //d_code_phase = 0;
     d_mag = 0;
     d_input_power = 0.0;
 
-    d_gnss_synchro = new Gnss_Synchro();
 
     d_sine_if = new gr_complex[d_fft_size];
 
@@ -91,20 +89,10 @@ gps_l1_ca_pcps_acquisition_cc::gps_l1_ca_pcps_acquisition_cc(
     d_dump = dump;
     d_dump_filename = dump_filename;
 
-    DLOG(INFO) << "fs in " << d_fs_in;
-    DLOG(INFO) << "samples per ms " << d_samples_per_ms;
-    DLOG(INFO) << "doppler max " << d_doppler_max;
-    DLOG(INFO) << "freq " << d_freq;
-    DLOG(INFO) << "satellite " << d_satellite;
-    DLOG(INFO) << "sampled_ms " << d_sampled_ms;
-    DLOG(INFO) << "fft_size " << d_fft_size;
-    DLOG(INFO) << "dump filename " << d_dump_filename;
-    DLOG(INFO) << "dump " << d_dump;
 }
 
 gps_l1_ca_pcps_acquisition_cc::~gps_l1_ca_pcps_acquisition_cc()
 {
-	delete d_gnss_synchro;
 	delete[] d_sine_if;
 	delete[] d_fft_codes;
 	delete d_ifft;
@@ -120,22 +108,20 @@ gps_l1_ca_pcps_acquisition_cc::~gps_l1_ca_pcps_acquisition_cc()
 
 
 
-void gps_l1_ca_pcps_acquisition_cc::set_satellite(Gnss_Satellite satellite)
+void gps_l1_ca_pcps_acquisition_cc::init()
 {
-    d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    // ¿qué diferencia hay con d_satellite=satellite; ?
+
     d_gnss_synchro->Acq_delay_samples=0.0;
     d_gnss_synchro->Acq_doppler_hz=0.0;
+    d_gnss_synchro->Acq_samplestamp_samples=0;
+
     //d_code_phase = 0;
     //d_doppler_freq = 0;
     d_mag = 0.0;
     d_input_power = 0.0;
 
     // Now the GPS codes are generated on the fly using a custom version of the GPS code generator
-    code_gen_complex_sampled(d_fft_if->get_inbuf(), satellite.get_PRN(), d_fs_in, 0);
-
-
-
+    code_gen_complex_sampled(d_fft_if->get_inbuf(), d_gnss_synchro->PRN, d_fs_in, 0);
 
     d_fft_if->execute(); // We need the FFT of GPS C/A code
     //Conjugate the local code
@@ -213,7 +199,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
             unsigned int i;
 
             DLOG(INFO) << "Channel: " << d_channel
-                    << " , doing acquisition of satellite: " << d_satellite
+                    << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
                     << " ,sample stamp: " << d_sample_counter << ", threshold: "
                     << d_threshold << ", doppler_max: " << d_doppler_max
                     << ", doppler_step: " << d_doppler_step;
@@ -294,10 +280,10 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
             if (d_test_statistics > d_threshold)
                 {
                     positive_acquisition = true;
-                    d_acq_sample_stamp = d_sample_counter;
+                    d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 
                     DLOG(INFO) << "positive acquisition";
-                    DLOG(INFO) << "satellite " << d_satellite;
+                    DLOG(INFO) << "satellite " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN;
                     DLOG(INFO) << "sample_stamp " << d_sample_counter;
                     DLOG(INFO) << "test statistics value " << d_test_statistics;
                     DLOG(INFO) << "test statistics threshold " << d_threshold;
@@ -309,7 +295,7 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
             else
                 {
                     DLOG(INFO) << "negative acquisition";
-                    DLOG(INFO) << "satellite " << d_satellite;
+                    DLOG(INFO) << "satellite " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN;
                     DLOG(INFO) << "sample_stamp " << d_sample_counter;
                     DLOG(INFO) << "test statistics value " << d_test_statistics;
                     DLOG(INFO) << "test statistics threshold " << d_threshold;

@@ -76,14 +76,12 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
-    void set_satellite(Gnss_Satellite satellite);
     void set_channel(unsigned int channel);
-    void set_prn_code_phase(signed int phase_samples);
-    void set_doppler_freq_shift(float doppler_freq_hz);
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+
     void start_tracking();
-    void set_acq_sample_stamp(unsigned long int sample_stamp);
 
 
 private:
@@ -91,7 +89,6 @@ private:
     gps_l1_ca_dll_fll_pll_tracking_cc_sptr tracking_;
     size_t item_size_;
 
-    Gnss_Satellite satellite_;
     unsigned int channel_;
 
     std::string role_;

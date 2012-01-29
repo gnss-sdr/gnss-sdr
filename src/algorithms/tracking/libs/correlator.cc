@@ -133,6 +133,7 @@ void Correlator::cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a()
             // TODO: Make a test to find the best architecture
             this->volk_32fc_x2_dot_prod_32fc_a_best_arch = arch_list.at(arch_list.size() - 1);
         }
+    std::cout<<"Selected architecture for volk_32fc_x2_dot_prod_32fc_a is "<<this->volk_32fc_x2_dot_prod_32fc_a_best_arch<<std::endl;
 }
 
 
@@ -164,13 +165,14 @@ void Correlator::cpu_arch_test_volk_32fc_x2_multiply_32fc_a()
             for (unsigned int i=0; i < arch_list.size(); ++i)
                 {
                     std::cout << "Arch " << i << ":" << arch_list.at(i) << std::endl;
-                    if (arch_list.at(i).compare("sse3") == 1)
+                    if (arch_list.at(i).find("sse")!=std::string::npos)
                         {
                             // TODO: Make a test to find the best architecture
-                            this->volk_32fc_x2_multiply_32fc_a_best_arch = "sse3";
+                            this->volk_32fc_x2_multiply_32fc_a_best_arch = arch_list.at(i);
                         }
                 }
         }
+    std::cout<<"Selected architecture for volk_32fc_x2_multiply_32fc_a_best_arch is "<<this->volk_32fc_x2_multiply_32fc_a_best_arch<<std::endl;
 }
 
 

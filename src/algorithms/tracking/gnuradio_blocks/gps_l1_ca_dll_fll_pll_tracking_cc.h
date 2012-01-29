@@ -46,7 +46,7 @@
 //#include <gnuradio/gr_sync_decimator.h>
 #include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
-#include "gnss_satellite.h"
+
 #include "tracking_FLL_PLL_filter.h"
 #include "gnss_synchro.h"
 
@@ -88,6 +88,9 @@ public:
     void update_local_code();
     void update_local_carrier();
     void set_FLL_and_PLL_BW(float fll_bw_hz,float pll_bw_hz);
+    /*
+     * \brief Satellite signal synchronization parameters uses shared memory between acquisition and tracking
+     */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
@@ -96,11 +99,6 @@ public:
      *
      * The user must override work to define the signal processing code
      */
-    //virtual int work (int noutput_items,
-    //                  gr_vector_const_void_star &input_items,
-    //                gr_vector_void_star &output_items) = 0;
-
-    //int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
@@ -158,10 +156,11 @@ private:
 
     gr_complex* d_carr_sign;
 
-    gr_complex d_Early;
-    gr_complex d_Prompt;
+    gr_complex* d_Early;
+    gr_complex* d_Prompt;
+    gr_complex* d_Late;
+
     gr_complex d_Prompt_prev;
-    gr_complex d_Late;
 
     float d_early_late_spc_chips;
 

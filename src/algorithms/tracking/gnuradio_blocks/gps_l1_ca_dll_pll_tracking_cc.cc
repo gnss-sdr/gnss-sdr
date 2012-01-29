@@ -125,13 +125,27 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     // Get space for a vector with the C/A code replica sampled 1x/chip
     d_ca_code = new gr_complex[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 2];
 
-    // Get space for the resampled early / prompt / late local replicas
-    d_early_code = new gr_complex[d_vector_length*2];
-    d_prompt_code = new gr_complex[d_vector_length*2];
-    d_late_code = new gr_complex[d_vector_length*2];
 
-    // space for carrier wipeoff and signal baseband vectors
+
     d_carr_sign = new gr_complex[d_vector_length*2];
+
+    /* If an array is partitioned for more than one thread to operate on,
+     * having the sub-array boundaries unaligned to cache lines could lead
+     * to performance degradation. Here we allocate memory
+     * (gr_comlex array of size 2*d_vector_length) aligned to cache of 16 bytes
+     */
+    // todo: do something if posix_memalign fails
+    // Get space for the resampled early / prompt / late local replicas
+    if (posix_memalign((void**)&d_early_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
+    if (posix_memalign((void**)&d_late_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
+    if (posix_memalign((void**)&d_prompt_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
+    // space for carrier wipeoff and signal baseband vectors
+    if (posix_memalign((void**)&d_carr_sign, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
+    // correlator outputs (scalar)
+    if (posix_memalign((void**)&d_Early, 16, sizeof(gr_complex)) == 0){};
+    if (posix_memalign((void**)&d_Prompt, 16, sizeof(gr_complex)) == 0){};
+    if (posix_memalign((void**)&d_Late, 16, sizeof(gr_complex)) == 0){};
+
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -300,11 +314,16 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_carrier()
 Gps_L1_Ca_Dll_Pll_Tracking_cc::~Gps_L1_Ca_Dll_Pll_Tracking_cc()
 {
     d_dump_file.close();
+
+    free(d_prompt_code);
+    free(d_late_code);
+    free(d_early_code);
+    free(d_carr_sign);
+    free(d_Early);
+    free(d_Prompt);
+    free(d_Late);
+
     delete[] d_ca_code;
-    delete[] d_early_code;
-    delete[] d_prompt_code;
-    delete[] d_late_code;
-    delete[] d_carr_sign;
     delete[] d_Prompt_buffer;
 }
 
@@ -321,22 +340,11 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
 
-    //	if ((unsigned int)ninput_items[0]<(d_vector_length*2))
-    //	{
-    //		std::cout<<"End of signal detected\r\n";
-    //		const int samples_available = ninput_items[0];
-    //		consume_each(samples_available);
-    //		return 0;
-    //	}
-
     // process vars
     float carr_error;
     float carr_nco;
     float code_error;
     float code_nco;
-    d_Early = gr_complex(0,0);
-    d_Prompt = gr_complex(0,0);
-    d_Late = gr_complex(0,0);
 
     if (d_enable_tracking == true)
         {
@@ -395,31 +403,26 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             update_local_code();
             update_local_carrier();
 
-            gr_complex bb_signal_sample(0,0);
-
             // perform Early, Prompt and Late correlation
-            /*!
-             * \todo Use SIMD-enabled correlators
-             */
-            for(int i=0; i<d_current_prn_length_samples; i++)
-                {
-                    //Perform the carrier wipe-off
-                    bb_signal_sample = in[i] * d_carr_sign[i];
-                    // Now get early, late, and prompt values for each
-                    d_Early += bb_signal_sample * d_early_code[i];
-                    d_Prompt += bb_signal_sample * d_prompt_code[i];
-                    d_Late += bb_signal_sample * d_late_code[i];
-                }
+            d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
+            		in,
+            		d_carr_sign,
+            		d_early_code,
+            		d_prompt_code,
+            		d_late_code,
+            		d_Early,
+            		d_Prompt,
+            		d_Late);
 
             // Compute PLL error and update carrier NCO -
-            carr_error = pll_cloop_two_quadrant_atan(d_Prompt) / (float)TWO_PI;
+            carr_error = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)TWO_PI;
             // Implement carrier loop filter and generate NCO command
             carr_nco = d_carrier_loop_filter.get_carrier_nco(carr_error);
             // Modify carrier freq based on NCO command
             d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_nco;
 
             // Compute DLL error and update code NCO
-            code_error = dll_nc_e_minus_l_normalized(d_Early, d_Late);
+            code_error = dll_nc_e_minus_l_normalized(*d_Early, *d_Late);
             // Implement code loop filter and generate NCO command
             code_nco = d_code_loop_filter.get_code_nco(code_error);
             // Modify code freq based on NCO command
@@ -463,7 +466,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
                 {
                     // fill buffer with prompt correlator output values
-                    d_Prompt_buffer[d_cn0_estimation_counter] = d_Prompt;
+                    d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
                     d_cn0_estimation_counter++;
                 }
             else
@@ -494,20 +497,9 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                 }
 
             // ########### Output the tracking data to navigation and PVT ##########
-//            // Output channel 0: Prompt correlator output Q
-//            *out[0] = (double)d_Prompt.real();
-//            // Output channel 1: Prompt correlator output I
-//            *out[1] = (double)d_Prompt.imag();
-//            // Output channel 2: PRN absolute delay [s]
-//            *out[2] = d_sample_counter_seconds;
-//            // Output channel 3: d_acc_carrier_phase_rad [rad]
-//            *out[3] = (double)d_acc_carrier_phase_rad;
-//            // Output channel 4: PRN code phase [s]
-//            *out[4] = (double)d_code_phase_samples * (1/(float)d_fs_in);
 
-
-            current_synchro_data.Prompt_I=(double)d_Prompt.real();
-            current_synchro_data.Prompt_Q=(double)d_Prompt.imag();
+            current_synchro_data.Prompt_I=(double)(*d_Prompt).real();
+            current_synchro_data.Prompt_Q=(double)(*d_Prompt).imag();
             current_synchro_data.Tracking_timestamp_secs=d_sample_counter_seconds;
             current_synchro_data.Carrier_phase_rads=(double)d_acc_carrier_phase_rad;
             current_synchro_data.Code_phase_secs=(double)d_code_phase_samples * (1/(float)d_fs_in);
@@ -542,25 +534,14 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
         }
     else
         {
+			*d_Early = gr_complex(0,0);
+			*d_Prompt = gr_complex(0,0);
+			*d_Late = gr_complex(0,0);
 			Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
 			//std::cout<<output_items.size()<<std::endl;
         	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
         	Gnss_Synchro current_synchro_data;
-        	//void* current_synchro_data_b;
-        	//char* p = (char*)malloc(sizeof(Gnss_Synchro));
-        	//current_synchro_data_b= (void*) new (p) Gnss_Synchro();
-        	//*((Gnss_Synchro*)current_synchro_data_b)=current_synchro_data;
-        	//free(p);
-            //current_synchro_data.Acq_delay_samples=d_acquisition_gnss_synchro->Acq_delay_samples;
-            //current_synchro_data.Acq_doppler_hz=d_acquisition_gnss_synchro->Acq_doppler_hz;
-            //current_synchro_data.Acq_samplestamp_samples=d_acquisition_gnss_synchro->Acq_samplestamp_samples;
-            //current_synchro_data.Signal=d_acquisition_gnss_synchro->Signal; //copy the object signal
-			//std::cout<<noutput_items<<std::endl;
-			//std::cout<<"size of sizeof(Gnss_Synchro)="<<sizeof(Gnss_Synchro)<<std::endl;
-
 			*out[0]=current_synchro_data;
-
-
         }
 
     if(d_dump)
@@ -570,11 +551,11 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             float prompt_Q;
             float tmp_E, tmp_P, tmp_L;
             float tmp_float;
-            prompt_I = d_Prompt.imag();
-            prompt_Q = d_Prompt.real();
-            tmp_E = std::abs<float>(d_Early);
-            tmp_P = std::abs<float>(d_Prompt);
-            tmp_L = std::abs<float>(d_Late);
+            prompt_I = (*d_Prompt).imag();
+            prompt_Q = (*d_Prompt).real();
+            tmp_E = std::abs<float>(*d_Early);
+            tmp_P = std::abs<float>(*d_Prompt);
+            tmp_L = std::abs<float>(*d_Late);
             try
             {
                     // EPR

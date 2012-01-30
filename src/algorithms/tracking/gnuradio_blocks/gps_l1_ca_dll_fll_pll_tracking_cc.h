@@ -46,11 +46,8 @@
 //#include <gnuradio/gr_sync_decimator.h>
 #include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
-
 #include "tracking_FLL_PLL_filter.h"
 #include "gnss_synchro.h"
-
-
 //#include "GPS_L1_CA.h"
 #include "correlator.h"
 
@@ -207,6 +204,9 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+
+    std::map<std::string, std::string> systemName;
+    std::string sys;
 };
 
 #endif //GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_CC_H

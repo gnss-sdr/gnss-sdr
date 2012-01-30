@@ -193,6 +193,9 @@ private:
     // file dump
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+
+    std::map<std::string, std::string> systemName;
+    std::string sys;
 };
 
 #endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_CC_H

@@ -170,13 +170,12 @@ gr_basic_block_sptr Channel::get_right_block()
 
 void Channel::set_signal(Gnss_Signal gnss_signal)
 {
-	Gnss_Satellite gnss_satellite;
-	gnss_satellite = gnss_signal.get_satellite();
-	gnss_signal.get_signal().copy(gnss_synchro_.Signal,2,0);
-	gnss_synchro_.PRN=gnss_signal.get_satellite().get_PRN();
-	gnss_synchro_.System=gnss_signal.get_satellite().get_system_short().c_str()[0];
+	gnss_signal_=gnss_signal;
+	gnss_signal_.get_signal().copy(gnss_synchro_.Signal,2,0);
+	gnss_synchro_.PRN=gnss_signal_.get_satellite().get_PRN();
+	gnss_synchro_.System=gnss_signal_.get_satellite().get_system_short().c_str()[0];
 	acq_->init();
-    nav_->set_satellite(gnss_satellite);
+    nav_->set_satellite(gnss_signal_.get_satellite());
 }
 
 

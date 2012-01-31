@@ -18,7 +18,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -70,16 +70,14 @@ float gps_l1_ca_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in)
     // SNR_SNV(count)=Psig/(Ptot-Psig);
     // CN0_SNV_dB=10*log10(SNR_SNV)+10*log10(BW)-10*log10(PRN_length);
     float SNR, SNR_dB_Hz;
-    float tmp_abs_I, tmp_abs_Q;
+    float tmp_abs_imag;
     float Psig, Ptot;
-    //float M2,M4;
     Psig = 0;
     Ptot = 0;
     for (int i=0; i<length; i++)
         {
-            tmp_abs_I = std::abs(Prompt_buffer[i].imag());
-            tmp_abs_Q = std::abs(Prompt_buffer[i].real());
-            Psig += tmp_abs_I;
+            tmp_abs_imag = std::abs(Prompt_buffer[i].imag());
+            Psig += tmp_abs_imag;
             Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
         }
     Psig = Psig / (float)length;

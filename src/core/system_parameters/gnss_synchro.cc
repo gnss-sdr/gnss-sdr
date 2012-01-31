@@ -33,37 +33,34 @@
 
 Gnss_Synchro::Gnss_Synchro()
 {
-	// Satellite and signal info
-	//System=" ";
-	//Signal="  ";
-	PRN=0;
-	// Acquisition
-	Acq_delay_samples=0.0;
-	Acq_doppler_hz=0.0;
-	Acq_samplestamp_samples=0;
-	Flag_valid_acquisition=false;
-	//Tracking
-	Prompt_I=0.0;
-	Prompt_Q=0.0;
-	Carrier_phase_rads=0.0;
-	Code_phase_secs=0.0;
-	Tracking_timestamp_secs=0.0;
-	CN0_dB_hz=0.0;
-	Flag_valid_tracking=false;
-	//Telemetry Decoder
-	Preamble_delay_ms=0.0;
-	Prn_delay_ms=0.0;
-	Preamble_code_phase_ms=0.0;
-	Preamble_code_phase_correction_ms=0.0;
-	Channel_ID=0;
-    Flag_valid_word=false;
-	Flag_preamble=false;
-	// Pseudorange
-	Pseudorange_m=0.0;
-	Pseudorange_timestamp_ms=0.0;
-	Flag_valid_pseudorange=false;
+    PRN = 0;
+    // Acquisition
+    Acq_delay_samples = 0.0;
+    Acq_doppler_hz = 0.0;
+    Acq_samplestamp_samples = 0;
+    Flag_valid_acquisition = false;
+    //Tracking
+    Prompt_I = 0.0;
+    Prompt_Q = 0.0;
+    Carrier_phase_rads = 0.0;
+    Code_phase_secs = 0.0;
+    Tracking_timestamp_secs = 0.0;
+    CN0_dB_hz = 0.0;
+    Flag_valid_tracking = false;
+    //Telemetry Decoder
+    Preamble_delay_ms = 0.0;
+    Prn_delay_ms = 0.0;
+    Preamble_code_phase_ms = 0.0;
+    Preamble_code_phase_correction_ms = 0.0;
+    Channel_ID = 0;
+    Flag_valid_word = false;
+    Flag_preamble = false;
+    // Pseudorange
+    Pseudorange_m = 0.0;
+    Pseudorange_timestamp_ms = 0.0;
+    Flag_valid_pseudorange = false;
 }
 
 Gnss_Synchro::~Gnss_Synchro()
-{
-}
+{}
+

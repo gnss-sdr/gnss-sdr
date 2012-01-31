@@ -32,25 +32,32 @@
 
 Gnss_Signal::Gnss_Signal()
 {
-	this->signal="";
+	this->signal = "";
 }
+
+
 Gnss_Signal::Gnss_Signal(Gnss_Satellite satellite_,std::string signal_)
 {
-	this->satellite=satellite_;
-	this->signal=signal_;
+	this->satellite = satellite_;
+	this->signal = signal_;
 }
+
+
 Gnss_Signal::~Gnss_Signal()
-{
-}
+{}
+
 
 std::string Gnss_Signal::get_signal() const
 {
 	return this->signal;
 }
+
+
 Gnss_Satellite Gnss_Signal::get_satellite() const
 {
 	return this->satellite;
 }
+
 
 std::ostream& operator<<(std::ostream &out, const Gnss_Signal &sig) // output
 {
@@ -58,6 +65,7 @@ std::ostream& operator<<(std::ostream &out, const Gnss_Signal &sig) // output
     out << sig.get_satellite() << " Signal " << sig.get_signal() ;
     return out;
 }
+
 
 bool operator== (const Gnss_Signal &sig1, const Gnss_Signal &sig2)
 {

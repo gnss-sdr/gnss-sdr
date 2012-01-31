@@ -170,11 +170,11 @@ gr_basic_block_sptr Channel::get_right_block()
 
 void Channel::set_signal(Gnss_Signal gnss_signal)
 {
-	gnss_signal_=gnss_signal;
-	gnss_signal_.get_signal().copy(gnss_synchro_.Signal,2,0);
-	gnss_synchro_.PRN=gnss_signal_.get_satellite().get_PRN();
-	gnss_synchro_.System=gnss_signal_.get_satellite().get_system_short().c_str()[0];
-	acq_->init();
+    gnss_signal_ = gnss_signal;
+    gnss_signal_.get_signal().copy(gnss_synchro_.Signal,2,0);
+    gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
+    gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];
+    acq_->init();
     nav_->set_satellite(gnss_signal_.get_satellite());
 }
 
@@ -240,7 +240,7 @@ void Channel::process_channel_messages()
     case 1:
 
         LOG_AT_LEVEL(INFO) << "Channel " << channel_
-        << " ACQ SUCCESS satellite " << gnss_synchro_.System << " "<< gnss_synchro_.PRN;
+        << " ACQ SUCCESS satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
         channel_fsm_.Event_gps_valid_acquisition();
         break;
 

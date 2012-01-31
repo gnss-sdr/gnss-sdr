@@ -1,6 +1,6 @@
 /*!
  * \file gnss_synchro.h
- * \brief  Implementation of the Gnss_Synchro class
+ * \brief  Interface of the Gnss_Synchro class
  * \author
  *  Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *  Javier Arribas, 2012. jarribas(at)cttc.es
@@ -33,16 +33,14 @@
 
 #include "gnss_signal.h"
 
-#include <string>
-
-class Gnss_Synchro{
-private:
-
+/*!
+ * \brief This is the class that contains the information that flows through the blocks.
+ */
+class Gnss_Synchro
+{
 public:
 	Gnss_Synchro();
 	~Gnss_Synchro();
-
-	//Gnss_Signal Signal;
 	// Satellite and signal info
 	char System;
 	char Signal[3];
@@ -72,7 +70,7 @@ public:
 	double Pseudorange_m;
 	double Pseudorange_timestamp_ms;
 	bool Flag_valid_pseudorange;
-
 };
+
 #endif
 

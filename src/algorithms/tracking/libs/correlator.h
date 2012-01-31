@@ -39,7 +39,11 @@
 
 
 /*!
- * \brief High optimized vector correlator class
+ * \brief Class that implements carrier wipe-off and correlators.
+ *
+ * Implemented versions:
+ * - Generic: Standard C++ implementation.
+ * - Volk: uses VOLK (Vector-Optimized Library of Kernels) and uses the processor's SIMD instruction sets. See http://gnuradio.org/redmine/projects/gnuradio/wiki/Volk
  *
  */
 class Correlator

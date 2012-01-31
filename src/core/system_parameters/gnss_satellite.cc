@@ -63,13 +63,11 @@ Gnss_Satellite::~Gnss_Satellite()
 void Gnss_Satellite::reset()
 {
     system_set = {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"};
-
     satelliteSystem["GPS"] = "G";
     satelliteSystem["GLONASS"] = "R";
     satelliteSystem["SBAS"] = "S";
     satelliteSystem["Galileo"] = "E";
     satelliteSystem["Compass"] = "C";
-
     PRN = 0;
     system = std::string("");
     block = std::string("");
@@ -188,6 +186,10 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
                     {
                         PRN = 11;
                     }
+                else if (PRN_ == 12)
+                    {
+                        PRN = 12;
+                    }
                 else
                     {
                         DLOG(INFO) << "This PRN is not defined";
@@ -228,8 +230,7 @@ std::string Gnss_Satellite::get_system() const
 
 std::string Gnss_Satellite::get_system_short() const
 {
-    // Get the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
-
+    // Get the satellite system {"G", "R", "S", "E", "C"}
     return satelliteSystem.at(system);
 }
 
@@ -479,6 +480,7 @@ void Gnss_Satellite::set_block(std::string system_, unsigned int PRN_ )
                     break;
                 case 120 :
                     block = std::string("EGNOS"); // EGNOS AOR-E Broadcast satellite http://www.egnos-pro.esa.int/index.html
+                    break;
                 case 124 :
                     block = std::string("EGNOS"); // EGNOS ESA ARTEMIS used for EGNOS Operations
                     break;
@@ -497,7 +499,8 @@ void Gnss_Satellite::set_block(std::string system_, unsigned int PRN_ )
                 block = std::string("IOV"); //  PFM, the ProtoFlight Model (GSAT0101), launched from French Guiana at 10:30 GMT on October 21, 2011
                 break;
             case 12 :
-                block =std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, launched the same day
+                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, launched the same day
+                break;
             default:
                 block = std::string("Unknown");
             }

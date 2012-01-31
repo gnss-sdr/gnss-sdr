@@ -36,6 +36,8 @@
 #include <set>
 #include <iostream>
 #include <map>
+
+
 /*
  * \brief This class represents a GNSS satellite.
  *
@@ -45,15 +47,15 @@
 class Gnss_Satellite
 {
 public:
-    Gnss_Satellite();                    //!< Default Constructor.
+    Gnss_Satellite();                          //!< Default Constructor.
     Gnss_Satellite(std::string system_, unsigned int PRN_); //!< Concrete GNSS satellite Constructor.
-    ~Gnss_Satellite();                   //!< Default Destructor.
+    ~Gnss_Satellite();                         //!< Default Destructor.
     unsigned int get_PRN() const;              //!< Gets satellite's PRN
     std::string get_system() const;            //!< Gets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
-    std::string get_system_short() const;            //!< Gets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
+    std::string get_system_short() const;      //!< Gets the satellite system {"G", "R", "SBAS", "E", "C"}
     std::string get_block() const;             //!< Gets the satellite block. If GPS, returns {"IIA", "IIR", "IIR-M", "IIF"}
-    friend bool operator== (const Gnss_Satellite &, const Gnss_Satellite &);  // operator== for comparison
-    friend std::ostream& operator<<(std::ostream &, const Gnss_Satellite &); // operator<< for pretty printing
+    friend bool operator== (const Gnss_Satellite &, const Gnss_Satellite &);  //!< operator== for comparison
+    friend std::ostream& operator<<(std::ostream &, const Gnss_Satellite &);  //!< operator<< for pretty printing
     //Gnss_Satellite& operator=(const Gnss_Satellite &);
 private:
     unsigned int PRN;

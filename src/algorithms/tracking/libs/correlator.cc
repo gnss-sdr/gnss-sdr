@@ -1,5 +1,5 @@
 /*!
- * \file correlator.h
+ * \file correlator.cc
  * \brief Highly optimized vector correlator class
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
@@ -55,11 +55,11 @@ void Correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const
 
     //std::cout<<"length="<<signal_length_samples<<std::endl;
 
-    *E_out=0;
-    *P_out=0;
-    *L_out=0;
+    *E_out = 0;
+    *P_out = 0;
+    *L_out = 0;
     // perform Early, Prompt and Late correlation
-    for(int i=0; i<signal_length_samples; ++i)
+    for(int i=0; i < signal_length_samples; ++i)
         {
             //Perform the carrier wipe-off
             bb_signal_sample = input[i] * carrier[i];
@@ -126,14 +126,14 @@ void Correlator::cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a()
     else
         {
             std::cout << "Detected architectures in this machine for volk_32fc_x2_dot_prod_32fc_a:" << std::endl;
-            for (unsigned int i=0; i<arch_list.size(); ++i)
+            for (unsigned int i=0; i < arch_list.size(); ++i)
                 {
                     std::cout << "Arch " << i << ":" << arch_list.at(i) << std::endl;
                 }
             // TODO: Make a test to find the best architecture
             this->volk_32fc_x2_dot_prod_32fc_a_best_arch = arch_list.at(arch_list.size() - 1);
         }
-    std::cout<<"Selected architecture for volk_32fc_x2_dot_prod_32fc_a is "<<this->volk_32fc_x2_dot_prod_32fc_a_best_arch<<std::endl;
+    std::cout << "Selected architecture for volk_32fc_x2_dot_prod_32fc_a is " << this->volk_32fc_x2_dot_prod_32fc_a_best_arch << std::endl;
 }
 
 
@@ -165,14 +165,14 @@ void Correlator::cpu_arch_test_volk_32fc_x2_multiply_32fc_a()
             for (unsigned int i=0; i < arch_list.size(); ++i)
                 {
                     std::cout << "Arch " << i << ":" << arch_list.at(i) << std::endl;
-                    if (arch_list.at(i).find("sse")!=std::string::npos)
+                    if (arch_list.at(i).find("sse") != std::string::npos)
                         {
                             // TODO: Make a test to find the best architecture
                             this->volk_32fc_x2_multiply_32fc_a_best_arch = arch_list.at(i);
                         }
                 }
         }
-    std::cout<<"Selected architecture for volk_32fc_x2_multiply_32fc_a_best_arch is "<<this->volk_32fc_x2_multiply_32fc_a_best_arch<<std::endl;
+    std::cout << "Selected architecture for volk_32fc_x2_multiply_32fc_a_best_arch is " << this->volk_32fc_x2_multiply_32fc_a_best_arch << std::endl;
 }
 
 

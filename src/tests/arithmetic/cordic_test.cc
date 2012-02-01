@@ -37,6 +37,7 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <cstdlib> // for RAND_MAX
+#include <gnuradio/gr_fxpt_nco.h>
 
 
 TEST(Cordic_Test, StandardCIsFasterThanCordic)
@@ -50,34 +51,58 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     double  sin_phase1 = 0;
     double  cos_phase2 = 0;
     double  sin_phase2 = 0;
+    double  cos_phase3 = 0;
+    double  sin_phase3 = 0;
+
+    gr_fxpt_nco* nco;
+    nco = new gr_fxpt_nco();
 
     double niter = 10000000;
-
     struct timeval tv;
+
+
     gettimeofday(&tv, NULL);
     long long int begin1 = tv.tv_sec * 1000000 + tv.tv_usec;
-
     for(int i=0; i<niter; i++)
         {
             cordicPtr->cordic_get_cos_sin(phase, cos_phase1, sin_phase1);
         }
-
     gettimeofday(&tv, NULL);
     long long int end1 = tv.tv_sec *1000000 + tv.tv_usec;
 
-    long long int begin2 = tv.tv_sec * 1000000 + tv.tv_usec;
 
+
+    gettimeofday(&tv, NULL);
+    long long int begin2 = tv.tv_sec * 1000000 + tv.tv_usec;
     for(int i=0; i<niter; i++)
         {
             cos_phase2 = cos(phase);
             sin_phase2 = sin(phase);
         }
-
     gettimeofday(&tv, NULL);
     long long int end2 = tv.tv_sec *1000000 + tv.tv_usec;
 
-    std::cout << "CORDIC sin =" << sin_phase1 << ", cos =" << cos_phase1 << " computed " << niter << " times in " << (end1-begin1) << " microseconds" << std::endl;
-    std::cout << "STD    sin =" << sin_phase2 << ", cos =" << cos_phase2 << " computed " << niter << " times in "  << (end2-begin2) << " microseconds" << std::endl;
 
-    EXPECT_TRUE((end2-begin2) < (end1-begin1));
+
+    float phase_f;
+    phase_f = (float)phase;
+    gettimeofday(&tv, NULL);
+    long long int begin3 = tv.tv_sec * 1000000 + tv.tv_usec;
+    for(int i=0; i<niter; i++)
+        {
+            nco->set_phase(phase_f);
+            cos_phase3 = nco->cos();
+            sin_phase3 = nco->sin();
+        }
+    gettimeofday(&tv, NULL);
+    long long int end3 = tv.tv_sec *1000000 + tv.tv_usec;
+    delete nco;
+    delete cordicPtr;
+
+
+    std::cout << "CORDIC sin =" << sin_phase1 << ", cos =" << cos_phase1 << " computed " << niter << " times in " << (end1-begin1) << " microseconds" << std::endl;
+    std::cout << "STD    sin =" << sin_phase2 << ", cos =" << cos_phase2 << " computed " << niter << " times in " << (end2-begin2) << " microseconds" << std::endl;
+    std::cout << "FXPT   sin =" << sin_phase3 << ", cos =" << cos_phase3 << " computed " << niter << " times in " << (end3-begin3) << " microseconds" << std::endl;
+
+    EXPECT_TRUE((end2-begin2) < (end1-begin1)); // if true, standard C++ is faster than the cordic implementation
 }

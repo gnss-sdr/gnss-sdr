@@ -43,6 +43,8 @@
 #include <glog/logging.h>
 #include "control_message_factory.h"
 
+#include "gnss_synchro.h"
+
 #define _lrotl(X,N)  ((X << N) ^ (X >> (32-N)))  // Used in the parity check algorithm
 
 
@@ -80,7 +82,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
         gr_msg_queue_sptr queue,
         bool dump) :
         gr_block ("gps_navigation_cc", gr_make_io_signature (1, 1, sizeof(Gnss_Synchro)),
-                gr_make_io_signature(1, 1, sizeof(gnss_synchro)))
+                gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_queue = queue;
@@ -175,28 +177,15 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     int corr_value = 0;
     int preamble_diff;
 
-    gnss_synchro gps_synchro; //structure to save the synchronization information
-
-
-    gnss_synchro **out = (gnss_synchro **) &output_items[0];
+    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
 
     d_sample_counter++; //count for the processed samples
 
     DLOG(INFO) << "Sample counter: " << d_sample_counter;
 
-    const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
     // ########### Output the tracking data to navigation and PVT ##########
-    // Output channel 0: Prompt correlator output Q
-    //	*out[0]=(double)d_Prompt.real();
-    //	// Output channel 1: Prompt correlator output I
-    //	*out[1]=(double)d_Prompt.imag();
-    //	// Output channel 2: PRN absolute delay [s]
-    //	*out[2]=d_sample_counter_seconds;
-    //	// Output channel 3: d_acc_carrier_phase_rad [rad]
-    //	*out[3]=(double)d_acc_carrier_phase_rad;
-    //	// Output channel 4: PRN code phase [s]
-    //	*out[4]=(double)d_code_phase_samples*(1/(float)d_fs_in);
+    const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
 
     /*!
      * \todo Check the HOW GPS time computation, taking into account that the preamble correlation last 160 symbols, which is 160 ms in GPS CA L1
@@ -337,16 +326,22 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     consume_each(1); //one by one
     DLOG(INFO) << "TELEMETRY PROCESSED for satellite " << this->d_satellite;
 
-    //! \todo This has to be documented!!!!
-    gps_synchro.valid_word = (d_flag_frame_sync == true and d_flag_parity == true);
-    gps_synchro.flag_preamble = d_flag_preamble;
-    gps_synchro.preamble_delay_ms = d_preamble_time_seconds*1000.0;
-    gps_synchro.prn_delay_ms = (in[0][0].Tracking_timestamp_secs - d_preamble_duration_seconds)*1000.0;
-    gps_synchro.preamble_code_phase_ms = d_preamble_code_phase_seconds*1000.0;
-    gps_synchro.preamble_code_phase_correction_ms = (in[0][0].Code_phase_secs - d_preamble_code_phase_seconds)*1000.0;
-    gps_synchro.satellite_PRN = this->d_satellite.get_PRN();
-    gps_synchro.channel_ID = d_channel;
-    *out[0] = gps_synchro;
+    Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
+
+    //1. Copy the current tracking output
+    current_synchro_data=in[0][0];
+    //2. Add the telemetry decoder information
+    current_synchro_data.Flag_valid_word=(d_flag_frame_sync == true and d_flag_parity == true);
+    current_synchro_data.Flag_preamble= d_flag_preamble;
+    current_synchro_data.Preamble_delay_ms= d_preamble_time_seconds*1000.0;
+    current_synchro_data.Prn_delay_ms = (in[0][0].Tracking_timestamp_secs - d_preamble_duration_seconds)*1000.0;
+    current_synchro_data.Preamble_code_phase_ms = d_preamble_code_phase_seconds*1000.0;
+    current_synchro_data.Preamble_code_phase_correction_ms = (in[0][0].Code_phase_secs - d_preamble_code_phase_seconds)*1000.0;
+    //gps_synchro.satellite_PRN = this->d_satellite.get_PRN(); //is already filled...
+    //gps_synchro.channel_ID = d_channel;
+
+    //3. Make the output (copy the object contents to the GNURadio reserved memory)
+    *out[0] = current_synchro_data;
     return 1;
 }
 

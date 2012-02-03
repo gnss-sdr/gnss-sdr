@@ -45,6 +45,8 @@
 #include "GPS_L1_CA.h"
 #include "armadillo"
 
+#include "gnss_synchro.h"
+
 /*!
  * \brief This class implements a simple PVT Least Squares solution
  */
@@ -84,7 +86,7 @@ public:
     gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file);
     ~gps_l1_ca_ls_pvt();
 
-    bool get_PVT(std::map<int,gnss_pseudorange> pseudoranges,double GPS_current_time,bool flag_averaging);
+    bool get_PVT(std::map<int,Gnss_Synchro> pseudoranges,double GPS_current_time,bool flag_averaging);
 
     /*!
      * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical

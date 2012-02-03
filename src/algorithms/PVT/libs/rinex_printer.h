@@ -105,7 +105,7 @@ public:
     /*!
      *  \brief Writes observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg,  std::map<int,float> pseudoranges);
+    void log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg,  std::map<int,double> pseudoranges);
 
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH

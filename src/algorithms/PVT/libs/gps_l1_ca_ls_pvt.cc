@@ -35,6 +35,8 @@
 #include <glog/logging.h>
 #include "boost/date_time/posix_time/posix_time.hpp"
 
+#include "gnss_synchro.h"
+
 using google::LogMessage;
 
 gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file)
@@ -217,9 +219,9 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
 }
 
 
-bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_map,double GPS_current_time,bool flag_averaging)
+bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,double GPS_current_time,bool flag_averaging)
 {
-    std::map<int,gnss_pseudorange>::iterator gnss_pseudoranges_iter;
+    std::map<int,Gnss_Synchro>::iterator gnss_pseudoranges_iter;
 
     arma::mat W = arma::eye(d_nchannels,d_nchannels); //channels weights matrix
     arma::vec obs = arma::zeros(d_nchannels); // pseudoranges observation vector
@@ -258,7 +260,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,gnss_pseudorange> gnss_pseudoranges_
                             satpos(2,i) = d_ephemeris[i].d_satpos_Z;
                             LOG_AT_LEVEL(INFO) << "ECEF satellite SV ID=" << d_ephemeris[i].i_satellite_PRN <<" X=" << d_ephemeris[i].d_satpos_X
                                     << " [m] Y=" << d_ephemeris[i].d_satpos_Y << " [m] Z=" << d_ephemeris[i].d_satpos_Z << " [m]" << std::endl;
-                            obs(i) = gnss_pseudoranges_iter->second.pseudorange_m + d_ephemeris[i].d_satClkCorr*GPS_C_m_s;
+                            obs(i) = gnss_pseudoranges_iter->second.Pseudorange_m + d_ephemeris[i].d_satClkCorr*GPS_C_m_s;
                             valid_obs++;
                         }
                     else

@@ -40,7 +40,7 @@
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
-
+#include "gnss_synchro.h"
 
 using google::LogMessage;
 
@@ -53,7 +53,7 @@ gps_l1_ca_make_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump
 
 
 gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging) :
-		                gr_block ("gps_l1_ca_pvt_cc", gr_make_io_signature (nchannels, nchannels,  sizeof(gnss_pseudorange)),
+		                gr_block ("gps_l1_ca_pvt_cc", gr_make_io_signature (nchannels, nchannels,  sizeof(Gnss_Synchro)),
 		                        gr_make_io_signature(1, 1, sizeof(gr_complex)))
 {
     d_queue = queue;
@@ -95,9 +95,9 @@ gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc()
 
 
 
-bool pseudoranges_pairCompare_min( std::pair<int,gnss_pseudorange> a, std::pair<int,gnss_pseudorange> b)
+bool pseudoranges_pairCompare_min( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
 {
-    return (a.second.pseudorange_m) < (b.second.pseudorange_m);
+    return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
 }
 
 
@@ -107,17 +107,17 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 {
     d_sample_counter++;
 
-    std::map<int,gnss_pseudorange> gnss_pseudoranges_map;
-    std::map<int,float> pseudoranges;
-    std::map<int,gnss_pseudorange>::iterator gnss_pseudoranges_iter;
+    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    std::map<int,double> pseudoranges;
+    std::map<int,Gnss_Synchro>::iterator gnss_pseudoranges_iter;
 
-    gnss_pseudorange **in = (gnss_pseudorange **)  &input_items[0]; //Get the input pointer
+    Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
 
     for (unsigned int i=0; i<d_nchannels; i++)
         {
-            if (in[i][0].valid == true)
+            if (in[i][0].Flag_valid_pseudorange == true)
                 {
-                    gnss_pseudoranges_map.insert(std::pair<int,gnss_pseudorange>(in[i][0].SV_ID, in[i][0])); //record the valid pseudorange in a map
+                    gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); //record the valid pseudorange in a map
                 }
         }
 
@@ -125,7 +125,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
             gnss_pseudoranges_iter != gnss_pseudoranges_map.end();
             gnss_pseudoranges_iter++)
         {
-            float pr = (float)gnss_pseudoranges_iter->second.pseudorange_m;
+            double pr = gnss_pseudoranges_iter->second.Pseudorange_m;
             pseudoranges[gnss_pseudoranges_iter->first] = pr;
             // std::cout << "Pseudoranges(SV ID,pseudorange [m]) =(" << gnss_pseudoranges_iter->first << ","
             //          << gnss_pseudoranges_iter->second.pseudorange_m << ")" <<std::endl;
@@ -147,7 +147,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
             nav_data_map[nav_msg.i_channel_ID] = nav_msg;
 
             // **** update pseudoranges clock ****
-            if (nav_msg.i_satellite_PRN == gnss_pseudoranges_iter->second.SV_ID)
+            if (nav_msg.i_satellite_PRN == gnss_pseudoranges_iter->second.PRN)
                 {
                     d_ephemeris_clock_s = d_last_nav_msg.d_TOW;
                     d_ephemeris_timestamp_ms = d_last_nav_msg.d_subframe1_timestamp_ms;
@@ -162,7 +162,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
             // compute on the fly PVT solution
             //std::cout<<"diff_clock_ephemeris="<<(gnss_pseudoranges_iter->second.timestamp_ms-d_ephemeris_timestamp_ms)/1000.0<<"\r\n";
             if (d_ls_pvt->get_PVT(gnss_pseudoranges_map,
-                    d_ephemeris_clock_s + (gnss_pseudoranges_iter->second.timestamp_ms - d_ephemeris_timestamp_ms)/1000.0,
+                    d_ephemeris_clock_s + (gnss_pseudoranges_iter->second.Pseudorange_timestamp_ms - d_ephemeris_timestamp_ms)/1000.0,
                     d_flag_averaging) == true)
                 {
                     d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);

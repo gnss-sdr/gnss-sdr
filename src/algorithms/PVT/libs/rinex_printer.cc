@@ -966,7 +966,7 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Navigation_Message 
 
 
 
-void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg, std::map<int,float> pseudoranges)
+void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg, std::map<int,double> pseudoranges)
 {
     std::string line;
 
@@ -1017,7 +1017,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
             line += std::string(2, ' ');
             //Number of satellites observed in current epoch
             int numSatellitesObserved = 0;
-            std::map<int,float>::iterator pseudoranges_iter;
+            std::map<int,double>::iterator pseudoranges_iter;
             for(pseudoranges_iter = pseudoranges.begin();
                     pseudoranges_iter != pseudoranges.end();
                     pseudoranges_iter++)
@@ -1048,7 +1048,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
                     lineObs.clear();
                     line.clear();
                     line += std::string(2, ' ');
-                    lineObs += Rinex_Printer::rightJustify(asString((double)pseudoranges_iter->second, 3), 14);
+                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second, 3), 14);
 
                     //Loss of lock indicator (LLI)
                     int lli = 0; // Include in the observation!!
@@ -1097,7 +1097,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
 
             //Number of satellites observed in current epoch
             int numSatellitesObserved = 0;
-            std::map<int,float>::iterator pseudoranges_iter;
+            std::map<int,double>::iterator pseudoranges_iter;
             for(pseudoranges_iter = pseudoranges.begin();
                     pseudoranges_iter != pseudoranges.end();
                     pseudoranges_iter++)
@@ -1124,7 +1124,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
                     if ((int)pseudoranges_iter->first < 10) lineObs += std::string(1, '0');
                     lineObs += boost::lexical_cast<std::string>((int)pseudoranges_iter->first);
                     //lineObs += std::string(2, ' ');
-                    lineObs += Rinex_Printer::rightJustify(asString((double)pseudoranges_iter->second, 3), 14);
+                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second, 3), 14);
 
                     //Loss of lock indicator (LLI)
                     int lli = 0; // Include in the observation!!

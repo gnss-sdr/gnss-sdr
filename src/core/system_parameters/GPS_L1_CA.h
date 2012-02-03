@@ -76,11 +76,6 @@ const int GPS_SUBFRAME_BITS=300;               //!< Number of bits per subframe 
 const int GPS_WORD_BITS=30;                    //!< Number of bits per word in the NAV message [bits]
 
 
-
-
-
-
-
 /*!
  *  \brief Navigation message bits slice structure: A portion of bits is indicated by
  *  the start position inside the subframe and the length in number of bits  */
@@ -94,39 +89,6 @@ typedef struct bits_slice
         length=l;
     }
 } bits_slice;
-
-
-
-
-/*!
- *  \brief Demodulator gnss_synchro structure, used to feed the pseudorange block */
-typedef struct gnss_synchro
-{
-  double preamble_delay_ms;
-  double prn_delay_ms;
-  double preamble_code_phase_ms;
-  double preamble_code_phase_correction_ms;
-  int satellite_PRN;
-  int channel_ID;
-  bool valid_word;
-  bool flag_preamble;
-} gnss_synchro;
-
-
-
-
-/*!
- *  \brief Observables structure, used to feed the PVT block */
-typedef struct gnss_pseudorange
-{
-  double pseudorange_m;
-  double timestamp_ms;
-  unsigned int SV_ID;
-  bool valid;
-} gnss_pseudorange;
-
-
-
 
 
 /* Constants for scaling the ephemeris found in the data message

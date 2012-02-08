@@ -42,6 +42,8 @@
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 #include "gps_navigation_message.h"
+#include <sys/time.h>
+#include <ctime>
 
 using google::LogMessage;
 
@@ -97,7 +99,17 @@ int main(int argc, char** argv)
 
     ControlThread *control_thread = new ControlThread();
 
+    // record startup time
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+
     control_thread->run();
+
+    // report the elapsed time
+    gettimeofday(&tv, NULL);
+    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::cout << "Total GNSS-SDR run time " << ((double)(end - begin))/1000000.0<< " [seconds]"<< std::endl;
 
     delete control_thread;
 

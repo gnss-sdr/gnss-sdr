@@ -394,18 +394,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignement
             Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
-            // check for samples consistency
-            for(int i=0; i<d_current_prn_length_samples; i++)
-                {
-                    if (std::isnan(in[i].real()) == true or std::isnan(in[i].imag()) == true)// or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
-                        {
-                            const int samples_available = ninput_items[0];
-                            d_sample_counter = d_sample_counter + samples_available;
-                            LOG_AT_LEVEL(WARNING) << "Detected NaN samples at sample number " << d_sample_counter << std::endl;
-                            consume_each(samples_available);
-                            return 0;
-                        }
-                }
             // Update the prn length based on code freq (variable) and
             // sampling frequency (fixed)
             // variable code PRN sample block size
@@ -424,6 +412,28 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     d_Early,
                     d_Prompt,
                     d_Late);
+
+            // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
+            if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true )// or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
+			{
+				const int samples_available = ninput_items[0];
+				d_sample_counter = d_sample_counter + samples_available;
+				LOG_AT_LEVEL(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
+				consume_each(samples_available);
+
+				// make an output to not stop the rest of the processing blocks
+	            current_synchro_data.Prompt_I=0.0;
+	            current_synchro_data.Prompt_Q=0.0;
+	            current_synchro_data.Tracking_timestamp_secs=d_sample_counter_seconds;
+	            current_synchro_data.Carrier_phase_rads=0.0;
+	            current_synchro_data.Code_phase_secs=0.0;
+	            current_synchro_data.CN0_dB_hz=0.0;
+	            current_synchro_data.Flag_valid_tracking=false;
+
+	            *out[0] =current_synchro_data;
+
+				return 1;
+			}
 
             // Compute PLL error and update carrier NCO -
             carr_error = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)TWO_PI;

@@ -101,9 +101,6 @@ void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr
     //free(carrier_aligned);
 }
 
-
-
-
 void Correlator::cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a()
 {
     //
@@ -133,12 +130,9 @@ void Correlator::cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a()
             // TODO: Make a test to find the best architecture
             this->volk_32fc_x2_dot_prod_32fc_a_best_arch = arch_list.at(arch_list.size() - 1);
         }
+
     std::cout << "Selected architecture for volk_32fc_x2_dot_prod_32fc_a is " << this->volk_32fc_x2_dot_prod_32fc_a_best_arch << std::endl;
 }
-
-
-
-
 
 
 void Correlator::cpu_arch_test_volk_32fc_x2_multiply_32fc_a()
@@ -172,10 +166,9 @@ void Correlator::cpu_arch_test_volk_32fc_x2_multiply_32fc_a()
                         }
                 }
         }
+
     std::cout << "Selected architecture for volk_32fc_x2_multiply_32fc_a_best_arch is " << this->volk_32fc_x2_multiply_32fc_a_best_arch << std::endl;
 }
-
-
 
 
 Correlator::Correlator ()
@@ -183,10 +176,6 @@ Correlator::Correlator ()
     cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a();
     cpu_arch_test_volk_32fc_x2_multiply_32fc_a();
 }
-
-
-
-
 
 Correlator::~Correlator ()
 {}

@@ -1,6 +1,6 @@
 /*!
  * \file test_main.cc
- * \brief  This file implements tests for the ControlMessageFactory.
+ * \brief  This file implements all system tests.
  * \author Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
  *
  *
@@ -56,6 +56,7 @@
 //#include "gnss_block/file_output_filter_test.cc"
 //#include "gnss_block/gnss_block_factory_test.cc"
 #include "gnuradio_block/gnss_sdr_valve_test.cc"
+#include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
 #include "string_converter/string_converter_test.cc"
 #include "arithmetic/complex_arithmetic_libc.cc"
 #include "arithmetic/correlations_libc.cc"

@@ -33,13 +33,8 @@
 
 
 #include <gtest/gtest.h>
-#include <iostream>
 #include <gflags/gflags.h>
-#include <stdexcept>
-
-
 #include <gnuradio/gr_top_block.h>
-#include <gnuradio/gr_file_source.h>
 #include <gnuradio/gr_sig_source_c.h>
 #include <gnuradio/gr_msg_queue.h>
 #include <gnuradio/gr_null_sink.h>
@@ -65,7 +60,6 @@ TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest) {
 		gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 		gr_top_block_sptr top_block = gr_make_top_block("direct_resampler_conditioner_cc_test");
-//		gr_file_source_sptr source = gr_make_file_source(sizeof(gr_complex),FLAGS_signal_file.c_str());
 	    gr_sig_source_c_sptr source = gr_make_sig_source_c(FLAGS_fs_in, GR_SIN_WAVE, 1000, 1, 0);
 	    gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), 1000000, queue);
 		direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(FLAGS_fs_in, FLAGS_fs_out);

@@ -12,13 +12,10 @@ exe run_tests : test_main.cc
 ../algorithms/channel/libs//gps_l1_ca_channel_fsm
 ../algorithms/conditioner/adapters//direct_resampler_conditioner
 ../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_cc
-../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_ss
+#../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_ss
 ../algorithms/libs//gps_sdr_signal_processing
 ../algorithms/libs//gnss_sdr_valve
 ../algorithms/libs//pass_through
-../algorithms/libs//gps_sdr_fft
-../algorithms/libs//gps_sdr_simd
-../algorithms/libs//gps_sdr_x86
 ../algorithms/observables/adapters//gps_l1_ca_observables
 ../algorithms/observables/gnuradio_blocks//gps_l1_ca_observables_cc
 ../algorithms/PVT/libs//rinex_printer

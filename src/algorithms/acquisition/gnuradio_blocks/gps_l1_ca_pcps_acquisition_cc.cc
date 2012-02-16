@@ -34,7 +34,6 @@
 #include "gps_l1_ca_pcps_acquisition_cc.h"
 #include "gps_sdr_signal_processing.h"
 #include "control_message_factory.h"
-#include "gps_sdr_x86.h"
 #include <gnuradio/gr_io_signature.h>
 #include <sstream>
 #include <glog/log_severity.h>

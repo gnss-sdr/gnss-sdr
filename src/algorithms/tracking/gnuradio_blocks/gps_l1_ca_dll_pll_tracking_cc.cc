@@ -308,14 +308,14 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_carrier()
 {
     float phase_rad, phase_step_rad;
 
-    phase_step_rad = (float)TWO_PI*d_carrier_doppler_hz / (float)d_fs_in;
+    phase_step_rad = (float)GPS_TWO_PI*d_carrier_doppler_hz / (float)d_fs_in;
     phase_rad = d_rem_carr_phase_rad;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
             d_carr_sign[i] = gr_complex(cos(phase_rad), sin(phase_rad));
             phase_rad += phase_step_rad;
         }
-    d_rem_carr_phase_rad = fmod(phase_rad, TWO_PI);
+    d_rem_carr_phase_rad = fmod(phase_rad, GPS_TWO_PI);
     d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + d_rem_carr_phase_rad;
 }
 
@@ -436,7 +436,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
 			}
 
             // Compute PLL error and update carrier NCO -
-            carr_error = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)TWO_PI;
+            carr_error = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)GPS_TWO_PI;
             // Implement carrier loop filter and generate NCO command
             carr_nco = d_carrier_loop_filter.get_carrier_nco(carr_error);
             // Modify carrier freq based on NCO command

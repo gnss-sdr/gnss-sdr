@@ -1,4 +1,4 @@
 project : build-dir ../../../../build ;
 
 obj direct_resampler_conditioner_cc : direct_resampler_conditioner_cc.cc ;
-obj direct_resampler_conditioner_ss : direct_resampler_conditioner_ss.cc ;
+#obj direct_resampler_conditioner_ss : direct_resampler_conditioner_ss.cc ;

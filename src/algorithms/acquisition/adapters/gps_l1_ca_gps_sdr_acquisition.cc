@@ -78,17 +78,7 @@ GpsL1CaGpsSdrAcquisition::GpsL1CaGpsSdrAcquisition(
 
     printf("vector_length_ %i\n\r", vector_length_);
 
-    if (item_type_.compare("short") == 0)
-    {
-        item_size_ = sizeof(short);
-        acquisition_ss_ = gps_l1_ca_gps_sdr_make_acquisition_ss(
-                acquisition_ms_, if_, fs_in_, vector_length_, queue_, dump_,
-                dump_filename_);
-        stream_to_vector_ = gr_make_stream_to_vector(item_size_, 2
-                * vector_length_);
-
-    }
-    else if (item_type_.compare("gr_complex") == 0)
+    if (item_type_.compare("gr_complex") == 0)
     {
         item_size_ = sizeof(gr_complex);
         acquisition_cc_ = gps_l1_ca_gps_sdr_make_acquisition_cc(
@@ -121,10 +111,6 @@ void GpsL1CaGpsSdrAcquisition::set_satellite(Gnss_Satellite satellite)
     {
         acquisition_cc_->set_satellite(gnss_satellite_);
     }
-    else
-    {
-        acquisition_ss_->set_satellite(gnss_satellite_);
-    }
 }
 
 
@@ -137,10 +123,6 @@ void GpsL1CaGpsSdrAcquisition::set_channel(unsigned int channel)
     {
         acquisition_cc_->set_channel(channel_);
     }
-    else
-    {
-        acquisition_ss_->set_channel(channel_);
-    }
 }
 
 // Set acquisition threshold
@@ -152,10 +134,6 @@ void GpsL1CaGpsSdrAcquisition::set_threshold(float threshold)
     {
         acquisition_cc_->set_threshold(threshold_);
     }
-    else
-    {
-        acquisition_ss_->set_threshold(threshold_);
-    }
 }
 
 // Set maximum Doppler shift
@@ -166,10 +144,6 @@ void GpsL1CaGpsSdrAcquisition::set_doppler_max(unsigned int doppler_max)
     if (item_type_.compare("gr_complex") == 0)
     {
         acquisition_cc_->set_doppler_max(doppler_max_);
-    }
-    else
-    {
-        acquisition_ss_->set_doppler_max(doppler_max_);
     }
 }
 
@@ -183,10 +157,6 @@ void GpsL1CaGpsSdrAcquisition::set_channel_queue(
     {
         acquisition_cc_->set_channel_queue(channel_internal_queue_);
     }
-    else
-    {
-        acquisition_ss_->set_channel_queue(channel_internal_queue_);
-    }
 }
 
 signed int GpsL1CaGpsSdrAcquisition::prn_code_phase()
@@ -195,10 +165,6 @@ signed int GpsL1CaGpsSdrAcquisition::prn_code_phase()
     if (item_type_.compare("gr_complex") == 0)
     {
         return acquisition_cc_->prn_code_phase();
-    }
-    else
-    {
-        return acquisition_ss_->prn_code_phase();
     }
 }
 
@@ -209,10 +175,6 @@ float GpsL1CaGpsSdrAcquisition::doppler_freq_shift()
     {
         return acquisition_cc_->doppler_freq_phase();
     }
-    else
-    {
-        return acquisition_ss_->doppler_freq_phase();
-    }
 }
 
 signed int GpsL1CaGpsSdrAcquisition::mag()
@@ -220,10 +182,6 @@ signed int GpsL1CaGpsSdrAcquisition::mag()
     if (item_type_.compare("gr_complex") == 0)
     {
         return acquisition_cc_->mag();
-    }
-    else
-    {
-        return acquisition_ss_->mag();
     }
 }
 
@@ -233,10 +191,6 @@ void GpsL1CaGpsSdrAcquisition::reset()
     {
         acquisition_cc_->set_active(true);
     }
-    else
-    {
-        acquisition_ss_->set_active(true);
-    }
 }
 
 unsigned long int GpsL1CaGpsSdrAcquisition::get_sample_stamp()
@@ -245,10 +199,6 @@ unsigned long int GpsL1CaGpsSdrAcquisition::get_sample_stamp()
     if (item_type_.compare("gr_complex") == 0)
     {
         return acquisition_cc_->get_sample_stamp();
-    }
-    else
-    {
-        return acquisition_ss_->get_sample_stamp();
     }
 }
 
@@ -262,11 +212,6 @@ void GpsL1CaGpsSdrAcquisition::connect(gr_top_block_sptr top_block)
         top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         //top_block->connect(acquisition_cc_, 0, vector_to_stream_, 0);
     }
-    else
-    {
-        top_block->connect(stream_to_vector_, 0, acquisition_ss_, 0);
-        //top_block->connect(acquisition_ss_, 0, vector_to_stream_, 0);
-    }
 
 }
 
@@ -277,11 +222,6 @@ void GpsL1CaGpsSdrAcquisition::disconnect(gr_top_block_sptr top_block)
     {
         top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
         //top_block->disconnect(acquisition_cc_, 0, vector_to_stream_, 0);
-    }
-    else
-    {
-        top_block->disconnect(stream_to_vector_, 0, acquisition_ss_, 0);
-        //top_block->disconnect(acquisition_ss_, 0, vector_to_stream_, 0);
     }
 }
 
@@ -295,10 +235,6 @@ gr_basic_block_sptr GpsL1CaGpsSdrAcquisition::get_right_block()
     if (item_type_.compare("gr_complex") == 0)
     {
         return acquisition_cc_;
-    }
-    else
-    {
-        return acquisition_ss_;
     }
 
 }

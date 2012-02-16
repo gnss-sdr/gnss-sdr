@@ -33,7 +33,7 @@
 // #include <gnuradio/usrp_source_c.h>
 #include <gnuradio/gr_file_sink.h>
 #include "direct_resampler_conditioner_cc.h"
-#include "direct_resampler_conditioner_ss.h"
+//#include "direct_resampler_conditioner_ss.h"
 #include "configuration_interface.h"
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -65,12 +65,12 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_,
                     sample_freq_out_);
         }
-    else if (item_type_.compare("short") == 0)
-        {
-            item_size_ = sizeof(short);
-            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_,
-                    sample_freq_out_);
-        }
+//    else if (item_type_.compare("short") == 0)
+//        {
+//            item_size_ = sizeof(short);
+//            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_,
+//                    sample_freq_out_);
+//        }
     else
         {
             LOG_AT_LEVEL(WARNING) << item_type_

@@ -36,7 +36,7 @@
 
 #include "acquisition_interface.h"
 #include "gps_l1_ca_gps_sdr_acquisition_cc.h"
-#include "gps_l1_ca_gps_sdr_acquisition_ss.h"
+//#include "gps_l1_ca_gps_sdr_acquisition_ss.h"
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
@@ -96,7 +96,7 @@ public:
 private:
 
     gps_l1_ca_gps_sdr_acquisition_cc_sptr acquisition_cc_;
-    gps_l1_ca_gps_sdr_acquisition_ss_sptr acquisition_ss_;
+    //gps_l1_ca_gps_sdr_acquisition_ss_sptr acquisition_ss_;
     gr_block_sptr stream_to_vector_;
     gr_block_sptr complex_to_short_;
     gr_block_sptr short_to_complex_;

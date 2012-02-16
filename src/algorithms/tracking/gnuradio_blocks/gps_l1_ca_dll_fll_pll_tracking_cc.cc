@@ -292,14 +292,14 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_code()
 void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_carrier()
 {
     float phase, phase_step;
-    phase_step = (float)TWO_PI * d_carrier_doppler_hz / (float)d_fs_in;
+    phase_step = (float)GPS_TWO_PI * d_carrier_doppler_hz / (float)d_fs_in;
     phase = d_rem_carr_phase;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
             d_carr_sign[i] = gr_complex(cos(phase), sin(phase));
             phase += phase_step;
         }
-    d_rem_carr_phase = fmod(phase, TWO_PI);
+    d_rem_carr_phase = fmod(phase, GPS_TWO_PI);
     d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + phase;
 }
 
@@ -425,13 +425,13 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                 }
             else
                 {
-                    d_FLL_discriminator_hz = fll_four_quadrant_atan(d_Prompt_prev, *d_Prompt, 0, correlation_time_s) / (float)TWO_PI;
+                    d_FLL_discriminator_hz = fll_four_quadrant_atan(d_Prompt_prev, *d_Prompt, 0, correlation_time_s) / (float)GPS_TWO_PI;
                     d_Prompt_prev = *d_Prompt;
                     d_FLL_wait = 1;
                 }
 
             // Compute PLL error
-            PLL_discriminator_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)TWO_PI;
+            PLL_discriminator_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)GPS_TWO_PI;
 
             /*
              * \todo Update FLL assistance algorithm!

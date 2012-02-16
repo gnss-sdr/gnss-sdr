@@ -55,8 +55,11 @@ DEFINE_string(RINEX_version, "3.01", "Specifies the RINEX version (2.11 or 3.01)
 
 Rinex_Printer::Rinex_Printer()
 {
-    Rinex_Printer::navFile.open(Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV"), std::ios::out | std::ios::app);
-    Rinex_Printer::obsFile.open(Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS"), std::ios::out | std::ios::app);
+    navfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV");
+    obsfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS");
+
+    Rinex_Printer::navFile.open(navfilename, std::ios::out | std::ios::app);
+    Rinex_Printer::obsFile.open(obsfilename, std::ios::out | std::ios::app);
 
     satelliteSystem["GPS"] = "G";
     satelliteSystem["GLONASS"] = "R";
@@ -153,8 +156,20 @@ Rinex_Printer::Rinex_Printer()
 Rinex_Printer::~Rinex_Printer()
 {
     // close RINEX files
+    long posn, poso;
+    posn = navFile.tellp();
+    poso = obsFile.tellp();
     Rinex_Printer::navFile.close();
     Rinex_Printer::obsFile.close();
+    // If nothing written, erase the files.
+    if (posn == 0)
+        {
+            remove(navfilename.c_str());
+        }
+    if (poso == 0)
+        {
+            remove(obsfilename.c_str());
+        }
 }
 
 

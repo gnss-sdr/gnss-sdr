@@ -148,6 +148,9 @@ private:
      */
     std::string createFilename(std::string type);
 
+    std::string navfilename;
+    std::string obsfilename;
+
     /*
      * Generates the data for the PGM / RUN BY / DATE line
      */

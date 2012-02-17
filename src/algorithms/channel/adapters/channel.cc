@@ -142,9 +142,13 @@ void Channel::disconnect(gr_top_block_sptr top_block)
             return;
         }
 
-    top_block->disconnect(acq_->get_right_block(), 0, trk_->get_left_block(), 0);
+    top_block->disconnect(pass_through_->get_right_block(), 0,
+            acq_->get_left_block(), 0);
+    top_block->disconnect(pass_through_->get_right_block(), 0,
+            trk_->get_left_block(), 0);
     top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
 
+    pass_through_->disconnect(top_block);
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);
     nav_->disconnect(top_block);

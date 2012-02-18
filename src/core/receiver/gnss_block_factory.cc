@@ -48,7 +48,7 @@
 #include "file_output_filter.h"
 #include "channel.h"
 //#include "usrp1_signal_source.h"
-#include "direct_resampler_conditioner.h"
+//#include "direct_resampler_conditioner.h"
 #include "gps_l1_ca_gps_sdr_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_tong_pcps_acquisition.h"
@@ -246,11 +246,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 
         }
 
-    else if (implementation.compare("Direct_Resampler") == 0)
-        {
-            block = new DirectResamplerConditioner(configuration, role,
-                    in_streams, out_streams);
-        }
+//    else if (implementation.compare("Direct_Resampler") == 0)
+//        {
+//            block = new DirectResamplerConditioner(configuration, role,
+//                    in_streams, out_streams);
+//        }
 
     // ACQUISITION BLOCKS ---------------------------------------------------------
 

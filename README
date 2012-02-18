@@ -3,7 +3,7 @@ HOW TO BUILD GNSS-SDR
 
 This document describes how to set up the compilation environment and build GNSS-SDR 
 
-Ubuntu 10.04, 10.10, 11.04 and 11.10)
+Ubuntu 10.04, 10.10, 11.04 and 11.10
 --------------------------------------
 
 * Install GNU Radio:
@@ -39,14 +39,15 @@ The full stop separated from "cmake" by a space is important. CMake will figure 
 
 NOTE: ATLAS version 3.6 is know to cause random crashes and incorrect results under Ubuntu. The minimum recommended version is 3.8. It is a good idea to completely remove ATLAS 3.6 from your system, in case you have it, as it intercepts calls to BLAS and LAPACK. 
 
-- Download, unzip, configure, build and install Google's performance analysis tools, google-perftools:
+- Download, unzip, configure, build and install gperftools, a set of performance analysis tools:
 
-$ wget http://google-perftools.googlecode.com/files/google-perftools-1.9.1.tar.gz 
-$ tar xvfz google-perftools-1.9.1.tar.gz 
-$ cd  google-perftools-1.9.1
+$ wget http://gperftools.googlecode.com/files/gperftools-2.0.tar.gz 
+$ tar xvfz gperftools-2.0.tar.gz 
+$ cd gperftools-2.0
 $ ./configure --enable-frame-pointers
 $ make
 $ sudo make install
+
 
 NOTE: At this moment (Dec. 2011), perftools seems to be not working properly in Ubuntu 11.10. See  http://code.google.com/p/google-perftools/issues/detail?id=386
 
@@ -219,7 +220,37 @@ NOTE: During compilation, you might see a harmless message g++: unrecognized opt
 flags darwin.compile OPTIONS : -std=c++0x ;
 
 
+GETTING STARTED
+---------------
 
+
+1. After building the code, you will find the gnss-sdr executable file in ./install directory. 
+
+2. At this moment, the real-time connection with the RF front-ends (USRPs or USB GNSS dongles) is not implemented yet. You need to work in post-processing mode. This means that you have to provide a captured GNSS signal file.
+    
+    2.1. The signal file can be easily recorded using the GNU Radio file sink in gr_complex<float> mode.
+
+    2.2. You will need a GPS active antenna and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
+We use the DBSRX to do the task, but you can try the newer ETTUS daughter boards as well. 
+
+    2.3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: an USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20= 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX we obtained good results with G=50
+
+    2.4. Capture at least 80 seconds of signal in an open sky conditions (at this moment, the acquisition is not very sensitive..). During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using gr_complex<float>.
+
+3. You are ready to configure the receiver to use your captured file among other parameters:
+
+    3.1. The configuration file reside in ./conf/gnss-sdr.conf
+    3.2. You need to modify at least the following settings:
+        3.2.1. SignalSource.filename= (absolute or relative route to your GNSS signal captured file)
+        3.2.2. GNSS-SDR.internal_fs_hz=(captured file sampling rate in Hz)
+        3.2.3. SignalSource.sampling_frequency=(captured file sampling rate in Hz)
+        3.2.4. SignalConditioner.sample_freq_in=(captured file sampling rate in Hz)
+        3.2.5. SignalConditioner.sample_freq_out=(captured file sampling rate in Hz)
+        3.2.6. TelemetryDecoder.fs_in=(captured file sampling rate in Hz)
+
+    3.3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters.
+
+4. Run the receiver from the install directory. The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get a PVT fix. The program will write a Google Earth KML file and RINEX (yet experimental) files in the install directory. Among the console output, GNSS-SDR also writes log files in /tmp/.
 
 
 

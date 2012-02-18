@@ -9,8 +9,8 @@ exe gnss-sdr : main.cc
 #../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_tong_pcps_acquisition_cc
 ../algorithms/channel/adapters//channel
 ../algorithms/channel/libs//gps_l1_ca_channel_fsm
-../algorithms/conditioner/adapters//direct_resampler_conditioner
-../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_cc
+#../algorithms/conditioner/adapters//direct_resampler_conditioner
+#../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_cc
 #../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_ss
 ../algorithms/libs//gps_sdr_signal_processing
 ../algorithms/libs//gnss_sdr_valve

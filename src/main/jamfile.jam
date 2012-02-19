@@ -9,9 +9,7 @@ exe gnss-sdr : main.cc
 #../algorithms/acquisition/gnuradio_blocks//gps_l1_ca_tong_pcps_acquisition_cc
 ../algorithms/channel/adapters//channel
 ../algorithms/channel/libs//gps_l1_ca_channel_fsm
-#../algorithms/conditioner/adapters//direct_resampler_conditioner
-#../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_cc
-#../algorithms/conditioner/gnuradio_blocks//direct_resampler_conditioner_ss
+../algorithms/conditioner/adapters//signal_conditioner
 ../algorithms/libs//gps_sdr_signal_processing
 ../algorithms/libs//gnss_sdr_valve
 ../algorithms/libs//pass_through
@@ -22,6 +20,9 @@ exe gnss-sdr : main.cc
 ../algorithms/PVT/libs//gps_l1_ca_ls_pvt
 ../algorithms/output_filter/adapters//file_output_filter
 ../algorithms/output_filter/adapters//null_sink_output_filter
+../algorithms/resampler/adapters//direct_resampler_conditioner
+../algorithms/resampler/gnuradio_blocks//direct_resampler_conditioner_cc
+#../algorithms/resampler/gnuradio_blocks//direct_resampler_conditioner_ss
 ../algorithms/signal_source/adapters//file_signal_source
 #../algorithms/signal_source/adapters//usrp1_signal_source
 ../algorithms/telemetry_decoder/adapters//gps_l1_ca_telemetry_decoder

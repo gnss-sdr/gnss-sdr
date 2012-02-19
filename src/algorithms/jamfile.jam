@@ -2,6 +2,7 @@ build-project acquisition ;
 build-project channel ;
 build-project conditioner ;
 build-project libs ;
+build-project resampler ;
 build-project signal_source ;
 build-project tracking ;
 build-project telemetry_decoder ;

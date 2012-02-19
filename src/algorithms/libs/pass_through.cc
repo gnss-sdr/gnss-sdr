@@ -50,7 +50,7 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration,	std::string ro
         out_streams_(out_streams)
 {
 
-    std::string default_item_type = "short";
+    std::string default_item_type = "gr_complex";
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     vector_size_ = configuration->property(role + ".vector_size", 1);

@@ -48,7 +48,8 @@
 #include "file_output_filter.h"
 #include "channel.h"
 //#include "usrp1_signal_source.h"
-//#include "direct_resampler_conditioner.h"
+#include "signal_conditioner.h"
+#include "direct_resampler_conditioner.h"
 #include "gps_l1_ca_gps_sdr_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_tong_pcps_acquisition.h"
@@ -90,14 +91,24 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
 {
 
     std::string default_implementation = "Pass_Through";
-    std::string implementation = configuration->property(
-            "SignalConditioner.implementation", default_implementation);
+    std::string data_type_adapter = configuration->property(
+            "DataTypeAdapter.implementation", default_implementation);
+    std::string input_filter = configuration->property(
+            "InputFilter.implementation", default_implementation);
+    std::string resampler = configuration->property(
+             "Resampler.implementation", default_implementation);
 
-    DLOG(INFO) << "Getting SignalConditioner with implementation "
-            << implementation;
+    DLOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
+            << data_type_adapter << ", InputFilter implementation: "
+            << input_filter << ", and Resampler implementation: "
+            << resampler;
 
-    return GetBlock(configuration, "SignalConditioner", implementation, 1, 1,
-            queue);
+    return new SignalConditioner(configuration, GetBlock(configuration,
+    		"DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
+    		configuration,"InputFilter", input_filter, 1, 1, queue),
+    		GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
+    		"SignalConditioner", "Signal_Conditioner", queue);
+
 }
 
 GNSSBlockInterface* GNSSBlockFactory::GetObservables(
@@ -163,7 +174,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetChannel(
     DLOG(INFO) << "Instantiating channel " << id;
 
     return new Channel(configuration, channel, GetBlock(configuration,
-            "SignalConditioner", "Pass_Through", 1, 1, queue),
+    		"Channel", "Pass_Through", 1, 1, queue),
             (AcquisitionInterface*)GetBlock(configuration, "Acquisition",
                     acq, 1, 1, queue), (TrackingInterface*)GetBlock(
                             configuration, "Tracking", trk, 1, 1, queue),
@@ -223,8 +234,16 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 {
     GNSSBlockInterface* block = NULL; //Change to nullptr when available in compilers (C++11)
 
+    //PASS THROUGH ----------------------------------------------------------------
+
+    if (implementation.compare("Pass_Through") == 0)
+            {
+                block = new Pass_Through(configuration, role, in_streams, out_streams);
+
+            }
+
     // SIGNAL SOURCES -------------------------------------------------------------
-    if (implementation.compare("File_Signal_Source") == 0)
+    else if (implementation.compare("File_Signal_Source") == 0)
         {
             block = new FileSignalSource(configuration, role, in_streams,
                     out_streams, queue);
@@ -238,19 +257,18 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 
     //! \todo Create a UHD block
 
-    // SIGNAL CONDITIONERS ---------------------------------------------------------
+    // DATA TYPE ADAPTER -----------------------------------------------------------
 
-    else if (implementation.compare("Pass_Through") == 0)
+    // INPUT FILTER ----------------------------------------------------------------
+
+    // RESAMPLER -------------------------------------------------------------------
+
+
+    else if (implementation.compare("Direct_Resampler") == 0)
         {
-            block = new Pass_Through(configuration, role, in_streams, out_streams);
-
+            block = new DirectResamplerConditioner(configuration, role,
+                    in_streams, out_streams);
         }
-
-//    else if (implementation.compare("Direct_Resampler") == 0)
-//        {
-//            block = new DirectResamplerConditioner(configuration, role,
-//                    in_streams, out_streams);
-//        }
 
     // ACQUISITION BLOCKS ---------------------------------------------------------
 

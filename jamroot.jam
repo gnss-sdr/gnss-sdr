@@ -33,6 +33,8 @@ project : requirements
 <include>src/algorithms/PVT/adapters
 <include>src/algorithms/PVT/gnuradio_blocks
 <include>src/algorithms/PVT/libs
+<include>src/algorithms/resampler/adapters
+<include>src/algorithms/resampler/gnuradio_blocks
 <include>src/algorithms/signal_source/adapters
 <include>src/algorithms/signal_source/gnuradio_blocks
 <include>src/algorithms/telemetry_decoder/adapters

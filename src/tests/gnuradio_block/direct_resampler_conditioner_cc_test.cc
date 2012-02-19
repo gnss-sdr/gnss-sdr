@@ -33,7 +33,8 @@
 
 
 #include <gtest/gtest.h>
-#include <gflags/gflags.h>
+#include <sys/time.h>
+#include <iostream>
 #include <gnuradio/gr_top_block.h>
 #include <gnuradio/gr_sig_source_c.h>
 #include <gnuradio/gr_msg_queue.h>
@@ -43,42 +44,44 @@
 #include "direct_resampler_conditioner_cc.h"
 
 
-
-DEFINE_string(signal_file, "../data/signal.dat",
-		"Path to the file containing the signal samples");
-
-DEFINE_double(fs_in, 8000000.0, "FS of the signal in Hz");
-DEFINE_double(fs_out, 4000000.0, "FS of the resampled signal in Hz");
-
-using namespace std;
-
 TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest) {
 
+	double fs_in = 8000000.0; //FS of the signal in Hz
+	double fs_out = 4000000.0; //FS of the resampled signal in Hz
+	struct timeval tv;
+	int nsamples = 1000000; //Number of samples to be computed
+	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+	gr_top_block_sptr top_block = gr_make_top_block("direct_resampler_conditioner_cc_test");
+    gr_sig_source_c_sptr source = gr_make_sig_source_c(fs_in, GR_SIN_WAVE, 1000, 1, 0);
+    gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+    long long int begin;
+    long long int end;
 
-	try {
+	EXPECT_NO_THROW( {
 
-		gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+		direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
 
-		gr_top_block_sptr top_block = gr_make_top_block("direct_resampler_conditioner_cc_test");
-	    gr_sig_source_c_sptr source = gr_make_sig_source_c(FLAGS_fs_in, GR_SIN_WAVE, 1000, 1, 0);
-	    gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), 1000000, queue);
-		direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(FLAGS_fs_in, FLAGS_fs_out);
-		gr_block_sptr sink = gr_make_null_sink(sizeof(gr_complex));
+	}) << "Failure in instantiation of direct_resampler_conditioner.";
+
+	direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
+	gr_block_sptr sink = gr_make_null_sink(sizeof(gr_complex));
+
+	EXPECT_NO_THROW( {
 
 	    top_block->connect(source, 0, valve, 0);
 		top_block->connect(valve, 0, resampler, 0);
 		top_block->connect(resampler, 0, sink, 0);
+	}) << "Connection failure of direct_resampler_conditioner.";
+
+	EXPECT_NO_THROW( {
+	    gettimeofday(&tv, NULL);
+	    begin = tv.tv_sec *1000000 + tv.tv_usec;
 		top_block->run(); // Start threads and wait
+	    gettimeofday(&tv, NULL);
+	    end = tv.tv_sec *1000000 + tv.tv_usec;
 		top_block->stop();
-		}
+	}) << "Connection failure of direct_resampler_conditioner.";
 
-	catch(std::runtime_error &e){
-
-		ADD_FAILURE() << "Runtime error";
-	}
-	catch(...){
-
-		ADD_FAILURE() << "Uncaught exception";
-	}
+	std::cout <<  "Resampled " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 
 }

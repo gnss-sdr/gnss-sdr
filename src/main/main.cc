@@ -44,6 +44,7 @@
 #include "gps_navigation_message.h"
 #include <sys/time.h>
 #include <ctime>
+#include <memory>
 
 using google::LogMessage;
 
@@ -75,7 +76,7 @@ int main(int argc, char** argv)
     //google::SetVersionString("0.1");
     google::ParseCommandLineFlags(&argc, &argv, true);
 
-    std::cout<<"Initializing GNSS-SDR... Please wait"<<std::endl;
+    std::cout << "Initializing GNSS-SDR... Please wait." << std::endl;
 
     google::InitGoogleLogging(argv[0]);
     if (FLAGS_log_dir.empty())
@@ -95,9 +96,7 @@ int main(int argc, char** argv)
             std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
         }
 
-
-
-    ControlThread *control_thread = new ControlThread();
+    std::unique_ptr<ControlThread> control_thread(new ControlThread());
 
     // record startup time
     struct timeval tv;
@@ -110,8 +109,6 @@ int main(int argc, char** argv)
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     std::cout << "Total GNSS-SDR run time " << ((double)(end - begin))/1000000.0<< " [seconds]"<< std::endl;
-
-    delete control_thread;
 
     google::ShutDownCommandLineFlags();
     std::cout<<"GNSS-SDR program ended"<<std::endl;

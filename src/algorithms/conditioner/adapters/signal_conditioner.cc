@@ -50,7 +50,6 @@ SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
         in_filt_(in_filt), res_(res), role_(role), implementation_(implementation),
         queue_(queue)
 {
-//    stop_ = false;
     connected_ = false;
 }
 

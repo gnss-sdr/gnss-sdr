@@ -1,11 +1,12 @@
 build-project acquisition ;
 build-project channel ;
 build-project conditioner ;
+build-project input_filter ;
 build-project libs ;
+build-project observables ;
+build-project output_filter ;
+build-project PVT ;
 build-project resampler ;
 build-project signal_source ;
 build-project tracking ;
 build-project telemetry_decoder ;
-build-project observables ;
-build-project PVT ;
-build-project output_filter ;

@@ -2,7 +2,7 @@
  * \file gnss_block_factory.cc
  * \brief  This class implements a factory that returns instances of GNSS blocks.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * This class encapsulates the complexity behind the instantiation
@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -50,6 +50,7 @@
 //#include "usrp1_signal_source.h"
 #include "signal_conditioner.h"
 #include "direct_resampler_conditioner.h"
+#include "fir_filter.h"
 #include "gps_l1_ca_gps_sdr_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_tong_pcps_acquisition.h"
@@ -260,7 +261,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     // DATA TYPE ADAPTER -----------------------------------------------------------
 
     // INPUT FILTER ----------------------------------------------------------------
-
+    else if (implementation.compare("Fir_Filter") == 0)
+        {
+            block = new FirFilter(configuration, role, in_streams,
+                    out_streams, queue);
+        }
     // RESAMPLER -------------------------------------------------------------------
 
 

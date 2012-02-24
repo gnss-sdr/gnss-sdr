@@ -61,7 +61,8 @@
 #include "arithmetic/complex_arithmetic_libc.cc"
 #include "arithmetic/correlations_libc.cc"
 #include "arithmetic/cordic_test.cc"
-
+#include "gnss_block/fir_filter_test.cc"
+#include "gnss_block/direct_resampler_conditioner_test.cc"
 
 concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
 

@@ -11,6 +11,7 @@ exe run_tests : test_main.cc
 ../algorithms/channel/adapters//channel
 ../algorithms/channel/libs//gps_l1_ca_channel_fsm
 ../algorithms/conditioner/adapters//signal_conditioner
+../algorithms/input_filter/adapters//fir_filter
 ../algorithms/libs//gps_sdr_signal_processing
 ../algorithms/libs//gnss_sdr_valve
 ../algorithms/libs//pass_through

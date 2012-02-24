@@ -1,0 +1,3 @@
+project : build-dir ../../../../build ;
+
+obj fir_filter : fir_filter.cc ;

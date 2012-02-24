@@ -25,6 +25,8 @@ project : requirements
 <include>src/algorithms/channel/libs
 <include>src/algorithms/conditioner/adapters
 <include>src/algorithms/conditioner/gnuradio_blocks
+<include>src/algorithms/input_filter/adapters
+<include>src/algorithms/input_filter/gnuradio_blocks
 <include>src/algorithms/libs
 <include>src/algorithms/observables/adapters
 <include>src/algorithms/observables/gnuradio_blocks

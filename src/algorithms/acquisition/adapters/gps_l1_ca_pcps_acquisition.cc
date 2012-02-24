@@ -78,6 +78,10 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
                 dump_, dump_filename_);
         stream_to_vector_ = gr_make_stream_to_vector(item_size_,
                 vector_length_);
+        DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id()
+                << ")";
+        DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id()
+                << ")";
     }
     else
     {
@@ -85,8 +89,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
                 << " unknown acquisition item type";
     }
 
-    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id()
-            << ")";
+
 }
 
 GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition()

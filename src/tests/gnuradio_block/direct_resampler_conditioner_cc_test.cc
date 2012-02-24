@@ -57,7 +57,7 @@ TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest) {
     long long int begin;
     long long int end;
 
-	EXPECT_NO_THROW( {
+	EXPECT_NO_THROW({
 
 		direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
 
@@ -80,7 +80,7 @@ TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest) {
 	    gettimeofday(&tv, NULL);
 	    end = tv.tv_sec *1000000 + tv.tv_usec;
 		top_block->stop();
-	}) << "Connection failure of direct_resampler_conditioner.";
+	}) << "Failure running direct_resampler_conditioner.";
 
 	std::cout <<  "Resampled " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 

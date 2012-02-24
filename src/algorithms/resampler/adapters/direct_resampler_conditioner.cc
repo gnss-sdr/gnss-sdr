@@ -63,6 +63,11 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             item_size_ = sizeof(gr_complex);
             resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_,
                     sample_freq_out_);
+            DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
+            DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
+            DLOG(INFO) << "Item size " << item_size_;
+            DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
+
         }
 //    else if (item_type_.compare("short") == 0)
 //        {
@@ -73,7 +78,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     else
         {
             LOG_AT_LEVEL(WARNING) << item_type_
-                    << " unrecognized item type. Using short";
+                    << " unrecognized item type for resampler";
             item_size_ = sizeof(short);
         }
 
@@ -83,10 +88,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
         }
 
-    DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
-    DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
-    DLOG(INFO) << "Item size " << item_size_;
-    DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
+
     if (dump_)
         {
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";

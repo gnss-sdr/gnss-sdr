@@ -53,30 +53,6 @@ protected:
 		top_block = gr_make_top_block("Fir filter test");
 		factory = new GNSSBlockFactory();
 		config = new InMemoryConfiguration();
-		config->set_property("InputFilter.number_of_taps", "4");
-		config->set_property("InputFilter.number_of_bands", "2");
-
-		config->set_property("InputFilter.band1_begin", "0.0");
-		config->set_property("InputFilter.band1_end", "0.45");
-		config->set_property("InputFilter.band2_begin", "0.55");
-		config->set_property("InputFilter.band2_end", "1.0");
-
-		config->set_property("InputFilter.ampl1_begin", "1.0");
-		config->set_property("InputFilter.ampl1_end", "1.0");
-		config->set_property("InputFilter.ampl2_begin", "0.0");
-		config->set_property("InputFilter.ampl2_end", "0.0");
-
-		config->set_property("InputFilter.band1_error", "1.0");
-		config->set_property("InputFilter.band2_error", "1.0");
-
-		config->set_property("InputFilter.filter_type", "bandpass");
-		config->set_property("InputFilter.grid_density", "16");
-
-//		config->set_property("InputFilter.dump", "true");
-
-		gnss_block = factory->GetBlock(config, "InputFilter", "Fir_Filter", 1,
-				1, queue);
-
 		item_size = sizeof(gr_complex);
 
 	}
@@ -84,6 +60,7 @@ protected:
 		delete factory;
 		delete config;
 	}
+	bool init();
 	gr_msg_queue_sptr queue;
 	gr_top_block_sptr top_block;
 	GNSSBlockFactory* factory;
@@ -93,6 +70,35 @@ protected:
 
 };
 
+bool Fir_Filter_Test::init(){
+
+	config->set_property("InputFilter.number_of_taps", "4");
+	config->set_property("InputFilter.number_of_bands", "2");
+
+	config->set_property("InputFilter.band1_begin", "0.0");
+	config->set_property("InputFilter.band1_end", "0.45");
+	config->set_property("InputFilter.band2_begin", "0.55");
+	config->set_property("InputFilter.band2_end", "1.0");
+
+	config->set_property("InputFilter.ampl1_begin", "1.0");
+	config->set_property("InputFilter.ampl1_end", "1.0");
+	config->set_property("InputFilter.ampl2_begin", "0.0");
+	config->set_property("InputFilter.ampl2_end", "0.0");
+
+	config->set_property("InputFilter.band1_error", "1.0");
+	config->set_property("InputFilter.band2_error", "1.0");
+
+	config->set_property("InputFilter.filter_type", "bandpass");
+	config->set_property("InputFilter.grid_density", "16");
+
+//		config->set_property("InputFilter.dump", "true");
+	gnss_block = factory->GetBlock(config, "InputFilter", "Fir_Filter", 1,
+		1, queue);
+	if (gnss_block == NULL) return false;
+	else return true;
+}
+
+
 TEST_F(Fir_Filter_Test, InstantiationConnectAndRunTest)
 {
 	int fs_in = 8000000;
@@ -101,8 +107,10 @@ TEST_F(Fir_Filter_Test, InstantiationConnectAndRunTest)
     long long int begin;
     long long int end;
 
-	ASSERT_NE( (int)gnss_block, NULL)
-		<< "Function factory->GetInputFilter(config, queue) fails." << std::endl;
+//	ASSERT_NE( (int)gnss_block, NULL)
+//		<< "Function factory->GetInputFilter(config, queue) fails." << std::endl;
+
+	ASSERT_NE(init(), false) << "Function factory->GetBlock(config, queue) fails." << std::endl;
 
 	ASSERT_NO_THROW( {
 			gnss_block->connect(top_block);

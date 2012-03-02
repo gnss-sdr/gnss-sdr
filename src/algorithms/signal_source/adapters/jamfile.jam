@@ -1,5 +1,6 @@
 project : build-dir ../../../../build ;
 
 obj file_signal_source : file_signal_source.cc ;
+obj uhd_signal_source : uhd_signal_source.cc ;
 #obj usrp1_signal_source : usrp1_signal_source.cc ;
 

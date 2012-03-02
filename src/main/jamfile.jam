@@ -25,7 +25,7 @@ exe gnss-sdr : main.cc
 ../algorithms/resampler/gnuradio_blocks//direct_resampler_conditioner_cc
 #../algorithms/resampler/gnuradio_blocks//direct_resampler_conditioner_ss
 ../algorithms/signal_source/adapters//file_signal_source
-#../algorithms/signal_source/adapters//usrp1_signal_source
+../algorithms/signal_source/adapters//uhd_signal_source
 ../algorithms/telemetry_decoder/adapters//gps_l1_ca_telemetry_decoder
 ../algorithms/telemetry_decoder/gnuradio_blocks//gps_l1_ca_telemetry_decoder_cc
 ../algorithms/telemetry_decoder/libs//gps_l1_ca_subframe_fsm
@@ -57,7 +57,9 @@ exe gnss-sdr : main.cc
 ../core/system_parameters//gnss_synchro
 ../..//gflags
 ../..//glog
-../..//gnuradio-core ;
+../..//gnuradio-core
+../..//uhd
+../..//gnuradio-uhd ;
 #../..//gnuradio-usrp ;
 
 install ../../install : gnss-sdr ;

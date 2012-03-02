@@ -13,6 +13,8 @@ lib gtest
 lib glog ;
 lib gflags ;
 lib gnuradio-core ;
+lib uhd ;
+lib gnuradio-uhd ;
 
 project : requirements
 <define>OMNITHREAD_POSIX
@@ -55,6 +57,7 @@ project : requirements
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/io
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/general
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/gengen
+<include>$GNURADIO_ROOT/gr-uhd/include
 <include>$GNURADIO_ROOT/volk/lib
 <include>$(GTEST_DIR)/include
 <threading>multi 

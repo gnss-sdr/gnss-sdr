@@ -200,13 +200,15 @@ void Channel::start()
 
 void Channel::run()
 {
-    start_acquisition();
     while (!stop_)
         {
             channel_internal_queue_.wait_and_pop(message_);
             process_channel_messages();
         }
 
+}
+void Channel::standby(){
+    channel_fsm_.Event_gps_failed_tracking_standby();
 }
 
 /*
@@ -215,8 +217,8 @@ void Channel::run()
  */
 void Channel::stop()
 {
-    stop_ = true;
     channel_internal_queue_.push(0); //message to stop channel
+	stop_ = true;
 
     /* When the boost::thread object that represents a thread of execution
      * is destroyed the thread becomes detached. Once a thread is detached,
@@ -262,12 +264,7 @@ void Channel::process_channel_messages()
             }
         break;
 
-    case 3:
-        LOG_AT_LEVEL(INFO) << "Channel " << channel_
-        << " TRACKING FAILED satellite " << gnss_synchro_.System << " "<< gnss_synchro_.PRN
-        << ", reacquisition.";
-        channel_fsm_.Event_gps_failed_tracking();
-        break;
+
 
     default:
         LOG_AT_LEVEL(WARNING) << "Default case, invalid message.";

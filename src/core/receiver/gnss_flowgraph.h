@@ -118,10 +118,13 @@ private:
     void init();
     void apply_action(unsigned int what);
     void set_signals_list();
+    void set_channels_state();
 
     bool connected_;
     bool running_;
     unsigned int channels_count_;
+    unsigned int acq_channels_count_;
+    unsigned int max_acq_channels_;
     unsigned int applied_actions_;
 
     std::string config_file_;
@@ -135,7 +138,7 @@ private:
     gr_msg_queue_sptr queue_;
 
     std::list<Gnss_Signal> available_GNSS_signals_;
-
+    std::vector<unsigned int> channels_state_;
 };
 
 #endif /*GNSS_SDR_GNSS_FLOWGRAPH_H_*/

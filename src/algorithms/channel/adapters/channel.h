@@ -91,7 +91,7 @@ public:
     void start_acquisition();
     void set_signal(Gnss_Signal gnss_signal_);
     void start();
-
+    void standby();
     /*!
      * \brief Set stop_ to true and blocks the calling thread until
      * the thread of the constructor has completed

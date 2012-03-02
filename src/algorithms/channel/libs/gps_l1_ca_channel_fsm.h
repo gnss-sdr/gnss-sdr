@@ -80,7 +80,8 @@ public:
     void Event_gps_valid_acquisition();
     void Event_gps_failed_acquisition_repeat();
     void Event_gps_failed_acquisition_no_repeat();
-    void Event_gps_failed_tracking();
+    //void Event_gps_failed_tracking_reacq();
+    void Event_gps_failed_tracking_standby();
 
 private:
     AcquisitionInterface *acq_;

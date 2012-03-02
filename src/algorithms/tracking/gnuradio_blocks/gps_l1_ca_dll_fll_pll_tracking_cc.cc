@@ -463,7 +463,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     d_CN0_SNV_dB_Hz = gps_l1_ca_CN0_SNV(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
                     // ###### TRACKING UNLOCK NOTIFICATION #####
-                    int tracking_message;
+                    //int tracking_message;
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_carrier_lock_test > MINIMUM_VALID_CN0)
                         {
                             d_carrier_lock_fail_counter++;
@@ -475,8 +475,13 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                         {
                             std::cout << "Channel " << d_channel << " loss of lock!" << std::endl;
-                            tracking_message = 3; //loss of lock
-                            d_channel_internal_queue->push(tracking_message);
+//                            tracking_message = 3; //loss of lock
+//                            d_channel_internal_queue->push(tracking_message);
+                        	ControlMessageFactory* cmf = new ControlMessageFactory();
+                        	if (d_queue != gr_msg_queue_sptr()) {
+                        		d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
+                        	}
+                        	delete cmf;
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }

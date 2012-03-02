@@ -2,7 +2,7 @@
  * \file gnss_flowgraph.cc
  * \brief Implementation of a GNSS receiver flowgraph
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Detailed description of the file here if needed.
  *
@@ -90,8 +90,15 @@ void GNSSFlowgraph::start() {
 
 void GNSSFlowgraph::stop() {
 	for (unsigned int i = 0; i < channels_count_; i++) {
+//		if(channels_state_[i]==2) channel(i)->
 		channel(i)->stop();
 	}
+
+	for (unsigned int i = 0; i < channels_count_; i++) {
+		std::cout << "Channel " << i << " in state " << channels_state_[i]
+				<< std::endl;
+	}
+
 	DLOG(INFO) << "Threads finished. Return to main program.";
 	top_block_->stop();
 	running_ = false;
@@ -216,10 +223,15 @@ void GNSSFlowgraph::connect() {
 				<< available_GNSS_signals_.front() << std::endl;
 		available_GNSS_signals_.pop_front();
 		channel(i)->start();
-		//channel(i)->start_acquisition();
+		if (channels_state_[i] == 1) {
+			channel(i)->start_acquisition();
+			DLOG(INFO) << "Channel " << i
+					<< " connected to observables and ready for acquisition";
+		} else {
+			DLOG(INFO) << "Channel " << i
+					<< " connected to observables in standby mode";
+		}
 
-		DLOG(INFO) << "Channel " << i
-				<< " connected to observables and ready for acquisition";
 	}
 	/*
 	 * Connect the observables output of each channel to the PVT block
@@ -284,6 +296,50 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what) {
 		channel(who)->start_acquisition();
 		break;
 		// TODO: Tracking messages
+
+	case 1:
+
+		LOG_AT_LEVEL(INFO) << "Channel " << who << " ACQ SUCCESS satellite "
+				<< channel(who)->get_signal().get_satellite();
+
+		channels_state_[who] = 2;
+		acq_channels_count_--;
+		if (acq_channels_count_ < max_acq_channels_) {
+			for (unsigned int i = 0; i < channels_count_; i++) {
+				if (channels_state_[i] == 0) {
+					channels_state_[i] = 1;
+					acq_channels_count_++;
+					channel(i)->start_acquisition();
+					break;
+				}
+			}
+		}
+
+		for (unsigned int i = 0; i < channels_count_; i++) {
+			std::cout << "Channel " << i << " in state " << channels_state_[i]
+					<< std::endl;
+		}
+		break;
+
+	case 2:
+
+		LOG_AT_LEVEL(INFO) << "Channel " << who << " TRK FAILED satellite "
+				<< channel(who)->get_signal().get_satellite();
+
+		if (acq_channels_count_ < max_acq_channels_) {
+			channels_state_[who] = 1;
+			acq_channels_count_++;
+			channel(who)->start_acquisition();
+		}else {
+			channels_state_[who] = 0;
+			channel(who)->standby();
+		}
+
+		for (unsigned int i = 0; i < channels_count_; i++) {
+			std::cout << "Channel " << i << " in state " << channels_state_[i]
+					<< std::endl;
+		}
+		break;
 
 	default:
 		break;
@@ -360,6 +416,8 @@ void GNSSFlowgraph::init() {
 
 	set_signals_list();
 
+	set_channels_state();
+
 	applied_actions_ = 0;
 
 	DLOG(INFO) << "Blocks instantiated. " << channels_count_ << " channels.";
@@ -376,7 +434,7 @@ void GNSSFlowgraph::set_signals_list() {
 	 * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf (page 5)
 	 */
 	std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-			11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,   25, 26, 27, 28,
+			11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
 			29, 30, 31, 32 };
 
 	std::set<unsigned int>::iterator available_gps_prn_iter;
@@ -390,12 +448,12 @@ void GNSSFlowgraph::set_signals_list() {
 
 	for (available_gps_prn_iter = available_gps_prn.begin(); available_gps_prn_iter
 			!= available_gps_prn.end(); available_gps_prn_iter++) {
-		signal_value = Gnss_Signal(Gnss_Satellite(std::string("GPS"), *available_gps_prn_iter),std::string("1C"));
+		signal_value = Gnss_Signal(Gnss_Satellite(std::string("GPS"),
+				*available_gps_prn_iter), std::string("1C"));
 		available_GNSS_signals_.push_back(signal_value);
 	}
 
-	std::list<Gnss_Signal>::iterator gnss_it =
-			available_GNSS_signals_.begin();
+	std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
 
 	for (unsigned int i = 0; i < channels_count_; i++) {
 		std::string default_system = "GPS";
@@ -410,24 +468,54 @@ void GNSSFlowgraph::set_signals_list() {
 		unsigned int sat = configuration_->property("Channel"
 				+ boost::lexical_cast<std::string>(i) + ".satellite", 0);
 
-
 		if ((sat == 0) || (sat == gnss_it->get_satellite().get_PRN())) // 0 = not PRN in configuration file
 		{
 			gnss_it++;
 		} else {
-			signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat),gnss_signal);
+			signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat),
+					gnss_signal);
 			available_GNSS_signals_.remove(signal_value);
 			available_GNSS_signals_.insert(gnss_it, signal_value);
 		}
 
 	}
-	std::cout << "Signal queue: " << std::endl;
-	for (std::list<Gnss_Signal>::iterator it =
-			available_GNSS_signals_.begin(); it
-			!= available_GNSS_signals_.end(); it++) {
-		std::cout << *it << std::endl;
+	/*	std::cout << "Signal queue: " << std::endl;
+	 for (std::list<Gnss_Signal>::iterator it =
+	 available_GNSS_signals_.begin(); it
+	 != available_GNSS_signals_.end(); it++) {
+	 std::cout << *it << std::endl;
+	 }*/
+
+}
+
+void GNSSFlowgraph::set_channels_state() {
+
+	max_acq_channels_ = (configuration_->property("Channels.in_acquisition",
+			channels_count_));
+
+	if (max_acq_channels_ > channels_count_) {
+		max_acq_channels_ = channels_count_;
+		std::cout
+				<< "Channels_in_acquisition is bigger than number of channels. Variable acq_channels_count_ is set to "
+				<< channels_count_ << std::endl;
 	}
 
+	channels_state_.reserve(channels_count_);
+
+	for (unsigned int i = 0; i < channels_count_; i++) {
+		if (i < max_acq_channels_) {
+			channels_state_.push_back(1);
+		} else
+			channels_state_.push_back(0);
+	}
+	acq_channels_count_ = max_acq_channels_;
+
+	DLOG(INFO) << acq_channels_count_ << " channels in acquisition state";
+
+	for (unsigned int i = 0; i < channels_count_; i++) {
+		std::cout << "Channel " << i << " in state " << channels_state_[i]
+				<< std::endl;
+	}
 }
 
 void GNSSFlowgraph::apply_action(unsigned int what) {

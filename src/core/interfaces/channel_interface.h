@@ -57,6 +57,7 @@ public:
     virtual void start_acquisition() = 0;
     virtual void set_signal(Gnss_Signal) = 0;
     virtual void start() = 0;
+    virtual void standby() = 0;
     virtual void stop() = 0;
 };
 

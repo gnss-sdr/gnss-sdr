@@ -49,8 +49,6 @@ $ make
 $ sudo make install
 
 
-NOTE: At this moment (Dec. 2011), perftools seems to be not working properly in Ubuntu 11.10. See  http://code.google.com/p/google-perftools/issues/detail?id=386
-
 - Download, unzip, configure, and build Google C++ Testing Framework (also known as Google Test):
 
 $ wget http://googletest.googlecode.com/files/gtest-1.6.0.zip
@@ -122,12 +120,36 @@ Mac OS X 1.6.8 (Snow Leopard)
 
 * Install Macports from  http://www.macports.org/install.php We recommend to install directly the “dmg” disk images for Snow Leopart. GNSS-SDR has not been tested with Leopard or Tiger.
 
+* Install some tools:
+
+$ sudo port install doxygen graphviz subversion orc
+
+
 * With your favorite text editor, create a $HOME/user-config.jam file and specify that you want to use the darwin toolset (Apple's version of the GCC toolchain) and doxygen:
 
 using darwin ;
 using doxygen ;
 
-* Install GNU Radio:
+* Install GNU Radio and UHD driver:
+
+$ git clone git://code.ettus.com/ettus/uhd.git
+$ cd uhd
+$ mkdir build
+$ cd build
+$ cmake ../
+$ make
+$ sudo make install
+$ cd..
+$ git clone git://gnuradio.org/gnuradio
+$ cd gnuradio
+$ mkdir build
+$ cd build cmake ../
+$ make
+$ sudo make install
+
+
+
+
 
 $ sudo port install gnuradio-core
 
@@ -136,19 +158,16 @@ $ sudo port install gnuradio-core
 export DYLD_LIBRARY_PATH=/usr/local/lib
 export GNURADIO_ROOT= /path/to/gnuradio
 
-where /path/to/gnuradio is the root folder where the source code of GNU Radio is. Currently, it is found in
-
-export GNURADIO_ROOT=/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_ports_science_gnuradio-examples/work/gnuradio-3.3.0
+where /path/to/gnuradio is the root folder where the source code of GNU Radio is. 
 
 In order to avoid defining these variables each time you enter a session, you may want to add these two lines to your $HOME/.bash_profile file.
 
 * Create a symbolic link in order to be able to use the gnuradio-core library from /usr/local/lib
 
-$ sudo ln -s /opt/local/lib/libgnuradio-core.dylib /usr/local/lib/libgnuradio-core.dylib
-
-* Install other tools:
-
-$ sudo port install doxygen graphviz subversion 
+$ sudo ln -s /usr/local/include/gnuradio /opt/local/include/gnuradio
+$ sudo ln -s /usr/local/lib/libgnuradio-uhd.dylib /opt/local/lib/libgnuradio-uhd.dylib
+$ sudo ln -s /usr/local/lib/libgnuradio-core.dylib /opt/local/lib/libgnuradio-core.dylib
+$ sudo ln -s /usr/local/lib/libvolk.dylib /opt/local/lib/libvolk.dylib
 
 - Download, compile, and install the Armadillo linear algebra library
 
@@ -218,6 +237,10 @@ NOTE: During compilation, you might see a harmless message g++: unrecognized opt
 
 #flags darwin.compile OPTIONS : -no-cpp-precomp ;
 flags darwin.compile OPTIONS : -std=c++0x ;
+
+- You can also build the release version (an optimized, faster executable) by typing:
+
+$ bjam release
 
 
 GETTING STARTED

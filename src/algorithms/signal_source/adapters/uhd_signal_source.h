@@ -1,9 +1,7 @@
 /*!
  * \file uhd_signal_source.h
- * \brief Universal Hardware Driver signal source
+ * \brief Interface for the Universal Hardware Driver signal source
  * \author Javier Arribas, 2012. jarribas(at)cttc.es
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -30,20 +28,20 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef UHD_SIGNAL_SOURCE_H_
-#define UHD_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_UHD_SIGNAL_SOURCE_H_
+#define GNSS_SDR_UHD_SIGNAL_SOURCE_H_
 
 #include <boost/shared_ptr.hpp>
-//#include <uhd/usrp/multi_usrp.hpp>
 #include <gnuradio/gr_uhd_usrp_source.h>
-
 #include <gnuradio/gr_hier_block2.h>
 #include <gnuradio/gr_msg_queue.h>
-
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
 
+/*!
+ * \brief This class reads samples from a UHD device (see http://code.ettus.com/redmine/ettus/projects/uhd/wiki)
+ */
 class UhdSignalSource: public GNSSBlockInterface
 {
 
@@ -93,10 +91,6 @@ private:
     bool dump_;
     std::string dump_filename_;
 
-    //uhd::usrp::multi_usrp::sptr uhd_source_;
-
-    //boost::shared_ptr<uhd_usrp_source>
-
     boost::shared_ptr<uhd_usrp_source> uhd_source_;
 
     gr_block_sptr valve_;
@@ -104,4 +98,4 @@ private:
     gr_msg_queue_sptr queue_;
 };
 
-#endif /*UHD_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_UHD_SIGNAL_SOURCE_H_*/

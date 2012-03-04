@@ -148,21 +148,16 @@ $ make
 $ sudo make install
 
 
-
-
-
-$ sudo port install gnuradio-core
-
 * Set some variables:
 
 export DYLD_LIBRARY_PATH=/usr/local/lib
-export GNURADIO_ROOT= /path/to/gnuradio
+export GNURADIO_ROOT=/path/to/gnuradio
 
-where /path/to/gnuradio is the root folder where the source code of GNU Radio is. 
+where /path/to/gnuradio is the root folder where the source code of GNU Radio was downloaded. 
 
 In order to avoid defining these variables each time you enter a session, you may want to add these two lines to your $HOME/.bash_profile file.
 
-* Create a symbolic link in order to be able to use the gnuradio-core library from /usr/local/lib
+* Create symbolic links in order to be able to use GNU Radio libraries from /usr/local/lib
 
 $ sudo ln -s /usr/local/include/gnuradio /opt/local/include/gnuradio
 $ sudo ln -s /usr/local/lib/libgnuradio-uhd.dylib /opt/local/lib/libgnuradio-uhd.dylib

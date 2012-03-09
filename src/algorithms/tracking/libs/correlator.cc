@@ -91,10 +91,15 @@ void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr
     memcpy(input_aligned,input,signal_length_samples * sizeof(gr_complex));
     //memcpy(carrier_aligned,carrier,signal_length_samples*sizeof(gr_complex));
 
-    volk_32fc_x2_multiply_32fc_a_manual(bb_signal, input_aligned, carrier, signal_length_samples,  volk_32fc_x2_multiply_32fc_a_best_arch.c_str());
-    volk_32fc_x2_dot_prod_32fc_a_manual(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
-    volk_32fc_x2_dot_prod_32fc_a_manual(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
-    volk_32fc_x2_dot_prod_32fc_a_manual(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+    //volk_32fc_x2_multiply_32fc_a_manual(bb_signal, input_aligned, carrier, signal_length_samples,  volk_32fc_x2_multiply_32fc_a_best_arch.c_str());
+    //volk_32fc_x2_dot_prod_32fc_a_manual(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+    //volk_32fc_x2_dot_prod_32fc_a_manual(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+    //volk_32fc_x2_dot_prod_32fc_a_manual(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+
+    volk_32fc_x2_multiply_32fc_a(bb_signal, input_aligned, carrier, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex));
+    volk_32fc_x2_dot_prod_32fc_a(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex));
+    volk_32fc_x2_dot_prod_32fc_a(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex));
 
     free(bb_signal);
     free(input_aligned);
@@ -173,8 +178,8 @@ void Correlator::cpu_arch_test_volk_32fc_x2_multiply_32fc_a()
 
 Correlator::Correlator ()
 {
-    cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a();
-    cpu_arch_test_volk_32fc_x2_multiply_32fc_a();
+    //cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a();
+    //cpu_arch_test_volk_32fc_x2_multiply_32fc_a();
 }
 
 Correlator::~Correlator ()

@@ -84,6 +84,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         }
     else if (item_type_.compare("gr_complex") == 0)
         {
+    	    item_size_ = sizeof(gr_complex);
             // 1. Make the uhd driver instance
             //uhd_source_= uhd::usrp::multi_usrp::make(dev_addr);
 

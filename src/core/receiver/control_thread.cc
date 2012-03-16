@@ -41,6 +41,8 @@
 #include "gnss_flowgraph.h"
 #include "file_configuration.h"
 #include "control_message_factory.h"
+#include <boost/thread/thread.hpp>
+#include <iostream>
 
 using google::LogMessage;
 
@@ -102,6 +104,9 @@ void ControlThread::run()
             return;
         }
 
+    // start the keyboard_listener thread
+    keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
+
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
         {
@@ -110,8 +115,8 @@ void ControlThread::run()
             if (control_messages_ != 0) process_control_messages();
         }
 
+    keyboard_thread_.join();
     flowgraph_->stop();
-
     LOG_AT_LEVEL(INFO) << "Flowgraph stopped";
 }
 
@@ -196,6 +201,29 @@ void ControlThread::apply_action(unsigned int what)
     default:
         DLOG(INFO) << "Unrecognized action.";
     }
+
+}
+
+void ControlThread::keyboard_listener()
+{
+	bool read_keys=true;
+	char c;
+	//std::cout<<"Keystroke reader start!"<<std::endl;
+	while(read_keys)
+	{
+		c= std::cin.get();
+		//std::cout<<"Keystroke received: "<<c<<std::endl;
+		if (c=='q')
+		{
+			std::cout<<"Quit keystroke order received, stopping GNSS-SDR !!"<<std::endl;
+			ControlMessageFactory* cmf = new ControlMessageFactory();
+			if (control_queue_ != gr_msg_queue_sptr()) {
+				control_queue_->handle(cmf->GetQueueMessage(200, 0));
+			}
+			delete cmf;
+			read_keys=false;
+		}
+	}
 
 }
 

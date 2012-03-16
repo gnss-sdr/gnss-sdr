@@ -37,6 +37,7 @@
 
 #include <gnuradio/gr_msg_queue.h>
 #include "control_message_factory.h"
+#include <boost/thread/thread.hpp>
 
 class GNSSFlowgraph;
 class ConfigurationInterface;
@@ -123,6 +124,8 @@ private:
 
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
+    boost::thread keyboard_thread_;
+    void keyboard_listener();
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

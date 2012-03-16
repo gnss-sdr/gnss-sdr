@@ -34,8 +34,10 @@ exe run_tests : test_main.cc
 ../algorithms/PVT/gnuradio_blocks//gps_l1_ca_pvt_cc
 ../algorithms/tracking/adapters//gps_l1_ca_dll_pll_tracking
 ../algorithms/tracking/adapters//gps_l1_ca_dll_fll_pll_tracking
+../algorithms/tracking/adapters//gps_l1_ca_tcp_connector_tracking
 ../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_pll_tracking_cc
 ../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_fll_pll_tracking_cc
+../algorithms/tracking/gnuradio_blocks//gps_l1_ca_tcp_connector_tracking_cc
 ../algorithms/tracking/libs//tracking_discriminators
 ../algorithms/tracking/libs//CN_estimators
 ../algorithms/tracking/libs//tracking_FLL_PLL_filter
@@ -43,6 +45,7 @@ exe run_tests : test_main.cc
 ../algorithms/tracking/libs//tracking_2nd_DLL_filter
 ../algorithms/tracking/libs//correlator
 ../algorithms/tracking/libs//cordic
+../algorithms/tracking/libs//tcp_communication
 ../core/libs//INIReader
 ../core/libs//ini
 ../core/libs//string_converter

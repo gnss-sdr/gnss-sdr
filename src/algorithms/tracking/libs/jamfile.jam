@@ -7,3 +7,4 @@ obj tracking_2nd_PLL_filter	: tracking_2nd_PLL_filter.cc ;
 obj tracking_2nd_DLL_filter	: tracking_2nd_DLL_filter.cc ;
 obj correlator : correlator.cc ;
 obj cordic : cordic.cc ;
+obj tcp_communication : tcp_communication.cc ;

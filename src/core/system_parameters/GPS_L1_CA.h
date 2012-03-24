@@ -39,16 +39,16 @@
 const double GPS_C_m_s        = 299792458.0;      //!< The speed of light, [m/s]
 const double GPS_C_m_ms       = 299792.4580;      //!< The speed of light, [m/ms]
 const double GPS_PI           = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
-const double GPS_TWO_PI           = 6.283185307179586;  //!< 2Pi as defined in IS-GPS-200E
+const double GPS_TWO_PI       = 6.283185307179586;//!< 2Pi as defined in IS-GPS-200E
 const double OMEGA_EARTH_DOT  = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
 const double GM               = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
 const double F                = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 
 
 // carrier and code frequencies
-const double  GPS_L1_FREQ_HZ	                = 1.57542e9; //!< L1 [Hz]
-const double  GPS_L1_CA_CODE_RATE_HZ            = 1.023e6;   //!< GPS L1 C/A code rate [chips/s]
-const double  GPS_L1_CA_CODE_LENGTH_CHIPS	= 1023.0;    //!< GPS L1 C/A code length [chips]
+const double  GPS_L1_FREQ_HZ              = 1.57542e9; //!< L1 [Hz]
+const double  GPS_L1_CA_CODE_RATE_HZ      = 1.023e6;   //!< GPS L1 C/A code rate [chips/s]
+const double  GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;    //!< GPS L1 C/A code length [chips]
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms

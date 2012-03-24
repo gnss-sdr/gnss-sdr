@@ -34,42 +34,43 @@
 #include "gnss_signal.h"
 
 /*!
- * \brief This is the class that contains the information that flows through the blocks.
+ * \brief This is the class that contains the information that is shared
+ * by the processing blocks.
  */
 class Gnss_Synchro
 {
 public:
-	Gnss_Synchro();
-	~Gnss_Synchro();
-	// Satellite and signal info
-	char System;
-	char Signal[3];
-	unsigned int PRN;
-	// Acquisition
-	double Acq_delay_samples;
-	double Acq_doppler_hz;
-	unsigned long int Acq_samplestamp_samples;
-	bool Flag_valid_acquisition;
-	//Tracking
-	double Prompt_I;
-	double Prompt_Q;
-	double Carrier_phase_rads;
-	double Code_phase_secs;
-	double Tracking_timestamp_secs;
-	double CN0_dB_hz;
-	bool Flag_valid_tracking;
-	//Telemetry Decoder
-	double Preamble_delay_ms;
-	double Prn_delay_ms;
-	double Preamble_code_phase_ms;
-	double Preamble_code_phase_correction_ms;
-	int Channel_ID;
-	bool Flag_valid_word;
-	bool Flag_preamble;
-	// Pseudorange
-	double Pseudorange_m;
-	double Pseudorange_timestamp_ms;
-	bool Flag_valid_pseudorange;
+    Gnss_Synchro();
+    ~Gnss_Synchro();
+    // Satellite and signal info
+    char System;      //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
+    char Signal[3];   //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
+    unsigned int PRN; //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
+    int Channel_ID;   //!< Set by Channel constructor
+    // Acquisition
+    double Acq_delay_samples;                  //!< Set by Acquisition processing block
+    double Acq_doppler_hz;                     //!< Set by Acquisition processing block
+    unsigned long int Acq_samplestamp_samples; //!< Set by Acquisition processing block
+    bool Flag_valid_acquisition;
+    //Tracking
+    double Prompt_I;                //!< Set by Tracking processing block
+    double Prompt_Q;                //!< Set by Tracking processing block
+    double Carrier_phase_rads;      //!< Set by Tracking processing block
+    double Code_phase_secs;         //!< Set by Tracking processing block
+    double Tracking_timestamp_secs; //!< Set by Tracking processing block
+    double CN0_dB_hz;               //!< Set by Tracking processing block
+    bool Flag_valid_tracking;
+    //Telemetry Decoder
+    double Preamble_delay_ms;
+    double Prn_delay_ms;
+    double Preamble_code_phase_ms;
+    double Preamble_code_phase_correction_ms;
+    bool Flag_valid_word;
+    bool Flag_preamble;
+    // Pseudorange
+    double Pseudorange_m;
+    double Pseudorange_timestamp_ms;
+    bool Flag_valid_pseudorange;
 };
 
 #endif

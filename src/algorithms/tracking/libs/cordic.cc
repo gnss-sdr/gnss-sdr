@@ -1,6 +1,7 @@
 /*!
  * \file cordic.cc
- * \brief Implementation of the CORDIC (COordinate Rotation DIgital Computer) algorithm
+ * \brief Implementation of the CORDIC (COordinate Rotation DIgital Computer) algorithm.
+ * This implementation is NOT OPTIMIZED, only for demonstration purposes
  * \author Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
  *
  * This is a modified implementation of the one found at

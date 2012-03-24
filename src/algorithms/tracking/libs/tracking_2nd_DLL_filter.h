@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -41,7 +41,8 @@
  * \brief This class implements a 2nd order DLL filter for code tracking loop.
  *
  * The algorithm is described in:
- * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S. H. Jensen, A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
+ * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S. H. Jensen, A Software-Defined GPS
+ * and Galileo Receiver. A Single-Frequency Approach,
  * Birkhauser, 2007, Applied and Numerical Harmonic Analysis.
  */
 class Tracking_2nd_DLL_filter
@@ -53,18 +54,16 @@ private:
     float d_pdi_code;
     float d_dllnoisebandwidth;
     float d_dlldampingratio;
-
     float d_old_code_error;
     float d_old_code_nco;
-
     void calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k);
 
 public:
-	void set_DLL_BW(float dll_bw_hz); //! Set DLL loop bandwidth [Hz]
-	void initialize(float d_acq_code_phase_samples);
-	float get_code_nco(float DLL_discriminator);
-	Tracking_2nd_DLL_filter();
-	~Tracking_2nd_DLL_filter();
+    void set_DLL_BW(float dll_bw_hz);                //! Set DLL filter bandwidth [Hz]
+    void initialize(float d_acq_code_phase_samples); //! Start tracking with acquisition information
+    float get_code_nco(float DLL_discriminator);     //! Numerically controlled oscillator
+    Tracking_2nd_DLL_filter();
+    ~Tracking_2nd_DLL_filter();
 };
 
 #endif

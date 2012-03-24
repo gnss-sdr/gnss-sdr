@@ -1,6 +1,6 @@
 /*!
- * \file tcp_communication.h
- * \brief Library with the definition of the TCP communication class
+ * \file tcp_communication.cc
+ * \brief Implementation of the TCP communication class
  * \author David Pubill, 2011. dpubill(at)cttc.es
  *
  *
@@ -38,78 +38,86 @@
 #define NUM_TX_VARIABLES 7
 #define NUM_RX_VARIABLES 3
 
-tcp_communication::tcp_communication() : tcp_socket_(io_service_){
-}
 
-tcp_communication::~tcp_communication(){
-}
+tcp_communication::tcp_communication() : tcp_socket_(io_service_)
+{}
+
+
+
+tcp_communication::~tcp_communication()
+{}
+
+
 
 int tcp_communication::listen_tcp_connection(size_t d_port_)
 {
-	try
-	{
-		//! Specify IP type and port
-		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), d_port_);
-		boost::asio::ip::tcp::acceptor acceptor(io_service_, endpoint);
+    try
+    {
+            // Specify IP type and port
+            boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), d_port_);
+            boost::asio::ip::tcp::acceptor acceptor(io_service_, endpoint);
 
-		//! Reuse the IP address for each connection
-		acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+            // Reuse the IP address for each connection
+            acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 
-		std::cout << "Server ready on port " << d_port_ << std::endl;
+            std::cout << "Server ready on port " << d_port_ << std::endl;
 
-		//! Listen for a connection and accept it
-		acceptor.listen(12);
-		acceptor.accept(tcp_socket_);
+            // Listen for a connection and accept it
+            acceptor.listen(12);
+            acceptor.accept(tcp_socket_);
 
-	    std::cout << "Socket accepted on port " << d_port_ << std::endl;
-	}
+            std::cout << "Socket accepted on port " << d_port_ << std::endl;
+    }
 
-	catch(std::exception& e)
-	{
-	    std::cerr << "Exception: " << e.what() << std::endl;
-	}
+    catch(std::exception& e)
+    {
+            std::cerr << "Exception: " << e.what() << std::endl;
+    }
 
     return false;
 }
 
+
+
 void tcp_communication::send_receive_tcp_packet(boost::array<float, NUM_TX_VARIABLES> buf, tcp_packet_data *tcp_data_)
 {
-	int controlc = 0;
-	boost::array<float, NUM_RX_VARIABLES> readbuf;
-	float d_control_id_ = buf.data()[6];
+    int controlc = 0;
+    boost::array<float, NUM_RX_VARIABLES> readbuf;
+    float d_control_id_ = buf.data()[6];
 
-	try
+    try
     {
-    	//! Send a TCP packet
-    	tcp_socket_.write_some(boost::asio::buffer(buf));
+            // Send a TCP packet
+            tcp_socket_.write_some(boost::asio::buffer(buf));
 
-    	//! Read the received TCP packet
-    	tcp_socket_.read_some(boost::asio::buffer(readbuf));
+            // Read the received TCP packet
+            tcp_socket_.read_some(boost::asio::buffer(readbuf));
 
-    	//! Recover the variables received
-    	tcp_data_->proc_pack_code_error = readbuf.data()[0];
-    	tcp_data_->proc_pack_carr_error = readbuf.data()[1];
+            // Recover the variables received
+            tcp_data_->proc_pack_code_error = readbuf.data()[0];
+            tcp_data_->proc_pack_carr_error = readbuf.data()[1];
 
-    	//! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
-    	if (d_control_id_ != readbuf.data()[2])
-    	{
-    		throw "Packet error!";
-    	}
+            // Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
+            if (d_control_id_ != readbuf.data()[2])
+                {
+                    throw "Packet error!";
+                }
     }
 
-	catch(std::exception& e)
-    	{
-    	    std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
-    	    std::cin >> controlc;
-    	}
+    catch(std::exception& e)
+    {
+            std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
+            std::cin >> controlc;
+    }
     return;
 }
 
+
+
 void tcp_communication::close_tcp_connection(size_t d_port_)
 {
-	//! Close the TCP connection
-	tcp_socket_.close();
-	std::cout << "Socket closed on port " << d_port_ << std::endl;
-
-	return;
+    // Close the TCP connection
+    tcp_socket_.close();
+    std::cout << "Socket closed on port " << d_port_ << std::endl;
+    return;
 }

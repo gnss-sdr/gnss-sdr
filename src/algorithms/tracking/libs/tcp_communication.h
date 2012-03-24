@@ -1,6 +1,6 @@
 /*!
  * \file tcp_communication.h
- * \brief Library with the definition of the TCP communication class
+ * \brief Interface of the TCP communication class
  * \author David Pubill, 2011. dpubill(at)cttc.es
  *
  *
@@ -29,26 +29,28 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef TCP_COMMUNICATION_H_
-#define TCP_COMMUNICATION_H_
+#ifndef GNSS_SDR_TCP_COMMUNICATION_H_
+#define GNSS_SDR_TCP_COMMUNICATION_H_
 
 #include <boost/asio.hpp>
+#include <boost/array.hpp>
 #include "tcp_packet_data.h"
+
 
 class tcp_communication
 {
 public:
 
-	tcp_communication();
-	~tcp_communication();
+    tcp_communication();
+    ~tcp_communication();
 
-	int listen_tcp_connection(size_t d_port_);
-	void send_receive_tcp_packet(boost::array<float, 7> buf, tcp_packet_data *tcp_data_);
-	void close_tcp_connection(size_t d_port_);
+    int listen_tcp_connection(size_t d_port_);
+    void send_receive_tcp_packet(boost::array<float,7> buf, tcp_packet_data *tcp_data_);
+    void close_tcp_connection(size_t d_port_);
 
 private:
-	boost::asio::io_service io_service_;
-	boost::asio::ip::tcp::socket tcp_socket_;
+    boost::asio::io_service io_service_;
+    boost::asio::ip::tcp::socket tcp_socket_;
 };
 
 #endif

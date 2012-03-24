@@ -1,6 +1,6 @@
 /*!
  * \file tcp_packet_data.h
- * \brief Library with the definition of the TCP packet data class
+ * \brief Interface of the TCP packet data class
  * \author David Pubill, 2011. dpubill(at)cttc.es
  *
  *
@@ -29,18 +29,16 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef TCP_PACKET_DATA_H_
-#define TCP_PACKET_DATA_H_
+#ifndef GNSS_SDR_TCP_PACKET_DATA_H_
+#define GNSS_SDR_TCP_PACKET_DATA_H_
 
 class tcp_packet_data
 {
 public:
-	tcp_packet_data();
-
-	float proc_pack_code_error;
-    float proc_pack_carr_error;
-
+    tcp_packet_data();
     ~tcp_packet_data();
+    float proc_pack_code_error;
+    float proc_pack_carr_error;
 };
 
 #endif

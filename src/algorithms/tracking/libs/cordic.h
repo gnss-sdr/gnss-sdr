@@ -1,10 +1,8 @@
 /*!
  * \file cordic.h
- * \brief Interface of the CORDIC (COordinate Rotation DIgital Computer) algorithm
+ * \brief Interface of the CORDIC (COordinate Rotation DIgital Computer) algorithm.
  * \author Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
  *
- * This is a modified implementation of the one found at
- * http://www.dspguru.com/dsp/faqs/cordic
  *
  * -------------------------------------------------------------------------
  *
@@ -42,6 +40,11 @@ typedef struct tagCORDIC_TABLE {
     double phase_rads;
 } CORDIC_TABLE;
 
+
+/*!
+ * \brief Implementation of the CORDIC (COordinate Rotation DIgital Computer) algorithm.
+ * This implementation is NOT OPTIMIZED, only for demonstration purposes
+ */
 class Cordic
 {
 public:

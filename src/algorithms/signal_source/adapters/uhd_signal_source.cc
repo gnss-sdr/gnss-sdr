@@ -33,7 +33,7 @@
 #include <gnuradio/gr_uhd_usrp_source.h>
 #include <uhd/types/device_addr.hpp>
 #include <uhd/exception.hpp>
-#include <boost/program_options.hpp>
+//#include <boost/program_options.hpp>
 #include <gnuradio/gr_file_sink.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
@@ -88,15 +88,15 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             // 1. Make the uhd driver instance
             //uhd_source_= uhd::usrp::multi_usrp::make(dev_addr);
 
-            // sigle source
+            // single source
             // * \param device_addr the address to identify the hardware
             // * \param io_type the desired output data type
-            uhd_source_= uhd_make_usrp_source(dev_addr,uhd::stream_args_t("fc32"));
+            uhd_source_ = uhd_make_usrp_source(dev_addr, uhd::stream_args_t("fc32"));
 
 
             // 2.1 set sampling clock reference
             //Lock mboard clocks internal, external, or mimo
-            std::string clk_reference="internal";
+            std::string clk_reference = "internal";
             uhd_source_->set_clock_source(clk_reference);
 
             // 2.2 set sampling rate

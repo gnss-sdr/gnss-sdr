@@ -240,19 +240,19 @@ void Channel::process_channel_messages()
     {
     case 0:
 
-        LOG_AT_LEVEL(INFO) << "Stop channel " << channel_;
+        DLOG(INFO) << "Stop channel " << channel_;
         break;
 
     case 1:
 
-        LOG_AT_LEVEL(INFO) << "Channel " << channel_
+    	DLOG(INFO) << "Channel " << channel_
         << " ACQ SUCCESS satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
         channel_fsm_.Event_gps_valid_acquisition();
         break;
 
     case 2:
 
-        LOG_AT_LEVEL(INFO) << "Channel " << channel_
+    	DLOG(INFO) << "Channel " << channel_
         << " ACQ FAILED satellite " << gnss_synchro_.System << " "<< gnss_synchro_.PRN;
         if (repeat_ == true)
             {

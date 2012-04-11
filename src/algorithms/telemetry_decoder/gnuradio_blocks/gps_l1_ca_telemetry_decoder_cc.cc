@@ -345,16 +345,16 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG_AT_LEVEL(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
+    DLOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
     d_GPS_FSM.i_satellite_PRN = d_satellite.get_PRN();
-    LOG_AT_LEVEL(INFO) << "Navigation Satellite set to " << d_satellite;
+    DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
 
 void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
 {
     d_channel = channel;
     d_GPS_FSM.i_channel_ID = channel;
-    LOG_AT_LEVEL(INFO) << "Navigation channel set to " << channel;
+    DLOG(INFO) << "Navigation channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {

@@ -288,7 +288,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what) {
 	switch (what) {
 	case 0:
 
-		LOG_AT_LEVEL(INFO) << "Channel " << who << " ACQ FAILED satellite "
+		DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite "
 				<< channel(who)->get_signal().get_satellite();
 		available_GNSS_signals_.push_back(channel(who)->get_signal());
 		channel(who)->set_signal(available_GNSS_signals_.front());
@@ -299,7 +299,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what) {
 
 	case 1:
 
-		LOG_AT_LEVEL(INFO) << "Channel " << who << " ACQ SUCCESS satellite "
+		DLOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite "
 				<< channel(who)->get_signal().get_satellite();
 
 		channels_state_[who] = 2;
@@ -323,7 +323,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what) {
 
 	case 2:
 
-		LOG_AT_LEVEL(INFO) << "Channel " << who << " TRK FAILED satellite "
+		DLOG(INFO) << "Channel " << who << " TRK FAILED satellite "
 				<< channel(who)->get_signal().get_satellite();
 
 		if (acq_channels_count_ < max_acq_channels_) {

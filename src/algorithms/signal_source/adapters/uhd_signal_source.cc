@@ -109,6 +109,10 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             std::cout << boost::format("Actual RX Freq: %f [Hz]...") % (uhd_source_->get_center_freq()) << std::endl << std::endl;
             DLOG(INFO) << boost::format("Actual RX Freq: %f [Hz]...") % (uhd_source_->get_center_freq()) << std::endl << std::endl;
 
+            // TODO: Asign the remanent IF from the PLL tune error
+            std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq()-freq_) << std::endl;
+            DLOG(INFO) <<  boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq()-freq_) << std::endl;
+
             // 4. set rx gain
             uhd_source_->set_gain(gain_);
             std::cout << boost::format("Actual RX Gain: %f dB...") % uhd_source_->get_gain() << std::endl << std::endl;
@@ -126,15 +130,21 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 
             //LO lock status
             //Check Ref and LO Lock detect
-            //std::vector<std::string> sensor_names;
-            //sensor_names = uhd_source_->get_rx_sensor_names(0);
-            //if (std::find(sensor_names.begin(), sensor_names.end(), "lo_locked") != sensor_names.end()) {
-            //    uhd::sensor_value_t lo_locked = uhd_source_->get_rx_sensor("lo_locked",0);
-            //    std::cout << boost::format("Checking RX: %s ...") % lo_locked.to_pp_string() << std::endl;
+            std::vector<std::string> sensor_names;
+            sensor_names = uhd_source_->get_sensor_names(0);
+            if (std::find(sensor_names.begin(), sensor_names.end(), "lo_locked") != sensor_names.end()) {
+                uhd::sensor_value_t lo_locked = uhd_source_->get_sensor("lo_locked",0);
+                std::cout << boost::format("Check for front-end %s ...") % lo_locked.to_pp_string() << " is ";
+                if (lo_locked.to_bool()==true)
+                {
+                	std::cout<<"Locked"<<std::endl;
+                }else{
+                	std::cout<<"UNLOCKED!!!!"<<std::endl;
+                }
             //UHD_ASSERT_THROW(lo_locked.to_bool());
-            //}
+            }
 
-            uhd_source_->set_subdev_spec(subdevice_);
+            uhd_source_->set_subdev_spec(subdevice_,0);
         }
     else
         {

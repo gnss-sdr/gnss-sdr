@@ -259,7 +259,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                             satpos(0,i) = d_ephemeris[i].d_satpos_X;
                             satpos(1,i) = d_ephemeris[i].d_satpos_Y;
                             satpos(2,i) = d_ephemeris[i].d_satpos_Z;
-                            LOG_AT_LEVEL(INFO) << "ECEF satellite SV ID=" << d_ephemeris[i].i_satellite_PRN <<" X=" << d_ephemeris[i].d_satpos_X
+                            DLOG(INFO) << "ECEF satellite SV ID=" << d_ephemeris[i].i_satellite_PRN <<" X=" << d_ephemeris[i].d_satpos_X
                                     << " [m] Y=" << d_ephemeris[i].d_satpos_Y << " [m] Z=" << d_ephemeris[i].d_satpos_Z << " [m]" << std::endl;
                             obs(i) = gnss_pseudoranges_iter->second.Pseudorange_m + d_ephemeris[i].d_satClkCorr*GPS_C_m_s;
                             valid_obs++;
@@ -278,12 +278,12 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     obs(i) = 1; // to avoid algorithm problems (divide by zero)
                 }
         }
-    LOG_AT_LEVEL(INFO) <<"PVT: valid observations="<<valid_obs<<std::endl;
+    DLOG(INFO) <<"PVT: valid observations="<<valid_obs<<std::endl;
     if (valid_obs>=4)
         {
             arma::vec mypos;
             mypos=leastSquarePos(satpos,obs,W);
-            LOG_AT_LEVEL(INFO) << "Position at TOW="<< GPS_current_time << " in ECEF (X,Y,Z) = " << mypos << std::endl;
+            DLOG(INFO) << "Position at TOW="<< GPS_current_time << " in ECEF (X,Y,Z) = " << mypos << std::endl;
             cart2geo(mypos(0), mypos(1), mypos(2), 4);
 
             // Compute UTC time and print PVT solution
@@ -292,7 +292,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             d_position_UTC_time = p_time;
             GPS_current_time=GPS_corrected_time;
 
-            LOG_AT_LEVEL(INFO) << "Position at " << boost::posix_time::to_simple_string(p_time)
+            DLOG(INFO)<< "Position at " << boost::posix_time::to_simple_string(p_time)
             << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
             << " [deg], Height= " << d_height_m << " [m]" << std::endl;
 

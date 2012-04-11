@@ -69,8 +69,17 @@ private:
   double check_t(double time);
 
 public:
+
+    bool b_update_tow_flag; // flag indicating that this ephemeris set have an updated TOW
+    bool b_valid_ephemeris_set_flag; // flag indicating that this ephemeris set have passed the validation check
     //broadcast orbit 1
-    double d_TOW;            //!< Time of GPS Week [s]
+	double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+    double d_TOW_SF1;            //!< Time of GPS Week from HOW word of Subframe 1 [s]
+    double d_TOW_SF2;            //!< Time of GPS Week from HOW word of Subframe 2 [s]
+    double d_TOW_SF3;            //!< Time of GPS Week from HOW word of Subframe 3 [s]
+    double d_TOW_SF4;            //!< Time of GPS Week from HOW word of Subframe 4 [s]
+    double d_TOW_SF5;            //!< Time of GPS Week from HOW word of Subframe 5 [s]
+
     double d_IODE_SF2;
     double d_IODE_SF3;
     double d_Crs;            //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
@@ -155,7 +164,7 @@ public:
     unsigned int i_satellite_PRN;
 
     // time synchro
-    double d_subframe1_timestamp_ms; //[ms]
+    double d_subframe_timestamp_ms; //[ms]
 
     // Ionospheric parameters
 

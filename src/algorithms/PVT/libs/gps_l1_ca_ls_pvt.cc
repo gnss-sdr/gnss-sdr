@@ -47,7 +47,8 @@ gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool
     d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
     d_averaging_depth = 0;
-
+    d_GPS_current_time=0;;
+    b_valid_position=false;
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {
@@ -277,7 +278,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     obs(i) = 1; // to avoid algorithm problems (divide by zero)
                 }
         }
-    std::cout<<"PVT: valid observations="<<valid_obs<<std::endl;
+    LOG_AT_LEVEL(INFO) <<"PVT: valid observations="<<valid_obs<<std::endl;
     if (valid_obs>=4)
         {
             arma::vec mypos;
@@ -286,11 +287,15 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             cart2geo(mypos(0), mypos(1), mypos(2), 4);
 
             // Compute UTC time and print PVT solution
-            boost::posix_time::time_duration t = boost::posix_time::seconds(utc + 604800*(double)GPS_week);
+            boost::posix_time::time_duration t = boost::posix_time::seconds(utc + 604800.0*(double)GPS_week);
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-            std::cout << "Position at " << boost::posix_time::to_simple_string(p_time)
+            d_position_UTC_time = p_time;
+            GPS_current_time=GPS_corrected_time;
+
+            LOG_AT_LEVEL(INFO) << "Position at " << boost::posix_time::to_simple_string(p_time)
             << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
             << " [deg], Height= " << d_height_m << " [m]" << std::endl;
+
             // ######## LOG FILE #########
             if(d_flag_dump_enabled == true)
                 {
@@ -355,6 +360,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                             d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
                             d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
                             d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
+                            b_valid_position=true;
                             return true; //indicates that the returned position is valid
                         }
                     else
@@ -368,6 +374,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                             d_avg_latitude_d = d_latitude_d;
                             d_avg_longitude_d = d_longitude_d;
                             d_avg_height_m = d_height_m;
+                            b_valid_position=false;
                             return false;//indicates that the returned position is not valid yet
                             // output the average, although it will not have the full historic available
                             //    			d_avg_latitude_d=0;
@@ -386,11 +393,13 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                 }
             else
                 {
+            	b_valid_position=true;
                     return true;//indicates that the returned position is valid
                 }
         }
     else
         {
+    	b_valid_position=false;
             return false;
         }
 }

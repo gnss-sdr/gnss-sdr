@@ -48,16 +48,14 @@ Gnss_Synchro::Gnss_Synchro()
     CN0_dB_hz = 0.0;
     Flag_valid_tracking = false;
     //Telemetry Decoder
-    Preamble_delay_ms = 0.0;
-    Prn_delay_ms = 0.0;
-    Preamble_code_phase_ms = 0.0;
-    Preamble_code_phase_correction_ms = 0.0;
+    Preamble_timestamp_ms = 0.0;
+    Prn_timestamp_ms = 0.0;
     Channel_ID = 0;
     Flag_valid_word = false;
     Flag_preamble = false;
     // Pseudorange
     Pseudorange_m = 0.0;
-    Pseudorange_timestamp_ms = 0.0;
+    Pseudorange_symbol_shift = 0.0;
     Flag_valid_pseudorange = false;
 }
 

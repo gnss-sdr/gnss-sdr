@@ -142,8 +142,8 @@ private:
     bool d_dump;
     unsigned int d_channel;
     int d_last_seg;
-    long d_if_freq;
-    long d_fs_in;
+    double d_if_freq;
+    double d_fs_in;
 
     gr_complex* d_ca_code;
 
@@ -159,44 +159,43 @@ private:
 
     gr_complex d_Prompt_prev;
 
-    float d_early_late_spc_chips;
+    double d_early_late_spc_chips;
 
 
-    float d_carrier_doppler_hz;
-    float d_code_freq_hz;
-    float d_code_phase_samples;
+    double d_carrier_doppler_hz;
+    double d_code_freq_hz;
+    double d_code_phase_samples;
     int d_current_prn_length_samples;
-    int d_next_prn_length_samples;
+    //int d_next_prn_length_samples;
     int d_FLL_wait;
-    float d_rem_carr_phase;
-    float d_rem_code_phase_samples;
-    float d_next_rem_code_phase_samples;
+    double d_rem_carr_phase;
+    double d_rem_code_phase_samples;
+    //double d_next_rem_code_phase_samples;
     bool d_pull_in;
 
     // acquisition
-    float d_acq_code_phase_samples;
-    float d_acq_carrier_doppler_hz;
+    double d_acq_code_phase_samples;
+    double d_acq_carrier_doppler_hz;
 
     // correlator
     Correlator d_correlator;
 
     // FLL + PLL filter
-    float d_FLL_discriminator_hz; // This is a class variable because FLL needs to have memory
+    double d_FLL_discriminator_hz; // This is a class variable because FLL needs to have memory
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
-    float d_acc_carrier_phase_rad;
+    double d_acc_carrier_phase_rad;
 
     unsigned long int d_sample_counter;
-    double d_sample_counter_seconds;
 
     unsigned long int d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
     gr_complex* d_Prompt_buffer;
-    float d_carrier_lock_test;
-    float d_CN0_SNV_dB_Hz;
+    double d_carrier_lock_test;
+    double d_CN0_SNV_dB_Hz;
 
-    float d_carrier_lock_threshold;
+    double d_carrier_lock_threshold;
 
     int d_carrier_lock_fail_counter;
 

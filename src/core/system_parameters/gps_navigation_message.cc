@@ -39,7 +39,16 @@
 
 void Gps_Navigation_Message::reset()
 {
-    d_TOW = 0;
+
+    b_update_tow_flag=false;
+    b_valid_ephemeris_set_flag=false;
+    d_TOW=0;
+    d_TOW_SF1 = 0;
+    d_TOW_SF2 = 0;
+    d_TOW_SF3 = 0;
+    d_TOW_SF4 = 0;
+    d_TOW_SF5 = 0;
+
     d_IODE_SF2 = 0;
     d_IODE_SF3 = 0;
     d_Crs = 0;
@@ -91,7 +100,7 @@ void Gps_Navigation_Message::reset()
     i_satellite_PRN = 0;
 
     // time synchro
-    d_subframe1_timestamp_ms = 0;
+    d_subframe_timestamp_ms = 0;
 
     // flags
     b_alert_flag = false;
@@ -438,8 +447,10 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         // subframe and we need the TOW of the first subframe in this data block
         // (the variable subframe at this point contains bits of the last subframe).
         //TOW = bin2dec(subframe(31:47)) * 6 - 30;
-        d_TOW = (double)read_navigation_unsigned(subframe_bits, TOW, num_of_slices(TOW));
-        d_TOW = d_TOW*6-6; //we are in the first subframe (the transmitted TOW is the start time of the next subframe, thus we need to substract one subframe (6 seconds)) !
+        d_TOW_SF1 = (double)read_navigation_unsigned(subframe_bits, TOW, num_of_slices(TOW));
+        //we are in the first subframe (the transmitted TOW is the start time of the next subframe) !
+        d_TOW_SF1 = d_TOW_SF1*6;
+        d_TOW=d_TOW_SF5;// Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -463,6 +474,9 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         break;
 
     case 2:  //--- It is subframe 2 -------------------
+        d_TOW_SF2 = (double)read_navigation_unsigned(subframe_bits, TOW, num_of_slices(TOW));
+        d_TOW_SF2 = d_TOW_SF2*6;
+        d_TOW=d_TOW_SF1;// Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -490,6 +504,9 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         break;
 
     case 3: // --- It is subframe 3 -------------------------------------
+        d_TOW_SF3 = (double)read_navigation_unsigned(subframe_bits, TOW, num_of_slices(TOW));
+        d_TOW_SF3 = d_TOW_SF3*6;
+        d_TOW=d_TOW_SF2;// Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -514,6 +531,9 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         break;
 
     case 4: // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
+        d_TOW_SF4 = (double)read_navigation_unsigned(subframe_bits, TOW, num_of_slices(TOW));
+        d_TOW_SF4 = d_TOW_SF4*6;
+        d_TOW=d_TOW_SF3;// Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -574,6 +594,9 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         break;
 
     case 5://--- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
+        d_TOW_SF5 = (double)read_navigation_unsigned(subframe_bits, TOW, num_of_slices(TOW));
+        d_TOW_SF5 = d_TOW_SF5*6;
+        d_TOW=d_TOW_SF4;// Set transmission time
         b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
         b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
         b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -678,7 +701,7 @@ double Gps_Navigation_Message::utc_time(double gpstime_corrected)
             /* 20.3.3.5.2.4c
              * Whenever the effectivity time of the leap second event, as indicated by the
              * WNLSF and DN values, is in the "past" (relative to the user's current time),
-             * and the userÕs current time does not fall in the time span as given above
+             * and the userï¿½s current time does not fall in the time span as given above
              * in 20.3.3.5.2.4b,*/
             Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * (double)(i_GPS_week - i_WN_T));
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
@@ -697,13 +720,21 @@ bool Gps_Navigation_Message::satellite_validation()
 {
 
     bool flag_data_valid = false;
+	b_valid_ephemeris_set_flag=false;
 
     // First Step:
     // check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
     // and check if the data have been filled (!=0)
-    if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!=-1)
+	if (d_TOW_SF1!=0 and d_TOW_SF2!=0 and d_TOW_SF3!=0)
+	{
+
+		if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!=-1)
         {
+			//std::cout<<"d_TOW_SF3-d_TOW_SF2="<<d_TOW_SF3-d_TOW_SF2<<std::endl;
+			//std::cout<<"d_TOW_SF2-d_TOW_SF1="<<d_TOW_SF2-d_TOW_SF1<<std::endl;
             flag_data_valid = true;
+            b_valid_ephemeris_set_flag=true;
         }
+	}
     return flag_data_valid;
 }

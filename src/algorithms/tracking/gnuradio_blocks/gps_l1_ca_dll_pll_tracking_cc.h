@@ -172,7 +172,7 @@ private:
     //PRN period in samples
     int d_current_prn_length_samples;
     int d_next_prn_length_samples;
-    double d_sample_counter_seconds;
+    //double d_sample_counter_seconds;
 
     //processing samples counters
     unsigned long int d_sample_counter;

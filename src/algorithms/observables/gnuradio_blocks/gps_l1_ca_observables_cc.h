@@ -41,6 +41,7 @@
 #include "gps_navigation_message.h"
 #include "rinex_printer.h"
 #include "GPS_L1_CA.h"
+#include "gnss_synchro.h"
 
 class gps_l1_ca_observables_cc;
 
@@ -83,7 +84,10 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
-    std::deque<double> *d_history_prn_delay_ms;
+    //std::deque<double> *d_history_prn_delay_ms;
+
+    std::deque<Gnss_Synchro> *d_history_gnss_synchro_deque;
+
 
     concurrent_queue<Gps_Navigation_Message> *d_nav_queue; // Navigation ephemeris queue
 };

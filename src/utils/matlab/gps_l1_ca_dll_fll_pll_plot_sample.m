@@ -27,41 +27,46 @@
 %  *
 %  * -------------------------------------------------------------------------
 %  */ 
-close all;
-clear all;
+%close all;
+%clear all;
 samplingFreq       = 64e6/16;     %[Hz]
-channels=6;
-path='/home/javier/workspace/gnss-sdr/trunk/install/';
-clear PRN_absolute_sample_start;
+channels=4;
+path='/home/javier/workspace/gnss-sdr-ref/trunk/install/';
 for N=1:1:channels
     tracking_log_path=[path 'tracking_ch_' num2str(N-1) '.dat'];
-    GNSS_tracking(N)= gps_l1_ca_dll_fll_pll_read_tracking_dump(tracking_log_path);   
+    GNSS_tracking(N)= gps_l1_ca_dll_fll_pll_read_tracking_dump(tracking_log_path,samplingFreq);   
 end
 
 % GNSS-SDR format conversion to MATLAB GPS receiver
-
+channel_PRN_ID=[32,14,20,11];
+tracking_loop_start=1;%10001;
+tracking_loop_end=70000;
 for N=1:1:channels
-        trackResults(N).status='T'; %fake track
-        trackResults(N).codeFreq=GNSS_tracking(N).code_freq_hz.';
-        trackResults(N).carrFreq=GNSS_tracking(N).carrier_doppler_hz.';
-        trackResults(N).dllDiscr       = GNSS_tracking(N).code_error_chips.';
-        trackResults(N).dllDiscrFilt   = GNSS_tracking(N).code_phase_samples.';
-        trackResults(N).pllDiscr       = GNSS_tracking(N).PLL_discriminator_hz.';
-        trackResults(N).pllDiscrFilt   = GNSS_tracking(N).carr_nco.';
+        trackResults_sdr(N).status='T'; %fake track
+        trackResults_sdr(N).codeFreq=GNSS_tracking(N).code_freq_hz(tracking_loop_start:tracking_loop_end).';
+        trackResults_sdr(N).carrFreq=GNSS_tracking(N).carrier_doppler_hz(tracking_loop_start:tracking_loop_end).';
+        trackResults_sdr(N).dllDiscr       = GNSS_tracking(N).code_error_chips(tracking_loop_start:tracking_loop_end).';
+        trackResults_sdr(N).dllDiscrFilt   = GNSS_tracking(N).code_phase_samples(tracking_loop_start:tracking_loop_end).';
+        trackResults_sdr(N).pllDiscr       = GNSS_tracking(N).PLL_discriminator_hz(tracking_loop_start:tracking_loop_end).';
+        trackResults_sdr(N).pllDiscrFilt   = GNSS_tracking(N).carr_nco(tracking_loop_start:tracking_loop_end).';
+        trackResults_sdr(N).absoluteSample = (GNSS_tracking(N).var2(tracking_loop_start:tracking_loop_end)+GNSS_tracking(N).var1(tracking_loop_start:tracking_loop_end)).';
+        
+        trackResults_sdr(N).prn_delay_ms = 1000*trackResults_sdr(N).absoluteSample/samplingFreq;
+        %trackResults_sdr(N).absoluteSample = (GNSS_tracking(N).PRN_start_sample(tracking_loop_start:tracking_loop_end)+GNSS_tracking(N).var1(tracking_loop_start:tracking_loop_end)).';
 
-        trackResults(N).I_P=GNSS_tracking(N).prompt_I.';
-        trackResults(N).Q_P=GNSS_tracking(N).prompt_Q.';
+        trackResults_sdr(N).I_P=GNSS_tracking(N).prompt_I(tracking_loop_start:tracking_loop_end).';
+        trackResults_sdr(N).Q_P=GNSS_tracking(N).prompt_Q(tracking_loop_start:tracking_loop_end).';
 
-        trackResults(N).I_E= GNSS_tracking(N).E.';
-        trackResults(N).I_L = GNSS_tracking(N).L.';
-        trackResults(N).Q_E = zeros(1,length(GNSS_tracking(N).E));
-        trackResults(N).Q_L =zeros(1,length(GNSS_tracking(N).E));
-        trackResults(N).PRN=N; %fake PRN
+        trackResults_sdr(N).I_E= GNSS_tracking(N).E(tracking_loop_start:tracking_loop_end).';
+        trackResults_sdr(N).I_L = GNSS_tracking(N).L(tracking_loop_start:tracking_loop_end).';
+        trackResults_sdr(N).Q_E = zeros(1,tracking_loop_end-tracking_loop_start+1);
+        trackResults_sdr(N).Q_L =zeros(1,tracking_loop_end-tracking_loop_start+1);
+        trackResults_sdr(N).PRN=channel_PRN_ID(N);
         
         % Use original MATLAB tracking plot function
         settings.numberOfChannels=channels;
-        settings.msToProcess=length(GNSS_tracking(N).E);
-        plotTracking(N,trackResults,settings)
+        settings.msToProcess=tracking_loop_end-tracking_loop_start+1;
+        %plotTracking(N,trackResults_sdr,settings)
 end
 
 

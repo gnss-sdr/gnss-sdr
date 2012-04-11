@@ -61,14 +61,14 @@ public:
     double CN0_dB_hz;               //!< Set by Tracking processing block
     bool Flag_valid_tracking;
     //Telemetry Decoder
-    double Preamble_delay_ms;
-    double Prn_delay_ms;
-    double Preamble_code_phase_ms;
-    double Preamble_code_phase_correction_ms;
+    double Preamble_timestamp_ms;
+    double Prn_timestamp_ms;
+    int Preamble_symbol_counter; //n_pre
     bool Flag_valid_word;
     bool Flag_preamble;
     // Pseudorange
     double Pseudorange_m;
+    double Pseudorange_symbol_shift;
     double Pseudorange_timestamp_ms;
     bool Flag_valid_pseudorange;
 };

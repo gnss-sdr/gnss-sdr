@@ -63,10 +63,15 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     bool flag_averaging;
     flag_averaging = configuration->property(role + ".flag_averaging", false);
 
+    int output_rate_ms;
+    output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
+    int display_rate_ms;
+    display_rate_ms = configuration->property(role + ".display_rate_ms", 500);
+
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging);
+    pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms);
 
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     // set the navigation msg queue;

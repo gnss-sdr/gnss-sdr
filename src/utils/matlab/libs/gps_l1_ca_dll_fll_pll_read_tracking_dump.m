@@ -26,14 +26,14 @@
 %  *
 %  * -------------------------------------------------------------------------
 %  */             
-function [GNSS_tracking] = gps_l1_ca_dll_fll_pll_read_tracking_dump (filename, count)
+function [GNSS_tracking] = gps_l1_ca_dll_fll_pll_read_tracking_dump (filename, samplingFreq, count)
 
   %% usage: gps_l1_ca_dll_fll_pll_read_tracking_dump (filename, [count])
   %%
   %% open GNSS-SDR tracking binary log file .dat and return the contents
   %%
 
-  m = nargchk (1,2,nargin);
+  m = nargchk (1,3,nargin);
   num_float_vars=16;
   num_double_vars=1;
   double_size_bytes=8;
@@ -44,7 +44,7 @@ function [GNSS_tracking] = gps_l1_ca_dll_fll_pll_read_tracking_dump (filename, c
     usage (m);
   end
 
-  if (nargin < 2)
+  if (nargin < 3)
     count = Inf;
   end
     %loops_counter = fread (f, count, 'uint32',4*12);
@@ -173,5 +173,6 @@ function [GNSS_tracking] = gps_l1_ca_dll_fll_pll_read_tracking_dump (filename, c
     GNSS_tracking.carrier_lock_test=carrier_lock_test;
     GNSS_tracking.var1=var1;
     GNSS_tracking.var2=var2;
+    GNSS_tracking.prn_delay_ms=1000*(GNSS_tracking.var2+GNSS_tracking.var1)./samplingFreq;
   end
   

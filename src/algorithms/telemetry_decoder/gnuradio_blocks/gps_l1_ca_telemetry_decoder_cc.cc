@@ -41,6 +41,7 @@
 #include <gnuradio/gr_io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include <boost/lexical_cast.hpp>
 #include "control_message_factory.h"
 
 #include "gnss_synchro.h"
@@ -92,7 +93,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_vector_length = vector_length;
     d_samples_per_bit = ( GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS ) / GPS_CA_TELEMETRY_RATE_BITS_SECOND;
     d_fs_in = fs_in;
-    d_preamble_duration_seconds = (1.0 / GPS_CA_TELEMETRY_RATE_BITS_SECOND) * GPS_CA_PREAMBLE_LENGTH_BITS;
+    //d_preamble_duration_seconds = (1.0 / GPS_CA_TELEMETRY_RATE_BITS_SECOND) * GPS_CA_PREAMBLE_LENGTH_BITS;
     //std::cout<<"d_preamble_duration_seconds="<<d_preamble_duration_seconds<<"\r\n";
     // set the preamble
     unsigned short int preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
@@ -124,7 +125,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_symbol_accumulator=0;
     d_symbol_accumulator_counter = 0;
     d_frame_bit_index = 0;
-
+    d_preamble_time_seconds=0;
     d_flag_frame_sync = false;
     d_GPS_frame_4bytes = 0;
     d_prev_GPS_frame_4bytes = 0;
@@ -175,37 +176,19 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
     int corr_value = 0;
-    int preamble_diff;
+    int preamble_diff=0;
 
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
-
-
     d_sample_counter++; //count for the processed samples
-
-    DLOG(INFO) << "Sample counter: " << d_sample_counter;
 
     // ########### Output the tracking data to navigation and PVT ##########
     const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
 
-    /*!
-     * \todo Check the HOW GPS time computation, taking into account that the preamble correlation last 160 symbols, which is 160 ms in GPS CA L1
-     */
-    // FIFO history to get the exact timestamp of the first symbol of the preamble
-    //  if (d_prn_start_sample_history.size()<160)
-    //  {
-    //	  // fill the queue
-    //	  d_prn_start_sample_history.push_front(in[2][0]);
-    //	  consume_each(1); //one by one
-    //	  return 1;
-    //  }else{
-    //	  d_prn_start_sample_history.pop_back();
-    //	  d_prn_start_sample_history.push_front(in[2][0]);
-    //  }
     // TODO Optimize me!
     //******* preamble correlation ********
     for (unsigned int i=0; i<d_samples_per_bit*8; i++)
         {
-            if (in[0][i].Prompt_Q < 0)	// symbols clipping
+            if (in[0][i].Prompt_I < 0)	// symbols clipping
                 {
                     corr_value -= d_preambles_symbols[i];
                 }
@@ -237,7 +220,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                             d_GPS_FSM.Event_gps_word_preamble();
                             d_flag_preamble = true;
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
-                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
+                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;// - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
                             d_preamble_code_phase_seconds = in[0][0].Code_phase_secs;
 
                             if (!d_flag_frame_sync)
@@ -262,11 +245,9 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 }
         }
 
-    //******* code error accumulator *****
-    //d_preamble_phase-=in[3][0];
     //******* SYMBOL TO BIT *******
 
-    d_symbol_accumulator += in[0][d_samples_per_bit*8 - 1].Prompt_Q; // accumulate the input value in d_symbol_accumulator
+    d_symbol_accumulator += in[0][d_samples_per_bit*8 - 1].Prompt_I; // accumulate the input value in d_symbol_accumulator
     d_symbol_accumulator_counter++;
     if (d_symbol_accumulator_counter == 20)
         {
@@ -324,7 +305,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 
     // output the frame
     consume_each(1); //one by one
-    DLOG(INFO) << "TELEMETRY PROCESSED for satellite " << this->d_satellite;
 
     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
 
@@ -333,12 +313,28 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //2. Add the telemetry decoder information
     current_synchro_data.Flag_valid_word=(d_flag_frame_sync == true and d_flag_parity == true);
     current_synchro_data.Flag_preamble= d_flag_preamble;
-    current_synchro_data.Preamble_delay_ms= d_preamble_time_seconds*1000.0;
-    current_synchro_data.Prn_delay_ms = (in[0][0].Tracking_timestamp_secs - d_preamble_duration_seconds)*1000.0;
-    current_synchro_data.Preamble_code_phase_ms = d_preamble_code_phase_seconds*1000.0;
-    current_synchro_data.Preamble_code_phase_correction_ms = (in[0][0].Code_phase_secs - d_preamble_code_phase_seconds)*1000.0;
-    //gps_synchro.satellite_PRN = this->d_satellite.get_PRN(); //is already filled...
-    //gps_synchro.channel_ID = d_channel;
+    current_synchro_data.Preamble_timestamp_ms= d_preamble_time_seconds*1000.0;
+    current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs*1000.0;
+    current_synchro_data.Preamble_symbol_counter=fmod((double)(d_sample_counter - d_preamble_index),6000); //not corrected the preamble correlation lag! -> to be taken into account in TX Time
+
+    if(d_dump == true)
+        {
+            // MULTIPLEXED FILE RECORDING - Record results to file
+            try
+            {
+				double tmp_double;
+				tmp_double = current_synchro_data.Preamble_timestamp_ms;
+				d_dump_file.write((char*)&tmp_double, sizeof(double));
+				tmp_double = current_synchro_data.Prn_timestamp_ms;
+				d_dump_file.write((char*)&tmp_double, sizeof(double));
+				tmp_double = current_synchro_data.Preamble_symbol_counter;
+				d_dump_file.write((char*)&tmp_double, sizeof(double));
+            }
+            catch (std::ifstream::failure e)
+            {
+                    std::cout << "Exception writing observables dump file " << e.what() << std::endl;
+            }
+        }
 
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_synchro_data;
@@ -359,5 +355,25 @@ void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
     d_channel = channel;
     d_GPS_FSM.i_channel_ID = channel;
     LOG_AT_LEVEL(INFO) << "Navigation channel set to " << channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                    {
+                    	    d_dump_filename="telemetry";
+                            d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            std::cout << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                    }
+                    catch (std::ifstream::failure e)
+                    {
+                            std::cout << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                    }
+                }
+        }
 }
 

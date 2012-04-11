@@ -483,17 +483,6 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             T_prn_samples = T_prn_seconds * d_fs_in;
             d_rem_code_phase_samples = d_next_rem_code_phase_samples;
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples;
-
-            // Update the current PRN delay (code phase in samples)
-            float T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
-            float T_prn_true_samples = T_prn_true_seconds * (float)d_fs_in;
-            d_code_phase_samples = d_code_phase_samples + T_prn_samples - T_prn_true_samples;
-            if (d_code_phase_samples < 0)
-                {
-                    d_code_phase_samples = T_prn_true_samples + d_code_phase_samples;
-                }
-
-            d_code_phase_samples = fmod(d_code_phase_samples, T_prn_true_samples);
             d_next_prn_length_samples = round(K_blk_samples); //round to a discrete samples
             d_next_rem_code_phase_samples = K_blk_samples - d_next_prn_length_samples; //rounding error
 
@@ -539,16 +528,6 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
                     //std::cout<<"d_carrier_lock_fail_counter"<<d_carrier_lock_fail_counter<<"\r\n";
                 }
 
-            // ########### Output the tracking data to navigation and PVT ##########
-
-            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
-            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
-            current_synchro_data.Tracking_timestamp_secs = d_sample_counter_seconds;
-            current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
-            current_synchro_data.Code_phase_secs = (double)d_code_phase_samples * (1/(float)d_fs_in);
-            current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
-            *out[0] = current_synchro_data;
-
             // ########## DEBUG OUTPUT
             /*!
              *  \todo The stop timer has to be moved to the signal source!
@@ -576,6 +555,19 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
                             //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
                         }
                 }
+
+            // ########### Output the tracking data to navigation and PVT ##########
+
+            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
+            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
+            // Tracking_timestamp_secs is aligned with the PRN start sample
+            current_synchro_data.Tracking_timestamp_secs=((double)d_sample_counter+(double)d_next_prn_length_samples+(double)d_next_rem_code_phase_samples)/(double)d_fs_in;
+            // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, Code_phase_secs=0
+            current_synchro_data.Code_phase_secs=0;
+            current_synchro_data.Tracking_timestamp_secs = d_sample_counter_seconds;
+            current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
+            current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
+            *out[0] = current_synchro_data;
         }
     else
         {
@@ -600,6 +592,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             float prompt_Q;
             float tmp_E, tmp_P, tmp_L;
             float tmp_float;
+            double tmp_double;
             prompt_I = (*d_Prompt).imag();
             prompt_Q = (*d_Prompt).real();
             tmp_E = std::abs<float>(*d_Early);
@@ -637,9 +630,10 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
                     d_dump_file.write((char*)&d_carrier_lock_test, sizeof(float));
 
                     // AUX vars (for debug purposes)
-                    tmp_float=0;
+                    tmp_float = d_rem_code_phase_samples;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    d_dump_file.write((char*)&d_sample_counter_seconds, sizeof(double));
+                    tmp_double=(double)(d_sample_counter+d_current_prn_length_samples);
+                    d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
             catch (std::ifstream::failure e)
             {
@@ -648,7 +642,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
         }
 
     consume_each(d_current_prn_length_samples); // this is necesary in gr_block derivates
-    d_sample_counter_seconds = d_sample_counter_seconds + ( ((double)d_current_prn_length_samples) / (double)d_fs_in );
+    //d_sample_counter_seconds = d_sample_counter_seconds + ( ((double)d_current_prn_length_samples) / (double)d_fs_in );
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }

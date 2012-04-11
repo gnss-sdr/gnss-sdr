@@ -44,6 +44,7 @@
 #include "gps_navigation_message.h"
 #include "GPS_L1_CA.h"
 #include "armadillo"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 #include "gnss_synchro.h"
 
@@ -59,7 +60,11 @@ private:
 public:
     int d_nchannels;      //! Number of available channels for positioning
     Gps_Navigation_Message* d_ephemeris;
-    double d_pseudoranges_time_ms;
+    double d_GPS_current_time;
+    boost::posix_time::ptime d_position_UTC_time;
+
+    bool b_valid_position;
+
     double d_latitude_d;  //! Latitude in degrees
     double d_longitude_d; //! Longitude in degrees
     double d_height_m;    //! Height [m]

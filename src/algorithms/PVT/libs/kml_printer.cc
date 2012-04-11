@@ -41,11 +41,15 @@ bool Kml_Printer::set_headers(std::string filename)
 
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
-
     kml_file.open(filename.c_str());
     if (kml_file.is_open())
         {
             DLOG(INFO) << "KML printer writing on " << filename.c_str();
+
+            // Set iostream numeric format and precision
+            kml_file.setf(kml_file.fixed,kml_file.floatfield);
+            kml_file<<std::setprecision(14);
+
             kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
                     << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
                     << "	<Document>" << std::endl

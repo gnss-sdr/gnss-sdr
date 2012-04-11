@@ -112,7 +112,7 @@ private:
   int d_word_number;
 
   long d_fs_in;
-  double d_preamble_duration_seconds;
+  //double d_preamble_duration_seconds;
   // navigation message vars
   Gps_Navigation_Message d_nav;
   GpsL1CaSubframeFsm d_GPS_FSM;

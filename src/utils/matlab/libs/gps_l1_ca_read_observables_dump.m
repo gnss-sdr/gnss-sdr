@@ -1,5 +1,5 @@
 % Javier Arribas 2011             
-function [observables] = gps_l1_ca_dll_pll_read_observables_dump (channels, filename, count)
+function [observables] = gps_l1_ca_read_observables_dump (channels, filename, count)
 
   %% usage: read_tracking_dat (filename, [count])
   %%

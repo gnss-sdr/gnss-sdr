@@ -183,7 +183,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = 5;
+    d_carrier_lock_threshold = 20;
 
     systemName["G"] = std::string("GPS");
     systemName["R"] = std::string("GLONASS");
@@ -465,10 +465,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
 
             // Compute DLL error and update code NCO
 //SIM            code_error = dll_nc_e_minus_l_normalized(*d_Early, *d_Late);
-            // Implement code loop filter and generate NCO command
-            code_nco = d_code_loop_filter.get_code_nco(code_error);
             // Modify code freq based on NCO command
-            d_code_freq_hz = GPS_L1_CA_CODE_RATE_HZ - code_nco;
+            d_code_freq_hz = 1/(1/GPS_L1_CA_CODE_RATE_HZ - code_nco/GPS_L1_CA_CODE_LENGTH_CHIPS);
 
             // Update the phasestep based on code freq (variable) and
             // sampling frequency (fixed)
@@ -502,8 +500,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
                     d_CN0_SNV_dB_Hz = gps_l1_ca_CN0_SNV(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
                     // ###### TRACKING UNLOCK NOTIFICATION #####
-                    //int tracking_message;
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_carrier_lock_test > MINIMUM_VALID_CN0)
+                    if (std::abs(d_carrier_lock_test) > d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
                         {
                             d_carrier_lock_fail_counter++;
                         }
@@ -558,8 +555,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
 
             // ########### Output the tracking data to navigation and PVT ##########
 
-            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
-            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
+            current_synchro_data.Prompt_I = (double)(*d_Prompt).imag();
+            current_synchro_data.Prompt_Q = (double)(*d_Prompt).real();
             // Tracking_timestamp_secs is aligned with the PRN start sample
             current_synchro_data.Tracking_timestamp_secs=((double)d_sample_counter+(double)d_next_prn_length_samples+(double)d_next_rem_code_phase_samples)/(double)d_fs_in;
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, Code_phase_secs=0

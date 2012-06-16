@@ -45,6 +45,14 @@
 
 class ConfigurationInterface;
 
+/*!
+ * \brief This class adapts a GNU Radio gr_fir_filter designed with gr_remez
+ *
+ * See Parks-McClellan FIR filter design, http://en.wikipedia.org/wiki/Parks-McClellan_filter_design_algorithm
+ * Calculates the optimal (in the Chebyshev/minimax sense) FIR filter impulse response
+ * given a set of band edges, the desired response on those bands, and the weight given
+ * to the error in those bands.
+ */
 class FirFilter: public GNSSBlockInterface
 {
 

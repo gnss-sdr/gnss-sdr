@@ -66,7 +66,7 @@ public:
     }
     std::string implementation()
     {
-        return "NullSinkOutputFilter";
+        return "Null_Sink_Output_Filter";
     }
     size_t item_size()
     {

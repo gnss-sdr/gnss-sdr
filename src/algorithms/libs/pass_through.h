@@ -60,7 +60,7 @@ public:
     }
     std::string implementation()
     {
-        return "PassThrough";
+        return "Pass_Through";
     }
 
     std::string item_type()

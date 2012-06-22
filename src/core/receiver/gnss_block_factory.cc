@@ -209,9 +209,9 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
             channels->push_back(GetChannel(configuration,
                     acquisition_implementation, tracking, telemetry_decoder, i,
                     queue));
-            //std::cout << "getchannel_" << i << ", acq_implementation_name: "
-            //<< acquisition_implementation_name << ", implementation: "
-            //<< acquisition_implementation << std::endl;
+//            std::cout << "getchannel_" << i << ", acq_implementation_name: "
+//            << acquisition_implementation_name << ", implementation: "
+//            << acquisition_implementation << std::endl;
 
         }
 

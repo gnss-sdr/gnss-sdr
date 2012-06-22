@@ -61,7 +61,7 @@ public:
     }
     std::string implementation()
     {
-        return "FileOutputFilter";
+        return "File_Output_Filter";
     }
     size_t item_size()
     {

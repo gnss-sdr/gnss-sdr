@@ -63,7 +63,7 @@ public:
     }
     std::string implementation()
     {
-        return "FileSignalSource";
+        return "File_Signal_Source";
     }
     size_t item_size()
     {

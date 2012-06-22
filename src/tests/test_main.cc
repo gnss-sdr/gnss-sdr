@@ -53,44 +53,20 @@
 //#include "flowgraph/file_signal_source_test.cc"
 #include "flowgraph/pass_through_test.cc"
 //#include "flowgraph/gnss_flowgraph_test.cc"
-//#include "gnss_block/file_output_filter_test.cc"
-//#include "gnss_block/gnss_block_factory_test.cc"
 #include "gnuradio_block/gnss_sdr_valve_test.cc"
 #include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
 #include "string_converter/string_converter_test.cc"
 #include "arithmetic/complex_arithmetic_libc.cc"
 #include "arithmetic/correlations_libc.cc"
 #include "arithmetic/cordic_test.cc"
+#include "gnss_block/file_signal_source_test.cc"
 #include "gnss_block/fir_filter_test.cc"
+#include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
+#include "gnss_block/file_output_filter_test.cc"
+#include "gnss_block/gnss_block_factory_test.cc"
 //#include "gnss_block/direct_resampler_conditioner_test.cc"
 
 concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
-
-/*
-class Control_Message_Factory_Test : public ::testing:: Test
-{
-protected:
-    Control_Message_Factory_Test(){}
-};
-
-
-
-class File_Configuration_Test : public ::testing:: Test
-{
-protected:
-    File_Configuration_Test(){}
-};
-
-
-class Control_Thread_Test : public ::testing:: Test
-{
-protected:
-    Control_Thread_Test(){}
-};
-*/
-
-
-
 
 
 int main(int argc, char **argv)

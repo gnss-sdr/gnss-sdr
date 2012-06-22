@@ -58,7 +58,7 @@ public:
     }
     std::string implementation()
     {
-        return "UhdSignalSource";
+        return "UHD_Signal_Source";
     }
     size_t item_size()
     {

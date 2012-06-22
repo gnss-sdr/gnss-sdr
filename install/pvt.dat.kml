@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+	<Document>
+	<name>GNSS Track</name>
+	<description>GNSS-SDR Receiver position log file created at Fri Jun 22 16:02:49 2012
+	</description>
+<Style id="yellowLineGreenPoly">
+ <LineStyle>
+ 	<color>7f00ffff</color>
+		<width>1</width>
+	</LineStyle>
+<PolyStyle>
+	<color>7f00ff00</color>
+</PolyStyle>
+</Style>
+<Placemark>
+<name>GNSS-SDR PVT</name>
+<description>GNSS-SDR position log</description>
+<styleUrl>#yellowLineGreenPoly</styleUrl>
+<LineString>
+<extrude>0</extrude>
+<tessellate>1</tessellate>
+<altitudeMode>absolute</altitudeMode>
+<coordinates>
+</coordinates>
+</LineString>
+</Placemark>
+</Document>
+</kml>

@@ -64,7 +64,7 @@ public:
     }
     std::string implementation()
     {
-        return "pvt";
+        return "GPS_L1_CA_PVT";
     }
 
     void connect(gr_top_block_sptr top_block);

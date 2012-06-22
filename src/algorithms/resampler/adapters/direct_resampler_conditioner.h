@@ -54,7 +54,7 @@ public:
     }
     std::string implementation()
     {
-        return "DirectResamplerConditioner";
+        return "Direct_Resampler";
     }
     size_t item_size()
     {

@@ -58,7 +58,7 @@ public:
     }
     std::string implementation()
     {
-        return "Acquisition";
+        return "GPS_L1_CA_PCPS_Acquisition";
     }
     size_t item_size()
     {

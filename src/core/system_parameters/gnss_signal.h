@@ -1,5 +1,5 @@
 /*!
- * \file gnss_satellite.cc
+ * \file gnss_signal.h
  * \brief  Implementation of the Gnss_Signal class
  * \author
  *  Luis Esteve, 2012. luis(at)epsilon-formacion.com

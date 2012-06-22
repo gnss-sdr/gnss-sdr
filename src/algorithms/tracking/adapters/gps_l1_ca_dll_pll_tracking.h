@@ -66,7 +66,7 @@ public:
     }
     std::string implementation()
     {
-        return "tracking";
+        return "GPS_L1_CA_DLL_PLL_Tracking";
     }
     size_t item_size()
     {

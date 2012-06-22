@@ -61,7 +61,7 @@ public:
     }
     std::string implementation()
     {
-        return "TelemetryDecoder";
+        return "GPS_L1_CA_Telemetry_Decoder";
     }
 
     void connect(gr_top_block_sptr top_block);

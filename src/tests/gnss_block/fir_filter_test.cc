@@ -1,6 +1,6 @@
 /*!
  * \file fir_filter_test.cc
- * \brief Test for the fir filter.
+ * \brief Implements Unit Test for the fir filter.
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
@@ -51,26 +51,22 @@ protected:
 	Fir_Filter_Test() {
 		queue = gr_make_msg_queue(0);
 		top_block = gr_make_top_block("Fir filter test");
-		factory = new GNSSBlockFactory();
 		config = new InMemoryConfiguration();
 		item_size = sizeof(gr_complex);
 
 	}
 	~Fir_Filter_Test() {
-		delete factory;
 		delete config;
 	}
-	bool init();
+	void init();
 	gr_msg_queue_sptr queue;
 	gr_top_block_sptr top_block;
-	GNSSBlockFactory* factory;
 	InMemoryConfiguration* config;
-	GNSSBlockInterface* gnss_block;
 	size_t item_size;
 
 };
 
-bool Fir_Filter_Test::init(){
+void Fir_Filter_Test::init(){
 
 	config->set_property("InputFilter.number_of_taps", "4");
 	config->set_property("InputFilter.number_of_bands", "2");
@@ -92,14 +88,19 @@ bool Fir_Filter_Test::init(){
 	config->set_property("InputFilter.grid_density", "16");
 
 //		config->set_property("InputFilter.dump", "true");
-	gnss_block = factory->GetBlock(config, "InputFilter", "Fir_Filter", 1,
-		1, queue);
-	if (gnss_block == NULL) return false;
-	else return true;
+
 }
 
+TEST_F(Fir_Filter_Test, Instantiate)
+{
+	init();
 
-TEST_F(Fir_Filter_Test, InstantiationConnectAndRunTest)
+	FirFilter *filter = new FirFilter(config, "InputFilter", 1, 1, queue);
+
+	delete filter;
+}
+
+TEST_F(Fir_Filter_Test, ConnectAndRun)
 {
 	int fs_in = 8000000;
 	int nsamples = 10000000;
@@ -107,20 +108,19 @@ TEST_F(Fir_Filter_Test, InstantiationConnectAndRunTest)
     long long int begin;
     long long int end;
 
-//	ASSERT_NE( (int)gnss_block, NULL)
-//		<< "Function factory->GetInputFilter(config, queue) fails." << std::endl;
+    init();
 
-	ASSERT_NE(init(), false) << "Function factory->GetBlock(config, queue) fails." << std::endl;
+	FirFilter *filter = new FirFilter(config, "InputFilter", 1, 1, queue);
 
 	ASSERT_NO_THROW( {
-			gnss_block->connect(top_block);
-			gr_sig_source_c_sptr source = gr_make_sig_source_c(fs_in,GR_SIN_WAVE, 1000, 1, 0);
+			filter->connect(top_block);
+			gr_sig_source_c_sptr source = gr_make_sig_source_c(fs_in,GR_SIN_WAVE, 1000, 1, gr_complex(0));
 			gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
 			gr_block_sptr null_sink = gr_make_null_sink(item_size);
 
 			top_block->connect(source, 0, valve, 0);
-			top_block->connect(valve, 0, gnss_block->get_left_block(), 0);
-			top_block->connect(gnss_block->get_right_block(), 0, null_sink, 0);
+			top_block->connect(valve, 0, filter->get_left_block(), 0);
+			top_block->connect(filter->get_right_block(), 0, null_sink, 0);
 		}) << "Failure connecting the top_block."<< std::endl;
 
 	EXPECT_NO_THROW( {
@@ -132,4 +132,5 @@ TEST_F(Fir_Filter_Test, InstantiationConnectAndRunTest)
 		}) << "Failure running he top_block."<< std::endl;
 	std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 
+	delete filter;
 }

@@ -52,7 +52,7 @@ TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest) {
 	int nsamples = 1000000; //Number of samples to be computed
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 	gr_top_block_sptr top_block = gr_make_top_block("direct_resampler_conditioner_cc_test");
-    gr_sig_source_c_sptr source = gr_make_sig_source_c(fs_in, GR_SIN_WAVE, 1000, 1, 0);
+    gr_sig_source_c_sptr source = gr_make_sig_source_c(fs_in, GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
     gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
     long long int begin;
     long long int end;

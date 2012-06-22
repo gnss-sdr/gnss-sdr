@@ -58,7 +58,7 @@ public:
     }
     std::string implementation()
     {
-        return "observables";
+        return "GPS_L1_CA_Observables";
     }
 
     void connect(gr_top_block_sptr top_block);

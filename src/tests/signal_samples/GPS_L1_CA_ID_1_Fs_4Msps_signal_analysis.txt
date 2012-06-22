@@ -1,0 +1,46 @@
+Matlab Signal Generator:
+
+function [E1]=GPS_L1(Fs,BB_BW,CN0_IN,Tsig,FI,Doppler,Delay,numsat,flag_Datos,flag_local,flag_noise)
+%[L1]=GPS_L1
+%Fs= Sampling frequency [Hz]
+%BB_BW= BaseBand bandwidth [Hz]
+%CN0_IN= Carrier-to-noise-density ratio [dB]
+%Tsig= Total signal time to generate [s]
+%FI= Intermediate Frequency, 0 means baseband [Hz]
+%Doppler = Doppler frequency [Hz]
+%Delay = Code delay [s]
+%numsat= Satellite Vehicle number(1-31)
+%flag_datos = 1 -> Signal contains random telemetry bits 0 -> No telemetry
+%flag_local = 1 -> Signal will be used as a local replica
+%flag_noise = 1 -> Signal contains noise 0 -> signal is noise-free
+
+s = GPS_L1(4e6,1.99e6,42,0.2,0,1680,131e-6,1,1,0,0);
+
+fs: 4e06
+CN0: 42 dbHz
+Doppler: -1680 Hz
+Delay: 131e-6 s x 4e6 sps/s = 524 sps
+
+=============================================================================================================
+
+Matlab analysis:
+
+Probing data (/media/DATA/Proyectos/Signals/signal.dat)...
+  Raw IF data plotted 
+  (run setSettings or change settings in "initSettings.m" to reconfigure)
+ 
+Enter "1" to initiate GNSS processing or "0" to exit : 1
+ 
+Starting processing...
+   Acquiring satellites...
+(01 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . )
+
+*=========*=====*===============*===========*=============*========*
+| Channel | PRN |   Frequency   |  Doppler  | Code Offset | Status |
+*=========*=====*===============*===========*=============*========*
+|       1 |   1 |  -1.67847e+03 |   -1678   |       525   |     T  |
+*=========*=====*===============*===========*=============*========*
+
+   Tracking started at 31-May-2012 12:55:03
+   Tracking is over (elapsed time 00:00:00)
+   Saving Acq & Tracking results to file "trackingResults.mat"

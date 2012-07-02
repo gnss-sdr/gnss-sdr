@@ -1,7 +1,7 @@
 HOW TO BUILD GNSS-SDR
 ----------------------
 
-This document describes how to set up the compilation environment and build GNSS-SDR 
+This document describes how to set up the compilation environment and build GNSS-SDR. See also http://gnss-sdr.org/documentation/building-guide
 
 Ubuntu 10.04, 10.10, 11.04 and 11.10
 --------------------------------------
@@ -28,9 +28,9 @@ where /path/to/gnuradio is the folder in which you invoked build-gnuradio. In or
 
 - Download, compile, and install the Armadillo linear algebra library
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-2.4.2.tar.gz
-$ tar xvfz armadillo-2.4.2.tar.gz
-$ cd armadillo-2.4.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-3.2.3.tar.gz
+$ tar xvfz armadillo-3.2.3.tar.gz
+$ cd armadillo-3.2.3
 $ cmake .
 $ make
 $ sudo make install
@@ -67,18 +67,18 @@ changing /home/username/gtest-1.6.0 by the actual directory where you downloaded
 
 - Download, unzip, configure, build and install Google's gflags package, a commandline flags processing module for C++:
 
-$ wget http://google-gflags.googlecode.com/files/gflags-1.7.tar.gz
-$ tar xvfz gflags-1.7.tar.gz
-$ cd gflags-1.7
+$ wget http://google-gflags.googlecode.com/files/gflags-2.0.zip
+$ unzip gflags-2.0.zip
+$ cd gflags-2.0
 $ ./configure
 $ make
 $ sudo make install
 
 - Download, unzip, configure, build and install glog, a Google's library that implements application-level logging:
 
-$ wget http://google-glog.googlecode.com/files/glog-0.3.1-1.tar.gz 
-$ tar xvfz glog-0.3.1-1.tar.gz 
-$ cd  glog-0.3.1
+$ wget http://google-glog.googlecode.com/files/glog-0.3.2.tar.gz 
+$ tar xvfz glog-0.3.2.tar.gz 
+$ cd  glog-0.3.2
 $ ./configure
 $ make
 $ sudo make install
@@ -100,22 +100,17 @@ $ bjam
 
 If everything went fine, a executable will be found at gnss-sdr/trunk/install/gnss-sdr
 
+- You can also build the release version (an optimized, faster executable) by typing:
 
-NOTE: If, later on, you want to bring your GNU Radio repository up to date with the original repository of GNU Radio (and test if GNSS-SDR works with it), go to the gnuradio directory and do:
-
-$ sudo make uninstall
-$ make clean
-$ git pull
-$ ./configure
-$ make
-$ make check
-$ sudo make install
+$ bjam release
 
 
 
 
-Mac OS X 1.6.8 (Snow Leopard)
+Mac OS X 1.6.8 (Snow Leopard) 
 ------------------------------
+NOTE: Currently the GCC toolchain is broken. We are working towards the use of LLVM/Clang.
+
 * If you have still not installed Apple's Developer Tools Xcode, do it now from  http://developer.apple.com/technologies/tools/ (it's free)
 
 * Install Macports from  http://www.macports.org/install.php We recommend to install directly the “dmg” disk images for Snow Leopart. GNSS-SDR has not been tested with Leopard or Tiger.
@@ -143,7 +138,8 @@ $ cd..
 $ git clone git://gnuradio.org/gnuradio
 $ cd gnuradio
 $ mkdir build
-$ cd build cmake ../
+$ cd build 
+$ cmake ../
 $ make
 $ sudo make install
 
@@ -166,9 +162,9 @@ $ sudo ln -s /usr/local/lib/libvolk.dylib /opt/local/lib/libvolk.dylib
 
 - Download, compile, and install the Armadillo linear algebra library
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-2.4.2.tar.gz
-$ tar xvfz armadillo-2.4.2.tar.gz
-$ cd armadillo-2.4.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-2.4.3.tar.gz
+$ tar xvfz armadillo-2.4.3.tar.gz
+$ cd armadillo-2.4.3
 $ cmake .
 $ make
 $ sudo make install

@@ -1,6 +1,6 @@
 /*!
  * \file signal_conditioner.h
- * \brief It holds blocks to change data type, filter and resample input data.
+ * \brief It wraps blocks to change data type, filter and resample input data.
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -45,6 +45,10 @@ class AcquisitionInterface;
 class TrackingInterface;
 class TelemetryDecoderInterface;
 
+/*!
+ * \brief This class wraps blocks to change data_type_adapter, input_filter and resampler
+ * to be applied to the input flow of sampled signal.
+ */
 class SignalConditioner: public GNSSBlockInterface
 {
 

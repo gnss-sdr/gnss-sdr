@@ -37,11 +37,11 @@
  * \brief This is the class that contains the information that is shared
  * by the processing blocks.
  */
-class Gnss_Synchro
+class  Gnss_Synchro
 {
 public:
-    Gnss_Synchro();
-    ~Gnss_Synchro();
+    //reset();
+    //~Gnss_Synchro();
     // Satellite and signal info
     char System;      //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
     char Signal[3];   //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)

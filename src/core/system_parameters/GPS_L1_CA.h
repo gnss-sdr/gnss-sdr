@@ -33,7 +33,9 @@
 #define GNSS_SDR_GPS_L1_CA_H_
 
 #include <complex>
+#include <vector>
 #include <gnss_satellite.h>
+//#include <initializer_list>
 
 // Physical constants
 const double GPS_C_m_s        = 299792458.0;      //!< The speed of light, [m/s]
@@ -81,18 +83,24 @@ const int GPS_WORD_BITS=30;                    //!< Number of bits per word in t
 
 /*!
  *  \brief Navigation message bits slice structure: A portion of bits is indicated by
- *  the start position inside the subframe and the length in number of bits  */
-typedef struct bits_slice
+ *  the start position inside the subframe and the length in number of bits
+ *  */
+
+typedef struct bits_slice_struct
 {
     int position;
     int length;
-    bits_slice(int p,int l)
+    bits_slice_struct(int p,int l)
     {
         position=p;
-        length=l;
+       length=l;
     }
-} bits_slice;
+} bits_slice_struct;
 
+
+
+
+typedef std::vector<bits_slice_struct> bits_slice;
 
 /* Constants for scaling the ephemeris found in the data message
         the format is the following: TWO_N5 -> 2^-5, TWO_P4 -> 2^4, PI_TWO_N43 -> Pi*2^-43, etc etc
@@ -146,130 +154,130 @@ const double PI_TWO_N23           =(3.745070282923929e-007);        //!< Pi*2^-2
 
 // SUBFRAME 1-5 (TLM and HOW)
 
-const bits_slice TOW[]= {{31,17}};
-const bits_slice INTEGRITY_STATUS_FLAG[] = {{23,1}};
-const bits_slice ALERT_FLAG[] = {{48,1}};
-const bits_slice ANTI_SPOOFING_FLAG[] = {{49,1}};
-const bits_slice SUBFRAME_ID[]= {{50,3}};
+const bits_slice TOW = { {31,17} };
+const bits_slice INTEGRITY_STATUS_FLAG = {{23,1}};
+const bits_slice ALERT_FLAG = {{48,1}};
+const bits_slice ANTI_SPOOFING_FLAG = {{49,1}};
+const bits_slice SUBFRAME_ID= {{50,3}};
 
 
 // SUBFRAME 1
-const bits_slice GPS_WEEK[]= {{61,10}};
-const bits_slice CA_OR_P_ON_L2[]= {{71,2}}; //*
-const bits_slice SV_ACCURACY[]= {{73,4}};
-const bits_slice SV_HEALTH[]= {{77,6}};
-const bits_slice L2_P_DATA_FLAG[] = {{91,1}};
-const bits_slice T_GD[]= {{197,8}};
+const bits_slice GPS_WEEK= {{61,10}};
+const bits_slice CA_OR_P_ON_L2= {{71,2}}; //*
+const bits_slice SV_ACCURACY= {{73,4}};
+const bits_slice SV_HEALTH= {{77,6}};
+const bits_slice L2_P_DATA_FLAG = {{91,1}};
+const bits_slice T_GD= {{197,8}};
 const double T_GD_LSB=TWO_N31;
 
-const bits_slice IODC[]= {{83,2},{211,8}};
-const bits_slice T_OC[]= {{219,16}};
+const bits_slice IODC= {{83,2},{211,8}};
+const bits_slice T_OC= {{219,16}};
 const double T_OC_LSB=TWO_P4;
 
-const bits_slice A_F2[]= {{241,8}};
+const bits_slice A_F2= {{241,8}};
 const double A_F2_LSB=TWO_N55;
-const bits_slice A_F1[]= {{249,16}};
+const bits_slice A_F1= {{249,16}};
 const double A_F1_LSB=TWO_N43;
-const bits_slice A_F0[]= {{271,22}};
+const bits_slice A_F0= {{271,22}};
 const double A_F0_LSB=TWO_N31;
 
 // SUBFRAME 2
 
-const bits_slice IODE_SF2[]= {{61,8}};
-const bits_slice C_RS[]= {{69,16}};
+const bits_slice IODE_SF2= {{61,8}};
+const bits_slice C_RS= {{69,16}};
 const double C_RS_LSB=TWO_N5;
-const bits_slice DELTA_N[]= {{91,16}};
+const bits_slice DELTA_N= {{91,16}};
 const double DELTA_N_LSB=PI_TWO_N43;
-const bits_slice M_0[]= {{107,8},{121,24}};
+const bits_slice M_0= {{107,8},{121,24}};
 const double M_0_LSB=PI_TWO_N31;
-const bits_slice C_UC[]= {{151,16}};
+const bits_slice C_UC= {{151,16}};
 const double C_UC_LSB=TWO_N29;
-const bits_slice E[]= {{167,8},{181,24}};
+const bits_slice E= {{167,8},{181,24}};
 const double E_LSB=TWO_N33;
-const bits_slice C_US[]= {{211,16}};
+const bits_slice C_US= {{211,16}};
 const double C_US_LSB=TWO_N29;
-const bits_slice SQRT_A[]= {{227,8},{241,24}};
+const bits_slice SQRT_A= {{227,8},{241,24}};
 const double SQRT_A_LSB=TWO_N19;
-const bits_slice T_OE[]= {{271,16}};
+const bits_slice T_OE= {{271,16}};
 const double T_OE_LSB=TWO_P4;
-const bits_slice FIT_INTERVAL_FLAG[]= {{271,1}};
-const bits_slice AODO[] = {{272,5}};
+const bits_slice FIT_INTERVAL_FLAG= {{271,1}};
+const bits_slice AODO = {{272,5}};
 const int AODO_LSB = 900;
 
 // SUBFRAME 3
 
-const bits_slice C_IC[]= {{61,16}};
+const bits_slice C_IC= {{61,16}};
 const double C_IC_LSB=TWO_N29;
-const bits_slice OMEGA_0[]= {{77,8},{91,24}};
+const bits_slice OMEGA_0 = {{77,8},{91,24}};
 const double OMEGA_0_LSB=PI_TWO_N31;
-const bits_slice C_IS[]= {{121,16}};
+const bits_slice C_IS = {{121,16}};
 const double C_IS_LSB=TWO_N29;
-const bits_slice I_0[]= {{137,8},{151,24}};
+const bits_slice I_0 = {{137,8},{151,24}};
 const double I_0_LSB=PI_TWO_N31;
-const bits_slice C_RC[]= {{181,16}};
+const bits_slice C_RC = {{181,16}};
 const double C_RC_LSB=TWO_N5;
-const bits_slice OMEGA[]= {{197,8},{211,24}};
+const bits_slice OMEGA = {{197,8},{211,24}};
 const double OMEGA_LSB=PI_TWO_N31;
-const bits_slice OMEGA_DOT[]= {{241,24}};
+const bits_slice OMEGA_DOT = {{241,24}};
 const double OMEGA_DOT_LSB=PI_TWO_N43;
-const bits_slice IODE_SF3[]= {{271,8}};
+const bits_slice IODE_SF3 = {{271,8}};
 
-const bits_slice I_DOT[]= {{279,14}};
+const bits_slice I_DOT = {{279,14}};
 const double I_DOT_LSB=PI_TWO_N43;
 
 
 // SUBFRAME 4-5
 
-const bits_slice SV_DATA_ID[]= {{61,2}};
-const bits_slice SV_PAGE[]= {{63,6}};
+const bits_slice SV_DATA_ID = {{61,2}};
+const bits_slice SV_PAGE = {{63,6}};
 
 // SUBFRAME 4
 
 //! \todo read all pages of subframe 4
 
 // Page 18 - Ionospheric and UTC data
-const bits_slice ALPHA_0[]= {{69,8}};
+const bits_slice ALPHA_0 = {{69,8}};
 const double ALPHA_0_LSB=TWO_N30;
-const bits_slice ALPHA_1[]= {{77,8}};
+const bits_slice ALPHA_1 = {{77,8}};
 const double ALPHA_1_LSB=TWO_N27;
-const bits_slice ALPHA_2[]= {{91,8}};
+const bits_slice ALPHA_2 = {{91,8}};
 const double ALPHA_2_LSB=TWO_N24;
-const bits_slice ALPHA_3[]= {{99,8}};
+const bits_slice ALPHA_3 = {{99,8}};
 const double ALPHA_3_LSB=TWO_N24;
-const bits_slice BETA_0[]= {{107,8}};
+const bits_slice BETA_0 = {{107,8}};
 const double BETA_0_LSB=TWO_P11;
-const bits_slice BETA_1[]= {{121,8}};
+const bits_slice BETA_1 = {{121,8}};
 const double BETA_1_LSB=TWO_P14;
-const bits_slice BETA_2[]= {{129,8}};
+const bits_slice BETA_2 = {{129,8}};
 const double BETA_2_LSB=TWO_P16;
-const bits_slice BETA_3[]= {{137,8}};
+const bits_slice BETA_3 = {{137,8}};
 const double BETA_3_LSB=TWO_P16;
-const bits_slice A_1[]= {{151,24}};
+const bits_slice A_1 = {{151,24}};
 const double A_1_LSB=TWO_N50;
-const bits_slice A_0[]= {{181,24},{211,8}};
+const bits_slice A_0 = {{181,24},{211,8}};
 const double A_0_LSB=TWO_N30;
-const bits_slice T_OT[]= {{219,8}};
+const bits_slice T_OT = {{219,8}};
 const double T_OT_LSB=TWO_P12;
-const bits_slice WN_T[]= {{227,8}};
+const bits_slice WN_T = {{227,8}};
 const double WN_T_LSB = 1;
-const bits_slice DELTAT_LS[]= {{241,8}};
+const bits_slice DELTAT_LS = {{241,8}};
 const double DELTAT_LS_LSB = 1;
-const bits_slice WN_LSF[]= {{249,8}};
+const bits_slice WN_LSF = {{249,8}};
 const double WN_LSF_LSB = 1;
-const bits_slice DN[]= {{257,8}};
+const bits_slice DN = {{257,8}};
 const double DN_LSB = 1;
-const bits_slice DELTAT_LSF[]= {{271,8}};
+const bits_slice DELTAT_LSF = {{271,8}};
 const double DELTAT_LSF_LSB = 1;
 
 // Page 25 - Antispoofing, SV config and SV health (PRN 25 -32)
-const bits_slice HEALTH_SV25[]={{229,6}};
-const bits_slice HEALTH_SV26[]={{241,6}};
-const bits_slice HEALTH_SV27[]={{247,6}};
-const bits_slice HEALTH_SV28[]={{253,6}};
-const bits_slice HEALTH_SV29[]={{259,6}};
-const bits_slice HEALTH_SV30[]={{271,6}};
-const bits_slice HEALTH_SV31[]={{277,6}};
-const bits_slice HEALTH_SV32[]={{283,6}};
+const bits_slice HEALTH_SV25 ={{229,6}};
+const bits_slice HEALTH_SV26 ={{241,6}};
+const bits_slice HEALTH_SV27 ={{247,6}};
+const bits_slice HEALTH_SV28 ={{253,6}};
+const bits_slice HEALTH_SV29 ={{259,6}};
+const bits_slice HEALTH_SV30 ={{271,6}};
+const bits_slice HEALTH_SV31 ={{277,6}};
+const bits_slice HEALTH_SV32 ={{283,6}};
 
 
 
@@ -280,33 +288,33 @@ const bits_slice HEALTH_SV32[]={{283,6}};
 
 
 // page 25 - Health (PRN 1 - 24)
-const bits_slice T_OA[]={{69,8}};
+const bits_slice T_OA ={{69,8}};
 const double T_OA_LSB = TWO_P12;
-const bits_slice WN_A[]={{77,8}};
-const bits_slice HEALTH_SV1[]={{91,6}};
-const bits_slice HEALTH_SV2[]={{97,6}};
-const bits_slice HEALTH_SV3[]={{103,6}};
-const bits_slice HEALTH_SV4[]={{109,6}};
-const bits_slice HEALTH_SV5[]={{121,6}};
-const bits_slice HEALTH_SV6[]={{127,6}};
-const bits_slice HEALTH_SV7[]={{133,6}};
-const bits_slice HEALTH_SV8[]={{139,6}};
-const bits_slice HEALTH_SV9[]={{151,6}};
-const bits_slice HEALTH_SV10[]={{157,6}};
-const bits_slice HEALTH_SV11[]={{163,6}};
-const bits_slice HEALTH_SV12[]={{169,6}};
-const bits_slice HEALTH_SV13[]={{181,6}};
-const bits_slice HEALTH_SV14[]={{187,6}};
-const bits_slice HEALTH_SV15[]={{193,6}};
-const bits_slice HEALTH_SV16[]={{199,6}};
-const bits_slice HEALTH_SV17[]={{211,6}};
-const bits_slice HEALTH_SV18[]={{217,6}};
-const bits_slice HEALTH_SV19[]={{223,6}};
-const bits_slice HEALTH_SV20[]={{229,6}};
-const bits_slice HEALTH_SV21[]={{241,6}};
-const bits_slice HEALTH_SV22[]={{247,6}};
-const bits_slice HEALTH_SV23[]={{253,6}};
-const bits_slice HEALTH_SV24[]={{259,6}};
+const bits_slice WN_A ={{77,8}};
+const bits_slice HEALTH_SV1 ={{91,6}};
+const bits_slice HEALTH_SV2 ={{97,6}};
+const bits_slice HEALTH_SV3 ={{103,6}};
+const bits_slice HEALTH_SV4 ={{109,6}};
+const bits_slice HEALTH_SV5 ={{121,6}};
+const bits_slice HEALTH_SV6 ={{127,6}};
+const bits_slice HEALTH_SV7 ={{133,6}};
+const bits_slice HEALTH_SV8 ={{139,6}};
+const bits_slice HEALTH_SV9 ={{151,6}};
+const bits_slice HEALTH_SV10 ={{157,6}};
+const bits_slice HEALTH_SV11 ={{163,6}};
+const bits_slice HEALTH_SV12 ={{169,6}};
+const bits_slice HEALTH_SV13 ={{181,6}};
+const bits_slice HEALTH_SV14 ={{187,6}};
+const bits_slice HEALTH_SV15 ={{193,6}};
+const bits_slice HEALTH_SV16 ={{199,6}};
+const bits_slice HEALTH_SV17 ={{211,6}};
+const bits_slice HEALTH_SV18 ={{217,6}};
+const bits_slice HEALTH_SV19 ={{223,6}};
+const bits_slice HEALTH_SV20 ={{229,6}};
+const bits_slice HEALTH_SV21 ={{241,6}};
+const bits_slice HEALTH_SV22 ={{247,6}};
+const bits_slice HEALTH_SV23 ={{253,6}};
+const bits_slice HEALTH_SV24 ={{259,6}};
 
 /*
 

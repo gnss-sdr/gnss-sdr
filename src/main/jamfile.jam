@@ -57,12 +57,11 @@ exe gnss-sdr : main.cc
 ../core/system_parameters//gps_navigation_message
 ../core/system_parameters//gnss_satellite
 ../core/system_parameters//gnss_signal
-../core/system_parameters//gnss_synchro
+#../core/system_parameters//gnss_synchro
 ../..//gflags
 ../..//glog
 ../..//gnuradio-core
 ../..//uhd
 ../..//gnuradio-uhd ;
-#../..//gnuradio-usrp ;
 
 install ../../install : gnss-sdr ;

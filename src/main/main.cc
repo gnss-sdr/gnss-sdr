@@ -108,8 +108,8 @@ int main(int argc, char** argv)
     // report the elapsed time
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout << "Total GNSS-SDR run time " << ((double)(end - begin))/1000000.0<< " [seconds]"<< std::endl;
+    std::cout << "Total GNSS-SDR run time " << ((double)(end - begin))/1000000.0 << " [seconds]" << std::endl;
 
     google::ShutDownCommandLineFlags();
-    std::cout<<"GNSS-SDR program ended"<<std::endl;
+    std::cout << "GNSS-SDR program ended." << std::endl;
 }

@@ -129,7 +129,9 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
     Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; //Get the output pointer
 
-    Gnss_Synchro current_gnss_synchro[d_nchannels];
+    const unsigned int cd_channels = d_nchannels;
+
+    Gnss_Synchro current_gnss_synchro[cd_channels];
 
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
     std::map<int,Gnss_Synchro> gnss_synchro_aligned_map;
@@ -148,23 +150,24 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
      */
     for (unsigned int i=0; i<d_nchannels ; i++)
         {
-        //Copy the telemetry decoder data to local copy
-    	current_gnss_synchro[i]=in[i][0];
+            //Copy the telemetry decoder data to local copy
+            current_gnss_synchro[i]=in[i][0];
 
             if (current_gnss_synchro[i].Flag_valid_word) //if this channel have valid word
                 {
-            	    current_gnss_synchro_map.insert(std::pair<int,Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i])); //record the word structure in a map for pseudoranges
+                    //record the word structure in a map for pseudoranges
+                    current_gnss_synchro_map.insert(std::pair<int,Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
                     // RECORD PRN start timestamps history
                     if (d_history_gnss_synchro_deque[i].size()<MAX_TOA_DELAY_MS)
                         {
-                    	d_history_gnss_synchro_deque[i].push_front(current_gnss_synchro[i]);
+                            d_history_gnss_synchro_deque[i].push_front(current_gnss_synchro[i]);
                             flag_history_ok = false; // at least one channel need more samples
                         }
                     else
                         {
-                                //clearQueue(d_history_prn_delay_ms[i]); //clear the queue as the preamble arrives
-							d_history_gnss_synchro_deque[i].pop_back();
-							d_history_gnss_synchro_deque[i].push_front(current_gnss_synchro[i]);
+                            //clearQueue(d_history_prn_delay_ms[i]); //clear the queue as the preamble arrives
+                            d_history_gnss_synchro_deque[i].pop_back();
+                            d_history_gnss_synchro_deque[i].push_front(current_gnss_synchro[i]);
                         }
                 }
         }
@@ -184,81 +187,81 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
     if(current_gnss_synchro_map.size() > 0 and flag_history_ok == true)
         {
 
-        /*
-         *  2.1 Find the correct symbol timestamp in the gnss_synchro history: we have to compare timestamps between channels on the SAME symbol
-		 *  (common TX time algorithm)
-		 */
+            /*
+             *  2.1 Find the correct symbol timestamp in the gnss_synchro history: we have to compare timestamps between channels on the SAME symbol
+             *  (common TX time algorithm)
+             */
 
-	    double min_preamble_delay_ms;
-	    double max_preamble_delay_ms;
-	    int current_symbol=0;
-	    int reference_channel;
-	    int history_shift;
-	    Gnss_Synchro tmp_gnss_synchro;
+            double min_preamble_delay_ms;
+            double max_preamble_delay_ms;
+            int current_symbol=0;
+            int reference_channel;
+            int history_shift;
+            Gnss_Synchro tmp_gnss_synchro;
 
-	    gnss_synchro_iter = min_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_preamble_delay_ms);
-	    min_preamble_delay_ms = gnss_synchro_iter->second.Preamble_timestamp_ms; //[ms]
+            gnss_synchro_iter = min_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_preamble_delay_ms);
+            min_preamble_delay_ms = gnss_synchro_iter->second.Preamble_timestamp_ms; //[ms]
 
-	    gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_preamble_delay_ms);
-	    max_preamble_delay_ms = gnss_synchro_iter->second.Preamble_timestamp_ms; //[ms]
+            gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_preamble_delay_ms);
+            max_preamble_delay_ms = gnss_synchro_iter->second.Preamble_timestamp_ms; //[ms]
 
-	    if ((max_preamble_delay_ms-min_preamble_delay_ms)< MAX_TOA_DELAY_MS)
-	    {
-	    	// we have a valid information set. Its time to align the symbols information
-	    	// what is the most delayed symbol in the current set? -> this will be the reference symbol
-	    	gnss_synchro_iter=min_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_preamble_symbol_count);
-	    	current_symbol=gnss_synchro_iter->second.Preamble_symbol_counter;
-	    	reference_channel=gnss_synchro_iter->second.Channel_ID;
-	    	// save it in the aligned symbols map
-	    	gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID, gnss_synchro_iter->second));
+            if ((max_preamble_delay_ms-min_preamble_delay_ms)< MAX_TOA_DELAY_MS)
+                {
+                    // we have a valid information set. Its time to align the symbols information
+                    // what is the most delayed symbol in the current set? -> this will be the reference symbol
+                    gnss_synchro_iter=min_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_preamble_symbol_count);
+                    current_symbol=gnss_synchro_iter->second.Preamble_symbol_counter;
+                    reference_channel=gnss_synchro_iter->second.Channel_ID;
+                    // save it in the aligned symbols map
+                    gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID, gnss_synchro_iter->second));
 
-	    	// Now find where the same symbols were in the rest of the channels searching in the symbol history
-			for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
-			{
-				//TODO: Replace the loop using current current_symbol-Preamble_symbol_counter
-				if (reference_channel!=gnss_synchro_iter->second.Channel_ID)
-				{
-					// compute the required symbol history shift in order to match the reference symbol
-					history_shift=gnss_synchro_iter->second.Preamble_symbol_counter-current_symbol;
-					if (history_shift<(int)MAX_TOA_DELAY_MS)// and history_shift>=0)
-					{
-						tmp_gnss_synchro= d_history_gnss_synchro_deque[gnss_synchro_iter->second.Channel_ID][history_shift];
-						gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID,tmp_gnss_synchro));
-					}
-				}
-			}
-	    }
+                    // Now find where the same symbols were in the rest of the channels searching in the symbol history
+                    for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
+                        {
+                            //TODO: Replace the loop using current current_symbol-Preamble_symbol_counter
+                            if (reference_channel!=gnss_synchro_iter->second.Channel_ID)
+                                {
+                                    // compute the required symbol history shift in order to match the reference symbol
+                                    history_shift=gnss_synchro_iter->second.Preamble_symbol_counter-current_symbol;
+                                    if (history_shift<(int)MAX_TOA_DELAY_MS)// and history_shift>=0)
+                                        {
+                                            tmp_gnss_synchro= d_history_gnss_synchro_deque[gnss_synchro_iter->second.Channel_ID][history_shift];
+                                            gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID,tmp_gnss_synchro));
+                                        }
+                                }
+                        }
+                }
 
-	    /*
-	     * 3 Compute the pseudorranges using the aligned data map
-	     */
-	    double min_symbol_timestamp_ms;
-	    double max_symbol_timestamp_ms;
-	    gnss_synchro_iter = min_element(gnss_synchro_aligned_map.begin(), gnss_synchro_aligned_map.end(), pairCompare_gnss_synchro_Prn_delay_ms);
-	    min_symbol_timestamp_ms = gnss_synchro_iter->second.Prn_timestamp_ms; //[ms]
+            /*
+             * 3 Compute the pseudorranges using the aligned data map
+             */
+            double min_symbol_timestamp_ms;
+            double max_symbol_timestamp_ms;
+            gnss_synchro_iter = min_element(gnss_synchro_aligned_map.begin(), gnss_synchro_aligned_map.end(), pairCompare_gnss_synchro_Prn_delay_ms);
+            min_symbol_timestamp_ms = gnss_synchro_iter->second.Prn_timestamp_ms; //[ms]
 
-	    gnss_synchro_iter = max_element(gnss_synchro_aligned_map.begin(), gnss_synchro_aligned_map.end(), pairCompare_gnss_synchro_Prn_delay_ms);
-	    max_symbol_timestamp_ms = gnss_synchro_iter->second.Prn_timestamp_ms; //[ms]
+            gnss_synchro_iter = max_element(gnss_synchro_aligned_map.begin(), gnss_synchro_aligned_map.end(), pairCompare_gnss_synchro_Prn_delay_ms);
+            max_symbol_timestamp_ms = gnss_synchro_iter->second.Prn_timestamp_ms; //[ms]
 
 
-		// check again if this is a valid set of observations
-		if ((max_symbol_timestamp_ms - min_symbol_timestamp_ms) < MAX_TOA_DELAY_MS)
-			/*
-			 * 2.3 compute the pseudoranges
-			 */
-			{
-				for(gnss_synchro_iter = gnss_synchro_aligned_map.begin(); gnss_synchro_iter != gnss_synchro_aligned_map.end(); gnss_synchro_iter++)
-					{
-					traveltime_ms = gnss_synchro_iter->second.Prn_timestamp_ms - min_symbol_timestamp_ms + GPS_STARTOFFSET_ms; //[ms]
-					pseudorange_m = traveltime_ms*GPS_C_m_ms; // [m]
-					// update the pseudorange object
-					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID]=gnss_synchro_iter->second;
-					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
-					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_symbol_shift = (double)current_symbol; // number of symbols shifted from preamble start symbol
-					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_timestamp_ms=max_symbol_timestamp_ms;
-					}
-			}
+            // check again if this is a valid set of observations
+            if ((max_symbol_timestamp_ms - min_symbol_timestamp_ms) < MAX_TOA_DELAY_MS)
+                /*
+                 * 2.3 compute the pseudoranges
+                 */
+                {
+                    for(gnss_synchro_iter = gnss_synchro_aligned_map.begin(); gnss_synchro_iter != gnss_synchro_aligned_map.end(); gnss_synchro_iter++)
+                        {
+                            traveltime_ms = gnss_synchro_iter->second.Prn_timestamp_ms - min_symbol_timestamp_ms + GPS_STARTOFFSET_ms; //[ms]
+                            pseudorange_m = traveltime_ms*GPS_C_m_ms; // [m]
+                            // update the pseudorange object
+                            current_gnss_synchro[gnss_synchro_iter->second.Channel_ID]=gnss_synchro_iter->second;
+                            current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
+                            current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_symbol_shift = (double)current_symbol; // number of symbols shifted from preamble start symbol
+                            current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
+                            current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_timestamp_ms=max_symbol_timestamp_ms;
+                        }
+                }
         }
 
 

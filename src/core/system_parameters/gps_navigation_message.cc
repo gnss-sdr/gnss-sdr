@@ -197,11 +197,12 @@ void Gps_Navigation_Message::print_gps_word_bytes(unsigned int GPS_word)
 
 
 
-bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices)
+bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice slices)
 {
     bool value;
 
-    if (bits[GPS_SUBFRAME_BITS - slices[0].position] == 1)
+    //if (bits[GPS_SUBFRAME_BITS - slices->front().position] == 1)
+    if (bits[GPS_SUBFRAME_BITS - slices.at(0).position] == 1)
         {
             value = true;
         }
@@ -217,17 +218,16 @@ bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS>
 
 
 
-unsigned long int Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
+unsigned long int Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice slices, int num_of_slices)
 {
     unsigned long int value;
-
     value = 0;
     for (int i=0; i<num_of_slices; i++)
         {
-            for (int j=0; j<slices[i].length; j++)
+            for (int j=0; j<slices.at(i).length; j++)
                 {
                     value <<= 1; //shift left
-                    if (bits[GPS_SUBFRAME_BITS - slices[i].position - j] == 1)
+                    if (bits[GPS_SUBFRAME_BITS - slices.at(i).position - j] == 1)
                         {
                             value += 1; // insert the bit
                         }
@@ -241,12 +241,12 @@ unsigned long int Gps_Navigation_Message::read_navigation_unsigned(std::bitset<G
 
 
 
-signed long int Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
+signed long int Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice slices, int num_of_slices)
 {
     signed long int value = 0;
 
     // read the MSB and perform the sign extension
-    if (bits[GPS_SUBFRAME_BITS-slices[0].position]==1)
+    if (bits[GPS_SUBFRAME_BITS-slices.at(0).position]==1)
         {
             value^=0xFFFFFFFF;
         }
@@ -257,11 +257,11 @@ signed long int Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_S
 
     for (int i=0; i<num_of_slices; i++)
         {
-            for (int j=0; j<slices[i].length; j++)
+            for (int j=0; j<slices.at(i).length; j++)
                 {
                     value<<=1; //shift left
                     value&=0xFFFFFFFE; //reset the corresponding bit
-                    if (bits[GPS_SUBFRAME_BITS - slices[i].position-j] == 1)
+                    if (bits[GPS_SUBFRAME_BITS - slices.at(i).position-j] == 1)
                         {
                             value+=1; // insert the bit
                         }

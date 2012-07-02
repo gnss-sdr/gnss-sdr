@@ -770,7 +770,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Navigatio
                     if ( (nav_msg[i].d_IODC > 496) && (nav_msg[i].d_IODC < 504) ) curve_fit_interval = 26;
                     if ( (nav_msg[i].d_IODC > 503) && (nav_msg[i].d_IODC < 511) )  curve_fit_interval = 50;
                     if ( ( (nav_msg[i].d_IODC > 751) && (nav_msg[i].d_IODC < 757) ) || (nav_msg[i].d_IODC == 511) ) curve_fit_interval = 74;
-                    if ( (nav_msg[i].d_IODC == 757)) curve_fit_interval = 98;
+                    if ( nav_msg[i].d_IODC == 757 ) curve_fit_interval = 98;
                 }
 
             if ((nav_msg[i].satelliteBlock[nav_msg[i].i_satellite_PRN].compare("IIR") == 0) ||

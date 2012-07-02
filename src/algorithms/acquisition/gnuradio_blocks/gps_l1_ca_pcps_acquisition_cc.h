@@ -47,117 +47,118 @@
 
 class gps_l1_ca_pcps_acquisition_cc;
 typedef boost::shared_ptr<gps_l1_ca_pcps_acquisition_cc>
-		gps_l1_ca_pcps_acquisition_cc_sptr;
+gps_l1_ca_pcps_acquisition_cc_sptr;
 gps_l1_ca_pcps_acquisition_cc_sptr
 gps_l1_ca_pcps_make_acquisition_cc(unsigned int sampled_ms,
-		unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
-		gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
+        unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
+        gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
 
 /*!
  * \brief This class implements a PCPS acquisition block for GPS L1 C/A
  */
-class gps_l1_ca_pcps_acquisition_cc: public gr_block {
+class gps_l1_ca_pcps_acquisition_cc: public gr_block
+{
 
 private:
 
-	friend gps_l1_ca_pcps_acquisition_cc_sptr
-	gps_l1_ca_pcps_make_acquisition_cc(unsigned int sampled_ms,
-			unsigned int doppler_max, long freq, long fs_in,
-			int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
-			std::string dump_filename);
+    friend gps_l1_ca_pcps_acquisition_cc_sptr
+    gps_l1_ca_pcps_make_acquisition_cc(unsigned int sampled_ms,
+            unsigned int doppler_max, long freq, long fs_in,
+            int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
+            std::string dump_filename);
 
-	gps_l1_ca_pcps_acquisition_cc(unsigned int sampled_ms,
-			unsigned int doppler_max, long freq, long fs_in,
-			int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
-			std::string dump_filename);
+    gps_l1_ca_pcps_acquisition_cc(unsigned int sampled_ms,
+            unsigned int doppler_max, long freq, long fs_in,
+            int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
+            std::string dump_filename);
 
-	void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-			int doppler_offset);
+    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
+            int doppler_offset);
 
-	long d_fs_in;
-	long d_freq;
-	int d_samples_per_ms;
-	unsigned int d_doppler_resolution;
-	float d_threshold;
-	std::string d_satellite_str;
-	unsigned int d_doppler_max;
-	unsigned int d_doppler_step;
-	unsigned int d_sampled_ms;
-	unsigned int d_fft_size;
-	unsigned long int d_sample_counter;
-	gr_complex* d_sine_if;
+    long d_fs_in;
+    long d_freq;
+    int d_samples_per_ms;
+    unsigned int d_doppler_resolution;
+    float d_threshold;
+    std::string d_satellite_str;
+    unsigned int d_doppler_max;
+    unsigned int d_doppler_step;
+    unsigned int d_sampled_ms;
+    unsigned int d_fft_size;
+    unsigned long int d_sample_counter;
+    gr_complex* d_sine_if;
 
-	gr_complex* d_fft_codes;
+    gr_complex* d_fft_codes;
 
-	gri_fft_complex* d_fft_if;
+    gri_fft_complex* d_fft_if;
 
-	gri_fft_complex* d_ifft;
+    gri_fft_complex* d_ifft;
 
-	Gnss_Synchro *d_gnss_synchro;
-	unsigned int d_code_phase;
-	float d_doppler_freq;
-	float d_mag;
-	float d_input_power;
-	float d_test_statistics;
+    Gnss_Synchro *d_gnss_synchro;
+    unsigned int d_code_phase;
+    float d_doppler_freq;
+    float d_mag;
+    float d_input_power;
+    float d_test_statistics;
 
-	gr_msg_queue_sptr d_queue;
-	concurrent_queue<int> *d_channel_internal_queue;
-	std::ofstream d_dump_file;
+    gr_msg_queue_sptr d_queue;
+    concurrent_queue<int> *d_channel_internal_queue;
+    std::ofstream d_dump_file;
 
-	bool d_active;
-	bool d_dump;
-	unsigned int d_channel;
-	std::string d_dump_filename;
+    bool d_active;
+    bool d_dump;
+    unsigned int d_channel;
+    std::string d_dump_filename;
 
 public:
 
-	~gps_l1_ca_pcps_acquisition_cc();
+    ~gps_l1_ca_pcps_acquisition_cc();
 
-	void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-	{
-		d_gnss_synchro = p_gnss_synchro;
-	}
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    {
+        d_gnss_synchro = p_gnss_synchro;
+    }
 
-	unsigned int mag()
-	{
-		return d_mag;
-	}
+    unsigned int mag()
+    {
+        return d_mag;
+    }
 
-	void init();
+    void init();
 
-	void set_active(bool active)
-	{
-		d_active = active;
-	}
+    void set_active(bool active)
+    {
+        d_active = active;
+    }
 
-	void set_channel(unsigned int channel)
-	{
-		d_channel = channel;
-	}
+    void set_channel(unsigned int channel)
+    {
+        d_channel = channel;
+    }
 
-	void set_threshold(float threshold)
-	{
-		d_threshold = threshold;
-	}
+    void set_threshold(float threshold)
+    {
+        d_threshold = threshold;
+    }
 
-	void set_doppler_max(unsigned int doppler_max)
-	{
-		d_doppler_max = doppler_max;
-	}
+    void set_doppler_max(unsigned int doppler_max)
+    {
+        d_doppler_max = doppler_max;
+    }
 
-	void set_doppler_step(unsigned int doppler_step)
-	{
-		d_doppler_step = doppler_step;
-	}
+    void set_doppler_step(unsigned int doppler_step)
+    {
+        d_doppler_step = doppler_step;
+    }
 
-	void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-	{
-		d_channel_internal_queue = channel_internal_queue;
-	}
+    void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
+    {
+        d_channel_internal_queue = channel_internal_queue;
+    }
 
-	int general_work(int noutput_items, gr_vector_int &ninput_items,
-			gr_vector_const_void_star &input_items,
-			gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+            gr_vector_const_void_star &input_items,
+            gr_vector_void_star &output_items);
 };
 
 #endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_CC_H*/

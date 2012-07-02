@@ -92,16 +92,16 @@ gps_l1_ca_pcps_acquisition_cc::gps_l1_ca_pcps_acquisition_cc(
 
 gps_l1_ca_pcps_acquisition_cc::~gps_l1_ca_pcps_acquisition_cc()
 {
-	delete[] d_sine_if;
-	delete[] d_fft_codes;
-	delete d_ifft;
-	delete d_fft_if;
+    delete[] d_sine_if;
+    delete[] d_fft_codes;
+    delete d_ifft;
+    delete d_fft_if;
 
 
     if (d_dump)
-    {
-        d_dump_file.close();
-    }
+        {
+            d_dump_file.close();
+        }
 }
 
 
@@ -110,9 +110,9 @@ gps_l1_ca_pcps_acquisition_cc::~gps_l1_ca_pcps_acquisition_cc()
 void gps_l1_ca_pcps_acquisition_cc::init()
 {
 
-    d_gnss_synchro->Acq_delay_samples=0.0;
-    d_gnss_synchro->Acq_doppler_hz=0.0;
-    d_gnss_synchro->Acq_samplestamp_samples=0;
+    d_gnss_synchro->Acq_delay_samples = 0.0;
+    d_gnss_synchro->Acq_doppler_hz = 0.0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0;
 
     //d_code_phase = 0;
     //d_doppler_freq = 0;
@@ -124,7 +124,7 @@ void gps_l1_ca_pcps_acquisition_cc::init()
 
     d_fft_if->execute(); // We need the FFT of GPS C/A code
     //Conjugate the local code
-    //TODO Optimize it ! try conj()
+    //TODO Optimize it !
     for (unsigned int i = 0; i < d_fft_size; i++)
     {
         d_fft_codes[i] = std::complex<float>(conj(d_fft_if->get_outbuf()[i]));
@@ -176,8 +176,8 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
 
             //restart acquisition variables
 
-            d_gnss_synchro->Acq_delay_samples=0.0;
-            d_gnss_synchro->Acq_doppler_hz=0.0;
+            d_gnss_synchro->Acq_delay_samples = 0.0;
+            d_gnss_synchro->Acq_doppler_hz = 0.0;
             //d_code_phase = 0;
             //d_doppler_freq = 0;
             d_mag = 0.0;
@@ -263,10 +263,8 @@ int gps_l1_ca_pcps_acquisition_cc::general_work(int noutput_items,
                     if (d_mag < magt)
                         {
                             d_mag = magt;
-                            d_gnss_synchro->Acq_delay_samples= (double)indext;
-                            d_gnss_synchro->Acq_doppler_hz= (double)doppler;
-                            //d_code_phase = indext;
-                            //d_doppler_freq = doppler;
+                            d_gnss_synchro->Acq_delay_samples = (double)indext;
+                            d_gnss_synchro->Acq_doppler_hz = (double)doppler;
                         }
                 }
 

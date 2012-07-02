@@ -129,7 +129,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
     Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; //Get the output pointer
 
-    const unsigned int cd_channels = d_nchannels;
+    Gnss_Synchro current_gnss_synchro[d_nchannels];
 
     Gnss_Synchro current_gnss_synchro[cd_channels];
 

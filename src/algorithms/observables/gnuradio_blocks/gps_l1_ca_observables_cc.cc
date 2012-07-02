@@ -131,7 +131,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
 
     Gnss_Synchro current_gnss_synchro[d_nchannels];
 
-    Gnss_Synchro current_gnss_synchro[cd_channels];
+   // Gnss_Synchro current_gnss_synchro[cd_channels];
 
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
     std::map<int,Gnss_Synchro> gnss_synchro_aligned_map;
@@ -166,7 +166,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     else
                         {
                             //clearQueue(d_history_prn_delay_ms[i]); //clear the queue as the preamble arrives
-                            d_history_gnss_synchro_deque[i].pop_back();
+                            d_history_gnss_synchro_deque[i].pop_back();Ä
                             d_history_gnss_synchro_deque[i].push_front(current_gnss_synchro[i]);
                         }
                 }

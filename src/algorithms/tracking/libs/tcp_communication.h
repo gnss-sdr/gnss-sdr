@@ -44,9 +44,9 @@ public:
     tcp_communication();
     ~tcp_communication();
 
-    int listen_tcp_connection(size_t d_port_);
-    void send_receive_tcp_packet(boost::array<float,7> buf, tcp_packet_data *tcp_data_);
-    void close_tcp_connection(size_t d_port_);
+	int listen_tcp_connection(size_t d_port_, size_t d_port_ch0_);
+	void send_receive_tcp_packet(boost::array<float, 9> buf, tcp_packet_data *tcp_data_);
+	void close_tcp_connection(size_t d_port_);
 
 private:
     boost::asio::io_service io_service_;

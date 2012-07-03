@@ -35,8 +35,8 @@
 #include <string>
 
 
-#define NUM_TX_VARIABLES 7
-#define NUM_RX_VARIABLES 3
+#define NUM_TX_VARIABLES 9
+#define NUM_RX_VARIABLES 4
 
 
 tcp_communication::tcp_communication() : tcp_socket_(io_service_)
@@ -49,7 +49,7 @@ tcp_communication::~tcp_communication()
 
 
 
-int tcp_communication::listen_tcp_connection(size_t d_port_)
+int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
 {
     try
     {
@@ -57,10 +57,13 @@ int tcp_communication::listen_tcp_connection(size_t d_port_)
             boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), d_port_);
             boost::asio::ip::tcp::acceptor acceptor(io_service_, endpoint);
 
+	    	if (d_port_ == d_port_ch0_)
+    		{
+	    		std::cout << "Server ready. Listening for TCP connections..." << std::endl;
+    		}
+
             // Reuse the IP address for each connection
             acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-
-            std::cout << "Server ready on port " << d_port_ << std::endl;
 
             // Listen for a connection and accept it
             acceptor.listen(12);
@@ -81,9 +84,9 @@ int tcp_communication::listen_tcp_connection(size_t d_port_)
 
 void tcp_communication::send_receive_tcp_packet(boost::array<float, NUM_TX_VARIABLES> buf, tcp_packet_data *tcp_data_)
 {
-    int controlc = 0;
-    boost::array<float, NUM_RX_VARIABLES> readbuf;
-    float d_control_id_ = buf.data()[6];
+	int controlc = 0;
+	boost::array<float, NUM_RX_VARIABLES> readbuf;
+	float d_control_id_ = buf.data()[0];
 
     try
     {
@@ -92,16 +95,17 @@ void tcp_communication::send_receive_tcp_packet(boost::array<float, NUM_TX_VARIA
 
             // Read the received TCP packet
             tcp_socket_.read_some(boost::asio::buffer(readbuf));
+    	
+    		//! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
+	    	if (d_control_id_ != readbuf.data()[0])
+    		{
+    			throw "Packet error!";
+    		}
 
-            // Recover the variables received
-            tcp_data_->proc_pack_code_error = readbuf.data()[0];
-            tcp_data_->proc_pack_carr_error = readbuf.data()[1];
-
-            // Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
-            if (d_control_id_ != readbuf.data()[2])
-                {
-                    throw "Packet error!";
-                }
+			// Recover the variables received
+    		tcp_data_->proc_pack_code_error = readbuf.data()[1];
+    		tcp_data_->proc_pack_carr_error = readbuf.data()[2];
+    		tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
     }
 
     catch(std::exception& e)

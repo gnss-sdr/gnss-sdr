@@ -1,6 +1,8 @@
 project : build-dir ../../../build ;
 
+obj gnss_signal_processing : gnss_signal_processing.cc ;
 obj gps_sdr_signal_processing : gps_sdr_signal_processing.cc ;
+obj galileo_e1_signal_processing : galileo_e1_signal_processing.cc ;
 obj gnss_sdr_valve : gnss_sdr_valve.cc ;
 obj pass_through : pass_through.cc ;
 #obj gps_sdr_fft : gps_sdr_fft.cc : <toolset>darwin:<define>NO_SIMD <toolset>gcc:<define>USE_SIMD ;

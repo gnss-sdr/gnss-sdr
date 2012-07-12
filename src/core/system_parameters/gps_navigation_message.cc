@@ -245,28 +245,56 @@ signed long int Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_S
 {
     signed long int value = 0;
 
-    // read the MSB and perform the sign extension
-    if (bits[GPS_SUBFRAME_BITS-slices[0].position]==1)
-        {
-            value^=0xFFFFFFFF;
-        }
-    else
-        {
-            value&=0;
-        }
+    // Bug correction: Discriminate between 64 bits and 32 bits compiler
+    int long_int_size_bytes = sizeof(signed long int);
+    if (long_int_size_bytes==8)
+    {
+		// read the MSB and perform the sign extension
+		if (bits[GPS_SUBFRAME_BITS-slices[0].position]==1)
+			{
+				value^=0xFFFFFFFFFFFFFFFF; //64 bits variable
+			}
+		else
+			{
+				value&=0;
+			}
 
-    for (int i=0; i<num_of_slices; i++)
-        {
-            for (int j=0; j<slices[i].length; j++)
-                {
-                    value<<=1; //shift left
-                    value&=0xFFFFFFFE; //reset the corresponding bit
-                    if (bits[GPS_SUBFRAME_BITS - slices[i].position-j] == 1)
-                        {
-                            value+=1; // insert the bit
-                        }
-                }
-        }
+		for (int i=0; i<num_of_slices; i++)
+			{
+				for (int j=0; j<slices[i].length; j++)
+					{
+						value<<=1; //shift left
+						value&=0xFFFFFFFFFFFFFFFE; //reset the corresponding bit (for the 64 bits variable)
+						if (bits[GPS_SUBFRAME_BITS - slices[i].position-j] == 1)
+							{
+								value+=1; // insert the bit
+							}
+					}
+			}
+    }else{
+		// read the MSB and perform the sign extension
+		if (bits[GPS_SUBFRAME_BITS-slices[0].position]==1)
+			{
+				value^=0xFFFFFFFF;
+			}
+		else
+			{
+				value&=0;
+			}
+
+		for (int i=0; i<num_of_slices; i++)
+			{
+				for (int j=0; j<slices[i].length; j++)
+					{
+						value<<=1; //shift left
+						value&=0xFFFFFFFE; //reset the corresponding bit
+						if (bits[GPS_SUBFRAME_BITS - slices[i].position-j] == 1)
+							{
+								value+=1; // insert the bit
+							}
+					}
+			}
+    }
     return value;
 }
 

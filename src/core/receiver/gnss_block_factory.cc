@@ -51,9 +51,7 @@
 #include "signal_conditioner.h"
 #include "direct_resampler_conditioner.h"
 #include "fir_filter.h"
-#include "gps_l1_ca_gps_sdr_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition.h"
-#include "gps_l1_ca_tong_pcps_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
@@ -221,14 +219,12 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
 }
 
 
-
-
-
     /*
      * Returns the block with the required configuration and implementation
      *
      * PLEASE ADD YOUR NEW BLOCK HERE!!
      */
+
 GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         ConfigurationInterface *configuration, std::string role,
         std::string implementation, unsigned int in_streams,
@@ -276,21 +272,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 
     // ACQUISITION BLOCKS ---------------------------------------------------------
 
-//    else if (implementation.compare("GPS_L1_CA_GPS_SDR_Acquisition") == 0)
-//        {
-//            block = new GpsL1CaGpsSdrAcquisition(configuration, role, in_streams,
-//                    out_streams, queue);
-//        }
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
             block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
                     out_streams, queue);
         }
-//    else if (implementation.compare("GPS_L1_CA_TONG_PCPS_Acquisition") == 0)
-//        {
-//            block = new GpsL1CaTongPcpsAcquisition(configuration, role,
-//                    in_streams, out_streams, queue);
-//        }
 
     // TRACKING BLOCKS -------------------------------------------------------------
 

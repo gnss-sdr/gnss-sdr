@@ -1,13 +1,15 @@
 /*!
- * \file gps_sdr_signal_processing.h
- * \brief This class implements various functions for GPS L1 CA signals
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \file gnss_signal_processing.h
+ * \brief This library gathers a few functions used by the algorithms of gnss-sdr,
+ *  regardless of system used
+ *
+ * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,15 +32,34 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_SDR_SIGNAL_PROCESSING_H_
-#define GPS_SDR_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SIGNAL_PROCESSING_H_
+#define GNSS_SIGNAL_PROCESSING_H_
 
 #include <complex>
 #include <iostream>
 #include "GPS_L1_CA.h"
 
+/*!
+ * \brief This function generates a complex exponential in _dest.
+ *
+ */
+void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs,
+        unsigned int _samps);
 
-void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift);
-void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift);
+/*!
+ * \brief This function makes a conversion from hex (the input is a char)
+ *  to binary (the output are 4 ints with +1 or -1 values).
+ *
+ */
 
-#endif /* GPS_SDR_SIGNAL_PROCESSING_H_ */
+void hex_to_binary_converter(int * _dest, char _from);
+
+/*!
+ * \brief This function resamples a sequence of complex values.
+ *
+ */
+void resampler(std::complex<float>* _from, std::complex<float>* _dest,
+        float _fs_in, float _fs_out, unsigned int _length_in,
+        unsigned int _length_out);
+
+#endif /* GNSS_SIGNAL_PROCESSING_H_ */

@@ -1,10 +1,9 @@
 /*!
- * \file gps_l1_ca_gps_sdr_acquisition.h
- * \brief Interface of an adapter of an acquisition module based
- * on the method in Gregory Heckler's GPS-SDR (see http://github.com/gps-sdr/gps-sdr)
- * to an AcquisitionInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ * \file galileo_e1_pcps_ambiguous_acquisition.h
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for Galileo E1 Signals
+ * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *
+ * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -31,34 +30,26 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_GPS_SDR_ACQUISITION_H_
-#define GNSS_SDR_GPS_L1_CA_GPS_SDR_ACQUISITION_H_
+#ifndef GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
+#define GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
 
+#include "gnss_synchro.h"
 #include "acquisition_interface.h"
-#include "gps_l1_ca_gps_sdr_acquisition_cc.h"
-//#include "gps_l1_ca_gps_sdr_acquisition_ss.h"
+#include "pcps_acquisition_cc.h"
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
 
-/*!
- * \brief Adapts the GPS-SDR acquisition implementation to
- * an Acquisition Interface
- *
- * Derived from AcquisitionInterface, this class wraps the implementation
- * of the acquisition algorithm proposed by Gregory Heckler at https://github.com/gps-sdr/gps-sdr
- *
- */
-class GpsL1CaGpsSdrAcquisition: public AcquisitionInterface
+class GalileoE1PcpsAmbiguousAcquisition: public AcquisitionInterface
 {
 
 public:
 
-    GpsL1CaGpsSdrAcquisition(ConfigurationInterface* configuration,
+    GalileoE1PcpsAmbiguousAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, gr_msg_queue_sptr queue);
 
-    virtual ~GpsL1CaGpsSdrAcquisition();
+    virtual ~GalileoE1PcpsAmbiguousAcquisition();
 
     std::string role()
     {
@@ -66,7 +57,7 @@ public:
     }
     std::string implementation()
     {
-        return "Acquisition";
+        return "Galileo_E1_PCPS_Ambiguous_Acquisition";
     }
     size_t item_size()
     {
@@ -78,46 +69,49 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
-    void set_satellite(Gnss_Satellite gnss_satellite);
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void set_channel(unsigned int channel);
     void set_threshold(float threshold);
     void set_doppler_max(unsigned int doppler_max);
+    void set_doppler_step(unsigned int doppler_step);
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
-    signed int prn_code_phase();
-    float doppler_freq_shift();
+
+    void init();
     signed int mag();
     void reset();
-    unsigned long int get_sample_stamp();
-
-    //Not used in this implementation
-    void set_doppler_step(unsigned int doppler_step)
-    {};
 
 private:
 
-    gps_l1_ca_gps_sdr_acquisition_cc_sptr acquisition_cc_;
-    //gps_l1_ca_gps_sdr_acquisition_ss_sptr acquisition_ss_;
+    ConfigurationInterface* configuration_;
+    pcps_acquisition_cc_sptr acquisition_cc_;
     gr_block_sptr stream_to_vector_;
     gr_block_sptr complex_to_short_;
     gr_block_sptr short_to_complex_;
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
-    Gnss_Satellite gnss_satellite_;
+
+    //unsigned int satellite_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;
-    unsigned int acquisition_ms_;
+    unsigned int doppler_step_;
+    unsigned int shift_resolution_;
+    unsigned int sampled_ms_;
     long fs_in_;
     long if_;
     bool dump_;
     std::string dump_filename_;
+    std::complex<float> * code_;
+	Gnss_Synchro * gnss_synchro_;
+
 
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     gr_msg_queue_sptr queue_;
     concurrent_queue<int> *channel_internal_queue_;
+
 };
 
-#endif
+#endif /* GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_ */

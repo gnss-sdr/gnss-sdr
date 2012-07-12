@@ -1,8 +1,9 @@
 /*!
  * \file gps_l1_ca_pcps_acquisition.cc
- * \brief Adapts a PCPS acquisition block for GPS L1 C/A to an AcquisitionInterface
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
+ *  GPS L1 C/A Signals
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ *         Luis Esteve, 2011-2012. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
  *
@@ -30,6 +31,7 @@
  */
 
 #include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include <iostream>
@@ -70,10 +72,12 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     //--- Find number of samples per spreading code ----------------------------
     vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
+    code_= new gr_complex[vector_length_];
+
     if (item_type_.compare("gr_complex") == 0)
     {
         item_size_ = sizeof(gr_complex);
-        acquisition_cc_ = gps_l1_ca_pcps_make_acquisition_cc(sampled_ms_,
+        acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_,
                 shift_resolution_, if_, fs_in_, vector_length_, queue_,
                 dump_, dump_filename_);
         stream_to_vector_ = gr_make_stream_to_vector(item_size_,
@@ -94,6 +98,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
 GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition()
 {
+	delete[] code_;
 }
 
 
@@ -152,9 +157,10 @@ void GpsL1CaPcpsAcquisition::set_channel_queue(
 
 void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
+	gnss_synchro_ = gnss_synchro;
     if (item_type_.compare("gr_complex") == 0)
     {
-        acquisition_cc_->set_gnss_synchro(gnss_synchro);
+        acquisition_cc_->set_gnss_synchro(gnss_synchro_);
     }
 }
 
@@ -173,6 +179,8 @@ signed int GpsL1CaPcpsAcquisition::mag()
 void GpsL1CaPcpsAcquisition::init(){
     if (item_type_.compare("gr_complex") == 0)
     {
+    	gps_l1_ca_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_, 0);
+    	acquisition_cc_->set_local_code(code_);
         acquisition_cc_->init();
     }
 }

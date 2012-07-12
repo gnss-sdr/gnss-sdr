@@ -49,7 +49,6 @@ class ConfigurationInterface;
 class AcquisitionInterface;
 class TrackingInterface;
 class TelemetryDecoderInterface;
-//class GpsL1CaChannelFsm;
 
 /*!
  * \brief This class represents a GNSS channel.

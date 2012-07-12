@@ -1,9 +1,8 @@
 /*!
- * \file gps_l1_ca_tong_pcps_acquisition.cc
- * \brief Brief description of the file here
- * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
- *
- * Detailed description of the file here if needed.
+ * \file galileo_e1_pcps_ambiguous_acquisition.cc
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
+ *  Galileo E1 Signals
+ * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
  *
@@ -30,85 +29,81 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_tong_pcps_acquisition.h"
-#include "GPS_L1_CA.h"
+#include "galileo_e1_pcps_ambiguous_acquisition.h"
+#include "galileo_e1_signal_processing.h"
+#include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include <iostream>
+#include <string>
+#include <boost/lexical_cast.hpp>
 #include <gnuradio/gr_io_signature.h>
 #include <gnuradio/gr_stream_to_vector.h>
 #include <gnuradio/gr_vector_to_stream.h>
 #include <gnuradio/gr_complex_to_interleaved_short.h>
 #include <gnuradio/gr_interleaved_short_to_complex.h>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
 using google::LogMessage;
 
-GpsL1CaTongPcpsAcquisition::GpsL1CaTongPcpsAcquisition(
+GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         gr_msg_queue_sptr queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(
-            queue)
+    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
 
+	configuration_ = configuration;
     std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_dump_filename = "../data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration->property(role + ".item_type",
             default_item_type);
 
-    std::cout << "item type " << item_type_ << std::endl;
-
-    satellite_ = Gnss_Satellite();
-    fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration->property(role + ".ifreq", 0);
-    dump_ = configuration->property(role + ".dump", false);
-    doppler_max_ = configuration->property(role + ".doppler_max", 10);
-    sampled_ms_ = configuration->property(role + ".sampled_ms", 1);
-    dump_filename_ = configuration->property(role + ".dump_filename",
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+    if_ = configuration_->property(role + ".ifreq", 0);
+    dump_ = configuration_->property(role + ".dump", false);
+    shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
+    sampled_ms_ = configuration_->property(role + ".sampled_ms", 4);
+    dump_filename_ = configuration_->property(role + ".dump_filename",
             default_dump_filename);
 
-    //--- Find number of samples per spreading code ----------------------------
-    vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    //--- Find number of samples per spreading code (4 ms)  ----------------------------
+
+    vector_length_ = round(fs_in_ / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
+    int samples_per_ms = vector_length_/4;
+
+    code_= new gr_complex[vector_length_];
 
     if (item_type_.compare("gr_complex") == 0)
     {
         item_size_ = sizeof(gr_complex);
-        acquisition_cc_ = gps_l1_ca_tong_pcps_make_acquisition_cc(
-                sampled_ms_, doppler_max_, if_, fs_in_, vector_length_,
-                queue_, dump_, dump_filename_);
+        acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_,
+                shift_resolution_, if_, fs_in_, samples_per_ms, queue_,
+                dump_, dump_filename_);
         stream_to_vector_ = gr_make_stream_to_vector(item_size_,
                 vector_length_);
+        DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id()
+                << ")";
+        DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id()
+                << ")";
     }
     else
     {
         LOG_AT_LEVEL(WARNING) << item_type_
                 << " unknown acquisition item type";
     }
-
-    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id()
-            << ")";
 }
 
-GpsL1CaTongPcpsAcquisition::~GpsL1CaTongPcpsAcquisition()
+GalileoE1PcpsAmbiguousAcquisition::~GalileoE1PcpsAmbiguousAcquisition()
 {
+	delete[] code_;
 }
 
-void GpsL1CaTongPcpsAcquisition::set_satellite(Gnss_Satellite satellite)
-{
-    satellite_ = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
 
-    if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_satellite(satellite_);
-    }
-}
-
-void GpsL1CaTongPcpsAcquisition::set_channel(unsigned int channel)
+void GalileoE1PcpsAmbiguousAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
 
@@ -118,7 +113,17 @@ void GpsL1CaTongPcpsAcquisition::set_channel(unsigned int channel)
     }
 }
 
-void GpsL1CaTongPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
+void GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
+{
+    threshold_ = threshold;
+
+    if (item_type_.compare("gr_complex") == 0)
+    {
+        acquisition_cc_->set_threshold(threshold_);
+    }
+}
+
+void GalileoE1PcpsAmbiguousAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
 
@@ -129,7 +134,7 @@ void GpsL1CaTongPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 
 }
 
-void GpsL1CaTongPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
+void GalileoE1PcpsAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
 
@@ -140,7 +145,7 @@ void GpsL1CaTongPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 
 }
 
-void GpsL1CaTongPcpsAcquisition::set_channel_queue(
+void GalileoE1PcpsAmbiguousAcquisition::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
@@ -151,44 +156,17 @@ void GpsL1CaTongPcpsAcquisition::set_channel_queue(
     }
 }
 
-signed int GpsL1CaTongPcpsAcquisition::prn_code_phase()
+void GalileoE1PcpsAmbiguousAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
+	gnss_synchro_ = gnss_synchro;
 
     if (item_type_.compare("gr_complex") == 0)
     {
-        return acquisition_cc_->prn_code_phase();
-    }
-    else
-    {
-        return 0;
+        acquisition_cc_->set_gnss_synchro(gnss_synchro_);
     }
 }
 
-unsigned long int GpsL1CaTongPcpsAcquisition::get_sample_stamp()
-{
-    if (item_type_.compare("gr_complex") == 0)
-    {
-        return acquisition_cc_->get_sample_stamp();
-    }
-    else
-    {
-        return 0;
-    }
-}
-float GpsL1CaTongPcpsAcquisition::doppler_freq_shift()
-{
-
-    if (item_type_.compare("gr_complex") == 0)
-    {
-        return acquisition_cc_->doppler_freq();
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-signed int GpsL1CaTongPcpsAcquisition::mag()
+signed int GalileoE1PcpsAmbiguousAcquisition::mag()
 {
     if (item_type_.compare("gr_complex") == 0)
     {
@@ -200,17 +178,27 @@ signed int GpsL1CaTongPcpsAcquisition::mag()
     }
 }
 
-void GpsL1CaTongPcpsAcquisition::reset()
+void GalileoE1PcpsAmbiguousAcquisition::init(){
+    if (item_type_.compare("gr_complex") == 0)
+    {
+    	bool cboc = configuration_->property("Acquisition"
+                + boost::lexical_cast<std::string>(channel_) + ".cboc", false);;
+
+        galileo_e1_code_gen_complex_sampled(code_, gnss_synchro_->Signal, cboc, gnss_synchro_->PRN, fs_in_, 0);
+        acquisition_cc_->set_local_code(code_);
+        acquisition_cc_->init();
+    }
+}
+void GalileoE1PcpsAmbiguousAcquisition::reset()
 {
+
     if (item_type_.compare("gr_complex") == 0)
     {
         acquisition_cc_->set_active(true);
-        acquisition_cc_->set_dwells(0);
-        acquisition_cc_->set_doppler(0);
     }
 }
 
-void GpsL1CaTongPcpsAcquisition::connect(gr_top_block_sptr top_block)
+void GalileoE1PcpsAmbiguousAcquisition::connect(gr_top_block_sptr top_block)
 {
 
     if (item_type_.compare("gr_complex") == 0)
@@ -220,7 +208,7 @@ void GpsL1CaTongPcpsAcquisition::connect(gr_top_block_sptr top_block)
 
 }
 
-void GpsL1CaTongPcpsAcquisition::disconnect(gr_top_block_sptr top_block)
+void GalileoE1PcpsAmbiguousAcquisition::disconnect(gr_top_block_sptr top_block)
 {
 
     if (item_type_.compare("gr_complex") == 0)
@@ -229,12 +217,12 @@ void GpsL1CaTongPcpsAcquisition::disconnect(gr_top_block_sptr top_block)
     }
 }
 
-gr_basic_block_sptr GpsL1CaTongPcpsAcquisition::get_left_block()
+gr_basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_left_block()
 {
     return stream_to_vector_;
 }
 
-gr_basic_block_sptr GpsL1CaTongPcpsAcquisition::get_right_block()
+gr_basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }

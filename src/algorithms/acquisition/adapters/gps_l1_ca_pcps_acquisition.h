@@ -1,8 +1,9 @@
 /*!
  * \file gps_l1_ca_pcps_acquisition.h
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for GPS L1 C/A
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
+ *  GPS L1 C/A signals
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ *         Luis Esteve, 2011-2012. luis(at)epsilon-formacion.com
  *
  * Detailed description of the file here if needed.
  *
@@ -36,7 +37,7 @@
 
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
-#include "gps_l1_ca_pcps_acquisition_cc.h"
+#include "pcps_acquisition_cc.h"
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
@@ -83,7 +84,7 @@ public:
 
 private:
 
-    gps_l1_ca_pcps_acquisition_cc_sptr acquisition_cc_;
+    pcps_acquisition_cc_sptr acquisition_cc_;
     gr_block_sptr stream_to_vector_;
     gr_block_sptr complex_to_short_;
     gr_block_sptr short_to_complex_;
@@ -102,6 +103,9 @@ private:
     long if_;
     bool dump_;
     std::string dump_filename_;
+    std::complex<float> * code_;
+	Gnss_Synchro * gnss_synchro_;
+
 
     std::string role_;
     unsigned int in_streams_;

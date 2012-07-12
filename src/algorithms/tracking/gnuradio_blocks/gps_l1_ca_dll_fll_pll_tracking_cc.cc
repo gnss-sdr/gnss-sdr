@@ -36,6 +36,7 @@
 
 #include "gnss_synchro.h"
 #include "gps_l1_ca_dll_fll_pll_tracking_cc.h"
+//#include "gnss_signal_processing.h"
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "tracking_discriminators.h"
@@ -221,7 +222,7 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::start_tracking()
     d_FLL_wait = 1;
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    code_gen_conplex(&d_ca_code[1], d_acquisition_gnss_synchro->PRN, 0);
+    gps_l1_ca_code_gen_complex(&d_ca_code[1], d_acquisition_gnss_synchro->PRN, 0);
 
     d_ca_code[0] = d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS];
     d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 1] = d_ca_code[1];

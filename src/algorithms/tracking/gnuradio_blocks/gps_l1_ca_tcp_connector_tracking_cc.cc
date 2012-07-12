@@ -254,7 +254,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     d_code_loop_filter.initialize(d_acq_code_phase_samples); //initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    code_gen_conplex(&d_ca_code[1], d_acquisition_gnss_synchro->PRN, 0);
+    gps_l1_ca_code_gen_complex(&d_ca_code[1], d_acquisition_gnss_synchro->PRN, 0);
     d_ca_code[0] = d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS];
     d_ca_code[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 1] = d_ca_code[1];
 

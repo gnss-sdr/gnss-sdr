@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
 
     google::SetUsageMessage(intro_help);
-    //google::SetVersionString("0.1");
+    google::SetVersionString("0.1");
     google::ParseCommandLineFlags(&argc, &argv, true);
 
     std::cout << "Initializing GNSS-SDR... Please wait." << std::endl;
@@ -81,19 +81,27 @@ int main(int argc, char** argv)
     google::InitGoogleLogging(argv[0]);
     if (FLAGS_log_dir.empty())
         {
-             // temp_directory_path() is only available from Boost 1.45. Ubuntu 10.10 ships with 1.42
-             // std::cout << "Logging will be done at " << boost::filesystem::temp_directory_path() << std::endl
-             //       << "Use gnss-sdr --log_dir=/path/to/log to change that."<< std::endl;
+             // temp_directory_path() is only available from
+             // Boost 1.45. Ubuntu 10.10 ships with 1.42
+             std::cout << "Logging will be done at "
+                 << boost::filesystem::temp_directory_path()
+                 << std::endl
+                 << "Use gnss-sdr --log_dir=/path/to/log to change that."
+                 << std::endl;
         }
     else
         {
             const boost::filesystem::path p (FLAGS_log_dir);
             if (!boost::filesystem::exists(p))
                 {
-                    std::cout << "The path " << FLAGS_log_dir << " does not exist, attempting to create it" << std::endl;
+                    std::cout << "The path "
+                        << FLAGS_log_dir
+                        << " does not exist, attempting to create it"
+                        << std::endl;
                     boost::filesystem::create_directory(p);
                 }
-            std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
+            std::cout << "Logging with be done at "
+                << FLAGS_log_dir << std::endl;
         }
 
     std::unique_ptr<ControlThread> control_thread(new ControlThread());
@@ -108,7 +116,9 @@ int main(int argc, char** argv)
     // report the elapsed time
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout << "Total GNSS-SDR run time " << ((double)(end - begin))/1000000.0 << " [seconds]" << std::endl;
+    std::cout << "Total GNSS-SDR run time "
+        << ((double)(end - begin))/1000000.0
+        << " [seconds]" << std::endl;
 
     google::ShutDownCommandLineFlags();
     std::cout << "GNSS-SDR program ended." << std::endl;

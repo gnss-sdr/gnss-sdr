@@ -108,11 +108,11 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
       << std::endl
       << "or specify your own receiver and source with the flag"
       << std::endl
-      <<"gnss-sdr --config_file=my_GNSS_SDR_configuration"
+      <<"gnss-sdr --config_file=my_GNSS_SDR_configuration.conf"
       << std::endl;
       LOG_AT_LEVEL(INFO) << "file_signal_source: Unable to open the samples file "
           << filename_.c_str() << ", exiting the program.";
-      exit(1);
+      throw(e);
   }
 
   DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";

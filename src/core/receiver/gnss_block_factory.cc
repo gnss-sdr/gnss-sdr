@@ -243,8 +243,18 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     // SIGNAL SOURCES -------------------------------------------------------------
     else if (implementation.compare("File_Signal_Source") == 0)
         {
+        try
+        {
             block = new FileSignalSource(configuration, role, in_streams,
-                    out_streams, queue);
+                out_streams, queue);
+        }
+        catch (const std::exception &e)
+        {
+            std::cout << "GNSS-SDR program ended." << std::endl;
+            LOG_AT_LEVEL(INFO) << implementation
+                                << ": Source file not found";
+            exit(1);
+        }
         }
 
         else if (implementation.compare("UHD_Signal_Source") == 0)

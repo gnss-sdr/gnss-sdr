@@ -74,5 +74,5 @@ TEST(FileSignalSource, InstantiateFileNotExists) {
 	config->set_property("Test.item_type", "gr_complex");
 	config->set_property("Test.repeat", "false");
 
-	EXPECT_THROW(new FileSignalSource(config, "Test", 1, 1, queue), std::runtime_error);
+	EXPECT_THROW(new FileSignalSource(config, "Test", 1, 1, queue), std::exception);
 }

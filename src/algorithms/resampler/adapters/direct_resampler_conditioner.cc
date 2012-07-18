@@ -55,6 +55,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     item_type_ = configuration->property(role + ".item_type",
             default_item_type);
     dump_ = configuration->property(role + ".dump", false);
+    DLOG(INFO) << "dump_ is "<< dump_;
     dump_filename_ = configuration->property(role + ".dump_filename",
             default_dump_file);
 
@@ -86,13 +87,9 @@ DirectResamplerConditioner::DirectResamplerConditioner(
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
-        }
-
-
-    if (dump_)
-        {
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
+
 }
 DirectResamplerConditioner::~DirectResamplerConditioner() {}
 

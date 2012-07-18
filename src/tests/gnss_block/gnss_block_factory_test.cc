@@ -177,7 +177,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateFreqXlatingFIRFilter) {
     configuration->set_property("InputFilter.grid_density", "16");
 
     configuration->set_property("InputFilter.sampling_frequency","4000000");
-    configuration->set_property("InputFilter.center_frequency","34000");
+    configuration->set_property("InputFilter.IF","34000");
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     GNSSBlockInterface *input_filter = factory->GetBlock(configuration, "InputFilter", "Freq_Xlating_Fir_Filter", 1,1, queue);

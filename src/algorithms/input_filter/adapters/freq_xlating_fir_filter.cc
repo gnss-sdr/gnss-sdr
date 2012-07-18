@@ -55,7 +55,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
                     == 0))
         {
             item_size = sizeof(gr_complex);
-            freq_xlating_fir_filter_ccf_ = gr_make_freq_xlating_fir_filter_ccf(1, taps_, center_freq_, sampling_freq_);
+            freq_xlating_fir_filter_ccf_ = gr_make_freq_xlating_fir_filter_ccf(1, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_ccf_->unique_id() << ")";
 
         }
@@ -114,7 +114,7 @@ void FreqXlatingFirFilter::init()
     std::string default_output_item_type = "gr_complex";
     std::string default_taps_item_type = "float";
     std::string default_dump_filename = "../data/input_filter.dat";
-    double default_center_freq = 0;
+    double default_intermediate_freq = 0;
     double default_sampling_freq = 4000000;
     int default_number_of_taps = 6;
     unsigned int default_number_of_bands = 2;
@@ -136,8 +136,8 @@ void FreqXlatingFirFilter::init()
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename",
             default_dump_filename);
-    center_freq_ = config_->property(role_ + ".center_frequency",
-            default_center_freq);
+    intermediate_freq_ = config_->property(role_ + ".IF",
+            default_intermediate_freq);
     sampling_freq_ = config_->property(role_ + ".sampling_frequency",
                 default_sampling_freq);
 

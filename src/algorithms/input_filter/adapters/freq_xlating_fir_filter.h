@@ -47,7 +47,7 @@ class ConfigurationInterface;
  * \brief This class adapts a gnuradio gr_freq_xlating_fir_filter designed with gr_remez
  *
  * Construct a FIR filter with the given taps and a composite frequency
- * translation that shifts center_freq down to zero Hz.  The frequency
+ * translation that shifts intermediate_freq_ down to zero Hz. The frequency
  * translation logically comes before the filtering operation.
  *
  * See Parks-McClellan FIR filter design, http://en.wikipedia.org/wiki/Parks-McClellan_filter_design_algorithm
@@ -95,7 +95,7 @@ private:
     std::string output_item_type_;
     std::string taps_item_type_;
     std::vector <float> taps_;
-    double center_freq_;
+    double intermediate_freq_;
     double sampling_freq_;
     std::string role_;
     unsigned int in_streams_;

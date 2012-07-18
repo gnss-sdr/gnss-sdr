@@ -51,6 +51,7 @@
 #include "signal_conditioner.h"
 #include "direct_resampler_conditioner.h"
 #include "fir_filter.h"
+#include "freq_xlating_fir_filter.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
@@ -91,12 +92,27 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
 {
 
     std::string default_implementation = "Pass_Through";
-    std::string data_type_adapter = configuration->property(
-            "DataTypeAdapter.implementation", default_implementation);
-    std::string input_filter = configuration->property(
-            "InputFilter.implementation", default_implementation);
-    std::string resampler = configuration->property(
-             "Resampler.implementation", default_implementation);
+    std::string signal_conditioner = configuration->property(
+            "SignalConditioner.implementation", default_implementation);
+    std::string data_type_adapter;
+    std::string input_filter;
+    std::string resampler;
+    if(signal_conditioner.compare("Pass_Through")==0)
+        {
+            data_type_adapter = "Pass_Through";
+            input_filter = "Pass_Through";
+            resampler = "Pass_Through";
+        }
+    else
+        {
+            data_type_adapter = configuration->property(
+                    "DataTypeAdapter.implementation", default_implementation);
+            input_filter = configuration->property(
+                    "InputFilter.implementation", default_implementation);
+            resampler = configuration->property(
+                     "Resampler.implementation", default_implementation);
+        }
+
 
     DLOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
             << data_type_adapter << ", InputFilter implementation: "
@@ -271,6 +287,12 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             block = new FirFilter(configuration, role, in_streams,
                     out_streams, queue);
         }
+    else if (implementation.compare("Freq_Xlating_Fir_Filter") == 0)
+        {
+            block = new FreqXlatingFirFilter(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+
     // RESAMPLER -------------------------------------------------------------------
 
 

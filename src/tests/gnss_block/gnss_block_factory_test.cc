@@ -150,6 +150,46 @@ TEST(GNSS_Block_Factory_Test, InstantiateFIRFilter) {
 	delete input_filter;
 }
 
+TEST(GNSS_Block_Factory_Test, InstantiateFreqXlatingFIRFilter) {
+    InMemoryConfiguration *configuration = new InMemoryConfiguration();
+
+    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+
+    configuration->set_property("InputFilter.implementation", "Freq_Xlating_Fir_Filter");
+
+    configuration->set_property("InputFilter.number_of_taps", "4");
+    configuration->set_property("InputFilter.number_of_bands", "2");
+
+    configuration->set_property("InputFilter.band1_begin", "0.0");
+    configuration->set_property("InputFilter.band1_end", "0.45");
+    configuration->set_property("InputFilter.band2_begin", "0.55");
+    configuration->set_property("InputFilter.band2_end", "1.0");
+
+    configuration->set_property("InputFilter.ampl1_begin", "1.0");
+    configuration->set_property("InputFilter.ampl1_end", "1.0");
+    configuration->set_property("InputFilter.ampl2_begin", "0.0");
+    configuration->set_property("InputFilter.ampl2_end", "0.0");
+
+    configuration->set_property("InputFilter.band1_error", "1.0");
+    configuration->set_property("InputFilter.band2_error", "1.0");
+
+    configuration->set_property("InputFilter.filter_type", "bandpass");
+    configuration->set_property("InputFilter.grid_density", "16");
+
+    configuration->set_property("InputFilter.sampling_frequency","4000000");
+    configuration->set_property("InputFilter.center_frequency","34000");
+
+    GNSSBlockFactory *factory = new GNSSBlockFactory();
+    GNSSBlockInterface *input_filter = factory->GetBlock(configuration, "InputFilter", "Freq_Xlating_Fir_Filter", 1,1, queue);
+
+    EXPECT_STREQ("InputFilter", input_filter->role().c_str());
+    EXPECT_STREQ("Freq_Xlating_Fir_Filter", input_filter->implementation().c_str());
+
+    delete configuration;
+    delete factory;
+    delete input_filter;
+}
+
 TEST(GNSS_Block_Factory_Test, InstantiateDirectResampler) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 

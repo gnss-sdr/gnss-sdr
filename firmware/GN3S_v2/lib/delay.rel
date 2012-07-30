@@ -1,0 +1,63 @@
+XH
+H 17 areas 2 global symbols
+M delay
+O -mmcs51 --model-small
+A _CODE size 0 flags 0 addr 0
+A RSEG size 0 flags 0 addr 0
+A REG_BANK_0 size 8 flags 4 addr 0
+A DSEG size 0 flags 0 addr 0
+A OSEG size 0 flags 4 addr 0
+A ISEG size 0 flags 0 addr 0
+A IABS size 0 flags 8 addr 0
+A BSEG size 0 flags 80 addr 0
+A PSEG size 0 flags 50 addr 0
+A XSEG size 0 flags 40 addr 0
+A XABS size 0 flags 48 addr 0
+A HOME size 0 flags 20 addr 0
+A GSINIT0 size 0 flags 20 addr 0
+A GSINIT1 size 0 flags 20 addr 0
+A GSINIT2 size 0 flags 20 addr 0
+A GSINIT3 size 0 flags 20 addr 0
+A GSINIT4 size 0 flags 20 addr 0
+A GSINIT5 size 0 flags 20 addr 0
+A GSINIT size 0 flags 20 addr 0
+A GSFINAL size 0 flags 20 addr 0
+A CSEG size 25 flags 20 addr 0
+S _mdelay Def0014
+S _udelay Def0001
+A CONST size 0 flags 20 addr 0
+A CABS size 0 flags 28 addr 0
+T 00 00
+R 00 00 00 02
+T 00 00
+R 00 00 00 14
+T 00 00 22
+R 00 00 00 14
+T 00 01
+R 00 00 00 14
+T 00 01 AA 82
+R 00 00 00 14
+T 00 03
+R 00 00 00 14
+T 00 03 12 00 00 DA FB 22
+R 00 00 00 14 00 03 00 14
+T 00 09
+R 00 00 00 14
+T 00 09 90 FB 50
+R 00 00 00 14
+T 00 0C
+R 00 00 00 14
+T 00 0C A3 E5 82 45 83 70 F9 22
+R 00 00 00 14
+T 00 14
+R 00 00 00 14
+T 00 14 AA 82 AB 83
+R 00 00 00 14
+T 00 18
+R 00 00 00 14
+T 00 18 12 00 09 1A BA FF 01 1B
+R 00 00 00 14 00 03 00 14
+T 00 20
+R 00 00 00 14
+T 00 20 EA 4B 70 F4 22
+R 00 00 00 14

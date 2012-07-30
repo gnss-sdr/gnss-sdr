@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<block>
+  <name>gn3s_source</name>
+  <key>gn3s_source_cc</key>
+  <category>GN3S</category>
+  <import>import gn3s</import>
+  <make>gn3s.source_cc()</make>
+
+  <source>
+    <name>out</name>
+    <type>complex</type>
+  </source>
+</block>

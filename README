@@ -91,6 +91,31 @@ $ sudo apt-get install subversion
 
 $ svn co http://gnss-sdr.svn.sourceforge.net/svnroot/gnss-sdr gnss-sdr
 
+
+* Build SparkFun SiGe GN3S V2 Custom firmware and driver (OPTIONAL)
+
+- Go to GR-GN3S root directory, compile and install the driver:
+  (read the gnss-sdr/trunk/drivers/gr-gn3s/README for more information)
+  
+$ cd gnss-sdr/trunk/drivers/gr-gn3s
+$ cd build
+$ cmake ../
+$ make
+$ sudo make install
+$ sudo ldconfig
+
+Set the envirnoment variable GN3S_DRIVER=1 in order to enable the GN3S_Signal_Source in GNSS-SDR (OPTIONAL)
+
+export GN3S_DRIVER=1
+
+In order to gain access to USB ports, gnss-sdr should be used as root.
+In addition, the driver requires access to the GN3S firmware binary file. 
+It should be available in the same path where the application is called.
+GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/firmware/GN3S_v2/bin/gn3s_firmware.ihx. 
+Please copy this file to the application path. The GNSS-SDR default path is gnss-sdr/trunk/install
+
+(in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR)
+
 * Build GNSS-SDR
 
 - Go to GNSS-SDR's root directory and compile the program:
@@ -113,7 +138,7 @@ NOTE: Currently the GCC toolchain is broken. We are working towards the use of L
 
 * If you have still not installed Apple's Developer Tools Xcode, do it now from  http://developer.apple.com/technologies/tools/ (it's free)
 
-* Install Macports from  http://www.macports.org/install.php We recommend to install directly the ÒdmgÓ disk images for Snow Leopart. GNSS-SDR has not been tested with Leopard or Tiger.
+* Install Macports from  http://www.macports.org/install.php We recommend to install directly the ï¿½dmgï¿½ disk images for Snow Leopart. GNSS-SDR has not been tested with Leopard or Tiger.
 
 * Install some tools:
 

@@ -1,5 +1,10 @@
 project : build-dir ../../build ;
 
+local GN3S_DRIVER = [ modules.peek : GN3S_DRIVER ] ; 
+
+if $(GN3S_DRIVER)
+{
+
 exe run_tests : test_main.cc 
 ../algorithms/acquisition/adapters//gps_l1_ca_pcps_acquisition
 ../algorithms/acquisition/adapters//galileo_e1_pcps_ambiguous_acquisition
@@ -23,7 +28,76 @@ exe run_tests : test_main.cc
 ../algorithms/output_filter/adapters//null_sink_output_filter
 ../algorithms/resampler/adapters//direct_resampler_conditioner
 ../algorithms/resampler/gnuradio_blocks//direct_resampler_conditioner_cc
-#../algorithms/resampler/gnuradio_blocks//direct_resampler_conditioner_ss
+../algorithms/signal_source/adapters//file_signal_source
+../algorithms/signal_source/adapters//uhd_signal_source
+../algorithms/telemetry_decoder/adapters//gps_l1_ca_telemetry_decoder
+../algorithms/telemetry_decoder/gnuradio_blocks//gps_l1_ca_telemetry_decoder_cc
+../algorithms/telemetry_decoder/libs//gps_l1_ca_subframe_fsm
+../algorithms/PVT/adapters//gps_l1_ca_pvt
+../algorithms/PVT/gnuradio_blocks//gps_l1_ca_pvt_cc
+../algorithms/tracking/adapters//gps_l1_ca_dll_pll_tracking
+../algorithms/tracking/adapters//gps_l1_ca_dll_fll_pll_tracking
+../algorithms/tracking/adapters//gps_l1_ca_tcp_connector_tracking
+../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_pll_tracking_cc
+../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_fll_pll_tracking_cc
+../algorithms/tracking/gnuradio_blocks//gps_l1_ca_tcp_connector_tracking_cc
+../algorithms/tracking/libs//tracking_discriminators
+../algorithms/tracking/libs//CN_estimators
+../algorithms/tracking/libs//tracking_FLL_PLL_filter
+../algorithms/tracking/libs//tracking_2nd_PLL_filter
+../algorithms/tracking/libs//tracking_2nd_DLL_filter
+../algorithms/tracking/libs//correlator
+../algorithms/tracking/libs//cordic
+../algorithms/tracking/libs//tcp_communication
+../core/libs//INIReader
+../core/libs//ini
+../core/libs//string_converter
+../core/receiver//control_message_factory
+../core/receiver//control_thread
+../core/receiver//file_configuration
+../core/receiver//in_memory_configuration
+../core/receiver//gnss_block_factory
+../core/receiver//gnss_flowgraph
+../core/system_parameters//gps_navigation_message
+../core/system_parameters//gnss_satellite
+../core/system_parameters//gnss_signal
+#../core/system_parameters//gnss_synchro
+../..//gflags
+../..//glog
+../..//gnuradio-core
+../..//uhd
+../..//gnuradio-uhd
+# GN3S DRIVER
+../algorithms/signal_source/adapters//gn3s_signal_source 
+../..//gr-gn3s
+../..//gtest : <include>$(GTEST_DIR)/include ;
+
+}
+else
+{
+exe run_tests : test_main.cc 
+../algorithms/acquisition/adapters//gps_l1_ca_pcps_acquisition
+../algorithms/acquisition/adapters//galileo_e1_pcps_ambiguous_acquisition
+../algorithms/acquisition/gnuradio_blocks//pcps_acquisition_cc
+../algorithms/channel/adapters//channel
+../algorithms/channel/libs//gps_l1_ca_channel_fsm
+../algorithms/conditioner/adapters//signal_conditioner
+../algorithms/input_filter/adapters//fir_filter
+../algorithms/input_filter/adapters//freq_xlating_fir_filter
+../algorithms/libs//gnss_signal_processing
+../algorithms/libs//gps_sdr_signal_processing
+../algorithms/libs//galileo_e1_signal_processing
+../algorithms/libs//gnss_sdr_valve
+../algorithms/libs//pass_through
+../algorithms/observables/adapters//gps_l1_ca_observables
+../algorithms/observables/gnuradio_blocks//gps_l1_ca_observables_cc
+../algorithms/PVT/libs//rinex_printer
+../algorithms/PVT/libs//kml_printer
+../algorithms/PVT/libs//gps_l1_ca_ls_pvt
+../algorithms/output_filter/adapters//file_output_filter
+../algorithms/output_filter/adapters//null_sink_output_filter
+../algorithms/resampler/adapters//direct_resampler_conditioner
+../algorithms/resampler/gnuradio_blocks//direct_resampler_conditioner_cc
 ../algorithms/signal_source/adapters//file_signal_source
 ../algorithms/signal_source/adapters//uhd_signal_source
 ../algorithms/telemetry_decoder/adapters//gps_l1_ca_telemetry_decoder
@@ -64,5 +138,6 @@ exe run_tests : test_main.cc
 ../..//uhd
 ../..//gnuradio-uhd
 ../..//gtest : <include>$(GTEST_DIR)/include ;
+}
 
 install ../../install : run_tests ;

@@ -60,6 +60,10 @@
 #include "gps_l1_ca_observables.h"
 #include "gps_l1_ca_pvt.h"
 
+#if GN3S_DRIVER
+	#include "gn3s_signal_source.h"
+#endif
+
 using google::LogMessage;
 
 
@@ -278,6 +282,13 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             block = new UhdSignalSource(configuration, role, in_streams,
                     out_streams, queue);
         }
+#if GN3S_DRIVER
+        else if (implementation.compare("GN3S_Signal_Source") == 0)
+        {
+            block = new Gn3sSignalSource(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+#endif
 
     // DATA TYPE ADAPTER -----------------------------------------------------------
 

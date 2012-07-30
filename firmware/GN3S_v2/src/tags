@@ -1,0 +1,3004 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.5.4	//
+AC	../include/fx2regs.h	/^         sbit at 0xD0+6 AC;$/;"	v
+ACC	../include/fx2regs.h	/^sfr at 0xE0 ACC;$/;"	v
+ALLOCATE_EXTERN	../include/fx2regs.h	41;"	d
+ALLOCATE_EXTERN	../include/radar_rev1_regs.h	31;"	d
+APTR1H	../include/fx2regs.h	/^sfr at 0x9A APTR1H;$/;"	v
+APTR1L	../include/fx2regs.h	/^sfr at 0x9B APTR1L;$/;"	v
+AUTODAT1	../include/fx2regs.h	/^sfr at 0x9C AUTODAT1; $/;"	v
+AUTODAT2	../include/fx2regs.h	/^sfr at 0x9F AUTODAT2;$/;"	v
+AUTOPTRH1	../include/fx2regs.h	396;"	d
+AUTOPTRH2	../include/fx2regs.h	/^sfr at 0x9D AUTOPTRH2;$/;"	v
+AUTOPTRL1	../include/fx2regs.h	397;"	d
+AUTOPTRL2	../include/fx2regs.h	/^sfr at 0x9E AUTOPTRL2; $/;"	v
+AUTOPTRSETUP	../include/fx2regs.h	/^sfr at 0xAF AUTOPTRSETUP;$/;"	v
+B	../include/fx2regs.h	/^sfr at 0xF0 B;$/;"	v
+BPADDRH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE606) volatile BYTE BPADDRH           ;  \/\/ Breakpoint Address H$/;"	v
+BPADDRL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE607) volatile BYTE BPADDRL           ;  \/\/ Breakpoint Address L$/;"	v
+BREAKPT	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE605) volatile BYTE BREAKPT           ;  \/\/ Breakpoint$/;"	v
+BYTE	../include/fx2regs.h	/^typedef unsigned char BYTE;$/;"	t
+CC	../lib/Makefile	/^CC=sdcc -mmcs51 --no-xinit-opt$/;"	m
+CC	../src/Makefile	/^CC=sdcc -mmcs51 --no-xinit-opt$/;"	m
+CKCON	../include/fx2regs.h	/^sfr at 0x8E CKCON;$/;"	v
+CLRERRCNT	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE665) volatile BYTE CLRERRCNT         ;  \/\/ Clear Error Counter EC[3..0]$/;"	v
+CPUCS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE600) volatile BYTE CPUCS             ;  \/\/ Control & Status$/;"	v
+CP_RL2	../include/fx2regs.h	/^	 sbit at 0xC8+0 CP_RL2;$/;"	v
+CT1	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6FB) volatile BYTE CT1               ;  \/\/ Chirp Test--Override$/;"	v
+CT2	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6FC) volatile BYTE CT2               ;  \/\/ Chirp Test--FSM$/;"	v
+CT3	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6FD) volatile BYTE CT3               ;  \/\/ Chirp Test--Control Signals$/;"	v
+CT4	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6FE) volatile BYTE CT4               ;  \/\/ Chirp Test--Inputs$/;"	v
+CY	../include/fx2regs.h	/^         sbit at 0xD0+7 CY;$/;"	v
+C_T2	../include/fx2regs.h	/^	 sbit at 0xC8+1 C_T2;$/;"	v
+DBUG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6F8) volatile BYTE DBUG              ;  \/\/ Debug$/;"	v
+DPH	../include/fx2regs.h	/^sfr at 0x83 DPH;$/;"	v
+DPH1	../include/fx2regs.h	/^sfr at 0x85 DPH1;$/;"	v
+DPL	../include/fx2regs.h	/^sfr at 0x82 DPL;$/;"	v
+DPL1	../include/fx2regs.h	/^sfr at 0x84 DPL1;$/;"	v
+DPS	../include/fx2regs.h	/^sfr at 0x86 DPS;$/;"	v
+DT_CONFIG	../include/usb_requests.h	68;"	d
+DT_DEVICE	../include/usb_requests.h	67;"	d
+DT_DEVQUAL	../include/usb_requests.h	72;"	d
+DT_ENDPOINT	../include/usb_requests.h	71;"	d
+DT_INTERFACE	../include/usb_requests.h	70;"	d
+DT_INTERFACE_POWER	../include/usb_requests.h	74;"	d
+DT_OTHER_SPEED	../include/usb_requests.h	73;"	d
+DT_STRING	../include/usb_requests.h	69;"	d
+EA	../include/fx2regs.h	/^         sbit at 0xA8+7 EA;$/;"	v
+EI2C	../include/fx2regs.h	/^         sbit at 0xE8+1 EI2C;$/;"	v
+EICON	../include/fx2regs.h	/^sfr at 0xD8 EICON; \/\/ Was WDCON in DS80C320 EICON; Bit Values differ from Reg320$/;"	v
+EIE	../include/fx2regs.h	/^sfr at 0xE8 EIE; \/\/ EIE Bit Values differ from Reg320$/;"	v
+EIEX4	../include/fx2regs.h	/^         sbit at 0xE8+2 EIEX4;$/;"	v
+EIEX5	../include/fx2regs.h	/^         sbit at 0xE8+3 EIEX5;$/;"	v
+EIEX6	../include/fx2regs.h	/^         sbit at 0xE8+4 EIEX6;$/;"	v
+EIP	../include/fx2regs.h	/^sfr at 0xF8 EIP; \/\/ EIP Bit Values differ from Reg320$/;"	v
+EIPX4	../include/fx2regs.h	/^         sbit at 0xF8+2 EIPX4;$/;"	v
+EIPX5	../include/fx2regs.h	/^         sbit at 0xF8+3 EIPX5;$/;"	v
+EIPX6	../include/fx2regs.h	/^         sbit at 0xF8+4 EIPX6;$/;"	v
+EIUSB	../include/fx2regs.h	/^         sbit at 0xE8+0 EIUSB;$/;"	v
+EP01STAT	../include/fx2regs.h	/^sfr at 0xBA EP01STAT;$/;"	v
+EP0BCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE68A) volatile BYTE EP0BCH            ;  \/\/ Endpoint 0 Byte Count H$/;"	v
+EP0BCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE68B) volatile BYTE EP0BCL            ;  \/\/ Endpoint 0 Byte Count L$/;"	v
+EP0BUF	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE740) volatile BYTE EP0BUF[64]        ;  \/\/ EP0 IN-OUT buffer$/;"	v
+EP0CS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A0) volatile BYTE EP0CS             ;  \/\/ Endpoint  Control and Status$/;"	v
+EP1INBC	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE68F) volatile BYTE EP1INBC           ;  \/\/ Endpoint 1 IN Byte Count$/;"	v
+EP1INBUF	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE7C0) volatile BYTE EP1INBUF[64]      ;  \/\/ EP1-IN buffer$/;"	v
+EP1INCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE611) volatile BYTE EP1INCFG          ;  \/\/ Endpoint 1-IN Configuration$/;"	v
+EP1INCS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A2) volatile BYTE EP1INCS           ;  \/\/ Endpoint 1 IN Control and Status$/;"	v
+EP1OUTBC	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE68D) volatile BYTE EP1OUTBC          ;  \/\/ Endpoint 1 OUT Byte Count$/;"	v
+EP1OUTBUF	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE780) volatile BYTE EP1OUTBUF[64]     ;  \/\/ EP1-OUT buffer$/;"	v
+EP1OUTCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE610) volatile BYTE EP1OUTCFG         ;  \/\/ Endpoint 1-OUT Configuration$/;"	v
+EP1OUTCS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A1) volatile BYTE EP1OUTCS          ;  \/\/ Endpoint 1 OUT Control and Status$/;"	v
+EP2468STAT	../include/fx2regs.h	/^sfr at 0xAA EP2468STAT;$/;"	v
+EP24FIFOFLGS	../include/fx2regs.h	/^sfr at 0xAB EP24FIFOFLGS;$/;"	v
+EP2AUTOINLENH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE620) volatile BYTE EP2AUTOINLENH     ;  \/\/ Endpoint 2 Packet Length H (IN only)$/;"	v
+EP2AUTOINLENL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE621) volatile BYTE EP2AUTOINLENL     ;  \/\/ Endpoint 2 Packet Length L (IN only)$/;"	v
+EP2BCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE690) volatile BYTE EP2BCH            ;  \/\/ Endpoint 2 Byte Count H$/;"	v
+EP2BCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE691) volatile BYTE EP2BCL            ;  \/\/ Endpoint 2 Byte Count L$/;"	v
+EP2CFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE612) volatile BYTE EP2CFG            ;  \/\/ Endpoint 2 Configuration$/;"	v
+EP2CS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A3) volatile BYTE EP2CS             ;  \/\/ Endpoint 2 Control and Status$/;"	v
+EP2FIFOBCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6AB) volatile BYTE EP2FIFOBCH        ;  \/\/ EP2 FIFO total byte count H$/;"	v
+EP2FIFOBCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6AC) volatile BYTE EP2FIFOBCL        ;  \/\/ EP2 FIFO total byte count L$/;"	v
+EP2FIFOBUF	../include/fx2regs.h	/^EXTERN xdata _AT_(0xF000) volatile BYTE EP2FIFOBUF[1024]  ;  \/\/ 512\/1024-byte EP2 buffer (IN or OUT)$/;"	v
+EP2FIFOCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE618) volatile BYTE EP2FIFOCFG        ;  \/\/ Endpoint 2 FIFO configuration$/;"	v
+EP2FIFOFLGS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A7) volatile BYTE EP2FIFOFLGS       ;  \/\/ Endpoint 2 Flags$/;"	v
+EP2FIFOIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE650) volatile BYTE EP2FIFOIE         ;  \/\/ Endpoint 2 Flag Interrupt Enable$/;"	v
+EP2FIFOIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE651) volatile BYTE EP2FIFOIRQ        ;  \/\/ Endpoint 2 Flag Interrupt Request$/;"	v
+EP2FIFOPFH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE630) volatile BYTE EP2FIFOPFH        ;  \/\/ EP2 Programmable Flag trigger H$/;"	v
+EP2FIFOPFL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE631) volatile BYTE EP2FIFOPFL        ;  \/\/ EP2 Programmable Flag trigger L$/;"	v
+EP2GPIFFLGSEL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6D2) volatile BYTE EP2GPIFFLGSEL     ;  \/\/ EP2 GPIF Flag select$/;"	v
+EP2GPIFPFSTOP	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6D3) volatile BYTE EP2GPIFPFSTOP     ;  \/\/ Stop GPIF EP2 transaction on prog. flag$/;"	v
+EP2GPIFTCH	../include/fx2regs.h	233;"	d
+EP2GPIFTCL	../include/fx2regs.h	234;"	d
+EP2GPIFTRIG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6D4) volatile BYTE EP2GPIFTRIG       ;  \/\/ EP2 FIFO Trigger$/;"	v
+EP2ISOINPKTS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE640) volatile BYTE EP2ISOINPKTS      ;  \/\/ EP2 (if ISO) IN Packets per frame (1-3)$/;"	v
+EP4AUTOINLENH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE622) volatile BYTE EP4AUTOINLENH     ;  \/\/ Endpoint 4 Packet Length H (IN only)$/;"	v
+EP4AUTOINLENL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE623) volatile BYTE EP4AUTOINLENL     ;  \/\/ Endpoint 4 Packet Length L (IN only)$/;"	v
+EP4BCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE694) volatile BYTE EP4BCH            ;  \/\/ Endpoint 4 Byte Count H$/;"	v
+EP4BCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE695) volatile BYTE EP4BCL            ;  \/\/ Endpoint 4 Byte Count L$/;"	v
+EP4CFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE613) volatile BYTE EP4CFG            ;  \/\/ Endpoint 4 Configuration$/;"	v
+EP4CS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A4) volatile BYTE EP4CS             ;  \/\/ Endpoint 4 Control and Status$/;"	v
+EP4FIFOBCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6AD) volatile BYTE EP4FIFOBCH        ;  \/\/ EP4 FIFO total byte count H$/;"	v
+EP4FIFOBCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6AE) volatile BYTE EP4FIFOBCL        ;  \/\/ EP4 FIFO total byte count L$/;"	v
+EP4FIFOBUF	../include/fx2regs.h	/^EXTERN xdata _AT_(0xF400) volatile BYTE EP4FIFOBUF[1024]  ;  \/\/ 512 byte EP4 buffer (IN or OUT)$/;"	v
+EP4FIFOCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE619) volatile BYTE EP4FIFOCFG        ;  \/\/ Endpoint 4 FIFO configuration$/;"	v
+EP4FIFOFLGS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A8) volatile BYTE EP4FIFOFLGS       ;  \/\/ Endpoint 4 Flags$/;"	v
+EP4FIFOIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE652) volatile BYTE EP4FIFOIE         ;  \/\/ Endpoint 4 Flag Interrupt Enable$/;"	v
+EP4FIFOIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE653) volatile BYTE EP4FIFOIRQ        ;  \/\/ Endpoint 4 Flag Interrupt Request$/;"	v
+EP4FIFOPFH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE632) volatile BYTE EP4FIFOPFH        ;  \/\/ EP4 Programmable Flag trigger H$/;"	v
+EP4FIFOPFL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE633) volatile BYTE EP4FIFOPFL        ;  \/\/ EP4 Programmable Flag trigger L$/;"	v
+EP4GPIFFLGSEL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6DA) volatile BYTE EP4GPIFFLGSEL     ;  \/\/ EP4 GPIF Flag select$/;"	v
+EP4GPIFPFSTOP	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6DB) volatile BYTE EP4GPIFPFSTOP     ;  \/\/ Stop GPIF EP4 transaction on prog. flag$/;"	v
+EP4GPIFTCH	../include/fx2regs.h	235;"	d
+EP4GPIFTCL	../include/fx2regs.h	236;"	d
+EP4GPIFTRIG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6DC) volatile BYTE EP4GPIFTRIG       ;  \/\/ EP4 FIFO Trigger$/;"	v
+EP4ISOINPKTS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE641) volatile BYTE EP4ISOINPKTS      ;  \/\/ EP4 (if ISO) IN Packets per frame (1-3)$/;"	v
+EP68FIFOFLGS	../include/fx2regs.h	/^sfr at 0xAC EP68FIFOFLGS;$/;"	v
+EP6AUTOINLENH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE624) volatile BYTE EP6AUTOINLENH     ;  \/\/ Endpoint 6 Packet Length H (IN only)$/;"	v
+EP6AUTOINLENL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE625) volatile BYTE EP6AUTOINLENL     ;  \/\/ Endpoint 6 Packet Length L (IN only)$/;"	v
+EP6BCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE698) volatile BYTE EP6BCH            ;  \/\/ Endpoint 6 Byte Count H$/;"	v
+EP6BCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE699) volatile BYTE EP6BCL            ;  \/\/ Endpoint 6 Byte Count L$/;"	v
+EP6CFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE614) volatile BYTE EP6CFG            ;  \/\/ Endpoint 6 Configuration$/;"	v
+EP6CS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A5) volatile BYTE EP6CS             ;  \/\/ Endpoint 6 Control and Status$/;"	v
+EP6FIFOBCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6AF) volatile BYTE EP6FIFOBCH        ;  \/\/ EP6 FIFO total byte count H$/;"	v
+EP6FIFOBCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6B0) volatile BYTE EP6FIFOBCL        ;  \/\/ EP6 FIFO total byte count L$/;"	v
+EP6FIFOBUF	../include/fx2regs.h	/^EXTERN xdata _AT_(0xF800) volatile BYTE EP6FIFOBUF[1024]  ;  \/\/ 512\/1024-byte EP6 buffer (IN or OUT)$/;"	v
+EP6FIFOCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE61A) volatile BYTE EP6FIFOCFG        ;  \/\/ Endpoint 6 FIFO configuration$/;"	v
+EP6FIFOFLGS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A9) volatile BYTE EP6FIFOFLGS       ;  \/\/ Endpoint 6 Flags$/;"	v
+EP6FIFOIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE654) volatile BYTE EP6FIFOIE         ;  \/\/ Endpoint 6 Flag Interrupt Enable$/;"	v
+EP6FIFOIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE655) volatile BYTE EP6FIFOIRQ        ;  \/\/ Endpoint 6 Flag Interrupt Request$/;"	v
+EP6FIFOPFH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE634) volatile BYTE EP6FIFOPFH        ;  \/\/ EP6 Programmable Flag trigger H$/;"	v
+EP6FIFOPFL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE635) volatile BYTE EP6FIFOPFL        ;  \/\/ EP6 Programmable Flag trigger L$/;"	v
+EP6GPIFFLGSEL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6E2) volatile BYTE EP6GPIFFLGSEL     ;  \/\/ EP6 GPIF Flag select$/;"	v
+EP6GPIFPFSTOP	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6E3) volatile BYTE EP6GPIFPFSTOP     ;  \/\/ Stop GPIF EP6 transaction on prog. flag$/;"	v
+EP6GPIFTCH	../include/fx2regs.h	237;"	d
+EP6GPIFTCL	../include/fx2regs.h	238;"	d
+EP6GPIFTRIG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6E4) volatile BYTE EP6GPIFTRIG       ;  \/\/ EP6 FIFO Trigger$/;"	v
+EP6ISOINPKTS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE642) volatile BYTE EP6ISOINPKTS      ;  \/\/ EP6 (if ISO) IN Packets per frame (1-3)$/;"	v
+EP8AUTOINLENH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE626) volatile BYTE EP8AUTOINLENH     ;  \/\/ Endpoint 8 Packet Length H (IN only)$/;"	v
+EP8AUTOINLENL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE627) volatile BYTE EP8AUTOINLENL     ;  \/\/ Endpoint 8 Packet Length L (IN only)$/;"	v
+EP8BCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE69C) volatile BYTE EP8BCH            ;  \/\/ Endpoint 8 Byte Count H$/;"	v
+EP8BCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE69D) volatile BYTE EP8BCL            ;  \/\/ Endpoint 8 Byte Count L$/;"	v
+EP8CFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE615) volatile BYTE EP8CFG            ;  \/\/ Endpoint 8 Configuration$/;"	v
+EP8CS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6A6) volatile BYTE EP8CS             ;  \/\/ Endpoint 8 Control and Status$/;"	v
+EP8FIFOBCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6B1) volatile BYTE EP8FIFOBCH        ;  \/\/ EP8 FIFO total byte count H$/;"	v
+EP8FIFOBCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6B2) volatile BYTE EP8FIFOBCL        ;  \/\/ EP8 FIFO total byte count L$/;"	v
+EP8FIFOBUF	../include/fx2regs.h	/^EXTERN xdata _AT_(0xFC00) volatile BYTE EP8FIFOBUF[1024]  ;  \/\/ 512 byte EP8 buffer (IN or OUT)$/;"	v
+EP8FIFOCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE61B) volatile BYTE EP8FIFOCFG        ;  \/\/ Endpoint 8 FIFO configuration$/;"	v
+EP8FIFOFLGS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6AA) volatile BYTE EP8FIFOFLGS       ;  \/\/ Endpoint 8 Flags$/;"	v
+EP8FIFOIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE656) volatile BYTE EP8FIFOIE         ;  \/\/ Endpoint 8 Flag Interrupt Enable$/;"	v
+EP8FIFOIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE657) volatile BYTE EP8FIFOIRQ        ;  \/\/ Endpoint 8 Flag Interrupt Request$/;"	v
+EP8FIFOPFH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE636) volatile BYTE EP8FIFOPFH        ;  \/\/ EP8 Programmable Flag trigger H$/;"	v
+EP8FIFOPFL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE637) volatile BYTE EP8FIFOPFL        ;  \/\/ EP8 Programmable Flag trigger L$/;"	v
+EP8GPIFFLGSEL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6EA) volatile BYTE EP8GPIFFLGSEL     ;  \/\/ EP8 GPIF Flag select$/;"	v
+EP8GPIFPFSTOP	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6EB) volatile BYTE EP8GPIFPFSTOP     ;  \/\/ Stop GPIF EP8 transaction on prog. flag$/;"	v
+EP8GPIFTCH	../include/fx2regs.h	239;"	d
+EP8GPIFTCL	../include/fx2regs.h	240;"	d
+EP8GPIFTRIG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6EC) volatile BYTE EP8GPIFTRIG       ;  \/\/ EP8 FIFO Trigger$/;"	v
+EP8ISOINPKTS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE643) volatile BYTE EP8ISOINPKTS      ;  \/\/ EP8 (if ISO) IN Packets per frame (1-3)$/;"	v
+EPIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE65E) volatile BYTE EPIE              ;  \/\/ Endpoint Interrupt Enables$/;"	v
+EPIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE65F) volatile BYTE EPIRQ             ;  \/\/ Endpoint Interrupt Requests$/;"	v
+ERESI	../include/fx2regs.h	/^         sbit at 0xD8+5 ERESI;$/;"	v
+ERRCNTLIM	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE664) volatile BYTE ERRCNTLIM         ;  \/\/ USB Error counter and limit$/;"	v
+ES0	../include/fx2regs.h	/^         sbit at 0xA8+4 ES0;$/;"	v
+ES1	../include/fx2regs.h	/^         sbit at 0xA8+6 ES1;$/;"	v
+ET0	../include/fx2regs.h	/^         sbit at 0xA8+1 ET0;$/;"	v
+ET1	../include/fx2regs.h	/^         sbit at 0xA8+3 ET1;$/;"	v
+ET2	../include/fx2regs.h	/^         sbit at 0xA8+5 ET2;$/;"	v
+EX0	../include/fx2regs.h	/^         sbit at 0xA8+0 EX0;$/;"	v
+EX1	../include/fx2regs.h	/^         sbit at 0xA8+2 EX1;$/;"	v
+EXEN2	../include/fx2regs.h	/^         sbit at 0xC8+3 EXEN2;$/;"	v
+EXF2	../include/fx2regs.h	/^         sbit at 0xC8+6 EXF2;$/;"	v
+EXIF	../include/fx2regs.h	/^sfr at 0x91 EXIF; \/\/ EXIF Bit Values differ from Reg320$/;"	v
+EXTAUTODAT1	../include/fx2regs.h	167;"	d
+EXTAUTODAT2	../include/fx2regs.h	168;"	d
+EXTERN	../include/fx2regs.h	305;"	d
+EXTERN	../include/fx2regs.h	65;"	d
+EXTERN	../include/fx2regs.h	68;"	d
+EXTERN	../include/radar_rev1_regs.h	34;"	d
+EXTERN	../include/radar_rev1_regs.h	37;"	d
+F0	../include/fx2regs.h	/^         sbit at 0xD0+5 F0;$/;"	v
+FALSE	../include/usrp_common.h	63;"	d
+FGV_EP2EF	../include/isr.h	113;"	d
+FGV_EP2FF	../include/isr.h	117;"	d
+FGV_EP2PF	../include/isr.h	109;"	d
+FGV_EP4EF	../include/isr.h	114;"	d
+FGV_EP4FF	../include/isr.h	118;"	d
+FGV_EP4PF	../include/isr.h	110;"	d
+FGV_EP6EF	../include/isr.h	115;"	d
+FGV_EP6FF	../include/isr.h	119;"	d
+FGV_EP6PF	../include/isr.h	111;"	d
+FGV_EP8EF	../include/isr.h	116;"	d
+FGV_EP8FF	../include/isr.h	120;"	d
+FGV_EP8PF	../include/isr.h	112;"	d
+FGV_GPIFDONE	../include/isr.h	121;"	d
+FGV_GPIFWF	../include/isr.h	122;"	d
+FGV_MAX	../include/isr.h	125;"	d
+FGV_MIN	../include/isr.h	124;"	d
+FIFOPINPOLAR	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE609) volatile BYTE FIFOPINPOLAR      ;  \/\/ FIFO polarities$/;"	v
+FIFORESET	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE604) volatile BYTE FIFORESET         ;  \/\/ Restore FIFOS to default state$/;"	v
+FL	../include/fx2regs.h	/^         sbit at 0xD0+1 FL;$/;"	v
+FLOWEQ0CTL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C8) volatile BYTE FLOWEQ0CTL        ; \/\/CTL states during active flow state$/;"	v
+FLOWEQ1CTL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C9) volatile BYTE FLOWEQ1CTL        ; \/\/CTL states during hold flow state$/;"	v
+FLOWHOLDOFF	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6CA) volatile BYTE FLOWHOLDOFF       ;$/;"	v
+FLOWLOGIC	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C7) volatile BYTE FLOWLOGIC         ; \/\/Defines flow\/hold decision criteria$/;"	v
+FLOWSTATE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C6) volatile BYTE FLOWSTATE         ; \/\/Defines GPIF flow state$/;"	v
+FLOWSTB	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6CB) volatile BYTE FLOWSTB           ; \/\/CTL\/RDY Signal to use as master data strobe $/;"	v
+FLOWSTBEDGE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6CC) volatile BYTE FLOWSTBEDGE       ; \/\/Defines active master strobe edge$/;"	v
+FLOWSTBHPERIOD	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6CD) volatile BYTE FLOWSTBHPERIOD    ; \/\/Half Period of output master strobe$/;"	v
+FL_BEGIN	../include/usrp_commands.h	60;"	d
+FL_END	../include/usrp_commands.h	62;"	d
+FL_XFER	../include/usrp_commands.h	61;"	d
+FNADDR	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE687) volatile BYTE FNADDR            ;  \/\/ USB Function address$/;"	v
+FS_DEV_REMOTE_WAKEUP	../include/usb_requests.h	79;"	d
+FS_ENDPOINT_HALT	../include/usb_requests.h	78;"	d
+FS_TEST_MODE	../include/usb_requests.h	80;"	d
+FX2REGS_H	../include/fx2regs.h	39;"	d
+FlowStates	../src/gpif.c	/^const char xdata FlowStates[36] =   $/;"	v
+FlowStates	../src/gpif2.c	/^const char xdata FlowStates[36] =   $/;"	v
+FlowStates	../src/radar_gpif.c	/^const char FlowStates[36] =$/;"	v
+FlowStates	../src/radar_gpif2.c	/^const char FlowStates[36] =$/;"	v
+GPIFABORT	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6F5) volatile BYTE GPIFABORT         ;  \/\/ Abort GPIF cycles$/;"	v
+GPIFADRH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C4) volatile BYTE GPIFADRH          ;  \/\/ GPIF Address H$/;"	v
+GPIFADRL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C5) volatile BYTE GPIFADRL          ;  \/\/ GPIF Address L$/;"	v
+GPIFCTLCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C3) volatile BYTE GPIFCTLCFG        ;  \/\/ CTL OUT pin drive$/;"	v
+GPIFHOLDAMOUNT	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE60C) volatile BYTE GPIFHOLDAMOUNT    ; \/\/Data delay shift $/;"	v
+GPIFIDLECS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C1) volatile BYTE GPIFIDLECS        ;  \/\/ GPIF Done, GPIF IDLE drive mode$/;"	v
+GPIFIDLECTL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C2) volatile BYTE GPIFIDLECTL       ;  \/\/ Inactive Bus, CTL states$/;"	v
+GPIFIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE660) volatile BYTE GPIFIE            ;  \/\/ GPIF Interrupt Enable$/;"	v
+GPIFIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE661) volatile BYTE GPIFIRQ           ;  \/\/ GPIF Interrupt Request$/;"	v
+GPIFREADYCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6F3) volatile BYTE GPIFREADYCFG      ;  \/\/ Internal RDY,Sync\/Async, RDY5CFG$/;"	v
+GPIFREADYSTAT	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6F4) volatile BYTE GPIFREADYSTAT     ;  \/\/ RDY pin states$/;"	v
+GPIFSGLDATH	../include/fx2regs.h	/^sfr at 0xBD GPIFSGLDATH;$/;"	v
+GPIFSGLDATLNOX	../include/fx2regs.h	/^sfr at 0xBF GPIFSGLDATLNOX;$/;"	v
+GPIFSGLDATLX	../include/fx2regs.h	/^sfr at 0xBE GPIFSGLDATLX;$/;"	v
+GPIFTCB0	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6D1) volatile BYTE GPIFTCB0          ;  \/\/ GPIF Transaction Count Byte 0$/;"	v
+GPIFTCB1	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6D0) volatile BYTE GPIFTCB1          ;  \/\/ GPIF Transaction Count Byte 1$/;"	v
+GPIFTCB2	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6CF) volatile BYTE GPIFTCB2          ;  \/\/ GPIF Transaction Count Byte 2$/;"	v
+GPIFTCB3	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6CE) volatile BYTE GPIFTCB3          ;  \/\/ GPIF Transaction Count Byte 3$/;"	v
+GPIFTRIG	../include/fx2regs.h	/^sfr at 0xBB GPIFTRIG;$/;"	v
+GPIFWFSELECT	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6C0) volatile BYTE GPIFWFSELECT      ;  \/\/ Waveform Selector$/;"	v
+GPIF_WAVE_DATA	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE400) volatile BYTE GPIF_WAVE_DATA[128];$/;"	v
+GS_RX_OVERRUN	../include/usrp_commands.h	46;"	d
+GS_TX_UNDERRUN	../include/usrp_commands.h	45;"	d
+GpifInit	../src/gpif.c	/^void GpifInit( void )$/;"	f
+GpifInit	../src/gpif2.c	/^void GpifInit( void )$/;"	f
+I2CS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE678) volatile BYTE I2CS              ;  \/\/ Control & Status$/;"	v
+I2CTL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE67A) volatile BYTE I2CTL             ;  \/\/ I2C Control$/;"	v
+I2DAT	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE679) volatile BYTE I2DAT             ;  \/\/ Data$/;"	v
+IBNIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE658) volatile BYTE IBNIE             ;  \/\/ IN-BULK-NAK Interrupt Enable$/;"	v
+IBNIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE659) volatile BYTE IBNIRQ            ;  \/\/ IN-BULK-NAK interrupt Request$/;"	v
+IE	../include/fx2regs.h	/^sfr at 0xA8 IE;$/;"	v
+IE0	../include/fx2regs.h	/^         sbit at 0x88+1 IE0;$/;"	v
+IE1	../include/fx2regs.h	/^         sbit at 0x88+3 IE1;$/;"	v
+IFCONFIG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE601) volatile BYTE IFCONFIG          ;  \/\/ Interface Configuration$/;"	v
+INCLUDES	../lib/Makefile	/^INCLUDES=-I..\/include\/$/;"	m
+INCLUDES	../src/Makefile	/^INCLUDES=-I..\/include\/$/;"	m
+INPKTEND	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE648) volatile BYTE INPKTEND          ;  \/\/ Force IN Packet End$/;"	v
+INT2CLR	../include/fx2regs.h	/^sfr at 0xA1 INT2CLR;$/;"	v
+INT2IVEC	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE666) volatile BYTE INT2IVEC          ;  \/\/ Interupt 2 (USB) Autovector$/;"	v
+INT4CLR	../include/fx2regs.h	/^sfr at 0xA2 INT4CLR;$/;"	v
+INT4IVEC	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE667) volatile BYTE INT4IVEC          ;  \/\/ Interupt 4 (FIFOS & GPIF) Autovector$/;"	v
+INT6	../include/fx2regs.h	/^         sbit at 0xD8+3 INT6;$/;"	v
+INTSETUP	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE668) volatile BYTE INTSETUP          ;  \/\/ Interrupt 2&4 Setup$/;"	v
+IOA	../include/fx2regs.h	/^sfr at 0x80 IOA;$/;"	v
+IOB	../include/fx2regs.h	/^sfr at 0x90 IOB;$/;"	v
+IOC	../include/fx2regs.h	/^sfr at 0xA0 IOC;$/;"	v
+IOD	../include/fx2regs.h	/^sfr at 0xB0 IOD;$/;"	v
+IOE	../include/fx2regs.h	/^sfr at 0xB1 IOE;$/;"	v
+IP	../include/fx2regs.h	/^sfr at 0xB8 IP;$/;"	v
+IT0	../include/fx2regs.h	/^         sbit at 0x88+0 IT0;$/;"	v
+IT1	../include/fx2regs.h	/^         sbit at 0x88+2 IT1;$/;"	v
+InitData	../src/gpif.c	/^const char xdata InitData[7] =                                   $/;"	v
+InitData	../src/gpif2.c	/^const char xdata InitData[7] =                                   $/;"	v
+InitData	../src/radar_gpif.c	/^const char InitData[7] =$/;"	v
+InitData	../src/radar_gpif2.c	/^const char InitData[7] =$/;"	v
+LED0_OFF	../include/radar_rev1_regs.h	/^xdata _AT_(0x8100) volatile unsigned char LED0_OFF;$/;"	v
+LED0_ON	../include/radar_rev1_regs.h	/^xdata _AT_(0x8000) volatile unsigned char LED0_ON;$/;"	v
+LED1_OFF	../include/radar_rev1_regs.h	/^xdata _AT_(0x9100) volatile unsigned char LED1_OFF;$/;"	v
+LED1_ON	../include/radar_rev1_regs.h	/^xdata _AT_(0x9000) volatile unsigned char LED1_ON;$/;"	v
+LED2_OFF	../include/radar_rev1_regs.h	/^xdata _AT_(0xA100) volatile unsigned char LED2_OFF;$/;"	v
+LED2_ON	../include/radar_rev1_regs.h	/^xdata _AT_(0xA000) volatile unsigned char LED2_ON;$/;"	v
+LED3_OFF	../include/radar_rev1_regs.h	/^xdata _AT_(0xB100) volatile unsigned char LED3_OFF;$/;"	v
+LED3_ON	../include/radar_rev1_regs.h	/^xdata _AT_(0xB000) volatile unsigned char LED3_ON;$/;"	v
+LJMP_OPCODE	../lib/isr.c	31;"	d	file:
+LSB	../lib/usb_common.c	49;"	d	file:
+MAX_EP0_PKTSIZE	../include/usrp_commands.h	25;"	d
+MICROFRAME	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE686) volatile BYTE MICROFRAME        ;  \/\/ Microframe count, 0-7$/;"	v
+MPAGE	../include/fx2regs.h	/^sfr at 0x92 MPAGE;$/;"	v
+MSB	../lib/usb_common.c	48;"	d	file:
+NAKIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE65A) volatile BYTE NAKIE             ;  \/\/ Endpoint Ping NAK interrupt Enable$/;"	v
+NAKIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE65B) volatile BYTE NAKIRQ            ;  \/\/ Endpoint Ping NAK interrupt Request$/;"	v
+NOP	../include/syncdelay.h	62;"	d
+OEA	../include/fx2regs.h	/^sfr at 0xB2 OEA;$/;"	v
+OEB	../include/fx2regs.h	/^sfr at 0xB3 OEB;$/;"	v
+OEC	../include/fx2regs.h	/^sfr at 0xB4 OEC;$/;"	v
+OED	../include/fx2regs.h	/^sfr at 0xB5 OED;$/;"	v
+OEE	../include/fx2regs.h	/^sfr at 0xB6 OEE;$/;"	v
+OUTPKTEND	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE649) volatile BYTE OUTPKTEND         ;  \/\/ Force OUT Packet End$/;"	v
+OV	../include/fx2regs.h	/^         sbit at 0xD0+2 OV;$/;"	v
+P	../include/fx2regs.h	/^         sbit at 0xD0+0 P;$/;"	v
+PCON	../include/fx2regs.h	/^sfr at 0x87 PCON;   \/*  PCON  *\/$/;"	v
+PI2C	../include/fx2regs.h	/^         sbit at 0xF8+1 PI2C;$/;"	v
+PINFLAGSAB	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE602) volatile BYTE PINFLAGSAB        ;  \/\/ FIFO FLAGA and FLAGB Assignments$/;"	v
+PINFLAGSCD	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE603) volatile BYTE PINFLAGSCD        ;  \/\/ FIFO FLAGC and FLAGD Assignments$/;"	v
+PORTACFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE670) volatile BYTE PORTACFG          ;  \/\/ I\/O PORTA Alternate Configuration$/;"	v
+PORTCCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE671) volatile BYTE PORTCCFG          ;  \/\/ I\/O PORTC Alternate Configuration$/;"	v
+PORTECFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE672) volatile BYTE PORTECFG          ;  \/\/ I\/O PORTE Alternate Configuration$/;"	v
+PS0	../include/fx2regs.h	/^         sbit at 0xB8+4 PS0;$/;"	v
+PS1	../include/fx2regs.h	/^         sbit at 0xB8+6 PS1;$/;"	v
+PSW	../include/fx2regs.h	/^sfr at 0xD0 PSW;$/;"	v
+PT0	../include/fx2regs.h	/^         sbit at 0xB8+1 PT0;$/;"	v
+PT1	../include/fx2regs.h	/^         sbit at 0xB8+3 PT1;$/;"	v
+PT2	../include/fx2regs.h	/^         sbit at 0xB8+5 PT2;$/;"	v
+PUSB	../include/fx2regs.h	/^         sbit at 0xF8+0 PUSB;$/;"	v
+PX0	../include/fx2regs.h	/^         sbit at 0xB8+0 PX0;$/;"	v
+PX1	../include/fx2regs.h	/^         sbit at 0xB8+2 PX1;$/;"	v
+RB8	../include/fx2regs.h	/^         sbit at 0x98+2 RB8;$/;"	v
+RB81	../include/fx2regs.h	/^         sbit at 0xC0+2 RB81;$/;"	v
+RCAP2H	../include/fx2regs.h	/^sfr at 0xCB RCAP2H;$/;"	v
+RCAP2L	../include/fx2regs.h	/^sfr at 0xCA RCAP2L;$/;"	v
+RCLK	../include/fx2regs.h	/^         sbit at 0xC8+5 RCLK;$/;"	v
+RELOAD_VALUE	../lib/timer.c	36;"	d	file:
+REN	../include/fx2regs.h	/^         sbit at 0x98+4 REN;$/;"	v
+REN1	../include/fx2regs.h	/^         sbit at 0xC0+4 REN1;$/;"	v
+RESI	../include/fx2regs.h	/^         sbit at 0xD8+4 RESI;$/;"	v
+RES_WAVEDATA_END	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE480) volatile BYTE RES_WAVEDATA_END  ;$/;"	v
+REVCTL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE60B) volatile BYTE REVCTL            ;  \/\/ Chip Revision Control$/;"	v
+REVID	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE60A) volatile BYTE REVID             ;  \/\/ Chip Revision$/;"	v
+RI	../include/fx2regs.h	/^         sbit at 0x98+0 RI;$/;"	v
+RI1	../include/fx2regs.h	/^         sbit at 0xC0+0 RI1;$/;"	v
+RQ_CLEAR_FEATURE	../include/usb_requests.h	52;"	d
+RQ_GET_CONFIG	../include/usb_requests.h	59;"	d
+RQ_GET_DESCR	../include/usb_requests.h	57;"	d
+RQ_GET_INTERFACE	../include/usb_requests.h	61;"	d
+RQ_GET_STATUS	../include/usb_requests.h	51;"	d
+RQ_RESERVED_2	../include/usb_requests.h	53;"	d
+RQ_RESERVED_4	../include/usb_requests.h	55;"	d
+RQ_SET_ADDRESS	../include/usb_requests.h	56;"	d
+RQ_SET_CONFIG	../include/usb_requests.h	60;"	d
+RQ_SET_DESCR	../include/usb_requests.h	58;"	d
+RQ_SET_FEATURE	../include/usb_requests.h	54;"	d
+RQ_SET_INTERFACE	../include/usb_requests.h	62;"	d
+RQ_SYNCH_FRAME	../include/usb_requests.h	63;"	d
+RS0	../include/fx2regs.h	/^         sbit at 0xD0+3 RS0;$/;"	v
+RS1	../include/fx2regs.h	/^         sbit at 0xD0+4 RS1;$/;"	v
+SBUF0	../include/fx2regs.h	/^sfr at 0x99 SBUF0;$/;"	v
+SBUF1	../include/fx2regs.h	/^sfr at 0xC1 SBUF1;$/;"	v
+SCON0	../include/fx2regs.h	/^sfr at 0x98 SCON0;$/;"	v
+SCON1	../include/fx2regs.h	/^sfr at 0xC0 SCON1;$/;"	v
+SEL	../include/fx2regs.h	/^         sbit at 0x86+0 SEL;$/;"	v
+SETUPDAT	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6B8) volatile BYTE SETUPDAT[8]       ;  \/\/ 8 bytes of SETUP data$/;"	v
+SLEEP_ADC0	../include/usrp_commands.h	73;"	d
+SLEEP_ADC1	../include/usrp_commands.h	74;"	d
+SLEEP_DAC0	../include/usrp_commands.h	75;"	d
+SLEEP_DAC1	../include/usrp_commands.h	76;"	d
+SM0	../include/fx2regs.h	/^         sbit at 0x98+7 SM0;$/;"	v
+SM01	../include/fx2regs.h	/^         sbit at 0xC0+7 SM01;$/;"	v
+SM1	../include/fx2regs.h	/^         sbit at 0x98+6 SM1;$/;"	v
+SM11	../include/fx2regs.h	/^         sbit at 0xC0+6 SM11;$/;"	v
+SM2	../include/fx2regs.h	/^         sbit at 0x98+5 SM2;$/;"	v
+SM21	../include/fx2regs.h	/^         sbit at 0xC0+5 SM21;$/;"	v
+SMOD1	../include/fx2regs.h	/^         sbit at 0xD8+7 SMOD1;$/;"	v
+SP	../include/fx2regs.h	/^sfr at 0x81 SP;$/;"	v
+SUDPTRCTL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6B5) volatile BYTE SUDPTRCTL         ;  \/\/ Setup Data Pointer Auto Mode$/;"	v
+SUDPTRH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6B3) volatile BYTE SUDPTRH           ;  \/\/ Setup Data Pointer high address byte$/;"	v
+SUDPTRL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6B4) volatile BYTE SUDPTRL           ;  \/\/ Setup Data Pointer low address byte$/;"	v
+SUSPEND	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE681) volatile BYTE SUSPEND           ;  \/\/ Put chip into suspend$/;"	v
+SV_I2C	../include/isr.h	57;"	d
+SV_INT_0	../include/isr.h	48;"	d
+SV_INT_1	../include/isr.h	50;"	d
+SV_INT_2	../include/isr.h	56;"	d
+SV_INT_4	../include/isr.h	58;"	d
+SV_INT_5	../include/isr.h	59;"	d
+SV_INT_6	../include/isr.h	60;"	d
+SV_MAX	../include/isr.h	63;"	d
+SV_MIN	../include/isr.h	62;"	d
+SV_RESUME	../include/isr.h	54;"	d
+SV_SERIAL_0	../include/isr.h	52;"	d
+SV_SERIAL_1	../include/isr.h	55;"	d
+SV_TIMER_0	../include/isr.h	49;"	d
+SV_TIMER_1	../include/isr.h	51;"	d
+SV_TIMER_2	../include/isr.h	53;"	d
+SYNCDELAY	../include/syncdelay.h	61;"	d
+T2CON	../include/fx2regs.h	/^sfr at 0xC8 T2CON;$/;"	v
+TB8	../include/fx2regs.h	/^         sbit at 0x98+3 TB8;$/;"	v
+TB81	../include/fx2regs.h	/^         sbit at 0xC0+3 TB81;$/;"	v
+TCLK	../include/fx2regs.h	/^         sbit at 0xC8+4 TCLK;$/;"	v
+TCON	../include/fx2regs.h	/^sfr at 0x88 TCON;$/;"	v
+TESTCFG	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6F9) volatile BYTE TESTCFG           ;  \/\/ Test configuration$/;"	v
+TF0	../include/fx2regs.h	/^         sbit at 0x88+5 TF0;$/;"	v
+TF1	../include/fx2regs.h	/^         sbit at 0x88+7 TF1;$/;"	v
+TF2	../include/fx2regs.h	/^         sbit at 0xC8+7 TF2;$/;"	v
+TH0	../include/fx2regs.h	/^sfr at 0x8C TH0;$/;"	v
+TH1	../include/fx2regs.h	/^sfr at 0x8D TH1;$/;"	v
+TH2	../include/fx2regs.h	/^sfr at 0xCD TH2;$/;"	v
+TI	../include/fx2regs.h	/^         sbit at 0x98+1 TI;$/;"	v
+TI1	../include/fx2regs.h	/^         sbit at 0xC0+1 TI1;$/;"	v
+TL0	../include/fx2regs.h	/^sfr at 0x8A TL0;$/;"	v
+TL1	../include/fx2regs.h	/^sfr at 0x8B TL1;$/;"	v
+TL2	../include/fx2regs.h	/^sfr at 0xCC TL2;$/;"	v
+TMOD	../include/fx2regs.h	/^sfr at 0x89 TMOD;$/;"	v
+TOGCTL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE683) volatile BYTE TOGCTL            ;  \/\/ Toggle Control$/;"	v
+TR0	../include/fx2regs.h	/^         sbit at 0x88+4 TR0;$/;"	v
+TR1	../include/fx2regs.h	/^         sbit at 0x88+6 TR1;$/;"	v
+TR2	../include/fx2regs.h	/^         sbit at 0xC8+2 TR2;$/;"	v
+TRUE	../include/usrp_common.h	62;"	d
+UART230	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE608) volatile BYTE UART230           ;  \/\/ 230 Kbaud clock for T0,T1,T2$/;"	v
+UDMACRCH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE67D) volatile BYTE UDMACRCH          ; \/\/CRC Upper byte$/;"	v
+UDMACRCL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE67E) volatile BYTE UDMACRCL          ; \/\/CRC Lower byte$/;"	v
+UDMACRCQUAL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE67F) volatile BYTE UDMACRCQUAL       ; \/\/UDMA In only, host terminated use only$/;"	v
+USBCS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE680) volatile BYTE USBCS             ;  \/\/ USB Control & Status$/;"	v
+USBDESCSEG	../src/Makefile	/^	$(CC) $(INCLUDES) --code-loc 0x0000 --code-size 0x1800 --xram-loc 0x1800 --xram-size 0x0800 -Wl '-b USBDESCSEG = 0xE000' -L ..\/lib libfx2.lib -o radar_firmware.ihx vectors.rel radar_main.rel usrp_common.rel init_gpif.rel radar_gpif2.rel usb_descriptors.rel _startup.rel$/;"	m
+USBERRIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE662) volatile BYTE USBERRIE          ;  \/\/ USB Error Interrupt Enables$/;"	v
+USBERRIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE663) volatile BYTE USBERRIRQ         ;  \/\/ USB Error Interrupt Requests$/;"	v
+USBFRAMEH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE684) volatile BYTE USBFRAMEH         ;  \/\/ USB Frame count H$/;"	v
+USBFRAMEL	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE685) volatile BYTE USBFRAMEL         ;  \/\/ USB Frame count L$/;"	v
+USBIE	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE65C) volatile BYTE USBIE             ;  \/\/ USB Int Enables$/;"	v
+USBIRQ	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE65D) volatile BYTE USBIRQ            ;  \/\/ USB Interrupt Requests$/;"	v
+USBTEST	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6FA) volatile BYTE USBTEST           ;  \/\/ USB Test Modes$/;"	v
+USRP_HASH_SLOT_0_ADDR	../include/usrp_commands.h	92;"	d
+USRP_HASH_SLOT_1_ADDR	../include/usrp_commands.h	93;"	d
+USRP_LED_REG	../include/radar_rev1_regs.h	74;"	d
+UV_EP0ACK	../include/isr.h	75;"	d
+UV_EP0IN	../include/isr.h	77;"	d
+UV_EP0OUT	../include/isr.h	78;"	d
+UV_EP0PINGNAK	../include/isr.h	87;"	d
+UV_EP1IN	../include/isr.h	79;"	d
+UV_EP1OUT	../include/isr.h	80;"	d
+UV_EP1PINGNAK	../include/isr.h	88;"	d
+UV_EP2	../include/isr.h	81;"	d
+UV_EP2ISOERR	../include/isr.h	97;"	d
+UV_EP2PINGNAK	../include/isr.h	89;"	d
+UV_EP4	../include/isr.h	82;"	d
+UV_EP4ISOERR	../include/isr.h	98;"	d
+UV_EP4PINGNAK	../include/isr.h	90;"	d
+UV_EP6	../include/isr.h	83;"	d
+UV_EP6ISOERR	../include/isr.h	99;"	d
+UV_EP6PINGNAK	../include/isr.h	91;"	d
+UV_EP8	../include/isr.h	84;"	d
+UV_EP8ISOERR	../include/isr.h	100;"	d
+UV_EP8PINGNAK	../include/isr.h	92;"	d
+UV_ERRLIMIT	../include/isr.h	93;"	d
+UV_HIGHSPEED	../include/isr.h	74;"	d
+UV_IBN	../include/isr.h	85;"	d
+UV_MAX	../include/isr.h	103;"	d
+UV_MIN	../include/isr.h	102;"	d
+UV_SOF	../include/isr.h	70;"	d
+UV_SPARE_1C	../include/isr.h	76;"	d
+UV_SPARE_44	../include/isr.h	86;"	d
+UV_SPARE_64	../include/isr.h	94;"	d
+UV_SPARE_68	../include/isr.h	95;"	d
+UV_SPARE_6C	../include/isr.h	96;"	d
+UV_SUDAV	../include/isr.h	69;"	d
+UV_SUSPEND	../include/isr.h	72;"	d
+UV_SUTOK	../include/isr.h	71;"	d
+UV_USBRESET	../include/isr.h	73;"	d
+VRQ_FPGA_LOAD	../include/usrp_commands.h	59;"	d
+VRQ_FPGA_SET_RESET	../include/usrp_commands.h	66;"	d
+VRQ_FPGA_SET_RX_ENABLE	../include/usrp_commands.h	68;"	d
+VRQ_FPGA_SET_RX_RESET	../include/usrp_commands.h	86;"	d
+VRQ_FPGA_SET_TX_ENABLE	../include/usrp_commands.h	67;"	d
+VRQ_FPGA_SET_TX_RESET	../include/usrp_commands.h	85;"	d
+VRQ_FPGA_WRITE_REG	../include/usrp_commands.h	65;"	d
+VRQ_GET_STATUS	../include/usrp_commands.h	44;"	d
+VRQ_I2C_READ	../include/usrp_commands.h	48;"	d
+VRQ_I2C_WRITE	../include/usrp_commands.h	78;"	d
+VRQ_SET_LED	../include/usrp_commands.h	57;"	d
+VRQ_SET_SLEEP_BITS	../include/usrp_commands.h	71;"	d
+VRQ_SPI_READ	../include/usrp_commands.h	50;"	d
+VRQ_SPI_WRITE	../include/usrp_commands.h	80;"	d
+VRT_VENDOR_IN	../include/usrp_commands.h	31;"	d
+VRT_VENDOR_OUT	../include/usrp_commands.h	32;"	d
+WAKEUPCS	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE682) volatile BYTE WAKEUPCS          ;  \/\/ Wakeup source and polarity$/;"	v
+WORD	../include/fx2regs.h	/^typedef unsigned short WORD;$/;"	t
+WaveData	../src/gpif.c	/^const char xdata WaveData[128] =     $/;"	v
+WaveData	../src/gpif2.c	/^const char xdata WaveData[128] =     $/;"	v
+WaveData	../src/radar_gpif.c	/^const char WaveData[128] =$/;"	v
+WaveData	../src/radar_gpif2.c	/^const char WaveData[128] =$/;"	v
+XAUTODAT1	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE67B) volatile BYTE XAUTODAT1         ;  \/\/ Autoptr1 MOVX access$/;"	v
+XAUTODAT2	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE67C) volatile BYTE XAUTODAT2         ;  \/\/ Autoptr2 MOVX access$/;"	v
+XGPIFSGLDATH	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6F0) volatile BYTE XGPIFSGLDATH      ;  \/\/ GPIF Data H (16-bit mode only)$/;"	v
+XGPIFSGLDATLNOX	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6F2) volatile BYTE XGPIFSGLDATLNOX   ;  \/\/ Read GPIF Data L, no transac trigger$/;"	v
+XGPIFSGLDATLX	../include/fx2regs.h	/^EXTERN xdata _AT_(0xE6F1) volatile BYTE XGPIFSGLDATLX     ;  \/\/ Read\/Write GPIF Data L & trigger transac$/;"	v
+_AC	../lib/fx2utils.asm	/^_AC	=	0x00d6$/;"	d
+_AC	../lib/isr.asm	/^_AC	=	0x00d6$/;"	d
+_AC	../lib/timer.asm	/^_AC	=	0x00d6$/;"	d
+_AC	../lib/usb_common.asm	/^_AC	=	0x00d6$/;"	d
+_AC	../src/init_gpif.asm	/^_AC	=	0x00d6$/;"	d
+_AC	../src/radar_main.asm	/^_AC	=	0x00d6$/;"	d
+_AC	../src/usrp_common.asm	/^_AC	=	0x00d6$/;"	d
+_ACC	../lib/fx2utils.asm	/^_ACC	=	0x00e0$/;"	d
+_ACC	../lib/isr.asm	/^_ACC	=	0x00e0$/;"	d
+_ACC	../lib/timer.asm	/^_ACC	=	0x00e0$/;"	d
+_ACC	../lib/usb_common.asm	/^_ACC	=	0x00e0$/;"	d
+_ACC	../src/init_gpif.asm	/^_ACC	=	0x00e0$/;"	d
+_ACC	../src/radar_main.asm	/^_ACC	=	0x00e0$/;"	d
+_ACC	../src/usrp_common.asm	/^_ACC	=	0x00e0$/;"	d
+_APTR1H	../lib/fx2utils.asm	/^_APTR1H	=	0x009a$/;"	d
+_APTR1H	../lib/isr.asm	/^_APTR1H	=	0x009a$/;"	d
+_APTR1H	../lib/timer.asm	/^_APTR1H	=	0x009a$/;"	d
+_APTR1H	../lib/usb_common.asm	/^_APTR1H	=	0x009a$/;"	d
+_APTR1H	../src/init_gpif.asm	/^_APTR1H	=	0x009a$/;"	d
+_APTR1H	../src/radar_main.asm	/^_APTR1H	=	0x009a$/;"	d
+_APTR1H	../src/usrp_common.asm	/^_APTR1H	=	0x009a$/;"	d
+_APTR1L	../lib/fx2utils.asm	/^_APTR1L	=	0x009b$/;"	d
+_APTR1L	../lib/isr.asm	/^_APTR1L	=	0x009b$/;"	d
+_APTR1L	../lib/timer.asm	/^_APTR1L	=	0x009b$/;"	d
+_APTR1L	../lib/usb_common.asm	/^_APTR1L	=	0x009b$/;"	d
+_APTR1L	../src/init_gpif.asm	/^_APTR1L	=	0x009b$/;"	d
+_APTR1L	../src/radar_main.asm	/^_APTR1L	=	0x009b$/;"	d
+_APTR1L	../src/usrp_common.asm	/^_APTR1L	=	0x009b$/;"	d
+_AT_	../include/fx2regs.h	306;"	d
+_AT_	../include/fx2regs.h	66;"	d
+_AT_	../include/fx2regs.h	69;"	d
+_AT_	../include/radar_rev1_regs.h	35;"	d
+_AT_	../include/radar_rev1_regs.h	38;"	d
+_AUTODAT1	../lib/fx2utils.asm	/^_AUTODAT1	=	0x009c$/;"	d
+_AUTODAT1	../lib/isr.asm	/^_AUTODAT1	=	0x009c$/;"	d
+_AUTODAT1	../lib/timer.asm	/^_AUTODAT1	=	0x009c$/;"	d
+_AUTODAT1	../lib/usb_common.asm	/^_AUTODAT1	=	0x009c$/;"	d
+_AUTODAT1	../src/init_gpif.asm	/^_AUTODAT1	=	0x009c$/;"	d
+_AUTODAT1	../src/radar_main.asm	/^_AUTODAT1	=	0x009c$/;"	d
+_AUTODAT1	../src/usrp_common.asm	/^_AUTODAT1	=	0x009c$/;"	d
+_AUTODAT2	../lib/fx2utils.asm	/^_AUTODAT2	=	0x009f$/;"	d
+_AUTODAT2	../lib/isr.asm	/^_AUTODAT2	=	0x009f$/;"	d
+_AUTODAT2	../lib/timer.asm	/^_AUTODAT2	=	0x009f$/;"	d
+_AUTODAT2	../lib/usb_common.asm	/^_AUTODAT2	=	0x009f$/;"	d
+_AUTODAT2	../src/init_gpif.asm	/^_AUTODAT2	=	0x009f$/;"	d
+_AUTODAT2	../src/radar_main.asm	/^_AUTODAT2	=	0x009f$/;"	d
+_AUTODAT2	../src/usrp_common.asm	/^_AUTODAT2	=	0x009f$/;"	d
+_AUTOPTRH2	../lib/fx2utils.asm	/^_AUTOPTRH2	=	0x009d$/;"	d
+_AUTOPTRH2	../lib/isr.asm	/^_AUTOPTRH2	=	0x009d$/;"	d
+_AUTOPTRH2	../lib/timer.asm	/^_AUTOPTRH2	=	0x009d$/;"	d
+_AUTOPTRH2	../lib/usb_common.asm	/^_AUTOPTRH2	=	0x009d$/;"	d
+_AUTOPTRH2	../src/init_gpif.asm	/^_AUTOPTRH2	=	0x009d$/;"	d
+_AUTOPTRH2	../src/radar_main.asm	/^_AUTOPTRH2	=	0x009d$/;"	d
+_AUTOPTRH2	../src/usrp_common.asm	/^_AUTOPTRH2	=	0x009d$/;"	d
+_AUTOPTRL2	../lib/fx2utils.asm	/^_AUTOPTRL2	=	0x009e$/;"	d
+_AUTOPTRL2	../lib/isr.asm	/^_AUTOPTRL2	=	0x009e$/;"	d
+_AUTOPTRL2	../lib/timer.asm	/^_AUTOPTRL2	=	0x009e$/;"	d
+_AUTOPTRL2	../lib/usb_common.asm	/^_AUTOPTRL2	=	0x009e$/;"	d
+_AUTOPTRL2	../src/init_gpif.asm	/^_AUTOPTRL2	=	0x009e$/;"	d
+_AUTOPTRL2	../src/radar_main.asm	/^_AUTOPTRL2	=	0x009e$/;"	d
+_AUTOPTRL2	../src/usrp_common.asm	/^_AUTOPTRL2	=	0x009e$/;"	d
+_AUTOPTRSETUP	../lib/fx2utils.asm	/^_AUTOPTRSETUP	=	0x00af$/;"	d
+_AUTOPTRSETUP	../lib/isr.asm	/^_AUTOPTRSETUP	=	0x00af$/;"	d
+_AUTOPTRSETUP	../lib/timer.asm	/^_AUTOPTRSETUP	=	0x00af$/;"	d
+_AUTOPTRSETUP	../lib/usb_common.asm	/^_AUTOPTRSETUP	=	0x00af$/;"	d
+_AUTOPTRSETUP	../src/init_gpif.asm	/^_AUTOPTRSETUP	=	0x00af$/;"	d
+_AUTOPTRSETUP	../src/radar_main.asm	/^_AUTOPTRSETUP	=	0x00af$/;"	d
+_AUTOPTRSETUP	../src/usrp_common.asm	/^_AUTOPTRSETUP	=	0x00af$/;"	d
+_B	../lib/fx2utils.asm	/^_B	=	0x00f0$/;"	d
+_B	../lib/isr.asm	/^_B	=	0x00f0$/;"	d
+_B	../lib/timer.asm	/^_B	=	0x00f0$/;"	d
+_B	../lib/usb_common.asm	/^_B	=	0x00f0$/;"	d
+_B	../src/init_gpif.asm	/^_B	=	0x00f0$/;"	d
+_B	../src/radar_main.asm	/^_B	=	0x00f0$/;"	d
+_B	../src/usrp_common.asm	/^_B	=	0x00f0$/;"	d
+_BPADDRH	../lib/fx2utils.asm	/^_BPADDRH	=	0xe606$/;"	d
+_BPADDRH	../lib/isr.asm	/^_BPADDRH	=	0xe606$/;"	d
+_BPADDRH	../lib/timer.asm	/^_BPADDRH	=	0xe606$/;"	d
+_BPADDRH	../lib/usb_common.asm	/^_BPADDRH	=	0xe606$/;"	d
+_BPADDRH	../src/init_gpif.asm	/^_BPADDRH	=	0xe606$/;"	d
+_BPADDRH	../src/radar_main.asm	/^_BPADDRH	=	0xe606$/;"	d
+_BPADDRH	../src/usrp_common.asm	/^_BPADDRH	=	0xe606$/;"	d
+_BPADDRL	../lib/fx2utils.asm	/^_BPADDRL	=	0xe607$/;"	d
+_BPADDRL	../lib/isr.asm	/^_BPADDRL	=	0xe607$/;"	d
+_BPADDRL	../lib/timer.asm	/^_BPADDRL	=	0xe607$/;"	d
+_BPADDRL	../lib/usb_common.asm	/^_BPADDRL	=	0xe607$/;"	d
+_BPADDRL	../src/init_gpif.asm	/^_BPADDRL	=	0xe607$/;"	d
+_BPADDRL	../src/radar_main.asm	/^_BPADDRL	=	0xe607$/;"	d
+_BPADDRL	../src/usrp_common.asm	/^_BPADDRL	=	0xe607$/;"	d
+_BREAKPT	../lib/fx2utils.asm	/^_BREAKPT	=	0xe605$/;"	d
+_BREAKPT	../lib/isr.asm	/^_BREAKPT	=	0xe605$/;"	d
+_BREAKPT	../lib/timer.asm	/^_BREAKPT	=	0xe605$/;"	d
+_BREAKPT	../lib/usb_common.asm	/^_BREAKPT	=	0xe605$/;"	d
+_BREAKPT	../src/init_gpif.asm	/^_BREAKPT	=	0xe605$/;"	d
+_BREAKPT	../src/radar_main.asm	/^_BREAKPT	=	0xe605$/;"	d
+_BREAKPT	../src/usrp_common.asm	/^_BREAKPT	=	0xe605$/;"	d
+_CKCON	../lib/fx2utils.asm	/^_CKCON	=	0x008e$/;"	d
+_CKCON	../lib/isr.asm	/^_CKCON	=	0x008e$/;"	d
+_CKCON	../lib/timer.asm	/^_CKCON	=	0x008e$/;"	d
+_CKCON	../lib/usb_common.asm	/^_CKCON	=	0x008e$/;"	d
+_CKCON	../src/init_gpif.asm	/^_CKCON	=	0x008e$/;"	d
+_CKCON	../src/radar_main.asm	/^_CKCON	=	0x008e$/;"	d
+_CKCON	../src/usrp_common.asm	/^_CKCON	=	0x008e$/;"	d
+_CLRERRCNT	../lib/fx2utils.asm	/^_CLRERRCNT	=	0xe665$/;"	d
+_CLRERRCNT	../lib/isr.asm	/^_CLRERRCNT	=	0xe665$/;"	d
+_CLRERRCNT	../lib/timer.asm	/^_CLRERRCNT	=	0xe665$/;"	d
+_CLRERRCNT	../lib/usb_common.asm	/^_CLRERRCNT	=	0xe665$/;"	d
+_CLRERRCNT	../src/init_gpif.asm	/^_CLRERRCNT	=	0xe665$/;"	d
+_CLRERRCNT	../src/radar_main.asm	/^_CLRERRCNT	=	0xe665$/;"	d
+_CLRERRCNT	../src/usrp_common.asm	/^_CLRERRCNT	=	0xe665$/;"	d
+_CPUCS	../lib/fx2utils.asm	/^_CPUCS	=	0xe600$/;"	d
+_CPUCS	../lib/isr.asm	/^_CPUCS	=	0xe600$/;"	d
+_CPUCS	../lib/timer.asm	/^_CPUCS	=	0xe600$/;"	d
+_CPUCS	../lib/usb_common.asm	/^_CPUCS	=	0xe600$/;"	d
+_CPUCS	../src/init_gpif.asm	/^_CPUCS	=	0xe600$/;"	d
+_CPUCS	../src/radar_main.asm	/^_CPUCS	=	0xe600$/;"	d
+_CPUCS	../src/usrp_common.asm	/^_CPUCS	=	0xe600$/;"	d
+_CP_RL2	../lib/fx2utils.asm	/^_CP_RL2	=	0x00c8$/;"	d
+_CP_RL2	../lib/isr.asm	/^_CP_RL2	=	0x00c8$/;"	d
+_CP_RL2	../lib/timer.asm	/^_CP_RL2	=	0x00c8$/;"	d
+_CP_RL2	../lib/usb_common.asm	/^_CP_RL2	=	0x00c8$/;"	d
+_CP_RL2	../src/init_gpif.asm	/^_CP_RL2	=	0x00c8$/;"	d
+_CP_RL2	../src/radar_main.asm	/^_CP_RL2	=	0x00c8$/;"	d
+_CP_RL2	../src/usrp_common.asm	/^_CP_RL2	=	0x00c8$/;"	d
+_CT1	../lib/fx2utils.asm	/^_CT1	=	0xe6fb$/;"	d
+_CT1	../lib/isr.asm	/^_CT1	=	0xe6fb$/;"	d
+_CT1	../lib/timer.asm	/^_CT1	=	0xe6fb$/;"	d
+_CT1	../lib/usb_common.asm	/^_CT1	=	0xe6fb$/;"	d
+_CT1	../src/init_gpif.asm	/^_CT1	=	0xe6fb$/;"	d
+_CT1	../src/radar_main.asm	/^_CT1	=	0xe6fb$/;"	d
+_CT1	../src/usrp_common.asm	/^_CT1	=	0xe6fb$/;"	d
+_CT2	../lib/fx2utils.asm	/^_CT2	=	0xe6fc$/;"	d
+_CT2	../lib/isr.asm	/^_CT2	=	0xe6fc$/;"	d
+_CT2	../lib/timer.asm	/^_CT2	=	0xe6fc$/;"	d
+_CT2	../lib/usb_common.asm	/^_CT2	=	0xe6fc$/;"	d
+_CT2	../src/init_gpif.asm	/^_CT2	=	0xe6fc$/;"	d
+_CT2	../src/radar_main.asm	/^_CT2	=	0xe6fc$/;"	d
+_CT2	../src/usrp_common.asm	/^_CT2	=	0xe6fc$/;"	d
+_CT3	../lib/fx2utils.asm	/^_CT3	=	0xe6fd$/;"	d
+_CT3	../lib/isr.asm	/^_CT3	=	0xe6fd$/;"	d
+_CT3	../lib/timer.asm	/^_CT3	=	0xe6fd$/;"	d
+_CT3	../lib/usb_common.asm	/^_CT3	=	0xe6fd$/;"	d
+_CT3	../src/init_gpif.asm	/^_CT3	=	0xe6fd$/;"	d
+_CT3	../src/radar_main.asm	/^_CT3	=	0xe6fd$/;"	d
+_CT3	../src/usrp_common.asm	/^_CT3	=	0xe6fd$/;"	d
+_CT4	../lib/fx2utils.asm	/^_CT4	=	0xe6fe$/;"	d
+_CT4	../lib/isr.asm	/^_CT4	=	0xe6fe$/;"	d
+_CT4	../lib/timer.asm	/^_CT4	=	0xe6fe$/;"	d
+_CT4	../lib/usb_common.asm	/^_CT4	=	0xe6fe$/;"	d
+_CT4	../src/init_gpif.asm	/^_CT4	=	0xe6fe$/;"	d
+_CT4	../src/radar_main.asm	/^_CT4	=	0xe6fe$/;"	d
+_CT4	../src/usrp_common.asm	/^_CT4	=	0xe6fe$/;"	d
+_CY	../lib/fx2utils.asm	/^_CY	=	0x00d7$/;"	d
+_CY	../lib/isr.asm	/^_CY	=	0x00d7$/;"	d
+_CY	../lib/timer.asm	/^_CY	=	0x00d7$/;"	d
+_CY	../lib/usb_common.asm	/^_CY	=	0x00d7$/;"	d
+_CY	../src/init_gpif.asm	/^_CY	=	0x00d7$/;"	d
+_CY	../src/radar_main.asm	/^_CY	=	0x00d7$/;"	d
+_CY	../src/usrp_common.asm	/^_CY	=	0x00d7$/;"	d
+_C_T2	../lib/fx2utils.asm	/^_C_T2	=	0x00c9$/;"	d
+_C_T2	../lib/isr.asm	/^_C_T2	=	0x00c9$/;"	d
+_C_T2	../lib/timer.asm	/^_C_T2	=	0x00c9$/;"	d
+_C_T2	../lib/usb_common.asm	/^_C_T2	=	0x00c9$/;"	d
+_C_T2	../src/init_gpif.asm	/^_C_T2	=	0x00c9$/;"	d
+_C_T2	../src/radar_main.asm	/^_C_T2	=	0x00c9$/;"	d
+_C_T2	../src/usrp_common.asm	/^_C_T2	=	0x00c9$/;"	d
+_DBUG	../lib/fx2utils.asm	/^_DBUG	=	0xe6f8$/;"	d
+_DBUG	../lib/isr.asm	/^_DBUG	=	0xe6f8$/;"	d
+_DBUG	../lib/timer.asm	/^_DBUG	=	0xe6f8$/;"	d
+_DBUG	../lib/usb_common.asm	/^_DBUG	=	0xe6f8$/;"	d
+_DBUG	../src/init_gpif.asm	/^_DBUG	=	0xe6f8$/;"	d
+_DBUG	../src/radar_main.asm	/^_DBUG	=	0xe6f8$/;"	d
+_DBUG	../src/usrp_common.asm	/^_DBUG	=	0xe6f8$/;"	d
+_DELAY_H_	../include/delay.h	24;"	d
+_DPH	../lib/fx2utils.asm	/^_DPH	=	0x0083$/;"	d
+_DPH	../lib/isr.asm	/^_DPH	=	0x0083$/;"	d
+_DPH	../lib/timer.asm	/^_DPH	=	0x0083$/;"	d
+_DPH	../lib/usb_common.asm	/^_DPH	=	0x0083$/;"	d
+_DPH	../src/init_gpif.asm	/^_DPH	=	0x0083$/;"	d
+_DPH	../src/radar_main.asm	/^_DPH	=	0x0083$/;"	d
+_DPH	../src/usrp_common.asm	/^_DPH	=	0x0083$/;"	d
+_DPH1	../lib/fx2utils.asm	/^_DPH1	=	0x0085$/;"	d
+_DPH1	../lib/isr.asm	/^_DPH1	=	0x0085$/;"	d
+_DPH1	../lib/timer.asm	/^_DPH1	=	0x0085$/;"	d
+_DPH1	../lib/usb_common.asm	/^_DPH1	=	0x0085$/;"	d
+_DPH1	../src/init_gpif.asm	/^_DPH1	=	0x0085$/;"	d
+_DPH1	../src/radar_main.asm	/^_DPH1	=	0x0085$/;"	d
+_DPH1	../src/usrp_common.asm	/^_DPH1	=	0x0085$/;"	d
+_DPL	../lib/fx2utils.asm	/^_DPL	=	0x0082$/;"	d
+_DPL	../lib/isr.asm	/^_DPL	=	0x0082$/;"	d
+_DPL	../lib/timer.asm	/^_DPL	=	0x0082$/;"	d
+_DPL	../lib/usb_common.asm	/^_DPL	=	0x0082$/;"	d
+_DPL	../src/init_gpif.asm	/^_DPL	=	0x0082$/;"	d
+_DPL	../src/radar_main.asm	/^_DPL	=	0x0082$/;"	d
+_DPL	../src/usrp_common.asm	/^_DPL	=	0x0082$/;"	d
+_DPL1	../lib/fx2utils.asm	/^_DPL1	=	0x0084$/;"	d
+_DPL1	../lib/isr.asm	/^_DPL1	=	0x0084$/;"	d
+_DPL1	../lib/timer.asm	/^_DPL1	=	0x0084$/;"	d
+_DPL1	../lib/usb_common.asm	/^_DPL1	=	0x0084$/;"	d
+_DPL1	../src/init_gpif.asm	/^_DPL1	=	0x0084$/;"	d
+_DPL1	../src/radar_main.asm	/^_DPL1	=	0x0084$/;"	d
+_DPL1	../src/usrp_common.asm	/^_DPL1	=	0x0084$/;"	d
+_DPS	../lib/fx2utils.asm	/^_DPS	=	0x0086$/;"	d
+_DPS	../lib/isr.asm	/^_DPS	=	0x0086$/;"	d
+_DPS	../lib/timer.asm	/^_DPS	=	0x0086$/;"	d
+_DPS	../lib/usb_common.asm	/^_DPS	=	0x0086$/;"	d
+_DPS	../src/init_gpif.asm	/^_DPS	=	0x0086$/;"	d
+_DPS	../src/radar_main.asm	/^_DPS	=	0x0086$/;"	d
+_DPS	../src/usrp_common.asm	/^_DPS	=	0x0086$/;"	d
+_EA	../lib/fx2utils.asm	/^_EA	=	0x00af$/;"	d
+_EA	../lib/isr.asm	/^_EA	=	0x00af$/;"	d
+_EA	../lib/timer.asm	/^_EA	=	0x00af$/;"	d
+_EA	../lib/usb_common.asm	/^_EA	=	0x00af$/;"	d
+_EA	../src/init_gpif.asm	/^_EA	=	0x00af$/;"	d
+_EA	../src/radar_main.asm	/^_EA	=	0x00af$/;"	d
+_EA	../src/usrp_common.asm	/^_EA	=	0x00af$/;"	d
+_EI2C	../lib/fx2utils.asm	/^_EI2C	=	0x00e9$/;"	d
+_EI2C	../lib/isr.asm	/^_EI2C	=	0x00e9$/;"	d
+_EI2C	../lib/timer.asm	/^_EI2C	=	0x00e9$/;"	d
+_EI2C	../lib/usb_common.asm	/^_EI2C	=	0x00e9$/;"	d
+_EI2C	../src/init_gpif.asm	/^_EI2C	=	0x00e9$/;"	d
+_EI2C	../src/radar_main.asm	/^_EI2C	=	0x00e9$/;"	d
+_EI2C	../src/usrp_common.asm	/^_EI2C	=	0x00e9$/;"	d
+_EICON	../lib/fx2utils.asm	/^_EICON	=	0x00d8$/;"	d
+_EICON	../lib/isr.asm	/^_EICON	=	0x00d8$/;"	d
+_EICON	../lib/timer.asm	/^_EICON	=	0x00d8$/;"	d
+_EICON	../lib/usb_common.asm	/^_EICON	=	0x00d8$/;"	d
+_EICON	../src/init_gpif.asm	/^_EICON	=	0x00d8$/;"	d
+_EICON	../src/radar_main.asm	/^_EICON	=	0x00d8$/;"	d
+_EICON	../src/usrp_common.asm	/^_EICON	=	0x00d8$/;"	d
+_EIE	../lib/fx2utils.asm	/^_EIE	=	0x00e8$/;"	d
+_EIE	../lib/isr.asm	/^_EIE	=	0x00e8$/;"	d
+_EIE	../lib/timer.asm	/^_EIE	=	0x00e8$/;"	d
+_EIE	../lib/usb_common.asm	/^_EIE	=	0x00e8$/;"	d
+_EIE	../src/init_gpif.asm	/^_EIE	=	0x00e8$/;"	d
+_EIE	../src/radar_main.asm	/^_EIE	=	0x00e8$/;"	d
+_EIE	../src/usrp_common.asm	/^_EIE	=	0x00e8$/;"	d
+_EIEX4	../lib/fx2utils.asm	/^_EIEX4	=	0x00ea$/;"	d
+_EIEX4	../lib/isr.asm	/^_EIEX4	=	0x00ea$/;"	d
+_EIEX4	../lib/timer.asm	/^_EIEX4	=	0x00ea$/;"	d
+_EIEX4	../lib/usb_common.asm	/^_EIEX4	=	0x00ea$/;"	d
+_EIEX4	../src/init_gpif.asm	/^_EIEX4	=	0x00ea$/;"	d
+_EIEX4	../src/radar_main.asm	/^_EIEX4	=	0x00ea$/;"	d
+_EIEX4	../src/usrp_common.asm	/^_EIEX4	=	0x00ea$/;"	d
+_EIEX5	../lib/fx2utils.asm	/^_EIEX5	=	0x00eb$/;"	d
+_EIEX5	../lib/isr.asm	/^_EIEX5	=	0x00eb$/;"	d
+_EIEX5	../lib/timer.asm	/^_EIEX5	=	0x00eb$/;"	d
+_EIEX5	../lib/usb_common.asm	/^_EIEX5	=	0x00eb$/;"	d
+_EIEX5	../src/init_gpif.asm	/^_EIEX5	=	0x00eb$/;"	d
+_EIEX5	../src/radar_main.asm	/^_EIEX5	=	0x00eb$/;"	d
+_EIEX5	../src/usrp_common.asm	/^_EIEX5	=	0x00eb$/;"	d
+_EIEX6	../lib/fx2utils.asm	/^_EIEX6	=	0x00ec$/;"	d
+_EIEX6	../lib/isr.asm	/^_EIEX6	=	0x00ec$/;"	d
+_EIEX6	../lib/timer.asm	/^_EIEX6	=	0x00ec$/;"	d
+_EIEX6	../lib/usb_common.asm	/^_EIEX6	=	0x00ec$/;"	d
+_EIEX6	../src/init_gpif.asm	/^_EIEX6	=	0x00ec$/;"	d
+_EIEX6	../src/radar_main.asm	/^_EIEX6	=	0x00ec$/;"	d
+_EIEX6	../src/usrp_common.asm	/^_EIEX6	=	0x00ec$/;"	d
+_EIP	../lib/fx2utils.asm	/^_EIP	=	0x00f8$/;"	d
+_EIP	../lib/isr.asm	/^_EIP	=	0x00f8$/;"	d
+_EIP	../lib/timer.asm	/^_EIP	=	0x00f8$/;"	d
+_EIP	../lib/usb_common.asm	/^_EIP	=	0x00f8$/;"	d
+_EIP	../src/init_gpif.asm	/^_EIP	=	0x00f8$/;"	d
+_EIP	../src/radar_main.asm	/^_EIP	=	0x00f8$/;"	d
+_EIP	../src/usrp_common.asm	/^_EIP	=	0x00f8$/;"	d
+_EIPX4	../lib/fx2utils.asm	/^_EIPX4	=	0x00fa$/;"	d
+_EIPX4	../lib/isr.asm	/^_EIPX4	=	0x00fa$/;"	d
+_EIPX4	../lib/timer.asm	/^_EIPX4	=	0x00fa$/;"	d
+_EIPX4	../lib/usb_common.asm	/^_EIPX4	=	0x00fa$/;"	d
+_EIPX4	../src/init_gpif.asm	/^_EIPX4	=	0x00fa$/;"	d
+_EIPX4	../src/radar_main.asm	/^_EIPX4	=	0x00fa$/;"	d
+_EIPX4	../src/usrp_common.asm	/^_EIPX4	=	0x00fa$/;"	d
+_EIPX5	../lib/fx2utils.asm	/^_EIPX5	=	0x00fb$/;"	d
+_EIPX5	../lib/isr.asm	/^_EIPX5	=	0x00fb$/;"	d
+_EIPX5	../lib/timer.asm	/^_EIPX5	=	0x00fb$/;"	d
+_EIPX5	../lib/usb_common.asm	/^_EIPX5	=	0x00fb$/;"	d
+_EIPX5	../src/init_gpif.asm	/^_EIPX5	=	0x00fb$/;"	d
+_EIPX5	../src/radar_main.asm	/^_EIPX5	=	0x00fb$/;"	d
+_EIPX5	../src/usrp_common.asm	/^_EIPX5	=	0x00fb$/;"	d
+_EIPX6	../lib/fx2utils.asm	/^_EIPX6	=	0x00fc$/;"	d
+_EIPX6	../lib/isr.asm	/^_EIPX6	=	0x00fc$/;"	d
+_EIPX6	../lib/timer.asm	/^_EIPX6	=	0x00fc$/;"	d
+_EIPX6	../lib/usb_common.asm	/^_EIPX6	=	0x00fc$/;"	d
+_EIPX6	../src/init_gpif.asm	/^_EIPX6	=	0x00fc$/;"	d
+_EIPX6	../src/radar_main.asm	/^_EIPX6	=	0x00fc$/;"	d
+_EIPX6	../src/usrp_common.asm	/^_EIPX6	=	0x00fc$/;"	d
+_EIUSB	../lib/fx2utils.asm	/^_EIUSB	=	0x00e8$/;"	d
+_EIUSB	../lib/isr.asm	/^_EIUSB	=	0x00e8$/;"	d
+_EIUSB	../lib/timer.asm	/^_EIUSB	=	0x00e8$/;"	d
+_EIUSB	../lib/usb_common.asm	/^_EIUSB	=	0x00e8$/;"	d
+_EIUSB	../src/init_gpif.asm	/^_EIUSB	=	0x00e8$/;"	d
+_EIUSB	../src/radar_main.asm	/^_EIUSB	=	0x00e8$/;"	d
+_EIUSB	../src/usrp_common.asm	/^_EIUSB	=	0x00e8$/;"	d
+_EP01STAT	../lib/fx2utils.asm	/^_EP01STAT	=	0x00ba$/;"	d
+_EP01STAT	../lib/isr.asm	/^_EP01STAT	=	0x00ba$/;"	d
+_EP01STAT	../lib/timer.asm	/^_EP01STAT	=	0x00ba$/;"	d
+_EP01STAT	../lib/usb_common.asm	/^_EP01STAT	=	0x00ba$/;"	d
+_EP01STAT	../src/init_gpif.asm	/^_EP01STAT	=	0x00ba$/;"	d
+_EP01STAT	../src/radar_main.asm	/^_EP01STAT	=	0x00ba$/;"	d
+_EP01STAT	../src/usrp_common.asm	/^_EP01STAT	=	0x00ba$/;"	d
+_EP0BCH	../lib/fx2utils.asm	/^_EP0BCH	=	0xe68a$/;"	d
+_EP0BCH	../lib/isr.asm	/^_EP0BCH	=	0xe68a$/;"	d
+_EP0BCH	../lib/timer.asm	/^_EP0BCH	=	0xe68a$/;"	d
+_EP0BCH	../lib/usb_common.asm	/^_EP0BCH	=	0xe68a$/;"	d
+_EP0BCH	../src/init_gpif.asm	/^_EP0BCH	=	0xe68a$/;"	d
+_EP0BCH	../src/radar_main.asm	/^_EP0BCH	=	0xe68a$/;"	d
+_EP0BCH	../src/usrp_common.asm	/^_EP0BCH	=	0xe68a$/;"	d
+_EP0BCL	../lib/fx2utils.asm	/^_EP0BCL	=	0xe68b$/;"	d
+_EP0BCL	../lib/isr.asm	/^_EP0BCL	=	0xe68b$/;"	d
+_EP0BCL	../lib/timer.asm	/^_EP0BCL	=	0xe68b$/;"	d
+_EP0BCL	../lib/usb_common.asm	/^_EP0BCL	=	0xe68b$/;"	d
+_EP0BCL	../src/init_gpif.asm	/^_EP0BCL	=	0xe68b$/;"	d
+_EP0BCL	../src/radar_main.asm	/^_EP0BCL	=	0xe68b$/;"	d
+_EP0BCL	../src/usrp_common.asm	/^_EP0BCL	=	0xe68b$/;"	d
+_EP0BUF	../lib/fx2utils.asm	/^_EP0BUF	=	0xe740$/;"	d
+_EP0BUF	../lib/isr.asm	/^_EP0BUF	=	0xe740$/;"	d
+_EP0BUF	../lib/timer.asm	/^_EP0BUF	=	0xe740$/;"	d
+_EP0BUF	../lib/usb_common.asm	/^_EP0BUF	=	0xe740$/;"	d
+_EP0BUF	../src/init_gpif.asm	/^_EP0BUF	=	0xe740$/;"	d
+_EP0BUF	../src/radar_main.asm	/^_EP0BUF	=	0xe740$/;"	d
+_EP0BUF	../src/usrp_common.asm	/^_EP0BUF	=	0xe740$/;"	d
+_EP0CS	../lib/fx2utils.asm	/^_EP0CS	=	0xe6a0$/;"	d
+_EP0CS	../lib/isr.asm	/^_EP0CS	=	0xe6a0$/;"	d
+_EP0CS	../lib/timer.asm	/^_EP0CS	=	0xe6a0$/;"	d
+_EP0CS	../lib/usb_common.asm	/^_EP0CS	=	0xe6a0$/;"	d
+_EP0CS	../src/init_gpif.asm	/^_EP0CS	=	0xe6a0$/;"	d
+_EP0CS	../src/radar_main.asm	/^_EP0CS	=	0xe6a0$/;"	d
+_EP0CS	../src/usrp_common.asm	/^_EP0CS	=	0xe6a0$/;"	d
+_EP1INBC	../lib/fx2utils.asm	/^_EP1INBC	=	0xe68f$/;"	d
+_EP1INBC	../lib/isr.asm	/^_EP1INBC	=	0xe68f$/;"	d
+_EP1INBC	../lib/timer.asm	/^_EP1INBC	=	0xe68f$/;"	d
+_EP1INBC	../lib/usb_common.asm	/^_EP1INBC	=	0xe68f$/;"	d
+_EP1INBC	../src/init_gpif.asm	/^_EP1INBC	=	0xe68f$/;"	d
+_EP1INBC	../src/radar_main.asm	/^_EP1INBC	=	0xe68f$/;"	d
+_EP1INBC	../src/usrp_common.asm	/^_EP1INBC	=	0xe68f$/;"	d
+_EP1INBUF	../lib/fx2utils.asm	/^_EP1INBUF	=	0xe7c0$/;"	d
+_EP1INBUF	../lib/isr.asm	/^_EP1INBUF	=	0xe7c0$/;"	d
+_EP1INBUF	../lib/timer.asm	/^_EP1INBUF	=	0xe7c0$/;"	d
+_EP1INBUF	../lib/usb_common.asm	/^_EP1INBUF	=	0xe7c0$/;"	d
+_EP1INBUF	../src/init_gpif.asm	/^_EP1INBUF	=	0xe7c0$/;"	d
+_EP1INBUF	../src/radar_main.asm	/^_EP1INBUF	=	0xe7c0$/;"	d
+_EP1INBUF	../src/usrp_common.asm	/^_EP1INBUF	=	0xe7c0$/;"	d
+_EP1INCFG	../lib/fx2utils.asm	/^_EP1INCFG	=	0xe611$/;"	d
+_EP1INCFG	../lib/isr.asm	/^_EP1INCFG	=	0xe611$/;"	d
+_EP1INCFG	../lib/timer.asm	/^_EP1INCFG	=	0xe611$/;"	d
+_EP1INCFG	../lib/usb_common.asm	/^_EP1INCFG	=	0xe611$/;"	d
+_EP1INCFG	../src/init_gpif.asm	/^_EP1INCFG	=	0xe611$/;"	d
+_EP1INCFG	../src/radar_main.asm	/^_EP1INCFG	=	0xe611$/;"	d
+_EP1INCFG	../src/usrp_common.asm	/^_EP1INCFG	=	0xe611$/;"	d
+_EP1INCS	../lib/fx2utils.asm	/^_EP1INCS	=	0xe6a2$/;"	d
+_EP1INCS	../lib/isr.asm	/^_EP1INCS	=	0xe6a2$/;"	d
+_EP1INCS	../lib/timer.asm	/^_EP1INCS	=	0xe6a2$/;"	d
+_EP1INCS	../lib/usb_common.asm	/^_EP1INCS	=	0xe6a2$/;"	d
+_EP1INCS	../src/init_gpif.asm	/^_EP1INCS	=	0xe6a2$/;"	d
+_EP1INCS	../src/radar_main.asm	/^_EP1INCS	=	0xe6a2$/;"	d
+_EP1INCS	../src/usrp_common.asm	/^_EP1INCS	=	0xe6a2$/;"	d
+_EP1OUTBC	../lib/fx2utils.asm	/^_EP1OUTBC	=	0xe68d$/;"	d
+_EP1OUTBC	../lib/isr.asm	/^_EP1OUTBC	=	0xe68d$/;"	d
+_EP1OUTBC	../lib/timer.asm	/^_EP1OUTBC	=	0xe68d$/;"	d
+_EP1OUTBC	../lib/usb_common.asm	/^_EP1OUTBC	=	0xe68d$/;"	d
+_EP1OUTBC	../src/init_gpif.asm	/^_EP1OUTBC	=	0xe68d$/;"	d
+_EP1OUTBC	../src/radar_main.asm	/^_EP1OUTBC	=	0xe68d$/;"	d
+_EP1OUTBC	../src/usrp_common.asm	/^_EP1OUTBC	=	0xe68d$/;"	d
+_EP1OUTBUF	../lib/fx2utils.asm	/^_EP1OUTBUF	=	0xe780$/;"	d
+_EP1OUTBUF	../lib/isr.asm	/^_EP1OUTBUF	=	0xe780$/;"	d
+_EP1OUTBUF	../lib/timer.asm	/^_EP1OUTBUF	=	0xe780$/;"	d
+_EP1OUTBUF	../lib/usb_common.asm	/^_EP1OUTBUF	=	0xe780$/;"	d
+_EP1OUTBUF	../src/init_gpif.asm	/^_EP1OUTBUF	=	0xe780$/;"	d
+_EP1OUTBUF	../src/radar_main.asm	/^_EP1OUTBUF	=	0xe780$/;"	d
+_EP1OUTBUF	../src/usrp_common.asm	/^_EP1OUTBUF	=	0xe780$/;"	d
+_EP1OUTCFG	../lib/fx2utils.asm	/^_EP1OUTCFG	=	0xe610$/;"	d
+_EP1OUTCFG	../lib/isr.asm	/^_EP1OUTCFG	=	0xe610$/;"	d
+_EP1OUTCFG	../lib/timer.asm	/^_EP1OUTCFG	=	0xe610$/;"	d
+_EP1OUTCFG	../lib/usb_common.asm	/^_EP1OUTCFG	=	0xe610$/;"	d
+_EP1OUTCFG	../src/init_gpif.asm	/^_EP1OUTCFG	=	0xe610$/;"	d
+_EP1OUTCFG	../src/radar_main.asm	/^_EP1OUTCFG	=	0xe610$/;"	d
+_EP1OUTCFG	../src/usrp_common.asm	/^_EP1OUTCFG	=	0xe610$/;"	d
+_EP1OUTCS	../lib/fx2utils.asm	/^_EP1OUTCS	=	0xe6a1$/;"	d
+_EP1OUTCS	../lib/isr.asm	/^_EP1OUTCS	=	0xe6a1$/;"	d
+_EP1OUTCS	../lib/timer.asm	/^_EP1OUTCS	=	0xe6a1$/;"	d
+_EP1OUTCS	../lib/usb_common.asm	/^_EP1OUTCS	=	0xe6a1$/;"	d
+_EP1OUTCS	../src/init_gpif.asm	/^_EP1OUTCS	=	0xe6a1$/;"	d
+_EP1OUTCS	../src/radar_main.asm	/^_EP1OUTCS	=	0xe6a1$/;"	d
+_EP1OUTCS	../src/usrp_common.asm	/^_EP1OUTCS	=	0xe6a1$/;"	d
+_EP2468STAT	../lib/fx2utils.asm	/^_EP2468STAT	=	0x00aa$/;"	d
+_EP2468STAT	../lib/isr.asm	/^_EP2468STAT	=	0x00aa$/;"	d
+_EP2468STAT	../lib/timer.asm	/^_EP2468STAT	=	0x00aa$/;"	d
+_EP2468STAT	../lib/usb_common.asm	/^_EP2468STAT	=	0x00aa$/;"	d
+_EP2468STAT	../src/init_gpif.asm	/^_EP2468STAT	=	0x00aa$/;"	d
+_EP2468STAT	../src/radar_main.asm	/^_EP2468STAT	=	0x00aa$/;"	d
+_EP2468STAT	../src/usrp_common.asm	/^_EP2468STAT	=	0x00aa$/;"	d
+_EP24FIFOFLGS	../lib/fx2utils.asm	/^_EP24FIFOFLGS	=	0x00ab$/;"	d
+_EP24FIFOFLGS	../lib/isr.asm	/^_EP24FIFOFLGS	=	0x00ab$/;"	d
+_EP24FIFOFLGS	../lib/timer.asm	/^_EP24FIFOFLGS	=	0x00ab$/;"	d
+_EP24FIFOFLGS	../lib/usb_common.asm	/^_EP24FIFOFLGS	=	0x00ab$/;"	d
+_EP24FIFOFLGS	../src/init_gpif.asm	/^_EP24FIFOFLGS	=	0x00ab$/;"	d
+_EP24FIFOFLGS	../src/radar_main.asm	/^_EP24FIFOFLGS	=	0x00ab$/;"	d
+_EP24FIFOFLGS	../src/usrp_common.asm	/^_EP24FIFOFLGS	=	0x00ab$/;"	d
+_EP2AUTOINLENH	../lib/fx2utils.asm	/^_EP2AUTOINLENH	=	0xe620$/;"	d
+_EP2AUTOINLENH	../lib/isr.asm	/^_EP2AUTOINLENH	=	0xe620$/;"	d
+_EP2AUTOINLENH	../lib/timer.asm	/^_EP2AUTOINLENH	=	0xe620$/;"	d
+_EP2AUTOINLENH	../lib/usb_common.asm	/^_EP2AUTOINLENH	=	0xe620$/;"	d
+_EP2AUTOINLENH	../src/init_gpif.asm	/^_EP2AUTOINLENH	=	0xe620$/;"	d
+_EP2AUTOINLENH	../src/radar_main.asm	/^_EP2AUTOINLENH	=	0xe620$/;"	d
+_EP2AUTOINLENH	../src/usrp_common.asm	/^_EP2AUTOINLENH	=	0xe620$/;"	d
+_EP2AUTOINLENL	../lib/fx2utils.asm	/^_EP2AUTOINLENL	=	0xe621$/;"	d
+_EP2AUTOINLENL	../lib/isr.asm	/^_EP2AUTOINLENL	=	0xe621$/;"	d
+_EP2AUTOINLENL	../lib/timer.asm	/^_EP2AUTOINLENL	=	0xe621$/;"	d
+_EP2AUTOINLENL	../lib/usb_common.asm	/^_EP2AUTOINLENL	=	0xe621$/;"	d
+_EP2AUTOINLENL	../src/init_gpif.asm	/^_EP2AUTOINLENL	=	0xe621$/;"	d
+_EP2AUTOINLENL	../src/radar_main.asm	/^_EP2AUTOINLENL	=	0xe621$/;"	d
+_EP2AUTOINLENL	../src/usrp_common.asm	/^_EP2AUTOINLENL	=	0xe621$/;"	d
+_EP2BCH	../lib/fx2utils.asm	/^_EP2BCH	=	0xe690$/;"	d
+_EP2BCH	../lib/isr.asm	/^_EP2BCH	=	0xe690$/;"	d
+_EP2BCH	../lib/timer.asm	/^_EP2BCH	=	0xe690$/;"	d
+_EP2BCH	../lib/usb_common.asm	/^_EP2BCH	=	0xe690$/;"	d
+_EP2BCH	../src/init_gpif.asm	/^_EP2BCH	=	0xe690$/;"	d
+_EP2BCH	../src/radar_main.asm	/^_EP2BCH	=	0xe690$/;"	d
+_EP2BCH	../src/usrp_common.asm	/^_EP2BCH	=	0xe690$/;"	d
+_EP2BCL	../lib/fx2utils.asm	/^_EP2BCL	=	0xe691$/;"	d
+_EP2BCL	../lib/isr.asm	/^_EP2BCL	=	0xe691$/;"	d
+_EP2BCL	../lib/timer.asm	/^_EP2BCL	=	0xe691$/;"	d
+_EP2BCL	../lib/usb_common.asm	/^_EP2BCL	=	0xe691$/;"	d
+_EP2BCL	../src/init_gpif.asm	/^_EP2BCL	=	0xe691$/;"	d
+_EP2BCL	../src/radar_main.asm	/^_EP2BCL	=	0xe691$/;"	d
+_EP2BCL	../src/usrp_common.asm	/^_EP2BCL	=	0xe691$/;"	d
+_EP2CFG	../lib/fx2utils.asm	/^_EP2CFG	=	0xe612$/;"	d
+_EP2CFG	../lib/isr.asm	/^_EP2CFG	=	0xe612$/;"	d
+_EP2CFG	../lib/timer.asm	/^_EP2CFG	=	0xe612$/;"	d
+_EP2CFG	../lib/usb_common.asm	/^_EP2CFG	=	0xe612$/;"	d
+_EP2CFG	../src/init_gpif.asm	/^_EP2CFG	=	0xe612$/;"	d
+_EP2CFG	../src/radar_main.asm	/^_EP2CFG	=	0xe612$/;"	d
+_EP2CFG	../src/usrp_common.asm	/^_EP2CFG	=	0xe612$/;"	d
+_EP2CS	../lib/fx2utils.asm	/^_EP2CS	=	0xe6a3$/;"	d
+_EP2CS	../lib/isr.asm	/^_EP2CS	=	0xe6a3$/;"	d
+_EP2CS	../lib/timer.asm	/^_EP2CS	=	0xe6a3$/;"	d
+_EP2CS	../lib/usb_common.asm	/^_EP2CS	=	0xe6a3$/;"	d
+_EP2CS	../src/init_gpif.asm	/^_EP2CS	=	0xe6a3$/;"	d
+_EP2CS	../src/radar_main.asm	/^_EP2CS	=	0xe6a3$/;"	d
+_EP2CS	../src/usrp_common.asm	/^_EP2CS	=	0xe6a3$/;"	d
+_EP2FIFOBCH	../lib/fx2utils.asm	/^_EP2FIFOBCH	=	0xe6ab$/;"	d
+_EP2FIFOBCH	../lib/isr.asm	/^_EP2FIFOBCH	=	0xe6ab$/;"	d
+_EP2FIFOBCH	../lib/timer.asm	/^_EP2FIFOBCH	=	0xe6ab$/;"	d
+_EP2FIFOBCH	../lib/usb_common.asm	/^_EP2FIFOBCH	=	0xe6ab$/;"	d
+_EP2FIFOBCH	../src/init_gpif.asm	/^_EP2FIFOBCH	=	0xe6ab$/;"	d
+_EP2FIFOBCH	../src/radar_main.asm	/^_EP2FIFOBCH	=	0xe6ab$/;"	d
+_EP2FIFOBCH	../src/usrp_common.asm	/^_EP2FIFOBCH	=	0xe6ab$/;"	d
+_EP2FIFOBCL	../lib/fx2utils.asm	/^_EP2FIFOBCL	=	0xe6ac$/;"	d
+_EP2FIFOBCL	../lib/isr.asm	/^_EP2FIFOBCL	=	0xe6ac$/;"	d
+_EP2FIFOBCL	../lib/timer.asm	/^_EP2FIFOBCL	=	0xe6ac$/;"	d
+_EP2FIFOBCL	../lib/usb_common.asm	/^_EP2FIFOBCL	=	0xe6ac$/;"	d
+_EP2FIFOBCL	../src/init_gpif.asm	/^_EP2FIFOBCL	=	0xe6ac$/;"	d
+_EP2FIFOBCL	../src/radar_main.asm	/^_EP2FIFOBCL	=	0xe6ac$/;"	d
+_EP2FIFOBCL	../src/usrp_common.asm	/^_EP2FIFOBCL	=	0xe6ac$/;"	d
+_EP2FIFOBUF	../lib/fx2utils.asm	/^_EP2FIFOBUF	=	0xf000$/;"	d
+_EP2FIFOBUF	../lib/isr.asm	/^_EP2FIFOBUF	=	0xf000$/;"	d
+_EP2FIFOBUF	../lib/timer.asm	/^_EP2FIFOBUF	=	0xf000$/;"	d
+_EP2FIFOBUF	../lib/usb_common.asm	/^_EP2FIFOBUF	=	0xf000$/;"	d
+_EP2FIFOBUF	../src/init_gpif.asm	/^_EP2FIFOBUF	=	0xf000$/;"	d
+_EP2FIFOBUF	../src/radar_main.asm	/^_EP2FIFOBUF	=	0xf000$/;"	d
+_EP2FIFOBUF	../src/usrp_common.asm	/^_EP2FIFOBUF	=	0xf000$/;"	d
+_EP2FIFOCFG	../lib/fx2utils.asm	/^_EP2FIFOCFG	=	0xe618$/;"	d
+_EP2FIFOCFG	../lib/isr.asm	/^_EP2FIFOCFG	=	0xe618$/;"	d
+_EP2FIFOCFG	../lib/timer.asm	/^_EP2FIFOCFG	=	0xe618$/;"	d
+_EP2FIFOCFG	../lib/usb_common.asm	/^_EP2FIFOCFG	=	0xe618$/;"	d
+_EP2FIFOCFG	../src/init_gpif.asm	/^_EP2FIFOCFG	=	0xe618$/;"	d
+_EP2FIFOCFG	../src/radar_main.asm	/^_EP2FIFOCFG	=	0xe618$/;"	d
+_EP2FIFOCFG	../src/usrp_common.asm	/^_EP2FIFOCFG	=	0xe618$/;"	d
+_EP2FIFOFLGS	../lib/fx2utils.asm	/^_EP2FIFOFLGS	=	0xe6a7$/;"	d
+_EP2FIFOFLGS	../lib/isr.asm	/^_EP2FIFOFLGS	=	0xe6a7$/;"	d
+_EP2FIFOFLGS	../lib/timer.asm	/^_EP2FIFOFLGS	=	0xe6a7$/;"	d
+_EP2FIFOFLGS	../lib/usb_common.asm	/^_EP2FIFOFLGS	=	0xe6a7$/;"	d
+_EP2FIFOFLGS	../src/init_gpif.asm	/^_EP2FIFOFLGS	=	0xe6a7$/;"	d
+_EP2FIFOFLGS	../src/radar_main.asm	/^_EP2FIFOFLGS	=	0xe6a7$/;"	d
+_EP2FIFOFLGS	../src/usrp_common.asm	/^_EP2FIFOFLGS	=	0xe6a7$/;"	d
+_EP2FIFOIE	../lib/fx2utils.asm	/^_EP2FIFOIE	=	0xe650$/;"	d
+_EP2FIFOIE	../lib/isr.asm	/^_EP2FIFOIE	=	0xe650$/;"	d
+_EP2FIFOIE	../lib/timer.asm	/^_EP2FIFOIE	=	0xe650$/;"	d
+_EP2FIFOIE	../lib/usb_common.asm	/^_EP2FIFOIE	=	0xe650$/;"	d
+_EP2FIFOIE	../src/init_gpif.asm	/^_EP2FIFOIE	=	0xe650$/;"	d
+_EP2FIFOIE	../src/radar_main.asm	/^_EP2FIFOIE	=	0xe650$/;"	d
+_EP2FIFOIE	../src/usrp_common.asm	/^_EP2FIFOIE	=	0xe650$/;"	d
+_EP2FIFOIRQ	../lib/fx2utils.asm	/^_EP2FIFOIRQ	=	0xe651$/;"	d
+_EP2FIFOIRQ	../lib/isr.asm	/^_EP2FIFOIRQ	=	0xe651$/;"	d
+_EP2FIFOIRQ	../lib/timer.asm	/^_EP2FIFOIRQ	=	0xe651$/;"	d
+_EP2FIFOIRQ	../lib/usb_common.asm	/^_EP2FIFOIRQ	=	0xe651$/;"	d
+_EP2FIFOIRQ	../src/init_gpif.asm	/^_EP2FIFOIRQ	=	0xe651$/;"	d
+_EP2FIFOIRQ	../src/radar_main.asm	/^_EP2FIFOIRQ	=	0xe651$/;"	d
+_EP2FIFOIRQ	../src/usrp_common.asm	/^_EP2FIFOIRQ	=	0xe651$/;"	d
+_EP2FIFOPFH	../lib/fx2utils.asm	/^_EP2FIFOPFH	=	0xe630$/;"	d
+_EP2FIFOPFH	../lib/isr.asm	/^_EP2FIFOPFH	=	0xe630$/;"	d
+_EP2FIFOPFH	../lib/timer.asm	/^_EP2FIFOPFH	=	0xe630$/;"	d
+_EP2FIFOPFH	../lib/usb_common.asm	/^_EP2FIFOPFH	=	0xe630$/;"	d
+_EP2FIFOPFH	../src/init_gpif.asm	/^_EP2FIFOPFH	=	0xe630$/;"	d
+_EP2FIFOPFH	../src/radar_main.asm	/^_EP2FIFOPFH	=	0xe630$/;"	d
+_EP2FIFOPFH	../src/usrp_common.asm	/^_EP2FIFOPFH	=	0xe630$/;"	d
+_EP2FIFOPFL	../lib/fx2utils.asm	/^_EP2FIFOPFL	=	0xe631$/;"	d
+_EP2FIFOPFL	../lib/isr.asm	/^_EP2FIFOPFL	=	0xe631$/;"	d
+_EP2FIFOPFL	../lib/timer.asm	/^_EP2FIFOPFL	=	0xe631$/;"	d
+_EP2FIFOPFL	../lib/usb_common.asm	/^_EP2FIFOPFL	=	0xe631$/;"	d
+_EP2FIFOPFL	../src/init_gpif.asm	/^_EP2FIFOPFL	=	0xe631$/;"	d
+_EP2FIFOPFL	../src/radar_main.asm	/^_EP2FIFOPFL	=	0xe631$/;"	d
+_EP2FIFOPFL	../src/usrp_common.asm	/^_EP2FIFOPFL	=	0xe631$/;"	d
+_EP2GPIFFLGSEL	../lib/fx2utils.asm	/^_EP2GPIFFLGSEL	=	0xe6d2$/;"	d
+_EP2GPIFFLGSEL	../lib/isr.asm	/^_EP2GPIFFLGSEL	=	0xe6d2$/;"	d
+_EP2GPIFFLGSEL	../lib/timer.asm	/^_EP2GPIFFLGSEL	=	0xe6d2$/;"	d
+_EP2GPIFFLGSEL	../lib/usb_common.asm	/^_EP2GPIFFLGSEL	=	0xe6d2$/;"	d
+_EP2GPIFFLGSEL	../src/init_gpif.asm	/^_EP2GPIFFLGSEL	=	0xe6d2$/;"	d
+_EP2GPIFFLGSEL	../src/radar_main.asm	/^_EP2GPIFFLGSEL	=	0xe6d2$/;"	d
+_EP2GPIFFLGSEL	../src/usrp_common.asm	/^_EP2GPIFFLGSEL	=	0xe6d2$/;"	d
+_EP2GPIFPFSTOP	../lib/fx2utils.asm	/^_EP2GPIFPFSTOP	=	0xe6d3$/;"	d
+_EP2GPIFPFSTOP	../lib/isr.asm	/^_EP2GPIFPFSTOP	=	0xe6d3$/;"	d
+_EP2GPIFPFSTOP	../lib/timer.asm	/^_EP2GPIFPFSTOP	=	0xe6d3$/;"	d
+_EP2GPIFPFSTOP	../lib/usb_common.asm	/^_EP2GPIFPFSTOP	=	0xe6d3$/;"	d
+_EP2GPIFPFSTOP	../src/init_gpif.asm	/^_EP2GPIFPFSTOP	=	0xe6d3$/;"	d
+_EP2GPIFPFSTOP	../src/radar_main.asm	/^_EP2GPIFPFSTOP	=	0xe6d3$/;"	d
+_EP2GPIFPFSTOP	../src/usrp_common.asm	/^_EP2GPIFPFSTOP	=	0xe6d3$/;"	d
+_EP2GPIFTRIG	../lib/fx2utils.asm	/^_EP2GPIFTRIG	=	0xe6d4$/;"	d
+_EP2GPIFTRIG	../lib/isr.asm	/^_EP2GPIFTRIG	=	0xe6d4$/;"	d
+_EP2GPIFTRIG	../lib/timer.asm	/^_EP2GPIFTRIG	=	0xe6d4$/;"	d
+_EP2GPIFTRIG	../lib/usb_common.asm	/^_EP2GPIFTRIG	=	0xe6d4$/;"	d
+_EP2GPIFTRIG	../src/init_gpif.asm	/^_EP2GPIFTRIG	=	0xe6d4$/;"	d
+_EP2GPIFTRIG	../src/radar_main.asm	/^_EP2GPIFTRIG	=	0xe6d4$/;"	d
+_EP2GPIFTRIG	../src/usrp_common.asm	/^_EP2GPIFTRIG	=	0xe6d4$/;"	d
+_EP2ISOINPKTS	../lib/fx2utils.asm	/^_EP2ISOINPKTS	=	0xe640$/;"	d
+_EP2ISOINPKTS	../lib/isr.asm	/^_EP2ISOINPKTS	=	0xe640$/;"	d
+_EP2ISOINPKTS	../lib/timer.asm	/^_EP2ISOINPKTS	=	0xe640$/;"	d
+_EP2ISOINPKTS	../lib/usb_common.asm	/^_EP2ISOINPKTS	=	0xe640$/;"	d
+_EP2ISOINPKTS	../src/init_gpif.asm	/^_EP2ISOINPKTS	=	0xe640$/;"	d
+_EP2ISOINPKTS	../src/radar_main.asm	/^_EP2ISOINPKTS	=	0xe640$/;"	d
+_EP2ISOINPKTS	../src/usrp_common.asm	/^_EP2ISOINPKTS	=	0xe640$/;"	d
+_EP4AUTOINLENH	../lib/fx2utils.asm	/^_EP4AUTOINLENH	=	0xe622$/;"	d
+_EP4AUTOINLENH	../lib/isr.asm	/^_EP4AUTOINLENH	=	0xe622$/;"	d
+_EP4AUTOINLENH	../lib/timer.asm	/^_EP4AUTOINLENH	=	0xe622$/;"	d
+_EP4AUTOINLENH	../lib/usb_common.asm	/^_EP4AUTOINLENH	=	0xe622$/;"	d
+_EP4AUTOINLENH	../src/init_gpif.asm	/^_EP4AUTOINLENH	=	0xe622$/;"	d
+_EP4AUTOINLENH	../src/radar_main.asm	/^_EP4AUTOINLENH	=	0xe622$/;"	d
+_EP4AUTOINLENH	../src/usrp_common.asm	/^_EP4AUTOINLENH	=	0xe622$/;"	d
+_EP4AUTOINLENL	../lib/fx2utils.asm	/^_EP4AUTOINLENL	=	0xe623$/;"	d
+_EP4AUTOINLENL	../lib/isr.asm	/^_EP4AUTOINLENL	=	0xe623$/;"	d
+_EP4AUTOINLENL	../lib/timer.asm	/^_EP4AUTOINLENL	=	0xe623$/;"	d
+_EP4AUTOINLENL	../lib/usb_common.asm	/^_EP4AUTOINLENL	=	0xe623$/;"	d
+_EP4AUTOINLENL	../src/init_gpif.asm	/^_EP4AUTOINLENL	=	0xe623$/;"	d
+_EP4AUTOINLENL	../src/radar_main.asm	/^_EP4AUTOINLENL	=	0xe623$/;"	d
+_EP4AUTOINLENL	../src/usrp_common.asm	/^_EP4AUTOINLENL	=	0xe623$/;"	d
+_EP4BCH	../lib/fx2utils.asm	/^_EP4BCH	=	0xe694$/;"	d
+_EP4BCH	../lib/isr.asm	/^_EP4BCH	=	0xe694$/;"	d
+_EP4BCH	../lib/timer.asm	/^_EP4BCH	=	0xe694$/;"	d
+_EP4BCH	../lib/usb_common.asm	/^_EP4BCH	=	0xe694$/;"	d
+_EP4BCH	../src/init_gpif.asm	/^_EP4BCH	=	0xe694$/;"	d
+_EP4BCH	../src/radar_main.asm	/^_EP4BCH	=	0xe694$/;"	d
+_EP4BCH	../src/usrp_common.asm	/^_EP4BCH	=	0xe694$/;"	d
+_EP4BCL	../lib/fx2utils.asm	/^_EP4BCL	=	0xe695$/;"	d
+_EP4BCL	../lib/isr.asm	/^_EP4BCL	=	0xe695$/;"	d
+_EP4BCL	../lib/timer.asm	/^_EP4BCL	=	0xe695$/;"	d
+_EP4BCL	../lib/usb_common.asm	/^_EP4BCL	=	0xe695$/;"	d
+_EP4BCL	../src/init_gpif.asm	/^_EP4BCL	=	0xe695$/;"	d
+_EP4BCL	../src/radar_main.asm	/^_EP4BCL	=	0xe695$/;"	d
+_EP4BCL	../src/usrp_common.asm	/^_EP4BCL	=	0xe695$/;"	d
+_EP4CFG	../lib/fx2utils.asm	/^_EP4CFG	=	0xe613$/;"	d
+_EP4CFG	../lib/isr.asm	/^_EP4CFG	=	0xe613$/;"	d
+_EP4CFG	../lib/timer.asm	/^_EP4CFG	=	0xe613$/;"	d
+_EP4CFG	../lib/usb_common.asm	/^_EP4CFG	=	0xe613$/;"	d
+_EP4CFG	../src/init_gpif.asm	/^_EP4CFG	=	0xe613$/;"	d
+_EP4CFG	../src/radar_main.asm	/^_EP4CFG	=	0xe613$/;"	d
+_EP4CFG	../src/usrp_common.asm	/^_EP4CFG	=	0xe613$/;"	d
+_EP4CS	../lib/fx2utils.asm	/^_EP4CS	=	0xe6a4$/;"	d
+_EP4CS	../lib/isr.asm	/^_EP4CS	=	0xe6a4$/;"	d
+_EP4CS	../lib/timer.asm	/^_EP4CS	=	0xe6a4$/;"	d
+_EP4CS	../lib/usb_common.asm	/^_EP4CS	=	0xe6a4$/;"	d
+_EP4CS	../src/init_gpif.asm	/^_EP4CS	=	0xe6a4$/;"	d
+_EP4CS	../src/radar_main.asm	/^_EP4CS	=	0xe6a4$/;"	d
+_EP4CS	../src/usrp_common.asm	/^_EP4CS	=	0xe6a4$/;"	d
+_EP4FIFOBCH	../lib/fx2utils.asm	/^_EP4FIFOBCH	=	0xe6ad$/;"	d
+_EP4FIFOBCH	../lib/isr.asm	/^_EP4FIFOBCH	=	0xe6ad$/;"	d
+_EP4FIFOBCH	../lib/timer.asm	/^_EP4FIFOBCH	=	0xe6ad$/;"	d
+_EP4FIFOBCH	../lib/usb_common.asm	/^_EP4FIFOBCH	=	0xe6ad$/;"	d
+_EP4FIFOBCH	../src/init_gpif.asm	/^_EP4FIFOBCH	=	0xe6ad$/;"	d
+_EP4FIFOBCH	../src/radar_main.asm	/^_EP4FIFOBCH	=	0xe6ad$/;"	d
+_EP4FIFOBCH	../src/usrp_common.asm	/^_EP4FIFOBCH	=	0xe6ad$/;"	d
+_EP4FIFOBCL	../lib/fx2utils.asm	/^_EP4FIFOBCL	=	0xe6ae$/;"	d
+_EP4FIFOBCL	../lib/isr.asm	/^_EP4FIFOBCL	=	0xe6ae$/;"	d
+_EP4FIFOBCL	../lib/timer.asm	/^_EP4FIFOBCL	=	0xe6ae$/;"	d
+_EP4FIFOBCL	../lib/usb_common.asm	/^_EP4FIFOBCL	=	0xe6ae$/;"	d
+_EP4FIFOBCL	../src/init_gpif.asm	/^_EP4FIFOBCL	=	0xe6ae$/;"	d
+_EP4FIFOBCL	../src/radar_main.asm	/^_EP4FIFOBCL	=	0xe6ae$/;"	d
+_EP4FIFOBCL	../src/usrp_common.asm	/^_EP4FIFOBCL	=	0xe6ae$/;"	d
+_EP4FIFOBUF	../lib/fx2utils.asm	/^_EP4FIFOBUF	=	0xf400$/;"	d
+_EP4FIFOBUF	../lib/isr.asm	/^_EP4FIFOBUF	=	0xf400$/;"	d
+_EP4FIFOBUF	../lib/timer.asm	/^_EP4FIFOBUF	=	0xf400$/;"	d
+_EP4FIFOBUF	../lib/usb_common.asm	/^_EP4FIFOBUF	=	0xf400$/;"	d
+_EP4FIFOBUF	../src/init_gpif.asm	/^_EP4FIFOBUF	=	0xf400$/;"	d
+_EP4FIFOBUF	../src/radar_main.asm	/^_EP4FIFOBUF	=	0xf400$/;"	d
+_EP4FIFOBUF	../src/usrp_common.asm	/^_EP4FIFOBUF	=	0xf400$/;"	d
+_EP4FIFOCFG	../lib/fx2utils.asm	/^_EP4FIFOCFG	=	0xe619$/;"	d
+_EP4FIFOCFG	../lib/isr.asm	/^_EP4FIFOCFG	=	0xe619$/;"	d
+_EP4FIFOCFG	../lib/timer.asm	/^_EP4FIFOCFG	=	0xe619$/;"	d
+_EP4FIFOCFG	../lib/usb_common.asm	/^_EP4FIFOCFG	=	0xe619$/;"	d
+_EP4FIFOCFG	../src/init_gpif.asm	/^_EP4FIFOCFG	=	0xe619$/;"	d
+_EP4FIFOCFG	../src/radar_main.asm	/^_EP4FIFOCFG	=	0xe619$/;"	d
+_EP4FIFOCFG	../src/usrp_common.asm	/^_EP4FIFOCFG	=	0xe619$/;"	d
+_EP4FIFOFLGS	../lib/fx2utils.asm	/^_EP4FIFOFLGS	=	0xe6a8$/;"	d
+_EP4FIFOFLGS	../lib/isr.asm	/^_EP4FIFOFLGS	=	0xe6a8$/;"	d
+_EP4FIFOFLGS	../lib/timer.asm	/^_EP4FIFOFLGS	=	0xe6a8$/;"	d
+_EP4FIFOFLGS	../lib/usb_common.asm	/^_EP4FIFOFLGS	=	0xe6a8$/;"	d
+_EP4FIFOFLGS	../src/init_gpif.asm	/^_EP4FIFOFLGS	=	0xe6a8$/;"	d
+_EP4FIFOFLGS	../src/radar_main.asm	/^_EP4FIFOFLGS	=	0xe6a8$/;"	d
+_EP4FIFOFLGS	../src/usrp_common.asm	/^_EP4FIFOFLGS	=	0xe6a8$/;"	d
+_EP4FIFOIE	../lib/fx2utils.asm	/^_EP4FIFOIE	=	0xe652$/;"	d
+_EP4FIFOIE	../lib/isr.asm	/^_EP4FIFOIE	=	0xe652$/;"	d
+_EP4FIFOIE	../lib/timer.asm	/^_EP4FIFOIE	=	0xe652$/;"	d
+_EP4FIFOIE	../lib/usb_common.asm	/^_EP4FIFOIE	=	0xe652$/;"	d
+_EP4FIFOIE	../src/init_gpif.asm	/^_EP4FIFOIE	=	0xe652$/;"	d
+_EP4FIFOIE	../src/radar_main.asm	/^_EP4FIFOIE	=	0xe652$/;"	d
+_EP4FIFOIE	../src/usrp_common.asm	/^_EP4FIFOIE	=	0xe652$/;"	d
+_EP4FIFOIRQ	../lib/fx2utils.asm	/^_EP4FIFOIRQ	=	0xe653$/;"	d
+_EP4FIFOIRQ	../lib/isr.asm	/^_EP4FIFOIRQ	=	0xe653$/;"	d
+_EP4FIFOIRQ	../lib/timer.asm	/^_EP4FIFOIRQ	=	0xe653$/;"	d
+_EP4FIFOIRQ	../lib/usb_common.asm	/^_EP4FIFOIRQ	=	0xe653$/;"	d
+_EP4FIFOIRQ	../src/init_gpif.asm	/^_EP4FIFOIRQ	=	0xe653$/;"	d
+_EP4FIFOIRQ	../src/radar_main.asm	/^_EP4FIFOIRQ	=	0xe653$/;"	d
+_EP4FIFOIRQ	../src/usrp_common.asm	/^_EP4FIFOIRQ	=	0xe653$/;"	d
+_EP4FIFOPFH	../lib/fx2utils.asm	/^_EP4FIFOPFH	=	0xe632$/;"	d
+_EP4FIFOPFH	../lib/isr.asm	/^_EP4FIFOPFH	=	0xe632$/;"	d
+_EP4FIFOPFH	../lib/timer.asm	/^_EP4FIFOPFH	=	0xe632$/;"	d
+_EP4FIFOPFH	../lib/usb_common.asm	/^_EP4FIFOPFH	=	0xe632$/;"	d
+_EP4FIFOPFH	../src/init_gpif.asm	/^_EP4FIFOPFH	=	0xe632$/;"	d
+_EP4FIFOPFH	../src/radar_main.asm	/^_EP4FIFOPFH	=	0xe632$/;"	d
+_EP4FIFOPFH	../src/usrp_common.asm	/^_EP4FIFOPFH	=	0xe632$/;"	d
+_EP4FIFOPFL	../lib/fx2utils.asm	/^_EP4FIFOPFL	=	0xe633$/;"	d
+_EP4FIFOPFL	../lib/isr.asm	/^_EP4FIFOPFL	=	0xe633$/;"	d
+_EP4FIFOPFL	../lib/timer.asm	/^_EP4FIFOPFL	=	0xe633$/;"	d
+_EP4FIFOPFL	../lib/usb_common.asm	/^_EP4FIFOPFL	=	0xe633$/;"	d
+_EP4FIFOPFL	../src/init_gpif.asm	/^_EP4FIFOPFL	=	0xe633$/;"	d
+_EP4FIFOPFL	../src/radar_main.asm	/^_EP4FIFOPFL	=	0xe633$/;"	d
+_EP4FIFOPFL	../src/usrp_common.asm	/^_EP4FIFOPFL	=	0xe633$/;"	d
+_EP4GPIFFLGSEL	../lib/fx2utils.asm	/^_EP4GPIFFLGSEL	=	0xe6da$/;"	d
+_EP4GPIFFLGSEL	../lib/isr.asm	/^_EP4GPIFFLGSEL	=	0xe6da$/;"	d
+_EP4GPIFFLGSEL	../lib/timer.asm	/^_EP4GPIFFLGSEL	=	0xe6da$/;"	d
+_EP4GPIFFLGSEL	../lib/usb_common.asm	/^_EP4GPIFFLGSEL	=	0xe6da$/;"	d
+_EP4GPIFFLGSEL	../src/init_gpif.asm	/^_EP4GPIFFLGSEL	=	0xe6da$/;"	d
+_EP4GPIFFLGSEL	../src/radar_main.asm	/^_EP4GPIFFLGSEL	=	0xe6da$/;"	d
+_EP4GPIFFLGSEL	../src/usrp_common.asm	/^_EP4GPIFFLGSEL	=	0xe6da$/;"	d
+_EP4GPIFPFSTOP	../lib/fx2utils.asm	/^_EP4GPIFPFSTOP	=	0xe6db$/;"	d
+_EP4GPIFPFSTOP	../lib/isr.asm	/^_EP4GPIFPFSTOP	=	0xe6db$/;"	d
+_EP4GPIFPFSTOP	../lib/timer.asm	/^_EP4GPIFPFSTOP	=	0xe6db$/;"	d
+_EP4GPIFPFSTOP	../lib/usb_common.asm	/^_EP4GPIFPFSTOP	=	0xe6db$/;"	d
+_EP4GPIFPFSTOP	../src/init_gpif.asm	/^_EP4GPIFPFSTOP	=	0xe6db$/;"	d
+_EP4GPIFPFSTOP	../src/radar_main.asm	/^_EP4GPIFPFSTOP	=	0xe6db$/;"	d
+_EP4GPIFPFSTOP	../src/usrp_common.asm	/^_EP4GPIFPFSTOP	=	0xe6db$/;"	d
+_EP4GPIFTRIG	../lib/fx2utils.asm	/^_EP4GPIFTRIG	=	0xe6dc$/;"	d
+_EP4GPIFTRIG	../lib/isr.asm	/^_EP4GPIFTRIG	=	0xe6dc$/;"	d
+_EP4GPIFTRIG	../lib/timer.asm	/^_EP4GPIFTRIG	=	0xe6dc$/;"	d
+_EP4GPIFTRIG	../lib/usb_common.asm	/^_EP4GPIFTRIG	=	0xe6dc$/;"	d
+_EP4GPIFTRIG	../src/init_gpif.asm	/^_EP4GPIFTRIG	=	0xe6dc$/;"	d
+_EP4GPIFTRIG	../src/radar_main.asm	/^_EP4GPIFTRIG	=	0xe6dc$/;"	d
+_EP4GPIFTRIG	../src/usrp_common.asm	/^_EP4GPIFTRIG	=	0xe6dc$/;"	d
+_EP4ISOINPKTS	../lib/fx2utils.asm	/^_EP4ISOINPKTS	=	0xe641$/;"	d
+_EP4ISOINPKTS	../lib/isr.asm	/^_EP4ISOINPKTS	=	0xe641$/;"	d
+_EP4ISOINPKTS	../lib/timer.asm	/^_EP4ISOINPKTS	=	0xe641$/;"	d
+_EP4ISOINPKTS	../lib/usb_common.asm	/^_EP4ISOINPKTS	=	0xe641$/;"	d
+_EP4ISOINPKTS	../src/init_gpif.asm	/^_EP4ISOINPKTS	=	0xe641$/;"	d
+_EP4ISOINPKTS	../src/radar_main.asm	/^_EP4ISOINPKTS	=	0xe641$/;"	d
+_EP4ISOINPKTS	../src/usrp_common.asm	/^_EP4ISOINPKTS	=	0xe641$/;"	d
+_EP68FIFOFLGS	../lib/fx2utils.asm	/^_EP68FIFOFLGS	=	0x00ac$/;"	d
+_EP68FIFOFLGS	../lib/isr.asm	/^_EP68FIFOFLGS	=	0x00ac$/;"	d
+_EP68FIFOFLGS	../lib/timer.asm	/^_EP68FIFOFLGS	=	0x00ac$/;"	d
+_EP68FIFOFLGS	../lib/usb_common.asm	/^_EP68FIFOFLGS	=	0x00ac$/;"	d
+_EP68FIFOFLGS	../src/init_gpif.asm	/^_EP68FIFOFLGS	=	0x00ac$/;"	d
+_EP68FIFOFLGS	../src/radar_main.asm	/^_EP68FIFOFLGS	=	0x00ac$/;"	d
+_EP68FIFOFLGS	../src/usrp_common.asm	/^_EP68FIFOFLGS	=	0x00ac$/;"	d
+_EP6AUTOINLENH	../lib/fx2utils.asm	/^_EP6AUTOINLENH	=	0xe624$/;"	d
+_EP6AUTOINLENH	../lib/isr.asm	/^_EP6AUTOINLENH	=	0xe624$/;"	d
+_EP6AUTOINLENH	../lib/timer.asm	/^_EP6AUTOINLENH	=	0xe624$/;"	d
+_EP6AUTOINLENH	../lib/usb_common.asm	/^_EP6AUTOINLENH	=	0xe624$/;"	d
+_EP6AUTOINLENH	../src/init_gpif.asm	/^_EP6AUTOINLENH	=	0xe624$/;"	d
+_EP6AUTOINLENH	../src/radar_main.asm	/^_EP6AUTOINLENH	=	0xe624$/;"	d
+_EP6AUTOINLENH	../src/usrp_common.asm	/^_EP6AUTOINLENH	=	0xe624$/;"	d
+_EP6AUTOINLENL	../lib/fx2utils.asm	/^_EP6AUTOINLENL	=	0xe625$/;"	d
+_EP6AUTOINLENL	../lib/isr.asm	/^_EP6AUTOINLENL	=	0xe625$/;"	d
+_EP6AUTOINLENL	../lib/timer.asm	/^_EP6AUTOINLENL	=	0xe625$/;"	d
+_EP6AUTOINLENL	../lib/usb_common.asm	/^_EP6AUTOINLENL	=	0xe625$/;"	d
+_EP6AUTOINLENL	../src/init_gpif.asm	/^_EP6AUTOINLENL	=	0xe625$/;"	d
+_EP6AUTOINLENL	../src/radar_main.asm	/^_EP6AUTOINLENL	=	0xe625$/;"	d
+_EP6AUTOINLENL	../src/usrp_common.asm	/^_EP6AUTOINLENL	=	0xe625$/;"	d
+_EP6BCH	../lib/fx2utils.asm	/^_EP6BCH	=	0xe698$/;"	d
+_EP6BCH	../lib/isr.asm	/^_EP6BCH	=	0xe698$/;"	d
+_EP6BCH	../lib/timer.asm	/^_EP6BCH	=	0xe698$/;"	d
+_EP6BCH	../lib/usb_common.asm	/^_EP6BCH	=	0xe698$/;"	d
+_EP6BCH	../src/init_gpif.asm	/^_EP6BCH	=	0xe698$/;"	d
+_EP6BCH	../src/radar_main.asm	/^_EP6BCH	=	0xe698$/;"	d
+_EP6BCH	../src/usrp_common.asm	/^_EP6BCH	=	0xe698$/;"	d
+_EP6BCL	../lib/fx2utils.asm	/^_EP6BCL	=	0xe699$/;"	d
+_EP6BCL	../lib/isr.asm	/^_EP6BCL	=	0xe699$/;"	d
+_EP6BCL	../lib/timer.asm	/^_EP6BCL	=	0xe699$/;"	d
+_EP6BCL	../lib/usb_common.asm	/^_EP6BCL	=	0xe699$/;"	d
+_EP6BCL	../src/init_gpif.asm	/^_EP6BCL	=	0xe699$/;"	d
+_EP6BCL	../src/radar_main.asm	/^_EP6BCL	=	0xe699$/;"	d
+_EP6BCL	../src/usrp_common.asm	/^_EP6BCL	=	0xe699$/;"	d
+_EP6CFG	../lib/fx2utils.asm	/^_EP6CFG	=	0xe614$/;"	d
+_EP6CFG	../lib/isr.asm	/^_EP6CFG	=	0xe614$/;"	d
+_EP6CFG	../lib/timer.asm	/^_EP6CFG	=	0xe614$/;"	d
+_EP6CFG	../lib/usb_common.asm	/^_EP6CFG	=	0xe614$/;"	d
+_EP6CFG	../src/init_gpif.asm	/^_EP6CFG	=	0xe614$/;"	d
+_EP6CFG	../src/radar_main.asm	/^_EP6CFG	=	0xe614$/;"	d
+_EP6CFG	../src/usrp_common.asm	/^_EP6CFG	=	0xe614$/;"	d
+_EP6CS	../lib/fx2utils.asm	/^_EP6CS	=	0xe6a5$/;"	d
+_EP6CS	../lib/isr.asm	/^_EP6CS	=	0xe6a5$/;"	d
+_EP6CS	../lib/timer.asm	/^_EP6CS	=	0xe6a5$/;"	d
+_EP6CS	../lib/usb_common.asm	/^_EP6CS	=	0xe6a5$/;"	d
+_EP6CS	../src/init_gpif.asm	/^_EP6CS	=	0xe6a5$/;"	d
+_EP6CS	../src/radar_main.asm	/^_EP6CS	=	0xe6a5$/;"	d
+_EP6CS	../src/usrp_common.asm	/^_EP6CS	=	0xe6a5$/;"	d
+_EP6FIFOBCH	../lib/fx2utils.asm	/^_EP6FIFOBCH	=	0xe6af$/;"	d
+_EP6FIFOBCH	../lib/isr.asm	/^_EP6FIFOBCH	=	0xe6af$/;"	d
+_EP6FIFOBCH	../lib/timer.asm	/^_EP6FIFOBCH	=	0xe6af$/;"	d
+_EP6FIFOBCH	../lib/usb_common.asm	/^_EP6FIFOBCH	=	0xe6af$/;"	d
+_EP6FIFOBCH	../src/init_gpif.asm	/^_EP6FIFOBCH	=	0xe6af$/;"	d
+_EP6FIFOBCH	../src/radar_main.asm	/^_EP6FIFOBCH	=	0xe6af$/;"	d
+_EP6FIFOBCH	../src/usrp_common.asm	/^_EP6FIFOBCH	=	0xe6af$/;"	d
+_EP6FIFOBCL	../lib/fx2utils.asm	/^_EP6FIFOBCL	=	0xe6b0$/;"	d
+_EP6FIFOBCL	../lib/isr.asm	/^_EP6FIFOBCL	=	0xe6b0$/;"	d
+_EP6FIFOBCL	../lib/timer.asm	/^_EP6FIFOBCL	=	0xe6b0$/;"	d
+_EP6FIFOBCL	../lib/usb_common.asm	/^_EP6FIFOBCL	=	0xe6b0$/;"	d
+_EP6FIFOBCL	../src/init_gpif.asm	/^_EP6FIFOBCL	=	0xe6b0$/;"	d
+_EP6FIFOBCL	../src/radar_main.asm	/^_EP6FIFOBCL	=	0xe6b0$/;"	d
+_EP6FIFOBCL	../src/usrp_common.asm	/^_EP6FIFOBCL	=	0xe6b0$/;"	d
+_EP6FIFOBUF	../lib/fx2utils.asm	/^_EP6FIFOBUF	=	0xf800$/;"	d
+_EP6FIFOBUF	../lib/isr.asm	/^_EP6FIFOBUF	=	0xf800$/;"	d
+_EP6FIFOBUF	../lib/timer.asm	/^_EP6FIFOBUF	=	0xf800$/;"	d
+_EP6FIFOBUF	../lib/usb_common.asm	/^_EP6FIFOBUF	=	0xf800$/;"	d
+_EP6FIFOBUF	../src/init_gpif.asm	/^_EP6FIFOBUF	=	0xf800$/;"	d
+_EP6FIFOBUF	../src/radar_main.asm	/^_EP6FIFOBUF	=	0xf800$/;"	d
+_EP6FIFOBUF	../src/usrp_common.asm	/^_EP6FIFOBUF	=	0xf800$/;"	d
+_EP6FIFOCFG	../lib/fx2utils.asm	/^_EP6FIFOCFG	=	0xe61a$/;"	d
+_EP6FIFOCFG	../lib/isr.asm	/^_EP6FIFOCFG	=	0xe61a$/;"	d
+_EP6FIFOCFG	../lib/timer.asm	/^_EP6FIFOCFG	=	0xe61a$/;"	d
+_EP6FIFOCFG	../lib/usb_common.asm	/^_EP6FIFOCFG	=	0xe61a$/;"	d
+_EP6FIFOCFG	../src/init_gpif.asm	/^_EP6FIFOCFG	=	0xe61a$/;"	d
+_EP6FIFOCFG	../src/radar_main.asm	/^_EP6FIFOCFG	=	0xe61a$/;"	d
+_EP6FIFOCFG	../src/usrp_common.asm	/^_EP6FIFOCFG	=	0xe61a$/;"	d
+_EP6FIFOFLGS	../lib/fx2utils.asm	/^_EP6FIFOFLGS	=	0xe6a9$/;"	d
+_EP6FIFOFLGS	../lib/isr.asm	/^_EP6FIFOFLGS	=	0xe6a9$/;"	d
+_EP6FIFOFLGS	../lib/timer.asm	/^_EP6FIFOFLGS	=	0xe6a9$/;"	d
+_EP6FIFOFLGS	../lib/usb_common.asm	/^_EP6FIFOFLGS	=	0xe6a9$/;"	d
+_EP6FIFOFLGS	../src/init_gpif.asm	/^_EP6FIFOFLGS	=	0xe6a9$/;"	d
+_EP6FIFOFLGS	../src/radar_main.asm	/^_EP6FIFOFLGS	=	0xe6a9$/;"	d
+_EP6FIFOFLGS	../src/usrp_common.asm	/^_EP6FIFOFLGS	=	0xe6a9$/;"	d
+_EP6FIFOIE	../lib/fx2utils.asm	/^_EP6FIFOIE	=	0xe654$/;"	d
+_EP6FIFOIE	../lib/isr.asm	/^_EP6FIFOIE	=	0xe654$/;"	d
+_EP6FIFOIE	../lib/timer.asm	/^_EP6FIFOIE	=	0xe654$/;"	d
+_EP6FIFOIE	../lib/usb_common.asm	/^_EP6FIFOIE	=	0xe654$/;"	d
+_EP6FIFOIE	../src/init_gpif.asm	/^_EP6FIFOIE	=	0xe654$/;"	d
+_EP6FIFOIE	../src/radar_main.asm	/^_EP6FIFOIE	=	0xe654$/;"	d
+_EP6FIFOIE	../src/usrp_common.asm	/^_EP6FIFOIE	=	0xe654$/;"	d
+_EP6FIFOIRQ	../lib/fx2utils.asm	/^_EP6FIFOIRQ	=	0xe655$/;"	d
+_EP6FIFOIRQ	../lib/isr.asm	/^_EP6FIFOIRQ	=	0xe655$/;"	d
+_EP6FIFOIRQ	../lib/timer.asm	/^_EP6FIFOIRQ	=	0xe655$/;"	d
+_EP6FIFOIRQ	../lib/usb_common.asm	/^_EP6FIFOIRQ	=	0xe655$/;"	d
+_EP6FIFOIRQ	../src/init_gpif.asm	/^_EP6FIFOIRQ	=	0xe655$/;"	d
+_EP6FIFOIRQ	../src/radar_main.asm	/^_EP6FIFOIRQ	=	0xe655$/;"	d
+_EP6FIFOIRQ	../src/usrp_common.asm	/^_EP6FIFOIRQ	=	0xe655$/;"	d
+_EP6FIFOPFH	../lib/fx2utils.asm	/^_EP6FIFOPFH	=	0xe634$/;"	d
+_EP6FIFOPFH	../lib/isr.asm	/^_EP6FIFOPFH	=	0xe634$/;"	d
+_EP6FIFOPFH	../lib/timer.asm	/^_EP6FIFOPFH	=	0xe634$/;"	d
+_EP6FIFOPFH	../lib/usb_common.asm	/^_EP6FIFOPFH	=	0xe634$/;"	d
+_EP6FIFOPFH	../src/init_gpif.asm	/^_EP6FIFOPFH	=	0xe634$/;"	d
+_EP6FIFOPFH	../src/radar_main.asm	/^_EP6FIFOPFH	=	0xe634$/;"	d
+_EP6FIFOPFH	../src/usrp_common.asm	/^_EP6FIFOPFH	=	0xe634$/;"	d
+_EP6FIFOPFL	../lib/fx2utils.asm	/^_EP6FIFOPFL	=	0xe635$/;"	d
+_EP6FIFOPFL	../lib/isr.asm	/^_EP6FIFOPFL	=	0xe635$/;"	d
+_EP6FIFOPFL	../lib/timer.asm	/^_EP6FIFOPFL	=	0xe635$/;"	d
+_EP6FIFOPFL	../lib/usb_common.asm	/^_EP6FIFOPFL	=	0xe635$/;"	d
+_EP6FIFOPFL	../src/init_gpif.asm	/^_EP6FIFOPFL	=	0xe635$/;"	d
+_EP6FIFOPFL	../src/radar_main.asm	/^_EP6FIFOPFL	=	0xe635$/;"	d
+_EP6FIFOPFL	../src/usrp_common.asm	/^_EP6FIFOPFL	=	0xe635$/;"	d
+_EP6GPIFFLGSEL	../lib/fx2utils.asm	/^_EP6GPIFFLGSEL	=	0xe6e2$/;"	d
+_EP6GPIFFLGSEL	../lib/isr.asm	/^_EP6GPIFFLGSEL	=	0xe6e2$/;"	d
+_EP6GPIFFLGSEL	../lib/timer.asm	/^_EP6GPIFFLGSEL	=	0xe6e2$/;"	d
+_EP6GPIFFLGSEL	../lib/usb_common.asm	/^_EP6GPIFFLGSEL	=	0xe6e2$/;"	d
+_EP6GPIFFLGSEL	../src/init_gpif.asm	/^_EP6GPIFFLGSEL	=	0xe6e2$/;"	d
+_EP6GPIFFLGSEL	../src/radar_main.asm	/^_EP6GPIFFLGSEL	=	0xe6e2$/;"	d
+_EP6GPIFFLGSEL	../src/usrp_common.asm	/^_EP6GPIFFLGSEL	=	0xe6e2$/;"	d
+_EP6GPIFPFSTOP	../lib/fx2utils.asm	/^_EP6GPIFPFSTOP	=	0xe6e3$/;"	d
+_EP6GPIFPFSTOP	../lib/isr.asm	/^_EP6GPIFPFSTOP	=	0xe6e3$/;"	d
+_EP6GPIFPFSTOP	../lib/timer.asm	/^_EP6GPIFPFSTOP	=	0xe6e3$/;"	d
+_EP6GPIFPFSTOP	../lib/usb_common.asm	/^_EP6GPIFPFSTOP	=	0xe6e3$/;"	d
+_EP6GPIFPFSTOP	../src/init_gpif.asm	/^_EP6GPIFPFSTOP	=	0xe6e3$/;"	d
+_EP6GPIFPFSTOP	../src/radar_main.asm	/^_EP6GPIFPFSTOP	=	0xe6e3$/;"	d
+_EP6GPIFPFSTOP	../src/usrp_common.asm	/^_EP6GPIFPFSTOP	=	0xe6e3$/;"	d
+_EP6GPIFTRIG	../lib/fx2utils.asm	/^_EP6GPIFTRIG	=	0xe6e4$/;"	d
+_EP6GPIFTRIG	../lib/isr.asm	/^_EP6GPIFTRIG	=	0xe6e4$/;"	d
+_EP6GPIFTRIG	../lib/timer.asm	/^_EP6GPIFTRIG	=	0xe6e4$/;"	d
+_EP6GPIFTRIG	../lib/usb_common.asm	/^_EP6GPIFTRIG	=	0xe6e4$/;"	d
+_EP6GPIFTRIG	../src/init_gpif.asm	/^_EP6GPIFTRIG	=	0xe6e4$/;"	d
+_EP6GPIFTRIG	../src/radar_main.asm	/^_EP6GPIFTRIG	=	0xe6e4$/;"	d
+_EP6GPIFTRIG	../src/usrp_common.asm	/^_EP6GPIFTRIG	=	0xe6e4$/;"	d
+_EP6ISOINPKTS	../lib/fx2utils.asm	/^_EP6ISOINPKTS	=	0xe642$/;"	d
+_EP6ISOINPKTS	../lib/isr.asm	/^_EP6ISOINPKTS	=	0xe642$/;"	d
+_EP6ISOINPKTS	../lib/timer.asm	/^_EP6ISOINPKTS	=	0xe642$/;"	d
+_EP6ISOINPKTS	../lib/usb_common.asm	/^_EP6ISOINPKTS	=	0xe642$/;"	d
+_EP6ISOINPKTS	../src/init_gpif.asm	/^_EP6ISOINPKTS	=	0xe642$/;"	d
+_EP6ISOINPKTS	../src/radar_main.asm	/^_EP6ISOINPKTS	=	0xe642$/;"	d
+_EP6ISOINPKTS	../src/usrp_common.asm	/^_EP6ISOINPKTS	=	0xe642$/;"	d
+_EP8AUTOINLENH	../lib/fx2utils.asm	/^_EP8AUTOINLENH	=	0xe626$/;"	d
+_EP8AUTOINLENH	../lib/isr.asm	/^_EP8AUTOINLENH	=	0xe626$/;"	d
+_EP8AUTOINLENH	../lib/timer.asm	/^_EP8AUTOINLENH	=	0xe626$/;"	d
+_EP8AUTOINLENH	../lib/usb_common.asm	/^_EP8AUTOINLENH	=	0xe626$/;"	d
+_EP8AUTOINLENH	../src/init_gpif.asm	/^_EP8AUTOINLENH	=	0xe626$/;"	d
+_EP8AUTOINLENH	../src/radar_main.asm	/^_EP8AUTOINLENH	=	0xe626$/;"	d
+_EP8AUTOINLENH	../src/usrp_common.asm	/^_EP8AUTOINLENH	=	0xe626$/;"	d
+_EP8AUTOINLENL	../lib/fx2utils.asm	/^_EP8AUTOINLENL	=	0xe627$/;"	d
+_EP8AUTOINLENL	../lib/isr.asm	/^_EP8AUTOINLENL	=	0xe627$/;"	d
+_EP8AUTOINLENL	../lib/timer.asm	/^_EP8AUTOINLENL	=	0xe627$/;"	d
+_EP8AUTOINLENL	../lib/usb_common.asm	/^_EP8AUTOINLENL	=	0xe627$/;"	d
+_EP8AUTOINLENL	../src/init_gpif.asm	/^_EP8AUTOINLENL	=	0xe627$/;"	d
+_EP8AUTOINLENL	../src/radar_main.asm	/^_EP8AUTOINLENL	=	0xe627$/;"	d
+_EP8AUTOINLENL	../src/usrp_common.asm	/^_EP8AUTOINLENL	=	0xe627$/;"	d
+_EP8BCH	../lib/fx2utils.asm	/^_EP8BCH	=	0xe69c$/;"	d
+_EP8BCH	../lib/isr.asm	/^_EP8BCH	=	0xe69c$/;"	d
+_EP8BCH	../lib/timer.asm	/^_EP8BCH	=	0xe69c$/;"	d
+_EP8BCH	../lib/usb_common.asm	/^_EP8BCH	=	0xe69c$/;"	d
+_EP8BCH	../src/init_gpif.asm	/^_EP8BCH	=	0xe69c$/;"	d
+_EP8BCH	../src/radar_main.asm	/^_EP8BCH	=	0xe69c$/;"	d
+_EP8BCH	../src/usrp_common.asm	/^_EP8BCH	=	0xe69c$/;"	d
+_EP8BCL	../lib/fx2utils.asm	/^_EP8BCL	=	0xe69d$/;"	d
+_EP8BCL	../lib/isr.asm	/^_EP8BCL	=	0xe69d$/;"	d
+_EP8BCL	../lib/timer.asm	/^_EP8BCL	=	0xe69d$/;"	d
+_EP8BCL	../lib/usb_common.asm	/^_EP8BCL	=	0xe69d$/;"	d
+_EP8BCL	../src/init_gpif.asm	/^_EP8BCL	=	0xe69d$/;"	d
+_EP8BCL	../src/radar_main.asm	/^_EP8BCL	=	0xe69d$/;"	d
+_EP8BCL	../src/usrp_common.asm	/^_EP8BCL	=	0xe69d$/;"	d
+_EP8CFG	../lib/fx2utils.asm	/^_EP8CFG	=	0xe615$/;"	d
+_EP8CFG	../lib/isr.asm	/^_EP8CFG	=	0xe615$/;"	d
+_EP8CFG	../lib/timer.asm	/^_EP8CFG	=	0xe615$/;"	d
+_EP8CFG	../lib/usb_common.asm	/^_EP8CFG	=	0xe615$/;"	d
+_EP8CFG	../src/init_gpif.asm	/^_EP8CFG	=	0xe615$/;"	d
+_EP8CFG	../src/radar_main.asm	/^_EP8CFG	=	0xe615$/;"	d
+_EP8CFG	../src/usrp_common.asm	/^_EP8CFG	=	0xe615$/;"	d
+_EP8CS	../lib/fx2utils.asm	/^_EP8CS	=	0xe6a6$/;"	d
+_EP8CS	../lib/isr.asm	/^_EP8CS	=	0xe6a6$/;"	d
+_EP8CS	../lib/timer.asm	/^_EP8CS	=	0xe6a6$/;"	d
+_EP8CS	../lib/usb_common.asm	/^_EP8CS	=	0xe6a6$/;"	d
+_EP8CS	../src/init_gpif.asm	/^_EP8CS	=	0xe6a6$/;"	d
+_EP8CS	../src/radar_main.asm	/^_EP8CS	=	0xe6a6$/;"	d
+_EP8CS	../src/usrp_common.asm	/^_EP8CS	=	0xe6a6$/;"	d
+_EP8FIFOBCH	../lib/fx2utils.asm	/^_EP8FIFOBCH	=	0xe6b1$/;"	d
+_EP8FIFOBCH	../lib/isr.asm	/^_EP8FIFOBCH	=	0xe6b1$/;"	d
+_EP8FIFOBCH	../lib/timer.asm	/^_EP8FIFOBCH	=	0xe6b1$/;"	d
+_EP8FIFOBCH	../lib/usb_common.asm	/^_EP8FIFOBCH	=	0xe6b1$/;"	d
+_EP8FIFOBCH	../src/init_gpif.asm	/^_EP8FIFOBCH	=	0xe6b1$/;"	d
+_EP8FIFOBCH	../src/radar_main.asm	/^_EP8FIFOBCH	=	0xe6b1$/;"	d
+_EP8FIFOBCH	../src/usrp_common.asm	/^_EP8FIFOBCH	=	0xe6b1$/;"	d
+_EP8FIFOBCL	../lib/fx2utils.asm	/^_EP8FIFOBCL	=	0xe6b2$/;"	d
+_EP8FIFOBCL	../lib/isr.asm	/^_EP8FIFOBCL	=	0xe6b2$/;"	d
+_EP8FIFOBCL	../lib/timer.asm	/^_EP8FIFOBCL	=	0xe6b2$/;"	d
+_EP8FIFOBCL	../lib/usb_common.asm	/^_EP8FIFOBCL	=	0xe6b2$/;"	d
+_EP8FIFOBCL	../src/init_gpif.asm	/^_EP8FIFOBCL	=	0xe6b2$/;"	d
+_EP8FIFOBCL	../src/radar_main.asm	/^_EP8FIFOBCL	=	0xe6b2$/;"	d
+_EP8FIFOBCL	../src/usrp_common.asm	/^_EP8FIFOBCL	=	0xe6b2$/;"	d
+_EP8FIFOBUF	../lib/fx2utils.asm	/^_EP8FIFOBUF	=	0xfc00$/;"	d
+_EP8FIFOBUF	../lib/isr.asm	/^_EP8FIFOBUF	=	0xfc00$/;"	d
+_EP8FIFOBUF	../lib/timer.asm	/^_EP8FIFOBUF	=	0xfc00$/;"	d
+_EP8FIFOBUF	../lib/usb_common.asm	/^_EP8FIFOBUF	=	0xfc00$/;"	d
+_EP8FIFOBUF	../src/init_gpif.asm	/^_EP8FIFOBUF	=	0xfc00$/;"	d
+_EP8FIFOBUF	../src/radar_main.asm	/^_EP8FIFOBUF	=	0xfc00$/;"	d
+_EP8FIFOBUF	../src/usrp_common.asm	/^_EP8FIFOBUF	=	0xfc00$/;"	d
+_EP8FIFOCFG	../lib/fx2utils.asm	/^_EP8FIFOCFG	=	0xe61b$/;"	d
+_EP8FIFOCFG	../lib/isr.asm	/^_EP8FIFOCFG	=	0xe61b$/;"	d
+_EP8FIFOCFG	../lib/timer.asm	/^_EP8FIFOCFG	=	0xe61b$/;"	d
+_EP8FIFOCFG	../lib/usb_common.asm	/^_EP8FIFOCFG	=	0xe61b$/;"	d
+_EP8FIFOCFG	../src/init_gpif.asm	/^_EP8FIFOCFG	=	0xe61b$/;"	d
+_EP8FIFOCFG	../src/radar_main.asm	/^_EP8FIFOCFG	=	0xe61b$/;"	d
+_EP8FIFOCFG	../src/usrp_common.asm	/^_EP8FIFOCFG	=	0xe61b$/;"	d
+_EP8FIFOFLGS	../lib/fx2utils.asm	/^_EP8FIFOFLGS	=	0xe6aa$/;"	d
+_EP8FIFOFLGS	../lib/isr.asm	/^_EP8FIFOFLGS	=	0xe6aa$/;"	d
+_EP8FIFOFLGS	../lib/timer.asm	/^_EP8FIFOFLGS	=	0xe6aa$/;"	d
+_EP8FIFOFLGS	../lib/usb_common.asm	/^_EP8FIFOFLGS	=	0xe6aa$/;"	d
+_EP8FIFOFLGS	../src/init_gpif.asm	/^_EP8FIFOFLGS	=	0xe6aa$/;"	d
+_EP8FIFOFLGS	../src/radar_main.asm	/^_EP8FIFOFLGS	=	0xe6aa$/;"	d
+_EP8FIFOFLGS	../src/usrp_common.asm	/^_EP8FIFOFLGS	=	0xe6aa$/;"	d
+_EP8FIFOIE	../lib/fx2utils.asm	/^_EP8FIFOIE	=	0xe656$/;"	d
+_EP8FIFOIE	../lib/isr.asm	/^_EP8FIFOIE	=	0xe656$/;"	d
+_EP8FIFOIE	../lib/timer.asm	/^_EP8FIFOIE	=	0xe656$/;"	d
+_EP8FIFOIE	../lib/usb_common.asm	/^_EP8FIFOIE	=	0xe656$/;"	d
+_EP8FIFOIE	../src/init_gpif.asm	/^_EP8FIFOIE	=	0xe656$/;"	d
+_EP8FIFOIE	../src/radar_main.asm	/^_EP8FIFOIE	=	0xe656$/;"	d
+_EP8FIFOIE	../src/usrp_common.asm	/^_EP8FIFOIE	=	0xe656$/;"	d
+_EP8FIFOIRQ	../lib/fx2utils.asm	/^_EP8FIFOIRQ	=	0xe657$/;"	d
+_EP8FIFOIRQ	../lib/isr.asm	/^_EP8FIFOIRQ	=	0xe657$/;"	d
+_EP8FIFOIRQ	../lib/timer.asm	/^_EP8FIFOIRQ	=	0xe657$/;"	d
+_EP8FIFOIRQ	../lib/usb_common.asm	/^_EP8FIFOIRQ	=	0xe657$/;"	d
+_EP8FIFOIRQ	../src/init_gpif.asm	/^_EP8FIFOIRQ	=	0xe657$/;"	d
+_EP8FIFOIRQ	../src/radar_main.asm	/^_EP8FIFOIRQ	=	0xe657$/;"	d
+_EP8FIFOIRQ	../src/usrp_common.asm	/^_EP8FIFOIRQ	=	0xe657$/;"	d
+_EP8FIFOPFH	../lib/fx2utils.asm	/^_EP8FIFOPFH	=	0xe636$/;"	d
+_EP8FIFOPFH	../lib/isr.asm	/^_EP8FIFOPFH	=	0xe636$/;"	d
+_EP8FIFOPFH	../lib/timer.asm	/^_EP8FIFOPFH	=	0xe636$/;"	d
+_EP8FIFOPFH	../lib/usb_common.asm	/^_EP8FIFOPFH	=	0xe636$/;"	d
+_EP8FIFOPFH	../src/init_gpif.asm	/^_EP8FIFOPFH	=	0xe636$/;"	d
+_EP8FIFOPFH	../src/radar_main.asm	/^_EP8FIFOPFH	=	0xe636$/;"	d
+_EP8FIFOPFH	../src/usrp_common.asm	/^_EP8FIFOPFH	=	0xe636$/;"	d
+_EP8FIFOPFL	../lib/fx2utils.asm	/^_EP8FIFOPFL	=	0xe637$/;"	d
+_EP8FIFOPFL	../lib/isr.asm	/^_EP8FIFOPFL	=	0xe637$/;"	d
+_EP8FIFOPFL	../lib/timer.asm	/^_EP8FIFOPFL	=	0xe637$/;"	d
+_EP8FIFOPFL	../lib/usb_common.asm	/^_EP8FIFOPFL	=	0xe637$/;"	d
+_EP8FIFOPFL	../src/init_gpif.asm	/^_EP8FIFOPFL	=	0xe637$/;"	d
+_EP8FIFOPFL	../src/radar_main.asm	/^_EP8FIFOPFL	=	0xe637$/;"	d
+_EP8FIFOPFL	../src/usrp_common.asm	/^_EP8FIFOPFL	=	0xe637$/;"	d
+_EP8GPIFFLGSEL	../lib/fx2utils.asm	/^_EP8GPIFFLGSEL	=	0xe6ea$/;"	d
+_EP8GPIFFLGSEL	../lib/isr.asm	/^_EP8GPIFFLGSEL	=	0xe6ea$/;"	d
+_EP8GPIFFLGSEL	../lib/timer.asm	/^_EP8GPIFFLGSEL	=	0xe6ea$/;"	d
+_EP8GPIFFLGSEL	../lib/usb_common.asm	/^_EP8GPIFFLGSEL	=	0xe6ea$/;"	d
+_EP8GPIFFLGSEL	../src/init_gpif.asm	/^_EP8GPIFFLGSEL	=	0xe6ea$/;"	d
+_EP8GPIFFLGSEL	../src/radar_main.asm	/^_EP8GPIFFLGSEL	=	0xe6ea$/;"	d
+_EP8GPIFFLGSEL	../src/usrp_common.asm	/^_EP8GPIFFLGSEL	=	0xe6ea$/;"	d
+_EP8GPIFPFSTOP	../lib/fx2utils.asm	/^_EP8GPIFPFSTOP	=	0xe6eb$/;"	d
+_EP8GPIFPFSTOP	../lib/isr.asm	/^_EP8GPIFPFSTOP	=	0xe6eb$/;"	d
+_EP8GPIFPFSTOP	../lib/timer.asm	/^_EP8GPIFPFSTOP	=	0xe6eb$/;"	d
+_EP8GPIFPFSTOP	../lib/usb_common.asm	/^_EP8GPIFPFSTOP	=	0xe6eb$/;"	d
+_EP8GPIFPFSTOP	../src/init_gpif.asm	/^_EP8GPIFPFSTOP	=	0xe6eb$/;"	d
+_EP8GPIFPFSTOP	../src/radar_main.asm	/^_EP8GPIFPFSTOP	=	0xe6eb$/;"	d
+_EP8GPIFPFSTOP	../src/usrp_common.asm	/^_EP8GPIFPFSTOP	=	0xe6eb$/;"	d
+_EP8GPIFTRIG	../lib/fx2utils.asm	/^_EP8GPIFTRIG	=	0xe6ec$/;"	d
+_EP8GPIFTRIG	../lib/isr.asm	/^_EP8GPIFTRIG	=	0xe6ec$/;"	d
+_EP8GPIFTRIG	../lib/timer.asm	/^_EP8GPIFTRIG	=	0xe6ec$/;"	d
+_EP8GPIFTRIG	../lib/usb_common.asm	/^_EP8GPIFTRIG	=	0xe6ec$/;"	d
+_EP8GPIFTRIG	../src/init_gpif.asm	/^_EP8GPIFTRIG	=	0xe6ec$/;"	d
+_EP8GPIFTRIG	../src/radar_main.asm	/^_EP8GPIFTRIG	=	0xe6ec$/;"	d
+_EP8GPIFTRIG	../src/usrp_common.asm	/^_EP8GPIFTRIG	=	0xe6ec$/;"	d
+_EP8ISOINPKTS	../lib/fx2utils.asm	/^_EP8ISOINPKTS	=	0xe643$/;"	d
+_EP8ISOINPKTS	../lib/isr.asm	/^_EP8ISOINPKTS	=	0xe643$/;"	d
+_EP8ISOINPKTS	../lib/timer.asm	/^_EP8ISOINPKTS	=	0xe643$/;"	d
+_EP8ISOINPKTS	../lib/usb_common.asm	/^_EP8ISOINPKTS	=	0xe643$/;"	d
+_EP8ISOINPKTS	../src/init_gpif.asm	/^_EP8ISOINPKTS	=	0xe643$/;"	d
+_EP8ISOINPKTS	../src/radar_main.asm	/^_EP8ISOINPKTS	=	0xe643$/;"	d
+_EP8ISOINPKTS	../src/usrp_common.asm	/^_EP8ISOINPKTS	=	0xe643$/;"	d
+_EPIE	../lib/fx2utils.asm	/^_EPIE	=	0xe65e$/;"	d
+_EPIE	../lib/isr.asm	/^_EPIE	=	0xe65e$/;"	d
+_EPIE	../lib/timer.asm	/^_EPIE	=	0xe65e$/;"	d
+_EPIE	../lib/usb_common.asm	/^_EPIE	=	0xe65e$/;"	d
+_EPIE	../src/init_gpif.asm	/^_EPIE	=	0xe65e$/;"	d
+_EPIE	../src/radar_main.asm	/^_EPIE	=	0xe65e$/;"	d
+_EPIE	../src/usrp_common.asm	/^_EPIE	=	0xe65e$/;"	d
+_EPIRQ	../lib/fx2utils.asm	/^_EPIRQ	=	0xe65f$/;"	d
+_EPIRQ	../lib/isr.asm	/^_EPIRQ	=	0xe65f$/;"	d
+_EPIRQ	../lib/timer.asm	/^_EPIRQ	=	0xe65f$/;"	d
+_EPIRQ	../lib/usb_common.asm	/^_EPIRQ	=	0xe65f$/;"	d
+_EPIRQ	../src/init_gpif.asm	/^_EPIRQ	=	0xe65f$/;"	d
+_EPIRQ	../src/radar_main.asm	/^_EPIRQ	=	0xe65f$/;"	d
+_EPIRQ	../src/usrp_common.asm	/^_EPIRQ	=	0xe65f$/;"	d
+_ERESI	../lib/fx2utils.asm	/^_ERESI	=	0x00dd$/;"	d
+_ERESI	../lib/isr.asm	/^_ERESI	=	0x00dd$/;"	d
+_ERESI	../lib/timer.asm	/^_ERESI	=	0x00dd$/;"	d
+_ERESI	../lib/usb_common.asm	/^_ERESI	=	0x00dd$/;"	d
+_ERESI	../src/init_gpif.asm	/^_ERESI	=	0x00dd$/;"	d
+_ERESI	../src/radar_main.asm	/^_ERESI	=	0x00dd$/;"	d
+_ERESI	../src/usrp_common.asm	/^_ERESI	=	0x00dd$/;"	d
+_ERRCNTLIM	../lib/fx2utils.asm	/^_ERRCNTLIM	=	0xe664$/;"	d
+_ERRCNTLIM	../lib/isr.asm	/^_ERRCNTLIM	=	0xe664$/;"	d
+_ERRCNTLIM	../lib/timer.asm	/^_ERRCNTLIM	=	0xe664$/;"	d
+_ERRCNTLIM	../lib/usb_common.asm	/^_ERRCNTLIM	=	0xe664$/;"	d
+_ERRCNTLIM	../src/init_gpif.asm	/^_ERRCNTLIM	=	0xe664$/;"	d
+_ERRCNTLIM	../src/radar_main.asm	/^_ERRCNTLIM	=	0xe664$/;"	d
+_ERRCNTLIM	../src/usrp_common.asm	/^_ERRCNTLIM	=	0xe664$/;"	d
+_ES0	../lib/fx2utils.asm	/^_ES0	=	0x00ac$/;"	d
+_ES0	../lib/isr.asm	/^_ES0	=	0x00ac$/;"	d
+_ES0	../lib/timer.asm	/^_ES0	=	0x00ac$/;"	d
+_ES0	../lib/usb_common.asm	/^_ES0	=	0x00ac$/;"	d
+_ES0	../src/init_gpif.asm	/^_ES0	=	0x00ac$/;"	d
+_ES0	../src/radar_main.asm	/^_ES0	=	0x00ac$/;"	d
+_ES0	../src/usrp_common.asm	/^_ES0	=	0x00ac$/;"	d
+_ES1	../lib/fx2utils.asm	/^_ES1	=	0x00ae$/;"	d
+_ES1	../lib/isr.asm	/^_ES1	=	0x00ae$/;"	d
+_ES1	../lib/timer.asm	/^_ES1	=	0x00ae$/;"	d
+_ES1	../lib/usb_common.asm	/^_ES1	=	0x00ae$/;"	d
+_ES1	../src/init_gpif.asm	/^_ES1	=	0x00ae$/;"	d
+_ES1	../src/radar_main.asm	/^_ES1	=	0x00ae$/;"	d
+_ES1	../src/usrp_common.asm	/^_ES1	=	0x00ae$/;"	d
+_ET0	../lib/fx2utils.asm	/^_ET0	=	0x00a9$/;"	d
+_ET0	../lib/isr.asm	/^_ET0	=	0x00a9$/;"	d
+_ET0	../lib/timer.asm	/^_ET0	=	0x00a9$/;"	d
+_ET0	../lib/usb_common.asm	/^_ET0	=	0x00a9$/;"	d
+_ET0	../src/init_gpif.asm	/^_ET0	=	0x00a9$/;"	d
+_ET0	../src/radar_main.asm	/^_ET0	=	0x00a9$/;"	d
+_ET0	../src/usrp_common.asm	/^_ET0	=	0x00a9$/;"	d
+_ET1	../lib/fx2utils.asm	/^_ET1	=	0x00ab$/;"	d
+_ET1	../lib/isr.asm	/^_ET1	=	0x00ab$/;"	d
+_ET1	../lib/timer.asm	/^_ET1	=	0x00ab$/;"	d
+_ET1	../lib/usb_common.asm	/^_ET1	=	0x00ab$/;"	d
+_ET1	../src/init_gpif.asm	/^_ET1	=	0x00ab$/;"	d
+_ET1	../src/radar_main.asm	/^_ET1	=	0x00ab$/;"	d
+_ET1	../src/usrp_common.asm	/^_ET1	=	0x00ab$/;"	d
+_ET2	../lib/fx2utils.asm	/^_ET2	=	0x00ad$/;"	d
+_ET2	../lib/isr.asm	/^_ET2	=	0x00ad$/;"	d
+_ET2	../lib/timer.asm	/^_ET2	=	0x00ad$/;"	d
+_ET2	../lib/usb_common.asm	/^_ET2	=	0x00ad$/;"	d
+_ET2	../src/init_gpif.asm	/^_ET2	=	0x00ad$/;"	d
+_ET2	../src/radar_main.asm	/^_ET2	=	0x00ad$/;"	d
+_ET2	../src/usrp_common.asm	/^_ET2	=	0x00ad$/;"	d
+_EX0	../lib/fx2utils.asm	/^_EX0	=	0x00a8$/;"	d
+_EX0	../lib/isr.asm	/^_EX0	=	0x00a8$/;"	d
+_EX0	../lib/timer.asm	/^_EX0	=	0x00a8$/;"	d
+_EX0	../lib/usb_common.asm	/^_EX0	=	0x00a8$/;"	d
+_EX0	../src/init_gpif.asm	/^_EX0	=	0x00a8$/;"	d
+_EX0	../src/radar_main.asm	/^_EX0	=	0x00a8$/;"	d
+_EX0	../src/usrp_common.asm	/^_EX0	=	0x00a8$/;"	d
+_EX1	../lib/fx2utils.asm	/^_EX1	=	0x00aa$/;"	d
+_EX1	../lib/isr.asm	/^_EX1	=	0x00aa$/;"	d
+_EX1	../lib/timer.asm	/^_EX1	=	0x00aa$/;"	d
+_EX1	../lib/usb_common.asm	/^_EX1	=	0x00aa$/;"	d
+_EX1	../src/init_gpif.asm	/^_EX1	=	0x00aa$/;"	d
+_EX1	../src/radar_main.asm	/^_EX1	=	0x00aa$/;"	d
+_EX1	../src/usrp_common.asm	/^_EX1	=	0x00aa$/;"	d
+_EXEN2	../lib/fx2utils.asm	/^_EXEN2	=	0x00cb$/;"	d
+_EXEN2	../lib/isr.asm	/^_EXEN2	=	0x00cb$/;"	d
+_EXEN2	../lib/timer.asm	/^_EXEN2	=	0x00cb$/;"	d
+_EXEN2	../lib/usb_common.asm	/^_EXEN2	=	0x00cb$/;"	d
+_EXEN2	../src/init_gpif.asm	/^_EXEN2	=	0x00cb$/;"	d
+_EXEN2	../src/radar_main.asm	/^_EXEN2	=	0x00cb$/;"	d
+_EXEN2	../src/usrp_common.asm	/^_EXEN2	=	0x00cb$/;"	d
+_EXF2	../lib/fx2utils.asm	/^_EXF2	=	0x00ce$/;"	d
+_EXF2	../lib/isr.asm	/^_EXF2	=	0x00ce$/;"	d
+_EXF2	../lib/timer.asm	/^_EXF2	=	0x00ce$/;"	d
+_EXF2	../lib/usb_common.asm	/^_EXF2	=	0x00ce$/;"	d
+_EXF2	../src/init_gpif.asm	/^_EXF2	=	0x00ce$/;"	d
+_EXF2	../src/radar_main.asm	/^_EXF2	=	0x00ce$/;"	d
+_EXF2	../src/usrp_common.asm	/^_EXF2	=	0x00ce$/;"	d
+_EXIF	../lib/fx2utils.asm	/^_EXIF	=	0x0091$/;"	d
+_EXIF	../lib/isr.asm	/^_EXIF	=	0x0091$/;"	d
+_EXIF	../lib/timer.asm	/^_EXIF	=	0x0091$/;"	d
+_EXIF	../lib/usb_common.asm	/^_EXIF	=	0x0091$/;"	d
+_EXIF	../src/init_gpif.asm	/^_EXIF	=	0x0091$/;"	d
+_EXIF	../src/radar_main.asm	/^_EXIF	=	0x0091$/;"	d
+_EXIF	../src/usrp_common.asm	/^_EXIF	=	0x0091$/;"	d
+_F0	../lib/fx2utils.asm	/^_F0	=	0x00d5$/;"	d
+_F0	../lib/isr.asm	/^_F0	=	0x00d5$/;"	d
+_F0	../lib/timer.asm	/^_F0	=	0x00d5$/;"	d
+_F0	../lib/usb_common.asm	/^_F0	=	0x00d5$/;"	d
+_F0	../src/init_gpif.asm	/^_F0	=	0x00d5$/;"	d
+_F0	../src/radar_main.asm	/^_F0	=	0x00d5$/;"	d
+_F0	../src/usrp_common.asm	/^_F0	=	0x00d5$/;"	d
+_FIFOPINPOLAR	../lib/fx2utils.asm	/^_FIFOPINPOLAR	=	0xe609$/;"	d
+_FIFOPINPOLAR	../lib/isr.asm	/^_FIFOPINPOLAR	=	0xe609$/;"	d
+_FIFOPINPOLAR	../lib/timer.asm	/^_FIFOPINPOLAR	=	0xe609$/;"	d
+_FIFOPINPOLAR	../lib/usb_common.asm	/^_FIFOPINPOLAR	=	0xe609$/;"	d
+_FIFOPINPOLAR	../src/init_gpif.asm	/^_FIFOPINPOLAR	=	0xe609$/;"	d
+_FIFOPINPOLAR	../src/radar_main.asm	/^_FIFOPINPOLAR	=	0xe609$/;"	d
+_FIFOPINPOLAR	../src/usrp_common.asm	/^_FIFOPINPOLAR	=	0xe609$/;"	d
+_FIFORESET	../lib/fx2utils.asm	/^_FIFORESET	=	0xe604$/;"	d
+_FIFORESET	../lib/isr.asm	/^_FIFORESET	=	0xe604$/;"	d
+_FIFORESET	../lib/timer.asm	/^_FIFORESET	=	0xe604$/;"	d
+_FIFORESET	../lib/usb_common.asm	/^_FIFORESET	=	0xe604$/;"	d
+_FIFORESET	../src/init_gpif.asm	/^_FIFORESET	=	0xe604$/;"	d
+_FIFORESET	../src/radar_main.asm	/^_FIFORESET	=	0xe604$/;"	d
+_FIFORESET	../src/usrp_common.asm	/^_FIFORESET	=	0xe604$/;"	d
+_FL	../lib/fx2utils.asm	/^_FL	=	0x00d1$/;"	d
+_FL	../lib/isr.asm	/^_FL	=	0x00d1$/;"	d
+_FL	../lib/timer.asm	/^_FL	=	0x00d1$/;"	d
+_FL	../lib/usb_common.asm	/^_FL	=	0x00d1$/;"	d
+_FL	../src/init_gpif.asm	/^_FL	=	0x00d1$/;"	d
+_FL	../src/radar_main.asm	/^_FL	=	0x00d1$/;"	d
+_FL	../src/usrp_common.asm	/^_FL	=	0x00d1$/;"	d
+_FLOWEQ0CTL	../lib/fx2utils.asm	/^_FLOWEQ0CTL	=	0xe6c8$/;"	d
+_FLOWEQ0CTL	../lib/isr.asm	/^_FLOWEQ0CTL	=	0xe6c8$/;"	d
+_FLOWEQ0CTL	../lib/timer.asm	/^_FLOWEQ0CTL	=	0xe6c8$/;"	d
+_FLOWEQ0CTL	../lib/usb_common.asm	/^_FLOWEQ0CTL	=	0xe6c8$/;"	d
+_FLOWEQ0CTL	../src/init_gpif.asm	/^_FLOWEQ0CTL	=	0xe6c8$/;"	d
+_FLOWEQ0CTL	../src/radar_main.asm	/^_FLOWEQ0CTL	=	0xe6c8$/;"	d
+_FLOWEQ0CTL	../src/usrp_common.asm	/^_FLOWEQ0CTL	=	0xe6c8$/;"	d
+_FLOWEQ1CTL	../lib/fx2utils.asm	/^_FLOWEQ1CTL	=	0xe6c9$/;"	d
+_FLOWEQ1CTL	../lib/isr.asm	/^_FLOWEQ1CTL	=	0xe6c9$/;"	d
+_FLOWEQ1CTL	../lib/timer.asm	/^_FLOWEQ1CTL	=	0xe6c9$/;"	d
+_FLOWEQ1CTL	../lib/usb_common.asm	/^_FLOWEQ1CTL	=	0xe6c9$/;"	d
+_FLOWEQ1CTL	../src/init_gpif.asm	/^_FLOWEQ1CTL	=	0xe6c9$/;"	d
+_FLOWEQ1CTL	../src/radar_main.asm	/^_FLOWEQ1CTL	=	0xe6c9$/;"	d
+_FLOWEQ1CTL	../src/usrp_common.asm	/^_FLOWEQ1CTL	=	0xe6c9$/;"	d
+_FLOWHOLDOFF	../lib/fx2utils.asm	/^_FLOWHOLDOFF	=	0xe6ca$/;"	d
+_FLOWHOLDOFF	../lib/isr.asm	/^_FLOWHOLDOFF	=	0xe6ca$/;"	d
+_FLOWHOLDOFF	../lib/timer.asm	/^_FLOWHOLDOFF	=	0xe6ca$/;"	d
+_FLOWHOLDOFF	../lib/usb_common.asm	/^_FLOWHOLDOFF	=	0xe6ca$/;"	d
+_FLOWHOLDOFF	../src/init_gpif.asm	/^_FLOWHOLDOFF	=	0xe6ca$/;"	d
+_FLOWHOLDOFF	../src/radar_main.asm	/^_FLOWHOLDOFF	=	0xe6ca$/;"	d
+_FLOWHOLDOFF	../src/usrp_common.asm	/^_FLOWHOLDOFF	=	0xe6ca$/;"	d
+_FLOWLOGIC	../lib/fx2utils.asm	/^_FLOWLOGIC	=	0xe6c7$/;"	d
+_FLOWLOGIC	../lib/isr.asm	/^_FLOWLOGIC	=	0xe6c7$/;"	d
+_FLOWLOGIC	../lib/timer.asm	/^_FLOWLOGIC	=	0xe6c7$/;"	d
+_FLOWLOGIC	../lib/usb_common.asm	/^_FLOWLOGIC	=	0xe6c7$/;"	d
+_FLOWLOGIC	../src/init_gpif.asm	/^_FLOWLOGIC	=	0xe6c7$/;"	d
+_FLOWLOGIC	../src/radar_main.asm	/^_FLOWLOGIC	=	0xe6c7$/;"	d
+_FLOWLOGIC	../src/usrp_common.asm	/^_FLOWLOGIC	=	0xe6c7$/;"	d
+_FLOWSTATE	../lib/fx2utils.asm	/^_FLOWSTATE	=	0xe6c6$/;"	d
+_FLOWSTATE	../lib/isr.asm	/^_FLOWSTATE	=	0xe6c6$/;"	d
+_FLOWSTATE	../lib/timer.asm	/^_FLOWSTATE	=	0xe6c6$/;"	d
+_FLOWSTATE	../lib/usb_common.asm	/^_FLOWSTATE	=	0xe6c6$/;"	d
+_FLOWSTATE	../src/init_gpif.asm	/^_FLOWSTATE	=	0xe6c6$/;"	d
+_FLOWSTATE	../src/radar_main.asm	/^_FLOWSTATE	=	0xe6c6$/;"	d
+_FLOWSTATE	../src/usrp_common.asm	/^_FLOWSTATE	=	0xe6c6$/;"	d
+_FLOWSTB	../lib/fx2utils.asm	/^_FLOWSTB	=	0xe6cb$/;"	d
+_FLOWSTB	../lib/isr.asm	/^_FLOWSTB	=	0xe6cb$/;"	d
+_FLOWSTB	../lib/timer.asm	/^_FLOWSTB	=	0xe6cb$/;"	d
+_FLOWSTB	../lib/usb_common.asm	/^_FLOWSTB	=	0xe6cb$/;"	d
+_FLOWSTB	../src/init_gpif.asm	/^_FLOWSTB	=	0xe6cb$/;"	d
+_FLOWSTB	../src/radar_main.asm	/^_FLOWSTB	=	0xe6cb$/;"	d
+_FLOWSTB	../src/usrp_common.asm	/^_FLOWSTB	=	0xe6cb$/;"	d
+_FLOWSTBEDGE	../lib/fx2utils.asm	/^_FLOWSTBEDGE	=	0xe6cc$/;"	d
+_FLOWSTBEDGE	../lib/isr.asm	/^_FLOWSTBEDGE	=	0xe6cc$/;"	d
+_FLOWSTBEDGE	../lib/timer.asm	/^_FLOWSTBEDGE	=	0xe6cc$/;"	d
+_FLOWSTBEDGE	../lib/usb_common.asm	/^_FLOWSTBEDGE	=	0xe6cc$/;"	d
+_FLOWSTBEDGE	../src/init_gpif.asm	/^_FLOWSTBEDGE	=	0xe6cc$/;"	d
+_FLOWSTBEDGE	../src/radar_main.asm	/^_FLOWSTBEDGE	=	0xe6cc$/;"	d
+_FLOWSTBEDGE	../src/usrp_common.asm	/^_FLOWSTBEDGE	=	0xe6cc$/;"	d
+_FLOWSTBHPERIOD	../lib/fx2utils.asm	/^_FLOWSTBHPERIOD	=	0xe6cd$/;"	d
+_FLOWSTBHPERIOD	../lib/isr.asm	/^_FLOWSTBHPERIOD	=	0xe6cd$/;"	d
+_FLOWSTBHPERIOD	../lib/timer.asm	/^_FLOWSTBHPERIOD	=	0xe6cd$/;"	d
+_FLOWSTBHPERIOD	../lib/usb_common.asm	/^_FLOWSTBHPERIOD	=	0xe6cd$/;"	d
+_FLOWSTBHPERIOD	../src/init_gpif.asm	/^_FLOWSTBHPERIOD	=	0xe6cd$/;"	d
+_FLOWSTBHPERIOD	../src/radar_main.asm	/^_FLOWSTBHPERIOD	=	0xe6cd$/;"	d
+_FLOWSTBHPERIOD	../src/usrp_common.asm	/^_FLOWSTBHPERIOD	=	0xe6cd$/;"	d
+_FNADDR	../lib/fx2utils.asm	/^_FNADDR	=	0xe687$/;"	d
+_FNADDR	../lib/isr.asm	/^_FNADDR	=	0xe687$/;"	d
+_FNADDR	../lib/timer.asm	/^_FNADDR	=	0xe687$/;"	d
+_FNADDR	../lib/usb_common.asm	/^_FNADDR	=	0xe687$/;"	d
+_FNADDR	../src/init_gpif.asm	/^_FNADDR	=	0xe687$/;"	d
+_FNADDR	../src/radar_main.asm	/^_FNADDR	=	0xe687$/;"	d
+_FNADDR	../src/usrp_common.asm	/^_FNADDR	=	0xe687$/;"	d
+_FX2UTILS_H_	../include/fx2utils.h	23;"	d
+_FlowStates	../src/radar_gpif2.asm	/^_FlowStates:$/;"	l
+_GPIFABORT	../lib/fx2utils.asm	/^_GPIFABORT	=	0xe6f5$/;"	d
+_GPIFABORT	../lib/isr.asm	/^_GPIFABORT	=	0xe6f5$/;"	d
+_GPIFABORT	../lib/timer.asm	/^_GPIFABORT	=	0xe6f5$/;"	d
+_GPIFABORT	../lib/usb_common.asm	/^_GPIFABORT	=	0xe6f5$/;"	d
+_GPIFABORT	../src/init_gpif.asm	/^_GPIFABORT	=	0xe6f5$/;"	d
+_GPIFABORT	../src/radar_main.asm	/^_GPIFABORT	=	0xe6f5$/;"	d
+_GPIFABORT	../src/usrp_common.asm	/^_GPIFABORT	=	0xe6f5$/;"	d
+_GPIFADRH	../lib/fx2utils.asm	/^_GPIFADRH	=	0xe6c4$/;"	d
+_GPIFADRH	../lib/isr.asm	/^_GPIFADRH	=	0xe6c4$/;"	d
+_GPIFADRH	../lib/timer.asm	/^_GPIFADRH	=	0xe6c4$/;"	d
+_GPIFADRH	../lib/usb_common.asm	/^_GPIFADRH	=	0xe6c4$/;"	d
+_GPIFADRH	../src/init_gpif.asm	/^_GPIFADRH	=	0xe6c4$/;"	d
+_GPIFADRH	../src/radar_main.asm	/^_GPIFADRH	=	0xe6c4$/;"	d
+_GPIFADRH	../src/usrp_common.asm	/^_GPIFADRH	=	0xe6c4$/;"	d
+_GPIFADRL	../lib/fx2utils.asm	/^_GPIFADRL	=	0xe6c5$/;"	d
+_GPIFADRL	../lib/isr.asm	/^_GPIFADRL	=	0xe6c5$/;"	d
+_GPIFADRL	../lib/timer.asm	/^_GPIFADRL	=	0xe6c5$/;"	d
+_GPIFADRL	../lib/usb_common.asm	/^_GPIFADRL	=	0xe6c5$/;"	d
+_GPIFADRL	../src/init_gpif.asm	/^_GPIFADRL	=	0xe6c5$/;"	d
+_GPIFADRL	../src/radar_main.asm	/^_GPIFADRL	=	0xe6c5$/;"	d
+_GPIFADRL	../src/usrp_common.asm	/^_GPIFADRL	=	0xe6c5$/;"	d
+_GPIFCTLCFG	../lib/fx2utils.asm	/^_GPIFCTLCFG	=	0xe6c3$/;"	d
+_GPIFCTLCFG	../lib/isr.asm	/^_GPIFCTLCFG	=	0xe6c3$/;"	d
+_GPIFCTLCFG	../lib/timer.asm	/^_GPIFCTLCFG	=	0xe6c3$/;"	d
+_GPIFCTLCFG	../lib/usb_common.asm	/^_GPIFCTLCFG	=	0xe6c3$/;"	d
+_GPIFCTLCFG	../src/init_gpif.asm	/^_GPIFCTLCFG	=	0xe6c3$/;"	d
+_GPIFCTLCFG	../src/radar_main.asm	/^_GPIFCTLCFG	=	0xe6c3$/;"	d
+_GPIFCTLCFG	../src/usrp_common.asm	/^_GPIFCTLCFG	=	0xe6c3$/;"	d
+_GPIFHOLDAMOUNT	../lib/fx2utils.asm	/^_GPIFHOLDAMOUNT	=	0xe60c$/;"	d
+_GPIFHOLDAMOUNT	../lib/isr.asm	/^_GPIFHOLDAMOUNT	=	0xe60c$/;"	d
+_GPIFHOLDAMOUNT	../lib/timer.asm	/^_GPIFHOLDAMOUNT	=	0xe60c$/;"	d
+_GPIFHOLDAMOUNT	../lib/usb_common.asm	/^_GPIFHOLDAMOUNT	=	0xe60c$/;"	d
+_GPIFHOLDAMOUNT	../src/init_gpif.asm	/^_GPIFHOLDAMOUNT	=	0xe60c$/;"	d
+_GPIFHOLDAMOUNT	../src/radar_main.asm	/^_GPIFHOLDAMOUNT	=	0xe60c$/;"	d
+_GPIFHOLDAMOUNT	../src/usrp_common.asm	/^_GPIFHOLDAMOUNT	=	0xe60c$/;"	d
+_GPIFIDLECS	../lib/fx2utils.asm	/^_GPIFIDLECS	=	0xe6c1$/;"	d
+_GPIFIDLECS	../lib/isr.asm	/^_GPIFIDLECS	=	0xe6c1$/;"	d
+_GPIFIDLECS	../lib/timer.asm	/^_GPIFIDLECS	=	0xe6c1$/;"	d
+_GPIFIDLECS	../lib/usb_common.asm	/^_GPIFIDLECS	=	0xe6c1$/;"	d
+_GPIFIDLECS	../src/init_gpif.asm	/^_GPIFIDLECS	=	0xe6c1$/;"	d
+_GPIFIDLECS	../src/radar_main.asm	/^_GPIFIDLECS	=	0xe6c1$/;"	d
+_GPIFIDLECS	../src/usrp_common.asm	/^_GPIFIDLECS	=	0xe6c1$/;"	d
+_GPIFIDLECTL	../lib/fx2utils.asm	/^_GPIFIDLECTL	=	0xe6c2$/;"	d
+_GPIFIDLECTL	../lib/isr.asm	/^_GPIFIDLECTL	=	0xe6c2$/;"	d
+_GPIFIDLECTL	../lib/timer.asm	/^_GPIFIDLECTL	=	0xe6c2$/;"	d
+_GPIFIDLECTL	../lib/usb_common.asm	/^_GPIFIDLECTL	=	0xe6c2$/;"	d
+_GPIFIDLECTL	../src/init_gpif.asm	/^_GPIFIDLECTL	=	0xe6c2$/;"	d
+_GPIFIDLECTL	../src/radar_main.asm	/^_GPIFIDLECTL	=	0xe6c2$/;"	d
+_GPIFIDLECTL	../src/usrp_common.asm	/^_GPIFIDLECTL	=	0xe6c2$/;"	d
+_GPIFIE	../lib/fx2utils.asm	/^_GPIFIE	=	0xe660$/;"	d
+_GPIFIE	../lib/isr.asm	/^_GPIFIE	=	0xe660$/;"	d
+_GPIFIE	../lib/timer.asm	/^_GPIFIE	=	0xe660$/;"	d
+_GPIFIE	../lib/usb_common.asm	/^_GPIFIE	=	0xe660$/;"	d
+_GPIFIE	../src/init_gpif.asm	/^_GPIFIE	=	0xe660$/;"	d
+_GPIFIE	../src/radar_main.asm	/^_GPIFIE	=	0xe660$/;"	d
+_GPIFIE	../src/usrp_common.asm	/^_GPIFIE	=	0xe660$/;"	d
+_GPIFIRQ	../lib/fx2utils.asm	/^_GPIFIRQ	=	0xe661$/;"	d
+_GPIFIRQ	../lib/isr.asm	/^_GPIFIRQ	=	0xe661$/;"	d
+_GPIFIRQ	../lib/timer.asm	/^_GPIFIRQ	=	0xe661$/;"	d
+_GPIFIRQ	../lib/usb_common.asm	/^_GPIFIRQ	=	0xe661$/;"	d
+_GPIFIRQ	../src/init_gpif.asm	/^_GPIFIRQ	=	0xe661$/;"	d
+_GPIFIRQ	../src/radar_main.asm	/^_GPIFIRQ	=	0xe661$/;"	d
+_GPIFIRQ	../src/usrp_common.asm	/^_GPIFIRQ	=	0xe661$/;"	d
+_GPIFREADYCFG	../lib/fx2utils.asm	/^_GPIFREADYCFG	=	0xe6f3$/;"	d
+_GPIFREADYCFG	../lib/isr.asm	/^_GPIFREADYCFG	=	0xe6f3$/;"	d
+_GPIFREADYCFG	../lib/timer.asm	/^_GPIFREADYCFG	=	0xe6f3$/;"	d
+_GPIFREADYCFG	../lib/usb_common.asm	/^_GPIFREADYCFG	=	0xe6f3$/;"	d
+_GPIFREADYCFG	../src/init_gpif.asm	/^_GPIFREADYCFG	=	0xe6f3$/;"	d
+_GPIFREADYCFG	../src/radar_main.asm	/^_GPIFREADYCFG	=	0xe6f3$/;"	d
+_GPIFREADYCFG	../src/usrp_common.asm	/^_GPIFREADYCFG	=	0xe6f3$/;"	d
+_GPIFREADYSTAT	../lib/fx2utils.asm	/^_GPIFREADYSTAT	=	0xe6f4$/;"	d
+_GPIFREADYSTAT	../lib/isr.asm	/^_GPIFREADYSTAT	=	0xe6f4$/;"	d
+_GPIFREADYSTAT	../lib/timer.asm	/^_GPIFREADYSTAT	=	0xe6f4$/;"	d
+_GPIFREADYSTAT	../lib/usb_common.asm	/^_GPIFREADYSTAT	=	0xe6f4$/;"	d
+_GPIFREADYSTAT	../src/init_gpif.asm	/^_GPIFREADYSTAT	=	0xe6f4$/;"	d
+_GPIFREADYSTAT	../src/radar_main.asm	/^_GPIFREADYSTAT	=	0xe6f4$/;"	d
+_GPIFREADYSTAT	../src/usrp_common.asm	/^_GPIFREADYSTAT	=	0xe6f4$/;"	d
+_GPIFSGLDATH	../lib/fx2utils.asm	/^_GPIFSGLDATH	=	0x00bd$/;"	d
+_GPIFSGLDATH	../lib/isr.asm	/^_GPIFSGLDATH	=	0x00bd$/;"	d
+_GPIFSGLDATH	../lib/timer.asm	/^_GPIFSGLDATH	=	0x00bd$/;"	d
+_GPIFSGLDATH	../lib/usb_common.asm	/^_GPIFSGLDATH	=	0x00bd$/;"	d
+_GPIFSGLDATH	../src/init_gpif.asm	/^_GPIFSGLDATH	=	0x00bd$/;"	d
+_GPIFSGLDATH	../src/radar_main.asm	/^_GPIFSGLDATH	=	0x00bd$/;"	d
+_GPIFSGLDATH	../src/usrp_common.asm	/^_GPIFSGLDATH	=	0x00bd$/;"	d
+_GPIFSGLDATLNOX	../lib/fx2utils.asm	/^_GPIFSGLDATLNOX	=	0x00bf$/;"	d
+_GPIFSGLDATLNOX	../lib/isr.asm	/^_GPIFSGLDATLNOX	=	0x00bf$/;"	d
+_GPIFSGLDATLNOX	../lib/timer.asm	/^_GPIFSGLDATLNOX	=	0x00bf$/;"	d
+_GPIFSGLDATLNOX	../lib/usb_common.asm	/^_GPIFSGLDATLNOX	=	0x00bf$/;"	d
+_GPIFSGLDATLNOX	../src/init_gpif.asm	/^_GPIFSGLDATLNOX	=	0x00bf$/;"	d
+_GPIFSGLDATLNOX	../src/radar_main.asm	/^_GPIFSGLDATLNOX	=	0x00bf$/;"	d
+_GPIFSGLDATLNOX	../src/usrp_common.asm	/^_GPIFSGLDATLNOX	=	0x00bf$/;"	d
+_GPIFSGLDATLX	../lib/fx2utils.asm	/^_GPIFSGLDATLX	=	0x00be$/;"	d
+_GPIFSGLDATLX	../lib/isr.asm	/^_GPIFSGLDATLX	=	0x00be$/;"	d
+_GPIFSGLDATLX	../lib/timer.asm	/^_GPIFSGLDATLX	=	0x00be$/;"	d
+_GPIFSGLDATLX	../lib/usb_common.asm	/^_GPIFSGLDATLX	=	0x00be$/;"	d
+_GPIFSGLDATLX	../src/init_gpif.asm	/^_GPIFSGLDATLX	=	0x00be$/;"	d
+_GPIFSGLDATLX	../src/radar_main.asm	/^_GPIFSGLDATLX	=	0x00be$/;"	d
+_GPIFSGLDATLX	../src/usrp_common.asm	/^_GPIFSGLDATLX	=	0x00be$/;"	d
+_GPIFTCB0	../lib/fx2utils.asm	/^_GPIFTCB0	=	0xe6d1$/;"	d
+_GPIFTCB0	../lib/isr.asm	/^_GPIFTCB0	=	0xe6d1$/;"	d
+_GPIFTCB0	../lib/timer.asm	/^_GPIFTCB0	=	0xe6d1$/;"	d
+_GPIFTCB0	../lib/usb_common.asm	/^_GPIFTCB0	=	0xe6d1$/;"	d
+_GPIFTCB0	../src/init_gpif.asm	/^_GPIFTCB0	=	0xe6d1$/;"	d
+_GPIFTCB0	../src/radar_main.asm	/^_GPIFTCB0	=	0xe6d1$/;"	d
+_GPIFTCB0	../src/usrp_common.asm	/^_GPIFTCB0	=	0xe6d1$/;"	d
+_GPIFTCB1	../lib/fx2utils.asm	/^_GPIFTCB1	=	0xe6d0$/;"	d
+_GPIFTCB1	../lib/isr.asm	/^_GPIFTCB1	=	0xe6d0$/;"	d
+_GPIFTCB1	../lib/timer.asm	/^_GPIFTCB1	=	0xe6d0$/;"	d
+_GPIFTCB1	../lib/usb_common.asm	/^_GPIFTCB1	=	0xe6d0$/;"	d
+_GPIFTCB1	../src/init_gpif.asm	/^_GPIFTCB1	=	0xe6d0$/;"	d
+_GPIFTCB1	../src/radar_main.asm	/^_GPIFTCB1	=	0xe6d0$/;"	d
+_GPIFTCB1	../src/usrp_common.asm	/^_GPIFTCB1	=	0xe6d0$/;"	d
+_GPIFTCB2	../lib/fx2utils.asm	/^_GPIFTCB2	=	0xe6cf$/;"	d
+_GPIFTCB2	../lib/isr.asm	/^_GPIFTCB2	=	0xe6cf$/;"	d
+_GPIFTCB2	../lib/timer.asm	/^_GPIFTCB2	=	0xe6cf$/;"	d
+_GPIFTCB2	../lib/usb_common.asm	/^_GPIFTCB2	=	0xe6cf$/;"	d
+_GPIFTCB2	../src/init_gpif.asm	/^_GPIFTCB2	=	0xe6cf$/;"	d
+_GPIFTCB2	../src/radar_main.asm	/^_GPIFTCB2	=	0xe6cf$/;"	d
+_GPIFTCB2	../src/usrp_common.asm	/^_GPIFTCB2	=	0xe6cf$/;"	d
+_GPIFTCB3	../lib/fx2utils.asm	/^_GPIFTCB3	=	0xe6ce$/;"	d
+_GPIFTCB3	../lib/isr.asm	/^_GPIFTCB3	=	0xe6ce$/;"	d
+_GPIFTCB3	../lib/timer.asm	/^_GPIFTCB3	=	0xe6ce$/;"	d
+_GPIFTCB3	../lib/usb_common.asm	/^_GPIFTCB3	=	0xe6ce$/;"	d
+_GPIFTCB3	../src/init_gpif.asm	/^_GPIFTCB3	=	0xe6ce$/;"	d
+_GPIFTCB3	../src/radar_main.asm	/^_GPIFTCB3	=	0xe6ce$/;"	d
+_GPIFTCB3	../src/usrp_common.asm	/^_GPIFTCB3	=	0xe6ce$/;"	d
+_GPIFTRIG	../lib/fx2utils.asm	/^_GPIFTRIG	=	0x00bb$/;"	d
+_GPIFTRIG	../lib/isr.asm	/^_GPIFTRIG	=	0x00bb$/;"	d
+_GPIFTRIG	../lib/timer.asm	/^_GPIFTRIG	=	0x00bb$/;"	d
+_GPIFTRIG	../lib/usb_common.asm	/^_GPIFTRIG	=	0x00bb$/;"	d
+_GPIFTRIG	../src/init_gpif.asm	/^_GPIFTRIG	=	0x00bb$/;"	d
+_GPIFTRIG	../src/radar_main.asm	/^_GPIFTRIG	=	0x00bb$/;"	d
+_GPIFTRIG	../src/usrp_common.asm	/^_GPIFTRIG	=	0x00bb$/;"	d
+_GPIFWFSELECT	../lib/fx2utils.asm	/^_GPIFWFSELECT	=	0xe6c0$/;"	d
+_GPIFWFSELECT	../lib/isr.asm	/^_GPIFWFSELECT	=	0xe6c0$/;"	d
+_GPIFWFSELECT	../lib/timer.asm	/^_GPIFWFSELECT	=	0xe6c0$/;"	d
+_GPIFWFSELECT	../lib/usb_common.asm	/^_GPIFWFSELECT	=	0xe6c0$/;"	d
+_GPIFWFSELECT	../src/init_gpif.asm	/^_GPIFWFSELECT	=	0xe6c0$/;"	d
+_GPIFWFSELECT	../src/radar_main.asm	/^_GPIFWFSELECT	=	0xe6c0$/;"	d
+_GPIFWFSELECT	../src/usrp_common.asm	/^_GPIFWFSELECT	=	0xe6c0$/;"	d
+_GPIF_WAVE_DATA	../lib/fx2utils.asm	/^_GPIF_WAVE_DATA	=	0xe400$/;"	d
+_GPIF_WAVE_DATA	../lib/isr.asm	/^_GPIF_WAVE_DATA	=	0xe400$/;"	d
+_GPIF_WAVE_DATA	../lib/timer.asm	/^_GPIF_WAVE_DATA	=	0xe400$/;"	d
+_GPIF_WAVE_DATA	../lib/usb_common.asm	/^_GPIF_WAVE_DATA	=	0xe400$/;"	d
+_GPIF_WAVE_DATA	../src/init_gpif.asm	/^_GPIF_WAVE_DATA	=	0xe400$/;"	d
+_GPIF_WAVE_DATA	../src/radar_main.asm	/^_GPIF_WAVE_DATA	=	0xe400$/;"	d
+_GPIF_WAVE_DATA	../src/usrp_common.asm	/^_GPIF_WAVE_DATA	=	0xe400$/;"	d
+_I2CS	../lib/fx2utils.asm	/^_I2CS	=	0xe678$/;"	d
+_I2CS	../lib/isr.asm	/^_I2CS	=	0xe678$/;"	d
+_I2CS	../lib/timer.asm	/^_I2CS	=	0xe678$/;"	d
+_I2CS	../lib/usb_common.asm	/^_I2CS	=	0xe678$/;"	d
+_I2CS	../src/init_gpif.asm	/^_I2CS	=	0xe678$/;"	d
+_I2CS	../src/radar_main.asm	/^_I2CS	=	0xe678$/;"	d
+_I2CS	../src/usrp_common.asm	/^_I2CS	=	0xe678$/;"	d
+_I2CTL	../lib/fx2utils.asm	/^_I2CTL	=	0xe67a$/;"	d
+_I2CTL	../lib/isr.asm	/^_I2CTL	=	0xe67a$/;"	d
+_I2CTL	../lib/timer.asm	/^_I2CTL	=	0xe67a$/;"	d
+_I2CTL	../lib/usb_common.asm	/^_I2CTL	=	0xe67a$/;"	d
+_I2CTL	../src/init_gpif.asm	/^_I2CTL	=	0xe67a$/;"	d
+_I2CTL	../src/radar_main.asm	/^_I2CTL	=	0xe67a$/;"	d
+_I2CTL	../src/usrp_common.asm	/^_I2CTL	=	0xe67a$/;"	d
+_I2DAT	../lib/fx2utils.asm	/^_I2DAT	=	0xe679$/;"	d
+_I2DAT	../lib/isr.asm	/^_I2DAT	=	0xe679$/;"	d
+_I2DAT	../lib/timer.asm	/^_I2DAT	=	0xe679$/;"	d
+_I2DAT	../lib/usb_common.asm	/^_I2DAT	=	0xe679$/;"	d
+_I2DAT	../src/init_gpif.asm	/^_I2DAT	=	0xe679$/;"	d
+_I2DAT	../src/radar_main.asm	/^_I2DAT	=	0xe679$/;"	d
+_I2DAT	../src/usrp_common.asm	/^_I2DAT	=	0xe679$/;"	d
+_IBNIE	../lib/fx2utils.asm	/^_IBNIE	=	0xe658$/;"	d
+_IBNIE	../lib/isr.asm	/^_IBNIE	=	0xe658$/;"	d
+_IBNIE	../lib/timer.asm	/^_IBNIE	=	0xe658$/;"	d
+_IBNIE	../lib/usb_common.asm	/^_IBNIE	=	0xe658$/;"	d
+_IBNIE	../src/init_gpif.asm	/^_IBNIE	=	0xe658$/;"	d
+_IBNIE	../src/radar_main.asm	/^_IBNIE	=	0xe658$/;"	d
+_IBNIE	../src/usrp_common.asm	/^_IBNIE	=	0xe658$/;"	d
+_IBNIRQ	../lib/fx2utils.asm	/^_IBNIRQ	=	0xe659$/;"	d
+_IBNIRQ	../lib/isr.asm	/^_IBNIRQ	=	0xe659$/;"	d
+_IBNIRQ	../lib/timer.asm	/^_IBNIRQ	=	0xe659$/;"	d
+_IBNIRQ	../lib/usb_common.asm	/^_IBNIRQ	=	0xe659$/;"	d
+_IBNIRQ	../src/init_gpif.asm	/^_IBNIRQ	=	0xe659$/;"	d
+_IBNIRQ	../src/radar_main.asm	/^_IBNIRQ	=	0xe659$/;"	d
+_IBNIRQ	../src/usrp_common.asm	/^_IBNIRQ	=	0xe659$/;"	d
+_IE	../lib/fx2utils.asm	/^_IE	=	0x00a8$/;"	d
+_IE	../lib/isr.asm	/^_IE	=	0x00a8$/;"	d
+_IE	../lib/timer.asm	/^_IE	=	0x00a8$/;"	d
+_IE	../lib/usb_common.asm	/^_IE	=	0x00a8$/;"	d
+_IE	../src/init_gpif.asm	/^_IE	=	0x00a8$/;"	d
+_IE	../src/radar_main.asm	/^_IE	=	0x00a8$/;"	d
+_IE	../src/usrp_common.asm	/^_IE	=	0x00a8$/;"	d
+_IE0	../lib/fx2utils.asm	/^_IE0	=	0x0089$/;"	d
+_IE0	../lib/isr.asm	/^_IE0	=	0x0089$/;"	d
+_IE0	../lib/timer.asm	/^_IE0	=	0x0089$/;"	d
+_IE0	../lib/usb_common.asm	/^_IE0	=	0x0089$/;"	d
+_IE0	../src/init_gpif.asm	/^_IE0	=	0x0089$/;"	d
+_IE0	../src/radar_main.asm	/^_IE0	=	0x0089$/;"	d
+_IE0	../src/usrp_common.asm	/^_IE0	=	0x0089$/;"	d
+_IE1	../lib/fx2utils.asm	/^_IE1	=	0x008b$/;"	d
+_IE1	../lib/isr.asm	/^_IE1	=	0x008b$/;"	d
+_IE1	../lib/timer.asm	/^_IE1	=	0x008b$/;"	d
+_IE1	../lib/usb_common.asm	/^_IE1	=	0x008b$/;"	d
+_IE1	../src/init_gpif.asm	/^_IE1	=	0x008b$/;"	d
+_IE1	../src/radar_main.asm	/^_IE1	=	0x008b$/;"	d
+_IE1	../src/usrp_common.asm	/^_IE1	=	0x008b$/;"	d
+_IFCONFIG	../lib/fx2utils.asm	/^_IFCONFIG	=	0xe601$/;"	d
+_IFCONFIG	../lib/isr.asm	/^_IFCONFIG	=	0xe601$/;"	d
+_IFCONFIG	../lib/timer.asm	/^_IFCONFIG	=	0xe601$/;"	d
+_IFCONFIG	../lib/usb_common.asm	/^_IFCONFIG	=	0xe601$/;"	d
+_IFCONFIG	../src/init_gpif.asm	/^_IFCONFIG	=	0xe601$/;"	d
+_IFCONFIG	../src/radar_main.asm	/^_IFCONFIG	=	0xe601$/;"	d
+_IFCONFIG	../src/usrp_common.asm	/^_IFCONFIG	=	0xe601$/;"	d
+_INPKTEND	../lib/fx2utils.asm	/^_INPKTEND	=	0xe648$/;"	d
+_INPKTEND	../lib/isr.asm	/^_INPKTEND	=	0xe648$/;"	d
+_INPKTEND	../lib/timer.asm	/^_INPKTEND	=	0xe648$/;"	d
+_INPKTEND	../lib/usb_common.asm	/^_INPKTEND	=	0xe648$/;"	d
+_INPKTEND	../src/init_gpif.asm	/^_INPKTEND	=	0xe648$/;"	d
+_INPKTEND	../src/radar_main.asm	/^_INPKTEND	=	0xe648$/;"	d
+_INPKTEND	../src/usrp_common.asm	/^_INPKTEND	=	0xe648$/;"	d
+_INT2CLR	../lib/fx2utils.asm	/^_INT2CLR	=	0x00a1$/;"	d
+_INT2CLR	../lib/isr.asm	/^_INT2CLR	=	0x00a1$/;"	d
+_INT2CLR	../lib/timer.asm	/^_INT2CLR	=	0x00a1$/;"	d
+_INT2CLR	../lib/usb_common.asm	/^_INT2CLR	=	0x00a1$/;"	d
+_INT2CLR	../src/init_gpif.asm	/^_INT2CLR	=	0x00a1$/;"	d
+_INT2CLR	../src/radar_main.asm	/^_INT2CLR	=	0x00a1$/;"	d
+_INT2CLR	../src/usrp_common.asm	/^_INT2CLR	=	0x00a1$/;"	d
+_INT2IVEC	../lib/fx2utils.asm	/^_INT2IVEC	=	0xe666$/;"	d
+_INT2IVEC	../lib/isr.asm	/^_INT2IVEC	=	0xe666$/;"	d
+_INT2IVEC	../lib/timer.asm	/^_INT2IVEC	=	0xe666$/;"	d
+_INT2IVEC	../lib/usb_common.asm	/^_INT2IVEC	=	0xe666$/;"	d
+_INT2IVEC	../src/init_gpif.asm	/^_INT2IVEC	=	0xe666$/;"	d
+_INT2IVEC	../src/radar_main.asm	/^_INT2IVEC	=	0xe666$/;"	d
+_INT2IVEC	../src/usrp_common.asm	/^_INT2IVEC	=	0xe666$/;"	d
+_INT4CLR	../lib/fx2utils.asm	/^_INT4CLR	=	0x00a2$/;"	d
+_INT4CLR	../lib/isr.asm	/^_INT4CLR	=	0x00a2$/;"	d
+_INT4CLR	../lib/timer.asm	/^_INT4CLR	=	0x00a2$/;"	d
+_INT4CLR	../lib/usb_common.asm	/^_INT4CLR	=	0x00a2$/;"	d
+_INT4CLR	../src/init_gpif.asm	/^_INT4CLR	=	0x00a2$/;"	d
+_INT4CLR	../src/radar_main.asm	/^_INT4CLR	=	0x00a2$/;"	d
+_INT4CLR	../src/usrp_common.asm	/^_INT4CLR	=	0x00a2$/;"	d
+_INT4IVEC	../lib/fx2utils.asm	/^_INT4IVEC	=	0xe667$/;"	d
+_INT4IVEC	../lib/isr.asm	/^_INT4IVEC	=	0xe667$/;"	d
+_INT4IVEC	../lib/timer.asm	/^_INT4IVEC	=	0xe667$/;"	d
+_INT4IVEC	../lib/usb_common.asm	/^_INT4IVEC	=	0xe667$/;"	d
+_INT4IVEC	../src/init_gpif.asm	/^_INT4IVEC	=	0xe667$/;"	d
+_INT4IVEC	../src/radar_main.asm	/^_INT4IVEC	=	0xe667$/;"	d
+_INT4IVEC	../src/usrp_common.asm	/^_INT4IVEC	=	0xe667$/;"	d
+_INT6	../lib/fx2utils.asm	/^_INT6	=	0x00db$/;"	d
+_INT6	../lib/isr.asm	/^_INT6	=	0x00db$/;"	d
+_INT6	../lib/timer.asm	/^_INT6	=	0x00db$/;"	d
+_INT6	../lib/usb_common.asm	/^_INT6	=	0x00db$/;"	d
+_INT6	../src/init_gpif.asm	/^_INT6	=	0x00db$/;"	d
+_INT6	../src/radar_main.asm	/^_INT6	=	0x00db$/;"	d
+_INT6	../src/usrp_common.asm	/^_INT6	=	0x00db$/;"	d
+_INTSETUP	../lib/fx2utils.asm	/^_INTSETUP	=	0xe668$/;"	d
+_INTSETUP	../lib/isr.asm	/^_INTSETUP	=	0xe668$/;"	d
+_INTSETUP	../lib/timer.asm	/^_INTSETUP	=	0xe668$/;"	d
+_INTSETUP	../lib/usb_common.asm	/^_INTSETUP	=	0xe668$/;"	d
+_INTSETUP	../src/init_gpif.asm	/^_INTSETUP	=	0xe668$/;"	d
+_INTSETUP	../src/radar_main.asm	/^_INTSETUP	=	0xe668$/;"	d
+_INTSETUP	../src/usrp_common.asm	/^_INTSETUP	=	0xe668$/;"	d
+_IOA	../lib/fx2utils.asm	/^_IOA	=	0x0080$/;"	d
+_IOA	../lib/isr.asm	/^_IOA	=	0x0080$/;"	d
+_IOA	../lib/timer.asm	/^_IOA	=	0x0080$/;"	d
+_IOA	../lib/usb_common.asm	/^_IOA	=	0x0080$/;"	d
+_IOA	../src/init_gpif.asm	/^_IOA	=	0x0080$/;"	d
+_IOA	../src/radar_main.asm	/^_IOA	=	0x0080$/;"	d
+_IOA	../src/usrp_common.asm	/^_IOA	=	0x0080$/;"	d
+_IOB	../lib/fx2utils.asm	/^_IOB	=	0x0090$/;"	d
+_IOB	../lib/isr.asm	/^_IOB	=	0x0090$/;"	d
+_IOB	../lib/timer.asm	/^_IOB	=	0x0090$/;"	d
+_IOB	../lib/usb_common.asm	/^_IOB	=	0x0090$/;"	d
+_IOB	../src/init_gpif.asm	/^_IOB	=	0x0090$/;"	d
+_IOB	../src/radar_main.asm	/^_IOB	=	0x0090$/;"	d
+_IOB	../src/usrp_common.asm	/^_IOB	=	0x0090$/;"	d
+_IOC	../lib/fx2utils.asm	/^_IOC	=	0x00a0$/;"	d
+_IOC	../lib/isr.asm	/^_IOC	=	0x00a0$/;"	d
+_IOC	../lib/timer.asm	/^_IOC	=	0x00a0$/;"	d
+_IOC	../lib/usb_common.asm	/^_IOC	=	0x00a0$/;"	d
+_IOC	../src/init_gpif.asm	/^_IOC	=	0x00a0$/;"	d
+_IOC	../src/radar_main.asm	/^_IOC	=	0x00a0$/;"	d
+_IOC	../src/usrp_common.asm	/^_IOC	=	0x00a0$/;"	d
+_IOD	../lib/fx2utils.asm	/^_IOD	=	0x00b0$/;"	d
+_IOD	../lib/isr.asm	/^_IOD	=	0x00b0$/;"	d
+_IOD	../lib/timer.asm	/^_IOD	=	0x00b0$/;"	d
+_IOD	../lib/usb_common.asm	/^_IOD	=	0x00b0$/;"	d
+_IOD	../src/init_gpif.asm	/^_IOD	=	0x00b0$/;"	d
+_IOD	../src/radar_main.asm	/^_IOD	=	0x00b0$/;"	d
+_IOD	../src/usrp_common.asm	/^_IOD	=	0x00b0$/;"	d
+_IOE	../lib/fx2utils.asm	/^_IOE	=	0x00b1$/;"	d
+_IOE	../lib/isr.asm	/^_IOE	=	0x00b1$/;"	d
+_IOE	../lib/timer.asm	/^_IOE	=	0x00b1$/;"	d
+_IOE	../lib/usb_common.asm	/^_IOE	=	0x00b1$/;"	d
+_IOE	../src/init_gpif.asm	/^_IOE	=	0x00b1$/;"	d
+_IOE	../src/radar_main.asm	/^_IOE	=	0x00b1$/;"	d
+_IOE	../src/usrp_common.asm	/^_IOE	=	0x00b1$/;"	d
+_IP	../lib/fx2utils.asm	/^_IP	=	0x00b8$/;"	d
+_IP	../lib/isr.asm	/^_IP	=	0x00b8$/;"	d
+_IP	../lib/timer.asm	/^_IP	=	0x00b8$/;"	d
+_IP	../lib/usb_common.asm	/^_IP	=	0x00b8$/;"	d
+_IP	../src/init_gpif.asm	/^_IP	=	0x00b8$/;"	d
+_IP	../src/radar_main.asm	/^_IP	=	0x00b8$/;"	d
+_IP	../src/usrp_common.asm	/^_IP	=	0x00b8$/;"	d
+_ISR_H_	../include/isr.h	24;"	d
+_IT0	../lib/fx2utils.asm	/^_IT0	=	0x0088$/;"	d
+_IT0	../lib/isr.asm	/^_IT0	=	0x0088$/;"	d
+_IT0	../lib/timer.asm	/^_IT0	=	0x0088$/;"	d
+_IT0	../lib/usb_common.asm	/^_IT0	=	0x0088$/;"	d
+_IT0	../src/init_gpif.asm	/^_IT0	=	0x0088$/;"	d
+_IT0	../src/radar_main.asm	/^_IT0	=	0x0088$/;"	d
+_IT0	../src/usrp_common.asm	/^_IT0	=	0x0088$/;"	d
+_IT1	../lib/fx2utils.asm	/^_IT1	=	0x008a$/;"	d
+_IT1	../lib/isr.asm	/^_IT1	=	0x008a$/;"	d
+_IT1	../lib/timer.asm	/^_IT1	=	0x008a$/;"	d
+_IT1	../lib/usb_common.asm	/^_IT1	=	0x008a$/;"	d
+_IT1	../src/init_gpif.asm	/^_IT1	=	0x008a$/;"	d
+_IT1	../src/radar_main.asm	/^_IT1	=	0x008a$/;"	d
+_IT1	../src/usrp_common.asm	/^_IT1	=	0x008a$/;"	d
+_InitData	../src/radar_gpif2.asm	/^_InitData:$/;"	l
+_LED0_OFF	../src/init_gpif.asm	/^_LED0_OFF	=	0x8100$/;"	d
+_LED0_OFF	../src/radar_main.asm	/^_LED0_OFF	=	0x8100$/;"	d
+_LED0_OFF	../src/usrp_common.asm	/^_LED0_OFF	=	0x8100$/;"	d
+_LED0_ON	../src/init_gpif.asm	/^_LED0_ON	=	0x8000$/;"	d
+_LED0_ON	../src/radar_main.asm	/^_LED0_ON	=	0x8000$/;"	d
+_LED0_ON	../src/usrp_common.asm	/^_LED0_ON	=	0x8000$/;"	d
+_LED1_OFF	../src/init_gpif.asm	/^_LED1_OFF	=	0x9100$/;"	d
+_LED1_OFF	../src/radar_main.asm	/^_LED1_OFF	=	0x9100$/;"	d
+_LED1_OFF	../src/usrp_common.asm	/^_LED1_OFF	=	0x9100$/;"	d
+_LED1_ON	../src/init_gpif.asm	/^_LED1_ON	=	0x9000$/;"	d
+_LED1_ON	../src/radar_main.asm	/^_LED1_ON	=	0x9000$/;"	d
+_LED1_ON	../src/usrp_common.asm	/^_LED1_ON	=	0x9000$/;"	d
+_LED2_OFF	../src/init_gpif.asm	/^_LED2_OFF	=	0xa100$/;"	d
+_LED2_OFF	../src/radar_main.asm	/^_LED2_OFF	=	0xa100$/;"	d
+_LED2_OFF	../src/usrp_common.asm	/^_LED2_OFF	=	0xa100$/;"	d
+_LED2_ON	../src/init_gpif.asm	/^_LED2_ON	=	0xa000$/;"	d
+_LED2_ON	../src/radar_main.asm	/^_LED2_ON	=	0xa000$/;"	d
+_LED2_ON	../src/usrp_common.asm	/^_LED2_ON	=	0xa000$/;"	d
+_LED3_OFF	../src/init_gpif.asm	/^_LED3_OFF	=	0xb100$/;"	d
+_LED3_OFF	../src/radar_main.asm	/^_LED3_OFF	=	0xb100$/;"	d
+_LED3_OFF	../src/usrp_common.asm	/^_LED3_OFF	=	0xb100$/;"	d
+_LED3_ON	../src/init_gpif.asm	/^_LED3_ON	=	0xb000$/;"	d
+_LED3_ON	../src/radar_main.asm	/^_LED3_ON	=	0xb000$/;"	d
+_LED3_ON	../src/usrp_common.asm	/^_LED3_ON	=	0xb000$/;"	d
+_MICROFRAME	../lib/fx2utils.asm	/^_MICROFRAME	=	0xe686$/;"	d
+_MICROFRAME	../lib/isr.asm	/^_MICROFRAME	=	0xe686$/;"	d
+_MICROFRAME	../lib/timer.asm	/^_MICROFRAME	=	0xe686$/;"	d
+_MICROFRAME	../lib/usb_common.asm	/^_MICROFRAME	=	0xe686$/;"	d
+_MICROFRAME	../src/init_gpif.asm	/^_MICROFRAME	=	0xe686$/;"	d
+_MICROFRAME	../src/radar_main.asm	/^_MICROFRAME	=	0xe686$/;"	d
+_MICROFRAME	../src/usrp_common.asm	/^_MICROFRAME	=	0xe686$/;"	d
+_MPAGE	../lib/fx2utils.asm	/^_MPAGE	=	0x0092$/;"	d
+_MPAGE	../lib/isr.asm	/^_MPAGE	=	0x0092$/;"	d
+_MPAGE	../lib/timer.asm	/^_MPAGE	=	0x0092$/;"	d
+_MPAGE	../lib/usb_common.asm	/^_MPAGE	=	0x0092$/;"	d
+_MPAGE	../src/init_gpif.asm	/^_MPAGE	=	0x0092$/;"	d
+_MPAGE	../src/radar_main.asm	/^_MPAGE	=	0x0092$/;"	d
+_MPAGE	../src/usrp_common.asm	/^_MPAGE	=	0x0092$/;"	d
+_NAKIE	../lib/fx2utils.asm	/^_NAKIE	=	0xe65a$/;"	d
+_NAKIE	../lib/isr.asm	/^_NAKIE	=	0xe65a$/;"	d
+_NAKIE	../lib/timer.asm	/^_NAKIE	=	0xe65a$/;"	d
+_NAKIE	../lib/usb_common.asm	/^_NAKIE	=	0xe65a$/;"	d
+_NAKIE	../src/init_gpif.asm	/^_NAKIE	=	0xe65a$/;"	d
+_NAKIE	../src/radar_main.asm	/^_NAKIE	=	0xe65a$/;"	d
+_NAKIE	../src/usrp_common.asm	/^_NAKIE	=	0xe65a$/;"	d
+_NAKIRQ	../lib/fx2utils.asm	/^_NAKIRQ	=	0xe65b$/;"	d
+_NAKIRQ	../lib/isr.asm	/^_NAKIRQ	=	0xe65b$/;"	d
+_NAKIRQ	../lib/timer.asm	/^_NAKIRQ	=	0xe65b$/;"	d
+_NAKIRQ	../lib/usb_common.asm	/^_NAKIRQ	=	0xe65b$/;"	d
+_NAKIRQ	../src/init_gpif.asm	/^_NAKIRQ	=	0xe65b$/;"	d
+_NAKIRQ	../src/radar_main.asm	/^_NAKIRQ	=	0xe65b$/;"	d
+_NAKIRQ	../src/usrp_common.asm	/^_NAKIRQ	=	0xe65b$/;"	d
+_OEA	../lib/fx2utils.asm	/^_OEA	=	0x00b2$/;"	d
+_OEA	../lib/isr.asm	/^_OEA	=	0x00b2$/;"	d
+_OEA	../lib/timer.asm	/^_OEA	=	0x00b2$/;"	d
+_OEA	../lib/usb_common.asm	/^_OEA	=	0x00b2$/;"	d
+_OEA	../src/init_gpif.asm	/^_OEA	=	0x00b2$/;"	d
+_OEA	../src/radar_main.asm	/^_OEA	=	0x00b2$/;"	d
+_OEA	../src/usrp_common.asm	/^_OEA	=	0x00b2$/;"	d
+_OEB	../lib/fx2utils.asm	/^_OEB	=	0x00b3$/;"	d
+_OEB	../lib/isr.asm	/^_OEB	=	0x00b3$/;"	d
+_OEB	../lib/timer.asm	/^_OEB	=	0x00b3$/;"	d
+_OEB	../lib/usb_common.asm	/^_OEB	=	0x00b3$/;"	d
+_OEB	../src/init_gpif.asm	/^_OEB	=	0x00b3$/;"	d
+_OEB	../src/radar_main.asm	/^_OEB	=	0x00b3$/;"	d
+_OEB	../src/usrp_common.asm	/^_OEB	=	0x00b3$/;"	d
+_OEC	../lib/fx2utils.asm	/^_OEC	=	0x00b4$/;"	d
+_OEC	../lib/isr.asm	/^_OEC	=	0x00b4$/;"	d
+_OEC	../lib/timer.asm	/^_OEC	=	0x00b4$/;"	d
+_OEC	../lib/usb_common.asm	/^_OEC	=	0x00b4$/;"	d
+_OEC	../src/init_gpif.asm	/^_OEC	=	0x00b4$/;"	d
+_OEC	../src/radar_main.asm	/^_OEC	=	0x00b4$/;"	d
+_OEC	../src/usrp_common.asm	/^_OEC	=	0x00b4$/;"	d
+_OED	../lib/fx2utils.asm	/^_OED	=	0x00b5$/;"	d
+_OED	../lib/isr.asm	/^_OED	=	0x00b5$/;"	d
+_OED	../lib/timer.asm	/^_OED	=	0x00b5$/;"	d
+_OED	../lib/usb_common.asm	/^_OED	=	0x00b5$/;"	d
+_OED	../src/init_gpif.asm	/^_OED	=	0x00b5$/;"	d
+_OED	../src/radar_main.asm	/^_OED	=	0x00b5$/;"	d
+_OED	../src/usrp_common.asm	/^_OED	=	0x00b5$/;"	d
+_OEE	../lib/fx2utils.asm	/^_OEE	=	0x00b6$/;"	d
+_OEE	../lib/isr.asm	/^_OEE	=	0x00b6$/;"	d
+_OEE	../lib/timer.asm	/^_OEE	=	0x00b6$/;"	d
+_OEE	../lib/usb_common.asm	/^_OEE	=	0x00b6$/;"	d
+_OEE	../src/init_gpif.asm	/^_OEE	=	0x00b6$/;"	d
+_OEE	../src/radar_main.asm	/^_OEE	=	0x00b6$/;"	d
+_OEE	../src/usrp_common.asm	/^_OEE	=	0x00b6$/;"	d
+_OUTPKTEND	../lib/fx2utils.asm	/^_OUTPKTEND	=	0xe649$/;"	d
+_OUTPKTEND	../lib/isr.asm	/^_OUTPKTEND	=	0xe649$/;"	d
+_OUTPKTEND	../lib/timer.asm	/^_OUTPKTEND	=	0xe649$/;"	d
+_OUTPKTEND	../lib/usb_common.asm	/^_OUTPKTEND	=	0xe649$/;"	d
+_OUTPKTEND	../src/init_gpif.asm	/^_OUTPKTEND	=	0xe649$/;"	d
+_OUTPKTEND	../src/radar_main.asm	/^_OUTPKTEND	=	0xe649$/;"	d
+_OUTPKTEND	../src/usrp_common.asm	/^_OUTPKTEND	=	0xe649$/;"	d
+_OV	../lib/fx2utils.asm	/^_OV	=	0x00d2$/;"	d
+_OV	../lib/isr.asm	/^_OV	=	0x00d2$/;"	d
+_OV	../lib/timer.asm	/^_OV	=	0x00d2$/;"	d
+_OV	../lib/usb_common.asm	/^_OV	=	0x00d2$/;"	d
+_OV	../src/init_gpif.asm	/^_OV	=	0x00d2$/;"	d
+_OV	../src/radar_main.asm	/^_OV	=	0x00d2$/;"	d
+_OV	../src/usrp_common.asm	/^_OV	=	0x00d2$/;"	d
+_P	../lib/fx2utils.asm	/^_P	=	0x00d0$/;"	d
+_P	../lib/isr.asm	/^_P	=	0x00d0$/;"	d
+_P	../lib/timer.asm	/^_P	=	0x00d0$/;"	d
+_P	../lib/usb_common.asm	/^_P	=	0x00d0$/;"	d
+_P	../src/init_gpif.asm	/^_P	=	0x00d0$/;"	d
+_P	../src/radar_main.asm	/^_P	=	0x00d0$/;"	d
+_P	../src/usrp_common.asm	/^_P	=	0x00d0$/;"	d
+_PCON	../lib/fx2utils.asm	/^_PCON	=	0x0087$/;"	d
+_PCON	../lib/isr.asm	/^_PCON	=	0x0087$/;"	d
+_PCON	../lib/timer.asm	/^_PCON	=	0x0087$/;"	d
+_PCON	../lib/usb_common.asm	/^_PCON	=	0x0087$/;"	d
+_PCON	../src/init_gpif.asm	/^_PCON	=	0x0087$/;"	d
+_PCON	../src/radar_main.asm	/^_PCON	=	0x0087$/;"	d
+_PCON	../src/usrp_common.asm	/^_PCON	=	0x0087$/;"	d
+_PI2C	../lib/fx2utils.asm	/^_PI2C	=	0x00f9$/;"	d
+_PI2C	../lib/isr.asm	/^_PI2C	=	0x00f9$/;"	d
+_PI2C	../lib/timer.asm	/^_PI2C	=	0x00f9$/;"	d
+_PI2C	../lib/usb_common.asm	/^_PI2C	=	0x00f9$/;"	d
+_PI2C	../src/init_gpif.asm	/^_PI2C	=	0x00f9$/;"	d
+_PI2C	../src/radar_main.asm	/^_PI2C	=	0x00f9$/;"	d
+_PI2C	../src/usrp_common.asm	/^_PI2C	=	0x00f9$/;"	d
+_PINFLAGSAB	../lib/fx2utils.asm	/^_PINFLAGSAB	=	0xe602$/;"	d
+_PINFLAGSAB	../lib/isr.asm	/^_PINFLAGSAB	=	0xe602$/;"	d
+_PINFLAGSAB	../lib/timer.asm	/^_PINFLAGSAB	=	0xe602$/;"	d
+_PINFLAGSAB	../lib/usb_common.asm	/^_PINFLAGSAB	=	0xe602$/;"	d
+_PINFLAGSAB	../src/init_gpif.asm	/^_PINFLAGSAB	=	0xe602$/;"	d
+_PINFLAGSAB	../src/radar_main.asm	/^_PINFLAGSAB	=	0xe602$/;"	d
+_PINFLAGSAB	../src/usrp_common.asm	/^_PINFLAGSAB	=	0xe602$/;"	d
+_PINFLAGSCD	../lib/fx2utils.asm	/^_PINFLAGSCD	=	0xe603$/;"	d
+_PINFLAGSCD	../lib/isr.asm	/^_PINFLAGSCD	=	0xe603$/;"	d
+_PINFLAGSCD	../lib/timer.asm	/^_PINFLAGSCD	=	0xe603$/;"	d
+_PINFLAGSCD	../lib/usb_common.asm	/^_PINFLAGSCD	=	0xe603$/;"	d
+_PINFLAGSCD	../src/init_gpif.asm	/^_PINFLAGSCD	=	0xe603$/;"	d
+_PINFLAGSCD	../src/radar_main.asm	/^_PINFLAGSCD	=	0xe603$/;"	d
+_PINFLAGSCD	../src/usrp_common.asm	/^_PINFLAGSCD	=	0xe603$/;"	d
+_PORTACFG	../lib/fx2utils.asm	/^_PORTACFG	=	0xe670$/;"	d
+_PORTACFG	../lib/isr.asm	/^_PORTACFG	=	0xe670$/;"	d
+_PORTACFG	../lib/timer.asm	/^_PORTACFG	=	0xe670$/;"	d
+_PORTACFG	../lib/usb_common.asm	/^_PORTACFG	=	0xe670$/;"	d
+_PORTACFG	../src/init_gpif.asm	/^_PORTACFG	=	0xe670$/;"	d
+_PORTACFG	../src/radar_main.asm	/^_PORTACFG	=	0xe670$/;"	d
+_PORTACFG	../src/usrp_common.asm	/^_PORTACFG	=	0xe670$/;"	d
+_PORTCCFG	../lib/fx2utils.asm	/^_PORTCCFG	=	0xe671$/;"	d
+_PORTCCFG	../lib/isr.asm	/^_PORTCCFG	=	0xe671$/;"	d
+_PORTCCFG	../lib/timer.asm	/^_PORTCCFG	=	0xe671$/;"	d
+_PORTCCFG	../lib/usb_common.asm	/^_PORTCCFG	=	0xe671$/;"	d
+_PORTCCFG	../src/init_gpif.asm	/^_PORTCCFG	=	0xe671$/;"	d
+_PORTCCFG	../src/radar_main.asm	/^_PORTCCFG	=	0xe671$/;"	d
+_PORTCCFG	../src/usrp_common.asm	/^_PORTCCFG	=	0xe671$/;"	d
+_PORTECFG	../lib/fx2utils.asm	/^_PORTECFG	=	0xe672$/;"	d
+_PORTECFG	../lib/isr.asm	/^_PORTECFG	=	0xe672$/;"	d
+_PORTECFG	../lib/timer.asm	/^_PORTECFG	=	0xe672$/;"	d
+_PORTECFG	../lib/usb_common.asm	/^_PORTECFG	=	0xe672$/;"	d
+_PORTECFG	../src/init_gpif.asm	/^_PORTECFG	=	0xe672$/;"	d
+_PORTECFG	../src/radar_main.asm	/^_PORTECFG	=	0xe672$/;"	d
+_PORTECFG	../src/usrp_common.asm	/^_PORTECFG	=	0xe672$/;"	d
+_PS0	../lib/fx2utils.asm	/^_PS0	=	0x00bc$/;"	d
+_PS0	../lib/isr.asm	/^_PS0	=	0x00bc$/;"	d
+_PS0	../lib/timer.asm	/^_PS0	=	0x00bc$/;"	d
+_PS0	../lib/usb_common.asm	/^_PS0	=	0x00bc$/;"	d
+_PS0	../src/init_gpif.asm	/^_PS0	=	0x00bc$/;"	d
+_PS0	../src/radar_main.asm	/^_PS0	=	0x00bc$/;"	d
+_PS0	../src/usrp_common.asm	/^_PS0	=	0x00bc$/;"	d
+_PS1	../lib/fx2utils.asm	/^_PS1	=	0x00be$/;"	d
+_PS1	../lib/isr.asm	/^_PS1	=	0x00be$/;"	d
+_PS1	../lib/timer.asm	/^_PS1	=	0x00be$/;"	d
+_PS1	../lib/usb_common.asm	/^_PS1	=	0x00be$/;"	d
+_PS1	../src/init_gpif.asm	/^_PS1	=	0x00be$/;"	d
+_PS1	../src/radar_main.asm	/^_PS1	=	0x00be$/;"	d
+_PS1	../src/usrp_common.asm	/^_PS1	=	0x00be$/;"	d
+_PSW	../lib/fx2utils.asm	/^_PSW	=	0x00d0$/;"	d
+_PSW	../lib/isr.asm	/^_PSW	=	0x00d0$/;"	d
+_PSW	../lib/timer.asm	/^_PSW	=	0x00d0$/;"	d
+_PSW	../lib/usb_common.asm	/^_PSW	=	0x00d0$/;"	d
+_PSW	../src/init_gpif.asm	/^_PSW	=	0x00d0$/;"	d
+_PSW	../src/radar_main.asm	/^_PSW	=	0x00d0$/;"	d
+_PSW	../src/usrp_common.asm	/^_PSW	=	0x00d0$/;"	d
+_PT0	../lib/fx2utils.asm	/^_PT0	=	0x00b9$/;"	d
+_PT0	../lib/isr.asm	/^_PT0	=	0x00b9$/;"	d
+_PT0	../lib/timer.asm	/^_PT0	=	0x00b9$/;"	d
+_PT0	../lib/usb_common.asm	/^_PT0	=	0x00b9$/;"	d
+_PT0	../src/init_gpif.asm	/^_PT0	=	0x00b9$/;"	d
+_PT0	../src/radar_main.asm	/^_PT0	=	0x00b9$/;"	d
+_PT0	../src/usrp_common.asm	/^_PT0	=	0x00b9$/;"	d
+_PT1	../lib/fx2utils.asm	/^_PT1	=	0x00bb$/;"	d
+_PT1	../lib/isr.asm	/^_PT1	=	0x00bb$/;"	d
+_PT1	../lib/timer.asm	/^_PT1	=	0x00bb$/;"	d
+_PT1	../lib/usb_common.asm	/^_PT1	=	0x00bb$/;"	d
+_PT1	../src/init_gpif.asm	/^_PT1	=	0x00bb$/;"	d
+_PT1	../src/radar_main.asm	/^_PT1	=	0x00bb$/;"	d
+_PT1	../src/usrp_common.asm	/^_PT1	=	0x00bb$/;"	d
+_PT2	../lib/fx2utils.asm	/^_PT2	=	0x00bd$/;"	d
+_PT2	../lib/isr.asm	/^_PT2	=	0x00bd$/;"	d
+_PT2	../lib/timer.asm	/^_PT2	=	0x00bd$/;"	d
+_PT2	../lib/usb_common.asm	/^_PT2	=	0x00bd$/;"	d
+_PT2	../src/init_gpif.asm	/^_PT2	=	0x00bd$/;"	d
+_PT2	../src/radar_main.asm	/^_PT2	=	0x00bd$/;"	d
+_PT2	../src/usrp_common.asm	/^_PT2	=	0x00bd$/;"	d
+_PUSB	../lib/fx2utils.asm	/^_PUSB	=	0x00f8$/;"	d
+_PUSB	../lib/isr.asm	/^_PUSB	=	0x00f8$/;"	d
+_PUSB	../lib/timer.asm	/^_PUSB	=	0x00f8$/;"	d
+_PUSB	../lib/usb_common.asm	/^_PUSB	=	0x00f8$/;"	d
+_PUSB	../src/init_gpif.asm	/^_PUSB	=	0x00f8$/;"	d
+_PUSB	../src/radar_main.asm	/^_PUSB	=	0x00f8$/;"	d
+_PUSB	../src/usrp_common.asm	/^_PUSB	=	0x00f8$/;"	d
+_PX0	../lib/fx2utils.asm	/^_PX0	=	0x00b8$/;"	d
+_PX0	../lib/isr.asm	/^_PX0	=	0x00b8$/;"	d
+_PX0	../lib/timer.asm	/^_PX0	=	0x00b8$/;"	d
+_PX0	../lib/usb_common.asm	/^_PX0	=	0x00b8$/;"	d
+_PX0	../src/init_gpif.asm	/^_PX0	=	0x00b8$/;"	d
+_PX0	../src/radar_main.asm	/^_PX0	=	0x00b8$/;"	d
+_PX0	../src/usrp_common.asm	/^_PX0	=	0x00b8$/;"	d
+_PX1	../lib/fx2utils.asm	/^_PX1	=	0x00ba$/;"	d
+_PX1	../lib/isr.asm	/^_PX1	=	0x00ba$/;"	d
+_PX1	../lib/timer.asm	/^_PX1	=	0x00ba$/;"	d
+_PX1	../lib/usb_common.asm	/^_PX1	=	0x00ba$/;"	d
+_PX1	../src/init_gpif.asm	/^_PX1	=	0x00ba$/;"	d
+_PX1	../src/radar_main.asm	/^_PX1	=	0x00ba$/;"	d
+_PX1	../src/usrp_common.asm	/^_PX1	=	0x00ba$/;"	d
+_RADAR_REV1_REGS_H_	../include/radar_rev1_regs.h	27;"	d
+_RB8	../lib/fx2utils.asm	/^_RB8	=	0x009a$/;"	d
+_RB8	../lib/isr.asm	/^_RB8	=	0x009a$/;"	d
+_RB8	../lib/timer.asm	/^_RB8	=	0x009a$/;"	d
+_RB8	../lib/usb_common.asm	/^_RB8	=	0x009a$/;"	d
+_RB8	../src/init_gpif.asm	/^_RB8	=	0x009a$/;"	d
+_RB8	../src/radar_main.asm	/^_RB8	=	0x009a$/;"	d
+_RB8	../src/usrp_common.asm	/^_RB8	=	0x009a$/;"	d
+_RB81	../lib/fx2utils.asm	/^_RB81	=	0x00c2$/;"	d
+_RB81	../lib/isr.asm	/^_RB81	=	0x00c2$/;"	d
+_RB81	../lib/timer.asm	/^_RB81	=	0x00c2$/;"	d
+_RB81	../lib/usb_common.asm	/^_RB81	=	0x00c2$/;"	d
+_RB81	../src/init_gpif.asm	/^_RB81	=	0x00c2$/;"	d
+_RB81	../src/radar_main.asm	/^_RB81	=	0x00c2$/;"	d
+_RB81	../src/usrp_common.asm	/^_RB81	=	0x00c2$/;"	d
+_RCAP2H	../lib/fx2utils.asm	/^_RCAP2H	=	0x00cb$/;"	d
+_RCAP2H	../lib/isr.asm	/^_RCAP2H	=	0x00cb$/;"	d
+_RCAP2H	../lib/timer.asm	/^_RCAP2H	=	0x00cb$/;"	d
+_RCAP2H	../lib/usb_common.asm	/^_RCAP2H	=	0x00cb$/;"	d
+_RCAP2H	../src/init_gpif.asm	/^_RCAP2H	=	0x00cb$/;"	d
+_RCAP2H	../src/radar_main.asm	/^_RCAP2H	=	0x00cb$/;"	d
+_RCAP2H	../src/usrp_common.asm	/^_RCAP2H	=	0x00cb$/;"	d
+_RCAP2L	../lib/fx2utils.asm	/^_RCAP2L	=	0x00ca$/;"	d
+_RCAP2L	../lib/isr.asm	/^_RCAP2L	=	0x00ca$/;"	d
+_RCAP2L	../lib/timer.asm	/^_RCAP2L	=	0x00ca$/;"	d
+_RCAP2L	../lib/usb_common.asm	/^_RCAP2L	=	0x00ca$/;"	d
+_RCAP2L	../src/init_gpif.asm	/^_RCAP2L	=	0x00ca$/;"	d
+_RCAP2L	../src/radar_main.asm	/^_RCAP2L	=	0x00ca$/;"	d
+_RCAP2L	../src/usrp_common.asm	/^_RCAP2L	=	0x00ca$/;"	d
+_RCLK	../lib/fx2utils.asm	/^_RCLK	=	0x00cd$/;"	d
+_RCLK	../lib/isr.asm	/^_RCLK	=	0x00cd$/;"	d
+_RCLK	../lib/timer.asm	/^_RCLK	=	0x00cd$/;"	d
+_RCLK	../lib/usb_common.asm	/^_RCLK	=	0x00cd$/;"	d
+_RCLK	../src/init_gpif.asm	/^_RCLK	=	0x00cd$/;"	d
+_RCLK	../src/radar_main.asm	/^_RCLK	=	0x00cd$/;"	d
+_RCLK	../src/usrp_common.asm	/^_RCLK	=	0x00cd$/;"	d
+_REN	../lib/fx2utils.asm	/^_REN	=	0x009c$/;"	d
+_REN	../lib/isr.asm	/^_REN	=	0x009c$/;"	d
+_REN	../lib/timer.asm	/^_REN	=	0x009c$/;"	d
+_REN	../lib/usb_common.asm	/^_REN	=	0x009c$/;"	d
+_REN	../src/init_gpif.asm	/^_REN	=	0x009c$/;"	d
+_REN	../src/radar_main.asm	/^_REN	=	0x009c$/;"	d
+_REN	../src/usrp_common.asm	/^_REN	=	0x009c$/;"	d
+_REN1	../lib/fx2utils.asm	/^_REN1	=	0x00c4$/;"	d
+_REN1	../lib/isr.asm	/^_REN1	=	0x00c4$/;"	d
+_REN1	../lib/timer.asm	/^_REN1	=	0x00c4$/;"	d
+_REN1	../lib/usb_common.asm	/^_REN1	=	0x00c4$/;"	d
+_REN1	../src/init_gpif.asm	/^_REN1	=	0x00c4$/;"	d
+_REN1	../src/radar_main.asm	/^_REN1	=	0x00c4$/;"	d
+_REN1	../src/usrp_common.asm	/^_REN1	=	0x00c4$/;"	d
+_RESI	../lib/fx2utils.asm	/^_RESI	=	0x00dc$/;"	d
+_RESI	../lib/isr.asm	/^_RESI	=	0x00dc$/;"	d
+_RESI	../lib/timer.asm	/^_RESI	=	0x00dc$/;"	d
+_RESI	../lib/usb_common.asm	/^_RESI	=	0x00dc$/;"	d
+_RESI	../src/init_gpif.asm	/^_RESI	=	0x00dc$/;"	d
+_RESI	../src/radar_main.asm	/^_RESI	=	0x00dc$/;"	d
+_RESI	../src/usrp_common.asm	/^_RESI	=	0x00dc$/;"	d
+_RES_WAVEDATA_END	../lib/fx2utils.asm	/^_RES_WAVEDATA_END	=	0xe480$/;"	d
+_RES_WAVEDATA_END	../lib/isr.asm	/^_RES_WAVEDATA_END	=	0xe480$/;"	d
+_RES_WAVEDATA_END	../lib/timer.asm	/^_RES_WAVEDATA_END	=	0xe480$/;"	d
+_RES_WAVEDATA_END	../lib/usb_common.asm	/^_RES_WAVEDATA_END	=	0xe480$/;"	d
+_RES_WAVEDATA_END	../src/init_gpif.asm	/^_RES_WAVEDATA_END	=	0xe480$/;"	d
+_RES_WAVEDATA_END	../src/radar_main.asm	/^_RES_WAVEDATA_END	=	0xe480$/;"	d
+_RES_WAVEDATA_END	../src/usrp_common.asm	/^_RES_WAVEDATA_END	=	0xe480$/;"	d
+_REVCTL	../lib/fx2utils.asm	/^_REVCTL	=	0xe60b$/;"	d
+_REVCTL	../lib/isr.asm	/^_REVCTL	=	0xe60b$/;"	d
+_REVCTL	../lib/timer.asm	/^_REVCTL	=	0xe60b$/;"	d
+_REVCTL	../lib/usb_common.asm	/^_REVCTL	=	0xe60b$/;"	d
+_REVCTL	../src/init_gpif.asm	/^_REVCTL	=	0xe60b$/;"	d
+_REVCTL	../src/radar_main.asm	/^_REVCTL	=	0xe60b$/;"	d
+_REVCTL	../src/usrp_common.asm	/^_REVCTL	=	0xe60b$/;"	d
+_REVID	../lib/fx2utils.asm	/^_REVID	=	0xe60a$/;"	d
+_REVID	../lib/isr.asm	/^_REVID	=	0xe60a$/;"	d
+_REVID	../lib/timer.asm	/^_REVID	=	0xe60a$/;"	d
+_REVID	../lib/usb_common.asm	/^_REVID	=	0xe60a$/;"	d
+_REVID	../src/init_gpif.asm	/^_REVID	=	0xe60a$/;"	d
+_REVID	../src/radar_main.asm	/^_REVID	=	0xe60a$/;"	d
+_REVID	../src/usrp_common.asm	/^_REVID	=	0xe60a$/;"	d
+_RI	../lib/fx2utils.asm	/^_RI	=	0x0098$/;"	d
+_RI	../lib/isr.asm	/^_RI	=	0x0098$/;"	d
+_RI	../lib/timer.asm	/^_RI	=	0x0098$/;"	d
+_RI	../lib/usb_common.asm	/^_RI	=	0x0098$/;"	d
+_RI	../src/init_gpif.asm	/^_RI	=	0x0098$/;"	d
+_RI	../src/radar_main.asm	/^_RI	=	0x0098$/;"	d
+_RI	../src/usrp_common.asm	/^_RI	=	0x0098$/;"	d
+_RI1	../lib/fx2utils.asm	/^_RI1	=	0x00c0$/;"	d
+_RI1	../lib/isr.asm	/^_RI1	=	0x00c0$/;"	d
+_RI1	../lib/timer.asm	/^_RI1	=	0x00c0$/;"	d
+_RI1	../lib/usb_common.asm	/^_RI1	=	0x00c0$/;"	d
+_RI1	../src/init_gpif.asm	/^_RI1	=	0x00c0$/;"	d
+_RI1	../src/radar_main.asm	/^_RI1	=	0x00c0$/;"	d
+_RI1	../src/usrp_common.asm	/^_RI1	=	0x00c0$/;"	d
+_RS0	../lib/fx2utils.asm	/^_RS0	=	0x00d3$/;"	d
+_RS0	../lib/isr.asm	/^_RS0	=	0x00d3$/;"	d
+_RS0	../lib/timer.asm	/^_RS0	=	0x00d3$/;"	d
+_RS0	../lib/usb_common.asm	/^_RS0	=	0x00d3$/;"	d
+_RS0	../src/init_gpif.asm	/^_RS0	=	0x00d3$/;"	d
+_RS0	../src/radar_main.asm	/^_RS0	=	0x00d3$/;"	d
+_RS0	../src/usrp_common.asm	/^_RS0	=	0x00d3$/;"	d
+_RS1	../lib/fx2utils.asm	/^_RS1	=	0x00d4$/;"	d
+_RS1	../lib/isr.asm	/^_RS1	=	0x00d4$/;"	d
+_RS1	../lib/timer.asm	/^_RS1	=	0x00d4$/;"	d
+_RS1	../lib/usb_common.asm	/^_RS1	=	0x00d4$/;"	d
+_RS1	../src/init_gpif.asm	/^_RS1	=	0x00d4$/;"	d
+_RS1	../src/radar_main.asm	/^_RS1	=	0x00d4$/;"	d
+_RS1	../src/usrp_common.asm	/^_RS1	=	0x00d4$/;"	d
+_SBUF0	../lib/fx2utils.asm	/^_SBUF0	=	0x0099$/;"	d
+_SBUF0	../lib/isr.asm	/^_SBUF0	=	0x0099$/;"	d
+_SBUF0	../lib/timer.asm	/^_SBUF0	=	0x0099$/;"	d
+_SBUF0	../lib/usb_common.asm	/^_SBUF0	=	0x0099$/;"	d
+_SBUF0	../src/init_gpif.asm	/^_SBUF0	=	0x0099$/;"	d
+_SBUF0	../src/radar_main.asm	/^_SBUF0	=	0x0099$/;"	d
+_SBUF0	../src/usrp_common.asm	/^_SBUF0	=	0x0099$/;"	d
+_SBUF1	../lib/fx2utils.asm	/^_SBUF1	=	0x00c1$/;"	d
+_SBUF1	../lib/isr.asm	/^_SBUF1	=	0x00c1$/;"	d
+_SBUF1	../lib/timer.asm	/^_SBUF1	=	0x00c1$/;"	d
+_SBUF1	../lib/usb_common.asm	/^_SBUF1	=	0x00c1$/;"	d
+_SBUF1	../src/init_gpif.asm	/^_SBUF1	=	0x00c1$/;"	d
+_SBUF1	../src/radar_main.asm	/^_SBUF1	=	0x00c1$/;"	d
+_SBUF1	../src/usrp_common.asm	/^_SBUF1	=	0x00c1$/;"	d
+_SCON0	../lib/fx2utils.asm	/^_SCON0	=	0x0098$/;"	d
+_SCON0	../lib/isr.asm	/^_SCON0	=	0x0098$/;"	d
+_SCON0	../lib/timer.asm	/^_SCON0	=	0x0098$/;"	d
+_SCON0	../lib/usb_common.asm	/^_SCON0	=	0x0098$/;"	d
+_SCON0	../src/init_gpif.asm	/^_SCON0	=	0x0098$/;"	d
+_SCON0	../src/radar_main.asm	/^_SCON0	=	0x0098$/;"	d
+_SCON0	../src/usrp_common.asm	/^_SCON0	=	0x0098$/;"	d
+_SCON1	../lib/fx2utils.asm	/^_SCON1	=	0x00c0$/;"	d
+_SCON1	../lib/isr.asm	/^_SCON1	=	0x00c0$/;"	d
+_SCON1	../lib/timer.asm	/^_SCON1	=	0x00c0$/;"	d
+_SCON1	../lib/usb_common.asm	/^_SCON1	=	0x00c0$/;"	d
+_SCON1	../src/init_gpif.asm	/^_SCON1	=	0x00c0$/;"	d
+_SCON1	../src/radar_main.asm	/^_SCON1	=	0x00c0$/;"	d
+_SCON1	../src/usrp_common.asm	/^_SCON1	=	0x00c0$/;"	d
+_SEL	../lib/fx2utils.asm	/^_SEL	=	0x0086$/;"	d
+_SEL	../lib/isr.asm	/^_SEL	=	0x0086$/;"	d
+_SEL	../lib/timer.asm	/^_SEL	=	0x0086$/;"	d
+_SEL	../lib/usb_common.asm	/^_SEL	=	0x0086$/;"	d
+_SEL	../src/init_gpif.asm	/^_SEL	=	0x0086$/;"	d
+_SEL	../src/radar_main.asm	/^_SEL	=	0x0086$/;"	d
+_SEL	../src/usrp_common.asm	/^_SEL	=	0x0086$/;"	d
+_SETUPDAT	../lib/fx2utils.asm	/^_SETUPDAT	=	0xe6b8$/;"	d
+_SETUPDAT	../lib/isr.asm	/^_SETUPDAT	=	0xe6b8$/;"	d
+_SETUPDAT	../lib/timer.asm	/^_SETUPDAT	=	0xe6b8$/;"	d
+_SETUPDAT	../lib/usb_common.asm	/^_SETUPDAT	=	0xe6b8$/;"	d
+_SETUPDAT	../src/init_gpif.asm	/^_SETUPDAT	=	0xe6b8$/;"	d
+_SETUPDAT	../src/radar_main.asm	/^_SETUPDAT	=	0xe6b8$/;"	d
+_SETUPDAT	../src/usrp_common.asm	/^_SETUPDAT	=	0xe6b8$/;"	d
+_SM0	../lib/fx2utils.asm	/^_SM0	=	0x009f$/;"	d
+_SM0	../lib/isr.asm	/^_SM0	=	0x009f$/;"	d
+_SM0	../lib/timer.asm	/^_SM0	=	0x009f$/;"	d
+_SM0	../lib/usb_common.asm	/^_SM0	=	0x009f$/;"	d
+_SM0	../src/init_gpif.asm	/^_SM0	=	0x009f$/;"	d
+_SM0	../src/radar_main.asm	/^_SM0	=	0x009f$/;"	d
+_SM0	../src/usrp_common.asm	/^_SM0	=	0x009f$/;"	d
+_SM01	../lib/fx2utils.asm	/^_SM01	=	0x00c7$/;"	d
+_SM01	../lib/isr.asm	/^_SM01	=	0x00c7$/;"	d
+_SM01	../lib/timer.asm	/^_SM01	=	0x00c7$/;"	d
+_SM01	../lib/usb_common.asm	/^_SM01	=	0x00c7$/;"	d
+_SM01	../src/init_gpif.asm	/^_SM01	=	0x00c7$/;"	d
+_SM01	../src/radar_main.asm	/^_SM01	=	0x00c7$/;"	d
+_SM01	../src/usrp_common.asm	/^_SM01	=	0x00c7$/;"	d
+_SM1	../lib/fx2utils.asm	/^_SM1	=	0x009e$/;"	d
+_SM1	../lib/isr.asm	/^_SM1	=	0x009e$/;"	d
+_SM1	../lib/timer.asm	/^_SM1	=	0x009e$/;"	d
+_SM1	../lib/usb_common.asm	/^_SM1	=	0x009e$/;"	d
+_SM1	../src/init_gpif.asm	/^_SM1	=	0x009e$/;"	d
+_SM1	../src/radar_main.asm	/^_SM1	=	0x009e$/;"	d
+_SM1	../src/usrp_common.asm	/^_SM1	=	0x009e$/;"	d
+_SM11	../lib/fx2utils.asm	/^_SM11	=	0x00c6$/;"	d
+_SM11	../lib/isr.asm	/^_SM11	=	0x00c6$/;"	d
+_SM11	../lib/timer.asm	/^_SM11	=	0x00c6$/;"	d
+_SM11	../lib/usb_common.asm	/^_SM11	=	0x00c6$/;"	d
+_SM11	../src/init_gpif.asm	/^_SM11	=	0x00c6$/;"	d
+_SM11	../src/radar_main.asm	/^_SM11	=	0x00c6$/;"	d
+_SM11	../src/usrp_common.asm	/^_SM11	=	0x00c6$/;"	d
+_SM2	../lib/fx2utils.asm	/^_SM2	=	0x009d$/;"	d
+_SM2	../lib/isr.asm	/^_SM2	=	0x009d$/;"	d
+_SM2	../lib/timer.asm	/^_SM2	=	0x009d$/;"	d
+_SM2	../lib/usb_common.asm	/^_SM2	=	0x009d$/;"	d
+_SM2	../src/init_gpif.asm	/^_SM2	=	0x009d$/;"	d
+_SM2	../src/radar_main.asm	/^_SM2	=	0x009d$/;"	d
+_SM2	../src/usrp_common.asm	/^_SM2	=	0x009d$/;"	d
+_SM21	../lib/fx2utils.asm	/^_SM21	=	0x00c5$/;"	d
+_SM21	../lib/isr.asm	/^_SM21	=	0x00c5$/;"	d
+_SM21	../lib/timer.asm	/^_SM21	=	0x00c5$/;"	d
+_SM21	../lib/usb_common.asm	/^_SM21	=	0x00c5$/;"	d
+_SM21	../src/init_gpif.asm	/^_SM21	=	0x00c5$/;"	d
+_SM21	../src/radar_main.asm	/^_SM21	=	0x00c5$/;"	d
+_SM21	../src/usrp_common.asm	/^_SM21	=	0x00c5$/;"	d
+_SMOD1	../lib/fx2utils.asm	/^_SMOD1	=	0x00df$/;"	d
+_SMOD1	../lib/isr.asm	/^_SMOD1	=	0x00df$/;"	d
+_SMOD1	../lib/timer.asm	/^_SMOD1	=	0x00df$/;"	d
+_SMOD1	../lib/usb_common.asm	/^_SMOD1	=	0x00df$/;"	d
+_SMOD1	../src/init_gpif.asm	/^_SMOD1	=	0x00df$/;"	d
+_SMOD1	../src/radar_main.asm	/^_SMOD1	=	0x00df$/;"	d
+_SMOD1	../src/usrp_common.asm	/^_SMOD1	=	0x00df$/;"	d
+_SP	../lib/fx2utils.asm	/^_SP	=	0x0081$/;"	d
+_SP	../lib/isr.asm	/^_SP	=	0x0081$/;"	d
+_SP	../lib/timer.asm	/^_SP	=	0x0081$/;"	d
+_SP	../lib/usb_common.asm	/^_SP	=	0x0081$/;"	d
+_SP	../src/init_gpif.asm	/^_SP	=	0x0081$/;"	d
+_SP	../src/radar_main.asm	/^_SP	=	0x0081$/;"	d
+_SP	../src/usrp_common.asm	/^_SP	=	0x0081$/;"	d
+_SUDPTRCTL	../lib/fx2utils.asm	/^_SUDPTRCTL	=	0xe6b5$/;"	d
+_SUDPTRCTL	../lib/isr.asm	/^_SUDPTRCTL	=	0xe6b5$/;"	d
+_SUDPTRCTL	../lib/timer.asm	/^_SUDPTRCTL	=	0xe6b5$/;"	d
+_SUDPTRCTL	../lib/usb_common.asm	/^_SUDPTRCTL	=	0xe6b5$/;"	d
+_SUDPTRCTL	../src/init_gpif.asm	/^_SUDPTRCTL	=	0xe6b5$/;"	d
+_SUDPTRCTL	../src/radar_main.asm	/^_SUDPTRCTL	=	0xe6b5$/;"	d
+_SUDPTRCTL	../src/usrp_common.asm	/^_SUDPTRCTL	=	0xe6b5$/;"	d
+_SUDPTRH	../lib/fx2utils.asm	/^_SUDPTRH	=	0xe6b3$/;"	d
+_SUDPTRH	../lib/isr.asm	/^_SUDPTRH	=	0xe6b3$/;"	d
+_SUDPTRH	../lib/timer.asm	/^_SUDPTRH	=	0xe6b3$/;"	d
+_SUDPTRH	../lib/usb_common.asm	/^_SUDPTRH	=	0xe6b3$/;"	d
+_SUDPTRH	../src/init_gpif.asm	/^_SUDPTRH	=	0xe6b3$/;"	d
+_SUDPTRH	../src/radar_main.asm	/^_SUDPTRH	=	0xe6b3$/;"	d
+_SUDPTRH	../src/usrp_common.asm	/^_SUDPTRH	=	0xe6b3$/;"	d
+_SUDPTRL	../lib/fx2utils.asm	/^_SUDPTRL	=	0xe6b4$/;"	d
+_SUDPTRL	../lib/isr.asm	/^_SUDPTRL	=	0xe6b4$/;"	d
+_SUDPTRL	../lib/timer.asm	/^_SUDPTRL	=	0xe6b4$/;"	d
+_SUDPTRL	../lib/usb_common.asm	/^_SUDPTRL	=	0xe6b4$/;"	d
+_SUDPTRL	../src/init_gpif.asm	/^_SUDPTRL	=	0xe6b4$/;"	d
+_SUDPTRL	../src/radar_main.asm	/^_SUDPTRL	=	0xe6b4$/;"	d
+_SUDPTRL	../src/usrp_common.asm	/^_SUDPTRL	=	0xe6b4$/;"	d
+_SUSPEND	../lib/fx2utils.asm	/^_SUSPEND	=	0xe681$/;"	d
+_SUSPEND	../lib/isr.asm	/^_SUSPEND	=	0xe681$/;"	d
+_SUSPEND	../lib/timer.asm	/^_SUSPEND	=	0xe681$/;"	d
+_SUSPEND	../lib/usb_common.asm	/^_SUSPEND	=	0xe681$/;"	d
+_SUSPEND	../src/init_gpif.asm	/^_SUSPEND	=	0xe681$/;"	d
+_SUSPEND	../src/radar_main.asm	/^_SUSPEND	=	0xe681$/;"	d
+_SUSPEND	../src/usrp_common.asm	/^_SUSPEND	=	0xe681$/;"	d
+_SYNCDELAY_H_	../include/syncdelay.h	23;"	d
+_T2CON	../lib/fx2utils.asm	/^_T2CON	=	0x00c8$/;"	d
+_T2CON	../lib/isr.asm	/^_T2CON	=	0x00c8$/;"	d
+_T2CON	../lib/timer.asm	/^_T2CON	=	0x00c8$/;"	d
+_T2CON	../lib/usb_common.asm	/^_T2CON	=	0x00c8$/;"	d
+_T2CON	../src/init_gpif.asm	/^_T2CON	=	0x00c8$/;"	d
+_T2CON	../src/radar_main.asm	/^_T2CON	=	0x00c8$/;"	d
+_T2CON	../src/usrp_common.asm	/^_T2CON	=	0x00c8$/;"	d
+_TB8	../lib/fx2utils.asm	/^_TB8	=	0x009b$/;"	d
+_TB8	../lib/isr.asm	/^_TB8	=	0x009b$/;"	d
+_TB8	../lib/timer.asm	/^_TB8	=	0x009b$/;"	d
+_TB8	../lib/usb_common.asm	/^_TB8	=	0x009b$/;"	d
+_TB8	../src/init_gpif.asm	/^_TB8	=	0x009b$/;"	d
+_TB8	../src/radar_main.asm	/^_TB8	=	0x009b$/;"	d
+_TB8	../src/usrp_common.asm	/^_TB8	=	0x009b$/;"	d
+_TB81	../lib/fx2utils.asm	/^_TB81	=	0x00c3$/;"	d
+_TB81	../lib/isr.asm	/^_TB81	=	0x00c3$/;"	d
+_TB81	../lib/timer.asm	/^_TB81	=	0x00c3$/;"	d
+_TB81	../lib/usb_common.asm	/^_TB81	=	0x00c3$/;"	d
+_TB81	../src/init_gpif.asm	/^_TB81	=	0x00c3$/;"	d
+_TB81	../src/radar_main.asm	/^_TB81	=	0x00c3$/;"	d
+_TB81	../src/usrp_common.asm	/^_TB81	=	0x00c3$/;"	d
+_TCLK	../lib/fx2utils.asm	/^_TCLK	=	0x00cc$/;"	d
+_TCLK	../lib/isr.asm	/^_TCLK	=	0x00cc$/;"	d
+_TCLK	../lib/timer.asm	/^_TCLK	=	0x00cc$/;"	d
+_TCLK	../lib/usb_common.asm	/^_TCLK	=	0x00cc$/;"	d
+_TCLK	../src/init_gpif.asm	/^_TCLK	=	0x00cc$/;"	d
+_TCLK	../src/radar_main.asm	/^_TCLK	=	0x00cc$/;"	d
+_TCLK	../src/usrp_common.asm	/^_TCLK	=	0x00cc$/;"	d
+_TCON	../lib/fx2utils.asm	/^_TCON	=	0x0088$/;"	d
+_TCON	../lib/isr.asm	/^_TCON	=	0x0088$/;"	d
+_TCON	../lib/timer.asm	/^_TCON	=	0x0088$/;"	d
+_TCON	../lib/usb_common.asm	/^_TCON	=	0x0088$/;"	d
+_TCON	../src/init_gpif.asm	/^_TCON	=	0x0088$/;"	d
+_TCON	../src/radar_main.asm	/^_TCON	=	0x0088$/;"	d
+_TCON	../src/usrp_common.asm	/^_TCON	=	0x0088$/;"	d
+_TESTCFG	../lib/fx2utils.asm	/^_TESTCFG	=	0xe6f9$/;"	d
+_TESTCFG	../lib/isr.asm	/^_TESTCFG	=	0xe6f9$/;"	d
+_TESTCFG	../lib/timer.asm	/^_TESTCFG	=	0xe6f9$/;"	d
+_TESTCFG	../lib/usb_common.asm	/^_TESTCFG	=	0xe6f9$/;"	d
+_TESTCFG	../src/init_gpif.asm	/^_TESTCFG	=	0xe6f9$/;"	d
+_TESTCFG	../src/radar_main.asm	/^_TESTCFG	=	0xe6f9$/;"	d
+_TESTCFG	../src/usrp_common.asm	/^_TESTCFG	=	0xe6f9$/;"	d
+_TF0	../lib/fx2utils.asm	/^_TF0	=	0x008d$/;"	d
+_TF0	../lib/isr.asm	/^_TF0	=	0x008d$/;"	d
+_TF0	../lib/timer.asm	/^_TF0	=	0x008d$/;"	d
+_TF0	../lib/usb_common.asm	/^_TF0	=	0x008d$/;"	d
+_TF0	../src/init_gpif.asm	/^_TF0	=	0x008d$/;"	d
+_TF0	../src/radar_main.asm	/^_TF0	=	0x008d$/;"	d
+_TF0	../src/usrp_common.asm	/^_TF0	=	0x008d$/;"	d
+_TF1	../lib/fx2utils.asm	/^_TF1	=	0x008f$/;"	d
+_TF1	../lib/isr.asm	/^_TF1	=	0x008f$/;"	d
+_TF1	../lib/timer.asm	/^_TF1	=	0x008f$/;"	d
+_TF1	../lib/usb_common.asm	/^_TF1	=	0x008f$/;"	d
+_TF1	../src/init_gpif.asm	/^_TF1	=	0x008f$/;"	d
+_TF1	../src/radar_main.asm	/^_TF1	=	0x008f$/;"	d
+_TF1	../src/usrp_common.asm	/^_TF1	=	0x008f$/;"	d
+_TF2	../lib/fx2utils.asm	/^_TF2	=	0x00cf$/;"	d
+_TF2	../lib/isr.asm	/^_TF2	=	0x00cf$/;"	d
+_TF2	../lib/timer.asm	/^_TF2	=	0x00cf$/;"	d
+_TF2	../lib/usb_common.asm	/^_TF2	=	0x00cf$/;"	d
+_TF2	../src/init_gpif.asm	/^_TF2	=	0x00cf$/;"	d
+_TF2	../src/radar_main.asm	/^_TF2	=	0x00cf$/;"	d
+_TF2	../src/usrp_common.asm	/^_TF2	=	0x00cf$/;"	d
+_TH0	../lib/fx2utils.asm	/^_TH0	=	0x008c$/;"	d
+_TH0	../lib/isr.asm	/^_TH0	=	0x008c$/;"	d
+_TH0	../lib/timer.asm	/^_TH0	=	0x008c$/;"	d
+_TH0	../lib/usb_common.asm	/^_TH0	=	0x008c$/;"	d
+_TH0	../src/init_gpif.asm	/^_TH0	=	0x008c$/;"	d
+_TH0	../src/radar_main.asm	/^_TH0	=	0x008c$/;"	d
+_TH0	../src/usrp_common.asm	/^_TH0	=	0x008c$/;"	d
+_TH1	../lib/fx2utils.asm	/^_TH1	=	0x008d$/;"	d
+_TH1	../lib/isr.asm	/^_TH1	=	0x008d$/;"	d
+_TH1	../lib/timer.asm	/^_TH1	=	0x008d$/;"	d
+_TH1	../lib/usb_common.asm	/^_TH1	=	0x008d$/;"	d
+_TH1	../src/init_gpif.asm	/^_TH1	=	0x008d$/;"	d
+_TH1	../src/radar_main.asm	/^_TH1	=	0x008d$/;"	d
+_TH1	../src/usrp_common.asm	/^_TH1	=	0x008d$/;"	d
+_TH2	../lib/fx2utils.asm	/^_TH2	=	0x00cd$/;"	d
+_TH2	../lib/isr.asm	/^_TH2	=	0x00cd$/;"	d
+_TH2	../lib/timer.asm	/^_TH2	=	0x00cd$/;"	d
+_TH2	../lib/usb_common.asm	/^_TH2	=	0x00cd$/;"	d
+_TH2	../src/init_gpif.asm	/^_TH2	=	0x00cd$/;"	d
+_TH2	../src/radar_main.asm	/^_TH2	=	0x00cd$/;"	d
+_TH2	../src/usrp_common.asm	/^_TH2	=	0x00cd$/;"	d
+_TI	../lib/fx2utils.asm	/^_TI	=	0x0099$/;"	d
+_TI	../lib/isr.asm	/^_TI	=	0x0099$/;"	d
+_TI	../lib/timer.asm	/^_TI	=	0x0099$/;"	d
+_TI	../lib/usb_common.asm	/^_TI	=	0x0099$/;"	d
+_TI	../src/init_gpif.asm	/^_TI	=	0x0099$/;"	d
+_TI	../src/radar_main.asm	/^_TI	=	0x0099$/;"	d
+_TI	../src/usrp_common.asm	/^_TI	=	0x0099$/;"	d
+_TI1	../lib/fx2utils.asm	/^_TI1	=	0x00c1$/;"	d
+_TI1	../lib/isr.asm	/^_TI1	=	0x00c1$/;"	d
+_TI1	../lib/timer.asm	/^_TI1	=	0x00c1$/;"	d
+_TI1	../lib/usb_common.asm	/^_TI1	=	0x00c1$/;"	d
+_TI1	../src/init_gpif.asm	/^_TI1	=	0x00c1$/;"	d
+_TI1	../src/radar_main.asm	/^_TI1	=	0x00c1$/;"	d
+_TI1	../src/usrp_common.asm	/^_TI1	=	0x00c1$/;"	d
+_TIMER_H_	../include/timer.h	24;"	d
+_TL0	../lib/fx2utils.asm	/^_TL0	=	0x008a$/;"	d
+_TL0	../lib/isr.asm	/^_TL0	=	0x008a$/;"	d
+_TL0	../lib/timer.asm	/^_TL0	=	0x008a$/;"	d
+_TL0	../lib/usb_common.asm	/^_TL0	=	0x008a$/;"	d
+_TL0	../src/init_gpif.asm	/^_TL0	=	0x008a$/;"	d
+_TL0	../src/radar_main.asm	/^_TL0	=	0x008a$/;"	d
+_TL0	../src/usrp_common.asm	/^_TL0	=	0x008a$/;"	d
+_TL1	../lib/fx2utils.asm	/^_TL1	=	0x008b$/;"	d
+_TL1	../lib/isr.asm	/^_TL1	=	0x008b$/;"	d
+_TL1	../lib/timer.asm	/^_TL1	=	0x008b$/;"	d
+_TL1	../lib/usb_common.asm	/^_TL1	=	0x008b$/;"	d
+_TL1	../src/init_gpif.asm	/^_TL1	=	0x008b$/;"	d
+_TL1	../src/radar_main.asm	/^_TL1	=	0x008b$/;"	d
+_TL1	../src/usrp_common.asm	/^_TL1	=	0x008b$/;"	d
+_TL2	../lib/fx2utils.asm	/^_TL2	=	0x00cc$/;"	d
+_TL2	../lib/isr.asm	/^_TL2	=	0x00cc$/;"	d
+_TL2	../lib/timer.asm	/^_TL2	=	0x00cc$/;"	d
+_TL2	../lib/usb_common.asm	/^_TL2	=	0x00cc$/;"	d
+_TL2	../src/init_gpif.asm	/^_TL2	=	0x00cc$/;"	d
+_TL2	../src/radar_main.asm	/^_TL2	=	0x00cc$/;"	d
+_TL2	../src/usrp_common.asm	/^_TL2	=	0x00cc$/;"	d
+_TMOD	../lib/fx2utils.asm	/^_TMOD	=	0x0089$/;"	d
+_TMOD	../lib/isr.asm	/^_TMOD	=	0x0089$/;"	d
+_TMOD	../lib/timer.asm	/^_TMOD	=	0x0089$/;"	d
+_TMOD	../lib/usb_common.asm	/^_TMOD	=	0x0089$/;"	d
+_TMOD	../src/init_gpif.asm	/^_TMOD	=	0x0089$/;"	d
+_TMOD	../src/radar_main.asm	/^_TMOD	=	0x0089$/;"	d
+_TMOD	../src/usrp_common.asm	/^_TMOD	=	0x0089$/;"	d
+_TOGCTL	../lib/fx2utils.asm	/^_TOGCTL	=	0xe683$/;"	d
+_TOGCTL	../lib/isr.asm	/^_TOGCTL	=	0xe683$/;"	d
+_TOGCTL	../lib/timer.asm	/^_TOGCTL	=	0xe683$/;"	d
+_TOGCTL	../lib/usb_common.asm	/^_TOGCTL	=	0xe683$/;"	d
+_TOGCTL	../src/init_gpif.asm	/^_TOGCTL	=	0xe683$/;"	d
+_TOGCTL	../src/radar_main.asm	/^_TOGCTL	=	0xe683$/;"	d
+_TOGCTL	../src/usrp_common.asm	/^_TOGCTL	=	0xe683$/;"	d
+_TR0	../lib/fx2utils.asm	/^_TR0	=	0x008c$/;"	d
+_TR0	../lib/isr.asm	/^_TR0	=	0x008c$/;"	d
+_TR0	../lib/timer.asm	/^_TR0	=	0x008c$/;"	d
+_TR0	../lib/usb_common.asm	/^_TR0	=	0x008c$/;"	d
+_TR0	../src/init_gpif.asm	/^_TR0	=	0x008c$/;"	d
+_TR0	../src/radar_main.asm	/^_TR0	=	0x008c$/;"	d
+_TR0	../src/usrp_common.asm	/^_TR0	=	0x008c$/;"	d
+_TR1	../lib/fx2utils.asm	/^_TR1	=	0x008e$/;"	d
+_TR1	../lib/isr.asm	/^_TR1	=	0x008e$/;"	d
+_TR1	../lib/timer.asm	/^_TR1	=	0x008e$/;"	d
+_TR1	../lib/usb_common.asm	/^_TR1	=	0x008e$/;"	d
+_TR1	../src/init_gpif.asm	/^_TR1	=	0x008e$/;"	d
+_TR1	../src/radar_main.asm	/^_TR1	=	0x008e$/;"	d
+_TR1	../src/usrp_common.asm	/^_TR1	=	0x008e$/;"	d
+_TR2	../lib/fx2utils.asm	/^_TR2	=	0x00ca$/;"	d
+_TR2	../lib/isr.asm	/^_TR2	=	0x00ca$/;"	d
+_TR2	../lib/timer.asm	/^_TR2	=	0x00ca$/;"	d
+_TR2	../lib/usb_common.asm	/^_TR2	=	0x00ca$/;"	d
+_TR2	../src/init_gpif.asm	/^_TR2	=	0x00ca$/;"	d
+_TR2	../src/radar_main.asm	/^_TR2	=	0x00ca$/;"	d
+_TR2	../src/usrp_common.asm	/^_TR2	=	0x00ca$/;"	d
+_UART230	../lib/fx2utils.asm	/^_UART230	=	0xe608$/;"	d
+_UART230	../lib/isr.asm	/^_UART230	=	0xe608$/;"	d
+_UART230	../lib/timer.asm	/^_UART230	=	0xe608$/;"	d
+_UART230	../lib/usb_common.asm	/^_UART230	=	0xe608$/;"	d
+_UART230	../src/init_gpif.asm	/^_UART230	=	0xe608$/;"	d
+_UART230	../src/radar_main.asm	/^_UART230	=	0xe608$/;"	d
+_UART230	../src/usrp_common.asm	/^_UART230	=	0xe608$/;"	d
+_UDMACRCH	../lib/fx2utils.asm	/^_UDMACRCH	=	0xe67d$/;"	d
+_UDMACRCH	../lib/isr.asm	/^_UDMACRCH	=	0xe67d$/;"	d
+_UDMACRCH	../lib/timer.asm	/^_UDMACRCH	=	0xe67d$/;"	d
+_UDMACRCH	../lib/usb_common.asm	/^_UDMACRCH	=	0xe67d$/;"	d
+_UDMACRCH	../src/init_gpif.asm	/^_UDMACRCH	=	0xe67d$/;"	d
+_UDMACRCH	../src/radar_main.asm	/^_UDMACRCH	=	0xe67d$/;"	d
+_UDMACRCH	../src/usrp_common.asm	/^_UDMACRCH	=	0xe67d$/;"	d
+_UDMACRCL	../lib/fx2utils.asm	/^_UDMACRCL	=	0xe67e$/;"	d
+_UDMACRCL	../lib/isr.asm	/^_UDMACRCL	=	0xe67e$/;"	d
+_UDMACRCL	../lib/timer.asm	/^_UDMACRCL	=	0xe67e$/;"	d
+_UDMACRCL	../lib/usb_common.asm	/^_UDMACRCL	=	0xe67e$/;"	d
+_UDMACRCL	../src/init_gpif.asm	/^_UDMACRCL	=	0xe67e$/;"	d
+_UDMACRCL	../src/radar_main.asm	/^_UDMACRCL	=	0xe67e$/;"	d
+_UDMACRCL	../src/usrp_common.asm	/^_UDMACRCL	=	0xe67e$/;"	d
+_UDMACRCQUAL	../lib/fx2utils.asm	/^_UDMACRCQUAL	=	0xe67f$/;"	d
+_UDMACRCQUAL	../lib/isr.asm	/^_UDMACRCQUAL	=	0xe67f$/;"	d
+_UDMACRCQUAL	../lib/timer.asm	/^_UDMACRCQUAL	=	0xe67f$/;"	d
+_UDMACRCQUAL	../lib/usb_common.asm	/^_UDMACRCQUAL	=	0xe67f$/;"	d
+_UDMACRCQUAL	../src/init_gpif.asm	/^_UDMACRCQUAL	=	0xe67f$/;"	d
+_UDMACRCQUAL	../src/radar_main.asm	/^_UDMACRCQUAL	=	0xe67f$/;"	d
+_UDMACRCQUAL	../src/usrp_common.asm	/^_UDMACRCQUAL	=	0xe67f$/;"	d
+_USBCS	../lib/fx2utils.asm	/^_USBCS	=	0xe680$/;"	d
+_USBCS	../lib/isr.asm	/^_USBCS	=	0xe680$/;"	d
+_USBCS	../lib/timer.asm	/^_USBCS	=	0xe680$/;"	d
+_USBCS	../lib/usb_common.asm	/^_USBCS	=	0xe680$/;"	d
+_USBCS	../src/init_gpif.asm	/^_USBCS	=	0xe680$/;"	d
+_USBCS	../src/radar_main.asm	/^_USBCS	=	0xe680$/;"	d
+_USBCS	../src/usrp_common.asm	/^_USBCS	=	0xe680$/;"	d
+_USBERRIE	../lib/fx2utils.asm	/^_USBERRIE	=	0xe662$/;"	d
+_USBERRIE	../lib/isr.asm	/^_USBERRIE	=	0xe662$/;"	d
+_USBERRIE	../lib/timer.asm	/^_USBERRIE	=	0xe662$/;"	d
+_USBERRIE	../lib/usb_common.asm	/^_USBERRIE	=	0xe662$/;"	d
+_USBERRIE	../src/init_gpif.asm	/^_USBERRIE	=	0xe662$/;"	d
+_USBERRIE	../src/radar_main.asm	/^_USBERRIE	=	0xe662$/;"	d
+_USBERRIE	../src/usrp_common.asm	/^_USBERRIE	=	0xe662$/;"	d
+_USBERRIRQ	../lib/fx2utils.asm	/^_USBERRIRQ	=	0xe663$/;"	d
+_USBERRIRQ	../lib/isr.asm	/^_USBERRIRQ	=	0xe663$/;"	d
+_USBERRIRQ	../lib/timer.asm	/^_USBERRIRQ	=	0xe663$/;"	d
+_USBERRIRQ	../lib/usb_common.asm	/^_USBERRIRQ	=	0xe663$/;"	d
+_USBERRIRQ	../src/init_gpif.asm	/^_USBERRIRQ	=	0xe663$/;"	d
+_USBERRIRQ	../src/radar_main.asm	/^_USBERRIRQ	=	0xe663$/;"	d
+_USBERRIRQ	../src/usrp_common.asm	/^_USBERRIRQ	=	0xe663$/;"	d
+_USBFRAMEH	../lib/fx2utils.asm	/^_USBFRAMEH	=	0xe684$/;"	d
+_USBFRAMEH	../lib/isr.asm	/^_USBFRAMEH	=	0xe684$/;"	d
+_USBFRAMEH	../lib/timer.asm	/^_USBFRAMEH	=	0xe684$/;"	d
+_USBFRAMEH	../lib/usb_common.asm	/^_USBFRAMEH	=	0xe684$/;"	d
+_USBFRAMEH	../src/init_gpif.asm	/^_USBFRAMEH	=	0xe684$/;"	d
+_USBFRAMEH	../src/radar_main.asm	/^_USBFRAMEH	=	0xe684$/;"	d
+_USBFRAMEH	../src/usrp_common.asm	/^_USBFRAMEH	=	0xe684$/;"	d
+_USBFRAMEL	../lib/fx2utils.asm	/^_USBFRAMEL	=	0xe685$/;"	d
+_USBFRAMEL	../lib/isr.asm	/^_USBFRAMEL	=	0xe685$/;"	d
+_USBFRAMEL	../lib/timer.asm	/^_USBFRAMEL	=	0xe685$/;"	d
+_USBFRAMEL	../lib/usb_common.asm	/^_USBFRAMEL	=	0xe685$/;"	d
+_USBFRAMEL	../src/init_gpif.asm	/^_USBFRAMEL	=	0xe685$/;"	d
+_USBFRAMEL	../src/radar_main.asm	/^_USBFRAMEL	=	0xe685$/;"	d
+_USBFRAMEL	../src/usrp_common.asm	/^_USBFRAMEL	=	0xe685$/;"	d
+_USBIE	../lib/fx2utils.asm	/^_USBIE	=	0xe65c$/;"	d
+_USBIE	../lib/isr.asm	/^_USBIE	=	0xe65c$/;"	d
+_USBIE	../lib/timer.asm	/^_USBIE	=	0xe65c$/;"	d
+_USBIE	../lib/usb_common.asm	/^_USBIE	=	0xe65c$/;"	d
+_USBIE	../src/init_gpif.asm	/^_USBIE	=	0xe65c$/;"	d
+_USBIE	../src/radar_main.asm	/^_USBIE	=	0xe65c$/;"	d
+_USBIE	../src/usrp_common.asm	/^_USBIE	=	0xe65c$/;"	d
+_USBIRQ	../lib/fx2utils.asm	/^_USBIRQ	=	0xe65d$/;"	d
+_USBIRQ	../lib/isr.asm	/^_USBIRQ	=	0xe65d$/;"	d
+_USBIRQ	../lib/timer.asm	/^_USBIRQ	=	0xe65d$/;"	d
+_USBIRQ	../lib/usb_common.asm	/^_USBIRQ	=	0xe65d$/;"	d
+_USBIRQ	../src/init_gpif.asm	/^_USBIRQ	=	0xe65d$/;"	d
+_USBIRQ	../src/radar_main.asm	/^_USBIRQ	=	0xe65d$/;"	d
+_USBIRQ	../src/usrp_common.asm	/^_USBIRQ	=	0xe65d$/;"	d
+_USBTEST	../lib/fx2utils.asm	/^_USBTEST	=	0xe6fa$/;"	d
+_USBTEST	../lib/isr.asm	/^_USBTEST	=	0xe6fa$/;"	d
+_USBTEST	../lib/timer.asm	/^_USBTEST	=	0xe6fa$/;"	d
+_USBTEST	../lib/usb_common.asm	/^_USBTEST	=	0xe6fa$/;"	d
+_USBTEST	../src/init_gpif.asm	/^_USBTEST	=	0xe6fa$/;"	d
+_USBTEST	../src/radar_main.asm	/^_USBTEST	=	0xe6fa$/;"	d
+_USBTEST	../src/usrp_common.asm	/^_USBTEST	=	0xe6fa$/;"	d
+_USB_COMMON_H_	../include/usb_common.h	24;"	d
+_USB_REQUESTS_H_	../include/usb_requests.h	28;"	d
+_USRPCOMMON_H_	../include/usrp_common.h	28;"	d
+_USRP_COMMANDS_H_	../include/usrp_commands.h	22;"	d
+_WAKEUPCS	../lib/fx2utils.asm	/^_WAKEUPCS	=	0xe682$/;"	d
+_WAKEUPCS	../lib/isr.asm	/^_WAKEUPCS	=	0xe682$/;"	d
+_WAKEUPCS	../lib/timer.asm	/^_WAKEUPCS	=	0xe682$/;"	d
+_WAKEUPCS	../lib/usb_common.asm	/^_WAKEUPCS	=	0xe682$/;"	d
+_WAKEUPCS	../src/init_gpif.asm	/^_WAKEUPCS	=	0xe682$/;"	d
+_WAKEUPCS	../src/radar_main.asm	/^_WAKEUPCS	=	0xe682$/;"	d
+_WAKEUPCS	../src/usrp_common.asm	/^_WAKEUPCS	=	0xe682$/;"	d
+_WaveData	../src/radar_gpif2.asm	/^_WaveData:$/;"	l
+_XAUTODAT1	../lib/fx2utils.asm	/^_XAUTODAT1	=	0xe67b$/;"	d
+_XAUTODAT1	../lib/isr.asm	/^_XAUTODAT1	=	0xe67b$/;"	d
+_XAUTODAT1	../lib/timer.asm	/^_XAUTODAT1	=	0xe67b$/;"	d
+_XAUTODAT1	../lib/usb_common.asm	/^_XAUTODAT1	=	0xe67b$/;"	d
+_XAUTODAT1	../src/init_gpif.asm	/^_XAUTODAT1	=	0xe67b$/;"	d
+_XAUTODAT1	../src/radar_main.asm	/^_XAUTODAT1	=	0xe67b$/;"	d
+_XAUTODAT1	../src/usrp_common.asm	/^_XAUTODAT1	=	0xe67b$/;"	d
+_XAUTODAT2	../lib/fx2utils.asm	/^_XAUTODAT2	=	0xe67c$/;"	d
+_XAUTODAT2	../lib/isr.asm	/^_XAUTODAT2	=	0xe67c$/;"	d
+_XAUTODAT2	../lib/timer.asm	/^_XAUTODAT2	=	0xe67c$/;"	d
+_XAUTODAT2	../lib/usb_common.asm	/^_XAUTODAT2	=	0xe67c$/;"	d
+_XAUTODAT2	../src/init_gpif.asm	/^_XAUTODAT2	=	0xe67c$/;"	d
+_XAUTODAT2	../src/radar_main.asm	/^_XAUTODAT2	=	0xe67c$/;"	d
+_XAUTODAT2	../src/usrp_common.asm	/^_XAUTODAT2	=	0xe67c$/;"	d
+_XGPIFSGLDATH	../lib/fx2utils.asm	/^_XGPIFSGLDATH	=	0xe6f0$/;"	d
+_XGPIFSGLDATH	../lib/isr.asm	/^_XGPIFSGLDATH	=	0xe6f0$/;"	d
+_XGPIFSGLDATH	../lib/timer.asm	/^_XGPIFSGLDATH	=	0xe6f0$/;"	d
+_XGPIFSGLDATH	../lib/usb_common.asm	/^_XGPIFSGLDATH	=	0xe6f0$/;"	d
+_XGPIFSGLDATH	../src/init_gpif.asm	/^_XGPIFSGLDATH	=	0xe6f0$/;"	d
+_XGPIFSGLDATH	../src/radar_main.asm	/^_XGPIFSGLDATH	=	0xe6f0$/;"	d
+_XGPIFSGLDATH	../src/usrp_common.asm	/^_XGPIFSGLDATH	=	0xe6f0$/;"	d
+_XGPIFSGLDATLNOX	../lib/fx2utils.asm	/^_XGPIFSGLDATLNOX	=	0xe6f2$/;"	d
+_XGPIFSGLDATLNOX	../lib/isr.asm	/^_XGPIFSGLDATLNOX	=	0xe6f2$/;"	d
+_XGPIFSGLDATLNOX	../lib/timer.asm	/^_XGPIFSGLDATLNOX	=	0xe6f2$/;"	d
+_XGPIFSGLDATLNOX	../lib/usb_common.asm	/^_XGPIFSGLDATLNOX	=	0xe6f2$/;"	d
+_XGPIFSGLDATLNOX	../src/init_gpif.asm	/^_XGPIFSGLDATLNOX	=	0xe6f2$/;"	d
+_XGPIFSGLDATLNOX	../src/radar_main.asm	/^_XGPIFSGLDATLNOX	=	0xe6f2$/;"	d
+_XGPIFSGLDATLNOX	../src/usrp_common.asm	/^_XGPIFSGLDATLNOX	=	0xe6f2$/;"	d
+_XGPIFSGLDATLX	../lib/fx2utils.asm	/^_XGPIFSGLDATLX	=	0xe6f1$/;"	d
+_XGPIFSGLDATLX	../lib/isr.asm	/^_XGPIFSGLDATLX	=	0xe6f1$/;"	d
+_XGPIFSGLDATLX	../lib/timer.asm	/^_XGPIFSGLDATLX	=	0xe6f1$/;"	d
+_XGPIFSGLDATLX	../lib/usb_common.asm	/^_XGPIFSGLDATLX	=	0xe6f1$/;"	d
+_XGPIFSGLDATLX	../src/init_gpif.asm	/^_XGPIFSGLDATLX	=	0xe6f1$/;"	d
+_XGPIFSGLDATLX	../src/radar_main.asm	/^_XGPIFSGLDATLX	=	0xe6f1$/;"	d
+_XGPIFSGLDATLX	../src/usrp_common.asm	/^_XGPIFSGLDATLX	=	0xe6f1$/;"	d
+__interrupt_vect	../src/radar_main.asm	/^__interrupt_vect:$/;"	l
+__sdcc_program_startup	../src/radar_main.asm	/^__sdcc_program_startup:$/;"	l
+__start__stack	../src/radar_main.asm	/^__start__stack:$/;"	l
+_app_vendor_cmd	../src/radar_main.asm	/^_app_vendor_cmd:$/;"	l
+_epcs	../lib/usb_common.asm	/^_epcs:$/;"	l
+_fx2_renumerate	../lib/fx2utils.asm	/^_fx2_renumerate:$/;"	l
+_fx2_reset_data_toggle	../lib/fx2utils.asm	/^_fx2_reset_data_toggle:$/;"	l
+_fx2_stall_ep0	../lib/fx2utils.asm	/^_fx2_stall_ep0:$/;"	l
+_get_ep0_data	../src/radar_main.asm	/^_get_ep0_data:$/;"	l
+_hook_fgv	../lib/isr.asm	/^_hook_fgv:$/;"	l
+_hook_sv	../lib/isr.asm	/^_hook_sv:$/;"	l
+_hook_timer_tick	../lib/timer.asm	/^_hook_timer_tick:$/;"	l
+_hook_uv	../lib/isr.asm	/^_hook_uv:$/;"	l
+_init_gpif	../src/init_gpif.asm	/^_init_gpif:$/;"	l
+_init_usrp	../src/usrp_common.asm	/^_init_usrp:$/;"	l
+_isr_HIGHSPEED	../lib/usb_common.asm	/^_isr_HIGHSPEED:$/;"	l
+_isr_SUDAV	../lib/usb_common.asm	/^_isr_SUDAV:$/;"	l
+_isr_USBRESET	../lib/usb_common.asm	/^_isr_USBRESET:$/;"	l
+_isr_tick	../src/radar_main.asm	/^_isr_tick:$/;"	l
+_isr_tick_count_1_1	../src/radar_main.asm	/^_isr_tick_count_1_1:$/;"	l
+_isr_tick_state_1_1	../src/radar_main.asm	/^_isr_tick_state_1_1:$/;"	l
+_main	../src/radar_main.asm	/^_main:$/;"	l
+_main_loop	../src/radar_main.asm	/^_main_loop:$/;"	l
+_mdelay	../lib/delay.asm	/^_mdelay:$/;"	l
+_mdelay1	../lib/delay.asm	/^_mdelay1:$/;"	l
+_plausible_endpoint	../lib/usb_common.asm	/^_plausible_endpoint:$/;"	l
+_setup_autovectors	../lib/isr.asm	/^_setup_autovectors:$/;"	l
+_setup_descriptors	../lib/usb_common.asm	/^_setup_descriptors:$/;"	l
+_udelay	../lib/delay.asm	/^_udelay:$/;"	l
+_udelay1	../lib/delay.asm	/^_udelay1:$/;"	l
+_usb_alt_setting	../lib/usb_common.c	/^unsigned char	_usb_alt_setting = 0;	\/\/ FIXME really 1\/interface$/;"	v
+_usb_config	../lib/usb_common.c	/^unsigned char	_usb_config = 0;$/;"	v
+_usb_got_SUDAV	../lib/usb_common.c	/^volatile bit _usb_got_SUDAV;$/;"	v
+_usb_handle_setup_packet	../lib/usb_common.asm	/^_usb_handle_setup_packet:$/;"	l
+_usb_install_handlers	../lib/usb_common.asm	/^_usb_install_handlers:$/;"	l
+app_vendor_cmd	../src/radar_main.c	/^app_vendor_cmd(void)$/;"	f
+ar0	../lib/delay.asm	/^	ar0 = 0x00$/;"	d
+ar0	../lib/fx2utils.asm	/^	ar0 = 0x00$/;"	d
+ar0	../lib/isr.asm	/^	ar0 = 0x00$/;"	d
+ar0	../lib/timer.asm	/^	ar0 = 0x00$/;"	d
+ar0	../lib/usb_common.asm	/^	ar0 = 0x00$/;"	d
+ar0	../src/init_gpif.asm	/^	ar0 = 0x00$/;"	d
+ar0	../src/radar_main.asm	/^	ar0 = 0x00$/;"	d
+ar0	../src/usrp_common.asm	/^	ar0 = 0x00$/;"	d
+ar1	../lib/delay.asm	/^	ar1 = 0x01$/;"	d
+ar1	../lib/fx2utils.asm	/^	ar1 = 0x01$/;"	d
+ar1	../lib/isr.asm	/^	ar1 = 0x01$/;"	d
+ar1	../lib/timer.asm	/^	ar1 = 0x01$/;"	d
+ar1	../lib/usb_common.asm	/^	ar1 = 0x01$/;"	d
+ar1	../src/init_gpif.asm	/^	ar1 = 0x01$/;"	d
+ar1	../src/radar_main.asm	/^	ar1 = 0x01$/;"	d
+ar1	../src/usrp_common.asm	/^	ar1 = 0x01$/;"	d
+ar2	../lib/delay.asm	/^	ar2 = 0x02$/;"	d
+ar2	../lib/fx2utils.asm	/^	ar2 = 0x02$/;"	d
+ar2	../lib/isr.asm	/^	ar2 = 0x02$/;"	d
+ar2	../lib/timer.asm	/^	ar2 = 0x02$/;"	d
+ar2	../lib/usb_common.asm	/^	ar2 = 0x02$/;"	d
+ar2	../src/init_gpif.asm	/^	ar2 = 0x02$/;"	d
+ar2	../src/radar_main.asm	/^	ar2 = 0x02$/;"	d
+ar2	../src/usrp_common.asm	/^	ar2 = 0x02$/;"	d
+ar3	../lib/delay.asm	/^	ar3 = 0x03$/;"	d
+ar3	../lib/fx2utils.asm	/^	ar3 = 0x03$/;"	d
+ar3	../lib/isr.asm	/^	ar3 = 0x03$/;"	d
+ar3	../lib/timer.asm	/^	ar3 = 0x03$/;"	d
+ar3	../lib/usb_common.asm	/^	ar3 = 0x03$/;"	d
+ar3	../src/init_gpif.asm	/^	ar3 = 0x03$/;"	d
+ar3	../src/radar_main.asm	/^	ar3 = 0x03$/;"	d
+ar3	../src/usrp_common.asm	/^	ar3 = 0x03$/;"	d
+ar4	../lib/delay.asm	/^	ar4 = 0x04$/;"	d
+ar4	../lib/fx2utils.asm	/^	ar4 = 0x04$/;"	d
+ar4	../lib/isr.asm	/^	ar4 = 0x04$/;"	d
+ar4	../lib/timer.asm	/^	ar4 = 0x04$/;"	d
+ar4	../lib/usb_common.asm	/^	ar4 = 0x04$/;"	d
+ar4	../src/init_gpif.asm	/^	ar4 = 0x04$/;"	d
+ar4	../src/radar_main.asm	/^	ar4 = 0x04$/;"	d
+ar4	../src/usrp_common.asm	/^	ar4 = 0x04$/;"	d
+ar5	../lib/delay.asm	/^	ar5 = 0x05$/;"	d
+ar5	../lib/fx2utils.asm	/^	ar5 = 0x05$/;"	d
+ar5	../lib/isr.asm	/^	ar5 = 0x05$/;"	d
+ar5	../lib/timer.asm	/^	ar5 = 0x05$/;"	d
+ar5	../lib/usb_common.asm	/^	ar5 = 0x05$/;"	d
+ar5	../src/init_gpif.asm	/^	ar5 = 0x05$/;"	d
+ar5	../src/radar_main.asm	/^	ar5 = 0x05$/;"	d
+ar5	../src/usrp_common.asm	/^	ar5 = 0x05$/;"	d
+ar6	../lib/delay.asm	/^	ar6 = 0x06$/;"	d
+ar6	../lib/fx2utils.asm	/^	ar6 = 0x06$/;"	d
+ar6	../lib/isr.asm	/^	ar6 = 0x06$/;"	d
+ar6	../lib/timer.asm	/^	ar6 = 0x06$/;"	d
+ar6	../lib/usb_common.asm	/^	ar6 = 0x06$/;"	d
+ar6	../src/init_gpif.asm	/^	ar6 = 0x06$/;"	d
+ar6	../src/radar_main.asm	/^	ar6 = 0x06$/;"	d
+ar6	../src/usrp_common.asm	/^	ar6 = 0x06$/;"	d
+ar7	../lib/delay.asm	/^	ar7 = 0x07$/;"	d
+ar7	../lib/fx2utils.asm	/^	ar7 = 0x07$/;"	d
+ar7	../lib/isr.asm	/^	ar7 = 0x07$/;"	d
+ar7	../lib/timer.asm	/^	ar7 = 0x07$/;"	d
+ar7	../lib/usb_common.asm	/^	ar7 = 0x07$/;"	d
+ar7	../src/init_gpif.asm	/^	ar7 = 0x07$/;"	d
+ar7	../src/radar_main.asm	/^	ar7 = 0x07$/;"	d
+ar7	../src/usrp_common.asm	/^	ar7 = 0x07$/;"	d
+bRequest	../lib/usb_common.c	40;"	d	file:
+bRequest	../src/radar_main.c	35;"	d	file:
+bRequestType	../lib/usb_common.c	39;"	d	file:
+bRequestType	../src/radar_main.c	34;"	d	file:
+bm1KBUF	../include/fx2regs.h	688;"	d
+bm3048MHZ	../include/fx2regs.h	648;"	d
+bm400KHZ	../include/fx2regs.h	567;"	d
+bm8051RES	../include/fx2regs.h	532;"	d
+bmACK	../include/fx2regs.h	563;"	d
+bmASYNC	../include/fx2regs.h	651;"	d
+bmAUTOIN	../include/fx2regs.h	662;"	d
+bmAUTOOUT	../include/fx2regs.h	661;"	d
+bmAV2EN	../include/fx2regs.h	587;"	d
+bmAV4EN	../include/fx2regs.h	589;"	d
+bmBERR	../include/fx2regs.h	562;"	d
+bmBIT0	../include/fx2regs.h	516;"	d
+bmBIT1	../include/fx2regs.h	517;"	d
+bmBIT2	../include/fx2regs.h	518;"	d
+bmBIT3	../include/fx2regs.h	519;"	d
+bmBIT4	../include/fx2regs.h	520;"	d
+bmBIT5	../include/fx2regs.h	521;"	d
+bmBIT6	../include/fx2regs.h	522;"	d
+bmBIT7	../include/fx2regs.h	523;"	d
+bmBPEN	../include/fx2regs.h	585;"	d
+bmBPPULSE	../include/fx2regs.h	584;"	d
+bmBREAK	../include/fx2regs.h	583;"	d
+bmBUF0	../include/fx2regs.h	690;"	d
+bmBUF1	../include/fx2regs.h	689;"	d
+bmBULK	../include/fx2regs.h	686;"	d
+bmCLKINV	../include/fx2regs.h	530;"	d
+bmCLKOE	../include/fx2regs.h	531;"	d
+bmCLKSPD	../include/fx2regs.h	527;"	d
+bmCLKSPD0	../include/fx2regs.h	529;"	d
+bmCLKSPD1	../include/fx2regs.h	528;"	d
+bmDISCON	../include/fx2regs.h	592;"	d
+bmDONE	../include/fx2regs.h	564;"	d
+bmDOUBLEBUF	../include/fx2regs.h	693;"	d
+bmDPEN	../include/fx2regs.h	601;"	d
+bmDYN_OUT	../include/fx2regs.h	673;"	d
+bmENH_PKT	../include/fx2regs.h	674;"	d
+bmEP0ACK	../include/fx2regs.h	575;"	d
+bmEP0IBN	../include/fx2regs.h	635;"	d
+bmEP0PING	../include/fx2regs.h	643;"	d
+bmEP1IBN	../include/fx2regs.h	634;"	d
+bmEP1PING	../include/fx2regs.h	642;"	d
+bmEP2EMPTY	../include/fx2regs.h	621;"	d
+bmEP2FULL	../include/fx2regs.h	620;"	d
+bmEP2IBN	../include/fx2regs.h	633;"	d
+bmEP2PING	../include/fx2regs.h	641;"	d
+bmEP4EMPTY	../include/fx2regs.h	619;"	d
+bmEP4FULL	../include/fx2regs.h	618;"	d
+bmEP4IBN	../include/fx2regs.h	632;"	d
+bmEP4PING	../include/fx2regs.h	640;"	d
+bmEP6EMPTY	../include/fx2regs.h	617;"	d
+bmEP6FULL	../include/fx2regs.h	616;"	d
+bmEP6IBN	../include/fx2regs.h	631;"	d
+bmEP6PING	../include/fx2regs.h	639;"	d
+bmEP8EMPTY	../include/fx2regs.h	615;"	d
+bmEP8FULL	../include/fx2regs.h	614;"	d
+bmEP8IBN	../include/fx2regs.h	630;"	d
+bmEP8PING	../include/fx2regs.h	638;"	d
+bmEPBUSY	../include/fx2regs.h	607;"	d
+bmEPEMPTY	../include/fx2regs.h	612;"	d
+bmEPFULL	../include/fx2regs.h	611;"	d
+bmEPSTALL	../include/fx2regs.h	608;"	d
+bmEXIF_I2CINT	../include/fx2regs.h	711;"	d
+bmEXIF_IE4	../include/fx2regs.h	712;"	d
+bmEXIF_IE5	../include/fx2regs.h	713;"	d
+bmEXIF_USBINT	../include/fx2regs.h	710;"	d
+bmFLAGD	../include/fx2regs.h	535;"	d
+bmGPIFA0	../include/fx2regs.h	546;"	d
+bmGPIFA1	../include/fx2regs.h	545;"	d
+bmGPIFA2	../include/fx2regs.h	544;"	d
+bmGPIFA3	../include/fx2regs.h	543;"	d
+bmGPIFA4	../include/fx2regs.h	542;"	d
+bmGPIFA5	../include/fx2regs.h	541;"	d
+bmGPIFA6	../include/fx2regs.h	540;"	d
+bmGPIFA7	../include/fx2regs.h	539;"	d
+bmGPIFA8	../include/fx2regs.h	548;"	d
+bmGPIF_EP2_START	../include/fx2regs.h	702;"	d
+bmGPIF_EP4_START	../include/fx2regs.h	703;"	d
+bmGPIF_EP6_START	../include/fx2regs.h	704;"	d
+bmGPIF_EP8_START	../include/fx2regs.h	705;"	d
+bmGPIF_IDLE	../include/fx2regs.h	700;"	d
+bmGPIF_READ	../include/fx2regs.h	706;"	d
+bmGPIF_WRITE	../include/fx2regs.h	707;"	d
+bmGSDA_REM_WAKEUP	../include/usb_requests.h	85;"	d
+bmGSDA_SELF_POWERED	../include/usb_requests.h	84;"	d
+bmGSTATE	../include/fx2regs.h	652;"	d
+bmHSGRANT	../include/fx2regs.h	576;"	d
+bmHSM	../include/fx2regs.h	591;"	d
+bmHSNAK	../include/fx2regs.h	605;"	d
+bmIBN	../include/fx2regs.h	644;"	d
+bmID	../include/fx2regs.h	561;"	d
+bmIFCFG0	../include/fx2regs.h	654;"	d
+bmIFCFG1	../include/fx2regs.h	653;"	d
+bmIFCFGMASK	../include/fx2regs.h	655;"	d
+bmIFCLKOE	../include/fx2regs.h	649;"	d
+bmIFCLKPOL	../include/fx2regs.h	650;"	d
+bmIFCLKSRC	../include/fx2regs.h	647;"	d
+bmIFGPIF	../include/fx2regs.h	656;"	d
+bmIN	../include/fx2regs.h	682;"	d
+bmINFM	../include/fx2regs.h	659;"	d
+bmINT0	../include/fx2regs.h	537;"	d
+bmINT1	../include/fx2regs.h	536;"	d
+bmINT4IN	../include/fx2regs.h	588;"	d
+bmINT6	../include/fx2regs.h	550;"	d
+bmINTERRUPT	../include/fx2regs.h	687;"	d
+bmINVALIDBUF	../include/fx2regs.h	692;"	d
+bmISOCHRONOUS	../include/fx2regs.h	685;"	d
+bmIV0	../include/fx2regs.h	573;"	d
+bmIV1	../include/fx2regs.h	572;"	d
+bmIV2	../include/fx2regs.h	571;"	d
+bmIV3	../include/fx2regs.h	570;"	d
+bmIV4	../include/fx2regs.h	569;"	d
+bmLASTRD	../include/fx2regs.h	560;"	d
+bmLED0	../include/radar_rev1_regs.h	75;"	d
+bmLED1	../include/radar_rev1_regs.h	76;"	d
+bmNAKALL	../include/fx2regs.h	678;"	d
+bmNOAUTOARM	../include/fx2regs.h	670;"	d
+bmNOSYNSOF	../include/fx2regs.h	593;"	d
+bmNPAK	../include/fx2regs.h	610;"	d
+bmOEP	../include/fx2regs.h	660;"	d
+bmPORT_A_INITIAL	../include/radar_rev1_regs.h	61;"	d
+bmPORT_A_OUTPUTS	../include/radar_rev1_regs.h	60;"	d
+bmPORT_C_INITIAL	../include/radar_rev1_regs.h	72;"	d
+bmPORT_C_OUTPUTS	../include/radar_rev1_regs.h	70;"	d
+bmPORT_E_INITIAL	../include/radar_rev1_regs.h	84;"	d
+bmPORT_E_OUTPUTS	../include/radar_rev1_regs.h	83;"	d
+bmPRTCSTB	../include/fx2regs.h	526;"	d
+bmQUADBUF	../include/fx2regs.h	691;"	d
+bmQUERYTOGGLE	../include/fx2regs.h	625;"	d
+bmRENUM	../include/fx2regs.h	594;"	d
+bmRESETTOGGLE	../include/fx2regs.h	627;"	d
+bmRT_DIR_IN	../include/usb_requests.h	33;"	d
+bmRT_DIR_MASK	../include/usb_requests.h	32;"	d
+bmRT_DIR_OUT	../include/usb_requests.h	34;"	d
+bmRT_RECIP_DEVICE	../include/usb_requests.h	43;"	d
+bmRT_RECIP_ENDPOINT	../include/usb_requests.h	45;"	d
+bmRT_RECIP_INTERFACE	../include/usb_requests.h	44;"	d
+bmRT_RECIP_MASK	../include/usb_requests.h	42;"	d
+bmRT_RECIP_OTHER	../include/usb_requests.h	46;"	d
+bmRT_TYPE_CLASS	../include/usb_requests.h	38;"	d
+bmRT_TYPE_MASK	../include/usb_requests.h	36;"	d
+bmRT_TYPE_RESERVED	../include/usb_requests.h	40;"	d
+bmRT_TYPE_STD	../include/usb_requests.h	37;"	d
+bmRT_TYPE_VENDOR	../include/usb_requests.h	39;"	d
+bmRXD0OUT	../include/fx2regs.h	552;"	d
+bmRXD1OUT	../include/fx2regs.h	551;"	d
+bmSDPAUTO	../include/fx2regs.h	623;"	d
+bmSETTOGGLE	../include/fx2regs.h	626;"	d
+bmSIGRESUME	../include/fx2regs.h	595;"	d
+bmSKIP	../include/fx2regs.h	697;"	d
+bmSKIPCOMMIT	../include/fx2regs.h	671;"	d
+bmSOF	../include/fx2regs.h	580;"	d
+bmSTART	../include/fx2regs.h	558;"	d
+bmSTOP	../include/fx2regs.h	559;"	d
+bmSTOPIE	../include/fx2regs.h	566;"	d
+bmSUDAV	../include/fx2regs.h	581;"	d
+bmSUSP	../include/fx2regs.h	578;"	d
+bmSUTOK	../include/fx2regs.h	579;"	d
+bmT0OUT	../include/fx2regs.h	555;"	d
+bmT1OUT	../include/fx2regs.h	554;"	d
+bmT2EX	../include/fx2regs.h	549;"	d
+bmT2OUT	../include/fx2regs.h	553;"	d
+bmTOGCTLEPMASK	../include/fx2regs.h	628;"	d
+bmTRIPLEBUF	../include/fx2regs.h	694;"	d
+bmTYPE0	../include/fx2regs.h	684;"	d
+bmTYPE1	../include/fx2regs.h	683;"	d
+bmURES	../include/fx2regs.h	577;"	d
+bmVALID	../include/fx2regs.h	681;"	d
+bmWORDWIDE	../include/fx2regs.h	665;"	d
+bmWU	../include/fx2regs.h	598;"	d
+bmWU2	../include/fx2regs.h	597;"	d
+bmWU2EN	../include/fx2regs.h	602;"	d
+bmWU2POL	../include/fx2regs.h	599;"	d
+bmWUEN	../include/fx2regs.h	603;"	d
+bmWUPOL	../include/fx2regs.h	600;"	d
+bmZEROLENIN	../include/fx2regs.h	663;"	d
+check_flow_state	../src/edit-gpif	/^def check_flow_state (line, flow_state_dict):$/;"	f
+clear_fifo_gpif_irq	../include/isr.h	168;"	d
+clear_timer_irq	../include/timer.h	31;"	d
+clear_usb_irq	../include/isr.h	161;"	d
+current_config_descr	../lib/usb_common.c	/^xdata unsigned char *current_config_descr;$/;"	v
+current_device_descr	../lib/usb_common.c	/^xdata unsigned char *current_device_descr;$/;"	v
+current_devqual_descr	../lib/usb_common.c	/^xdata unsigned char *current_devqual_descr;$/;"	v
+delta	../src/edit-gpif	/^def delta (xseq, yseq):$/;"	f
+edit_gpif	../src/edit-gpif	/^def edit_gpif (input_name, output_name, inline_name):$/;"	f
+epcs	../lib/usb_common.c	/^epcs (unsigned char ep)$/;"	f
+fx2_renumerate	../lib/fx2utils.c	/^fx2_renumerate (void)$/;"	f
+fx2_reset_data_toggle	../lib/fx2utils.c	/^fx2_reset_data_toggle (unsigned char ep)$/;"	f
+fx2_stall_ep0	../lib/fx2utils.c	/^fx2_stall_ep0 (void)$/;"	f
+get_ep0_data	../src/radar_main.c	/^static void get_ep0_data(void)$/;"	f	file:
+hook_fgv	../lib/isr.c	/^hook_fgv (unsigned char vector_number, unsigned short addr)$/;"	f
+hook_sv	../lib/isr.c	/^hook_sv (unsigned char vector_number, unsigned short addr)$/;"	f
+hook_timer_tick	../lib/timer.c	/^hook_timer_tick (unsigned short isr_tick_handler)$/;"	f
+hook_uv	../lib/isr.c	/^hook_uv (unsigned char vector_number, unsigned short addr)$/;"	f
+i2c_read	../lib/i2c.c	/^i2c_read (unsigned char addr, xdata unsigned char *buf, unsigned char len)$/;"	f
+i2c_write	../lib/i2c.c	/^i2c_write (unsigned char addr, xdata const unsigned char *buf, unsigned char len)$/;"	f
+init_gpif	../src/init_gpif.c	/^init_gpif(void)$/;"	f
+init_usrp	../src/usrp_common.c	/^void init_usrp(void)$/;"	f
+main	../src/radar_main.c	/^void main(void) {$/;"	f
+main_loop	../src/radar_main.c	/^static void main_loop(void) $/;"	f	file:
+mdelay	../lib/delay.c	/^mdelay (unsigned int msecs)$/;"	f
+other_config_descr	../lib/usb_common.c	/^xdata unsigned char *other_config_descr;$/;"	v
+plausible_endpoint	../lib/usb_common.c	/^plausible_endpoint (unsigned char ep)$/;"	f
+setup_autovectors	../lib/isr.c	/^setup_autovectors (void)$/;"	f
+setup_descriptors	../lib/usb_common.c	/^setup_descriptors (void)$/;"	f	file:
+setup_flowstate_common	../include/radar_gpif_inline.h	5;"	d
+setup_flowstate_common	../include/radar_gpif_inline2.h	5;"	d
+setup_flowstate_read	../include/radar_gpif_inline.h	18;"	d
+setup_flowstate_read	../include/radar_gpif_inline2.h	18;"	d
+setup_flowstate_write	../include/radar_gpif_inline.h	26;"	d
+setup_flowstate_write	../include/radar_gpif_inline2.h	26;"	d
+udelay	../lib/delay.c	/^udelay (unsigned char usecs)$/;"	f
+usb_handle_setup_packet	../lib/usb_common.c	/^usb_handle_setup_packet (void)$/;"	f
+usb_install_handlers	../lib/usb_common.c	/^usb_install_handlers (void)$/;"	f
+usb_setup_packet_avail	../include/usb_common.h	35;"	d
+wIndexH	../lib/usb_common.c	44;"	d	file:
+wIndexH	../src/radar_main.c	39;"	d	file:
+wIndexL	../lib/usb_common.c	43;"	d	file:
+wIndexL	../src/radar_main.c	38;"	d	file:
+wLengthH	../lib/usb_common.c	46;"	d	file:
+wLengthH	../src/radar_main.c	41;"	d	file:
+wLengthL	../lib/usb_common.c	45;"	d	file:
+wLengthL	../src/radar_main.c	40;"	d	file:
+wValueH	../lib/usb_common.c	42;"	d	file:
+wValueH	../src/radar_main.c	37;"	d	file:
+wValueL	../lib/usb_common.c	41;"	d	file:
+wValueL	../src/radar_main.c	36;"	d	file:
+wordwide	../src/usrp_common.c	29;"	d	file:
+write_define	../src/edit-gpif	/^def write_define (output, name, pairs):$/;"	f
+write_inlines	../src/edit-gpif	/^def write_inlines (output, dict):$/;"	f

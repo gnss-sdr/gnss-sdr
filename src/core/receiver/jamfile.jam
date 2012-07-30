@@ -4,5 +4,15 @@ obj control_message_factory : control_message_factory.cc ;
 obj control_thread : control_thread.cc ;
 obj file_configuration : file_configuration.cc ;
 obj in_memory_configuration : in_memory_configuration.cc ;
-obj gnss_block_factory : gnss_block_factory.cc ;
+
+local GN3S_DRIVER = [ modules.peek : GN3S_DRIVER ] ; 
+
+if $(GN3S_DRIVER)
+{
+	obj gnss_block_factory : gnss_block_factory.cc : <define>GN3S_DRIVER ;
+}
+else
+{
+	obj gnss_block_factory : gnss_block_factory.cc ;
+}
 obj gnss_flowgraph : gnss_flowgraph.cc ;

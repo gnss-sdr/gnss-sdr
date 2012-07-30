@@ -1,5 +1,13 @@
 import os ;
 
+local GN3S_DRIVER = [ os.environ GN3S_DRIVER ] ;
+module
+{
+	 #Global variable in the global module
+     .GN3S_DRIVER = GN3S_DRIVER ;
+}
+
+
 local GTEST_DIR = [ os.environ GTEST_DIR ] ;
 project gtest : source-location $(GTEST_DIR)/src : build-dir ../../build ; 
 
@@ -15,6 +23,16 @@ lib gflags ;
 lib gnuradio-core ;
 lib uhd ;
 lib gnuradio-uhd ;
+
+if ($(GN3S_DRIVER))
+{
+    echo "GN3S_DRIVER enabled" ;
+	lib gr-gn3s ;
+}
+
+project
+: usage-requirements <include>.
+;
 
 project : requirements
 <define>OMNITHREAD_POSIX

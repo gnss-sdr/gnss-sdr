@@ -73,37 +73,40 @@ void Correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const
 
 
 
-void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out)
+void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, bool input_vector_aligned)
 {
     gr_complex* bb_signal;
     gr_complex* input_aligned;
-    //gr_complex* carrier_aligned;
 
-    // signal_length_samples=next_power_2(signal_length_samples);
-    //std::cout<<"length="<<signal_length_samples<<std::endl;
-
-    //long int new_length=next_power_2(signal_length_samples);
     //todo: do something if posix_memalign fails
     if (posix_memalign((void**)&bb_signal, 16, signal_length_samples * sizeof(gr_complex)) == 0) {};
-    if (posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex)) == 0){};
-    //posix_memalign((void**)&carrier_aligned, 16, new_length*sizeof(gr_complex));
 
-    memcpy(input_aligned,input,signal_length_samples * sizeof(gr_complex));
-    //memcpy(carrier_aligned,carrier,signal_length_samples*sizeof(gr_complex));
+    if (input_vector_aligned==false)
+    {
+        //todo: do something if posix_memalign fails
+    	if (posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex)) == 0){};
+        memcpy(input_aligned,input,signal_length_samples * sizeof(gr_complex));
 
-    //volk_32fc_x2_multiply_32fc_a_manual(bb_signal, input_aligned, carrier, signal_length_samples,  volk_32fc_x2_multiply_32fc_a_best_arch.c_str());
-    //volk_32fc_x2_dot_prod_32fc_a_manual(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
-    //volk_32fc_x2_dot_prod_32fc_a_manual(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
-    //volk_32fc_x2_dot_prod_32fc_a_manual(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+        //volk_32fc_x2_multiply_32fc_a_manual(bb_signal, input_aligned, carrier, signal_length_samples,  volk_32fc_x2_multiply_32fc_a_best_arch.c_str());
+        //volk_32fc_x2_dot_prod_32fc_a_manual(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+        //volk_32fc_x2_dot_prod_32fc_a_manual(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
+        //volk_32fc_x2_dot_prod_32fc_a_manual(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
 
-    volk_32fc_x2_multiply_32fc_a(bb_signal, input_aligned, carrier, signal_length_samples);
+        volk_32fc_x2_multiply_32fc_a(bb_signal, input_aligned, carrier, signal_length_samples);
+    }else{
+    	//use directly the input vector
+        volk_32fc_x2_multiply_32fc_a(bb_signal, input, carrier, signal_length_samples);
+    }
+
     volk_32fc_x2_dot_prod_32fc_a(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex));
     volk_32fc_x2_dot_prod_32fc_a(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex));
     volk_32fc_x2_dot_prod_32fc_a(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex));
 
     free(bb_signal);
-    free(input_aligned);
-    //free(carrier_aligned);
+    if (input_vector_aligned==false)
+    {
+    	free(input_aligned);
+    }
 }
 
 void Correlator::cpu_arch_test_volk_32fc_x2_dot_prod_32fc_a()

@@ -386,7 +386,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     d_late_code,
                     d_Early,
                     d_Prompt,
-                    d_Late);
+                    d_Late,
+                    is_unaligned());
 
             // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
             if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true )// or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)

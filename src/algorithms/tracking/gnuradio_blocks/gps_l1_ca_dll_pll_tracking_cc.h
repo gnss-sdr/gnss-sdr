@@ -133,9 +133,9 @@ private:
     long d_if_freq;
     long d_fs_in;
 
-    float d_early_late_spc_chips;
+    double d_early_late_spc_chips;
 
-    float d_code_phase_step_chips;
+    double d_code_phase_step_chips;
 
     gr_complex* d_ca_code;
 

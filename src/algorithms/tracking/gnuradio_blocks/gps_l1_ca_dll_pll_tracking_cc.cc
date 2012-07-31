@@ -265,23 +265,35 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
 
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_code()
 {
-    float tcode_chips;
-    float rem_code_phase_chips;
+    double tcode_chips;
+    double rem_code_phase_chips;
     int associated_chip_index;
     int code_length_chips = (int)GPS_L1_CA_CODE_LENGTH_CHIPS;
+    double code_phase_step_chips;
+	int early_late_spc_samples;
+	int epl_loop_length_samples;
+
     // unified loop for E, P, L code vectors
+    code_phase_step_chips = ((double)d_code_freq_hz) / ((double)d_fs_in);
     rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_hz / d_fs_in);
     tcode_chips = -rem_code_phase_chips;
-    for (int i=0; i<d_current_prn_length_samples; i++)
-        {
-            associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
+
+    // Alternative EPL code generation (40% of speed improvement!)
+    early_late_spc_samples=round(d_early_late_spc_chips/code_phase_step_chips);
+    epl_loop_length_samples=d_current_prn_length_samples+early_late_spc_samples*2;
+    for (int i=0; i<epl_loop_length_samples; i++)
+		{
+    	    associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
             d_early_code[i] = d_ca_code[associated_chip_index];
-            associated_chip_index = 1 + round(fmod(tcode_chips, code_length_chips));
-            d_prompt_code[i] = d_ca_code[associated_chip_index];
-            associated_chip_index = 1 + round(fmod(tcode_chips+d_early_late_spc_chips, code_length_chips));
-            d_late_code[i] = d_ca_code[associated_chip_index];
+            //associated_chip_index = 1 + round(fmod(tcode_chips, code_length_chips));
+            //d_prompt_code[i] = d_ca_code[associated_chip_index];
+            //associated_chip_index = 1 + round(fmod(tcode_chips+d_early_late_spc_chips, code_length_chips));
+            //d_late_code[i] = d_ca_code[associated_chip_index];
             tcode_chips = tcode_chips + d_code_phase_step_chips;
-        }
+		}
+
+    memcpy(d_prompt_code,&d_early_code[early_late_spc_samples],d_current_prn_length_samples* sizeof(gr_complex));
+    memcpy(d_late_code,&d_early_code[early_late_spc_samples*2],d_current_prn_length_samples* sizeof(gr_complex));
 }
 
 

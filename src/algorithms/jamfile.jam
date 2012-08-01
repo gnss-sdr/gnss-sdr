@@ -1,6 +1,7 @@
 build-project acquisition ;
 build-project channel ;
 build-project conditioner ;
+build-project data_type_adapter ;
 build-project input_filter ;
 build-project libs ;
 build-project observables ;

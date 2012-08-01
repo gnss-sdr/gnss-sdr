@@ -82,13 +82,13 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     }
   else if (item_type_.compare("short") == 0)
     {
-      item_size_ = sizeof(short);
+      item_size_ = sizeof(short int);
     }
   else
     {
       LOG_AT_LEVEL(WARNING) << item_type_
-          << " unrecognized item type. Using short.";
-      item_size_ = sizeof(short);
+          << " unrecognized item type. Using gr_complex.";
+      item_size_ = sizeof(gr_complex);
     }
   try
   {

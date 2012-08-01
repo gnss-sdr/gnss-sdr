@@ -49,6 +49,7 @@
 #include "channel.h"
 #include "uhd_signal_source.h"
 #include "signal_conditioner.h"
+#include "ishort_to_complex.h"
 #include "direct_resampler_conditioner.h"
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
@@ -303,7 +304,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 #endif
 
     // DATA TYPE ADAPTER -----------------------------------------------------------
-
+    else if (implementation.compare("Ishort_To_Complex") == 0)
+            {
+                block = new IshortToComplex(configuration, role, in_streams,
+                        out_streams, queue);
+            }
     // INPUT FILTER ----------------------------------------------------------------
     else if (implementation.compare("Fir_Filter") == 0)
         {

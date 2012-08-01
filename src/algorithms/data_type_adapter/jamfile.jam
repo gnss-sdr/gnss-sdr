@@ -1,2 +1,2 @@
-# build-project adapters ;
+build-project adapters ;
 # build-project gnuradio_blocks ;

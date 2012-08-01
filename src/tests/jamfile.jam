@@ -22,6 +22,7 @@ exe run_tests : test_main.cc
 ../algorithms/channel/adapters//channel
 ../algorithms/channel/libs//gps_l1_ca_channel_fsm
 ../algorithms/conditioner/adapters//signal_conditioner
+../algorithms/data_type_adapter/adapters//ishort_to_complex
 ../algorithms/input_filter/adapters//fir_filter
 ../algorithms/input_filter/adapters//freq_xlating_fir_filter
 ../algorithms/libs//gnss_signal_processing

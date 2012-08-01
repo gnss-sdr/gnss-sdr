@@ -2,6 +2,7 @@ project : build-dir ../../../../build ;
 
 #ECHO Global: [ VARNAMES ] ;
 local GN3S_DRIVER = [ modules.peek : GN3S_DRIVER ] ; 
+local RTLSDR_DRIVER = [ modules.peek : RTLSDR_DRIVER ] ; 
 
 obj file_signal_source : file_signal_source.cc ;
 obj uhd_signal_source : uhd_signal_source.cc ;
@@ -11,3 +12,7 @@ if ($(GN3S_DRIVER))
 	obj gn3s_signal_source : gn3s_signal_source.cc ;
 }
 
+if ($(RTLSDR_DRIVER))
+{
+	obj rtlsdr_signal_source : rtlsdr_signal_source.cc ;	
+}

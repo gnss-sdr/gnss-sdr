@@ -64,6 +64,10 @@
 	#include "gn3s_signal_source.h"
 #endif
 
+#if RTLSDR_DRIVER
+	#include "rtlsdr_signal_source.h"
+#endif
+
 using google::LogMessage;
 
 
@@ -286,6 +290,14 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         else if (implementation.compare("GN3S_Signal_Source") == 0)
         {
             block = new Gn3sSignalSource(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+#endif
+
+#if RTLSDR_DRIVER
+        else if (implementation.compare("Rtlsdr_Signal_Source") == 0)
+        {
+            block = new RtlsdrSignalSource(configuration, role, in_streams,
                     out_streams, queue);
         }
 #endif

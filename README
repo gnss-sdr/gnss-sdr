@@ -104,7 +104,7 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 
-Set the envirnoment variable GN3S_DRIVER=1 in order to enable the GN3S_Signal_Source in GNSS-SDR (OPTIONAL)
+- Set the envirnoment variable GN3S_DRIVER=1 in order to enable the GN3S_Signal_Source in GNSS-SDR (OPTIONAL)
 
 export GN3S_DRIVER=1
 
@@ -115,6 +115,17 @@ GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/fi
 Please copy this file to the application path. The GNSS-SDR default path is gnss-sdr/trunk/install
 
 (in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR)
+
+- Set the envirnoment variable RTLSDR_DRIVER=1 in order to enable the Rtlsdr_Signal_Source in GNSS-SDR (OPTIONAL)
+
+export RTLSDR_DRIVER=1
+
+In order to compile the RTLSDR adapter you should also provide the path to the gr-osmosdr source code using:
+
+export OSMOSDR_ROOT=/path/to/gr-osmosdr
+
+(in order to disable the Rtlsdr_Signal_Source compilation, you should remove the RTLSDR_DRIVER variable and build again GNSS-SDR)
+
 
 * Build GNSS-SDR
 

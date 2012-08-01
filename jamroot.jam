@@ -1,10 +1,13 @@
 import os ;
 
 local GN3S_DRIVER = [ os.environ GN3S_DRIVER ] ;
+local RTLSDR_DRIVER = [ os.environ RTLSDR_DRIVER ] ;
+
 module
 {
 	 #Global variable in the global module
      .GN3S_DRIVER = GN3S_DRIVER ;
+     .RTLSDR_DRIVER = RTLSDR_DRIVER ;
 }
 
 
@@ -28,6 +31,12 @@ if ($(GN3S_DRIVER))
 {
     echo "GN3S_DRIVER enabled" ;
 	lib gr-gn3s ;
+}
+
+if ($(RTLSDR_DRIVER))
+{
+    echo "RTLSDR_DRIVER enabled" ;
+	lib gnuradio-osmosdr ;
 }
 
 project
@@ -77,6 +86,7 @@ project : requirements
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/gengen
 <include>$GNURADIO_ROOT/gr-uhd/include
 <include>$GNURADIO_ROOT/volk/lib
+<include>$OSMOSDR_ROOT/include/osmosdr
 <include>$(GTEST_DIR)/include
 <threading>multi 
 <toolset>darwin:<include>/opt/local/include ;

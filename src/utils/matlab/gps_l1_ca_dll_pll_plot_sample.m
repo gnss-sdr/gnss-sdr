@@ -30,7 +30,7 @@
 close all;
 clear all;
 samplingFreq       = 64e6/16;     %[Hz]
-channels=6;
+channels=4;
 path='/home/javier/workspace/gnss-sdr/trunk/install/';
 clear PRN_absolute_sample_start;
 for N=1:1:channels

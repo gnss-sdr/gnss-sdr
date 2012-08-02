@@ -85,12 +85,13 @@ protected:
 
 void GalileoE1PcpsAmbiguousAcquisitionTest::init(){
 
+    gnss_synchro.Channel_ID=0;
+    gnss_synchro.System = 'E';
+    std::string signal = "1C";
+    signal.copy(gnss_synchro.Signal,2,0);
+    gnss_synchro.PRN=1;
 
 	config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
-	config->set_property("Channel1.system", "Galileo");
-	config->set_property("Channel1.signal", "1B");
-	config->set_property("Channel1.satellite", "1");
-
 	config->set_property("Acquisition.item_type", "gr_complex");
 	config->set_property("Acquisition.if", "0");
 	config->set_property("Acquisition.sampled_ms", "4");
@@ -180,22 +181,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     init();
 	GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
 
-	std::string default_system = "Galileo";
-	std::string default_signal = "1C";
-
-	std::string gnss_system = config->property("Channel1.system", default_system);
-	std::string gnss_signal = config->property("Channel1.signal", default_signal);
-	unsigned int sat = config->property("Channel1.satellite", 0);
-
-	Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, (unsigned int)sat), gnss_signal);
-
-	signal_value.get_signal().copy(gnss_synchro.Signal,2,0);
-	gnss_synchro.PRN = sat;
-    gnss_synchro.System = signal_value.get_satellite().get_system_short().c_str()[0];
-	gnss_synchro.Channel_ID=1;
-
 	ASSERT_NO_THROW( {
-	    	acquisition->set_channel(1);
+	    	acquisition->set_channel(gnss_synchro.Channel_ID);
 	}) << "Failure setting channel."<< std::endl;
 
 	ASSERT_NO_THROW( {

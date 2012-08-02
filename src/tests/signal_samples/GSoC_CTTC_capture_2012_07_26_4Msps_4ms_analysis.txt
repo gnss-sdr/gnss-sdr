@@ -1,0 +1,50 @@
+Signal capturing:
+
+Hardware: USRP1 + DBSRX daughterboard (Rev 4.5) + Antenna Novatel GPS-600. The USRP1 uses its internal 64 MHz onboard reference for deriving the sampling clock.
+
+Date: July 26th, 2012
+Time: 13:31:49 (UTC)
+Location: Roof of the Centre Tecnològic de Telecomunicacions de Catalunya (CTTC), (40.396764 N, 3.713379 E), located at the Parc Mediterrani de la Tecnologia, Av. Carl Friedrich Gauss, 7, 08860 Castelldefels, Barcelona, Spain.
+
+Signal capture utility: we used the Universal Hardware Driver (UHD). 
+UHD driver capture to file example located in uhd/host/build/examples/$.rx_samples_to_file
+
+File sink:
+In order to avoid buffer overflows the target destination for the capture file was a 4 GB RAM unit (in a system equipped with 8 GB of RAM). The linux command used to setup the RAM drive was:
+$ mkdir /tmp/ram
+$ mount -t tmpfs -o size=4G tmpfs /tmp/ram
+
+The command for capturing data was:
+
+$ ./rx_samples_to_file --file /tmp/ram/usrpcap1.dat --type short --freq 1575420000 --gain 50 --rate 8000000 --nsamps 800000000
+
+This captures samples in interleaved (I&Q) short format (signed 16-bits, or 2 bytes), which is still not implemented in GNSS-SDR. Thus, the file was converted to gr_complex using a simple script in GNU Radio Companion.
+
+===== MATLAB Results using plot_acq_grid_gsoc.m ===========================================================================================
+
+Settings:
+
+sampling_freq_Hz = 4000000
+Doppler_max_Hz = 9875
+Doppler_min_Hz = -10000
+Doppler_step_Hz = 125
+
+Results:
+
+PRN 11
+
+POSITIVE ACQUISITION
+maximum_correlation_peak = 23.0285
+delay_error_sps = 13873
+Doppler_error_Hz = -9500
+noise_floor = 1.8919
+Gain_dbs = 10.8538
+
+PRN 12
+
+POSITIVE ACQUISITION
+maximum_correlation_peak = 16.5534
+delay_error_sps =  10583
+Doppler_error_Hz = -7250
+noise_floor = 1.9020
+Gain_dbs = 9.3968

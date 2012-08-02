@@ -1,6 +1,14 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition_test.cc
- * \brief  This class implements an acquisition test based on some input parameters.
+ * \file galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc
+ * \brief  This class implements an acquisition test based on GSoC 2012
+ *         experiments.
+ *
+ * This test is a part of an experiment performed by Luis Esteve in the
+ * framework of the Google Summer of Code (GSoC) 2012, with the collaboration
+ * of Javier Arribas and Carles Fernández, related to the extension of GNSS-SDR
+ *  to Galileo. The objective is perform a positive acquisition of in-orbit
+ *  Galileo signals in the E1 band.
+ *
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -39,18 +47,20 @@
 #include <gnuradio/gr_sig_source_c.h>
 #include <gnuradio/gr_msg_queue.h>
 #include <gnuradio/gr_null_sink.h>
+#include <gnuradio/gr_skiphead.h>
 
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
+#include "gnss_signal.h"
 #include "gnss_synchro.h"
 
-#include "gps_l1_ca_pcps_acquisition.h"
+#include "galileo_e1_pcps_ambiguous_acquisition.h"
 
-class GpsL1CaPcpsAcquisitionTest: public ::testing::Test {
+class GalileoE1PcpsAmbiguousAcquisitionGSoCTest: public ::testing::Test {
 protected:
-	GpsL1CaPcpsAcquisitionTest() {
+	GalileoE1PcpsAmbiguousAcquisitionGSoCTest() {
 		queue = gr_make_msg_queue(0);
 		top_block = gr_make_top_block("Acquisition test");
 		factory = new GNSSBlockFactory();
@@ -60,7 +70,7 @@ protected:
 		message = 0;
 	}
 
-	~GpsL1CaPcpsAcquisitionTest() {
+	~GalileoE1PcpsAmbiguousAcquisitionGSoCTest() {
 		delete factory;
 		delete config;
 	}
@@ -82,34 +92,35 @@ protected:
     boost::thread ch_thread;
 };
 
-void GpsL1CaPcpsAcquisitionTest::init(){
+void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init(){
 
-	gnss_synchro.Channel_ID=0;
-	gnss_synchro.System = 'G';
-	std::string signal = "1C";
-	signal.copy(gnss_synchro.Signal,2,0);
-	gnss_synchro.PRN=1;
+    gnss_synchro.Channel_ID=0;
+    gnss_synchro.System = 'E';
+    std::string signal = "1C";
+    signal.copy(gnss_synchro.Signal,2,0);
+    gnss_synchro.PRN=11;
 
-	config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
+    config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
+
 	config->set_property("Acquisition.item_type", "gr_complex");
 	config->set_property("Acquisition.if", "0");
-	config->set_property("Acquisition.sampled_ms", "1");
+	config->set_property("Acquisition.sampled_ms", "4");
 	config->set_property("Acquisition.dump", "false");
-	config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-	config->set_property("Acquisition.threshold", "70");
-	config->set_property("Acquisition.doppler_max", "7200");
-	config->set_property("Acquisition.doppler_step", "600");
+	config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
+	config->set_property("Acquisition.threshold", "50");
+	config->set_property("Acquisition.doppler_max", "10000");
+	config->set_property("Acquisition.doppler_step", "125");
 	config->set_property("Acquisition.repeat_satellite", "false");
-
+	config->set_property("Acquisition1.cboc", "true");
 }
 
-void GpsL1CaPcpsAcquisitionTest::start_queue()
+void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::start_queue()
 {
-    ch_thread = boost::thread(&GpsL1CaPcpsAcquisitionTest::wait_message, this);
+    ch_thread = boost::thread(&GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message, this);
 }
 
 
-void GpsL1CaPcpsAcquisitionTest::wait_message()
+void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message()
 {
     while (!stop)
         {
@@ -118,34 +129,34 @@ void GpsL1CaPcpsAcquisitionTest::wait_message()
         }
 }
 
-void GpsL1CaPcpsAcquisitionTest::stop_queue()
+void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::stop_queue()
 {
 	stop = true;
  }
 
 
 
-TEST_F(GpsL1CaPcpsAcquisitionTest, Instantiate)
+TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, Instantiate)
 {
 
 	init();
 
-	GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config, "Acquisition", 1, 1, queue);
+	GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
 
 	delete acquisition;
 
 }
 
-TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
+TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
 {
 	int fs_in = 4000000;
-	int nsamples = 4000;
+	int nsamples = 4*fs_in;
 	struct timeval tv;
     long long int begin;
     long long int end;
 
     init();
-	GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config, "Acquisition", 1, 1, queue);
+	GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
 
 	ASSERT_NO_THROW( {
 			acquisition->connect(top_block);
@@ -170,18 +181,18 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 
 }
 
-TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
+TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 {
 	struct timeval tv;
     long long int begin;
     long long int end;
-    double expected_delay_samples = 524;
-    double expected_doppler_hz = -1680;
+
     init();
-	GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config, "Acquisition", 1, 1, queue);
+	GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+
 
 	ASSERT_NO_THROW( {
-	    	acquisition->set_channel(1);
+	    	acquisition->set_channel(gnss_synchro.Channel_ID);
 	}) << "Failure setting channel."<< std::endl;
 
 	ASSERT_NO_THROW( {
@@ -211,10 +222,11 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 	}) << "Failure connecting acquisition to the top_block."<< std::endl;
 
 	ASSERT_NO_THROW( {
-			std::string file = "../src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
-			const char * file_name = file.c_str();
+	        std::string file = "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+	        const char * file_name = file.c_str();
 			gr_file_source_sptr file_source = gr_make_file_source(sizeof(gr_complex),file_name,false);
-			top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
+
+            top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
 	}) << "Failure connecting the blocks of acquisition test."<< std::endl;
 
 	start_queue();
@@ -234,14 +246,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 	unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
 	std::cout <<  "Acquired " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 
-	ASSERT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-
-	double delay_error_samples = abs(expected_delay_samples-gnss_synchro.Acq_delay_samples);
-	float delay_error_chips = (float)(delay_error_samples*1023/4000);
-	double doppler_error_hz = abs(expected_doppler_hz-gnss_synchro.Acq_doppler_hz);
-
-	EXPECT_LE(doppler_error_hz, 333) << "Doppler error exceeds the expected value: 333 Hz = 2/(3*integration period)";
-	EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
+	EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
 	delete acquisition;
 

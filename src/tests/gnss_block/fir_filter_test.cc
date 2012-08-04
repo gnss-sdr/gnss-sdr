@@ -43,8 +43,7 @@
 #include "gnss_sdr_valve.h"
 #include "fir_filter.h"
 
-DEFINE_string(filter_test_output_filename, "../src/tests/data/fir_filter_test_output.dat", "Dump filename")
-;
+DEFINE_string(filter_test_output_filename, "../src/tests/data/fir_filter_test_output.dat", "Dump filename");
 
 class Fir_Filter_Test: public ::testing::Test {
 protected:
@@ -105,8 +104,8 @@ TEST_F(Fir_Filter_Test, ConnectAndRun)
 	int fs_in = 8000000;
 	int nsamples = 10000000;
 	struct timeval tv;
-    long long int begin;
-    long long int end;
+    long long int begin = 0;
+    long long int end = 0;
 
     init();
 

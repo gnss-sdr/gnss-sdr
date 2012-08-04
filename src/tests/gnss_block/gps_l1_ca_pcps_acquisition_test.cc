@@ -141,8 +141,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 	int fs_in = 4000000;
 	int nsamples = 4000;
 	struct timeval tv;
-    long long int begin;
-    long long int end;
+    long long int begin = 0;
+    long long int end = 0;
 
     init();
 	GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config, "Acquisition", 1, 1, queue);
@@ -173,8 +173,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
 TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 {
 	struct timeval tv;
-    long long int begin;
-    long long int end;
+    long long int begin = 0;
+    long long int end = 0;
     double expected_delay_samples = 524;
     double expected_doppler_hz = -1680;
     init();

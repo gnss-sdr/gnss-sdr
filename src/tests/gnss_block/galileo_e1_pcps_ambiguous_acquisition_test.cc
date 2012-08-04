@@ -142,8 +142,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
 	int fs_in = 4000000;
 	int nsamples = 4*fs_in;
 	struct timeval tv;
-    long long int begin;
-    long long int end;
+    long long int begin = 0;
+    long long int end = 0;
 
     init();
 	GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
@@ -174,8 +174,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
 {
 	struct timeval tv;
-    long long int begin;
-    long long int end;
+    long long int begin = 0;
+    long long int end = 0;
     double expected_delay_samples = 2920; //18250;
     double expected_doppler_hz = 632;
     init();

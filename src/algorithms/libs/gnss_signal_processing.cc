@@ -35,19 +35,15 @@
 
 
 
-void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps) {
-
-	double phase, phase_step;
-
-	phase_step = (GPS_TWO_PI*_f)/_fs;
-
-	for(unsigned int i = 0; i < _samps; i++)	{
-
+void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
+{
+	double phase = 0;
+	double phase_step = (GPS_TWO_PI*_f)/_fs;
+	for(unsigned int i = 0; i < _samps; i++)
+	{
 		_dest[i] = std::complex<float>(cos(phase),sin(phase));
-
 		phase += phase_step;
 	}
-
 }
 
 

@@ -38,10 +38,10 @@
 void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
 	double phase = 0;
-	double phase_step = (GPS_TWO_PI*_f)/_fs;
+	const double phase_step = (GPS_TWO_PI * _f) / _fs;
 	for(unsigned int i = 0; i < _samps; i++)
 	{
-		_dest[i] = std::complex<float>(cos(phase),sin(phase));
+		_dest[i] = std::complex<float>(cos(phase), sin(phase));
 		phase += phase_step;
 	}
 }
@@ -150,28 +150,23 @@ void hex_to_binary_converter(int * _dest, char _from)
 	}
 }
 
+
 void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs_in,
 		float _fs_out, unsigned int _length_in, unsigned int _length_out)
 {
-
 	unsigned int _codeValueIndex;
 	//--- Find time constants --------------------------------------------------
-    float _t_in = 1/_fs_in;  // Incoming sampling  period in sec
-    float _t_out = 1/_fs_out;   // Out sampling period in sec
-
+    const float _t_in = 1/_fs_in;  // Incoming sampling  period in sec
+    const float _t_out = 1/_fs_out;   // Out sampling period in sec
     for (unsigned int i=0; i<_length_out; i++)
         {
             //=== Digitizing =======================================================
-
-            //--- Make index array to read sampled values -------------------------
-
+            //--- compute index array to read sampled values -------------------------
             _codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
-
             if (i == _length_out - 1)
                 {
                     //--- Correct the last index (due to number rounding issues) -----------
                     _dest[i] = _from[_length_in - 1];
-
                 }
             else
                 {
@@ -179,5 +174,4 @@ void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs
                     _dest[i] = _from[_codeValueIndex];
                 }
         }
-
 }

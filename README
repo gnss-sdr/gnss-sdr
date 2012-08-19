@@ -92,7 +92,7 @@ $ sudo apt-get install subversion
 $ svn co http://gnss-sdr.svn.sourceforge.net/svnroot/gnss-sdr gnss-sdr
 
 
-* Build SparkFun SiGe GN3S V2 Custom firmware and driver (OPTIONAL)
+* Build GN3S V2 Custom firmware and driver (OPTIONAL)
 
 - Go to GR-GN3S root directory, compile and install the driver:
   (read the gnss-sdr/trunk/drivers/gr-gn3s/README for more information)
@@ -104,9 +104,9 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 
-- Set the envirnoment variable GN3S_DRIVER=1 in order to enable the GN3S_Signal_Source in GNSS-SDR (OPTIONAL)
+- Set the environment variable GN3S_DRIVER=1 in order to enable the GN3S_Signal_Source in GNSS-SDR (OPTIONAL)
 
-export GN3S_DRIVER=1
+$ export GN3S_DRIVER=1
 
 In order to gain access to USB ports, gnss-sdr should be used as root.
 In addition, the driver requires access to the GN3S firmware binary file. 
@@ -116,13 +116,35 @@ Please copy this file to the application path. The GNSS-SDR default path is gnss
 
 (in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR)
 
-- Set the envirnoment variable RTLSDR_DRIVER=1 in order to enable the Rtlsdr_Signal_Source in GNSS-SDR (OPTIONAL)
+* Build RTL-SDR support (OPTIONAL)
 
-export RTLSDR_DRIVER=1
+- Install the OsmoSDR library and GNU Radio source (http://sdr.osmocom.org/trac/) 
+
+$ git clone git://git.osmocom.org/osmo-sdr.git
+$ cd osmo-sdr/software/libosmosdr
+$ mkdir build
+$ cd build/
+$ cmake ../
+$ make
+$ sudo make install
+$ sudo ldconfig
+$ cd ../../
+$ git clone git://git.osmocom.org/gr-osmosdr
+$ cd gr-osmosdr
+$ mkdir build
+$ cd build
+$ cmake ../ -Wno-dev
+$ make
+$ sudo make install
+$ sudo ldconfig
+
+- Set the environment variable RTLSDR_DRIVER=1 in order to enable the Rtlsdr_Signal_Source in GNSS-SDR (OPTIONAL)
+
+$ export RTLSDR_DRIVER=1
 
 In order to compile the RTLSDR adapter you should also provide the path to the gr-osmosdr source code using:
 
-export OSMOSDR_ROOT=/path/to/gr-osmosdr
+$ export OSMOSDR_ROOT=/path/to/gr-osmosdr
 
 (in order to disable the Rtlsdr_Signal_Source compilation, you should remove the RTLSDR_DRIVER variable and build again GNSS-SDR)
 

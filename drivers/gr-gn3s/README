@@ -4,9 +4,9 @@ Source maintainer:
 Javier Arribas
 jarribas@cttc.es
 
-This document describes how to build the Sparkfun SiGe GN3S V2 GPS Sampler GNU Radio Source USB 2.0 driver. 
+This document describes how to build the GN3S V2 GPS Sampler GNU Radio Source USB 2.0 driver. 
 
-More information on the device can be found in http://www.sparkfun.com/products/8238
+More information on the device (not available anymore) can be found in http://www.sparkfun.com/products/8238
 
 The driver core is based on Gregory W. Hecker driver available in http://github.com/gps-sdr/gps-sdr.
 
@@ -59,4 +59,11 @@ In addition, the driver requires access to the GN3S firmware binary file.
 It should be available in the same path where the application is called.
 GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/firmware/GN3S_v2/bin/gn3s_firmware.ihx. 
 Please copy this file to the application path.
+
+8- Once the GR-GN3S driver is installed, you can add this Signal Source at gnss-sdr by doing:
+
+$ export GN3S_DRIVER=1
+$ bjam release
+
+
 

@@ -142,9 +142,11 @@ $ sudo ldconfig
 
 $ export RTLSDR_DRIVER=1
 
-In order to compile the RTLSDR adapter you should also provide the path to the gr-osmosdr source code using:
+- In order to compile the RTLSDR adapter you should also provide the path to the gr-osmosdr source code using:
 
 $ export OSMOSDR_ROOT=/path/to/gr-osmosdr
+
+The default will be OSMOSDR_ROOT=/usr/local
 
 (in order to disable the Rtlsdr_Signal_Source compilation, you should remove the RTLSDR_DRIVER variable and build again GNSS-SDR)
 

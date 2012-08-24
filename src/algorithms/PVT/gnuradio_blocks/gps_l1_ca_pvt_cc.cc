@@ -223,6 +223,8 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 	            std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
 	            << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
 	            << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
+	            std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+	            << " is HDOP = " << d_ls_pvt->d_HDOP << " and VDOP = " << d_ls_pvt->d_VDOP << std::endl;
     		}
 
     		if(d_dump == true)

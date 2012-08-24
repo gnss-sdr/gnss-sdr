@@ -68,6 +68,7 @@ public:
     double d_latitude_d;  //! Latitude in degrees
     double d_longitude_d; //! Longitude in degrees
     double d_height_m;    //! Height [m]
+
     //averaging
     std::deque<double> d_hist_latitude_d;
     std::deque<double> d_hist_longitude_d;
@@ -81,6 +82,14 @@ public:
     double d_x_m;
     double d_y_m;
     double d_z_m;
+
+    // DOP estimations
+
+    double d_GDOP;
+    double d_PDOP;
+    double d_HDOP;
+    double d_VDOP;
+    double d_TDOP;
 
     bool d_flag_dump_enabled;
     std::string d_dump_filename;

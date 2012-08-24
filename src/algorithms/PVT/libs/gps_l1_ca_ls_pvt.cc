@@ -216,6 +216,24 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
             //--- Apply position update --------------------------------------------
             pos = pos + x;
         }
+
+    try{
+    //-- compute the Dilution Of Precision values
+		arma::mat Q;
+		Q       = arma::inv(arma::htrans(A)*A);
+		d_GDOP  = sqrt(arma::trace(Q));                 // GDOP
+		d_PDOP  = sqrt(Q(1,1) + Q(2,2) + Q(3,3));       // PDOP
+		d_HDOP  = sqrt(Q(1,1) + Q(2,2));                // HDOP
+		d_VDOP  = sqrt(Q(3,3));                         // VDOP
+		d_TDOP  = sqrt(Q(4,4));                         // TDOP
+    }catch(std::exception e)
+    {
+    	d_GDOP  = -1;
+		d_PDOP  = -1;
+		d_HDOP  = -1;
+		d_VDOP  = -1;
+		d_TDOP	= -1;
+    }
     return pos;
 }
 

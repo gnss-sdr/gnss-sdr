@@ -32,7 +32,8 @@
 
 #include "galileo_e1_signal_processing.h"
 
-void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn,
+void
+galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn,
         unsigned int _chip_shift)
 {
     std::string _galileo_signal = _Signal;
@@ -71,7 +72,8 @@ void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn,
 
 }
 
-void galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn,
+void
+galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn,
         unsigned int _length_out)
 {
     const unsigned int _length_in = Galileo_E1_B_CODE_LENGTH_CHIPS;
@@ -91,7 +93,8 @@ void galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn,
 
 }
 
-void galileo_e1_sinboc_61_gen(std::complex<float>* _dest, int* _prn,
+void
+galileo_e1_sinboc_61_gen(std::complex<float>* _dest, int* _prn,
         unsigned int _length_out)
 {
     const unsigned int _length_in = Galileo_E1_B_CODE_LENGTH_CHIPS;
@@ -110,7 +113,8 @@ void galileo_e1_sinboc_61_gen(std::complex<float>* _dest, int* _prn,
         }
 
 }
-void galileo_e1_gen(std::complex<float>* _dest, int* _prn, char _Signal[3])
+void
+galileo_e1_gen(std::complex<float>* _dest, int* _prn, char _Signal[3])
 {
     std::string _galileo_signal = _Signal;
     const unsigned int _codeLength = 12 * Galileo_E1_B_CODE_LENGTH_CHIPS;
@@ -142,9 +146,9 @@ void galileo_e1_gen(std::complex<float>* _dest, int* _prn, char _Signal[3])
         return;
 }
 
-void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest,
-        char _Signal[3], bool _cboc, unsigned int _prn, signed int _fs,
-        unsigned int _chip_shift)
+void
+galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
+        bool _cboc, unsigned int _prn, signed int _fs, unsigned int _chip_shift)
 {
 
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
@@ -162,12 +166,19 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest,
 
             _codeLength = 12 * Galileo_E1_B_CODE_LENGTH_CHIPS;
 
-            std::complex<float> _signal_E1[_codeLength];
+            if (_fs != 12 * _codeFreqBasis)
+                {
+                    std::complex<float> _signal_E1[_codeLength];
 
-            galileo_e1_gen(_signal_E1, primary_code_E1_chips, _Signal); //generate cboc 12 samples per chip
+                    galileo_e1_gen(_signal_E1, primary_code_E1_chips, _Signal); //generate cboc 12 samples per chip
 
-            resampler(_signal_E1, _dest, 12 * _codeFreqBasis, _fs, _codeLength,
-                    _samplesPerCode); //resamples code to fs
+                    resampler(_signal_E1, _dest, 12 * _codeFreqBasis, _fs,
+                            _codeLength, _samplesPerCode); //resamples code to fs
+                }
+            else
+                {
+                    galileo_e1_gen(_dest, primary_code_E1_chips, _Signal); //generate cboc 12 samples per chip
+                }
 
         }
     else
@@ -177,13 +188,20 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest,
 
             _codeLength = 2 * Galileo_E1_B_CODE_LENGTH_CHIPS;
 
-            std::complex<float> _signal_E1[_codeLength];
+            if (_fs != 2 * _codeFreqBasis)
+                {
+                    std::complex<float> _signal_E1[_codeLength];
 
-            galileo_e1_sinboc_11_gen(_signal_E1, primary_code_E1_chips,
-                    _codeLength); //generate sinboc(1,1) 2 samples per chip
+                    galileo_e1_sinboc_11_gen(_signal_E1, primary_code_E1_chips,
+                            _codeLength); //generate sinboc(1,1) 2 samples per chip
+                    resampler(_signal_E1, _dest, 2 * _codeFreqBasis, _fs,
+                            _codeLength, _samplesPerCode); //resamples code to fs
+                }
+            else
+                {
+                    galileo_e1_sinboc_11_gen(_dest, primary_code_E1_chips,
+                            _codeLength); //generate sinboc(1,1) 2 samples per chip                }
 
-            resampler(_signal_E1, _dest, 2 * _codeFreqBasis, _fs, _codeLength,
-                    _samplesPerCode); //resamples code to fs
-
+                }
         }
 }

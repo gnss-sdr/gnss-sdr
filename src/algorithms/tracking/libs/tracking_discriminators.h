@@ -3,13 +3,14 @@
  * \brief Interface of a library with a set of code tracking and carrier
  * tracking discriminators.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Library with a set of code tracking and carrier tracking discriminators
  * that is used by the tracking algorithms.
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -82,6 +83,18 @@ float pll_cloop_two_quadrant_atan(gr_complex prompt_s1);
  * \f$L=\sqrt{I_{LS}^2,Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].
  */
 float dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1);
+
+
+/*! \brief DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator
+ *
+ * DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator:
+ * \f{equation}
+ *  error=\frac{E-L}{E+L},
+ * \f}
+ * where \f$E=\sqrt{I_{VE}^2+Q_{VE}^2+I_{E}^2+Q_{E}^2}\f$ and
+ * \f$L=\sqrt{I_{VL}^2+Q_{VL}^2+I_{L}^2+Q_{L}^2}\f$ . The output is in [chips].
+ */
+float dll_nc_vemlp_normalized(gr_complex very_early_s1, gr_complex early_s1, gr_complex late_s1, gr_complex very_late_s1);
 
 
 #endif

@@ -56,6 +56,7 @@
  * Applications, pp.28-30, August 2008.
  */
 float gps_l1_ca_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in);
+float galileo_e1_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in);
 
 /*! \brief A carrier lock detector
  *

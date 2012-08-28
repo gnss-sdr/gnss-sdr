@@ -64,10 +64,9 @@
 #include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
 #include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc"
 #include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
-//#include "gnss_block/gps_l1_ca_dll_pll_tracking_test.cc"
+//#include "gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc"
 #include "gnss_block/file_output_filter_test.cc"
 #include "gnss_block/gnss_block_factory_test.cc"
-//#include "gnss_block/direct_resampler_conditioner_test.cc"
 
 concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
 

@@ -38,6 +38,7 @@
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 #include "gps_navigation_message.h"
+#include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
 #include "gps_l1_ca_ls_pvt.h"
@@ -80,6 +81,8 @@ private:
   long unsigned int d_sample_counter;
 
   Kml_Printer d_kml_dump;
+
+  Nmea_Printer *d_nmea_printer;
 
   concurrent_queue<Gps_Navigation_Message> *d_nav_queue; // Navigation ephemeris queue
   Gps_Navigation_Message d_last_nav_msg;                 // Last navigation message

@@ -48,6 +48,8 @@
 
 #include "gnss_synchro.h"
 
+#define PVT_MAX_CHANNELS 24
+
 /*!
  * \brief This class implements a simple PVT Least Squares solution
  */
@@ -56,9 +58,17 @@ class gps_l1_ca_ls_pvt
 private:
     arma::vec leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w);
     arma::vec e_r_corr(double traveltime, arma::vec X_sat);
-    //void topocent();
+    void topocent(double *Az, double *El, double *D, arma::vec x, arma::vec x_sat);
+    void togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
 public:
     int d_nchannels;      //! Number of available channels for positioning
+    int d_valid_observations; //! Number of valid pseudorrange observations (valid satellites)
+    int d_visible_satellites_IDs[PVT_MAX_CHANNELS]; //! Array with the IDs of the valid satellites
+	double d_visible_satellites_El[PVT_MAX_CHANNELS]; //! Array with the LOS Elevation of the valid satellites
+	double d_visible_satellites_Az[PVT_MAX_CHANNELS]; //! Array with the LOS Azimuth of the valid satellites
+	double d_visible_satellites_Distance[PVT_MAX_CHANNELS]; //! Array with the LOS Distance of the valid satellites
+	double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS]; //! Array with the IDs of the valid satellites
+
     Gps_Navigation_Message* d_ephemeris;
     double d_GPS_current_time;
     boost::posix_time::ptime d_position_UTC_time;
@@ -92,6 +102,8 @@ public:
     double d_TDOP;
 
     bool d_flag_dump_enabled;
+    bool d_flag_averaging;
+
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 

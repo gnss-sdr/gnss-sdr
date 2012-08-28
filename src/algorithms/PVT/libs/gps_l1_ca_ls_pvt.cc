@@ -188,7 +188,10 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                             //--- Correct satellite position (do to earth rotation) --------
 
                             Rot_X = e_r_corr(traveltime, X.col(i)); //armadillo
-                            //--- Find the elevation angel of the satellite ----------------
+                            //--- Find the elevation angle of the satellite ----------------
+
+                            topocent(&d_visible_satellites_Az[i],&d_visible_satellites_El[i],&d_visible_satellites_Distance[i],pos.subvec(0,2), Rot_X - pos.subvec(0,2));
+
                             //[az(i), el(i), dist] = topocent(pos(1:3, :), Rot_X - pos(1:3, :));
 
                         }
@@ -221,11 +224,13 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
     //-- compute the Dilution Of Precision values
 		arma::mat Q;
 		Q       = arma::inv(arma::htrans(A)*A);
+		//std::cout<<Q<<std::endl;
+
 		d_GDOP  = sqrt(arma::trace(Q));                 // GDOP
-		d_PDOP  = sqrt(Q(1,1) + Q(2,2) + Q(3,3));       // PDOP
-		d_HDOP  = sqrt(Q(1,1) + Q(2,2));                // HDOP
-		d_VDOP  = sqrt(Q(3,3));                         // VDOP
-		d_TDOP  = sqrt(Q(4,4));                         // TDOP
+		d_PDOP  = sqrt(Q(0,0) + Q(1,1) + Q(2,2));       // PDOP
+		d_HDOP  = sqrt(Q(0,0) + Q(1,1));                // HDOP
+		d_VDOP  = sqrt(Q(2,2));                         // VDOP
+		d_TDOP  = sqrt(Q(3,3));                         // TDOP
     }catch(std::exception e)
     {
     	d_GDOP  = -1;
@@ -249,6 +254,8 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
     int GPS_week = 0;
     double GPS_corrected_time = 0;
     double utc = 0;
+
+    d_flag_averaging=flag_averaging;
 
     int valid_obs=0; //valid observations counter
     for (int i=0; i<d_nchannels; i++)
@@ -280,6 +287,8 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                             DLOG(INFO) << "ECEF satellite SV ID=" << d_ephemeris[i].i_satellite_PRN <<" X=" << d_ephemeris[i].d_satpos_X
                                     << " [m] Y=" << d_ephemeris[i].d_satpos_Y << " [m] Z=" << d_ephemeris[i].d_satpos_Z << " [m]" << std::endl;
                             obs(i) = gnss_pseudoranges_iter->second.Pseudorange_m + d_ephemeris[i].d_satClkCorr*GPS_C_m_s;
+                            d_visible_satellites_IDs[valid_obs]=d_ephemeris[i].i_satellite_PRN;
+                            d_visible_satellites_CN0_dB[valid_obs]=gnss_pseudoranges_iter->second.CN0_dB_hz;
                             valid_obs++;
                         }
                     else
@@ -296,7 +305,11 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     obs(i) = 1; // to avoid algorithm problems (divide by zero)
                 }
         }
+
+    d_valid_observations = valid_obs;
+
     DLOG(INFO) <<"PVT: valid observations="<<valid_obs<<std::endl;
+
     if (valid_obs>=4)
         {
             arma::vec mypos;
@@ -471,59 +484,230 @@ void gps_l1_ca_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_selec
     d_height_m = h;
 }
 
-//void gps_l1_ca_ls_pvt::topocent(traveltime, X_sat)
-//{
-/*
-%function [Az, El, D] = topocent(X, dx)
-%TOPOCENT  Transformation of vector dx into topocentric coordinate
-%          system with origin at X.
-%          Both parameters are 3 by 1 vectors.
-%
-%[Az, El, D] = topocent(X, dx);
-%
-%   Inputs:
-%       X           - vector origin corrdinates (in ECEF system [X; Y; Z;])
-%       dx          - vector ([dX; dY; dZ;]).
-%
-%   Outputs:
-%       D           - vector length. Units like units of the input
-%       Az          - azimuth from north positive clockwise, degrees
-%       El          - elevation angle, degrees
+void gps_l1_ca_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z)
+{
+	//function [dphi, dlambda, h] = togeod(a, finv, X, Y, Z)
+	//%TOGEOD   Subroutine to calculate geodetic coordinates latitude, longitude,
+	//%         height given Cartesian coordinates X,Y,Z, and reference ellipsoid
+	//%         values semi-major axis (a) and the inverse of flattening (finv).
+	//%
+	//%[dphi, dlambda, h] = togeod(a, finv, X, Y, Z);
+	//%
+	//%  The units of linear parameters X,Y,Z,a must all agree (m,km,mi,ft,..etc)
+	//%  The output units of angular quantities will be in decimal degrees
+	//%  (15.5 degrees not 15 deg 30 min). The output units of h will be the
+	//%  same as the units of X,Y,Z,a.
+	//%
+	//%   Inputs:
+	//%       a           - semi-major axis of the reference ellipsoid
+	//%       finv        - inverse of flattening of the reference ellipsoid
+	//%       X,Y,Z       - Cartesian coordinates
+	//%
+	//%   Outputs:
+	//%       dphi        - latitude
+	//%       dlambda     - longitude
+	//%       h           - height above reference ellipsoid
+	//
+	//%  Copyright (C) 1987 C. Goad, Columbus, Ohio
+	//%  Reprinted with permission of author, 1996
+	//%  Fortran code translated into MATLAB
+	//%  Kai Borre 03-30-96
+	//%
+	//% CVS record:
+	//% $Id: togeod.m,v 1.1.1.1.2.4 2006/08/22 13:45:59 dpl Exp $
+	//%==========================================================================
+	//
+	*h       = 0;
+	double tolsq = 1.e-10;
+	int maxit=10;
+	// compute radians-to-degree factor
+	double rtd;
+	rtd     = 180/GPS_PI;
+
+	// compute square of eccentricity
+	double esq;
+	if (finv < 1.0E-20)
+	{
+		esq = 0;
+	}else
+	{
+		esq = (2 - 1/finv) / finv;
+	}
+
+	double oneesq;
+
+	oneesq  = 1 - esq;
+
+	// first guess
+	// P is distance from spin axis
+	double P;
+	P = sqrt(X*X+Y*Y);
+	//direct calculation of longitude
+	//
+	if (P > 1.0E-20)
+	{
+		*dlambda = atan2(Y,X) * rtd;
+	}else
+	{
+		*dlambda = 0;
+	}
+
+	if (*dlambda < 0)
+	{
+		*dlambda = *dlambda + 360.0;
+	}
+
+	// r is distance from origin (0,0,0)
+	double r;
+	r = sqrt(P*P + Z*Z);
+
+	double sinphi;
+
+	if (r > 1.0E-20)
+	{
+		sinphi = Z/r;
+	} else
+	{
+		sinphi = 0;
+	}
+
+	*dphi = asin(sinphi);
+
+	// initial value of height  =  distance from origin minus
+	// approximate distance from origin to surface of ellipsoid
+	if (r < 1.0E-20)
+	{
+		*h = 0;
+		return;
+	}
+
+	*h = r - a*(1-sinphi*sinphi/finv);
 
 
-dtr = pi/180;
+	// iterate
+	double cosphi;
+	double N_phi;
+	double dP;
+	double dZ;
+	for (int i=0; i<maxit; i++)
+	{
+		sinphi  = sin(*dphi);
+		cosphi  = cos(*dphi);
 
-[phi, lambda, h] = togeod(6378137, 298.257223563, X(1), X(2), X(3));
+		//     compute radius of curvature in prime vertical direction
+		N_phi   = a/sqrt(1-esq*sinphi*sinphi);
 
-cl  = cos(lambda * dtr);
-sl  = sin(lambda * dtr);
-cb  = cos(phi * dtr);
-sb  = sin(phi * dtr);
+		//    compute residuals in P and Z
+		dP      = P - (N_phi + (*h)) * cosphi;
+		dZ      = Z - (N_phi*oneesq + (*h)) * sinphi;
+		//
+		//    update height and latitude
+		*h       = *h + (sinphi*dZ + cosphi*dP);
+		*dphi    = *dphi + (cosphi*dZ - sinphi*dP)/(N_phi + (*h));
 
-F   = [-sl -sb*cl cb*cl;
-        cl -sb*sl cb*sl;
-        0    cb   sb];
+		//     test for convergence
+		if ((dP*dP + dZ*dZ) < tolsq)
+		{
+			break;
+		}
 
-local_vector = F' * dx;
-E   = local_vector(1);
-N   = local_vector(2);
-U   = local_vector(3);
+		//    Not Converged--Warn user
+		//    if (i == (maxit-1))
+		//        fprintf([' Problem in TOGEOD, did not converge in %2.0f',...
+		//            ' iterations\n'], i);
+		//    end
+	}
+	//
+	*dphi = (*dphi) * rtd;
 
-hor_dis = sqrt(E^2 + N^2);
+}
+void gps_l1_ca_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, arma::vec x_sat)
+{
 
-if hor_dis < 1.e-20
-    Az = 0;
-    El = 90;
-else
-    Az = atan2(E, N)/dtr;
-    El = atan2(U, hor_dis)/dtr;
-end
+	//%function [Az, El, D] = topocent(X, dx)
+	//%TOPOCENT  Transformation of vector dx into topocentric coordinate
+	//%          system with origin at X.
+	//%          Both parameters are 3 by 1 vectors.
+	//%
+	//%[Az, El, D] = topocent(X, dx);
+	//%
+	//%   Inputs:
+	//%       X           - vector origin corrdinates (in ECEF system [X; Y; Z;])
+	//%       dx          - vector ([dX; dY; dZ;]).
+	//%
+	//%   Outputs:
+	//%       D           - vector length. Units like units of the input
+	//%       Az          - azimuth from north positive clockwise, degrees
+	//%       El          - elevation angle, degrees
 
-if Az < 0
-    Az = Az + 360;
-end
+	double dtr;
+	double lambda;
+	double phi;
+	double cl;
+	double sl;
+	double cb;
+	double sb;
 
-D   = sqrt(dx(1)^2 + dx(2)^2 + dx(3)^2);
-%%%%%%%%% end topocent.m %%%%%%%%%
- */
-//}
+	double h;
+
+	dtr = GPS_PI/180.0;
+
+	//[phi, lambda, h] = togeod(6378137, 298.257223563, X(1), X(2), X(3));
+
+	togeod(&phi, &lambda, &h,6378137.0, 298.257223563, x(0), x(1), x(2));
+
+	cl  = cos(lambda * dtr);
+	sl  = sin(lambda * dtr);
+	cb  = cos(phi * dtr);
+	sb  = sin(phi * dtr);
+
+	arma::mat F=arma::zeros(3,3);
+
+	F(0,0)=-sl;
+	F(0,1)=-sb*cl;
+	F(0,2)=cb*cl;
+
+	F(1,0)=cl;
+	F(1,1)=-sb*sl;
+	F(1,2)=cb*sl;
+
+	F(2,0)=0;
+	F(2,1)=cb;
+	F(2,2)=sb;
+
+	arma::vec local_vector;
+
+	local_vector = arma::htrans(F) * x_sat;
+
+	double E;
+	double N;
+	double U;
+
+	E   = local_vector(0);
+	N   = local_vector(1);
+	U   = local_vector(2);
+
+	double hor_dis;
+
+	hor_dis = sqrt(E*E + N*N);
+
+	if (hor_dis < 1.0E-20)
+	{
+		*Az = 0;
+		*El = 90;
+	}
+	else
+	{
+		*Az = atan2(E, N)/dtr;
+		*El = atan2(U, hor_dis)/dtr;
+	}
+
+	if (*Az < 0)
+	{
+		*Az = *Az + 360.0;
+	}
+
+
+	*D   = sqrt(x_sat(0)*x_sat(0) + x_sat(1)*x_sat(1) + x_sat(2)*x_sat(2));
+
+}

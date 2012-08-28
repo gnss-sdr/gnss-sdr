@@ -34,6 +34,7 @@ exe run_tests : test_main.cc
 ../algorithms/observables/gnuradio_blocks//gps_l1_ca_observables_cc
 ../algorithms/PVT/libs//rinex_printer
 ../algorithms/PVT/libs//kml_printer
+../algorithms/PVT/libs//nmea_printer
 ../algorithms/PVT/libs//gps_l1_ca_ls_pvt
 ../algorithms/output_filter/adapters//file_output_filter
 ../algorithms/output_filter/adapters//null_sink_output_filter

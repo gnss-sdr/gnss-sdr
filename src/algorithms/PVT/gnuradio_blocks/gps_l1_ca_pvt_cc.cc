@@ -66,10 +66,19 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
     d_dump_filename = dump_filename;
     std::string dump_ls_pvt_filename;
     dump_ls_pvt_filename=dump_filename;
+
+    //initialize kml_printer
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;
     kml_dump_filename.append(".kml");
     d_kml_dump.set_headers(kml_dump_filename);
+
+    //initialize nmea_printer
+    std::string nmea_dump_filename;
+    nmea_dump_filename = d_dump_filename;
+    nmea_dump_filename.append(".nmea");
+    d_nmea_printer=new Nmea_Printer(nmea_dump_filename);
+
     d_dump_filename.append("_raw.dat");
     dump_ls_pvt_filename.append("_ls_pvt.dat");
     d_averaging_depth = averaging_depth;
@@ -117,6 +126,7 @@ gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc()
     d_kml_dump.close_file();
     delete d_ls_pvt;
     delete rp;
+    delete d_nmea_printer;
 }
 
 
@@ -204,6 +214,8 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 				if (d_ls_pvt->get_PVT(gnss_pseudoranges_map,d_tx_time,d_flag_averaging) == true)
 				{
 					d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
+					d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
+
 					if (!b_rinex_header_writen) //  & we have utc data in nav message!
 					{
 						rp->rinex_nav_header(rp->navFile, d_last_nav_msg);

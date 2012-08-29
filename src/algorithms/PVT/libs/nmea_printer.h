@@ -47,7 +47,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Nmea_Printer(std::string filename);
+    Nmea_Printer(std::string filename, bool flag_nmea_tty_port, std::string nmea_dump_filename);
 
     /*!
      * \brief Print NMEA PVT and satellite info to the initialized device
@@ -63,8 +63,13 @@ public:
 private:
     std::string nmea_filename ; //<! String with the NMEA log filename
     std::ofstream nmea_file_descriptor ; //<! Output file stream for NMEA log file
+    std::string nmea_devname;
+    int nmea_dev_descriptor ; //<! NMEA serial device descriptor (i.e. COM port)
 
     gps_l1_ca_ls_pvt* d_PVT_data;
+
+    int init_serial (std::string serial_device); //serial port control
+    void close_serial ();
 
     std::string get_GPGGA();
     std::string get_GPGSV();

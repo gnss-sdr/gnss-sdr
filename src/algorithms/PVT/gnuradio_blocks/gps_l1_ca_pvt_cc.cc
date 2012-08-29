@@ -47,13 +47,13 @@ using google::LogMessage;
 
 
 gps_l1_ca_pvt_cc_sptr
-gps_l1_ca_make_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms)
+gps_l1_ca_make_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname)
 {
-    return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms));
+    return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname));
 }
 
 
-gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms) :
+gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname) :
 		                gr_block ("gps_l1_ca_pvt_cc", gr_make_io_signature (nchannels, nchannels,  sizeof(Gnss_Synchro)),
 		                        gr_make_io_signature(1, 1, sizeof(gr_complex)))
 {
@@ -74,10 +74,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
     d_kml_dump.set_headers(kml_dump_filename);
 
     //initialize nmea_printer
-    std::string nmea_dump_filename;
-    nmea_dump_filename = d_dump_filename;
-    nmea_dump_filename.append(".nmea");
-    d_nmea_printer=new Nmea_Printer(nmea_dump_filename);
+    d_nmea_printer=new Nmea_Printer(nmea_dump_filename,flag_nmea_tty_port,nmea_dump_devname);
 
     d_dump_filename.append("_raw.dat");
     dump_ls_pvt_filename.append("_ls_pvt.dat");

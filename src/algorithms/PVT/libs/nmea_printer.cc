@@ -37,6 +37,8 @@
 #include <glog/logging.h>
 #include <gflags/gflags.h>
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include <fcntl.h>
+#include <termios.h>
 #include "GPS_L1_CA.h"
 #include "nmea_printer.h"
 
@@ -44,7 +46,7 @@ using google::LogMessage;
 
 //DEFINE_string(NMEA_version, "2.1", "Specifies the NMEA version (2.1)");
 
-Nmea_Printer::Nmea_Printer(std::string filename)
+Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_tty_port, std::string nmea_dump_devname)
 {
 	nmea_filename=filename;
 	nmea_file_descriptor.open(nmea_filename.c_str(), std::ios::out);
@@ -52,6 +54,19 @@ Nmea_Printer::Nmea_Printer(std::string filename)
         {
             DLOG(INFO) << "NMEA printer writing on " << nmea_filename.c_str();
         }
+
+    nmea_devname=nmea_dump_devname;
+    if (flag_nmea_tty_port==true)
+    {
+
+    	nmea_dev_descriptor=init_serial(nmea_devname.c_str());
+        if (nmea_dev_descriptor!=-1)
+            {
+                DLOG(INFO) << "NMEA printer writing on " << nmea_devname.c_str();
+            }
+    }else{
+    	nmea_dev_descriptor=-1;
+    }
 }
 
 Nmea_Printer::~Nmea_Printer()
@@ -60,28 +75,110 @@ Nmea_Printer::~Nmea_Printer()
         {
     		nmea_file_descriptor.close();
         }
+    close_serial();
 }
 
+
+int Nmea_Printer::init_serial (std::string serial_device) {
+	/*!
+	 * Opens the serial device and sets the deffault baud rate for a NMEA transmission (9600,8,N,1)
+	 */
+  int fd = 0;
+  struct termios options;
+
+  long BAUD;
+  long DATABITS;
+  long STOPBITS;
+  long PARITYON;
+  long PARITY;
+
+  fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+  if (fd == -1) return fd; //failed to open TTY port
+
+    fcntl(fd, F_SETFL, 0);    // clear all flags on descriptor, enable direct I/O
+    tcgetattr(fd, &options);   // read serial port options
+
+    BAUD  = B9600;
+    //BAUD  =  B38400;
+    DATABITS = CS8;
+    STOPBITS = 0;
+    PARITYON = 0;
+    PARITY = 0;
+
+    options.c_cflag = BAUD | DATABITS | STOPBITS | PARITYON | PARITY | CLOCAL | CREAD;
+    // enable receiver, set 8 bit data, ignore control lines
+    //options.c_cflag |= (CLOCAL | CREAD | CS8);
+    options.c_iflag = IGNPAR;
+
+    // set the new port options
+    tcsetattr(fd, TCSANOW, &options);
+    return fd;
+}
+
+void Nmea_Printer::close_serial ()
+{
+	if (nmea_dev_descriptor != -1)
+	{
+		close(nmea_dev_descriptor);
+	}
+}
 
 bool Nmea_Printer::Print_Nmea_Line(gps_l1_ca_ls_pvt* pvt_data, bool print_average_values)
 {
 
+	std::string GPRMC;
+	std::string GPGGA;
+	std::string GPGSA;
+	std::string GPGSV;
+
 	// set the new PVT data
 	d_PVT_data=pvt_data;
 
+	// generate the NMEA sentences
+
+	//GPRMC
+	GPRMC=get_GPRMC();
+	//GPGGA (Global Positioning System Fixed Data)
+	GPGGA=get_GPGGA();
+	//GPGSA
+	GPGSA=get_GPGSA();
+	//GPGSV
+	GPGSV=get_GPGSV();
+
+	// write to log file
 	try{
 		//GPRMC
-		nmea_file_descriptor<<get_GPRMC();
+		nmea_file_descriptor<<GPRMC;
 		//GPGGA (Global Positioning System Fixed Data)
-		nmea_file_descriptor<<get_GPGGA();
+		nmea_file_descriptor<<GPGGA;
 		//GPGSA
-		nmea_file_descriptor<<get_GPGSA();
+		nmea_file_descriptor<<GPGSA;
 		//GPGSV
-		nmea_file_descriptor<<get_GPGSV();
+		nmea_file_descriptor<<GPGSV;
 
 	}catch(std::exception ex)
 	{
 		 DLOG(INFO) << "NMEA printer can not write on output file" << nmea_filename.c_str();;
+	}
+
+	//write to serial device
+	if (nmea_dev_descriptor!=-1)
+	{
+		try{
+			int n_bytes_written;
+			//GPRMC
+			n_bytes_written=write(nmea_dev_descriptor, GPRMC.c_str(), GPRMC.length());
+			//GPGGA (Global Positioning System Fixed Data)
+			n_bytes_written=write(nmea_dev_descriptor, GPGGA.c_str(), GPGGA.length());
+			//GPGSA
+			n_bytes_written=write(nmea_dev_descriptor, GPGSA.c_str(), GPGSA.length());
+			//GPGSV
+			n_bytes_written=write(nmea_dev_descriptor, GPGSV.c_str(), GPGSV.length());
+
+		}catch(std::exception ex)
+		{
+			 DLOG(INFO) << "NMEA printer can not write on serial device" << nmea_filename.c_str();;
+		}
 	}
 
 	return true;

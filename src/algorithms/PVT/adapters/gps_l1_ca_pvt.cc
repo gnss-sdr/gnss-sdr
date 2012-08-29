@@ -54,6 +54,8 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
 {
 
     std::string default_dump_filename = "./pvt.dat";
+    std::string default_nmea_dump_filename = "./nmea_pvt.nmea";
+    std::string default_nmea_dump_devname = "/dev/tty1";
 
     DLOG(INFO) << "role " << role;
 
@@ -71,7 +73,16 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms);
+    // NMEA Printer settings
+
+    bool flag_nmea_tty_port;
+    flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
+    std::string nmea_dump_filename;
+    nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
+    std::string nmea_dump_devname;
+    nmea_dump_devname = configuration->property(role + ".nmea_dump_devname", default_nmea_dump_devname);
+
+    pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms,flag_nmea_tty_port,nmea_dump_filename,nmea_dump_devname);
 
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     // set the navigation msg queue;

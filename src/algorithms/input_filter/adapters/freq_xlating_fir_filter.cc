@@ -50,12 +50,17 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
     size_t item_size;
     (*this).init();
 
+    int decimation_factor;
+    int default_decimation_factor=1;
+    decimation_factor = config_->property(role_ + ".decimation_factor",
+    		default_decimation_factor);
+
     if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare(
             "gr_complex") == 0) && (output_item_type_.compare("gr_complex")
                     == 0))
         {
             item_size = sizeof(gr_complex);
-            freq_xlating_fir_filter_ccf_ = gr_make_freq_xlating_fir_filter_ccf(1, taps_, intermediate_freq_, sampling_freq_);
+            freq_xlating_fir_filter_ccf_ = gr_make_freq_xlating_fir_filter_ccf(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_ccf_->unique_id() << ")";
 
         }

@@ -57,12 +57,12 @@ class gps_l1_ca_ls_pvt
 {
 private:
     arma::vec leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w);
-    arma::vec e_r_corr(double traveltime, arma::vec X_sat);
-    void topocent(double *Az, double *El, double *D, arma::vec x, arma::vec x_sat);
+    arma::vec rotateSatellite(double traveltime, arma::vec X_sat);
+    void topocent(double *Az, double *El, double *D, arma::vec x, arma::vec dx);
     void togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
 public:
     int d_nchannels;      //! Number of available channels for positioning
-    int d_valid_observations; //! Number of valid pseudorrange observations (valid satellites)
+    int d_valid_observations; //! Number of valid pseudorange observations (valid satellites)
     int d_visible_satellites_IDs[PVT_MAX_CHANNELS]; //! Array with the IDs of the valid satellites
 	double d_visible_satellites_El[PVT_MAX_CHANNELS]; //! Array with the LOS Elevation of the valid satellites
 	double d_visible_satellites_Az[PVT_MAX_CHANNELS]; //! Array with the LOS Azimuth of the valid satellites
@@ -121,7 +121,7 @@ public:
      * \param[in] X [m] Cartesian coordinate
      * \param[in] Y [m] Cartesian coordinate
      * \param[in] Z [m] Cartesian coordinate
-     * \param[in] elipsoid_selection Choices of Reference Ellipsoid for Geographical Coordinates:
+     * \param[in] elipsoid_selection. Choices of Reference Ellipsoid for Geographical Coordinates:
      * 0 - International Ellipsoid 1924.
      * 1 - International Ellipsoid 1967.
      * 2 - World Geodetic System 1972.

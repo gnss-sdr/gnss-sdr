@@ -111,7 +111,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init(){
 	config->set_property("Acquisition.doppler_max", "10000");
 	config->set_property("Acquisition.doppler_step", "125");
 	config->set_property("Acquisition.repeat_satellite", "false");
-	config->set_property("Acquisition1.cboc", "true");
+	config->set_property("Acquisition0.cboc", "true");
 }
 
 void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::start_queue()
@@ -142,6 +142,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, Instantiate)
 	init();
 
 	GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    EXPECT_STREQ("Galileo_E1_PCPS_Ambiguous_Acquisition", acquisition->implementation().c_str());
 
 	delete acquisition;
 

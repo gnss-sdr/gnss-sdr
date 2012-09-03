@@ -227,6 +227,24 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsAcquisition) {
 	delete acquisition;
 }
 
+TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsAmbiguousAcquisition) {
+    InMemoryConfiguration *configuration = new InMemoryConfiguration();
+
+    configuration->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
+
+    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+
+    GNSSBlockFactory *factory = new GNSSBlockFactory();
+    AcquisitionInterface *acquisition = (AcquisitionInterface*)factory->GetBlock(configuration, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
+
+
+    EXPECT_STREQ("Acquisition", acquisition->role().c_str());
+    EXPECT_STREQ("Galileo_E1_PCPS_Ambiguous_Acquisition", acquisition->implementation().c_str());
+
+    delete configuration;
+    delete factory;
+    delete acquisition;
+}
 TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllFllPllTracking) {
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
@@ -282,6 +300,25 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTcpConnectorTracking) {
 	delete configuration;
 	delete factory;
 	delete tracking;
+}
+
+TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1DllPllVemlTracking) {
+    InMemoryConfiguration *configuration = new InMemoryConfiguration();
+
+    configuration->set_property("Tracking.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
+
+    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+
+    GNSSBlockFactory *factory = new GNSSBlockFactory();
+    TrackingInterface *tracking = (TrackingInterface*)factory->GetBlock(configuration, "Tracking", "Galileo_E1_DLL_PLL_VEML_Tracking", 1, 1, queue);
+
+
+    EXPECT_STREQ("Tracking", tracking->role().c_str());
+    EXPECT_STREQ("Galileo_E1_DLL_PLL_VEML_Tracking", tracking->implementation().c_str());
+
+    delete configuration;
+    delete factory;
+    delete tracking;
 }
 
 TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder) {

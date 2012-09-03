@@ -54,9 +54,11 @@
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
 #include "gps_l1_ca_pcps_acquisition.h"
+#include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
+#include "galileo_e1_dll_pll_veml_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l1_ca_observables.h"
 #include "gps_l1_ca_pvt.h"
@@ -337,6 +339,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
                     out_streams, queue);
         }
+    else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
+        {
+            block = new GalileoE1PcpsAmbiguousAcquisition(configuration, role, in_streams,
+                    out_streams, queue);
+        }
 
     // TRACKING BLOCKS -------------------------------------------------------------
 
@@ -353,6 +360,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_TCP_CONNECTOR_Tracking") == 0)
             {
                 block = new GpsL1CaTcpConnectorTracking(configuration, role, in_streams,
+                        out_streams, queue);
+            }
+    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
+            {
+                block = new GalileoE1DllPllVemlTracking(configuration, role, in_streams,
                         out_streams, queue);
             }
 

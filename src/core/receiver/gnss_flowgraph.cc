@@ -521,7 +521,7 @@ void GNSSFlowgraph::init()
 void GNSSFlowgraph::set_signals_list()
 {
     /*
-     * Sets a sequential list of satellites (1...32)
+     * Sets a sequential list of satellites (1, 2, ...32)
      */
 
     /*
@@ -532,7 +532,7 @@ void GNSSFlowgraph::set_signals_list()
             11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
             29, 30, 31, 32 };
 
-    std::set<unsigned int>::iterator available_gps_prn_iter;
+    std::set<unsigned int>::iterator available_gnss_prn_iter;
 
     Gnss_Signal signal_value;
 
@@ -541,11 +541,25 @@ void GNSSFlowgraph::set_signals_list()
      * To add signals from other systems, add another loop 'for'
      */
 
-    for (available_gps_prn_iter = available_gps_prn.begin(); available_gps_prn_iter
-    != available_gps_prn.end(); available_gps_prn_iter++)
+    for (available_gnss_prn_iter = available_gps_prn.begin(); available_gnss_prn_iter
+    != available_gps_prn.end(); available_gnss_prn_iter++)
         {
             signal_value = Gnss_Signal(Gnss_Satellite(std::string("GPS"),
-                    *available_gps_prn_iter), std::string("1C"));
+                    *available_gnss_prn_iter), std::string("1C"));
+            available_GNSS_signals_.push_back(signal_value);
+        }
+
+    std::set<unsigned int> available_galileo_prn = { 11, 12 };
+
+
+    for (available_gnss_prn_iter = available_galileo_prn.begin(); available_gnss_prn_iter
+    != available_galileo_prn.end(); available_gnss_prn_iter++)
+        {
+            signal_value = Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
+                    *available_gnss_prn_iter), std::string("1B"));
+            available_GNSS_signals_.push_back(signal_value);
+            signal_value = Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
+                    *available_gnss_prn_iter), std::string("1C"));
             available_GNSS_signals_.push_back(signal_value);
         }
 
@@ -578,12 +592,12 @@ void GNSSFlowgraph::set_signals_list()
                 }
 
         }
-    /*	std::cout << "Signal queue: " << std::endl;
+    	std::cout << "Signal queue: " << std::endl;
 	 for (std::list<Gnss_Signal>::iterator it =
 	 available_GNSS_signals_.begin(); it
 	 != available_GNSS_signals_.end(); it++) {
 	 std::cout << *it << std::endl;
-	 }*/
+	 }
 
 }
 

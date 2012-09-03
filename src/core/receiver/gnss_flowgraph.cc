@@ -592,12 +592,12 @@ void GNSSFlowgraph::set_signals_list()
                 }
 
         }
-    	std::cout << "Signal queue: " << std::endl;
+/*    	std::cout << "Signal queue: " << std::endl;
 	 for (std::list<Gnss_Signal>::iterator it =
 	 available_GNSS_signals_.begin(); it
 	 != available_GNSS_signals_.end(); it++) {
 	 std::cout << *it << std::endl;
-	 }
+	 }*/
 
 }
 

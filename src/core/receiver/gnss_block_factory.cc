@@ -56,6 +56,7 @@
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
+#include "gps_l1_ca_dll_pll_optim_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "galileo_e1_dll_pll_veml_tracking.h"
@@ -350,6 +351,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
         {
             block = new GpsL1CaDllPllTracking(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Optim_Tracking") == 0)
+        {
+            block = new GpsL1CaDllPllOptimTracking(configuration, role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("GPS_L1_CA_DLL_FLL_PLL_Tracking") == 0)

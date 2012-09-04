@@ -4,3 +4,4 @@ obj gps_l1_ca_dll_pll_tracking : gps_l1_ca_dll_pll_tracking.cc : <toolset>darwin
 obj gps_l1_ca_dll_fll_pll_tracking : gps_l1_ca_dll_fll_pll_tracking.cc : <toolset>darwin:<define>GNSS_SDR_USE_BOOST_ROUND ;
 obj gps_l1_ca_tcp_connector_tracking : gps_l1_ca_tcp_connector_tracking.cc : <toolset>darwin:<define>GNSS_SDR_USE_BOOST_ROUND ;
 obj galileo_e1_dll_pll_veml_tracking : galileo_e1_dll_pll_veml_tracking.cc : <toolset>darwin:<define>GNSS_SDR_USE_BOOST_ROUND ;
+obj gps_l1_ca_dll_pll_optim_tracking : gps_l1_ca_dll_pll_optim_tracking.cc : <toolset>darwin:<define>GNSS_SDR_USE_BOOST_ROUND ;

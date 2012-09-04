@@ -48,10 +48,12 @@ exe run_tests : test_main.cc
 ../algorithms/PVT/adapters//gps_l1_ca_pvt
 ../algorithms/PVT/gnuradio_blocks//gps_l1_ca_pvt_cc
 ../algorithms/tracking/adapters//gps_l1_ca_dll_pll_tracking
+../algorithms/tracking/adapters//gps_l1_ca_dll_pll_optim_tracking
 ../algorithms/tracking/adapters//gps_l1_ca_dll_fll_pll_tracking
 ../algorithms/tracking/adapters//gps_l1_ca_tcp_connector_tracking
 ../algorithms/tracking/adapters//galileo_e1_dll_pll_veml_tracking
 ../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_pll_tracking_cc
+../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_pll_optim_tracking_cc
 ../algorithms/tracking/gnuradio_blocks//gps_l1_ca_dll_fll_pll_tracking_cc
 ../algorithms/tracking/gnuradio_blocks//gps_l1_ca_tcp_connector_tracking_cc
 ../algorithms/tracking/gnuradio_blocks//galileo_e1_dll_pll_veml_tracking_cc

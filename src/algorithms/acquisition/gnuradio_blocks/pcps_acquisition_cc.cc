@@ -38,6 +38,7 @@
 #include <sstream>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include <volk/volk.h>
 
 using google::LogMessage;
 
@@ -124,7 +125,7 @@ void pcps_acquisition_cc::init()
     for (unsigned int i = 0; i < d_fft_size; i++)
     {
         d_fft_codes[i] = std::complex<float>(conj(d_fft_if->get_outbuf()[i]));
-        d_fft_codes[i] = d_fft_codes[i] / (float)d_fft_size; //to correct the scale factor introduced by FFTW
+        //d_fft_codes[i] = d_fft_codes[i] / (float)d_fft_size; //to correct the scale factor introduced by FFTW
     }
 
 }
@@ -176,6 +177,8 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
             unsigned int i;
 
+            float fft_normalization_factor;
+
             DLOG(INFO) << "Channel: " << d_channel
                     << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
                     << " ,sample stamp: " << d_sample_counter << ", threshold: "
@@ -203,16 +206,23 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
                     //3- Perform the FFT-based circular convolution (parallel time search)
                     d_fft_if->execute();
-                    for (i = 0; i < d_fft_size; i++)
-                        {
-                            d_ifft->get_inbuf()[i] = (d_fft_if->get_outbuf()[i]
-                                      * d_fft_codes[i]) / (float)d_fft_size;
-                        }
+                    // Using plain C++ operations
+//                    for (i = 0; i < d_fft_size; i++)
+//                        {
+//                            d_ifft->get_inbuf()[i] = (d_fft_if->get_outbuf()[i]
+//                                      * d_fft_codes[i]) / (float)d_fft_size;
+//                        }
+
+                    // Using SIMD operations with VOLK library
+                    volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
+
                     d_ifft->execute();
 
                     // Search maximum
                     indext = 0;
                     magt = 0;
+                    fft_normalization_factor=(float)d_fft_size*(float)d_fft_size;
+
                     for (i = 0; i < d_fft_size; i++)
                         {
                             tmp_magt = std::norm(d_ifft->get_outbuf()[i]);
@@ -222,6 +232,9 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                                     indext = i;
                                 }
                         }
+
+                    // Normalize the maximum value to correct the scale factor introduced by FFTW
+                    magt=magt/(fft_normalization_factor*fft_normalization_factor);
 
                     // Record results to files
                     if (d_dump)

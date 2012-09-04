@@ -32,17 +32,32 @@
  */
 
 #include "gnss_signal_processing.h"
-
+#include <gr_fxpt.h>
 
 
 void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
-	double phase = 0;
-	const double phase_step = (GPS_TWO_PI * _f) / _fs;
+	//old
+	//double phase = 0;
+	//const double phase_step = (GPS_TWO_PI * _f) / _fs;
+
+	//new Fixed Point NCO (faster)
+	int phase_i=0;
+	int phase_step_i;
+	float phase_step_f =(float)((GPS_TWO_PI * _f) / _fs);
+	phase_step_i=gr_fxpt::float_to_fixed(phase_step_f);
+    float sin_f,cos_f;
+
 	for(unsigned int i = 0; i < _samps; i++)
 	{
-		_dest[i] = std::complex<float>(cos(phase), sin(phase));
-		phase += phase_step;
+		//old
+		//_dest[i] = std::complex<float>(cos(phase), sin(phase));
+		//phase += phase_step;
+
+		//new Fixed Point NCO (faster)
+		gr_fxpt::sincos(phase_i,&sin_f,&cos_f);
+		_dest[i] = std::complex<float>(cos_f, sin_f);
+		phase_i += phase_step_i;
 	}
 }
 

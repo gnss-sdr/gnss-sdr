@@ -347,7 +347,6 @@ void GNSSFlowgraph::wait()
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
     DLOG(INFO) << "received " << what << " from " << who;
-//    Gnss_Signal aux_signal;
 
     switch (what)
     {
@@ -358,19 +357,12 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         available_GNSS_signals_.push_back(channel(who)->get_signal());
 
         while (channel(who)->get_signal().get_satellite().get_system() != available_GNSS_signals_.front().get_satellite().get_system()){
-                std::cout << "Entra en el bucleeeeeeeeeeee" << std::endl;
                 available_GNSS_signals_.push_back(available_GNSS_signals_.front());
                 available_GNSS_signals_.pop_front();
         }
         channel(who)->set_signal(available_GNSS_signals_.front());
         available_GNSS_signals_.pop_front();
         channel(who)->start_acquisition();
-
-//        std::cout << "Signal queue: " << std::endl;
-//        for (std::list<Gnss_Signal>::iterator it = available_GNSS_signals_.begin(); it != available_GNSS_signals_.end(); it++) {
-//                aux_signal = *it;
-//        std::cout << aux_signal.get_satellite().get_system() << " " << aux_signal.get_signal() << " PRN " << aux_signal.get_satellite().get_PRN() << std::endl;
-//        }
 
         break;
         // TODO: Tracking messages

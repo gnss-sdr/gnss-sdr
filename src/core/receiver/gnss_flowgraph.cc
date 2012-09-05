@@ -347,6 +347,7 @@ void GNSSFlowgraph::wait()
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
     DLOG(INFO) << "received " << what << " from " << who;
+//    Gnss_Signal aux_signal;
 
     switch (what)
     {
@@ -355,9 +356,22 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite "
                    << channel(who)->get_signal().get_satellite();
         available_GNSS_signals_.push_back(channel(who)->get_signal());
+
+        while (channel(who)->get_signal().get_satellite().get_system() != available_GNSS_signals_.front().get_satellite().get_system()){
+                std::cout << "Entra en el bucleeeeeeeeeeee" << std::endl;
+                available_GNSS_signals_.push_back(available_GNSS_signals_.front());
+                available_GNSS_signals_.pop_front();
+        }
         channel(who)->set_signal(available_GNSS_signals_.front());
         available_GNSS_signals_.pop_front();
         channel(who)->start_acquisition();
+
+//        std::cout << "Signal queue: " << std::endl;
+//        for (std::list<Gnss_Signal>::iterator it = available_GNSS_signals_.begin(); it != available_GNSS_signals_.end(); it++) {
+//                aux_signal = *it;
+//        std::cout << aux_signal.get_satellite().get_system() << " " << aux_signal.get_signal() << " PRN " << aux_signal.get_satellite().get_PRN() << std::endl;
+//        }
+
         break;
         // TODO: Tracking messages
 
@@ -558,9 +572,9 @@ void GNSSFlowgraph::set_signals_list()
             signal_value = Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
                     *available_gnss_prn_iter), std::string("1B"));
             available_GNSS_signals_.push_back(signal_value);
-            signal_value = Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-                    *available_gnss_prn_iter), std::string("1C"));
-            available_GNSS_signals_.push_back(signal_value);
+//            signal_value = Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
+//                    *available_gnss_prn_iter), std::string("1C"));
+//            available_GNSS_signals_.push_back(signal_value);
         }
 
     std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
@@ -592,12 +606,13 @@ void GNSSFlowgraph::set_signals_list()
                 }
 
         }
-/*    	std::cout << "Signal queue: " << std::endl;
-	 for (std::list<Gnss_Signal>::iterator it =
-	 available_GNSS_signals_.begin(); it
-	 != available_GNSS_signals_.end(); it++) {
-	 std::cout << *it << std::endl;
-	 }*/
+
+//     std::cout << "Signal queue: " << std::endl;
+//     Gnss_Signal aux_signal;
+//	 for (std::list<Gnss_Signal>::iterator it = available_GNSS_signals_.begin(); it != available_GNSS_signals_.end(); it++) {
+//	         aux_signal = *it;
+//	         std::cout << aux_signal.get_satellite().get_system() << " " << aux_signal.get_signal() << " PRN " << aux_signal.get_satellite().get_PRN() << std::endl;
+//	 }
 
 }
 

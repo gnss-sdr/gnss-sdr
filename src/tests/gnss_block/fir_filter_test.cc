@@ -1,6 +1,6 @@
 /*!
  * \file fir_filter_test.cc
- * \brief Implements Unit Test for the fir filter.
+ * \brief Implements Unit Test for the FirFilter class.
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------

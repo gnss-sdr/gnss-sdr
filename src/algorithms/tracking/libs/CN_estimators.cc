@@ -1,20 +1,26 @@
 /*!
  * \file CN_estimators.cc
  * \brief Implementation of a library with a set of Carrier to Noise
- * estimators and lock detectors. SNV_CN0 is a Carrier-to-Noise (CN0) estimator
+ * estimators and lock detectors.
+ *
+ * SNV_CN0 is a Carrier-to-Noise (CN0) estimator
  * based on the Signal-to-Noise Variance (SNV) estimator [1].
  * Carrier lock detector using normalised estimate of the cosine
  * of twice the carrier phase error [2].
+ *
  * [1] Marco Pini, Emanuela Falletti and Maurizio Fantino, "Performance
  * Evaluation of C/N0 Estimators using a Real Time GNSS Software Receiver,"
  * IEEE 10th International Symposium on Spread Spectrum Techniques and
  * Applications, pp.28-30, August 2008.
+ *
  * [2] Van Dierendonck, A.J. (1996), Global Positioning System: Theory and
  * Applications,
  * Volume I, Chapter 8: GPS Receivers, AJ Systems, Los Altos, CA 94024.
  * Inc.: 329-407.
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *
+ * \authors <ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *

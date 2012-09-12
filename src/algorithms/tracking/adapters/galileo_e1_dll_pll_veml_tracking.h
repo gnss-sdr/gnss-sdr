@@ -1,7 +1,7 @@
 /*!
  * \file galileo_e1_dll_pll_veml_tracking.h
- * \brief  Interface of an adapter of a DLL+PLL VEML (Very Early Minus Late)
- *  tracking loop block for Galileo E1 to a TrackingInterface
+ * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
+ *   to a TrackingInterface for Galileo E1 signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -44,7 +44,8 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a code DLL + carrier PLL tracking loop
+ * \brief This class Adapts a DLL+PLL VEML (Very Early Minus Late) tracking
+ * loop block to a TrackingInterface for Galileo E1 signals
  */
 class GalileoE1DllPllVemlTracking : public TrackingInterface
 {
@@ -85,7 +86,8 @@ public:
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-     * to efficiently exchange synchronization data between acquisition and tracking blocks
+     * to efficiently exchange synchronization data between acquisition and
+     *  tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
 

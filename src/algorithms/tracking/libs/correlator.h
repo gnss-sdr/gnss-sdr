@@ -1,7 +1,10 @@
 /*!
  * \file correlator.h
  * \brief High optimized vector correlator class
- * \author Javier Arribas, 2012. jarribas(at)cttc.es
+ * \authors <ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * Class that implements a high optimized vector correlator class
  * using the volk library

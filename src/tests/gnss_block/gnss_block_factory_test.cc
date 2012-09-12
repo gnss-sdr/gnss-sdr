@@ -1,8 +1,12 @@
 /*!
  * \file gnss_block_factory_test.cc
- * \brief This class implements a Unit Test for the class GNSSBlockFactory..
- * \authors Carlos Avilés, 2010. carlos.avilesr(at)googlemail.com
- *          Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \brief This class implements a Unit Test for the GNSSBlockFactory class.
+ * \authors <ul>
+ *          <li> Carlos Avilés, 2010. carlos.avilesr(at)googlemail.com
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
+ *
+ * This class test the instantiation of all blocks in gnss_block_factory
  *
  * -------------------------------------------------------------------------
  *

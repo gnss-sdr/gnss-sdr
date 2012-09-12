@@ -3,7 +3,6 @@
  * \brief This library implements various functions for Galileo E1 signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *

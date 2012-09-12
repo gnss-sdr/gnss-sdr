@@ -1,9 +1,9 @@
 /*!
  * \file galileo_e1_pcps_ambiguous_acquisition.h
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for Galileo E1 Signals
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
+ *  Galileo E1 Signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -40,6 +40,11 @@
 
 class ConfigurationInterface;
 
+/*!
+ * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
+ *  for Galileo E1 Signals
+ */
+
 class GalileoE1PcpsAmbiguousAcquisition: public AcquisitionInterface
 {
 
@@ -69,15 +74,51 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
+    /*!
+     * \brief Set acquisition/tracking common Gnss_Synchro object pointer
+     * to efficiently exchange synchronization data between acquisition and
+     *  tracking blocks
+     */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+
+    /*!
+     * \brief Set acquisition channel unique ID
+     */
     void set_channel(unsigned int channel);
+
+    /*!
+     * \brief Set statistics threshold of PCPS algorithm
+     */
     void set_threshold(float threshold);
+
+    /*!
+     * \brief Set maximum Doppler off grid search
+     */
     void set_doppler_max(unsigned int doppler_max);
+
+    /*!
+     * \brief Set Doppler steps for the grid search
+     */
     void set_doppler_step(unsigned int doppler_step);
+
+    /*!
+     * \brief Set tracking channel internal queue
+     */
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
+    /*!
+     * \brief Initializes acquisition algorithm.
+     */
     void init();
+
+    /*!
+     * \brief Returns the maximum peak of grid search
+     */
     signed int mag();
+
+    /*!
+     * \brief Restart acquisition algorithm
+     */
     void reset();
 
 private:

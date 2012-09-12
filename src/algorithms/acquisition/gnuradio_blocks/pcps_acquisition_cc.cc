@@ -1,8 +1,10 @@
 /*!
  * \file pcps_acquisition_cc.cc
- * \brief This class implements a Parallell Code Phase Search Acquisition
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \brief This class implements a Parallel Code Phase Search Acquisition
+ * \authors <ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * Detailed description of the file here if needed.
  *
@@ -125,7 +127,6 @@ void pcps_acquisition_cc::init()
     for (unsigned int i = 0; i < d_fft_size; i++)
     {
         d_fft_codes[i] = std::complex<float>(conj(d_fft_if->get_outbuf()[i]));
-        //d_fft_codes[i] = d_fft_codes[i] / (float)d_fft_size; //to correct the scale factor introduced by FFTW
     }
 
 }
@@ -243,8 +244,6 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                             std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
                             filename.str("");
                             filename << "../data/test_statistics_"<<d_gnss_synchro->System<<"_"<<d_gnss_synchro->Signal<<"_sat_" << d_gnss_synchro->PRN << "_doppler_"<<  doppler << ".dat";
-                            //std::cout << filename.str().c_str();
-                            //std::cout << ".\n";
                             d_dump_file.open(filename.str().c_str(), std::ios::out
                                     | std::ios::binary);
                             d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
@@ -257,8 +256,6 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                             d_mag = magt;
                             d_gnss_synchro->Acq_delay_samples= (double)indext;
                             d_gnss_synchro->Acq_doppler_hz= (double)doppler;
-                            //d_code_phase = indext;
-                            //d_doppler_freq = doppler;
                         }
                 }
 

@@ -2,12 +2,14 @@
  * \file gps_l1_ca_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  GPS L1 C/A Signals
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *         Luis Esteve, 2011-2012. luis(at)epsilon-formacion.com
+ * \authors <ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -69,8 +71,9 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     dump_filename_ = configuration->property(role + ".dump_filename",
             default_dump_filename);
 
-    //--- Find number of samples per spreading code ----------------------------
-    vector_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    //--- Find number of samples per spreading code -------------------------
+    vector_length_ = round(fs_in_
+            / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     code_= new gr_complex[vector_length_];
 

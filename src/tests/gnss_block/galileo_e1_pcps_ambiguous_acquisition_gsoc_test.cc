@@ -1,13 +1,16 @@
 /*!
  * \file galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc
- * \brief  This class implements an acquisition test based on GSoC 2012
- *         experiments.
+ * \brief  This class implements an acquisition test for
+ *  GalileoE1PcpsAmbiguousAcquisition class based on GSoC 2012 experiments.
  *
  * This test is a part of an experiment performed by Luis Esteve in the
  * framework of the Google Summer of Code (GSoC) 2012, with the collaboration
  * of Javier Arribas and Carles Fernández, related to the extension of GNSS-SDR
  *  to Galileo. The objective is perform a positive acquisition of in-orbit
  *  Galileo signals in the E1 band.
+ *
+ *  Report:
+ *  https://docs.google.com/document/d/1SZ3m1K7Qf9GsZQGEF7VSOEewBDCjbylCClw9rSXwG7Y/edit?pli=1
  *
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *

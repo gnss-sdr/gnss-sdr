@@ -1,7 +1,10 @@
 /*!
  * \file correlator.cc
  * \brief Highly optimized vector correlator class
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \authors <ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * Class that implements a high optimized vector correlator class.
  *
@@ -52,8 +55,6 @@ unsigned long Correlator::next_power_2(unsigned long v)
 void Correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out)
 {
     gr_complex bb_signal_sample(0,0);
-
-    //std::cout<<"length="<<signal_length_samples<<std::endl;
 
     *E_out = 0;
     *P_out = 0;

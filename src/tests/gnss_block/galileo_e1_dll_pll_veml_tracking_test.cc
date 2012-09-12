@@ -1,6 +1,7 @@
 /*!
- * \file galileo_e1_dll_pll_veml_tracking_internal_test.cc
- * \brief  This class implements a tracking test based on some input parameters.
+ * \file galileo_e1_dll_pll_veml_tracking_test.cc
+ * \brief  This class implements a tracking test for GalileoE1DllPllVemlTracking
+ *  class based on some input parameters.
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -67,9 +68,6 @@ protected:
     }
 
     void init();
-    void start_queue();
-    void wait_message();
-    void stop_queue();
 
     gr_msg_queue_sptr queue;
     gr_top_block_sptr top_block;
@@ -101,26 +99,6 @@ void GalileoE1DllPllVemlTrackingInternalTest::init(){
     config->set_property("Tracking.pll_bw_hz", "30.0");
     config->set_property("Tracking.dll_bw_hz", "2.0");
 }
-
-void GalileoE1DllPllVemlTrackingInternalTest::start_queue()
-{
-    ch_thread = boost::thread(&GalileoE1DllPllVemlTrackingInternalTest::wait_message, this);
-}
-
-
-void GalileoE1DllPllVemlTrackingInternalTest::wait_message()
-{
-    while (!stop)
-        {
-            channel_internal_queue.wait_and_pop(message);
-            stop_queue();
-        }
-}
-
-void GalileoE1DllPllVemlTrackingInternalTest::stop_queue()
-{
-    stop = true;
- }
 
 
 

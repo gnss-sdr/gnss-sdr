@@ -1,6 +1,7 @@
 /*!
  * \file gps_l1_ca_pcps_acquisition_test.cc
- * \brief  This class implements an acquisition test based on some input parameters.
+ * \brief  This class implements an acquisition test for
+ * GpsL1CaPcpsAcquisition class based on some input parameters.
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *

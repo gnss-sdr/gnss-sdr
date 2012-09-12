@@ -1,7 +1,7 @@
 /*!
  * \file galileo_e1_dll_pll_veml_tracking_cc.cc
- * \brief Implementation of a code DLL + carrier PLL bump-jump tracking
- *  block
+ * \brief Implementation of a code DLL + carrier PLL VEML (Very Early
+ *  Minus Late) tracking block for Galileo E1 signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:

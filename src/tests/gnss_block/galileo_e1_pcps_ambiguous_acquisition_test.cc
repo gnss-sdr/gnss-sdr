@@ -1,6 +1,7 @@
 /*!
  * \file galileo_e1_pcps_ambiguous_acquisition_test.cc
- * \brief  This class implements an acquisition test based on some input parameters.
+ * \brief  This class implements an acquisition test for
+ * GalileoE1PcpsAmbiguousAcquisition class based on some input parameters.
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *

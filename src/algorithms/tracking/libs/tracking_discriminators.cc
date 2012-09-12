@@ -2,9 +2,10 @@
  * \file tracking_discriminators.cc
  * \brief Implementation of a library with a set of code tracking
  * and carrier tracking discriminators that is used by the tracking algorithms.
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *
+ * \authors <ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
@@ -104,7 +105,8 @@ float dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
 }
 
 /*
- * DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator:
+ * DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator, using the outputs
+ * of four correlators, Very Early (VE), Early (E), Late (L) and Very Late (VL):
  * \f{equation}
  *  error=\frac{E-L}{E+L},
  * \f}

@@ -2,8 +2,10 @@
  * \file tracking_discriminators.h
  * \brief Interface of a library with a set of code tracking and carrier
  * tracking discriminators.
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \authors <ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * Library with a set of code tracking and carrier tracking discriminators
  * that is used by the tracking algorithms.
@@ -79,15 +81,16 @@ float pll_cloop_two_quadrant_atan(gr_complex prompt_s1);
  * \f{equation}
  * 	error=\frac{E-L}{E+L},
  * \f}
- * where \f$E=\sqrt{I_{ES}^2,Q_{ES}^2}\f$ is the Early correlator output absolute value and
- * \f$L=\sqrt{I_{LS}^2,Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].
+ * where \f$E=\sqrt{I_{ES}^2+Q_{ES}^2}\f$ is the Early correlator output absolute value and
+ * \f$L=\sqrt{I_{LS}^2+Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].
  */
 float dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1);
 
 
 /*! \brief DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator
  *
- * DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator:
+ * DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator, using the outputs
+ * of four correlators, Very Early (VE), Early (E), Late (L) and Very Late (VL):
  * \f{equation}
  *  error=\frac{E-L}{E+L},
  * \f}

@@ -1,21 +1,29 @@
 /*!
  * \file pcps_acquisition_cc.h
- * \brief This class implements a Parallell Code Phase Search Acquisition
+ * \brief This class implements a Parallel Code Phase Search Acquisition
  *
- *  Acquisition strategy (Kay Borre book + CFAR threshold):
- *  1. Compute the input signal power estimation
- *  2. Doppler serial search loop
- *  3. Perform the FFT-based circular convolution (parallel time search)
- *  4. Record the maximum peak and the associated synchronization parameters
- *  5. Compute the test statistics and compare to the threshold
- *  6. Declare positive or negative acquisition using a message queue
+ *  Acquisition strategy (Kay Borre book + CFAR threshold).
+ *  <ol>
+ *  <li> Compute the input signal power estimation
+ *  <li> Doppler serial search loop
+ *  <li> Perform the FFT-based circular convolution (parallel time search)
+ *  <li> Record the maximum peak and the associated synchronization parameters
+ *  <li> Compute the test statistics and compare to the threshold
+ *  <li> Declare positive or negative acquisition using a message queue
+ *  </ol>
  *
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+ * "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
+ * Approach", Birkha user, 2007. pp 81-84
+ *
+ * \authors <ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -59,6 +67,10 @@ pcps_acquisition_cc_sptr
 pcps_make_acquisition_cc(unsigned int sampled_ms,
 		unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
 		gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
+
+/*!
+ * \brief This class implements a Parallel Code Phase Search Acquisition
+ */
 
 class pcps_acquisition_cc: public gr_block {
 
@@ -117,45 +129,79 @@ public:
 
 	~pcps_acquisition_cc();
 
+    /*!
+     * \brief Set acquisition/tracking common Gnss_Synchro object pointer
+     * to efficiently exchange synchronization data between acquisition and
+     *  tracking blocks
+     */
 	void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 	{
 		d_gnss_synchro = p_gnss_synchro;
 	}
 
+    /*!
+     * \brief Returns the maximum peak of grid search
+     */
 	unsigned int mag()
 	{
 		return d_mag;
 	}
 
+    /*!
+     * \brief Initializes acquisition algorithm.
+     */
 	void init();
 
+    /*!
+     * \brief Sets local code for PCPS acquisition algorithm.
+     */
 	void set_local_code(std::complex<float> * code);
 
+    /*!
+     * \brief Starts acquisition algorithm, turning from standby mode to
+     * active mode
+     */
 	void set_active(bool active)
 	{
 		d_active = active;
 	}
 
+    /*!
+     * \brief Set acquisition channel unique ID
+     */
 	void set_channel(unsigned int channel)
 	{
 		d_channel = channel;
 	}
 
+    /*!
+     * \brief Set statistics threshold of PCPS algorithm
+     */
 	void set_threshold(float threshold)
 	{
 		d_threshold = threshold;
 	}
 
+    /*!
+     * \brief Set maximum Doppler off grid search
+     */
 	void set_doppler_max(unsigned int doppler_max)
 	{
 		d_doppler_max = doppler_max;
 	}
 
+    /*!
+     * \brief Set Doppler steps for the grid search
+     */
 	void set_doppler_step(unsigned int doppler_step)
 	{
 		d_doppler_step = doppler_step;
 	}
 
+
+    /*!
+     * \brief Set tracking channel internal queue
+     */
 	void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
 	{
 		d_channel_internal_queue = channel_internal_queue;

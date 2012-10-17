@@ -38,7 +38,9 @@ galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn,
 {
     std::string _galileo_signal = _Signal;
     signed int prn = _prn - 1;
-    int* dest = _dest;
+    int index;
+    index=0;
+    //int* dest = _dest;
 
     /* A simple error check */
     if ((_prn < 1) || (_prn > 50))
@@ -46,23 +48,23 @@ galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn,
             return;
         }
 
-    if (_galileo_signal.compare("1B") == 0)
+    if (_galileo_signal.rfind("1B") != std::string::npos && _galileo_signal.length() >= 2)
         {
             for (size_t i = 0; i < Galileo_E1_B_PRIMARY_CODE[prn].length(); i++)
                 {
-                    hex_to_binary_converter(dest,
+                    hex_to_binary_converter(&_dest[index],
                             Galileo_E1_B_PRIMARY_CODE[prn].at(i));
-                    dest = dest + 4;
+                    index = index +4;
                 }
 
         }
-    else if (_galileo_signal.compare("1C") == 0)
+    else if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2)
         {
             for (size_t i = 0; i < Galileo_E1_C_PRIMARY_CODE[prn].length(); i++)
                 {
-                    hex_to_binary_converter(dest,
+                    hex_to_binary_converter(&_dest[index],
                             Galileo_E1_C_PRIMARY_CODE[prn].at(i));
-                    dest = dest + 4;
+                    index = index +4;
                 }
         }
     else
@@ -128,14 +130,14 @@ galileo_e1_gen(std::complex<float>* _dest, int* _prn, char _Signal[3])
 
     galileo_e1_sinboc_61_gen(sinboc_61, _prn, _codeLength); //generate sinboc(6,1) 12 samples per chip
 
-    if (_galileo_signal.compare("1B") == 0)
+    if (_galileo_signal.rfind("1B") != std::string::npos && _galileo_signal.length() >= 2)
         {
             for (unsigned int i = 0; i < _codeLength; i++)
                 {
                     _dest[i] = alpha * sinboc_11[i] + beta * sinboc_61[i];
                 }
         }
-    else if (_galileo_signal.compare("1C") == 0)
+    else if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2)
         {
             for (unsigned int i = 0; i < _codeLength; i++)
                 {

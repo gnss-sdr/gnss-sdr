@@ -75,9 +75,9 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_mag = 0;
     d_input_power = 0.0;
 
-    d_sine_if = new gr_complex[d_fft_size];
-
-    d_fft_codes = (gr_complex*)malloc(sizeof(gr_complex) * d_fft_size);
+    //todo: do something if posix_memalign fails
+    if (posix_memalign((void**)&d_carrier, 16, d_fft_size * sizeof(gr_complex)) == 0){};
+    if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
 
     // Direct FFT
     d_fft_if = new gri_fft_complex(d_fft_size, true);
@@ -92,8 +92,8 @@ pcps_acquisition_cc::pcps_acquisition_cc(
 
 pcps_acquisition_cc::~pcps_acquisition_cc()
 {
-	delete[] d_sine_if;
-	delete[] d_fft_codes;
+	free(d_carrier);
+	free(d_fft_codes);
 	delete d_ifft;
 	delete d_fft_if;
 
@@ -175,7 +175,6 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
             //aux vars
-
             unsigned int i;
 
             float fft_normalization_factor;
@@ -199,20 +198,18 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                 {
                     //doppler search steps
                     //Perform the carrier wipe-off
-                    complex_exp_gen(d_sine_if, d_freq + doppler, d_fs_in, d_fft_size);
-                    for (i = 0; i < d_fft_size; i++)
-                        {
-                            d_fft_if->get_inbuf()[i] = in[i] * d_sine_if[i];
-                        }
+                    complex_exp_gen(d_carrier, d_freq + doppler, d_fs_in, d_fft_size);
+
+                    if (is_unaligned()==true)
+                    {
+                        volk_32fc_x2_multiply_32fc_u(d_fft_if->get_inbuf(), in, d_carrier, d_fft_size);
+                    }else{
+                    	//use directly the input vector
+                        volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in, d_carrier, d_fft_size);
+                    }
 
                     //3- Perform the FFT-based circular convolution (parallel time search)
                     d_fft_if->execute();
-                    // Using plain C++ operations
-//                    for (i = 0; i < d_fft_size; i++)
-//                        {
-//                            d_ifft->get_inbuf()[i] = (d_fft_if->get_outbuf()[i]
-//                                      * d_fft_codes[i]) / (float)d_fft_size;
-//                        }
 
                     // Using SIMD operations with VOLK library
                     volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);

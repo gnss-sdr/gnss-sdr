@@ -101,7 +101,7 @@ private:
 	unsigned int d_sampled_ms;
 	unsigned int d_fft_size;
 	unsigned long int d_sample_counter;
-	gr_complex* d_sine_if;
+	gr_complex* d_carrier;
 
 	gr_complex* d_fft_codes;
 

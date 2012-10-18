@@ -286,7 +286,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_carrier()
     phase_rad = d_rem_carr_phase_rad;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
-            d_carr_sign[i] = gr_complex(cos(phase_rad), sin(phase_rad));
+            d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
             phase_rad += phase_step_rad;
         }
     d_rem_carr_phase_rad = fmod(phase_rad, GPS_TWO_PI);
@@ -460,8 +460,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
 
             // ########### Output the tracking results to Telemetry block ##########
 
-            current_synchro_data.Prompt_I = (double)(*d_Prompt).imag(); // ???????
-            current_synchro_data.Prompt_Q = (double)(*d_Prompt).real(); // ???????
+            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
+            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             // Tracking_timestamp_secs is aligned with the PRN start sample
             current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter +
                     (double)d_next_prn_length_samples + (double)d_next_rem_code_phase_samples) / (double)d_fs_in;
@@ -517,8 +517,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             float tmp_VE, tmp_E, tmp_P, tmp_L, tmp_VL;
             float tmp_float;
             double tmp_double;
-            prompt_I = (*d_Prompt).imag();
-            prompt_Q = (*d_Prompt).real();
+            prompt_I = (*d_Prompt).real();
+            prompt_Q = (*d_Prompt).imag();
             tmp_VE = std::abs<float>(*d_Very_Early);
             tmp_E = std::abs<float>(*d_Early);
             tmp_P = std::abs<float>(*d_Prompt);

@@ -310,10 +310,6 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::update_local_code()
 		{
     	    associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
             d_early_code[i] = d_ca_code[associated_chip_index];
-            //associated_chip_index = 1 + round(fmod(tcode_chips, code_length_chips));
-            //d_prompt_code[i] = d_ca_code[associated_chip_index];
-            //associated_chip_index = 1 + round(fmod(tcode_chips+d_early_late_spc_chips, code_length_chips));
-            //d_late_code[i] = d_ca_code[associated_chip_index];
             tcode_chips = tcode_chips + d_code_phase_step_chips;
 		}
 
@@ -332,7 +328,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::update_local_carrier()
     phase_rad = d_rem_carr_phase_rad;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
-            d_carr_sign[i] = gr_complex(cos(phase_rad), sin(phase_rad));
+            d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
             phase_rad += phase_step_rad;
         }
     d_rem_carr_phase_rad = fmod(phase_rad, GPS_TWO_PI);
@@ -466,7 +462,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             d_control_id++;
 
             //! Send and receive a TCP packet
-             boost::array<float, NUM_TX_VARIABLES> tx_variables_array = {{d_control_id,(*d_Early).imag(),(*d_Early).real(),(*d_Late).imag(),(*d_Late).real(),(*d_Prompt).imag(),(*d_Prompt).real(),d_acq_carrier_doppler_hz,1}};
+             boost::array<float, NUM_TX_VARIABLES> tx_variables_array = {{d_control_id,(*d_Early).real(),(*d_Early).imag(),(*d_Late).real(),(*d_Late).imag(),(*d_Prompt).real(),(*d_Prompt).imag(),d_acq_carrier_doppler_hz,1}};
              d_tcp_com.send_receive_tcp_packet(tx_variables_array, &tcp_data);
 
              //! Recover the tracking data
@@ -545,8 +541,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
 
             // ########### Output the tracking data to navigation and PVT ##########
 
-            current_synchro_data.Prompt_I = (double)(*d_Prompt).imag();
-            current_synchro_data.Prompt_Q = (double)(*d_Prompt).real();
+            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
+            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             current_synchro_data.Tracking_timestamp_secs = d_sample_counter_seconds;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
             current_synchro_data.Code_phase_secs = (double)d_code_phase_samples * (1/(float)d_fs_in);
@@ -600,8 +596,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             float prompt_Q;
             float tmp_E, tmp_P, tmp_L;
             float tmp_float;
-            prompt_I = (*d_Prompt).imag();
-            prompt_Q = (*d_Prompt).real();
+            prompt_I = (*d_Prompt).real();
+            prompt_Q = (*d_Prompt).imag();
             tmp_E = std::abs<float>(*d_Early);
             tmp_P = std::abs<float>(*d_Prompt);
             tmp_L = std::abs<float>(*d_Late);

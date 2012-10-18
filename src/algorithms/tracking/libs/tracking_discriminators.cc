@@ -49,8 +49,8 @@
 float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2,float t1, float t2)
 {
     float cross,dot;
-    dot = prompt_s1.imag()*prompt_s2.imag() + prompt_s1.real()*prompt_s2.real();
-    cross = prompt_s1.imag()*prompt_s2.real() - prompt_s2.imag()*prompt_s1.real();
+    dot = prompt_s1.real()*prompt_s2.real() + prompt_s1.imag()*prompt_s2.imag();
+    cross = prompt_s1.real()*prompt_s2.imag() - prompt_s2.real()*prompt_s1.imag();
     return atan2(cross, dot) / (t2-t1);
 }
 
@@ -64,7 +64,7 @@ float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2,float t1
  */
 float pll_four_quadrant_atan(gr_complex prompt_s1)
 {
-    return atan2(prompt_s1.real(), prompt_s1.imag());
+    return atan2(prompt_s1.imag(), prompt_s1.real());
 }
 
 
@@ -77,9 +77,9 @@ float pll_four_quadrant_atan(gr_complex prompt_s1)
  */
 float pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
 {
-    if (prompt_s1.imag() != 0.0)
+    if (prompt_s1.real() != 0.0)
         {
-            return atan(prompt_s1.real() / prompt_s1.imag());
+            return atan(prompt_s1.imag() / prompt_s1.real());
         }
     else
         {

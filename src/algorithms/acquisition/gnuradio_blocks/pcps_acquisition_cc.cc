@@ -198,7 +198,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                 {
                     //doppler search steps
                     //Perform the carrier wipe-off
-                    complex_exp_gen(d_carrier, d_freq + doppler, d_fs_in, d_fft_size);
+                    complex_exp_gen_conj(d_carrier, d_freq + doppler, d_fs_in, d_fft_size);
 
                     if (is_unaligned()==true)
                     {

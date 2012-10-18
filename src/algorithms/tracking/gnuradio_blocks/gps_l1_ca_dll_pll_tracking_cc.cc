@@ -307,7 +307,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_carrier()
     phase_rad = d_rem_carr_phase_rad;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
-            d_carr_sign[i] = gr_complex(cos(phase_rad), sin(phase_rad));
+            d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
             phase_rad += phase_step_rad;
         }
     d_rem_carr_phase_rad = fmod(phase_rad, GPS_TWO_PI);
@@ -496,8 +496,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
 
             // ########### Output the tracking data to navigation and PVT ##########
 
-            current_synchro_data.Prompt_I = (double)(*d_Prompt).imag();
-            current_synchro_data.Prompt_Q = (double)(*d_Prompt).real();
+            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
+            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             // Tracking_timestamp_secs is aligned with the PRN start sample
             current_synchro_data.Tracking_timestamp_secs=((double)d_sample_counter+(double)d_next_prn_length_samples+(double)d_next_rem_code_phase_samples)/(double)d_fs_in;
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
@@ -554,8 +554,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             float tmp_E, tmp_P, tmp_L;
             float tmp_float;
             double tmp_double;
-            prompt_I = (*d_Prompt).imag();
-            prompt_Q = (*d_Prompt).real();
+            prompt_I = (*d_Prompt).real();
+            prompt_Q = (*d_Prompt).imag();
             tmp_E = std::abs<float>(*d_Early);
             tmp_P = std::abs<float>(*d_Prompt);
             tmp_L = std::abs<float>(*d_Late);

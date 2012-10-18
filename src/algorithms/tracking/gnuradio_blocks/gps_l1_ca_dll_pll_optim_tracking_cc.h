@@ -135,7 +135,6 @@ private:
     long d_fs_in;
 
     double d_early_late_spc_chips;
-
     double d_code_phase_step_chips;
 
     gr_complex* d_ca_code;
@@ -190,6 +189,7 @@ private:
     // control vars
     bool d_enable_tracking;
     bool d_pull_in;
+    int d_gnuradio_forecast_samples;
 
     // file dump
     std::string d_dump_filename;

@@ -72,19 +72,17 @@ float gps_l1_ca_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in)
 {
     // estimate CN0 using buffered values
     // MATLAB CODE
-    // Psig=((1/N)*sum(abs(imag(x((n-N+1):n)))))^2;
-    // Ptot=(1/N)*sum(abs(x((n-N+1):n)).^2);
     // SNR_SNV(count)=Psig/(Ptot-Psig);
     // CN0_SNV_dB=10*log10(SNR_SNV)+10*log10(BW)-10*log10(PRN_length);
     float SNR, SNR_dB_Hz;
-    float tmp_abs_imag;
+    float tmp_abs_real;
     float Psig, Ptot;
     Psig = 0;
     Ptot = 0;
     for (int i=0; i<length; i++)
         {
-            tmp_abs_imag = std::abs(Prompt_buffer[i].imag());
-            Psig += tmp_abs_imag;
+            tmp_abs_real = std::abs(Prompt_buffer[i].real());
+            Psig += tmp_abs_real;
             Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
         }
     Psig = Psig / (float)length;
@@ -114,19 +112,17 @@ float galileo_e1_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in)
 {
     // estimate CN0 using buffered values
     // MATLAB CODE
-    // Psig=((1/N)*sum(abs(imag(x((n-N+1):n)))))^2;
-    // Ptot=(1/N)*sum(abs(x((n-N+1):n)).^2);
     // SNR_SNV(count)=Psig/(Ptot-Psig);
     // CN0_SNV_dB=10*log10(SNR_SNV)+10*log10(BW)-10*log10(PRN_length);
     float SNR, SNR_dB_Hz;
-    float tmp_abs_imag;
+    float tmp_abs_real;
     float Psig, Ptot;
     Psig = 0;
     Ptot = 0;
     for (int i=0; i<length; i++)
         {
-            tmp_abs_imag = std::abs(Prompt_buffer[i].imag());
-            Psig += tmp_abs_imag;
+            tmp_abs_real= std::abs(Prompt_buffer[i].real());
+            Psig += tmp_abs_real;
             Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
         }
     Psig = Psig / (float)length;
@@ -150,11 +146,6 @@ float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
      * Code lock detector
      */
     // estimate using buffered values
-    // MATLAB CODE
-    // lock detector operation
-    // NBD=sum(abs(imag(x((n-N+1):n))))^2 + sum(abs(real(x((n-N+1):n))))^2;
-    // NBP=sum(imag(x((n-N+1):n)).^2) - sum(real(x((n-N+1):n)).^2);
-    // LOCK(count)=NBD/NBP;
     float tmp_abs_I, tmp_abs_Q;
     float tmp_sum_abs_I, tmp_sum_abs_Q;
     float tmp_sum_sqr_I, tmp_sum_sqr_Q;
@@ -165,12 +156,12 @@ float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
     float NBD,NBP;
     for (int i=0; i<length; i++)
         {
-            tmp_abs_I = std::abs(Prompt_buffer[i].imag());
-            tmp_abs_Q = std::abs(Prompt_buffer[i].real());
+            tmp_abs_I = std::abs(Prompt_buffer[i].real());
+            tmp_abs_Q = std::abs(Prompt_buffer[i].imag());
             tmp_sum_abs_I += tmp_abs_I;
             tmp_sum_abs_Q += tmp_abs_Q;
-            tmp_sum_sqr_I += (Prompt_buffer[i].imag() * Prompt_buffer[i].imag());
-            tmp_sum_sqr_Q += (Prompt_buffer[i].real() * Prompt_buffer[i].real());
+            tmp_sum_sqr_I += (Prompt_buffer[i].real() * Prompt_buffer[i].real());
+            tmp_sum_sqr_Q += (Prompt_buffer[i].imag() * Prompt_buffer[i].imag());
         }
     NBD = tmp_sum_abs_I * tmp_sum_abs_I + tmp_sum_abs_Q * tmp_sum_abs_Q;
     NBP = tmp_sum_sqr_I - tmp_sum_sqr_Q;

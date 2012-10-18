@@ -54,7 +54,7 @@ class Correlator
 public:
     void Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
     void Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out,bool input_vector_aligned);
-    void Carrier_wipeoff_and_VEPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* VE_code,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* VL_code,gr_complex* VE_out,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out,gr_complex* VL_out,bool input_vector_aligned);
+    void Carrier_wipeoff_and_VEPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* VE_code,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* VL_code,gr_complex* VE_out,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out,gr_complex* VL_out,bool input_vector_unaligned);
     Correlator();
     ~Correlator();
 private:

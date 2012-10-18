@@ -47,6 +47,14 @@ void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs,
         unsigned int _samps);
 
 /*!
+ * \brief This function generates a conjugate complex exponential in _dest.
+ *
+ */
+void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs,
+        unsigned int _samps);
+
+
+/*!
  * \brief This function makes a conversion from hex (the input is a char)
  *  to binary (the output are 4 ints with +1 or -1 values).
  *

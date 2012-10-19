@@ -60,6 +60,7 @@
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "galileo_e1_dll_pll_veml_tracking.h"
+#include "galileo_e1_tcp_connector_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l1_ca_observables.h"
 #include "gps_l1_ca_pvt.h"
@@ -364,15 +365,20 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
                     out_streams, queue);
         }
     else if (implementation.compare("GPS_L1_CA_TCP_CONNECTOR_Tracking") == 0)
-            {
+        {
                 block = new GpsL1CaTcpConnectorTracking(configuration, role, in_streams,
                         out_streams, queue);
-            }
+        }
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
-            {
+        {
                 block = new GalileoE1DllPllVemlTracking(configuration, role, in_streams,
                         out_streams, queue);
-            }
+        }
+    else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
+        {
+                block = new GalileoE1TcpConnectorTracking(configuration, role, in_streams,
+                        out_streams, queue);
+        }
 
     // TELEMETRY DECODERS ----------------------------------------------------------
 

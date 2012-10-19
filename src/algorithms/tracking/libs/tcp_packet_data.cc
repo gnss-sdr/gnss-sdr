@@ -1,6 +1,6 @@
 /*!
- * \file tcp_communication.h
- * \brief Interface of the TCP communication class
+ * \file tcp_packet_data.cc
+ * \brief Interface of the TCP packet data class
  * \author David Pubill, 2011. dpubill(at)cttc.es
  *
  *
@@ -28,33 +28,15 @@
  *
  * -------------------------------------------------------------------------
  */
-
-#ifndef GNSS_SDR_TCP_COMMUNICATION_H_
-#define GNSS_SDR_TCP_COMMUNICATION_H_
-
-#include <boost/asio.hpp>
-#include <boost/array.hpp>
 #include "tcp_packet_data.h"
 
-#define NUM_TX_VARIABLES_GALILEO_E1 13
-#define NUM_TX_VARIABLES_GPS_L1_CA 9
-#define NUM_RX_VARIABLES 4
-
-class tcp_communication
+tcp_packet_data::tcp_packet_data()
 {
-public:
 
-    tcp_communication();
-    ~tcp_communication();
+	proc_pack_code_error = 0;
+    proc_pack_carr_error = 0;
+    proc_pack_carrier_doppler_hz = 0;
+}
 
-	int listen_tcp_connection(size_t d_port_, size_t d_port_ch0_);
-	void send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf, tcp_packet_data *tcp_data_);
-	void send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, tcp_packet_data *tcp_data_);
-	void close_tcp_connection(size_t d_port_);
-
-private:
-    boost::asio::io_service io_service_;
-    boost::asio::ip::tcp::socket tcp_socket_;
-};
-
-#endif
+tcp_packet_data::~tcp_packet_data() {
+}

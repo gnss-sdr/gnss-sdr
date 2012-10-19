@@ -35,9 +35,6 @@
 #include <string>
 
 
-#define NUM_TX_VARIABLES 9
-#define NUM_RX_VARIABLES 4
-
 
 tcp_communication::tcp_communication() : tcp_socket_(io_service_)
 {}
@@ -82,7 +79,7 @@ int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
 
 
 
-void tcp_communication::send_receive_tcp_packet(boost::array<float, NUM_TX_VARIABLES> buf, tcp_packet_data *tcp_data_)
+void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf, tcp_packet_data *tcp_data_)
 {
 	int controlc = 0;
 	boost::array<float, NUM_RX_VARIABLES> readbuf;
@@ -116,7 +113,39 @@ void tcp_communication::send_receive_tcp_packet(boost::array<float, NUM_TX_VARIA
     return;
 }
 
+void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, tcp_packet_data *tcp_data_)
+{
+	int controlc = 0;
+	boost::array<float, NUM_RX_VARIABLES> readbuf;
+	float d_control_id_ = buf.data()[0];
 
+    try
+    {
+            // Send a TCP packet
+            tcp_socket_.write_some(boost::asio::buffer(buf));
+
+            // Read the received TCP packet
+            tcp_socket_.read_some(boost::asio::buffer(readbuf));
+
+    		//! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
+	    	if (d_control_id_ != readbuf.data()[0])
+    		{
+    			throw "Packet error!";
+    		}
+
+			// Recover the variables received
+    		tcp_data_->proc_pack_code_error = readbuf.data()[1];
+    		tcp_data_->proc_pack_carr_error = readbuf.data()[2];
+    		tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
+    }
+
+    catch(std::exception& e)
+    {
+            std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program." << std::endl;
+            std::cin >> controlc;
+    }
+    return;
+}
 
 void tcp_communication::close_tcp_connection(size_t d_port_)
 {

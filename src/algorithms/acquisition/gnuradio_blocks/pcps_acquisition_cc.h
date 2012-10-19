@@ -46,8 +46,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef PCPS_ACQUISITION_CC_H_
-#define PCPS_ACQUISITION_CC_H_
+#ifndef GNSS_SDR_PCPS_ACQUISITION_CC_H_
+#define GNSS_SDR_PCPS_ACQUISITION_CC_H_
 
 #include <fstream>
 #include <gnuradio/gr_block.h>
@@ -62,154 +62,147 @@
 
 class pcps_acquisition_cc;
 typedef boost::shared_ptr<pcps_acquisition_cc>
-		pcps_acquisition_cc_sptr;
+pcps_acquisition_cc_sptr;
 pcps_acquisition_cc_sptr
 pcps_make_acquisition_cc(unsigned int sampled_ms,
-		unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
-		gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
+        unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
+        gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition
  */
 
 class pcps_acquisition_cc: public gr_block {
-
 private:
+    friend pcps_acquisition_cc_sptr
+    pcps_make_acquisition_cc(unsigned int sampled_ms,
+            unsigned int doppler_max, long freq, long fs_in,
+            int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
+            std::string dump_filename);
 
-	friend pcps_acquisition_cc_sptr
-	pcps_make_acquisition_cc(unsigned int sampled_ms,
-			unsigned int doppler_max, long freq, long fs_in,
-			int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
-			std::string dump_filename);
+    pcps_acquisition_cc(unsigned int sampled_ms,
+            unsigned int doppler_max, long freq, long fs_in,
+            int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
+            std::string dump_filename);
 
-	pcps_acquisition_cc(unsigned int sampled_ms,
-			unsigned int doppler_max, long freq, long fs_in,
-			int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
-			std::string dump_filename);
+    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
+            int doppler_offset);
 
-	void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-			int doppler_offset);
-
-	long d_fs_in;
-	long d_freq;
-	int d_samples_per_ms;
-	unsigned int d_doppler_resolution;
-	float d_threshold;
-	std::string d_satellite_str;
-	unsigned int d_doppler_max;
-	unsigned int d_doppler_step;
-	unsigned int d_sampled_ms;
-	unsigned int d_fft_size;
-	unsigned long int d_sample_counter;
-	gr_complex* d_carrier;
-
-	gr_complex* d_fft_codes;
-
-	gri_fft_complex* d_fft_if;
-
-	gri_fft_complex* d_ifft;
-
-	Gnss_Synchro *d_gnss_synchro;
-	unsigned int d_code_phase;
-	float d_doppler_freq;
-	float d_mag;
-	float d_input_power;
-	float d_test_statistics;
-
-	gr_msg_queue_sptr d_queue;
-	concurrent_queue<int> *d_channel_internal_queue;
-	std::ofstream d_dump_file;
-
-	bool d_active;
-	bool d_dump;
-	unsigned int d_channel;
-	std::string d_dump_filename;
+    long d_fs_in;
+    long d_freq;
+    int d_samples_per_ms;
+    unsigned int d_doppler_resolution;
+    float d_threshold;
+    std::string d_satellite_str;
+    unsigned int d_doppler_max;
+    unsigned int d_doppler_step;
+    unsigned int d_sampled_ms;
+    unsigned int d_fft_size;
+    unsigned long int d_sample_counter;
+    gr_complex* d_carrier;
+    gr_complex* d_fft_codes;
+    gri_fft_complex* d_fft_if;
+    gri_fft_complex* d_ifft;
+    Gnss_Synchro *d_gnss_synchro;
+    unsigned int d_code_phase;
+    float d_doppler_freq;
+    float d_mag;
+    float d_input_power;
+    float d_test_statistics;
+    gr_msg_queue_sptr d_queue;
+    concurrent_queue<int> *d_channel_internal_queue;
+    std::ofstream d_dump_file;
+    bool d_active;
+    bool d_dump;
+    unsigned int d_channel;
+    std::string d_dump_filename;
 
 public:
-
-	~pcps_acquisition_cc();
+    /*!
+     * \brief Default destructor
+     */
+    ~pcps_acquisition_cc();
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-     * to efficiently exchange synchronization data between acquisition and
-     *  tracking blocks
+     * to exchange synchronization data between acquisition and tracking blocks
      */
-	void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-	{
-		d_gnss_synchro = p_gnss_synchro;
-	}
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    {
+        d_gnss_synchro = p_gnss_synchro;
+    }
 
     /*!
      * \brief Returns the maximum peak of grid search
      */
-	unsigned int mag()
-	{
-		return d_mag;
-	}
+    unsigned int mag()
+    {
+        return d_mag;
+    }
 
     /*!
      * \brief Initializes acquisition algorithm.
      */
-	void init();
+    void init();
 
     /*!
      * \brief Sets local code for PCPS acquisition algorithm.
      */
-	void set_local_code(std::complex<float> * code);
+    void set_local_code(std::complex<float> * code);
 
     /*!
      * \brief Starts acquisition algorithm, turning from standby mode to
      * active mode
      */
-	void set_active(bool active)
-	{
-		d_active = active;
-	}
+    void set_active(bool active)
+    {
+        d_active = active;
+    }
 
     /*!
      * \brief Set acquisition channel unique ID
      */
-	void set_channel(unsigned int channel)
-	{
-		d_channel = channel;
-	}
+    void set_channel(unsigned int channel)
+    {
+        d_channel = channel;
+    }
 
     /*!
      * \brief Set statistics threshold of PCPS algorithm
      */
-	void set_threshold(float threshold)
-	{
-		d_threshold = threshold;
-	}
+    void set_threshold(float threshold)
+    {
+        d_threshold = threshold;
+    }
 
     /*!
      * \brief Set maximum Doppler off grid search
      */
-	void set_doppler_max(unsigned int doppler_max)
-	{
-		d_doppler_max = doppler_max;
-	}
+    void set_doppler_max(unsigned int doppler_max)
+    {
+        d_doppler_max = doppler_max;
+    }
 
     /*!
      * \brief Set Doppler steps for the grid search
      */
-	void set_doppler_step(unsigned int doppler_step)
-	{
-		d_doppler_step = doppler_step;
-	}
+    void set_doppler_step(unsigned int doppler_step)
+    {
+        d_doppler_step = doppler_step;
+    }
 
 
     /*!
      * \brief Set tracking channel internal queue
      */
-	void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-	{
-		d_channel_internal_queue = channel_internal_queue;
-	}
+    void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
+    {
+        d_channel_internal_queue = channel_internal_queue;
+    }
 
-	int general_work(int noutput_items, gr_vector_int &ninput_items,
-			gr_vector_const_void_star &input_items,
-			gr_vector_void_star &output_items);
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+            gr_vector_const_void_star &input_items,
+            gr_vector_void_star &output_items);
 };
 
-#endif /* PCPS_ACQUISITION_CC_H_*/
+#endif /* GNSS_SDR_PCPS_ACQUISITION_CC_H_*/

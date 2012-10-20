@@ -131,40 +131,35 @@ float galileo_e1_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in)
     SNR_dB_Hz = 10 * log10(SNR) + 10 * log10(fs_in/2) - 10 * log10(Galileo_E1_B_CODE_LENGTH_CHIPS);
     return SNR_dB_Hz;
 }
+
+
 /*
  * The Carrier Phase Lock Detector block uses the normalised estimate of the cosine of twice the carrier phase error is given by
  * \f{equation}
- * 	C2\phi=\frac{NBD}{NBP},
+ * 	\cos(2\phi)=\frac{NBD}{NBP},
  * \f}
- *  where \f$NBD=(\sum^{N-1}_{i=0}|Im(Pc(i))|)^2+(\sum^{N-1}_{i=0}|Re(Pc(i))|)^2\f$,
- *  \f$NBP=\sum^{N-1}_{i=0}Im(Pc(i))^2-\sum^{N-1}_{i=0}Re(Pc(i))^2\f$, and
+ *  where \f$NBD=(\sum^{N-1}_{i=0}Im(Pc(i)))^2-(\sum^{N-1}_{i=0}Re(Pc(i)))^2\f$,
+ *  \f$NBP=(\sum^{N-1}_{i=0}Im(Pc(i)))^2+(\sum^{N-1}_{i=0}Re(Pc(i)))^2\f$, and
  *  \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
  */
 float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
 {
     /*
-     * Code lock detector
+     * carrier lock detector
      */
     // estimate using buffered values
-    float tmp_abs_I, tmp_abs_Q;
-    float tmp_sum_abs_I, tmp_sum_abs_Q;
-    float tmp_sum_sqr_I, tmp_sum_sqr_Q;
-    tmp_sum_abs_I = 0;
-    tmp_sum_abs_Q = 0;
-    tmp_sum_sqr_I = 0;
-    tmp_sum_sqr_Q = 0;
+
+    float tmp_sum_I, tmp_sum_Q;
+    tmp_sum_I = 0;
+    tmp_sum_Q = 0;
     float NBD,NBP;
     for (int i=0; i<length; i++)
         {
-            tmp_abs_I = std::abs(Prompt_buffer[i].real());
-            tmp_abs_Q = std::abs(Prompt_buffer[i].imag());
-            tmp_sum_abs_I += tmp_abs_I;
-            tmp_sum_abs_Q += tmp_abs_Q;
-            tmp_sum_sqr_I += (Prompt_buffer[i].real() * Prompt_buffer[i].real());
-            tmp_sum_sqr_Q += (Prompt_buffer[i].imag() * Prompt_buffer[i].imag());
+            tmp_sum_I += Prompt_buffer[i].real();
+            tmp_sum_Q += Prompt_buffer[i].imag();
         }
-    NBD = tmp_sum_abs_I * tmp_sum_abs_I + tmp_sum_abs_Q * tmp_sum_abs_Q;
-    NBP = tmp_sum_sqr_I - tmp_sum_sqr_Q;
+    NBP = tmp_sum_I*tmp_sum_I + tmp_sum_Q*tmp_sum_Q;
+    NBD = tmp_sum_I*tmp_sum_I - tmp_sum_Q*tmp_sum_Q;
     return NBD/NBP;
 }
 

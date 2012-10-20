@@ -168,7 +168,7 @@ private:
     Correlator d_correlator;
 
     // tracking vars
-    float d_code_freq_hz;
+    float d_code_freq_chips;
     float d_carrier_doppler_hz;
     float d_acc_carrier_phase_rad;
     float d_code_phase_samples;

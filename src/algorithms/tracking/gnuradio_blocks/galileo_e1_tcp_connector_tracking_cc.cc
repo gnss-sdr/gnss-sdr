@@ -60,9 +60,10 @@
 /*!
  * \todo Include in definition header file
  */
-#define CN0_ESTIMATION_SAMPLES 10
+#define CN0_ESTIMATION_SAMPLES 20
 #define MINIMUM_VALID_CN0 25
-#define MAXIMUM_LOCK_FAIL_COUNTER 200
+#define MAXIMUM_LOCK_FAIL_COUNTER 50
+#define CARRIER_LOCK_THRESHOLD 0.85
 
 using google::LogMessage;
 
@@ -191,7 +192,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = 20;
+    d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
     systemName["G"] = std::string("GPS");
     systemName["R"] = std::string("GLONASS");
@@ -441,7 +442,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
                     d_CN0_SNV_dB_Hz = galileo_e1_CN0_SNV(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
                     // ###### TRACKING UNLOCK NOTIFICATION #####
-                    if (std::abs(d_carrier_lock_test) > d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
+                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
                         {
                             d_carrier_lock_fail_counter++;
                         }

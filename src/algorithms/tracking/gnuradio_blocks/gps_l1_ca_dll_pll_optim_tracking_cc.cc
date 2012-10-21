@@ -38,7 +38,7 @@
 #include "gps_l1_ca_dll_pll_optim_tracking_cc.h"
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"
-#include "CN_estimators.h"
+#include "lock_detectors.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
@@ -507,8 +507,9 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
             else
                 {
                     d_cn0_estimation_counter = 0;
-                    d_CN0_SNV_dB_Hz = gps_l1_ca_CN0_SNV(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
+
                     // ###### TRACKING UNLOCK NOTIFICATION #####
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
                         {
@@ -524,7 +525,8 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
                             //tracking_message = 3; //loss of lock
                             //d_channel_internal_queue->push(tracking_message);
                         	ControlMessageFactory* cmf = new ControlMessageFactory();
-                        	if (d_queue != gr_msg_queue_sptr()) {
+                        	if (d_queue != gr_msg_queue_sptr())
+                        	{
                         		d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                         	}
                         	delete cmf;
@@ -540,9 +542,11 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
             current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
             current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             // Tracking_timestamp_secs is aligned with the PRN start sample
-            current_synchro_data.Tracking_timestamp_secs=((double)d_sample_counter+(double)d_next_prn_length_samples+(double)d_next_rem_code_phase_samples)/(double)d_fs_in;
-            // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-            current_synchro_data.Code_phase_secs=0;
+            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter +
+            		(double)d_next_prn_length_samples + (double)d_next_rem_code_phase_samples) / (double)d_fs_in;
+            // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN,
+            // thus, Code_phase_secs = 0
+            current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             *out[0] = current_synchro_data;

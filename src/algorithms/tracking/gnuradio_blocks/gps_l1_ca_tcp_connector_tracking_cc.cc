@@ -39,7 +39,7 @@
 #include "gps_l1_ca_tcp_connector_tracking_cc.h"
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"
-#include "CN_estimators.h"
+#include "lock_detectors.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
 #include "tcp_communication.h"
@@ -51,7 +51,6 @@
 #include <gnuradio/gr_io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include <boost/asio.hpp>
 #include "tcp_packet_data.h"
 
@@ -503,8 +502,9 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             else
                 {
                     d_cn0_estimation_counter = 0;
-                    d_CN0_SNV_dB_Hz = gps_l1_ca_CN0_SNV(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
+
                     // ###### TRACKING UNLOCK NOTIFICATION #####
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
                         {

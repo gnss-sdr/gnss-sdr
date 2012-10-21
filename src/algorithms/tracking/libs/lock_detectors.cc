@@ -1,7 +1,6 @@
 /*!
- * \file CN_estimators.cc
- * \brief Implementation of a library with a set of Carrier to Noise
- * estimators and lock detectors.
+ * \file lock_detectors.cc
+ * \brief Implementation of a library with a set of code and carrier phase lock detectors.
  *
  * SNV_CN0 is a Carrier-to-Noise (CN0) estimator
  * based on the Signal-to-Noise Variance (SNV) estimator [1].
@@ -46,7 +45,8 @@
  *
  * -------------------------------------------------------------------------
  */
-#include "CN_estimators.h"
+
+#include "lock_detectors.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include <gnuradio/gr_complex.h>
@@ -68,73 +68,28 @@
  * where \f$f_s\f$ is the sampling frequency and \f$L_{PRN}\f$ is the PRN sequence length.
  *
  */
-float gps_l1_ca_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in)
+float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length)
 {
-    // estimate CN0 using buffered values
-    // MATLAB CODE
-    // SNR_SNV(count)=Psig/(Ptot-Psig);
-    // CN0_SNV_dB=10*log10(SNR_SNV)+10*log10(BW)-10*log10(PRN_length);
-    float SNR, SNR_dB_Hz;
-    float tmp_abs_real;
-    float Psig, Ptot;
-    Psig = 0;
-    Ptot = 0;
+    float SNR = 0;
+    float SNR_dB_Hz = 0;
+    float Psig = 0;
+    float Ptot = 0;
     for (int i=0; i<length; i++)
         {
-            tmp_abs_real = std::abs(Prompt_buffer[i].real());
-            Psig += tmp_abs_real;
+            Psig += std::abs(Prompt_buffer[i].real());
             Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
         }
     Psig = Psig / (float)length;
     Psig = Psig * Psig;
-    SNR = Psig / (Ptot / (float)length - Psig);
-    SNR_dB_Hz = 10 * log10(SNR) + 10 * log10(fs_in/2) - 10 * log10(GPS_L1_CA_CODE_LENGTH_CHIPS);
-    return SNR_dB_Hz;
-}
-
-/*
- * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Signal-to-Noise Variance (SNV) estimator:
- * \f{equation}
- *  \hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\hat{P}_s}{\hat{P}_{tot}-\hat{P}_s},
- * \f}
- *  where \f$\hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2\f$ is the estimation of the signal power,
- * \f$\hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2\f$ is the estimator of the total power, \f$|\cdot|\f$ is the absolute value,
- * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
- *
- * The SNR value is converted to CN0 [dB-Hz], taking to account the receiver bandwidth and the PRN code gain, using the following formula:
- * \f{equation}
- *  CN0_{dB}=10*log(\hat{\rho})+10*log(\frac{f_s}{2})-10*log(L_{PRN}),
- * \f}
- * where \f$f_s\f$ is the sampling frequency and \f$L_{PRN}\f$ is the PRN sequence length.
- *
- */
-float galileo_e1_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in)
-{
-    // estimate CN0 using buffered values
-    // MATLAB CODE
-    // SNR_SNV(count)=Psig/(Ptot-Psig);
-    // CN0_SNV_dB=10*log10(SNR_SNV)+10*log10(BW)-10*log10(PRN_length);
-    float SNR, SNR_dB_Hz;
-    float tmp_abs_real;
-    float Psig, Ptot;
-    Psig = 0;
-    Ptot = 0;
-    for (int i=0; i<length; i++)
-        {
-            tmp_abs_real= std::abs(Prompt_buffer[i].real());
-            Psig += tmp_abs_real;
-            Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
-        }
-    Psig = Psig / (float)length;
-    Psig = Psig * Psig;
-    SNR = Psig / (Ptot / (float)length - Psig);
-    SNR_dB_Hz = 10 * log10(SNR) + 10 * log10(fs_in/2) - 10 * log10(Galileo_E1_B_CODE_LENGTH_CHIPS);
+    Ptot = Ptot / (float)length;
+    SNR = Psig / (Ptot - Psig);
+    SNR_dB_Hz = 10 * log10(SNR) + 10 * log10(fs_in/2) - 10 * log10((float)code_length);
     return SNR_dB_Hz;
 }
 
 
 /*
- * The Carrier Phase Lock Detector block uses the normalised estimate of the cosine of twice the carrier phase error is given by
+ * The estimate of the cosine of twice the carrier phase error is given by
  * \f{equation}
  * 	\cos(2\phi)=\frac{NBD}{NBP},
  * \f}
@@ -144,15 +99,10 @@ float galileo_e1_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in)
  */
 float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
 {
-    /*
-     * carrier lock detector
-     */
-    // estimate using buffered values
-
-    float tmp_sum_I, tmp_sum_Q;
-    tmp_sum_I = 0;
-    tmp_sum_Q = 0;
-    float NBD,NBP;
+    float tmp_sum_I = 0;
+    float tmp_sum_Q = 0;
+    float NBD = 0;
+    float NBP = 0;
     for (int i=0; i<length; i++)
         {
             tmp_sum_I += Prompt_buffer[i].real();
@@ -162,4 +112,3 @@ float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
     NBD = tmp_sum_I*tmp_sum_I - tmp_sum_Q*tmp_sum_Q;
     return NBD/NBP;
 }
-

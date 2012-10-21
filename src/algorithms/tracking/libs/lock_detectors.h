@@ -1,7 +1,6 @@
 /*!
- * \file CN_estimators.h
- * \brief Interface of a library with a set of Carrier to Noise
- * estimators and lock detectors.
+ * \file lock_detectors.h
+ * \brief Interface of a library with a set of code and carrier phase lock detectors.
  *
  * SNV_CN0 is a Carrier-to-Noise (CN0) estimator
  * based on the Signal-to-Noise Variance (SNV) estimator [1].
@@ -23,7 +22,7 @@
  *          </ul>
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -46,33 +45,12 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_CN_ESTIMATORS_H_
-#define GNSS_SDR_CN_ESTIMATORS_H_
+#ifndef GNSS_SDR_LOCK_DETECTORS_H_
+#define GNSS_SDR_LOCK_DETECTORS_H_
 
 #include <gnuradio/gr_complex.h>
 
-/*! \brief CN0_SNV is a Carrier-to-Noise (CN0) estimator
- * based on the Signal-to-Noise Variance (SNV) estimator
- *
- * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Signal-to-Noise Variance (SNV) estimator:
- * \f{equation}
- * 	\hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\hat{P}_s}{\hat{P}_{tot}-\hat{P}_s},
- * \f}
- *  where \f$\hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2\f$ is the estimation of the signal power,
- * \f$\hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2\f$ is the estimator of the total power, \f$|\cdot|\f$ is the absolute value,
- * \f$Re(\cdot)\f$ stands for the real part of the value, and \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
- *
- * The SNR value is converted to CN0 [dB-Hz], taking to account the receiver bandwidth and the PRN code gain, using the following formula:
- * \f{equation}
- * 	CN0_{dB}=10*log(\hat{\rho})+10*log(\frac{f_s}{2})-10*log(L_{PRN}),
- * \f}
- * where \f$f_s\f$ is the sampling frequency and \f$L_{PRN}\f$ is the PRN sequence length.
- * Ref: Marco Pini, Emanuela Falletti and Maurizio Fantino, "Performance
- * Evaluation of C/N0 Estimators using a Real Time GNSS Software Receiver,"
- * IEEE 10th International Symposium on Spread Spectrum Techniques and
- * Applications, pp.28-30, August 2008.
- */
-float gps_l1_ca_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in);
+
 /*! \brief CN0_SNV is a Carrier-to-Noise (CN0) estimator
  * based on the Signal-to-Noise Variance (SNV) estimator
  *
@@ -94,11 +72,13 @@ float gps_l1_ca_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in);
  * IEEE 10th International Symposium on Spread Spectrum Techniques and
  * Applications, pp.28-30, August 2008.
  */
-float galileo_e1_CN0_SNV(gr_complex* Prompt_buffer, int length, long fs_in);
+float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length);
+
+
 
 /*! \brief A carrier lock detector
  *
- * The Carrier Phase Lock Detector block uses the normalised estimate of the cosine of twice the carrier phase error is given by
+ * The Carrier Phase Lock Detector block uses the estimate of the cosine of twice the carrier phase error is given by
  * \f{equation}
  * 	C2\phi=\frac{NBD}{NBP},
  * \f}

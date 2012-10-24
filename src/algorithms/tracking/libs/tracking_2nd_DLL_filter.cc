@@ -59,7 +59,7 @@ void Tracking_2nd_DLL_filter::set_DLL_BW(float dll_bw_hz)
 
 
 
-void Tracking_2nd_DLL_filter::initialize(float d_acq_code_phase_samples)
+void Tracking_2nd_DLL_filter::initialize()
 {
     // code tracking loop parameters
     d_old_code_nco   = 0.0;

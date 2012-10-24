@@ -61,7 +61,7 @@ private:
     void calculate_lopp_coef(float* tau1,float* tau2, float lbw, float zeta, float k);
 public:
 	void set_PLL_BW(float pll_bw_hz);  //! Set PLL loop bandwidth [Hz]
-	void initialize(float d_acq_carrier_doppler_hz);
+	void initialize();
 	float get_carrier_nco(float PLL_discriminator);
     Tracking_2nd_PLL_filter(float pdi_carr);
 	Tracking_2nd_PLL_filter();

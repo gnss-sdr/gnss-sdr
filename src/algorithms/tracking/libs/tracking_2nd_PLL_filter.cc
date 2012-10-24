@@ -58,7 +58,7 @@ void Tracking_2nd_PLL_filter::set_PLL_BW(float pll_bw_hz)
 
 
 
-void Tracking_2nd_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
+void Tracking_2nd_PLL_filter::initialize()
 {
     // carrier/Costas loop parameters
     d_old_carr_nco   = 0.0;
@@ -66,8 +66,11 @@ void Tracking_2nd_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
 }
 
 
-
-
+/*
+ * PLL second order FIR filter
+ * Req Input in [Hz/Ti]
+ * The output is in [Hz/s].
+ */
 float Tracking_2nd_PLL_filter::get_carrier_nco(float PLL_discriminator)
 {
     float carr_nco;

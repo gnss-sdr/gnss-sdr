@@ -209,8 +209,8 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
     d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
     // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); //initialize the carrier filter
-    d_code_loop_filter.initialize(d_acq_code_phase_samples); //initialize the code filter
+    d_carrier_loop_filter.initialize(); //initialize the carrier filter
+    d_code_loop_filter.initialize(); //initialize the code filter
 
 
     // generate local reference ALWAYS starting at chip 2 (2 samples per chip)

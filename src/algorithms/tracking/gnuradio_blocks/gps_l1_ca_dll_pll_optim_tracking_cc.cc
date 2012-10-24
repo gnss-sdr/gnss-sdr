@@ -229,8 +229,8 @@ void Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::start_tracking()
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(d_carrier_doppler_hz); //initialize the carrier filter
-    d_code_loop_filter.initialize(d_acq_code_phase_samples); //initialize the code filter
+    d_carrier_loop_filter.initialize(); //initialize the carrier filter
+    d_code_loop_filter.initialize(); //initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
     gps_l1_ca_code_gen_complex(&d_ca_code[1], d_acquisition_gnss_synchro->PRN, 0);

@@ -79,15 +79,11 @@ galileo_e1_dll_pll_veml_make_tracking_cc(
             fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, very_early_late_space_chips));
 }
 
-
-
 void galileo_e1_dll_pll_veml_tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
     ninput_items_required[0] = (int)d_vector_length*2; //set the required available samples in each call
 }
-
-
 
 galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
         long if_freq,
@@ -112,8 +108,8 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
-    d_code_loop_filter = Tracking_2nd_DLL_filter(0.004);
-    d_carrier_loop_filter = Tracking_2nd_PLL_filter(0.004);
+    d_code_loop_filter = Tracking_2nd_DLL_filter(Galileo_E1_CODE_PERIOD);
+    d_carrier_loop_filter = Tracking_2nd_PLL_filter(Galileo_E1_CODE_PERIOD);
 
     // Initialize tracking  ==========================================
 
@@ -159,8 +155,6 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_rem_code_phase_samples = 0.0;
     // Residual carrier phase
     d_rem_carr_phase_rad = 0.0;
-    // Phase step
-    d_code_phase_step_chips = d_code_freq_chips / (float)d_fs_in; //[chips]
 
     // sample synchronization
     d_sample_counter = 0;
@@ -181,14 +175,8 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
-    //systemName["G"] = std::string("GPS");
-    //systemName["R"] = std::string("GLONASS");
-    //systemName["S"] = std::string("SBAS");
     systemName["E"] = std::string("Galileo");
-    //systemName["C"] = std::string("Compass");
 }
-
-
 
 void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
 {
@@ -197,10 +185,8 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
     d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
     // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); //initialize the carrier filter
-    // THE PARAMETER IS NOT USED!!
-    d_code_loop_filter.initialize(d_acq_code_phase_samples); //initialize the code filter
-    // THE PARAMETER IS NOT USED!!
+    d_carrier_loop_filter.initialize(); //initialize the carrier filter
+    d_code_loop_filter.initialize(); //initialize the code filter
 
     // generate local reference ALWAYS starting at chip 2 (2 samples per chip)
     galileo_e1_code_gen_complex_sampled(&d_ca_code[2],d_acquisition_gnss_synchro->Signal, false, d_acquisition_gnss_synchro->PRN, 2*Galileo_E1_CODE_CHIP_RATE_HZ, 0);
@@ -213,12 +199,11 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0.0;
     d_rem_carr_phase_rad = 0;
-    d_next_rem_code_phase_samples = 0;
     d_acc_carrier_phase_rad = 0;
 
-    d_code_phase_samples = d_acq_code_phase_samples; // Never used?
+    d_acc_code_phase_secs = 0;
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
-    d_next_prn_length_samples = d_vector_length;
+    d_current_prn_length_samples = d_vector_length;
 
     std::string sys_ = &d_acquisition_gnss_synchro->System;
     sys = sys_.substr(0,1);
@@ -234,9 +219,6 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
     std::cout << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples << std::endl;
 }
-
-
-
 
 
 void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
@@ -275,26 +257,19 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
     memcpy(d_very_late_code, &d_very_early_code[2*very_early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
 }
 
-
-
-
 void galileo_e1_dll_pll_veml_tracking_cc::update_local_carrier()
 {
     float phase_rad, phase_step_rad;
-
+    // Compute the carrier phase step for the K-1 carrier doppler estimation
     phase_step_rad = (float)GPS_TWO_PI*d_carrier_doppler_hz / (float)d_fs_in;
+    // Initialize the carrier phase with the remanent carrier phase of the K-2 loop
     phase_rad = d_rem_carr_phase_rad;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
             d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
             phase_rad += phase_step_rad;
         }
-    d_rem_carr_phase_rad = fmod(phase_rad, GPS_TWO_PI);
-    d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + d_rem_carr_phase_rad; // Why here????
 }
-
-
-
 
 galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 {
@@ -331,16 +306,14 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             if (d_pull_in == true)
                 {
                     /*
-                     * Signal alignment (skip samples until the incoming signal is aligned with local replica
+                     * Signal alignment (skip samples until the incoming signal is aligned with local replica)
                      */
                     int samples_offset;
                     float acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_next_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_next_prn_length_samples);
+                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_current_prn_length_samples);
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
-                    //d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / (double)d_fs_in);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
                     d_debug_counter++;
@@ -350,7 +323,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
 
             // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
             Gnss_Synchro current_synchro_data;
-
             // Fill the acquisition data
             current_synchro_data = *d_acquisition_gnss_synchro;
 
@@ -358,11 +330,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             const gr_complex* in = (gr_complex*) input_items[0];
             Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
-            // Update the prn length based on code freq (variable) and sampling frequency (fixed)
-            // variable code PRN sample block size
-            d_current_prn_length_samples = d_next_prn_length_samples;
-
-            // Generate local code and carrier replicas
+            // Generate local code and carrier replicas (using \hat{f}_d(k-1))
             update_local_code();
             update_local_carrier();
 
@@ -382,38 +350,46 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                     d_Very_Late,
                     is_unaligned());
 
-
+            // ################## PLL ##########################################################
             // PLL discriminator
             carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)GPS_TWO_PI;
-            // Implement carrier loop filter and generate NCO command
+            // Carrier discriminator filter
             carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
-            // Modify carrier freq based on NCO command
+            // New carrier Doppler frequency estimation
             d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
+            // New code Doppler frequency estimation
+            d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ + ((d_carrier_doppler_hz * Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ);
+            //carrier phase accumulator for (K) doppler estimation
+            d_acc_carrier_phase_rad=d_acc_carrier_phase_rad+GPS_TWO_PI*d_carrier_doppler_hz*Galileo_E1_CODE_PERIOD;
+            //remanent carrier phase to prevent overflow in the code NCO
+            d_rem_carr_phase_rad=d_rem_carr_phase_rad+GPS_TWO_PI*d_carrier_doppler_hz*Galileo_E1_CODE_PERIOD;
+            d_rem_carr_phase_rad=fmod(d_rem_carr_phase_rad,GPS_TWO_PI);
 
+            // ################## DLL ##########################################################
             // DLL discriminator
-            code_error_chips = dll_nc_vemlp_normalized(*d_Very_Early, *d_Early, *d_Late, *d_Very_Late);
-            // Implement code loop filter and generate NCO command
-            code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips);
-            // Modify code freq based on NCO command
-            d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ + (((d_carrier_doppler_hz + d_if_freq) * Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ) - code_error_filt_chips;
-            // Update the phase step based on code freq (variable) and sampling frequency (fixed)
-            d_code_phase_step_chips = d_code_freq_chips / (float)d_fs_in; //[chips]
+            code_error_chips = dll_nc_vemlp_normalized(*d_Very_Early, *d_Early, *d_Late, *d_Very_Late); //[chips/Ti]
+            // Code discriminator filter
+            code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
+            //Code phase accumulator
+            float code_error_filt_secs;
+            code_error_filt_secs=(Galileo_E1_CODE_PERIOD*code_error_filt_chips)/Galileo_E1_CODE_CHIP_RATE_HZ; //[seconds]
+            //code_error_filt_secs=T_prn_seconds*code_error_filt_chips*T_chip_seconds*(float)d_fs_in; //[seconds]
+            d_acc_code_phase_secs=d_acc_code_phase_secs+code_error_filt_secs;
 
+            // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
             // keep alignment parameters for the next input buffer
             float T_chip_seconds;
             float T_prn_seconds;
             float T_prn_samples;
             float K_blk_samples;
+            // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
             T_chip_seconds = 1 / d_code_freq_chips;
             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * d_fs_in;
-            d_rem_code_phase_samples = d_next_rem_code_phase_samples;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples;
-            d_next_prn_length_samples = round(K_blk_samples); //round to a discrete samples
-            d_next_rem_code_phase_samples = K_blk_samples - d_next_prn_length_samples; //rounding error
-            /*!
-             * \todo Improve the lock detection algorithm!
-             */
+            T_prn_samples = T_prn_seconds * (float)d_fs_in;
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs*(float)d_fs_in;
+            d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
+            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
+
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
             if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
                 {
@@ -443,8 +419,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                         {
                             std::cout << "Channel " << d_channel << " loss of lock!" << std::endl ;
-                            //tracking_message = 3; //loss of lock
-                            //d_channel_internal_queue->push(tracking_message);
                             ControlMessageFactory* cmf = new ControlMessageFactory();
                             if (d_queue != gr_msg_queue_sptr())
                                 {
@@ -462,7 +436,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             // Tracking_timestamp_secs is aligned with the PRN start sample
             current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter +
-                    (double)d_next_prn_length_samples + (double)d_next_rem_code_phase_samples) / (double)d_fs_in;
+                    (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples) / (double)d_fs_in;
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
@@ -482,10 +456,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                             std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
                             std::cout << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
                                                             << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
-                            //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
-                            //if (d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
-                            //std::cout<<"d_carrier_lock_test="<<d_carrier_lock_test<<std::endl;
-                            //std::cout<<"d_carrier_lock_fail_counter="<<d_carrier_lock_fail_counter<<std::endl;
+
                         }
                 }
             else

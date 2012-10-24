@@ -38,6 +38,7 @@
 // carrier and code frequencies
 const double Galileo_E1_FREQ_HZ = 1.57542e9; //!< E1 [Hz]
 const double Galileo_E1_CODE_CHIP_RATE_HZ = 1.023e6; //!< Galileo E1 code rate [chips/s]
+const double Galileo_E1_CODE_PERIOD = 0.004; //!< Galileo E1 code period [s]
 const double Galileo_E1_SUB_CARRIER_A_RATE_HZ = 1.023e6; //!< Galileo E1 sub-carrier 'a' rate [Hz]
 const double Galileo_E1_SUB_CARRIER_B_RATE_HZ = 6.138e6; //!< Galileo E1 sub-carrier 'b' rate [Hz]
 const double Galileo_E1_B_CODE_LENGTH_CHIPS = 4092.0; //!< Galileo E1-B code length [chips]

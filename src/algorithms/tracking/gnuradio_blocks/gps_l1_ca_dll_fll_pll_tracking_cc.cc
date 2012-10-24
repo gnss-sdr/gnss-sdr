@@ -124,6 +124,9 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
     // Initialize tracking variables ==========================================
     d_carrier_loop_filter.set_params(fll_bw_hz,pll_bw_hz,order);
 
+    d_code_loop_filter=Tracking_2nd_DLL_filter(GPS_L1_CA_CODE_PERIOD);
+    d_code_loop_filter.set_DLL_BW(dll_bw_hz);
+
     // Get space for a vector with the C/A code replica sampled 1x/chip
     d_ca_code = new gr_complex[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 2];
 
@@ -346,6 +349,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
 {
 
     double code_error_chips = 0;
+    double code_error_filt_chips =0;
     double correlation_time_s = 0;
     double PLL_discriminator_hz = 0;
     double carr_nco_hz = 0;
@@ -433,6 +437,8 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
              */
             // Compute DLL error
             code_error_chips = dll_nc_e_minus_l_normalized(*d_Early,*d_Late);
+            // Compute DLL filtered error
+            code_error_filt_chips=d_code_loop_filter.get_code_nco(code_error_chips);
 
             //compute FLL error
             correlation_time_s = ((double)d_current_prn_length_samples) / d_fs_in;
@@ -456,7 +462,9 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
              */
             carr_nco_hz = d_carrier_loop_filter.get_carrier_error(d_FLL_discriminator_hz, PLL_discriminator_hz, correlation_time_s);
             d_carrier_doppler_hz = d_if_freq + carr_nco_hz;
-            d_code_freq_hz = GPS_L1_CA_CODE_RATE_HZ + (((d_carrier_doppler_hz + d_if_freq) * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ) - code_error_chips;
+
+
+            d_code_freq_hz = GPS_L1_CA_CODE_RATE_HZ + (((d_carrier_doppler_hz + d_if_freq) * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);
 
             /*!
              * \todo Improve the lock detection algorithm!
@@ -528,7 +536,12 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             T_chip_seconds = 1/d_code_freq_hz;
             T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * d_fs_in;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples;
+
+            float code_error_filt_samples;
+            code_error_filt_samples=T_prn_seconds*code_error_filt_chips*T_chip_seconds*(float)d_fs_in; //[seconds]
+            d_acc_code_phase_samples=d_acc_code_phase_samples+code_error_filt_samples;
+
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_samples;
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete sample
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error
 
@@ -598,7 +611,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     //DLL commands
                     tmp_float=(float)code_error_chips;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    tmp_float=(float)d_code_phase_samples;
+                    tmp_float=(float)code_error_filt_chips;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
 
                     // CN0 and carrier lock test

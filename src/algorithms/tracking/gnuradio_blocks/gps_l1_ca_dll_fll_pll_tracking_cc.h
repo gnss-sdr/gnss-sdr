@@ -47,6 +47,7 @@
 #include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
 #include "tracking_FLL_PLL_filter.h"
+#include "tracking_2nd_DLL_filter.h"
 #include "gnss_synchro.h"
 //#include "GPS_L1_CA.h"
 #include "correlator.h"
@@ -184,6 +185,9 @@ private:
     double d_FLL_discriminator_hz; // This is a class variable because FLL needs to have memory
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
     double d_acc_carrier_phase_rad;
+    double d_acc_code_phase_samples;
+
+    Tracking_2nd_DLL_filter d_code_loop_filter;
 
     unsigned long int d_sample_counter;
 

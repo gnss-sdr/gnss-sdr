@@ -15,8 +15,8 @@ standalone signal source block instantiated from a GNU Radio flowgraph from C++ 
 
 It is based on the GNU Radio How-to-make-a-block cmake source v 3.6
 
-Installation in Ubuntu 10.04, 10.10, 11.04 and 11.10
------------------------------------------------------
+Installation in Ubuntu 11.04, 11.10, 12.04 (32 and 64 bits)
+-----------------------------------------------------------
 
 1- Install CMake through your OS's package manager or by some other means.
 
@@ -37,13 +37,13 @@ $ sudo apt-get install subversion
 
 4- Check out the latest version of GNSS-SDR
 
-$ svn co http://gnss-sdr.svn.sourceforge.net/svnroot/gnss-sdr gnss-sdr
+$ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
 
 5- Build GR-GN3S
 
 - Go to GR-GN3S root directory and compile the driver:
 
-$ cd gnss-sdr/trunk/drivers/gr-gn3s
+$ cd gnss-sdr/drivers/gr-gn3s
 $ cd build
 $ cmake ../
 $ make

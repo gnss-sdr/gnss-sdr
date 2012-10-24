@@ -3,8 +3,8 @@ HOW TO BUILD GNSS-SDR
 
 This document describes how to set up the compilation environment and build GNSS-SDR. See also http://gnss-sdr.org/documentation/building-guide
 
-Ubuntu 10.04, 10.10, 11.04 and 11.10
---------------------------------------
+Ubuntu 11.04, 11.10, 12.04 (32 and 64 bits)
+--------------------------------------------
 
 * Install GNU Radio:
 
@@ -28,9 +28,9 @@ where /path/to/gnuradio is the folder in which you invoked build-gnuradio. In or
 
 - Download, compile, and install the Armadillo linear algebra library
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-3.2.3.tar.gz
-$ tar xvfz armadillo-3.2.3.tar.gz
-$ cd armadillo-3.2.3
+$ wget http://sourceforge.net/projects/arma/files/armadillo-3.4.3.tar.gz
+$ tar xvfz armadillo-3.4.3.tar.gz
+$ cd armadillo-3.4.3
 $ cmake .
 $ make
 $ sudo make install
@@ -89,15 +89,15 @@ $ sudo apt-get install subversion
 
 * Check out the latest version of GNSS-SDR
 
-$ svn co http://gnss-sdr.svn.sourceforge.net/svnroot/gnss-sdr gnss-sdr
+$ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
 
 
 * Build GN3S V2 Custom firmware and driver (OPTIONAL)
 
 - Go to GR-GN3S root directory, compile and install the driver:
-  (read the gnss-sdr/trunk/drivers/gr-gn3s/README for more information)
+  (read the drivers/gr-gn3s/README for more information)
   
-$ cd gnss-sdr/trunk/drivers/gr-gn3s
+$ cd gnss-sdr/drivers/gr-gn3s
 $ cd build
 $ cmake ../
 $ make
@@ -112,7 +112,7 @@ In order to gain access to USB ports, gnss-sdr should be used as root.
 In addition, the driver requires access to the GN3S firmware binary file. 
 It should be available in the same path where the application is called.
 GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/firmware/GN3S_v2/bin/gn3s_firmware.ihx. 
-Please copy this file to the application path. The GNSS-SDR default path is gnss-sdr/trunk/install
+Please copy this file to the application path. The GNSS-SDR default path is gnss-sdr/install
 
 (in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR)
 
@@ -155,10 +155,10 @@ The default will be OSMOSDR_ROOT=/usr/local
 
 - Go to GNSS-SDR's root directory and compile the program:
 
-$ cd gnss-sdr/trunk
+$ cd gnss-sdr
 $ bjam
 
-If everything went fine, a executable will be found at gnss-sdr/trunk/install/gnss-sdr
+If everything went fine, a executable will be found at gnss-sdr/install/gnss-sdr
 
 - You can also build the release version (an optimized, faster executable) by typing:
 
@@ -167,138 +167,17 @@ $ bjam release
 
 
 
-Mac OS X 1.6.8 (Snow Leopard) 
+Mac OS X 
 ------------------------------
-NOTE: Currently the GCC toolchain is broken. We are working towards the use of LLVM/Clang.
+NOTE: Currently, Apple's GCC toolchain is broken. We are working towards the use of LLVM/Clang.
 
-* If you have still not installed Apple's Developer Tools Xcode, do it now from  http://developer.apple.com/technologies/tools/ (it's free)
-
-* Install Macports from  http://www.macports.org/install.php We recommend to install directly the �dmg� disk images for Snow Leopart. GNSS-SDR has not been tested with Leopard or Tiger.
-
-* Install some tools:
-
-$ sudo port install doxygen graphviz subversion orc
-
-
-* With your favorite text editor, create a $HOME/user-config.jam file and specify that you want to use the darwin toolset (Apple's version of the GCC toolchain) and doxygen:
-
-using darwin ;
-using doxygen ;
-
-* Install GNU Radio and UHD driver:
-
-$ git clone git://code.ettus.com/ettus/uhd.git
-$ cd uhd
-$ mkdir build
-$ cd build
-$ cmake ../
-$ make
-$ sudo make install
-$ cd..
-$ git clone git://gnuradio.org/gnuradio
-$ cd gnuradio
-$ mkdir build
-$ cd build 
-$ cmake ../
-$ make
-$ sudo make install
-
-
-* Set some variables:
-
-export DYLD_LIBRARY_PATH=/usr/local/lib
-export GNURADIO_ROOT=/path/to/gnuradio
-
-where /path/to/gnuradio is the root folder where the source code of GNU Radio was downloaded. 
-
-In order to avoid defining these variables each time you enter a session, you may want to add these two lines to your $HOME/.bash_profile file.
-
-* Create symbolic links in order to be able to use GNU Radio libraries from /usr/local/lib
-
-$ sudo ln -s /usr/local/include/gnuradio /opt/local/include/gnuradio
-$ sudo ln -s /usr/local/lib/libgnuradio-uhd.dylib /opt/local/lib/libgnuradio-uhd.dylib
-$ sudo ln -s /usr/local/lib/libgnuradio-core.dylib /opt/local/lib/libgnuradio-core.dylib
-$ sudo ln -s /usr/local/lib/libvolk.dylib /opt/local/lib/libvolk.dylib
-
-- Download, compile, and install the Armadillo linear algebra library
-
-$ wget http://sourceforge.net/projects/arma/files/armadillo-2.4.3.tar.gz
-$ tar xvfz armadillo-2.4.3.tar.gz
-$ cd armadillo-2.4.3
-$ cmake .
-$ make
-$ sudo make install
-
-    The full stop separated from "cmake" by a space is important. CMake will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system. The "Accelerate" framework is used for accessing BLAS and LAPACK functions.
-
-- Install Google's performance analysis tools, google-perftools:
-
-$ sudo port install google-perftools
-$ sudo ln -s /opt/local/lib/libprofiler.dylib /usr/local/lib/libprofiler.dylib 
-$ sudo ln -s /opt/local/lib/libtcmalloc.dylib /usr/local/lib/libtcmalloc.dylib
-
-- Download, unzip, configure, and build Google C++ Testing Framework (also known as Google Test):
-
-$ wget http://googletest.googlecode.com/files/gtest-1.6.0.zip
-$ unzip gtest-1.6.0.zip
-$ cd gtest-1.6.0
-$ ./configure
-$ make
-
-Please DO NOT install gtest (do not do "sudo make install"). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of #if in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of gtest its own tests; it is only required that you tell the system where the gtest folder that you downloaded resides. Just add to your $HOME/.bash_profile file the following line:
-
-export GTEST_DIR=/Users/username/gtest-1.6.0
-
-changing /Users/username/gtest-1.6.0 by the actual directory where you unziped gtest. 
-
-- Download, unzip, configure, build and install Google's gflags package, a commandline flags processing module for C++:
-
-$ wget http://google-gflags.googlecode.com/files/gflags-1.7.tar.gz
-$ tar xvfz gflags-1.7.tar.gz
-$ cd gflags-1.7
-$ ./configure
-$ make
-$ sudo make install
-
-- Download, unzip, configure, build and install glog, a Google's library that implements application-level logging:
-
-$ wget http://google-glog.googlecode.com/files/glog-0.3.1-1.tar.gz 
-$ tar xvfz glog-0.3.1-1.tar.gz 
-$ cd  glog-0.3.1
-$ ./configure
-$ make
-$ sudo make install
-
-* Check the repository for the latest version of GNSS-SDR:
-
-- Check out the latest version of GNSS-SDR
-
-$ svn co http://gnss-sdr.svn.sourceforge.net/svnroot/gnss-sdr gnss-sdr
-
-* Build GNSS-SDR
-
-- Go to GNSS-SDR's root directory and compile the program:
-
-$ cd gnss-sdr/trunk
-$ bjam
-
-If everything went fine, a executable will be found at gnss-sdr/trunk/install/gnss-sdr
-
-NOTE: During compilation, you might see a harmless message g++: unrecognized option '-no-cpp-precomp'. You can safely ignore it, and even change darwin toolset configuration to remove it: for OS X 10.6.8 I changed /opt/local/share/boost-build/tools/tools/darwin.jam at line 58 like this
-
-#flags darwin.compile OPTIONS : -no-cpp-precomp ;
-flags darwin.compile OPTIONS : -std=c++0x ;
-
-- You can also build the release version (an optimized, faster executable) by typing:
-
-$ bjam release
 
 
 GETTING STARTED
 ---------------
 
 
-1. After building the code, you will find the gnss-sdr executable file in ./install directory. 
+1. After building the code, you will find the gnss-sdr executable file at gnss-sdr/install 
 
 2. At this moment, the real-time connection with the RF front-ends (USRPs or USB GNSS dongles) is not implemented yet. You need to work in post-processing mode. This means that you have to provide a captured GNSS signal file.
     
@@ -325,6 +204,4 @@ We use the DBSRX to do the task, but you can try the newer ETTUS daughter boards
     3.3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters.
 
 4. Run the receiver from the install directory. The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get a PVT fix. The program will write a Google Earth KML file and RINEX (yet experimental) files in the install directory. Among the console output, GNSS-SDR also writes log files in /tmp/.
-
-
 

@@ -99,7 +99,6 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
         gr_block ("galileo_e1_dll_pll_veml_tracking_cc", gr_make_io_signature (1, 1, sizeof(gr_complex)),
                 gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
 {
-    d_debug_counter = 0;
     this->set_relative_rate(1.0/vector_length);
     // initialize internal vars
     d_queue = queue;
@@ -316,7 +315,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
-                    d_debug_counter++;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     return 1;
                 }

@@ -172,7 +172,6 @@ private:
 
     //PRN period in samples
     int d_current_prn_length_samples;
-    //double d_sample_counter_seconds;
 
     //processing samples counters
     unsigned long int d_sample_counter;
@@ -197,8 +196,6 @@ private:
     std::map<std::string, std::string> systemName;
     std::string sys;
 
-    //debug
-    int d_debug_counter;
 };
 
 #endif //GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_CC_H

@@ -86,14 +86,11 @@ galileo_e1_tcp_connector_make_tracking_cc(
 }
 
 
-
 void Galileo_E1_Tcp_Connector_Tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
     ninput_items_required[0] = (int)d_vector_length*2; //set the required available samples in each call
 }
-
-
 
 Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
         long if_freq,
@@ -118,14 +115,8 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
-    d_code_loop_filter=Tracking_2nd_DLL_filter(0.004);
-    d_carrier_loop_filter=Tracking_2nd_PLL_filter(0.004);
 
     // Initialize tracking  ==========================================
-
-    d_code_loop_filter.set_DLL_BW(dll_bw_hz);
-    d_carrier_loop_filter.set_PLL_BW(pll_bw_hz);
-
     //--- DLL variables --------------------------------------------------------
     d_early_late_spc_chips = early_late_space_chips; // Define early-late offset (in chips)
     d_very_early_late_spc_chips = very_early_late_space_chips; // Define very-early-late offset (in chips)
@@ -138,10 +129,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-//    int d_ca_code_size = (int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS + 4);
     d_ca_code = new gr_complex[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS + 4)];
-
-//    std::cout << "d_ca_code_size = " << d_ca_code_size << std::endl;
 
     /* If an array is partitioned for more than one thread to operate on,
      * having the sub-array boundaries unaligned to cache lines could lead
@@ -167,17 +155,14 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
-    d_code_freq_hz = Galileo_E1_CODE_CHIP_RATE_HZ;
+    d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ;
     // define residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
     // define residual carrier phase
     d_rem_carr_phase_rad = 0.0;
-    // define phase step
-    d_code_phase_step_chips = d_code_freq_hz / (float)d_fs_in; //[chips]
 
     // sample synchronization
     d_sample_counter = 0;
-    //d_sample_counter_seconds = 0;
     d_acq_sample_stamp = 0;
 
     d_enable_tracking = false;
@@ -203,33 +188,27 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
 void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
 {
-
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-    // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(); //initialize the carrier filter
-    d_code_loop_filter.initialize(); //initialize the code filter
-
 
     // generate local reference ALWAYS starting at chip 2 (2 samples per chip)
     galileo_e1_code_gen_complex_sampled(&d_ca_code[2],d_acquisition_gnss_synchro->Signal, false, d_acquisition_gnss_synchro->PRN, 2*Galileo_E1_CODE_CHIP_RATE_HZ, 0);
-
+    // Fill head and tail
     d_ca_code[0] = d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS)];
     d_ca_code[1] = d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS+1)];
     d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS+2)] = d_ca_code[2];
     d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS+3)] = d_ca_code[3];
+
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0.0;
     d_rem_carr_phase_rad = 0;
-    d_next_rem_code_phase_samples = 0;
     d_acc_carrier_phase_rad = 0;
 
-    d_code_phase_samples = d_acq_code_phase_samples;
+    d_acc_code_phase_secs = 0;
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
-
-    d_next_prn_length_samples = d_vector_length;
+    d_current_prn_length_samples = d_vector_length;
 
     std::string sys_ = &d_acquisition_gnss_synchro->System;
     sys = sys_.substr(0,1);
@@ -249,7 +228,6 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
 
 void Galileo_E1_Tcp_Connector_Tracking_cc::update_local_code()
 {
-
     double tcode_half_chips;
     float rem_code_phase_half_chips;
     int associated_chip_index;
@@ -260,18 +238,17 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::update_local_code()
     int very_early_late_spc_samples;
     int epl_loop_length_samples;
 
-    // unified loop for E, P, L code vectors
-    code_phase_step_chips = ((double)d_code_freq_hz) / ((double)d_fs_in);
-    code_phase_step_half_chips = (2.0*(double)d_code_freq_hz) / ((double)d_fs_in);
+    // unified loop for VE, E, P, L, VL code vectors
+    code_phase_step_chips = ((double)d_code_freq_chips) / ((double)d_fs_in);
+    code_phase_step_half_chips = (2.0*(double)d_code_freq_chips) / ((double)d_fs_in);
 
-    rem_code_phase_half_chips = d_rem_code_phase_samples * (2*d_code_freq_hz / d_fs_in);
+    rem_code_phase_half_chips = d_rem_code_phase_samples * (2*d_code_freq_chips / d_fs_in);
     tcode_half_chips = -(double)rem_code_phase_half_chips;
 
-    early_late_spc_samples=round(d_early_late_spc_chips/code_phase_step_chips);
-    very_early_late_spc_samples=round(d_very_early_late_spc_chips/code_phase_step_chips);
+    early_late_spc_samples = round(d_early_late_spc_chips / code_phase_step_chips);
+    very_early_late_spc_samples = round(d_very_early_late_spc_chips / code_phase_step_chips);
 
-    epl_loop_length_samples=d_current_prn_length_samples+very_early_late_spc_samples*2;
-
+    epl_loop_length_samples = d_current_prn_length_samples + very_early_late_spc_samples*2;
 
     for (int i=0; i<epl_loop_length_samples; i++)
         {
@@ -279,32 +256,25 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::update_local_code()
             d_very_early_code[i] = d_ca_code[associated_chip_index];
             tcode_half_chips = tcode_half_chips + code_phase_step_half_chips;
         }
-    memcpy(d_early_code,&d_very_early_code[very_early_late_spc_samples-early_late_spc_samples],d_current_prn_length_samples* sizeof(gr_complex));
-    memcpy(d_prompt_code,&d_very_early_code[very_early_late_spc_samples],d_current_prn_length_samples* sizeof(gr_complex));
-    memcpy(d_late_code,&d_very_early_code[2*very_early_late_spc_samples-early_late_spc_samples],d_current_prn_length_samples* sizeof(gr_complex));
-    memcpy(d_very_late_code,&d_very_early_code[2*very_early_late_spc_samples],d_current_prn_length_samples* sizeof(gr_complex));
-
+    memcpy(d_early_code, &d_very_early_code[very_early_late_spc_samples - early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
+    memcpy(d_prompt_code, &d_very_early_code[very_early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
+    memcpy(d_late_code, &d_very_early_code[2*very_early_late_spc_samples - early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
+    memcpy(d_very_late_code, &d_very_early_code[2*very_early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
 }
-
-
-
 
 void Galileo_E1_Tcp_Connector_Tracking_cc::update_local_carrier()
 {
     float phase_rad, phase_step_rad;
-
+    // Compute the carrier phase step for the K-1 carrier doppler estimation
     phase_step_rad = (float)GPS_TWO_PI*d_carrier_doppler_hz / (float)d_fs_in;
+    // Initialize the carrier phase with the remanent carrier phase of the K-2 loop
     phase_rad = d_rem_carr_phase_rad;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
             d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
             phase_rad += phase_step_rad;
         }
-    d_rem_carr_phase_rad = fmod(phase_rad, GPS_TWO_PI);
-    d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + d_rem_carr_phase_rad;
 }
-
-
 
 
 Galileo_E1_Tcp_Connector_Tracking_cc::~Galileo_E1_Tcp_Connector_Tracking_cc()
@@ -335,45 +305,40 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
 {
 
     // process vars
-    float carr_nco_hz;
-    float code_nco_chips;
+    float carr_error_filt_hz;
+    float code_error_filt_chips;
 
     tcp_packet_data tcp_data;
 
     if (d_enable_tracking == true)
         {
-            /*
-             * Receiver signal alignment
-             */
-            if (d_pull_in == true)
-                {
-                    int samples_offset;
-                    float acq_trk_shif_correction_samples;
-                    int acq_to_trk_delay_samples;
-                    acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_next_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_next_prn_length_samples);
-                    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
-                    //d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / (double)d_fs_in);
-                    d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
-                    d_pull_in = false;
-                    consume_each(samples_offset); //shift input to perform alignement with local replica
-                    return 1;
-                }
+        if (d_pull_in == true)
+            {
+                /*
+                 * Signal alignment (skip samples until the incoming signal is aligned with local replica)
+                 */
+                int samples_offset;
+                float acq_trk_shif_correction_samples;
+                int acq_to_trk_delay_samples;
+                acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
+                acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_current_prn_length_samples);
+                samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+                d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
+                d_pull_in = false;
+                consume_each(samples_offset); //shift input to perform alignment with local replica
+                return 1;
+            }
 
-            // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            Gnss_Synchro current_synchro_data;
-            // Fill the acquisition data
-            current_synchro_data = *d_acquisition_gnss_synchro;
+			// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+			Gnss_Synchro current_synchro_data;
+			// Fill the acquisition data
+			current_synchro_data = *d_acquisition_gnss_synchro;
 
-            const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignement
-            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+			// Block input data and block output stream pointers
+			const gr_complex* in = (gr_complex*) input_items[0];
+			Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
-            // Update the prn length based on code freq (variable) and
-            // sampling frequency (fixed)
-            // variable code PRN sample block size
-            d_current_prn_length_samples = d_next_prn_length_samples;
-
+			// Generate local code and carrier replicas (using \hat{f}_d(k-1))
             update_local_code();
             update_local_carrier();
 
@@ -393,7 +358,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
                     d_Very_Late,
                     is_unaligned());
 
-
+            // ################## TCP CONNECTOR ##########################################################
             //! Variable used for control
             d_control_id++;
 
@@ -401,71 +366,81 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
             boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> tx_variables_array = {{d_control_id,(*d_Very_Early).real(),(*d_Very_Early).imag(),(*d_Early).real(),(*d_Early).imag(),(*d_Late).real(),(*d_Late).imag(),(*d_Very_Late).real(),(*d_Very_Late).imag(),(*d_Prompt).real(),(*d_Prompt).imag(),d_acq_carrier_doppler_hz,1}};
             d_tcp_com.send_receive_tcp_packet_galileo_e1(tx_variables_array, &tcp_data);
 
+            // ################## PLL ##########################################################
             // PLL discriminator, carrier loop filter implementation and NCO command generation (TCP_connector)
-            carr_nco_hz = tcp_data.proc_pack_carr_error;
-            // Modify carrier freq based on NCO command (TCP_connector)
-            d_carrier_doppler_hz = tcp_data.proc_pack_carrier_doppler_hz;
+            carr_error_filt_hz = tcp_data.proc_pack_carr_error;
+            // New carrier Doppler frequency estimation
+            d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
+            // New code Doppler frequency estimation
+            d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ + ((d_carrier_doppler_hz * Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ);
+            //carrier phase accumulator for (K) doppler estimation
+            d_acc_carrier_phase_rad=d_acc_carrier_phase_rad+GPS_TWO_PI*d_carrier_doppler_hz*Galileo_E1_CODE_PERIOD;
+            //remanent carrier phase to prevent overflow in the code NCO
+            d_rem_carr_phase_rad=d_rem_carr_phase_rad+GPS_TWO_PI*d_carrier_doppler_hz*Galileo_E1_CODE_PERIOD;
+            d_rem_carr_phase_rad=fmod(d_rem_carr_phase_rad,GPS_TWO_PI);
 
+            // ################## DLL ##########################################################
             // DLL discriminator, carrier loop filter implementation and NCO command generation (TCP_connector)
-            code_nco_chips = tcp_data.proc_pack_code_error;
-            // Modify code freq based on NCO command
-            d_code_freq_hz = Galileo_E1_CODE_CHIP_RATE_HZ + (d_carrier_doppler_hz * Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ - code_nco_chips;
-            // Update the phase step based on code freq (variable) and sampling frequency (fixed)
-            d_code_phase_step_chips = d_code_freq_hz / (float)d_fs_in; //[chips]
+            code_error_filt_chips = tcp_data.proc_pack_code_error;
+            //Code phase accumulator
+            float code_error_filt_secs;
+            code_error_filt_secs=(Galileo_E1_CODE_PERIOD*code_error_filt_chips)/Galileo_E1_CODE_CHIP_RATE_HZ; //[seconds]
+            d_acc_code_phase_secs=d_acc_code_phase_secs+code_error_filt_secs;
 
-            // keep alignment parameters for the next input buffer
-            float T_chip_seconds;
-            float T_prn_seconds;
-            float T_prn_samples;
-            float K_blk_samples;
-            T_chip_seconds = 1 / d_code_freq_hz;
-            T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * d_fs_in;
-            d_rem_code_phase_samples = d_next_rem_code_phase_samples;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples;
-            d_next_prn_length_samples = round(K_blk_samples); //round to a discrete samples
-            d_next_rem_code_phase_samples = K_blk_samples - d_next_prn_length_samples; //rounding error
+            // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+             // keep alignment parameters for the next input buffer
+             float T_chip_seconds;
+             float T_prn_seconds;
+             float T_prn_samples;
+             float K_blk_samples;
+             // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
+             T_chip_seconds = 1 / d_code_freq_chips;
+             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
+             T_prn_samples = T_prn_seconds * (float)d_fs_in;
+             K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs*(float)d_fs_in;
+             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
+             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
-            /*!
-             * \todo Improve the lock detection algorithm!
-             */
-            // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
-                {
-                    // fill buffer with prompt correlator output values
-                    d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
-                    d_cn0_estimation_counter++;
-                }
-            else
-                {
-                    d_cn0_estimation_counter = 0;
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, Galileo_E1_B_CODE_LENGTH_CHIPS);
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
+             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
+             if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
+                 {
+                     // fill buffer with prompt correlator output values
+                     d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
+                     d_cn0_estimation_counter++;
+                 }
+             else
+                 {
+                     d_cn0_estimation_counter = 0;
 
-                    // ###### TRACKING UNLOCK NOTIFICATION #####
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
-                        {
-                            d_carrier_lock_fail_counter++;
-                        }
-                    else
-                        {
-                            if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
-                        }
-                    if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
-                        {
-                            std::cout << "Channel " << d_channel << " loss of lock!" << std::endl ;
-                            //tracking_message = 3; //loss of lock
-                            //d_channel_internal_queue->push(tracking_message);
-                            ControlMessageFactory* cmf = new ControlMessageFactory();
-                            if (d_queue != gr_msg_queue_sptr()) {
-                                d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-                            }
-                            delete cmf;
-                            d_carrier_lock_fail_counter = 0;
-                            d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
+                     // Code lock indicator
+                     d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, Galileo_E1_B_CODE_LENGTH_CHIPS);
 
-                        }
-                }
+                     // Carrier lock indicator
+                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
+
+                     // Loss of lock detection
+                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
+                         {
+                             d_carrier_lock_fail_counter++;
+                         }
+                     else
+                         {
+                             if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
+                         }
+                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+                         {
+                             std::cout << "Channel " << d_channel << " loss of lock!" << std::endl ;
+                             ControlMessageFactory* cmf = new ControlMessageFactory();
+                             if (d_queue != gr_msg_queue_sptr())
+                                 {
+                                     d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
+                                 }
+                             delete cmf;
+                             d_carrier_lock_fail_counter = 0;
+                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
+                         }
+                 }
+
 
             // ########### Output the tracking data to navigation and PVT ##########
 
@@ -554,15 +529,15 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
 
                     // carrier and code frequency
                     d_dump_file.write((char*)&d_carrier_doppler_hz, sizeof(float));
-                    d_dump_file.write((char*)&d_code_freq_hz, sizeof(float));
+                    d_dump_file.write((char*)&d_code_freq_chips, sizeof(float));
 
                     //PLL commands
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    d_dump_file.write((char*)&carr_nco_hz, sizeof(float));
+                    d_dump_file.write((char*)&carr_error_filt_hz, sizeof(float));
 
                     //DLL commands
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    d_dump_file.write((char*)&code_nco_chips, sizeof(float));
+                    d_dump_file.write((char*)&code_error_filt_chips, sizeof(float));
 
                     // CN0 and carrier lock test
                     d_dump_file.write((char*)&d_CN0_SNV_dB_Hz, sizeof(float));

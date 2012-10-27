@@ -47,8 +47,6 @@
 
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
-#include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
 #include "correlator.h"
 #include "tcp_communication.h"
 
@@ -139,8 +137,6 @@ private:
     float d_early_late_spc_chips;
     float d_very_early_late_spc_chips;
 
-    float d_code_phase_step_chips;
-
     gr_complex* d_ca_code;
 
     gr_complex* d_very_early_code;
@@ -161,10 +157,6 @@ private:
     float d_next_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
-    // PLL and DLL filter library
-    Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
-
     // acquisition
     float d_acq_code_phase_samples;
     float d_acq_carrier_doppler_hz;
@@ -173,9 +165,10 @@ private:
     Correlator d_correlator;
 
     // tracking vars
-    float d_code_freq_hz;
+    float d_code_freq_chips;
     float d_carrier_doppler_hz;
     float d_acc_carrier_phase_rad;
+    float d_acc_code_phase_secs;
     float d_code_phase_samples;
     size_t d_port_ch0;
     size_t d_port;

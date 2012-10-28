@@ -233,6 +233,7 @@ GalileoE1PcpsAmbiguousAcquisition::connect(gr_top_block_sptr top_block)
 
 void
 GalileoE1PcpsAmbiguousAcquisition::disconnect(gr_top_block_sptr top_block)
+{
     if (item_type_.compare("gr_complex") == 0)
         {
             top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);

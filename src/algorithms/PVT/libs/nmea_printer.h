@@ -34,7 +34,7 @@
  */
 
 #ifndef GNSS_SDR_NMEA_PRINTER_H_
-#define	 GNSS_SDR_NMEA_PRINTER_H_
+#define	GNSS_SDR_NMEA_PRINTER_H_
 
 
 #include <iostream>
@@ -59,18 +59,14 @@ public:
      */
     ~Nmea_Printer();
 
-
 private:
     std::string nmea_filename ; //<! String with the NMEA log filename
     std::ofstream nmea_file_descriptor ; //<! Output file stream for NMEA log file
     std::string nmea_devname;
     int nmea_dev_descriptor ; //<! NMEA serial device descriptor (i.e. COM port)
-
     gps_l1_ca_ls_pvt* d_PVT_data;
-
     int init_serial (std::string serial_device); //serial port control
     void close_serial ();
-
     std::string get_GPGGA();
     std::string get_GPGSV();
     std::string get_GPGSA();
@@ -79,7 +75,6 @@ private:
     std::string longitude_to_hm(double longitude);
     std::string latitude_to_hm(double lat);
     char checkSum(std::string sentence);
-
 };
 
 #endif

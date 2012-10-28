@@ -38,18 +38,15 @@ bool Kml_Printer::set_headers(std::string filename)
 {
     time_t rawtime;
     struct tm * timeinfo;
-
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
     kml_file.open(filename.c_str());
     if (kml_file.is_open())
         {
             DLOG(INFO) << "KML printer writing on " << filename.c_str();
-
             // Set iostream numeric format and precision
             kml_file.setf(kml_file.fixed,kml_file.floatfield);
-            kml_file<<std::setprecision(14);
-
+            kml_file << std::setprecision(14);
             kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
                     << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
                     << "	<Document>" << std::endl
@@ -83,6 +80,7 @@ bool Kml_Printer::set_headers(std::string filename)
 }
 
 
+
 bool Kml_Printer::print_position(gps_l1_ca_ls_pvt* position,bool print_average_values)
 {
     double latitude;
@@ -90,15 +88,15 @@ bool Kml_Printer::print_position(gps_l1_ca_ls_pvt* position,bool print_average_v
     double height;
     if (print_average_values == false)
         {
-            latitude=position->d_latitude_d;
-            longitude=position->d_longitude_d;
-            height=position->d_height_m;
+            latitude = position->d_latitude_d;
+            longitude = position->d_longitude_d;
+            height = position->d_height_m;
         }
     else
         {
-            latitude=position->d_avg_latitude_d;
-            longitude=position->d_avg_longitude_d;
-            height=position->d_avg_height_m;
+            latitude = position->d_avg_latitude_d;
+            longitude = position->d_avg_longitude_d;
+            height = position->d_avg_height_m;
         }
 
     if (kml_file.is_open())
@@ -118,11 +116,11 @@ bool Kml_Printer::close_file()
 {
     if (kml_file.is_open())
         {
-            kml_file<<"</coordinates>" << std::endl
-                    <<"</LineString>" << std::endl
-                    <<"</Placemark>" << std::endl
-                    <<"</Document>" << std::endl
-                    <<"</kml>";
+            kml_file << "</coordinates>" << std::endl
+                     << "</LineString>" << std::endl
+                     << "</Placemark>" << std::endl
+                     << "</Document>" << std::endl
+                     << "</kml>";
             kml_file.close();
             return true;
         }

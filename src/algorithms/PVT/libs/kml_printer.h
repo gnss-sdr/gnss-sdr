@@ -46,19 +46,13 @@
 class Kml_Printer
 {
 private:
-
-	std::ofstream kml_file;
-
+    std::ofstream kml_file;
 public:
-
-	bool set_headers(std::string filename);
-
-	bool print_position(gps_l1_ca_ls_pvt* position, bool print_average_values);
-
-	bool close_file();
-
-	Kml_Printer();
-	~Kml_Printer();
+    bool set_headers(std::string filename);
+    bool print_position(gps_l1_ca_ls_pvt* position, bool print_average_values);
+    bool close_file();
+    Kml_Printer();
+    ~Kml_Printer();
 };
 
 #endif

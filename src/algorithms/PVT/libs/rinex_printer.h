@@ -14,7 +14,7 @@
  * 1) The carrier-phase measurement at one or both carriers (actually being a
  * measurement on the beat frequency between the received carrier of the
  * satellite signal and a receiver-generated reference frequency).
- * 2) The pseudorange (code) measuremen , equivalent to the difference
+ * 2) The pseudorange (code) measurement , equivalent to the difference
  * of the time of reception (expressed in the time frame of the receiver)
  * and the time of transmission (expressed in the time frame of the satellite)
  * of a distinct satellite signal.
@@ -66,8 +66,6 @@
  */
 class Rinex_Printer
 {
-
-
 public:
     /*!
      * \brief Default constructor. Creates GPS Navigation and Observables RINEX files and their headers
@@ -106,29 +104,18 @@ public:
      *  \brief Writes observables into the RINEX file
      */
     void log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg,  std::map<int,double> pseudoranges);
-
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     std::map<std::string,std::string> observationCode; //<! GNSS observation descriptors
-
-
     std::string stringVersion; //<! RINEX version (2.10/2.11 or 3.01)
 
-
-
-
 private:
-
     int version ;  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
-
     int numberTypesObservations; // Number of available types of observable in the system. Should be public?
-
-
     /*
      * Generation of RINEX signal strength indicators
      */
     int signalStrength(double snr);
-
 
     /* Creates RINEX file names according to the naming convention
      *
@@ -426,7 +413,6 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
         const std::string::size_type expLen,
         const bool checkSwitch)
 {
-
     std::string::size_type idx = aStr.find('.', startPos);
     int expAdd = 0;
     std::string exp;
@@ -505,19 +491,17 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
             aStr.insert((std::string::size_type)1, 1, '0');
         }
 
-
     return aStr;
-
 }  // end sci2for
 
 
 
 inline std::string asString(const long double x, const std::string::size_type precision)
- {
+{
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(precision) << x ;
     return ss.str();
- }
+}
 
 
 

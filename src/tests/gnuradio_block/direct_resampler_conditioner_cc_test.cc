@@ -39,15 +39,14 @@
 #include <gnuradio/gr_sig_source_c.h>
 #include <gnuradio/gr_msg_queue.h>
 #include <gnuradio/gr_null_sink.h>
-
 #include "gnss_sdr_valve.h"
 #include "direct_resampler_conditioner_cc.h"
 
 
-TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest) {
-
-	double fs_in = 8000000.0; //FS of the signal in Hz
-	double fs_out = 4000000.0; //FS of the resampled signal in Hz
+TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest)
+{
+	double fs_in = 8000000.0; // Input sampling frequency in Hz
+	double fs_out = 4000000.0; // sampling freuqncy of the resampled signal in Hz
 	struct timeval tv;
 	int nsamples = 1000000; //Number of samples to be computed
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
@@ -58,16 +57,13 @@ TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest) {
     long long int end = 0;
 
 	EXPECT_NO_THROW({
-
 		direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
-
 	}) << "Failure in instantiation of direct_resampler_conditioner.";
 
 	direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
 	gr_block_sptr sink = gr_make_null_sink(sizeof(gr_complex));
 
 	EXPECT_NO_THROW( {
-
 	    top_block->connect(source, 0, valve, 0);
 		top_block->connect(valve, 0, resampler, 0);
 		top_block->connect(resampler, 0, sink, 0);
@@ -83,5 +79,4 @@ TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest) {
 	}) << "Failure running direct_resampler_conditioner.";
 
 	std::cout <<  "Resampled " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
-
 }

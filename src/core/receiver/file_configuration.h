@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -53,15 +53,13 @@ class InMemoryConfiguration;
  * The file is in the INI format, containing sections and pairs of names and values.
  * For more information about the INI format, see http://en.wikipedia.org/wiki/INI_file
  */
-class FileConfiguration : public ConfigurationInterface {
-
+class FileConfiguration : public ConfigurationInterface
+{
 public:
     FileConfiguration(std::string filename);
     FileConfiguration();
-
     //! Virtual destructor
     virtual ~FileConfiguration();
-
     std::string property(std::string property_name, std::string default_value);
     bool property(std::string property_name, bool default_value);
     long property(std::string property_name, long default_value);
@@ -69,13 +67,9 @@ public:
     unsigned int property(std::string property_name, unsigned int default_value);
     float property(std::string property_name, float default_value);
     double property(std::string property_name, double default_value);
-
     void set_property(std::string property_name, std::string value);
-
 private:
-
     void init();
-
     std::string filename_;
     INIReader *ini_reader_;
     InMemoryConfiguration* overrided_;

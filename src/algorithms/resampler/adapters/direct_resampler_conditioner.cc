@@ -44,10 +44,8 @@ DirectResamplerConditioner::DirectResamplerConditioner(
         unsigned int in_stream, unsigned int out_stream) :
         role_(role), in_stream_(in_stream), out_stream_(out_stream)
 {
-
     std::string default_item_type = "short";
     std::string default_dump_file = "./data/signal_conditioner.dat";
-
     sample_freq_in_ = configuration->property(role_ + ".sample_freq_in",
             (double)4000000.0);
     sample_freq_out_ = configuration->property(role_ + ".sample_freq_out",
@@ -70,32 +68,33 @@ DirectResamplerConditioner::DirectResamplerConditioner(
             DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
 
         }
-//    else if (item_type_.compare("short") == 0)
-//        {
-//            item_size_ = sizeof(short);
-//            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_,
-//                    sample_freq_out_);
-//        }
+    //    else if (item_type_.compare("short") == 0)
+    //        {
+    //            item_size_ = sizeof(short);
+    //            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_,
+    //                    sample_freq_out_);
+    //        }
     else
         {
             LOG_AT_LEVEL(WARNING) << item_type_
                     << " unrecognized item type for resampler";
             item_size_ = sizeof(short);
         }
-
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
-
 }
+
+
 DirectResamplerConditioner::~DirectResamplerConditioner() {}
+
+
 
 void DirectResamplerConditioner::connect(gr_top_block_sptr top_block)
 {
-
     if (dump_)
         {
             top_block->connect(resampler_, 0, file_sink_, 0);
@@ -105,8 +104,8 @@ void DirectResamplerConditioner::connect(gr_top_block_sptr top_block)
         {
             DLOG(INFO) << "nothing to connect internally";
         }
-
 }
+
 
 void DirectResamplerConditioner::disconnect(gr_top_block_sptr top_block)
 {
@@ -116,10 +115,12 @@ void DirectResamplerConditioner::disconnect(gr_top_block_sptr top_block)
         }
 }
 
+
 gr_basic_block_sptr DirectResamplerConditioner::get_left_block()
 {
     return resampler_;
 }
+
 
 gr_basic_block_sptr DirectResamplerConditioner::get_right_block()
 {

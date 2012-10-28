@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -47,7 +47,6 @@ class ConfigurationInterface;
  */
 class NullSinkOutputFilter : public GNSSBlockInterface
 {
-
 public:
     NullSinkOutputFilter(ConfigurationInterface* configuration,
             std::string role,
@@ -55,7 +54,6 @@ public:
             unsigned int out_streams);
 
     virtual ~NullSinkOutputFilter();
-
     std::string item_type()
     {
         return item_type_;
@@ -72,20 +70,16 @@ public:
     {
         return item_size_;
     }
-
     void connect(gr_top_block_sptr top_block);
     void disconnect(gr_top_block_sptr top_block);
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
 private:
-
     gr_block_sptr sink_;
     size_t item_size_;
-
     std::string item_type_;
     std::string role_;
-
     unsigned int in_streams_;
     unsigned int out_streams_;
 };

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -44,8 +44,8 @@ ControlMessageFactory::ControlMessageFactory()
 ControlMessageFactory::~ControlMessageFactory()
 {}
 
-gr_message_sptr ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what) {
-
+gr_message_sptr ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what)
+{
     ControlMessage *control_message = new ControlMessage;
 
     control_message->who = who;
@@ -59,21 +59,22 @@ gr_message_sptr ControlMessageFactory::GetQueueMessage(unsigned int who, unsigne
     return queue_message;
 }
 
-std::vector<ControlMessage*>* ControlMessageFactory::GetControlMessages(gr_message_sptr queue_message) {
-
+std::vector<ControlMessage*>* ControlMessageFactory::GetControlMessages(gr_message_sptr queue_message)
+{
     std::vector<ControlMessage*>* control_messages = new std::vector<ControlMessage*>();
     unsigned int control_messages_count = queue_message->length() / sizeof(ControlMessage);
-    if(queue_message->length() % sizeof(ControlMessage) != 0) {
+    if(queue_message->length() % sizeof(ControlMessage) != 0)
+        {
             LOG_AT_LEVEL(WARNING) << "Queue message has size " << queue_message->length() << " which is not" <<
                     " multiple of control message size " << sizeof(ControlMessage);
             LOG_AT_LEVEL(WARNING) << "Ignoring this queue message to prevent unexpected results.";
             return control_messages;
-    }
-    for(unsigned int i=0;i<control_messages_count;i++) {
+        }
+    for(unsigned int i=0; i<control_messages_count; i++)
+        {
             control_messages->push_back(new ControlMessage);
             memcpy(control_messages->at(i), queue_message->msg() + (i*sizeof(ControlMessage)), sizeof(ControlMessage));
-    }
-
+        }
     return control_messages;
 }
 

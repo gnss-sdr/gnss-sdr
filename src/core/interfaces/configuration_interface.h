@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -50,19 +50,14 @@
  */
 class ConfigurationInterface
 {
-
 public:
-
     virtual ~ConfigurationInterface()
     {}
-
-    virtual std::string property(std::string property_name,
-            std::string default_value) = 0;
+    virtual std::string property(std::string property_name, std::string default_value) = 0;
     virtual bool property(std::string property_name, bool default_value) = 0;
     virtual long property(std::string property_name, long default_value) = 0;
     virtual int property(std::string property_name, int default_value) = 0;
-    virtual unsigned int property(std::string property_name,
-            unsigned int default_value) = 0;
+    virtual unsigned int property(std::string property_name, unsigned int default_value) = 0;
     virtual float property(std::string property_name, float default_value) = 0;
     virtual double property(std::string property_name, double default_value) = 0;
     virtual void set_property(std::string property_name, std::string value) = 0;

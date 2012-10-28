@@ -56,81 +56,70 @@ gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long
  * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
  *
  */
-class gps_l1_ca_telemetry_decoder_cc : public gr_block {
-
+class gps_l1_ca_telemetry_decoder_cc : public gr_block
+{
 public:
-
-  ~gps_l1_ca_telemetry_decoder_cc();
-
-  void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
-  void set_channel(int channel);                 //!< Set receiver's channel
-
-  /*!
-   * \brief Set the navigation queue
-   */
-  void set_navigation_queue(concurrent_queue<Gps_Navigation_Message> *nav_queue){d_GPS_FSM.d_nav_queue=nav_queue;}
-
-  int general_work (int noutput_items, gr_vector_int &ninput_items,
-      gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
-
-  void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
+    ~gps_l1_ca_telemetry_decoder_cc();
+    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
+    void set_channel(int channel);                 //!< Set receiver's channel
+    /*!
+     * \brief Set the navigation queue
+     */
+    void set_navigation_queue(concurrent_queue<Gps_Navigation_Message> *nav_queue){d_GPS_FSM.d_nav_queue=nav_queue;}
+    int general_work (int noutput_items, gr_vector_int &ninput_items,
+            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
+    friend gps_l1_ca_telemetry_decoder_cc_sptr
+    gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
+            int vector_length, gr_msg_queue_sptr queue, bool dump);
+    gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
+            int vector_length, gr_msg_queue_sptr queue, bool dump);
+    bool gps_word_parityCheck(unsigned int gpsword);
 
-  friend gps_l1_ca_telemetry_decoder_cc_sptr
-  gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
-      int vector_length, gr_msg_queue_sptr queue, bool dump);
+    // constants
+    unsigned short int d_preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS];
+    // class private vars
 
-  gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
-      int vector_length, gr_msg_queue_sptr queue, bool dump);
+    signed int *d_preambles_symbols;
+    unsigned int d_samples_per_bit;
+    long unsigned int d_sample_counter;
+    long unsigned int d_preamble_index;
+    unsigned int d_stat;
+    bool d_flag_frame_sync;
 
-  bool gps_word_parityCheck(unsigned int gpsword);
+    // symbols
+    double d_symbol_accumulator;
+    short int d_symbol_accumulator_counter;
 
-  // constants
-  unsigned short int d_preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS];
+    //bits and frame
+    unsigned short int d_frame_bit_index;
+    unsigned int d_GPS_frame_4bytes;
+    unsigned int d_prev_GPS_frame_4bytes;
+    bool d_flag_parity;
+    bool d_flag_preamble;
+    int d_word_number;
 
-  // class private vars
+    long d_fs_in;
+    //double d_preamble_duration_seconds;
+    // navigation message vars
+    Gps_Navigation_Message d_nav;
+    GpsL1CaSubframeFsm d_GPS_FSM;
 
-  signed int *d_preambles_symbols;
-  unsigned int d_samples_per_bit;
-  long unsigned int d_sample_counter;
-  long unsigned int d_preamble_index;
-  unsigned int d_stat;
-  bool d_flag_frame_sync;
+    gr_msg_queue_sptr d_queue;
+    unsigned int d_vector_length;
+    bool d_dump;
+    Gnss_Satellite d_satellite;
+    int d_channel;
 
-  // symbols
-  double d_symbol_accumulator;
-  short int d_symbol_accumulator_counter;
+    //std::deque<double> d_prn_start_sample_history;
 
-  //bits and frame
-  unsigned short int d_frame_bit_index;
-  unsigned int d_GPS_frame_4bytes;
-  unsigned int d_prev_GPS_frame_4bytes;
-  bool d_flag_parity;
-  bool d_flag_preamble;
-  int d_word_number;
+    double d_preamble_time_seconds;
+    double d_preamble_code_phase_seconds;
 
-  long d_fs_in;
-  //double d_preamble_duration_seconds;
-  // navigation message vars
-  Gps_Navigation_Message d_nav;
-  GpsL1CaSubframeFsm d_GPS_FSM;
-
-
-  gr_msg_queue_sptr d_queue;
-  unsigned int d_vector_length;
-  bool d_dump;
-  Gnss_Satellite d_satellite;
-  int d_channel;
-
-  //std::deque<double> d_prn_start_sample_history;
-
-  double d_preamble_time_seconds;
-  double d_preamble_code_phase_seconds;
-
-  std::string d_dump_filename;
-  std::ofstream d_dump_file;
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
 };
 
 #endif

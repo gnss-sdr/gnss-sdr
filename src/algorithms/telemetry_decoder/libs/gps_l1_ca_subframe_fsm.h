@@ -65,10 +65,7 @@ struct gps_subframe_fsm_S11;
 
 class GpsL1CaSubframeFsm : public sc::state_machine< GpsL1CaSubframeFsm, gps_subframe_fsm_S0 >
 {
-private:
-
 public:
-
   // channel and satellite info
   int i_channel_ID;
   unsigned int i_satellite_PRN;

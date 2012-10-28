@@ -40,14 +40,12 @@ class ConfigurationInterface;
 
 class Gn3sSignalSource: public GNSSBlockInterface
 {
-
 public:
 	Gn3sSignalSource(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
             unsigned int out_stream, gr_msg_queue_sptr queue);
 
     virtual ~Gn3sSignalSource();
-
     std::string role()
     {
         return role_;
@@ -60,14 +58,12 @@ public:
     {
         return item_size_;
     }
-
     void connect(gr_top_block_sptr top_block);
     void disconnect(gr_top_block_sptr top_block);
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
 private:
-
     std::string role_;
     unsigned int in_stream_;
     unsigned int out_stream_;

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -44,9 +44,7 @@ class ConfigurationInterface;
  */
 class GpsL1CaTelemetryDecoder : public TelemetryDecoderInterface
 {
-
 public:
-
     GpsL1CaTelemetryDecoder(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
@@ -54,7 +52,6 @@ public:
             gr_msg_queue_sptr queue);
 
     virtual ~GpsL1CaTelemetryDecoder();
-
     std::string role()
     {
         return role_;
@@ -63,36 +60,29 @@ public:
     {
         return "GPS_L1_CA_Telemetry_Decoder";
     }
-
     void connect(gr_top_block_sptr top_block);
     void disconnect(gr_top_block_sptr top_block);
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
-
     void set_satellite(Gnss_Satellite satellite);
     void set_channel(int channel){telemetry_decoder_->set_channel(channel);};
-
     void reset()
     {
         return;
     };
-
     size_t item_size()
     {
         return 0;
     }
+
 private:
-
     gps_l1_ca_telemetry_decoder_cc_sptr telemetry_decoder_;
-
     Gnss_Satellite satellite_;
     int channel_;
     unsigned int vector_length_;
     std::string item_type_;
-
     bool dump_;
     std::string dump_filename_;
-
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

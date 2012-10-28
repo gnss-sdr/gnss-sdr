@@ -101,16 +101,14 @@ void GNSSFlowgraph::stop()
 {
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            //		if(channels_state_[i]==2) channel(i)->
+            // if(channels_state_[i]==2) channel(i)->
             channel(i)->stop();
         }
-
     for (unsigned int i = 0; i < channels_count_; i++)
         {
             std::cout << "Channel " << i << " in state " << channels_state_[i]
                       << std::endl;
         }
-
     DLOG(INFO) << "Threads finished. Return to main program.";
     top_block_->stop();
     running_ = false;
@@ -596,16 +594,7 @@ void GNSSFlowgraph::set_signals_list()
                     available_GNSS_signals_.remove(signal_value);
                     available_GNSS_signals_.insert(gnss_it, signal_value);
                 }
-
         }
-
-//     std::cout << "Signal queue: " << std::endl;
-//     Gnss_Signal aux_signal;
-//	 for (std::list<Gnss_Signal>::iterator it = available_GNSS_signals_.begin(); it != available_GNSS_signals_.end(); it++) {
-//	         aux_signal = *it;
-//	         std::cout << aux_signal.get_satellite().get_system() << " " << aux_signal.get_signal() << " PRN " << aux_signal.get_satellite().get_PRN() << std::endl;
-//	 }
-
 }
 
 

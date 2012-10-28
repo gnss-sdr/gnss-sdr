@@ -41,8 +41,8 @@ using google::LogMessage;
 IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         gr_msg_queue_sptr queue) :
-        config_(configuration), role_(role), in_streams_(in_streams),
-        out_streams_(out_streams), queue_(queue)
+                config_(configuration), role_(role), in_streams_(in_streams),
+                out_streams_(out_streams), queue_(queue)
 {
 
     std::string default_input_item_type = "gr_complex";
@@ -71,12 +71,13 @@ IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::str
 
 }
 
+
 IshortToComplex::~IshortToComplex()
 {}
 
+
 void IshortToComplex::connect(gr_top_block_sptr top_block)
 {
-
     if (dump_)
         {
             top_block->connect(gr_interleaved_short_to_complex_, 0, file_sink_, 0);
@@ -87,20 +88,23 @@ void IshortToComplex::connect(gr_top_block_sptr top_block)
         }
 }
 
+
 void IshortToComplex::disconnect(gr_top_block_sptr top_block)
 {
-
     if (dump_)
         {
             top_block->connect(gr_interleaved_short_to_complex_, 0, file_sink_, 0);
         }
-
 }
+
+
 
 gr_basic_block_sptr IshortToComplex::get_left_block()
 {
     return gr_interleaved_short_to_complex_;
 }
+
+
 
 gr_basic_block_sptr IshortToComplex::get_right_block()
 {

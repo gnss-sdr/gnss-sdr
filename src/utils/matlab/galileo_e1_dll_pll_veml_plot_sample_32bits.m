@@ -42,30 +42,30 @@ end
 % GNSS-SDR format conversion to MATLAB GPS receiver
 
 for N=1:1:channels
-        trackResults(N).status='T'; %fake track
-        trackResults(N).codeFreq=GNSS_tracking(N).code_freq_hz.';
-        trackResults(N).carrFreq=GNSS_tracking(N).carrier_doppler_hz.';
-        trackResults(N).dllDiscr       = GNSS_tracking(N).code_error.';
-        trackResults(N).dllDiscrFilt   = GNSS_tracking(N).code_nco.';
-        trackResults(N).pllDiscr       = GNSS_tracking(N).carr_error.';
-        trackResults(N).pllDiscrFilt   = GNSS_tracking(N).carr_nco.';
+        trackResults(N).status = 'T'; %fake track
+        trackResults(N).codeFreq = GNSS_tracking(N).code_freq_hz.';
+        trackResults(N).carrFreq = GNSS_tracking(N).carrier_doppler_hz.';
+        trackResults(N).dllDiscr = GNSS_tracking(N).code_error.';
+        trackResults(N).dllDiscrFilt = GNSS_tracking(N).code_nco.';
+        trackResults(N).pllDiscr = GNSS_tracking(N).carr_error.';
+        trackResults(N).pllDiscrFilt = GNSS_tracking(N).carr_nco.';
 
-        trackResults(N).I_P=GNSS_tracking(N).prompt_I.';
-        trackResults(N).Q_P=GNSS_tracking(N).prompt_Q.';
+        trackResults(N).I_P = GNSS_tracking(N).prompt_I.';
+        trackResults(N).Q_P = GNSS_tracking(N).prompt_Q.';
 
-        trackResults(N).I_VE= GNSS_tracking(N).VE.';
-        trackResults(N).I_E= GNSS_tracking(N).E.';
+        trackResults(N).I_VE = GNSS_tracking(N).VE.';
+        trackResults(N).I_E = GNSS_tracking(N).E.';
         trackResults(N).I_L = GNSS_tracking(N).L.';
         trackResults(N).I_VL = GNSS_tracking(N).VL.';
         trackResults(N).Q_VE = zeros(1,length(GNSS_tracking(N).VE));
         trackResults(N).Q_E = zeros(1,length(GNSS_tracking(N).E));
-        trackResults(N).Q_L =zeros(1,length(GNSS_tracking(N).L));
-        trackResults(N).Q_VL =zeros(1,length(GNSS_tracking(N).VL));
-        trackResults(N).PRN=N; %fake PRN
+        trackResults(N).Q_L = zeros(1,length(GNSS_tracking(N).L));
+        trackResults(N).Q_VL = zeros(1,length(GNSS_tracking(N).VL));
+        trackResults(N).PRN = N; %fake PRN
         
         % Use original MATLAB tracking plot function
-        settings.numberOfChannels=channels;
-        settings.msToProcess=length(GNSS_tracking(N).E)*4;
+        settings.numberOfChannels = channels;
+        settings.msToProcess = length(GNSS_tracking(N).E)*4;
         plotVEMLTracking(N,trackResults,settings)
 end
 

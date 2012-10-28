@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -54,9 +54,8 @@ class AcquisitionInterface: public GNSSBlockInterface
 {
 
 public:
-
     //virtual void set_active(bool active) = 0;
-	virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
+    virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
     virtual void set_channel(unsigned int channel) = 0;
     virtual void set_threshold(float threshold) = 0;
     virtual void set_doppler_max(unsigned int doppler_max) = 0;
@@ -65,7 +64,6 @@ public:
     virtual void init() = 0;
     virtual signed int mag() = 0;
     virtual void reset() = 0;
-
 };
 
 #endif /* GNSS_SDR_ACQUISITION_INTERFACE */

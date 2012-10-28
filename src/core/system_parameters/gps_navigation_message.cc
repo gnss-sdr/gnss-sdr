@@ -39,7 +39,6 @@
 
 void Gps_Navigation_Message::reset()
 {
-
     b_update_tow_flag=false;
     b_valid_ephemeris_set_flag=false;
     d_TOW=0;
@@ -209,7 +208,6 @@ bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS>
         {
             value = false;
         }
-
     return value;
 }
 
@@ -219,9 +217,7 @@ bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS>
 
 unsigned long int Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices)
 {
-    unsigned long int value;
-
-    value = 0;
+    unsigned long int value = 0;
     for (int i=0; i<num_of_slices; i++)
         {
             for (int j=0; j<slices[i].length; j++)
@@ -245,56 +241,58 @@ signed long int Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_S
 {
     signed long int value = 0;
 
-    // Bug correction: Discriminate between 64 bits and 32 bits compiler
+    // Discriminate between 64 bits and 32 bits compiler
     int long_int_size_bytes = sizeof(signed long int);
-    if (long_int_size_bytes==8)
-    {
-		// read the MSB and perform the sign extension
-		if (bits[GPS_SUBFRAME_BITS-slices[0].position]==1)
-			{
-				value^=0xFFFFFFFFFFFFFFFF; //64 bits variable
-			}
-		else
-			{
-				value&=0;
-			}
+    if (long_int_size_bytes == 8) // if a long int takes 8 bytes, we are in a 64 bits system
+        {
+            // read the MSB and perform the sign extension
+            if (bits[GPS_SUBFRAME_BITS - slices[0].position] == 1)
+                {
+                    value^=0xFFFFFFFFFFFFFFFF; //64 bits variable
+                }
+            else
+                {
+                    value&=0;
+                }
 
-		for (int i=0; i<num_of_slices; i++)
-			{
-				for (int j=0; j<slices[i].length; j++)
-					{
-						value<<=1; //shift left
-						value&=0xFFFFFFFFFFFFFFFE; //reset the corresponding bit (for the 64 bits variable)
-						if (bits[GPS_SUBFRAME_BITS - slices[i].position-j] == 1)
-							{
-								value+=1; // insert the bit
-							}
-					}
-			}
-    }else{
-		// read the MSB and perform the sign extension
-		if (bits[GPS_SUBFRAME_BITS-slices[0].position]==1)
-			{
-				value^=0xFFFFFFFF;
-			}
-		else
-			{
-				value&=0;
-			}
+            for (int i=0; i<num_of_slices; i++)
+                {
+                    for (int j=0; j<slices[i].length; j++)
+                        {
+                            value<<=1; //shift left
+                            value&=0xFFFFFFFFFFFFFFFE; //reset the corresponding bit (for the 64 bits variable)
+                            if (bits[GPS_SUBFRAME_BITS - slices[i].position - j] == 1)
+                                {
+                                    value+=1; // insert the bit
+                                }
+                        }
+                }
+        }
+    else  // we assume we are in a 32 bits system
+        {
+            // read the MSB and perform the sign extension
+            if (bits[GPS_SUBFRAME_BITS-slices[0].position] == 1)
+                {
+                    value^=0xFFFFFFFF;
+                }
+            else
+                {
+                    value&=0;
+                }
 
-		for (int i=0; i<num_of_slices; i++)
-			{
-				for (int j=0; j<slices[i].length; j++)
-					{
-						value<<=1; //shift left
-						value&=0xFFFFFFFE; //reset the corresponding bit
-						if (bits[GPS_SUBFRAME_BITS - slices[i].position-j] == 1)
-							{
-								value+=1; // insert the bit
-							}
-					}
-			}
-    }
+            for (int i=0; i<num_of_slices; i++)
+                {
+                    for (int j=0; j<slices[i].length; j++)
+                        {
+                            value<<=1; //shift left
+                            value&=0xFFFFFFFE; //reset the corresponding bit
+                            if (bits[GPS_SUBFRAME_BITS - slices[i].position - j] == 1)
+                                {
+                                    value+=1; // insert the bit
+                                }
+                        }
+                }
+        }
     return value;
 }
 
@@ -428,12 +426,6 @@ void Gps_Navigation_Message::satellitePosition(double transmitTime)
     d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);
 }
-
-
-
-
-
-
 
 
 
@@ -665,6 +657,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
                 almanacHealth[24] = (int)read_navigation_unsigned(subframe_bits, HEALTH_SV24, num_of_slices(HEALTH_SV24));
             }
         break;
+
     default:
         break;
     } // switch subframeID ...
@@ -746,23 +739,19 @@ double Gps_Navigation_Message::utc_time(double gpstime_corrected)
 
 bool Gps_Navigation_Message::satellite_validation()
 {
-
     bool flag_data_valid = false;
-	b_valid_ephemeris_set_flag=false;
+    b_valid_ephemeris_set_flag = false;
 
     // First Step:
     // check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
     // and check if the data have been filled (!=0)
-	if (d_TOW_SF1!=0 and d_TOW_SF2!=0 and d_TOW_SF3!=0)
-	{
-
-		if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!=-1)
+    if (d_TOW_SF1 != 0 and d_TOW_SF2 != 0 and d_TOW_SF3 != 0)
         {
-			//std::cout<<"d_TOW_SF3-d_TOW_SF2="<<d_TOW_SF3-d_TOW_SF2<<std::endl;
-			//std::cout<<"d_TOW_SF2-d_TOW_SF1="<<d_TOW_SF2-d_TOW_SF1<<std::endl;
-            flag_data_valid = true;
-            b_valid_ephemeris_set_flag=true;
+            if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!=-1)
+                {
+                    flag_data_valid = true;
+                    b_valid_ephemeris_set_flag=true;
+                }
         }
-	}
     return flag_data_valid;
 }

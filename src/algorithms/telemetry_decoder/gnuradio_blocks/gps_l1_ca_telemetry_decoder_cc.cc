@@ -57,7 +57,6 @@ gps_l1_ca_telemetry_decoder_cc_sptr
 gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
         int vector_length, gr_msg_queue_sptr queue, bool dump)
 {
-
     return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, if_freq,
             fs_in, vector_length, queue, dump));
 }
@@ -68,22 +67,22 @@ void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int 
 {
     for (unsigned i = 0; i < 3; i++)
         {
-            ninput_items_required[i] = d_samples_per_bit*8; //set the required sample history
+            ninput_items_required[i] = d_samples_per_bit * 8; //set the required sample history
         }
 }
 
 
 
 gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
-		Gnss_Satellite satellite,
-		long if_freq,
-		long fs_in,
-		unsigned
+        Gnss_Satellite satellite,
+        long if_freq,
+        long fs_in,
+        unsigned
         int vector_length,
         gr_msg_queue_sptr queue,
         bool dump) :
         gr_block ("gps_navigation_cc", gr_make_io_signature (1, 1, sizeof(Gnss_Synchro)),
-                gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
+        gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_queue = queue;
@@ -176,7 +175,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
     int corr_value = 0;
-    int preamble_diff=0;
+    int preamble_diff = 0;
 
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
     d_sample_counter++; //count for the processed samples
@@ -199,7 +198,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         }
     d_flag_preamble=false;
     //******* frame sync ******************
-    if (abs(corr_value)>=160)
+    if (abs(corr_value) >= 160)
         {
             //TODO: Rewrite with state machine
             if (d_stat == 0)
@@ -311,11 +310,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //1. Copy the current tracking output
     current_synchro_data=in[0][0];
     //2. Add the telemetry decoder information
-    current_synchro_data.Flag_valid_word=(d_flag_frame_sync == true and d_flag_parity == true);
-    current_synchro_data.Flag_preamble= d_flag_preamble;
-    current_synchro_data.Preamble_timestamp_ms= d_preamble_time_seconds*1000.0;
-    current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs*1000.0;
-    current_synchro_data.Preamble_symbol_counter=fmod((double)(d_sample_counter - d_preamble_index),6000); //not corrected the preamble correlation lag! -> to be taken into account in TX Time
+    current_synchro_data.Flag_valid_word = (d_flag_frame_sync == true and d_flag_parity == true);
+    current_synchro_data.Flag_preamble = d_flag_preamble;
+    current_synchro_data.Preamble_timestamp_ms = d_preamble_time_seconds * 1000.0;
+    current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
+    current_synchro_data.Preamble_symbol_counter = fmod((double)(d_sample_counter - d_preamble_index), 6000); //not corrected the preamble correlation lag! -> to be taken into account in TX Time
 
     if(d_dump == true)
         {
@@ -350,6 +349,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
 
+
 void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
 {
     d_channel = channel;
@@ -362,7 +362,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
                 {
                     try
                     {
-                    	    d_dump_filename="telemetry";
+                            d_dump_filename = "telemetry";
                             d_dump_filename.append(boost::lexical_cast<std::string>(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );

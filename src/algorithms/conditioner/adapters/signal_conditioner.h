@@ -36,8 +36,6 @@
 #include <gnuradio/gr_msg_queue.h>
 #include "gnss_block_interface.h"
 #include "control_message_factory.h"
-//#include "gnss_signal.h"
-//#include "gnss_synchro.h"
 
 
 class ConfigurationInterface;
@@ -51,10 +49,9 @@ class TelemetryDecoderInterface;
  */
 class SignalConditioner: public GNSSBlockInterface
 {
-
 public:
     //! Constructor
-	SignalConditioner(ConfigurationInterface *configuration,
+    SignalConditioner(ConfigurationInterface *configuration,
             GNSSBlockInterface *data_type_adapt, GNSSBlockInterface *in_filt,
             GNSSBlockInterface *res, std::string role, std::string implementation,
             gr_msg_queue_sptr queue);
@@ -68,34 +65,22 @@ public:
     gr_basic_block_sptr get_right_block();
 
     std::string role(){ return role_; }
-
     std::string implementation(){ return "Signal_Conditioner"; }
-
     size_t item_size(){ return 0; }
 
     GNSSBlockInterface *data_type_adapter(){ return data_type_adapt_; }
-
     GNSSBlockInterface *input_filter(){ return in_filt_; }
-
     GNSSBlockInterface *resampler(){ return res_; }
 
-
-
-
 private:
-
     GNSSBlockInterface *data_type_adapt_;
     GNSSBlockInterface *in_filt_;
     GNSSBlockInterface *res_;
-
     std::string role_;
     std::string implementation_;
-
     bool connected_;
     //bool stop_;
     gr_msg_queue_sptr queue_;
-
-
 };
 
 #endif /*GNSS_SDR_SIGNAL_CONDITIONER_H_*/

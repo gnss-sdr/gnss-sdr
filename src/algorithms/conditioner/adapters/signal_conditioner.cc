@@ -47,29 +47,30 @@ SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
         GNSSBlockInterface *data_type_adapt, GNSSBlockInterface *in_filt,
         GNSSBlockInterface *res, std::string role, std::string implementation,
         gr_msg_queue_sptr queue) : data_type_adapt_(data_type_adapt),
-        in_filt_(in_filt), res_(res), role_(role), implementation_(implementation),
-        queue_(queue)
+                in_filt_(in_filt), res_(res), role_(role), implementation_(implementation),
+                queue_(queue)
 {
     connected_ = false;
 }
 
+
 // Destructor
 SignalConditioner::~SignalConditioner()
 {
-	delete data_type_adapt_;
-	delete in_filt_;
-	delete res_;
+    delete data_type_adapt_;
+    delete in_filt_;
+    delete res_;
 }
+
+
 
 void SignalConditioner::connect(gr_top_block_sptr top_block)
 {
-
     if (connected_)
         {
             LOG_AT_LEVEL(WARNING) << "Signal conditioner already connected internally";
             return;
         }
-
     data_type_adapt_->connect(top_block);
     in_filt_->connect(top_block);
     res_->connect(top_block);
@@ -85,9 +86,10 @@ void SignalConditioner::connect(gr_top_block_sptr top_block)
     connected_ = true;
 }
 
+
+
 void SignalConditioner::disconnect(gr_top_block_sptr top_block)
 {
-
     if (!connected_)
         {
             LOG_AT_LEVEL(WARNING) << "Signal conditioner already disconnected internally";
@@ -105,6 +107,7 @@ void SignalConditioner::disconnect(gr_top_block_sptr top_block)
 
     connected_ = false;
 }
+
 
 gr_basic_block_sptr SignalConditioner::get_left_block()
 {

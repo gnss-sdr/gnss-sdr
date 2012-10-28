@@ -44,10 +44,8 @@ class ConfigurationInterface;
  */
 class IshortToComplex: public GNSSBlockInterface
 {
-
 public:
-
-	IshortToComplex(ConfigurationInterface* configuration,
+    IshortToComplex(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, gr_msg_queue_sptr queue);
 
@@ -71,9 +69,7 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
-
 private:
-
     gr_interleaved_short_to_complex_sptr gr_interleaved_short_to_complex_;
     ConfigurationInterface* config_;
     bool dump_;

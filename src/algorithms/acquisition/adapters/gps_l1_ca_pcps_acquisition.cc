@@ -95,9 +95,8 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
         LOG_AT_LEVEL(WARNING) << item_type_
                 << " unknown acquisition item type";
     }
-
-
 }
+
 
 GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition()
 {
@@ -108,38 +107,36 @@ GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition()
 void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
-
     if (item_type_.compare("gr_complex") == 0)
     {
         acquisition_cc_->set_channel(channel_);
     }
 }
 
+
 void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 {
     threshold_ = threshold;
-
     if (item_type_.compare("gr_complex") == 0)
     {
         acquisition_cc_->set_threshold(threshold_);
     }
 }
 
+
 void GpsL1CaPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
-
     if (item_type_.compare("gr_complex") == 0)
     {
         acquisition_cc_->set_doppler_max(doppler_max_);
     }
-
 }
+
 
 void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-
     if (item_type_.compare("gr_complex") == 0)
     {
         acquisition_cc_->set_doppler_step(doppler_step_);
@@ -147,25 +144,27 @@ void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 
 }
 
+
 void GpsL1CaPcpsAcquisition::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
-
     if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_channel_queue(channel_internal_queue_);
-    }
+        {
+            acquisition_cc_->set_channel_queue(channel_internal_queue_);
+        }
 }
+
 
 void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
-	gnss_synchro_ = gnss_synchro;
+    gnss_synchro_ = gnss_synchro;
     if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_gnss_synchro(gnss_synchro_);
-    }
+        {
+            acquisition_cc_->set_gnss_synchro(gnss_synchro_);
+        }
 }
+
 
 signed int GpsL1CaPcpsAcquisition::mag()
 {
@@ -179,6 +178,7 @@ signed int GpsL1CaPcpsAcquisition::mag()
     }
 }
 
+
 void GpsL1CaPcpsAcquisition::init(){
     if (item_type_.compare("gr_complex") == 0)
     {
@@ -187,14 +187,16 @@ void GpsL1CaPcpsAcquisition::init(){
         acquisition_cc_->init();
     }
 }
+
+
 void GpsL1CaPcpsAcquisition::reset()
 {
-
     if (item_type_.compare("gr_complex") == 0)
     {
         acquisition_cc_->set_active(true);
     }
 }
+
 
 void GpsL1CaPcpsAcquisition::connect(gr_top_block_sptr top_block)
 {
@@ -206,19 +208,21 @@ void GpsL1CaPcpsAcquisition::connect(gr_top_block_sptr top_block)
 
 }
 
+
 void GpsL1CaPcpsAcquisition::disconnect(gr_top_block_sptr top_block)
 {
-
     if (item_type_.compare("gr_complex") == 0)
     {
         top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
     }
 }
 
+
 gr_basic_block_sptr GpsL1CaPcpsAcquisition::get_left_block()
 {
     return stream_to_vector_;
 }
+
 
 gr_basic_block_sptr GpsL1CaPcpsAcquisition::get_right_block()
 {

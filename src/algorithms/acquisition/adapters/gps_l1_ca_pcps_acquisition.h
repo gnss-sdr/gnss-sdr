@@ -46,12 +46,9 @@ class ConfigurationInterface;
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for GPS L1 C/A signals
  */
-
 class GpsL1CaPcpsAcquisition: public AcquisitionInterface
 {
-
 public:
-
     GpsL1CaPcpsAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, gr_msg_queue_sptr queue);
@@ -124,7 +121,6 @@ public:
     void reset();
 
 private:
-
     pcps_acquisition_cc_sptr acquisition_cc_;
     gr_block_sptr stream_to_vector_;
     gr_block_sptr complex_to_short_;
@@ -132,7 +128,6 @@ private:
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
-
     //unsigned int satellite_;
     unsigned int channel_;
     float threshold_;
@@ -145,15 +140,12 @@ private:
     bool dump_;
     std::string dump_filename_;
     std::complex<float> * code_;
-	Gnss_Synchro * gnss_synchro_;
-
-
+    Gnss_Synchro * gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     gr_msg_queue_sptr queue_;
     concurrent_queue<int> *channel_internal_queue_;
-
 };
 
 #endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_ */

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
-#define GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
+#ifndef GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
+#define GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_
 
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
@@ -44,12 +44,9 @@ class ConfigurationInterface;
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
  *  for Galileo E1 Signals
  */
-
 class GalileoE1PcpsAmbiguousAcquisition: public AcquisitionInterface
 {
-
 public:
-
     GalileoE1PcpsAmbiguousAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, gr_msg_queue_sptr queue);
@@ -122,7 +119,6 @@ public:
     void reset();
 
 private:
-
     ConfigurationInterface* configuration_;
     pcps_acquisition_cc_sptr acquisition_cc_;
     gr_block_sptr stream_to_vector_;
@@ -131,7 +127,6 @@ private:
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
-
     //unsigned int satellite_;
     unsigned int channel_;
     float threshold_;
@@ -144,15 +139,12 @@ private:
     bool dump_;
     std::string dump_filename_;
     std::complex<float> * code_;
-	Gnss_Synchro * gnss_synchro_;
-
-
+    Gnss_Synchro * gnss_synchro_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     gr_msg_queue_sptr queue_;
     concurrent_queue<int> *channel_internal_queue_;
-
 };
 
-#endif /* GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_ */
+#endif /* GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_ */

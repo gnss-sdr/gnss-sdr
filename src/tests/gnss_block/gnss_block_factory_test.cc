@@ -47,7 +47,8 @@
 #include "gnss_block_factory.h"
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateFileSignalSource) {
+TEST(GNSS_Block_Factory_Test, InstantiateFileSignalSource)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("SignalSource.implementation", "File_Signal_Source");
@@ -65,7 +66,9 @@ TEST(GNSS_Block_Factory_Test, InstantiateFileSignalSource) {
 	delete signal_source;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateUHDSignalSource) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateUHDSignalSource)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("SignalSource.implementation", "UHD_Signal_Source");
@@ -82,11 +85,11 @@ TEST(GNSS_Block_Factory_Test, InstantiateUHDSignalSource) {
 	delete signal_source;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalSource) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalSource)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("SignalSource.implementation", "Pepito");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -99,11 +102,10 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalSource) {
 }
 
 
-TEST(GNSS_Block_Factory_Test, InstantiateSignalConditioner) {
+TEST(GNSS_Block_Factory_Test, InstantiateSignalConditioner)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("SignalConditioner.implementation", "Signal_Conditioner");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -117,9 +119,10 @@ TEST(GNSS_Block_Factory_Test, InstantiateSignalConditioner) {
 	delete signal_conditioner;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateFIRFilter) {
-	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
+TEST(GNSS_Block_Factory_Test, InstantiateFIRFilter)
+{
+	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	configuration->set_property("InputFilter.implementation", "Fir_Filter");
@@ -154,9 +157,9 @@ TEST(GNSS_Block_Factory_Test, InstantiateFIRFilter) {
 	delete input_filter;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateFreqXlatingFIRFilter) {
+TEST(GNSS_Block_Factory_Test, InstantiateFreqXlatingFIRFilter)
+{
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
     gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
     configuration->set_property("InputFilter.implementation", "Freq_Xlating_Fir_Filter");
@@ -194,11 +197,10 @@ TEST(GNSS_Block_Factory_Test, InstantiateFreqXlatingFIRFilter) {
     delete input_filter;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateDirectResampler) {
+TEST(GNSS_Block_Factory_Test, InstantiateDirectResampler)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("Resampler.implementation", "Direct_Resampler");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -212,16 +214,14 @@ TEST(GNSS_Block_Factory_Test, InstantiateDirectResampler) {
 	delete resampler;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsAcquisition) {
+TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsAcquisition)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
 	AcquisitionInterface *acquisition = (AcquisitionInterface*)factory->GetBlock(configuration, "Acquisition", "GPS_L1_CA_PCPS_Acquisition", 1, 1, queue);
-
 
 	EXPECT_STREQ("Acquisition", acquisition->role().c_str());
 	EXPECT_STREQ("GPS_L1_CA_PCPS_Acquisition", acquisition->implementation().c_str());
@@ -231,16 +231,15 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsAcquisition) {
 	delete acquisition;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsAmbiguousAcquisition) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsAmbiguousAcquisition)
+{
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
     configuration->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
-
     gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     AcquisitionInterface *acquisition = (AcquisitionInterface*)factory->GetBlock(configuration, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
-
 
     EXPECT_STREQ("Acquisition", acquisition->role().c_str());
     EXPECT_STREQ("Galileo_E1_PCPS_Ambiguous_Acquisition", acquisition->implementation().c_str());
@@ -249,16 +248,16 @@ TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsAmbiguousAcquisition) {
     delete factory;
     delete acquisition;
 }
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllFllPllTracking) {
+
+
+TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllFllPllTracking)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
 	TrackingInterface *tracking = (TrackingInterface*)factory->GetBlock(configuration, "Tracking", "GPS_L1_CA_DLL_FLL_PLL_Tracking", 1, 1, queue);
-
 
 	EXPECT_STREQ("Tracking", tracking->role().c_str());
 	EXPECT_STREQ("GPS_L1_CA_DLL_FLL_PLL_Tracking", tracking->implementation().c_str());
@@ -268,16 +267,15 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllFllPllTracking) {
 	delete tracking;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllPllTracking) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllPllTracking)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
 	TrackingInterface *tracking = (TrackingInterface*)factory->GetBlock(configuration, "Tracking", "GPS_L1_CA_DLL_PLL_Tracking", 1, 1, queue);
-
 
 	EXPECT_STREQ("Tracking", tracking->role().c_str());
 	EXPECT_STREQ("GPS_L1_CA_DLL_PLL_Tracking", tracking->implementation().c_str());
@@ -287,16 +285,15 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllPllTracking) {
 	delete tracking;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTcpConnectorTracking) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTcpConnectorTracking)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("Tracking.implementation", "GPS_L1_CA_TCP_CONNECTOR_Tracking");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
 	TrackingInterface *tracking = (TrackingInterface*)factory->GetBlock(configuration, "Tracking", "GPS_L1_CA_TCP_CONNECTOR_Tracking", 1, 1, queue);
-
 
 	EXPECT_STREQ("Tracking", tracking->role().c_str());
 	EXPECT_STREQ("GPS_L1_CA_TCP_CONNECTOR_Tracking", tracking->implementation().c_str());
@@ -306,16 +303,15 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTcpConnectorTracking) {
 	delete tracking;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1DllPllVemlTracking) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1DllPllVemlTracking)
+{
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
     configuration->set_property("Tracking.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
-
     gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     TrackingInterface *tracking = (TrackingInterface*)factory->GetBlock(configuration, "Tracking", "Galileo_E1_DLL_PLL_VEML_Tracking", 1, 1, queue);
-
 
     EXPECT_STREQ("Tracking", tracking->role().c_str());
     EXPECT_STREQ("Galileo_E1_DLL_PLL_VEML_Tracking", tracking->implementation().c_str());
@@ -325,16 +321,15 @@ TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1DllPllVemlTracking) {
     delete tracking;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
 	TelemetryDecoderInterface *telemetry_decoder = (TelemetryDecoderInterface*)factory->GetBlock(configuration, "TelemetryDecoder", "GPS_L1_CA_Telemetry_Decoder", 1, 1, queue);
-
 
 	EXPECT_STREQ("TelemetryDecoder", telemetry_decoder->role().c_str());
 	EXPECT_STREQ("GPS_L1_CA_Telemetry_Decoder", telemetry_decoder->implementation().c_str());
@@ -344,7 +339,8 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder) {
 	delete telemetry_decoder;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateChannels) {
+TEST(GNSS_Block_Factory_Test, InstantiateChannels)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
 	configuration->set_property("Channels.count", "2");
@@ -368,17 +364,16 @@ TEST(GNSS_Block_Factory_Test, InstantiateChannels) {
 
 	delete configuration;
 	delete factory;
-	for(unsigned int i=0 ; i<channels->size() ; i++)
-        delete channels->at(i);
+	for(unsigned int i=0 ; i<channels->size() ; i++) delete channels->at(i);
 	channels->clear();
 	delete channels;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateObservables) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateObservables)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("Observables.implementation", "Pass_Through");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -392,11 +387,11 @@ TEST(GNSS_Block_Factory_Test, InstantiateObservables) {
 	delete observables;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaObservables) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaObservables)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("Observables.implementation", "GPS_L1_CA_Observables");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -410,11 +405,11 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaObservables) {
 	delete observables;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateWrongObservables) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateWrongObservables)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("Observables.implementation", "Pepito");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -427,11 +422,10 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongObservables) {
 	delete observables;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiatePvt) {
+TEST(GNSS_Block_Factory_Test, InstantiatePvt)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("PVT.implementation", "Pass_Through");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -445,11 +439,11 @@ TEST(GNSS_Block_Factory_Test, InstantiatePvt) {
 	delete pvt;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPvt) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPvt)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -463,11 +457,11 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPvt) {
 	delete pvt;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateWrongPvt) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateWrongPvt)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("PVT.implementation", "Pepito");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -480,11 +474,12 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongPvt) {
 	delete pvt;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateNullSinkOutputFilter) {
+
+
+TEST(GNSS_Block_Factory_Test, InstantiateNullSinkOutputFilter)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -498,11 +493,11 @@ TEST(GNSS_Block_Factory_Test, InstantiateNullSinkOutputFilter) {
 	delete output_filter;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateFileOutputFilter) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateFileOutputFilter)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("OutputFilter.implementation", "File_Output_Filter");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();
@@ -516,11 +511,11 @@ TEST(GNSS_Block_Factory_Test, InstantiateFileOutputFilter) {
 	delete output_filter;
 }
 
-TEST(GNSS_Block_Factory_Test, InstantiateWrongOutputFilter) {
+
+TEST(GNSS_Block_Factory_Test, InstantiateWrongOutputFilter)
+{
 	InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
 	configuration->set_property("OutputFilter.implementation", "Pepito");
-
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
 
 	GNSSBlockFactory *factory = new GNSSBlockFactory();

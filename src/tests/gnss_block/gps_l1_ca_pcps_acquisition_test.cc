@@ -40,18 +40,19 @@
 #include <gnuradio/gr_sig_source_c.h>
 #include <gnuradio/gr_msg_queue.h>
 #include <gnuradio/gr_null_sink.h>
-
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
-
 #include "gps_l1_ca_pcps_acquisition.h"
 
-class GpsL1CaPcpsAcquisitionTest: public ::testing::Test {
+
+class GpsL1CaPcpsAcquisitionTest: public ::testing::Test
+{
 protected:
-	GpsL1CaPcpsAcquisitionTest() {
+	GpsL1CaPcpsAcquisitionTest()
+	{
 		queue = gr_make_msg_queue(0);
 		top_block = gr_make_top_block("Acquisition test");
 		factory = new GNSSBlockFactory();
@@ -61,7 +62,8 @@ protected:
 		message = 0;
 	}
 
-	~GpsL1CaPcpsAcquisitionTest() {
+	~GpsL1CaPcpsAcquisitionTest()
+	{
 		delete factory;
 		delete config;
 	}
@@ -77,14 +79,15 @@ protected:
 	InMemoryConfiguration* config;
 	Gnss_Synchro gnss_synchro;
 	size_t item_size;
-    concurrent_queue<int> channel_internal_queue;
-    bool stop;
-    int message;
-    boost::thread ch_thread;
+	concurrent_queue<int> channel_internal_queue;
+	bool stop;
+	int message;
+	boost::thread ch_thread;
 };
 
-void GpsL1CaPcpsAcquisitionTest::init(){
 
+void GpsL1CaPcpsAcquisitionTest::init()
+{
 	gnss_synchro.Channel_ID = 0;
 	gnss_synchro.System = 'G';
 	std::string signal = "1C";
@@ -101,40 +104,38 @@ void GpsL1CaPcpsAcquisitionTest::init(){
 	config->set_property("Acquisition.doppler_max", "7200");
 	config->set_property("Acquisition.doppler_step", "600");
 	config->set_property("Acquisition.repeat_satellite", "false");
-
 }
+
 
 void GpsL1CaPcpsAcquisitionTest::start_queue()
 {
-    ch_thread = boost::thread(&GpsL1CaPcpsAcquisitionTest::wait_message, this);
+	ch_thread = boost::thread(&GpsL1CaPcpsAcquisitionTest::wait_message, this);
 }
 
 
 void GpsL1CaPcpsAcquisitionTest::wait_message()
 {
-    while (!stop)
-        {
-            channel_internal_queue.wait_and_pop(message);
-            stop_queue();
-        }
+	while (!stop)
+	{
+		channel_internal_queue.wait_and_pop(message);
+		stop_queue();
+	}
 }
+
+
 
 void GpsL1CaPcpsAcquisitionTest::stop_queue()
 {
 	stop = true;
- }
+}
 
 
 
 TEST_F(GpsL1CaPcpsAcquisitionTest, Instantiate)
 {
-
 	init();
-
 	GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config, "Acquisition", 1, 1, queue);
-
 	delete acquisition;
-
 }
 
 TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)

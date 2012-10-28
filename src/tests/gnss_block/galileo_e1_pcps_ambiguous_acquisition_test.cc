@@ -40,7 +40,6 @@
 #include <gnuradio/gr_sig_source_c.h>
 #include <gnuradio/gr_msg_queue.h>
 #include <gnuradio/gr_null_sink.h>
-
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
@@ -50,9 +49,11 @@
 
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 
-class GalileoE1PcpsAmbiguousAcquisitionTest: public ::testing::Test {
+class GalileoE1PcpsAmbiguousAcquisitionTest: public ::testing::Test
+{
 protected:
-	GalileoE1PcpsAmbiguousAcquisitionTest() {
+	GalileoE1PcpsAmbiguousAcquisitionTest()
+	{
 		queue = gr_make_msg_queue(0);
 		top_block = gr_make_top_block("Acquisition test");
 		factory = new GNSSBlockFactory();
@@ -62,7 +63,8 @@ protected:
 		message = 0;
 	}
 
-	~GalileoE1PcpsAmbiguousAcquisitionTest() {
+	~GalileoE1PcpsAmbiguousAcquisitionTest()
+	{
 		delete factory;
 		delete config;
 	}
@@ -78,19 +80,19 @@ protected:
 	InMemoryConfiguration* config;
 	Gnss_Synchro gnss_synchro;
 	size_t item_size;
-    concurrent_queue<int> channel_internal_queue;
-    bool stop;
-    int message;
-    boost::thread ch_thread;
+	concurrent_queue<int> channel_internal_queue;
+	bool stop;
+	int message;
+	boost::thread ch_thread;
 };
 
-void GalileoE1PcpsAmbiguousAcquisitionTest::init(){
-
-    gnss_synchro.Channel_ID=0;
-    gnss_synchro.System = 'E';
-    std::string signal = "1C";
-    signal.copy(gnss_synchro.Signal,2,0);
-    gnss_synchro.PRN=1;
+void GalileoE1PcpsAmbiguousAcquisitionTest::init()
+{
+	gnss_synchro.Channel_ID=0;
+	gnss_synchro.System = 'E';
+	std::string signal = "1C";
+	signal.copy(gnss_synchro.Signal,2,0);
+	gnss_synchro.PRN=1;
 
 	config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
 	config->set_property("Acquisition.item_type", "gr_complex");
@@ -107,35 +109,31 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init(){
 
 void GalileoE1PcpsAmbiguousAcquisitionTest::start_queue()
 {
-    ch_thread = boost::thread(&GalileoE1PcpsAmbiguousAcquisitionTest::wait_message, this);
+	ch_thread = boost::thread(&GalileoE1PcpsAmbiguousAcquisitionTest::wait_message, this);
 }
 
 
 void GalileoE1PcpsAmbiguousAcquisitionTest::wait_message()
 {
-    while (!stop)
-        {
-            channel_internal_queue.wait_and_pop(message);
-            stop_queue();
-        }
+	while (!stop)
+	{
+		channel_internal_queue.wait_and_pop(message);
+		stop_queue();
+	}
 }
 
 void GalileoE1PcpsAmbiguousAcquisitionTest::stop_queue()
 {
 	stop = true;
- }
+}
 
 
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, Instantiate)
 {
-
 	init();
-
 	GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
-
 	delete acquisition;
-
 }
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
@@ -245,5 +243,4 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
 	EXPECT_LT(delay_error_chips, 0.175) << "Delay error exceeds the expected value: 0.175 chips";
 
 	delete acquisition;
-
 }

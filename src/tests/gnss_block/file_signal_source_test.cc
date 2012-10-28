@@ -30,21 +30,17 @@
  */
 
 #include <gtest/gtest.h>
-
 #include <gr_block.h>
 #include <gr_msg_queue.h>
 #include <gr_top_block.h>
 #include <gr_null_sink.h>
-
 #include <stdexcept>
-
 #include "file_signal_source.h"
 #include "in_memory_configuration.h"
 
-TEST(FileSignalSource, Instantiate) {
-
+TEST(FileSignalSource, Instantiate)
+{
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
-
 	InMemoryConfiguration* config = new InMemoryConfiguration();
 
 	config->set_property("Test.samples", "0");
@@ -62,10 +58,9 @@ TEST(FileSignalSource, Instantiate) {
 	delete signal_source;
 }
 
-TEST(FileSignalSource, InstantiateFileNotExists) {
-
+TEST(FileSignalSource, InstantiateFileNotExists)
+{
 	gr_msg_queue_sptr queue = gr_make_msg_queue(0);
-
 	InMemoryConfiguration* config = new InMemoryConfiguration();
 
 	config->set_property("Test.samples", "0");

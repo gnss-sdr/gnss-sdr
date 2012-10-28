@@ -178,7 +178,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     long long int begin = 0;
     long long int end = 0;
     double expected_delay_samples = 2920; //18250;
-    double expected_doppler_hz = 632;
+    double expected_doppler_hz = -632;
     init();
 	GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
 
@@ -235,12 +235,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
 
 	unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
 	std::cout <<  "Acquired " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
-
 	EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
-	double delay_error_samples = abs(expected_delay_samples-gnss_synchro.Acq_delay_samples);
+	double delay_error_samples = abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
 	float delay_error_chips = (float)(delay_error_samples*1023/4000000);
-	double doppler_error_hz = abs(expected_doppler_hz-gnss_synchro.Acq_doppler_hz);
+	double doppler_error_hz = abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
 	EXPECT_LE(doppler_error_hz, 166) << "Doppler error exceeds the expected value: 166 Hz = 2/(3*integration period)";
 	EXPECT_LT(delay_error_chips, 0.175) << "Delay error exceeds the expected value: 0.175 chips";

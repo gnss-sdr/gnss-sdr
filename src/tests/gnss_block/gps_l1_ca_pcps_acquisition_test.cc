@@ -85,7 +85,7 @@ protected:
 
 void GpsL1CaPcpsAcquisitionTest::init(){
 
-	gnss_synchro.Channel_ID=0;
+	gnss_synchro.Channel_ID = 0;
 	gnss_synchro.System = 'G';
 	std::string signal = "1C";
 	signal.copy(gnss_synchro.Signal,2,0);
@@ -177,7 +177,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     long long int begin = 0;
     long long int end = 0;
     double expected_delay_samples = 524;
-    double expected_doppler_hz = -1680;
+    double expected_doppler_hz = 1680;
     init();
 	GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config, "Acquisition", 1, 1, queue);
 
@@ -237,9 +237,9 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 
 	ASSERT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
-	double delay_error_samples = abs(expected_delay_samples-gnss_synchro.Acq_delay_samples);
+	double delay_error_samples = abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
 	float delay_error_chips = (float)(delay_error_samples*1023/4000);
-	double doppler_error_hz = abs(expected_doppler_hz-gnss_synchro.Acq_doppler_hz);
+	double doppler_error_hz = abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
 	EXPECT_LE(doppler_error_hz, 333) << "Doppler error exceeds the expected value: 333 Hz = 2/(3*integration period)";
 	EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";

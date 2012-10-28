@@ -46,12 +46,16 @@ gnss_sdr_valve::gnss_sdr_valve (size_t sizeof_stream_item,
                 d_nitems (nitems), d_ncopied_items (0), d_queue(queue)
 {}
 
+
+
 gr_block_sptr gnss_sdr_make_valve (size_t sizeof_stream_item,
         int nitems,
         gr_msg_queue_sptr queue)
 {
     return gr_block_sptr (new gnss_sdr_valve (sizeof_stream_item, nitems, queue));
 }
+
+
 
 int gnss_sdr_valve::work (int noutput_items,
         gr_vector_const_void_star &input_items,
@@ -63,17 +67,12 @@ int gnss_sdr_valve::work (int noutput_items,
             ControlMessageFactory* cmf = new ControlMessageFactory();
             d_queue->handle(cmf->GetQueueMessage(200,0));
             delete cmf;
-
-            return -1;				// Done!
+            return -1;	// Done!
         }
-
-    unsigned n = std::min (d_nitems - d_ncopied_items, noutput_items);
-
+    unsigned n = std::min(d_nitems - d_ncopied_items, noutput_items);
     if (n == 0)
         return 0;
-
     memcpy (output_items[0], input_items[0], n * input_signature()->sizeof_stream_item (0));
     d_ncopied_items += n;
-
     return n;
 }

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,8 +38,7 @@ galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn,
 {
     std::string _galileo_signal = _Signal;
     signed int prn = _prn - 1;
-    int index;
-    index=0;
+    int index = 0;
     //int* dest = _dest;
 
     /* A simple error check */
@@ -71,8 +70,9 @@ galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn,
         {
             return;
         }
-
 }
+
+
 
 void
 galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn,
@@ -80,10 +80,8 @@ galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn,
 {
     const unsigned int _length_in = Galileo_E1_B_CODE_LENGTH_CHIPS;
     unsigned int _period = (unsigned int) (_length_out / _length_in);
-
     for (unsigned int i = 0; i < _length_in; i++)
         {
-
             for (unsigned int j = 0; j < (_period / 2); j++)
                 _dest[i * _period + j] = std::complex<float>((float) _prn[i],
                         0.0);
@@ -92,8 +90,9 @@ galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn,
                 _dest[i * _period + j] = std::complex<float>((float) (-_prn[i]),
                         0.0);
         }
-
 }
+
+
 
 void
 galileo_e1_sinboc_61_gen(std::complex<float>* _dest, int* _prn,
@@ -104,17 +103,17 @@ galileo_e1_sinboc_61_gen(std::complex<float>* _dest, int* _prn,
 
     for (unsigned int i = 0; i < _length_in; i++)
         {
-
             for (unsigned int j = 0; j < _period; j += 2)
                 _dest[i * _period + j] = std::complex<float>((float) _prn[i],
                         0.0);
-
             for (unsigned int j = 1; j < _period; j += 2)
                 _dest[i * _period + j] = std::complex<float>((float) (-_prn[i]),
                         0.0);
         }
-
 }
+
+
+
 void
 galileo_e1_gen(std::complex<float>* _dest, int* _prn, char _Signal[3])
 {
@@ -127,7 +126,6 @@ galileo_e1_gen(std::complex<float>* _dest, int* _prn, char _Signal[3])
     std::complex<float> sinboc_61[_codeLength];
 
     galileo_e1_sinboc_11_gen(sinboc_11, _prn, _codeLength); //generate sinboc(1,1) 12 samples per chip
-
     galileo_e1_sinboc_61_gen(sinboc_61, _prn, _codeLength); //generate sinboc(6,1) 12 samples per chip
 
     if (_galileo_signal.rfind("1B") != std::string::npos && _galileo_signal.length() >= 2)
@@ -148,13 +146,13 @@ galileo_e1_gen(std::complex<float>* _dest, int* _prn, char _Signal[3])
         return;
 }
 
+
+
 void
 galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
         bool _cboc, unsigned int _prn, signed int _fs, unsigned int _chip_shift)
 {
-
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
-
     unsigned int _samplesPerCode;
     const unsigned int _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ; //Hz
     unsigned int _codeLength = Galileo_E1_B_CODE_LENGTH_CHIPS;
@@ -165,15 +163,11 @@ galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
 
     if (_cboc == true)
         {
-
             _codeLength = 12 * Galileo_E1_B_CODE_LENGTH_CHIPS;
-
             if (_fs != 12 * _codeFreqBasis)
                 {
                     std::complex<float> _signal_E1[_codeLength];
-
                     galileo_e1_gen(_signal_E1, primary_code_E1_chips, _Signal); //generate cboc 12 samples per chip
-
                     resampler(_signal_E1, _dest, 12 * _codeFreqBasis, _fs,
                             _codeLength, _samplesPerCode); //resamples code to fs
                 }
@@ -181,19 +175,14 @@ galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
                 {
                     galileo_e1_gen(_dest, primary_code_E1_chips, _Signal); //generate cboc 12 samples per chip
                 }
-
         }
     else
         {
-
             //--- Find number of samples per spreading code ----------------------------
-
             _codeLength = 2 * Galileo_E1_B_CODE_LENGTH_CHIPS;
-
             if (_fs != 2 * _codeFreqBasis)
                 {
                     std::complex<float> _signal_E1[_codeLength];
-
                     galileo_e1_sinboc_11_gen(_signal_E1, primary_code_E1_chips,
                             _codeLength); //generate sinboc(1,1) 2 samples per chip
                     resampler(_signal_E1, _dest, 2 * _codeFreqBasis, _fs,
@@ -203,7 +192,6 @@ galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
                 {
                     galileo_e1_sinboc_11_gen(_dest, primary_code_E1_chips,
                             _codeLength); //generate sinboc(1,1) 2 samples per chip                }
-
                 }
         }
 }

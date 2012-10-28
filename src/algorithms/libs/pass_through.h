@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,9 +30,6 @@
  * -------------------------------------------------------------------------
  */
 
-
-
-
 #ifndef GNSS_SDR_PASS_THROUGH_H_
 #define GNSS_SDR_PASS_THROUGH_H_
 
@@ -45,7 +42,6 @@ class ConfigurationInterface;
 
 class Pass_Through : public GNSSBlockInterface
 {
-
 public:
     Pass_Through(ConfigurationInterface* configuration,
             std::string role,
@@ -53,7 +49,6 @@ public:
             unsigned int out_stream);
 
     virtual ~Pass_Through();
-
     std::string role()
     {
         return role_;
@@ -62,7 +57,6 @@ public:
     {
         return "Pass_Through";
     }
-
     std::string item_type()
     {
         return item_type_;
@@ -75,20 +69,17 @@ public:
     {
         return item_size_;
     }
-
     void connect(gr_top_block_sptr top_block);
     void disconnect(gr_top_block_sptr top_block);
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
 private:
-
     std::string item_type_;
     size_t vector_size_;
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-
     gr_kludge_copy_sptr kludge_copy_;
     size_t item_size_;
 };

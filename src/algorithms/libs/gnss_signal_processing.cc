@@ -32,59 +32,56 @@
  */
 
 #include "gnss_signal_processing.h"
-#include <gr_fxpt.h>
+#include <gr_fxpt.h>  // fixed point sine and cosine
 
 
 void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
-	//old
-	//double phase = 0;
-	//const double phase_step = (GPS_TWO_PI * _f) / _fs;
-
-	//new Fixed Point NCO (faster)
-	int phase_i=0;
-	int phase_step_i;
-	float phase_step_f =(float)((GPS_TWO_PI * _f) / _fs);
-	phase_step_i=gr_fxpt::float_to_fixed(phase_step_f);
+    //old
+    //double phase = 0;
+    //const double phase_step = (GPS_TWO_PI * _f) / _fs;
+    //new Fixed Point NCO (faster)
+    int phase_i = 0;
+    int phase_step_i;
+    float phase_step_f = (float)((GPS_TWO_PI * _f) / _fs);
+    phase_step_i = gr_fxpt::float_to_fixed(phase_step_f);
     float sin_f,cos_f;
 
-	for(unsigned int i = 0; i < _samps; i++)
-	{
-		//old
-		//_dest[i] = std::complex<float>(cos(phase), sin(phase));
-		//phase += phase_step;
-
-		//new Fixed Point NCO (faster)
-		gr_fxpt::sincos(phase_i,&sin_f,&cos_f);
-		_dest[i] = std::complex<float>(cos_f, sin_f);
-		phase_i += phase_step_i;
-	}
+    for(unsigned int i = 0; i < _samps; i++)
+        {
+            //old
+            //_dest[i] = std::complex<float>(cos(phase), sin(phase));
+            //phase += phase_step;
+            //new Fixed Point NCO (faster)
+            gr_fxpt::sincos(phase_i,&sin_f,&cos_f);
+            _dest[i] = std::complex<float>(cos_f, sin_f);
+            phase_i += phase_step_i;
+        }
 }
+
 
 void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
-	//old
-	//double phase = 0;
-	//const double phase_step = (GPS_TWO_PI * _f) / _fs;
-
-	//new Fixed Point NCO (faster)
-	int phase_i=0;
-	int phase_step_i;
-	float phase_step_f =(float)((GPS_TWO_PI * _f) / _fs);
-	phase_step_i=gr_fxpt::float_to_fixed(phase_step_f);
+    //old
+    //double phase = 0;
+    //const double phase_step = (GPS_TWO_PI * _f) / _fs;
+    //new Fixed Point NCO (faster)
+    int phase_i = 0;
+    int phase_step_i;
+    float phase_step_f = (float)((GPS_TWO_PI * _f) / _fs);
+    phase_step_i = gr_fxpt::float_to_fixed(phase_step_f);
     float sin_f,cos_f;
 
-	for(unsigned int i = 0; i < _samps; i++)
-	{
-		//old
-		//_dest[i] = std::complex<float>(cos(phase), sin(phase));
-		//phase += phase_step;
-
-		//new Fixed Point NCO (faster)
-		gr_fxpt::sincos(phase_i,&sin_f,&cos_f);
-		_dest[i] = std::complex<float>(cos_f, -sin_f);
-		phase_i += phase_step_i;
-	}
+    for(unsigned int i = 0; i < _samps; i++)
+        {
+            //old
+            //_dest[i] = std::complex<float>(cos(phase), sin(phase));
+            //phase += phase_step;
+            //new Fixed Point NCO (faster)
+            gr_fxpt::sincos(phase_i,&sin_f,&cos_f);
+            _dest[i] = std::complex<float>(cos_f, -sin_f);
+            phase_i += phase_step_i;
+        }
 }
 
 
@@ -93,110 +90,110 @@ void hex_to_binary_converter(int * _dest, char _from)
 	switch(_from)
 	{
 		case '0':
-			*(_dest)=1;
-			*(_dest+1)=1;
-			*(_dest+2)=1;
-			*(_dest+3)=1;
+			*(_dest) = 1;
+			*(_dest+1) = 1;
+			*(_dest+2) = 1;
+			*(_dest+3) = 1;
 			break;
 		case '1':
-			*(_dest)=1;
-			*(_dest+1)=1;
-			*(_dest+2)=1;
-			*(_dest+3)=-1;
+			*(_dest) = 1;
+			*(_dest+1) = 1;
+			*(_dest+2) = 1;
+			*(_dest+3) = -1;
 			break;
 		case '2':
-			*(_dest)=1;
-			*(_dest+1)=1;
-			*(_dest+2)=-1;
-			*(_dest+3)=1;
+			*(_dest) = 1;
+			*(_dest+1) = 1;
+			*(_dest+2) = -1;
+			*(_dest+3) = 1;
 			break;
 		case '3':
-			*(_dest)=1;
-			*(_dest+1)=1;
-			*(_dest+2)=-1;
-			*(_dest+3)=-1;
+			*(_dest) = 1;
+			*(_dest+1) = 1;
+			*(_dest+2) = -1;
+			*(_dest+3) = -1;
 			break;
 		case '4':
-			*(_dest)=1;
-			*(_dest+1)=-1;
-			*(_dest+2)=1;
-			*(_dest+3)=1;
+			*(_dest) = 1;
+			*(_dest+1) = -1;
+			*(_dest+2) = 1;
+			*(_dest+3) = 1;
 			break;
 		case '5':
-			*(_dest)=1;
-			*(_dest+1)=-1;
-			*(_dest+2)=1;
-			*(_dest+3)=-1;
+			*(_dest) = 1;
+			*(_dest+1) = -1;
+			*(_dest+2) = 1;
+			*(_dest+3) = -1;
 			break;
 		case '6':
-			*(_dest)=1;
-			*(_dest+1)=-1;
-			*(_dest+2)=-1;
-			*(_dest+3)=1;
+			*(_dest) = 1;
+			*(_dest+1) = -1;
+			*(_dest+2) = -1;
+			*(_dest+3) = 1;
 			break;
 		case '7':
-			*(_dest)=1;
-			*(_dest+1)=-1;
-			*(_dest+2)=-1;
-			*(_dest+3)=-1;
+			*(_dest) = 1;
+			*(_dest+1) = -1;
+			*(_dest+2) = -1;
+			*(_dest+3) = -1;
 			break;
 		case '8':
-			*(_dest)=-1;
-			*(_dest+1)=1;
-			*(_dest+2)=1;
-			*(_dest+3)=1;
+			*(_dest) = -1;
+			*(_dest+1) = 1;
+			*(_dest+2) = 1;
+			*(_dest+3) = 1;
 			break;
 		case '9':
-			*(_dest)=-1;
-			*(_dest+1)=1;
-			*(_dest+2)=1;
-			*(_dest+3)=-1;
+			*(_dest) = -1;
+			*(_dest+1) = 1;
+			*(_dest+2) = 1;
+			*(_dest+3) = -1;
 			break;
 		case 'A':
-			*(_dest)=-1;
-			*(_dest+1)=1;
-			*(_dest+2)=-1;
-			*(_dest+3)=1;
+			*(_dest) = -1;
+			*(_dest+1) = 1;
+			*(_dest+2) = -1;
+			*(_dest+3) = 1;
 			break;
 		case 'B':
-			*(_dest)=-1;
-			*(_dest+1)=1;
-			*(_dest+2)=-1;
-			*(_dest+3)=-1;
+			*(_dest) = -1;
+			*(_dest+1) = 1;
+			*(_dest+2) = -1;
+			*(_dest+3) = -1;
 			break;
 		case 'C':
-			*(_dest)=-1;
-			*(_dest+1)=-1;
-			*(_dest+2)=1;
-			*(_dest+3)=1;
+			*(_dest) = -1;
+			*(_dest+1) = -1;
+			*(_dest+2) = 1;
+			*(_dest+3) = 1;
 			break;
 		case 'D':
-			*(_dest)=-1;
-			*(_dest+1)=-1;
-			*(_dest+2)=1;
-			*(_dest+3)=-1;
+			*(_dest) = -1;
+			*(_dest+1) = -1;
+			*(_dest+2) = 1;
+			*(_dest+3) = -1;
 			break;
 		case 'E':
-			*(_dest)=-1;
-			*(_dest+1)=-1;
-			*(_dest+2)=-1;
-			*(_dest+3)=1;
+			*(_dest) = -1;
+			*(_dest+1) = -1;
+			*(_dest+2) = -1;
+			*(_dest+3) = 1;
 			break;
 		case 'F':
-			*(_dest)=-1;
-			*(_dest+1)=-1;
-			*(_dest+2)=-1;
-			*(_dest+3)=-1;
+			*(_dest) = -1;
+			*(_dest+1) = -1;
+			*(_dest+2) = -1;
+			*(_dest+3) = -1;
 			break;
 	}
 }
 
 
 void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs_in,
-		float _fs_out, unsigned int _length_in, unsigned int _length_out)
+        float _fs_out, unsigned int _length_in, unsigned int _length_out)
 {
-	unsigned int _codeValueIndex;
-	//--- Find time constants --------------------------------------------------
+    unsigned int _codeValueIndex;
+    //--- Find time constants --------------------------------------------------
     const float _t_in = 1/_fs_in;  // Incoming sampling  period in sec
     const float _t_out = 1/_fs_out;   // Out sampling period in sec
     for (unsigned int i=0; i<_length_out; i++)
@@ -211,7 +208,7 @@ void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs
                 }
             else
                 {
-                    //if repeat the chip -> upsample by nearest neighbourhood interpolation
+                    //if repeat the chip -> upsample by nearest neighborhood interpolation
                     _dest[i] = _from[_codeValueIndex];
                 }
         }

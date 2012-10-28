@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,8 +30,6 @@
  */
 
 
-
-
 #ifndef GNSS_SDR_GNSS_SDR_VALVE_H_
 #define GNSS_SDR_GNSS_SDR_VALVE_H_
 
@@ -45,20 +43,17 @@ gr_block_sptr gnss_sdr_make_valve (size_t sizeof_stream_item,
 
 class gnss_sdr_valve : public gr_sync_block
 {
-
     friend gr_block_sptr gnss_sdr_make_valve(size_t sizeof_stream_item,
             int nitems,
             gr_msg_queue_sptr queue);
     gnss_sdr_valve (size_t sizeof_stream_item,
             int nitems,
             gr_msg_queue_sptr queue);
-
     int	d_nitems;
     int	d_ncopied_items;
     gr_msg_queue_sptr d_queue;
 
 public:
-
     int work (int noutput_items,
             gr_vector_const_void_star &input_items,
             gr_vector_void_star &output_items);

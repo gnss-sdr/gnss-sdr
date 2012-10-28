@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GPS_SDR_SIGNAL_PROCESSING_H_
-#define GPS_SDR_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
+#define GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_
 
 #include <complex>
 #include <iostream>
@@ -41,4 +41,4 @@
 void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift);
 void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift);
 
-#endif /* GPS_SDR_SIGNAL_PROCESSING_H_ */
+#endif /* GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H_ */

@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,8 +31,6 @@
  * -------------------------------------------------------------------------
  */
 
-
-
 #include "pass_through.h"
 #include <iostream>
 #include <gnuradio/gr_io_signature.h>
@@ -42,19 +40,16 @@
 
 using google::LogMessage;
 
-Pass_Through::Pass_Through(ConfigurationInterface* configuration,	std::string role,
+Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
         role_(role),
         in_streams_(in_streams),
         out_streams_(out_streams)
 {
-
     std::string default_item_type = "gr_complex";
-
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     vector_size_ = configuration->property(role + ".vector_size", 1);
-
     if(item_type_.compare("float") == 0)
         {
             item_size_ = sizeof(float);
@@ -72,28 +67,37 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration,	std::string ro
             LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Using float";
             item_size_ = sizeof(float);
         }
-
     kludge_copy_ = gr_make_kludge_copy(item_size_);
     DLOG(INFO) << "kludge_copy(" << kludge_copy_->unique_id() << ")";
 }
 
+
+
 Pass_Through::~Pass_Through()
 {}
+
+
 
 void Pass_Through::connect(gr_top_block_sptr top_block)
 {
     DLOG(INFO) << "nothing to connect internally";
 }
 
+
+
 void Pass_Through::disconnect(gr_top_block_sptr top_block)
 {
     // Nothing to disconnect
 }
 
+
+
 gr_basic_block_sptr Pass_Through::get_left_block()
 {
     return kludge_copy_;
 }
+
+
 
 gr_basic_block_sptr Pass_Through::get_right_block()
 {

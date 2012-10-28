@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -55,7 +55,6 @@ class GNSSBlockFactory;
  */
 class GNSSFlowgraph
 {
-
 public:
     /*!
      * \brief Constructor that initializes the receiver flowgraph
@@ -114,29 +113,22 @@ public:
     }
 
 private:
-
     void init();
     void apply_action(unsigned int what);
     void set_signals_list();
     void set_channels_state();
-
     bool connected_;
     bool running_;
     unsigned int channels_count_;
     unsigned int acq_channels_count_;
     unsigned int max_acq_channels_;
     unsigned int applied_actions_;
-
     std::string config_file_;
-
     ConfigurationInterface *configuration_;
     GNSSBlockFactory *block_factory_;
-
     std::vector<GNSSBlockInterface*>* blocks_;
-
     gr_top_block_sptr top_block_;
     gr_msg_queue_sptr queue_;
-
     std::list<Gnss_Signal> available_GNSS_signals_;
     std::vector<unsigned int> channels_state_;
 };

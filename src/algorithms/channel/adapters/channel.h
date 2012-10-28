@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -56,7 +56,6 @@ class TelemetryDecoderInterface;
  */
 class Channel: public ChannelInterface
 {
-
 public:
     //! Constructor
     Channel(ConfigurationInterface *configuration, unsigned int channel,
@@ -64,29 +63,19 @@ public:
             TrackingInterface *trk, TelemetryDecoderInterface *nav,
             std::string role, std::string implementation,
             gr_msg_queue_sptr queue);
-
     //! Virtual destructor
     virtual ~Channel();
-
     void connect(gr_top_block_sptr top_block);
     void disconnect(gr_top_block_sptr top_block);
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
-
     std::string role(){ return role_; }
-
     std::string implementation(){ return "Channel"; }
-
     size_t item_size(){ return 0; }
-
     Gnss_Signal get_signal() const { return gnss_signal_; }
-
     AcquisitionInterface* acquisition(){ return acq_; }
-
     TrackingInterface* tracking(){ return trk_; }
-
     TelemetryDecoderInterface* telemetry(){ return nav_; }
-
     void start_acquisition();
     void set_signal(Gnss_Signal gnss_signal_);
     void start();
@@ -98,32 +87,25 @@ public:
     void stop();
 
 private:
-
     GNSSBlockInterface *pass_through_;
     AcquisitionInterface *acq_;
     TrackingInterface *trk_;
     TelemetryDecoderInterface *nav_;
-
     std::string role_;
     std::string implementation_;
-
     unsigned int channel_;
-
     Gnss_Synchro gnss_synchro_;
     Gnss_Signal gnss_signal_;
     bool connected_;
     bool stop_;
     int message_;
     bool repeat_;
-
     GpsL1CaChannelFsm channel_fsm_;
     gr_msg_queue_sptr queue_;
     concurrent_queue<int> channel_internal_queue_;
     boost::thread ch_thread_;
-
     void run();
     void process_channel_messages();
-
 };
 
 #endif /*GNSS_SDR_CHANNEL_H_*/

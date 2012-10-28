@@ -55,15 +55,12 @@ class ConfigurationInterface;
  */
 class FirFilter: public GNSSBlockInterface
 {
-
 public:
-
     FirFilter(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, gr_msg_queue_sptr queue);
 
     virtual ~FirFilter();
-
     std::string role()
     {
         return role_;
@@ -76,15 +73,12 @@ public:
     {
         return 0;
     }
-
     void connect(gr_top_block_sptr top_block);
     void disconnect(gr_top_block_sptr top_block);
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
 
-
 private:
-
     gr_fir_filter_ccf_sptr fir_filter_ccf_;
     ConfigurationInterface* config_;
     bool dump_;

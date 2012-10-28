@@ -41,17 +41,13 @@ class ConfigurationInterface;
 
 class GpsL1CaObservables : public ObservablesInterface
 {
-
 public:
-
     GpsL1CaObservables(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
             gr_msg_queue_sptr queue);
-
     virtual ~GpsL1CaObservables();
-
     std::string role()
     {
         return role_;
@@ -60,17 +56,14 @@ public:
     {
         return "GPS_L1_CA_Observables";
     }
-
     void connect(gr_top_block_sptr top_block);
     void disconnect(gr_top_block_sptr top_block);
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
-
     void reset()
     {
         return;
     };
-
     //!< All blocks must have an item_size() function implementation
     size_t item_size()
     {
@@ -78,7 +71,6 @@ public:
     }
 
 private:
-
     gps_l1_ca_observables_cc_sptr observables_;
     bool dump_;
     unsigned int fs_in_;

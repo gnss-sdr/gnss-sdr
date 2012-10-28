@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -48,13 +48,11 @@ class ConfigurationInterface;
  */
 class ControlThread
 {
-
 public:
     /*!
      * \brief Default constructor
      */
     ControlThread();
-
 
     /*!
      * \brief Constructor that initializes the class with parameters
@@ -62,7 +60,6 @@ public:
      * \param[in] configuration Pointer to a ConfigurationInterface
      */
     ControlThread(ConfigurationInterface *configuration);
-
 
     //! \brief Virtual destructor. Derived classes must implement the destructor
     virtual ~ControlThread();
@@ -107,21 +104,17 @@ public:
 
 
 private:
-
     void init();
     void read_control_messages();
     void process_control_messages();
     void apply_action(unsigned int what);
-
     GNSSFlowgraph *flowgraph_;
     ConfigurationInterface *configuration_;
     gr_msg_queue_sptr control_queue_;
     ControlMessageFactory *control_message_factory_;
     std::vector<ControlMessage*> *control_messages_;
-
     bool stop_;
     bool delete_configuration_;
-
     unsigned int processed_control_messages_;
     unsigned int applied_actions_;
     boost::thread keyboard_thread_;

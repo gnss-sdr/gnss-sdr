@@ -95,7 +95,6 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             //    sc16: Complex signed integer (16-bit integers) range [-32768, +32767].
             //     sc8: Complex signed integer (8-bit integers) range [-128, 127].
             uhd_source_ = uhd_make_usrp_source(dev_addr, uhd::stream_args_t("fc32"));
-            std::cout << boost::format("Using Device: %s") % uhd_source_->get_pp_string() << std::endl;
 
             // 2.1 set sampling clock reference
             // Set the clock source for the usrp device.

@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,8 +33,6 @@
  * -------------------------------------------------------------------------
  */
 
-
-
 #include "file_configuration.h"
 #include <string>
 #include <glog/log_severity.h>
@@ -51,11 +49,13 @@ FileConfiguration::FileConfiguration(std::string filename)
     init();
 }
 
+
 FileConfiguration::FileConfiguration()
 {
     filename_ = "./default_config_file.txt";
     init();
 }
+
 
 FileConfiguration::~FileConfiguration()
 {
@@ -65,9 +65,9 @@ FileConfiguration::~FileConfiguration()
     delete overrided_;
 }
 
+
 std::string FileConfiguration::property(std::string property_name, std::string default_value)
 {
-
     if(overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
@@ -78,9 +78,9 @@ std::string FileConfiguration::property(std::string property_name, std::string d
         }
 }
 
+
 bool FileConfiguration::property(std::string property_name, bool default_value)
 {
-
     if(overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
@@ -91,10 +91,10 @@ bool FileConfiguration::property(std::string property_name, bool default_value)
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
+
 
 long FileConfiguration::property(std::string property_name, long default_value)
 {
-
     if(overrided_->is_present(property_name))
         {
             return overrided_->property(property_name, default_value);
@@ -106,19 +106,22 @@ long FileConfiguration::property(std::string property_name, long default_value)
         }
 }
 
+
+
 int FileConfiguration::property(std::string property_name, int default_value)
 {
-
-    if(overrided_->is_present(property_name)) {
-
+    if(overrided_->is_present(property_name))
+        {
             return overrided_->property(property_name, default_value);
-    }
+        }
     else
         {
             std::string empty = "";
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
+
+
 
 unsigned int FileConfiguration::property(std::string property_name, unsigned int default_value)
 {
@@ -133,6 +136,8 @@ unsigned int FileConfiguration::property(std::string property_name, unsigned int
         }
 }
 
+
+
 float FileConfiguration::property(std::string property_name, float default_value)
 {
     if(overrided_->is_present(property_name))
@@ -145,6 +150,7 @@ float FileConfiguration::property(std::string property_name, float default_value
             return converter_->convert(property(property_name, empty), default_value);
         }
 }
+
 
 double FileConfiguration::property(std::string property_name, double default_value)
 {
@@ -159,20 +165,21 @@ double FileConfiguration::property(std::string property_name, double default_val
         }
 }
 
+
+
 void FileConfiguration::set_property(std::string property_name, std::string value)
 {
     overrided_->set_property(property_name, value);
 }
 
+
+
 void FileConfiguration::init()
 {
-
     converter_ = new StringConverter();
     overrided_ = new InMemoryConfiguration();
-
     ini_reader_ = new INIReader(filename_);
     error_ = ini_reader_->ParseError();
-
     if(error_ == 0)
         {
             DLOG(INFO) << "Configuration file " << filename_ << " opened with no errors";
@@ -185,7 +192,6 @@ void FileConfiguration::init()
         {
             LOG_AT_LEVEL(WARNING) << "Unable to open configuration file " << filename_;
         }
-
 }
 
 

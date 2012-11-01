@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,22 +36,20 @@
 
 InMemoryConfiguration::InMemoryConfiguration()
 {
-
     converter_ = new StringConverter();
 }
 
+
 InMemoryConfiguration::~InMemoryConfiguration()
 {
-
     properties_.clear();
     delete converter_;
 }
 
+
 std::string InMemoryConfiguration::property(std::string property_name, std::string default_value)
 {
-
     std::map<std::string, std::string>::iterator iter = properties_.find(property_name);
-
     if(iter != properties_.end())
         {
             return iter->second;
@@ -62,11 +60,13 @@ std::string InMemoryConfiguration::property(std::string property_name, std::stri
         }
 }
 
+
 bool InMemoryConfiguration::property(std::string property_name, bool default_value)
 {
     std::string empty = "";
     return converter_->convert(property(property_name, empty), default_value);
 }
+
 
 long InMemoryConfiguration::property(std::string property_name, long default_value)
 {
@@ -74,11 +74,13 @@ long InMemoryConfiguration::property(std::string property_name, long default_val
     return converter_->convert(property(property_name, empty), default_value);
 }
 
+
 int InMemoryConfiguration::property(std::string property_name, int default_value)
 {
     std::string empty = "";
     return converter_->convert(property(property_name, empty), default_value);
 }
+
 
 unsigned int InMemoryConfiguration::property(std::string property_name, unsigned int default_value)
 {
@@ -86,11 +88,13 @@ unsigned int InMemoryConfiguration::property(std::string property_name, unsigned
     return converter_->convert(property(property_name, empty), default_value);
 }
 
+
 float InMemoryConfiguration::property(std::string property_name, float default_value)
 {
     std::string empty = "";
     return converter_->convert(property(property_name, empty), default_value);
 }
+
 
 double InMemoryConfiguration::property(std::string property_name, double default_value)
 {
@@ -98,10 +102,12 @@ double InMemoryConfiguration::property(std::string property_name, double default
     return converter_->convert(property(property_name, empty), default_value);
 }
 
+
 void InMemoryConfiguration::set_property(std::string property_name, std::string value)
 {
     properties_.insert(std::make_pair(property_name, value));
 }
+
 
 bool InMemoryConfiguration::is_present(std::string property_name)
 {

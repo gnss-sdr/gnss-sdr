@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -51,18 +51,16 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
         GNSSBlockInterface *pass_through, AcquisitionInterface *acq,
         TrackingInterface *trk, TelemetryDecoderInterface *nav,
         std::string role, std::string implementation, gr_msg_queue_sptr queue) :
-        pass_through_(pass_through), acq_(acq), trk_(trk), nav_(nav),
-        role_(role), implementation_(implementation), channel_(channel),
-        queue_(queue)
-
+                pass_through_(pass_through), acq_(acq), trk_(trk), nav_(nav),
+                role_(role), implementation_(implementation), channel_(channel),
+                queue_(queue)
 {
     stop_ = false;
     acq_->set_channel(channel_);
     trk_->set_channel(channel_);
     nav_->set_channel(channel_);
 
-    gnss_synchro_.Channel_ID=channel_;
-
+    gnss_synchro_.Channel_ID = channel_;
     acq_->set_gnss_synchro(&gnss_synchro_);
     trk_->set_gnss_synchro(&gnss_synchro_);
 
@@ -108,30 +106,25 @@ Channel::~Channel()
 
 void Channel::connect(gr_top_block_sptr top_block)
 {
-
     if (connected_)
         {
             LOG_AT_LEVEL(WARNING) << "channel already connected internally";
             return;
         }
-
     pass_through_->connect(top_block);
     acq_->connect(top_block);
     trk_->connect(top_block);
     nav_->connect(top_block);
 
-    top_block->connect(pass_through_->get_right_block(), 0,
-            acq_->get_left_block(), 0);
+    top_block->connect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
     DLOG(INFO) << "pass_through_ -> acquisition";
-
-    top_block->connect(pass_through_->get_right_block(), 0,
-            trk_->get_left_block(), 0);
+    top_block->connect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
     DLOG(INFO) << "pass_through_ -> tracking";
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
     DLOG(INFO) << "tracking -> telemetry_decoder";
-
     connected_ = true;
 }
+
 
 
 void Channel::disconnect(gr_top_block_sptr top_block)
@@ -141,18 +134,13 @@ void Channel::disconnect(gr_top_block_sptr top_block)
             LOG_AT_LEVEL(WARNING) << "Channel already disconnected internally";
             return;
         }
-
-    top_block->disconnect(pass_through_->get_right_block(), 0,
-            acq_->get_left_block(), 0);
-    top_block->disconnect(pass_through_->get_right_block(), 0,
-            trk_->get_left_block(), 0);
+    top_block->disconnect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
+    top_block->disconnect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
     top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
-
     pass_through_->disconnect(top_block);
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);
     nav_->disconnect(top_block);
-
     connected_ = false;
 }
 
@@ -205,11 +193,16 @@ void Channel::run()
             channel_internal_queue_.wait_and_pop(message_);
             process_channel_messages();
         }
-
 }
-void Channel::standby(){
+
+
+
+void Channel::standby()
+{
     channel_fsm_.Event_gps_failed_tracking_standby();
 }
+
+
 
 /*
  * Set stop_ to true and blocks the calling thread until
@@ -218,8 +211,7 @@ void Channel::standby(){
 void Channel::stop()
 {
     channel_internal_queue_.push(0); //message to stop channel
-	stop_ = true;
-
+    stop_ = true;
     /* When the boost::thread object that represents a thread of execution
      * is destroyed the thread becomes detached. Once a thread is detached,
      * it will continue executing until the invocation of the function or
@@ -234,26 +226,23 @@ void Channel::stop()
     ch_thread_.join();
 }
 
+
+
 void Channel::process_channel_messages()
 {
     switch (message_)
     {
     case 0:
-
         DLOG(INFO) << "Stop channel " << channel_;
         break;
-
     case 1:
-
-    	DLOG(INFO) << "Channel " << channel_
-        << " ACQ SUCCESS satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
+        DLOG(INFO) << "Channel " << channel_ << " ACQ SUCCESS satellite " <<
+            gnss_synchro_.System << " " << gnss_synchro_.PRN;
         channel_fsm_.Event_gps_valid_acquisition();
         break;
-
     case 2:
-
-    	DLOG(INFO) << "Channel " << channel_
-        << " ACQ FAILED satellite " << gnss_synchro_.System << " "<< gnss_synchro_.PRN;
+        DLOG(INFO) << "Channel " << channel_
+            << " ACQ FAILED satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
         if (repeat_ == true)
             {
                 channel_fsm_.Event_gps_failed_acquisition_repeat();
@@ -263,9 +252,6 @@ void Channel::process_channel_messages()
                 channel_fsm_.Event_gps_failed_acquisition_no_repeat();
             }
         break;
-
-
-
     default:
         LOG_AT_LEVEL(WARNING) << "Default case, invalid message.";
         break;

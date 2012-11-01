@@ -43,8 +43,6 @@
 #include "GPS_L1_CA.h"
 
 
-
-
 /*!
  * \brief This class decodes a GPS NAV Data message as described in IS-GPS-200E
  *
@@ -52,28 +50,25 @@
  */
 class Gps_Navigation_Message
 {
-
 private:
-  unsigned long int read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices);
-  signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices);
-  bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices);
-  void print_gps_word_bytes(unsigned int GPS_word);
-
-  /*
-   * Accounts for the beginning or end of week crossover
-   *
-   * See paragraph 20.3.3.3.3.1 (IS-GPS-200E)
-   * \param[in]  -  time in seconds
-   * \param[out] -  corrected time, in seconds
-   */
-  double check_t(double time);
+    unsigned long int read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices);
+    signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices);
+    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices);
+    void print_gps_word_bytes(unsigned int GPS_word);
+    /*
+     * Accounts for the beginning or end of week crossover
+     *
+     * See paragraph 20.3.3.3.3.1 (IS-GPS-200E)
+     * \param[in]  -  time in seconds
+     * \param[out] -  corrected time, in seconds
+     */
+    double check_t(double time);
 
 public:
-
     bool b_update_tow_flag; // flag indicating that this ephemeris set have an updated TOW
     bool b_valid_ephemeris_set_flag; // flag indicating that this ephemeris set have passed the validation check
     //broadcast orbit 1
-	double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+    double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     double d_TOW_SF1;            //!< Time of GPS Week from HOW word of Subframe 1 [s]
     double d_TOW_SF2;            //!< Time of GPS Week from HOW word of Subframe 2 [s]
     double d_TOW_SF3;            //!< Time of GPS Week from HOW word of Subframe 3 [s]
@@ -143,10 +138,8 @@ public:
      *  accompanying alert, is less than 1E-8 per hour.
      */
     bool b_integrity_status_flag;
-
     bool b_alert_flag;      //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
     bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
-
 
     // clock terms
     //double d_master_clock;  // GPS transmission time
@@ -159,7 +152,6 @@ public:
     double d_satpos_Z;       //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
 
     // satellite identification info
-
     int i_channel_ID;
     unsigned int i_satellite_PRN;
 
@@ -167,7 +159,6 @@ public:
     double d_subframe_timestamp_ms; //[ms]
 
     // Ionospheric parameters
-
     double d_alpha0;      //!< Coefficient 0 of a cubic equation representing the amplitude of the vertical delay [s]
     double d_alpha1;      //!< Coefficient 1 of a cubic equation representing the amplitude of the vertical delay [s/semi-circle]
     double d_alpha2;      //!< Coefficient 2 of a cubic equation representing the amplitude of the vertical delay [s(semi-circle)^2]
@@ -178,7 +169,6 @@ public:
     double d_beta3;       //!< Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]
 
     // UTC parameters
-
     double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
     double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
@@ -200,7 +190,6 @@ public:
      * \brief Decodes the GPS NAV message
      */
     int subframe_decoder(char *subframe);
-
 
     /*!
      * \brief Computes the position of the satellite

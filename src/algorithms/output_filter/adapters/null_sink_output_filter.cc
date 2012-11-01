@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,8 +29,6 @@
  * -------------------------------------------------------------------------
  */
 
-
-
 #include "null_sink_output_filter.h"
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -47,10 +45,8 @@ NullSinkOutputFilter::NullSinkOutputFilter(ConfigurationInterface* configuration
         in_streams_(in_streams),
         out_streams_(out_streams)
 {
-
     std::string default_item_type = "short";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-
     if(item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
@@ -65,31 +61,40 @@ NullSinkOutputFilter::NullSinkOutputFilter(ConfigurationInterface* configuration
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Usign float";
+            LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Using float";
             item_size_ = sizeof(float);
         }
-
     sink_ = gr_make_null_sink(item_size_);
     DLOG(INFO) << "null_sink(" << sink_->unique_id() << ")";
 }
 
+
+
 NullSinkOutputFilter::~NullSinkOutputFilter()
 {}
+
+
 
 void NullSinkOutputFilter::connect(gr_top_block_sptr top_block)
 {
     DLOG(INFO) << "nothing to connect internally";
 }
 
+
+
 void NullSinkOutputFilter::disconnect(gr_top_block_sptr top_block)
 {
     // Nothing to connect
 }
 
+
+
 gr_basic_block_sptr NullSinkOutputFilter::get_left_block()
 {
     return sink_;
 }
+
+
 
 gr_basic_block_sptr NullSinkOutputFilter::get_right_block()
 {

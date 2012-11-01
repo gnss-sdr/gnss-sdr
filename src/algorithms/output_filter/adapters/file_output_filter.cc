@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -45,13 +45,10 @@ FileOutputFilter::FileOutputFilter(ConfigurationInterface* configuration,
         in_streams_(in_streams),
         out_streams_(out_streams)
 {
-
     std::string default_filename = "./output.dat";
     std::string default_item_type = "short";
-
     filename_ = configuration->property(role + ".filename", default_filename);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-
     if(item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
@@ -69,29 +66,36 @@ FileOutputFilter::FileOutputFilter(ConfigurationInterface* configuration,
             LOG_AT_LEVEL(WARNING) << item_type_ << " Unrecognized item type. Using short.";
             item_size_ = sizeof(short);
         }
-
     file_sink_ = gr_make_file_sink(item_size_, filename_.c_str());
-
     DLOG(INFO) << "file sink(" << file_sink_->unique_id() << ")";
 }
 
+
+
 FileOutputFilter::~FileOutputFilter()
 {}
+
+
 
 void FileOutputFilter::connect(gr_top_block_sptr top_block)
 {
     DLOG(INFO) << "nothing to connect internally";
 }
 
+
 void FileOutputFilter::disconnect(gr_top_block_sptr top_block)
 {
     // Nothing to disconnect internally
 }
 
+
+
 gr_basic_block_sptr FileOutputFilter::get_left_block()
 {
     return file_sink_;
 }
+
+
 
 gr_basic_block_sptr FileOutputFilter::get_right_block()
 {

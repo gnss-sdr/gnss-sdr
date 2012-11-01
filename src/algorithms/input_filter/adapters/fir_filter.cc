@@ -43,41 +43,38 @@ using google::LogMessage;
 FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         gr_msg_queue_sptr queue) :
-        config_(configuration), role_(role), in_streams_(in_streams),
-        out_streams_(out_streams), queue_(queue)
+                config_(configuration), role_(role), in_streams_(in_streams),
+                out_streams_(out_streams), queue_(queue)
 {
-
     size_t item_size;
     (*this).init();
-
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare(
-            "gr_complex") == 0) && (output_item_type_.compare("gr_complex")
-                    == 0))
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
+            && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex);
             fir_filter_ccf_ = gr_make_fir_filter_ccf(1, taps_);
             DLOG(INFO) << "input_filter(" << fir_filter_ccf_->unique_id() << ")";
-
         }
     else
         {
-            LOG_AT_LEVEL(ERROR) << taps_item_type_
-                    << " unknown input filter item type";
+            LOG_AT_LEVEL(ERROR) << taps_item_type_ << " unknown input filter item type";
         }
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr_make_file_sink(item_size, dump_filename_.c_str());
         }
-
 }
+
+
 
 FirFilter::~FirFilter()
 {}
 
+
+
 void FirFilter::connect(gr_top_block_sptr top_block)
 {
-
     if (dump_)
         {
             top_block->connect(fir_filter_ccf_, 0, file_sink_, 0);
@@ -88,25 +85,31 @@ void FirFilter::connect(gr_top_block_sptr top_block)
         }
 }
 
+
+
 void FirFilter::disconnect(gr_top_block_sptr top_block)
 {
-
     if (dump_)
         {
             top_block->connect(fir_filter_ccf_, 0, file_sink_, 0);
         }
-
 }
+
+
 
 gr_basic_block_sptr FirFilter::get_left_block()
 {
     return fir_filter_ccf_;
 }
 
+
+
 gr_basic_block_sptr FirFilter::get_right_block()
 {
     return fir_filter_ccf_;
 }
+
+
 
 void FirFilter::init()
 {
@@ -124,30 +127,21 @@ void FirFilter::init()
 
     DLOG(INFO) << "role " << role_;
 
-    input_item_type_ = config_->property(role_ + ".input_item_type",
-            default_input_item_type);
-    output_item_type_ = config_->property(role_ + ".output_item_type",
-            default_output_item_type);
-    taps_item_type_ = config_->property(role_ + ".taps_item_type",
-            default_taps_item_type);
-
+    input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
+    output_item_type_ = config_->property(role_ + ".output_item_type", default_output_item_type);
+    taps_item_type_ = config_->property(role_ + ".taps_item_type", default_taps_item_type);
     dump_ = config_->property(role_ + ".dump", false);
-    dump_filename_ = config_->property(role_ + ".dump_filename",
-            default_dump_filename);
-    int number_of_taps = config_->property(role_ + ".number_of_taps",
-            default_number_of_taps);
-    unsigned int number_of_bands = config_->property(role_ + ".number_of_bands",
-            default_number_of_bands);
+    dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
+    int number_of_taps = config_->property(role_ + ".number_of_taps", default_number_of_taps);
+    unsigned int number_of_bands = config_->property(role_ + ".number_of_bands", default_number_of_bands);
 
     std::vector<double> bands;
     std::vector<double> ampl;
     std::vector<double> error_w;
     std::string option;
     double option_value;
-
     for (unsigned int i = 0; i < number_of_bands; i++)
         {
-
             option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_begin";
             option_value = config_->property(role_ + option, default_bands[i]);
             bands.push_back(option_value);

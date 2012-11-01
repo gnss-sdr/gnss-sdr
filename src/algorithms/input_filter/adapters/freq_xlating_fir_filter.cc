@@ -43,46 +43,42 @@ using google::LogMessage;
 FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         gr_msg_queue_sptr queue) :
-        config_(configuration), role_(role), in_streams_(in_streams),
-        out_streams_(out_streams), queue_(queue)
+                config_(configuration), role_(role), in_streams_(in_streams),
+                out_streams_(out_streams), queue_(queue)
 {
-
     size_t item_size;
     (*this).init();
-
     int decimation_factor;
-    int default_decimation_factor=1;
-    decimation_factor = config_->property(role_ + ".decimation_factor",
-    		default_decimation_factor);
+    int default_decimation_factor = 1;
+    decimation_factor = config_->property(role_ + ".decimation_factor", default_decimation_factor);
 
-    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare(
-            "gr_complex") == 0) && (output_item_type_.compare("gr_complex")
-                    == 0))
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
+            && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex);
             freq_xlating_fir_filter_ccf_ = gr_make_freq_xlating_fir_filter_ccf(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_ccf_->unique_id() << ")";
-
         }
     else
         {
-            LOG_AT_LEVEL(ERROR) << taps_item_type_
-                    << " unknown input filter item type";
+            LOG_AT_LEVEL(ERROR) << taps_item_type_ << " unknown input filter item type";
         }
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr_make_file_sink(item_size, dump_filename_.c_str());
         }
-
 }
+
+
 
 FreqXlatingFirFilter::~FreqXlatingFirFilter()
 {}
 
+
+
 void FreqXlatingFirFilter::connect(gr_top_block_sptr top_block)
 {
-
     if (dump_)
         {
             top_block->connect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
@@ -93,9 +89,10 @@ void FreqXlatingFirFilter::connect(gr_top_block_sptr top_block)
         }
 }
 
+
+
 void FreqXlatingFirFilter::disconnect(gr_top_block_sptr top_block)
 {
-
     if (dump_)
         {
             top_block->connect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
@@ -103,15 +100,18 @@ void FreqXlatingFirFilter::disconnect(gr_top_block_sptr top_block)
 
 }
 
+
 gr_basic_block_sptr FreqXlatingFirFilter::get_left_block()
 {
     return freq_xlating_fir_filter_ccf_;
 }
 
+
 gr_basic_block_sptr FreqXlatingFirFilter::get_right_block()
 {
     return freq_xlating_fir_filter_ccf_;
 }
+
 
 void FreqXlatingFirFilter::init()
 {
@@ -131,25 +131,15 @@ void FreqXlatingFirFilter::init()
 
     DLOG(INFO) << "role " << role_;
 
-    input_item_type_ = config_->property(role_ + ".input_item_type",
-            default_input_item_type);
-    output_item_type_ = config_->property(role_ + ".output_item_type",
-            default_output_item_type);
-    taps_item_type_ = config_->property(role_ + ".taps_item_type",
-            default_taps_item_type);
-
+    input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
+    output_item_type_ = config_->property(role_ + ".output_item_type", default_output_item_type);
+    taps_item_type_ = config_->property(role_ + ".taps_item_type", default_taps_item_type);
     dump_ = config_->property(role_ + ".dump", false);
-    dump_filename_ = config_->property(role_ + ".dump_filename",
-            default_dump_filename);
-    intermediate_freq_ = config_->property(role_ + ".IF",
-            default_intermediate_freq);
-    sampling_freq_ = config_->property(role_ + ".sampling_frequency",
-                default_sampling_freq);
-
-    int number_of_taps = config_->property(role_ + ".number_of_taps",
-            default_number_of_taps);
-    unsigned int number_of_bands = config_->property(role_ + ".number_of_bands",
-            default_number_of_bands);
+    dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
+    intermediate_freq_ = config_->property(role_ + ".IF", default_intermediate_freq);
+    sampling_freq_ = config_->property(role_ + ".sampling_frequency", default_sampling_freq);
+    int number_of_taps = config_->property(role_ + ".number_of_taps", default_number_of_taps);
+    unsigned int number_of_bands = config_->property(role_ + ".number_of_bands", default_number_of_bands);
 
     std::vector<double> bands;
     std::vector<double> ampl;
@@ -159,7 +149,6 @@ void FreqXlatingFirFilter::init()
 
     for (unsigned int i = 0; i < number_of_bands; i++)
         {
-
             option = ".band" + boost::lexical_cast<std::string>(i + 1) + "_begin";
             option_value = config_->property(role_ + option, default_bands[i]);
             bands.push_back(option_value);
@@ -183,7 +172,6 @@ void FreqXlatingFirFilter::init()
 
     std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
     int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
-
     std::vector<double> taps_d = gr_remez(number_of_taps - 1, bands, ampl,
             error_w, filter_type, grid_density);
     taps_.reserve(taps_d.size());

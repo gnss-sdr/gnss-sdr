@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -52,46 +52,39 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
         out_streams_(out_streams),
         queue_(queue)
 {
-
+    // dump parameters
     std::string default_dump_filename = "./pvt.dat";
     std::string default_nmea_dump_filename = "./nmea_pvt.nmea";
     std::string default_nmea_dump_devname = "/dev/tty1";
-
     DLOG(INFO) << "role " << role;
-
-    int averaging_depth;
-    averaging_depth = configuration->property(role + ".averaging_depth", 10);
-
-    bool flag_averaging;
-    flag_averaging = configuration->property(role + ".flag_averaging", false);
-
-    int output_rate_ms;
-    output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
-    int display_rate_ms;
-    display_rate_ms = configuration->property(role + ".display_rate_ms", 500);
-
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-
+    // moving average depth parameters
+    int averaging_depth;
+    averaging_depth = configuration->property(role + ".averaging_depth", 10);
+    bool flag_averaging;
+    flag_averaging = configuration->property(role + ".flag_averaging", false);
+    // output rate
+    int output_rate_ms;
+    output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
+    // display rate
+    int display_rate_ms;
+    display_rate_ms = configuration->property(role + ".display_rate_ms", 500);
     // NMEA Printer settings
-
     bool flag_nmea_tty_port;
     flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
     std::string nmea_dump_filename;
     nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
     std::string nmea_dump_devname;
     nmea_dump_devname = configuration->property(role + ".nmea_dump_devname", default_nmea_dump_devname);
-
+    // make PVT object
     pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms,flag_nmea_tty_port,nmea_dump_filename,nmea_dump_devname);
-
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     // set the navigation msg queue;
-
     pvt_->set_navigation_queue(&global_gps_nav_msg_queue);
-
     DLOG(INFO) << "global navigation message queue assigned to pvt (" << pvt_->unique_id() << ")";
-
 }
+
 
 GpsL1CaPvt::~GpsL1CaPvt()
 {}
@@ -103,6 +96,7 @@ void GpsL1CaPvt::connect(gr_top_block_sptr top_block)
     DLOG(INFO) << "nothing to connect internally";
 }
 
+
 void GpsL1CaPvt::disconnect(gr_top_block_sptr top_block)
 {
     // Nothing to disconnect
@@ -112,6 +106,7 @@ gr_basic_block_sptr GpsL1CaPvt::get_left_block()
 {
     return pvt_;
 }
+
 
 gr_basic_block_sptr GpsL1CaPvt::get_right_block()
 {

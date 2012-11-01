@@ -47,10 +47,9 @@ using google::LogMessage;
 RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream, unsigned int out_stream,
         gr_msg_queue_sptr queue) :
-        role_(role), in_stream_(in_stream), out_stream_(out_stream),
-        queue_(queue)
+                role_(role), in_stream_(in_stream), out_stream_(out_stream),
+                queue_(queue)
 {
-
     // DUMP PARAMETERS
     std::string empty = "";
     std::string default_dump_file = "./data/signal_source.dat";
@@ -61,55 +60,54 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
             default_dump_file);
 
     // RTLSDR Driver parameters
-    AGC_enabled_=configuration->property(role + ".AGC_enabled",true);
-
+    AGC_enabled_ = configuration->property(role + ".AGC_enabled",true);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     gain_ = configuration->property(role + ".gain", (double)50.0);
     sample_rate_ = configuration->property(role + ".sampling_frequency", (double)2.0e6);
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
 
-    item_type_ = configuration->property(role + ".item_type",
-            default_item_type);
     if (item_type_.compare("short") == 0)
         {
             item_size_ = sizeof(short);
         }
     else if (item_type_.compare("gr_complex") == 0)
         {
-    	    item_size_ = sizeof(gr_complex);
+            item_size_ = sizeof(gr_complex);
             // 1. Make the driver instance
             rtlsdr_source_ = osmosdr_make_source_c();
 
             // 2 set sampling rate
             rtlsdr_source_->set_sample_rate(sample_rate_);
             std::cout << boost::format("Actual RX Rate: %f [SPS]...") % (rtlsdr_source_->get_sample_rate()) << std::endl ;
-            DLOG(INFO) << boost::format("Actual RX Rate: %f [SPS]...") % (rtlsdr_source_->get_sample_rate()) << std::endl;
+            LOG(INFO) << boost::format("Actual RX Rate: %f [SPS]...") % (rtlsdr_source_->get_sample_rate());
 
             // 3. set rx frequency
             rtlsdr_source_->set_center_freq(freq_);
             std::cout << boost::format("Actual RX Freq: %f [Hz]...") % (rtlsdr_source_->get_center_freq()) << std::endl ;
-            DLOG(INFO) << boost::format("Actual RX Freq: %f [Hz]...") % (rtlsdr_source_->get_center_freq()) << std::endl ;
+            LOG(INFO) << boost::format("Actual RX Freq: %f [Hz]...") % (rtlsdr_source_->get_center_freq());
 
-            // TODO: Asign the remanent IF from the PLL tune error
-            std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (rtlsdr_source_->get_center_freq()-freq_) ;
-            DLOG(INFO) <<  boost::format("PLL Frequency tune error %f [Hz]...") % (rtlsdr_source_->get_center_freq()-freq_) ;
+            // TODO: Assign the remnant IF from the PLL tune error
+            std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (rtlsdr_source_->get_center_freq() - freq_) ;
+            LOG(INFO) <<  boost::format("PLL Frequency tune error %f [Hz]...") % (rtlsdr_source_->get_center_freq() - freq_) ;
 
             // 4. set rx gain
-            if (this->AGC_enabled_==true)
-            {
-            	rtlsdr_source_->set_gain_mode(true);
-            	std::cout << "AGC enabled"<< std::endl;
-            	DLOG(INFO)<< "AGC enabled"<< std::endl;
-            }else{
-            	rtlsdr_source_->set_gain_mode(false);
-                rtlsdr_source_->set_gain(gain_);
-                std::cout << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain() << std::endl;
-                DLOG(INFO) << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain() << std::endl;
-            }
+            if (this->AGC_enabled_ == true)
+                {
+                    rtlsdr_source_->set_gain_mode(true);
+                    std::cout << "AGC enabled" << std::endl;
+                    LOG(INFO) << "AGC enabled";
+                }
+            else
+                {
+                    rtlsdr_source_->set_gain_mode(false);
+                    rtlsdr_source_->set_gain(gain_);
+                    std::cout << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain() << std::endl;
+                    LOG(INFO) << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain();
+                }
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
-                    << " unrecognized item type. Using short.";
+            LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Using short.";
             item_size_ = sizeof(short);
         }
 
@@ -126,21 +124,21 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
             file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
-
 }
+
+
 
 RtlsdrSignalSource::~RtlsdrSignalSource()
-{
-}
+{}
+
+
 
 void RtlsdrSignalSource::connect(gr_top_block_sptr top_block)
 {
-
     if (samples_ != 0)
         {
             top_block->connect(rtlsdr_source_, 0, valve_, 0);
             DLOG(INFO) << "connected rtlsdr source to valve";
-
             if (dump_)
                 {
                     top_block->connect(valve_, 0, file_sink_, 0);
@@ -157,13 +155,13 @@ void RtlsdrSignalSource::connect(gr_top_block_sptr top_block)
         }
 }
 
+
+
 void RtlsdrSignalSource::disconnect(gr_top_block_sptr top_block)
 {
-
     if (samples_ != 0)
         {
             top_block->disconnect(rtlsdr_source_, 0, valve_, 0);
-
             if (dump_)
                 {
                     top_block->disconnect(valve_, 0, file_sink_, 0);
@@ -178,11 +176,15 @@ void RtlsdrSignalSource::disconnect(gr_top_block_sptr top_block)
         }
 }
 
+
+
 gr_basic_block_sptr RtlsdrSignalSource::get_left_block()
 {
     LOG_AT_LEVEL(WARNING) << "Trying to get signal source left block.";
     return gr_basic_block_sptr();
 }
+
+
 
 gr_basic_block_sptr RtlsdrSignalSource::get_right_block()
 {

@@ -124,12 +124,11 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_symbol_accumulator=0;
     d_symbol_accumulator_counter = 0;
     d_frame_bit_index = 0;
-    d_preamble_time_seconds=0;
+    d_preamble_time_seconds = 0;
     d_flag_frame_sync = false;
     d_GPS_frame_4bytes = 0;
     d_prev_GPS_frame_4bytes = 0;
     d_flag_parity = false;
-
     //set_history(d_samples_per_bit*8); // At least a history of 8 bits are needed to correlate with the preamble
 }
 
@@ -145,12 +144,10 @@ gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
 bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
 {
     unsigned int d1, d2, d3, d4, d5, d6, d7, t, parity;
-
     /* XOR as many bits in parallel as possible.  The magic constants pick
        up bits which are to be XOR'ed together to implement the GPS parity
        check algorithm described in IS-GPS-200E.  This avoids lengthy shift-
        and-xor loops. */
-
     d1 = gpsword & 0xFBFFBF00;
     d2 = _lrotl(gpsword,1) & 0x07FFBF01;
     d3 = _lrotl(gpsword,2) & 0xFC0F8100;
@@ -158,9 +155,7 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
     d5 = _lrotl(gpsword,4) & 0xFC00000E;
     d6 = _lrotl(gpsword,5) & 0x07F00001;
     d7 = _lrotl(gpsword,6) & 0x00003000;
-
     t = d1 ^ d2 ^ d3 ^ d4 ^ d5 ^ d6 ^ d7;
-
     // Now XOR the 5 6-bit fields together to produce the 6-bit final result.
     parity = t ^ _lrotl(t,6) ^ _lrotl(t,12) ^ _lrotl(t,18) ^ _lrotl(t,24);
     parity = parity & 0x3F;
@@ -243,9 +238,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                         }
                 }
         }
-
     //******* SYMBOL TO BIT *******
-
     d_symbol_accumulator += in[0][d_samples_per_bit*8 - 1].Prompt_I; // accumulate the input value in d_symbol_accumulator
     d_symbol_accumulator_counter++;
     if (d_symbol_accumulator_counter == 20)
@@ -256,14 +249,13 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 }
             d_symbol_accumulator = 0;
             d_symbol_accumulator_counter = 0;
-
             //******* bits to words ******
             d_frame_bit_index++;
             if (d_frame_bit_index == 30)
                 {
                     d_frame_bit_index = 0;
-                    //parity check
-                    //Each word in wordbuff is composed of:
+                    // parity check
+                    // Each word in wordbuff is composed of:
                     //      Bits 0 to 29 = the GPS data word
                     //      Bits 30 to 31 = 2 LSBs of the GPS word ahead.
                     // prepare the extended frame [-2 -1 0 ... 30]
@@ -301,12 +293,9 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     d_GPS_frame_4bytes<<=1; //shift 1 bit left the telemetry word
                 }
         }
-
     // output the frame
     consume_each(1); //one by one
-
     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
-
     //1. Copy the current tracking output
     current_synchro_data=in[0][0];
     //2. Add the telemetry decoder information
@@ -315,26 +304,24 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     current_synchro_data.Preamble_timestamp_ms = d_preamble_time_seconds * 1000.0;
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
     current_synchro_data.Preamble_symbol_counter = fmod((double)(d_sample_counter - d_preamble_index), 6000); //not corrected the preamble correlation lag! -> to be taken into account in TX Time
-
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
             {
-				double tmp_double;
-				tmp_double = current_synchro_data.Preamble_timestamp_ms;
-				d_dump_file.write((char*)&tmp_double, sizeof(double));
-				tmp_double = current_synchro_data.Prn_timestamp_ms;
-				d_dump_file.write((char*)&tmp_double, sizeof(double));
-				tmp_double = current_synchro_data.Preamble_symbol_counter;
-				d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    double tmp_double;
+                    tmp_double = current_synchro_data.Preamble_timestamp_ms;
+                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    tmp_double = current_synchro_data.Prn_timestamp_ms;
+                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    tmp_double = current_synchro_data.Preamble_symbol_counter;
+                    d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
             catch (std::ifstream::failure e)
             {
                     std::cout << "Exception writing observables dump file " << e.what() << std::endl;
             }
         }
-
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_synchro_data;
     return 1;

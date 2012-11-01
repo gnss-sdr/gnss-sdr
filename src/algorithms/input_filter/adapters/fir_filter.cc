@@ -165,9 +165,11 @@ void FirFilter::init()
 
     std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
     int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
-
-    std::vector<double> taps_d = gr_remez(number_of_taps - 1, bands, ampl,
-            error_w, filter_type, grid_density);
+    // gr_remez implements the Parks-McClellan FIR filter design.
+    // It calculates the optimal (in the Chebyshev/minimax sense) FIR filter
+    // impulse response given a set of band edges, the desired response on
+    // those bands, and the weight given to the error in those bands.
+    std::vector<double> taps_d = gr_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
     taps_.reserve(taps_d.size());
     for (std::vector<double>::iterator it = taps_d.begin(); it != taps_d.end(); it++)
         {

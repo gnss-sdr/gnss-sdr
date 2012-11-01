@@ -77,40 +77,37 @@ using google::LogMessage;
 
 
 GNSSBlockFactory::GNSSBlockFactory()
-{
-}
+{}
+
 
 GNSSBlockFactory::~GNSSBlockFactory()
-{
-}
+{}
+
 
 GNSSBlockInterface* GNSSBlockFactory::GetSignalSource(
         ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
 {
-
     std::string default_implementation = "File_Signal_Source";
-
     std::string implementation = configuration->property(
             "SignalSource.implementation", default_implementation);
-
     DLOG(INFO) << "Getting SignalSource with implementation "
             << implementation;
-
     return GetBlock(configuration, "SignalSource", implementation, 0, 1,
             queue);
 }
 
+
+
 GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
         ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
 {
-
     std::string default_implementation = "Pass_Through";
     std::string signal_conditioner = configuration->property(
             "SignalConditioner.implementation", default_implementation);
     std::string data_type_adapter;
     std::string input_filter;
     std::string resampler;
-    if(signal_conditioner.compare("Pass_Through")==0)
+    if(signal_conditioner.compare("Pass_Through") == 0)
         {
             data_type_adapter = "Pass_Through";
             input_filter = "Pass_Through";
@@ -126,7 +123,6 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
                      "Resampler.implementation", default_implementation);
         }
 
-
     DLOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
             << data_type_adapter << ", InputFilter implementation: "
             << input_filter << ", and Resampler implementation: "
@@ -137,73 +133,63 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
     		configuration,"InputFilter", input_filter, 1, 1, queue),
     		GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
     		"SignalConditioner", "Signal_Conditioner", queue);
-
 }
+
+
 
 GNSSBlockInterface* GNSSBlockFactory::GetObservables(
         ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
 {
-
     std::string default_implementation = "GPS_L1_CA_Observables";
     std::string implementation = configuration->property(
             "Observables.implementation", default_implementation);
-
     DLOG(INFO) << "Getting Observables with implementation "
             << implementation;
-
     unsigned int channel_count =
             configuration->property("Channels.count", 12);
-
     return GetBlock(configuration, "Observables", implementation,
             channel_count, channel_count, queue);
 }
 
+
+
 GNSSBlockInterface* GNSSBlockFactory::GetPVT(
         ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
 {
-
     std::string default_implementation = "Pass_Through";
     std::string implementation = configuration->property(
             "PVT.implementation", default_implementation);
-
     DLOG(INFO) << "Getting PVT with implementation " << implementation;
-
-    unsigned int channel_count =
-            configuration->property("Channels.count", 12);
-
+    unsigned int channel_count = configuration->property("Channels.count", 12);
     return GetBlock(configuration, "PVT", implementation, channel_count, 1,
             queue);
 }
 
+
+
 GNSSBlockInterface* GNSSBlockFactory::GetOutputFilter(
         ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
 {
-
     std::string default_implementation = "Null_Sink_Output_Filter";
     std::string implementation = configuration->property(
             "OutputFilter.implementation", default_implementation);
-
-    DLOG(INFO) << "Getting OutputFilter with implementation "
-            << implementation;
-
+    DLOG(INFO) << "Getting OutputFilter with implementation " << implementation;
     return GetBlock(configuration, "OutputFilter", implementation, 1, 0,
             queue);
 }
+
 
 GNSSBlockInterface* GNSSBlockFactory::GetChannel(
         ConfigurationInterface *configuration, std::string acq,
         std::string trk, std::string tlm, int channel,
         gr_msg_queue_sptr queue)
 {
-
     std::stringstream stream;
     stream << channel;
     std::string id = stream.str();
-
     DLOG(INFO) << "Instantiating channel " << id;
-
     return new Channel(configuration, channel, GetBlock(configuration,
-    		"Channel", "Pass_Through", 1, 1, queue),
+            "Channel", "Pass_Through", 1, 1, queue),
             (AcquisitionInterface*)GetBlock(configuration, "Acquisition",
                     acq, 1, 1, queue), (TrackingInterface*)GetBlock(
                             configuration, "Tracking", trk, 1, 1, queue),
@@ -212,23 +198,22 @@ GNSSBlockInterface* GNSSBlockFactory::GetChannel(
                                     "Channel", queue);
 }
 
+
+
 std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
         ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
 {
-
     std::string default_implementation = "Pass_Through";
     unsigned int channel_count =
             configuration->property("Channels.count", 12);
     std::vector<GNSSBlockInterface*>* channels = new std::vector<
             GNSSBlockInterface*>();
-
     std::string tracking = configuration->property("Tracking.implementation",
             default_implementation);
     std::string telemetry_decoder = configuration->property(
             "TelemetryDecoder.implementation", default_implementation);
     for (unsigned int i = 0; i < channel_count; i++)
         {
-
             std::string acquisition_implementation_name = "Acquisition"
                     + boost::lexical_cast<std::string>(i) + ".implementation";
             std::string acquisition_implementation = configuration->property(
@@ -241,10 +226,8 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
 //            << acquisition_implementation << std::endl;
 
         }
-
     DLOG(INFO) << "Getting " << channel_count << " channels";
     return channels;
-
 }
 
 
@@ -253,7 +236,6 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
      *
      * PLEASE ADD YOUR NEW BLOCK HERE!!
      */
-
 GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         ConfigurationInterface *configuration, std::string role,
         std::string implementation, unsigned int in_streams,
@@ -262,37 +244,34 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     GNSSBlockInterface* block = NULL; //Change to nullptr when available in compilers (C++11)
 
     //PASS THROUGH ----------------------------------------------------------------
-
     if (implementation.compare("Pass_Through") == 0)
-            {
-                block = new Pass_Through(configuration, role, in_streams, out_streams);
-
-            }
+        {
+            block = new Pass_Through(configuration, role, in_streams, out_streams);
+        }
 
     // SIGNAL SOURCES -------------------------------------------------------------
     else if (implementation.compare("File_Signal_Source") == 0)
         {
-        try
-        {
-            block = new FileSignalSource(configuration, role, in_streams,
-                out_streams, queue);
+            try
+            {
+                    block = new FileSignalSource(configuration, role, in_streams,
+                            out_streams, queue);
+            }
+            catch (const std::exception &e)
+            {
+                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    LOG_AT_LEVEL(INFO) << implementation
+                            << ": Source file not found";
+                    exit(1);
+            }
         }
-        catch (const std::exception &e)
-        {
-            std::cout << "GNSS-SDR program ended." << std::endl;
-            LOG_AT_LEVEL(INFO) << implementation
-                                << ": Source file not found";
-            exit(1);
-        }
-        }
-
-        else if (implementation.compare("UHD_Signal_Source") == 0)
+    else if (implementation.compare("UHD_Signal_Source") == 0)
         {
             block = new UhdSignalSource(configuration, role, in_streams,
                     out_streams, queue);
         }
 #if GN3S_DRIVER
-        else if (implementation.compare("GN3S_Signal_Source") == 0)
+    else if (implementation.compare("GN3S_Signal_Source") == 0)
         {
             block = new Gn3sSignalSource(configuration, role, in_streams,
                     out_streams, queue);
@@ -300,7 +279,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 #endif
 
 #if RTLSDR_DRIVER
-        else if (implementation.compare("Rtlsdr_Signal_Source") == 0)
+    else if (implementation.compare("Rtlsdr_Signal_Source") == 0)
         {
             block = new RtlsdrSignalSource(configuration, role, in_streams,
                     out_streams, queue);
@@ -309,10 +288,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 
     // DATA TYPE ADAPTER -----------------------------------------------------------
     else if (implementation.compare("Ishort_To_Complex") == 0)
-            {
-                block = new IshortToComplex(configuration, role, in_streams,
-                        out_streams, queue);
-            }
+        {
+            block = new IshortToComplex(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+
     // INPUT FILTER ----------------------------------------------------------------
     else if (implementation.compare("Fir_Filter") == 0)
         {
@@ -326,8 +306,6 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         }
 
     // RESAMPLER -------------------------------------------------------------------
-
-
     else if (implementation.compare("Direct_Resampler") == 0)
         {
             block = new DirectResamplerConditioner(configuration, role,
@@ -335,7 +313,6 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         }
 
     // ACQUISITION BLOCKS ---------------------------------------------------------
-
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
             block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
@@ -348,7 +325,6 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         }
 
     // TRACKING BLOCKS -------------------------------------------------------------
-
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
         {
             block = new GpsL1CaDllPllTracking(configuration, role, in_streams,
@@ -366,28 +342,26 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         }
     else if (implementation.compare("GPS_L1_CA_TCP_CONNECTOR_Tracking") == 0)
         {
-                block = new GpsL1CaTcpConnectorTracking(configuration, role, in_streams,
-                        out_streams, queue);
+            block = new GpsL1CaTcpConnectorTracking(configuration, role, in_streams,
+                    out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
         {
-                block = new GalileoE1DllPllVemlTracking(configuration, role, in_streams,
-                        out_streams, queue);
+            block = new GalileoE1DllPllVemlTracking(configuration, role, in_streams,
+                    out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
-                block = new GalileoE1TcpConnectorTracking(configuration, role, in_streams,
-                        out_streams, queue);
+            block = new GalileoE1TcpConnectorTracking(configuration, role, in_streams,
+                    out_streams, queue);
         }
 
     // TELEMETRY DECODERS ----------------------------------------------------------
-
     else if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)
         {
             block = new GpsL1CaTelemetryDecoder(configuration, role, in_streams,
                     out_streams, queue);
         }
-
     // OBSERVABLES -----------------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_Observables") == 0)
         {
@@ -396,7 +370,6 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         }
 
     // PVT -------------------------------------------------------------------------
-
     else if (implementation.compare("GPS_L1_CA_PVT") == 0)
         {
             block = new GpsL1CaPvt(configuration, role, in_streams,
@@ -414,13 +387,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             block = new FileOutputFilter(configuration, role, in_streams,
                     out_streams);
         }
-
     else
         {
             // Log fatal. This causes execution to stop.
             LOG_AT_LEVEL(ERROR) << implementation
                     << ": Undefined implementation for block";
         }
-
     return block;
 }

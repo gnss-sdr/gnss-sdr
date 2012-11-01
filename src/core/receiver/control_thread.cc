@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -56,6 +56,7 @@ ControlThread::ControlThread()
     init();
 }
 
+
 ControlThread::ControlThread(ConfigurationInterface *configuration)
 {
     configuration_ = configuration;
@@ -63,12 +64,16 @@ ControlThread::ControlThread(ConfigurationInterface *configuration)
     init();
 }
 
+
+
 ControlThread::~ControlThread()
 {
     delete flowgraph_;
     if (delete_configuration_) delete configuration_;
     delete control_message_factory_;
 }
+
+
 
 /*
  * Runs the control thread that manages the receiver control plane
@@ -81,7 +86,7 @@ ControlThread::~ControlThread()
  */
 void ControlThread::run()
 {
-
+    // Connect the flowgraph
     flowgraph_->connect();
     if (flowgraph_->connected())
         {
@@ -92,7 +97,7 @@ void ControlThread::run()
             LOG_AT_LEVEL(ERROR) << "Unable to connect flowgraph";
             return;
         }
-
+    // Start the flowgraph
     flowgraph_->start();
     if (flowgraph_->running())
         {
@@ -103,7 +108,6 @@ void ControlThread::run()
             LOG_AT_LEVEL(ERROR) << "Unable to start flowgraph";
             return;
         }
-
     // start the keyboard_listener thread
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
 
@@ -114,23 +118,23 @@ void ControlThread::run()
             read_control_messages();
             if (control_messages_ != 0) process_control_messages();
         }
-
     keyboard_thread_.join();
     flowgraph_->stop();
     LOG_AT_LEVEL(INFO) << "Flowgraph stopped";
 }
 
+
+
 void ControlThread::set_control_queue(gr_msg_queue_sptr control_queue)
 {
     if (flowgraph_->running())
         {
-            LOG_AT_LEVEL(WARNING)
-                        << "Unable to set control queue while flowgraph is running";
+            LOG_AT_LEVEL(WARNING) << "Unable to set control queue while flowgraph is running";
             return;
         }
-
     control_queue_ = control_queue;
 }
+
 
 
 void ControlThread::init()
@@ -144,9 +148,10 @@ void ControlThread::init()
     applied_actions_ = 0;
 }
 
+
+
 void ControlThread::read_control_messages()
 {
-
     DLOG(INFO) << "Reading control messages from queue";
     gr_message_sptr queue_message = control_queue_->delete_head();
     if (queue_message != 0)
@@ -160,11 +165,11 @@ void ControlThread::read_control_messages()
         }
 }
 
+
 // Apply the corresponding control actions
 // TODO:  May be it is better to move the apply_action state machine to the control_thread
 void ControlThread::process_control_messages()
 {
-
     for (unsigned int i = 0; i < control_messages_->size(); i++)
         {
             if (stop_) break;
@@ -177,16 +182,15 @@ void ControlThread::process_control_messages()
                     flowgraph_->apply_action(control_messages_->at(i)->who,
                             control_messages_->at(i)->what);
                 }
-
             delete control_messages_->at(i);
             processed_control_messages_++;
         }
-
     control_messages_->clear();
     delete control_messages_;
-
     DLOG(INFO) << "Processed all control messages";
 }
+
+
 
 void ControlThread::apply_action(unsigned int what)
 {
@@ -201,29 +205,28 @@ void ControlThread::apply_action(unsigned int what)
     default:
         DLOG(INFO) << "Unrecognized action.";
     }
-
 }
+
+
 
 void ControlThread::keyboard_listener()
 {
-	bool read_keys=true;
-	char c;
-	//std::cout<<"Keystroke reader start!"<<std::endl;
-	while(read_keys)
-	{
-		c= std::cin.get();
-		//std::cout<<"Keystroke received: "<<c<<std::endl;
-		if (c=='q')
-		{
-			std::cout<<"Quit keystroke order received, stopping GNSS-SDR !!"<<std::endl;
-			ControlMessageFactory* cmf = new ControlMessageFactory();
-			if (control_queue_ != gr_msg_queue_sptr()) {
-				control_queue_->handle(cmf->GetQueueMessage(200, 0));
-			}
-			delete cmf;
-			read_keys=false;
-		}
-	}
-
+    bool read_keys = true;
+    char c;
+    while(read_keys)
+        {
+            c = std::cin.get();
+            if (c =='q')
+                {
+                    std::cout << "Quit keystroke order received, stopping GNSS-SDR !!" << std::endl;
+                    ControlMessageFactory* cmf = new ControlMessageFactory();
+                    if (control_queue_ != gr_msg_queue_sptr())
+                        {
+                            control_queue_->handle(cmf->GetQueueMessage(200, 0));
+                        }
+                    delete cmf;
+                    read_keys = false;
+                }
+        }
 }
 

@@ -118,7 +118,7 @@ void ControlThread::run()
             read_control_messages();
             if (control_messages_ != 0) process_control_messages();
         }
-    keyboard_thread_.join();
+    keyboard_thread_.timed_join(boost::posix_time::seconds(1));
     flowgraph_->stop();
     LOG_AT_LEVEL(INFO) << "Flowgraph stopped";
 }
@@ -194,7 +194,6 @@ void ControlThread::process_control_messages()
 
 void ControlThread::apply_action(unsigned int what)
 {
-
     switch (what)
     {
     case 0:

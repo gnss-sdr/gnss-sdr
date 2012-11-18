@@ -135,8 +135,6 @@ private:
 
     double d_early_late_spc_chips;
 
-    double d_code_phase_step_chips;
-
     gr_complex* d_ca_code;
 
     gr_complex* d_early_code;
@@ -150,7 +148,6 @@ private:
 
     // remaining code phase and carrier phase between tracking loops
     float d_rem_code_phase_samples;
-    float d_next_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
@@ -164,15 +161,14 @@ private:
     Correlator d_correlator;
 
     // tracking vars
-    float d_code_freq_hz;
+    float d_code_freq_chips;
     float d_carrier_doppler_hz;
     float d_acc_carrier_phase_rad;
     float d_code_phase_samples;
+    float d_acc_code_phase_secs;
 
     //PRN period in samples
     int d_current_prn_length_samples;
-    int d_next_prn_length_samples;
-    //double d_sample_counter_seconds;
 
     //processing samples counters
     unsigned long int d_sample_counter;

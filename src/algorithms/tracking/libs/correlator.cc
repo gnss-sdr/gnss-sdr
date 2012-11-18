@@ -77,25 +77,23 @@ void Correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples,const
 void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, bool input_vector_unaligned)
 {
     gr_complex* bb_signal;
-    gr_complex* input_aligned;
+    //gr_complex* input_aligned;
 
     //todo: do something if posix_memalign fails
     if (posix_memalign((void**)&bb_signal, 16, signal_length_samples * sizeof(gr_complex)) == 0) {};
 
-    //todo: There is an issue with the aligned version of volk_32fc_x2_multiply_32fc, even if the is_unaligned()==false
     if (input_vector_unaligned==true)
     {
         //todo: do something if posix_memalign fails
     	//if (posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex)) == 0){};
         //memcpy(input_aligned,input,signal_length_samples * sizeof(gr_complex));
 
-        //volk_32fc_x2_multiply_32fc_a_manual(bb_signal, input_aligned, carrier, signal_length_samples,  volk_32fc_x2_multiply_32fc_a_best_arch.c_str());
-        //volk_32fc_x2_dot_prod_32fc_a_manual(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
-        //volk_32fc_x2_dot_prod_32fc_a_manual(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
-        //volk_32fc_x2_dot_prod_32fc_a_manual(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex),  volk_32fc_x2_dot_prod_32fc_a_best_arch.c_str());
-
         volk_32fc_x2_multiply_32fc_u(bb_signal, input, carrier, signal_length_samples);
     }else{
+    	/*
+    	 * todo: There is a problem with the aligned version of volk_32fc_x2_multiply_32fc_a.
+    	 * It crashes even if the is_aligned() work function returns true. Im keeping the unaligned version in both cases..
+    	 */
     	//use directly the input vector
         volk_32fc_x2_multiply_32fc_u(bb_signal, input, carrier, signal_length_samples);
     }

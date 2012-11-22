@@ -25,6 +25,7 @@ exe run_tests : test_main.cc
 ../algorithms/data_type_adapter/adapters//ishort_to_complex
 ../algorithms/input_filter/adapters//fir_filter
 ../algorithms/input_filter/adapters//freq_xlating_fir_filter
+../algorithms/libs//nco_lib
 ../algorithms/libs//gnss_signal_processing
 ../algorithms/libs//gps_sdr_signal_processing
 ../algorithms/libs//galileo_e1_signal_processing

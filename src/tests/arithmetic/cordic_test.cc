@@ -2,6 +2,7 @@
  * \file cordic_test.cc
  * \brief Test of the CORDIC (COordinate Rotation DIgital Computer) algorithm
  * \author Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
+ * 		   Javier Arribas, 2012. jarribas(at)cttc.es
  *
  *
  * -------------------------------------------------------------------------
@@ -30,79 +31,105 @@
  */
 
 
+#include "GPS_L1_CA.h"
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <gtest/gtest.h>
 #include "cordic.h"
 #include <sys/time.h>
 #include <algorithm>
 #include <cstdlib> // for RAND_MAX
 #include <gnuradio/gr_fxpt_nco.h>
-
+#include "nco_lib.h"
 
 TEST(Cordic_Test, StandardCIsFasterThanCordic)
 {
     int largest_k = 10;
     Cordic* cordicPtr;
     cordicPtr = new Cordic(largest_k);
-    double phase = rand();
-    phase = (phase/RAND_MAX) * 3.141592;
-    double  cos_phase1 = 0;
-    double  sin_phase1 = 0;
-    double  cos_phase2 = 0;
-    double  sin_phase2 = 0;
-    double  cos_phase3 = 0;
-    double  sin_phase3 = 0;
 
-    gr_fxpt_nco* nco;
-    nco = new gr_fxpt_nco();
+    std::complex<float> *d_carr_sign;
+    // carrier parameters
+    int d_vector_length=4000;
+    float phase_rad;
+    float phase_step_rad;
+    float carrier_freq=2000;
+    float d_fs_in=4000000;
+    phase_step_rad = (float)GPS_TWO_PI*carrier_freq / (float)d_fs_in;
 
-    double niter = 10000000;
+    // space for carrier wipeoff and signal baseband vectors
+    if (posix_memalign((void**)&d_carr_sign, 16, d_vector_length * sizeof(std::complex<float>) * 2) == 0){};
+    double sin_d,cos_d;
+    double sin_f,cos_f;
+
+
+    double niter = 10000;
     struct timeval tv;
 
-
+    //*** NON-OPTIMIZED CORDIC *****
     gettimeofday(&tv, NULL);
     long long int begin1 = tv.tv_sec * 1000000 + tv.tv_usec;
+
     for(int i=0; i<niter; i++)
         {
-            cordicPtr->cordic_get_cos_sin(phase, cos_phase1, sin_phase1);
+    	phase_rad=0;
+            for(int j=0;j<d_vector_length;j++)
+            {
+
+            	cordicPtr->cordic_get_cos_sin(phase_rad, cos_d, sin_d);
+            	d_carr_sign[j]=std::complex<float>(cos_d,-sin_d);
+            	phase_rad=phase_rad+phase_step_rad;
+            }
+
         }
     gettimeofday(&tv, NULL);
     long long int end1 = tv.tv_sec *1000000 + tv.tv_usec;
 
 
-
+    //*** STD COS, SIN standalone *****
     gettimeofday(&tv, NULL);
     long long int begin2 = tv.tv_sec * 1000000 + tv.tv_usec;
     for(int i=0; i<niter; i++)
         {
-            cos_phase2 = cos(phase);
-            sin_phase2 = sin(phase);
+			for(int j=0;j<d_vector_length;j++)
+			{
+				cos_f = std::cos(phase_rad);
+				sin_f = std::sin(phase_rad);
+				d_carr_sign[j]=std::complex<float>(cos_f,-sin_f);
+				phase_rad=phase_rad+phase_step_rad;
+			}
         }
     gettimeofday(&tv, NULL);
     long long int end2 = tv.tv_sec *1000000 + tv.tv_usec;
 
-
-
-    float phase_f;
-    phase_f = (float)phase;
+    //*** GNU RADIO FIXED POINT ARITHMETIC ********
     gettimeofday(&tv, NULL);
     long long int begin3 = tv.tv_sec * 1000000 + tv.tv_usec;
     for(int i=0; i<niter; i++)
         {
-            nco->set_phase(phase_f);
-            cos_phase3 = nco->cos();
-            sin_phase3 = nco->sin();
+        	fxp_nco(d_carr_sign, d_vector_length,0, phase_step_rad);
         }
     gettimeofday(&tv, NULL);
     long long int end3 = tv.tv_sec *1000000 + tv.tv_usec;
-    delete nco;
+
+    //*** SSE2 NCO ****************
+     gettimeofday(&tv, NULL);
+    long long int begin4 = tv.tv_sec * 1000000 + tv.tv_usec;
+    for(int i=0; i<niter; i++)
+        {
+        	sse_nco(d_carr_sign, d_vector_length,0, phase_step_rad);
+        }
+    gettimeofday(&tv, NULL);
+    long long int end4 = tv.tv_sec *1000000 + tv.tv_usec;
+
+
     delete cordicPtr;
 
 
-    std::cout << "CORDIC sin =" << sin_phase1 << ", cos =" << cos_phase1 << " computed " << niter << " times in " << (end1-begin1) << " microseconds" << std::endl;
-    std::cout << "STD    sin =" << sin_phase2 << ", cos =" << cos_phase2 << " computed " << niter << " times in " << (end2-begin2) << " microseconds" << std::endl;
-    std::cout << "FXPT   sin =" << sin_phase3 << ", cos =" << cos_phase3 << " computed " << niter << " times in " << (end3-begin3) << " microseconds" << std::endl;
+    std::cout << "NON-OPTIMIZED CORDIC computed " << niter << " times in " << (end1-begin1) << " microseconds" << std::endl;
+    std::cout << "STD LIB ARITHM computed " << niter << " times in " << (end2-begin2) << " microseconds" << std::endl;
+    std::cout << "FXPT CORDIC computed " << niter << " times in " << (end3-begin3) << " microseconds" << std::endl;
+    std::cout << "SSE CORDIC computed " << niter << " times in " << (end4-begin4) << " microseconds" << std::endl;
 
     EXPECT_TRUE((end2-begin2) < (end1-begin1)); // if true, standard C++ is faster than the cordic implementation
 }

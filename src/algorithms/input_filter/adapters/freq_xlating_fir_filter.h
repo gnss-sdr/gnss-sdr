@@ -35,16 +35,13 @@
 
 #include "gnss_synchro.h"
 #include "gnss_block_interface.h"
-#include <gnuradio/gr_freq_xlating_fir_filter_ccc.h>
-#include <gnuradio/gr_freq_xlating_fir_filter_ccf.h>
-#include <gnuradio/gr_freq_xlating_fir_filter_fcc.h>
-#include <gnuradio/gr_freq_xlating_fir_filter_scc.h>
+#include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a gnuradio gr_freq_xlating_fir_filter designed with gr_remez
+ * \brief This class adapts a gnuradio gr_freq_xlating_fir_filter designed with pm_remez
  *
  * Construct a FIR filter with the given taps and a composite frequency
  * translation that shifts intermediate_freq_ down to zero Hz. The frequency
@@ -81,7 +78,7 @@ public:
     gr_basic_block_sptr get_right_block();
 
 private:
-    gr_freq_xlating_fir_filter_ccf_sptr freq_xlating_fir_filter_ccf_;
+    gr::filter::freq_xlating_fir_filter_ccf::sptr freq_xlating_fir_filter_ccf_;
     ConfigurationInterface* config_;
     bool dump_;
     std::string dump_filename_;

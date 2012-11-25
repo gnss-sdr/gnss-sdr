@@ -34,8 +34,8 @@
 #include "configuration_interface.h"
 #include "gps_l1_ca_observables_cc.h"
 #include <gnuradio/gr_io_signature.h>
-#include <gnuradio/gr_stream_to_vector.h>
-#include <gnuradio/gr_vector_to_stream.h>
+//#include <gnuradio/gr_stream_to_vector.h>
+//#include <gnuradio/gr_vector_to_stream.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 

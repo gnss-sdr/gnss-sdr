@@ -46,7 +46,7 @@ project
 project : requirements
 <define>OMNITHREAD_POSIX
 <cxxflags>"-msse2 -mfpmath=sse -std=c++0x -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free"
-<linkflags>"-larmadillo -lboost_system -lboost_filesystem -lboost_thread -lboost_date_time -llapack -lblas -lprofiler -ltcmalloc -lvolk"
+<linkflags>"-lgnuradio-blocks -lgnuradio-fft -lgnuradio-filter -larmadillo -lboost_system -lboost_filesystem -lboost_thread -lboost_date_time -llapack -lblas -lprofiler -ltcmalloc -lvolk"
 <include>src/algorithms/acquisition/adapters
 <include>src/algorithms/acquisition/gnuradio_blocks
 <include>src/algorithms/channel/adapters
@@ -85,7 +85,10 @@ project : requirements
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/general
 <include>$GNURADIO_ROOT/gnuradio-core/src/lib/gengen
 <include>$GNURADIO_ROOT/gr-uhd/include
-<include>$GNURADIO_ROOT/volk/lib
+<include>$GNURADIO_ROOT/gr-blocks/include
+<include>$GNURADIO_ROOT/gr-fft/include
+<include>$GNURADIO_ROOT/gr-filter/include
+#<include>$GNURADIO_ROOT/volk/lib
 <include>$OSMOSDR_ROOT/include/osmosdr
 <include>$(GTEST_DIR)/include
 <threading>multi 

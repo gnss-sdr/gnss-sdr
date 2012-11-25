@@ -46,132 +46,139 @@
 using google::LogMessage;
 
 DEFINE_string(signal_source, "-",
-    "If defined, path to the file containing the signal samples (overrides the configuration file)");
+		"If defined, path to the file containing the signal samples (overrides the configuration file)");
 
 
 FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
-    std::string role, unsigned int in_streams, unsigned int out_streams,
-    gr_msg_queue_sptr queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+		std::string role, unsigned int in_streams, unsigned int out_streams,
+		gr_msg_queue_sptr queue) :
+		role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
+	std::string default_filename = "../data/sc2_d16.dat";
+	std::string default_item_type = "short";
+	std::string default_dump_filename = "../data/sc2_d16.dat";
 
-  std::string default_filename = "../data/sc2_d16.dat";
-  std::string default_item_type = "short";
-  std::string default_dump_filename = "../data/sc2_d16.dat";
+	samples_ = configuration->property(role + ".samples", 0);
+	sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
+	filename_ = configuration->property(role + ".filename", default_filename);
 
-  samples_ = configuration->property(role + ".samples", 0);
-  sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
-  filename_ = configuration->property(role + ".filename", default_filename);
+	// override value with commandline flag, if present
+	if (FLAGS_signal_source.compare("-") != 0) filename_= FLAGS_signal_source;
 
-  // override value with commandline flag, if present
-  if (FLAGS_signal_source.compare("-") != 0) filename_= FLAGS_signal_source;
+	item_type_ = configuration->property(role + ".item_type", default_item_type);
+	repeat_ = configuration->property(role + ".repeat", false);
+	dump_ = configuration->property(role + ".dump", false);
+	dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
+	enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
 
-  item_type_ = configuration->property(role + ".item_type", default_item_type);
-  repeat_ = configuration->property(role + ".repeat", false);
-  dump_ = configuration->property(role + ".dump", false);
-  dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-  enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
+	if (item_type_.compare("gr_complex") == 0)
+	{
+		item_size_ = sizeof(gr_complex);
+	}
+	else if (item_type_.compare("float") == 0)
+	{
+		item_size_ = sizeof(float);
+	}
+	else if (item_type_.compare("short") == 0)
+	{
+		item_size_ = sizeof(short int);
+	}
+	else
+	{
+		LOG_AT_LEVEL(WARNING) << item_type_
+				<< " unrecognized item type. Using gr_complex.";
+		item_size_ = sizeof(gr_complex);
+	}
+	try
+	{
+		file_source_ = gr_make_file_source(item_size_, filename_.c_str(), repeat_);
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr
+		<< "The receiver was configured to work with a file signal source "
+		<< std::endl
+		<< "but the specified file is unreachable by GNSS-SDR."
+		<< std::endl
+		<< "Please modify the configuration at "
+		<< "conf/gnss-sdr.conf (the default configuration file)"
+		<< std::endl
+		<< "and point SignalSource.filename to a valid file,"
+		<< std::endl
+		<< "or specify your own receiver and source with the flag"
+		<< std::endl
+		<<"gnss-sdr --config_file=my_GNSS_SDR_configuration.conf"
+		<< std::endl;
+		LOG_AT_LEVEL(INFO) << "file_signal_source: Unable to open the samples file "
+				<< filename_.c_str() << ", exiting the program.";
+		throw(e);
+	}
 
-  if (item_type_.compare("gr_complex") == 0)
-    {
-      item_size_ = sizeof(gr_complex);
-    }
-  else if (item_type_.compare("float") == 0)
-    {
-      item_size_ = sizeof(float);
-    }
-  else if (item_type_.compare("short") == 0)
-    {
-      item_size_ = sizeof(short int);
-    }
-  else
-    {
-      LOG_AT_LEVEL(WARNING) << item_type_
-          << " unrecognized item type. Using gr_complex.";
-      item_size_ = sizeof(gr_complex);
-    }
-  try
-  {
-      file_source_ = gr_make_file_source(item_size_, filename_.c_str(), repeat_);
-  }
-  catch (const std::exception &e)
-  {
-      std::cerr
-      << "The receiver was configured to work with a file signal source "
-      << std::endl
-      << "but the specified file is unreachable by GNSS-SDR."
-      << std::endl
-      << "Please modify the configuration at "
-      << "conf/gnss-sdr.conf (the default configuration file)"
-      << std::endl
-      << "and point SignalSource.filename to a valid file,"
-      << std::endl
-      << "or specify your own receiver and source with the flag"
-      << std::endl
-      <<"gnss-sdr --config_file=my_GNSS_SDR_configuration.conf"
-      << std::endl;
-      LOG_AT_LEVEL(INFO) << "file_signal_source: Unable to open the samples file "
-          << filename_.c_str() << ", exiting the program.";
-      throw(e);
-  }
+	DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
 
-  DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
+	if (samples_ == 0) // read all file
+	{
+		/*!
+		 * BUG workaround: The GNURadio file source does not stop the receiver after reaching the End of File.
+		 * A possible solution is to compute the file length in samples using file size, excluding the last 100 milliseconds, and enable always the
+		 * valve block
+		 */
+		std::ifstream file (filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+		std::ifstream::pos_type size;
+		if (file.is_open())
+		{
+			size = file.tellg();
+		}
+		else
+		{
+			std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << std::endl;
+			LOG_AT_LEVEL(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
+		}
+		std::cout << std::setprecision(16);
+		std::cout << "Processing file " << filename_ << ", which contains " << (double)size << " [bytes]" << std::endl;
+		if (size > 0)
+		{
+			samples_ = floor((double)size / (double)item_size()) - ceil(0.1 * (double)sampling_frequency_); //process all the samples available in the file excluding the last 100 ms
+		}
+	}
+	CHECK(samples_ > 0) << "File does not contain enough samples to process.";
+	double signal_duration_s;
+	signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
+	DLOG(INFO) << "Total samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
+	std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
+	// if samples_ > 0 then enable a flow valve to stop the process after n samples
+	//if (samples_ > 0)
+	//{
+		valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
+		DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
+	//}
+	//else
+	//{
+	//	std::cout << "Not enough samples to process." << std::endl;
+		// here we should exit the program
+		//throw;
+		//LOG(FATAL)
 
-  if (samples_ == 0)
-    {
-      /*!
-       * BUG workaround: The GNURadio file source does not stop the receiver after reaching the End of File.
-       * A possible solution is to compute the file length in samples using file size, excluding the last 100 milliseconds, and enable always the
-       * valve block
-       */
-      std::ifstream file (filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-      std::ifstream::pos_type size;
-      if (file.is_open())
-        {
-          size = file.tellg();
-        }
-      else
-        {
-          std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << std::endl;
-          LOG_AT_LEVEL(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
-        }
-      std::cout << std::setprecision(16);
-      std::cout <<"Processing file " << filename_ << ", which contains " << (double)size << " [bytes]" << std::endl;
-      if (size > 0)
-        {
-          samples_ = floor((double)size / (double)item_size()) - ceil(0.1 * (double)sampling_frequency_); //process all the samples available in the file excluding the last 100 ms
+	//}
 
-        }
-    }
-  double signal_duration_s;
-  signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
-  DLOG(INFO) << "Total samples to be processed= "<< samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
-  std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
-  // if samples != 0 then enable a flow valve to stop the process after n samples
-  if (samples_ != 0)
-    {
-      valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
-      DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
-    }
+	if (dump_)
+	{
+		sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+		DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
+	}
 
-  if (dump_)
-    {
-      sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
-      DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
-    }
-
-  if (enable_throttle_control_)
-    {
-      throttle_ = gr_make_throttle(item_size_, sampling_frequency_);
-    }
-  DLOG(INFO) << "File source filename " << filename_;
-  DLOG(INFO) << "Samples " << samples_;
-  DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
-  DLOG(INFO) << "Item type " << item_type_;
-  DLOG(INFO) << "Item size " << item_size_;
-  DLOG(INFO) << "Repeat " << repeat_;
-  DLOG(INFO) << "Dump " << dump_;
-  DLOG(INFO) << "Dump filename " << dump_filename_;
+	if (enable_throttle_control_)
+	{
+		throttle_ = gr_make_throttle(item_size_, sampling_frequency_);
+	}
+	DLOG(INFO) << "File source filename " << filename_;
+	DLOG(INFO) << "Samples " << samples_;
+	DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
+	DLOG(INFO) << "Item type " << item_type_;
+	DLOG(INFO) << "Item size " << item_size_;
+	DLOG(INFO) << "Repeat " << repeat_;
+	DLOG(INFO) << "Dump " << dump_;
+	DLOG(INFO) << "Dump filename " << dump_filename_;
 }
 
 
@@ -185,7 +192,7 @@ FileSignalSource::~FileSignalSource()
 
 void FileSignalSource::connect(gr_top_block_sptr top_block)
 {
-  if (samples_ != 0)
+  if (samples_ > 0)
     {
       if (enable_throttle_control_ == true)
         {
@@ -240,7 +247,7 @@ void FileSignalSource::connect(gr_top_block_sptr top_block)
 
 void FileSignalSource::disconnect(gr_top_block_sptr top_block)
 {
-  if (samples_ != 0)
+  if (samples_ > 0)
     {
       if (enable_throttle_control_ == true)
         {
@@ -305,7 +312,7 @@ gr_basic_block_sptr FileSignalSource::get_left_block()
 
 gr_basic_block_sptr FileSignalSource::get_right_block()
 {
-  if (samples_ != 0)
+  if (samples_ > 0)
     {
       return valve_;
     }

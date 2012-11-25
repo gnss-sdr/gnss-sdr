@@ -69,7 +69,7 @@ public:
 };
 
 struct gps_channel_acquiring_fsm_S1: public sc::state<
-		gps_channel_acquiring_fsm_S1, GpsL1CaChannelFsm> {
+gps_channel_acquiring_fsm_S1, GpsL1CaChannelFsm> {
 public:
 	typedef mpl::list<sc::transition<
 			Ev_gps_channel_failed_acquisition_no_repeat,
@@ -77,7 +77,7 @@ public:
 			Ev_gps_channel_failed_acquisition_repeat,
 			gps_channel_acquiring_fsm_S1>, sc::transition<
 			Ev_gps_channel_valid_acquisition, gps_channel_tracking_fsm_S2> >
-			reactions;
+	reactions;
 
 	gps_channel_acquiring_fsm_S1(my_context ctx) :
 		my_base(ctx) {

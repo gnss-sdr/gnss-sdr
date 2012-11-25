@@ -33,7 +33,7 @@
 
 #include "gnss_synchro.h"
 #include "gnss_block_interface.h"
-#include <gnuradio/gr_interleaved_short_to_complex.h>
+#include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
@@ -70,7 +70,7 @@ public:
     gr_basic_block_sptr get_right_block();
 
 private:
-    gr_interleaved_short_to_complex_sptr gr_interleaved_short_to_complex_;
+    gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_;
     ConfigurationInterface* config_;
     bool dump_;
     std::string dump_filename_;

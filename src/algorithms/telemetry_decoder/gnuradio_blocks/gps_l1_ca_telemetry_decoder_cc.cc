@@ -191,7 +191,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     corr_value += d_preambles_symbols[i];
                 }
         }
-    d_flag_preamble=false;
+    d_flag_preamble = false;
+
     //******* frame sync ******************
     if (abs(corr_value) >= 160)
         {
@@ -206,7 +207,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     d_frame_bit_index = 8;
                     d_stat = 1; // enter into frame pre-detection status
                 }
-            else if (d_stat == 1) //check 6 seconds of preample separation
+            else if (d_stat == 1) //check 6 seconds of preamble separation
                 {
                     preamble_diff = abs(d_sample_counter - d_preamble_index);
                     if (abs(preamble_diff - 6000) < 1)
@@ -238,6 +239,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                         }
                 }
         }
+
     //******* SYMBOL TO BIT *******
     d_symbol_accumulator += in[0][d_samples_per_bit*8 - 1].Prompt_I; // accumulate the input value in d_symbol_accumulator
     d_symbol_accumulator_counter++;
@@ -245,7 +247,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         {
             if (d_symbol_accumulator > 0)
                 { //symbol to bit
-                    d_GPS_frame_4bytes +=1; //insert the telemetry bit in LSB
+                    d_GPS_frame_4bytes += 1; //insert the telemetry bit in LSB
                 }
             d_symbol_accumulator = 0;
             d_symbol_accumulator_counter = 0;

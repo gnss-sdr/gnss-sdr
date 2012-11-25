@@ -275,8 +275,8 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_code()
     tcode_chips = -rem_code_phase_chips;
 
     // Alternative EPL code generation (40% of speed improvement!)
-    early_late_spc_samples=round(d_early_late_spc_chips/code_phase_step_chips);
-    epl_loop_length_samples=d_current_prn_length_samples+early_late_spc_samples*2;
+    early_late_spc_samples = round(d_early_late_spc_chips / code_phase_step_chips);
+    epl_loop_length_samples = d_current_prn_length_samples + early_late_spc_samples*2;
     for (int i=0; i<epl_loop_length_samples; i++)
 		{
     	    associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
@@ -399,15 +399,15 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
 				consume_each(samples_available);
 
 				// make an output to not stop the rest of the processing blocks
-	            current_synchro_data.Prompt_I=0.0;
-	            current_synchro_data.Prompt_Q=0.0;
-	            current_synchro_data.Tracking_timestamp_secs=(double)d_sample_counter/(double)d_fs_in;
-	            current_synchro_data.Carrier_phase_rads=0.0;
-	            current_synchro_data.Code_phase_secs=0.0;
-	            current_synchro_data.CN0_dB_hz=0.0;
-	            current_synchro_data.Flag_valid_tracking=false;
+	            current_synchro_data.Prompt_I = 0.0;
+	            current_synchro_data.Prompt_Q = 0.0;
+	            current_synchro_data.Tracking_timestamp_secs = (double)d_sample_counter/(double)d_fs_in;
+	            current_synchro_data.Carrier_phase_rads = 0.0;
+	            current_synchro_data.Code_phase_secs = 0.0;
+	            current_synchro_data.CN0_dB_hz = 0.0;
+	            current_synchro_data.Flag_valid_tracking = false;
 
-	            *out[0] =current_synchro_data;
+	            *out[0] = current_synchro_data;
 
 				return 1;
 			}
@@ -635,13 +635,8 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel_queue(concurrent_queue<int> *cha
     d_channel_internal_queue = channel_internal_queue;
 }
 
+
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
-
-    //	Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    //DLOG(INFO) << "Tracking code phase set to " << d_acq_code_phase_samples;
-    //DLOG(INFO) << "Tracking carrier doppler set to " << d_acq_carrier_doppler_hz;
-    //DLOG(INFO) << "Tracking Satellite set to " << d_satellite;
-
 }

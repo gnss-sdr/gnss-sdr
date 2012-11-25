@@ -34,7 +34,7 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/gr_io_signature.h>
 #include <gnuradio/gr_file_sink.h>
-#include <gnuradio/gr_remez.h>
+#include <gnuradio/filter/pm_remez.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -56,7 +56,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex);
-            freq_xlating_fir_filter_ccf_ = gr_make_freq_xlating_fir_filter_ccf(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
+            freq_xlating_fir_filter_ccf_ = gr::filter::freq_xlating_fir_filter_ccf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_ccf_->unique_id() << ")";
         }
     else
@@ -172,8 +172,10 @@ void FreqXlatingFirFilter::init()
 
     std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
     int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
-    std::vector<double> taps_d = gr_remez(number_of_taps - 1, bands, ampl,
-            error_w, filter_type, grid_density);
+
+    std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl,
+              error_w, filter_type, grid_density);
+
     taps_.reserve(taps_d.size());
     for (std::vector<double>::iterator it = taps_d.begin(); it != taps_d.end(); it++)
         {

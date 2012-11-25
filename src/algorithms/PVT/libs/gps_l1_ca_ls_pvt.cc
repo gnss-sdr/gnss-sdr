@@ -588,7 +588,7 @@ void gps_l1_ca_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a
                 }
             if (i == (maxit-1))
                 {
-                    DLOG(INFO) << "The computation of geodetic coordinates did not converged" << std::endl;
+                    DLOG(INFO) << "The computation of geodetic coordinates did not converge";
                 }
         }
     *dphi = (*dphi) * rtd;

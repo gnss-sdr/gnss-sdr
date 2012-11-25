@@ -80,10 +80,10 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
 
     // Direct FFT
-    d_fft_if = new gri_fft_complex(d_fft_size, true);
+    d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
 
     // Inverse FFT
-    d_ifft = new gri_fft_complex(d_fft_size, false);
+    d_ifft = new gr::fft::fft_complex(d_fft_size, false);
 
     // For dumping samples into a file
     d_dump = dump;

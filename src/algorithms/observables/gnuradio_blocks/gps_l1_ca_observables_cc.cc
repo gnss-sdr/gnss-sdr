@@ -182,7 +182,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             current_gnss_synchro[i].Pseudorange_symbol_shift = 0.0;
         }
     /*
-     * 2. Compute RAW pseudorranges: Use only the valid channels (channels that are tracking a satellite)
+     * 2. Compute RAW pseudoranges: Use only the valid channels (channels that are tracking a satellite)
      */
     if(current_gnss_synchro_map.size() > 0 and flag_history_ok == true)
         {
@@ -219,18 +219,18 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             if (reference_channel != gnss_synchro_iter->second.Channel_ID)
                                 {
                                     // compute the required symbol history shift in order to match the reference symbol
-                                    history_shift = gnss_synchro_iter->second.Preamble_symbol_counter-current_symbol;
+                                    history_shift = gnss_synchro_iter->second.Preamble_symbol_counter - current_symbol;
                                     if (history_shift < (int)MAX_TOA_DELAY_MS ) // and history_shift>=0)
                                         {
                                             tmp_gnss_synchro= d_history_gnss_synchro_deque[gnss_synchro_iter->second.Channel_ID][history_shift];
-                                            gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID,tmp_gnss_synchro));
+                                            gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID, tmp_gnss_synchro));
                                         }
                                 }
                         }
                 }
 
             /*
-             * 3 Compute the pseudorranges using the aligned data map
+             * 3 Compute the pseudoranges using the aligned data map
              */
             double min_symbol_timestamp_ms;
             double max_symbol_timestamp_ms;

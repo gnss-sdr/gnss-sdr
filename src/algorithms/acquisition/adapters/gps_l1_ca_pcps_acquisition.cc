@@ -38,10 +38,6 @@
 #include "configuration_interface.h"
 #include <iostream>
 #include <gnuradio/gr_io_signature.h>
-#include <gnuradio/gr_stream_to_vector.h>
-#include <gnuradio/gr_vector_to_stream.h>
-#include <gnuradio/gr_complex_to_interleaved_short.h>
-#include <gnuradio/gr_interleaved_short_to_complex.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -83,8 +79,9 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
         acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_,
                 shift_resolution_, if_, fs_in_, vector_length_, queue_,
                 dump_, dump_filename_);
-        stream_to_vector_ = gr_make_stream_to_vector(item_size_,
-                vector_length_);
+
+        stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+
         DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id()
                 << ")";
         DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id()

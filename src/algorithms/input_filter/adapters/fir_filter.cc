@@ -34,7 +34,7 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/gr_io_signature.h>
 #include <gnuradio/gr_file_sink.h>
-#include <gnuradio/gr_remez.h>
+#include <gnuradio/filter/pm_remez.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -52,7 +52,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex);
-            fir_filter_ccf_ = gr_make_fir_filter_ccf(1, taps_);
+            fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps_);
             DLOG(INFO) << "input_filter(" << fir_filter_ccf_->unique_id() << ")";
         }
     else
@@ -165,11 +165,11 @@ void FirFilter::init()
 
     std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
     int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
-    // gr_remez implements the Parks-McClellan FIR filter design.
+    // pm_remez implements the Parks-McClellan FIR filter design.
     // It calculates the optimal (in the Chebyshev/minimax sense) FIR filter
     // impulse response given a set of band edges, the desired response on
     // those bands, and the weight given to the error in those bands.
-    std::vector<double> taps_d = gr_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
+    std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
     taps_.reserve(taps_d.size());
     for (std::vector<double>::iterator it = taps_d.begin(); it != taps_d.end(); it++)
         {

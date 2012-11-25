@@ -29,7 +29,6 @@
  */
 
 #include "ishort_to_complex.h"
-#include <gnuradio/gr_interleaved_short_to_complex.h>
 #include "configuration_interface.h"
 #include <gnuradio/gr_io_signature.h>
 #include <gnuradio/gr_file_sink.h>
@@ -60,7 +59,8 @@ IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::str
 
     size_t item_size=sizeof(gr_complex);
 
-    gr_interleaved_short_to_complex_ = gr_make_interleaved_short_to_complex();
+    gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
+
     DLOG(INFO) << "data_type_adapter_(" << gr_interleaved_short_to_complex_->unique_id() << ")";
 
     if (dump_)

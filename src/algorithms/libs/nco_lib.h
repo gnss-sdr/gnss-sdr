@@ -38,8 +38,8 @@
  *
  */
 
-#ifndef NCO_LIB_CC_H
-#define	 NCO_LIB_CC_H
+#ifndef GNSS_SDR_NCO_LIB_CC_H_
+#define	GNSS_SDR_NCO_LIB_CC_H_
 
 #include <gr_fxpt.h>
 #include <xmmintrin.h>

@@ -1,6 +1,6 @@
 /*!
  * \file fir_filter.h
- * \brief Adapts a gnuradio gr_fir_filter designed with gr_remez
+ * \brief Adapts a gnuradio gr_fir_filter designed with pm_remez
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Detailed description of the file here if needed.
@@ -35,18 +35,13 @@
 
 #include "gnss_synchro.h"
 #include "gnss_block_interface.h"
-#include <gnuradio/gr_fir_filter_ccc.h>
-#include <gnuradio/gr_fir_filter_ccf.h>
-#include <gnuradio/gr_fir_filter_fcc.h>
-#include <gnuradio/gr_fir_filter_fff.h>
-#include <gnuradio/gr_fir_filter_fsf.h>
-#include <gnuradio/gr_fir_filter_scc.h>
+#include <gnuradio/filter/fir_filter_ccf.h>
 #include <gnuradio/gr_msg_queue.h>
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a GNU Radio gr_fir_filter designed with gr_remez
+ * \brief This class adapts a GNU Radio gr_fir_filter designed with pm_remez
  *
  * See Parks-McClellan FIR filter design, http://en.wikipedia.org/wiki/Parks-McClellan_filter_design_algorithm
  * Calculates the optimal (in the Chebyshev/minimax sense) FIR filter impulse response
@@ -79,7 +74,7 @@ public:
     gr_basic_block_sptr get_right_block();
 
 private:
-    gr_fir_filter_ccf_sptr fir_filter_ccf_;
+    gr::filter::fir_filter_ccf::sptr fir_filter_ccf_;
     ConfigurationInterface* config_;
     bool dump_;
     std::string dump_filename_;

@@ -37,6 +37,7 @@
 #include "acquisition_interface.h"
 #include "pcps_acquisition_cc.h"
 #include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/blocks/stream_to_vector.h>
 
 class ConfigurationInterface;
 
@@ -121,9 +122,7 @@ public:
 private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_cc_sptr acquisition_cc_;
-    gr_block_sptr stream_to_vector_;
-    gr_block_sptr complex_to_short_;
-    gr_block_sptr short_to_complex_;
+    gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;

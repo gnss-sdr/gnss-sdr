@@ -37,6 +37,9 @@
 #include <gnuradio/gr_block.h>
 #include "correlator.h"
 
+#define LV_HAVE_SSE3
+#include "volk_cw_epl_corr.h"
+
 unsigned long Correlator::next_power_2(unsigned long v)
 {
     v--;
@@ -107,6 +110,11 @@ void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples,const gr
     //{
     //	free(input_aligned);
     //}
+}
+
+void Correlator::Carrier_wipeoff_and_EPL_volk_custom(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, bool input_vector_unaligned)
+{
+    volk_cw_epl_corr_u(input, carrier, E_code, P_code, L_code, E_out, P_out, L_out, signal_length_samples);
 }
 
 void Correlator::Carrier_wipeoff_and_VEPL_volk(int signal_length_samples,const gr_complex* input, gr_complex* carrier,gr_complex* VE_code,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code,gr_complex* VL_code,gr_complex* VE_out,gr_complex* E_out, gr_complex* P_out, gr_complex* L_out,gr_complex* VL_out,bool input_vector_aligned)

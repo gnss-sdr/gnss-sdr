@@ -397,7 +397,7 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
 			update_local_carrier();
 
             // perform Early, Prompt and Late correlation
-            d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
+            d_correlator.Carrier_wipeoff_and_EPL_volk_custom(d_current_prn_length_samples,
                     in,
                     d_carr_sign,
                     d_early_code,

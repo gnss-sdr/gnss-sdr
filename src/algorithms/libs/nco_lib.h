@@ -32,11 +32,7 @@
  * -------------------------------------------------------------------------
  */
 
-/*!
- * \brief Implements a conjugate complex exponential vector in std::complex<float> *d_carr_sign
- * containing int n_samples, with the starting phase .
- *
- */
+
 
 #ifndef GNSS_SDR_NCO_LIB_CC_H_
 #define	GNSS_SDR_NCO_LIB_CC_H_
@@ -46,10 +42,48 @@
 #include <sse_mathfun.h>
 #include <cmath>
 
+/*!
+ * \brief Implements a conjugate complex exponential vector in std::complex<float> *d_carr_sign
+ * containing int n_samples, with the starting phase float start_phase_rad and the pase step between vector elements
+ * float phase_step_rad. This function uses a SSE CORDIC implementation.
+ *
+ */
 void sse_nco(std::complex<float> *dest, int n_samples,float start_phase_rad, float phase_step_rad);
 
+/*!
+ * \brief Implements a conjugate complex exponential vector in std::complex<float> *d_carr_sign
+ * containing int n_samples, with the starting phase float start_phase_rad and the pase step between vector elements
+ * float phase_step_rad. This function uses the GNU Radio fixed point CORDIC implementation.
+ *
+ */
 void fxp_nco(std::complex<float> *dest, int n_samples,float start_phase_rad, float phase_step_rad);
 
+/*!
+ * \brief Implements a conjugate complex exponential vector in std::complex<float> *d_carr_sign
+ * containing int n_samples, with the starting phase float start_phase_rad and the pase step between vector elements
+ * float phase_step_rad. This function uses the stdlib sin() and cos() implementation.
+ *
+ */
+
 void std_nco(std::complex<float> *dest, int n_samples,float start_phase_rad, float phase_step_rad);
+
+/*!
+ * \brief Implements a conjugate complex exponential vector in std::complex<float> *d_carr_sign
+ * containing int n_samples, with the starting phase float start_phase_rad and the pase step between vector elements
+ * float phase_step_rad. This function uses the GNU Radio fixed point CORDIC implementation.
+ *
+ */
+
+void fxp_nco_cpyref(std::complex<float> *dest, int n_samples,float start_phase_rad, float phase_step_rad);
+
+
+/*!
+ * \brief Implements a conjugate complex exponential vector in two separated float arrays (In-phase and Quadrature)
+ * containing int n_samples, with the starting phase float start_phase_rad and the pase step between vector elements
+ * float phase_step_rad. This function uses the GNU Radio fixed point CORDIC implementation.
+ *
+ */
+
+void fxp_nco_IQ_split(float* I, float* Q, int n_samples,float start_phase_rad, float phase_step_rad);
 
 #endif //NCO_LIB_CC_H

@@ -49,6 +49,8 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     cordicPtr = new Cordic(largest_k);
 
     std::complex<float> *d_carr_sign;
+    float* d_carr_sign_I;
+    float* d_carr_sign_Q;
     // carrier parameters
     int d_vector_length=4000;
     float phase_rad;
@@ -59,6 +61,10 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
 
     // space for carrier wipeoff and signal baseband vectors
     if (posix_memalign((void**)&d_carr_sign, 16, d_vector_length * sizeof(std::complex<float>) * 2) == 0){};
+
+    if (posix_memalign((void**)&d_carr_sign_I, 16, d_vector_length * sizeof(float) * 2) == 0){};
+    if (posix_memalign((void**)&d_carr_sign_Q, 16, d_vector_length * sizeof(float) * 2) == 0){};
+
     double sin_d,cos_d;
     double sin_f,cos_f;
 
@@ -123,6 +129,27 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     long long int end4 = tv.tv_sec *1000000 + tv.tv_usec;
 
 
+    //*** GNU RADIO FIXED POINT ARITHMETIC COPY BY REFERENCE********
+    gettimeofday(&tv, NULL);
+    long long int begin5 = tv.tv_sec * 1000000 + tv.tv_usec;
+    for(int i=0; i<niter; i++)
+        {
+        	fxp_nco_cpyref(d_carr_sign, d_vector_length,0, phase_step_rad);
+        }
+    gettimeofday(&tv, NULL);
+    long long int end5 = tv.tv_sec *1000000 + tv.tv_usec;
+
+
+    //*** GNU RADIO FIXED POINT ARITHMETIC COPY BY REFERENCE SPLIT IQ********
+    gettimeofday(&tv, NULL);
+    long long int begin6 = tv.tv_sec * 1000000 + tv.tv_usec;
+    for(int i=0; i<niter; i++)
+        {
+        	fxp_nco_IQ_split(d_carr_sign_I, d_carr_sign_Q, d_vector_length,0, phase_step_rad);
+        }
+    gettimeofday(&tv, NULL);
+    long long int end6 = tv.tv_sec *1000000 + tv.tv_usec;
+
     delete cordicPtr;
 
 
@@ -130,6 +157,7 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     std::cout << "STD LIB ARITHM computed " << niter << " times in " << (end2-begin2) << " microseconds" << std::endl;
     std::cout << "FXPT CORDIC computed " << niter << " times in " << (end3-begin3) << " microseconds" << std::endl;
     std::cout << "SSE CORDIC computed " << niter << " times in " << (end4-begin4) << " microseconds" << std::endl;
-
+    std::cout << "FXPT CORDIC CPY REF computed " << niter << " times in " << (end5-begin5) << " microseconds" << std::endl;
+    std::cout << "FXPT CORDIC CPY REF SPLIT computed " << niter << " times in " << (end6-begin6) << " microseconds" << std::endl;
     EXPECT_TRUE((end2-begin2) < (end1-begin1)); // if true, standard C++ is faster than the cordic implementation
 }

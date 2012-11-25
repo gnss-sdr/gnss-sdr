@@ -98,15 +98,51 @@ void fxp_nco(std::complex<float> *dest, int n_samples,float start_phase_rad, flo
 	for(int i = 0; i < n_samples; i++)
 		{
 			//using temp variables
-			gr_fxpt::sincos(phase_rad_i,&sin_f,&cos_f);
-			dest[i] = gr_complex(cos_f, -sin_f);
-			//using references (may be it can be a problem for c++11 standard
-			//gr_fxpt::sincos(phase_rad_i,&d_carr_sign[i].imag(),&d_carr_sign[i].real());
-
+			gr_fxpt::sincos(-phase_rad_i,&sin_f,&cos_f);
+			dest[i] = gr_complex(cos_f, sin_f);
 			phase_rad_i += phase_step_rad_i;
 
 		}
 }
+
+void fxp_nco_cpyref(std::complex<float> *dest, int n_samples,float start_phase_rad, float phase_step_rad)
+{
+	int phase_rad_i;
+	phase_rad_i=gr_fxpt::float_to_fixed(start_phase_rad);
+	int phase_step_rad_i;
+	phase_step_rad_i=gr_fxpt::float_to_fixed(phase_step_rad);
+
+	float* vector_cpx;
+	vector_cpx=(float*)dest;
+	for(int i = 0; i < n_samples; i++)
+		{
+			//using references (may be it can be a problem for c++11 standard
+			//gr_fxpt::sincos(phase_rad_i,&d_carr_sign[i].imag(),&d_carr_sign[i].real());
+			gr_fxpt::sincos(-phase_rad_i,&vector_cpx[i*2+1],&vector_cpx[i*2]);
+			phase_rad_i += phase_step_rad_i;
+
+		}
+}
+
+void fxp_nco_IQ_split(float* I, float* Q , int n_samples,float start_phase_rad, float phase_step_rad)
+{
+	int phase_rad_i;
+	phase_rad_i=gr_fxpt::float_to_fixed(start_phase_rad);
+	int phase_step_rad_i;
+	phase_step_rad_i=gr_fxpt::float_to_fixed(phase_step_rad);
+
+	float sin_f,cos_f;
+	for(int i = 0; i < n_samples; i++)
+		{
+			gr_fxpt::sincos(-phase_rad_i,&sin_f,&cos_f);
+			I[i]=cos_f;
+			Q[i]=sin_f;
+			phase_rad_i += phase_step_rad_i;
+
+		}
+}
+
+
 
 void std_nco(std::complex<float> *dest, int n_samples,float start_phase_rad, float phase_step_rad)
 {

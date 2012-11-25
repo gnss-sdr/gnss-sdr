@@ -45,7 +45,7 @@ project
 
 project : requirements
 <define>OMNITHREAD_POSIX
-<cxxflags>"-msse2 -mfpmath=sse -std=c++0x -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free"
+<cxxflags>"-msse2 -msse3 -mfpmath=sse -std=c++0x -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free"
 <linkflags>"-lgnuradio-blocks -lgnuradio-fft -lgnuradio-filter -larmadillo -lboost_system -lboost_filesystem -lboost_thread -lboost_date_time -llapack -lblas -lprofiler -ltcmalloc -lvolk"
 <include>src/algorithms/acquisition/adapters
 <include>src/algorithms/acquisition/gnuradio_blocks

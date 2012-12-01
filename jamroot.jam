@@ -79,19 +79,11 @@ project : requirements
 <include>src/core/libs
 <include>src/core/receiver
 <include>src/core/system_parameters
-<include>$GNURADIO_ROOT/gnuradio-core/src/lib/runtime
-<include>$GNURADIO_ROOT/gnuradio-core/src/lib/filter
-<include>$GNURADIO_ROOT/gnuradio-core/src/lib/io
-<include>$GNURADIO_ROOT/gnuradio-core/src/lib/general
-<include>$GNURADIO_ROOT/gnuradio-core/src/lib/gengen
-<include>$GNURADIO_ROOT/gr-uhd/include
-<include>$GNURADIO_ROOT/gr-blocks/include
-<include>$GNURADIO_ROOT/gr-fft/include
-<include>$GNURADIO_ROOT/gr-filter/include
-#<include>$GNURADIO_ROOT/volk/lib
 <include>$OSMOSDR_ROOT/include/osmosdr
 <include>$(GTEST_DIR)/include
 <threading>multi 
-<toolset>darwin:<include>/opt/local/include ;
+<toolset>gcc:<include>/usr/local/include/gnuradio
+<toolset>darwin:<include>/opt/local/include/gnuradio ;
+
 
 build-project src ;

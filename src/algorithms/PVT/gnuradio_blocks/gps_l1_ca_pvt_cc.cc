@@ -85,7 +85,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
     d_ephemeris_clock_s = 0.0;
 
     d_sample_counter = 0;
-
+    d_last_sample_nav_output=0;
     d_tx_time=0.0;
 
     b_rinex_header_writen = false;
@@ -222,8 +222,15 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                                         }
                                     if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
                                         {
-                                            rp->log_rinex_nav(rp->navFile, nav_data_map);
-                                            rp->log_rinex_obs(rp->obsFile, d_last_nav_msg, pseudoranges);
+                                    	    // Limit the RINEX navigation output rate to 1/6 seg
+                                    		// Notice that d_sample_counter period is 1ms (for GPS correlators)
+
+                                    		if ((d_sample_counter-d_last_sample_nav_output)>=6000)
+                                    		{
+                                    			rp->log_rinex_nav(rp->navFile, nav_data_map);
+                                    			d_last_sample_nav_output=d_sample_counter;
+                                    		}
+                                            rp->log_rinex_obs(rp->obsFile, d_last_nav_msg, d_tx_time, pseudoranges);
                                         }
                                 }
                         }

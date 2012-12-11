@@ -72,6 +72,7 @@ private:
     int d_output_rate_ms;
     int d_display_rate_ms;
     long unsigned int d_sample_counter;
+    long unsigned int d_last_sample_nav_output;
     Kml_Printer d_kml_dump;
     Nmea_Printer *d_nmea_printer;
     concurrent_queue<Gps_Navigation_Message> *d_nav_queue; // Navigation ephemeris queue

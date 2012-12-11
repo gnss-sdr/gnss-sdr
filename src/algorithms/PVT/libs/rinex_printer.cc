@@ -516,7 +516,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Navigatio
     for (int i=0; i < (int)nav_msg.size(); i++)
         {
             // -------- SV / EPOCH / SV CLK
-            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_time(nav_msg[i]);
+            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(nav_msg[i],nav_msg[i].d_TOW);
             std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
             std::string month (timestring, 4, 2);
             std::string day (timestring, 6, 2);
@@ -549,9 +549,9 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Navigatio
                     line += std::string(1, ' ');
                     line += Rinex_Printer::doub2for(nav_msg[i].d_A_f0, 18, 2);
                     line += std::string(1, ' ');
-                    line += Rinex_Printer::doub2for(nav_msg[i].d_A_f0, 18, 2);
+                    line += Rinex_Printer::doub2for(nav_msg[i].d_A_f1, 18, 2);
                     line += std::string(1, ' ');
-                    line += Rinex_Printer::doub2for(nav_msg[i].d_A_f0, 18, 2);
+                    line += Rinex_Printer::doub2for(nav_msg[i].d_A_f2, 18, 2);
                     line += std::string(1, ' ');
                 }
             if (version == 3)
@@ -575,9 +575,9 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Navigatio
                     line += std::string(1, ' ');
                     line += Rinex_Printer::doub2for(nav_msg[i].d_A_f0, 18, 2);
                     line += std::string(1, ' ');
-                    line += Rinex_Printer::doub2for(nav_msg[i].d_A_f0, 18, 2);
+                    line += Rinex_Printer::doub2for(nav_msg[i].d_A_f1, 18, 2);
                     line += std::string(1, ' ');
-                    line += Rinex_Printer::doub2for(nav_msg[i].d_A_f0, 18, 2);
+                    line += Rinex_Printer::doub2for(nav_msg[i].d_A_f2, 18, 2);
                 }
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
@@ -711,10 +711,10 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Navigatio
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for((double)(nav_msg[i].i_code_on_L2), 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for((double)(nav_msg[i].i_code_on_L2), 18, 2);
-            line += std::string(1, ' ');
             double GPS_week_continuous_number = (double)(nav_msg[i].i_GPS_week + 1024); // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
             line += Rinex_Printer::doub2for(GPS_week_continuous_number, 18, 2);
+            line += std::string(1, ' ');
+            line += Rinex_Printer::doub2for((double)(nav_msg[i].i_code_on_L2), 18, 2);
             if (version == 2)
                 {
                     line += std::string(1, ' ');
@@ -861,12 +861,12 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Navigation_Message 
     out << line << std::endl;
 
     // -------- Line MARKER TYPE
-    line.clear();
-    line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
-    line += std::string(40, ' ');
-    line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+    //line.clear();
+    //line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20); // put a flag or a property
+    //line += std::string(40, ' ');
+    //line += Rinex_Printer::leftJustify("MARKER TYPE", 20);
+    //Rinex_Printer::lengthCheck(line);
+    //out << line << std::endl;
 
     // -------- Line OBSERVER / AGENCY
     line.clear();
@@ -897,7 +897,18 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Navigation_Message 
     out << line << std::endl;
 
     // -------- APPROX POSITION  (optional for moving platforms)
-
+    // put here real data!
+    double antena_x = 0.0;
+    double antena_y = 0.0;
+    double antena_z = 0.0;
+    line.clear();
+    line += Rinex_Printer::rightJustify(Rinex_Printer::asString(antena_x, 4), 14);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::asString(antena_y, 4), 14);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::asString(antena_z, 4), 14);
+    line += std::string(18, ' ');
+    line += Rinex_Printer::leftJustify("APPROX POSITION XYZ", 20);
+    Rinex_Printer::lengthCheck(line);
+    out << line << std::endl;
 
     // -------- ANTENNA: DELTA H/E/N
     // put here real data!
@@ -912,7 +923,6 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Navigation_Message 
     line += Rinex_Printer::leftJustify("ANTENNA: DELTA H/E/N", 20);
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
-
 
     // -------- SYS / OBS TYPES
 
@@ -947,15 +957,15 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Navigation_Message 
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_time(nav_msg);
-    std::string timestring=boost::posix_time::to_iso_string(p_utc_time);
+    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(nav_msg,nav_msg.d_TOW);
+    std::string timestring=boost::posix_time::to_iso_string(p_gps_time);
     std::string year (timestring, 0, 4);
     std::string month (timestring, 4, 2);
     std::string day (timestring, 6, 2);
     std::string hour (timestring, 9, 2);
     std::string minutes (timestring, 11, 2);
-    double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
-    double seconds = fmod(utc_t, 60);
+    double gps_t =nav_msg.d_TOW;
+    double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -981,14 +991,17 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Navigation_Message 
 
 
 
-void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg, std::map<int,double> pseudoranges)
+void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg, double obs_time, std::map<int,double> pseudoranges)
 {
+	// RINEX observations timestamps are GPS timestamps.
+
     std::string line;
 
-    // Should look at the pseudoranges timestamp gnss_pseudorange.timestamp_ms!!!
-    boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_time(nav_msg);
-    std::string timestring=boost::posix_time::to_iso_string(p_utc_time);
-    double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
+    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(nav_msg,obs_time);
+    std::string timestring=boost::posix_time::to_iso_string(p_gps_time);
+    //double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
+    double gps_t=nav_msg.sv_clock_correction(obs_time);
+
     std::string month (timestring, 4, 2);
     std::string day (timestring, 6, 2);
     std::string hour (timestring, 9, 2);
@@ -1025,7 +1038,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
             line += std::string(1, ' ');
             line += minutes;
             line += std::string(1, ' ');
-            line += Rinex_Printer::asString(fmod(utc_t, 60), 7);
+            line += Rinex_Printer::asString(fmod(gps_t, 60), 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
             line += std::string(1, '0');
@@ -1105,7 +1118,13 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav
             line += minutes;
 
             line += std::string(1, ' ');
-            line += Rinex_Printer::asString(fmod(utc_t, 60), 7);
+            double seconds=fmod(gps_t, 60);
+            // Add extra 0 if seconds are < 10
+            if (seconds<10)
+            {
+            	line +=std::string(1, '0');
+            }
+            line += Rinex_Printer::asString(seconds, 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
             line += std::string(1, '0');
@@ -1177,14 +1196,25 @@ int Rinex_Printer::signalStrength(double snr)
 }
 
 
-
-
-boost::posix_time::ptime Rinex_Printer::compute_time(Gps_Navigation_Message nav_msg)
+boost::posix_time::ptime Rinex_Printer::compute_UTC_time(Gps_Navigation_Message nav_msg)
 {
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     //: idea resolve the ambiguity with the leap second  http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm
     double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
     boost::posix_time::time_duration t = boost::posix_time::millisec((utc_t + 604800*(double)(nav_msg.i_GPS_week))*1000);
+    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    return p_time;
+}
+
+boost::posix_time::ptime Rinex_Printer::compute_GPS_time(Gps_Navigation_Message nav_msg, double obs_time)
+{
+	// The RINEX v2.11 v3.00 format uses GPS time for the observations epoch, not UTC time, thus, no leap seconds needed here.
+	// (see Section 3 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt)
+	// (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
+	// --??? No time correction here, since it will be done in the RINEX processor
+    double gps_t = nav_msg.sv_clock_correction(obs_time);
+    //double gps_t=obs_time;
+	boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800*(double)(nav_msg.i_GPS_week%1024))*1000);
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -1208,5 +1238,4 @@ enum RINEX_enumMarkerType {
 };
 
  */
-
 

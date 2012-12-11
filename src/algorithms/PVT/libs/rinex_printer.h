@@ -93,7 +93,13 @@ public:
     /*!
      *  \brief Computes the UTC time and returns a boost::posix_time::ptime object
      */
-    boost::posix_time::ptime compute_time(Gps_Navigation_Message nav_msg);
+    boost::posix_time::ptime compute_UTC_time(Gps_Navigation_Message nav_msg);
+
+    /*!
+     *  \brief Computes the GPS time and returns a boost::posix_time::ptime object
+     */
+    boost::posix_time::ptime compute_GPS_time(Gps_Navigation_Message nav_msg, double obs_time);
+
 
     /*!
      *  \brief Writes data from the navigation message into the RINEX file
@@ -103,7 +109,7 @@ public:
     /*!
      *  \brief Writes observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, Gps_Navigation_Message nav_msg,  std::map<int,double> pseudoranges);
+    void log_rinex_obs(std::ofstream& out,Gps_Navigation_Message nav_msg, double obs_time,  std::map<int,double> pseudoranges);
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     std::map<std::string,std::string> observationCode; //<! GNSS observation descriptors

@@ -1,10 +1,9 @@
 /*!
  * \file volk_cw_epl_corr.h
- * \brief Implements the carrier wipeoff function and the Early Prompt Late correlators in a single SSE-enabled loop.
+ * \brief Implements the carrier wipe-off function and the Early-Prompt-Late
+ * correlators in a single SSE-enabled loop.
  *
  * \author Javier Arribas 2012, jarribas(at)cttc.es
- *
- * Detailed description of the file here if needed.
  *
  * -------------------------------------------------------------------------
  *
@@ -31,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_cw_epl_corr_H
-#define INCLUDED_volk_cw_epl_corr_H
+#ifndef GNSS_SDR_VOLK_CW_EPL_CORR_H_
+#define GNSS_SDR_VOLK_CW_EPL_CORR_H_
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -45,6 +44,8 @@
  */
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
+
+
   /*!
     \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
     \param input The input signal input
@@ -57,8 +58,8 @@
     \param L_out Early correlation output
     \param num_points The number of complex values in vectors
   */
-
-static inline void volk_cw_epl_corr_u(const lv_32fc_t* input, const lv_32fc_t* carrier, const lv_32fc_t* E_code, const lv_32fc_t* P_code, const lv_32fc_t* L_code, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out,  unsigned int num_points){
+static inline void volk_cw_epl_corr_u(const lv_32fc_t* input, const lv_32fc_t* carrier, const lv_32fc_t* E_code, const lv_32fc_t* P_code, const lv_32fc_t* L_code, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out,  unsigned int num_points)
+{
 	unsigned int number = 0;
     const unsigned int halfPoints = num_points / 2;
 
@@ -72,9 +73,9 @@ static inline void volk_cw_epl_corr_u(const lv_32fc_t* input, const lv_32fc_t* c
     // Aux vars
     __m128 x, y, yl, yh, z, tmp1, tmp2, z_E, z_P, z_L;
 
-    z_E=_mm_setzero_ps();
-    z_P=_mm_setzero_ps();
-    z_L=_mm_setzero_ps();
+    z_E = _mm_setzero_ps();
+    z_P = _mm_setzero_ps();
+    z_L = _mm_setzero_ps();
 
     //input and output vectors
     //lv_32fc_t* _input_BB = input_BB;
@@ -84,8 +85,8 @@ static inline void volk_cw_epl_corr_u(const lv_32fc_t* input, const lv_32fc_t* c
     const lv_32fc_t* _P_code = P_code;
     const lv_32fc_t* _L_code = L_code;
 
-    for(;number < halfPoints; number++){
-
+    for(;number < halfPoints; number++)
+    {
       // carrier wipe-off (vector point-to-point product)
       x = _mm_loadu_ps((float*)_input); // Load the ar + ai, br + bi as ar,ai,br,bi
       y = _mm_loadu_ps((float*)_carrier); // Load the cr + ci, dr + di as cr,ci,dr,di
@@ -106,7 +107,7 @@ static inline void volk_cw_epl_corr_u(const lv_32fc_t* input, const lv_32fc_t* c
       // correlation E,P,L (3x vector scalar product)
       // Early
       //x = _mm_load_ps((float*)_input_BB); // Load the ar + ai, br + bi as ar,ai,br,bi
-      x=z;
+      x = z;
 
       y = _mm_load_ps((float*)_E_code); // Load the cr + ci, dr + di as cr,ci,dr,di
 
@@ -170,7 +171,6 @@ static inline void volk_cw_epl_corr_u(const lv_32fc_t* input, const lv_32fc_t* c
       _L_code +=2;
     }
 
-
     __VOLK_ATTR_ALIGNED(16) lv_32fc_t dotProductVector_E[2];
     __VOLK_ATTR_ALIGNED(16) lv_32fc_t dotProductVector_P[2];
     __VOLK_ATTR_ALIGNED(16) lv_32fc_t dotProductVector_L[2];
@@ -184,12 +184,12 @@ static inline void volk_cw_epl_corr_u(const lv_32fc_t* input, const lv_32fc_t* c
     dotProduct_P += ( dotProductVector_P[0] + dotProductVector_P[1] );
     dotProduct_L += ( dotProductVector_L[0] + dotProductVector_L[1] );
 
-    if((num_points % 2) != 0) {
+    if((num_points % 2) != 0)
+    {
       //_input_BB = (*_input) * (*_carrier);
   	  dotProduct_E += (*_input) * (*_E_code)*(*_carrier);
   	  dotProduct_P += (*_input) * (*_P_code)*(*_carrier);
   	  dotProduct_L += (*_input) * (*_L_code)*(*_carrier);
-
     }
 
     *E_out = dotProduct_E;
@@ -199,5 +199,4 @@ static inline void volk_cw_epl_corr_u(const lv_32fc_t* input, const lv_32fc_t* c
 
 
 #endif /* LV_HAVE_SSE */
-
-#endif /* INCLUDED_volk_cw_epl_corr_H */
+#endif /* GNSS_SDR_VOLK_CW_EPL_CORR_H_ */

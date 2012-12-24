@@ -216,15 +216,36 @@ link_directories(
 )
 
 
+########################################################################
+# Set compiler flags
+########################################################################
+
+# Add compiler flags related to SSE instructions
+set(MY_CXX_FLAGS "-msse2 -msse3")
+if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -mfpmath=sse")
+     # For SSE related flags, see http://gcc.gnu.org/onlinedocs/gcc-4.6.3/gcc/i386-and-x86_002d64-Options.html
+endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+
+# Enable C++11 support in GCC
+# For "-std=c++0x"  GCC's support for C++11 see http://gcc.gnu.org/projects/cxx0x.html
+if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++0x")
+endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+
+# Add warning flags 
+# For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -std=c++0x ")
+
+# Set GPerftools related flags if it is available
+# See http://gperftools.googlecode.com/svn/trunk/README
 if(GPERFTOOLS_FOUND)
      if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-          list(APPEND CMAKE_CXX_FLAGS "-msse2 -msse3 -mfpmath=sse -Wall -std=c++0x  -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
-     else(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-          list(APPEND CMAKE_CXX_FLAGS "-msse2 -msse3 -mfpmath=sse -Wall -std=c++0x")
+          set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")       
      endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-else(GPERFTOOLS_FOUND)
-     list(APPEND CMAKE_CXX_FLAGS "-msse2 -msse3 -mfpmath=sse -Wall -std=c++0x")
 endif(GPERFTOOLS_FOUND)
+
+list(APPEND CMAKE_CXX_FLAGS ${MY_CXX_FLAGS})
 
 ########################################################################
 # Add subdirectories (in order of deps)

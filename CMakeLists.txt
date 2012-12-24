@@ -119,18 +119,23 @@ include_directories(${GFlags_INCLUDE_DIRS})
 # GPerftools - http://code.google.com/p/gperftools/
 ################################################################################
 
+set(GCC_GPERFTOOLS_FLAGS "")
 find_package(Gperftools)
-if ( NOT Gperftools_FOUND )
-  message("GPerftools library not found!")
+if ( NOT GPERFTOOLS_FOUND )
+  message("The optional library GPerftools has not been found.")
 else()
   message ( "GPerftools library found" )
-endif( NOT Gperftools_FOUND )
+  link_libraries(profiler tcmalloc)
+endif( NOT GPERFTOOLS_FOUND )
+list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
+
 
 
 
 ################################################################################
 # Doxygen - http://www.stack.nl/~dimitri/doxygen/index.html
 ################################################################################
+
 include(FindDoxygen)
 IF (DOXYGEN_EXECUTABLE)
     message( STATUS "Setting Doxygen Generator" )
@@ -198,6 +203,7 @@ include_directories(
     ${GLOG_INCLUDE_DIRS}
     ${GFLAGS_INCLUDE_DIRS}
     ${UHD_INCLUDE_DIRS}
+    ${GPERFTOOLS_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -206,18 +212,26 @@ link_directories(
     ${GNURADIO_CORE_LIBRARY_DIRS}
     ${GLOG_LIBRARY_DIRS}
     ${GFLAGS_LIBRARY_DIRS}
+    ${GPERFTOOLS_LIBRARY_DIRS}
 )
 
 
-list(APPEND CMAKE_CXX_FLAGS "-msse2 -msse3 -mfpmath=sse -Wall -std=c++0x")
- 
+if(GPERFTOOLS_FOUND)
+     if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+          list(APPEND CMAKE_CXX_FLAGS "-msse2 -msse3 -mfpmath=sse -Wall -std=c++0x  -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
+     else(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+          list(APPEND CMAKE_CXX_FLAGS "-msse2 -msse3 -mfpmath=sse -Wall -std=c++0x")
+     endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+else(GPERFTOOLS_FOUND)
+     list(APPEND CMAKE_CXX_FLAGS "-msse2 -msse3 -mfpmath=sse -Wall -std=c++0x")
+endif(GPERFTOOLS_FOUND)
 
 ########################################################################
 # Add subdirectories (in order of deps)
 ########################################################################
 add_subdirectory(src)
 
-add_subdirectory(drivers)
+#add_subdirectory(drivers)
 #add_subdirectory(firmware)
 #add_subdirectory($OSMOSDR_ROOT/include/osmosdr)
 #add_subdirectory(${GTEST_DIR}/include)

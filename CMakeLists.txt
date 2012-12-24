@@ -187,10 +187,20 @@ if(NOT ARMADILLO_FOUND)
 endif()
 
 
+################################################################################
 # Setup of optional drivers
+################################################################################
 if( $ENV{GN3S_DRIVER} )
     message( "GN3S_DRIVER variable found" )
+    # copy firmware to install folder
+    # Build project gr-gn3s
 endif($ENV{GN3S_DRIVER} )
+
+if( $ENV{RTLSDR_DRIVER} )
+    message( "RTLSDR_DRIVER variable found" )
+    # find libosmosdr
+    # find gr-osmosdr
+endif($ENV{RTLSDR_DRIVER} )
 
 
 ########################################################################
@@ -235,7 +245,7 @@ endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 
 # Add warning flags 
 # For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall -std=c++0x ")
+set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall")
 
 # Set GPerftools related flags if it is available
 # See http://gperftools.googlecode.com/svn/trunk/README

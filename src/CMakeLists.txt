@@ -19,6 +19,5 @@
 add_subdirectory(algorithms)
 add_subdirectory(core)
 add_subdirectory(main)
-
-#add_subdirectory(tests)
+add_subdirectory(tests)
 #add_subdirectory(utils)

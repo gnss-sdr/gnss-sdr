@@ -27,17 +27,6 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 cmake_minimum_required(VERSION 2.6)
 project(gnss-sdr CXX)
 
-################################################################################
-# GTest - http://code.google.com/p/googletest/
-################################################################################
-set(GTEST_DIR $ENV{GTEST_DIR})
-set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
-include_directories(${GTEST_INCLUDE_DIRECTORIES})
-message("GTEST found at ${GTEST_DIR}")
-add_library(gtest ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest_main.cc)
-enable_testing(true)
-#enable_testing() ?
-
 #select the release build type by default to get optimization flags
 if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE "Release")
@@ -50,7 +39,7 @@ list(APPEND CMAKE_MODULE_PATH ${gnss-sdr_project_SOURCE_DIR}/cmake/Modules)
 
 # Set the version information here
 set(VERSION_INFO_MAJOR_VERSION 0)
-#set(VERSION_INFO_API_COMPAT    7)
+#set(VERSION_INFO_API_COMPAT    1)
 set(VERSION_INFO_MINOR_VERSION 1)
 
 
@@ -62,6 +51,21 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 ########################################################################
 # Environment setup
 ########################################################################
+
+
+################################################################################
+# Googletest - http://code.google.com/p/googletest/
+################################################################################
+set(GTEST_DIR $ENV{GTEST_DIR})
+if(GTEST_DIR)
+     set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
+     include_directories(${GTEST_INCLUDE_DIRECTORIES})
+     message("GTEST sources at ${GTEST_DIR}")
+else()
+     # Download gtest ?
+     message( " GTEST_DIR environment variable not set. ")
+endif(GTEST_DIR)
+
 
 ################################################################################
 # Boost - http://www.boost.org
@@ -84,7 +88,7 @@ if(NOT Boost_FOUND)
 endif()
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
-FIND_PACKAGE ( Boost COMPONENTS date_time filesystem system thread) 
+find_package(Boost COMPONENTS date_time filesystem system thread REQUIRED) 
 
 #if ( NOT BOOST_DATE_TIME_FOUND )
 #     message(FATAL_ERROR "Boost date_time library not found " )
@@ -136,12 +140,17 @@ list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
 # Doxygen - http://www.stack.nl/~dimitri/doxygen/index.html
 ################################################################################
 
-include(FindDoxygen)
-IF (DOXYGEN_EXECUTABLE)
-    message( STATUS "Setting Doxygen Generator" )
-    add_custom_target(docs
-    COMMAND ${DOXYGEN_EXECUTABLE} VERBATIM)
-ENDIF(DOXYGEN_EXECUTABLE)
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+    message( "Doxygen found" )
+    configure_file(#${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
+         ${CMAKE_SOURCE_DIR}/Doxyfile @ONLY)
+         add_custom_target(doc
+         ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Doxyfile
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+         COMMENT "Generating API documentation with Doxygen" VERBATIM
+    )
+ENDIF(DOXYGEN_FOUND)
 
 
 
@@ -246,6 +255,12 @@ endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 # Add warning flags 
 # For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall")
+
+
+if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    #http://gcc.gnu.org/wiki/Visibility
+    add_definitions(-fvisibility=hidden)
+endif()
 
 # Set GPerftools related flags if it is available
 # See http://gperftools.googlecode.com/svn/trunk/README

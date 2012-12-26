@@ -16,41 +16,75 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(GTEST_DIR $ENV{GTEST_DIR})
 
-if(GTEST_DIR)
+set(GTEST_DIR_LOCAL $ENV{GTEST_DIR})
+
+if(NOT GTEST_DIR_LOCAL)
+     # if GTEST_DIR is not defined, we download and build it
+     include(ExternalProject)
+     set(gtest_RELEASE 1.6.0)
+     ExternalProject_Add(
+          gtest-${gtest_RELEASE}
+          URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
+          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../download/gtest-${gtest_RELEASE}
+          URL_MD5 "4577b49f2973c90bf9ba69aa8166b786"
+          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
+          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
+          UPDATE_COMMAND ""
+          PATCH_COMMAND ""
+          INSTALL_COMMAND ""
+     )
+     # Set up variables
+     # Set recently downloaded and build Googletest root folder
+     set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}")
+     # Source code
+     ExternalProject_Get_Property(gtest-${gtest_RELEASE} source_dir)
+     set(GTEST_INCLUDE_DIR ${source_dir}/include)
+     set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
+     # Library
+     ExternalProject_Get_Property(gtest-${gtest_RELEASE} binary_dir)
+     set(GTEST_LIBRARY_PATH "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a;${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a")
+     set(GTEST_LIBRARY gtest-${gtest_RELEASE}) 
+     set(GTEST_LIBRARIES 
+          ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a 
+          ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a 
+     ) 
+	 set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}")
+endif(NOT GTEST_DIR_LOCAL)
+
+if(GTEST_DIR_LOCAL)
+     # If the variable GTEST_DIR is defined, we use the existing Googletest
+     set(GTEST_DIR $ENV{GTEST_DIR})
      set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
      add_library(gtest ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest_main.cc)
-     include_directories(
-          ${GTEST_INCLUDE_DIRECTORIES}
-          ${CMAKE_SOURCE_DIR}/src/core/system_parameters
-          ${CMAKE_SOURCE_DIR}/src/core/interfaces
-          ${CMAKE_SOURCE_DIR}/src/core/receiver
-          ${CMAKE_SOURCE_DIR}/src/core/libs   
-          ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-          ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
-          ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
-          ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
-          ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
-          ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
-          ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
-          ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
-          ${GLOG_INCLUDE_DIRS}
-          ${GFlags_INCLUDE_DIRS}
-          ${GNURADIO_CORE_INCLUDE_DIRS}
-          ${GNURADIO_GRUEL_INCLUDE_DIRS}
-          ${Boost_INCLUDE_DIRS}
-     )
-     add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
-     target_link_libraries(run_tests ${Boost_LIBRARIES} glog gflags gtest gnss_sp_libs gnss_rx)
-     add_dependencies(run_tests googletest)
-     #add_test(tests_gnss ${CMAKE_SOURCE_DIR}/install/run_tests)
-     install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
-else()
-     message (" ################################ ")
-     message (" Googletest not found! ")
-     message (" ################################ ")
-     message (" GNSS-SDR test system is based on Googletest, which has not been found ")
-     message (" Tests will not be build. Please download Googletest source code ")
-     message (" and define the environment variable GTEST_DIR pointing to its root folder")
-endif(GTEST_DIR)
+     set(GTEST_LIBRARIES gtest)
+endif(GTEST_DIR_LOCAL)
+     
+include_directories(
+     ${GTEST_INCLUDE_DIRECTORIES}
+     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+     ${CMAKE_SOURCE_DIR}/src/core/interfaces
+     ${CMAKE_SOURCE_DIR}/src/core/receiver
+     ${CMAKE_SOURCE_DIR}/src/core/libs   
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
+     ${GNURADIO_CORE_INCLUDE_DIRS}
+     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${Boost_INCLUDE_DIRS}
+)
+
+add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
+target_link_libraries(run_tests ${Boost_LIBRARIES} glog gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
+     
+
+
+ 

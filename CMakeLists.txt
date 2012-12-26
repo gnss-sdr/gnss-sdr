@@ -24,7 +24,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(gnss-sdr CXX)
 
 #select the release build type by default to get optimization flags
@@ -58,12 +58,12 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 ################################################################################
 set(GTEST_DIR $ENV{GTEST_DIR})
 if(GTEST_DIR)
-     set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
-     include_directories(${GTEST_INCLUDE_DIRECTORIES})
-     message("GTEST sources at ${GTEST_DIR}")
+     message("GTEST root folder at ${GTEST_DIR}")
 else()
-     # Download gtest ?
-     message( " GTEST_DIR environment variable not set. ")
+     message (" Googletest has not been found because the variable ")
+     message (" GTEST_DIR is not defined.")
+     message (" Googletest will be downloaded and built automatically ")
+     message (" when doing 'make'. ")
 endif(GTEST_DIR)
 
 

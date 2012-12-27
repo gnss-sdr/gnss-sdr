@@ -16,17 +16,36 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-#set(OPT_DRIVER_INCLUDE_DIRS  ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters)
-
-
 # Optional drivers
 
 if($ENV{GN3S_DRIVER})
-    message(" GN3S ")
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters)
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
+     ##############################################
+     # GN3S (USB dongle)
+     ##############################################
+
+     # find_package(GrGN3S)
+     # if not found, build it with ExternalPackage_Add
+     include(ExternalProject)     
+     ExternalProject_Add(
+          gr-gn3s
+          SOURCE_DIR ${CMAKE_SOURCE_DIR}/drivers/gr-gn3s
+          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-gn3s
+          UPDATE_COMMAND ""
+          PATCH_COMMAND ""
+          INSTALL_COMMAND ""
+     )
+     
+     # Set up variables
+     set(GRGN3S_INCLUDE_DIRS ${GRGN3S_DIR}/include ${GRGN3S_DIR} ${GRGN3S_DIR}/src)
+     set(GRGN3S_LIBRARIES 
+         "${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-gn3s/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gr-gn3s${CMAKE_SHARED_LIBRARY_SUFFIX}"
+     ) 
+     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRGN3S_LIBRARIES})
+     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRGN3S_INCLUDE_DIRS})
+     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
 endif($ENV{GN3S_DRIVER})
+
+
 
 if($ENV{RTLSDR_DRIVER})
     ################################################################################

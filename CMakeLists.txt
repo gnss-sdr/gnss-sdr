@@ -96,26 +96,26 @@ find_package(Boost COMPONENTS date_time filesystem system thread REQUIRED)
 
 
 ################################################################################
-# GLog - http://code.google.com/p/google-glog/
+# glog - http://code.google.com/p/google-glog/
 ################################################################################
 
 find_package(GLOG REQUIRED)
 if ( NOT GLOG_FOUND )
-  message(FATAL_ERROR "GLOG library not found!")
-else(  NOT GLOG_FOUND )
-  message ( "GLOG library found at ${GLOG_LIBRARIES}" )
+  message(FATAL_ERROR "google-glog library not found! Please check http://code.google.com/p/google-glog/")
+else( NOT GLOG_FOUND )
+  message ( "google-glog library found." )
 endif( NOT GLOG_FOUND )
 include_directories(${GLOG_INCLUDE_DIRS})
 
 ################################################################################
-# GFlags - http://code.google.com/p/gflags/
+# gflags - http://code.google.com/p/gflags/
 ################################################################################
 
 find_package(GFlags REQUIRED)
 if ( NOT GFlags_FOUND )
-  message(FATAL_ERROR "GFLAGS library not found!")
-else()
-  message ( "GFLAGS library found" )
+  message(FATAL_ERROR "gflags library not found! Please check http://code.google.com/p/gflags/")
+else( NOT GFlags_FOUND )
+  message ( "gflags library found." )
 endif( NOT GFlags_FOUND )
 include_directories(${GFlags_INCLUDE_DIRS})
 
@@ -128,7 +128,7 @@ find_package(Gperftools)
 if ( NOT GPERFTOOLS_FOUND )
   message("The optional library GPerftools has not been found.")
 else()
-  message ( "GPerftools library found" )
+  message ( "GPerftools library found." )
   link_libraries(profiler tcmalloc)
 endif( NOT GPERFTOOLS_FOUND )
 list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
@@ -142,13 +142,12 @@ list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    message( "Doxygen found" )
-    configure_file(#${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
-         ${CMAKE_SOURCE_DIR}/Doxyfile @ONLY)
-         add_custom_target(doc
+    message( "Doxygen found. You can build the documentation with 'make doc'." )
+    configure_file(${CMAKE_SOURCE_DIR}/Doxyfile @ONLY)
+    add_custom_target(doc
          ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Doxyfile
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-         COMMENT "Generating API documentation with Doxygen" VERBATIM
+         COMMENT "Generating API documentation with Doxygen." VERBATIM
     )
 ENDIF(DOXYGEN_FOUND)
 
@@ -192,7 +191,7 @@ endif()
 
 find_package(Armadillo)
 if(NOT ARMADILLO_FOUND)
-    message(FATAL_ERROR "Armadillo required to build gnss-sdr")
+    message(FATAL_ERROR "Armadillo required to build gnss-sdr. Please check http://arma.sourceforge.net/")
 endif()
 
 
@@ -200,13 +199,16 @@ endif()
 # Setup of optional drivers
 ################################################################################
 if( $ENV{GN3S_DRIVER} )
-    message( "GN3S_DRIVER variable found" )
+    message( "GN3S_DRIVER variable found." )
     # copy firmware to install folder
     # Build project gr-gn3s
+else( $ENV{GN3S_DRIVER} )
+    message( "GN3S_DRIVER is not defined." )
+    message( "Define it with 'export GN3S_DRIVER=1' to add support for the GN3S dongle." )
 endif($ENV{GN3S_DRIVER} )
 
 if( $ENV{RTLSDR_DRIVER} )
-    message( "RTLSDR_DRIVER variable found" )
+    message( "RTLSDR_DRIVER variable found." )
     # find libosmosdr
     # find gr-osmosdr
 endif($ENV{RTLSDR_DRIVER} )

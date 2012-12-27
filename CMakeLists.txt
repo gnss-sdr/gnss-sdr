@@ -213,7 +213,7 @@ endif($ENV{RTLSDR_DRIVER} )
 
 
 ########################################################################
-# Setup the include and linker paths
+# Setup the include paths
 ########################################################################
 include_directories(
     ${Boost_INCLUDE_DIRS}
@@ -223,15 +223,6 @@ include_directories(
     ${GFLAGS_INCLUDE_DIRS}
     ${UHD_INCLUDE_DIRS}
     ${GPERFTOOLS_INCLUDE_DIRS}
-)
-
-link_directories(
-    ${Boost_LIBRARY_DIRS}
-    ${GRUEL_LIBRARY_DIRS}
-    ${GNURADIO_CORE_LIBRARY_DIRS}
-    ${GLOG_LIBRARY_DIRS}
-    ${GFLAGS_LIBRARY_DIRS}
-    ${GPERFTOOLS_LIBRARY_DIRS}
 )
 
 
@@ -279,7 +270,6 @@ add_subdirectory(src)
 
 #add_subdirectory(drivers)
 #add_subdirectory(firmware)
-#add_subdirectory($OSMOSDR_ROOT/include/osmosdr)
-#add_subdirectory(${GTEST_DIR}/include)
+
  
 

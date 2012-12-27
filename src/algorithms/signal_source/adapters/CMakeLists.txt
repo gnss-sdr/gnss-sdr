@@ -16,25 +16,46 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+#set(OPT_DRIVER_INCLUDE_DIRS  ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters)
+
+
 # Optional drivers
 
-IF($ENV{GN3S_DRIVER})
+if($ENV{GN3S_DRIVER})
     message(" GN3S ")
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
-ENDIF($ENV{GN3S_DRIVER})
+endif($ENV{GN3S_DRIVER})
 
-IF($ENV{RTLSDR_DRIVER})
-    message(" RTLSDR ")
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters)
+if($ENV{RTLSDR_DRIVER})
+    ################################################################################
+    # OsmoSDR - http://sdr.osmocom.org/trac/
+    ################################################################################
+    find_package(LibOsmoSDR)
+    if(NOT LIBOSMOSDR_FOUND)
+         message(FATAL_ERROR "libosmosdr required to build gnss-sdr with the optional RTLSDR driver")
+    endif(NOT LIBOSMOSDR_FOUND)    
+    find_package(GrOsmoSDR REQUIRED)
+        if(NOT GROSMOSDR_FOUND)
+             message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional RTLSDR driver")
+        endif(NOT GROSMOSDR_FOUND)  
+    # set RTL include dirs
+    set(RTL_DRIVER_INCLUDE_DIRS 
+        ${OPT_DRIVER_INCLUDE_DIRS} 
+        ${GROSMOSDR_INCLUDE_DIR}/osmosdr
+        ${LIBOSMOSDR_INCLUDE_DIR}
+    )
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} rtlsdr_signal_source.cc)
-ENDIF($ENV{RTLSDR_DRIVER})
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${LIBOSMOSDR_LIBRARIES} ${GROSMOSDR_LIBRARIES})
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${RTL_DRIVER_INCLUDE_DIRS}) 
+endif($ENV{RTLSDR_DRIVER})
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc uhd_signal_source.cc ${OPT_DRIVER_SOURCES})
 
 include_directories(
-     $(CMAKE_CURRENT_SOURCE_DIR)
-     $(OPT_DRIVER_INCLUDE_DIRS)
+     ${CMAKE_CURRENT_SOURCE_DIR}
+     ${OPT_DRIVER_INCLUDE_DIRS}
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
@@ -45,7 +66,5 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
 )
 
-link_directories(${Boost_LIBRARY_DIR})
-
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES})
-target_link_libraries(signal_source_adapters gnss_sp_libs ${Boost_LIBRARIES} uhd gnuradio-uhd)
+target_link_libraries(signal_source_adapters gnss_sp_libs ${Boost_LIBRARIES} uhd gnuradio-uhd ${OPT_LIBRARIES})

@@ -84,7 +84,34 @@ include_directories(
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 target_link_libraries(run_tests ${Boost_LIBRARIES} glog gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
-     
 
+#########################################################
+#  Adding Tests to Ctest
+#########################################################
+
+
+set(CMAKE_CTEST_COMMAND ctest -V)
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+     
+add_executable(control_thread_test EXCLUDE_FROM_ALL
+     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
+     ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_message_factory_test.cc
+)
+target_link_libraries(control_thread_test ${Boost_LIBRARIES} glog gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+add_test(control_thread_test control_thread_test) 
+
+add_executable(gnss_block_test EXCLUDE_FROM_ALL
+     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_signal_source_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/fir_filter_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_acquisition_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc
+     #${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gnss_block_factory_test.cc   
+)
+target_link_libraries(gnss_block_test ${Boost_LIBRARIES} gflags glog ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+add_test(gnss_block_test gnss_block_test) 
 
  

@@ -56,6 +56,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 ################################################################################
 # Googletest - http://code.google.com/p/googletest/
 ################################################################################
+enable_testing()
 set(GTEST_DIR $ENV{GTEST_DIR})
 if(GTEST_DIR)
      message("GTEST root folder at ${GTEST_DIR}")
@@ -65,6 +66,7 @@ else()
      message (" Googletest will be downloaded and built automatically ")
      message (" when doing 'make'. ")
 endif(GTEST_DIR)
+
 
 
 ################################################################################

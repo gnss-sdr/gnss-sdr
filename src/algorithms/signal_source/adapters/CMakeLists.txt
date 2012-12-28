@@ -43,6 +43,12 @@ if($ENV{GN3S_DRIVER})
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRGN3S_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRGN3S_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
+     
+     #  Copy GN3S firmware binary file to install folder
+     message(STATUS "Copying the GN3S firmware binary file to install folder")    
+     file(COPY ${CMAKE_SOURCE_DIR}/firmware/GN3S_v2/bin/gn3s_firmware.ihx 
+          DESTINATION ${CMAKE_SOURCE_DIR}/install/gn3s_firmware.ihx 
+     )     
 endif($ENV{GN3S_DRIVER})
 
 

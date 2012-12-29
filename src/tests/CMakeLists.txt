@@ -21,7 +21,6 @@ set(GTEST_DIR_LOCAL $ENV{GTEST_DIR})
 
 if(NOT GTEST_DIR_LOCAL)
      # if GTEST_DIR is not defined, we download and build it
-     include(ExternalProject)
      set(gtest_RELEASE 1.6.0)
      ExternalProject_Add(
           gtest-${gtest_RELEASE}
@@ -82,7 +81,7 @@ include_directories(
 )
 
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
-target_link_libraries(run_tests ${Boost_LIBRARIES} glog gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(run_tests ${Boost_LIBRARIES} ${GLOG_LIBRARIES} gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
 
 #########################################################
@@ -90,14 +89,14 @@ install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
 #########################################################
 
 
-set(CMAKE_CTEST_COMMAND ctest -V)
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+#set(CMAKE_CTEST_COMMAND ctest -V)
+#add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
      
 add_executable(control_thread_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_message_factory_test.cc
 )
-target_link_libraries(control_thread_test ${Boost_LIBRARIES} glog gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(control_thread_test ${Boost_LIBRARIES} ${GLOG_LIBRARIES} gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
 add_test(control_thread_test control_thread_test) 
 
 add_executable(gnss_block_test EXCLUDE_FROM_ALL
@@ -111,7 +110,7 @@ add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gnss_block_factory_test.cc   
 )
-target_link_libraries(gnss_block_test ${Boost_LIBRARIES} gflags glog ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(gnss_block_test ${Boost_LIBRARIES} ${GLOG_LIBRARIES} gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
 add_test(gnss_block_test gnss_block_test) 
 
  

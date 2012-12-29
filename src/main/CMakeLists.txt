@@ -17,8 +17,6 @@
 #
 
 
-# message(" We see ${Boost_LIBRARIES}")
-
 include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
@@ -32,7 +30,7 @@ include_directories(
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
-target_link_libraries(gnss-sdr ${Boost_LIBRARIES} glog gflags gnss_sp_libs gnss_rx)
+target_link_libraries(gnss-sdr ${Boost_LIBRARIES} ${GLOG_LIBRARIES} gflags gnss_sp_libs gnss_rx)
 
 install(TARGETS gnss-sdr
         DESTINATION ${CMAKE_SOURCE_DIR}/install

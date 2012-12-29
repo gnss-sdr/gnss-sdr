@@ -51,7 +51,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 ########################################################################
 # Environment setup
 ########################################################################
-
+include(ExternalProject)
 
 ################################################################################
 # Googletest - http://code.google.com/p/googletest/
@@ -101,12 +101,36 @@ find_package(Boost COMPONENTS date_time filesystem system thread REQUIRED)
 # glog - http://code.google.com/p/google-glog/
 ################################################################################
 
-find_package(GLOG REQUIRED)
+find_package(GLOG)
 if ( NOT GLOG_FOUND )
-  message(FATAL_ERROR "google-glog library not found! Please check http://code.google.com/p/google-glog/")
-else( NOT GLOG_FOUND )
-  message ( "google-glog library found." )
-endif( NOT GLOG_FOUND )
+     message (" glog library has not been found.")
+     message (" glog will be downloaded and built automatically ")
+     message (" when doing 'make'. ")
+     set(glog_RELEASE 0.3.2)
+     set(glog_MD5 "897fbff90d91ea2b6d6e78c8cea641cc")
+     ExternalProject_Add(
+          glog-${glog_RELEASE}
+          URL http://google-glog.googlecode.com/files/glog-${glog_RELEASE}.tar.gz
+          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
+          URL_MD5 ${glog_MD5}
+          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
+          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+          CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> 
+          BUILD_COMMAND make
+          UPDATE_COMMAND ""
+          PATCH_COMMAND ""
+          INSTALL_COMMAND ""
+     )
+     # Set up variables
+     set(GLOG_INCLUDE_DIRS 
+          ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/src/ 
+          ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/src
+     )
+     set(GLOG_LIBRARIES 
+          ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog.so 
+     )
+     set(glog ${GLOG_LIBRARIES}) 
+endif( NOT GLOG_FOUND)
 include_directories(${GLOG_INCLUDE_DIRS})
 
 ################################################################################

@@ -80,8 +80,10 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
 )
 
+
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
-target_link_libraries(run_tests ${Boost_LIBRARIES} ${GLOG_LIBRARIES} gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(run_tests ${Boost_LIBRARIES}  ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
 
 #########################################################
@@ -96,7 +98,7 @@ add_executable(control_thread_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_message_factory_test.cc
 )
-target_link_libraries(control_thread_test ${Boost_LIBRARIES} ${GLOG_LIBRARIES} gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(control_thread_test ${Boost_LIBRARIES} ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
 add_test(control_thread_test control_thread_test) 
 
 add_executable(gnss_block_test EXCLUDE_FROM_ALL
@@ -110,7 +112,7 @@ add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gnss_block_factory_test.cc   
 )
-target_link_libraries(gnss_block_test ${Boost_LIBRARIES} ${GLOG_LIBRARIES} gflags ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(gnss_block_test ${Boost_LIBRARIES} ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
 add_test(gnss_block_test gnss_block_test) 
 
  

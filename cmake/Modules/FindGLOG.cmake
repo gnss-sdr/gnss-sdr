@@ -69,7 +69,7 @@ else(MSVC)
      endif(APPLE)
 endif(MSVC)
 
-message("glog library = " ${GLOG_LIBRARIES})
+message("glog library found at ${GLOG_LIBRARIES}")
 
 # handle the QUIETLY and REQUIRED arguments and set GLOG_FOUND to TRUE if
 # all listed variables are TRUE

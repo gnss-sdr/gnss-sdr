@@ -29,10 +29,11 @@ include_directories(
 )
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
-
-target_link_libraries(gnss-sdr ${Boost_LIBRARIES} ${GLOG_LIBRARIES} gflags gnss_sp_libs gnss_rx)
-
+target_link_libraries(gnss-sdr ${Boost_LIBRARIES} ${GLOG_LIBRARIES} ${GFlags_LIBS}  gnss_sp_libs gnss_rx)
+#add_dependencies(gnss-sdr gflags-${glags_RELEASE} glog-${glog_RELEASE} STATIC)############
 install(TARGETS gnss-sdr
         DESTINATION ${CMAKE_SOURCE_DIR}/install
         )
+        
+       
         

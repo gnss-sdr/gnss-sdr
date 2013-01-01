@@ -37,4 +37,4 @@ include_directories(
 )
 
 add_library(pvt_lib ${PVT_LIB_SOURCES})
-target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${ARMADILLO_LIBRARY})
+target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${ARMADILLO_LIBRARY})

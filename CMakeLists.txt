@@ -97,17 +97,85 @@ find_package(Boost COMPONENTS date_time filesystem system thread REQUIRED)
 #endif()
 
 
+
+
+################################################################################
+# gflags - http://code.google.com/p/gflags/
+################################################################################
+
+find_package(GFlags)
+
+if (NOT GFlags_FOUND OR LOCAL_GFLAGS)
+     message (" gflags library has not been found.")
+     message (" gflags will be downloaded and built automatically ")
+     message (" when doing 'make'. ")
+     set(gflags_RELEASE 2.0 CACHE STRING "Local gflags release")
+     set(gflags_MD5 "5fd4554d2ba84bf222a2fec0870d28df")
+     ExternalProject_Add(
+          gflags-${gflags_RELEASE}
+          URL http://gflags.googlecode.com/files/gflags-${gflags_RELEASE}.zip
+          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/gflags-${gflags_RELEASE}
+          URL_MD5 ${gflags_MD5}
+          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
+          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          #BUILD_IN_SOURCE 1
+          BUILD_COMMAND make
+          UPDATE_COMMAND ""
+          PATCH_COMMAND ""
+          INSTALL_COMMAND ""
+     )
+
+     set(GFlags_INCLUDE_DIRS 
+          ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/src CACHE PATH "Local Gflags headers"      
+     )
+     set(GFlags_LIBS 
+          ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.a
+     )
+     set(GFlags_LIBRARY gflags-${gflags_RELEASE})
+     set(gflags gflags-${gflags_RELEASE})
+     set(GFlags_LIBRARY_PATH  ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs )
+     link_directories(${GFlags_LIBRARY_PATH})
+     set(GFlags_lib ${GFlags_LIBS}  CACHE FILEPATH "Local Gflags library")
+     set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
+     set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and build automatically")
+endif(NOT GFlags_FOUND OR LOCAL_GFLAGS)
+
+include_directories(${GFlags_INCLUDE_DIRS})
+
+
+
 ################################################################################
 # glog - http://code.google.com/p/google-glog/
 ################################################################################
 
 find_package(GLOG)
-if ( NOT GLOG_FOUND )
-     message (" glog library has not been found.")
+if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
+     message (" glog library has not been found")
+     if(LOCAL_GFLAGS)
+          message(" or it is likely not linked to gflags.")
+     endif(LOCAL_GFLAGS)
      message (" glog will be downloaded and built automatically ")
      message (" when doing 'make'. ")
      set(glog_RELEASE 0.3.2)
      set(glog_MD5 "897fbff90d91ea2b6d6e78c8cea641cc")
+     if(LOCAL_GFLAGS) 
+          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+"#!/bin/sh
+export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
+export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
+export LIBS=${GFlags_LIBS}
+export GFLAGS_LIBS=${GFlags_LIBS}
+../../thirdparty/glog/glog-${glog_RELEASE}/configure ")
+          file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+               DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+               FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                                GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+          set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)                      
+     else(LOCAL_GFLAGS)
+          set(GLOG_CONFIGURE ../../thirdparty/glog/glog-${glog_RELEASE}/configure)
+     endif(LOCAL_GFLAGS)
+    
      ExternalProject_Add(
           glog-${glog_RELEASE}
           URL http://google-glog.googlecode.com/files/glog-${glog_RELEASE}.tar.gz
@@ -115,7 +183,7 @@ if ( NOT GLOG_FOUND )
           URL_MD5 ${glog_MD5}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-          CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> 
+          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR> 
           BUILD_COMMAND make
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
@@ -127,23 +195,10 @@ if ( NOT GLOG_FOUND )
           ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/src
      )
      set(GLOG_LIBRARIES 
-          ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog.so 
+          ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog.a 
      )
-     set(glog ${GLOG_LIBRARIES}) 
-endif( NOT GLOG_FOUND)
+endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
 include_directories(${GLOG_INCLUDE_DIRS})
-
-################################################################################
-# gflags - http://code.google.com/p/gflags/
-################################################################################
-
-find_package(GFlags REQUIRED)
-if ( NOT GFlags_FOUND )
-  message(FATAL_ERROR "gflags library not found! Please check http://code.google.com/p/gflags/")
-else( NOT GFlags_FOUND )
-  message ( "gflags library found." )
-endif( NOT GFlags_FOUND )
-include_directories(${GFlags_INCLUDE_DIRS})
 
 ################################################################################
 # GPerftools - http://code.google.com/p/gperftools/
@@ -248,7 +303,7 @@ include_directories(
     ${GRUEL_INCLUDE_DIRS}
     ${GNURADIO_CORE_INCLUDE_DIRS}
     ${GLOG_INCLUDE_DIRS}
-    ${GFLAGS_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
     ${UHD_INCLUDE_DIRS}
     ${GPERFTOOLS_INCLUDE_DIRS}
 )
@@ -296,8 +351,6 @@ list(APPEND CMAKE_CXX_FLAGS ${MY_CXX_FLAGS})
 ########################################################################
 add_subdirectory(src)
 
-#add_subdirectory(drivers)
-#add_subdirectory(firmware)
 
  
 

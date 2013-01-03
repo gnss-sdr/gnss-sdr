@@ -25,8 +25,8 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${ARMADILLO_INCLUDE_DIRS}
 )
 
 add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES})
-target_link_libraries(pvt_gr_blocks pvt_lib)
+target_link_libraries(pvt_gr_blocks pvt_lib ${ARMADILLO_LIBRARIES})

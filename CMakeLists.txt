@@ -119,7 +119,6 @@ if (NOT GFlags_FOUND OR LOCAL_GFLAGS)
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
           CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
-          #BUILD_IN_SOURCE 1
           BUILD_COMMAND make
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
@@ -183,7 +182,7 @@ export GFLAGS_LIBS=${GFlags_LIBS}
           URL_MD5 ${glog_MD5}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR> 
+          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
           BUILD_COMMAND make
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
@@ -272,8 +271,48 @@ endif()
 
 find_package(Armadillo)
 if(NOT ARMADILLO_FOUND)
-    message(FATAL_ERROR "Armadillo required to build gnss-sdr. Please check http://arma.sourceforge.net/")
-endif()
+     message (" Armadillo has not been found.")
+     message (" Armadillo will be downloaded and built automatically ")
+     message (" when doing 'make'. ")
+     set(armadillo_RELEASE 3.6.1)
+     set(armadillo_MD5 "cf0e72fbd2ed07d9fbde01ec8feee953")
+     if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+          set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
+          file(WRITE ${ARMADILLO_PATCH_FILE} "")
+     else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+          set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
+          file(WRITE ${ARMADILLO_PATCH_FILE}
+"43c43
+< set(ARMA_USE_WRAPPER true )  # set this to false if you prefer to directly link with LAPACK and/or BLAS (eg. -llapack -lblas) instead of -larmadillo
+---
+> set(ARMA_USE_WRAPPER false)  # set this to false if you prefer to directly link with LAPACK and/or BLAS (eg. -llapack -lblas) instead of -larmadillo
+274c274
+< add_library( armadillo SHARED src/wrap_libs )
+---
+> add_library( armadillo STATIC src/wrap_libs )
+")                  
+     endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+     ExternalProject_Add(
+          armadillo-${armadillo_RELEASE}
+          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
+          URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
+          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
+          URL_MD5 ${armadillo_MD5}    
+          PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} 
+          CONFIGURE_COMMAND <BINARY_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}     
+          BUILD_IN_SOURCE 1
+          BUILD_COMMAND make
+          UPDATE_COMMAND ""
+          INSTALL_COMMAND ""
+     )
+     # Set up variables
+     ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
+     set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )     
+     find_library(lapack NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
+     find_library(blas NAMES blas HINTS /usr/lib /usr/local/lib /usr/lib64)
+     set(ARMADILLO_LIBRARIES ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a ${lapack} ${blas} gfortran)
+     set(LOCAL_ARMADILLO true)
+endif(NOT ARMADILLO_FOUND)
 
 
 ################################################################################
@@ -298,6 +337,7 @@ endif($ENV{RTLSDR_DRIVER} )
 ########################################################################
 # Setup the include paths
 ########################################################################
+
 include_directories(
     ${Boost_INCLUDE_DIRS}
     ${GRUEL_INCLUDE_DIRS}
@@ -353,4 +393,3 @@ add_subdirectory(src)
 
 
  
-

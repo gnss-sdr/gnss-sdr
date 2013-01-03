@@ -51,11 +51,10 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${Boost_INCLUDE_DIRS}
      ${GNURADIO_CORE_INCLUDE_DIRS}
-     #${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${ARMADILLO_INCLUDE_DIRS}
 )
 link_directories(${Boost_LIBRARY_DIR})
 
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES})
-target_link_libraries(gnss_rx ${Boost_LIBRARIES} gnuradio-core gnss_system_parameters gnss_sp_libs signal_source_adapters datatype_adapters input_filter_adapters conditioner_adapters resampler_adapters acq_adapters tracking_lib tracking_adapters channel_adapters telemetry_decoder_adapters obs_adapters pvt_adapters pvt_lib out_adapters rx_core_lib)
+target_link_libraries(gnss_rx ${Boost_LIBRARIES} ${ARMADILLO_LIBRARIES} gnuradio-core gnss_system_parameters gnss_sp_libs signal_source_adapters datatype_adapters input_filter_adapters conditioner_adapters resampler_adapters acq_adapters tracking_lib tracking_adapters channel_adapters telemetry_decoder_adapters obs_adapters pvt_adapters pvt_lib out_adapters rx_core_lib)

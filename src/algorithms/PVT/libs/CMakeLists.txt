@@ -23,7 +23,6 @@ set(PVT_LIB_SOURCES
      nmea_printer.cc    
 )
 
-
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -37,4 +36,4 @@ include_directories(
 )
 
 add_library(pvt_lib ${PVT_LIB_SOURCES})
-target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${ARMADILLO_LIBRARY})
+target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${ARMADILLO_LIBRARIES} )

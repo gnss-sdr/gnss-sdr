@@ -131,6 +131,9 @@ if (NOT GFlags_FOUND OR LOCAL_GFLAGS)
      set(GFlags_LIBS 
           ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.a
      )
+     set(GFlags_SHARED_LIBS 
+          ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.so
+     )
      set(GFlags_LIBRARY gflags-${gflags_RELEASE})
      set(gflags gflags-${gflags_RELEASE})
      set(GFlags_LIBRARY_PATH  ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs )
@@ -164,7 +167,7 @@ if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
 export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
 export LIBS=${GFlags_LIBS}
-export GFLAGS_LIBS=${GFlags_LIBS}
+export GFLAGS_LIBS=${GFlags_SHARED_LIBS}
 ../../thirdparty/glog/glog-${glog_RELEASE}/configure ")
           file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}

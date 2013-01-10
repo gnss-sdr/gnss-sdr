@@ -56,11 +56,7 @@ endif($ENV{GN3S_DRIVER})
 if($ENV{RTLSDR_DRIVER})
     ################################################################################
     # OsmoSDR - http://sdr.osmocom.org/trac/
-    ################################################################################
-    find_package(LibOsmoSDR)
-    if(NOT LIBOSMOSDR_FOUND)
-         message(FATAL_ERROR "libosmosdr required to build gnss-sdr with the optional RTLSDR driver")
-    endif(NOT LIBOSMOSDR_FOUND)    
+    ################################################################################  
     find_package(GrOsmoSDR REQUIRED)
         if(NOT GROSMOSDR_FOUND)
              message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional RTLSDR driver")
@@ -69,10 +65,9 @@ if($ENV{RTLSDR_DRIVER})
     set(RTL_DRIVER_INCLUDE_DIRS 
         ${OPT_DRIVER_INCLUDE_DIRS} 
         ${GROSMOSDR_INCLUDE_DIR}/osmosdr
-        ${LIBOSMOSDR_INCLUDE_DIR}
     )
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} rtlsdr_signal_source.cc)
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${LIBOSMOSDR_LIBRARIES} ${GROSMOSDR_LIBRARIES})
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${RTL_DRIVER_INCLUDE_DIRS}) 
 endif($ENV{RTLSDR_DRIVER})
 

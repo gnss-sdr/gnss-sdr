@@ -90,11 +90,9 @@ if(NOT Boost_FOUND)
 endif()
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost COMPONENTS date_time filesystem system thread REQUIRED) 
+find_package(Boost COMPONENTS date_time system filesystem thread REQUIRED) 
+include_directories(${Boost_INCLUDE_DIRS})
 
-#if ( NOT BOOST_DATE_TIME_FOUND )
-#     message(FATAL_ERROR "Boost date_time library not found " )
-#endif()
 
 
 
@@ -113,6 +111,7 @@ if (NOT GFlags_FOUND OR LOCAL_GFLAGS)
      set(gflags_MD5 "5fd4554d2ba84bf222a2fec0870d28df")
      ExternalProject_Add(
           gflags-${gflags_RELEASE}
+          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
           URL http://gflags.googlecode.com/files/gflags-${gflags_RELEASE}.zip
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/gflags-${gflags_RELEASE}
           URL_MD5 ${gflags_MD5}
@@ -166,9 +165,8 @@ if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
 export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
-export LIBS=${GFlags_LIBS}
-export GFLAGS_LIBS=${GFlags_SHARED_LIBS}
-../../thirdparty/glog/glog-${glog_RELEASE}/configure ")
+export LIBS=${GFlags_SHARED_LIBS}
+../../thirdparty/glog/glog-${glog_RELEASE}/configure")
           file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
@@ -180,6 +178,7 @@ export GFLAGS_LIBS=${GFlags_SHARED_LIBS}
     
      ExternalProject_Add(
           glog-${glog_RELEASE}
+          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
           URL http://google-glog.googlecode.com/files/glog-${glog_RELEASE}.tar.gz
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
           URL_MD5 ${glog_MD5}
@@ -201,6 +200,8 @@ export GFLAGS_LIBS=${GFlags_SHARED_LIBS}
      )
 endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
 include_directories(${GLOG_INCLUDE_DIRS})
+
+
 
 ################################################################################
 # GPerftools - http://code.google.com/p/gperftools/
@@ -244,6 +245,8 @@ find_package(Gruel)
 if(NOT GRUEL_FOUND)
     message(FATAL_ERROR "Gruel required to build gnss-sdr")
 endif()
+link_libraries(gruel)
+include_directories(${GRUEL_INCLUDE_DIRS})
 
 
 find_package(GnuradioCore)
@@ -342,8 +345,6 @@ endif($ENV{RTLSDR_DRIVER} )
 ########################################################################
 
 include_directories(
-    ${Boost_INCLUDE_DIRS}
-    ${GRUEL_INCLUDE_DIRS}
     ${GNURADIO_CORE_INCLUDE_DIRS}
     ${GLOG_INCLUDE_DIRS}
     ${GFlags_INCLUDE_DIRS}
@@ -387,12 +388,17 @@ if(GPERFTOOLS_FOUND)
      endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 endif(GPERFTOOLS_FOUND)
 
+# Detect 64-bits machine
+if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+     #set(MY_CXX_FLAGS "${MY_CXX_FLAGS}  ...")
+     message("64-bits architecture detected.") 
+endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+
 list(APPEND CMAKE_CXX_FLAGS ${MY_CXX_FLAGS})
 
 ########################################################################
 # Add subdirectories (in order of deps)
 ########################################################################
 add_subdirectory(src)
-
 
  

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GNSS_SDR_GPS_NAVIGATION_MESSAGE_H
-#define GNSS_SDR_GPS_NAVIGATION_MESSAGE_H
+#ifndef GNSS_SDR_GPS_NAVIGATION_MESSAGE_H_
+#define GNSS_SDR_GPS_NAVIGATION_MESSAGE_H_
 
 #include <iostream>
 #include <map>
@@ -51,9 +51,9 @@
 class Gps_Navigation_Message
 {
 private:
-    unsigned long int read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices);
-    signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices, int num_of_slices);
-    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const bits_slice *slices);
+    unsigned long int read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    signed long int read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
+    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter);
     void print_gps_word_bytes(unsigned int GPS_word);
     /*
      * Accounts for the beginning or end of week crossover
@@ -100,7 +100,7 @@ public:
     double d_IDOT;           //!< Rate of Inclination Angle [semi-circles/s]
     int i_code_on_L2;        //!< If 1, P code ON in L2;  if 2, C/A code ON in L2;
     int i_GPS_week;          //!< GPS week number, aka WN [week]
-    bool   b_L2_P_data_flag; //!< When true, indicates that the NAV data stream was commanded OFF on the P-code of the L2 channel
+    bool b_L2_P_data_flag;   //!< When true, indicates that the NAV data stream was commanded OFF on the P-code of the L2 channel
     //broadcast orbit 6
     int i_SV_accuracy;       //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
     int i_SV_health;

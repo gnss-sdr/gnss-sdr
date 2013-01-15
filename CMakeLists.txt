@@ -226,13 +226,23 @@ list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     message( "Doxygen found. You can build the documentation with 'make doc'." )
-    configure_file(${CMAKE_SOURCE_DIR}/Doxyfile @ONLY)
+    message( "When done, point your browser to ${CMAKE_SOURCE_DIR}/html/index.html")
+    set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
+    file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
+    file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} top_builddir)
+    configure_file(${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile.in
+         ${CMAKE_SOURCE_DIR}/docs/Doxyfile
+         @ONLY)
     add_custom_target(doc
-         ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Doxyfile
+         ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/docs/Doxyfile
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
          COMMENT "Generating API documentation with Doxygen." VERBATIM
     )
-ENDIF(DOXYGEN_FOUND)
+else(DOXYGEN_FOUND)
+     message( "Doxygen has not been found in your system.")
+     message( "You can get nice code documentation by using it!")
+     message( "Get it from http://www.stack.nl/~dimitri/doxygen/index.html")
+endif(DOXYGEN_FOUND)
 
 
 

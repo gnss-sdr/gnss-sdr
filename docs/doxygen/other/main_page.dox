@@ -14,6 +14,7 @@ href="http://sourceforge.net/p/gnss-sdr/code/311/tree/trunk/" target="_blank"><b
 \section toc Contents
 \li \ref overview
 \li \ref build
+\li \ref using_gnss-sdr
 \li \ref control_plane
 \li \ref signal_processing
 
@@ -43,10 +44,167 @@ buses to a variety of either commercially available or custom-made RF front-ends
 
 \image html overview.png
 
+As signal inputs, it accepts:
+\li Raw data file captured with a data grabber (digitized at some intermediate frequency or directly at baseband).
+\li Any suitable RF configuration that can be driven by the Universal Software Radio Peripheral Hardware Driver (<a href="http://files.ettus.com/uhd_docs/manual/html/" target="_blank">UHD</a>).
+This includes all current and future <a href="http://www.ettus.com/">Ettus Research</a> products. The USRP1 + DBSRX 2.2 daughterboard is an example of working configuration for GPS L1 C/A and Galileo E1B and E1C signals.
+\li The <a href="http://gnss-sdr.org/documentation/sige-gn3s-sampler-v2-usb-front-end" target="blank">GN3S v2 USB dongle</a> (GN3S v3 might work with small modifications).
+\li Experimentally, with some <a href="http://gnss-sdr.org/documentation/gnss-sdr-operation-realtek-rtl2832u-usb-dongle-dvb-t-receiver" target="_blank">USB DVB-T dongles based on the Realtek RTL2832U chipset</a>.
+
+As outputs, it provides:
+\li Dump of intermediate signals (selectable by the user)
+\li The processing is logged at a  system temporary folder (usually, <tt>/tmp</tt>)
+\li Observables in form of RINEX file (experimental)
+\li Navigation message data in form of RINEX file
+\li Position, Velocity and Time solution in KML format and NMEA
+
+
 \section build Building GNSS-SDR  
 
-See the <a href="http://gnss-sdr.org/documentation/building-guide" target="_blank">building guide</a> page for details about the project's
-dependencies and build process.
+In principle, GNSS-SDR can be built in any Unix-like system. In practice, it depends on being able to install all the required dependencies. See the <a href="http://gnss-sdr.org/documentation/building-guide" target="_blank">building guide</a> page for details about the project's
+dependencies and build process. Mainly, it consists on installing <a href="" target="_blank">GNU Radio</a> plus some few more libraries:
+
+\li <a href="http://code.google.com/p/gflags/" target="_blank">Gflags</a>, a library that implements commandline flags processing,
+\li <a href="http://code.google.com/p/google-glog/" target="_blank">Glog</a>, a library that implements application-level logging, 
+\li <a href="http://arma.sourceforge.net/" target="_blank">Armadillo</a>, a C++ linear algebra library,
+\li <a href="http://code.google.com/p/googletest/" target="_blank">Googletest</a>, Google's framework for writing C++ tests (requires definition of the GTEST_DIR variable),
+
+and, optionally,
+\li <a href="http://code.google.com/p/gperftools/" target="_blank">Gperftools</a>, which provides fast, multi-threaded malloc() and performance analysis tools.
+
+After all dependencies are installed, checkout the GNSS-SDR repository:
+\code
+$ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr 
+\endcode
+
+This will create a folder named gnss-sdr with the following structure:
+\code
+ |-gnss-sdr
+ |---build       <- where gnss-sdr is build
+ |---cmake       <- CMake-related files
+ |---conf        <- Configuration files. Each file represents one receiver.
+ |---data        <- Populate this folder with you captured data.
+ |---docs        <- Contains documentation-related files
+ |---drivers     <- Drivers for some RF front-ends
+ |---firmware    <- Firmware for some front-ends
+ |---install     <- Executables 
+ |---src         <- Source code folder
+ |-----algorithms
+ |-------PVT
+ |-------acquisition
+ |-------channel
+ |-------conditioner
+ |-------data_type_adapter
+ |-------input_filter
+ |-------libs
+ |-------observables
+ |-------output_filter
+ |-------resampler
+ |-------signal_source
+ |-------telemetry_decoder
+ |-------tracking
+ |-----core
+ |-------interfaces
+ |-------libs
+ |-------receiver
+ |-------system_parameters
+ |-----main
+ |-----tests
+ |-----utils     <- some utilities (e.g. Matlab scripts)
+\endcode
+
+You are now ready to build GNSS-SDR. For doing that, you can choose either bjam or <a href="http://www.cmake.org/" target="_blank">CMake</a> as building tools:
+\li Using bjam:
+\code
+$ cd gnss-sdr
+$ bjam release
+\endcode
+\li Using CMake:
+\code
+$ cd gnss-sdr/build
+$ cmake ../
+$ make
+$ make install
+\endcode
+
+If everything goes well, two new executables will be created at <tt>gnss-sdr/install</tt>, namely <tt>gnss-sdr</tt> and <tt>run_tests</tt>. You can create
+this documentation by doing:
+\code
+$ doxygen
+\endcode
+from the <tt>gnss-sdr</tt> root folder, or
+\code
+$ make doc
+\endcode
+
+from the <tt>gnss-sdr/build</tt> folder if you are using CMake. In both cases, <a href="http://www.stack.nl/~dimitri/doxygen/" target="_blank">Doxygen</a> will generate HTML documentation that can be 
+retrieved pointing your browser of preference to <tt>gnss-sdr/docs/html/index.html</tt>.
+
+\subsection debug_and_release Debug and Release builds
+
+By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using
+a RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about
+the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
+\code
+$ cd gnss-sdr/build
+$ cmake -DCMAKE_BUILD_TYPE=Debug ../
+$ make
+$ make install
+\endcode
+
+Bjam works the other way around. By default, it builds the Debug version:
+\code
+$ cd gnss-sdr
+$ bjam
+\endcode
+and the Release version can be obtained by doing 
+\code
+$ bjam release
+\endcode
+
+\subsection pudating_gnss-sdr Updating GNSS-SDR
+If you checked out GNSS-SDR some days ago, it is possible that some developer has updated files at the Subversion repository. You can update your working copy by doing:
+\code
+$ cd gnss-sdr
+$ svn up
+\endcode
+Before rebuiling the source code, it is safe (and recommended) to remove the remainders of old builds:
+\code
+$ rm -rf gnss-sdr/build/*
+\endcode
+
+You can also check <a href="http://svnbook.red-bean.com/" target="_blank">control version with Subversion</a> for more information about Subversion usage.
+
+\section using_gnss-sdr Using GNSS-SDR
+
+With GNSS-SDR, you can define you own receiver, work with captured raw data or from a RF front-end, dump into files intermediate signals, or tune every single algorithm used in the \ref signal_processing. All the configuration
+is done in a single file. Those configuration files reside at the <tt>gnss-sdr/conf</tt> folder. By default, the executable <tt>gnss-sdr</tt> will read the configuration
+available at <tt>gnss-sdr/conf/gnss-sdr.conf</tt>. You can edit that file to fit your needs, or even better, define a new <tt>my_receiver.conf</tt> file with your own configuration. 
+This new receiver can be done by going to the <tt>gnss-sdr/install</tt> folder:
+\code
+$ cd gnss-sdr/install
+\endcode
+and invoking gnss-sdr with the <tt>--config_file</tt> flag pointing to your configuration file:
+\code
+$ ./gnss-sdr --config_file=../conf/my_receiver.conf
+\endcode
+
+You can see a guide of available implementations at <tt>gnss-sdr/conf/master.conf</tt>. That folder contains other working examples as well. If you have a working
+configuration and want to share it will others, please email it to the <a href="http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR developers mailing list</b></a>
+and we will be happy to upload it to the server.
+
+You can use a single configuration file for processing
+different data files, specifying the file to be processed with the <tt>--signal_source</tt> flag:
+\code
+$ ./gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
+\endcode
+This will override the <tt>SignalSource.filename</tt> specified in the configuration file.
+
+You can get a complete list of available commandline flags by doing: 
+\code
+$ ./gnss-sdr --help
+\endcode
+For general usage of commandline flags, see <a href="http://google-gflags.googlecode.com/svn/trunk/doc/gflags.html" target="_blank">how to use Google Commandline Flags</a>.
 
 \section control_plane Control plane
 GNSS-SDR's main method initializes the logging library, processes the command line flags, if any, provided by the user and instantiates a ControlThread object. 
@@ -85,7 +243,7 @@ SignalSource.parameter2=value2
 \endcode
 
 The name of these parameters can be anything but one reserved word: implementation. This parameter indicates in its value the name of the class that has to be instantiated 
-by the factory for that role. For instance, if we want to use the implementation Pass_Through for module SignalConditioner, the corresponding line in the 
+by the factory for that role. For instance, if our signal source is providing data already at baseband and thus we want to use the implementation Pass_Through for module SignalConditioner, the corresponding line in the 
 configuration file would be
 
 \code
@@ -154,12 +312,25 @@ and the sampling frequency and intermediate frequency at what the signal was ori
 SignalSource.implementation=File_Signal_Source
 SignalSource.filename=/home/user/gnss-sdr/data/my_capture.dat
 SignalSource.item_type=gr_complex
-SignalSource.sampling_frequency=4000000
-SignalSource.freq=1575420000
+SignalSource.sampling_frequency=4000000 ; Sampling frequency in [Hz]
+SignalSource.freq=1575420000 ; RF front-end center frequency in [Hz] 
 \endcode 
 
-Example: UhdSignalSource.
- 
+Example: UhdSignalSource
+
+The user may prefer to use a UHD-compatible RF front-end and try real-time processing. For instance, for a USRP1 + DBSRX daughterboard, use:
+\code
+;######### SIGNAL_SOURCE CONFIG ############
+SignalSource.implementation=UHD_Signal_Source
+SignalSource.item_type=gr_complex
+SignalSource.sampling_frequency=4000000 ; Sampling frequency in [Hz]
+SignalSource.freq=1575420000 ; RF front-end center frequency in [Hz] 
+SignalSource.gain=60 ; Front-end gain in dB
+SignalSource.subdevice=B:0 ; UHD subdevice specification (for USRP1 use A:0 or B:0)
+\endcode
+
+Other examples are available at <tt>gnss-sdr/conf</tt>.
+
  \subsection signal_conditioner Signal Conditioner
  The signal conditioner is in charge of resampling the signal and delivering a reference sample rate to the downstream processing blocks, acting as
   a facade between the signal source and the synchronization channels, providing a simplified interface to the input signal. 
@@ -182,7 +353,7 @@ This module is also in charge of managing the interplay between acquisition and 
      <a href="http://www.boost.org/libs/statechart/doc/tutorial.html" target="_blank">Boost.Statechart library</a>, 
      which provides desirable features such as support for asynchronous state machines, multi-threading, type-safety, error handling and compile-time validation.
      
-The abstract class ChannelInterface represents an interface to a channel GNSS block.
+The abstract class ChannelInterface represents an interface to a channel GNSS block. Check Channel for an actual implementation.
      
 \subsubsection acquisition Acquisition
 The first task of a GNSS receiver is to detect the presence or absence of in-view satellites. This is done by the acquisition system process, which also provides a coarse estimation of two signal parameters: the frequency shift 
@@ -194,6 +365,33 @@ derived from <tt>gr_block</tt>, and ensures that newly developed implementations
 Moreover, it adds still another layer of abstraction, since each given acquisition algorithm can have different implementations (for instance using
  different numerical libraries). In such a way, implementations can be continuously improved without having any impact neither on the algorithm interface nor the general acquisition interface.
 
+Check GpsL1CaPcpsAcquisition and GalileoE1PcpsAmbiguousAcquisition for examples of adapters from a Parallel Code Phase Search (PCPS) acquisition block, and
+ pcps_acquisition_cc for an example of a block implementation. The source code of all the available acquisition algorithms is located at:
+ 
+ \code
+  |-gnss-sdr
+  |---src
+  |-----algorithms
+  |-------acquisition
+  |---------adapters          <- Adapters of the processing blocks to an AcquisitionInterface
+  |---------gnuradio_blocks   <- Signal processing blocks implementation
+ \endcode
+
+The user can select a given implementation for the algorithm to be used in each receiver channel, as well as their parameters, in the configuration file:
+\code
+;######### ACQUISITION CH 0 CONFIG ############
+Acquisition0.implementation=GPS_L1_CA_PCPS_Acquisition
+Acquisition0.threshold=70
+Acquisition0.doppler_max=10000
+Acquisition0.doppler_step=250
+ 
+;######### ACQUISITION CH 1 CONFIG ############
+Acquisition1.implementation=GPS_L1_CA_PCPS_Acquisition
+Acquisition1.threshold=70
+Acquisition1.doppler_max=10000
+Acquisition1.doppler_step=250
+\endcode
+
 
 \subsubsection tracking Tracking
 When a satellite is declared present, the parameters estimated by the acquisition module are then fed to the receiver tracking module, which represents the
@@ -201,8 +399,34 @@ When a satellite is declared present, the parameters estimated by the acquisitio
   variations. 
 
 Again, a class hierarchy consisting of a TrackingInterface class and subclasses implementing algorithms provides a way of testing different approaches, 
-with full access to their parameters.
+with full access to their parameters. Check GpsL1CaDllPllTracking or GalileoE1DllPllVemlTracking for examples of adapters, and Gps_L1_Ca_Dll_Pll_Tracking_cc for an example 
+of a signal porcessing block implementation.
 
+The source code of all the available tracking algorithms is located at:
+ \code
+  |-gnss-sdr
+  |---src
+  |-----algorithms
+  |-------tracking
+  |---------adapters          <- Adapters of the processing blocks to a TrackingInterface
+  |---------gnuradio_blocks   <- Signal processing blocks implementation
+  |---------libs              <- libraries of tracking objects (e.g. correlators, discriminators, and so on)
+ \endcode
+
+The user can select a given implementation for the algorithm to be used in all the tracking blocks, as well as its parameters, in the configuration file:
+\code
+;######### TRACKING GLOBAL CONFIG ############
+Tracking.implementation=GPS_L1_CA_DLL_PLL_Tracking
+Tracking.item_type=gr_complex
+Tracking.if=0
+Tracking.dump=false
+Tracking.dump_filename=./tracking_ch_ ; used if dump is set to true. 
+                                      ; Will add "x.dat" where x is the channel number.
+Tracking.pll_bw_hz=50.0; PLL loop filter bandwidth [Hz]
+Tracking.dll_bw_hz=2.0; DLL loop filter bandwidth [Hz]
+Tracking.order=3;
+Tracking.early_late_space_chips=0.5; correlator early-late space [chips]
+\endcode
 
 \subsubsection decoding Decoding of the navigation message
 Most of GNSS signal links are modulated by a navigation message containing the time the message was transmitted, orbital parameters of satellites 
@@ -212,7 +436,8 @@ spread over different words, and values extracted from different frames are requ
 error control an others contain actual information. There are also error control mechanisms, from parity checks to forward error correction (FEC) encoding and 
 interleaving, depending on the system. All this decoding complexity is managed by a finite state machine implemented with the <a href="http://www.boost.org/libs/statechart/doc/tutorial.html" target="_blank">Boost.Statechart library</a>.
 
-The common interface is TelemetryDecoderInterface.
+The common interface is TelemetryDecoderInterface. Check GpsL1CaTelemetryDecoder for an example of the GPS L1 NAV message decoding adapter, and gps_l1_ca_telemetry_decoder_cc
+for an actual implementation of a signal processing block.
 
 \subsection observables Observables
 GNSS systems provide different kinds of observations. The most commonly used are the code observations, also called pseudoranges. The <i>pseudo</i> comes from 
@@ -221,7 +446,7 @@ the fact that on the receiver side the clock error is unknown and thus the measu
  generated in the receiver. Both observables are computed from the outputs of the tracking module and the decoding of the navigation message.
 This module collects all the data provided by every tracked channel, aligns all received data into a coherent set, and computes the observables.
 
-The common interface is ObservablesInterface.
+The common interface is ObservablesInterface. 
 
 \subsection pvt Computation of Position, Velocity and Time
 Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute a simple least square
@@ -245,6 +470,8 @@ PVT.dump_filename=./PVT ; Log path and filename without extension.
 \endcode
 
 \subsection output_filter Output filter
+
+(To be completed)
 
 */
 

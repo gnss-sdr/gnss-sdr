@@ -1,10 +1,28 @@
+# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+#
+# This file is part of GNSS-SDR.
+#
+# GNSS-SDR is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# at your option) any later version.
+#
+# GNSS-SDR is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+#
+
 /*! \mainpage
 
 \image html gnss-sdr_logo.png
 
 Welcome to GNSS-SDR!
 
-GNSS-SDR is an open-source GNSS software receiver freely available to the research community. This project provides a common framework for GNSS signal processing which can operate in a variety of computer platforms. This tool is intended to foster collaboration, increase awareness, and reduce development costs in the field of GNSS receiver design and customized use of GNSS signals.
+GNSS-SDR is an open-source <a href="http://en.wikipedia.org/wiki/Software_GNSS_receiver" target="_blank">GNSS software receiver</a> freely available to the research community. This project provides a common framework for GNSS signal processing which can operate in a variety of computer platforms. This tool is intended to foster collaboration, increase awareness, and reduce development costs in the field of GNSS receiver design and customized use of GNSS signals.
 
 For details about GNSS-SDR and using it, please see the <a
 href="http://gnss-sdr.org" target="_blank"><b>main project page</b></a> or browse the code at the <a
@@ -17,6 +35,8 @@ href="http://sourceforge.net/p/gnss-sdr/code/311/tree/trunk/" target="_blank"><b
 \li \ref using_gnss-sdr
 \li \ref control_plane
 \li \ref signal_processing
+\li \ref license
+\li \ref publications
 
 
 More details on GNSS-SDR signal processing blocks:
@@ -24,11 +44,14 @@ More details on GNSS-SDR signal processing blocks:
 \li \ref signal_source
 \li \ref signal_conditioner
 \li \ref channel
+    <ul>
+      <li> \ref acquisition </li>
+      <li> \ref tracking</li>
+      <li> \ref decoding
+    </ul>
 \li \ref observables
 \li \ref pvt
 \li \ref output_filter
-
- 
 
 
 \section overview Overview
@@ -52,7 +75,7 @@ This includes all current and future <a href="http://www.ettus.com/">Ettus Resea
 \li Experimentally, with some <a href="http://gnss-sdr.org/documentation/gnss-sdr-operation-realtek-rtl2832u-usb-dongle-dvb-t-receiver" target="_blank">USB DVB-T dongles based on the Realtek RTL2832U chipset</a>.
 
 As outputs, it provides:
-\li Dump of intermediate signals (selectable by the user)
+\li Dump of intermediate signals (configurable by the user)
 \li The processing is logged at a  system temporary folder (usually, <tt>/tmp</tt>)
 \li Observables in form of RINEX file (experimental)
 \li Navigation message data in form of RINEX file
@@ -80,7 +103,7 @@ $ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
 This will create a folder named gnss-sdr with the following structure:
 \code
  |-gnss-sdr
- |---build       <- where gnss-sdr is build
+ |---build       <- where gnss-sdr is built
  |---cmake       <- CMake-related files
  |---conf        <- Configuration files. Each file represents one receiver.
  |---data        <- Populate this folder with you captured data.
@@ -400,7 +423,8 @@ When a satellite is declared present, the parameters estimated by the acquisitio
 
 Again, a class hierarchy consisting of a TrackingInterface class and subclasses implementing algorithms provides a way of testing different approaches, 
 with full access to their parameters. Check GpsL1CaDllPllTracking or GalileoE1DllPllVemlTracking for examples of adapters, and Gps_L1_Ca_Dll_Pll_Tracking_cc for an example 
-of a signal porcessing block implementation.
+of a signal processing block implementation. There are also available some useful classes for signal tracking; take a look at Correlator, pll_four_quadrant_atan, dll_nc_e_minus_l_normalized, 
+cn0_svn_estimator and carrier_lock_detector. 
 
 The source code of all the available tracking algorithms is located at:
  \code
@@ -472,6 +496,71 @@ PVT.dump_filename=./PVT ; Log path and filename without extension.
 \subsection output_filter Output filter
 
 (To be completed)
+
+\section license About the software license
+GNSS-SDR is released under the <a href="http://www.gnu.org/licenses/gpl.html" target="_blank">General Public License (GPL) v3</a>, thus securing practical usability, inspection, 
+and continuous improvement by the research community, allowing the discussion based on tangible code and the analysis of results obtained with real signals. 
+The GPL implies that:
+
+\li Copies may be distributed free of charge or for money, but the source code has to be shipped or provided free of charge (or at cost price) on demand. The receiver of the source code has the same rights meaning he can share copies free of charge or resell.
+\li The licensed material may be analyzed or modified.
+\li Modified material may be distributed under the same licensing terms but <b>do not</b> have to be distributed.
+
+That means that modifications only have to be made available to the public if distribution happens. So it is perfectly fine to take the GNSS-SDR source code, modify it heavily and use it in a not distributed application / library. This is how companies like Google can run their own patched versions of Linux for example.
+
+But what this also means is that non-GPL code cannot use GPL code. This means that you cannot modify / use GNSS-SDR, blend it with non-GPL code, and make money with the resulting software. You cannot distribute the resulting software under a non-disclosure agreement or contract. Distributors under the GPL also grant a license for any of their patents practiced by the software, to practice those patents in GPL software. You can sell a device that runs with GNSS-SDR, but if you distribute the code, it has to remain under GPL.
+
+\section publications Publications and Credits
+If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate if you reference any of these articles to credit the GNSS-SDR project:
+
+\li C. Fern&aacute;ndez-Prades, J. Arribas, L. Esteve, D. Pubill, P. Closas, <a href="http://www.cttc.es/resources/doc/121208-2582419-fernandez-9099698438457074772.pdf" target="_blank"><i>An Open Source Galileo E1 Software Receiver</i></a>, in Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC 2012), ESTEC, Noordwijk, The Netherlands, Dec. 2012.
+\li J. Arribas, <a href="http://theses.eurasip.org/theses/449/gnss-array-based-acquisition-theory-and/" target="_blank"><i>GNSS Array-based Acquisition: Theory and Implementation</i></a>, PhD Thesis, Universitat Polit&egrave;cnica de Catalunya, Barcelona, Spain, June 2012.
+\li C. Fern&aacute;ndez-Prades, J. Arribas,  P. Closas, C. Avil&eacutes, and L. Esteve, <a href="http://www.cttc.es/resources/doc/110921-ion11-gnss-sdr-45303.pdf" target="_blank"><i>GNSS-SDR: an open source tool for researchers and developers</i></a>, in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011. 
+\li C. Fern&aacute;ndez-Prades, C. Avil&eacute;s, L. Esteve, J. Arribas, and P. Closas, <a href="http://www.cttc.cat/resources/doc/101213-pid1531501-14543.pdf" target="_blank"><i>Design patterns for GNSS software receivers</i></a>, in Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010), ESTEC, Noordwijk, The Netherlands, Dec. 2010. DOI:10.1109/NAVITEC.2010.5707981 
+
+For LaTeX users, these are the BibTeX cites for your convenience:
+
+\code
+@INPROCEEDINGS{GNSS-SDR12
+  author = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and L.~Esteve and D.~Pubill and P.~Closas},
+  title = {An Open Source {G}alileo {E1} Software Receiver},
+  booktitle = {Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2012)}, 
+  year = {2012}, 
+  address = {ESTEC, Noordwijk, The Netherlands}, 
+  month = {Dec.} }
+\endcode
+ 
+\code
+@PHDTHESIS{Arribas12,
+  author = {J.~Arribas},
+  title = {{GNSS} Array-based Acquisition: Theory and Implementation},
+  school = {Universitat Polit\`{e}cnica de Catalunya},
+  year = {2012},
+  address = {Barcelona, Spain},
+  month = {June} }
+\endcode
+ 
+\code
+@INPROCEEDINGS{GNSS-SDR11, 
+ AUTHOR = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and P.~Closas and C.~Avil\'{e}s and L.~Esteve}, 
+ TITLE = {{GNSS-SDR}: An Open Source Tool For Researchers and Developers}, 
+ BOOKTITLE = {Proc. of the ION GNSS 2011 Conference}, 
+ YEAR = {2011}, 
+ address = {Portland, Oregon}, 
+ month = {Sept.} } 
+\endcode
+ 
+\code
+@INPROCEEDINGS{GNSS-SDR10, 
+ AUTHOR = {C.~{Fern\'{a}ndez--Prades} and C.~Avil\'{e}s and L.~Esteve and J.~Arribas and P.~Closas}, 
+ TITLE = {Design patterns for {GNSS} software receivers}, 
+ BOOKTITLE = {Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010)}, 
+ YEAR = {2010}, 
+ address = {ESTEC, Noordwijk, The Netherlands}, 
+ month = {Dec.}, 
+ note = {DOI:10.1109/NAVITEC.2010.5707981} } 
+\endcode
+
 
 */
 

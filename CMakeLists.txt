@@ -225,19 +225,45 @@ list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    message( "Doxygen found. You can build the documentation with 'make doc'." )
-    message( "When done, point your browser to ${CMAKE_SOURCE_DIR}/html/index.html")
-    set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
-    file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
-    file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} top_builddir)
-    configure_file(${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile.in
-         ${CMAKE_SOURCE_DIR}/docs/Doxyfile
-         @ONLY)
-    add_custom_target(doc
-         ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/docs/Doxyfile
-         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-         COMMENT "Generating API documentation with Doxygen." VERBATIM
-    )
+     message( "Doxygen found.")
+     message(STATUS "You can build the documentation with 'make doc'." )
+     message(STATUS "When done, point your browser to ${CMAKE_SOURCE_DIR}/html/index.html")
+     set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
+     file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
+     file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} top_builddir)
+     find_package(LATEX)
+     if (PDFLATEX_COMPILER)
+          set(GENERATE_PDF_DOCUMENTATION "YES")
+     else(PDFLATEX_COMPILER)
+          set(GENERATE_PDF_DOCUMENTATION "NO")
+     endif(PDFLATEX_COMPILER)
+     configure_file(${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile.in
+          ${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile
+          @ONLY
+     )
+     add_custom_target(doc
+          ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+          COMMENT "Generating API documentation with Doxygen." VERBATIM
+     )
+     if(LATEX_COMPILER)
+          message(STATUS "'make pdfmanual' will generate a manual at ${CMAKE_SOURCE_DIR}/docs/GNSS-SDR_manual.pdf")         
+          add_custom_target(pdfmanual
+               COMMAND ${CMAKE_MAKE_PROGRAM}
+               COMMAND ${CMAKE_COMMAND} -E copy refman.pdf ${CMAKE_SOURCE_DIR}/docs/GNSS-SDR_manual.pdf
+               COMMAND ${CMAKE_MAKE_PROGRAM} clean
+               DEPENDS doc
+               WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/latex
+               COMMENT "Generating PDF manual with Doxygen." VERBATIM
+          )
+     endif(LATEX_COMPILER)
+     message(STATUS "'make doc-clean' will clean the documentation.")
+     add_custom_target(doc-clean
+          COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/docs/html
+          COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/docs/latex
+          COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/docs/GNSS-SDR_manual.pdf
+          COMMENT "Cleaning documentation." VERBATIM
+     )
 else(DOXYGEN_FOUND)
      message( "Doxygen has not been found in your system.")
      message( "You can get nice code documentation by using it!")

@@ -19,6 +19,7 @@
 /*! \mainpage
 
 \image html gnss-sdr_logo.png
+\image latex gnss-sdr_logo.png "GNSS-SDR logo" width=2.5cm
 
 Welcome to GNSS-SDR!
 
@@ -66,6 +67,7 @@ buses to a variety of either commercially available or custom-made RF front-ends
  observation of the ionospheric impact on navigation signals, GNSS reflectometry, signal quality monitoring, or carrier-phase based navigation techniques. 
 
 \image html overview.png
+\image latex overview.png "Overview" width=12cm
 
 As signal inputs, it accepts:
 \li Raw data file captured with a data grabber (digitized at some intermediate frequency or directly at baseband).
@@ -295,6 +297,7 @@ adds or removes processing or hierarchical blocks to the internal graph, and <tt
 
 
 \image html ClassHierarchy.png
+\image latex ClassHierarchy.png "Class hierarchy of signal processing blocks" width=12cm
 
 A signal processing flow is constructed by creating a tree of hierarchical blocks, which at any level may also contain terminal nodes that actually implement signal 
 processing functions.
@@ -423,8 +426,8 @@ When a satellite is declared present, the parameters estimated by the acquisitio
 
 Again, a class hierarchy consisting of a TrackingInterface class and subclasses implementing algorithms provides a way of testing different approaches, 
 with full access to their parameters. Check GpsL1CaDllPllTracking or GalileoE1DllPllVemlTracking for examples of adapters, and Gps_L1_Ca_Dll_Pll_Tracking_cc for an example 
-of a signal processing block implementation. There are also available some useful classes for signal tracking; take a look at Correlator, pll_four_quadrant_atan, dll_nc_e_minus_l_normalized, 
-cn0_svn_estimator and carrier_lock_detector. 
+of a signal processing block implementation. There are also available some useful classes and functions for signal tracking; take a look at Correlator, lock_detectors.h, tracking_discriminators.h or
+tracking_2nd_DLL_filter.h. 
 
 The source code of all the available tracking algorithms is located at:
  \code

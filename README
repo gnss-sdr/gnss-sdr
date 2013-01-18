@@ -26,7 +26,7 @@ In order to avoid defining these variables each time you enter a session, you ma
 * Install other libraries used by GNSS-SDR:
 
 - Download, compile, and install the Armadillo linear algebra library
-
+$ sudo apt-get install libatlas-dev
 $ wget http://sourceforge.net/projects/arma/files/armadillo-3.6.1.tar.gz
 $ tar xvfz armadillo-3.6.1.tar.gz
 $ cd armadillo-3.6.1
@@ -36,7 +36,6 @@ $ sudo make install
 
 The full stop separated from "cmake" by a space is important. CMake will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
 
-NOTE: ATLAS version 3.6 is know to cause random crashes and incorrect results under Ubuntu. The minimum recommended version is 3.8. It is a good idea to completely remove ATLAS 3.6 from your system, in case you have it, as it intercepts calls to BLAS and LAPACK. 
 
 - Download, unzip, configure, build and install gperftools, a set of performance analysis tools:
 

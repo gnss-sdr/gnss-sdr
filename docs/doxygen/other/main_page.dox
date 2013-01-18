@@ -38,6 +38,7 @@ href="http://sourceforge.net/p/gnss-sdr/code/311/tree/trunk/" target="_blank"><b
 \li \ref signal_processing
 \li \ref license
 \li \ref publications
+\li \ref now_what
 
 
 More details on GNSS-SDR signal processing blocks:
@@ -98,17 +99,17 @@ and, optionally,
 \li <a href="http://code.google.com/p/gperftools/" target="_blank">Gperftools</a>, which provides fast, multi-threaded malloc() and performance analysis tools.
 
 After all dependencies are installed, checkout the GNSS-SDR repository:
-\code
+\verbatim
 $ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr 
-\endcode
+\endverbatim
 
 This will create a folder named gnss-sdr with the following structure:
-\code
+\verbatim
  |-gnss-sdr
  |---build       <- where gnss-sdr is built
  |---cmake       <- CMake-related files
  |---conf        <- Configuration files. Each file represents one receiver.
- |---data        <- Populate this folder with you captured data.
+ |---data        <- Populate this folder with your captured data.
  |---docs        <- Contains documentation-related files
  |---drivers     <- Drivers for some RF front-ends
  |---firmware    <- Firmware for some front-ends
@@ -136,78 +137,82 @@ This will create a folder named gnss-sdr with the following structure:
  |-----main
  |-----tests
  |-----utils     <- some utilities (e.g. Matlab scripts)
-\endcode
+\endverbatim
 
 You are now ready to build GNSS-SDR. For doing that, you can choose either bjam or <a href="http://www.cmake.org/" target="_blank">CMake</a> as building tools:
 \li Using bjam:
-\code
+\verbatim
 $ cd gnss-sdr
 $ bjam release
-\endcode
+\endverbatim
 \li Using CMake:
-\code
+\verbatim
 $ cd gnss-sdr/build
 $ cmake ../
 $ make
 $ make install
-\endcode
+\endverbatim
 
 If everything goes well, two new executables will be created at <tt>gnss-sdr/install</tt>, namely <tt>gnss-sdr</tt> and <tt>run_tests</tt>. You can create
 this documentation by doing:
-\code
+\verbatim
 $ doxygen
-\endcode
+\endverbatim
 from the <tt>gnss-sdr</tt> root folder, or
-\code
+\verbatim
 $ make doc
-\endcode
+\endverbatim
 
 from the <tt>gnss-sdr/build</tt> folder if you are using CMake. In both cases, <a href="http://www.stack.nl/~dimitri/doxygen/" target="_blank">Doxygen</a> will generate HTML documentation that can be 
 retrieved pointing your browser of preference to <tt>gnss-sdr/docs/html/index.html</tt>.
 
 If you are using CMake, there are two more extra targets available. From the <tt>gnss-sdr/build</tt> folder:
-\code
+\verbatim
 $ make doc-clean
-\endcode
+\endverbatim
 will remove the content of previously-generated documentation and, if a LaTeX installation is detected in your system,
-\code
+\verbatim
 $ make pdfmanual
-\endcode
-will create a PDF manual at <tt>gnss-sdr/docs/GNSS-SDR_manual.pdf</tt>.
-
+\endverbatim
+will create a PDF manual at <tt>gnss-sdr/docs/GNSS-SDR_manual.pdf</tt>. Please note that the PDF generation requires some fonts to be installed on the host system.
+In Ubuntu 12.10, those fonts do not come by default. You can install them by doing:
+\verbatim
+$ sudo apt-get install texlive-fonts-recommended
+\endverbatim
+and then run <tt> cmake ../</tt> and <tt>make pdfmanual</tt> again.
 
 \subsection debug_and_release Debug and Release builds
 
 By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using
 a RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about
 the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
-\code
+\verbatim
 $ cd gnss-sdr/build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
 $ make install
-\endcode
+\endverbatim
 
 Bjam works the other way around. By default, it builds the Debug version:
-\code
+\verbatim
 $ cd gnss-sdr
 $ bjam
-\endcode
+\endverbatim
 and the Release version can be obtained by doing 
-\code
+\verbatim
 $ bjam release
-\endcode
+\endverbatim
 
 \subsection pudating_gnss-sdr Updating GNSS-SDR
 If you checked out GNSS-SDR some days ago, it is possible that some developer has updated files at the Subversion repository. You can update your working copy by doing:
-\code
+\verbatim
 $ cd gnss-sdr
 $ svn up
-\endcode
+\endverbatim
 Before rebuiling the source code, it is safe (and recommended) to remove the remainders of old builds:
-\code
+\verbatim
 $ rm -rf gnss-sdr/build/*
-\endcode
+\endverbatim
 
 You can also check <a href="http://svnbook.red-bean.com/" target="_blank">control version with Subversion</a> for more information about Subversion usage.
 
@@ -217,13 +222,13 @@ With GNSS-SDR, you can define you own receiver, work with captured raw data or f
 is done in a single file. Those configuration files reside at the <tt>gnss-sdr/conf</tt> folder. By default, the executable <tt>gnss-sdr</tt> will read the configuration
 available at <tt>gnss-sdr/conf/gnss-sdr.conf</tt>. You can edit that file to fit your needs, or even better, define a new <tt>my_receiver.conf</tt> file with your own configuration. 
 This new receiver can be done by going to the <tt>gnss-sdr/install</tt> folder:
-\code
+\verbatim
 $ cd gnss-sdr/install
-\endcode
+\endverbatim
 and invoking gnss-sdr with the <tt>--config_file</tt> flag pointing to your configuration file:
-\code
+\verbatim
 $ ./gnss-sdr --config_file=../conf/my_receiver.conf
-\endcode
+\endverbatim
 
 You can see a guide of available implementations at <tt>gnss-sdr/conf/master.conf</tt>. That folder contains other working examples as well. If you have a working
 configuration and want to share it will others, please email it to the <a href="http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR developers mailing list</b></a>
@@ -231,15 +236,15 @@ and we will be happy to upload it to the server.
 
 You can use a single configuration file for processing
 different data files, specifying the file to be processed with the <tt>--signal_source</tt> flag:
-\code
+\verbatim
 $ ./gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
-\endcode
+\endverbatim
 This will override the <tt>SignalSource.filename</tt> specified in the configuration file.
 
 You can get a complete list of available commandline flags by doing: 
-\code
+\verbatim
 $ ./gnss-sdr --help
-\endcode
+\endverbatim
 For general usage of commandline flags, see <a href="http://google-gflags.googlecode.com/svn/trunk/doc/gflags.html" target="_blank">how to use Google Commandline Flags</a>.
 
 \section control_plane Control plane
@@ -273,18 +278,18 @@ used in the actual GNSS-SDR application whereas InMemoryConfiguration is intende
 need to read configuration parameters will receive instances of ConfigurationInterface from where they will fetch the values. For instance, parameters related 
 to SignalSource should look like this:
 
-\code
+\verbatim
 SignalSource.parameter1=value1
 SignalSource.parameter2=value2
-\endcode
+\endverbatim
 
 The name of these parameters can be anything but one reserved word: implementation. This parameter indicates in its value the name of the class that has to be instantiated 
 by the factory for that role. For instance, if our signal source is providing data already at baseband and thus we want to use the implementation Pass_Through for module SignalConditioner, the corresponding line in the 
 configuration file would be
 
-\code
+\verbatim
 SignalConditioner.implementation=Pass_Through
-\endcode
+\endverbatim
 
 Since the configuration is just a set of property names and values without any meaning or syntax, the system is very versatile and easily extendable. Adding new 
 properties to the system only implies modifications in the classes that will make use of these properties. In addition, the configuration files are not checked 
@@ -344,19 +349,19 @@ Example: FileSignalSource
 The user can configure the receiver for reading from a file, setting in the configuration file the data file location, sample format, 
 and the sampling frequency and intermediate frequency at what the signal was originally captured.
  
-\code
+\verbatim
 ;######### SIGNAL_SOURCE CONFIG ############
 SignalSource.implementation=File_Signal_Source
 SignalSource.filename=/home/user/gnss-sdr/data/my_capture.dat
 SignalSource.item_type=gr_complex
 SignalSource.sampling_frequency=4000000 ; Sampling frequency in [Hz]
 SignalSource.freq=1575420000 ; RF front-end center frequency in [Hz] 
-\endcode 
+\endverbatim 
 
 Example: UhdSignalSource
 
 The user may prefer to use a UHD-compatible RF front-end and try real-time processing. For instance, for a USRP1 + DBSRX daughterboard, use:
-\code
+\verbatim
 ;######### SIGNAL_SOURCE CONFIG ############
 SignalSource.implementation=UHD_Signal_Source
 SignalSource.item_type=gr_complex
@@ -364,7 +369,7 @@ SignalSource.sampling_frequency=4000000 ; Sampling frequency in [Hz]
 SignalSource.freq=1575420000 ; RF front-end center frequency in [Hz] 
 SignalSource.gain=60 ; Front-end gain in dB
 SignalSource.subdevice=B:0 ; UHD subdevice specification (for USRP1 use A:0 or B:0)
-\endcode
+\endverbatim
 
 Other examples are available at <tt>gnss-sdr/conf</tt>.
 
@@ -405,17 +410,17 @@ Moreover, it adds still another layer of abstraction, since each given acquisiti
 Check GpsL1CaPcpsAcquisition and GalileoE1PcpsAmbiguousAcquisition for examples of adapters from a Parallel Code Phase Search (PCPS) acquisition block, and
  pcps_acquisition_cc for an example of a block implementation. The source code of all the available acquisition algorithms is located at:
  
- \code
+ \verbatim
   |-gnss-sdr
   |---src
   |-----algorithms
   |-------acquisition
   |---------adapters          <- Adapters of the processing blocks to an AcquisitionInterface
   |---------gnuradio_blocks   <- Signal processing blocks implementation
- \endcode
+ \endverbatim
 
 The user can select a given implementation for the algorithm to be used in each receiver channel, as well as their parameters, in the configuration file:
-\code
+\verbatim
 ;######### ACQUISITION CH 0 CONFIG ############
 Acquisition0.implementation=GPS_L1_CA_PCPS_Acquisition
 Acquisition0.threshold=70
@@ -427,7 +432,7 @@ Acquisition1.implementation=GPS_L1_CA_PCPS_Acquisition
 Acquisition1.threshold=70
 Acquisition1.doppler_max=10000
 Acquisition1.doppler_step=250
-\endcode
+\endverbatim
 
 
 \subsubsection tracking Tracking
@@ -441,7 +446,7 @@ of a signal processing block implementation. There are also available some usefu
 tracking_2nd_DLL_filter.h. 
 
 The source code of all the available tracking algorithms is located at:
- \code
+ \verbatim
   |-gnss-sdr
   |---src
   |-----algorithms
@@ -449,10 +454,10 @@ The source code of all the available tracking algorithms is located at:
   |---------adapters          <- Adapters of the processing blocks to a TrackingInterface
   |---------gnuradio_blocks   <- Signal processing blocks implementation
   |---------libs              <- libraries of tracking objects (e.g. correlators, discriminators, and so on)
- \endcode
+ \endverbatim
 
 The user can select a given implementation for the algorithm to be used in all the tracking blocks, as well as its parameters, in the configuration file:
-\code
+\verbatim
 ;######### TRACKING GLOBAL CONFIG ############
 Tracking.implementation=GPS_L1_CA_DLL_PLL_Tracking
 Tracking.item_type=gr_complex
@@ -464,7 +469,7 @@ Tracking.pll_bw_hz=50.0; PLL loop filter bandwidth [Hz]
 Tracking.dll_bw_hz=2.0; DLL loop filter bandwidth [Hz]
 Tracking.order=3;
 Tracking.early_late_space_chips=0.5; correlator early-late space [chips]
-\endcode
+\endverbatim
 
 \subsubsection decoding Decoding of the navigation message
 Most of GNSS signal links are modulated by a navigation message containing the time the message was transmitted, orbital parameters of satellites 
@@ -492,20 +497,20 @@ Although data processing for obtaining high-accuracy PVT solutions is out of the
   data such as <a href="http://www.gpstk.org" target="_blank">GPSTk</a> or <a href="http://gage14.upc.es/gLAB/" target="_blank">gLAB</a> appears as a viable solution for high performance, completely customizable GNSS receivers.
 
 The common interface is PvtInterface. For instance, in order to use the implementation GpsL1CaPvt, add to the configuration file:
-\code
+\verbatim
 ;######### PVT CONFIG ############
 PVT.implementation=GPS_L1_CA_PVT
-\endcode
+\endverbatim
 
 This implementation allows tuning of the following parameters:
-\code
+\verbatim
 PVT.averaging_depth=10 ; Number of PVT observations in the moving average algorithm
 PVT.flag_averaging=true ; Enables the PVT averaging between output intervals (arithmetic mean) [true] or [false] 
 PVT.output_rate_ms=100 ; Period in [ms] between two PVT outputs
 PVT.display_rate_ms=500 ; Position console print (std::out) interval [ms].
 PVT.dump=false ; Enable or disable the PVT internal binary data file logging [true] or [false] 
 PVT.dump_filename=./PVT ; Log path and filename without extension.
-\endcode
+\endverbatim
 
 \subsection output_filter Output filter
 
@@ -529,12 +534,12 @@ If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate i
 
 \li C. Fern&aacute;ndez-Prades, J. Arribas, L. Esteve, D. Pubill, P. Closas, <a href="http://www.cttc.es/resources/doc/121208-2582419-fernandez-9099698438457074772.pdf" target="_blank"><i>An Open Source Galileo E1 Software Receiver</i></a>, in Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC 2012), ESTEC, Noordwijk, The Netherlands, Dec. 2012.
 \li J. Arribas, <a href="http://theses.eurasip.org/theses/449/gnss-array-based-acquisition-theory-and/" target="_blank"><i>GNSS Array-based Acquisition: Theory and Implementation</i></a>, PhD Thesis, Universitat Polit&egrave;cnica de Catalunya, Barcelona, Spain, June 2012.
-\li C. Fern&aacute;ndez-Prades, J. Arribas,  P. Closas, C. Avil&eacutes, and L. Esteve, <a href="http://www.cttc.es/resources/doc/110921-ion11-gnss-sdr-45303.pdf" target="_blank"><i>GNSS-SDR: an open source tool for researchers and developers</i></a>, in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011. 
+\li C. Fern&aacute;ndez-Prades, J. Arribas,  P. Closas, C. Avil&eacute;s, and L. Esteve, <a href="http://www.cttc.es/resources/doc/110921-ion11-gnss-sdr-45303.pdf" target="_blank"><i>GNSS-SDR: an open source tool for researchers and developers</i></a>, in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011. 
 \li C. Fern&aacute;ndez-Prades, C. Avil&eacute;s, L. Esteve, J. Arribas, and P. Closas, <a href="http://www.cttc.cat/resources/doc/101213-pid1531501-14543.pdf" target="_blank"><i>Design patterns for GNSS software receivers</i></a>, in Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010), ESTEC, Noordwijk, The Netherlands, Dec. 2010. DOI:10.1109/NAVITEC.2010.5707981 
 
 For LaTeX users, these are the BibTeX cites for your convenience:
 
-\code
+\verbatim
 @INPROCEEDINGS{GNSS-SDR12
   author = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and L.~Esteve and D.~Pubill and P.~Closas},
   title = {An Open Source {G}alileo {E1} Software Receiver},
@@ -542,9 +547,9 @@ For LaTeX users, these are the BibTeX cites for your convenience:
   year = {2012}, 
   address = {ESTEC, Noordwijk, The Netherlands}, 
   month = {Dec.} }
-\endcode
+\endverbatim
  
-\code
+\verbatim
 @PHDTHESIS{Arribas12,
   author = {J.~Arribas},
   title = {{GNSS} Array-based Acquisition: Theory and Implementation},
@@ -552,9 +557,9 @@ For LaTeX users, these are the BibTeX cites for your convenience:
   year = {2012},
   address = {Barcelona, Spain},
   month = {June} }
-\endcode
+\endverbatim
  
-\code
+\verbatim
 @INPROCEEDINGS{GNSS-SDR11, 
  AUTHOR = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and P.~Closas and C.~Avil\'{e}s and L.~Esteve}, 
  TITLE = {{GNSS-SDR}: An Open Source Tool For Researchers and Developers}, 
@@ -562,9 +567,9 @@ For LaTeX users, these are the BibTeX cites for your convenience:
  YEAR = {2011}, 
  address = {Portland, Oregon}, 
  month = {Sept.} } 
-\endcode
+\endverbatim
  
-\code
+\verbatim
 @INPROCEEDINGS{GNSS-SDR10, 
  AUTHOR = {C.~{Fern\'{a}ndez--Prades} and C.~Avil\'{e}s and L.~Esteve and J.~Arribas and P.~Closas}, 
  TITLE = {Design patterns for {GNSS} software receivers}, 
@@ -573,9 +578,27 @@ For LaTeX users, these are the BibTeX cites for your convenience:
  address = {ESTEC, Noordwijk, The Netherlands}, 
  month = {Dec.}, 
  note = {DOI:10.1109/NAVITEC.2010.5707981} } 
-\endcode
+\endverbatim
 
+\section now_what Ok, now what?
+In order to start using GNSS-SDR, you may want to populate <tt>gnss-sdr/data</tt> folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output 
+of a Radio Frequency front-end's Analog-to_Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intemediate frequency (on the order of MHz). 
+Prepare your configuration file, and then you are ready for going to the <tt> gnss-sdr/install</tt> folder, running <tt>./gnss-sdr</tt>, and see how the file is processed.
+Please ask the Developer Team for a signal sample if you need one, and they will do their best ;-)
 
+Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware (see \ref signal_source), for the GN3S v2 USB dongle
+and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
+
+You can find more information at the <a href="http://gnss-sdr.org/documents" target="_blank"><b>GNSS-SDR Documentation page</b></a> or directly asking to the 
+<a href="http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR Developers mailing list</b></a>. 
+ 
+You are also very welcome to contribute to the project, there are many ways to <a href="http://gnss-sdr.org/participate" target="_blank"><b>participate in GNSS-SDR</b></a>.
+If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. 
+Please do not hesitate to <a href="http://gnss-sdr.org/contact-us" target="_blank"><b>contact them</b></a>.
+
+Enjoy GNSS-SDR! 
+
+The Developer Team
 */
 
 

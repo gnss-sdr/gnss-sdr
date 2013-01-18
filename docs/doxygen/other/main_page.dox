@@ -165,6 +165,17 @@ $ make doc
 from the <tt>gnss-sdr/build</tt> folder if you are using CMake. In both cases, <a href="http://www.stack.nl/~dimitri/doxygen/" target="_blank">Doxygen</a> will generate HTML documentation that can be 
 retrieved pointing your browser of preference to <tt>gnss-sdr/docs/html/index.html</tt>.
 
+If you are using CMake, there are two more extra targets available. From the <tt>gnss-sdr/build</tt> folder:
+\code
+$ make doc-clean
+\endcode
+will remove the content of previously-generated documentation and, if a LaTeX installation is detected in your system,
+\code
+$ make pdfmanual
+\endcode
+will create a PDF manual at <tt>gnss-sdr/docs/GNSS-SDR_manual.pdf</tt>.
+
+
 \subsection debug_and_release Debug and Release builds
 
 By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using

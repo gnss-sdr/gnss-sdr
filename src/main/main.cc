@@ -82,9 +82,10 @@ int main(int argc, char** argv)
     if (FLAGS_log_dir.empty())
         {
              // temp_directory_path() is only available from
-             // Boost 1.45. Ubuntu 10.10 ships with 1.42
+             // Boost 1.45. Ubuntu 10.10 and Debian 6.0.6 ships with 1.42
              std::cout << "Logging will be done at "
-                 << boost::filesystem::temp_directory_path()
+                 //<< boost::filesystem::temp_directory_path()
+                 << "/tmp"
                  << std::endl
                  << "Use gnss-sdr --log_dir=/path/to/log to change that."
                  << std::endl;

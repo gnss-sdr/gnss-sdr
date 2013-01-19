@@ -39,19 +39,29 @@ list(APPEND CMAKE_MODULE_PATH ${gnss-sdr_project_SOURCE_DIR}/cmake/Modules)
 
 # Set the version information here
 set(VERSION_INFO_MAJOR_VERSION 0)
-#set(VERSION_INFO_API_COMPAT    1)
+set(VERSION_INFO_API_COMPAT    0)
 set(VERSION_INFO_MINOR_VERSION 1)
-
+set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
 
 # Append -O2 optimization flag for Debug builds
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
-#SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")
+
 
 
 ########################################################################
 # Environment setup
 ########################################################################
 include(ExternalProject)
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+     set(OperatingSystem "Linux")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+     set(OperatingSystem "Mac OS X")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+
 
 ################################################################################
 # Googletest - http://code.google.com/p/googletest/
@@ -68,6 +78,63 @@ else()
 endif(GTEST_DIR)
 
 
+################################################################################
+# GNURadio - http://gnuradio.org/redmine/projects/gnuradio/wiki
+################################################################################
+
+find_package(GnuradioCore)
+if(NOT GNURADIO_CORE_FOUND)
+     message(WARNING "GNU Radio is required to build gnss-sdr")
+     if(OperatingSystem MATCHES "Linux")
+          set(GNURADIO_RELEASE "3.6.3")
+          set(UHD_RELEASE "003_005_000")
+          file(DOWNLOAD http://www.sbrac.org/files/build-gnuradio
+               ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
+          )
+          file(COPY ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
+               DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
+               FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+          )
+          execute_process(
+               COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/build-gnuradio -l ${CMAKE_CURRENT_BINARY_DIR}/build-gnuradio.log
+               WORKING_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
+          )
+     endif(OperatingSystem MATCHES "Linux")
+#  -gt v${GNURADIO_RELEASE} -ut release_${UHD_RELEASE} does not work :-(
+endif(NOT GNURADIO_CORE_FOUND)
+if(GNURADIO_RELEASE)
+     find_package(GnuradioCore)
+endif(GNURADIO_RELEASE)
+
+
+
+find_package(Gruel)
+if(NOT GRUEL_FOUND)
+    message(FATAL_ERROR "Gruel required to build gnss-sdr")
+    
+endif()
+link_libraries(gruel)
+include_directories(${GRUEL_INCLUDE_DIRS})
+
+
+
+
+
+find_package(UHD)
+if(NOT UHD_FOUND)
+    message(FATAL_ERROR "UHD required to build gnss-sdr")
+endif()
+
+find_package(GnuradioUHD)
+if(NOT GNURADIO_UHD_FOUND)
+    message(FATAL_ERROR "Gnuradio UHD required to build gnss-sdr")
+endif()
+
+find_package(Volk)
+if(NOT VOLK_FOUND)
+    message(FATAL_ERROR "Volk required to build gnss-sdr")
+endif()
+
 
 ################################################################################
 # Boost - http://www.boost.org
@@ -77,18 +144,18 @@ if(UNIX AND EXISTS "/usr/lib64")
     list(APPEND BOOST_LIBRARYDIR "/usr/lib64") #fedora 64-bit fix
 endif(UNIX AND EXISTS "/usr/lib64")
 set(Boost_ADDITIONAL_VERSIONS
+    "1.42.0" "1.42" "1.43.0" "1.43" "1.44.0" "1.44"
     "1.45.0" "1.45" "1.46.0" "1.46" "1.47.0" "1.47" "1.48.0" "1.48" "1.49.0" "1.49"
-    "1.50.0" "1.50" "1.51.0" "1.51" "1.52.0" "1.52" "1.53.0" "1.53" "1.54.0" "1.54"
+    "1.50.0" "1.50" "1.51.0" "1.51"                 "1.53.0" "1.53" "1.54.0" "1.54"
     "1.55.0" "1.55" "1.56.0" "1.56" "1.57.0" "1.57" "1.58.0" "1.58" "1.59.0" "1.59"
     "1.60.0" "1.60" "1.61.0" "1.61" "1.62.0" "1.62" "1.63.0" "1.63" "1.64.0" "1.64"
     "1.65.0" "1.65" "1.66.0" "1.66" "1.67.0" "1.67" "1.68.0" "1.68" "1.69.0" "1.69"
 )
-set(Boost_MIN_VERSION "1.45.0")
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost ${Boost_MIN_VERSION} COMPONENTS date_time system filesystem thread REQUIRED) 
+find_package(Boost COMPONENTS date_time system filesystem thread REQUIRED) 
 if(NOT Boost_FOUND)
-     message(FATAL_ERROR "Fatal error: Boost (version >=1.45.0) required.")
+     message(FATAL_ERROR "Fatal error: Boost (version >=1.42.0) required.")
 endif(NOT Boost_FOUND)
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -273,40 +340,6 @@ endif(DOXYGEN_FOUND)
 
 
 ################################################################################
-# GNURadio - http://gnuradio.org/redmine/projects/gnuradio/wiki
-################################################################################
-
-find_package(Gruel)
-if(NOT GRUEL_FOUND)
-    message(FATAL_ERROR "Gruel required to build gnss-sdr")
-endif()
-link_libraries(gruel)
-include_directories(${GRUEL_INCLUDE_DIRS})
-
-
-find_package(GnuradioCore)
-if(NOT GNURADIO_CORE_FOUND)
-    message(FATAL_ERROR "GnuRadio Core required to build gnss-sdr")
-endif()
-
-
-find_package(UHD)
-if(NOT UHD_FOUND)
-    message(FATAL_ERROR "UHD required to build gnss-sdr")
-endif()
-
-find_package(GnuradioUHD)
-if(NOT GNURADIO_UHD_FOUND)
-    message(FATAL_ERROR "Gnuradio UHD required to build gnss-sdr")
-endif()
-
-find_package(Volk)
-if(NOT VOLK_FOUND)
-    message(FATAL_ERROR "Volk required to build gnss-sdr")
-endif()
-
-
-################################################################################
 # Armadillo - http://arma.sourceforge.net/
 ################################################################################
 
@@ -353,6 +386,10 @@ if(NOT ARMADILLO_FOUND)
      find_library(blas NAMES blas HINTS /usr/lib /usr/local/lib /usr/lib64)
      set(ARMADILLO_LIBRARIES ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a ${lapack} ${blas} gfortran)
      set(LOCAL_ARMADILLO true)
+     # Save a copy at the thirdparty folder
+     file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
+          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo
+     )
 endif(NOT ARMADILLO_FOUND)
 
 

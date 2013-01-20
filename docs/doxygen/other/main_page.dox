@@ -482,6 +482,8 @@ interleaving, depending on the system. All this decoding complexity is managed b
 The common interface is TelemetryDecoderInterface. Check GpsL1CaTelemetryDecoder for an example of the GPS L1 NAV message decoding adapter, and gps_l1_ca_telemetry_decoder_cc
 for an actual implementation of a signal processing block.
 
+See the \ref reference_docs for more information about the signal format.
+
 \subsection observables Observables
 GNSS systems provide different kinds of observations. The most commonly used are the code observations, also called pseudoranges. The <i>pseudo</i> comes from 
 the fact that on the receiver side the clock error is unknown and thus the measurement is not a pure range observation. High accuracy applications also use the

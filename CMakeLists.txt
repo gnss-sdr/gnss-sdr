@@ -46,7 +46,9 @@ set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_I
 # Append -O2 optimization flag for Debug builds
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
+option(INSTALL_GNURADIO "Install GNU Radio and all its dependencies" OFF)
 
+file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 ########################################################################
 # Environment setup
@@ -79,15 +81,16 @@ endif(GTEST_DIR)
 
 
 ################################################################################
-# GNURadio - http://gnuradio.org/redmine/projects/gnuradio/wiki
+# GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
 ################################################################################
 
-find_package(GnuradioCore)
-if(NOT GNURADIO_CORE_FOUND)
-     message(WARNING "GNU Radio is required to build gnss-sdr")
+if(INSTALL_GNURADIO)
      if(OperatingSystem MATCHES "Linux")
+          message("Trying to install GNU Radio and all its dependencies.")
+          message("This process can take a long time.")
           set(GNURADIO_RELEASE "3.6.3")
           set(UHD_RELEASE "003_005_000")
+          set(INSTALL_GNURADIO CACHE BOOL OFF FORCE)
           file(DOWNLOAD http://www.sbrac.org/files/build-gnuradio
                ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
           )
@@ -97,21 +100,31 @@ if(NOT GNURADIO_CORE_FOUND)
           )
           execute_process(
                COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/build-gnuradio -l ${CMAKE_CURRENT_BINARY_DIR}/build-gnuradio.log
-               WORKING_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
+               WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
           )
+          #  The flags -gt v${GNURADIO_RELEASE} -ut release_${UHD_RELEASE} do not work :-(     
+     else(OperatingSystem MATCHES "Linux")
+          message( "The script http://www.sbrac.org/files/build-gnuradio does not work in your operating system.")
+          message( "Please visit http://gnuradio.org and find out how to install GNU Radio.")
+          message( "Once installed, run 'cmake ${RELATIVE_CMAKE_CALL}' again.")
      endif(OperatingSystem MATCHES "Linux")
-#  -gt v${GNURADIO_RELEASE} -ut release_${UHD_RELEASE} does not work :-(
+endif(INSTALL_GNURADIO)
+
+find_package(GnuradioCore)
+if(NOT GNURADIO_CORE_FOUND)
+     if(OperatingSystem MATCHES "Linux")       
+          message( "If you are using Ubuntu, Fedora, RedHat, Debian or Mint")
+          message( "use 'cmake ${RELATIVE_CMAKE_CALL} -DINSTALL_GNURADIO=ON' to install GNU Radio and all its dependencies." )
+     endif(OperatingSystem MATCHES "Linux")
+     message(FATAL_ERROR "Please install GNU Radio and all its dependencies. Visit http://gnuradio.org")
 endif(NOT GNURADIO_CORE_FOUND)
-if(GNURADIO_RELEASE)
-     find_package(GnuradioCore)
-endif(GNURADIO_RELEASE)
+
 
 
 
 find_package(Gruel)
 if(NOT GRUEL_FOUND)
     message(FATAL_ERROR "Gruel required to build gnss-sdr")
-    
 endif()
 link_libraries(gruel)
 include_directories(${GRUEL_INCLUDE_DIRS})

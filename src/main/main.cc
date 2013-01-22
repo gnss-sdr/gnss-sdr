@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,6 +30,9 @@
  *
  * -------------------------------------------------------------------------
  */
+#ifndef GNSS_SDR_VERSION
+#define GNSS_SDR_VERSION "0.0.1"
+#endif
 
 #include <boost/filesystem.hpp>
 #include <gflags/gflags.h>
@@ -73,7 +76,7 @@ int main(int argc, char** argv)
 
 
     google::SetUsageMessage(intro_help);
-    google::SetVersionString("0.1");
+    google::SetVersionString(GNSS_SDR_VERSION);
     google::ParseCommandLineFlags(&argc, &argv, true);
 
     std::cout << "Initializing GNSS-SDR... Please wait." << std::endl;

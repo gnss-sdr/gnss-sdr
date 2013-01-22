@@ -18,7 +18,7 @@
 
 ########################################################################
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(FATAL_ERROR "Prevented in-tree build. This is bad practice.")
+    message(FATAL_ERROR "Prevented in-tree build. This is bad practice. Try 'cd build && cmake ../' ")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 
 ########################################################################
@@ -119,19 +119,12 @@ if(NOT GNURADIO_CORE_FOUND)
      message(FATAL_ERROR "Please install GNU Radio and all its dependencies. Visit http://gnuradio.org")
 endif(NOT GNURADIO_CORE_FOUND)
 
-
-
-
 find_package(Gruel)
 if(NOT GRUEL_FOUND)
     message(FATAL_ERROR "Gruel required to build gnss-sdr")
 endif()
 link_libraries(gruel)
 include_directories(${GRUEL_INCLUDE_DIRS})
-
-
-
-
 
 find_package(UHD)
 if(NOT UHD_FOUND)
@@ -480,6 +473,8 @@ if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
 list(APPEND CMAKE_CXX_FLAGS ${MY_CXX_FLAGS})
+
+add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
 ########################################################################
 # Add subdirectories (in order of deps)

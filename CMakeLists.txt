@@ -151,7 +151,7 @@ if(UNIX AND EXISTS "/usr/lib64")
 endif(UNIX AND EXISTS "/usr/lib64")
 set(Boost_ADDITIONAL_VERSIONS
     "1.42.0" "1.42" "1.43.0" "1.43" "1.44.0" "1.44"
-    "1.45.0" "1.45" "1.46.0" "1.46" "1.47.0" "1.47" "1.48.0" "1.48" "1.49.0" "1.49"
+    "1.45.0" "1.45" "1.46.0" "1.46"                 "1.48.0" "1.48" "1.49.0" "1.49"
     "1.50.0" "1.50" "1.51.0" "1.51"                 "1.53.0" "1.53" "1.54.0" "1.54"
     "1.55.0" "1.55" "1.56.0" "1.56" "1.57.0" "1.57" "1.58.0" "1.58" "1.59.0" "1.59"
     "1.60.0" "1.60" "1.61.0" "1.61" "1.62.0" "1.62" "1.63.0" "1.63" "1.64.0" "1.64"
@@ -202,9 +202,7 @@ if (NOT GFlags_FOUND OR LOCAL_GFLAGS)
      set(GFlags_LIBS 
           ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.a
      )
-     set(GFlags_SHARED_LIBS 
-          ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.so
-     )
+     file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
      set(GFlags_LIBRARY gflags-${gflags_RELEASE})
      set(gflags gflags-${gflags_RELEASE})
      set(GFlags_LIBRARY_PATH  ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs )
@@ -469,6 +467,7 @@ endif(GPERFTOOLS_FOUND)
 # Detect 64-bits machine
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
      #set(MY_CXX_FLAGS "${MY_CXX_FLAGS}  ...")
+     # link_libraries(pthread) # Needed by Fedora 18
      message("64-bits architecture detected.") 
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 

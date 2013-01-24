@@ -27,6 +27,8 @@ include_directories(
      ${ARMADILLO_INCLUDE_DIRS}  
 )
 
+add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
+
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 target_link_libraries(gnss-sdr ${Boost_LIBRARIES} ${GLOG_LIBRARIES} ${GFlags_LIBS} ${ARMADILLO_LIBRARIES} gnss_sp_libs gnss_rx)
 

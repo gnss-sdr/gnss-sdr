@@ -87,3 +87,10 @@ project : requirements
 
 
 build-project src ;
+
+import notfile ;
+notfile doc : @doxygen ;
+    actions doxygen 
+    {
+		doxygen ./docs/doxygen/Doxyfile.generic
+    }

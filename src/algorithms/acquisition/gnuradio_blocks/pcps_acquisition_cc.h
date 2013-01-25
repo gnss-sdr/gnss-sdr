@@ -69,7 +69,10 @@ pcps_make_acquisition_cc(unsigned int sampled_ms,
         gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
 
 /*!
- * \brief This class implements a Parallel Code Phase Search Acquisition
+ * \brief This class implements a Parallel Code Phase Search Acquisition.
+ *
+ * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
+ * Algorithm 1, for a pseudocode description of this implementation.
  */
 
 class pcps_acquisition_cc: public gr_block
@@ -120,13 +123,14 @@ private:
 
 public:
 	/*!
-	 * \brief Default destructor
+	 * \brief Default destructor.
 	 */
 	 ~pcps_acquisition_cc();
 
 	/*!
 	 * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-	 * to exchange synchronization data between acquisition and tracking blocks
+	 * to exchange synchronization data between acquisition and tracking blocks.
+	 * \param p_gnss_synchro Satellite information shared by the processing blocks.
 	 */
 	 void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 	 {
@@ -134,7 +138,7 @@ public:
 	 }
 
 	 /*!
-	  * \brief Returns the maximum peak of grid search
+	  * \brief Returns the maximum peak of grid search.
 	  */
 	 unsigned int mag()
 	 {
@@ -148,12 +152,14 @@ public:
 
 	 /*!
 	  * \brief Sets local code for PCPS acquisition algorithm.
+	  * \param code - Pointer to the PRN code.
 	  */
 	 void set_local_code(std::complex<float> * code);
 
 	 /*!
 	  * \brief Starts acquisition algorithm, turning from standby mode to
 	  * active mode
+	  * \param active - bool that activates/deactivates the block.
 	  */
 	 void set_active(bool active)
 	 {
@@ -162,6 +168,7 @@ public:
 
 	 /*!
 	  * \brief Set acquisition channel unique ID
+	  * \param channel - receiver channel.
 	  */
 	 void set_channel(unsigned int channel)
 	 {
@@ -169,7 +176,9 @@ public:
 	 }
 
 	 /*!
-	  * \brief Set statistics threshold of PCPS algorithm
+	  * \brief Set statistics threshold of PCPS algorithm.
+	  * \param threshold - Threshold for signal detection (check \ref Navitec2012,
+	  * Algorithm 1, for a definition of this threshold).
 	  */
 	 void set_threshold(float threshold)
 	 {
@@ -177,7 +186,8 @@ public:
 	 }
 
 	 /*!
-	  * \brief Set maximum Doppler off grid search
+	  * \brief Set maximum Doppler grid search
+	  * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
 	  */
 	 void set_doppler_max(unsigned int doppler_max)
 	 {
@@ -186,6 +196,7 @@ public:
 
 	 /*!
 	  * \brief Set Doppler steps for the grid search
+	  * \param doppler_step - Frequency bin of the search grid [Hz].
 	  */
 	 void set_doppler_step(unsigned int doppler_step)
 	 {
@@ -194,13 +205,17 @@ public:
 
 
 	 /*!
-	  * \brief Set tracking channel internal queue
+	  * \brief Set tracking channel internal queue.
+	  * \param channel_internal_queue - Channel's internal blocks information queue.
 	  */
 	 void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
 	 {
 		 d_channel_internal_queue = channel_internal_queue;
 	 }
 
+	 /*!
+	 * \brief Parallel Code Phase Search Acquisition signal processing.
+	 */
 	 int general_work(int noutput_items, gr_vector_int &ninput_items,
 			 gr_vector_const_void_star &input_items,
 			 gr_vector_void_star &output_items);

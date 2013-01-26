@@ -88,7 +88,7 @@ As outputs, it provides:
 \section build Building GNSS-SDR  
 
 In principle, GNSS-SDR can be built in any Unix-like system. In practice, it depends on being able to install all the required dependencies. See the <a href="http://gnss-sdr.org/documentation/building-guide" target="_blank">building guide</a> page for details about the project's
-dependencies and build process. Mainly, it consists on installing <a href="" target="_blank">GNU Radio</a> plus some few more libraries:
+dependencies and build process. Mainly, it consists on installing <a href="http://gnuradio.org/" target="_blank">GNU Radio</a> plus some few more libraries:
 
 \li <a href="http://code.google.com/p/gflags/" target="_blank">Gflags</a>, a library that implements commandline flags processing,
 \li <a href="http://code.google.com/p/google-glog/" target="_blank">Glog</a>, a library that implements application-level logging, 
@@ -156,7 +156,7 @@ $ make install
 If everything goes well, two new executables will be created at <tt>gnss-sdr/install</tt>, namely <tt>gnss-sdr</tt> and <tt>run_tests</tt>. You can create
 this documentation by doing:
 \verbatim
-$ doxygen
+$ bjam doc
 \endverbatim
 from the <tt>gnss-sdr</tt> root folder, or
 \verbatim
@@ -203,8 +203,8 @@ and the Release version can be obtained by doing
 $ bjam release
 \endverbatim
 
-\subsection pudating_gnss-sdr Updating GNSS-SDR
-If you checked out GNSS-SDR some days ago, it is possible that some developer has updated files at the Subversion repository. You can update your working copy by doing:
+\subsection updating_gnss-sdr Updating GNSS-SDR
+If you checked out GNSS-SDR some days ago, it is possible that some developer had updated files at the Subversion repository. You can update your working copy by doing:
 \verbatim
 $ cd gnss-sdr
 $ svn up
@@ -214,7 +214,7 @@ Before rebuiling the source code, it is safe (and recommended) to remove the rem
 $ rm -rf gnss-sdr/build/*
 \endverbatim
 
-You can also check <a href="http://svnbook.red-bean.com/" target="_blank">control version with Subversion</a> for more information about Subversion usage.
+You can also check <a href="http://svnbook.red-bean.com/" target="_blank">Version Control with Subversion</a> for more information about Subversion usage.
 
 \section using_gnss-sdr Using GNSS-SDR
 

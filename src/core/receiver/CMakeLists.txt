@@ -57,4 +57,4 @@ include_directories(
 link_directories(${Boost_LIBRARY_DIR})
 
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES})
-target_link_libraries(gnss_rx ${Boost_LIBRARIES} ${ARMADILLO_LIBRARIES} gnuradio-core gnss_system_parameters gnss_sp_libs signal_source_adapters datatype_adapters input_filter_adapters conditioner_adapters resampler_adapters acq_adapters tracking_lib tracking_adapters channel_adapters telemetry_decoder_adapters obs_adapters pvt_adapters pvt_lib out_adapters rx_core_lib)
+target_link_libraries(gnss_rx ${Boost_LIBRARIES} ${ARMADILLO_LIBRARIES} ${GNURADIO_CORE_LIBRARIES} gnss_system_parameters gnss_sp_libs signal_source_adapters datatype_adapters input_filter_adapters conditioner_adapters resampler_adapters acq_adapters tracking_lib tracking_adapters channel_adapters telemetry_decoder_adapters obs_adapters pvt_adapters pvt_lib out_adapters rx_core_lib)

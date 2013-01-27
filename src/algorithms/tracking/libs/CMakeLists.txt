@@ -39,4 +39,4 @@ include_directories(
 )
 
 add_library(tracking_lib ${TRACKING_LIB_SOURCES})
-target_link_libraries(tracking_lib ${VOLK_LIBRARIES} gnuradio-core)
+target_link_libraries(tracking_lib ${VOLK_LIBRARIES} ${GNURADIO_CORE_LIBRARIES})

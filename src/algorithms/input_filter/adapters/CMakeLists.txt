@@ -31,4 +31,4 @@ include_directories(
 )
 
 add_library(input_filter_adapters ${INPUT_FILTER_ADAPTER_SOURCES})
-target_link_libraries(input_filter_adapters gnuradio-filter)
+target_link_libraries(input_filter_adapters ${GR_FILTER_LIBRARIES})

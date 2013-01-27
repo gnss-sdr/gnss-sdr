@@ -55,12 +55,16 @@ file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRE
 ########################################################################
 include(ExternalProject)
 
+set(OS_IS_MACOSX "")
+set(OS_IS_LINUX "")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      set(OperatingSystem "Linux")
+     set(OS_IS_LINUX TRUE)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      set(OperatingSystem "Mac OS X")
+     set(OS_IS_MACOSX TRUE)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 
@@ -119,11 +123,45 @@ if(NOT GNURADIO_CORE_FOUND)
      message(FATAL_ERROR "Please install GNU Radio and all its dependencies. Visit http://gnuradio.org")
 endif(NOT GNURADIO_CORE_FOUND)
 
+find_library(
+     GNURADIO_CORE_LIBRARIES
+     NAMES gnuradio-core
+     PATHS usr/local/lib
+          /usr/local/lib64
+          /usr/lib
+          /usr/lib64
+)
+
+find_library(
+     GR_FILTER_LIBRARIES
+     NAMES gnuradio-filter
+     PATHS usr/local/lib
+          /usr/local/lib64
+          /usr/lib
+          /usr/lib64
+)
+find_library(
+     GR_FFT_LIBRARIES
+     NAMES gnuradio-fft
+     PATHS usr/local/lib
+          /usr/local/lib64
+          /usr/lib
+          /usr/lib64
+)
+find_library(
+     GR_BLOCKS_LIBRARIES
+     NAMES gnuradio-blocks
+     PATHS usr/local/lib
+          /usr/local/lib64
+          /usr/lib
+          /usr/lib64
+)  
+
 find_package(Gruel)
 if(NOT GRUEL_FOUND)
     message(FATAL_ERROR "Gruel required to build gnss-sdr")
 endif()
-link_libraries(gruel)
+link_libraries(${GRUEL_LIBRARIES})
 include_directories(${GRUEL_INCLUDE_DIRS})
 
 find_package(UHD)
@@ -140,7 +178,14 @@ find_package(Volk)
 if(NOT VOLK_FOUND)
     message(FATAL_ERROR "Volk required to build gnss-sdr")
 endif()
-
+find_library(
+     VOLK_LIBRARIES
+     NAMES volk
+     PATHS usr/local/lib
+          /usr/local/lib64
+          /usr/lib
+          /usr/lib64
+)
 
 ################################################################################
 # Boost - http://www.boost.org

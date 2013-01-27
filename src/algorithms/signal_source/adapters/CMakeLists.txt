@@ -87,4 +87,4 @@ include_directories(
 )
 
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES})
-target_link_libraries(signal_source_adapters gnss_sp_libs ${Boost_LIBRARIES} uhd gnuradio-uhd ${OPT_LIBRARIES})
+target_link_libraries(signal_source_adapters gnss_sp_libs ${Boost_LIBRARIES} uhd ${GNURADIO_UHD_LIBRARIES} ${OPT_LIBRARIES})

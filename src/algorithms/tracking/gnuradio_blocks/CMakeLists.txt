@@ -37,4 +37,4 @@ include_directories(
 )
 
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES})
-target_link_libraries(tracking_gr_blocks tracking_lib gnuradio-core gnss_sp_libs ${Boost_LINK_LIBRARIES} )
+target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_CORE_LIBRARIES} gnss_sp_libs ${Boost_LINK_LIBRARIES} )

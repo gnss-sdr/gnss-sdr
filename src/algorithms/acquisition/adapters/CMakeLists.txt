@@ -33,4 +33,4 @@ include_directories(
 )
 
 add_library(acq_adapters ${ACQ_ADAPTER_SOURCES})
-target_link_libraries(acq_adapters gnss_sp_libs acq_gr_blocks)
+target_link_libraries(acq_adapters gnss_sp_libs acq_gr_blocks ${GR_BLOCKS_LIBRARIES})

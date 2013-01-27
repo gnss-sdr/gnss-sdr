@@ -29,4 +29,4 @@ include_directories(
 )
 
 add_library(datatype_adapters ${DATATYPE_ADAPTER_SOURCES})
-target_link_libraries(datatype_adapters gnuradio-blocks)
+target_link_libraries(datatype_adapters ${GR_FILTER_LIBRARIES} ${GR_BLOCKS_LIBRARIES})

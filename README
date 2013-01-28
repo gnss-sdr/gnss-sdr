@@ -3,8 +3,9 @@ HOW TO BUILD GNSS-SDR
 
 This document describes how to set up the compilation environment and build GNSS-SDR. See also http://gnss-sdr.org/documentation/building-guide
 
-Ubuntu 11.04, 11.10, 12.04, 12.10 (32 and 64 bits)
---------------------------------------------------
+GNU/Linux 
+-----------------------------------------------------------
+Tested distributions: Ubuntu 12.04 (32 and 64 bits), Debian 6.0.6, Fedora 18
 
 * Install GNU Radio:
 
@@ -257,7 +258,31 @@ $ rm -rf gnss-sdr/build/*
 
 Mac OS X 
 ------------------------------
-NOTE: Currently, Apple's GCC toolchain is broken. We are working towards the use of LLVM/Clang. 
+Tested version: 10.8.2 (Mountain Lion)
+
+If you have still not installed Apple's Xcode Developer Tools and MacPorts, please do it now following the instructions from http://www.macports.org/install.php. All the required packages are available for free.
+
+Once MacPorts is properly installed on your system, open a terminal and type:
+
+$ sudo port install gcc46
+$ sudo port activate gcc46
+$ sudo port install gnuradio +full
+$ sudo port install subversion
+$ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
+$ cd gnss-sdr/build
+$ cmake ../ DCMAKE_CXX_COMPILER=gcc
+$ make
+$ make install
+
+This will create two executables at gnss-sdr/install, namely gnss-sdr and run_tests. The documentation can be built by:
+
+$ make doc
+
+and can be viewed doing:
+
+$ open ../docs/html/index.html
+
+  
 
 WARNING: GNU Radio's VOLK component (which handles vector optimized instructions and routines) compiles best when using GCC. 
 The default compiler for macports is CLANG, which will result in a fully functioning GNU Radio install but the VOLK component will not utilize the CPU's capabilities.

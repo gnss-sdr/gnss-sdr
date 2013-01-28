@@ -1,7 +1,7 @@
 /*!
- * \file gps_l1_ca_tcp_connector_tracking.h
+ * \file galileo_e1_tcp_connector_tracking.h
  * \brief  Interface of an adapter of a TCP connector block based on code DLL + carrier PLL
- * for GPS L1 C/A to a TrackingInterface
+ * for Galileo E1 to a TrackingInterface
  * \author David Pubill, 2012. dpubill(at)cttc.es
  *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
@@ -9,11 +9,11 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -65,6 +65,7 @@ public:
     {
         return role_;
     }
+    //! returns "Galileo_E1_TCP_CONNECTOR_Tracking"
     std::string implementation()
     {
         return "Galileo_E1_TCP_CONNECTOR_Tracking";

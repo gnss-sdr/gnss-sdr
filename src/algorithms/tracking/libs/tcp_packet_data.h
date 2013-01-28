@@ -1,6 +1,6 @@
 /*!
  * \file tcp_packet_data.h
- * \brief Interface of the TCP packet data class
+ * \brief Interface of the TCP data packet class
  * \author David Pubill, 2011. dpubill(at)cttc.es
  *
  *
@@ -32,6 +32,9 @@
 #ifndef GNSS_SDR_TCP_PACKET_DATA_H_
 #define GNSS_SDR_TCP_PACKET_DATA_H_
 
+/*!
+ * \brief Class that implements a TCP data packet
+ */
 class tcp_packet_data
 {
 public:

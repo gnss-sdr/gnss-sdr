@@ -122,8 +122,8 @@ galileo_e1_gen(std::complex<float>* _dest, int* _prn, char _Signal[3])
     const float alpha = sqrt(10.0 / 11.0);
     const float beta = sqrt(1.0 / 11.0);
 
-    std::complex<float> sinboc_11[_codeLength];
-    std::complex<float> sinboc_61[_codeLength];
+    std::complex<float> sinboc_11[49152]; // 12*4096 (_codeLength not accepted by Clang )
+    std::complex<float> sinboc_61[49152];
 
     galileo_e1_sinboc_11_gen(sinboc_11, _prn, _codeLength); //generate sinboc(1,1) 12 samples per chip
     galileo_e1_sinboc_61_gen(sinboc_61, _prn, _codeLength); //generate sinboc(6,1) 12 samples per chip
@@ -156,7 +156,7 @@ galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
     unsigned int _samplesPerCode;
     const unsigned int _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ; //Hz
     unsigned int _codeLength = Galileo_E1_B_CODE_LENGTH_CHIPS;
-    int primary_code_E1_chips[_codeLength];
+    int primary_code_E1_chips[4096];
     _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
 
     galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn, 0); //generate Galileo E1 code, 1 sample per chip
@@ -166,7 +166,7 @@ galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
             _codeLength = 12 * Galileo_E1_B_CODE_LENGTH_CHIPS;
             if (_fs != 12 * _codeFreqBasis)
                 {
-                    std::complex<float> _signal_E1[_codeLength];
+                    std::complex<float> _signal_E1[4096];
                     galileo_e1_gen(_signal_E1, primary_code_E1_chips, _Signal); //generate cboc 12 samples per chip
                     resampler(_signal_E1, _dest, 12 * _codeFreqBasis, _fs,
                             _codeLength, _samplesPerCode); //resamples code to fs
@@ -182,7 +182,7 @@ galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
             _codeLength = 2 * Galileo_E1_B_CODE_LENGTH_CHIPS;
             if (_fs != 2 * _codeFreqBasis)
                 {
-                    std::complex<float> _signal_E1[_codeLength];
+                    std::complex<float> _signal_E1[8192];
                     galileo_e1_sinboc_11_gen(_signal_E1, primary_code_E1_chips,
                             _codeLength); //generate sinboc(1,1) 2 samples per chip
                     resampler(_signal_E1, _dest, 2 * _codeFreqBasis, _fs,

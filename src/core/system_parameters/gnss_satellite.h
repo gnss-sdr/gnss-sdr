@@ -38,7 +38,7 @@
 #include <map>
 
 
-/*
+/*!
  * \brief This class represents a GNSS satellite.
  *
  * It contains information about the space vehicles currently operational

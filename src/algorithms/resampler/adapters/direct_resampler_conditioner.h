@@ -38,6 +38,10 @@
 
 class ConfigurationInterface;
 
+/*!
+ * \brief Interface of an adapter of a direct resampler conditioner block
+ * to a SignalConditionerInterface
+ */
 class DirectResamplerConditioner: public GNSSBlockInterface
 {
 public:
@@ -50,6 +54,7 @@ public:
     {
         return role_;
     }
+    //! returns "Direct_Resampler"
     std::string implementation()
     {
         return "Direct_Resampler";

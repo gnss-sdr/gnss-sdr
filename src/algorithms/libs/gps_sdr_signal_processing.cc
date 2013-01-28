@@ -99,7 +99,7 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, uns
 
 
 /*
- * code_gen_complex_sampled, generate GPS L1 C/A code complex for the desired SV ID and sampled to specific sampling frequency
+ *  Generates complex GPS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
  */
 void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift)
 {

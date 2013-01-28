@@ -39,6 +39,9 @@
 
 class ConfigurationInterface;
 
+/*!
+ * \brief This class implements an ObservablesInterface for GPS L1 C/A
+ */
 class GpsL1CaObservables : public ObservablesInterface
 {
 public:
@@ -52,6 +55,8 @@ public:
     {
         return role_;
     }
+
+    //!  return "GPS_L1_CA_Observables"
     std::string implementation()
     {
         return "GPS_L1_CA_Observables";
@@ -63,8 +68,9 @@ public:
     void reset()
     {
         return;
-    };
-    //!< All blocks must have an item_size() function implementation
+    }
+
+    //! All blocks must have an item_size() function implementation
     size_t item_size()
     {
         return sizeof(gr_complex);

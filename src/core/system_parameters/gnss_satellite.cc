@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -493,6 +493,7 @@ void Gnss_Satellite::set_block(std::string system_, unsigned int PRN_ )
             }
     if (system_.compare("Galileo") == 0)
         {
+            // Check http://igs.org/mgex/Status_GAL.htm
             switch ( PRN_ )
             {
             case 11 :
@@ -500,6 +501,12 @@ void Gnss_Satellite::set_block(std::string system_, unsigned int PRN_ )
                 break;
             case 12 :
                 block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, launched the same day
+                break;
+            case 19 :
+                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3)
+                break;
+            case 20 :
+                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4)
                 break;
             default:
                 block = std::string("Unknown");

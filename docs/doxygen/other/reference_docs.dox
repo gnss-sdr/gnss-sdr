@@ -38,6 +38,7 @@ Official GLONASS webpage: <a href="http://www.glonass-ianc.rsa.ru/en/" target="_
 \subsection galileo Galileo
 Check the <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/index_en.htm" target="_blank">Galileo website of the European Commission</a> and the
 <a href="http://www.esa.int/Our_Activities/Navigation/The_future_-_Galileo/What_is_Galileo" target="_blank">Galileo website of the European Space Agency</a>.
+There is a website with <a href="http://igs.org/mgex/Status_GAL.htm" target="_blank">Galileo constellation status information</a> from the International GNSS Service.
 
 \li Galileo E5, E6, and E1: European GNSS (Galileo) Open Service.  <a href="http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 1.1</b></a>, European Commission, Sept. 2010. 
 

@@ -51,25 +51,24 @@
 #include <map>
 #include <string>
 
-// Read an INI file into easy-to-access name/value pairs. (Note that I've gone
-// for simplicity here rather than speed, but it should be pretty decent.)
+/*!
+ * \brief Read an INI file into easy-to-access name/value pairs. (Note that I've gone
+ * for simplicity here rather than speed, but it should be pretty decent.)
+ */
 class INIReader
 {
 public:
-    // Construct INIReader and parse given filename. See ini.h for more info
-    // about the parsing.
+    //! Construct INIReader and parse given filename. See ini.h for more info about the parsing.
     INIReader(std::string filename);
 
-    // Return the result of ini_parse(), i.e., 0 on success, line number of
-    // first error on parse error, or -1 on file open error.
+    //! Return the result of ini_parse(), i.e., 0 on success, line number of first error on parse error, or -1 on file open error.
     int ParseError();
 
-    // Get a string value from INI file, returning default_value if not found.
+    //! Get a string value from INI file, returning default_value if not found.
     std::string Get(std::string section, std::string name,
                     std::string default_value);
 
-    // Get an integer (long) value from INI file, returning default_value if
-    // not found.
+    //! Get an integer (long) value from INI file, returning default_value if not found.
     long GetInteger(std::string section, std::string name, long default_value);
 
 private:

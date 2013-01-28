@@ -40,6 +40,9 @@
 
 class ConfigurationInterface;
 
+/*!
+ * \brief This class implements a block that connects input and output (does nothing)
+ */
 class Pass_Through : public GNSSBlockInterface
 {
 public:
@@ -53,6 +56,7 @@ public:
     {
         return role_;
     }
+    //! returns "Pass_Through"
     std::string implementation()
     {
         return "Pass_Through";

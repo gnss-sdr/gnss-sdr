@@ -35,6 +35,7 @@
 
 #include <gnuradio/gr_message.h>
 
+//! Message described by who sent it and what it says
 typedef struct ControlMessage_
 {
     unsigned int who;

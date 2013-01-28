@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -43,13 +43,11 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a PVT interface for GPS L1 C/A
+ * \brief This class implements a PvtInterface for GPS L1 C/A
  */
 class GpsL1CaPvt : public PvtInterface
 {
-
 public:
-
     GpsL1CaPvt(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
@@ -62,6 +60,8 @@ public:
     {
         return role_;
     }
+
+    //!  return "GPS_L1_CA_PVT"
     std::string implementation()
     {
         return "GPS_L1_CA_PVT";
@@ -75,15 +75,15 @@ public:
     void reset()
     {
         return;
-    };
-    // all blocks must have an intem_size() function implementation
+    }
+
+    //! All blocks must have an item_size() function implementation
     size_t item_size()
     {
         return sizeof(gr_complex);
     }
 
 private:
-
     gps_l1_ca_pvt_cc_sptr pvt_;
     bool dump_;
     unsigned int fs_in_;

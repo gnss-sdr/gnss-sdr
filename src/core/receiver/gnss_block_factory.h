@@ -43,6 +43,9 @@
 class ConfigurationInterface;
 class GNSSBlockInterface;
 
+/*!
+ * \brief Class that produces all kinds of GNSS blocks
+ */
 class GNSSBlockFactory
 {
 public:

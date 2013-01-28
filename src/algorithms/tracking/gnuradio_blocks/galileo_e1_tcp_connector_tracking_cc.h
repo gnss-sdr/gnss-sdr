@@ -1,9 +1,9 @@
 /*!
- * \file gps_l1_ca_tcp_connector_tracking_cc.h
+ * \file galileo_e1_tcp_connector_tracking_cc.h
  * \brief Interface of a TCP connector block based on code DLL + carrier PLL VEML (Very Early
  *  Minus Late) tracking block for Galileo E1 signals
  * \author David Pubill, 2012. dpubill(at)cttc.es
- *		   Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -13,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

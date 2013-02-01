@@ -76,8 +76,8 @@ $ sudo ldconfig
 
 - Download, unzip, configure, build and install glog, a Google's library that implements application-level logging:
 
-$ wget http://google-glog.googlecode.com/files/glog-0.3.2.tar.gz 
-$ tar xvfz glog-0.3.2.tar.gz 
+$ wget http://google-glog.googlecode.com/files/glog-0.3.3.tar.gz 
+$ tar xvfz glog-0.3.3.tar.gz 
 $ cd glog-0.3.2
 $ ./configure
 $ make

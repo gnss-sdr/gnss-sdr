@@ -76,6 +76,7 @@ As signal inputs, it accepts:
 This includes all current and future <a href="http://www.ettus.com/">Ettus Research</a> products. The USRP1 + DBSRX 2.2 daughterboard is an example of working configuration for GPS L1 C/A and Galileo E1B and E1C signals.
 \li The <a href="http://gnss-sdr.org/documentation/sige-gn3s-sampler-v2-usb-front-end" target="blank">GN3S v2 USB dongle</a> (GN3S v3 might work with small modifications).
 \li Experimentally, with some <a href="http://gnss-sdr.org/documentation/gnss-sdr-operation-realtek-rtl2832u-usb-dongle-dvb-t-receiver" target="_blank">USB DVB-T dongles based on the Realtek RTL2832U chipset</a>.
+\li For mathematical representations of the targeted signals, check out the \ref the_signal_model page.
 
 As outputs, it provides:
 \li Dump of intermediate signals (configurable by the user)

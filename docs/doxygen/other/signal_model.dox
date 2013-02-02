@@ -80,7 +80,14 @@ s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
  e_{L1I}(t)  =& \sum_{l=-\infty}^{\infty}  D_{\text{NAV}}\Big[ [l]_{204600}\Big]  \oplus   C_{\text{P(Y)}}\Big[ |l|_{L_{\text{P(Y)}}} \Big]   p(t  -  lT_{c,\text{P(Y)}})~,\label{eq:L1CAI}\\
  e_{L1Q}(t)  =&  \sum_{l=-\infty}^{\infty} D_{\text{NAV}}\Big[ [l]_{20460}  \Big]  \oplus  C_{\text{C/A}} \Big[ |l|_{1023} \Big] p(t - lT_{c,\text{C/A}})~,\label{eq:L1CA}
 \f}
-  where \f$\oplus\f$ is the exclusive-or operation (modulo-2 addition), \f$|l|_{L}\f$ means \f$l\f$ modulo \f$L\f$, \f$[l]_{L}\f$ means the integer part of \f$\frac{l}{L}\f$, \f$D_{\text{NAV}}\f$ is the GPS navigation message bit sequence, transmitted at \f$50\f$ bps, \f$T_{c,\text{P(Y)}}=\frac{1}{10.23}\f$ \f$\mu\f$s,  \f$T_{c,\text{C/A}}=\frac{1}{1.023}\f$ \f$\mu\f$s, \f$L_{\text{P(Y)}}=6.1871 \cdot 10^{12}\f$, and \f$p(t)\f$ is a rectangular pulse of a chip-period duration centered at \f$t=0\f$ and filtered at the transmitter. According to the chip rate, the binary phase-shift keying modulations in (\ref{eq:L1CAI}) and (\ref{eq:L1CA}) are denoted as BPSK(10) and BPSK(1), respectively. The precision P codes (named Y codes whenever the anti-spoofing mode is activated, encrypting the code and thus denying non-U.S. military users) are sequences of \f$7\f$ days in length. Regarding the modernization plans for GPS, it is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="http://www.gps.gov/technical/icwg/IS-GPS-800B.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision B</b></a>, to be broadcast on the same L1 frequency that currently contains the C/A signal. The L1C will be available with first Block III launch, currently scheduled for 2013. The implementation will provide C/A code to ensure backward compatibility.
+  where \f$\oplus\f$ is the exclusive-or operation (modulo-2 addition), \f$|l|_{L}\f$ means \f$l\f$ modulo \f$L\f$, \f$[l]_{L}\f$ means the integer part of \f$\frac{l}{L}\f$, 
+  \f$D_{\text{NAV}}\f$ is the GPS navigation message bit sequence, transmitted at \f$50\f$ bps, \f$T_{c,\text{P(Y)}}=\frac{1}{10.23}\f$ \f$\mu\f$s,  \f$T_{c,\text{C/A}}=\frac{1}{1.023}\f$ \f$\mu\f$s, 
+  \f$L_{\text{P(Y)}}=6.1871 \cdot 10^{12}\f$, and \f$p(t)\f$ is a rectangular pulse of a chip-period duration centered at \f$t=0\f$ and filtered at the transmitter. 
+  According to the chip rate, the binary phase-shift keying modulations in the equations above are denoted as BPSK(10) and BPSK(1), respectively. The precision P codes (named Y codes whenever 
+  the anti-spoofing mode is activated, encrypting the code and thus denying non-U.S. military users) are sequences of \f$7\f$ days in length. Regarding the modernization plans for GPS, it 
+  is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="http://www.gps.gov/technical/icwg/IS-GPS-800B.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision B</b></a>, 
+  to be broadcast on the same L1 frequency that currently contains the C/A signal. The L1C will be available with first Block III launch, currently scheduled for 2013. The implementation will 
+  provide C/A code to ensure backward compatibility.
 
 
 \li <b>GPS L2C</b>. Defined at <a href="http://www.gps.gov/technical/icwg/IS-GPS-200F.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision F</b></a>, is only available on Block IIR-M and subsequent satellite blocks. Centered at \f$f_{\text{GPS L2}}=1227.60\f$ MHz, the signal structure is the same than in (\ref{eq:GPSL1}), with the precision code in the In-phase component, just as in (\ref{eq:L1CAI}) but with an optional presence of the navigation message \f$D_{\text{NAV}}\f$. For the Quadrature-phase component, three options are defined:
@@ -222,7 +229,7 @@ e_{E5aI}(t)=&  \sum_{m=-\infty}^{+\infty}C_{E5aIs}\Big[|m|_{20}\Big] \oplus \sum
 Channel A contains the F/NAV type of navigation message, \f$D_{\text{F/NAV}}\f$, intended for the Open Service. The I/NAV message structures for the E5bI and E1B signals use the same page
 layout. Only page sequencing is different, with page swapping
 between both components in order to allow a fast reception of data by a dual frequency
-receiver. The single subcarrier \f$sc_s(t)\f$ and the product subcarrier \f$sc_p(t)\f$ of expressions (\ref{sscs}) and (\ref{sscp}) are defined as:
+receiver. The single subcarrier \f$sc_s(t)\f$ and the product subcarrier \f$sc_p(t)\f$ are defined as:
 \f{align}{
  sc_s(t)=& \frac{\sqrt{2}}{4}\text{sign} \left( \cos \left( 2 \pi f_s t - \frac{\pi}{4}\right) \right)+\\ \nonumber {}&+ \frac{1}{2}\text{sign} \Big( \cos \left( 2 \pi f_s t \right) \Big)+\\
 {} &+\frac{\sqrt{2}}{4}\text{sign} \left( \cos \left( 2 \pi f_s t + \frac{\pi}{4}\right) \right)~,

@@ -60,6 +60,8 @@ public:
     {
         return role_;
     }
+
+    //! Returns "Fir_Filter"
     std::string implementation()
     {
         return "Fir_Filter";

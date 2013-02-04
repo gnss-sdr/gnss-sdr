@@ -64,6 +64,8 @@ public:
     {
         return role_;
     }
+
+    //! Returns "GPS_L1_CA_DLL_PLL_Tracking"
     std::string implementation()
     {
         return "GPS_L1_CA_DLL_PLL_Tracking";

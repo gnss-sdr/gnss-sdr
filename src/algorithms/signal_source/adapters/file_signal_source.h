@@ -45,7 +45,8 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class reads samples from a file.
+ * \brief Class that reads signals samples from a file
+ * and adapts it to a SignalSourceInterface
  */
 class FileSignalSource: public GNSSBlockInterface
 {
@@ -59,6 +60,10 @@ public:
     {
         return role_;
     }
+
+    /*!
+     * \brief Returns "File_Signal_Source".
+     */
     std::string implementation()
     {
         return "File_Signal_Source";

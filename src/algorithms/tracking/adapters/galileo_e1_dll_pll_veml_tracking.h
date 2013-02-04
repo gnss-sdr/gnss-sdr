@@ -64,6 +64,8 @@ public:
     {
         return role_;
     }
+
+    //! Returns "Galileo_E1_DLL_PLL_VEML_Tracking"
     std::string implementation()
     {
         return "Galileo_E1_DLL_PLL_VEML_Tracking";

@@ -56,6 +56,10 @@ public:
     {
         return role_;
     }
+
+    /*!
+     * \brief Returns "UHD_Signal_Source"
+     */
     std::string implementation()
     {
         return "UHD_Signal_Source";

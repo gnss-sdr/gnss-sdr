@@ -64,6 +64,8 @@ public:
     {
         return role_;
     }
+
+    //! Returns "Freq_Xlating_Fir_Filter"
     std::string implementation()
     {
         return "Freq_Xlating_Fir_Filter";

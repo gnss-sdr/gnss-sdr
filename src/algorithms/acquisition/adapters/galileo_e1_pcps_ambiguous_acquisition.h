@@ -58,6 +58,10 @@ public:
     {
         return role_;
     }
+
+    /*!
+     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition"
+     */
     std::string implementation()
     {
         return "Galileo_E1_PCPS_Ambiguous_Acquisition";

@@ -65,6 +65,7 @@ public:
     gr_basic_block_sptr get_right_block();
 
     std::string role(){ return role_; }
+    //! Returns "Signal_Conditioner"
     std::string implementation(){ return "Signal_Conditioner"; }
     size_t item_size(){ return 0; }
 

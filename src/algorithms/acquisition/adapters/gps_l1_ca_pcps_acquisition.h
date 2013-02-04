@@ -61,6 +61,10 @@ public:
     {
         return role_;
     }
+
+    /*!
+     * \brief Returns "GPS_L1_CA_PCPS_Acquisition"
+     */
     std::string implementation()
     {
         return "GPS_L1_CA_PCPS_Acquisition";

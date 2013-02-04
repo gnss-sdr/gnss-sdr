@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,7 +40,10 @@
 gr_block_sptr gnss_sdr_make_valve (size_t sizeof_stream_item,
         int nitems,
         gr_msg_queue_sptr queue);
-
+/*!
+ * \brief Implementation of a GNU Radio block that sends a STOP message to the
+ * control queue right after a specific number of samples have passed through it.
+ */
 class gnss_sdr_valve : public gr_sync_block
 {
     friend gr_block_sptr gnss_sdr_make_valve(size_t sizeof_stream_item,

@@ -56,6 +56,8 @@ public:
     {
         return role_;
     }
+
+    //! Returns "GPS_L1_CA_Telemetry_Decoder"
     std::string implementation()
     {
         return "GPS_L1_CA_Telemetry_Decoder";
@@ -65,11 +67,11 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
     void set_satellite(Gnss_Satellite satellite);
-    void set_channel(int channel){telemetry_decoder_->set_channel(channel);};
+    void set_channel(int channel){telemetry_decoder_->set_channel(channel);}
     void reset()
     {
         return;
-    };
+    }
     size_t item_size()
     {
         return 0;

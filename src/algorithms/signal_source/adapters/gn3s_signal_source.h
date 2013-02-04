@@ -53,6 +53,10 @@ public:
     {
         return role_;
     }
+
+    /*!
+     * \brief Returns "Gn3sSignalSource".
+     */
     std::string implementation()
     {
         return "Gn3sSignalSource";

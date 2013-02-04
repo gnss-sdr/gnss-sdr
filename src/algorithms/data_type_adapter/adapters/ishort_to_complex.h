@@ -55,6 +55,7 @@ public:
     {
         return role_;
     }
+    //! Returns "IshortToComplex"
     std::string implementation()
     {
         return "IshortToComplex";

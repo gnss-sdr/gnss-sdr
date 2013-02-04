@@ -45,7 +45,6 @@ class ConfigurationInterface;
  */
 class RtlsdrSignalSource: public GNSSBlockInterface
 {
-
 public:
 	RtlsdrSignalSource(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
@@ -57,6 +56,10 @@ public:
     {
         return role_;
     }
+
+    /*!
+     * \brief Returns "Rtlsdr_Signal_Source"
+     */
     std::string implementation()
     {
         return "Rtlsdr_Signal_Source";
@@ -72,7 +75,6 @@ public:
     gr_basic_block_sptr get_right_block();
 
 private:
-
     std::string role_;
 
     // UHD SETTINGS

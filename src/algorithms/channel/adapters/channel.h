@@ -70,6 +70,8 @@ public:
     gr_basic_block_sptr get_left_block();
     gr_basic_block_sptr get_right_block();
     std::string role(){ return role_; }
+
+    //! Returns "Channel"
     std::string implementation(){ return "Channel"; }
     size_t item_size(){ return 0; }
     Gnss_Signal get_signal() const { return gnss_signal_; }

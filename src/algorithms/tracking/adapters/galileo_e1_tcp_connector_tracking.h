@@ -65,7 +65,7 @@ public:
     {
         return role_;
     }
-    //! returns "Galileo_E1_TCP_CONNECTOR_Tracking"
+    //! Returns "Galileo_E1_TCP_CONNECTOR_Tracking"
     std::string implementation()
     {
         return "Galileo_E1_TCP_CONNECTOR_Tracking";

@@ -68,7 +68,7 @@ int main(int argc, char** argv)
     const std::string intro_help(
             std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n")
     +
-    "Copyright (C) 2010-2012 (see AUTHORS file for a list of contributors)\n"
+    "Copyright (C) 2010-2013 (see AUTHORS file for a list of contributors)\n"
     +
     "This program comes with ABSOLUTELY NO WARRANTY;\n"
     +

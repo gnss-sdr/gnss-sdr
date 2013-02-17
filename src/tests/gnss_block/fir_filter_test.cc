@@ -33,7 +33,8 @@
 #include <sys/time.h>
 #include <iostream>
 #include <gnuradio/gr_top_block.h>
-#include <gnuradio/gr_sig_source_c.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/analog/sig_source_c.h>
 #include <gnuradio/gr_msg_queue.h>
 #include <gnuradio/gr_null_sink.h>
 #include "gnss_block_factory.h"
@@ -47,87 +48,87 @@ DEFINE_string(filter_test_output_filename, "../src/tests/data/fir_filter_test_ou
 class Fir_Filter_Test: public ::testing::Test
 {
 protected:
-	Fir_Filter_Test()
-	{
-		queue = gr_make_msg_queue(0);
-		top_block = gr_make_top_block("Fir filter test");
-		config = new InMemoryConfiguration();
-		item_size = sizeof(gr_complex);
-
-	}
-	~Fir_Filter_Test()
-	{
-		delete config;
-	}
-	void init();
-	gr_msg_queue_sptr queue;
-	gr_top_block_sptr top_block;
-	InMemoryConfiguration* config;
-	size_t item_size;
+    Fir_Filter_Test()
+    {
+        queue = gr_make_msg_queue(0);
+        top_block = gr_make_top_block("Fir filter test");
+        config = new InMemoryConfiguration();
+        item_size = sizeof(gr_complex);
+    }
+    ~Fir_Filter_Test()
+    {
+        delete config;
+    }
+    void init();
+    gr_msg_queue_sptr queue;
+    gr_top_block_sptr top_block;
+    InMemoryConfiguration* config;
+    size_t item_size;
 };
 
 void Fir_Filter_Test::init()
 {
-	config->set_property("InputFilter.number_of_taps", "4");
-	config->set_property("InputFilter.number_of_bands", "2");
+    config->set_property("InputFilter.number_of_taps", "4");
+    config->set_property("InputFilter.number_of_bands", "2");
 
-	config->set_property("InputFilter.band1_begin", "0.0");
-	config->set_property("InputFilter.band1_end", "0.45");
-	config->set_property("InputFilter.band2_begin", "0.55");
-	config->set_property("InputFilter.band2_end", "1.0");
+    config->set_property("InputFilter.band1_begin", "0.0");
+    config->set_property("InputFilter.band1_end", "0.45");
+    config->set_property("InputFilter.band2_begin", "0.55");
+    config->set_property("InputFilter.band2_end", "1.0");
 
-	config->set_property("InputFilter.ampl1_begin", "1.0");
-	config->set_property("InputFilter.ampl1_end", "1.0");
-	config->set_property("InputFilter.ampl2_begin", "0.0");
-	config->set_property("InputFilter.ampl2_end", "0.0");
+    config->set_property("InputFilter.ampl1_begin", "1.0");
+    config->set_property("InputFilter.ampl1_end", "1.0");
+    config->set_property("InputFilter.ampl2_begin", "0.0");
+    config->set_property("InputFilter.ampl2_end", "0.0");
 
-	config->set_property("InputFilter.band1_error", "1.0");
-	config->set_property("InputFilter.band2_error", "1.0");
+    config->set_property("InputFilter.band1_error", "1.0");
+    config->set_property("InputFilter.band2_error", "1.0");
 
-	config->set_property("InputFilter.filter_type", "bandpass");
-	config->set_property("InputFilter.grid_density", "16");
-	//config->set_property("InputFilter.dump", "true");
+    config->set_property("InputFilter.filter_type", "bandpass");
+    config->set_property("InputFilter.grid_density", "16");
+    //config->set_property("InputFilter.dump", "true");
 }
 
 
 TEST_F(Fir_Filter_Test, Instantiate)
 {
-	init();
-	FirFilter *filter = new FirFilter(config, "InputFilter", 1, 1, queue);
-	delete filter;
+    init();
+    FirFilter *filter = new FirFilter(config, "InputFilter", 1, 1, queue);
+    delete filter;
 }
+
 
 TEST_F(Fir_Filter_Test, ConnectAndRun)
 {
-	int fs_in = 8000000;
-	int nsamples = 10000000;
-	struct timeval tv;
-	long long int begin = 0;
-	long long int end = 0;
+    int fs_in = 8000000;
+    int nsamples = 10000000;
+    struct timeval tv;
+    long long int begin = 0;
+    long long int end = 0;
 
-	init();
+    init();
 
-	FirFilter *filter = new FirFilter(config, "InputFilter", 1, 1, queue);
+    FirFilter *filter = new FirFilter(config, "InputFilter", 1, 1, queue);
 
-	ASSERT_NO_THROW( {
-		filter->connect(top_block);
-		gr_sig_source_c_sptr source = gr_make_sig_source_c(fs_in,GR_SIN_WAVE, 1000, 1, gr_complex(0));
-		gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-		gr_block_sptr null_sink = gr_make_null_sink(item_size);
+    ASSERT_NO_THROW( {
+        filter->connect(top_block);
+        gr_block_sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        gr_block_sptr null_sink = gr_make_null_sink(item_size);
 
-		top_block->connect(source, 0, valve, 0);
-		top_block->connect(valve, 0, filter->get_left_block(), 0);
-		top_block->connect(filter->get_right_block(), 0, null_sink, 0);
-	}) << "Failure connecting the top_block."<< std::endl;
+        top_block->connect(source, 0, valve, 0);
+        top_block->connect(valve, 0, filter->get_left_block(), 0);
+        top_block->connect(filter->get_right_block(), 0, null_sink, 0);
+    }) << "Failure connecting the top_block."<< std::endl;
 
-	EXPECT_NO_THROW( {
-		gettimeofday(&tv, NULL);
-		begin = tv.tv_sec *1000000 + tv.tv_usec;
-		top_block->run(); // Start threads and wait
-		gettimeofday(&tv, NULL);
-		end = tv.tv_sec *1000000 + tv.tv_usec;
-	}) << "Failure running he top_block."<< std::endl;
-	std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    EXPECT_NO_THROW( {
+        gettimeofday(&tv, NULL);
+        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        top_block->run(); // Start threads and wait
+        gettimeofday(&tv, NULL);
+        end = tv.tv_sec *1000000 + tv.tv_usec;
+    }) << "Failure running he top_block."<< std::endl;
+    std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 
-	delete filter;
+    delete filter;
 }

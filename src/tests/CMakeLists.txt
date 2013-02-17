@@ -67,7 +67,11 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs   
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
@@ -80,9 +84,17 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
 )
 
+find_library(
+     GR_ANALOG_LIBRARIES
+     NAMES gnuradio-analog
+     PATHS /usr/local/lib
+           /usr/local/lib64
+           /usr/lib
+           /usr/lib64
+)  
 
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
-target_link_libraries(run_tests ${Boost_LIBRARIES}  ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(run_tests ${Boost_LIBRARIES}  ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} ${GR_ANALOG_LIBRARIES} gnss_sp_libs gnss_rx)
 
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
 

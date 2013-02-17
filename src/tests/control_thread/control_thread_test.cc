@@ -1,15 +1,33 @@
-
-/**
- * Copyright notice
- */
-
-/**
- * Author: Carlos Avilés, 2010. carlos.avilesr(at)googlemail.com
- */
-
-/**
- * This class implements a Unit Tests for the class ControlThread.
+/*!
+ * \file control_thread_test.cc
+ * \brief  This file implements tests for the ControlThread.
+ * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ *         Carles Fernandez-Prades, 2013. cfernandez(at)cttc.es
  *
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
 
 #include <gtest/gtest.h>
@@ -18,109 +36,116 @@
 #include "in_memory_configuration.h"
 
 
-TEST(Control_Thread_Test, InstantiateRunControlMessages) {
+TEST(Control_Thread_Test, InstantiateRunControlMessages)
+{
+    InMemoryConfiguration *config = new InMemoryConfiguration();
 
-	InMemoryConfiguration *config = new InMemoryConfiguration();
-        config->set_property("SignalSource.implementation", "File_Signal_Source");
-        config->set_property("SignalSource.filename", "/Users/carlesfernandez/Documents/workspace/gnss-sdr/trunk/data/sc2_d16.dat");
-        config->set_property("SignalSource.item_type", "gr_complex");
-        config->set_property("SignalConditioner.implementation", "Pass_Through");
-        config->set_property("SignalConditioner.item_type", "gr_complex");
-        config->set_property("Channels.count", "12");
-        config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-        config->set_property("Acquisition.item_type", "gr_complex");
-        config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
-        config->set_property("Tracking.item_type", "gr_complex");
-        config->set_property("Navigation.implementation", "GPS_L1_CA_Telemetry_Decoder");
-        config->set_property("Navigation.item_type", "gr_complex");
-        config->set_property("Pseudorange.implementation", "GPS_L1_CA_Observables");
-        config->set_property("Pseudorange.item_type", "gr_complex");
-        config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-        config->set_property("PVT.item_type", "gr_complex");
-        config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-        config->set_property("OutputFilter.item_type", "gr_complex");
+    config->set_property("SignalSource.implementation", "File_Signal_Source");
+    config->set_property("SignalSource.filename", "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat");
+    config->set_property("SignalSource.item_type", "gr_complex");
+    config->set_property("SignalSource.sampling_frequency", "4000000");
+    config->set_property("SignalSource.repeat", "true");
+    config->set_property("SignalConditioner.implementation", "Pass_Through");
+    config->set_property("SignalConditioner.item_type", "gr_complex");
+    config->set_property("Channels.count", "12");
+    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition.item_type", "gr_complex");
+    config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
+    config->set_property("Tracking.item_type", "gr_complex");
+    config->set_property("Navigation.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("Navigation.item_type", "gr_complex");
+    config->set_property("Pseudorange.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Pseudorange.item_type", "gr_complex");
+    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.item_type", "gr_complex");
+    config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
+    config->set_property("OutputFilter.item_type", "gr_complex");
 
-	ControlThread *control_thread = new ControlThread(config);
+    ControlThread *control_thread = new ControlThread(config);
 
-	gr_msg_queue_sptr control_queue = gr_make_msg_queue(0);
-	ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
+    gr_msg_queue_sptr control_queue = gr_make_msg_queue(0);
+    ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
 
-	control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(1,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(2,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(3,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(4,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(5,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(6,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(7,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(8,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(9,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(10,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(11,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(12,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(13,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(14,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(15,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(16,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(1,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(2,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(3,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(4,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(5,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(6,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(7,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(8,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(9,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(10,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(11,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(12,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(13,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(14,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(15,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(16,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
 
-	control_thread->set_control_queue(control_queue);
+    control_thread->set_control_queue(control_queue);
 
-	control_thread->run();
+    control_thread->run();
 
-	EXPECT_EQ(18, control_thread->processed_control_messages());
-	EXPECT_EQ(1, control_thread->applied_actions());
+    unsigned int expected18 = 18;
+    unsigned int expected1 = 1;
+    EXPECT_EQ(expected18, control_thread->processed_control_messages());
+    EXPECT_EQ(expected1, control_thread->applied_actions());
 
-	delete config;
-	delete control_thread;
-	delete control_msg_factory;
+    delete config;
+    delete control_thread;
+    delete control_msg_factory;
 }
 
 
 
 
 
-TEST(Control_Thread_Test, InstantiateRunControlMessages2) {
+TEST(Control_Thread_Test, InstantiateRunControlMessages2)
+{
+    InMemoryConfiguration *config = new InMemoryConfiguration();
+    config->set_property("SignalSource.implementation", "File_Signal_Source");
+    config->set_property("SignalSource.filename", "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat");
+    config->set_property("SignalSource.item_type", "gr_complex");
+    config->set_property("SignalSource.sampling_frequency", "4000000");
+    config->set_property("SignalConditioner.implementation", "Pass_Through");
+    config->set_property("SignalConditioner.item_type", "gr_complex");
+    config->set_property("Channels.count", "12");
+    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition.item_type", "gr_complex");
+    config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
+    config->set_property("Tracking.item_type", "gr_complex");
+    config->set_property("Navigation.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("Navigation.item_type", "gr_complex");
+    config->set_property("Pseudorange.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Pseudorange.item_type", "gr_complex");
+    config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
+    config->set_property("PVT.item_type", "gr_complex");
+    config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
+    config->set_property("OutputFilter.item_type", "gr_complex");
 
-	InMemoryConfiguration *config = new InMemoryConfiguration();
-	config->set_property("SignalSource.implementation", "File_Signal_Source");
-	config->set_property("SignalSource.filename", "/Users/carlesfernandez/Documents/workspace/gnss-sdr/trunk/data/sc2_d16.dat");
-	config->set_property("SignalSource.item_type", "gr_complex");
-	config->set_property("SignalConditioner.implementation", "Pass_Through");
-	config->set_property("SignalConditioner.item_type", "gr_complex");
-	config->set_property("Channels.count", "12");
-	config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-	config->set_property("Acquisition.item_type", "gr_complex");
-	config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
-	config->set_property("Tracking.item_type", "gr_complex");
-	config->set_property("Navigation.implementation", "GPS_L1_CA_Telemetry_Decoder");
-	config->set_property("Navigation.item_type", "gr_complex");
-	config->set_property("Pseudorange.implementation", "GPS_L1_CA_Observables");
-	config->set_property("Pseudorange.item_type", "gr_complex");
-	config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-	config->set_property("PVT.item_type", "gr_complex");
-	config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-	config->set_property("OutputFilter.item_type", "gr_complex");
+    ControlThread *control_thread = new ControlThread(config);
 
-	ControlThread *control_thread = new ControlThread(config);
+    gr_msg_queue_sptr control_queue = gr_make_msg_queue(0);
+    ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
 
-	gr_msg_queue_sptr control_queue = gr_make_msg_queue(0);
-	ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
+    control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(0,2));
+    control_queue->handle(control_msg_factory->GetQueueMessage(0,1));
+    control_queue->handle(control_msg_factory->GetQueueMessage(0,3));
+    control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
 
-	control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
-	control_queue->handle(control_msg_factory->GetQueueMessage(0,2));
-	control_queue->handle(control_msg_factory->GetQueueMessage(0,1));
-	control_queue->handle(control_msg_factory->GetQueueMessage(0,3));
-	control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
+    control_thread->set_control_queue(control_queue);
 
-	control_thread->set_control_queue(control_queue);
+    control_thread->run();
+    unsigned int expected5 = 5;
+    unsigned int expected1 = 1;
+    EXPECT_EQ(expected5, control_thread->processed_control_messages());
+    EXPECT_EQ(expected1, control_thread->applied_actions());
 
-	control_thread->run();
-
-	EXPECT_EQ(5, control_thread->processed_control_messages());
-	EXPECT_EQ(1, control_thread->applied_actions());
-
-	delete config;
-	delete control_thread;
-	delete control_msg_factory;
+    delete config;
+    delete control_thread;
+    delete control_msg_factory;
 }

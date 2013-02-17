@@ -37,7 +37,8 @@
 #include <iostream>
 #include <gnuradio/gr_top_block.h>
 #include <gnuradio/gr_file_source.h>
-#include <gnuradio/gr_sig_source_c.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/analog/sig_source_c.h>
 #include <gnuradio/gr_msg_queue.h>
 #include <gnuradio/gr_null_sink.h>
 #include "gnss_block_factory.h"
@@ -150,7 +151,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
 	ASSERT_NO_THROW( {
 			acquisition->connect(top_block);
 
-			gr_sig_source_c_sptr source = gr_make_sig_source_c(fs_in,GR_SIN_WAVE, 1000, 1, gr_complex(0));
+			gr_block_sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
 			gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
 
 			top_block->connect(source, 0, valve, 0);

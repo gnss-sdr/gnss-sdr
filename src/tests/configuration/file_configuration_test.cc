@@ -1,12 +1,12 @@
 /*!
  * \file file_configuration_test.cc
- * \brief  This file implements tests for the ControlMessageFactory.
+ * \brief  This file implements tests for the file_configuration.
  * \author Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
  *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -40,18 +40,18 @@
 
 TEST(File_Configuration_Test, OverridedProperties)
 {
-	ConfigurationInterface *configuration = new FileConfiguration("./data/config_file_sample.txt");
-	std::string default_value = "default_value";
-	std::string value = configuration->property("NotThere", default_value);
+    ConfigurationInterface *configuration = new FileConfiguration("./data/config_file_sample.txt");
+    std::string default_value = "default_value";
+    std::string value = configuration->property("NotThere", default_value);
 
-	EXPECT_STREQ("default_value", value.c_str());
+    EXPECT_STREQ("default_value", value.c_str());
 
-	configuration->set_property("NotThere", "Yes!");
-	value = configuration->property("NotThere", default_value);
+    configuration->set_property("NotThere", "Yes!");
+    value = configuration->property("NotThere", default_value);
 
-	EXPECT_STREQ("Yes!", value.c_str());
+    EXPECT_STREQ("Yes!", value.c_str());
 
-	delete configuration;
+    delete configuration;
 }
 
 
@@ -59,13 +59,13 @@ TEST(File_Configuration_Test, OverridedProperties)
 TEST(File_Configuration_Test, LoadFromNonExistentFile)
 {
 
-	ConfigurationInterface *configuration = new FileConfiguration("./i_dont_exist.conf");
-	std::string default_value = "default_value";
-	std::string value = configuration->property("whatever.whatever", default_value);
+    ConfigurationInterface *configuration = new FileConfiguration("./i_dont_exist.conf");
+    std::string default_value = "default_value";
+    std::string value = configuration->property("whatever.whatever", default_value);
 
-	EXPECT_STREQ("default_value", value.c_str());
+    EXPECT_STREQ("default_value", value.c_str());
 
-	delete configuration;
+    delete configuration;
 }
 
 
@@ -73,11 +73,11 @@ TEST(File_Configuration_Test, LoadFromNonExistentFile)
 
 TEST(File_Configuration_Test, PropertyDoesNotExist)
 {
-	ConfigurationInterface *configuration = new FileConfiguration("./data/config_file_sample.txt");
-	std::string default_value = "default_value";
-	std::string value = configuration->property("whatever.whatever", default_value);
+    ConfigurationInterface *configuration = new FileConfiguration("./data/config_file_sample.txt");
+    std::string default_value = "default_value";
+    std::string value = configuration->property("whatever.whatever", default_value);
 
-	EXPECT_STREQ("default_value", value.c_str());
+    EXPECT_STREQ("default_value", value.c_str());
 
-	delete configuration;
+    delete configuration;
 }

@@ -1,15 +1,33 @@
-
-/**
- * Copyright notice
- */
-
-/**
- * Author: Carlos Avilés, 2010. carlos.avilesr(at)googlemail.com
- */
-
-/**
- * This class implements a Unit Tests for the class GNSSFlowgraph.
+/*!
+ * \file gnss_flowgraph_test.cc
+ * \brief  This file implements tests for a flowgraph
+ * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ *         Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
  *
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
 
 #include <gtest/gtest.h>
@@ -31,19 +49,22 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
 {
     InMemoryConfiguration* config = new InMemoryConfiguration();
 
+    config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
+    config->set_property("SignalSource.item_type", "gr_complex");
+    config->set_property("SignalSource.filename", "../src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("Channels.count", "2");
     config->set_property("Channels.acquisition.implementation", "Pass_Through");
     config->set_property("Channels.tracking.implementation", "Pass_Through");
     config->set_property("Channels.observables.implementation", "Pass_Through");
-    config->set_property("Observables.implementation", "GpsL1CaObservables");
+    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    config->set_property("OutputFilter.implementation", "NullSinkOutputFilter");
+    config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
 
     GNSSFlowgraph* flowgraph = new GNSSFlowgraph(config, gr_make_msg_queue(0));
 
-    EXPECT_STREQ("FileSignalSource", flowgraph->signal_source()->implementation().c_str());
+    EXPECT_STREQ("File_Signal_Source", flowgraph->signal_source()->implementation().c_str());
     EXPECT_STREQ("Pass_Through", flowgraph->signal_conditioner()->implementation().c_str());
     EXPECT_STREQ("Channel", flowgraph->channel(0)->implementation().c_str());
     EXPECT_STREQ("Pass_Through", ((Channel*)flowgraph->channel(0))->acquisition()->implementation().c_str());
@@ -51,9 +72,9 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     EXPECT_STREQ("Channel", flowgraph->channel(1)->implementation().c_str());
     EXPECT_STREQ("Pass_Through", ((Channel*)flowgraph->channel(1))->acquisition()->implementation().c_str());
     EXPECT_STREQ("Pass_Through", ((Channel*)flowgraph->channel(1))->tracking()->implementation().c_str());
-    EXPECT_STREQ("GpsL1CaObservables", flowgraph->observables()->implementation().c_str());
+    EXPECT_STREQ("GPS_L1_CA_Observables", flowgraph->observables()->implementation().c_str());
     EXPECT_STREQ("GPS_L1_CA_PVT", flowgraph->pvt()->implementation().c_str());
-    EXPECT_STREQ("NullSinkOutputFilter", flowgraph->output_filter()->implementation().c_str());
+    EXPECT_STREQ("Null_Sink_Output_Filter", flowgraph->output_filter()->implementation().c_str());
 
     EXPECT_NO_THROW(flowgraph->connect());
     EXPECT_TRUE(flowgraph->connected());

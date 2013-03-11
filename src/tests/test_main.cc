@@ -70,6 +70,10 @@
 
 
 concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
+concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
+concurrent_queue<Gps_Iono> global_gps_iono_queue;
+concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
+concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
 
 
 int main(int argc, char **argv)

@@ -1,8 +1,9 @@
 /*!
- * \file single_test_main.cc
- * \brief  This file contains the main function for tests (used with CTest).
- * \author Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
+ * \file gps_almanac.cc
+ * \brief  Interface of a GPS ALMANAC storage
  *
+ * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -29,29 +30,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include <iostream>
-#include <queue>
-#include <gtest/gtest.h>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
-#include <gflags/gflags.h>
-#include <gnuradio/gr_msg_queue.h>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/filesystem.hpp>
-#include "concurrent_queue.h"
-#include "gps_navigation_message.h"
+#include "gps_almanac.h"
 
-concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
-concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
-concurrent_queue<Gps_Iono> global_gps_iono_queue;
-concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
-concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
-
-int main(int argc, char **argv)
+Gps_Almanac::Gps_Almanac()
 {
-	google::ParseCommandLineFlags(&argc, &argv, true);
-	testing::InitGoogleTest(&argc, argv);
-    google::InitGoogleLogging(argv[0]);
-    return RUN_ALL_TESTS();
+
 }
+

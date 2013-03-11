@@ -31,3 +31,4 @@ include_directories(
 )
 
 add_library(telemetry_decoder_lib ${TELEMETRY_DECODER_LIB_SOURCES})
+target_link_libraries(telemetry_decoder_lib gnss_system_parameters)

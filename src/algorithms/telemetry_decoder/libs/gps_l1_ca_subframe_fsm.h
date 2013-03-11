@@ -46,6 +46,10 @@
 #include <cstring>
 #include "GPS_L1_CA.h"
 #include "gps_navigation_message.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_almanac.h"
+#include "gps_utc_model.h"
 
 namespace sc = boost::statechart;
 namespace mpl = boost::mpl;
@@ -71,9 +75,24 @@ public:
   unsigned int i_satellite_PRN;
 
   // ephemeris queue
+  concurrent_queue<Gps_Ephemeris> *d_ephemeris_queue;
+  // ionospheric parameters queue
+  concurrent_queue<Gps_Iono> *d_iono_queue;
+  // UTC model parameters queue
+  concurrent_queue<Gps_Utc_Model> *d_utc_model_queue;
+  // Almanac queue
+  concurrent_queue<Gps_Almanac> *d_almanac_queue;
+  // Old navigation message queue
   concurrent_queue<Gps_Navigation_Message> *d_nav_queue;
   // navigation message class
   Gps_Navigation_Message d_nav;
+
+  // GPS SV and System parameters
+  Gps_Ephemeris ephemeris;
+  Gps_Almanac almanac;
+  Gps_Utc_Model utc_model;
+  Gps_Iono iono;
+
 
   char d_subframe[GPS_SUBFRAME_LENGTH];
   char d_GPS_frame_4bytes[GPS_WORD_LENGTH];

@@ -105,6 +105,8 @@ void Gps_Navigation_Message::reset()
 	b_antispoofing_flag = false;
 
 	// Ionosphere and UTC
+	flag_iono_valid=false;
+	flag_utc_model_valid=true;
 	d_alpha0 = 0;
 	d_alpha1 = 0;
 	d_alpha2 = 0;
@@ -591,6 +593,8 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
 			i_WN_LSF = (int)read_navigation_unsigned(subframe_bits, WN_LSF);
 			i_DN = (int)read_navigation_unsigned(subframe_bits, DN);;  // Right-justified ?
 			d_DeltaT_LSF = (double)read_navigation_signed(subframe_bits, DELTAT_LSF);
+			flag_iono_valid=true;
+			flag_utc_model_valid=true;
 		}
 
 		if (SV_page == 25)
@@ -731,8 +735,82 @@ double Gps_Navigation_Message::utc_time(double gpstime_corrected)
 
 
 
+Gps_Ephemeris Gps_Navigation_Message::get_ephemeris()
+{
+	Gps_Ephemeris ephemeris;
+    ephemeris.i_satellite_PRN=i_satellite_PRN;
+    ephemeris.d_TOW=d_TOW;
+    ephemeris.d_Crs=d_Crs;
+    ephemeris.d_Delta_n=d_Delta_n;
+    ephemeris.d_M_0=d_M_0;
+    ephemeris.d_Cuc=d_Cuc;
+    ephemeris.d_e_eccentricity=d_e_eccentricity;
+    ephemeris.d_Cus=d_Cus;
+    ephemeris.d_sqrt_A=d_sqrt_A;
+    ephemeris.d_Toe=d_Toe;
+    ephemeris.d_Toc=d_Toc;
+    ephemeris.d_Cic=d_Cic;
+    ephemeris.d_OMEGA0=d_OMEGA0;
+    ephemeris.d_Cis=d_Cis;
+    ephemeris.d_i_0=d_i_0;
+    ephemeris.d_Crc=d_Crc;
+    ephemeris.d_OMEGA=d_OMEGA;
+    ephemeris.d_OMEGA_DOT=d_OMEGA_DOT;
+    ephemeris.d_IDOT=d_IDOT;
+    ephemeris.i_code_on_L2=i_code_on_L2;
+    ephemeris.i_GPS_week=i_GPS_week;
+    ephemeris.b_L2_P_data_flag=b_L2_P_data_flag;
+    ephemeris.i_SV_accuracy=i_SV_accuracy;
+    ephemeris.i_SV_health=i_SV_health;
+    ephemeris.d_TGD=d_TGD;
+    ephemeris.d_IODC=d_IODC;
+    ephemeris.i_AODO=i_AODO;
+    ephemeris.b_fit_interval_flag=b_fit_interval_flag;
+    ephemeris.d_spare1=d_spare1;
+    ephemeris.d_spare2=d_spare2;
+    ephemeris.d_A_f0=d_A_f0;
+    ephemeris.d_A_f1=d_A_f1;
+    ephemeris.d_A_f2=d_A_f2;
+    ephemeris.b_integrity_status_flag=b_integrity_status_flag;
+    ephemeris.b_alert_flag=b_alert_flag;
+    ephemeris.b_antispoofing_flag=b_antispoofing_flag;
 
+	return ephemeris;
+}
 
+Gps_Iono Gps_Navigation_Message::get_iono()
+{
+	Gps_Iono iono;
+    iono.d_alpha0=d_alpha0;
+    iono.d_alpha1=d_alpha1;
+    iono.d_alpha2=d_alpha2;
+    iono.d_alpha3=d_alpha3;
+    iono.d_beta0=d_beta0;
+    iono.d_beta1=d_beta1;
+    iono.d_beta2=d_beta2;
+    iono.d_beta3=d_beta3;
+    iono.valid=flag_iono_valid;
+	// TODO: Clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
+	return iono;
+}
+
+Gps_Utc_Model Gps_Navigation_Message::get_utc_model()
+{
+	Gps_Utc_Model utc_model;
+
+	utc_model.valid=flag_utc_model_valid;
+    // UTC parameters
+	utc_model.d_A1=d_A1;
+	utc_model.d_A0=d_A0;
+	utc_model.d_t_OT=d_t_OT;
+	utc_model.i_WN_T=i_WN_T;
+	utc_model.d_DeltaT_LS=d_DeltaT_LS;
+	utc_model.i_WN_LSF=i_WN_LSF;
+	utc_model.i_DN=i_DN;
+	utc_model.d_DeltaT_LSF=d_DeltaT_LSF;
+	// TODO: Clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
+	return utc_model;
+}
 bool Gps_Navigation_Message::satellite_validation()
 {
 	bool flag_data_valid = false;

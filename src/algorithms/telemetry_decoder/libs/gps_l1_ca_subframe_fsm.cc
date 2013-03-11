@@ -250,7 +250,6 @@ void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
     int subframe_ID;
     // NEW GPS SUBFRAME HAS ARRIVED!
     subframe_ID = d_nav.subframe_decoder(this->d_subframe); //decode the subframe
-    //std::cout<<"Detected PRN: " << d_nav.i_satellite_PRN << "  for satellite " <<
     std::cout << "NAVIGATION FSM: received subframe " << subframe_ID << " for satellite " << Gnss_Satellite(std::string("GPS"), i_satellite_PRN) << std::endl;
     d_nav.i_satellite_PRN = i_satellite_PRN;
     d_nav.i_channel_ID = i_channel_ID;
@@ -259,30 +258,38 @@ void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
     /*!
      * \todo change satellite validation to subframe 5 because it will have a complete set of ephemeris parameters
      */
-//    if (subframe_ID == 3)
-//        { // if the subframe is the 5th, then
-//            if (d_nav.satellite_validation()) // if all the satellite ephemeris parameters are good, then
-//                {
-//                    // Send the procesed satellite ephemeris packet
-//                    d_nav_queue->push(d_nav);
+    if (d_nav.satellite_validation()==true)
+    	{
+    		// get ephemeris object for this SV (mandatory)
+//    		Gps_Ephemeris ephemeris=d_nav.get_ephemeris();
+//    		d_ephemeris_queue->push(ephemeris);
 //
-//                }
-//        }
-    d_nav.satellite_validation();
-    d_nav_queue->push(d_nav);
-
+//    		// get ionospheric parameters (if available)
+//    		if (d_nav.flag_iono_valid==true)
+//    		{
+//    			Gps_Iono iono=d_nav.get_iono();
+//    			d_iono_queue->push(iono);
+//    		}
+//
+//    		// get almanac (if available)
+//    		//TODO: implement almanac reader in navigation_message
+//
+//    		// get UTC model
+//    		if (d_nav.flag_utc_model_valid==true)
+//    		{
+//    			Gps_Utc_Model utc_model=d_nav.get_utc_model();
+//    			d_utc_model_queue->push(utc_model);
+//
+//    		}
+    		// old nav queue
+    	    d_nav_queue->push(d_nav);
+    	}
 }
-
-
-
 
 void GpsL1CaSubframeFsm::Event_gps_word_valid()
 {
   this->process_event(Ev_gps_word_valid());
 }
-
-
-
 
 void GpsL1CaSubframeFsm::Event_gps_word_invalid()
 {

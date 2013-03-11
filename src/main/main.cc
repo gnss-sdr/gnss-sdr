@@ -45,6 +45,10 @@
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 #include "gps_navigation_message.h"
+#include "gps_ephemeris.h"
+#include "gps_almanac.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
 #include <sys/time.h>
 #include <ctime>
 #include <memory>
@@ -62,6 +66,11 @@ DECLARE_string(log_dir);
  * to the Observables modules
  */
 concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
+concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
+concurrent_queue<Gps_Iono> global_gps_iono_queue;
+concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
+concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
+
 
 int main(int argc, char** argv)
 {

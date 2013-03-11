@@ -20,6 +20,10 @@ set(SYSTEM_PARAMETERS_SOURCES
      gnss_satellite.cc
      gnss_signal.cc
      gps_navigation_message.cc
+	 gps_ephemeris.cc
+	 gps_iono.cc
+	 gps_almanac.cc
+	 gps_utc_model.cc
 )
 
 include_directories(

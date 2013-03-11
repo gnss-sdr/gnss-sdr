@@ -41,6 +41,11 @@
 #include "boost/assign.hpp"
 #include <math.h>
 #include "GPS_L1_CA.h"
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_almanac.h"
+#include "gps_utc_model.h"
+
 
 
 /*!
@@ -159,6 +164,7 @@ public:
     double d_subframe_timestamp_ms; //[ms]
 
     // Ionospheric parameters
+    bool flag_iono_valid; //!< If set, it indicates that the ionospheric parameters are filled (page 18 has arrived and decoded)
     double d_alpha0;      //!< Coefficient 0 of a cubic equation representing the amplitude of the vertical delay [s]
     double d_alpha1;      //!< Coefficient 1 of a cubic equation representing the amplitude of the vertical delay [s/semi-circle]
     double d_alpha2;      //!< Coefficient 2 of a cubic equation representing the amplitude of the vertical delay [s(semi-circle)^2]
@@ -169,6 +175,7 @@ public:
     double d_beta3;       //!< Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]
 
     // UTC parameters
+    bool flag_utc_model_valid; //!< If set, it indicates that the UTC model parameters are filled
     double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]
     double d_t_OT;        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200E) [s]
@@ -185,6 +192,22 @@ public:
 
     // public functions
     void reset();
+
+    /*!
+     * \brief Obtain a GPS SV Ephemeris class filled with current SV data
+     */
+    Gps_Ephemeris get_ephemeris();
+
+    /*!
+     * \brief Obtain a GPS ionospheric correction parameters class filled with current SV data
+     */
+    Gps_Iono get_iono();
+
+    /*!
+     * \brief Obtain a GPS UTC model parameters class filled with current SV data
+     */
+    Gps_Utc_Model get_utc_model();
+
 
     /*!
      * \brief Decodes the GPS NAV message

@@ -1,0 +1,40 @@
+SUPL-START DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+EXPORTS SUPLSTART, SETCapabilities;
+
+IMPORTS LocationId, QoP
+          FROM ULP-Components;
+
+SUPLSTART ::= SEQUENCE {
+  sETCapabilities  SETCapabilities,
+  locationId       LocationId,
+  qoP              QoP OPTIONAL,
+  ...}
+
+SETCapabilities ::= SEQUENCE {
+  posTechnology  PosTechnology,
+  prefMethod     PrefMethod,
+  posProtocol    PosProtocol,
+  ...}
+
+PosTechnology ::= SEQUENCE {
+  agpsSETassisted  BOOLEAN,
+  agpsSETBased     BOOLEAN,
+  autonomousGPS    BOOLEAN,
+  aFLT             BOOLEAN,
+  eCID             BOOLEAN,
+  eOTD             BOOLEAN,
+  oTDOA            BOOLEAN,
+  ...}
+
+PrefMethod ::= ENUMERATED {
+  agpsSETassistedPreferred, agpsSETBasedPreferred, noPreference}
+
+PosProtocol ::= SEQUENCE {
+  tia801  BOOLEAN,
+  rrlp    BOOLEAN,
+  rrc     BOOLEAN,
+  ...}
+
+END

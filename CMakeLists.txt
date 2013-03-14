@@ -25,7 +25,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8)
-project(gnss-sdr CXX)
+project(gnss-sdr CXX C)
 
 #select the release build type by default to get optimization flags
 if(NOT CMAKE_BUILD_TYPE)

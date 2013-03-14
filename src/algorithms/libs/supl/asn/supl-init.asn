@@ -1,0 +1,52 @@
+SUPL-INIT DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+EXPORTS SUPLINIT;
+
+IMPORTS SLPAddress, QoP, PosMethod
+          FROM ULP-Components;
+
+SUPLINIT ::= SEQUENCE {
+  posMethod     PosMethod,
+  notification  Notification OPTIONAL,
+  sLPAddress    SLPAddress OPTIONAL,
+  qoP           QoP OPTIONAL,
+  sLPMode       SLPMode,
+  mAC           MAC OPTIONAL,
+  keyIdentity   KeyIdentity OPTIONAL,
+  ...}
+
+Notification ::= SEQUENCE {
+  notificationType  NotificationType,
+  encodingType      EncodingType OPTIONAL,
+  requestorId       OCTET STRING(SIZE (1..maxReqLength)) OPTIONAL,
+  requestorIdType   FormatIndicator OPTIONAL,
+  clientName        OCTET STRING(SIZE (1..maxClientLength)) OPTIONAL,
+  clientNameType    FormatIndicator OPTIONAL,
+  ...}
+
+NotificationType ::= ENUMERATED {
+  noNotificationNoVerification(0), notificationOnly(1),
+  notificationAndVerficationAllowedNA(2),
+  notificationAndVerficationDeniedNA(3), privacyOverride(4), ...
+  }
+
+EncodingType ::= ENUMERATED {ucs2(0), gsmDefault(1), utf8(2), ...
+                             }
+
+maxReqLength INTEGER ::= 50
+
+maxClientLength INTEGER ::= 50
+
+FormatIndicator ::= ENUMERATED {
+  logicalName(0), e-mailAddress(1), msisdn(2), url(3), sipUrl(4), min(5),
+  mdn(6), imsPublicIdentity(7), ...
+  }
+
+SLPMode ::= ENUMERATED {proxy(0), nonProxy(1)}
+
+MAC ::= BIT STRING(SIZE (64))
+
+KeyIdentity ::= BIT STRING(SIZE (128))
+
+END

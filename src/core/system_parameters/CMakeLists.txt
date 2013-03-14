@@ -24,6 +24,9 @@ set(SYSTEM_PARAMETERS_SOURCES
 	 gps_iono.cc
 	 gps_almanac.cc
 	 gps_utc_model.cc
+	 gps_acq_assist.cc
+	 gps_ref_time.cc
+	 gps_ref_location.cc
 )
 
 include_directories(

@@ -1,0 +1,15 @@
+SUPL-END DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+EXPORTS SUPLEND;
+
+IMPORTS StatusCode, Position, Ver
+          FROM ULP-Components;
+
+SUPLEND ::= SEQUENCE {
+  position    Position OPTIONAL,
+  statusCode  StatusCode OPTIONAL,
+  ver         Ver OPTIONAL,
+  ...}
+
+END

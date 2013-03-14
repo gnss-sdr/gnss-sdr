@@ -1,0 +1,54 @@
+SUPL-POS-INIT DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+EXPORTS SUPLPOSINIT;
+
+IMPORTS
+  SUPLPOS
+    FROM SUPL-POS
+  SETCapabilities
+    FROM SUPL-START
+  LocationId, Position, Ver
+    FROM ULP-Components;
+
+SUPLPOSINIT ::= SEQUENCE {
+  sETCapabilities      SETCapabilities,
+  requestedAssistData  RequestedAssistData OPTIONAL,
+  locationId           LocationId,
+  position             Position OPTIONAL,
+  sUPLPOS              SUPLPOS OPTIONAL,
+  ver                  Ver OPTIONAL,
+  ...}
+
+RequestedAssistData ::= SEQUENCE {
+  almanacRequested                BOOLEAN,
+  utcModelRequested               BOOLEAN,
+  ionosphericModelRequested       BOOLEAN,
+  dgpsCorrectionsRequested        BOOLEAN,
+  referenceLocationRequested      BOOLEAN,
+  referenceTimeRequested          BOOLEAN,
+  acquisitionAssistanceRequested  BOOLEAN,
+  realTimeIntegrityRequested      BOOLEAN,
+  navigationModelRequested        BOOLEAN,
+  navigationModelData             XNavigationModel OPTIONAL,
+  ...}
+
+-- name clash with RRLP stuff
+XNavigationModel ::= SEQUENCE {
+  gpsWeek   INTEGER(0..1023),
+  gpsToe    INTEGER(0..167),
+  nSAT      INTEGER(0..31),
+  toeLimit  INTEGER(0..10),
+  satInfo   SatelliteInfo OPTIONAL,
+  ...}
+
+-- Further information on this fields can be found
+-- in 3GPP TS 44.031 and 49.031
+SatelliteInfo ::= SEQUENCE (SIZE (1..31)) OF SatelliteInfoElement
+
+SatelliteInfoElement ::= SEQUENCE {
+  satId  INTEGER(0..63),
+  iODE   INTEGER(0..255),
+  ...}
+
+END

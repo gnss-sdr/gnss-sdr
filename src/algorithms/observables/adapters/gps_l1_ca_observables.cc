@@ -39,8 +39,6 @@
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
-extern concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
-
 using google::LogMessage;
 
 GpsL1CaObservables::GpsL1CaObservables(ConfigurationInterface* configuration,
@@ -65,9 +63,6 @@ GpsL1CaObservables::GpsL1CaObservables(ConfigurationInterface* configuration,
     observables_ = gps_l1_ca_make_observables_cc(in_streams_, queue_, dump_, dump_filename_, output_rate_ms, flag_averaging);
     observables_->set_fs_in(fs_in_);
     DLOG(INFO) << "pseudorange(" << observables_->unique_id() << ")";
-    // set the navigation msg queue;
-    observables_->set_navigation_queue(&global_gps_nav_msg_queue);
-    DLOG(INFO) << "global navigation message queue assigned to observables ("<< observables_->unique_id() << ")";
 }
 
 

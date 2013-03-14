@@ -61,6 +61,12 @@ public:
      * Default constructor
      */
     Gps_Utc_Model();
+
+    /*!
+     * \brief Computes the Coordinated Universal Time (UTC) and
+     * returns it in [s] (IS-GPS-200E, 20.3.3.5.2.4)
+     */
+    double utc_time(double gpstime_corrected, int i_GPS_week);
 };
 
 #endif

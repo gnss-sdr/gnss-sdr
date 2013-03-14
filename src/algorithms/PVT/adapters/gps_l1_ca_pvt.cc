@@ -38,7 +38,10 @@
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
-extern concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
+extern concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
+extern concurrent_queue<Gps_Iono> global_gps_iono_queue;
+extern concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
+extern concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
 
 using google::LogMessage;
 
@@ -81,7 +84,10 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms,flag_nmea_tty_port,nmea_dump_filename,nmea_dump_devname);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     // set the navigation msg queue;
-    pvt_->set_navigation_queue(&global_gps_nav_msg_queue);
+    pvt_->set_ephemeris_queue(&global_gps_ephemeris_queue);
+    pvt_->set_iono_queue(&global_gps_iono_queue);
+    //pvt_->set_almanac_queue(&global_gps_almanac_queue);
+    pvt_->set_utc_model_queue(&global_gps_utc_model_queue);
     DLOG(INFO) << "global navigation message queue assigned to pvt (" << pvt_->unique_id() << ")";
 }
 

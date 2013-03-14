@@ -42,7 +42,6 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 
-extern concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
 extern concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
 extern concurrent_queue<Gps_Iono> global_gps_iono_queue;
 extern concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
@@ -74,7 +73,6 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
     telemetry_decoder_ = gps_l1_ca_make_telemetry_decoder_cc(satellite_, 0, (long)fs_in, vector_length_, queue_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     // set the navigation msg queue;
-    telemetry_decoder_->set_navigation_queue(&global_gps_nav_msg_queue);
     telemetry_decoder_->set_ephemeris_queue(&global_gps_ephemeris_queue);
     telemetry_decoder_->set_iono_queue(&global_gps_iono_queue);
     telemetry_decoder_->set_almanac_queue(&global_gps_almanac_queue);

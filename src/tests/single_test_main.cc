@@ -42,7 +42,6 @@
 #include "concurrent_queue.h"
 #include "gps_navigation_message.h"
 
-concurrent_queue<Gps_Navigation_Message> global_gps_nav_msg_queue;
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
 concurrent_queue<Gps_Iono> global_gps_iono_queue;
 concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;

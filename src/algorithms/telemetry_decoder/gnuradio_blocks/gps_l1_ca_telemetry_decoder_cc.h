@@ -63,9 +63,8 @@ public:
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
     /*!
-     * \brief Set the navigation queue
+     * \brief Set the satellite data queue
      */
-    void set_navigation_queue(concurrent_queue<Gps_Navigation_Message> *nav_queue){d_GPS_FSM.d_nav_queue=nav_queue;}
     void set_ephemeris_queue(concurrent_queue<Gps_Ephemeris> *ephemeris_queue){d_GPS_FSM.d_ephemeris_queue=ephemeris_queue;}
     void set_iono_queue(concurrent_queue<Gps_Iono> *iono_queue){d_GPS_FSM.d_iono_queue=iono_queue;}
     void set_almanac_queue(concurrent_queue<Gps_Almanac> *almanac_queue){d_GPS_FSM.d_almanac_queue=almanac_queue;}
@@ -122,6 +121,10 @@ private:
 
     double d_preamble_time_seconds;
     double d_preamble_code_phase_seconds;
+
+    double d_TOW_at_Preamble;
+    double d_TOW_at_current_symbol;
+    bool flag_TOW_set;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;

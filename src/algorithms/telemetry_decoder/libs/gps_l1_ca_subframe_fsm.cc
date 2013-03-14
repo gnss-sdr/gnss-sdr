@@ -232,18 +232,11 @@ GpsL1CaSubframeFsm::GpsL1CaSubframeFsm()
   initiate(); //start the FSM
 }
 
-
-
-
 void GpsL1CaSubframeFsm::gps_word_to_subframe(int position)
 {
   // insert the word in the correct position of the subframe
   std::memcpy(&d_subframe[position*GPS_WORD_LENGTH], &d_GPS_frame_4bytes, sizeof(char)*GPS_WORD_LENGTH);
 }
-
-
-
-
 
 void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
 {
@@ -254,36 +247,36 @@ void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
     d_nav.i_satellite_PRN = i_satellite_PRN;
     d_nav.i_channel_ID = i_channel_ID;
     d_nav.d_subframe_timestamp_ms = this->d_preamble_time_ms;
-    d_nav.b_update_tow_flag = true;
-    /*!
-     * \todo change satellite validation to subframe 5 because it will have a complete set of ephemeris parameters
-     */
-    if (d_nav.satellite_validation()==true)
+
+    switch (subframe_ID)
+    {
+    case 3: //we have a new set of ephemeris data for the current SV
+    	if (d_nav.satellite_validation()==true)
     	{
     		// get ephemeris object for this SV (mandatory)
-//    		Gps_Ephemeris ephemeris=d_nav.get_ephemeris();
-//    		d_ephemeris_queue->push(ephemeris);
-//
-//    		// get ionospheric parameters (if available)
-//    		if (d_nav.flag_iono_valid==true)
-//    		{
-//    			Gps_Iono iono=d_nav.get_iono();
-//    			d_iono_queue->push(iono);
-//    		}
-//
-//    		// get almanac (if available)
-//    		//TODO: implement almanac reader in navigation_message
-//
-//    		// get UTC model
-//    		if (d_nav.flag_utc_model_valid==true)
-//    		{
-//    			Gps_Utc_Model utc_model=d_nav.get_utc_model();
-//    			d_utc_model_queue->push(utc_model);
-//
-//    		}
-    		// old nav queue
-    	    d_nav_queue->push(d_nav);
+    		Gps_Ephemeris ephemeris=d_nav.get_ephemeris();
+    		d_ephemeris_queue->push(ephemeris);
     	}
+    	break;
+    case 4: // Possible IONOSPHERE and UTC model update (page 18)
+    	if (d_nav.flag_iono_valid==true)
+    	{
+    		Gps_Iono iono=d_nav.get_iono(); //notice that the read operation will clear the valid flag
+    		d_iono_queue->push(iono);
+    	}
+    	if (d_nav.flag_utc_model_valid==true)
+    	{
+    		Gps_Utc_Model utc_model=d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+    		d_utc_model_queue->push(utc_model);
+    	}
+    	break;
+    case 5:
+		// get almanac (if available)
+		//TODO: implement almanac reader in navigation_message
+    	break;
+    default:
+    	break;
+    }
 }
 
 void GpsL1CaSubframeFsm::Event_gps_word_valid()

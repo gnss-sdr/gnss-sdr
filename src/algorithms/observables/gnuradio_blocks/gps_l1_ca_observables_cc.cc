@@ -107,6 +107,10 @@ bool pairCompare_gnss_synchro_preamble_symbol_count( std::pair<int,Gnss_Synchro>
     return (a.second.Preamble_symbol_counter) < (b.second.Preamble_symbol_counter);
 }
 
+bool pairCompare_gnss_synchro_d_TOW_at_current_symbol( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
+{
+    return (a.second.d_TOW_at_current_symbol) < (b.second.d_TOW_at_current_symbol);
+}
 
 
 bool pairCompare_gnss_synchro_preamble_delay_ms( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
@@ -190,44 +194,32 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
              *  2.1 Find the correct symbol timestamp in the gnss_synchro history: we have to compare timestamps between channels on the SAME symbol
              *  (common TX time algorithm)
              */
-            double min_preamble_delay_ms;
-            double max_preamble_delay_ms;
-            int current_symbol = 0;
             int reference_channel;
             int history_shift;
             Gnss_Synchro tmp_gnss_synchro;
-
-            gnss_synchro_iter = min_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_preamble_delay_ms);
-            min_preamble_delay_ms = gnss_synchro_iter->second.Preamble_timestamp_ms; //[ms]
-
-            gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_preamble_delay_ms);
-            max_preamble_delay_ms = gnss_synchro_iter->second.Preamble_timestamp_ms; //[ms]
-
-            if ((max_preamble_delay_ms - min_preamble_delay_ms) < MAX_TOA_DELAY_MS)
-                {
-                    // we have a valid information set. Its time to align the symbols information
-                    // what is the most delayed symbol in the current set? -> this will be the reference symbol
-                    gnss_synchro_iter = min_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_preamble_symbol_count);
-                    current_symbol = gnss_synchro_iter->second.Preamble_symbol_counter;
-                    reference_channel = gnss_synchro_iter->second.Channel_ID;
-                    // save it in the aligned symbols map
-                    gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID, gnss_synchro_iter->second));
-                    // Now find where the same symbols were in the rest of the channels searching in the symbol history
-                    for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
-                        {
-                            //TODO: Replace the loop using current current_symbol-Preamble_symbol_counter
-                            if (reference_channel != gnss_synchro_iter->second.Channel_ID)
-                                {
-                                    // compute the required symbol history shift in order to match the reference symbol
-                                    history_shift = gnss_synchro_iter->second.Preamble_symbol_counter - current_symbol;
-                                    if (history_shift < (int)MAX_TOA_DELAY_MS ) // and history_shift>=0)
-                                        {
-                                            tmp_gnss_synchro= d_history_gnss_synchro_deque[gnss_synchro_iter->second.Channel_ID][history_shift];
-                                            gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID, tmp_gnss_synchro));
-                                        }
-                                }
-                        }
-                }
+            // we have a valid information set. Its time to align the symbols information
+            // what is the most delayed symbol in the current set? -> this will be the reference symbol
+            gnss_synchro_iter = min_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_d_TOW_at_current_symbol);
+            double d_TOW_reference=gnss_synchro_iter->second.d_TOW_at_current_symbol;
+            reference_channel = gnss_synchro_iter->second.Channel_ID;
+            // save it in the aligned symbols map
+            gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID, gnss_synchro_iter->second));
+            // Now find where the same symbols were in the rest of the channels searching in the symbol history
+            for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
+            {
+            	//TODO: Replace the loop using current current_symbol-Preamble_symbol_counter
+            	if (reference_channel != gnss_synchro_iter->second.Channel_ID)
+            	{
+            		// compute the required symbol history shift in order to match the reference symbol
+            		history_shift=round((gnss_synchro_iter->second.d_TOW_at_current_symbol-d_TOW_reference)*1000);
+            		//check if this is a valid set of observations
+            		if (history_shift < (int)MAX_TOA_DELAY_MS )
+            		{
+            			tmp_gnss_synchro= d_history_gnss_synchro_deque[gnss_synchro_iter->second.Channel_ID][history_shift];
+            			gnss_synchro_aligned_map.insert(std::pair<int,Gnss_Synchro>(gnss_synchro_iter->second.Channel_ID, tmp_gnss_synchro));
+            		}
+            	}
+            }
 
             /*
              * 3 Compute the pseudoranges using the aligned data map
@@ -241,11 +233,12 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             max_symbol_timestamp_ms = gnss_synchro_iter->second.Prn_timestamp_ms; //[ms]
 
             // check again if this is a valid set of observations
-            if ((max_symbol_timestamp_ms - min_symbol_timestamp_ms) < MAX_TOA_DELAY_MS)
+            //not necesary
+            //if ((max_symbol_timestamp_ms - min_symbol_timestamp_ms) < MAX_TOA_DELAY_MS)
                 /*
                  * 2.3 compute the pseudoranges
                  */
-                {
+                //{
                     for(gnss_synchro_iter = gnss_synchro_aligned_map.begin(); gnss_synchro_iter != gnss_synchro_aligned_map.end(); gnss_synchro_iter++)
                         {
                             traveltime_ms = gnss_synchro_iter->second.Prn_timestamp_ms - min_symbol_timestamp_ms + GPS_STARTOFFSET_ms; //[ms]
@@ -253,11 +246,11 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             // update the pseudorange object
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
-                            current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_symbol_shift = (double)current_symbol; // number of symbols shifted from preamble start symbol
+                            current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_symbol_shift = 0;
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
                             current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_timestamp_ms = max_symbol_timestamp_ms;
                         }
-                }
+                //}
         }
 
     if(d_dump == true)

@@ -129,6 +129,10 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_GPS_frame_4bytes = 0;
     d_prev_GPS_frame_4bytes = 0;
     d_flag_parity = false;
+    d_TOW_at_Preamble=0;
+    d_TOW_at_current_symbol=0;
+    flag_TOW_set=false;
+
     //set_history(d_samples_per_bit*8); // At least a history of 8 bits are needed to correlate with the preamble
 }
 
@@ -236,6 +240,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                             std::cout << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff << std::endl;
                             d_stat = 0; //lost of frame sync
                             d_flag_frame_sync = false;
+                            flag_TOW_set=false;
                         }
                 }
         }
@@ -301,11 +306,28 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //1. Copy the current tracking output
     current_synchro_data=in[0][0];
     //2. Add the telemetry decoder information
-    current_synchro_data.Flag_valid_word = (d_flag_frame_sync == true and d_flag_parity == true);
+    if (flag_TOW_set==true)
+    {
+    	d_TOW_at_current_symbol=d_TOW_at_current_symbol+GPS_L1_CA_CODE_PERIOD;
+    }
+    if (this->d_flag_preamble==true and d_GPS_FSM.d_nav.d_TOW>0) //update TOW at the preamble instant (todo: check for valid d_TOW)
+    {
+    	d_TOW_at_Preamble=d_GPS_FSM.d_nav.d_TOW+GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
+    	if (flag_TOW_set==false)
+    	{
+    		d_TOW_at_current_symbol=d_TOW_at_Preamble+GPS_L1_CA_CODE_PERIOD*GPS_CA_PREAMBLE_LENGTH_BITS;
+    		flag_TOW_set=true;
+    	}
+    }
+
+
+    current_synchro_data.d_TOW=d_TOW_at_Preamble;
+    current_synchro_data.d_TOW_at_current_symbol=d_TOW_at_current_symbol;
+    current_synchro_data.Flag_valid_word = (d_flag_frame_sync == true and d_flag_parity == true and flag_TOW_set==true);
     current_synchro_data.Flag_preamble = d_flag_preamble;
     current_synchro_data.Preamble_timestamp_ms = d_preamble_time_seconds * 1000.0;
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
-    current_synchro_data.Preamble_symbol_counter = fmod((double)(d_sample_counter - d_preamble_index), 6000); //not corrected the preamble correlation lag! -> to be taken into account in TX Time
+    current_synchro_data.Preamble_symbol_counter = 0;//fmod((double)(d_sample_counter - d_preamble_index), 6000); //not corrected the preamble correlation lag! -> to be taken into account in TX Time
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file

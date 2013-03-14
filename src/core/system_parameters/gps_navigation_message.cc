@@ -37,7 +37,6 @@
 
 void Gps_Navigation_Message::reset()
 {
-	b_update_tow_flag = false;
 	b_valid_ephemeris_set_flag = false;
 	d_TOW = 0;
 	d_TOW_SF1 = 0;
@@ -468,7 +467,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
 		d_TOW_SF1 = (double)read_navigation_unsigned(subframe_bits, TOW);
 		//we are in the first subframe (the transmitted TOW is the start time of the next subframe) !
 		d_TOW_SF1 = d_TOW_SF1*6;
-		d_TOW = d_TOW_SF5; // Set transmission time
+		d_TOW = d_TOW_SF1-6; // Set transmission time
 		b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
 		b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
 		b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -494,7 +493,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
 	case 2:  //--- It is subframe 2 -------------------
 		d_TOW_SF2 = (double)read_navigation_unsigned(subframe_bits, TOW);
 		d_TOW_SF2 = d_TOW_SF2*6;
-		d_TOW = d_TOW_SF1; // Set transmission time
+		d_TOW = d_TOW_SF1-6; // Set transmission time
 		b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
 		b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
 		b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -524,7 +523,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
 	case 3: // --- It is subframe 3 -------------------------------------
 		d_TOW_SF3 = (double)read_navigation_unsigned(subframe_bits, TOW);
 		d_TOW_SF3 = d_TOW_SF3*6;
-		d_TOW = d_TOW_SF2; // Set transmission time
+		d_TOW = d_TOW_SF3-6; // Set transmission time
 		b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
 		b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
 		b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -551,7 +550,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
 	case 4: // --- It is subframe 4 ---------- Almanac, ionospheric model, UTC parameters, SV health (PRN: 25-32)
 		d_TOW_SF4 = (double)read_navigation_unsigned(subframe_bits, TOW);
 		d_TOW_SF4 = d_TOW_SF4*6;
-		d_TOW = d_TOW_SF3; // Set transmission time
+		d_TOW = d_TOW_SF4-6; // Set transmission time
 		b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
 		b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
 		b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -616,7 +615,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
 	case 5://--- It is subframe 5 -----------------almanac health (PRN: 1-24) and Almanac reference week number and time.
 		d_TOW_SF5 = (double)read_navigation_unsigned(subframe_bits, TOW);
 		d_TOW_SF5 = d_TOW_SF5*6;
-		d_TOW = d_TOW_SF4; // Set transmission time
+		d_TOW = d_TOW_SF5-6; // Set transmission time
 		b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
 		b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
 		b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
@@ -790,7 +789,8 @@ Gps_Iono Gps_Navigation_Message::get_iono()
     iono.d_beta2=d_beta2;
     iono.d_beta3=d_beta3;
     iono.valid=flag_iono_valid;
-	// TODO: Clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
+	//WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
+    flag_iono_valid=false;
 	return iono;
 }
 
@@ -808,7 +808,8 @@ Gps_Utc_Model Gps_Navigation_Message::get_utc_model()
 	utc_model.i_WN_LSF=i_WN_LSF;
 	utc_model.i_DN=i_DN;
 	utc_model.d_DeltaT_LSF=d_DeltaT_LSF;
-	// TODO: Clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
+	// warning: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
+	d_DeltaT_LSF=false;
 	return utc_model;
 }
 bool Gps_Navigation_Message::satellite_validation()

@@ -82,8 +82,7 @@ public:
   concurrent_queue<Gps_Utc_Model> *d_utc_model_queue;
   // Almanac queue
   concurrent_queue<Gps_Almanac> *d_almanac_queue;
-  // Old navigation message queue
-  concurrent_queue<Gps_Navigation_Message> *d_nav_queue;
+
   // navigation message class
   Gps_Navigation_Message d_nav;
 

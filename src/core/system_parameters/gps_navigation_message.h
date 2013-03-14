@@ -70,7 +70,6 @@ private:
     double check_t(double time);
 
 public:
-    bool b_update_tow_flag; // flag indicating that this ephemeris set have an updated TOW
     bool b_valid_ephemeris_set_flag; // flag indicating that this ephemeris set have passed the validation check
     //broadcast orbit 1
     double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]

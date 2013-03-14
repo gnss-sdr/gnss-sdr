@@ -240,197 +240,204 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
 
 bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double GPS_current_time, bool flag_averaging)
 {
-    std::map<int,Gnss_Synchro>::iterator gnss_pseudoranges_iter;
+	   std::map<int,Gnss_Synchro>::iterator gnss_pseudoranges_iter;
 
-    arma::mat W = arma::eye(d_nchannels,d_nchannels); //channels weights matrix
-    arma::vec obs = arma::zeros(d_nchannels);         // pseudoranges observation vector
-    arma::mat satpos = arma::zeros(3,d_nchannels);    //satellite positions matrix
+	   std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
 
-    int GPS_week = 0;
-    double GPS_corrected_time = 0;
-    double utc = 0;
+	   int valid_pseudoranges=gnss_pseudoranges_map.size();
 
-    d_flag_averaging = flag_averaging;
+	    arma::mat W = arma::eye(valid_pseudoranges,valid_pseudoranges); //channels weights matrix
+	    arma::vec obs = arma::zeros(valid_pseudoranges);         // pseudoranges observation vector
+	    arma::mat satpos = arma::zeros(3,valid_pseudoranges);    //satellite positions matrix
 
-    int valid_obs = 0; //valid observations counter
-    for (int i=0; i<d_nchannels; i++)
+	    int GPS_week = 0;
+	    double GPS_corrected_time = 0;
+	    double utc = 0;
+
+	    d_flag_averaging = flag_averaging;
+
+
+	    // ********************************************************************************
+	    // ****** PREPARE THE LEAST SQUARES DATA (SV POSITIONS MATRIX AND OBS VECTORS) ****
+	    // ********************************************************************************
+	    int valid_obs = 0; //valid observations counter
+	    int obs_counter=0;
+	    for(gnss_pseudoranges_iter = gnss_pseudoranges_map.begin();
+	            gnss_pseudoranges_iter != gnss_pseudoranges_map.end();
+	            gnss_pseudoranges_iter++)
         {
-            if (d_ephemeris[i].satellite_validation() == true)
-                {
-                    gnss_pseudoranges_iter = gnss_pseudoranges_map.find(d_ephemeris[i].i_satellite_PRN);
-                    if (gnss_pseudoranges_iter != gnss_pseudoranges_map.end())
-                        {
-                            /*!
-                             * \todo Place here the satellite CN0 (power level, or weight factor)
-                             */
-                            W(i,i) = 1;
-                            // compute the GPS master clock
-                            // d_ephemeris[i].master_clock(GPS_current_time); ?????
+            // 1- find the ephemeris for the current SV observation. The SV PRN ID is the map key
+            gps_ephemeris_iter = gps_ephemeris_map.find(gnss_pseudoranges_iter->first);
+            if (gps_ephemeris_iter != gps_ephemeris_map.end())
+            {
+            	// Ephemeris available in the ephemeris map
+                /*!
+                 * \todo Place here the satellite CN0 (power level, or weight factor)
+                 */
+                W(obs_counter,obs_counter) = 1;
 
-                            // compute the clock error including relativistic effects
-                            GPS_corrected_time = d_ephemeris[i].sv_clock_correction(GPS_current_time);
-                            GPS_week = d_ephemeris[i].i_GPS_week;
+                // 2- compute the clock error including relativistic effects for this SV
+                GPS_corrected_time = gps_ephemeris_iter->second.sv_clock_correction(GPS_current_time);
+                //DLOG(INFO)<<"pseudorranges SV "<<gps_ephemeris_iter->second.i_satellite_PRN
+                //		<< " tx_time-d_TOW="<<GPS_corrected_time-gnss_pseudoranges_iter->second.d_TOW<<std::endl;
+                //DLOG(INFO)<<"pseudorranges SV "<<gps_ephemeris_iter->second.i_satellite_PRN
+                //		<< " d_TOW_current_symbol="<<gnss_pseudoranges_iter->second.d_TOW_at_current_symbol<<std::endl;
 
-                            utc = d_ephemeris[i].utc_time(GPS_corrected_time);
+                GPS_week = gps_ephemeris_iter->second.i_GPS_week;
+                // 3- compute the UTC time for this SV
+                //TODO: check if the utc time model is valid (or it is empty (not received yet!) and no corrections are available)
+                utc = gps_utc_model.utc_time(GPS_corrected_time,GPS_week);
+                //DLOG(INFO)<<"pseudorranges SV "<<gps_ephemeris_iter->second.i_satellite_PRN
+                //		<< " symbol_shift_from_preamble="<<gnss_pseudoranges_iter->second.Pseudorange_symbol_shift<<std::endl;
 
-                            // compute the satellite current ECEF position
-                            d_ephemeris[i].satellitePosition(GPS_corrected_time);
+                // 4- compute the current ECEF position for this SV
+                gps_ephemeris_iter->second.satellitePosition(GPS_corrected_time);
+                satpos(0,obs_counter) = gps_ephemeris_iter->second.d_satpos_X;
+                satpos(1,obs_counter) = gps_ephemeris_iter->second.d_satpos_Y;
+                satpos(2,obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
+                // 5- fill the observations vector with the corrected pseudorranges
+                obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + gps_ephemeris_iter->second.d_satClkCorr*GPS_C_m_s;
+                d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
+                d_visible_satellites_CN0_dB[valid_obs]  =gnss_pseudoranges_iter->second.CN0_dB_hz;
+                valid_obs++;
+                // SV ECEF DEBUG OUTPUT
+                DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
+                        << " X=" << gps_ephemeris_iter->second.d_satpos_X
+                        << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
+                        << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
+                        << " [m] PR_obs="<<obs(obs_counter)<<"[m]"<< std::endl;
 
-                            satpos(0,i) = d_ephemeris[i].d_satpos_X;
-                            satpos(1,i) = d_ephemeris[i].d_satpos_Y;
-                            satpos(2,i) = d_ephemeris[i].d_satpos_Z;
-                            DLOG(INFO) << "ECEF satellite SV ID=" << d_ephemeris[i].i_satellite_PRN
-                                    << " X=" << d_ephemeris[i].d_satpos_X
-                                    << " [m] Y=" << d_ephemeris[i].d_satpos_Y
-                                    << " [m] Z=" << d_ephemeris[i].d_satpos_Z << " [m]" << std::endl;
-                            obs(i) = gnss_pseudoranges_iter->second.Pseudorange_m + d_ephemeris[i].d_satClkCorr*GPS_C_m_s;
-                            d_visible_satellites_IDs[valid_obs] = d_ephemeris[i].i_satellite_PRN;
-                            d_visible_satellites_CN0_dB[valid_obs]  =gnss_pseudoranges_iter->second.CN0_dB_hz;
-                            valid_obs++;
-                        }
-                    else
-                        {
-                            // no valid pseudorange for the current channel
-                            W(i,i) = 0; // channel de-activated
-                            obs(i) = 1; // to avoid algorithm problems (divide by zero)
-                        }
-                }
-            else
-                {
-                    // no valid ephemeris for the current channel
-                    W(i,i) = 0; // channel de-activated
-                    obs(i) = 1; // to avoid algorithm problems (divide by zero)
-                }
+            }else{ // the ephemeris are not available for this SV
+                // no valid pseudorange for the current SV
+                W(obs_counter,obs_counter) = 0; // SV de-activated
+                obs(obs_counter) = 1; // to avoid algorithm problems (divide by zero)
+                DLOG(INFO)<<"No ephemeris data for SV "<<gnss_pseudoranges_iter->first<<std::endl;
+            }
+            obs_counter++;
+
         }
 
-    d_valid_observations = valid_obs;
-    DLOG(INFO) << "PVT: valid observations=" << valid_obs << std::endl;
+	    // ********************************************************************************
+	    // ****** SOLVE LEAST SQUARES******************************************************
+	    // ********************************************************************************
+	    d_valid_observations = valid_obs;
+	       DLOG(INFO) << "(new)PVT: valid observations=" << valid_obs << std::endl;
 
-    if (valid_obs >= 4)
-        {
-            arma::vec mypos;
-            mypos=leastSquarePos(satpos,obs,W);
-            DLOG(INFO) << "Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos << std::endl;
-            gps_l1_ca_ls_pvt::cart2geo(mypos(0), mypos(1), mypos(2), 4);
+	       if (valid_obs >= 4)
+	           {
+	               arma::vec mypos;
+	               DLOG(INFO)<<"satpos="<<satpos<<std::endl;
+	               DLOG(INFO)<<"obs="<<obs<<std::endl;
+	               DLOG(INFO)<<"W="<<W<<std::endl;
+	               mypos=leastSquarePos(satpos,obs,W);
+	               DLOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos << std::endl;
+	               gps_l1_ca_ls_pvt::cart2geo(mypos(0), mypos(1), mypos(2), 4);
 
-            // Compute UTC time and print PVT solution
-            double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
-            boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek*(double)GPS_week);
-            // 22 August 1999 last GPS time roll over
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-            d_position_UTC_time = p_time;
-            GPS_current_time = GPS_corrected_time;
+	               // Compute UTC time and print PVT solution
+	               double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
+	               boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek*(double)GPS_week);
+	               // 22 August 1999 last GPS time roll over
+	               boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+	               d_position_UTC_time = p_time;
+	               GPS_current_time = GPS_corrected_time;
 
-            DLOG(INFO) << "Position at " << boost::posix_time::to_simple_string(p_time)
-            << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-            << " [deg], Height= " << d_height_m << " [m]" << std::endl;
+	               DLOG(INFO) << "(new)Position at " << boost::posix_time::to_simple_string(p_time)
+	               << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+	               << " [deg], Height= " << d_height_m << " [m]" << std::endl;
 
-            // ######## LOG FILE #########
-            if(d_flag_dump_enabled == true)
-                {
-                    // MULTIPLEXED FILE RECORDING - Record results to file
-                    try
-                    {
-                            double tmp_double;
-                            //  PVT GPS time
-                            tmp_double = GPS_current_time;
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // ECEF User Position East [m]
-                            tmp_double = mypos(0);
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // ECEF User Position North [m]
-                            tmp_double = mypos(1);
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // ECEF User Position Up [m]
-                            tmp_double = mypos(2);
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // User clock offset [s]
-                            tmp_double = mypos(3);
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // GEO user position Latitude [deg]
-                            tmp_double = d_latitude_d;
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // GEO user position Longitude [deg]
-                            tmp_double = d_longitude_d;
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // GEO user position Height [m]
-                            tmp_double = d_height_m;
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    }
-                    catch (std::ifstream::failure e)
-                    {
-                            std::cout << "Exception writing PVT LS dump file "<< e.what() << std::endl;
-                    }
-                }
+	               // ######## LOG FILE #########
+	               if(d_flag_dump_enabled == true)
+	                   {
+	                       // MULTIPLEXED FILE RECORDING - Record results to file
+	                       try
+	                       {
+	                               double tmp_double;
+	                               //  PVT GPS time
+	                               tmp_double = GPS_current_time;
+	                               d_dump_file.write((char*)&tmp_double, sizeof(double));
+	                               // ECEF User Position East [m]
+	                               tmp_double = mypos(0);
+	                               d_dump_file.write((char*)&tmp_double, sizeof(double));
+	                               // ECEF User Position North [m]
+	                               tmp_double = mypos(1);
+	                               d_dump_file.write((char*)&tmp_double, sizeof(double));
+	                               // ECEF User Position Up [m]
+	                               tmp_double = mypos(2);
+	                               d_dump_file.write((char*)&tmp_double, sizeof(double));
+	                               // User clock offset [s]
+	                               tmp_double = mypos(3);
+	                               d_dump_file.write((char*)&tmp_double, sizeof(double));
+	                               // GEO user position Latitude [deg]
+	                               tmp_double = d_latitude_d;
+	                               d_dump_file.write((char*)&tmp_double, sizeof(double));
+	                               // GEO user position Longitude [deg]
+	                               tmp_double = d_longitude_d;
+	                               d_dump_file.write((char*)&tmp_double, sizeof(double));
+	                               // GEO user position Height [m]
+	                               tmp_double = d_height_m;
+	                               d_dump_file.write((char*)&tmp_double, sizeof(double));
+	                       }
+	                       catch (std::ifstream::failure e)
+	                       {
+	                               std::cout << "Exception writing PVT LS dump file "<< e.what() << std::endl;
+	                       }
+	                   }
 
-            // MOVING AVERAGE PVT
-            if (flag_averaging == true)
-                {
-                    if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
-                        {
-                            // Pop oldest value
-                            d_hist_longitude_d.pop_back();
-                            d_hist_latitude_d.pop_back();
-                            d_hist_height_m.pop_back();
-                            // Push new values
-                            d_hist_longitude_d.push_front(d_longitude_d);
-                            d_hist_latitude_d.push_front(d_latitude_d);
-                            d_hist_height_m.push_front(d_height_m);
+	               // MOVING AVERAGE PVT
+	               if (flag_averaging == true)
+	                   {
+	                       if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
+	                           {
+	                               // Pop oldest value
+	                               d_hist_longitude_d.pop_back();
+	                               d_hist_latitude_d.pop_back();
+	                               d_hist_height_m.pop_back();
+	                               // Push new values
+	                               d_hist_longitude_d.push_front(d_longitude_d);
+	                               d_hist_latitude_d.push_front(d_latitude_d);
+	                               d_hist_height_m.push_front(d_height_m);
 
-                            d_avg_latitude_d = 0;
-                            d_avg_longitude_d = 0;
-                            d_avg_height_m = 0;
-                            for (unsigned int i=0; i<d_hist_longitude_d.size(); i++)
-                                {
-                                    d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
-                                    d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
-                                    d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
-                                }
-                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
-                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
-                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
-                            b_valid_position = true;
-                            return true; //indicates that the returned position is valid
-                        }
-                    else
-                        {
-                            //int current_depth=d_hist_longitude_d.size();
-                            // Push new values
-                            d_hist_longitude_d.push_front(d_longitude_d);
-                            d_hist_latitude_d.push_front(d_latitude_d);
-                            d_hist_height_m.push_front(d_height_m);
+	                               d_avg_latitude_d = 0;
+	                               d_avg_longitude_d = 0;
+	                               d_avg_height_m = 0;
+	                               for (unsigned int i=0; i<d_hist_longitude_d.size(); i++)
+	                                   {
+	                                       d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
+	                                       d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
+	                                       d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
+	                                   }
+	                               d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
+	                               d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
+	                               d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
+	                               b_valid_position = true;
+	                               return true; //indicates that the returned position is valid
+	                           }
+	                       else
+	                           {
+	                               //int current_depth=d_hist_longitude_d.size();
+	                               // Push new values
+	                               d_hist_longitude_d.push_front(d_longitude_d);
+	                               d_hist_latitude_d.push_front(d_latitude_d);
+	                               d_hist_height_m.push_front(d_height_m);
 
-                            d_avg_latitude_d = d_latitude_d;
-                            d_avg_longitude_d = d_longitude_d;
-                            d_avg_height_m = d_height_m;
-                            b_valid_position = false;
-                            return false; //indicates that the returned position is not valid yet
-                            // output the average, although it will not have the full historic available
-                            //    			d_avg_latitude_d=0;
-                            //    			d_avg_longitude_d=0;
-                            //    			d_avg_height_m=0;
-                            //    		    for (unsigned int i=0;i<d_hist_longitude_d.size();i++)
-                            //    		    {
-                            //    		    	d_avg_latitude_d=d_avg_latitude_d+d_hist_latitude_d.at(i);
-                            //    		        d_avg_longitude_d=d_avg_longitude_d+d_hist_longitude_d.at(i);
-                            //    		    	d_avg_height_m=d_avg_height_m+d_hist_height_m.at(i);
-                            //    		    }
-                            //    		    d_avg_latitude_d=d_avg_latitude_d/(double)current_depth;
-                            //    		    d_avg_longitude_d=d_avg_longitude_d/(double)current_depth;
-                            //    		    d_avg_height_m=d_avg_height_m/(double)current_depth;
-                        }
-                }
-            else
-                {
-                    b_valid_position = true;
-                    return true; //indicates that the returned position is valid
-                }
-        }
-    else
-        {
-            b_valid_position = false;
-            return false;
-        }
+	                               d_avg_latitude_d = d_latitude_d;
+	                               d_avg_longitude_d = d_longitude_d;
+	                               d_avg_height_m = d_height_m;
+	                               b_valid_position = false;
+	                               return false; //indicates that the returned position is not valid yet
+	                           }
+	                   }
+	               else
+	                   {
+	                       b_valid_position = true;
+	                       return true; //indicates that the returned position is valid
+	                   }
+	           }
+	       else
+	           {
+	               b_valid_position = false;
+	               return false;
+	           }
 }
 
 

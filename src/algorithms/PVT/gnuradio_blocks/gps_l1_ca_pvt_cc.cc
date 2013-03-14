@@ -82,7 +82,6 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
 
     d_ls_pvt = new gps_l1_ca_ls_pvt(nchannels,dump_ls_pvt_filename,d_dump);
     d_ls_pvt->set_averaging_depth(d_averaging_depth);
-    d_ephemeris_clock_s = 0.0;
 
     d_sample_counter = 0;
     d_last_sample_nav_output=0;
@@ -90,11 +89,6 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
 
     b_rinex_header_writen = false;
     rp = new Rinex_Printer();
-
-    for (unsigned int i=0; i<nchannels; i++)
-        {
-            nav_data_map[i] = Gps_Navigation_Message();
-        }
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -166,107 +160,120 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     // find the minimum index (nearest satellite, will be the reference)
     gnss_pseudoranges_iter = std::min_element(gnss_pseudoranges_map.begin(), gnss_pseudoranges_map.end(), pseudoranges_pairCompare_min);
 
-    Gps_Navigation_Message nav_msg;
-    while (d_nav_queue->try_pop(nav_msg) == true)
-        {
-            std::cout << "New ephemeris record has arrived from SAT ID "
-                    << nav_msg.i_satellite_PRN << " (Block "
-                    <<  nav_msg.satelliteBlock[nav_msg.i_satellite_PRN]
-                                               << ")" << std::endl;
-            d_last_nav_msg = nav_msg;
-            if (nav_msg.b_valid_ephemeris_set_flag == true)
-                {
-                    d_ls_pvt->d_ephemeris[nav_msg.i_channel_ID] = nav_msg;
-                    nav_data_map[nav_msg.i_channel_ID] = nav_msg;
-                }
-            // **** update pseudoranges clock ****
-            if (nav_msg.i_satellite_PRN == gnss_pseudoranges_iter->second.PRN)
-                {
-                    d_ephemeris_clock_s = d_last_nav_msg.d_TOW;
-                    d_ephemeris_timestamp_ms = d_last_nav_msg.d_subframe_timestamp_ms;
-                }
-        }
+    // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
+    Gps_Ephemeris gps_eph;
+    while (d_gps_eph_queue->try_pop(gps_eph) == true)
+    {
+    	// DEBUG MESSAGE
+    	std::cout << "New ephemeris record has arrived from SAT ID "
+    			<< gps_eph.i_satellite_PRN << " (Block "
+    			<<  gps_eph.satelliteBlock[gps_eph.i_satellite_PRN]
+    			                           << ")" << std::endl;
+    	d_ls_pvt->gps_ephemeris_map[gps_eph.i_satellite_PRN] = gps_eph;
+    	std::cout<<"SV "<<gps_eph.i_satellite_PRN<<"d_TOW="<<gps_eph.d_TOW<<std::endl;
+    }
+    Gps_Utc_Model gps_utc_model;
+    while (d_gps_utc_model_queue->try_pop(gps_utc_model) == true)
+    {
+    	// DEBUG MESSAGE
+    	std::cout << "New UTC model record has arrived "<< std::endl;
 
-    // ############ 2. COMPUTE THE PVT ################################
-    // write the pseudoranges to RINEX OBS file
-    // 1- need a valid clock
-    if (d_ephemeris_clock_s > 0 and d_last_nav_msg.i_satellite_PRN > 0 and d_last_nav_msg.b_valid_ephemeris_set_flag == true)
-        {
-            double clock_error;
-            double satellite_tx_time_using_timestamps;
-            //for GPS L1 C/A: t_tx = TOW + N_symbols_from_TOW*T_symbol
-            //Notice that the TOW is decoded AFTER processing the subframe -> we need to add ONE subframe duration to t_tx
-            d_tx_time = d_ephemeris_clock_s + gnss_pseudoranges_iter->second.Pseudorange_symbol_shift/(double)GPS_CA_TELEMETRY_RATE_SYMBOLS_SECOND + GPS_SUBFRAME_SECONDS;
-            //Perform an extra check to verify the TOW update (the ephemeris queue is ASYNCHRONOUS to the GNU Radio Gnss_Synchro sample stream)
-            //-> compute the t_tx_timestamps using the symbols timestamp (it is affected by code Doppler, but it is not wrapped like N_symbols_from_TOW)
-            satellite_tx_time_using_timestamps = d_ephemeris_clock_s + (gnss_pseudoranges_iter->second.Pseudorange_timestamp_ms - d_ephemeris_timestamp_ms)/1000.0;
-            //->compute the absolute error between both T_tx
-            clock_error = std::abs(d_tx_time - satellite_tx_time_using_timestamps);
-            // -> The symbol counter N_symbols_from_TOW will be reset every new received telemetry word, if the TOW is not updated, both t_tx and t_tx_timestamps times will difer by more than 1 seconds.
-            if (clock_error < 1)
-                {
-                    // compute on the fly PVT solution
-                    //mod 8/4/2012 Set the PVT computation rate in this block
-                    if ((d_sample_counter % d_output_rate_ms) == 0)
-                        {
-                            if (d_ls_pvt->get_PVT(gnss_pseudoranges_map,d_tx_time,d_flag_averaging) == true)
-                                {
-                                    d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
-                                    d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
+    	d_ls_pvt->gps_utc_model=gps_utc_model;
+    }
 
-                                    if (!b_rinex_header_writen) //  & we have utc data in nav message!
-                                        {
-                                            rp->rinex_nav_header(rp->navFile, d_last_nav_msg);
-                                            rp->rinex_obs_header(rp->obsFile, d_last_nav_msg);
-                                            b_rinex_header_writen = true; // do not write header anymore
-                                        }
-                                    if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
-                                        {
-                                    	    // Limit the RINEX navigation output rate to 1/6 seg
-                                    		// Notice that d_sample_counter period is 1ms (for GPS correlators)
+    Gps_Iono gps_iono;
+    while (d_gps_iono_queue->try_pop(gps_iono) == true)
+    {
+    	// DEBUG MESSAGE
+    	std::cout << "New IONO record has arrived "<< std::endl;
 
-                                    		if ((d_sample_counter-d_last_sample_nav_output)>=6000)
-                                    		{
-                                    			rp->log_rinex_nav(rp->navFile, nav_data_map);
-                                    			d_last_sample_nav_output=d_sample_counter;
-                                    		}
-                                            rp->log_rinex_obs(rp->obsFile, d_last_nav_msg, d_tx_time, pseudoranges);
-                                        }
-                                }
-                        }
+    	d_ls_pvt->gps_iono=gps_iono;
+    }
 
-                    if (((d_sample_counter % d_display_rate_ms) == 0) and d_ls_pvt->b_valid_position == true)
-                        {
-                            std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                            << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
-                            << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
 
-                            std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                            << " is HDOP = " << d_ls_pvt->d_HDOP << " and VDOP = " << d_ls_pvt->d_VDOP << std::endl;
-                        }
+    // ############ 2.bis COMPUTE THE PVT ################################
+    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() >0)
+    {
+    	// The GPS TX time is directly the Time of Week (TOW) associated to the current symbol of the reference channel
+    	// It is used to compute the SV positions at the TX instant
+    	d_tx_time = gnss_pseudoranges_iter->second.d_TOW_at_current_symbol;
+    	// compute on the fly PVT solution
+    	//mod 8/4/2012 Set the PVT computation rate in this block
+    	if ((d_sample_counter % d_output_rate_ms) == 0)
+    	{
+    	    bool pvt_result;
+    		pvt_result=d_ls_pvt->get_PVT(gnss_pseudoranges_map,d_tx_time,d_flag_averaging);
+    		if (pvt_result==true)
+    		{
+    			d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
+    		    d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
 
-                    if(d_dump == true)
-                        {
-                            // MULTIPLEXED FILE RECORDING - Record results to file
-                            try
-                            {
-                                    double tmp_double;
-                                    for (unsigned int i=0; i<d_nchannels ; i++)
-                                        {
-                                            tmp_double = in[i][0].Pseudorange_m;
-                                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                                            tmp_double = in[i][0].Pseudorange_symbol_shift;
-                                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                                            d_dump_file.write((char*)&d_tx_time, sizeof(double));
-                                        }
-                            }
-                            catch (std::ifstream::failure e)
-                            {
-                                    std::cout << "Exception writing observables dump file " << e.what() << std::endl;
-                            }
-                        }
-                }
-        }
+    		if (!b_rinex_header_writen) //  & we have utc data in nav message!
+    		{
+    	   		 std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+    	   		gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+    			if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+    			{
+    				rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second,d_tx_time);
+        			rp->rinex_nav_header(rp->navFile,d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
+        			b_rinex_header_writen = true; // do not write header anymore
+    			}
+    		}
+    		if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
+    		{
+    			// Limit the RINEX navigation output rate to 1/6 seg
+    			// Notice that d_sample_counter period is 1ms (for GPS correlators)
+
+    			if ((d_sample_counter-d_last_sample_nav_output)>=6000)
+    			{
+    				rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
+    				d_last_sample_nav_output=d_sample_counter;
+    			}
+				std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+				gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+				if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+				{
+					rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_tx_time, pseudoranges);
+				}
+    		}
+    		}
+
+
+    	}
+
+    	// DEBUG MESSAGE: Display position in console output
+    	if (((d_sample_counter % d_display_rate_ms) == 0) and d_ls_pvt->b_valid_position == true)
+    	{
+    		std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+    		<< " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+    		<< " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
+
+    		std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+    		<< " is HDOP = " << d_ls_pvt->d_HDOP << " and VDOP = " << d_ls_pvt->d_VDOP << std::endl;
+    	}
+		// MULTIPLEXED FILE RECORDING - Record results to file
+    	if(d_dump == true)
+    	{
+    		try
+    		{
+    			double tmp_double;
+    			for (unsigned int i=0; i<d_nchannels ; i++)
+    			{
+    				tmp_double = in[i][0].Pseudorange_m;
+    				d_dump_file.write((char*)&tmp_double, sizeof(double));
+    				tmp_double = in[i][0].Pseudorange_symbol_shift;
+    				d_dump_file.write((char*)&tmp_double, sizeof(double));
+    				d_dump_file.write((char*)&d_tx_time, sizeof(double));
+    			}
+    		}
+    		catch (std::ifstream::failure e)
+    		{
+    			std::cout << "Exception writing observables dump file " << e.what() << std::endl;
+    		}
+    	}
+
+    }
+
     consume_each(1); //one by one
     return 0;
 }

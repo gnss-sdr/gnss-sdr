@@ -38,6 +38,9 @@
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 #include "gps_navigation_message.h"
+#include "gps_ephemeris.h"
+#include "gps_utc_model.h"
+#include "gps_iono.h"
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
@@ -75,20 +78,23 @@ private:
     long unsigned int d_last_sample_nav_output;
     Kml_Printer d_kml_dump;
     Nmea_Printer *d_nmea_printer;
-    concurrent_queue<Gps_Navigation_Message> *d_nav_queue; // Navigation ephemeris queue
-    Gps_Navigation_Message d_last_nav_msg;                 // Last navigation message
-    double d_ephemeris_clock_s;
-    double d_ephemeris_timestamp_ms;
+
+    concurrent_queue<Gps_Ephemeris> *d_gps_eph_queue; // Navigation ephemeris queue
+    concurrent_queue<Gps_Utc_Model> *d_gps_utc_model_queue; // Navigation UTC model queue
+    concurrent_queue<Gps_Iono> *d_gps_iono_queue; // Navigation UTC model queue
     double d_tx_time;
     gps_l1_ca_ls_pvt *d_ls_pvt;
-    std::map<int,Gps_Navigation_Message> nav_data_map;
 
 public:
     ~gps_l1_ca_pvt_cc (); //!< Default destructor
     /*!
      * \brief Set the queue for getting navigation messages from the GpsL1CaTelemetryDecoder
      */
-    void set_navigation_queue(concurrent_queue<Gps_Navigation_Message> *nav_queue){d_nav_queue=nav_queue;}
+
+    void set_ephemeris_queue(concurrent_queue<Gps_Ephemeris> *eph_queue){d_gps_eph_queue=eph_queue;}
+    void set_utc_model_queue(concurrent_queue<Gps_Utc_Model> *utc_model_queue){d_gps_utc_model_queue=utc_model_queue;}
+    void set_iono_queue(concurrent_queue<Gps_Iono> *iono_queue){d_gps_iono_queue=iono_queue;}
+
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items); //!< PVT Signal Processing
 };

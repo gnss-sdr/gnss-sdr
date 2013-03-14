@@ -40,13 +40,23 @@
 
 
 /*!
- * \brief This class is a storage for the GPS SV ephemeris data as described in IS-GPS-200E
+ * \brief This class is a storage and orbital model functions for the GPS SV ephemeris data as described in IS-GPS-200E
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  */
 class Gps_Ephemeris
 {
 private:
+
+    /*
+     * Accounts for the beginning or end of week crossover
+     *
+     * See paragraph 20.3.3.3.3.1 (IS-GPS-200E)
+     * \param[in]  -  time in seconds
+     * \param[out] -  corrected time, in seconds
+     */
+    double check_t(double time);
+
 
 public:
 
@@ -102,6 +112,36 @@ public:
     bool b_integrity_status_flag;
     bool b_alert_flag;      //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
     bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
+
+    // clock terms derived from ephemeris data
+    double d_satClkCorr;     // GPS clock error
+    double d_dtr;            // relativistic clock correction term
+
+    // satellite positions
+    double d_satpos_X;       //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
+    double d_satpos_Y;       //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
+    double d_satpos_Z;       //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
+
+    // Satellite velocity
+    double d_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
+    double d_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
+    double d_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
+
+
+    std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
+
+
+    /*!
+     * \brief Compute the ECEF SV coordinates and ECEF velocity
+     * Implementation of Table 20-IV (IS-GPS-200E)
+     */
+    void satellitePosition(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_satClkCorr) according to the User Algorithm for SV Clock Correction
+     * and returns the corrected clock (IS-GPS-200E,  20.3.3.3.3.1)
+     */
+    double sv_clock_correction(double transmitTime);
 
 
     /*!

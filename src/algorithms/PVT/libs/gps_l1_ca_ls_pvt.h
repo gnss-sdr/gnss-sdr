@@ -47,6 +47,8 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 #include "gnss_synchro.h"
+#include "gps_ephemeris.h"
+#include "gps_utc_model.h"
 
 #define PVT_MAX_CHANNELS 24
 
@@ -70,6 +72,14 @@ public:
     double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS]; //! Array with the IDs of the valid satellites
 
     Gps_Navigation_Message* d_ephemeris;
+
+    // new ephemeris storage
+    std::map<int,Gps_Ephemeris> gps_ephemeris_map;
+    // new utc_model storage
+    Gps_Utc_Model gps_utc_model;
+    // new iono storage
+    Gps_Iono gps_iono;
+
     double d_GPS_current_time;
     boost::posix_time::ptime d_position_UTC_time;
 
@@ -112,7 +122,7 @@ public:
     gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file);
     ~gps_l1_ca_ls_pvt();
 
-    bool get_PVT(std::map<int,Gnss_Synchro> pseudoranges,double GPS_current_time,bool flag_averaging);
+    bool get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double GPS_current_time, bool flag_averaging);
 
     /*!
      * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical

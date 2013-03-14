@@ -1,0 +1,23 @@
+SUPL-RESPONSE DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+EXPORTS SUPLRESPONSE;
+
+IMPORTS PosMethod, SLPAddress
+          FROM ULP-Components;
+
+SUPLRESPONSE ::= SEQUENCE {
+  posMethod     PosMethod,
+  sLPAddress    SLPAddress OPTIONAL,
+  sETAuthKey    SETAuthKey OPTIONAL,
+  keyIdentity4  KeyIdentity4 OPTIONAL,
+  ...}
+
+SETAuthKey ::= CHOICE {
+  shortKey  BIT STRING(SIZE (128)),
+  longKey   BIT STRING(SIZE (256)),
+  ...}
+
+KeyIdentity4 ::= BIT STRING(SIZE (128))
+
+END

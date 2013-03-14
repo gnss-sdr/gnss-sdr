@@ -16,5 +16,22 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(CORE_LIBS_SOURCES ini.cc INIReader.cc string_converter.cc)
+add_subdirectory(supl)
+
+set(CORE_LIBS_SOURCES 
+	ini.cc 
+	INIReader.cc 
+	string_converter.cc
+	gnss_sdr_supl_client.cc
+	)
+	
+include_directories(
+	$(CMAKE_CURRENT_SOURCE_DIR)
+	${CMAKE_SOURCE_DIR}/src/core/system_parameters
+	${CMAKE_SOURCE_DIR}/src/core/libs/supl
+	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
+	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+)
+
 add_library(rx_core_lib ${CORE_LIBS_SOURCES})
+target_link_libraries (rx_core_lib supl_library) 

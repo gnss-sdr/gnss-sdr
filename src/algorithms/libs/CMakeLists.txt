@@ -16,8 +16,6 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(supl)
-
 set(GNSS_SPLIBS_SOURCES 
      galileo_e1_signal_processing.cc 
      gnss_sdr_valve.cc 
@@ -25,7 +23,6 @@ set(GNSS_SPLIBS_SOURCES
      gps_sdr_signal_processing.cc
      nco_lib.cc
      pass_through.cc
-     gnss_sdr_supl_client.cc
 )
 
 include_directories(
@@ -33,10 +30,6 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${CMAKE_SOURCE_DIR}/src/algorithms/libs/supl
-	 ${CMAKE_SOURCE_DIR}/src/algorithms/libs/supl/asn-rrlp
-	 ${CMAKE_SOURCE_DIR}/src/algorithms/libs/supl/asn-supl
 )
 
 add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES})
-target_link_libraries (gnss_sp_libs supl_library) 

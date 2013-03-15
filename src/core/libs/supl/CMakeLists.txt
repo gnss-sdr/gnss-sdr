@@ -33,5 +33,5 @@ include_directories(
 	
 
 add_library (supl_library STATIC ${ASN_RRLP_SOURCES} ${ASN_SUPL_SOURCES} ${SUPL_SOURCES})
-target_link_libraries (supl_library ssl) 
+target_link_libraries (supl_library ssl gnss_system_parameters) 
 SET_TARGET_PROPERTIES(supl_library PROPERTIES LINKER_LANGUAGE C)

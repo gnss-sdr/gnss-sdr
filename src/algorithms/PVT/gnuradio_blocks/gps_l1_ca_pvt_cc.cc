@@ -42,9 +42,13 @@
 #include "control_message_factory.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "gnss_synchro.h"
+#include "concurrent_map.h"
 
 using google::LogMessage;
 
+extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
+extern concurrent_map<Gps_Iono> global_gps_iono_map;
+extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 
 gps_l1_ca_pvt_cc_sptr
 gps_l1_ca_make_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname)
@@ -156,42 +160,26 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
             pseudoranges[gnss_pseudoranges_iter->first] = pr;
         }
 
-    // ############ 1. READ EPHEMERIS FROM QUEUE ######################
     // find the minimum index (nearest satellite, will be the reference)
     gnss_pseudoranges_iter = std::min_element(gnss_pseudoranges_map.begin(), gnss_pseudoranges_map.end(), pseudoranges_pairCompare_min);
 
-    // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
-    Gps_Ephemeris gps_eph;
-    while (d_gps_eph_queue->try_pop(gps_eph) == true)
-    {
-    	// DEBUG MESSAGE
-    	std::cout << "New ephemeris record has arrived from SAT ID "
-    			<< gps_eph.i_satellite_PRN << " (Block "
-    			<<  gps_eph.satelliteBlock[gps_eph.i_satellite_PRN]
-    			                           << ")" << std::endl;
-    	d_ls_pvt->gps_ephemeris_map[gps_eph.i_satellite_PRN] = gps_eph;
-    	std::cout<<"SV "<<gps_eph.i_satellite_PRN<<"d_TOW="<<gps_eph.d_TOW<<std::endl;
-    }
-    Gps_Utc_Model gps_utc_model;
-    while (d_gps_utc_model_queue->try_pop(gps_utc_model) == true)
-    {
-    	// DEBUG MESSAGE
-    	std::cout << "New UTC model record has arrived "<< std::endl;
+    // ############ 1. READ EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
 
-    	d_ls_pvt->gps_utc_model=gps_utc_model;
+    d_ls_pvt->gps_ephemeris_map=global_gps_ephemeris_map.get_map_copy();
+
+    if (global_gps_utc_model_map.size()>0)
+    {
+    	// UTC MODEL data is shared for all the GPS satellites. Read always at ID=0
+    	global_gps_utc_model_map.read(0,d_ls_pvt->gps_utc_model);
     }
 
-    Gps_Iono gps_iono;
-    while (d_gps_iono_queue->try_pop(gps_iono) == true)
+    if (global_gps_iono_map.size()>0)
     {
-    	// DEBUG MESSAGE
-    	std::cout << "New IONO record has arrived "<< std::endl;
-
-    	d_ls_pvt->gps_iono=gps_iono;
+    	// IONO data is shared for all the GPS satellites. Read always at ID=0
+        global_gps_iono_map.read(0,d_ls_pvt->gps_iono);
     }
 
-
-    // ############ 2.bis COMPUTE THE PVT ################################
+    // ############ 2 COMPUTE THE PVT ################################
     if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() >0)
     {
     	// The GPS TX time is directly the Time of Week (TOW) associated to the current symbol of the reference channel

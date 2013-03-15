@@ -33,6 +33,13 @@
  */
 
 #include "control_thread.h"
+#include <boost/lexical_cast.hpp>
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
+#include "gps_almanac.h"
+#include "concurrent_queue.h"
+#include "concurrent_map.h"
 #include <unistd.h>
 #include <gnuradio/gr_message.h>
 #include <gflags/gflags.h>
@@ -43,6 +50,16 @@
 #include "control_message_factory.h"
 #include <boost/thread/thread.hpp>
 #include <iostream>
+
+extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
+extern concurrent_map<Gps_Iono> global_gps_iono_map;
+extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
+
+extern concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
+extern concurrent_queue<Gps_Iono> global_gps_iono_queue;
+extern concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
+extern concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
+
 
 using google::LogMessage;
 
@@ -111,6 +128,11 @@ void ControlThread::run()
     // start the keyboard_listener thread
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
 
+    //start the GNSS SV data collector thread
+    gps_ephemeris_data_collector_thread_ =boost::thread(&ControlThread::gps_ephemeris_data_collector, this);
+    gps_iono_data_collector_thread_ =boost::thread(&ControlThread::gps_iono_data_collector, this);
+    gps_utc_model_data_collector_thread_ =boost::thread(&ControlThread::gps_utc_model_data_collector, this);
+
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
         {
@@ -118,6 +140,10 @@ void ControlThread::run()
             read_control_messages();
             if (control_messages_ != 0) process_control_messages();
         }
+    std::cout<<"Stopping GNSS-SDR, please wait!"<<std::endl;
+    gps_ephemeris_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
+    gps_iono_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
+    gps_utc_model_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
     flowgraph_->stop();
     LOG_AT_LEVEL(INFO) << "Flowgraph stopped";
@@ -146,6 +172,53 @@ void ControlThread::init()
     stop_ = false;
     processed_control_messages_ = 0;
     applied_actions_ = 0;
+
+    // GNSS Assistance configuration
+    bool enable_gps_supl_assistance=configuration_->property("SUPL_gps_enabled",false);
+    if (enable_gps_supl_assistance==true)
+    	//SUPL SERVER TEST. Not operational yet!
+    {
+		std::string default_acq_server="supl.nokia.com";
+		std::string default_eph_server="supl.google.com";
+		supl_client_ephemeris_.server_name=configuration_->property("SUPL_ephemeris_server",default_acq_server);
+		supl_client_acquisition_.server_name=configuration_->property("SUPL_acquisition_server",default_eph_server);
+		supl_client_ephemeris_.server_port=configuration_->property("SUPL_ephemeris_port",7275);
+		supl_client_acquisition_.server_port=configuration_->property("SUPL_acquisition_server",7275);
+
+		supl_mcc=configuration_->property("SUPL_MCC",244);
+		supl_mns=configuration_->property("SUPL_MNS",5);
+
+		std::string default_lac="0x59e2";
+		std::string default_ci="0x31b0";
+		try {
+			supl_lac = boost::lexical_cast<int>(configuration_->property("SUPL_LAC",default_lac));
+		} catch(boost::bad_lexical_cast &) {
+			supl_lac=0x59e2;
+		}
+		try {
+		supl_ci = boost::lexical_cast<int>(configuration_->property("SUPL_CI",default_ci));
+		} catch(boost::bad_lexical_cast &) {
+			supl_ci=0x31b0;
+		}
+
+		supl_client_ephemeris_.request=0;
+		int error=supl_client_ephemeris_.get_assistance(supl_mcc,supl_mns,supl_lac,supl_ci);
+		if (error==0)
+		{
+			std::cout<< "Try read ephemeris from GPS ephemeris data queue"<<std::endl;
+			std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
+			for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
+					gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
+					gps_eph_iter++)
+			{
+				std::cout<<"Received Ephemeris for SV "<<gps_eph_iter->first<<std::endl;
+				std::cout<<"OMEGA="<<gps_eph_iter->second.d_OMEGA<<std::endl;
+			}
+		}else{
+			std::cout<< "SUPL client for Ephemeris returned "<<error<<std::endl;
+			stop_=true;
+		}
+    }
 }
 
 
@@ -203,9 +276,94 @@ void ControlThread::apply_action(unsigned int what)
         break;
     default:
         DLOG(INFO) << "Unrecognized action.";
+        break;
     }
 }
 
+
+void ControlThread::gps_ephemeris_data_collector()
+{
+
+	// ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
+	Gps_Ephemeris gps_eph;
+	Gps_Ephemeris gps_eph_old;
+	while(stop_==false)
+	{
+		global_gps_ephemeris_queue.wait_and_pop(gps_eph);
+
+			// DEBUG MESSAGE
+			std::cout << "New ephemeris record has arrived from SAT ID "
+					<< gps_eph.i_satellite_PRN << " (Block "
+					<<  gps_eph.satelliteBlock[gps_eph.i_satellite_PRN]
+					                           << ")" << std::endl;
+			// insert new ephemeris record to the global ephemeris map
+			if (global_gps_ephemeris_map.read(gps_eph.i_satellite_PRN,gps_eph_old))
+			{
+				// Check the EPHEMERIS timestamp. If it is newer, then update the ephemeris
+				if (gps_eph.i_GPS_week > gps_eph_old.i_GPS_week)
+				{
+					global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN,gps_eph);
+				}else{
+					if (gps_eph.d_TOW>gps_eph_old.d_TOW)
+					{
+						global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN,gps_eph);
+					}else{
+						std::cout<<"not updating the existing ephemeris"<<std::endl;
+					}
+				}
+
+			}else{
+				// insert new ephemeris record
+				global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN,gps_eph);
+			}
+	}
+}
+
+void ControlThread::gps_iono_data_collector()
+{
+
+	// ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
+	Gps_Iono gps_iono;
+	Gps_Iono gps_iono_old;
+	while(stop_==false)
+	{
+		global_gps_iono_queue.wait_and_pop(gps_iono);
+
+
+		std::cout << "New IONO record has arrived "<< std::endl;
+			// insert new ephemeris record to the global ephemeris map
+			if (global_gps_iono_map.read(0,gps_iono_old))
+			{
+				// TODO: Check the IONO timestamp. If it is newer, then update the iono
+				global_gps_iono_map.write(0,gps_iono);
+			}else{
+				// insert new ephemeris record
+				global_gps_iono_map.write(0,gps_iono);
+			}
+	}
+}
+
+void ControlThread::gps_utc_model_data_collector()
+{
+
+	// ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
+	Gps_Utc_Model gps_utc;
+	Gps_Utc_Model gps_utc_old;
+	while(stop_==false)
+	{
+		global_gps_utc_model_queue.wait_and_pop(gps_utc);
+		std::cout << "New UTC MODEL record has arrived "<< std::endl;
+			// insert new ephemeris record to the global ephemeris map
+			if (global_gps_utc_model_map.read(0,gps_utc_old))
+			{
+				// TODO: Check the UTC MODEL timestamp. If it is newer, then update the UTC MODEL
+				global_gps_utc_model_map.write(0,gps_utc_old);
+			}else{
+				// insert new ephemeris record
+				global_gps_utc_model_map.write(0,gps_utc_old);
+			}
+	}
+}
 
 
 void ControlThread::keyboard_listener()

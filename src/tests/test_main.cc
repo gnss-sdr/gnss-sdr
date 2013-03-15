@@ -42,6 +42,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/filesystem.hpp>
 #include "concurrent_queue.h"
+#include "concurrent_map.h"
 #include "gps_navigation_message.h"
 #include "control_thread.h"
 
@@ -67,11 +68,14 @@
 #include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
 #include "string_converter/string_converter_test.cc"
 
-
+concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue2;
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
 concurrent_queue<Gps_Iono> global_gps_iono_queue;
 concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
 concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
+concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
+concurrent_map<Gps_Iono> global_gps_iono_map;
+concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 
 
 int main(int argc, char **argv)

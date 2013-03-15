@@ -29,6 +29,9 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/libs
+     ${CMAKE_SOURCE_DIR}/src/core/libs/supl
+     ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
+	 ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters

@@ -141,6 +141,8 @@ int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
 
 	int err;
 	ctx.p.request=request; // select assistance info request from a pre-defined set
+
+	//std::cout<<"mcc="<<mcc<<"mns="<<mns<<"lac="<<lac<<"ci="<<ci<<std::endl;
 	err=supl_get_assist(&ctx, cstr, &assist);
 	if (err==0)
 	{

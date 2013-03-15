@@ -632,12 +632,3 @@ void GNSSFlowgraph::set_channels_state()
                       << std::endl;
         }
 }
-
-
-
-void GNSSFlowgraph::apply_action(unsigned int what)
-{
-    DLOG(INFO) << "Applied action " << what << " to flowgraph";
-    applied_actions_++;
-}
-

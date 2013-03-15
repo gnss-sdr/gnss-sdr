@@ -36,7 +36,6 @@
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-#include "concurrent_queue.h"
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
 #include "gps_utc_model.h"
@@ -78,10 +77,6 @@ private:
     long unsigned int d_last_sample_nav_output;
     Kml_Printer d_kml_dump;
     Nmea_Printer *d_nmea_printer;
-
-    concurrent_queue<Gps_Ephemeris> *d_gps_eph_queue; // Navigation ephemeris queue
-    concurrent_queue<Gps_Utc_Model> *d_gps_utc_model_queue; // Navigation UTC model queue
-    concurrent_queue<Gps_Iono> *d_gps_iono_queue; // Navigation UTC model queue
     double d_tx_time;
     gps_l1_ca_ls_pvt *d_ls_pvt;
 
@@ -90,10 +85,6 @@ public:
     /*!
      * \brief Set the queue for getting navigation messages from the GpsL1CaTelemetryDecoder
      */
-
-    void set_ephemeris_queue(concurrent_queue<Gps_Ephemeris> *eph_queue){d_gps_eph_queue=eph_queue;}
-    void set_utc_model_queue(concurrent_queue<Gps_Utc_Model> *utc_model_queue){d_gps_utc_model_queue=utc_model_queue;}
-    void set_iono_queue(concurrent_queue<Gps_Iono> *iono_queue){d_gps_iono_queue=iono_queue;}
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items); //!< PVT Signal Processing

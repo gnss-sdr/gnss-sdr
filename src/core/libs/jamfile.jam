@@ -1,5 +1,0 @@
-project : build-dir ../../../build ;
-
-obj string_converter : string_converter.cc ;
-obj INIReader : INIReader.cc ;
-obj ini : ini.cc ;

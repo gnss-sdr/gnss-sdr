@@ -66,7 +66,7 @@ changing /home/username/gtest-1.6.0 by the actual directory where you downloaded
 
 - Download, unzip, configure, build and install Google's gflags package, a commandline flags processing module for C++:
 
-$ wget http://google-gflags.googlecode.com/files/gflags-2.0.zip
+$ wget http://gflags.googlecode.com/files/gflags-2.0.zip
 $ unzip gflags-2.0.zip
 $ cd gflags-2.0
 $ ./configure
@@ -217,30 +217,6 @@ $ cd gnss-sdr/build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
 $ make install
-
-
-
-Using Bjam
-----------
-
-- Go to GNSS-SDR's root directory and compile the program:
-
-$ cd gnss-sdr
-$ bjam
-
-If everything went fine, two new executables will be created at gnss-sdr/install, namely gnss-sdr and run_tests.
-
-- You can also build the release version (an optimized, faster executable) by typing:
-
-$ bjam release
-
-You can create the documentation by doing:
-
-$ bjam doc
-
-from the gnss-sdr root folder. This will generate HTML documentation that can be retrieved pointing your browser of preference to gnss-sdr/docs/html/index.html.
-
-
 
 Updating GNSS-SDR
 -----------------

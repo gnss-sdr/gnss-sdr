@@ -1,3 +1,0 @@
-project : build-dir ../../../../build ;
-
-obj gps_l1_ca_observables : gps_l1_ca_observables.cc ;

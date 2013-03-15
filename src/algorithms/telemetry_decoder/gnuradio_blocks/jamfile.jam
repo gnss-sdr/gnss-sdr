@@ -1,3 +1,0 @@
-project : build-dir ../../../../build ;
-
-obj gps_l1_ca_telemetry_decoder_cc : gps_l1_ca_telemetry_decoder_cc.cc ;

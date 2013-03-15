@@ -1,3 +1,0 @@
-project : build-dir ../../../../build ;
-
-obj pcps_acquisition_cc : pcps_acquisition_cc.cc ;

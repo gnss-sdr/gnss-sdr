@@ -1,3 +1,0 @@
-build-project libs ;
-build-project receiver ;
-build-project system_parameters ;

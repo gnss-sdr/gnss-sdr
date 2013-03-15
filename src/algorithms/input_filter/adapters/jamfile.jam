@@ -1,4 +1,0 @@
-project : build-dir ../../../../build ;
-
-obj fir_filter : fir_filter.cc ;
-obj freq_xlating_fir_filter : freq_xlating_fir_filter.cc ;

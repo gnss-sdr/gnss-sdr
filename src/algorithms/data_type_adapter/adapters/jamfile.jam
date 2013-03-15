@@ -1,3 +1,0 @@
-project : build-dir ../../../../build ;
-
-obj ishort_to_complex : ishort_to_complex.cc ;

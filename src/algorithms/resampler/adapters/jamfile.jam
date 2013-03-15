@@ -1,3 +1,0 @@
-project : build-dir ../../../../build ;
-
-obj direct_resampler_conditioner : direct_resampler_conditioner.cc ;

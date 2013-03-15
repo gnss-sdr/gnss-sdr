@@ -1,3 +1,0 @@
-project : build-dir ../../../../build ;
-
-obj gps_l1_ca_channel_fsm : gps_l1_ca_channel_fsm.cc ;

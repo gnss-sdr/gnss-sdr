@@ -1,4 +1,0 @@
-project : build-dir ../../../../build ;
-
-obj gps_l1_ca_pcps_acquisition : gps_l1_ca_pcps_acquisition.cc ;
-obj galileo_e1_pcps_ambiguous_acquisition : galileo_e1_pcps_ambiguous_acquisition.cc ;

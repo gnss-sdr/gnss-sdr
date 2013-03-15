@@ -1,3 +1,0 @@
-project : build-dir ../../../../build ;
-
-obj signal_conditioner : signal_conditioner.cc ;

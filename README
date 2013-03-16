@@ -173,10 +173,6 @@ The default will be OSMOSDR_ROOT=/usr/local
 
 * Build GNSS-SDR
 
-You can choose either Bjam or CMake as a building tool. We are progressively moving to CMake, but Bjam is still available. 
-
-Using CMake
-------------
 - Go to GNSS-SDR's build directory:
 
 $ cd gnss-sdr/build
@@ -240,8 +236,8 @@ If you have still not installed Apple's Xcode Developer Tools and MacPorts, plea
 
 Once MacPorts is properly installed on your system, open a terminal and type:
 
-$ sudo port install gcc46
-$ sudo port activate gcc46
+$ sudo port install gcc47
+$ sudo port select --set gcc mp-gcc47
 $ sudo port install gnuradio +full
 $ sudo port install subversion
 $ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr

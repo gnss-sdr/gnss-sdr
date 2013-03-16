@@ -140,13 +140,7 @@ This will create a folder named gnss-sdr with the following structure:
  |-----utils     <- some utilities (e.g. Matlab scripts)
 \endverbatim
 
-You are now ready to build GNSS-SDR. For doing that, you can choose either bjam or <a href="http://www.cmake.org/" target="_blank">CMake</a> as building tools:
-\li Using bjam:
-\verbatim
-$ cd gnss-sdr
-$ bjam release
-\endverbatim
-\li Using CMake:
+You are now ready to build GNSS-SDR by using <a href="http://www.cmake.org/" target="_blank">CMake</a> as building tool:
 \verbatim
 $ cd gnss-sdr/build
 $ cmake ../
@@ -157,17 +151,13 @@ $ make install
 If everything goes well, two new executables will be created at <tt>gnss-sdr/install</tt>, namely <tt>gnss-sdr</tt> and <tt>run_tests</tt>. You can create
 this documentation by doing:
 \verbatim
-$ bjam doc
-\endverbatim
-from the <tt>gnss-sdr</tt> root folder, or
-\verbatim
 $ make doc
 \endverbatim
 
-from the <tt>gnss-sdr/build</tt> folder if you are using CMake. In both cases, <a href="http://www.stack.nl/~dimitri/doxygen/" target="_blank">Doxygen</a> will generate HTML documentation that can be 
+from the <tt>gnss-sdr/build</tt> folder. In both cases, <a href="http://www.stack.nl/~dimitri/doxygen/" target="_blank">Doxygen</a> will generate HTML documentation that can be 
 retrieved pointing your browser of preference to <tt>gnss-sdr/docs/html/index.html</tt>.
 
-If you are using CMake, there are two more extra targets available. From the <tt>gnss-sdr/build</tt> folder:
+There are two more extra targets available. From the <tt>gnss-sdr/build</tt> folder:
 \verbatim
 $ make doc-clean
 \endverbatim
@@ -192,16 +182,6 @@ $ cd gnss-sdr/build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
 $ make install
-\endverbatim
-
-Bjam works the other way around. By default, it builds the Debug version:
-\verbatim
-$ cd gnss-sdr
-$ bjam
-\endverbatim
-and the Release version can be obtained by doing 
-\verbatim
-$ bjam release
 \endverbatim
 
 \subsection updating_gnss-sdr Updating GNSS-SDR

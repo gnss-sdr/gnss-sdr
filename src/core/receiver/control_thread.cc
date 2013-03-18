@@ -163,6 +163,27 @@ void ControlThread::set_control_queue(gr_msg_queue_sptr control_queue)
 
 
 
+bool ControlThread::read_assistance_from_XML()
+{
+	std::string eph_xml_filename="gps_ephemeris.xml";
+	std::cout<< "SUPL: Try read GPS ephemeris from XML file "<<eph_xml_filename<<std::endl;
+	if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename)==true)
+	{
+		std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
+		for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
+				gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
+				gps_eph_iter++)
+		{
+			std::cout<<"SUPL: Read XML Ephemeris for GPS SV "<<gps_eph_iter->first<<std::endl;
+			global_gps_ephemeris_queue.push(gps_eph_iter->second);
+		}
+		return false;
+	}else{
+		std::cout<< "ERROR: SUPL client error reading XML"<<std::endl;
+		std::cout<< "Disabling SUPL assistance.."<<std::endl;
+		return false;
+	}
+}
 void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
@@ -174,49 +195,105 @@ void ControlThread::init()
     applied_actions_ = 0;
 
     // GNSS Assistance configuration
-    bool enable_gps_supl_assistance=configuration_->property("SUPL_gps_enabled",false);
+    bool enable_gps_supl_assistance=configuration_->property("GNSS-SDR.SUPL_gps_enabled",false);
     if (enable_gps_supl_assistance==true)
     	//SUPL SERVER TEST. Not operational yet!
     {
+    	std::cout<< "SUPL RRLP GPS assistance enabled!"<<std::endl;
 		std::string default_acq_server="supl.nokia.com";
 		std::string default_eph_server="supl.google.com";
-		supl_client_ephemeris_.server_name=configuration_->property("SUPL_ephemeris_server",default_acq_server);
-		supl_client_acquisition_.server_name=configuration_->property("SUPL_acquisition_server",default_eph_server);
-		supl_client_ephemeris_.server_port=configuration_->property("SUPL_ephemeris_port",7275);
-		supl_client_acquisition_.server_port=configuration_->property("SUPL_acquisition_server",7275);
+		supl_client_ephemeris_.server_name=configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_server",default_acq_server);
+		supl_client_acquisition_.server_name=configuration_->property("GNSS-SDR.SUPL_gps_acquisition_server",default_eph_server);
+		supl_client_ephemeris_.server_port=configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_port",7275);
+		supl_client_acquisition_.server_port=configuration_->property("GNSS-SDR.SUPL_gps_acquisition_port",7275);
 
-		supl_mcc=configuration_->property("SUPL_MCC",244);
-		supl_mns=configuration_->property("SUPL_MNS",5);
+		supl_mcc=configuration_->property("GNSS-SDR.SUPL_MCC",244);
+		supl_mns=configuration_->property("GNSS-SDR.SUPL_MNS",5);
 
 		std::string default_lac="0x59e2";
 		std::string default_ci="0x31b0";
 		try {
-			supl_lac = boost::lexical_cast<int>(configuration_->property("SUPL_LAC",default_lac));
+			supl_lac = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_LAC",default_lac));
 		} catch(boost::bad_lexical_cast &) {
 			supl_lac=0x59e2;
 		}
 		try {
-		supl_ci = boost::lexical_cast<int>(configuration_->property("SUPL_CI",default_ci));
+		supl_ci = boost::lexical_cast<int>(configuration_->property("GNSS-SDR.SUPL_CI",default_ci));
 		} catch(boost::bad_lexical_cast &) {
 			supl_ci=0x31b0;
 		}
 
-		supl_client_ephemeris_.request=0;
-		int error=supl_client_ephemeris_.get_assistance(supl_mcc,supl_mns,supl_lac,supl_ci);
+		bool SUPL_read_gps_assistance_xml=configuration_->property("GNSS-SDR.SUPL_read_gps_assistance_xml",false);
+		if (SUPL_read_gps_assistance_xml==true)
+		{
+			// read assistance from file
+			read_assistance_from_XML();
+		}else{
+
+		// Request ephemeris from SUPL server
+		int error;
+		supl_client_ephemeris_.request=1;
+		std::cout<< "SUPL: Try read GPS ephemeris from SUPL server.."<<std::endl;
+		error=supl_client_ephemeris_.get_assistance(supl_mcc,supl_mns,supl_lac,supl_ci);
 		if (error==0)
 		{
-			std::cout<< "Try read ephemeris from GPS ephemeris data queue"<<std::endl;
 			std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
 			for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
 					gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
 					gps_eph_iter++)
 			{
-				std::cout<<"Received Ephemeris for SV "<<gps_eph_iter->first<<std::endl;
-				std::cout<<"OMEGA="<<gps_eph_iter->second.d_OMEGA<<std::endl;
+				std::cout<<"SUPL: Received Ephemeris for GPS SV "<<gps_eph_iter->first<<std::endl;
+				global_gps_ephemeris_queue.push(gps_eph_iter->second);
+			}
+			//Save ephemeris to XML file
+			std::string eph_xml_filename="gps_ephemeris.xml";
+			if (supl_client_ephemeris_.save_ephemeris_xml(eph_xml_filename)==true)
+			{
+				std::cout<<"SUPL: XML Ephemeris file created"<<std::endl;
 			}
 		}else{
-			std::cout<< "SUPL client for Ephemeris returned "<<error<<std::endl;
+			std::cout<< "ERROR: SUPL client for Ephemeris returned "<<error<<std::endl;
+			std::cout<< "Please check internet connection and SUPL server configuration"<<error<<std::endl;
+			std::cout<< "Trying to read ephemeris from XML file"<<std::endl;
+			if (read_assistance_from_XML()==false)
+			{
+				std::cout<< "ERROR: Could not read Ephemeris file: Disabling SUPL assistance.."<<std::endl;
+				enable_gps_supl_assistance=false;
+				stop_=true;
+			}
+		}
+
+		// Request almanac , IONO and UTC Model
+		supl_client_ephemeris_.request=0;
+		std::cout<< "SUPL: Try read Almanac, Iono, Utc Model, Ref Time and Ref Location from SUPL server.."<<std::endl;
+		error=supl_client_ephemeris_.get_assistance(supl_mcc,supl_mns,supl_lac,supl_ci);
+		if (error==0)
+		{
+			std::map<int,Gps_Almanac>::iterator gps_alm_iter;
+			for(gps_alm_iter = supl_client_ephemeris_.gps_almanac_map.begin();
+					gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.end();
+					gps_alm_iter++)
+			{
+				std::cout<<"SUPL: Received Almanac for GPS SV "<<gps_alm_iter->first<<std::endl;
+				global_gps_almanac_queue.push(gps_alm_iter->second);
+			}
+			if (supl_client_ephemeris_.gps_iono.valid==true)
+			{
+				std::cout<<"SUPL: Received GPS Iono"<<std::endl;
+				global_gps_iono_queue.push(supl_client_ephemeris_.gps_iono);
+			}
+			if (supl_client_ephemeris_.gps_utc.valid==true)
+			{
+				std::cout<<"SUPL: Received GPS UTC Model"<<std::endl;
+				global_gps_utc_model_queue.push(supl_client_ephemeris_.gps_utc);
+			}
+		}else{
+			std::cout<< "ERROR: SUPL client for Almanac returned "<<error<<std::endl;
+			std::cout<< "Please check internet connection and SUPL server configuration"<<error<<std::endl;
+			std::cout<< "Disabling SUPL assistance.."<<std::endl;
+			enable_gps_supl_assistance=false;
 			stop_=true;
+		}
 		}
     }
 }
@@ -292,7 +369,7 @@ void ControlThread::gps_ephemeris_data_collector()
 		global_gps_ephemeris_queue.wait_and_pop(gps_eph);
 
 			// DEBUG MESSAGE
-			std::cout << "New ephemeris record has arrived from SAT ID "
+			std::cout << "Ephemeris record has arrived from SAT ID "
 					<< gps_eph.i_satellite_PRN << " (Block "
 					<<  gps_eph.satelliteBlock[gps_eph.i_satellite_PRN]
 					                           << ")" << std::endl;
@@ -302,18 +379,21 @@ void ControlThread::gps_ephemeris_data_collector()
 				// Check the EPHEMERIS timestamp. If it is newer, then update the ephemeris
 				if (gps_eph.i_GPS_week > gps_eph_old.i_GPS_week)
 				{
+					std::cout << "Ephemeris record updated (GPS week="<<gps_eph.i_GPS_week<<std::endl;
 					global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN,gps_eph);
 				}else{
-					if (gps_eph.d_TOW>gps_eph_old.d_TOW)
+					if (gps_eph.d_Toe>gps_eph_old.d_Toe)
 					{
+						std::cout << "Ephemeris record updated (Toe="<<gps_eph.d_Toe<<std::endl;
 						global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN,gps_eph);
 					}else{
-						std::cout<<"not updating the existing ephemeris"<<std::endl;
+						std::cout<<"Not updating the existing ephemeris"<<std::endl;
 					}
 				}
 
 			}else{
 				// insert new ephemeris record
+				std::cout << "New Ephemeris record inserted with Toe="<<gps_eph.d_Toe<<" and GPS Week="<<gps_eph.i_GPS_week<<std::endl;
 				global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN,gps_eph);
 			}
 	}

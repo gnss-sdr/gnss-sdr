@@ -117,6 +117,7 @@ private:
 	int supl_ci; // Cell Identity (16 bits, 0-65535 are valid values).
 
     void init();
+    bool read_assistance_from_XML();
     void read_control_messages();
     void process_control_messages();
     void gps_ephemeris_data_collector();

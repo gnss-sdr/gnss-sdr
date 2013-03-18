@@ -421,7 +421,7 @@ static int pdu_make_ulp_pos_init(supl_ctx_t *ctx, supl_ulp_t *pdu) {
   case 1: // request Navigation Model (Ephemeris)
 	  req_adata->acquisitionAssistanceRequested = 0; // 1
 	  req_adata->navigationModelRequested = 1; // 1
-	  req_adata->referenceTimeRequested = 0;
+	  req_adata->referenceTimeRequested = 1;
 	  req_adata->utcModelRequested = 0; //1
 	  req_adata->ionosphericModelRequested = 0; // 1
 	  req_adata->referenceLocationRequested = 0;

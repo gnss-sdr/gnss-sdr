@@ -244,6 +244,14 @@ void gnss_sdr_supl_client::read_supl_data()
 				gps_ephemeris_map.insert(std::pair<int,Gps_Ephemeris>(e->prn, gps_eph));
 				gps_eph_iterator=this->gps_ephemeris_map.find(e->prn);
 			}
+			if (gps_time.valid)
+			{
+				gps_eph_iterator->second.i_GPS_week=assist.time.gps_week;
+				gps_eph_iterator->second.d_TOW=assist.time.gps_tow;
+			}else{
+				gps_eph_iterator->second.i_GPS_week=0;
+				gps_eph_iterator->second.d_TOW=0;
+			}
 			gps_eph_iterator->second.i_satellite_PRN=e->prn;
 			// SV navigation model
 			gps_eph_iterator->second.i_code_on_L2=e->bits;
@@ -306,4 +314,37 @@ void gnss_sdr_supl_client::read_supl_data()
 
 		}
 	}
+}
+
+bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string file_name)
+
+{
+	try {
+		std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+		boost::archive::xml_iarchive xml(ifs);
+		gps_ephemeris_map.clear();
+		xml >> boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", gps_ephemeris_map);
+		ifs.close();
+	}catch (std::exception& e)
+		  {
+		LOG_AT_LEVEL(ERROR)<< e.what() << "File: "<< file_name<<std::endl;
+		return false;
+		  }
+    return true;
+}
+
+bool gnss_sdr_supl_client::save_ephemeris_xml(const std::string file_name)
+
+{
+	try {
+		std::ofstream ofs(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
+	    boost::archive::xml_oarchive xml(ofs);
+	    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", gps_ephemeris_map);
+	    ofs.close();
+	}catch (std::exception& e)
+		  {
+		LOG_AT_LEVEL(ERROR)<< e.what() << std::endl;
+		return false;
+		  }
+    return true;
 }

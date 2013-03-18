@@ -180,5 +180,6 @@ void FreqXlatingFirFilter::init()
     for (std::vector<double>::iterator it = taps_d.begin(); it != taps_d.end(); it++)
         {
             taps_.push_back(float(*it));
+            std::cout<<"TAP="<<float(*it)<<std::endl;
         }
 }

@@ -47,7 +47,7 @@ if($ENV{GN3S_DRIVER})
      #  Copy GN3S firmware binary file to install folder
      message(STATUS "Copying the GN3S firmware binary file to install folder")    
      file(COPY ${CMAKE_SOURCE_DIR}/firmware/GN3S_v2/bin/gn3s_firmware.ihx 
-          DESTINATION ${CMAKE_SOURCE_DIR}/install/gn3s_firmware.ihx 
+          DESTINATION ${CMAKE_SOURCE_DIR}/install/
      )     
 endif($ENV{GN3S_DRIVER})
 

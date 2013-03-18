@@ -206,7 +206,7 @@ set(Boost_ADDITIONAL_VERSIONS
 )
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost COMPONENTS date_time system filesystem thread REQUIRED) 
+find_package(Boost COMPONENTS date_time system filesystem thread serialization REQUIRED) 
 if(NOT Boost_FOUND)
      message(FATAL_ERROR "Fatal error: Boost (version >=1.42.0) required.")
 endif(NOT Boost_FOUND)

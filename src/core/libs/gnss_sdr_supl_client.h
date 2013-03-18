@@ -35,6 +35,12 @@
 #define GNSS_SDR_SUPL_CLIENT_H_
 
 #include <iostream>
+#include <fstream>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/serialization/map.hpp>
+#include <glog/log_severity.h>
+#include <glog/logging.h>
 
 extern "C" {
 #include "supl.h"
@@ -101,6 +107,17 @@ public:
 	 *
 	 */
 	void read_supl_data();
+
+	/*!
+	 * \brief Read ephemeris map from XML file
+	 */
+	bool load_ephemeris_xml(const std::string file_name);
+
+	/*!
+	 * \brief Save ephemeris map to XML file.
+	 */
+	bool save_ephemeris_xml(const std::string file_name);
+
 	/*
 	 * Prints SUPL data to std::cout. Use it for debug purposes only.
 	 */

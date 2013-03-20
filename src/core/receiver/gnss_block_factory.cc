@@ -54,6 +54,7 @@
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
 #include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_assisted_acquisition.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_pll_optim_tracking.h"
@@ -316,6 +317,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
             block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+    else if (implementation.compare("GPS_L1_CA_PCPS_Assisted_Acquisition") == 0)
+        {
+            block = new GpsL1CaPcpsAssistedAcquisition(configuration, role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)

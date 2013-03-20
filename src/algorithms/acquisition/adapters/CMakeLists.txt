@@ -19,6 +19,7 @@
 set(ACQ_ADAPTER_SOURCES 
      galileo_e1_pcps_ambiguous_acquisition.cc
      gps_l1_ca_pcps_acquisition.cc 
+     gps_l1_ca_pcps_assisted_acquisition.cc 
 )
 
 include_directories(

@@ -16,7 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(ACQ_GR_BLOCKS_SOURCES pcps_acquisition_cc.cc )
+set(ACQ_GR_BLOCKS_SOURCES 
+	pcps_acquisition_cc.cc 
+	pcps_assisted_acquisition_cc.cc
+)
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)

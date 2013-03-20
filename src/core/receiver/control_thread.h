@@ -123,6 +123,7 @@ private:
     void gps_ephemeris_data_collector();
     void gps_utc_model_data_collector();
     void gps_iono_data_collector();
+    void gps_acq_assist_data_collector();
     void apply_action(unsigned int what);
     GNSSFlowgraph *flowgraph_;
     ConfigurationInterface *configuration_;
@@ -137,6 +138,7 @@ private:
     boost::thread gps_ephemeris_data_collector_thread_;
     boost::thread gps_iono_data_collector_thread_;
     boost::thread gps_utc_model_data_collector_thread_;
+    boost::thread gps_acq_assist_data_collector_thread_;
     void keyboard_listener();
 };
 

@@ -302,6 +302,7 @@ void gnss_sdr_supl_client::read_supl_data()
 				gps_acq_iterator=this->gps_acq_map.find(e->prn);
 			}
 			// fill the acquisition assistance structure
+			gps_acq_iterator->second.i_satellite_PRN=e->prn;
 			gps_acq_iterator->second.d_TOW=(double)assist.acq_time;
 			gps_acq_iterator->second.d_Doppler0=(double)e->doppler0;
 			gps_acq_iterator->second.d_Doppler1=(double)e->doppler1;

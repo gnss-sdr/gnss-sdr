@@ -34,4 +34,5 @@ include_directories(
 )
 
 add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES})
-target_link_libraries(acq_gr_blocks ${GR_FFT_LIBRARIES} ${VOLK_LIBRARIES}) 
+target_link_libraries(acq_gr_blocks gnss_system_parameters ${GR_FFT_LIBRARIES} ${VOLK_LIBRARIES})
+

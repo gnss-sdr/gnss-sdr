@@ -1,6 +1,6 @@
 /*!
  * \file pcps_assisted_acquisition_cc.h
- * \brief This class implements a Parallel Code Phase Search Acquisition
+ * \brief This class implements a Parallel Code Phase Search Acquisition with assistance and multi-dwells
  *
  *  Acquisition strategy (Kay Borre book + CFAR threshold).
  *  <ol>
@@ -17,8 +17,7 @@
  * Approach", Birkha user, 2007. pp 81-84
  *
  * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          <li> Javier Arribas, 2013. jarribas(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -65,7 +64,7 @@ typedef boost::shared_ptr<pcps_assisted_acquisition_cc>
 pcps_assisted_acquisition_cc_sptr;
 pcps_assisted_acquisition_cc_sptr
 pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-        unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
+        int doppler_max, int doppler_min, long freq, long fs_in, int samples_per_ms,
         gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
 
 /*!
@@ -80,17 +79,25 @@ class pcps_assisted_acquisition_cc: public gr_block
 private:
 	friend pcps_assisted_acquisition_cc_sptr
 	pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-			unsigned int doppler_max, long freq, long fs_in,
+		    int doppler_max, int doppler_min, long freq, long fs_in,
 			int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
 			std::string dump_filename);
 
 	pcps_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-			unsigned int doppler_max, long freq, long fs_in,
+		    int doppler_max, int doppler_min, long freq, long fs_in,
 			int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
 			std::string dump_filename);
 
 	void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
 			int doppler_offset);
+
+	int compute_and_accumulate_grid(gr_vector_const_void_star &input_items);
+	float estimate_input_power(gr_vector_const_void_star &input_items);
+	double search_maximum();
+	void get_assistance();
+	void reset_grid();
+	void redefine_grid();
+	void free_grid_memory();
 
 	long d_fs_in;
 	long d_freq;
@@ -100,27 +107,39 @@ private:
 	int d_gnuradio_forecast_samples;
 	float d_threshold;
 	std::string d_satellite_str;
-	unsigned int d_doppler_max;
-	unsigned int d_doppler_step;
+	int d_doppler_max;
+	int d_doppler_min;
+	int d_config_doppler_max;
+	int d_config_doppler_min;
+
+	int d_num_doppler_points;
+    int d_doppler_step;
 	unsigned int d_sampled_ms;
 	unsigned int d_fft_size;
 	unsigned long int d_sample_counter;
 	gr_complex* d_carrier;
 	gr_complex* d_fft_codes;
+
+	float** d_grid_data;
+	gr_complex** d_grid_doppler_wipeoffs;
+
 	gr::fft::fft_complex* d_fft_if;
 	gr::fft::fft_complex* d_ifft;
 	Gnss_Synchro *d_gnss_synchro;
 	unsigned int d_code_phase;
 	float d_doppler_freq;
-	float d_mag;
 	float d_input_power;
 	float d_test_statistics;
 	gr_msg_queue_sptr d_queue;
 	concurrent_queue<int> *d_channel_internal_queue;
 	std::ofstream d_dump_file;
+	int d_state;
 	bool d_active;
+	bool d_disable_assist;
+	int d_well_count;
 	bool d_dump;
 	unsigned int d_channel;
+
 	std::string d_dump_filename;
 
 public:
@@ -144,7 +163,7 @@ public:
 	  */
 	 unsigned int mag()
 	 {
-		 return d_mag;
+		 return d_test_statistics;
 	 }
 
 	 /*!
@@ -200,10 +219,7 @@ public:
 	  * \brief Set Doppler steps for the grid search
 	  * \param doppler_step - Frequency bin of the search grid [Hz].
 	  */
-	 void set_doppler_step(unsigned int doppler_step)
-	 {
-		 d_doppler_step = doppler_step;
-	 }
+	 void set_doppler_step(unsigned int doppler_step);
 
 
 	 /*!

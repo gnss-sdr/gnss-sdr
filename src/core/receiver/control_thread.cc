@@ -388,7 +388,7 @@ void ControlThread::gps_acq_assist_data_collector()
 
 		// DEBUG MESSAGE
 		std::cout << "Acquisition assistance record has arrived from SAT ID "
-				<< gps_acq.i_satellite_PRN << std::endl;
+				<< gps_acq.i_satellite_PRN << " with Doppler " << gps_acq.d_Doppler0<<" [Hz] "<<std::endl;
 		// insert new acq record to the global ephemeris map
 		if (global_gps_acq_assist_map.read(gps_acq.i_satellite_PRN,gps_acq_old))
 		{

@@ -177,10 +177,14 @@ The default will be OSMOSDR_ROOT=/usr/local
 
 $ cd gnss-sdr/build
 
-- Configure and build the program:
+- Configure and build the program*:
 
 $ cmake ../
 $ make
+
+*By default, cmake is configured to build the release version. If you want to build the debug version, please use:
+
+cmake ../ -DCMAKE_BUILD_TYPE=Debug
 
 - Move the executables to the install folder
 

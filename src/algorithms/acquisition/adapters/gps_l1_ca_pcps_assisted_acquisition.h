@@ -133,9 +133,9 @@ private:
     //unsigned int satellite_;
     unsigned int channel_;
     float threshold_;
-    unsigned int doppler_max_;
+    int doppler_max_;
     unsigned int doppler_step_;
-    unsigned int shift_resolution_;
+    int doppler_min_;
     unsigned int sampled_ms_;
     int max_dwells_;
     long fs_in_;

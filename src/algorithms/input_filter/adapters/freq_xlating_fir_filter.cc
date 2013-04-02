@@ -66,6 +66,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
+            std::cout<<"Dumping output into file " << dump_filename_<<std::endl;
             file_sink_ = gr_make_file_sink(item_size, dump_filename_.c_str());
         }
 }

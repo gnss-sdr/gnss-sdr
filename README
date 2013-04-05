@@ -246,7 +246,7 @@ $ sudo port install gnuradio +full
 $ sudo port install subversion
 $ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
 $ cd gnss-sdr/build
-$ cmake ../ DCMAKE_CXX_COMPILER=gcc
+$ cmake ../ -DCMAKE_CXX_COMPILER=gcc
 $ make
 $ make install
 

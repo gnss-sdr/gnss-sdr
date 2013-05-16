@@ -64,14 +64,16 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     acq_->set_gnss_synchro(&gnss_synchro_);
     trk_->set_gnss_synchro(&gnss_synchro_);
 
-    acq_->set_threshold(configuration->property("Acquisition"
-            + boost::lexical_cast<std::string>(channel_) + ".threshold", 0.0));
+// IMPORTANT: Do not change the order of the following 3 methods
+
     acq_->set_doppler_max(configuration->property("Acquisition"
             + boost::lexical_cast<std::string>(channel_) + ".doppler_max",
             10000));
     acq_->set_doppler_step(configuration->property("Acquisition"
             + boost::lexical_cast<std::string>(channel_) + ".doppler_step",
             250));
+    acq_->set_threshold(configuration->property("Acquisition"
+            + boost::lexical_cast<std::string>(channel_) + ".threshold", 0.0));
 
     repeat_ = configuration->property("Acquisition" + boost::lexical_cast<
             std::string>(channel_) + ".repeat_satellite", false);

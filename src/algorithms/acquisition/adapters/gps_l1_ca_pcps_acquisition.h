@@ -127,6 +127,7 @@ public:
     void reset();
 
 private:
+    ConfigurationInterface* configuration_;
     pcps_acquisition_cc_sptr acquisition_cc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
@@ -150,6 +151,8 @@ private:
     unsigned int out_streams_;
     gr_msg_queue_sptr queue_;
     concurrent_queue<int> *channel_internal_queue_;
+
+    float calculate_threshold(float pfa);
 };
 
 #endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_ */

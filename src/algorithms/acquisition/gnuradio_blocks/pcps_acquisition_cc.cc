@@ -188,7 +188,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             d_input_power = d_input_power / (float)d_fft_size;
 
             // 2- Doppler frequency search loop
-            for (doppler = (int)(-d_doppler_max); doppler < (int)d_doppler_max; doppler += d_doppler_step)
+            for (doppler = (int)(-d_doppler_max); doppler <= (int)d_doppler_max; doppler += d_doppler_step)
                 {
                     // doppler search steps
                     // Perform the carrier wipe-off

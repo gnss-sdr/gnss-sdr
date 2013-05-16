@@ -39,6 +39,8 @@
 #include <gnuradio/gr_io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include <boost/math/distributions/exponential.hpp>
+
 
 using google::LogMessage;
 
@@ -55,7 +57,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     DLOG(INFO) << "role " << role;
 
-    item_type_ = configuration->property(role + ".item_type",
+    item_type_ = configuration_->property(role + ".item_type",
             default_item_type);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
@@ -118,8 +120,17 @@ GalileoE1PcpsAmbiguousAcquisition::set_channel(unsigned int channel)
 void
 GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
 {
-    threshold_ = threshold;
-    if (item_type_.compare("gr_complex") == 0)
+	float pfa = configuration_->property(role_+ boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+	if(pfa==0.0)
+	{
+		threshold_ = threshold;
+	}
+	else
+	{
+		threshold_ = calculate_threshold(pfa);
+	}
+
+	if (item_type_.compare("gr_complex") == 0)
         {
             acquisition_cc_->set_threshold(threshold_);
         }
@@ -214,6 +225,28 @@ GalileoE1PcpsAmbiguousAcquisition::reset()
         }
 }
 
+float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
+{
+	//Calculate the threshold
+
+	unsigned int frequency_bins = 0;
+	for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+	{
+	 	frequency_bins++;
+	}
+
+	DLOG(INFO) <<"Pfa = "<< pfa;
+
+	unsigned int ncells = vector_length_*frequency_bins;
+	double exponent = 1/(double)ncells;
+	double val = pow(1.0-pfa,exponent);
+	boost::math::exponential_distribution<double> mydist (0.5);
+	float threshold = (float)quantile(mydist,val);
+
+	DLOG(INFO) << "Threshold = " << threshold;
+
+	return threshold;
+}
 
 
 void

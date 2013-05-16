@@ -148,6 +148,8 @@ private:
     unsigned int out_streams_;
     gr_msg_queue_sptr queue_;
     concurrent_queue<int> *channel_internal_queue_;
+
+    float calculate_threshold(float pfa);
 };
 
 #endif /* GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H_ */

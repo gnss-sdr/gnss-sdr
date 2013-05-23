@@ -65,6 +65,7 @@ Rinex_Printer::Rinex_Printer()
     Rinex_Printer::navFile.open(navfilename, std::ios::out | std::ios::app);
     Rinex_Printer::obsFile.open(obsfilename, std::ios::out | std::ios::app);
 
+    // RINEX v3.00 codes
     satelliteSystem["GPS"] = "G";
     satelliteSystem["GLONASS"] = "R";
     satelliteSystem["SBAS payload"] = "S";
@@ -131,6 +132,15 @@ Rinex_Printer::Rinex_Printer()
     observationType["CARRIER_PHASE"] = "L";
     observationType["DOPPLER"] = "D";
     observationType["SIGNAL_STRENGTH"] = "S";
+
+    // RINEX v2.10 and v2.11 codes
+    observationType["PSEUDORANGE_CA_v2"] = "C";
+    observationType["PSEUDORANGE_P_v2"] = "P";
+    observationType["DOPPLER_v2"] = "D";
+    observationType["SIGNAL_STRENGTH_v2"] = "S";
+    observationCode["GPS_L1_CA_v2"] = "1";
+
+
 
     if ( FLAGS_RINEX_version.compare("3.01") == 0 )
         {
@@ -936,36 +946,73 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, doub
     Rinex_Printer::lengthCheck(line);
     out << line << std::endl;
 
-    // -------- SYS / OBS TYPES
+    if (version==2)
+    {
+    	// --------- WAVELENGHT FACTOR
+		// put here real data!
+		line.clear();
+		line +=Rinex_Printer::rightJustify("1",6);
+		line +=Rinex_Printer::rightJustify("1",6);
+		line += std::string(48, ' ');
+		line += Rinex_Printer::leftJustify("WAVELENGTH FACT L1/2", 20);
+		Rinex_Printer::lengthCheck(line);
+		out << line << std::endl;
+    }
 
-    // one line per available system
-    line.clear();
-    line += satelliteSystem["GPS"];
-    line += std::string(2, ' ');
-    //int numberTypesObservations=2; // Count the number of available types of observable in the system
-    std::stringstream strm;
-    strm << numberTypesObservations;
-    line += Rinex_Printer::rightJustify(strm.str(), 3);
-    // per type of observation
-    line += std::string(1, ' ');
-    line += observationType["PSEUDORANGE"];
-    line += observationCode["GPS_L1_CA"];
-    line += std::string(1, ' ');
-    line += observationType["SIGNAL_STRENGTH"];
-    line += observationCode["GPS_L1_CA"];
+    if (version==3)
+    {
+		// -------- SYS / OBS TYPES
+		// one line per available system
+		line.clear();
+		line += satelliteSystem["GPS"];
+		line += std::string(2, ' ');
+		//int numberTypesObservations=2; // Count the number of available types of observable in the system
+		std::stringstream strm;
+		strm << numberTypesObservations;
+		line += Rinex_Printer::rightJustify(strm.str(), 3);
+		// per type of observation
+		line += std::string(1, ' ');
+		line += observationType["PSEUDORANGE"];
+		line += observationCode["GPS_L1_CA"];
+		line += std::string(1, ' ');
+		line += observationType["SIGNAL_STRENGTH"];
+		line += observationCode["GPS_L1_CA"];
 
-    line += std::string(60-line.size(), ' ');
-    line += Rinex_Printer::leftJustify("SYS / # / OBS TYPES", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+		line += std::string(60-line.size(), ' ');
+		line += Rinex_Printer::leftJustify("SYS / # / OBS TYPES", 20);
+		Rinex_Printer::lengthCheck(line);
+		out << line << std::endl;
+    }
 
-    // -------- Signal Strength units
-    line.clear();
-    line += Rinex_Printer::leftJustify("DBHZ", 20);
-    line += std::string(40, ' ');
-    line += Rinex_Printer::leftJustify("SIGNAL STRENGTH UNIT", 20);
-    Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;
+    if (version==2)
+    {
+		// -------- SYS / OBS TYPES
+		line.clear();
+		std::stringstream strm;
+		strm << numberTypesObservations;
+		line += Rinex_Printer::rightJustify(strm.str(), 6);
+		// per type of observation
+		line += Rinex_Printer::rightJustify(observationType["PSEUDORANGE_CA_v2"], 5);
+		line += observationCode["GPS_L1_CA_v2"];
+		line += std::string(1, ' ');
+		line += observationType["SIGNAL_STRENGTH_v2"];
+		line += observationCode["GPS_L1_CA_v2"];
+		line += std::string(60-line.size(), ' ');
+		line += Rinex_Printer::leftJustify("# / TYPES OF OBSERV", 20);
+		Rinex_Printer::lengthCheck(line);
+		out << line << std::endl;
+    }
+
+    if (version==3)
+    {
+		// -------- Signal Strength units
+		line.clear();
+		line += Rinex_Printer::leftJustify("DBHZ", 20);
+		line += std::string(40, ' ');
+		line += Rinex_Printer::leftJustify("SIGNAL STRENGTH UNIT", 20);
+		Rinex_Printer::lengthCheck(line);
+		out << line << std::endl;
+    }
 
     // -------- TIME OF FIRST OBS
     line.clear();
@@ -1054,7 +1101,6 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
             line += std::string(1, '0');
-            line += std::string(2, ' ');
             //Number of satellites observed in current epoch
             int numSatellitesObserved = 0;
             std::map<int,double>::iterator pseudoranges_iter;
@@ -1064,7 +1110,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
                 {
                     numSatellitesObserved++;
                 }
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
+            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 2);
             for(pseudoranges_iter = pseudoranges.begin();
                     pseudoranges_iter != pseudoranges.end();
                     pseudoranges_iter++)

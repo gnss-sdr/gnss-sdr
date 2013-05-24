@@ -136,6 +136,7 @@ Rinex_Printer::Rinex_Printer()
     // RINEX v2.10 and v2.11 codes
     observationType["PSEUDORANGE_CA_v2"] = "C";
     observationType["PSEUDORANGE_P_v2"] = "P";
+    observationType["CARRIER_PHASE_CA_v2"] = "L";
     observationType["DOPPLER_v2"] = "D";
     observationType["SIGNAL_STRENGTH_v2"] = "S";
     observationCode["GPS_L1_CA_v2"] = "1";
@@ -992,10 +993,17 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, doub
 		strm << numberTypesObservations;
 		line += Rinex_Printer::rightJustify(strm.str(), 6);
 		// per type of observation
+		// GPS L1 PSEUDORANGE
 		line += Rinex_Printer::rightJustify(observationType["PSEUDORANGE_CA_v2"], 5);
 		line += observationCode["GPS_L1_CA_v2"];
-		line += std::string(1, ' ');
-		line += observationType["SIGNAL_STRENGTH_v2"];
+		// GPS L1 PHASE
+		line += Rinex_Printer::rightJustify(observationType["CARRIER_PHASE_CA_v2"], 5);
+		line += observationCode["GPS_L1_CA_v2"];
+		// GPS DOPPLER L1
+		line += Rinex_Printer::rightJustify(observationType["DOPPLER_v2"], 5);
+		line += observationCode["GPS_L1_CA_v2"];
+		// GPS L1 SIGNAL STRENGTH
+		line += Rinex_Printer::rightJustify(observationType["SIGNAL_STRENGTH_v2"], 5);
 		line += observationCode["GPS_L1_CA_v2"];
 		line += std::string(60-line.size(), ' ');
 		line += Rinex_Printer::leftJustify("# / TYPES OF OBSERV", 20);
@@ -1050,7 +1058,7 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, doub
 
 
 
-void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,double> pseudoranges)
+void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges)
 {
 	// RINEX observations timestamps are GPS timestamps.
 
@@ -1103,14 +1111,14 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
             line += std::string(1, '0');
             //Number of satellites observed in current epoch
             int numSatellitesObserved = 0;
-            std::map<int,double>::iterator pseudoranges_iter;
+            std::map<int,Gnss_Synchro>::iterator pseudoranges_iter;
             for(pseudoranges_iter = pseudoranges.begin();
                     pseudoranges_iter != pseudoranges.end();
                     pseudoranges_iter++)
                 {
                     numSatellitesObserved++;
                 }
-            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 2);
+            line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
             for(pseudoranges_iter = pseudoranges.begin();
                     pseudoranges_iter != pseudoranges.end();
                     pseudoranges_iter++)
@@ -1133,8 +1141,9 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
                     std::string lineObs;
                     lineObs.clear();
                     line.clear();
+                    // GPS L1 PSEUDORANGE
                     line += std::string(2, ' ');
-                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second, 3), 14);
+                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Pseudorange_m, 3), 14);
 
                     //Loss of lock indicator (LLI)
                     int lli = 0; // Include in the observation!!
@@ -1146,15 +1155,13 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
                         {
                             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
                         }
-                    int ssi=signalStrength(54.0); // TODO: include estimated signal strength
-                    if (ssi == 0)
-                        {
-                            lineObs += std::string(1, ' ');
-                        }
-                    else
-                        {
-                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(ssi), 1);
-                        }
+                    // GPS L1 CA PHASE
+                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_phase_rads/GPS_TWO_PI, 3), 14);
+                    // GPS L1 CA DOPPLER
+                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_Doppler_hz, 3), 14);
+                    //GPS L1 SIGNAL STRENGTH
+                    //int ssi=signalStrength(54.0); // The original RINEX 2.11 file stores the RSS in a tabulated format 1-9. However, it is also valid to store the CN0 using dB-Hz units
+                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.CN0_dB_hz, 3), 14);
                     if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
                     out << lineObs << std::endl;
                 }
@@ -1189,7 +1196,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
 
             //Number of satellites observed in current epoch
             int numSatellitesObserved = 0;
-            std::map<int,double>::iterator pseudoranges_iter;
+            std::map<int,Gnss_Synchro>::iterator pseudoranges_iter;
             for(pseudoranges_iter = pseudoranges.begin();
                     pseudoranges_iter != pseudoranges.end();
                     pseudoranges_iter++)
@@ -1216,7 +1223,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
                     if ((int)pseudoranges_iter->first < 10) lineObs += std::string(1, '0');
                     lineObs += boost::lexical_cast<std::string>((int)pseudoranges_iter->first);
                     //lineObs += std::string(2, ' ');
-                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second, 3), 14);
+                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Pseudorange_m, 3), 14);
 
                     //Loss of lock indicator (LLI)
                     int lli = 0; // Include in the observation!!

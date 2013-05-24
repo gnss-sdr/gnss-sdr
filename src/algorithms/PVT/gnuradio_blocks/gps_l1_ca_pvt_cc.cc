@@ -221,7 +221,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 				gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
 				if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
 				{
-					rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_tx_time, pseudoranges);
+					rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_tx_time, gnss_pseudoranges_map);
 				}
     		}
     		}

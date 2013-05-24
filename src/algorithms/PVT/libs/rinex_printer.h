@@ -59,6 +59,7 @@
 #include "gps_navigation_message.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "GPS_L1_CA.h"
+#include "gnss_synchro.h"
 
 /*!
  * \brief Class that handles the generation of Receiver
@@ -109,7 +110,7 @@ public:
     /*!
      *  \brief Writes observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,double> pseudoranges);
+    void log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     std::map<std::string,std::string> observationCode; //<! GNSS observation descriptors

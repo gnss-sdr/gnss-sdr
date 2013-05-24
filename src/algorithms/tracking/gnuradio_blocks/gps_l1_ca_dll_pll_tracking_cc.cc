@@ -498,6 +498,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Code_phase_secs=0;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
+            current_synchro_data.Carrier_Doppler_hz= (double)d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             *out[0] = current_synchro_data;
 

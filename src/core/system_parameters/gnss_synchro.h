@@ -59,6 +59,7 @@ public:
     double Code_phase_secs;         //!< Set by Tracking processing block
     double Tracking_timestamp_secs; //!< Set by Tracking processing block
     double CN0_dB_hz;               //!< Set by Tracking processing block
+    double Carrier_Doppler_hz;		 //!< Set by Tracking processing block
     bool Flag_valid_tracking;
     //Telemetry Decoder
     double Preamble_timestamp_ms; //!< Set by Telemetry Decoder processing block

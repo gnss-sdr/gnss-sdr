@@ -553,6 +553,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, Code_phase_secs=0
             current_synchro_data.Code_phase_secs=0;
             current_synchro_data.Carrier_phase_rads=d_acc_carrier_phase_rad;
+            current_synchro_data.Carrier_Doppler_hz=d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz=d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_tracking=true;
             *out[0] =current_synchro_data;

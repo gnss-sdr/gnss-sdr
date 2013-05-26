@@ -189,6 +189,10 @@ GNSSBlockInterface* GNSSBlockFactory::GetChannel(
     stream << channel;
     std::string id = stream.str();
     DLOG(INFO) << "Instantiating channel " << id;
+    DLOG(INFO) << "Getting Channel " << id << " with" << std::endl << " Acquisition Implementation: "
+    		<< acq << std::endl << " Tracking Implementation: " << trk << std::endl << " Telemetry "
+    		"Decoder implementation: " << tlm;
+
     return new Channel(configuration, channel, GetBlock(configuration,
             "Channel", "Pass_Through", 1, 1, queue),
             (AcquisitionInterface*)GetBlock(configuration, "Acquisition",
@@ -207,27 +211,29 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
     std::string default_implementation = "Pass_Through";
     unsigned int channel_count =
             configuration->property("Channels.count", 12);
+    DLOG(INFO) << "Getting " << channel_count << " channels";
     std::vector<GNSSBlockInterface*>* channels = new std::vector<
             GNSSBlockInterface*>();
     std::string tracking = configuration->property("Tracking.implementation",
             default_implementation);
     std::string telemetry_decoder = configuration->property(
             "TelemetryDecoder.implementation", default_implementation);
+    std::string acquisition_implementation = configuration->property(
+    		"Acquisition.implementation", default_implementation);
+
     for (unsigned int i = 0; i < channel_count; i++)
         {
-            std::string acquisition_implementation_name = "Acquisition"
-                    + boost::lexical_cast<std::string>(i) + ".implementation";
-            std::string acquisition_implementation = configuration->property(
-                    acquisition_implementation_name, default_implementation);
+            std::string acquisition_implementation_specific = configuration->property(
+            		"Acquisition"+ boost::lexical_cast<std::string>(i) + ".implementation",
+            		default_implementation);
+            if(acquisition_implementation_specific.compare(default_implementation) != 0)
+            {
+            	acquisition_implementation = acquisition_implementation_specific;
+            }
             channels->push_back(GetChannel(configuration,
                     acquisition_implementation, tracking, telemetry_decoder, i,
                     queue));
-//            std::cout << "getchannel_" << i << ", acq_implementation_name: "
-//            << acquisition_implementation_name << ", implementation: "
-//            << acquisition_implementation << std::endl;
-
         }
-    DLOG(INFO) << "Getting " << channel_count << " channels";
     return channels;
 }
 

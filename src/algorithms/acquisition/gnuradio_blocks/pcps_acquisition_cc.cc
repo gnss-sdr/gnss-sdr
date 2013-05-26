@@ -191,6 +191,8 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             for (doppler = (int)(-d_doppler_max); doppler <= (int)d_doppler_max; doppler += d_doppler_step)
                 {
                     // doppler search steps
+            		//TODO: Create a run time lookup table with all the required Doppler wipe-off LO signals, by allocating a memory space (aligned) and by initializing it when the Doppler step is assigned
+            		// then, use the arrays to multiply the incomming signal, instead of computing the sine and cosine online.
                     // Perform the carrier wipe-off
                     complex_exp_gen_conj(d_carrier, d_freq + doppler, d_fs_in, d_fft_size);
                     if (is_unaligned()==true)
@@ -255,7 +257,8 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                 }
 
             // 5- Compute the test statistics and compare to the threshold
-            d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+            //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+            d_test_statistics = d_mag / d_input_power;
 
             // 6- Declare positive or negative acquisition using a message queue
             if (d_test_statistics > d_threshold)

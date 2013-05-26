@@ -538,20 +538,27 @@ void GNSSFlowgraph::set_signals_list()
 
     std::set<unsigned int>::iterator available_gnss_prn_iter;
 
-    Gnss_Signal signal_value;
+
 
     /*
      * Loop to create the list of GNSS Signals
      * To add signals from other systems, add another loop 'for'
      */
 
+    /*
+     * Loop to create GPS L1 C/A signals
+     */
+
     for (available_gnss_prn_iter = available_gps_prn.begin(); available_gnss_prn_iter
     != available_gps_prn.end(); available_gnss_prn_iter++)
         {
-            signal_value = Gnss_Signal(Gnss_Satellite(std::string("GPS"),
-                    *available_gnss_prn_iter), std::string("1C"));
-            available_GNSS_signals_.push_back(signal_value);
+    		available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
+    				*available_gnss_prn_iter), std::string("1C")));
         }
+
+    /*
+     * Loop to create the list of Galileo E1 B signals
+     */
 
     std::set<unsigned int> available_galileo_prn = { 11, 12 };
 
@@ -559,27 +566,32 @@ void GNSSFlowgraph::set_signals_list()
     for (available_gnss_prn_iter = available_galileo_prn.begin(); available_gnss_prn_iter
     != available_galileo_prn.end(); available_gnss_prn_iter++)
         {
-            signal_value = Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-                    *available_gnss_prn_iter), std::string("1B"));
-            available_GNSS_signals_.push_back(signal_value);
-//            signal_value = Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-//                    *available_gnss_prn_iter), std::string("1C"));
-//            available_GNSS_signals_.push_back(signal_value);
+			available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
+				*available_gnss_prn_iter), std::string("1B")));
         }
+
+    /*
+     * Ordering the list of signals from configuration file
+     */
 
     std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
 
+    std::string default_system = (configuration_->property("Channel.system",std::string("GPS")));
+    std::string default_signal = configuration_->property("Channel.signal",std::string("1C"));
+
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            std::string default_system = "GPS";
-            std::string default_signal = "1C";
 
             std::string gnss_system = (configuration_->property("Channel"
                     + boost::lexical_cast<std::string>(i) + ".system",
                     default_system));
+            DLOG(INFO) << "Channel " << i << " system " << gnss_system;
+
             std::string gnss_signal = (configuration_->property("Channel"
                     + boost::lexical_cast<std::string>(i) + ".signal",
                     default_signal));
+            DLOG(INFO) << "Channel " << i << " signal " << gnss_signal;
+
             unsigned int sat = configuration_->property("Channel"
                     + boost::lexical_cast<std::string>(i) + ".satellite", 0);
 
@@ -589,12 +601,21 @@ void GNSSFlowgraph::set_signals_list()
                 }
             else
                 {
-                    signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat),
+            		Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat),
                             gnss_signal);
+                    DLOG(INFO) << "Channel " << i << " " << signal_value;
                     available_GNSS_signals_.remove(signal_value);
                     available_GNSS_signals_.insert(gnss_it, signal_value);
                 }
         }
+//    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
+//
+//    std::list<Gnss_Signal>::iterator available_gnss_list_iter;
+//    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
+//    != available_GNSS_signals_.end(); available_gnss_list_iter++)
+//    {
+//    	std::cout << *available_gnss_list_iter << std::endl;
+//    }
 }
 
 

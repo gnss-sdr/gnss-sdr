@@ -119,6 +119,9 @@ void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
 void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 {
 	float pfa = configuration_->property(role_+ boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+
+	if(pfa==0.0) pfa = configuration_->property(role_+".pfa", 0.0);
+
 	if(pfa==0.0)
 	{
 		threshold_ = threshold;
@@ -127,6 +130,8 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 	{
 		threshold_ = calculate_threshold(pfa);
 	}
+
+	DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
 
     if (item_type_.compare("gr_complex") == 0)
     {
@@ -218,15 +223,14 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
 	 	frequency_bins++;
 	}
 
-	DLOG(INFO) <<"Pfa = "<< pfa;
+	DLOG(INFO) <<"Channel "<<channel_<<"  Pfa = "<< pfa;
 
 	unsigned int ncells = vector_length_*frequency_bins;
 	double exponent = 1/(double)ncells;
 	double val = pow(1.0-pfa,exponent);
-	boost::math::exponential_distribution<double> mydist (0.5);
+	double lambda = double(vector_length_);
+	boost::math::exponential_distribution<double> mydist (lambda);
 	float threshold = (float)quantile(mydist,val);
-
-	DLOG(INFO) << "Threshold = " << threshold;
 
 	return threshold;
 }

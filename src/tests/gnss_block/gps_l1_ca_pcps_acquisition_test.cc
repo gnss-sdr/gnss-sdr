@@ -101,7 +101,7 @@ void GpsL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition.sampled_ms", "1");
     config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.threshold", "70");
+    config->set_property("Acquisition.threshold", "0.005");
     config->set_property("Acquisition.doppler_max", "7200");
     config->set_property("Acquisition.doppler_step", "600");
     config->set_property("Acquisition.repeat_satellite", "false");

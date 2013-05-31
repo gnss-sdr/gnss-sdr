@@ -101,7 +101,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
 	config->set_property("Acquisition.sampled_ms", "4");
 	config->set_property("Acquisition.dump", "false");
 	config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
-	config->set_property("Acquisition.threshold", "70");
+	config->set_property("Acquisition.threshold", "0.005");
 	config->set_property("Acquisition.doppler_max", "7000");
 	config->set_property("Acquisition.doppler_step", "125");
 	config->set_property("Acquisition.repeat_satellite", "false");

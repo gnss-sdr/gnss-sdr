@@ -203,17 +203,15 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                     A(i,3) = 1.0;
                 }
 
-            // These lines allow the code to exit gracefully in case of any errors
-            //if (rank(A) != 4) {
-            //  pos.clear();
-            //  return pos;
-            //}
-
             //--- Find position update ---------------------------------------------
             x = arma::solve(w*A, w*omc); // Armadillo
 
             //--- Apply position update --------------------------------------------
             pos = pos + x;
+            if (arma::norm(x,2)<1e-4)
+            {
+            	break; // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
+            }
         }
 
     try{
@@ -249,8 +247,12 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
 	arma::mat satpos = arma::zeros(3,valid_pseudoranges);    //satellite positions matrix
 
 	int GPS_week = 0;
-	double GPS_corrected_time = 0;
+	//double GPS_corrected_time = 0;
 	double utc = 0;
+	double SV_clock_drift_s = 0;
+	double SV_relativistic_clock_corr_s=0;
+	double TX_time_corrected_s;
+	double SV_clock_bias_s=0;
 
 	d_flag_averaging = flag_averaging;
 
@@ -272,19 +274,32 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
 			 * \todo Place here the satellite CN0 (power level, or weight factor)
 			 */
 			W(obs_counter,obs_counter) = 1;
-			// 2- compute the clock error including relativistic effects for this SV
-			GPS_corrected_time = gps_ephemeris_iter->second.sv_clock_correction(GPS_current_time);
-			GPS_week = gps_ephemeris_iter->second.i_GPS_week;
-			// 3- compute the UTC time for this SV
-			//TODO: check if the utc time model is valid (or it is empty (not received yet!) and no corrections are available)
-			utc = gps_utc_model.utc_time(GPS_corrected_time,GPS_week);
-			// 4- compute the current ECEF position for this SV
-			gps_ephemeris_iter->second.satellitePosition(GPS_corrected_time);
+
+			// COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
+            // first estimate of transmit time
+			double Rx_time=GPS_current_time;
+			double Tx_time=Rx_time-gnss_pseudoranges_iter->second.Pseudorange_m/GPS_C_m_s;
+
+			// 2- compute the clock drift using the clock model (broadcast) for this SV
+			SV_clock_drift_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
+
+			// 3- compute the relativistic clock drift using the clock model (broadcast) for this SV
+
+			SV_relativistic_clock_corr_s = gps_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
+
+
+			// 4- compute the current ECEF position for this SV using corrected TX time
+
+			SV_clock_bias_s=SV_clock_drift_s+SV_relativistic_clock_corr_s-gps_ephemeris_iter->second.d_TGD;
+			TX_time_corrected_s=Tx_time-SV_clock_bias_s;
+
+			gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
+
 			satpos(0,obs_counter) = gps_ephemeris_iter->second.d_satpos_X;
 			satpos(1,obs_counter) = gps_ephemeris_iter->second.d_satpos_Y;
 			satpos(2,obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
 			// 5- fill the observations vector with the corrected pseudorranges
-			obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + gps_ephemeris_iter->second.d_satClkCorr*GPS_C_m_s;
+			obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s*GPS_C_m_s;
 			d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
 			d_visible_satellites_CN0_dB[valid_obs]  =gnss_pseudoranges_iter->second.CN0_dB_hz;
 			valid_obs++;
@@ -294,6 +309,11 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
 					<< " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
 					<< " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
 					<< " [m] PR_obs="<<obs(obs_counter)<<"[m]"<< std::endl;
+
+			// compute the UTC time for this SV (just to print the asociated UTC timestamp)
+		    GPS_week = gps_ephemeris_iter->second.i_GPS_week;
+			utc = gps_utc_model.utc_time(TX_time_corrected_s,GPS_week);
+
 		}else{ // the ephemeris are not available for this SV
 			// no valid pseudorange for the current SV
 			W(obs_counter,obs_counter) = 0; // SV de-activated
@@ -301,7 +321,6 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
 			DLOG(INFO)<<"No ephemeris data for SV "<<gnss_pseudoranges_iter->first<<std::endl;
 		}
 		obs_counter++;
-
 	}
 
 	// ********************************************************************************
@@ -326,7 +345,6 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
 		// 22 August 1999 last GPS time roll over
 		boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
 		d_position_UTC_time = p_time;
-		GPS_current_time = GPS_corrected_time;
 
 		DLOG(INFO) << "(new)Position at " << boost::posix_time::to_simple_string(p_time)
 		<< " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d

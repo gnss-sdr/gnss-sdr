@@ -493,7 +493,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
 	case 2:  //--- It is subframe 2 -------------------
 		d_TOW_SF2 = (double)read_navigation_unsigned(subframe_bits, TOW);
 		d_TOW_SF2 = d_TOW_SF2*6;
-		d_TOW = d_TOW_SF1-6; // Set transmission time
+		d_TOW = d_TOW_SF2-6; // Set transmission time
 		b_integrity_status_flag = read_navigation_bool(subframe_bits, INTEGRITY_STATUS_FLAG);
 		b_alert_flag = read_navigation_bool(subframe_bits, ALERT_FLAG);
 		b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);

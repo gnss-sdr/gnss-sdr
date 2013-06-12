@@ -76,7 +76,6 @@ private:
     int d_output_rate_ms;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    std::deque<Gnss_Synchro> *d_history_gnss_synchro_deque;
 };
 
 #endif

@@ -136,16 +136,62 @@ double Gps_Ephemeris::check_t(double time)
 
 
 // 20.3.3.3.3.1 User Algorithm for SV Clock Correction.
-double Gps_Ephemeris::sv_clock_correction(double transmitTime)
+//clkDrift= af0 + af1.*(tTX - toc) + af2.*(tTX - toc).^2;
+double Gps_Ephemeris::sv_clock_drift(double transmitTime)
 {
 	double dt;
 	dt = check_t(transmitTime - d_Toc);
-	d_satClkCorr = (d_A_f2 * dt + d_A_f1) * dt + d_A_f0 + d_dtr;
-	double correctedTime = transmitTime - d_satClkCorr;
-	return correctedTime;
+	d_satClkDrift = d_A_f0 + d_A_f1*dt + (d_A_f2 * dt)*(d_A_f2 * dt);
+	return d_satClkDrift;
 }
+// compute the relativistic correction term
+double Gps_Ephemeris::sv_clock_relativistic_term(double transmitTime)
+{
+	double tk;
+	double a;
+	double n;
+	double n0;
+	double E;
+	double E_old;
+	double dE;
+	double M;
 
+	// Restore semi-major axis
+	a = d_sqrt_A*d_sqrt_A;
 
+	// Time from ephemeris reference epoch
+	tk = check_t(transmitTime - d_Toe);
+
+	// Computed mean motion
+	n0 = sqrt(GM / (a*a*a));
+	// Corrected mean motion
+	n = n0 + d_Delta_n;
+	// Mean anomaly
+	M = d_M_0 + n * tk;
+
+	// Reduce mean anomaly to between 0 and 2pi
+	M = fmod((M + 2*GPS_PI), (2*GPS_PI));
+
+	// Initial guess of eccentric anomaly
+	E = M;
+
+	// --- Iteratively compute eccentric anomaly ----------------------------
+	for (int ii = 1; ii<20; ii++)
+	{
+		E_old   = E;
+		E       = M + d_e_eccentricity * sin(E);
+		dE      = fmod(E - E_old, 2*GPS_PI);
+		if (fabs(dE) < 1e-12)
+		{
+			//Necessary precision is reached, exit from the loop
+			break;
+		}
+	}
+
+	// Compute relativistic correction term
+	d_dtr = F * d_e_eccentricity * d_sqrt_A * sin(E);
+	return d_dtr;
+}
 
 void Gps_Ephemeris::satellitePosition(double transmitTime)
 {
@@ -200,8 +246,8 @@ void Gps_Ephemeris::satellitePosition(double transmitTime)
 		}
 	}
 
-	// Compute relativistic correction term
-	d_dtr = F * d_e_eccentricity * d_sqrt_A * sin(E);
+	// Compute relativistic correction term (now is in sepparated function)
+	//d_dtr = F * d_e_eccentricity * d_sqrt_A * sin(E);
 
 	// Compute the true anomaly
 	double tmp_Y = sqrt(1.0 - d_e_eccentricity * d_e_eccentricity) * sin(E);

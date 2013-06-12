@@ -77,7 +77,7 @@ private:
     long unsigned int d_last_sample_nav_output;
     Kml_Printer d_kml_dump;
     Nmea_Printer *d_nmea_printer;
-    double d_tx_time;
+    double d_rx_time;
     gps_l1_ca_ls_pvt *d_ls_pvt;
 
 public:

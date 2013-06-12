@@ -54,7 +54,7 @@
 
 using google::LogMessage;
 
-DEFINE_string(RINEX_version, "3.01", "Specifies the RINEX version (2.11 or 3.01)");
+DEFINE_string(RINEX_version, "2.11", "Specifies the RINEX version (2.11 or 3.01)");
 
 
 Rinex_Printer::Rinex_Printer()
@@ -1067,7 +1067,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
     boost::posix_time::ptime p_gps_time= Rinex_Printer::compute_GPS_time(eph,obs_time);
     std::string timestring=boost::posix_time::to_iso_string(p_gps_time);
     //double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    double gps_t=eph.sv_clock_correction(obs_time);
+    double gps_t=obs_time;
 
     std::string month (timestring, 4, 2);
     std::string day (timestring, 6, 2);
@@ -1265,7 +1265,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(Gps_Navigation_Message 
 {
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     //: idea resolve the ambiguity with the leap second  http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm
-    double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(nav_msg.d_TOW));
+    double utc_t = nav_msg.utc_time(nav_msg.d_TOW);
     boost::posix_time::time_duration t = boost::posix_time::millisec((utc_t + 604800*(double)(nav_msg.i_GPS_week))*1000);
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
@@ -1277,7 +1277,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(Gps_Ephemeris eph, doub
 	// (see Section 3 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt)
 	// (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
 	// --??? No time correction here, since it will be done in the RINEX processor
-    double gps_t = eph.sv_clock_correction(obs_time);
+    double gps_t = obs_time;
     //double gps_t=obs_time;
 	boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800*(double)(eph.i_GPS_week%1024))*1000);
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);

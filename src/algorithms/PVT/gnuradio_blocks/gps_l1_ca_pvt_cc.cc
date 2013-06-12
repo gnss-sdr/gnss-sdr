@@ -89,7 +89,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
 
     d_sample_counter = 0;
     d_last_sample_nav_output=0;
-    d_tx_time=0.0;
+    d_rx_time=0.0;
 
     b_rinex_header_writen = false;
     rp = new Rinex_Printer();
@@ -139,8 +139,6 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     d_sample_counter++;
 
     std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
-    std::map<int,double> pseudoranges;
-    std::map<int,Gnss_Synchro>::iterator gnss_pseudoranges_iter;
 
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
 
@@ -149,19 +147,9 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
                     gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
+                    d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
                 }
         }
-
-    for(gnss_pseudoranges_iter = gnss_pseudoranges_map.begin();
-            gnss_pseudoranges_iter != gnss_pseudoranges_map.end();
-            gnss_pseudoranges_iter++)
-        {
-            double pr = gnss_pseudoranges_iter->second.Pseudorange_m;
-            pseudoranges[gnss_pseudoranges_iter->first] = pr;
-        }
-
-    // find the minimum index (nearest satellite, will be the reference)
-    gnss_pseudoranges_iter = std::min_element(gnss_pseudoranges_map.begin(), gnss_pseudoranges_map.end(), pseudoranges_pairCompare_min);
 
     // ############ 1. READ EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
 
@@ -184,13 +172,13 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     {
     	// The GPS TX time is directly the Time of Week (TOW) associated to the current symbol of the reference channel
     	// It is used to compute the SV positions at the TX instant
-    	d_tx_time = gnss_pseudoranges_iter->second.d_TOW_at_current_symbol;
+
     	// compute on the fly PVT solution
     	//mod 8/4/2012 Set the PVT computation rate in this block
     	if ((d_sample_counter % d_output_rate_ms) == 0)
     	{
     	    bool pvt_result;
-    		pvt_result=d_ls_pvt->get_PVT(gnss_pseudoranges_map,d_tx_time,d_flag_averaging);
+    		pvt_result=d_ls_pvt->get_PVT(gnss_pseudoranges_map,d_rx_time,d_flag_averaging);
     		if (pvt_result==true)
     		{
     			d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
@@ -202,7 +190,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     	   		gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
     			if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
     			{
-    				rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second,d_tx_time);
+    				rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second,d_rx_time);
         			rp->rinex_nav_header(rp->navFile,d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
         			b_rinex_header_writen = true; // do not write header anymore
     			}
@@ -221,7 +209,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 				gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
 				if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
 				{
-					rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_tx_time, gnss_pseudoranges_map);
+					rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
 				}
     		}
     		}
@@ -249,9 +237,9 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     			{
     				tmp_double = in[i][0].Pseudorange_m;
     				d_dump_file.write((char*)&tmp_double, sizeof(double));
-    				tmp_double = in[i][0].Pseudorange_symbol_shift;
+    				tmp_double = 0;
     				d_dump_file.write((char*)&tmp_double, sizeof(double));
-    				d_dump_file.write((char*)&d_tx_time, sizeof(double));
+    				d_dump_file.write((char*)&d_rx_time, sizeof(double));
     			}
     		}
     		catch (std::ifstream::failure e)

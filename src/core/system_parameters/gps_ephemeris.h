@@ -115,7 +115,7 @@ public:
     bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
 
     // clock terms derived from ephemeris data
-    double d_satClkCorr;     // GPS clock error
+    double d_satClkDrift;     // GPS clock error
     double d_dtr;            // relativistic clock correction term
 
     // satellite positions
@@ -188,10 +188,16 @@ public:
     void satellitePosition(double transmitTime);
 
     /*!
-     * \brief Sets (\a d_satClkCorr) according to the User Algorithm for SV Clock Correction
-     * and returns the corrected clock (IS-GPS-200E,  20.3.3.3.3.1)
+     * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200E,  20.3.3.3.3.1)
      */
-    double sv_clock_correction(double transmitTime);
+    double sv_clock_drift(double transmitTime);
+
+    /*!
+     * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
+     *  (IS-GPS-200E,  20.3.3.3.3.1)
+     */
+    double sv_clock_relativistic_term(double transmitTime);
 
 
     /*!

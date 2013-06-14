@@ -560,7 +560,7 @@ void GNSSFlowgraph::set_signals_list()
      * Loop to create the list of Galileo E1 B signals
      */
 
-    std::set<unsigned int> available_galileo_prn = { 11, 12 };
+    std::set<unsigned int> available_galileo_prn = { 11, 12 ,19, 20 };
 
 
     for (available_gnss_prn_iter = available_galileo_prn.begin(); available_gnss_prn_iter

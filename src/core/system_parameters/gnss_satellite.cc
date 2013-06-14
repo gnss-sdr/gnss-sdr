@@ -190,6 +190,14 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
                     {
                         PRN = 12;
                     }
+                else if (PRN_ == 19)
+                    {
+                        PRN = 19;
+                    }
+                else if (PRN_ == 20)
+                    {
+                        PRN = 20;
+                    }
                 else
                     {
                         DLOG(INFO) << "This PRN is not defined";

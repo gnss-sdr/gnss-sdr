@@ -45,26 +45,23 @@
  */
 class Gps_Acq_Assist
 {
-private:
-
 public:
+    unsigned int i_satellite_PRN; //!< SV PRN NUMBER
+    double d_TOW;                 //!< Time Of Week assigned to the acquisition data
+    double d_Doppler0;            //!< Doppler (0 order term) [Hz]
+    double d_Doppler1;            //!< Doppler (1 order term) [Hz]
+    double dopplerUncertainty;    //!< Doppler Uncertainty [Hz]
+    double Code_Phase;            //!< Code phase [chips]
+    double Code_Phase_int;        //!< Integer Code Phase [1 C/A code period]
+    double GPS_Bit_Number;        //!< GPS Bit Number
+    double Code_Phase_window;     //!< Code Phase search window [chips]
+    double Azimuth;               //!< Satellite Azimuth [deg]
+    double Elevation;             //!< Satellite Elevation [deg]
 
-	unsigned int i_satellite_PRN; // SV PRN NUMBER
-	double d_TOW; // Time Of Week assigned to the acquisition data
-	double d_Doppler0; //Doppler (0 order term) [Hz]
-	double d_Doppler1; //Doppler (1 order term) [Hz]
-	double dopplerUncertainty; // Doppler Uncertainty [Hz]
-	double Code_Phase; // Code phase [Chips]
-	double Code_Phase_int; // Integer Code Phase [1 C/A code period]
-	double GPS_Bit_Number; // GPS Bit Number
-	double Code_Phase_window; // Code Phase search window [Chips]
-	double Azimuth; // Satellite Azimuth [deg]
-	double Elevation; // Satellite Elevation [deg]
-
-	/*!
-	 * Default constructor
-	 */
-	Gps_Acq_Assist();
+    /*!
+     * Default constructor
+     */
+    Gps_Acq_Assist();
 };
 
 #endif

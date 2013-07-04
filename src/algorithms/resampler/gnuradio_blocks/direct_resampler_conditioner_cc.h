@@ -39,7 +39,7 @@
 #ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H
 #define	GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CC_H
 
-#include <gnuradio/gr_block.h>
+#include <gnuradio/block.h>
 
 class direct_resampler_conditioner_cc;
 typedef boost::shared_ptr<direct_resampler_conditioner_cc> direct_resampler_conditioner_cc_sptr;
@@ -52,7 +52,7 @@ direct_resampler_make_conditioner_cc(double sample_freq_in,
  *
  * Direct resampling without interpolation
  */
-class direct_resampler_conditioner_cc: public gr_block
+class direct_resampler_conditioner_cc: public gr::block
 {
 private:
     friend direct_resampler_conditioner_cc_sptr

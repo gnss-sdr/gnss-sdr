@@ -39,7 +39,7 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <cstdlib> // for RAND_MAX
-#include <gnuradio/gr_fxpt_nco.h>
+#include <gnuradio/fxpt_nco.h>
 #include "nco_lib.h"
 
 TEST(Cordic_Test, StandardCIsFasterThanCordic)
@@ -52,22 +52,20 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     float* d_carr_sign_I;
     float* d_carr_sign_Q;
     // carrier parameters
-    int d_vector_length=4000;
+    int d_vector_length = 4000;
     float phase_rad;
     float phase_step_rad;
-    float carrier_freq=2000;
-    float d_fs_in=4000000;
+    float carrier_freq = 2000;
+    float d_fs_in = 4000000;
     phase_step_rad = (float)GPS_TWO_PI*carrier_freq / (float)d_fs_in;
 
     // space for carrier wipeoff and signal baseband vectors
     if (posix_memalign((void**)&d_carr_sign, 16, d_vector_length * sizeof(std::complex<float>) * 2) == 0){};
-
     if (posix_memalign((void**)&d_carr_sign_I, 16, d_vector_length * sizeof(float) * 2) == 0){};
     if (posix_memalign((void**)&d_carr_sign_Q, 16, d_vector_length * sizeof(float) * 2) == 0){};
 
     double sin_d,cos_d;
     double sin_f,cos_f;
-
 
     double niter = 10000;
     struct timeval tv;
@@ -79,12 +77,12 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     for(int i=0; i<niter; i++)
         {
     	phase_rad=0;
-            for(int j=0;j<d_vector_length;j++)
+            for(int j=0; j<d_vector_length; j++)
             {
 
             	cordicPtr->cordic_get_cos_sin(phase_rad, cos_d, sin_d);
-            	d_carr_sign[j]=std::complex<float>(cos_d,-sin_d);
-            	phase_rad=phase_rad+phase_step_rad;
+            	d_carr_sign[j] = std::complex<float>(cos_d, -sin_d);
+            	phase_rad = phase_rad + phase_step_rad;
             }
 
         }
@@ -101,8 +99,8 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
 			{
 				cos_f = std::cos(phase_rad);
 				sin_f = std::sin(phase_rad);
-				d_carr_sign[j]=std::complex<float>(cos_f,-sin_f);
-				phase_rad=phase_rad+phase_step_rad;
+				d_carr_sign[j]  =std::complex<float>(cos_f, -sin_f);
+				phase_rad = phase_rad + phase_step_rad;
 			}
         }
     gettimeofday(&tv, NULL);
@@ -113,7 +111,7 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     long long int begin3 = tv.tv_sec * 1000000 + tv.tv_usec;
     for(int i=0; i<niter; i++)
         {
-        	fxp_nco(d_carr_sign, d_vector_length,0, phase_step_rad);
+        	gr::fxpt_nco(d_carr_sign, d_vector_length,0, phase_step_rad);
         }
     gettimeofday(&tv, NULL);
     long long int end3 = tv.tv_sec *1000000 + tv.tv_usec;
@@ -134,7 +132,7 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     long long int begin5 = tv.tv_sec * 1000000 + tv.tv_usec;
     for(int i=0; i<niter; i++)
         {
-        	fxp_nco_cpyref(d_carr_sign, d_vector_length,0, phase_step_rad);
+        	gr::fxpt_nco_cpyref(d_carr_sign, d_vector_length,0, phase_step_rad);
         }
     gettimeofday(&tv, NULL);
     long long int end5 = tv.tv_sec *1000000 + tv.tv_usec;
@@ -145,7 +143,7 @@ TEST(Cordic_Test, StandardCIsFasterThanCordic)
     long long int begin6 = tv.tv_sec * 1000000 + tv.tv_usec;
     for(int i=0; i<niter; i++)
         {
-        	fxp_nco_IQ_split(d_carr_sign_I, d_carr_sign_Q, d_vector_length,0, phase_step_rad);
+        	gr::fxpt_nco_IQ_split(d_carr_sign_I, d_carr_sign_Q, d_vector_length,0, phase_step_rad);
         }
     gettimeofday(&tv, NULL);
     long long int end6 = tv.tv_sec *1000000 + tv.tv_usec;

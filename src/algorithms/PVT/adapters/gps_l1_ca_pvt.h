@@ -38,7 +38,7 @@
 
 #include "pvt_interface.h"
 #include "gps_l1_ca_pvt_cc.h"
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 
 class ConfigurationInterface;
 
@@ -52,7 +52,7 @@ public:
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
-            gr_msg_queue_sptr queue);
+            boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~GpsL1CaPvt();
 
@@ -61,23 +61,23 @@ public:
         return role_;
     }
 
-    //!  return "GPS_L1_CA_PVT"
+    //!  Returns "GPS_L1_CA_PVT"
     std::string implementation()
     {
         return "GPS_L1_CA_PVT";
     }
 
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
     void reset()
     {
         return;
     }
 
-    //! All blocks must have an item_size() function implementation
+    //! All blocks must have an item_size() function implementation. Returns sizeof(gr_complex)
     size_t item_size()
     {
         return sizeof(gr_complex);
@@ -91,7 +91,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr_msg_queue_sptr queue_;
+    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif

@@ -35,9 +35,8 @@
 #include <algorithm>
 #include <bitset>
 #include <cmath>
-#include "math.h"
 #include "control_message_factory.h"
-#include <gnuradio/gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "gnss_synchro.h"
@@ -47,15 +46,15 @@ using google::LogMessage;
 
 
 gps_l1_ca_observables_cc_sptr
-gps_l1_ca_make_observables_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging)
+gps_l1_ca_make_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging)
 {
     return gps_l1_ca_observables_cc_sptr(new gps_l1_ca_observables_cc(nchannels, queue, dump, dump_filename, output_rate_ms, flag_averaging));
 }
 
 
-gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
-		                        gr_block ("gps_l1_ca_observables_cc", gr_make_io_signature (nchannels, nchannels,  sizeof(Gnss_Synchro)),
-		                                gr_make_io_signature(nchannels, nchannels, sizeof(Gnss_Synchro)))
+gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
+		                        gr::block("gps_l1_ca_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+		                        gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_queue = queue;
@@ -138,14 +137,14 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
     if(current_gnss_synchro_map.size() > 0)
         {
             /*
-             *  2.1 Use CURRENT set  of measurements and find the nearest satellite
+             *  2.1 Use CURRENT set of measurements and find the nearest satellite
              *  common RX time algorithm
              */
             //;
             // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
             gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_d_TOW_at_current_symbol);
-            double d_TOW_reference=gnss_synchro_iter->second.d_TOW_at_current_symbol;
-            double d_ref_PRN_rx_time_ms=gnss_synchro_iter->second.Prn_timestamp_ms;
+            double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
+            double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
             //int reference_channel= gnss_synchro_iter->second.Channel_ID;
 
             // Now compute RX time differences due to the PRN alignement in the correlators
@@ -155,16 +154,16 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
             {
             	// compute the required symbol history shift in order to match the reference symbol
-            	delta_rx_time_ms=gnss_synchro_iter->second.Prn_timestamp_ms-d_ref_PRN_rx_time_ms;
+            	delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms-d_ref_PRN_rx_time_ms;
             	//std::cout<<"delta_rx_time_ms="<<delta_rx_time_ms<<std::endl;
             	//compute the pseudorange
-            	traveltime_ms=(d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0+delta_rx_time_ms+GPS_STARTOFFSET_ms;
+            	traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
             	pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
                 // update the pseudorange object
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol=round(d_TOW_reference*1000)/1000+GPS_STARTOFFSET_ms/1000.0;
+                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000)/1000 + GPS_STARTOFFSET_ms/1000.0;
             }
         }
 
@@ -202,5 +201,4 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
         }
     return 1; //Output the observables
 }
-
 

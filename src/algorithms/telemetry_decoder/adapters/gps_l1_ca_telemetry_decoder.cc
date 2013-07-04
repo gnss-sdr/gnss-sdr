@@ -33,7 +33,7 @@
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "configuration_interface.h"
 #include "gps_l1_ca_telemetry_decoder_cc.h"
-#include <gnuradio/gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -54,7 +54,7 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
+        boost::shared_ptr<gr::msg_queue> queue) :
         role_(role),
         in_streams_(in_streams),
         out_streams_(out_streams),
@@ -93,26 +93,26 @@ void GpsL1CaTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
 }
 
 
-void GpsL1CaTelemetryDecoder::connect(gr_top_block_sptr top_block)
+void GpsL1CaTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
-void GpsL1CaTelemetryDecoder::disconnect(gr_top_block_sptr top_block)
+void GpsL1CaTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
     // Nothing to disconnect
 }
 
 
-gr_basic_block_sptr GpsL1CaTelemetryDecoder::get_left_block()
+gr::basic_block_sptr GpsL1CaTelemetryDecoder::get_left_block()
 {
     return telemetry_decoder_;
 }
 
 
-gr_basic_block_sptr GpsL1CaTelemetryDecoder::get_right_block()
+gr::basic_block_sptr GpsL1CaTelemetryDecoder::get_right_block()
 {
     return telemetry_decoder_;
 }

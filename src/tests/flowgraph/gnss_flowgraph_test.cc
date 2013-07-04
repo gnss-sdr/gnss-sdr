@@ -31,7 +31,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include "gnss_flowgraph.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
@@ -62,7 +62,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
     config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
 
-    GNSSFlowgraph* flowgraph = new GNSSFlowgraph(config, gr_make_msg_queue(0));
+    GNSSFlowgraph* flowgraph = new GNSSFlowgraph(config, gr::msg_queue::make(0));
 
     EXPECT_STREQ("File_Signal_Source", flowgraph->signal_source()->implementation().c_str());
     EXPECT_STREQ("Pass_Through", flowgraph->signal_conditioner()->implementation().c_str());

@@ -24,9 +24,10 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_library(channel_adapters ${CHANNEL_ADAPTER_SOURCES})
-target_link_libraries(channel_adapters channel_fsm)
+target_link_libraries(channel_adapters channel_fsm ${GNURADIO_RUNTIME_LIBRARIES})

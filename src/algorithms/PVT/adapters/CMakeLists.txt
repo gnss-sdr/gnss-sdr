@@ -25,9 +25,10 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_library(pvt_adapters ${PVT_ADAPTER_SOURCES})
-target_link_libraries(pvt_adapters pvt_gr_blocks ${ARMADILLO_LIBRARIES})
+target_link_libraries(pvt_adapters pvt_gr_blocks ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})

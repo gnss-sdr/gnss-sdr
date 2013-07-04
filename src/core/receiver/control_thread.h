@@ -36,7 +36,7 @@
 #define GNSS_SDR_CONTROL_THREAD_H_
 
 #include <boost/thread/thread.hpp>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include "control_message_factory.h"
 #include "gnss_sdr_supl_client.h"
 
@@ -80,7 +80,7 @@ public:
      *
      * \param[in] gr_msg_queue_sptr control_queue
      */
-    void set_control_queue(gr_msg_queue_sptr control_queue);
+    void set_control_queue(boost::shared_ptr<gr::msg_queue> control_queue);
 
 
     unsigned int processed_control_messages()
@@ -109,12 +109,12 @@ private:
     /*!
      * \brief SUPL assistance classes
      */
-	gnss_sdr_supl_client supl_client_acquisition_;
-	gnss_sdr_supl_client supl_client_ephemeris_;
-	int supl_mcc; // Current network MCC (Mobile country code), 3 digits.
-	int supl_mns; //Current network MNC (Mobile Network code), 2 or 3 digits.
-	int supl_lac; // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
-	int supl_ci; // Cell Identity (16 bits, 0-65535 are valid values).
+    gnss_sdr_supl_client supl_client_acquisition_;
+    gnss_sdr_supl_client supl_client_ephemeris_;
+    int supl_mcc; // Current network MCC (Mobile country code), 3 digits.
+    int supl_mns; // Current network MNC (Mobile Network code), 2 or 3 digits.
+    int supl_lac; // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
+    int supl_ci;  // Cell Identity (16 bits, 0-65535 are valid values).
 
     void init();
     bool read_assistance_from_XML();
@@ -127,7 +127,7 @@ private:
     void apply_action(unsigned int what);
     GNSSFlowgraph *flowgraph_;
     ConfigurationInterface *configuration_;
-    gr_msg_queue_sptr control_queue_;
+    boost::shared_ptr<gr::msg_queue> control_queue_;
     ControlMessageFactory *control_message_factory_;
     std::vector<ControlMessage*> *control_messages_;
     bool stop_;

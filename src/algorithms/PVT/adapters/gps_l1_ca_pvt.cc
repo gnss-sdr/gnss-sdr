@@ -34,7 +34,6 @@
 #include "gps_l1_ca_pvt.h"
 #include "configuration_interface.h"
 #include "gps_l1_ca_pvt_cc.h"
-#include <gnuradio/gr_io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -44,11 +43,11 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams),
-        queue_(queue)
+        boost::shared_ptr<gr::msg_queue> queue) :
+                role_(role),
+                in_streams_(in_streams),
+                out_streams_(out_streams),
+                queue_(queue)
 {
     // dump parameters
     std::string default_dump_filename = "./pvt.dat";
@@ -76,7 +75,7 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     std::string nmea_dump_devname;
     nmea_dump_devname = configuration->property(role + ".nmea_dump_devname", default_nmea_dump_devname);
     // make PVT object
-    pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms,flag_nmea_tty_port,nmea_dump_filename,nmea_dump_devname);
+    pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 
@@ -85,25 +84,25 @@ GpsL1CaPvt::~GpsL1CaPvt()
 {}
 
 
-void GpsL1CaPvt::connect(gr_top_block_sptr top_block)
+void GpsL1CaPvt::connect(gr::top_block_sptr top_block)
 {
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
-void GpsL1CaPvt::disconnect(gr_top_block_sptr top_block)
+void GpsL1CaPvt::disconnect(gr::top_block_sptr top_block)
 {
     // Nothing to disconnect
 }
 
-gr_basic_block_sptr GpsL1CaPvt::get_left_block()
+gr::basic_block_sptr GpsL1CaPvt::get_left_block()
 {
     return pvt_;
 }
 
 
-gr_basic_block_sptr GpsL1CaPvt::get_right_block()
+gr::basic_block_sptr GpsL1CaPvt::get_right_block()
 {
     return pvt_;
 }

@@ -16,6 +16,15 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+#if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#set(GNSS_SPLIBS_SOURCES 
+#     galileo_e1_signal_processing.cc 
+#     gnss_sdr_valve.cc 
+#     gnss_signal_processing.cc 
+#     gps_sdr_signal_processing.cc
+#     pass_through.cc
+#)
+#else(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 set(GNSS_SPLIBS_SOURCES 
      galileo_e1_signal_processing.cc 
      gnss_sdr_valve.cc 
@@ -24,12 +33,17 @@ set(GNSS_SPLIBS_SOURCES
      nco_lib.cc
      pass_through.cc
 )
+#endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
+     ${Boost_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
 )
 
 add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES})
+target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES})

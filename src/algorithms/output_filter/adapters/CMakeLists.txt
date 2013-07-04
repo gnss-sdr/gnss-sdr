@@ -25,8 +25,9 @@ include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_library(out_adapters ${OUTPUTFILTER_ADAPTER_SOURCES})
+target_link_libraries(out_adapters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})

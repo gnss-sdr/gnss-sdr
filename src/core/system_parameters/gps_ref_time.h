@@ -41,17 +41,12 @@
  */
 class Gps_Ref_Time
 {
-private:
-
 public:
-
-	bool valid;
-	double d_TOW;
-	double d_Week;
-
-	double d_tv_sec;
-	double d_tv_usec;
-
+    bool valid;
+    double d_TOW;
+    double d_Week;
+    double d_tv_sec;
+    double d_tv_usec;
     /*!
      * Default constructor
      */

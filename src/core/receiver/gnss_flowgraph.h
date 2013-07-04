@@ -38,8 +38,8 @@
 #include <string>
 #include <vector>
 #include <queue>
-#include <gnuradio/gr_top_block.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/top_block.h>
+#include <gnuradio/msg_queue.h>
 #include "GPS_L1_CA.h"
 #include "gnss_signal.h"
 
@@ -60,7 +60,7 @@ public:
      * \brief Constructor that initializes the receiver flowgraph
      */
     GNSSFlowgraph(ConfigurationInterface* configuration,
-            gr_msg_queue_sptr queue);
+            boost::shared_ptr<gr::msg_queue> queue);
 
     /*!
      * \brief Virtual destructor
@@ -132,8 +132,8 @@ private:
     ConfigurationInterface *configuration_;
     GNSSBlockFactory *block_factory_;
     std::vector<GNSSBlockInterface*>* blocks_;
-    gr_top_block_sptr top_block_;
-    gr_msg_queue_sptr queue_;
+    gr::top_block_sptr top_block_;
+    boost::shared_ptr<gr::msg_queue> queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;
     std::vector<unsigned int> channels_state_;
 };

@@ -34,7 +34,8 @@
 #include "gnss_synchro.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/msg_queue.h>
 
 class ConfigurationInterface;
 
@@ -47,7 +48,7 @@ class IshortToComplex: public GNSSBlockInterface
 public:
     IshortToComplex(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, gr_msg_queue_sptr queue);
+            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~IshortToComplex();
 
@@ -65,10 +66,10 @@ public:
         return 0;
     }
 
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
 private:
     gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_;
@@ -80,8 +81,8 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr_msg_queue_sptr queue_;
-    gr_block_sptr file_sink_;
+    boost::shared_ptr<gr::msg_queue> queue_;
+    gr::blocks::file_sink::sptr file_sink_;
 };
 
 #endif

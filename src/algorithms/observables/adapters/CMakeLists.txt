@@ -25,9 +25,9 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/observables/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_library(obs_adapters ${OBS_ADAPTER_SOURCES})
-target_link_libraries(obs_adapters obs_gr_blocks)
+target_link_libraries(obs_adapters obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

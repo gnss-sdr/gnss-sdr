@@ -34,7 +34,7 @@
 
 #include <complex>
 #include <vector>
-#include <utility>
+#include <utility> // std::pair
 #include <gnss_satellite.h>
 
 // Physical constants
@@ -132,11 +132,11 @@ const double PI_TWO_N23 = (3.745070282923929e-007);  //!< Pi*2^-23
 
 // SUBFRAME 1-5 (TLM and HOW)
 
-const std::vector<std::pair<int,int>> TOW({{31,17}});
-const std::vector<std::pair<int,int>> INTEGRITY_STATUS_FLAG({{23,1}});
-const std::vector<std::pair<int,int>> ALERT_FLAG({{48,1}});
-const std::vector<std::pair<int,int>> ANTI_SPOOFING_FLAG({{49,1}});
-const std::vector<std::pair<int,int>> SUBFRAME_ID({{50,3}});
+const std::vector<std::pair<int,int> > TOW( { {31,17} } );
+const std::vector<std::pair<int,int> > INTEGRITY_STATUS_FLAG({{23,1}});
+const std::vector<std::pair<int,int> > ALERT_FLAG({{48,1}});
+const std::vector<std::pair<int,int> > ANTI_SPOOFING_FLAG({{49,1}});
+const std::vector<std::pair<int,int> > SUBFRAME_ID({{50,3}});
 
 
 // SUBFRAME 1

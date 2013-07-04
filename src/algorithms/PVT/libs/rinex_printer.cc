@@ -33,14 +33,13 @@
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-
 #include "GPS_L1_CA.h"
 #include <ostream>
 #include <fstream>
 #include <stdlib.h>  // for getenv()
 #include <iostream>
 #include <string>
-#include <math.h>    // for floor
+#include <cmath> // for floor
 #include <algorithm> // for min and max
 #include "boost/date_time/time_zone_base.hpp"
 #include "boost/date_time/gregorian/gregorian.hpp"
@@ -948,79 +947,79 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, doub
     out << line << std::endl;
 
     if (version==2)
-    {
-    	// --------- WAVELENGHT FACTOR
-		// put here real data!
-		line.clear();
-		line +=Rinex_Printer::rightJustify("1",6);
-		line +=Rinex_Printer::rightJustify("1",6);
-		line += std::string(48, ' ');
-		line += Rinex_Printer::leftJustify("WAVELENGTH FACT L1/2", 20);
-		Rinex_Printer::lengthCheck(line);
-		out << line << std::endl;
-    }
+        {
+            // --------- WAVELENGHT FACTOR
+            // put here real data!
+            line.clear();
+            line +=Rinex_Printer::rightJustify("1",6);
+            line +=Rinex_Printer::rightJustify("1",6);
+            line += std::string(48, ' ');
+            line += Rinex_Printer::leftJustify("WAVELENGTH FACT L1/2", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
 
     if (version==3)
-    {
-		// -------- SYS / OBS TYPES
-		// one line per available system
-		line.clear();
-		line += satelliteSystem["GPS"];
-		line += std::string(2, ' ');
-		//int numberTypesObservations=2; // Count the number of available types of observable in the system
-		std::stringstream strm;
-		strm << numberTypesObservations;
-		line += Rinex_Printer::rightJustify(strm.str(), 3);
-		// per type of observation
-		line += std::string(1, ' ');
-		line += observationType["PSEUDORANGE"];
-		line += observationCode["GPS_L1_CA"];
-		line += std::string(1, ' ');
-		line += observationType["SIGNAL_STRENGTH"];
-		line += observationCode["GPS_L1_CA"];
+        {
+            // -------- SYS / OBS TYPES
+            // one line per available system
+            line.clear();
+            line += satelliteSystem["GPS"];
+            line += std::string(2, ' ');
+            //int numberTypesObservations=2; // Count the number of available types of observable in the system
+            std::stringstream strm;
+            strm << numberTypesObservations;
+            line += Rinex_Printer::rightJustify(strm.str(), 3);
+            // per type of observation
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GPS_L1_CA"];
+            line += std::string(1, ' ');
+            line += observationType["SIGNAL_STRENGTH"];
+            line += observationCode["GPS_L1_CA"];
 
-		line += std::string(60-line.size(), ' ');
-		line += Rinex_Printer::leftJustify("SYS / # / OBS TYPES", 20);
-		Rinex_Printer::lengthCheck(line);
-		out << line << std::endl;
-    }
+            line += std::string(60-line.size(), ' ');
+            line += Rinex_Printer::leftJustify("SYS / # / OBS TYPES", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
 
     if (version==2)
-    {
-		// -------- SYS / OBS TYPES
-		line.clear();
-		std::stringstream strm;
-		strm << numberTypesObservations;
-		line += Rinex_Printer::rightJustify(strm.str(), 6);
-		// per type of observation
-		// GPS L1 PSEUDORANGE
-		line += Rinex_Printer::rightJustify(observationType["PSEUDORANGE_CA_v2"], 5);
-		line += observationCode["GPS_L1_CA_v2"];
-		// GPS L1 PHASE
-		line += Rinex_Printer::rightJustify(observationType["CARRIER_PHASE_CA_v2"], 5);
-		line += observationCode["GPS_L1_CA_v2"];
-		// GPS DOPPLER L1
-		line += Rinex_Printer::rightJustify(observationType["DOPPLER_v2"], 5);
-		line += observationCode["GPS_L1_CA_v2"];
-		// GPS L1 SIGNAL STRENGTH
-		line += Rinex_Printer::rightJustify(observationType["SIGNAL_STRENGTH_v2"], 5);
-		line += observationCode["GPS_L1_CA_v2"];
-		line += std::string(60-line.size(), ' ');
-		line += Rinex_Printer::leftJustify("# / TYPES OF OBSERV", 20);
-		Rinex_Printer::lengthCheck(line);
-		out << line << std::endl;
-    }
+        {
+            // -------- SYS / OBS TYPES
+            line.clear();
+            std::stringstream strm;
+            strm << numberTypesObservations;
+            line += Rinex_Printer::rightJustify(strm.str(), 6);
+            // per type of observation
+            // GPS L1 PSEUDORANGE
+            line += Rinex_Printer::rightJustify(observationType["PSEUDORANGE_CA_v2"], 5);
+            line += observationCode["GPS_L1_CA_v2"];
+            // GPS L1 PHASE
+            line += Rinex_Printer::rightJustify(observationType["CARRIER_PHASE_CA_v2"], 5);
+            line += observationCode["GPS_L1_CA_v2"];
+            // GPS DOPPLER L1
+            line += Rinex_Printer::rightJustify(observationType["DOPPLER_v2"], 5);
+            line += observationCode["GPS_L1_CA_v2"];
+            // GPS L1 SIGNAL STRENGTH
+            line += Rinex_Printer::rightJustify(observationType["SIGNAL_STRENGTH_v2"], 5);
+            line += observationCode["GPS_L1_CA_v2"];
+            line += std::string(60-line.size(), ' ');
+            line += Rinex_Printer::leftJustify("# / TYPES OF OBSERV", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
 
     if (version==3)
-    {
-		// -------- Signal Strength units
-		line.clear();
-		line += Rinex_Printer::leftJustify("DBHZ", 20);
-		line += std::string(40, ' ');
-		line += Rinex_Printer::leftJustify("SIGNAL STRENGTH UNIT", 20);
-		Rinex_Printer::lengthCheck(line);
-		out << line << std::endl;
-    }
+        {
+            // -------- Signal Strength units
+            line.clear();
+            line += Rinex_Printer::leftJustify("DBHZ", 20);
+            line += std::string(40, ' ');
+            line += Rinex_Printer::leftJustify("SIGNAL STRENGTH UNIT", 20);
+            Rinex_Printer::lengthCheck(line);
+            out << line << std::endl;
+        }
 
     // -------- TIME OF FIRST OBS
     line.clear();
@@ -1031,7 +1030,7 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, doub
     std::string day (timestring, 6, 2);
     std::string hour (timestring, 9, 2);
     std::string minutes (timestring, 11, 2);
-    double gps_t =d_TOW_first_observation;
+    double gps_t = d_TOW_first_observation;
     double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
@@ -1064,10 +1063,11 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
 
     std::string line;
 
-    boost::posix_time::ptime p_gps_time= Rinex_Printer::compute_GPS_time(eph,obs_time);
-    std::string timestring=boost::posix_time::to_iso_string(p_gps_time);
+    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph,obs_time);
+    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     //double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    double gps_t=obs_time;
+    //double gps_t = eph.sv_clock_correction(obs_time);
+    double gps_t = obs_time;
 
     std::string month (timestring, 4, 2);
     std::string day (timestring, 6, 2);
@@ -1273,13 +1273,12 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(Gps_Navigation_Message 
 
 boost::posix_time::ptime Rinex_Printer::compute_GPS_time(Gps_Ephemeris eph, double obs_time)
 {
-	// The RINEX v2.11 v3.00 format uses GPS time for the observations epoch, not UTC time, thus, no leap seconds needed here.
-	// (see Section 3 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt)
-	// (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
-	// --??? No time correction here, since it will be done in the RINEX processor
+    // The RINEX v2.11 v3.00 format uses GPS time for the observations epoch, not UTC time, thus, no leap seconds needed here.
+    // (see Section 3 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt)
+    // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
+    // --??? No time correction here, since it will be done in the RINEX processor
     double gps_t = obs_time;
-    //double gps_t=obs_time;
-	boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800*(double)(eph.i_GPS_week%1024))*1000);
+    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800*(double)(eph.i_GPS_week%1024))*1000);
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }

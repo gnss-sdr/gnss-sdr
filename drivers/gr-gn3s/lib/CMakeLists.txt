@@ -23,7 +23,7 @@
 include(GrPlatform) #define LIB_SUFFIX
 
 add_library(gr-gn3s SHARED gn3s_source_cc.cc gn3s_source.cc gn3s.cc fusb.cc fusb_linux.cc)
-target_link_libraries(gr-gn3s ${Boost_LIBRARIES} ${GRUEL_LIBRARIES} ${GNURADIO_CORE_LIBRARIES} "usb")
+target_link_libraries(gr-gn3s ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} "usb" ${LIBUSB_LIBRARIES})
 set_target_properties(gr-gn3s PROPERTIES DEFINE_SYMBOL "gr_gn3s_EXPORTS")
 
 ########################################################################
@@ -46,6 +46,6 @@ set(GR_TEST_TARGET_DEPS gr-gn3s)
 add_definitions(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MAIN)
 
 add_executable(qa_gn3s_source_cc qa_gn3s_source_cc.cc)
-target_link_libraries(qa_gn3s_source_cc gr-gn3s ${Boost_LIBRARIES} "usb")
+target_link_libraries(qa_gn3s_source_cc gr-gn3s ${Boost_LIBRARIES} "usb" ${LIBUSB_LIBRARIES})
 GR_ADD_TEST(qa_gn3s_source_cc qa_gn3s_source_cc)
 

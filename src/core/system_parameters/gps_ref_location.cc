@@ -1,5 +1,5 @@
 /*!
- * \file gps_ref_time.cc
+ * \file gps_ref_location.cc
  * \brief  Interface of a GPS REFERENCE LOCATION storage
  *
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
@@ -33,7 +33,6 @@
 
 Gps_Ref_Location::Gps_Ref_Location()
 {
-	valid=false;
-
+    valid = false;
 }
 

@@ -29,8 +29,8 @@
  */
 
 #include "gn3s_signal_source.h"
-#include <gnuradio/gr_file_sink.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/msg_queue.h>
 #include <gn3s/gn3s_source_cc.h>
 #include "configuration_interface.h"
 #include <glog/log_severity.h>
@@ -39,7 +39,7 @@
 using google::LogMessage;
 
 Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream, gr_msg_queue_sptr queue) :
+        std::string role, unsigned int in_stream, unsigned int out_stream, gr::blocks::file_sink::sptr queue) :
         role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "short";
@@ -73,7 +73,7 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+            file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
         }
     if (dump_)
         {
@@ -88,7 +88,7 @@ Gn3sSignalSource::~Gn3sSignalSource()
 
 
 
-void Gn3sSignalSource::connect(gr_top_block_sptr top_block)
+void Gn3sSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -103,7 +103,7 @@ void Gn3sSignalSource::connect(gr_top_block_sptr top_block)
 
 
 
-void Gn3sSignalSource::disconnect(gr_top_block_sptr top_block)
+void Gn3sSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -112,14 +112,14 @@ void Gn3sSignalSource::disconnect(gr_top_block_sptr top_block)
 }
 
 
-gr_basic_block_sptr Gn3sSignalSource::get_left_block()
+gr::basic_block_sptr Gn3sSignalSource::get_left_block()
 {
     LOG_AT_LEVEL(WARNING) << "Left block of a signal source should not be retrieved";
-    return gr_block_sptr();
+    return gr::block_sptr();
 }
 
 
-gr_basic_block_sptr Gn3sSignalSource::get_right_block()
+gr::basic_block_sptr Gn3sSignalSource::get_right_block()
 {
     return gn3s_source_;
 }

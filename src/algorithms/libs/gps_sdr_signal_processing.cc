@@ -31,7 +31,6 @@
  */
 
 #include "gps_sdr_signal_processing.h"
-#include <math.h>
 #include <stdlib.h>
 #include <cmath>
 

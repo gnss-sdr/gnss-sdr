@@ -34,30 +34,32 @@
 #define GNSS_SDR_GNSS_SDR_VALVE_H_
 
 #include <cstring>
-#include <gr_sync_block.h>
-#include <gr_msg_queue.h>
+#include <gnuradio/sync_block.h>
+#include <gnuradio/msg_queue.h>
+#include <boost/shared_ptr.hpp>
 
-gr_block_sptr gnss_sdr_make_valve (size_t sizeof_stream_item,
+
+boost::shared_ptr<gr::block> gnss_sdr_make_valve (size_t sizeof_stream_item,
         int nitems,
-        gr_msg_queue_sptr queue);
+        gr::msg_queue::sptr queue);
 /*!
  * \brief Implementation of a GNU Radio block that sends a STOP message to the
  * control queue right after a specific number of samples have passed through it.
  */
-class gnss_sdr_valve : public gr_sync_block
+class gnss_sdr_valve : public gr::sync_block
 {
-    friend gr_block_sptr gnss_sdr_make_valve(size_t sizeof_stream_item,
-            int nitems,
-            gr_msg_queue_sptr queue);
+    friend boost::shared_ptr<gr::block> gnss_sdr_make_valve(size_t sizeof_stream_item,
+                                                            int nitems,
+                                                            gr::msg_queue::sptr queue);
     gnss_sdr_valve (size_t sizeof_stream_item,
-            int nitems,
-            gr_msg_queue_sptr queue);
+                    int nitems,
+                    gr::msg_queue::sptr queue);
     int	d_nitems;
     int	d_ncopied_items;
-    gr_msg_queue_sptr d_queue;
+    gr::msg_queue::sptr d_queue;
 
 public:
-    int work (int noutput_items,
+    int work(int noutput_items,
             gr_vector_const_void_star &input_items,
             gr_vector_void_star &output_items);
 };

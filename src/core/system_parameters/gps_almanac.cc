@@ -32,8 +32,5 @@
 
 #include "gps_almanac.h"
 
-Gps_Almanac::Gps_Almanac()
-{
-
-}
+Gps_Almanac::Gps_Almanac() {}
 

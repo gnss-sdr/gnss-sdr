@@ -33,9 +33,10 @@
 #define GNSS_SDR_RTLSDR_SIGNAL_SOURCE_H_
 
 #include <boost/shared_ptr.hpp>
-#include <osmosdr/osmosdr_source_c.h>
-#include <gnuradio/gr_hier_block2.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <osmosdr/source.h>
+//#include <gnuradio/hier_block2.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/file_sink.h>
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
@@ -48,7 +49,7 @@ class RtlsdrSignalSource: public GNSSBlockInterface
 public:
 	RtlsdrSignalSource(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
-            unsigned int out_stream, gr_msg_queue_sptr queue);
+            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~RtlsdrSignalSource();
 
@@ -69,10 +70,10 @@ public:
         return item_size_;
     }
 
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
 private:
     std::string role_;
@@ -93,11 +94,11 @@ private:
     bool dump_;
     std::string dump_filename_;
 
-    boost::shared_ptr<osmosdr_source_c> rtlsdr_source_;
+    boost::shared_ptr<osmosdr::source> rtlsdr_source_;
 
-    gr_block_sptr valve_;
-    gr_block_sptr file_sink_;
-    gr_msg_queue_sptr queue_;
+    boost::shared_ptr<gr::block> valve_;
+    gr::blocks::file_sink::sptr file_sink_;
+    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif /*GNSS_SDR_RTLSDR_SIGNAL_SOURCE_H_*/

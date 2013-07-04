@@ -34,7 +34,7 @@
  */
 
 
-#include <gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include <vector>
 #include <gtest/gtest.h>
 #include "in_memory_configuration.h"
@@ -53,7 +53,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateFileSignalSource)
 
     configuration->set_property("SignalSource.implementation", "File_Signal_Source");
     configuration->set_property("SignalSource.filename", "../src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     GNSSBlockInterface *signal_source = factory->GetSignalSource(configuration, queue);
@@ -72,7 +72,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateUHDSignalSource)
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
 
     configuration->set_property("SignalSource.implementation", "UHD_Signal_Source");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     GNSSBlockInterface *signal_source = factory->GetSignalSource(configuration, queue);
@@ -90,7 +90,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalSource)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("SignalSource.implementation", "Pepito");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     GNSSBlockInterface *signal_source = factory->GetSignalSource(configuration, queue);
@@ -106,7 +106,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateSignalConditioner)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("SignalConditioner.implementation", "Signal_Conditioner");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     GNSSBlockInterface *signal_conditioner = factory->GetSignalConditioner(configuration, queue);
@@ -123,7 +123,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateSignalConditioner)
 TEST(GNSS_Block_Factory_Test, InstantiateFIRFilter)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     configuration->set_property("InputFilter.implementation", "Fir_Filter");
 
@@ -160,7 +160,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateFIRFilter)
 TEST(GNSS_Block_Factory_Test, InstantiateFreqXlatingFIRFilter)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     configuration->set_property("InputFilter.implementation", "Freq_Xlating_Fir_Filter");
 
@@ -201,7 +201,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateDirectResampler)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Resampler.implementation", "Direct_Resampler");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     GNSSBlockInterface *resampler = factory->GetBlock(configuration, "Resampler", "Direct_Resampler", 1,1, queue);
@@ -218,7 +218,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsAcquisition)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     AcquisitionInterface *acquisition = (AcquisitionInterface*)factory->GetBlock(configuration, "Acquisition", "GPS_L1_CA_PCPS_Acquisition", 1, 1, queue);
@@ -236,7 +236,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsAmbiguousAcquisition)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     AcquisitionInterface *acquisition = (AcquisitionInterface*)factory->GetBlock(configuration, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
@@ -254,7 +254,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllFllPllTracking)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     TrackingInterface *tracking = (TrackingInterface*)factory->GetBlock(configuration, "Tracking", "GPS_L1_CA_DLL_FLL_PLL_Tracking", 1, 1, queue);
@@ -272,7 +272,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaDllPllTracking)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     TrackingInterface *tracking = (TrackingInterface*)factory->GetBlock(configuration, "Tracking", "GPS_L1_CA_DLL_PLL_Tracking", 1, 1, queue);
@@ -290,7 +290,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTcpConnectorTracking)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Tracking.implementation", "GPS_L1_CA_TCP_CONNECTOR_Tracking");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     TrackingInterface *tracking = (TrackingInterface*)factory->GetBlock(configuration, "Tracking", "GPS_L1_CA_TCP_CONNECTOR_Tracking", 1, 1, queue);
@@ -308,7 +308,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1DllPllVemlTracking)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Tracking.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     TrackingInterface *tracking = (TrackingInterface*)factory->GetBlock(configuration, "Tracking", "Galileo_E1_DLL_PLL_VEML_Tracking", 1, 1, queue);
@@ -326,7 +326,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     TelemetryDecoderInterface *telemetry_decoder = (TelemetryDecoderInterface*)factory->GetBlock(configuration, "TelemetryDecoder", "GPS_L1_CA_Telemetry_Decoder", 1, 1, queue);
@@ -354,7 +354,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateChannels)
     configuration->set_property("Channel1.item_type", "gr_complex");
     configuration->set_property("Acquisition1.implementation", "GPS_L1_CA_PCPS_Acquisition");
 
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
 
@@ -374,7 +374,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateObservables)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Observables.implementation", "Pass_Through");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     ObservablesInterface *observables = (ObservablesInterface*)factory->GetObservables(configuration, queue);
@@ -392,7 +392,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaObservables)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Observables.implementation", "GPS_L1_CA_Observables");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     ObservablesInterface *observables = (ObservablesInterface*)factory->GetObservables(configuration, queue);
@@ -410,7 +410,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongObservables)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("Observables.implementation", "Pepito");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     ObservablesInterface *observables = (ObservablesInterface*)factory->GetObservables(configuration, queue);
@@ -426,7 +426,7 @@ TEST(GNSS_Block_Factory_Test, InstantiatePvt)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("PVT.implementation", "Pass_Through");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     PvtInterface *pvt = (PvtInterface*)factory->GetPVT(configuration, queue);
@@ -444,7 +444,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPvt)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     PvtInterface *pvt = (PvtInterface*)factory->GetPVT(configuration, queue);
@@ -462,7 +462,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongPvt)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("PVT.implementation", "Pepito");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     PvtInterface *pvt = (PvtInterface*)factory->GetPVT(configuration, queue);
@@ -480,7 +480,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateNullSinkOutputFilter)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     GNSSBlockInterface *output_filter = factory->GetOutputFilter(configuration, queue);
@@ -498,7 +498,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateFileOutputFilter)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("OutputFilter.implementation", "File_Output_Filter");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     GNSSBlockInterface *output_filter = factory->GetOutputFilter(configuration, queue);
@@ -516,7 +516,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongOutputFilter)
 {
     InMemoryConfiguration *configuration = new InMemoryConfiguration();
     configuration->set_property("OutputFilter.implementation", "Pepito");
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
 
     GNSSBlockFactory *factory = new GNSSBlockFactory();
     GNSSBlockInterface *output_filter = factory->GetOutputFilter(configuration, queue);

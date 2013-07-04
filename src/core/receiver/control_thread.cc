@@ -41,7 +41,7 @@
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include <unistd.h>
-#include <gnuradio/gr_message.h>
+#include <gnuradio/message.h>
 #include <gflags/gflags.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -156,7 +156,7 @@ void ControlThread::run()
 
 
 
-void ControlThread::set_control_queue(gr_msg_queue_sptr control_queue)
+void ControlThread::set_control_queue(boost::shared_ptr<gr::msg_queue> control_queue)
 {
     if (flowgraph_->running())
         {
@@ -192,7 +192,7 @@ bool ControlThread::read_assistance_from_XML()
 void ControlThread::init()
 {
 	// Instantiates a control queue, a GNSS flowgraph, and a control message factory
-	control_queue_ = gr_make_msg_queue(0);
+	control_queue_ = gr::msg_queue::make(0);
 	flowgraph_ = new GNSSFlowgraph(configuration_, control_queue_);
 	control_message_factory_ = new ControlMessageFactory();
 	stop_ = false;
@@ -322,7 +322,7 @@ void ControlThread::init()
 void ControlThread::read_control_messages()
 {
     DLOG(INFO) << "Reading control messages from queue";
-    gr_message_sptr queue_message = control_queue_->delete_head();
+    boost::shared_ptr<gr::message> queue_message = control_queue_->delete_head();
     if (queue_message != 0)
         {
             control_messages_ = control_message_factory_->GetControlMessages(
@@ -504,7 +504,7 @@ void ControlThread::keyboard_listener()
                 {
                     std::cout << "Quit keystroke order received, stopping GNSS-SDR !!" << std::endl;
                     ControlMessageFactory* cmf = new ControlMessageFactory();
-                    if (control_queue_ != gr_msg_queue_sptr())
+                    if (control_queue_ != gr::msg_queue::sptr())
                         {
                             control_queue_->handle(cmf->GetQueueMessage(200, 0));
                         }

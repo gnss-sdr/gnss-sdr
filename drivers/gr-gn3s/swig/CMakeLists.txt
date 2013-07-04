@@ -31,15 +31,15 @@ include(GrPython)
 ########################################################################
 # Setup swig generation
 ########################################################################
-foreach(incdir ${GNURADIO_CORE_INCLUDE_DIRS})
-    list(APPEND GR_SWIG_INCLUDE_DIRS ${incdir}/swig)
-endforeach(incdir)
+set(GNURADIO_RUNTIME_SWIG_INCLUDE_DIRS ${GNURADIO_RUNTIME_INCLUDE_DIRS}/gnuradio/swig)
 
-foreach(incdir ${GRUEL_INCLUDE_DIRS})
-    list(APPEND GR_SWIG_INCLUDE_DIRS ${incdir}/gruel/swig)
-endforeach(incdir)
+set(GR_SWIG_INCLUDE_DIRS
+    ${GR_GN3S_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_SWIG_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+)
 
-set(GR_SWIG_LIBRARIES gr-gn3s)
+set(GR_SWIG_LIBRARIES gr-gn3s gnuradio-runtime)
 set(GR_SWIG_DOC_FILE ${CMAKE_CURRENT_BINARY_DIR}/gn3s_swig_doc.i)
 set(GR_SWIG_DOC_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
@@ -57,5 +57,5 @@ install(
     FILES
     gn3s_swig.i
     ${CMAKE_CURRENT_BINARY_DIR}/gn3s_swig_doc.i
-    DESTINATION ${GR_INCLUDE_DIR}/gn3s/swig
+    DESTINATION ${GNURADIO_RUNTIME_INCLUDE_DIR}/gn3s/swig
 )

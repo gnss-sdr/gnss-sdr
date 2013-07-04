@@ -35,7 +35,7 @@
 
 #include "observables_interface.h"
 #include "gps_l1_ca_observables_cc.h"
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 
 class ConfigurationInterface;
 
@@ -46,25 +46,25 @@ class GpsL1CaObservables : public ObservablesInterface
 {
 public:
     GpsL1CaObservables(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams,
-            gr_msg_queue_sptr queue);
+                       std::string role,
+                       unsigned int in_streams,
+                       unsigned int out_streams,
+                       boost::shared_ptr<gr::msg_queue> queue);
     virtual ~GpsL1CaObservables();
     std::string role()
     {
         return role_;
     }
 
-    //!  return "GPS_L1_CA_Observables"
+    //!  Returns "GPS_L1_CA_Observables"
     std::string implementation()
     {
         return "GPS_L1_CA_Observables";
     }
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
     void reset()
     {
         return;
@@ -84,7 +84,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr_msg_queue_sptr queue_;
+    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif

@@ -33,7 +33,7 @@
 #ifndef GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 #define GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 
-#include <gnuradio/gr_message.h>
+#include <gnuradio/message.h>
 
 //! Message described by who sent it and what it says
 typedef struct ControlMessage_
@@ -58,8 +58,8 @@ public:
     //! Virtual destructor
     virtual ~ControlMessageFactory();
 
-    gr_message_sptr GetQueueMessage(unsigned int who, unsigned int what);
-    std::vector<ControlMessage*>* GetControlMessages(gr_message_sptr queue_message);
+    boost::shared_ptr<gr::message> GetQueueMessage(unsigned int who, unsigned int what);
+    std::vector<ControlMessage*>* GetControlMessages(gr::message::sptr queue_message);
 };
 
 #endif /*GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_*/

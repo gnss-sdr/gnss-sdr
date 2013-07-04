@@ -33,9 +33,11 @@
 #ifndef GNSS_SDR_PASS_THROUGH_H_
 #define GNSS_SDR_PASS_THROUGH_H_
 
-#include <gr_hier_block2.h>
-#include <gr_kludge_copy.h>
-#include <gr_file_sink.h>
+#include <gnuradio/hier_block2.h>
+//#include <gr_kludge_copy.h>
+#include <gnuradio/blocks/copy.h>
+//#include <gr_file_sink.h>
+//#include <gnuradio/blocks/file_sink.h>
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
@@ -73,10 +75,10 @@ public:
     {
         return item_size_;
     }
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
 private:
     std::string item_type_;
@@ -84,7 +86,8 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr_kludge_copy_sptr kludge_copy_;
+    //gr_kludge_copy_sptr kludge_copy_;
+    gr::blocks::copy::sptr kludge_copy_;
     size_t item_size_;
 };
 

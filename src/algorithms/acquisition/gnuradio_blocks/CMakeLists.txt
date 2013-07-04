@@ -27,12 +27,11 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
-     ${GR_FFT_INCLUDE_DIRS}
-     ${VOLK_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES})
-target_link_libraries(acq_gr_blocks gnss_system_parameters ${GR_FFT_LIBRARIES} ${VOLK_LIBRARIES})
+target_link_libraries(acq_gr_blocks gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES})
 

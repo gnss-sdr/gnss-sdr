@@ -86,7 +86,7 @@ GNSSBlockFactory::~GNSSBlockFactory()
 
 
 GNSSBlockInterface* GNSSBlockFactory::GetSignalSource(
-        ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
+        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "File_Signal_Source";
     std::string implementation = configuration->property(
@@ -100,7 +100,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalSource(
 
 
 GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
-        ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
+        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Pass_Through";
     std::string signal_conditioner = configuration->property(
@@ -139,7 +139,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
 
 
 GNSSBlockInterface* GNSSBlockFactory::GetObservables(
-        ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
+        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "GPS_L1_CA_Observables";
     std::string implementation = configuration->property(
@@ -155,7 +155,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetObservables(
 
 
 GNSSBlockInterface* GNSSBlockFactory::GetPVT(
-        ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
+        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Pass_Through";
     std::string implementation = configuration->property(
@@ -169,7 +169,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetPVT(
 
 
 GNSSBlockInterface* GNSSBlockFactory::GetOutputFilter(
-        ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
+        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Null_Sink_Output_Filter";
     std::string implementation = configuration->property(
@@ -183,7 +183,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetOutputFilter(
 GNSSBlockInterface* GNSSBlockFactory::GetChannel(
         ConfigurationInterface *configuration, std::string acq,
         std::string trk, std::string tlm, int channel,
-        gr_msg_queue_sptr queue)
+        boost::shared_ptr<gr::msg_queue> queue)
 {
     std::stringstream stream;
     stream << channel;
@@ -206,7 +206,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetChannel(
 
 
 std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
-        ConfigurationInterface *configuration, gr_msg_queue_sptr queue)
+        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Pass_Through";
     unsigned int channel_count =
@@ -246,7 +246,7 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
 GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         ConfigurationInterface *configuration, std::string role,
         std::string implementation, unsigned int in_streams,
-        unsigned int out_streams, gr_msg_queue_sptr queue)
+        unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue)
 {
     GNSSBlockInterface* block = NULL; //Change to nullptr when available in compilers (C++11)
 

@@ -32,7 +32,7 @@
 #include "file_output_filter.h"
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include <gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 #include "configuration_interface.h"
 
 using google::LogMessage;
@@ -66,7 +66,7 @@ FileOutputFilter::FileOutputFilter(ConfigurationInterface* configuration,
             LOG_AT_LEVEL(WARNING) << item_type_ << " Unrecognized item type. Using short.";
             item_size_ = sizeof(short);
         }
-    file_sink_ = gr_make_file_sink(item_size_, filename_.c_str());
+    file_sink_ = gr::blocks::file_sink::make(item_size_, filename_.c_str());
     DLOG(INFO) << "file sink(" << file_sink_->unique_id() << ")";
 }
 
@@ -77,27 +77,28 @@ FileOutputFilter::~FileOutputFilter()
 
 
 
-void FileOutputFilter::connect(gr_top_block_sptr top_block)
+void FileOutputFilter::connect(gr::top_block_sptr top_block)
 {
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
-void FileOutputFilter::disconnect(gr_top_block_sptr top_block)
+void FileOutputFilter::disconnect(gr::top_block_sptr top_block)
 {
     // Nothing to disconnect internally
 }
 
 
 
-gr_basic_block_sptr FileOutputFilter::get_left_block()
+gr::basic_block_sptr FileOutputFilter::get_left_block()
 {
     return file_sink_;
 }
 
 
 
-gr_basic_block_sptr FileOutputFilter::get_right_block()
+gr::basic_block_sptr FileOutputFilter::get_right_block()
 {
-    return file_sink_;
+    //return file_sink_;//gr_block_sptr();
+    return gr::blocks::file_sink::sptr();
 }

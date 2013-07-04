@@ -54,6 +54,9 @@ endif($ENV{GN3S_DRIVER})
 
 
 if($ENV{RTLSDR_DRIVER})
+    set(RTLSDR_DRIVER ON)
+endif($ENV{RTLSDR_DRIVER})
+if(RTLSDR_DRIVER)
     ################################################################################
     # OsmoSDR - http://sdr.osmocom.org/trac/
     ################################################################################  
@@ -69,9 +72,10 @@ if($ENV{RTLSDR_DRIVER})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} rtlsdr_signal_source.cc)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${RTL_DRIVER_INCLUDE_DIRS}) 
-endif($ENV{RTLSDR_DRIVER})
+endif(RTLSDR_DRIVER)
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc uhd_signal_source.cc ${OPT_DRIVER_SOURCES})
+
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}
@@ -79,13 +83,12 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
-     ${GR_UHD_INCLUDE_DIRS}
      ${UHD_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
 )
 
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES})
-target_link_libraries(signal_source_adapters gnss_sp_libs ${Boost_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES} ${OPT_LIBRARIES})
+target_link_libraries(signal_source_adapters ${Boost_LIBRARIES}  ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${UHD_LIBRARIES}  ${GNURADIO_UHD_LIBRARIES} ${OPT_LIBRARIES}  gnss_sp_libs)

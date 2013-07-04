@@ -20,8 +20,8 @@
 
 
 FIND_PATH(GROSMOSDR_INCLUDE_DIR 
-     NAMES osmosdr/osmosdr_source_c.h 
-           osmosdr/osmosdr_api.h
+     NAMES osmosdr/source_c.h 
+           osmosdr/api.h
      HINTS ${GrOsmoSDR_ROOT_DIR}/include
      PATHS /usr/local/include
            /usr/include

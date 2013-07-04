@@ -16,6 +16,15 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+#if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#set(TRACKING_GR_BLOCKS_SOURCES 
+#     galileo_e1_dll_pll_veml_tracking_cc.cc
+#     galileo_e1_tcp_connector_tracking_cc.cc
+#     gps_l1_ca_dll_fll_pll_tracking_cc.cc
+#     gps_l1_ca_dll_pll_tracking_cc.cc
+#     gps_l1_ca_tcp_connector_tracking_cc.cc
+#)
+#else(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 set(TRACKING_GR_BLOCKS_SOURCES 
      galileo_e1_dll_pll_veml_tracking_cc.cc
      galileo_e1_tcp_connector_tracking_cc.cc
@@ -24,6 +33,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      gps_l1_ca_dll_pll_tracking_cc.cc
      gps_l1_ca_tcp_connector_tracking_cc.cc
 )
+#endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
@@ -32,9 +42,9 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${Boost_INCLUDE_DIRS}
 )
 
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES})
-target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_CORE_LIBRARIES} gnss_sp_libs ${Boost_LINK_LIBRARIES} )
+target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} )

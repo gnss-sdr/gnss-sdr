@@ -40,8 +40,8 @@
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-#include <gnuradio/gr_block.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/block.h>
+#include <gnuradio/msg_queue.h>
 //#include <gnuradio/gr_sync_decimator.h>
 #include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
@@ -54,6 +54,7 @@
 
 
 class Gps_L1_Ca_Dll_Pll_Tracking_cc;
+
 typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_cc>
         gps_l1_ca_dll_pll_tracking_cc_sptr;
 
@@ -61,7 +62,7 @@ gps_l1_ca_dll_pll_tracking_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_cc(long if_freq,
                                    long fs_in, unsigned
                                    int vector_length,
-                                   gr_msg_queue_sptr queue,
+                                   boost::shared_ptr<gr::msg_queue> queue,
                                    bool dump,
                                    std::string dump_filename,
                                    float pll_bw_hz,
@@ -73,7 +74,7 @@ gps_l1_ca_dll_pll_make_tracking_cc(long if_freq,
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Gps_L1_Ca_Dll_Pll_Tracking_cc: public gr_block
+class Gps_L1_Ca_Dll_Pll_Tracking_cc: public gr::block
 {
 public:
 
@@ -102,7 +103,7 @@ private:
     gps_l1_ca_dll_pll_make_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            gr_msg_queue_sptr queue,
+            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -112,7 +113,7 @@ private:
     Gps_L1_Ca_Dll_Pll_Tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            gr_msg_queue_sptr queue,
+            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -122,7 +123,7 @@ private:
     void update_local_carrier();
 
     // tracking configuration vars
-    gr_msg_queue_sptr d_queue;
+    boost::shared_ptr<gr::msg_queue> d_queue;
     concurrent_queue<int> *d_channel_internal_queue;
     unsigned int d_vector_length;
     bool d_dump;

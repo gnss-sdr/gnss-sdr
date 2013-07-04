@@ -31,7 +31,7 @@
 #define INCLUDED_GN3S_SOURCE_CC_H
 
 #include "gn3s_api.h"
-#include <gr_block.h>
+#include <gnuradio/block.h>
 #include "gn3s_source.h"
 #include "gn3s_defines.h"
 
@@ -65,7 +65,7 @@ GN3S_API gn3s_source_cc_sptr gn3s_make_source_cc ();
  *
  * \sa gn3s_source for a version that subclasses gr_block.
  */
-class GN3S_API gn3s_source_cc : public gr_block
+class GN3S_API gn3s_source_cc : public gr::block
 {
 private:
   // The friend declaration allows gn3s_source to

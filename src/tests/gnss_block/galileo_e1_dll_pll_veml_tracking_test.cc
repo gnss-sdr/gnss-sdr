@@ -35,13 +35,13 @@
 #include <gtest/gtest.h>
 #include <sys/time.h>
 #include <iostream>
-#include <gnuradio/gr_top_block.h>
-#include <gnuradio/gr_file_source.h>
+#include <gnuradio/top_block.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/gr_msg_queue.h>
-#include <gnuradio/gr_null_sink.h>
-#include <gnuradio/gr_skiphead.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
@@ -55,8 +55,8 @@ class GalileoE1DllPllVemlTrackingInternalTest: public ::testing::Test
 protected:
     GalileoE1DllPllVemlTrackingInternalTest()
     {
-        queue = gr_make_msg_queue(0);
-        top_block = gr_make_top_block("Tracking test");
+        queue = gr::msg_queue::make(0);
+        top_block = gr::make_top_block("Tracking test");
         factory = new GNSSBlockFactory();
         config = new InMemoryConfiguration();
         item_size = sizeof(gr_complex);
@@ -72,8 +72,8 @@ protected:
 
     void init();
 
-    gr_msg_queue_sptr queue;
-    gr_top_block_sptr top_block;
+    gr::msg_queue::sptr queue;
+    gr::top_block_sptr top_block;
     GNSSBlockFactory* factory;
     InMemoryConfiguration* config;
     Gnss_Synchro gnss_synchro;
@@ -187,10 +187,10 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
     ASSERT_NO_THROW( {
         std::string file = "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         const char * file_name = file.c_str();
-        gr_file_source_sptr file_source = gr_make_file_source(sizeof(gr_complex),file_name,false);
-        gr_skiphead_sptr skip_head = gr_make_skiphead(sizeof(gr_complex), skiphead_sps);
-        gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), num_samples, queue);
-        gr_null_sink_sptr sink = gr_make_null_sink(sizeof(Gnss_Synchro));
+        gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex),file_name,false);
+        gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);
+        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), num_samples, queue);
+        gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
         top_block->connect(file_source, 0, skip_head, 0);
         top_block->connect(skip_head, 0, valve, 0);
         top_block->connect(valve, 0, tracking->get_left_block(), 0);

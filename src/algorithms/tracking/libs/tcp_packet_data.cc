@@ -32,11 +32,9 @@
 
 tcp_packet_data::tcp_packet_data()
 {
-
-	proc_pack_code_error = 0;
+    proc_pack_code_error = 0;
     proc_pack_carr_error = 0;
     proc_pack_carrier_doppler_hz = 0;
 }
 
-tcp_packet_data::~tcp_packet_data() {
-}
+tcp_packet_data::~tcp_packet_data() {}

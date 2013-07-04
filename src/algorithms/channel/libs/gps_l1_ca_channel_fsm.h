@@ -44,7 +44,7 @@
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include <iostream>
 #include <cstring>
 
@@ -69,7 +69,7 @@ public:
 
     void set_acquisition(AcquisitionInterface *acquisition);
     void set_tracking(TrackingInterface *tracking);
-    void set_queue(gr_msg_queue_sptr queue);
+    void set_queue(boost::shared_ptr<gr::msg_queue> queue);
     void set_channel(unsigned int channel);
     void start_acquisition();
     void start_tracking();
@@ -87,7 +87,7 @@ private:
     AcquisitionInterface *acq_;
     TrackingInterface *trk_;
     TelemetryDecoderInterface *nav_;
-    gr_msg_queue_sptr queue_;
+    boost::shared_ptr<gr::msg_queue> queue_;
     unsigned int channel_;
 };
 

@@ -33,6 +33,7 @@ include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${GLOG_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
 )
 
 link_directories(${Boost_LIBRARY_DIR})

@@ -31,6 +31,8 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/src/core/libs/supl
 	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
 	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+    ${GLOG_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
 )
 
 add_library(rx_core_lib ${CORE_LIBS_SOURCES})

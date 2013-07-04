@@ -35,7 +35,7 @@
 #include "direct_resampler_conditioner_ss.h"
 #include "gps_sdr_signal_processing.h"
 #include <iostream>
-#include <gnuradio/gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -52,8 +52,8 @@ direct_resampler_conditioner_ss_sptr direct_resampler_make_conditioner_ss(
 
 direct_resampler_conditioner_ss::direct_resampler_conditioner_ss(
         double sample_freq_in, double sample_freq_out) :
-    gr_block("direct_resampler_make_conditioner_ss", gr_make_io_signature(1,
-            1, sizeof(short)), gr_make_io_signature(1, 1, sizeof(short))),
+    gr::block("direct_resampler_make_conditioner_ss", gr::io_signature::make(1,
+            1, sizeof(short)), gr::io_signature::make(1, 1, sizeof(short))),
             d_sample_freq_in(sample_freq_in), d_sample_freq_out(
                     sample_freq_out), d_phase(0), d_lphase(0), d_history(1)
 {

@@ -34,9 +34,8 @@
 #include <map>
 #include <algorithm>
 #include <bitset>
-#include <cmath>
-#include "math.h"
-#include <gnuradio/gr_io_signature.h>
+#include <gnuradio/gr_complex.h>
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
@@ -51,15 +50,15 @@ extern concurrent_map<Gps_Iono> global_gps_iono_map;
 extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 
 gps_l1_ca_pvt_cc_sptr
-gps_l1_ca_make_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname)
+gps_l1_ca_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname)
 {
     return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname));
 }
 
 
-gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname) :
-		                		        gr_block ("gps_l1_ca_pvt_cc", gr_make_io_signature (nchannels, nchannels,  sizeof(Gnss_Synchro)),
-		                		                gr_make_io_signature(1, 1, sizeof(gr_complex)))
+gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname) :
+		                		        gr::block("gps_l1_ca_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
+		                		                gr::io_signature::make(1, 1, sizeof(gr_complex)))
 {
 
     d_output_rate_ms = output_rate_ms;
@@ -88,8 +87,8 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
     d_ls_pvt->set_averaging_depth(d_averaging_depth);
 
     d_sample_counter = 0;
-    d_last_sample_nav_output=0;
-    d_rx_time=0.0;
+    d_last_sample_nav_output = 0;
+    d_rx_time = 0.0;
 
     b_rinex_header_writen = false;
     rp = new Rinex_Printer();
@@ -111,7 +110,6 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, gr_msg_queue_sptr que
                     }
                 }
         }
-
 }
 
 
@@ -153,102 +151,95 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 
     // ############ 1. READ EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
 
-    d_ls_pvt->gps_ephemeris_map=global_gps_ephemeris_map.get_map_copy();
+    d_ls_pvt->gps_ephemeris_map = global_gps_ephemeris_map.get_map_copy();
 
     if (global_gps_utc_model_map.size()>0)
-    {
-    	// UTC MODEL data is shared for all the GPS satellites. Read always at ID=0
-    	global_gps_utc_model_map.read(0,d_ls_pvt->gps_utc_model);
-    }
+        {
+            // UTC MODEL data is shared for all the GPS satellites. Read always at ID=0
+            global_gps_utc_model_map.read(0,d_ls_pvt->gps_utc_model);
+        }
 
     if (global_gps_iono_map.size()>0)
-    {
-    	// IONO data is shared for all the GPS satellites. Read always at ID=0
-        global_gps_iono_map.read(0,d_ls_pvt->gps_iono);
-    }
+        {
+            // IONO data is shared for all the GPS satellites. Read always at ID=0
+            global_gps_iono_map.read(0,d_ls_pvt->gps_iono);
+        }
 
     // ############ 2 COMPUTE THE PVT ################################
     if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() >0)
-    {
-    	// The GPS TX time is directly the Time of Week (TOW) associated to the current symbol of the reference channel
-    	// It is used to compute the SV positions at the TX instant
+        {
+            // compute on the fly PVT solution
+            //mod 8/4/2012 Set the PVT computation rate in this block
+            if ((d_sample_counter % d_output_rate_ms) == 0)
+                {
+                    bool pvt_result;
+                    pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
+                    if (pvt_result==true)
+                        {
+                            d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
+                            d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
 
-    	// compute on the fly PVT solution
-    	//mod 8/4/2012 Set the PVT computation rate in this block
-    	if ((d_sample_counter % d_output_rate_ms) == 0)
-    	{
-    	    bool pvt_result;
-    		pvt_result=d_ls_pvt->get_PVT(gnss_pseudoranges_map,d_rx_time,d_flag_averaging);
-    		if (pvt_result==true)
-    		{
-    			d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
-    		    d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
+                            if (!b_rinex_header_writen) //  & we have utc data in nav message!
+                                {
+                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                        {
+                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second,d_rx_time);
+                                            rp->rinex_nav_header(rp->navFile,d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
+                                            b_rinex_header_writen = true; // do not write header anymore
+                                        }
+                                }
+                            if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
+                                {
+                                    // Limit the RINEX navigation output rate to 1/6 seg
+                                    // Notice that d_sample_counter period is 1ms (for GPS correlators)
+                                    if ((d_sample_counter-d_last_sample_nav_output)>=6000)
+                                        {
+                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
+                                            d_last_sample_nav_output=d_sample_counter;
+                                        }
+                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                        {
+                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                        }
+                                }
+                        }
+                }
 
-    		if (!b_rinex_header_writen) //  & we have utc data in nav message!
-    		{
-    	   		 std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
-    	   		gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
-    			if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
-    			{
-    				rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second,d_rx_time);
-        			rp->rinex_nav_header(rp->navFile,d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
-        			b_rinex_header_writen = true; // do not write header anymore
-    			}
-    		}
-    		if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
-    		{
-    			// Limit the RINEX navigation output rate to 1/6 seg
-    			// Notice that d_sample_counter period is 1ms (for GPS correlators)
+            // DEBUG MESSAGE: Display position in console output
+            if (((d_sample_counter % d_display_rate_ms) == 0) and d_ls_pvt->b_valid_position == true)
+                {
+                    std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+                    << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                    << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
 
-    			if ((d_sample_counter-d_last_sample_nav_output)>=6000)
-    			{
-    				rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
-    				d_last_sample_nav_output=d_sample_counter;
-    			}
-				std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
-				gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
-				if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
-				{
-					rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
-				}
-    		}
-    		}
-
-
-    	}
-
-    	// DEBUG MESSAGE: Display position in console output
-    	if (((d_sample_counter % d_display_rate_ms) == 0) and d_ls_pvt->b_valid_position == true)
-    	{
-    		std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-    		<< " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
-    		<< " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
-
-    		std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-    		<< " is HDOP = " << d_ls_pvt->d_HDOP << " and VDOP = " << d_ls_pvt->d_VDOP << std::endl;
-    	}
-		// MULTIPLEXED FILE RECORDING - Record results to file
-    	if(d_dump == true)
-    	{
-    		try
-    		{
-    			double tmp_double;
-    			for (unsigned int i=0; i<d_nchannels ; i++)
-    			{
-    				tmp_double = in[i][0].Pseudorange_m;
-    				d_dump_file.write((char*)&tmp_double, sizeof(double));
-    				tmp_double = 0;
-    				d_dump_file.write((char*)&tmp_double, sizeof(double));
-    				d_dump_file.write((char*)&d_rx_time, sizeof(double));
-    			}
-    		}
-    		catch (std::ifstream::failure e)
-    		{
-    			std::cout << "Exception writing observables dump file " << e.what() << std::endl;
-    		}
-    	}
-
-    }
+                    std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+                    << " is HDOP = " << d_ls_pvt->d_HDOP << " and VDOP = " << d_ls_pvt->d_VDOP << std::endl;
+                }
+            // MULTIPLEXED FILE RECORDING - Record results to file
+            if(d_dump == true)
+                {
+                    try
+                    {
+                            double tmp_double;
+                            for (unsigned int i=0; i<d_nchannels ; i++)
+                                {
+                                    tmp_double = in[i][0].Pseudorange_m;
+                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    tmp_double = 0;
+                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write((char*)&d_rx_time, sizeof(double));
+                                }
+                    }
+                    catch (std::ifstream::failure e)
+                    {
+                            std::cout << "Exception writing observables dump file " << e.what() << std::endl;
+                    }
+                }
+        }
 
     consume_each(1); //one by one
     return 0;

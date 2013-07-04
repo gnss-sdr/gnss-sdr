@@ -35,8 +35,7 @@
 
 #include "telemetry_decoder_interface.h"
 #include "gps_l1_ca_telemetry_decoder_cc.h"
-
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 
 
 class ConfigurationInterface;
@@ -51,7 +50,7 @@ public:
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
-            gr_msg_queue_sptr queue);
+            boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~GpsL1CaTelemetryDecoder();
     std::string role()
@@ -64,10 +63,10 @@ public:
     {
         return "GPS_L1_CA_Telemetry_Decoder";
     }
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
     void set_satellite(Gnss_Satellite satellite);
     void set_channel(int channel){telemetry_decoder_->set_channel(channel);}
     void reset()
@@ -90,7 +89,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr_msg_queue_sptr queue_;
+    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif

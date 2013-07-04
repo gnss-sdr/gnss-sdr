@@ -37,22 +37,21 @@
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include <iostream>
-#include <gnuradio/gr_io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
+#include <gnuradio/msg_queue.h>
 
 using google::LogMessage;
 
 GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(
-            queue)
+        gr::msg_queue::sptr queue) :
+    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
-
-	configuration_=configuration;
+    configuration_ = configuration;
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
 
@@ -70,7 +69,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     sampled_ms_ = configuration_->property(role + ".sampled_ms", 1);
     dump_filename_ = configuration_->property(role + ".dump_filename",
             default_dump_filename);
-
 
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_
@@ -118,10 +116,12 @@ void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
 
 void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 {
-	float pfa = configuration_->property(role_+ boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+	float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-	if(pfa==0.0) pfa = configuration_->property(role_+".pfa", 0.0);
-
+	if(pfa==0.0)
+        {
+                 pfa = configuration_->property(role_+".pfa", 0.0);
+        }
 	if(pfa==0.0)
 	{
 		threshold_ = threshold;
@@ -235,9 +235,8 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
 	return threshold;
 }
 
-void GpsL1CaPcpsAcquisition::connect(gr_top_block_sptr top_block)
+void GpsL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
-
     if (item_type_.compare("gr_complex") == 0)
     {
         top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
@@ -246,7 +245,7 @@ void GpsL1CaPcpsAcquisition::connect(gr_top_block_sptr top_block)
 }
 
 
-void GpsL1CaPcpsAcquisition::disconnect(gr_top_block_sptr top_block)
+void GpsL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
     {
@@ -255,13 +254,13 @@ void GpsL1CaPcpsAcquisition::disconnect(gr_top_block_sptr top_block)
 }
 
 
-gr_basic_block_sptr GpsL1CaPcpsAcquisition::get_left_block()
+gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_left_block()
 {
     return stream_to_vector_;
 }
 
 
-gr_basic_block_sptr GpsL1CaPcpsAcquisition::get_right_block()
+gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }

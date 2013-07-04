@@ -16,7 +16,15 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+#if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#set(TRACKING_ADAPTER_SOURCES 
+#     galileo_e1_dll_pll_veml_tracking.cc
+#     galileo_e1_tcp_connector_tracking.cc
+#     gps_l1_ca_dll_fll_pll_tracking.cc
+#     gps_l1_ca_dll_pll_tracking.cc
+#     gps_l1_ca_tcp_connector_tracking.cc
+#)
+#else(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 set(TRACKING_ADAPTER_SOURCES 
      galileo_e1_dll_pll_veml_tracking.cc
      galileo_e1_tcp_connector_tracking.cc
@@ -25,6 +33,7 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l1_ca_dll_pll_tracking.cc
      gps_l1_ca_tcp_connector_tracking.cc
 )
+#endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
@@ -34,8 +43,8 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_library(tracking_adapters ${TRACKING_ADAPTER_SOURCES})

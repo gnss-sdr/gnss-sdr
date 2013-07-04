@@ -49,8 +49,8 @@
 #define GNSS_SDR_PCPS_assisted_acquisition_cc_H_
 
 #include <fstream>
-#include <gnuradio/gr_block.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/block.h>
+#include <gnuradio/msg_queue.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include <queue>
@@ -60,12 +60,14 @@
 #include "gnss_synchro.h"
 
 class pcps_assisted_acquisition_cc;
+
 typedef boost::shared_ptr<pcps_assisted_acquisition_cc>
 pcps_assisted_acquisition_cc_sptr;
+
 pcps_assisted_acquisition_cc_sptr
 pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
         int doppler_max, int doppler_min, long freq, long fs_in, int samples_per_ms,
-        gr_msg_queue_sptr queue, bool dump, std::string dump_filename);
+        boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -74,171 +76,171 @@ pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
  * Algorithm 1, for a pseudocode description of this implementation.
  */
 
-class pcps_assisted_acquisition_cc: public gr_block
+class pcps_assisted_acquisition_cc: public gr::block
 {
 private:
-	friend pcps_assisted_acquisition_cc_sptr
-	pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-		    int doppler_max, int doppler_min, long freq, long fs_in,
-			int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
-			std::string dump_filename);
+    friend pcps_assisted_acquisition_cc_sptr
+    pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
+            int doppler_max, int doppler_min, long freq, long fs_in,
+            int samples_per_ms, boost::shared_ptr<gr::msg_queue> queue, bool dump,
+            std::string dump_filename);
 
-	pcps_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
-		    int doppler_max, int doppler_min, long freq, long fs_in,
-			int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
-			std::string dump_filename);
+    pcps_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
+            int doppler_max, int doppler_min, long freq, long fs_in,
+            int samples_per_ms, boost::shared_ptr<gr::msg_queue> queue, bool dump,
+            std::string dump_filename);
 
-	void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-			int doppler_offset);
+    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
+            int doppler_offset);
 
-	int compute_and_accumulate_grid(gr_vector_const_void_star &input_items);
-	float estimate_input_power(gr_vector_const_void_star &input_items);
-	double search_maximum();
-	void get_assistance();
-	void reset_grid();
-	void redefine_grid();
-	void free_grid_memory();
+    int compute_and_accumulate_grid(gr_vector_const_void_star &input_items);
+    float estimate_input_power(gr_vector_const_void_star &input_items);
+    double search_maximum();
+    void get_assistance();
+    void reset_grid();
+    void redefine_grid();
+    void free_grid_memory();
 
-	long d_fs_in;
-	long d_freq;
-	int d_samples_per_ms;
-	int d_max_dwells;
-	unsigned int d_doppler_resolution;
-	int d_gnuradio_forecast_samples;
-	float d_threshold;
-	std::string d_satellite_str;
-	int d_doppler_max;
-	int d_doppler_min;
-	int d_config_doppler_max;
-	int d_config_doppler_min;
+    long d_fs_in;
+    long d_freq;
+    int d_samples_per_ms;
+    int d_max_dwells;
+    unsigned int d_doppler_resolution;
+    int d_gnuradio_forecast_samples;
+    float d_threshold;
+    std::string d_satellite_str;
+    int d_doppler_max;
+    int d_doppler_min;
+    int d_config_doppler_max;
+    int d_config_doppler_min;
 
-	int d_num_doppler_points;
+    int d_num_doppler_points;
     int d_doppler_step;
-	unsigned int d_sampled_ms;
-	unsigned int d_fft_size;
-	unsigned long int d_sample_counter;
-	gr_complex* d_carrier;
-	gr_complex* d_fft_codes;
+    unsigned int d_sampled_ms;
+    unsigned int d_fft_size;
+    unsigned long int d_sample_counter;
+    gr_complex* d_carrier;
+    gr_complex* d_fft_codes;
 
-	float** d_grid_data;
-	gr_complex** d_grid_doppler_wipeoffs;
+    float** d_grid_data;
+    gr_complex** d_grid_doppler_wipeoffs;
 
-	gr::fft::fft_complex* d_fft_if;
-	gr::fft::fft_complex* d_ifft;
-	Gnss_Synchro *d_gnss_synchro;
-	unsigned int d_code_phase;
-	float d_doppler_freq;
-	float d_input_power;
-	float d_test_statistics;
-	gr_msg_queue_sptr d_queue;
-	concurrent_queue<int> *d_channel_internal_queue;
-	std::ofstream d_dump_file;
-	int d_state;
-	bool d_active;
-	bool d_disable_assist;
-	int d_well_count;
-	bool d_dump;
-	unsigned int d_channel;
+    gr::fft::fft_complex* d_fft_if;
+    gr::fft::fft_complex* d_ifft;
+    Gnss_Synchro *d_gnss_synchro;
+    unsigned int d_code_phase;
+    float d_doppler_freq;
+    float d_input_power;
+    float d_test_statistics;
+    boost::shared_ptr<gr::msg_queue> d_queue;
+    concurrent_queue<int> *d_channel_internal_queue;
+    std::ofstream d_dump_file;
+    int d_state;
+    bool d_active;
+    bool d_disable_assist;
+    int d_well_count;
+    bool d_dump;
+    unsigned int d_channel;
 
-	std::string d_dump_filename;
+    std::string d_dump_filename;
 
 public:
-	/*!
-	 * \brief Default destructor.
-	 */
-	 ~pcps_assisted_acquisition_cc();
+    /*!
+     * \brief Default destructor.
+     */
+    ~pcps_assisted_acquisition_cc();
 
-	/*!
-	 * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-	 * to exchange synchronization data between acquisition and tracking blocks.
-	 * \param p_gnss_synchro Satellite information shared by the processing blocks.
-	 */
-	 void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
-	 {
-		 d_gnss_synchro = p_gnss_synchro;
-	 }
+    /*!
+     * \brief Set acquisition/tracking common Gnss_Synchro object pointer
+     * to exchange synchronization data between acquisition and tracking blocks.
+     * \param p_gnss_synchro Satellite information shared by the processing blocks.
+     */
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+    {
+        d_gnss_synchro = p_gnss_synchro;
+    }
 
-	 /*!
-	  * \brief Returns the maximum peak of grid search.
-	  */
-	 unsigned int mag()
-	 {
-		 return d_test_statistics;
-	 }
+    /*!
+     * \brief Returns the maximum peak of grid search.
+     */
+    unsigned int mag()
+    {
+        return d_test_statistics;
+    }
 
-	 /*!
-	  * \brief Initializes acquisition algorithm.
-	  */
-	 void init();
+    /*!
+     * \brief Initializes acquisition algorithm.
+     */
+    void init();
 
-	 /*!
-	  * \brief Sets local code for PCPS acquisition algorithm.
-	  * \param code - Pointer to the PRN code.
-	  */
-	 void set_local_code(std::complex<float> * code);
+    /*!
+     * \brief Sets local code for PCPS acquisition algorithm.
+     * \param code - Pointer to the PRN code.
+     */
+    void set_local_code(std::complex<float> * code);
 
-	 /*!
-	  * \brief Starts acquisition algorithm, turning from standby mode to
-	  * active mode
-	  * \param active - bool that activates/deactivates the block.
-	  */
-	 void set_active(bool active)
-	 {
-		 d_active = active;
-	 }
+    /*!
+     * \brief Starts acquisition algorithm, turning from standby mode to
+     * active mode
+     * \param active - bool that activates/deactivates the block.
+     */
+    void set_active(bool active)
+    {
+        d_active = active;
+    }
 
-	 /*!
-	  * \brief Set acquisition channel unique ID
-	  * \param channel - receiver channel.
-	  */
-	 void set_channel(unsigned int channel)
-	 {
-		 d_channel = channel;
-	 }
+    /*!
+     * \brief Set acquisition channel unique ID
+     * \param channel - receiver channel.
+     */
+    void set_channel(unsigned int channel)
+    {
+        d_channel = channel;
+    }
 
-	 /*!
-	  * \brief Set statistics threshold of PCPS algorithm.
-	  * \param threshold - Threshold for signal detection (check \ref Navitec2012,
-	  * Algorithm 1, for a definition of this threshold).
-	  */
-	 void set_threshold(float threshold)
-	 {
-		 d_threshold = threshold;
-	 }
+    /*!
+     * \brief Set statistics threshold of PCPS algorithm.
+     * \param threshold - Threshold for signal detection (check \ref Navitec2012,
+     * Algorithm 1, for a definition of this threshold).
+     */
+    void set_threshold(float threshold)
+    {
+        d_threshold = threshold;
+    }
 
-	 /*!
-	  * \brief Set maximum Doppler grid search
-	  * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
-	  */
-	 void set_doppler_max(unsigned int doppler_max)
-	 {
-		 d_doppler_max = doppler_max;
-	 }
+    /*!
+     * \brief Set maximum Doppler grid search
+     * \param doppler_max - Maximum Doppler shift considered in the grid search [Hz].
+     */
+    void set_doppler_max(unsigned int doppler_max)
+    {
+        d_doppler_max = doppler_max;
+    }
 
-	 /*!
-	  * \brief Set Doppler steps for the grid search
-	  * \param doppler_step - Frequency bin of the search grid [Hz].
-	  */
-	 void set_doppler_step(unsigned int doppler_step);
+    /*!
+     * \brief Set Doppler steps for the grid search
+     * \param doppler_step - Frequency bin of the search grid [Hz].
+     */
+    void set_doppler_step(unsigned int doppler_step);
 
 
-	 /*!
-	  * \brief Set tracking channel internal queue.
-	  * \param channel_internal_queue - Channel's internal blocks information queue.
-	  */
-	 void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-	 {
-		 d_channel_internal_queue = channel_internal_queue;
-	 }
+    /*!
+     * \brief Set tracking channel internal queue.
+     * \param channel_internal_queue - Channel's internal blocks information queue.
+     */
+    void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
+    {
+        d_channel_internal_queue = channel_internal_queue;
+    }
 
-	 /*!
-	 * \brief Parallel Code Phase Search Acquisition signal processing.
-	 */
-	 int general_work(int noutput_items, gr_vector_int &ninput_items,
-			 gr_vector_const_void_star &input_items,
-			 gr_vector_void_star &output_items);
+    /*!
+     * \brief Parallel Code Phase Search Acquisition signal processing.
+     */
+    int general_work(int noutput_items, gr_vector_int &ninput_items,
+            gr_vector_const_void_star &input_items,
+            gr_vector_void_star &output_items);
 
-	 void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 };
 

@@ -38,8 +38,8 @@
 #ifndef GNSS_SDR_GNSS_BLOCK_INTERFACE_H_
 #define GNSS_SDR_GNSS_BLOCK_INTERFACE_H_
 
-#include <gnuradio/gr_hier_block2.h>
-#include <gnuradio/gr_top_block.h>
+//#include <gnuradio/hier_block2.h>
+#include <gnuradio/top_block.h>
 
 /*!
  * \brief This abstract class represents an interface to GNSS blocks.
@@ -57,10 +57,10 @@ public:
     virtual std::string role() = 0;
     virtual std::string implementation() = 0;
     virtual size_t item_size() = 0;
-    virtual void connect(gr_top_block_sptr top_block) = 0;
-    virtual void disconnect(gr_top_block_sptr top_block) = 0;
-    virtual gr_basic_block_sptr get_left_block() = 0;
-    virtual gr_basic_block_sptr get_right_block() = 0;
+    virtual void connect(gr::top_block_sptr top_block) = 0;
+    virtual void disconnect(gr::top_block_sptr top_block) = 0;
+    virtual gr::basic_block_sptr get_left_block() = 0;
+    virtual gr::basic_block_sptr get_right_block() = 0;
 };
 
 #endif /*GNSS_SDR_GNSS_BLOCK_INTERFACE_H_*/

@@ -156,7 +156,7 @@ void GpsL1CaChannelFsm::set_tracking(TrackingInterface *tracking) {
 	trk_ = tracking;
 }
 
-void GpsL1CaChannelFsm::set_queue(gr_msg_queue_sptr queue) {
+void GpsL1CaChannelFsm::set_queue(boost::shared_ptr<gr::msg_queue> queue) {
 	queue_ = queue;
 }
 
@@ -181,7 +181,7 @@ void GpsL1CaChannelFsm::start_tracking() {
 	//trk_->set_acq_sample_stamp(acq_->get_sample_stamp());
 	trk_->start_tracking();
 	ControlMessageFactory* cmf = new ControlMessageFactory();
-	if (queue_ != gr_msg_queue_sptr()) {
+	if (queue_ != gr::msg_queue::make()) {
 		queue_->handle(cmf->GetQueueMessage(channel_, 1));
 	}
 	delete cmf;
@@ -189,7 +189,7 @@ void GpsL1CaChannelFsm::start_tracking() {
 
 void GpsL1CaChannelFsm::request_satellite() {
 	ControlMessageFactory* cmf = new ControlMessageFactory();
-	if (queue_ != gr_msg_queue_sptr()) {
+	if (queue_ != gr::msg_queue::make()) {
 		queue_->handle(cmf->GetQueueMessage(channel_, 0));
 	}
 	delete cmf;

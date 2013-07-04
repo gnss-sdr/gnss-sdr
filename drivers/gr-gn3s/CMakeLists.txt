@@ -63,6 +63,19 @@ if(NOT Boost_FOUND)
 endif()
 
 ########################################################################
+# Find libUSB
+########################################################################
+find_package(USB)
+if(NOT LIBUSB_FOUND)
+    message(FATAL_ERROR "libusb required to compile gn3s")
+endif(NOT LIBUSB_FOUND)
+include_directories(${LIBUSB_INCLUDE_DIR})
+#message (" kjhkhkjh ${LIBUSB_INCLUDE_DIR}")
+if(APPLE)
+  include_directories(/usr/include/pcap)
+endif(APPLE)
+
+########################################################################
 # Install directories
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
@@ -82,15 +95,11 @@ set(GRC_BLOCKS_DIR      ${GR_PKG_DATA_DIR}/grc/blocks)
 ########################################################################
 # Find gnuradio build dependencies
 ########################################################################
-find_package(Gruel)
-find_package(GnuradioCore)
+find_package(GnuradioRuntime)
 
-if(NOT GRUEL_FOUND)
-    message(FATAL_ERROR "Gruel required to compile gn3s")
-endif()
 
-if(NOT GNURADIO_CORE_FOUND)
-    message(FATAL_ERROR "GnuRadio Core required to compile gn3s")
+if(NOT GNURADIO_RUNTIME_FOUND)
+    message(FATAL_ERROR "gnuradio-runtime 3.7 or later is required to compile gr-gn3s")
 endif()
 
 
@@ -100,14 +109,13 @@ endif()
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${Boost_INCLUDE_DIRS}
-    ${GRUEL_INCLUDE_DIRS}
-    ${GNURADIO_CORE_INCLUDE_DIRS}
+    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+    ${LIBUSB_INCLUDE_DIR}
 )
 
 link_directories(
     ${Boost_LIBRARY_DIRS}
-    ${GRUEL_LIBRARY_DIRS}
-    ${GNURADIO_CORE_LIBRARY_DIRS}
+    ${GNURADIO_RUNTIME_LIBRARY_DIRS}
 )
 
 # Set component parameters

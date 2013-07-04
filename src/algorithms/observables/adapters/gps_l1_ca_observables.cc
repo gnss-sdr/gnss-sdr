@@ -33,9 +33,6 @@
 #include "gps_l1_ca_observables.h"
 #include "configuration_interface.h"
 #include "gps_l1_ca_observables_cc.h"
-#include <gnuradio/gr_io_signature.h>
-//#include <gnuradio/gr_stream_to_vector.h>
-//#include <gnuradio/gr_vector_to_stream.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -45,11 +42,11 @@ GpsL1CaObservables::GpsL1CaObservables(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams),
-        queue_(queue)
+        boost::shared_ptr<gr::msg_queue> queue) :
+                    role_(role),
+                    in_streams_(in_streams),
+                    out_streams_(out_streams),
+                    queue_(queue)
 {
     int output_rate_ms;
     output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
@@ -74,7 +71,7 @@ GpsL1CaObservables::~GpsL1CaObservables()
 
 
 
-void GpsL1CaObservables::connect(gr_top_block_sptr top_block)
+void GpsL1CaObservables::connect(gr::top_block_sptr top_block)
 {
     // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
@@ -82,7 +79,7 @@ void GpsL1CaObservables::connect(gr_top_block_sptr top_block)
 
 
 
-void GpsL1CaObservables::disconnect(gr_top_block_sptr top_block)
+void GpsL1CaObservables::disconnect(gr::top_block_sptr top_block)
 {
     // Nothing to disconnect
 }
@@ -90,7 +87,7 @@ void GpsL1CaObservables::disconnect(gr_top_block_sptr top_block)
 
 
 
-gr_basic_block_sptr GpsL1CaObservables::get_left_block()
+gr::basic_block_sptr GpsL1CaObservables::get_left_block()
 {
     return observables_;
 }
@@ -98,7 +95,7 @@ gr_basic_block_sptr GpsL1CaObservables::get_left_block()
 
 
 
-gr_basic_block_sptr GpsL1CaObservables::get_right_block()
+gr::basic_block_sptr GpsL1CaObservables::get_right_block()
 {
     return observables_;
 }

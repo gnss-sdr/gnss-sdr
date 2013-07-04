@@ -32,11 +32,11 @@
 #include <gtest/gtest.h>
 #include <sys/time.h>
 #include <iostream>
-#include <gnuradio/gr_top_block.h>
+#include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/gr_msg_queue.h>
-#include <gnuradio/gr_null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/null_sink.h>
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
@@ -50,8 +50,8 @@ class Fir_Filter_Test: public ::testing::Test
 protected:
     Fir_Filter_Test()
     {
-        queue = gr_make_msg_queue(0);
-        top_block = gr_make_top_block("Fir filter test");
+        queue = gr::msg_queue::make(0);
+        top_block = gr::make_top_block("Fir filter test");
         config = new InMemoryConfiguration();
         item_size = sizeof(gr_complex);
     }
@@ -60,8 +60,8 @@ protected:
         delete config;
     }
     void init();
-    gr_msg_queue_sptr queue;
-    gr_top_block_sptr top_block;
+    boost::shared_ptr<gr::msg_queue> queue;
+    gr::top_block_sptr top_block;
     InMemoryConfiguration* config;
     size_t item_size;
 };
@@ -112,9 +112,9 @@ TEST_F(Fir_Filter_Test, ConnectAndRun)
 
     ASSERT_NO_THROW( {
         filter->connect(top_block);
-        gr_block_sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-        gr_block_sptr null_sink = gr_make_null_sink(item_size);
+        boost::shared_ptr<gr::block> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
 
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, filter->get_left_block(), 0);

@@ -33,7 +33,7 @@
 
 #include <gn3s_source_cc.h>
 #include <gn3s_defines.h>
-#include <gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 
 
 /*
@@ -49,7 +49,7 @@ gn3s_make_source_cc ()
 /*
  * Specify constraints on number of input and output streams.
  * This info is used to construct the input and output signatures
- * (2nd & 3rd args to gr_block's constructor).  The input and
+ * (2nd & 3rd args to gr::block's constructor).  The input and
  * output signatures are used by the runtime system to
  * check that a valid number and type of inputs and outputs
  * are connected to this block.  In this case, we accept
@@ -64,9 +64,9 @@ static const int MAX_OUT = 1;	// maximum number of output streams
  * The private constructor
  */
 gn3s_source_cc::gn3s_source_cc ()
-  : gr_block ("gn3s_cc",
-	      gr_make_io_signature (MIN_IN, MAX_IN, sizeof (gr_complex)),
-	      gr_make_io_signature (MIN_OUT, MAX_OUT, sizeof (gr_complex)))
+  : gr::block ("gn3s_cc",
+	      gr::io_signature::make(MIN_IN, MAX_IN, sizeof (gr_complex)),
+	      gr::io_signature::make(MIN_OUT, MAX_OUT, sizeof (gr_complex)))
 {
   // constructor code here
   gn3s_drv = new gn3s_Source();
@@ -99,13 +99,16 @@ int n_samples_rx;
 if (noutput_items<=GN3S_SAMPS_5MS)
 {
   gn3s_drv->Read(&packet,noutput_items);
-  n_samples_rx=noutput_items;
-}else{
-  gn3s_drv->Read(&packet,GN3S_SAMPS_5MS);
-  n_samples_rx=GN3S_SAMPS_5MS;
+  n_samples_rx = noutput_items;
 }
-  for (int i = 0; i < n_samples_rx; i++){
-	out[i]=gr_complex(packet.data[i].i,packet.data[i].q);
+else
+{
+  gn3s_drv->Read(&packet,GN3S_SAMPS_5MS);
+  n_samples_rx = GN3S_SAMPS_5MS;
+}
+  for (int i = 0; i < n_samples_rx; i++)
+  {
+	out[i] = gr_complex(packet.data[i].i, packet.data[i].q);
   }
 
   // Tell runtime system how many output items we produced.

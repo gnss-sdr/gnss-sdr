@@ -32,8 +32,5 @@
 
 #include "gps_acq_assist.h"
 
-Gps_Acq_Assist::Gps_Acq_Assist()
-{
-
-}
+Gps_Acq_Assist::Gps_Acq_Assist() {}
 

@@ -45,13 +45,13 @@
 #include <gtest/gtest.h>
 #include <sys/time.h>
 #include <iostream>
-#include <gnuradio/gr_top_block.h>
-#include <gnuradio/gr_file_source.h>
+#include <gnuradio/top_block.h>
+#include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/gr_msg_queue.h>
-#include <gnuradio/gr_null_sink.h>
-#include <gnuradio/gr_skiphead.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
 
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
@@ -67,8 +67,8 @@ class GalileoE1PcpsAmbiguousAcquisitionGSoCTest: public ::testing::Test
 protected:
     GalileoE1PcpsAmbiguousAcquisitionGSoCTest()
     {
-        queue = gr_make_msg_queue(0);
-        top_block = gr_make_top_block("Acquisition test");
+        queue = gr::msg_queue::make(0);
+        top_block = gr::make_top_block("Acquisition test");
         factory = new GNSSBlockFactory();
         config = new InMemoryConfiguration();
         item_size = sizeof(gr_complex);
@@ -87,8 +87,8 @@ protected:
     void wait_message();
     void stop_queue();
 
-    gr_msg_queue_sptr queue;
-    gr_top_block_sptr top_block;
+    gr::msg_queue::sptr queue;
+    gr::top_block_sptr top_block;
     GNSSBlockFactory* factory;
     InMemoryConfiguration* config;
     Gnss_Synchro gnss_synchro;
@@ -102,14 +102,13 @@ protected:
 void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
 {
 
-    gnss_synchro.Channel_ID=0;
+    gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
     std::string signal = "1C";
-    signal.copy(gnss_synchro.Signal,2,0);
-    gnss_synchro.PRN=11;
+    signal.copy(gnss_synchro.Signal, 2, 0);
+    gnss_synchro.PRN = 11;
 
     config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
-
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.sampled_ms", "4");
@@ -169,9 +168,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-        gr_block_sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
-        gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
-
+        boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test."<< std::endl;
@@ -232,8 +230,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     ASSERT_NO_THROW( {
         std::string file = "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         const char * file_name = file.c_str();
-        gr_file_source_sptr file_source = gr_make_file_source(sizeof(gr_complex),file_name,false);
-
+        gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test."<< std::endl;
 

@@ -35,11 +35,11 @@
 #include <gtest/gtest.h>
 #include <sys/time.h>
 #include <iostream>
-#include <gnuradio/gr_top_block.h>
+#include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/gr_msg_queue.h>
-#include <gnuradio/gr_null_sink.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/null_sink.h>
 #include "gnss_sdr_valve.h"
 #include "direct_resampler_conditioner_cc.h"
 
@@ -50,10 +50,10 @@ TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest)
     double fs_out = 4000000.0; // sampling freuqncy of the resampled signal in Hz
     struct timeval tv;
     int nsamples = 1000000; //Number of samples to be computed
-    gr_msg_queue_sptr queue = gr_make_msg_queue(0);
-    gr_top_block_sptr top_block = gr_make_top_block("direct_resampler_conditioner_cc_test");
-    gr_block_sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
-    gr_block_sptr valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    gr::top_block_sptr top_block = gr::make_top_block("direct_resampler_conditioner_cc_test");
+    boost::shared_ptr<gr::analog::sig_source_c> source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000.0, 1.0, gr_complex(0.0));
+    boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
     long long int begin = 0;
     long long int end = 0;
 
@@ -62,7 +62,7 @@ TEST(Direct_Resampler_Conditioner_Cc_Test, InstantiationAndRunTest)
     }) << "Failure in instantiation of direct_resampler_conditioner.";
 
     direct_resampler_conditioner_cc_sptr resampler = direct_resampler_make_conditioner_cc(fs_in, fs_out);
-    gr_block_sptr sink = gr_make_null_sink(sizeof(gr_complex));
+    gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(gr_complex));
 
     EXPECT_NO_THROW( {
         top_block->connect(source, 0, valve, 0);

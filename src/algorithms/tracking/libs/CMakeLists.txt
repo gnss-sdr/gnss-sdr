@@ -33,10 +33,8 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
 )
 
 add_library(tracking_lib ${TRACKING_LIB_SOURCES})
-target_link_libraries(tracking_lib ${VOLK_LIBRARIES} ${GNURADIO_CORE_LIBRARIES})
+target_link_libraries(tracking_lib ${VOLK_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})

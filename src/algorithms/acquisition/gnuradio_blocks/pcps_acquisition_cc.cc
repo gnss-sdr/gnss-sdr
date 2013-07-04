@@ -34,7 +34,7 @@
 #include "pcps_acquisition_cc.h"
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
-#include <gnuradio/gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 #include <sstream>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -44,7 +44,7 @@ using google::LogMessage;
 
 pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
         unsigned int sampled_ms, unsigned int doppler_max, long freq,
-        long fs_in, int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
+        long fs_in, int samples_per_ms, gr::msg_queue::sptr queue, bool dump,
         std::string dump_filename)
 {
 
@@ -57,11 +57,11 @@ pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
 
 pcps_acquisition_cc::pcps_acquisition_cc(
         unsigned int sampled_ms, unsigned int doppler_max, long freq,
-        long fs_in, int samples_per_ms, gr_msg_queue_sptr queue, bool dump,
+        long fs_in, int samples_per_ms, gr::msg_queue::sptr queue, bool dump,
         std::string dump_filename) :
-        gr_block("pcps_acquisition_cc",
-        gr_make_io_signature(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
-        gr_make_io_signature(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
+        gr::block("pcps_acquisition_cc",
+        gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
+        gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
@@ -108,7 +108,7 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 
 void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 {
-	memcpy(d_fft_if->get_inbuf(),code,sizeof(gr_complex)*d_fft_size);
+	memcpy(d_fft_if->get_inbuf(),code, sizeof(gr_complex)*d_fft_size);
 }
 
 
@@ -175,10 +175,11 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             d_input_power = 0.0;
 
             DLOG(INFO) << "Channel: " << d_channel
-                    << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
-                    << " ,sample stamp: " << d_sample_counter << ", threshold: "
-                    << d_threshold << ", doppler_max: " << d_doppler_max
-                    << ", doppler_step: " << d_doppler_step;
+                       << " , doing acquisition of satellite: " << d_gnss_synchro->System
+                       << " "<< d_gnss_synchro->PRN
+                       << " ,sample stamp: " << d_sample_counter << ", threshold: "
+                       << d_threshold << ", doppler_max: " << d_doppler_max
+                       << ", doppler_step: " << d_doppler_step;
 
             // 1- Compute the input signal power estimation
             for (i = 0; i < d_fft_size; i++)
@@ -247,10 +248,9 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                             std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
                             filename.str("");
                             filename << "../data/test_statistics_" << d_gnss_synchro->System
-                                    <<"_" << d_gnss_synchro->Signal << "_sat_"
-                                    << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
-                            d_dump_file.open(filename.str().c_str(), std::ios::out
-                                    | std::ios::binary);
+                                     <<"_" << d_gnss_synchro->Signal << "_sat_"
+                                     << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
+                            d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
                             d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
                             d_dump_file.close();
                         }

@@ -26,8 +26,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${Boost_INCLUDE_DIRS}
 )
 
 add_library(telemetry_decoder_lib ${TELEMETRY_DECODER_LIB_SOURCES})

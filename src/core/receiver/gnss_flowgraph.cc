@@ -47,7 +47,7 @@
 using google::LogMessage;
 
 GNSSFlowgraph::GNSSFlowgraph(ConfigurationInterface *configuration,
-        gr_msg_queue_sptr queue)
+        boost::shared_ptr<gr::msg_queue> queue)
 {
     connected_ = false;
     running_ = false;
@@ -508,7 +508,7 @@ void GNSSFlowgraph::init()
             blocks_->push_back(channels->at(i));
         }
 
-    top_block_ = gr_make_top_block("GNSSFlowgraph");
+    top_block_ = gr::make_top_block("GNSSFlowgraph");
 
     delete channels;
 
@@ -539,7 +539,6 @@ void GNSSFlowgraph::set_signals_list()
     std::set<unsigned int>::iterator available_gnss_prn_iter;
 
 
-
     /*
      * Loop to create the list of GNSS Signals
      * To add signals from other systems, add another loop 'for'
@@ -560,7 +559,7 @@ void GNSSFlowgraph::set_signals_list()
      * Loop to create the list of Galileo E1 B signals
      */
 
-    std::set<unsigned int> available_galileo_prn = { 11, 12 ,19, 20 };
+    std::set<unsigned int> available_galileo_prn = { 11, 12, 19, 20 };
 
 
     for (available_gnss_prn_iter = available_galileo_prn.begin(); available_gnss_prn_iter
@@ -581,7 +580,6 @@ void GNSSFlowgraph::set_signals_list()
 
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-
             std::string gnss_system = (configuration_->property("Channel"
                     + boost::lexical_cast<std::string>(i) + ".system",
                     default_system));

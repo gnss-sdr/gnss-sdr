@@ -46,8 +46,8 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
-#include "math.h"
-#include <gnuradio/gr_io_signature.h>
+//#include "math.h"
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -67,7 +67,7 @@ galileo_e1_dll_pll_veml_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -89,15 +89,15 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips,
         float very_early_late_space_chips):
-        gr_block ("galileo_e1_dll_pll_veml_tracking_cc", gr_make_io_signature (1, 1, sizeof(gr_complex)),
-                gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
+        gr::block("galileo_e1_dll_pll_veml_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     this->set_relative_rate(1.0/vector_length);
     // initialize internal vars
@@ -418,7 +418,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                         {
                             std::cout << "Channel " << d_channel << " loss of lock!" << std::endl ;
                             ControlMessageFactory* cmf = new ControlMessageFactory();
-                            if (d_queue != gr_msg_queue_sptr())
+                            if (d_queue != gr::msg_queue::sptr())
                                 {
                                     d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                                 }
@@ -438,7 +438,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
-            current_synchro_data.Carrier_Doppler_hz= (double)d_carrier_doppler_hz;
+            current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             *out[0] = current_synchro_data;
 

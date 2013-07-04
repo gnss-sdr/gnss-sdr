@@ -33,7 +33,7 @@
 
 #include "pass_through.h"
 #include <iostream>
-#include <gnuradio/gr_io_signature.h>
+//#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
@@ -67,7 +67,7 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
             LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Using float";
             item_size_ = sizeof(float);
         }
-    kludge_copy_ = gr_make_kludge_copy(item_size_);
+    kludge_copy_ = gr::blocks::copy::make(item_size_);
     DLOG(INFO) << "kludge_copy(" << kludge_copy_->unique_id() << ")";
 }
 
@@ -78,28 +78,28 @@ Pass_Through::~Pass_Through()
 
 
 
-void Pass_Through::connect(gr_top_block_sptr top_block)
+void Pass_Through::connect(gr::top_block_sptr top_block)
 {
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 
-void Pass_Through::disconnect(gr_top_block_sptr top_block)
+void Pass_Through::disconnect(gr::top_block_sptr top_block)
 {
     // Nothing to disconnect
 }
 
 
 
-gr_basic_block_sptr Pass_Through::get_left_block()
+gr::basic_block_sptr Pass_Through::get_left_block()
 {
     return kludge_copy_;
 }
 
 
 
-gr_basic_block_sptr Pass_Through::get_right_block()
+gr::basic_block_sptr Pass_Through::get_right_block()
 {
     return kludge_copy_;
 }

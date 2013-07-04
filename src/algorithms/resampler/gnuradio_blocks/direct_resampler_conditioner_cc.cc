@@ -34,7 +34,7 @@
 
 #include "direct_resampler_conditioner_cc.h"
 #include <iostream>
-#include <gnuradio/gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -53,8 +53,8 @@ direct_resampler_conditioner_cc_sptr direct_resampler_make_conditioner_cc(
 
 direct_resampler_conditioner_cc::direct_resampler_conditioner_cc(
         double sample_freq_in, double sample_freq_out) :
-            gr_block("direct_resampler_conditioner_cc", gr_make_io_signature(1, 1,
-                    sizeof(gr_complex)), gr_make_io_signature(1, 1,
+            gr::block("direct_resampler_conditioner_cc", gr::io_signature::make(1, 1,
+                    sizeof(gr_complex)), gr::io_signature::make(1, 1,
                             sizeof(gr_complex))), d_sample_freq_in(sample_freq_in),
                             d_sample_freq_out(sample_freq_out), d_phase(0), d_lphase(0),
                             d_history(1)

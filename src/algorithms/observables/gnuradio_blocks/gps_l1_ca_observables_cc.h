@@ -32,8 +32,8 @@
 #define	GNSS_SDR_GPS_L1_CA_OBSERVABLES_CC_H
 
 #include <fstream>
-#include <gnuradio/gr_block.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/block.h>
+#include <gnuradio/msg_queue.h>
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
@@ -48,12 +48,12 @@ class gps_l1_ca_observables_cc;
 typedef boost::shared_ptr<gps_l1_ca_observables_cc> gps_l1_ca_observables_cc_sptr;
 
 gps_l1_ca_observables_cc_sptr
-gps_l1_ca_make_observables_cc(unsigned int n_channels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+gps_l1_ca_make_observables_cc(unsigned int n_channels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
 /*!
  * \brief This class implements a block that computes GPS L1 C/A observables
  */
-class gps_l1_ca_observables_cc : public gr_block
+class gps_l1_ca_observables_cc : public gr::block
 {
 public:
     ~gps_l1_ca_observables_cc ();
@@ -63,11 +63,11 @@ public:
 
 private:
     friend gps_l1_ca_observables_cc_sptr
-    gps_l1_ca_make_observables_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
-    gps_l1_ca_observables_cc(unsigned int nchannels, gr_msg_queue_sptr queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+    gps_l1_ca_make_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+    gps_l1_ca_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
     // class private vars
-    gr_msg_queue_sptr d_queue;
+    boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool d_flag_averaging;
     long int d_sample_counter;

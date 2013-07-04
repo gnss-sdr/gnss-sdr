@@ -30,9 +30,7 @@
  */
 
 #include "rtlsdr_signal_source.h"
-#include <osmosdr_api.h>
-#include <osmosdr_source_c.h>
-#include <gnuradio/gr_file_sink.h>
+#include <gnuradio/blocks/file_sink.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include <glog/log_severity.h>
@@ -46,7 +44,7 @@ using google::LogMessage;
 
 RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream, unsigned int out_stream,
-        gr_msg_queue_sptr queue) :
+        boost::shared_ptr<gr::msg_queue> queue) :
                 role_(role), in_stream_(in_stream), out_stream_(out_stream),
                 queue_(queue)
 {
@@ -74,7 +72,7 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the driver instance
-            rtlsdr_source_ = osmosdr_make_source_c();
+            rtlsdr_source_ = osmosdr::source::make();
 
             // 2 set sampling rate
             rtlsdr_source_->set_sample_rate(sample_rate_);
@@ -121,7 +119,7 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+            file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
 }
@@ -133,7 +131,7 @@ RtlsdrSignalSource::~RtlsdrSignalSource()
 
 
 
-void RtlsdrSignalSource::connect(gr_top_block_sptr top_block)
+void RtlsdrSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)
         {
@@ -157,7 +155,7 @@ void RtlsdrSignalSource::connect(gr_top_block_sptr top_block)
 
 
 
-void RtlsdrSignalSource::disconnect(gr_top_block_sptr top_block)
+void RtlsdrSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)
         {
@@ -178,15 +176,15 @@ void RtlsdrSignalSource::disconnect(gr_top_block_sptr top_block)
 
 
 
-gr_basic_block_sptr RtlsdrSignalSource::get_left_block()
+gr::basic_block_sptr RtlsdrSignalSource::get_left_block()
 {
     LOG_AT_LEVEL(WARNING) << "Trying to get signal source left block.";
-    return gr_basic_block_sptr();
+    return gr::basic_block_sptr();
 }
 
 
 
-gr_basic_block_sptr RtlsdrSignalSource::get_right_block()
+gr::basic_block_sptr RtlsdrSignalSource::get_right_block()
 {
     if (samples_ != 0)
         {

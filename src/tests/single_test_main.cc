@@ -36,7 +36,7 @@
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/filesystem.hpp>
@@ -56,8 +56,8 @@ concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 
 int main(int argc, char **argv)
 {
-	google::ParseCommandLineFlags(&argc, &argv, true);
-	testing::InitGoogleTest(&argc, argv);
+    google::ParseCommandLineFlags(&argc, &argv, true);
+    testing::InitGoogleTest(&argc, argv);
     google::InitGoogleLogging(argv[0]);
     return RUN_ALL_TESTS();
 }

@@ -27,14 +27,20 @@ include_directories(
 	 ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_CORE_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}  
+     ${Boost_INCLUDE_DIRS}
 )
 
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
+if(OS_IS_MACOSX)
+     # Tell the linker where the libraries installed by MacPorts are
+     link_directories( /opt/local/lib )
+endif(OS_IS_MACOSX)
+
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
-target_link_libraries(gnss-sdr ${Boost_LIBRARIES} ${GLOG_LIBRARIES} ${GFlags_LIBS} ${ARMADILLO_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(gnss-sdr ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES} gnss_sp_libs gnss_rx)
+
 
 install(TARGETS gnss-sdr
         DESTINATION ${CMAKE_SOURCE_DIR}/install

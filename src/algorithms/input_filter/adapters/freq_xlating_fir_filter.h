@@ -36,7 +36,8 @@
 #include "gnss_synchro.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/msg_queue.h>
 
 class ConfigurationInterface;
 
@@ -57,7 +58,7 @@ class FreqXlatingFirFilter: public GNSSBlockInterface
 public:
     FreqXlatingFirFilter(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, gr_msg_queue_sptr queue);
+            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~FreqXlatingFirFilter();
     std::string role()
@@ -74,10 +75,10 @@ public:
     {
         return 0;
     }
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
 private:
     gr::filter::freq_xlating_fir_filter_ccf::sptr freq_xlating_fir_filter_ccf_;
@@ -93,8 +94,8 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr_msg_queue_sptr queue_;
-    gr_block_sptr file_sink_;
+    boost::shared_ptr<gr::msg_queue> queue_;
+    gr::blocks::file_sink::sptr file_sink_;
     void init();
 };
 

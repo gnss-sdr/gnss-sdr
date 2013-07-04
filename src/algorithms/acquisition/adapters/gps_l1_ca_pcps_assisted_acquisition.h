@@ -37,7 +37,7 @@
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_assisted_acquisition_cc.h"
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 
 
@@ -52,7 +52,7 @@ class GpsL1CaPcpsAssistedAcquisition: public AcquisitionInterface
 public:
 	GpsL1CaPcpsAssistedAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, gr_msg_queue_sptr queue);
+            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~GpsL1CaPcpsAssistedAcquisition();
 
@@ -73,10 +73,10 @@ public:
         return item_size_;
     }
 
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -147,7 +147,7 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr_msg_queue_sptr queue_;
+    boost::shared_ptr<gr::msg_queue> queue_;
     concurrent_queue<int> *channel_internal_queue_;
 };
 

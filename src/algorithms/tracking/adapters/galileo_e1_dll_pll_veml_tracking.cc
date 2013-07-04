@@ -41,7 +41,7 @@
 #ifdef GNSS_SDR_USE_BOOST_ROUND
   #include <boost/math/special_functions/round.hpp>
 #endif
-#include <gnuradio/gr_io_signature.h>
+//#include <gnuradio/gr_io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -50,7 +50,7 @@ using google::LogMessage;
 GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
+        boost::shared_ptr<gr::msg_queue> queue) :
         role_(role), in_streams_(in_streams), out_streams_(out_streams),
         queue_(queue)
 {
@@ -148,22 +148,22 @@ void GalileoE1DllPllVemlTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
-void GalileoE1DllPllVemlTracking::connect(gr_top_block_sptr top_block)
+void GalileoE1DllPllVemlTracking::connect(gr::top_block_sptr top_block)
 {
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
-void GalileoE1DllPllVemlTracking::disconnect(gr_top_block_sptr top_block)
+void GalileoE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block)
 {
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
-gr_basic_block_sptr GalileoE1DllPllVemlTracking::get_left_block()
+gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_left_block()
 {
     return tracking_;
 }
 
-gr_basic_block_sptr GalileoE1DllPllVemlTracking::get_right_block()
+gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_right_block()
 {
     return tracking_;
 }

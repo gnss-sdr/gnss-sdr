@@ -42,7 +42,7 @@ TEST(Control_Message_Factory_Test, GetQueueMessage)
 {
     ControlMessageFactory *factory = new ControlMessageFactory();
 
-    gr_message_sptr queue_message = factory->GetQueueMessage(0, 0);
+    gr::message::sptr queue_message = factory->GetQueueMessage(0, 0);
     ControlMessage *control_message = (ControlMessage*)queue_message->msg();
 
     unsigned int expected0 = 0;
@@ -64,7 +64,7 @@ TEST(Control_Message_Factory_Test, GetControlMessages)
     control_message->who = 1;
     control_message->what = 4;
 
-    gr_message_sptr queue_message = gr_make_message(0, 0, 0, sizeof(ControlMessage));
+    gr::message::sptr queue_message = gr::message::make(0, 0, 0, sizeof(ControlMessage));
     memcpy(queue_message->msg(), control_message, sizeof(ControlMessage));
     std::vector<ControlMessage*> *control_messages = factory->GetControlMessages(queue_message);
 
@@ -91,7 +91,7 @@ TEST(Control_Message_Factory_Test, GetControlMessagesWrongSize)
     control_message->what = 4;
     int another_int = 10;
 
-    gr_message_sptr queue_message = gr_make_message(0, 0, 0, sizeof(ControlMessage) + sizeof(int));
+    gr::message::sptr queue_message = gr::message::make(0, 0, 0, sizeof(ControlMessage) + sizeof(int));
     memcpy(queue_message->msg(), control_message, sizeof(ControlMessage));
     memcpy(queue_message->msg() + sizeof(ControlMessage), &another_int, sizeof(int));
     std::vector<ControlMessage*> *control_messages = factory->GetControlMessages(queue_message);

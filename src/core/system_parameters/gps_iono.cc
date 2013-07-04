@@ -34,7 +34,7 @@
 
 Gps_Iono::Gps_Iono()
 {
-	valid=false;
+    valid = false;
 
 }
 

@@ -38,7 +38,7 @@
 #include <iostream>
 #include <sstream>
 #include <bitset>
-#include <gnuradio/gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <boost/lexical_cast.hpp>
@@ -55,7 +55,7 @@ using google::LogMessage;
  */
 gps_l1_ca_telemetry_decoder_cc_sptr
 gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-        int vector_length, gr_msg_queue_sptr queue, bool dump)
+        int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump)
 {
     return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, if_freq,
             fs_in, vector_length, queue, dump));
@@ -79,10 +79,10 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
         long fs_in,
         unsigned
         int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump) :
-        gr_block ("gps_navigation_cc", gr_make_io_signature (1, 1, sizeof(Gnss_Synchro)),
-        gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
+        gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+        gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_queue = queue;
@@ -118,9 +118,10 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
                 }
         }
     d_sample_counter = 0;
+    //d_preamble_code_phase_seconds = 0;
     d_stat = 0;
     d_preamble_index = 0;
-    d_symbol_accumulator=0;
+    d_symbol_accumulator = 0;
     d_symbol_accumulator_counter = 0;
     d_frame_bit_index = 0;
     d_preamble_time_seconds = 0;
@@ -128,9 +129,9 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_GPS_frame_4bytes = 0;
     d_prev_GPS_frame_4bytes = 0;
     d_flag_parity = false;
-    d_TOW_at_Preamble=0;
-    d_TOW_at_current_symbol=0;
-    flag_TOW_set=false;
+    d_TOW_at_Preamble = 0;
+    d_TOW_at_current_symbol = 0;
+    flag_TOW_set = false;
 
     //set_history(d_samples_per_bit*8); // At least a history of 8 bits are needed to correlate with the preamble
 }
@@ -302,25 +303,26 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     consume_each(1); //one by one
     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
     //1. Copy the current tracking output
-    current_synchro_data=in[0][0];
+    current_synchro_data = in[0][0];
     //2. Add the telemetry decoder information
-
     if (this->d_flag_preamble==true and d_GPS_FSM.d_nav.d_TOW>0) //update TOW at the preamble instant (todo: check for valid d_TOW)
-    {
-    	d_TOW_at_Preamble=d_GPS_FSM.d_nav.d_TOW+GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
-    	d_TOW_at_current_symbol=d_TOW_at_Preamble+GPS_CA_PREAMBLE_LENGTH_BITS/GPS_CA_TELEMETRY_RATE_BITS_SECOND;
-    	Prn_timestamp_at_preamble_ms=in[0][0].Tracking_timestamp_secs * 1000.0;
-    	if (flag_TOW_set==false)
-    	{
-    	   flag_TOW_set=true;
-    	}
-    }else{
-    	d_TOW_at_current_symbol=d_TOW_at_current_symbol+GPS_L1_CA_CODE_PERIOD;
-    }
+        {
+            d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
+            d_TOW_at_current_symbol = d_TOW_at_Preamble + GPS_CA_PREAMBLE_LENGTH_BITS/GPS_CA_TELEMETRY_RATE_BITS_SECOND;
+            Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
+            if (flag_TOW_set==false)
+                {
+                    flag_TOW_set = true;
+                }
+        }
+    else
+        {
+            d_TOW_at_current_symbol = d_TOW_at_current_symbol + GPS_L1_CA_CODE_PERIOD;
+        }
 
 
-    current_synchro_data.d_TOW=d_TOW_at_Preamble;
-    current_synchro_data.d_TOW_at_current_symbol=d_TOW_at_current_symbol;
+    current_synchro_data.d_TOW = d_TOW_at_Preamble;
+    current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
     current_synchro_data.Flag_valid_word = (d_flag_frame_sync == true and d_flag_parity == true and flag_TOW_set==true);
     current_synchro_data.Flag_preamble = d_flag_preamble;
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;

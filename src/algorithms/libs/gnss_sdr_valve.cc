@@ -31,28 +31,28 @@
  */
 
 #include "gnss_sdr_valve.h"
-#include <gnuradio/gr_io_signature.h>
-#include "control_message_factory.h"
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include "control_message_factory.h"
 
 using google::LogMessage;
 
 gnss_sdr_valve::gnss_sdr_valve (size_t sizeof_stream_item,
         int nitems,
-        gr_msg_queue_sptr queue) : gr_sync_block ("valve",
-                gr_make_io_signature (1, 1, sizeof_stream_item),
-                gr_make_io_signature (1, 1, sizeof_stream_item)),
-                d_nitems (nitems), d_ncopied_items (0), d_queue(queue)
+        gr::msg_queue::sptr queue) : gr::sync_block("valve",
+                gr::io_signature::make(1, 1, sizeof_stream_item),
+                gr::io_signature::make(1, 1, sizeof_stream_item) ),
+                d_nitems(nitems), d_ncopied_items(0), d_queue(queue)
 {}
 
 
 
-gr_block_sptr gnss_sdr_make_valve (size_t sizeof_stream_item,
+boost::shared_ptr<gr::block> gnss_sdr_make_valve (size_t sizeof_stream_item,
         int nitems,
-        gr_msg_queue_sptr queue)
+        gr::msg_queue::sptr queue)
 {
-    return gr_block_sptr (new gnss_sdr_valve (sizeof_stream_item, nitems, queue));
+    return boost::shared_ptr<gnss_sdr_valve> (new gnss_sdr_valve (sizeof_stream_item, nitems, queue));
 }
 
 
@@ -72,7 +72,7 @@ int gnss_sdr_valve::work (int noutput_items,
     unsigned n = std::min(d_nitems - d_ncopied_items, noutput_items);
     if (n == 0)
         return 0;
-    memcpy (output_items[0], input_items[0], n * input_signature()->sizeof_stream_item (0));
+    memcpy (output_items[0], input_items[0], n * input_signature()->sizeof_stream_item(0));
     d_ncopied_items += n;
     return n;
 }

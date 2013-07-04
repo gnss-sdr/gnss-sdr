@@ -32,8 +32,8 @@
 #include "configuration_interface.h"
 #include <string>
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/gr_io_signature.h>
-#include <gnuradio/gr_file_sink.h>
+//#include <gnuradio/io_signature.h>
+#include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/pm_remez.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -42,7 +42,7 @@ using google::LogMessage;
 
 FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
+        boost::shared_ptr<gr::msg_queue> queue) :
                 config_(configuration), role_(role), in_streams_(in_streams),
                 out_streams_(out_streams), queue_(queue)
 {
@@ -67,7 +67,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             std::cout<<"Dumping output into file " << dump_filename_<<std::endl;
-            file_sink_ = gr_make_file_sink(item_size, dump_filename_.c_str());
+            file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
 }
 
@@ -78,7 +78,7 @@ FreqXlatingFirFilter::~FreqXlatingFirFilter()
 
 
 
-void FreqXlatingFirFilter::connect(gr_top_block_sptr top_block)
+void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -92,7 +92,7 @@ void FreqXlatingFirFilter::connect(gr_top_block_sptr top_block)
 
 
 
-void FreqXlatingFirFilter::disconnect(gr_top_block_sptr top_block)
+void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -102,13 +102,13 @@ void FreqXlatingFirFilter::disconnect(gr_top_block_sptr top_block)
 }
 
 
-gr_basic_block_sptr FreqXlatingFirFilter::get_left_block()
+gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
 {
     return freq_xlating_fir_filter_ccf_;
 }
 
 
-gr_basic_block_sptr FreqXlatingFirFilter::get_right_block()
+gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
 {
     return freq_xlating_fir_filter_ccf_;
 }

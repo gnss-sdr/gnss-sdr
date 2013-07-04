@@ -36,7 +36,7 @@
 #define GNSS_SDR_FILE_OUTPUT_FILTER_H_
 
 #include "gnss_block_interface.h"
-#include <gr_file_sink.h>
+#include <gnuradio/blocks/file_sink.h>
 
 class ConfigurationInterface;
 
@@ -48,9 +48,9 @@ class FileOutputFilter : public GNSSBlockInterface
 {
 public:
     FileOutputFilter(ConfigurationInterface* configuration,
-            std::string role,
-            unsigned int in_streams,
-            unsigned int out_streams);
+                     std::string role,
+                     unsigned int in_streams,
+                     unsigned int out_streams);
 
     virtual ~FileOutputFilter();
     std::string role()
@@ -65,13 +65,13 @@ public:
     {
         return item_size_;
     }
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
 private:
-    gr_file_sink_sptr file_sink_;
+    gr::blocks::file_sink::sptr file_sink_;
     size_t item_size_;
     std::string filename_;
     std::string item_type_;

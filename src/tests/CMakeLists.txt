@@ -58,6 +58,8 @@ if(GTEST_DIR_LOCAL)
      add_library(gtest ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest_main.cc)
      set(GTEST_LIBRARIES gtest)
 endif(GTEST_DIR_LOCAL)
+
+#find_library(GnuradioAnalog)
      
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}
@@ -67,7 +69,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs   
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-	 ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+     ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
@@ -82,13 +84,12 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+ #    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
 )
 
 find_library(
-     GR_ANALOG_LIBRARIES
+     GNURADIO_ANALOG_LIBRARIES
      NAMES gnuradio-analog
      PATHS /usr/local/lib
            /usr/local/lib64
@@ -96,8 +97,9 @@ find_library(
            /usr/lib64
 )  
 
+
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
-target_link_libraries(run_tests ${Boost_LIBRARIES}  ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} ${GR_ANALOG_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(run_tests ${Boost_LIBRARIES}  ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_ANALOG_LIBRARIES} gnss_sp_libs gnss_rx)
 
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
 

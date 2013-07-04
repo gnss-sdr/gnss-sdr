@@ -76,10 +76,11 @@ macro(GR_PYTHON_CHECK_MODULE desc mod cmd have)
     execute_process(
         COMMAND ${PYTHON_EXECUTABLE} -c "
 #########################################
-try: import ${mod}
-except: exit(-1)
-try: assert ${cmd}
-except: exit(-1)
+try:
+    import ${mod}
+    assert ${cmd}
+except ImportError, AssertionError: exit(-1)
+except: pass
 #########################################"
         RESULT_VARIABLE ${have}
     )
@@ -95,11 +96,13 @@ endmacro(GR_PYTHON_CHECK_MODULE)
 ########################################################################
 # Sets the python installation directory GR_PYTHON_DIR
 ########################################################################
+if(NOT DEFINED GR_PYTHON_DIR)
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "
 from distutils import sysconfig
 print sysconfig.get_python_lib(plat_specific=True, prefix='')
 " OUTPUT_VARIABLE GR_PYTHON_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+endif()
 file(TO_CMAKE_PATH ${GR_PYTHON_DIR} GR_PYTHON_DIR)
 
 ########################################################################
@@ -180,6 +183,10 @@ function(GR_PYTHON_INSTALL)
     elseif(GR_PYTHON_INSTALL_PROGRAMS)
     ####################################################################
         file(TO_NATIVE_PATH ${PYTHON_EXECUTABLE} pyexe_native)
+
+        if (CMAKE_CROSSCOMPILING)
+           set(pyexe_native /usr/bin/env python)
+        endif()
 
         foreach(pyfile ${GR_PYTHON_INSTALL_PROGRAMS})
             get_filename_component(pyfile_name ${pyfile} NAME)

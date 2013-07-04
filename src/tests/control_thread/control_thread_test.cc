@@ -31,7 +31,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include "control_thread.h"
 #include "in_memory_configuration.h"
 
@@ -47,15 +47,17 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("SignalSource.repeat", "true");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
-    config->set_property("Channels.count", "12");
-    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.item_type", "gr_complex");
+    config->set_property("Channels.count", "2");
+    config->set_property("Acquisition1.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition1.item_type", "gr_complex");
+    config->set_property("Acquisition2.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition2.item_type", "gr_complex");
     config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
     config->set_property("Tracking.item_type", "gr_complex");
-    config->set_property("Navigation.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("Navigation.item_type", "gr_complex");
-    config->set_property("Pseudorange.implementation", "GPS_L1_CA_Observables");
-    config->set_property("Pseudorange.item_type", "gr_complex");
+    config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("TelemetryDecoder.item_type", "gr_complex");
+    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
     config->set_property("PVT.item_type", "gr_complex");
     config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
@@ -63,7 +65,7 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
 
     ControlThread *control_thread = new ControlThread(config);
 
-    gr_msg_queue_sptr control_queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
     ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
 
     control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
@@ -112,15 +114,15 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
-    config->set_property("Channels.count", "12");
+    config->set_property("Channels.count", "1");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
     config->set_property("Tracking.item_type", "gr_complex");
-    config->set_property("Navigation.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("Navigation.item_type", "gr_complex");
-    config->set_property("Pseudorange.implementation", "GPS_L1_CA_Observables");
-    config->set_property("Pseudorange.item_type", "gr_complex");
+    config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("TelemetryDecoder.item_type", "gr_complex");
+    config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
+    config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
     config->set_property("PVT.item_type", "gr_complex");
     config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
@@ -128,7 +130,7 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
 
     ControlThread *control_thread = new ControlThread(config);
 
-    gr_msg_queue_sptr control_queue = gr_make_msg_queue(0);
+    gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
     ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
 
     control_queue->handle(control_msg_factory->GetQueueMessage(0,0));

@@ -45,9 +45,8 @@ class Gps_Iono
 private:
 
 public:
-
-	// valid flag
-	bool valid;
+    // valid flag
+    bool valid;
     // Ionospheric parameters
     double d_alpha0;      //!< Coefficient 0 of a cubic equation representing the amplitude of the vertical delay [s]
     double d_alpha1;      //!< Coefficient 1 of a cubic equation representing the amplitude of the vertical delay [s/semi-circle]

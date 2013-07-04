@@ -54,10 +54,11 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${Boost_INCLUDE_DIRS}
 )
-link_directories(${Boost_LIBRARY_DIR})
+
 
 #Enable GN3S module if the driver is present
 if( $ENV{GN3S_DRIVER} )
@@ -65,12 +66,13 @@ if( $ENV{GN3S_DRIVER} )
 	add_definitions(-DGN3S_DRIVER)
 endif($ENV{GN3S_DRIVER} )
 
-#Enable RTL-SDR module if the driver is present
-if( $ENV{RTLSDR_DRIVER} )
-    message( "Precompiler RTLSDR_DRIVER enabled" )
-	add_definitions(-DRTLSDR_DRIVER)
-endif($ENV{RTLSDR_DRIVER} )
-
-
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES})
-target_link_libraries(gnss_rx ${Boost_LIBRARIES} ${ARMADILLO_LIBRARIES} ${GNURADIO_CORE_LIBRARIES} gnss_system_parameters gnss_sp_libs signal_source_adapters datatype_adapters input_filter_adapters conditioner_adapters resampler_adapters acq_adapters tracking_lib tracking_adapters channel_adapters telemetry_decoder_adapters obs_adapters pvt_adapters pvt_lib out_adapters rx_core_lib)
+target_link_libraries(gnss_rx ${Boost_LIBRARIES} ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} 
+      gnss_system_parameters gnss_sp_libs 
+      signal_source_adapters datatype_adapters 
+      input_filter_adapters 
+      conditioner_adapters resampler_adapters 
+      acq_adapters tracking_lib tracking_adapters 
+      channel_adapters telemetry_decoder_adapters 
+      obs_adapters pvt_adapters pvt_lib 
+      out_adapters rx_core_lib)

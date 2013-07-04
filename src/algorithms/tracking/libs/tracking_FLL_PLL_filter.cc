@@ -34,7 +34,7 @@
 #include "tracking_FLL_PLL_filter.h"
 #include <iostream>
 
-void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz,float pll_bw_hz, int order)
+void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int order)
 {
     /*
      * Filter design (Kaplan 2nd ed., Pag. 181 Fig. 181)
@@ -48,12 +48,12 @@ void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz,float pll_bw_hz, int or
             d_pll_b3 = 2.400;
             d_pll_a3 = 1.100;
             d_pll_a2 = 1.414;
-            d_pll_w0p = pll_bw_hz/0.7845;
-            d_pll_w0p2 = d_pll_w0p*d_pll_w0p;
-            d_pll_w0p3 = d_pll_w0p2*d_pll_w0p;
+            d_pll_w0p = pll_bw_hz / 0.7845;
+            d_pll_w0p2 = d_pll_w0p * d_pll_w0p;
+            d_pll_w0p3 = d_pll_w0p2 * d_pll_w0p;
 
-            d_pll_w0f = fll_bw_hz/0.53;
-            d_pll_w0f2 = d_pll_w0f*d_pll_w0f;
+            d_pll_w0f = fll_bw_hz / 0.53;
+            d_pll_w0f2 = d_pll_w0f * d_pll_w0f;
         }
     else
         {
@@ -61,9 +61,9 @@ void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz,float pll_bw_hz, int or
              * 2nd order PLL with 1st order FLL assist
              */
             d_pll_a2 = 1.414;
-            d_pll_w0p = pll_bw_hz/0.53;
-            d_pll_w0p2 = d_pll_w0p*d_pll_w0p;
-            d_pll_w0f = fll_bw_hz/0.25;
+            d_pll_w0p = pll_bw_hz / 0.53;
+            d_pll_w0p2 = d_pll_w0p * d_pll_w0p;
+            d_pll_w0f = fll_bw_hz / 0.25;
         }
 }
 
@@ -107,9 +107,9 @@ float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float 
              * 2nd order PLL with 1st order FLL assist
              */
             float pll_w_new;
-            pll_w_new = d_pll_w + PLL_discriminator * d_pll_w0p2 * correlation_time_s + FLL_discriminator * d_pll_w0f * correlation_time_s ;
+            pll_w_new = d_pll_w + PLL_discriminator * d_pll_w0p2 * correlation_time_s + FLL_discriminator * d_pll_w0f * correlation_time_s;
             carrier_error_hz = 0.5 * (pll_w_new + d_pll_w) + d_pll_a2 * d_pll_w0p * PLL_discriminator;
-            d_pll_w =pll_w_new;
+            d_pll_w = pll_w_new;
             /*std::cout<<" d_pll_w = "<<carrier_error_hz<<
 			   ", pll_w_new = "<<pll_w_new
 			   <<", PLL_discriminator=" <<PLL_discriminator

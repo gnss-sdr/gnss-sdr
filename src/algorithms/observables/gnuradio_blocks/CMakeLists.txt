@@ -25,8 +25,9 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
 )
 
-add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES})
+add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} )
+target_link_libraries(obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

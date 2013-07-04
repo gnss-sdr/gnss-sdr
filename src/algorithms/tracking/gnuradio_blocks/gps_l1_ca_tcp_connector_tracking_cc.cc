@@ -47,8 +47,8 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
-#include "math.h"
-#include <gnuradio/gr_io_signature.h>
+//#include "math.h"
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <boost/asio.hpp>
@@ -69,7 +69,7 @@ gps_l1_ca_tcp_connector_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -95,15 +95,15 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips,
         size_t port_ch0) :
-        gr_block ("Gps_L1_Ca_Tcp_Connector_Tracking_cc", gr_make_io_signature (1, 1, sizeof(gr_complex)),
-                gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
+        gr::block("Gps_L1_Ca_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
 
     //gr_sync_decimator ("Gps_L1_Ca_Tcp_Connector_Tracking_cc", gr_make_io_signature (1, 1, sizeof(gr_complex)),
@@ -518,7 +518,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
                         {
                             std::cout << "Channel " << d_channel << " loss of lock!" << std::endl ;
                         	ControlMessageFactory* cmf = new ControlMessageFactory();
-                        	if (d_queue != gr_msg_queue_sptr()) {
+                        	if (d_queue != gr::msg_queue::sptr()) {
                         		d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                         	}
                         	delete cmf;
@@ -534,7 +534,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             current_synchro_data.Tracking_timestamp_secs = d_sample_counter_seconds;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
-            current_synchro_data.Carrier_Doppler_hz= (double)d_carrier_doppler_hz;
+            current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.Code_phase_secs = (double)d_code_phase_samples * (1/(float)d_fs_in);
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             *out[0] = current_synchro_data;

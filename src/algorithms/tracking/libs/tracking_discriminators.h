@@ -50,7 +50,7 @@
  * \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_1\f$, and
  * \f$I_{PS2},Q_{PS2}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_2\f$. The output is in [radians/second].
  */
-float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2,float t1, float t2);
+float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, float t1, float t2);
 
 
 /*! \brief PLL four quadrant arctan discriminator

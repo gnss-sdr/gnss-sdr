@@ -155,7 +155,7 @@ function(GR_LIBRARY_FOO target)
         GR_LIBTOOL(TARGET ${target} DESTINATION ${GR_LIBRARY_DIR})
 
         #give the library a special name with ultra-zero soversion
-        set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_NAME ${target}-${LIBVER} SOVERSION "0.0.0")
+        set_target_properties(${target} PROPERTIES OUTPUT_NAME ${target}-${LIBVER} SOVERSION "0.0.0")
         set(target_name lib${target}-${LIBVER}.so.0.0.0)
 
         #custom command to generate symlinks
@@ -208,3 +208,140 @@ function(GR_GEN_TARGET_DEPS name var)
         set(${var} "DEPENDS;${name};COMMAND;${name}" PARENT_SCOPE)
     endif()
 endfunction(GR_GEN_TARGET_DEPS)
+
+########################################################################
+# Control use of gr_logger
+# Usage:
+#   GR_LOGGING()
+#
+# Will set ENABLE_GR_LOG to 1 by default.
+# Can manually set with -DENABLE_GR_LOG=0|1
+########################################################################
+function(GR_LOGGING)
+  find_package(Log4cpp)
+
+  OPTION(ENABLE_GR_LOG "Use gr_logger" ON)
+  if(ENABLE_GR_LOG)
+    # If gr_logger is enabled, make it usable
+    add_definitions( -DENABLE_GR_LOG )
+
+    # also test LOG4CPP; if we have it, use this version of the logger
+    # otherwise, default to the stdout/stderr model.
+    if(LOG4CPP_FOUND)
+      SET(HAVE_LOG4CPP True CACHE INTERNAL "" FORCE)
+      add_definitions( -DHAVE_LOG4CPP )
+    else(not LOG4CPP_FOUND)
+      SET(HAVE_LOG4CPP False CACHE INTERNAL "" FORCE)
+      SET(LOG4CPP_INCLUDE_DIRS "" CACHE INTERNAL "" FORCE)
+      SET(LOG4CPP_LIBRARY_DIRS "" CACHE INTERNAL "" FORCE)
+      SET(LOG4CPP_LIBRARIES "" CACHE INTERNAL "" FORCE)
+    endif(LOG4CPP_FOUND)
+
+    SET(ENABLE_GR_LOG ${ENABLE_GR_LOG} CACHE INTERNAL "" FORCE)
+
+  else(ENABLE_GR_LOG)
+    SET(HAVE_LOG4CPP False CACHE INTERNAL "" FORCE)
+    SET(LOG4CPP_INCLUDE_DIRS "" CACHE INTERNAL "" FORCE)
+    SET(LOG4CPP_LIBRARY_DIRS "" CACHE INTERNAL "" FORCE)
+    SET(LOG4CPP_LIBRARIES "" CACHE INTERNAL "" FORCE)
+  endif(ENABLE_GR_LOG)
+
+  message(STATUS "ENABLE_GR_LOG set to ${ENABLE_GR_LOG}.")
+  message(STATUS "HAVE_LOG4CPP set to ${HAVE_LOG4CPP}.")
+  message(STATUS "LOG4CPP_LIBRARIES set to ${LOG4CPP_LIBRARIES}.")
+
+endfunction(GR_LOGGING)
+
+########################################################################
+# Run GRCC to compile .grc files into .py files.
+#
+# Usage: GRCC(filename, directory)
+#    - filenames: List of file name of .grc file
+#    - directory: directory of built .py file - usually in
+#                 ${CMAKE_CURRENT_BINARY_DIR}
+#    - Sets PYFILES: output converted GRC file names to Python files.
+########################################################################
+function(GRCC)
+  # Extract directory from list of args, remove it for the list of filenames.
+  list(GET ARGV -1 directory)
+  list(REMOVE_AT ARGV -1)
+  set(filenames ${ARGV})
+  file(MAKE_DIRECTORY ${directory})
+
+  SET(GRCC_COMMAND ${CMAKE_SOURCE_DIR}/gr-utils/python/grcc)
+
+  # GRCC uses some stuff in grc and gnuradio-runtime, so we force
+  # the known paths here
+  list(APPEND PYTHONPATHS
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/gnuradio-runtime/python
+    ${CMAKE_SOURCE_DIR}/gnuradio-runtime/lib/swig
+    ${CMAKE_BINARY_DIR}/gnuradio-runtime/lib/swig
+    )
+
+  if(WIN32)
+    #SWIG generates the python library files into a subdirectory.
+    #Therefore, we must append this subdirectory into PYTHONPATH.
+    #Only do this for the python directories matching the following:
+    foreach(pydir ${PYTHONPATHS})
+      get_filename_component(name ${pydir} NAME)
+      if(name MATCHES "^(swig|lib|src)$")
+        list(APPEND PYTHONPATHS ${pydir}/${CMAKE_BUILD_TYPE})
+      endif()
+    endforeach(pydir)
+  endif(WIN32)
+
+  file(TO_NATIVE_PATH "${PYTHONPATHS}" pypath)
+
+  if(UNIX)
+    list(APPEND pypath "$PYTHONPATH")
+    string(REPLACE ";" ":" pypath "${pypath}")
+    set(ENV{PYTHONPATH} ${pypath})
+  endif(UNIX)
+
+  if(WIN32)
+    list(APPEND pypath "%PYTHONPATH%")
+    string(REPLACE ";" "\\;" pypath "${pypath}")
+    #list(APPEND environs "PYTHONPATH=${pypath}")
+    set(ENV{PYTHONPATH} ${pypath})
+  endif(WIN32)
+
+  foreach(f ${filenames})
+    execute_process(
+      COMMAND ${GRCC_COMMAND} -d ${directory} ${f}
+      )
+    string(REPLACE ".grc" ".py" pyfile "${f}")
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" pyfile "${pyfile}")
+    list(APPEND pyfiles ${pyfile})
+  endforeach(f)
+
+  set(PYFILES ${pyfiles} PARENT_SCOPE)
+endfunction(GRCC)
+
+########################################################################
+# Check if HAVE_PTHREAD_SETSCHEDPARAM and HAVE_SCHED_SETSCHEDULER
+#  should be defined
+########################################################################
+macro(GR_CHECK_LINUX_SCHED_AVAIL)
+set(CMAKE_REQUIRED_LIBRARIES -lpthread)
+    CHECK_CXX_SOURCE_COMPILES("
+        #include <pthread.h>
+        int main(){
+            pthread_t pthread;
+            pthread_setschedparam(pthread,  0, 0);
+            return 0;
+        } " HAVE_PTHREAD_SETSCHEDPARAM
+    )
+    GR_ADD_COND_DEF(HAVE_PTHREAD_SETSCHEDPARAM)
+    
+    CHECK_CXX_SOURCE_COMPILES("
+        #include <sched.h>
+        int main(){
+            pid_t pid;
+            sched_setscheduler(pid, 0, 0);
+            return 0;
+        } " HAVE_SCHED_SETSCHEDULER
+    )
+    GR_ADD_COND_DEF(HAVE_SCHED_SETSCHEDULER)
+endmacro(GR_CHECK_LINUX_SCHED_AVAIL)
+

@@ -30,10 +30,12 @@
 
 #include "uhd_signal_source.h"
 //#include <uhd/usrp/multi_usrp.hpp>
-#include <gnuradio/gr_uhd_usrp_source.h>
+//#include <gnuradio/gr_uhd_usrp_source.h>
+#include <gnuradio/uhd/usrp_source.h>
 #include <uhd/types/device_addr.hpp>
 #include <uhd/exception.hpp>
-#include <gnuradio/gr_file_sink.h>
+//#include <gnuradio/gr_file_sink.h>
+//#include <gnuradio/blocks/file_sink.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
 #include <glog/log_severity.h>
@@ -45,7 +47,7 @@ using google::LogMessage;
 
 UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream, unsigned int out_stream,
-        gr_msg_queue_sptr queue) :
+        boost::shared_ptr<gr::msg_queue> queue) :
                 role_(role), in_stream_(in_stream), out_stream_(out_stream),
                 queue_(queue)
 {
@@ -94,7 +96,9 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             //    fc32: Complex floating point (32-bit floats) range [-1.0, +1.0].
             //    sc16: Complex signed integer (16-bit integers) range [-32768, +32767].
             //     sc8: Complex signed integer (8-bit integers) range [-128, 127].
-            uhd_source_ = uhd_make_usrp_source(dev_addr, uhd::stream_args_t("fc32"));
+            //uhd_source_ = uhd_make_usrp_source(dev_addr, uhd::stream_args_t("fc32"));
+            uhd_source_ = gr::uhd::usrp_source::make(dev_addr, uhd::stream_args_t("fc32"));
+
 
             // 2.1 set sampling clock reference
             // Set the clock source for the usrp device.
@@ -174,7 +178,8 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+            //file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+            file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
 }
@@ -186,7 +191,7 @@ UhdSignalSource::~UhdSignalSource()
 
 
 
-void UhdSignalSource::connect(gr_top_block_sptr top_block)
+void UhdSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)
         {
@@ -210,7 +215,7 @@ void UhdSignalSource::connect(gr_top_block_sptr top_block)
 
 
 
-void UhdSignalSource::disconnect(gr_top_block_sptr top_block)
+void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)
         {
@@ -232,15 +237,16 @@ void UhdSignalSource::disconnect(gr_top_block_sptr top_block)
 
 
 
-gr_basic_block_sptr UhdSignalSource::get_left_block()
+gr::basic_block_sptr UhdSignalSource::get_left_block()
 {
     LOG_AT_LEVEL(WARNING) << "Trying to get signal source left block.";
-    return gr_basic_block_sptr();
+    //return gr_basic_block_sptr();
+    return gr::uhd::usrp_source::sptr();
 }
 
 
 
-gr_basic_block_sptr UhdSignalSource::get_right_block()
+gr::basic_block_sptr UhdSignalSource::get_right_block()
 {
     if (samples_ != 0)
         {

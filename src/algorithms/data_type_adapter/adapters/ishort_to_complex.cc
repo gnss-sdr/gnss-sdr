@@ -30,8 +30,6 @@
 
 #include "ishort_to_complex.h"
 #include "configuration_interface.h"
-#include <gnuradio/gr_io_signature.h>
-#include <gnuradio/gr_file_sink.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -39,7 +37,7 @@ using google::LogMessage;
 
 IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
+        boost::shared_ptr<gr::msg_queue> queue) :
                 config_(configuration), role_(role), in_streams_(in_streams),
                 out_streams_(out_streams), queue_(queue)
 {
@@ -51,13 +49,13 @@ IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::str
     DLOG(INFO) << "role " << role_;
 
     input_item_type_ = config_->property(role_ + ".input_item_type",
-            default_input_item_type);
+                                         default_input_item_type);
 
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename",
-            default_dump_filename);
+                                       default_dump_filename);
 
-    size_t item_size=sizeof(gr_complex);
+    size_t item_size = sizeof(gr_complex);
 
     gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
 
@@ -66,7 +64,7 @@ IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::str
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            file_sink_ = gr_make_file_sink(item_size, dump_filename_.c_str());
+            file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
 
 }
@@ -76,7 +74,7 @@ IshortToComplex::~IshortToComplex()
 {}
 
 
-void IshortToComplex::connect(gr_top_block_sptr top_block)
+void IshortToComplex::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -89,7 +87,7 @@ void IshortToComplex::connect(gr_top_block_sptr top_block)
 }
 
 
-void IshortToComplex::disconnect(gr_top_block_sptr top_block)
+void IshortToComplex::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -99,14 +97,14 @@ void IshortToComplex::disconnect(gr_top_block_sptr top_block)
 
 
 
-gr_basic_block_sptr IshortToComplex::get_left_block()
+gr::basic_block_sptr IshortToComplex::get_left_block()
 {
     return gr_interleaved_short_to_complex_;
 }
 
 
 
-gr_basic_block_sptr IshortToComplex::get_right_block()
+gr::basic_block_sptr IshortToComplex::get_right_block()
 {
     return gr_interleaved_short_to_complex_;
 }

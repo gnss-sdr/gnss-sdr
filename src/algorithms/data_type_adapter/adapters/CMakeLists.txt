@@ -23,10 +23,9 @@ include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
-     ${GR_BLOCKS_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_library(datatype_adapters ${DATATYPE_ADAPTER_SOURCES})
-target_link_libraries(datatype_adapters ${GR_FILTER_LIBRARIES} ${GR_BLOCKS_LIBRARIES})
+target_link_libraries(datatype_adapters ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})

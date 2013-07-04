@@ -33,7 +33,7 @@
 #ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_
 #define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_
 
-#include <gnuradio/gr_hier_block2.h>
+#include <gnuradio/hier_block2.h>
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
@@ -63,10 +63,10 @@ public:
     {
         return item_size_;
     }
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
 private:
     std::string role_;
@@ -79,8 +79,8 @@ private:
     std::string dump_filename_;
     double sample_freq_in_;
     double sample_freq_out_;
-    gr_block_sptr resampler_;
-    gr_block_sptr file_sink_;
+    gr::block_sptr resampler_;
+    gr::block_sptr file_sink_;
 };
 
 #endif /*GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H_*/

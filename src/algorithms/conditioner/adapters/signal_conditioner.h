@@ -32,8 +32,7 @@
 #ifndef GNSS_SDR_SIGNAL_CONDITIONER_H_
 #define GNSS_SDR_SIGNAL_CONDITIONER_H_
 
-#include <gnuradio/gr_null_sink.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include "gnss_block_interface.h"
 #include "control_message_factory.h"
 
@@ -54,15 +53,15 @@ public:
     SignalConditioner(ConfigurationInterface *configuration,
             GNSSBlockInterface *data_type_adapt, GNSSBlockInterface *in_filt,
             GNSSBlockInterface *res, std::string role, std::string implementation,
-            gr_msg_queue_sptr queue);
+            boost::shared_ptr<gr::msg_queue> queue);
 
     //! Virtual destructor
     virtual ~SignalConditioner();
 
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
     std::string role(){ return role_; }
     //! Returns "Signal_Conditioner"
@@ -81,7 +80,7 @@ private:
     std::string implementation_;
     bool connected_;
     //bool stop_;
-    gr_msg_queue_sptr queue_;
+    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif /*GNSS_SDR_SIGNAL_CONDITIONER_H_*/

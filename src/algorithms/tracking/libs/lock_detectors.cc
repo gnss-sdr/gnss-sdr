@@ -50,7 +50,7 @@
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include <gnuradio/gr_complex.h>
-#include <math.h>
+//#include <math.h>
 
 /*
  * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Signal-to-Noise Variance (SNV) estimator:

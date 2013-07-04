@@ -31,7 +31,7 @@
 #ifndef INCLUDED_GN3S_API_H
 #define INCLUDED_GN3S_API_H
 
-#include <gruel/attributes.h>
+#include <gnuradio/attributes.h>
 
 #ifdef gr_gn3s_EXPORTS
 #  define GN3S_API __GR_ATTR_EXPORT

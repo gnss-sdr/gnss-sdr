@@ -29,11 +29,11 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
 )
 
 add_library(pvt_lib ${PVT_LIB_SOURCES})
-target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${ARMADILLO_LIBRARIES} )
+target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES} )

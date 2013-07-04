@@ -32,7 +32,7 @@
 #include "null_sink_output_filter.h"
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include <gr_io_signature.h>
+#include <gnuradio/io_signature.h>
 #include "configuration_interface.h"
 
 using google::LogMessage;
@@ -41,9 +41,9 @@ NullSinkOutputFilter::NullSinkOutputFilter(ConfigurationInterface* configuration
         std::string role,
         unsigned int in_streams,
         unsigned int out_streams) :
-        role_(role),
-        in_streams_(in_streams),
-        out_streams_(out_streams)
+                role_(role),
+                in_streams_(in_streams),
+                out_streams_(out_streams)
 {
     std::string default_item_type = "short";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
@@ -64,7 +64,7 @@ NullSinkOutputFilter::NullSinkOutputFilter(ConfigurationInterface* configuration
             LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Using float";
             item_size_ = sizeof(float);
         }
-    sink_ = gr_make_null_sink(item_size_);
+    sink_ = gr::blocks::null_sink::make(item_size_);
     DLOG(INFO) << "null_sink(" << sink_->unique_id() << ")";
 }
 
@@ -75,29 +75,30 @@ NullSinkOutputFilter::~NullSinkOutputFilter()
 
 
 
-void NullSinkOutputFilter::connect(gr_top_block_sptr top_block)
+void NullSinkOutputFilter::connect(gr::top_block_sptr top_block)
 {
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 
-void NullSinkOutputFilter::disconnect(gr_top_block_sptr top_block)
+void NullSinkOutputFilter::disconnect(gr::top_block_sptr top_block)
 {
     // Nothing to connect
 }
 
 
 
-gr_basic_block_sptr NullSinkOutputFilter::get_left_block()
+gr::basic_block_sptr NullSinkOutputFilter::get_left_block()
 {
     return sink_;
 }
 
 
 
-gr_basic_block_sptr NullSinkOutputFilter::get_right_block()
+gr::basic_block_sptr NullSinkOutputFilter::get_right_block()
 {
     LOG_AT_LEVEL(WARNING) << "Right block of a signal sink should not be retrieved";
-    return gr_block_sptr();
+    //return gr::blocks::sptr::make();
+    return sink_;
 }

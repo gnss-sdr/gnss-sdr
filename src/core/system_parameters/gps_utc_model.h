@@ -42,11 +42,8 @@
  */
 class Gps_Utc_Model
 {
-private:
-
 public:
-
-	bool valid;
+    bool valid;
     // UTC parameters
     double d_A1;          //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s/s]
     double d_A0;          //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200E) [s]

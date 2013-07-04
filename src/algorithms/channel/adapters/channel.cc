@@ -39,8 +39,8 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
-#include <gnuradio/gr_io_signature.h>
-#include <gnuradio/gr_message.h>
+#include <gnuradio/io_signature.h>
+#include <gnuradio/message.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -50,7 +50,7 @@ using google::LogMessage;
 Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
         GNSSBlockInterface *pass_through, AcquisitionInterface *acq,
         TrackingInterface *trk, TelemetryDecoderInterface *nav,
-        std::string role, std::string implementation, gr_msg_queue_sptr queue) :
+        std::string role, std::string implementation, boost::shared_ptr<gr::msg_queue> queue) :
                 pass_through_(pass_through), acq_(acq), trk_(trk), nav_(nav),
                 role_(role), implementation_(implementation), channel_(channel),
                 queue_(queue)
@@ -84,9 +84,10 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     float threshold = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_)
     		+ ".threshold",0.0);
-    if(threshold==0.0)	threshold = configuration->property("Acquisition.threshold",0.0);
+    if(threshold==0.0)	threshold = configuration->property("Acquisition.threshold",0);
 
     acq_->set_threshold(threshold);
+
 
     repeat_ = configuration->property("Acquisition" + boost::lexical_cast<
             std::string>(channel_) + ".repeat_satellite", false);
@@ -119,7 +120,7 @@ Channel::~Channel()
 
 
 
-void Channel::connect(gr_top_block_sptr top_block)
+void Channel::connect(gr::top_block_sptr top_block)
 {
     if (connected_)
         {
@@ -142,7 +143,7 @@ void Channel::connect(gr_top_block_sptr top_block)
 
 
 
-void Channel::disconnect(gr_top_block_sptr top_block)
+void Channel::disconnect(gr::top_block_sptr top_block)
 {
     if (!connected_)
         {
@@ -161,14 +162,14 @@ void Channel::disconnect(gr_top_block_sptr top_block)
 
 
 
-gr_basic_block_sptr Channel::get_left_block()
+gr::basic_block_sptr Channel::get_left_block()
 {
     return pass_through_->get_left_block();
 }
 
 
 
-gr_basic_block_sptr Channel::get_right_block()
+gr::basic_block_sptr Channel::get_right_block()
 {
     return nav_->get_right_block();
 }

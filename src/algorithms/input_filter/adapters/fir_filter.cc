@@ -32,8 +32,6 @@
 #include "configuration_interface.h"
 #include <string>
 #include <boost/lexical_cast.hpp>
-#include <gnuradio/gr_io_signature.h>
-#include <gnuradio/gr_file_sink.h>
 #include <gnuradio/filter/pm_remez.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -42,7 +40,7 @@ using google::LogMessage;
 
 FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
+        boost::shared_ptr<gr::msg_queue> queue) :
                 config_(configuration), role_(role), in_streams_(in_streams),
                 out_streams_(out_streams), queue_(queue)
 {
@@ -62,7 +60,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            file_sink_ = gr_make_file_sink(item_size, dump_filename_.c_str());
+            file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
 }
 
@@ -73,7 +71,7 @@ FirFilter::~FirFilter()
 
 
 
-void FirFilter::connect(gr_top_block_sptr top_block)
+void FirFilter::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -87,7 +85,7 @@ void FirFilter::connect(gr_top_block_sptr top_block)
 
 
 
-void FirFilter::disconnect(gr_top_block_sptr top_block)
+void FirFilter::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
@@ -97,14 +95,14 @@ void FirFilter::disconnect(gr_top_block_sptr top_block)
 
 
 
-gr_basic_block_sptr FirFilter::get_left_block()
+gr::basic_block_sptr FirFilter::get_left_block()
 {
     return fir_filter_ccf_;
 }
 
 
 
-gr_basic_block_sptr FirFilter::get_right_block()
+gr::basic_block_sptr FirFilter::get_right_block()
 {
     return fir_filter_ccf_;
 }
@@ -165,6 +163,7 @@ void FirFilter::init()
 
     std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
     int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
+
     // pm_remez implements the Parks-McClellan FIR filter design.
     // It calculates the optimal (in the Chebyshev/minimax sense) FIR filter
     // impulse response given a set of band edges, the desired response on

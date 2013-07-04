@@ -37,7 +37,7 @@
 #ifndef GNSS_SDR_NCO_LIB_CC_H_
 #define	GNSS_SDR_NCO_LIB_CC_H_
 
-#include <gr_fxpt.h>
+#include <gnuradio/fxpt.h>
 #include <xmmintrin.h>
 #include <sse_mathfun.h>
 #include <cmath>

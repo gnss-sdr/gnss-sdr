@@ -510,7 +510,7 @@ std::string Nmea_Printer::get_GPGSA()
     sentence_str << std::hex << (int)checksum;
 
     // end NMEA sentence
-    sentence_str<<"\r\n";
+    sentence_str << "\r\n";
     return sentence_str.str();
 }
 
@@ -521,7 +521,7 @@ std::string Nmea_Printer::get_GPGSV()
 {
     // GSV-GNSS Satellites in View
     // Notice that NMEA 2.1 only supports 12 channels
-    int n_sats_used=d_PVT_data->d_valid_observations;
+    int n_sats_used = d_PVT_data->d_valid_observations;
     std::stringstream sentence_str;
     std::stringstream frame_str;
     std::string sentence_header;
@@ -618,11 +618,11 @@ std::string Nmea_Printer::get_GPGGA()
 
     if (d_PVT_data->d_flag_averaging == true)
         {
-            MSL_altitude=d_PVT_data->d_avg_height_m;
+            MSL_altitude = d_PVT_data->d_avg_height_m;
         }
     else
         {
-            MSL_altitude=d_PVT_data->d_height_m;
+            MSL_altitude = d_PVT_data->d_height_m;
         }
 
     std::stringstream sentence_str;

@@ -36,7 +36,6 @@
 #include <map>
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
-
 #include "GPS_L1_CA.h"
 
 
@@ -115,7 +114,7 @@ public:
     bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
 
     // clock terms derived from ephemeris data
-    double d_satClkDrift;     // GPS clock error
+    double d_satClkDrift;    // GPS clock error
     double d_dtr;            // relativistic clock correction term
 
     // satellite positions

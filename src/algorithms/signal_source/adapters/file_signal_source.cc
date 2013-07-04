@@ -41,7 +41,7 @@
 #include <gflags/gflags.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include <gnuradio/gr_io_signature.h>
+//#include <gnuradio/io_signature.h>
 
 using google::LogMessage;
 
@@ -51,12 +51,12 @@ DEFINE_string(signal_source, "-",
 
 FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams, unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
-		        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+        boost::shared_ptr<gr::msg_queue> queue) :
+		                role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "short";
-    std::string default_dump_filename = "../data/my_capture.dat";
+    std::string default_dump_filename = "../data/my_capture_dump.dat";
 
     samples_ = configuration->property(role + ".samples", 0);
     sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
@@ -91,7 +91,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         }
     try
     {
-            file_source_ = gr_make_file_source(item_size_, filename_.c_str(), repeat_);
+            file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
+
     }
     catch (const std::exception &e)
     {
@@ -110,7 +111,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             <<"gnss-sdr --config_file=my_GNSS_SDR_configuration.conf"
             << std::endl;
             LOG_AT_LEVEL(INFO) << "file_signal_source: Unable to open the samples file "
-                    << filename_.c_str() << ", exiting the program.";
+                               << filename_.c_str() << ", exiting the program.";
             throw(e);
     }
 
@@ -141,9 +142,11 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
             if (size > 0)
                 {
-                    samples_ = floor((double)size / (double)item_size()) - ceil(0.1 * (double)sampling_frequency_); //process all the samples available in the file excluding the last 100 ms
+                    samples_ = floor((double)size / (double)item_size() - ceil(0.002 * (double)sampling_frequency_)); //process all the samples available in the file excluding the last 2 ms
                 }
         }
+    std::cout << samples_ << std::endl;
+    //if(samples_ > 0) samples_ = 0;
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
     signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
@@ -155,13 +158,15 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
     if (dump_)
         {
-            sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+            //sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
+            sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
         }
 
     if (enable_throttle_control_)
         {
-            throttle_ = gr_make_throttle(item_size_, sampling_frequency_);
+            throttle_ = gr::blocks::throttle::make(item_size_, sampling_frequency_);
+
         }
     DLOG(INFO) << "File source filename " << filename_;
     DLOG(INFO) << "Samples " << samples_;
@@ -182,54 +187,54 @@ FileSignalSource::~FileSignalSource()
 
 
 
-void FileSignalSource::connect(gr_top_block_sptr top_block)
+void FileSignalSource::connect(gr::top_block_sptr top_block)
 {
-  if (samples_ > 0)
-    {
-      if (enable_throttle_control_ == true)
+    if (samples_ > 0)
         {
-          top_block->connect(file_source_, 0, throttle_, 0);
-          DLOG(INFO) << "connected file source to throttle";
-          top_block->connect(throttle_, 0, valve_, 0);
-          DLOG(INFO) << "connected throttle to valve";
-          if (dump_)
-            {
-              top_block->connect(valve_, 0, sink_, 0);
-              DLOG(INFO) << "connected valve to file sink";
-            }
+            if (enable_throttle_control_ == true)
+                {
+                    top_block->connect(file_source_, 0, throttle_, 0);
+                    DLOG(INFO) << "connected file source to throttle";
+                    top_block->connect(throttle_, 0, valve_, 0);
+                    DLOG(INFO) << "connected throttle to valve";
+                    if (dump_)
+                        {
+                            top_block->connect(valve_, 0, sink_, 0);
+                            DLOG(INFO) << "connected valve to file sink";
+                        }
+                }
+            else
+                {
+                    top_block->connect(file_source_, 0, valve_, 0);
+                    DLOG(INFO) << "connected file source to valve";
+                    if (dump_)
+                        {
+                            top_block->connect(valve_, 0, sink_, 0);
+                            DLOG(INFO) << "connected valve to file sink";
+                        }
+                }
         }
-      else
+    else
         {
-          top_block->connect(file_source_, 0, valve_, 0);
-          DLOG(INFO) << "connected file source to valve";
-          if (dump_)
-            {
-              top_block->connect(valve_, 0, sink_, 0);
-              DLOG(INFO) << "connected valve to file sink";
-            }
+            if (enable_throttle_control_ == true)
+                {
+                    top_block->connect(file_source_, 0, throttle_, 0);
+                    DLOG(INFO) << "connected file source to throttle";
+                    if (dump_)
+                        {
+                            top_block->connect(file_source_, 0, sink_, 0);
+                            DLOG(INFO) << "connected file source to sink";
+                        }
+                }
+            else
+                {
+                    if (dump_)
+                        {
+                            top_block->connect(file_source_, 0, sink_, 0);
+                            DLOG(INFO) << "connected file source to sink";
+                        }
+                }
         }
-    }
-  else
-    {
-      if (enable_throttle_control_ == true)
-        {
-          top_block->connect(file_source_, 0, throttle_, 0);
-          DLOG(INFO) << "connected file source to throttle";
-          if (dump_)
-            {
-              top_block->connect(file_source_, 0, sink_, 0);
-              DLOG(INFO) << "connected file source to sink";
-            }
-        }
-      else
-        {
-          if (dump_)
-            {
-              top_block->connect(file_source_, 0, sink_, 0);
-              DLOG(INFO) << "connected file source to sink";
-            }
-        }
-    }
 }
 
 
@@ -237,85 +242,86 @@ void FileSignalSource::connect(gr_top_block_sptr top_block)
 
 
 
-void FileSignalSource::disconnect(gr_top_block_sptr top_block)
+void FileSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-  if (samples_ > 0)
-    {
-      if (enable_throttle_control_ == true)
+    if (samples_ > 0)
         {
-          top_block->disconnect(file_source_, 0, throttle_, 0);
-          DLOG(INFO) << "disconnected file source to throttle";
-          top_block->disconnect(throttle_, 0, valve_, 0);
-          DLOG(INFO) << "disconnected throttle to valve";
-          if (dump_)
-            {
-              top_block->disconnect(valve_, 0, sink_, 0);
-              DLOG(INFO) << "disconnected valve to file sink";
-            }
+            if (enable_throttle_control_ == true)
+                {
+                    top_block->disconnect(file_source_, 0, throttle_, 0);
+                    DLOG(INFO) << "disconnected file source to throttle";
+                    top_block->disconnect(throttle_, 0, valve_, 0);
+                    DLOG(INFO) << "disconnected throttle to valve";
+                    if (dump_)
+                        {
+                            top_block->disconnect(valve_, 0, sink_, 0);
+                            DLOG(INFO) << "disconnected valve to file sink";
+                        }
+                }
+            else
+                {
+                    top_block->disconnect(file_source_, 0, valve_, 0);
+                    DLOG(INFO) << "disconnected file source to valve";
+                    if (dump_)
+                        {
+                            top_block->disconnect(valve_, 0, sink_, 0);
+                            DLOG(INFO) << "disconnected valve to file sink";
+                        }
+                }
         }
-      else
+    else
         {
-          top_block->disconnect(file_source_, 0, valve_, 0);
-          DLOG(INFO) << "disconnected file source to valve";
-          if (dump_)
-            {
-              top_block->disconnect(valve_, 0, sink_, 0);
-              DLOG(INFO) << "disconnected valve to file sink";
-            }
+            if (enable_throttle_control_ == true)
+                {
+                    top_block->disconnect(file_source_, 0, throttle_, 0);
+                    DLOG(INFO) << "disconnected file source to throttle";
+                    if (dump_)
+                        {
+                            top_block->disconnect(file_source_, 0, sink_, 0);
+                            DLOG(INFO) << "disconnected file source to sink";
+                        }
+                }
+            else
+                {
+                    if (dump_)
+                        {
+                            top_block->disconnect(file_source_, 0, sink_, 0);
+                            DLOG(INFO) << "disconnected file source to sink";
+                        }
+                }
         }
-    }
-  else
-    {
-      if (enable_throttle_control_ == true)
-        {
-          top_block->disconnect(file_source_, 0, throttle_, 0);
-          DLOG(INFO) << "disconnected file source to throttle";
-          if (dump_)
-            {
-              top_block->disconnect(file_source_, 0, sink_, 0);
-              DLOG(INFO) << "disconnected file source to sink";
-            }
-        }
-      else
-        {
-          if (dump_)
-            {
-              top_block->disconnect(file_source_, 0, sink_, 0);
-              DLOG(INFO) << "disconnected file source to sink";
-            }
-        }
-    }
 }
 
 
 
 
 
-gr_basic_block_sptr FileSignalSource::get_left_block()
+gr::basic_block_sptr FileSignalSource::get_left_block()
 {
-  LOG_AT_LEVEL(WARNING) << "Left block of a signal source should not be retrieved";
-  return gr_block_sptr();
+    LOG_AT_LEVEL(WARNING) << "Left block of a signal source should not be retrieved";
+    //return gr_block_sptr();
+    return gr::blocks::file_source::sptr();
 }
 
 
 
 
 
-gr_basic_block_sptr FileSignalSource::get_right_block()
+gr::basic_block_sptr FileSignalSource::get_right_block()
 {
-  if (samples_ > 0)
-    {
-      return valve_;
-    }
-  else
-    {
-      if (enable_throttle_control_ == true)
+    if (samples_ > 0)
         {
-          return throttle_;
+            return valve_;
         }
-      else
+    else
         {
-          return file_source_;
+            if (enable_throttle_control_ == true)
+                {
+                    return throttle_;
+                }
+            else
+                {
+                    return file_source_;
+                }
         }
-    }
 }

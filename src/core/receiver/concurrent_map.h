@@ -42,7 +42,7 @@ template<typename Data>
  */
 class concurrent_map
 {
-	typedef typename std::map<int,Data>::iterator Data_iterator; //iterator is ambit dependant
+    typedef typename std::map<int,Data>::iterator Data_iterator; //iterator is ambit dependant
 private:
     std::map<int,Data> the_map;
     boost::mutex the_mutex;
@@ -50,16 +50,16 @@ public:
     void write(int key, Data const& data)
     {
         boost::mutex::scoped_lock lock(the_mutex);
-        the_map.insert(std::pair<int,Data>(key,data));
+        the_map.insert(std::pair<int, Data>(key, data));
         lock.unlock();
     }
 
     std::map<int,Data> get_map_copy()
-       {
-           boost::mutex::scoped_lock lock(the_mutex);
-           return the_map;
-           lock.unlock();
-       }
+    {
+        boost::mutex::scoped_lock lock(the_mutex);
+        return the_map;
+        lock.unlock();
+    }
 
     int size()
     {
@@ -70,18 +70,21 @@ public:
 
     bool read(int key, Data& p_data)
     {
-      boost::mutex::scoped_lock lock(the_mutex);
-      Data_iterator data_iter;
- 	  data_iter = the_map.find(key);
-      if (data_iter != the_map.end())
-        {
-    	  p_data= data_iter->second;
-          lock.unlock();
-    	  return true;
-        }else{
-            lock.unlock();
-            return false;
-        }
+        boost::mutex::scoped_lock lock(the_mutex);
+        Data_iterator data_iter;
+        data_iter = the_map.find(key);
+        if (data_iter != the_map.end())
+            {
+                p_data = data_iter->second;
+                lock.unlock();
+                return true;
+            }
+        else
+            {
+                lock.unlock();
+                return false;
+            }
     }
 };
+
 #endif

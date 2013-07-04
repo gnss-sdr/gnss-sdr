@@ -29,9 +29,10 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
-     ${GNURADIO_CORE_INCLUDE_DIRS}
-     ${GNURADIO_GRUEL_INCLUDE_DIRS}
+     ${Boost_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
 )
 
 add_library(acq_adapters ${ACQ_ADAPTER_SOURCES})
-target_link_libraries(acq_adapters gnss_sp_libs acq_gr_blocks ${GR_BLOCKS_LIBRARIES})
+target_link_libraries(acq_adapters gnss_sp_libs acq_gr_blocks ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})

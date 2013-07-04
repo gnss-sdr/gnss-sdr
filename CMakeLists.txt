@@ -39,8 +39,8 @@ list(APPEND CMAKE_MODULE_PATH ${gnss-sdr_project_SOURCE_DIR}/cmake/Modules)
 
 # Set the version information here
 set(VERSION_INFO_MAJOR_VERSION 0)
-set(VERSION_INFO_API_COMPAT    0)
-set(VERSION_INFO_MINOR_VERSION 1)
+set(VERSION_INFO_API_COMPAT    2)
+set(VERSION_INFO_MINOR_VERSION 0.svn)
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
 
 # Append -O2 optimization flag for Debug builds
@@ -49,6 +49,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 option(INSTALL_GNURADIO "Install GNU Radio and all its dependencies" OFF)
 
 file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
 
 ########################################################################
 # Environment setup
@@ -65,7 +66,7 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      set(OperatingSystem "Mac OS X")
      set(OS_IS_MACOSX TRUE)
-     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
+     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
      set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -86,108 +87,6 @@ else()
 endif(GTEST_DIR)
 
 
-################################################################################
-# GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
-################################################################################
-
-if(INSTALL_GNURADIO)
-     if(OperatingSystem MATCHES "Linux")
-          message("Trying to install GNU Radio and all its dependencies.")
-          message("This process can take a long time.")
-          set(GNURADIO_RELEASE "3.6.3")
-          set(UHD_RELEASE "003_005_000")
-          set(INSTALL_GNURADIO CACHE BOOL OFF FORCE)
-          file(DOWNLOAD http://www.sbrac.org/files/build-gnuradio
-               ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
-          )
-          file(COPY ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
-               DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
-               FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-          )
-          execute_process(
-               COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/build-gnuradio -l ${CMAKE_CURRENT_BINARY_DIR}/build-gnuradio.log
-               WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
-          )
-          #  The flags -gt v${GNURADIO_RELEASE} -ut release_${UHD_RELEASE} do not work :-(     
-     else(OperatingSystem MATCHES "Linux")
-          message( "The script http://www.sbrac.org/files/build-gnuradio does not work in your operating system.")
-          message( "Please visit http://gnuradio.org and find out how to install GNU Radio.")
-          message( "Once installed, run 'cmake ${RELATIVE_CMAKE_CALL}' again.")
-     endif(OperatingSystem MATCHES "Linux")
-endif(INSTALL_GNURADIO)
-
-find_package(GnuradioCore)
-if(NOT GNURADIO_CORE_FOUND)
-     if(OperatingSystem MATCHES "Linux")       
-          message( "If you are using Ubuntu, Fedora, RedHat, Debian or Mint")
-          message( "use 'cmake ${RELATIVE_CMAKE_CALL} -DINSTALL_GNURADIO=ON' to install GNU Radio and all its dependencies." )
-     endif(OperatingSystem MATCHES "Linux")
-     message(FATAL_ERROR "Please install GNU Radio and all its dependencies. Visit http://gnuradio.org")
-endif(NOT GNURADIO_CORE_FOUND)
-
-find_library(
-     GNURADIO_CORE_LIBRARIES
-     NAMES gnuradio-core
-     PATHS usr/local/lib
-          /usr/local/lib64
-          /usr/lib
-          /usr/lib64
-)
-
-find_library(
-     GR_FILTER_LIBRARIES
-     NAMES gnuradio-filter
-     PATHS usr/local/lib
-          /usr/local/lib64
-          /usr/lib
-          /usr/lib64
-)
-find_library(
-     GR_FFT_LIBRARIES
-     NAMES gnuradio-fft
-     PATHS usr/local/lib
-          /usr/local/lib64
-          /usr/lib
-          /usr/lib64
-)
-find_library(
-     GR_BLOCKS_LIBRARIES
-     NAMES gnuradio-blocks
-     PATHS usr/local/lib
-          /usr/local/lib64
-          /usr/lib
-          /usr/lib64
-)  
-
-find_package(Gruel)
-if(NOT GRUEL_FOUND)
-    message(FATAL_ERROR "Gruel required to build gnss-sdr")
-endif()
-link_libraries(${GRUEL_LIBRARIES})
-include_directories(${GRUEL_INCLUDE_DIRS})
-
-find_package(UHD)
-if(NOT UHD_FOUND)
-    message(FATAL_ERROR "UHD required to build gnss-sdr")
-endif()
-
-find_package(GnuradioUHD)
-if(NOT GNURADIO_UHD_FOUND)
-    message(FATAL_ERROR "Gnuradio UHD required to build gnss-sdr")
-endif()
-
-find_package(Volk)
-if(NOT VOLK_FOUND)
-    message(FATAL_ERROR "Volk required to build gnss-sdr")
-endif()
-find_library(
-     VOLK_LIBRARIES
-     NAMES volk
-     PATHS usr/local/lib
-          /usr/local/lib64
-          /usr/lib
-          /usr/lib64
-)
 
 ################################################################################
 # Boost - http://www.boost.org
@@ -210,8 +109,50 @@ find_package(Boost COMPONENTS date_time system filesystem thread serialization R
 if(NOT Boost_FOUND)
      message(FATAL_ERROR "Fatal error: Boost (version >=1.42.0) required.")
 endif(NOT Boost_FOUND)
-include_directories(${Boost_INCLUDE_DIRS})
 
+
+################################################################################
+# GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
+################################################################################
+
+if(INSTALL_GNURADIO)
+     if(OperatingSystem MATCHES "Linux")
+          message("Trying to install GNU Radio and all its dependencies.")
+          message("This process can take a long time.")
+          #set(GNURADIO_RELEASE "3.6.3")
+          #set(UHD_RELEASE "003_005_000")
+          set(INSTALL_GNURADIO CACHE BOOL OFF FORCE)
+          file(DOWNLOAD http://www.sbrac.org/files/build-gnuradio
+               ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
+          )
+          file(COPY ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
+               DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
+               FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+          )
+          execute_process(
+               COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/build-gnuradio -l ${CMAKE_CURRENT_BINARY_DIR}/build-gnuradio.log
+               WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
+          )
+          #  The flags -gt v${GNURADIO_RELEASE} -ut release_${UHD_RELEASE} do not work :-(     
+     else(OperatingSystem MATCHES "Linux")
+          message( "The script http://www.sbrac.org/files/build-gnuradio does not work in your operating system.")
+          message( "Please visit http://gnuradio.org and find out how to install GNU Radio.")
+          message( "Once installed, run 'cmake ${RELATIVE_CMAKE_CALL}' again.")
+     endif(OperatingSystem MATCHES "Linux")
+endif(INSTALL_GNURADIO)
+
+
+find_package(GnuradioRuntime)
+find_package(GnuradioBlocks)
+find_package(UHD)
+find_package(GnuradioUHD)
+#find_library(GnuradioAnalog)
+find_package(GnuradioFilter)
+find_package(GnuradioFft)
+find_package(Volk)
+if(NOT GNURADIO_RUNTIME_FOUND)
+    message(FATAL_ERROR "gnuradio-runtime 3.7 or later is required to build gnss-sdr")
+endif()
 
 
 
@@ -219,15 +160,16 @@ include_directories(${Boost_INCLUDE_DIRS})
 ################################################################################
 # gflags - http://code.google.com/p/gflags/
 ################################################################################
-
+set(LOCAL_GFLAGS false CACHE STRING "GFlags installed on the system")
 find_package(GFlags)
 
-if (NOT GFlags_FOUND OR LOCAL_GFLAGS)
+if (NOT GFlags_FOUND)
      message (" gflags library has not been found.")
      message (" gflags will be downloaded and built automatically ")
      message (" when doing 'make'. ")
      set(gflags_RELEASE 2.0 CACHE STRING "Local gflags release")
      set(gflags_MD5 "5fd4554d2ba84bf222a2fec0870d28df")
+     
      ExternalProject_Add(
           gflags-${gflags_RELEASE}
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
@@ -256,10 +198,8 @@ if (NOT GFlags_FOUND OR LOCAL_GFLAGS)
      link_directories(${GFlags_LIBRARY_PATH})
      set(GFlags_lib ${GFlags_LIBS}  CACHE FILEPATH "Local Gflags library")
      set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
-     set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and build automatically")
-endif(NOT GFlags_FOUND OR LOCAL_GFLAGS)
-
-include_directories(${GFlags_INCLUDE_DIRS})
+     set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and build automatically" FORCE)
+endif(NOT GFlags_FOUND)
 
 
 
@@ -270,14 +210,14 @@ include_directories(${GFlags_INCLUDE_DIRS})
 find_package(GLOG)
 if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
      message (" glog library has not been found")
-     if(LOCAL_GFLAGS)
+     if(NOT GFlags_FOUND)
           message(" or it is likely not linked to gflags.")
-     endif(LOCAL_GFLAGS)
+     endif(NOT GFlags_FOUND)
      message (" glog will be downloaded and built automatically ")
      message (" when doing 'make'. ")
      set(glog_RELEASE 0.3.3)
      set(glog_MD5 "a6fd2c22f8996846e34c763422717c18")
-     if(LOCAL_GFLAGS) 
+     if(LOCAL_GFLAGS)
           file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
@@ -288,11 +228,20 @@ export LIBS=${GFlags_SHARED_LIBS}
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
                                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-          set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)                      
      else(LOCAL_GFLAGS)
-          set(GLOG_CONFIGURE ../../thirdparty/glog/glog-${glog_RELEASE}/configure)
+     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+ "#!/bin/sh
+ export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
+ export LDFLAGS=-L${GFlags_LIBRARY_DIRS}
+ export LIBS=${GFlags_LIBS}
+ ../../thirdparty/glog/glog-${glog_RELEASE}/configure")
+          file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+               DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+               FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                                GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
      endif(LOCAL_GFLAGS)
-    
+
+     set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)   
      ExternalProject_Add(
           glog-${glog_RELEASE}
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
@@ -301,7 +250,7 @@ export LIBS=${GFlags_SHARED_LIBS}
           URL_MD5 ${glog_MD5}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
+          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR> 
           BUILD_COMMAND make
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
@@ -315,8 +264,8 @@ export LIBS=${GFlags_SHARED_LIBS}
      set(GLOG_LIBRARIES 
           ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog.a 
      )
+     set(LOCAL_GLOG true)
 endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
-include_directories(${GLOG_INCLUDE_DIRS})
 
 
 
@@ -328,7 +277,7 @@ set(GCC_GPERFTOOLS_FLAGS "")
 find_package(Gperftools)
 if ( NOT GPERFTOOLS_FOUND )
   message("The optional library GPerftools has not been found.")
-else()
+else( NOT GPERFTOOLS_FOUND )
   message ( "GPerftools library found." )
   link_libraries(profiler tcmalloc)
 endif( NOT GPERFTOOLS_FOUND )
@@ -401,23 +350,23 @@ if(NOT ARMADILLO_FOUND)
      message (" Armadillo has not been found.")
      message (" Armadillo will be downloaded and built automatically ")
      message (" when doing 'make'. ")
-     set(armadillo_RELEASE 3.6.2)
-     set(armadillo_MD5 "0ccb90f5f40d936a59785eff10c362ad")
+     set(armadillo_RELEASE 3.810.2)
+     set(armadillo_MD5 "f91e3aff360d6a21fa7db36bb3dfe35f")
      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
           set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
           file(WRITE ${ARMADILLO_PATCH_FILE} "")
      else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
           set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
           file(WRITE ${ARMADILLO_PATCH_FILE}
-"43c43
-< set(ARMA_USE_WRAPPER true )  # set this to false if you prefer to directly link with LAPACK and/or BLAS (eg. -llapack -lblas) instead of -larmadillo
+"35c35
+< set(ARMA_USE_WRAPPER true )
 ---
-> set(ARMA_USE_WRAPPER false)  # set this to false if you prefer to directly link with LAPACK and/or BLAS (eg. -llapack -lblas) instead of -larmadillo
-274c274
+> set(ARMA_USE_WRAPPER false)
+292c292
 < add_library( armadillo SHARED src/wrap_libs )
 ---
 > add_library( armadillo STATIC src/wrap_libs )
-")                  
+")                     
      endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
      ExternalProject_Add(
           armadillo-${armadillo_RELEASE}
@@ -460,8 +409,8 @@ endif($ENV{GN3S_DRIVER} )
 
 if( $ENV{RTLSDR_DRIVER} )
     message( "RTLSDR_DRIVER variable found." )
-    # find libosmosdr
-    # find gr-osmosdr
+    # find libosmosdr (done in src/algorithms/signal_sources/adapters)
+    # find gr-osmosdr (done in src/algorithms/signal_sources/adapters)
 endif($ENV{RTLSDR_DRIVER} )
 
 
@@ -469,13 +418,19 @@ endif($ENV{RTLSDR_DRIVER} )
 # Setup the include paths
 ########################################################################
 
-include_directories(
-    ${GNURADIO_CORE_INCLUDE_DIRS}
-    ${GLOG_INCLUDE_DIRS}
-    ${GFlags_INCLUDE_DIRS}
-    ${UHD_INCLUDE_DIRS}
-    ${GPERFTOOLS_INCLUDE_DIRS}
-)
+#include_directories(
+#    ${Boost_INCLUDE_DIRS}
+#    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+#    ${GNURADIO_BLOCKS_INCLUDE_DIRS}
+#    ${UHD_INCLUDE_DIRS}
+#    ${GNURADIO_UHD_INCLUDE_DIRS}
+#    ${GNURADIO_FILTER_INCLUDE_DIRS}
+#    ${GNURADIO_FFT_INCLUDE_DIRS}
+#    ${ARMADILLO_INCLUDE_DIRS}
+#    ${GLOG_INCLUDE_DIRS}
+#    ${GFlags_INCLUDE_DIRS}
+#    ${GPERFTOOLS_INCLUDE_DIRS}
+#)
 
 
 ########################################################################
@@ -487,6 +442,9 @@ include_directories(
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
      set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++0x")
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wno-c++11-narrowing")
+endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 # Add warning flags 
 # For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
@@ -514,18 +472,18 @@ endif(GPERFTOOLS_FOUND)
 
 # Detect 64-bits machine
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+     # message("64-bits architecture detected.") 
      #set(MY_CXX_FLAGS "${MY_CXX_FLAGS}  ...")
      # link_libraries(pthread) # Needed by Fedora 18
-     message("64-bits architecture detected.") 
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
 list(APPEND CMAKE_CXX_FLAGS ${MY_CXX_FLAGS})
 
-#add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
+
+
 
 ########################################################################
 # Add subdirectories (in order of deps)
 ########################################################################
 add_subdirectory(src)
 
- 

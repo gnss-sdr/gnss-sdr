@@ -35,8 +35,8 @@
 #ifndef GNSS_SDR_CHANNEL_H_
 #define GNSS_SDR_CHANNEL_H_
 
-#include <gnuradio/gr_null_sink.h>
-#include <gnuradio/gr_msg_queue.h>
+//#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/msg_queue.h>
 #include "channel_interface.h"
 #include "gps_l1_ca_channel_fsm.h"
 #include "control_message_factory.h"
@@ -62,13 +62,13 @@ public:
             GNSSBlockInterface *pass_through, AcquisitionInterface *acq,
             TrackingInterface *trk, TelemetryDecoderInterface *nav,
             std::string role, std::string implementation,
-            gr_msg_queue_sptr queue);
+            boost::shared_ptr<gr::msg_queue> queue);
     //! Virtual destructor
     virtual ~Channel();
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
     std::string role(){ return role_; }
 
     //! Returns "Channel"
@@ -103,7 +103,7 @@ private:
     int message_;
     bool repeat_;
     GpsL1CaChannelFsm channel_fsm_;
-    gr_msg_queue_sptr queue_;
+    boost::shared_ptr<gr::msg_queue> queue_;
     concurrent_queue<int> channel_internal_queue_;
     boost::thread ch_thread_;
     void run();

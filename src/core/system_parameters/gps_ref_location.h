@@ -41,15 +41,11 @@
  */
 class Gps_Ref_Location
 {
-private:
-
 public:
-
-	bool valid;
+    bool valid;
     double lat;
     double lon;
     double uncertainty;
-
     /*!
      * Default constructor
      */

@@ -37,7 +37,7 @@
 #include <gtest/gtest.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/filesystem.hpp>
@@ -47,9 +47,9 @@
 #include "control_thread.h"
 
 
-#include "arithmetic/complex_arithmetic_libc.cc"
-#include "arithmetic/correlations_libc.cc"
-#include "arithmetic/cordic_test.cc"
+//#include "arithmetic/complex_arithmetic_libc.cc"
+//#include "arithmetic/correlations_libc.cc"
+//#include "arithmetic/cordic_test.cc"
 #include "configuration/file_configuration_test.cc"
 #include "configuration/in_memory_configuration_test.cc"
 #include "control_thread/control_message_factory_test.cc"

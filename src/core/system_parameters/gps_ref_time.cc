@@ -33,7 +33,6 @@
 
 Gps_Ref_Time::Gps_Ref_Time()
 {
-	valid=false;
-
+    valid = false;
 }
 

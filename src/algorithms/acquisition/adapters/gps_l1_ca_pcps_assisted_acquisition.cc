@@ -37,7 +37,6 @@
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include <iostream>
-#include <gnuradio/gr_io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -46,9 +45,9 @@ using google::LogMessage;
 GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
-        gr_msg_queue_sptr queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(
-            queue)
+        boost::shared_ptr<gr::msg_queue> queue) :
+    role_(role), in_streams_(in_streams), out_streams_(out_streams),
+        queue_(queue)
 {
 
     std::string default_item_type = "gr_complex";
@@ -57,7 +56,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration->property(role + ".item_type",
-            default_item_type);
+                                         default_item_type);
 
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration->property(role + ".ifreq", 0);
@@ -67,7 +66,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     sampled_ms_ = configuration->property(role + ".sampled_ms", 1);
     max_dwells_= configuration->property(role + ".max_dwells", 1);
     dump_filename_ = configuration->property(role + ".dump_filename",
-            default_dump_filename);
+                                             default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_
@@ -80,7 +79,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
         item_size_ = sizeof(gr_complex);
         acquisition_cc_ = pcps_make_assisted_acquisition_cc(max_dwells_,sampled_ms_,
         		doppler_max_, doppler_min_, if_, fs_in_, vector_length_, queue_,
-                dump_, dump_filename_);
+                        dump_, dump_filename_);
 
     }
     else
@@ -159,7 +158,7 @@ void GpsL1CaPcpsAssistedAcquisition::reset()
 }
 
 
-void GpsL1CaPcpsAssistedAcquisition::connect(gr_top_block_sptr top_block)
+void GpsL1CaPcpsAssistedAcquisition::connect(gr::top_block_sptr top_block)
 {
 
     //nothing to disconnect, now the tracking uses gr_sync_decimator
@@ -167,19 +166,19 @@ void GpsL1CaPcpsAssistedAcquisition::connect(gr_top_block_sptr top_block)
 }
 
 
-void GpsL1CaPcpsAssistedAcquisition::disconnect(gr_top_block_sptr top_block)
+void GpsL1CaPcpsAssistedAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 
-gr_basic_block_sptr GpsL1CaPcpsAssistedAcquisition::get_left_block()
+gr::basic_block_sptr GpsL1CaPcpsAssistedAcquisition::get_left_block()
 {
     return acquisition_cc_;
 }
 
 
-gr_basic_block_sptr GpsL1CaPcpsAssistedAcquisition::get_right_block()
+gr::basic_block_sptr GpsL1CaPcpsAssistedAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }

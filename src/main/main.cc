@@ -38,7 +38,7 @@
 #include <gflags/gflags.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/msg_queue.h>
 #include "control_thread.h"
 #include <queue>
 #include <boost/thread/mutex.hpp>

@@ -37,8 +37,8 @@
 #include "concurrent_queue.h"
 #include <fstream>
 #include <bitset>
-#include <gnuradio/gr_block.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/block.h>
+#include <gnuradio/msg_queue.h>
 //#include <gnuradio/gr_sync_block.h>
 #include "gnss_satellite.h"
 
@@ -50,13 +50,13 @@ typedef boost::shared_ptr<gps_l1_ca_telemetry_decoder_cc> gps_l1_ca_telemetry_de
 
 gps_l1_ca_telemetry_decoder_cc_sptr
 gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-    int vector_length, gr_msg_queue_sptr queue, bool dump);
+    int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
  *
  */
-class gps_l1_ca_telemetry_decoder_cc : public gr_block
+class gps_l1_ca_telemetry_decoder_cc : public gr::block
 {
 public:
     ~gps_l1_ca_telemetry_decoder_cc();
@@ -65,10 +65,10 @@ public:
     /*!
      * \brief Set the satellite data queue
      */
-    void set_ephemeris_queue(concurrent_queue<Gps_Ephemeris> *ephemeris_queue){d_GPS_FSM.d_ephemeris_queue=ephemeris_queue;}
-    void set_iono_queue(concurrent_queue<Gps_Iono> *iono_queue){d_GPS_FSM.d_iono_queue=iono_queue;}
-    void set_almanac_queue(concurrent_queue<Gps_Almanac> *almanac_queue){d_GPS_FSM.d_almanac_queue=almanac_queue;}
-    void set_utc_model_queue(concurrent_queue<Gps_Utc_Model> *utc_model_queue){d_GPS_FSM.d_utc_model_queue=utc_model_queue;}
+    void set_ephemeris_queue(concurrent_queue<Gps_Ephemeris> *ephemeris_queue){d_GPS_FSM.d_ephemeris_queue = ephemeris_queue;}
+    void set_iono_queue(concurrent_queue<Gps_Iono> *iono_queue){d_GPS_FSM.d_iono_queue = iono_queue;}
+    void set_almanac_queue(concurrent_queue<Gps_Almanac> *almanac_queue){d_GPS_FSM.d_almanac_queue = almanac_queue;}
+    void set_utc_model_queue(concurrent_queue<Gps_Utc_Model> *utc_model_queue){d_GPS_FSM.d_utc_model_queue = utc_model_queue;}
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
@@ -77,9 +77,9 @@ public:
 private:
     friend gps_l1_ca_telemetry_decoder_cc_sptr
     gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
-            int vector_length, gr_msg_queue_sptr queue, bool dump);
-    gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
-            int vector_length, gr_msg_queue_sptr queue, bool dump);
+            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
+            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
     bool gps_word_parityCheck(unsigned int gpsword);
 
     // constants
@@ -111,7 +111,7 @@ private:
     Gps_Navigation_Message d_nav;
     GpsL1CaSubframeFsm d_GPS_FSM;
 
-    gr_msg_queue_sptr d_queue;
+    boost::shared_ptr<gr::msg_queue> d_queue;
     unsigned int d_vector_length;
     bool d_dump;
     Gnss_Satellite d_satellite;

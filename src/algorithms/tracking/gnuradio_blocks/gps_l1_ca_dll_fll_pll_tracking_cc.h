@@ -41,8 +41,8 @@
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-#include <gnuradio/gr_block.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/block.h>
+#include <gnuradio/msg_queue.h>
 //#include <gnuradio/gr_sync_decimator.h>
 #include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
@@ -53,6 +53,7 @@
 #include "correlator.h"
 
 class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc;
+
 typedef boost::shared_ptr<Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc>
 gps_l1_ca_dll_fll_pll_tracking_cc_sptr;
 
@@ -61,7 +62,7 @@ gps_l1_ca_dll_fll_pll_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         int order,
@@ -75,7 +76,7 @@ gps_l1_ca_dll_fll_pll_make_tracking_cc(
 /*!
  * \brief This class implements a DLL and a FLL assisted PLL tracking loop block
  */
-class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc: public gr_block
+class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc: public gr::block
 {
 public:
 
@@ -111,7 +112,7 @@ private:
             long if_freq,
             long fs_in, unsigned
             int vector_length,
-            gr_msg_queue_sptr queue,
+            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             int order,
@@ -124,7 +125,7 @@ private:
             long if_freq,
             long fs_in, unsigned
             int vector_length,
-            gr_msg_queue_sptr queue,
+            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             int order,
@@ -137,7 +138,7 @@ private:
 
     // class private vars
     Gnss_Synchro *d_acquisition_gnss_synchro;
-    gr_msg_queue_sptr d_queue;
+    boost::shared_ptr<gr::msg_queue> d_queue;
     concurrent_queue<int> *d_channel_internal_queue;
     unsigned int d_vector_length;
     bool d_dump;

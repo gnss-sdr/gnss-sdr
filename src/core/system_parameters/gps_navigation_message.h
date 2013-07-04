@@ -39,7 +39,7 @@
 #include <algorithm>
 #include <bitset>
 #include "boost/assign.hpp"
-#include <math.h>
+#include <cmath>
 #include "GPS_L1_CA.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"

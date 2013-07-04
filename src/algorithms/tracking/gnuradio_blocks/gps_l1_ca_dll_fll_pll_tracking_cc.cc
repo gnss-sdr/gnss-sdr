@@ -48,8 +48,8 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
-#include "math.h"
-#include <gnuradio/gr_io_signature.h>
+//#include "math.h"
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -71,7 +71,7 @@ gps_l1_ca_dll_fll_pll_make_tracking_cc(
 		long fs_in,
 		unsigned
         int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump, std::string dump_filename,
         int order,
         float fll_bw_hz,
@@ -98,7 +98,7 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         int order,
@@ -106,14 +106,14 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips) :
-        gr_block ("Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc", gr_make_io_signature (1, 1, sizeof(gr_complex)),
-                gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
+        gr::block("Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
 
-    d_acquisition_gnss_synchro=NULL;
+    d_acquisition_gnss_synchro = NULL;
 
     d_if_freq = (double)if_freq;
     d_fs_in = (double)fs_in;
@@ -124,7 +124,7 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
     // Initialize tracking variables ==========================================
     d_carrier_loop_filter.set_params(fll_bw_hz,pll_bw_hz,order);
 
-    d_code_loop_filter=Tracking_2nd_DLL_filter(GPS_L1_CA_CODE_PERIOD);
+    d_code_loop_filter = Tracking_2nd_DLL_filter(GPS_L1_CA_CODE_PERIOD);
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
 
     // Get space for a vector with the C/A code replica sampled 1x/chip
@@ -496,7 +496,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                         {
                             std::cout << "Channel " << d_channel << " loss of lock!" << std::endl;
                         	ControlMessageFactory* cmf = new ControlMessageFactory();
-                        	if (d_queue != gr_msg_queue_sptr()) {
+                        	if (d_queue != gr::msg_queue::sptr()) {
                         		d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                         	}
                         	delete cmf;
@@ -538,25 +538,25 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             T_prn_samples = T_prn_seconds * d_fs_in;
 
             float code_error_filt_samples;
-            code_error_filt_samples=T_prn_seconds*code_error_filt_chips*T_chip_seconds*(float)d_fs_in; //[seconds]
-            d_acc_code_phase_samples=d_acc_code_phase_samples+code_error_filt_samples;
+            code_error_filt_samples = T_prn_seconds*code_error_filt_chips*T_chip_seconds*(float)d_fs_in; //[seconds]
+            d_acc_code_phase_samples = d_acc_code_phase_samples + code_error_filt_samples;
 
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_samples;
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete sample
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error
 
             // ########### Output the tracking data to navigation and PVT ##########
-            current_synchro_data.Prompt_I=(double)(*d_Prompt).real();
-            current_synchro_data.Prompt_Q=(double)(*d_Prompt).imag();
+            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
+            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             // Tracking_timestamp_secs is aligned with the PRN start sample
-            current_synchro_data.Tracking_timestamp_secs=((double)d_sample_counter+(double)d_current_prn_length_samples+d_rem_code_phase_samples)/d_fs_in;
+            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + d_rem_code_phase_samples)/d_fs_in;
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, Code_phase_secs=0
-            current_synchro_data.Code_phase_secs=0;
-            current_synchro_data.Carrier_phase_rads=d_acc_carrier_phase_rad;
-            current_synchro_data.Carrier_Doppler_hz=d_carrier_doppler_hz;
-            current_synchro_data.CN0_dB_hz=d_CN0_SNV_dB_Hz;
-            current_synchro_data.Flag_valid_tracking=true;
-            *out[0] =current_synchro_data;
+            current_synchro_data.Code_phase_secs = 0;
+            current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
+            current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+            current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
+            current_synchro_data.Flag_valid_tracking = true;
+            *out[0] = current_synchro_data;
         }
     else
         {

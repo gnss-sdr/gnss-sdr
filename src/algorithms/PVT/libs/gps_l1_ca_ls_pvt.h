@@ -38,7 +38,8 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-#include <math.h>
+//#include <math.h>
+#include <cmath>
 #include <map>
 #include <algorithm>
 #include "gps_navigation_message.h"

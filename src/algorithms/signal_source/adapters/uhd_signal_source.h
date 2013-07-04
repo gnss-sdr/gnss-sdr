@@ -32,9 +32,11 @@
 #define GNSS_SDR_UHD_SIGNAL_SOURCE_H_
 
 #include <boost/shared_ptr.hpp>
-#include <gnuradio/gr_uhd_usrp_source.h>
-#include <gnuradio/gr_hier_block2.h>
-#include <gnuradio/gr_msg_queue.h>
+#include <gnuradio/hier_block2.h>
+#include <gnuradio/uhd/usrp_source.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/msg_queue.h>
+//#include <gnuradio/messages/msg_queue.h>
 #include "gnss_block_interface.h"
 
 class ConfigurationInterface;
@@ -48,7 +50,7 @@ class UhdSignalSource: public GNSSBlockInterface
 public:
     UhdSignalSource(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
-            unsigned int out_stream, gr_msg_queue_sptr queue);
+            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~UhdSignalSource();
 
@@ -69,10 +71,10 @@ public:
         return item_size_;
     }
 
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
 private:
 
@@ -95,11 +97,13 @@ private:
     bool dump_;
     std::string dump_filename_;
 
-    boost::shared_ptr<uhd_usrp_source> uhd_source_;
+    //boost::shared_ptr<uhd_usrp_source> uhd_source_;
+    gr::uhd::usrp_source::sptr uhd_source_;
 
-    gr_block_sptr valve_;
-    gr_block_sptr file_sink_;
-    gr_msg_queue_sptr queue_;
+    boost::shared_ptr<gr::block> valve_;
+    //gr_block_sptr file_sink_;
+    gr::blocks::file_sink::sptr file_sink_;
+    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif /*GNSS_SDR_UHD_SIGNAL_SOURCE_H_*/

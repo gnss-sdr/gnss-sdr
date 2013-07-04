@@ -49,8 +49,8 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
-#include "math.h"
-#include <gnuradio/gr_io_signature.h>
+//#include "math.h"
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -72,7 +72,7 @@ galileo_e1_tcp_connector_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -96,7 +96,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        gr_msg_queue_sptr queue,
+        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -104,8 +104,8 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
         float early_late_space_chips,
         float very_early_late_space_chips,
         size_t port_ch0):
-        gr_block ("Galileo_E1_Tcp_Connector_Tracking_cc", gr_make_io_signature (1, 1, sizeof(gr_complex)),
-                gr_make_io_signature(1, 1, sizeof(Gnss_Synchro)))
+        gr::block("Galileo_E1_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     this->set_relative_rate(1.0/vector_length);
     // initialize internal vars
@@ -431,7 +431,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
                          {
                              std::cout << "Channel " << d_channel << " loss of lock!" << std::endl ;
                              ControlMessageFactory* cmf = new ControlMessageFactory();
-                             if (d_queue != gr_msg_queue_sptr())
+                             if (d_queue != gr::msg_queue::sptr())
                                  {
                                      d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                                  }
@@ -447,11 +447,11 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
             current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
             current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             // Tracking_timestamp_secs is aligned with the PRN start sample
-            current_synchro_data.Tracking_timestamp_secs=((double)d_sample_counter+(double)d_next_prn_length_samples+(double)d_next_rem_code_phase_samples)/(double)d_fs_in;
+            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter+(double)d_next_prn_length_samples+(double)d_next_rem_code_phase_samples)/(double)d_fs_in;
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-            current_synchro_data.Code_phase_secs=0;
+            current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
-            current_synchro_data.Carrier_Doppler_hz= (double)d_carrier_doppler_hz;
+            current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             *out[0] = current_synchro_data;
 

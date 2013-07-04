@@ -36,11 +36,14 @@
 #define GNSS_SDR_FILE_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
-#include <gnuradio/gr_file_source.h>
-#include <gnuradio/gr_file_sink.h>
-#include <gnuradio/gr_throttle.h>
-#include <gnuradio/gr_hier_block2.h>
-#include <gnuradio/gr_msg_queue.h>
+//#include <gnuradio/gr_file_source.h>
+#include <gnuradio/blocks/file_source.h>
+//#include <gnuradio/gr_file_sink.h>
+#include <gnuradio/blocks/file_sink.h>
+//#include <gnuradio/gr_throttle.h>
+#include <gnuradio/blocks/throttle.h>
+#include <gnuradio/hier_block2.h>
+#include <gnuradio/msg_queue.h>
 
 class ConfigurationInterface;
 
@@ -53,7 +56,7 @@ class FileSignalSource: public GNSSBlockInterface
 public:
     FileSignalSource(ConfigurationInterface* configuration, std::string role,
             unsigned int in_streams, unsigned int out_streams,
-            gr_msg_queue_sptr queue);
+            boost::shared_ptr<gr::msg_queue> queue);
 
     virtual ~FileSignalSource();
     std::string role()
@@ -72,10 +75,10 @@ public:
     {
         return item_size_;
     }
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
     std::string filename()
     {
         return filename_;
@@ -108,11 +111,14 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    gr_file_source_sptr file_source_;
-    gr_block_sptr valve_;
-    gr_block_sptr sink_;
-    gr_block_sptr throttle_;
-    gr_msg_queue_sptr queue_;
+//    gr_file_source_sptr file_source_;
+    gr::blocks::file_source::sptr file_source_;
+    //gr_block_sptr valve_;
+    boost::shared_ptr<gr::block> valve_;
+    gr::blocks::file_sink::sptr sink_;
+//    gr_block_sptr throttle_;
+    gr::blocks::throttle::sptr  throttle_;
+    boost::shared_ptr<gr::msg_queue> queue_;
     size_t item_size_;
     // Throttle control
     bool enable_throttle_control_;

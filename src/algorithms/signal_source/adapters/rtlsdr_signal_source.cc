@@ -60,7 +60,9 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
     // RTLSDR Driver parameters
     AGC_enabled_ = configuration->property(role + ".AGC_enabled",true);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    gain_ = configuration->property(role + ".gain", (double)50.0);
+    gain_ = configuration->property(role + ".gain", (double)40.0);
+    rf_gain_ = configuration->property(role + ".rf_gain", (double)40.0);
+    if_gain_ = configuration->property(role + ".if_gain", (double)40.0);
     sample_rate_ = configuration->property(role + ".sampling_frequency", (double)2.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
 
@@ -98,7 +100,9 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
             else
                 {
                     rtlsdr_source_->set_gain_mode(false);
-                    rtlsdr_source_->set_gain(gain_);
+                    rtlsdr_source_->set_gain(gain_,0);
+                    rtlsdr_source_->set_if_gain(rf_gain_,0);
+                    rtlsdr_source_->set_bb_gain(if_gain_,0);
                     std::cout << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain() << std::endl;
                     LOG(INFO) << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain();
                 }

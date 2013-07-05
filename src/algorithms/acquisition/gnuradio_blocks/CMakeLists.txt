@@ -19,6 +19,7 @@
 set(ACQ_GR_BLOCKS_SOURCES 
 	pcps_acquisition_cc.cc 
 	pcps_assisted_acquisition_cc.cc
+	pcps_acquisition_fine_doppler_cc.cc
 )
 
 include_directories(

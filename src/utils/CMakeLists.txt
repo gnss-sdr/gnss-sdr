@@ -16,8 +16,4 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(algorithms)
-add_subdirectory(core)
-add_subdirectory(main)
-add_subdirectory(tests)
-add_subdirectory(utils)
+add_subdirectory(front-end-cal)

@@ -484,10 +484,10 @@ void ControlThread::gps_utc_model_data_collector()
 			if (global_gps_utc_model_map.read(0,gps_utc_old))
 			{
 				// TODO: Check the UTC MODEL timestamp. If it is newer, then update the UTC MODEL
-				global_gps_utc_model_map.write(0,gps_utc_old);
+				global_gps_utc_model_map.write(0,gps_utc);
 			}else{
 				// insert new ephemeris record
-				global_gps_utc_model_map.write(0,gps_utc_old);
+				global_gps_utc_model_map.write(0,gps_utc);
 			}
 	}
 }

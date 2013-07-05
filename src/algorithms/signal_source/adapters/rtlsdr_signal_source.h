@@ -87,6 +87,8 @@ private:
 
     double freq_;
     double gain_;
+    double if_gain_;
+    double rf_gain_;
 
     std::string item_type_;
     size_t item_size_;

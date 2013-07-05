@@ -238,8 +238,8 @@ method executes the destructor of the ControlThread object, which deallocates me
 The GNSSFlowgraph class is responsible for preparing the graph of blocks according to the configuration, running it, modifying it during run-time and stopping it. 
 Blocks are identified by its role. This class knows which roles it has to instantiate and how to connect them. 
 It relies on the configuration to get the correct instances of the roles it needs and then it applies the connections between GNU Radio blocks to make the 
-graph ready to be started. The complexity related to managing the blocks and the data stream is handled by GNU Radio's <tt>gr_top_block</tt> class. GNSSFlowgraph wraps 
-the <tt>gr_top_block</tt> instance so we can take advantage of the \ref gnss_block_factory, the configuration system and the processing blocks. This class is also responsible 
+graph ready to be started. The complexity related to managing the blocks and the data stream is handled by GNU Radio's <tt>gr::top_block</tt> class. GNSSFlowgraph wraps 
+the <tt>gr::top_block</tt> instance so we can take advantage of the \ref gnss_block_factory, the configuration system and the processing blocks. This class is also responsible 
 for applying changes to the configuration of the flowgraph during run-time, dynamically reconfiguring channels: it selects the strategy for selecting satellites. 
 This can range from a sequential search over all the satellites' ID to smarter approaches that determine what are the satellites most likely in-view based on rough 
 estimations of the receiver position in order to avoid searching satellites in the other side of the Earth.
@@ -288,9 +288,9 @@ algorithms, and to place observers at any point of the receiver chain.
 
 \section signal_processing Signal Processing plane
 
-GNU Radio's class <tt>gr_basic_block</tt> is the abstract base class for all signal processing blocks, a bare abstraction of an entity that has a name and a set of 
-inputs and outputs. It is never instantiated directly; rather, this is the abstract parent class of both <tt>gr_hier_block2</tt>, which is a recursive container that 
-adds or removes processing or hierarchical blocks to the internal graph, and <tt>gr_block</tt>, which is the abstract base class for all the processing blocks. 
+GNU Radio's class <tt>gr::basic_block</tt> is the abstract base class for all signal processing blocks, a bare abstraction of an entity that has a name and a set of 
+inputs and outputs. It is never instantiated directly; rather, this is the abstract parent class of both <tt>gr::hier_block2</tt>, which is a recursive container that 
+adds or removes processing or hierarchical blocks to the internal graph, and <tt>gr::block</tt>, which is the abstract base class for all the processing blocks. 
 
 
 \image html ClassHierarchy.png
@@ -299,7 +299,7 @@ adds or removes processing or hierarchical blocks to the internal graph, and <tt
 A signal processing flow is constructed by creating a tree of hierarchical blocks, which at any level may also contain terminal nodes that actually implement signal 
 processing functions.
 
-Class <tt>gr_top_block</tt> is the top-level hierarchical block representing a flowgraph. It defines GNU Radio runtime functions used during the execution of the 
+Class <tt>gr::top_block</tt> is the top-level hierarchical block representing a flowgraph. It defines GNU Radio runtime functions used during the execution of the 
 program: run(), start(), stop(), wait(), etc. A a subclass called GNSSBlockInterface is the common interface for all the GNSS-SDR modules. It defines pure virtual 
 methods, that are required to be implemented by a derived class.
 
@@ -384,7 +384,7 @@ The first task of a GNSS receiver is to detect the presence or absence of in-vie
 AcquisitionInterface is the common interface for all the acquisition algorithms and their corresponding implementations. Algorithms' interface, that may vary 
 depending on the use of information external to the receiver, such as in Assisted GNSS, is defined in classes referred to as <i>adapters</i>. 
 These adapters wrap the GNU Radio blocks interface into a compatible interface expected by AcquisitionInterface. This allows the use of existing GNU Radio blocks 
-derived from <tt>gr_block</tt>, and ensures that newly developed implementations will also be reusable in other GNU Radio-based applications. 
+derived from <tt>gr::block</tt>, and ensures that newly developed implementations will also be reusable in other GNU Radio-based applications. 
 Moreover, it adds still another layer of abstraction, since each given acquisition algorithm can have different implementations (for instance using
  different numerical libraries). In such a way, implementations can be continuously improved without having any impact neither on the algorithm interface nor the general acquisition interface.
 
@@ -402,17 +402,51 @@ Check GpsL1CaPcpsAcquisition and GalileoE1PcpsAmbiguousAcquisition for examples 
 
 The user can select a given implementation for the algorithm to be used in each receiver channel, as well as their parameters, in the configuration file:
 \verbatim
+;######### ACQUISITION GLOBAL CONFIG ############
+
+;#dump: Enable or disable the acquisition internal data file logging [true] or [false] 
+Acquisition.dump=false
+;#filename: Log path and filename
+Acquisition.dump_filename=./acq_dump.dat
+;#item_type: Type and resolution for each of the signal samples. Use only gr_complex in this version.
+Acquisition.item_type=gr_complex
+;#if: Signal intermediate frequency in [Hz] 
+Acquisition.if=0
+;#sampled_ms: Signal block duration for the acquisition signal detection [ms]
+Acquisition.sampled_ms=1
+;#implementation: Acquisition algorithm selection for this channel:
+Acquisition.implementation=GPS_L1_CA_PCPS_Acquisition
+;#threshold: Acquisition threshold
+Acquisition.threshold=0.005
+;#pfa: Acquisition false alarm probability. This option overrides the threshold option. 
+;Only use with implementations: [GPS_L1_CA_PCPS_Acquisition] or [Galileo_E1_PCPS_Ambiguous_Acquisition] 
+Acquisition.pfa=0.0001
+;#doppler_max: Maximum expected Doppler shift [Hz]
+Acquisition.doppler_max=10000
+;#doppler_max: Doppler step in the grid search [Hz]
+Acquisition.doppler_step=500
+
+;######### ACQUISITION CHANNELS CONFIG ######
+;#The following options are specific to each channel and overwrite the generic options 
+
+
 ;######### ACQUISITION CH 0 CONFIG ############
-Acquisition0.implementation=GPS_L1_CA_PCPS_Acquisition
-Acquisition0.threshold=70
-Acquisition0.doppler_max=10000
-Acquisition0.doppler_step=250
- 
+;Acquisition0.implementation=GPS_L1_CA_PCPS_Acquisition
+;Acquisition0.threshold=0.005
+;Acquisition0.pfa=0.001
+;Acquisition0.doppler_max=10000
+;Acquisition0.doppler_step=250
+
+;#repeat_satellite: Use only jointly with the satellite PRN ID option. The default value is false
+;Acquisition0.repeat_satellite = false
+
 ;######### ACQUISITION CH 1 CONFIG ############
-Acquisition1.implementation=GPS_L1_CA_PCPS_Acquisition
-Acquisition1.threshold=70
-Acquisition1.doppler_max=10000
-Acquisition1.doppler_step=250
+;Acquisition1.implementation=GPS_L1_CA_PCPS_Acquisition
+;Acquisition1.threshold=0.005
+;Acquisition1.pfa=0.001
+;Acquisition1.doppler_max=10000
+;Acquisition1.doppler_step=250
+;Acquisition1.repeat_satellite = false
 \endverbatim
 
 
@@ -440,16 +474,35 @@ The source code of all the available tracking algorithms is located at:
 The user can select a given implementation for the algorithm to be used in all the tracking blocks, as well as its parameters, in the configuration file:
 \verbatim
 ;######### TRACKING GLOBAL CONFIG ############
+
+;#implementation: Selected tracking algorithm
 Tracking.implementation=GPS_L1_CA_DLL_PLL_Tracking
+;#item_type: Type and resolution for each of the signal samples. Use only [gr_complex] in this version.
 Tracking.item_type=gr_complex
+
+;#sampling_frequency: Signal Intermediate Frequency in [Hz] 
 Tracking.if=0
+
+;#dump: Enable or disable the Tracking internal binary data file logging [true] or [false] 
 Tracking.dump=false
-Tracking.dump_filename=./tracking_ch_ ; used if dump is set to true. 
-                                      ; Will add "x.dat" where x is the channel number.
-Tracking.pll_bw_hz=50.0; PLL loop filter bandwidth [Hz]
-Tracking.dll_bw_hz=2.0; DLL loop filter bandwidth [Hz]
+
+;#dump_filename: Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
+Tracking.dump_filename=./tracking_ch_
+
+;#pll_bw_hz: PLL loop filter bandwidth [Hz]
+Tracking.pll_bw_hz=50.0;
+
+;#dll_bw_hz: DLL loop filter bandwidth [Hz]
+Tracking.dll_bw_hz=2.0;
+
+;#fll_bw_hz: FLL loop filter bandwidth [Hz]
+Tracking.fll_bw_hz=10.0;
+
+;#order: PLL/DLL loop filter order [2] or [3]
 Tracking.order=3;
-Tracking.early_late_space_chips=0.5; correlator early-late space [chips]
+
+;#early_late_space_chips: correlator early-late space [chips]. Use [0.5]
+Tracking.early_late_space_chips=0.5;
 \endverbatim
 
 \subsubsection decoding Decoding of the navigation message
@@ -461,7 +514,13 @@ error control an others contain actual information. There are also error control
 interleaving, depending on the system. All this decoding complexity is managed by a finite state machine implemented with the <a href="http://www.boost.org/libs/statechart/doc/tutorial.html" target="_blank">Boost.Statechart library</a>.
 
 The common interface is TelemetryDecoderInterface. Check GpsL1CaTelemetryDecoder for an example of the GPS L1 NAV message decoding adapter, and gps_l1_ca_telemetry_decoder_cc
-for an actual implementation of a signal processing block.
+for an actual implementation of a signal processing block. Configuration example:
+
+\verbatim
+;######### TELEMETRY DECODER CONFIG ############
+TelemetryDecoder.implementation=GPS_L1_CA_Telemetry_Decoder
+TelemetryDecoder.dump=false
+\endverbatim
 
 See the \ref reference_docs for more information about the signal format.
 
@@ -474,6 +533,19 @@ This module collects all the data provided by every tracked channel, aligns all 
 
 The common interface is ObservablesInterface. 
 
+Configuration example:
+\verbatim
+;######### OBSERVABLES CONFIG ############
+;#implementation: Use [GPS_L1_CA_Observables] for GPS L1 C/A.
+Observables.implementation=GPS_L1_CA_Observables
+
+;#dump: Enable or disable the Observables internal binary data file logging [true] or [false] 
+Observables.dump=false
+
+;#dump_filename: Log path and filename.
+Observables.dump_filename=./observables.dat
+\endverbatim
+
 \subsection pvt Computation of Position, Velocity and Time
 Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute a simple least square
  solution and leaves room for more sophisticated positioning methods. The integration with libraries and software tools that are able to deal with multi-constellation
@@ -483,6 +555,18 @@ The common interface is PvtInterface. For instance, in order to use the implemen
 \verbatim
 ;######### PVT CONFIG ############
 PVT.implementation=GPS_L1_CA_PVT
+
+;#nmea_dump_filename: NMEA log path and filename
+PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea;
+
+;#flag_nmea_tty_port: Enable or disable the NMEA log to a serial TTY port (Can be used with real hardware or virtual one)
+PVT.flag_nmea_tty_port=true;
+
+;#nmea_dump_devname: serial device descriptor for NMEA logging
+PVT.nmea_dump_devname=/dev/pts/4
+
+;#dump: Enable or disable the PVT internal binary data file logging [true] or [false] 
+PVT.dump=false
 \endverbatim
 
 This implementation allows tuning of the following parameters:
@@ -515,10 +599,10 @@ But what this also means is that non-GPL code cannot use GPL code. This means th
 \section publications Publications and Credits
 If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate if you reference any of these articles to credit the GNSS-SDR project:
 
-\li \anchor Navitec2012 C. Fern&aacute;ndez-Prades, J. Arribas, L. Esteve, D. Pubill, P. Closas, <a href="http://www.cttc.es/resources/doc/121208-2582419-fernandez-9099698438457074772.pdf" target="_blank"><i>An Open Source Galileo E1 Software Receiver</i></a>, in Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC 2012), ESTEC, Noordwijk, The Netherlands, Dec. 2012.
+\li \anchor Navitec2012 C. Fern&aacute;ndez-Prades, J. Arribas, L. Esteve, D. Pubill, P. Closas, <a href="http://www.cttc.es/publication/an-open-source-galileo-e1-software-receiver/" target="_blank"><i>An Open Source Galileo E1 Software Receiver</i></a>, in Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC 2012), ESTEC, Noordwijk, The Netherlands, Dec. 2012.
 \li J. Arribas, <a href="http://theses.eurasip.org/theses/449/gnss-array-based-acquisition-theory-and/" target="_blank"><i>GNSS Array-based Acquisition: Theory and Implementation</i></a>, PhD Thesis, Universitat Polit&egrave;cnica de Catalunya, Barcelona, Spain, June 2012.
-\li C. Fern&aacute;ndez-Prades, J. Arribas,  P. Closas, C. Avil&eacute;s, and L. Esteve, <a href="http://www.cttc.es/resources/doc/110921-ion11-gnss-sdr-45303.pdf" target="_blank"><i>GNSS-SDR: an open source tool for researchers and developers</i></a>, in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011. 
-\li C. Fern&aacute;ndez-Prades, C. Avil&eacute;s, L. Esteve, J. Arribas, and P. Closas, <a href="http://www.cttc.cat/resources/doc/101213-pid1531501-14543.pdf" target="_blank"><i>Design patterns for GNSS software receivers</i></a>, in Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010), ESTEC, Noordwijk, The Netherlands, Dec. 2010. DOI:10.1109/NAVITEC.2010.5707981 
+\li C. Fern&aacute;ndez-Prades, J. Arribas,  P. Closas, C. Avil&eacute;s, and L. Esteve, <a href="http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/" target="_blank"><i>GNSS-SDR: an open source tool for researchers and developers</i></a>, in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011. 
+\li C. Fern&aacute;ndez-Prades, C. Avil&eacute;s, L. Esteve, J. Arribas, and P. Closas, <a href="http://www.cttc.es/publication/design-patterns-for-gnss-software-receivers/" target="_blank"><i>Design patterns for GNSS software receivers</i></a>, in Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010), ESTEC, Noordwijk, The Netherlands, Dec. 2010. DOI:10.1109/NAVITEC.2010.5707981 
 
 For LaTeX users, these are the BibTeX cites for your convenience:
 

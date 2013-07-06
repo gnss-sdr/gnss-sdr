@@ -84,10 +84,9 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${UHD_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
-     ${Boost_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}     
+     ${Boost_INCLUDE_DIRS}
 )
 
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES})

@@ -17,6 +17,10 @@
 #
 
 set(GTEST_DIR_LOCAL $ENV{GTEST_DIR})
+if(NOT EXISTS GTEST_DIR_LOCAL)
+    set(GTEST_DIR_LOCAL false)
+endif(NOT EXISTS GTEST_DIR_LOCAL)
+
 
 if(NOT GTEST_DIR_LOCAL)
      # if GTEST_DIR is not defined, we download and build it

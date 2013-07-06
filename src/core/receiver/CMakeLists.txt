@@ -56,6 +56,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${ARMADILLO_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
 )
 

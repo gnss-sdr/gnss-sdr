@@ -19,19 +19,20 @@
 add_subdirectory(supl)
 
 set(CORE_LIBS_SOURCES 
-	ini.cc 
-	INIReader.cc 
-	string_converter.cc
-	gnss_sdr_supl_client.cc
-	)
+    ini.cc 
+    INIReader.cc 
+    string_converter.cc
+    gnss_sdr_supl_client.cc
+)
 	
 include_directories(
-	$(CMAKE_CURRENT_SOURCE_DIR)
-	${CMAKE_SOURCE_DIR}/src/core/system_parameters
-	${CMAKE_SOURCE_DIR}/src/core/libs/supl
-	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+    $(CMAKE_CURRENT_SOURCE_DIR)
+    ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
+    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
+    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
     ${GLOG_INCLUDE_DIRS}
+    ${GFlags_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
 )
 

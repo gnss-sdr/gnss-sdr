@@ -27,6 +27,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
 )
 
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} )

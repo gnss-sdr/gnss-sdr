@@ -44,6 +44,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 

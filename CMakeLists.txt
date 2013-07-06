@@ -177,6 +177,7 @@ endif()
 # gflags - http://code.google.com/p/gflags/
 ################################################################################
 set(LOCAL_GFLAGS false CACHE STRING "GFlags installed on the system")
+set(GFlags_ROOT_DIR false)
 find_package(GFlags)
 
 if (NOT GFlags_FOUND)
@@ -207,7 +208,7 @@ if (NOT GFlags_FOUND)
      set(GFlags_LIBS 
           ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.a
      )
-     set(GFlags_ROOT_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE})
+     set(GFlags_ROOT_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE} CACHE PATH "GFlags root folder" FORCE)
      file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
      set(GFlags_LIBRARY gflags-${gflags_RELEASE})
      set(gflags gflags-${gflags_RELEASE})

@@ -119,8 +119,8 @@ if(INSTALL_GNURADIO)
      if(OperatingSystem MATCHES "Linux")
           message("Trying to install GNU Radio and all its dependencies.")
           message("This process can take a long time.")
-          #set(GNURADIO_RELEASE "3.6.3")
-          #set(UHD_RELEASE "003_005_000")
+          #set(GNURADIO_RELEASE "3.7.0")
+          #set(UHD_RELEASE "003_005_003")
           set(INSTALL_GNURADIO CACHE BOOL OFF FORCE)
           file(DOWNLOAD http://www.sbrac.org/files/build-gnuradio
                ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
@@ -146,15 +146,31 @@ find_package(GnuradioRuntime)
 find_package(GnuradioBlocks)
 find_package(UHD)
 find_package(GnuradioUHD)
-#find_library(GnuradioAnalog)
+#find_library(GnuradioAnalog) # Required at tests, added later
 find_package(GnuradioFilter)
 find_package(GnuradioFft)
 find_package(Volk)
 if(NOT GNURADIO_RUNTIME_FOUND)
     message(FATAL_ERROR "gnuradio-runtime 3.7 or later is required to build gnss-sdr")
 endif()
-
-
+if(NOT GNURADIO_BLOCKS_FOUND)
+    message(FATAL_ERROR "gnuradio-blocks 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT UHD_FOUND)
+    message(FATAL_ERROR "UHD is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_UHD_FOUND)
+    message(FATAL_ERROR "gnuradio-uhd 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_FILTER_FOUND)
+    message(FATAL_ERROR "gnuradio-filter 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_FFT_FOUND)
+    message(FATAL_ERROR "gnuradio-fft 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT VOLK_FOUND)
+    message(FATAL_ERROR "VOLK is required to build gnss-sdr")
+endif()
 
 
 ################################################################################
@@ -191,6 +207,7 @@ if (NOT GFlags_FOUND)
      set(GFlags_LIBS 
           ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.a
      )
+     set(GFlags_ROOT_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE})
      file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
      set(GFlags_LIBRARY gflags-${gflags_RELEASE})
      set(gflags gflags-${gflags_RELEASE})

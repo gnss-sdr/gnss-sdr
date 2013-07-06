@@ -16,7 +16,6 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 set(GTEST_DIR_LOCAL $ENV{GTEST_DIR})
 
 if(NOT GTEST_DIR_LOCAL)
@@ -49,15 +48,14 @@ if(NOT GTEST_DIR_LOCAL)
           ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a 
      ) 
 	 set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}")
-endif(NOT GTEST_DIR_LOCAL)
-
-if(GTEST_DIR_LOCAL)
+else(NOT GTEST_DIR_LOCAL)
      # If the variable GTEST_DIR is defined, we use the existing Googletest
      set(GTEST_DIR $ENV{GTEST_DIR})
      set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
      add_library(gtest ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest_main.cc)
      set(GTEST_LIBRARIES gtest)
-endif(GTEST_DIR_LOCAL)
+endif(NOT GTEST_DIR_LOCAL)
+
 
 #find_library(GnuradioAnalog)
      

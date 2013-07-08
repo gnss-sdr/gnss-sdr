@@ -103,9 +103,9 @@ void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples, const g
             volk_32fc_x2_multiply_32fc_u(bb_signal, input, carrier, signal_length_samples);
         }
 
-    volk_32fc_x2_dot_prod_32fc_a(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex));
-    volk_32fc_x2_dot_prod_32fc_a(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex));
-    volk_32fc_x2_dot_prod_32fc_a(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex));
+    volk_32fc_x2_dot_prod_32fc_a(E_out, bb_signal, E_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(P_out, bb_signal, P_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(L_out, bb_signal, L_code, signal_length_samples);
 
     free(bb_signal);
     //if (input_vector_unaligned==false)
@@ -119,39 +119,39 @@ void Correlator::Carrier_wipeoff_and_EPL_volk_custom(int signal_length_samples, 
     volk_cw_epl_corr_u(input, carrier, E_code, P_code, L_code, E_out, P_out, L_out, signal_length_samples);
 }
 
-void Correlator::Carrier_wipeoff_and_VEPL_volk(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* VE_code, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* VL_code, gr_complex* VE_out, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* VL_out, bool input_vector_aligned)
+void Correlator::Carrier_wipeoff_and_VEPL_volk(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* VE_code, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* VL_code, gr_complex* VE_out, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* VL_out, bool input_vector_unaligned)
 {
     gr_complex* bb_signal;
-    gr_complex* input_aligned;
+    //gr_complex* input_aligned;
 
     //todo: do something if posix_memalign fails
     if (posix_memalign((void**)&bb_signal, 16, signal_length_samples * sizeof(gr_complex)) == 0) {};
 
-    if (input_vector_aligned == false)
+    if (input_vector_unaligned == false)
         {
             //todo: do something if posix_memalign fails
-            if (posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex)) == 0){};
-            memcpy(input_aligned,input,signal_length_samples * sizeof(gr_complex));
+            //if (posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex)) == 0){};
+            //memcpy(input_aligned,input,signal_length_samples * sizeof(gr_complex));
 
-            volk_32fc_x2_multiply_32fc_a(bb_signal, input_aligned, carrier, signal_length_samples);
+            volk_32fc_x2_multiply_32fc_u(bb_signal, input, carrier, signal_length_samples);
         }
     else
         {
             //use directly the input vector
-            volk_32fc_x2_multiply_32fc_a(bb_signal, input, carrier, signal_length_samples);
+            volk_32fc_x2_multiply_32fc_u(bb_signal, input, carrier, signal_length_samples);
         }
 
-    volk_32fc_x2_dot_prod_32fc_a(VE_out, bb_signal, VE_code, signal_length_samples * sizeof(gr_complex));
-    volk_32fc_x2_dot_prod_32fc_a(E_out, bb_signal, E_code, signal_length_samples * sizeof(gr_complex));
-    volk_32fc_x2_dot_prod_32fc_a(P_out, bb_signal, P_code, signal_length_samples * sizeof(gr_complex));
-    volk_32fc_x2_dot_prod_32fc_a(L_out, bb_signal, L_code, signal_length_samples * sizeof(gr_complex));
-    volk_32fc_x2_dot_prod_32fc_a(VL_out, bb_signal, VL_code, signal_length_samples * sizeof(gr_complex));
+    volk_32fc_x2_dot_prod_32fc_a(VE_out, bb_signal, VE_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(E_out, bb_signal, E_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(P_out, bb_signal, P_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(L_out, bb_signal, L_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(VL_out, bb_signal, VL_code, signal_length_samples);
 
     free(bb_signal);
-    if (input_vector_aligned == false)
-        {
-            free(input_aligned);
-        }
+    //if (input_vector_unaligned == false)
+        //{
+            //free(input_aligned);
+        //}
 }
 
 /*

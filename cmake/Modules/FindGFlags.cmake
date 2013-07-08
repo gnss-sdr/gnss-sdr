@@ -11,6 +11,7 @@
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0011 OLD)
 
+set(GFlags_ROOT_DIR)
 if (WIN32)
      FIND_PATH(GFlags_ROOT_DIR
      src/gflags.cc

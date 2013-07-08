@@ -331,8 +331,29 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
 	return d_fft_size;
 }
 
+inline int pow2roundup (int x)
+{
+    if (x < 0)
+        return 0;
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return x+1;
+}
+
 int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star &input_items, int available_samples)
 {
+
+	// Direct FFT
+	int zero_padding_factor=8;
+	int fft_size_extended=d_fft_size*zero_padding_factor;
+
+	gr::fft::fft_complex *fft_operator=new gr::fft::fft_complex(fft_size_extended,true);
+	//zero padding the entire vector
+	memset(fft_operator->get_inbuf(),0,fft_size_extended*sizeof(gr_complex));
 
 	//1. generate local code aligned with the acquisition code phase estimation
 	gr_complex *code_replica;
@@ -340,61 +361,82 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 	gps_l1_ca_code_gen_complex_sampled(code_replica, d_gnss_synchro->PRN, d_fs_in, 0);
 
 	int shift_index=(int)d_gnss_synchro->Acq_delay_samples;
-	std::cout<<"shift_index="<<shift_index<<std::endl;
-	//std::rotate(code_replica,code_replica+shift_index,code_replica+available_samples);
+	//std::cout<<"shift_index="<<shift_index<<std::endl;
+	// Rotate to align the local code replica using acquisition time delay estimation
+	std::rotate(code_replica,code_replica+(d_fft_size-shift_index),code_replica+d_fft_size-1);
 
 	//2. Perform code wipe-off
 	const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
 
-	volk_32fc_x2_multiply_32fc_u(d_fft_if->get_inbuf(), in, code_replica, d_fft_size);
+	volk_32fc_x2_multiply_32fc_u(fft_operator->get_inbuf(), in, code_replica, d_fft_size);
 
-	// 3. Perform the FFT
-	d_fft_if->execute();
+	// 3. Perform the FFT (zero padded!)
+	fft_operator->execute();
 
 	// 4. Compute the magnitude and find the maximum
 	float* p_tmp_vector;
-	if (posix_memalign((void**)&p_tmp_vector, 16, d_fft_size * sizeof(float)) == 0){};
-	volk_32fc_magnitude_squared_32f_a(p_tmp_vector, d_fft_if->get_outbuf(), d_fft_size);
+	if (posix_memalign((void**)&p_tmp_vector, 16, fft_size_extended * sizeof(float)) == 0){};
+	volk_32fc_magnitude_squared_32f_a(p_tmp_vector, fft_operator->get_outbuf(), fft_size_extended);
 
 	unsigned int tmp_index_freq;
-	volk_32f_index_max_16u_a(&tmp_index_freq,p_tmp_vector,d_fft_size);
+	volk_32f_index_max_16u_a(&tmp_index_freq,p_tmp_vector,fft_size_extended);
 
-	float fftFreqBins[d_fft_size];
-	float curr_normal_freq=-1.0;
-	for (unsigned int i=0;i<d_fft_size;i++)
+	//std::cout<<"FFT maximum index present at "<<tmp_index_freq<<std::endl;
+
+	//case even
+	int counter=0;
+
+	float fftFreqBins[fft_size_extended];
+
+	for (int k=0;k<(fft_size_extended/2);k++)
 	{
-		fftFreqBins[i]=(d_fs_in/2.0)*curr_normal_freq;
-		curr_normal_freq+=2/d_fft_size;
+		fftFreqBins[counter]=((d_fs_in/2)*k)/(fft_size_extended/2);
+		counter++;
 	}
 
+	for (int k=fft_size_extended/2;k>0;k--)
+	{
+		fftFreqBins[counter]=((-d_fs_in/2)*k)/(fft_size_extended/2);
+		counter++;
+	}
 
-	std::stringstream filename;
-	std::streamsize n = sizeof(gr_complex) * (d_fft_size);
+	// 5. Update the Doppler estimation in Hz
+	if (abs(fftFreqBins[tmp_index_freq]-d_gnss_synchro->Acq_doppler_hz)<1000)
+	{
+		d_gnss_synchro->Acq_doppler_hz=(double)fftFreqBins[tmp_index_freq];
+		//std::cout<<"FFT maximum present at "<<fftFreqBins[tmp_index_freq]<<" [Hz]"<<std::endl;
+	}else{
+		//std::cout<<"Error estimating fine frequency Doppler"<<std::endl;
+		//debug log
+//
+//		std::cout<<"FFT maximum present at "<<fftFreqBins[tmp_index_freq]<<" [Hz]"<<std::endl;
+//		std::stringstream filename;
+//		std::streamsize n = sizeof(gr_complex) * (d_fft_size);
+//
+//		filename.str("");
+//		filename << "../data/code_prn_" << d_gnss_synchro->PRN << ".dat";
+//		d_dump_file.open(filename.str().c_str(), std::ios::out
+//				| std::ios::binary);
+//		d_dump_file.write((char*)code_replica, n); //write directly |abs(x)|^2 in this Doppler bin?
+//		d_dump_file.close();
+//
+//		filename.str("");
+//		filename << "../data/signal_prn_" << d_gnss_synchro->PRN << ".dat";
+//		d_dump_file.open(filename.str().c_str(), std::ios::out
+//				| std::ios::binary);
+//		d_dump_file.write((char*)in, n); //write directly |abs(x)|^2 in this Doppler bin?
+//		d_dump_file.close();
+//
+//
+//		n = sizeof(float) * (fft_size_extended);
+//		filename.str("");
+//		filename << "../data/fft_prn_" << d_gnss_synchro->PRN << ".dat";
+//		d_dump_file.open(filename.str().c_str(), std::ios::out
+//				| std::ios::binary);
+//		d_dump_file.write((char*)p_tmp_vector, n); //write directly |abs(x)|^2 in this Doppler bin?
+//		d_dump_file.close();
+	}
 
-	filename.str("");
-	filename << "../data/code_prn_" << d_gnss_synchro->PRN << ".dat";
-	d_dump_file.open(filename.str().c_str(), std::ios::out
-			| std::ios::binary);
-	d_dump_file.write((char*)code_replica, n); //write directly |abs(x)|^2 in this Doppler bin?
-	d_dump_file.close();
-
-	filename.str("");
-	filename << "../data/signal_prn_" << d_gnss_synchro->PRN << ".dat";
-	d_dump_file.open(filename.str().c_str(), std::ios::out
-			| std::ios::binary);
-	d_dump_file.write((char*)in, n); //write directly |abs(x)|^2 in this Doppler bin?
-	d_dump_file.close();
-
-
-	n = sizeof(float) * (d_fft_size);
-	filename.str("");
-	filename << "../data/fft_prn_" << d_gnss_synchro->PRN << ".dat";
-	d_dump_file.open(filename.str().c_str(), std::ios::out
-			| std::ios::binary);
-	d_dump_file.write((char*)p_tmp_vector, n); //write directly |abs(x)|^2 in this Doppler bin?
-	d_dump_file.close();
-
-	std::cout<<"FFT maximum present at "<<fftFreqBins[tmp_index_freq]<<" [Hz]"<<std::endl;
 
 	return d_fft_size;
 }
@@ -444,7 +486,8 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 			d_state=3;
 		}
 		d_sample_counter+=consumed_samples;
-		consume_each(consumed_samples);
+		//consume_each(consumed_samples);
+		consume_each(0);
 		break;
 	case 3: // Compute test statistics and decide
 		d_input_power=estimate_input_power(input_items);
@@ -462,8 +505,9 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 				d_state=7; //negative acquisition
 			}
 		}
-		d_sample_counter += ninput_items[0]; // sample counter
-		consume_each(ninput_items[0]);
+		//d_sample_counter += ninput_items[0]; // sample counter
+		//consume_each(ninput_items[0]);
+		consume_each(0);
 		break;
 	case 4: // RedefineGrid
 		free_grid_memory();
@@ -475,7 +519,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 		break;
 	case 5: // Fine doppler estimation
 		DLOG(INFO) << "Performing fine Doppler estimation";
-		//estimate_Doppler(input_items, ninput_items[0]); //disabled in repo
+		estimate_Doppler(input_items, ninput_items[0]); //disabled in repo
 		d_sample_counter += ninput_items[0]; // sample counter
 		consume_each(ninput_items[0]);
 		d_state=6;

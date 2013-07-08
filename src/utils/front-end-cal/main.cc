@@ -366,13 +366,19 @@ int main(int argc, char** argv)
     std::map<int,double> f_fs_estimation_Hz_map;
     std::map<int,double> f_ppm_estimation_Hz_map;
 
+	std::cout <<std::setiosflags(std::ios::fixed)<<std::setprecision(2)<<
+			"Doppler analysis results:"<<std::endl;
+
+    std::cout << "SV ID  Measured [Hz]   Predicted [Hz]" <<std::endl;
+
     for (std::map<int,double>::iterator it = doppler_measurements_map.begin() ; it != doppler_measurements_map.end(); ++it)
       {
-    	std::cout << "Doppler measured for (SV=" << it->first<<")="<<it->second<<" [Hz]"<<std::endl;
+    	//std::cout << "Doppler measured for (SV=" << it->first<<")="<<it->second<<" [Hz]"<<std::endl;
     	try{
     		double doppler_estimated_hz;
     		doppler_estimated_hz=front_end_cal.estimate_doppler_from_eph(it->first,current_TOW,lat_deg,lon_deg,altitude_m);
-    		std::cout << "Doppler estimated for (SV=" << it->first<<")="<<doppler_estimated_hz<<" [Hz]"<<std::endl;
+    		//std::cout << "Doppler estimated for (SV=" << it->first<<")="<<doppler_estimated_hz<<" [Hz]"<<std::endl;
+    		std::cout << "  "<<it->first<<"   "<<it->second<<"   "<<doppler_estimated_hz<<std::endl;
     		// 7. Compute front-end IF and sampling frequency estimation
     		// Compare with the measurements and compute clock drift using FE model
     		double estimated_fs_Hz, estimated_f_if_Hz,f_osc_err_ppm;
@@ -384,7 +390,8 @@ int main(int argc, char** argv)
 
     	}catch(int ex)
     	{
-    		std::cout<<"Eph not found for SV "<<it->first<<std::endl;
+    		//std::cout<<"Eph not found for SV "<<it->first<<std::endl;
+    		std::cout << "  "<<it->first<<"   "<<it->second<<"  (Eph not found)"<<std::endl;
     	}
       }
 
@@ -421,7 +428,7 @@ int main(int argc, char** argv)
     delete gnss_synchro;
 
     google::ShutDownCommandLineFlags();
-    std::cout << "GNSS-SDR program ended." << std::endl;
+    std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
 
 //    if (global_gps_acq_assist_map.size()>0)
 //    {

@@ -67,6 +67,12 @@ if( $ENV{GN3S_DRIVER} )
 	add_definitions(-DGN3S_DRIVER)
 endif($ENV{GN3S_DRIVER} )
 
+#Enable RTL-SDR module if the driver is present
+if( $ENV{RTLSDR_DRIVER} )
+    message( "Precompiler RTLSDR_DRIVER enabled" )
+	add_definitions(-DRTLSDR_DRIVER)
+endif($ENV{RTLSDR_DRIVER} )
+
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES})
 target_link_libraries(gnss_rx ${Boost_LIBRARIES} ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} 
       gnss_system_parameters gnss_sp_libs 

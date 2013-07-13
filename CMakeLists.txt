@@ -421,8 +421,12 @@ if( $ENV{GN3S_DRIVER} )
     # copy firmware to install folder
     # Build project gr-gn3s
 else( $ENV{GN3S_DRIVER} )
-    message( "GN3S_DRIVER is not defined." )
-    message( "Define it with 'export GN3S_DRIVER=1' to add support for the GN3S dongle." )
+    if( GN3S_DRIVER )
+       message("GN3S driver will be compiled")
+    else( GNSS_DRIVER )
+       message( "GN3S_DRIVER is not defined." )
+       message( "Define it with 'export GN3S_DRIVER=1' to add support for the GN3S dongle." )
+    endif( GN3S_DRIVER )
 endif($ENV{GN3S_DRIVER} )
 
 if( $ENV{RTLSDR_DRIVER} )

@@ -62,16 +62,16 @@ include_directories(
 
 
 #Enable GN3S module if the driver is present
-if( $ENV{GN3S_DRIVER} )
-    message( "Precompiler GN3S_DRIVER enabled" )
-	add_definitions(-DGN3S_DRIVER)
-endif($ENV{GN3S_DRIVER} )
+if( ($ENV{GN3S_DRIVER} EQUAL 1) OR (${GN3S_DRIVER} EQUAL 1) )
+    message( "Support for RF front-end GN3S v2 enabled" )
+    add_definitions(-DGN3S_DRIVER=1)
+endif( ($ENV{GN3S_DRIVER} EQUAL 1) OR (${GN3S_DRIVER} EQUAL 1) )
 
 #Enable RTL-SDR module if the driver is present
-if( $ENV{RTLSDR_DRIVER} )
-    message( "Precompiler RTLSDR_DRIVER enabled" )
-	add_definitions(-DRTLSDR_DRIVER)
-endif($ENV{RTLSDR_DRIVER} )
+if( ($ENV{RTLSDR_DRIVER} EQUAL 1) OR (${RTLSDR_DRIVER} EQUAL 1) )
+    message( "Support for RF front-end based on RTL dongle enabled" )
+    add_definitions(-DRTLSDR_DRIVER=1)
+endif( ($ENV{RTLSDR_DRIVER} EQUAL 1) OR (${RTLSDR_DRIVER} EQUAL 1) )
 
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES})
 target_link_libraries(gnss_rx ${Boost_LIBRARIES} ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} 

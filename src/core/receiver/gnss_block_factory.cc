@@ -63,6 +63,7 @@
 #include "galileo_e1_dll_pll_veml_tracking.h"
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
+#include "galileo_e1b_telemetry_decoder.h"
 #include "gps_l1_ca_observables.h"
 #include "gps_l1_ca_pvt.h"
 
@@ -372,6 +373,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)
         {
             block = new GpsL1CaTelemetryDecoder(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+    else if (implementation.compare("Galileo_E1B_Telemetry_Decoder") == 0)
+        {
+            block = new GalileoE1BTelemetryDecoder(configuration, role, in_streams,
                     out_streams, queue);
         }
     // OBSERVABLES -----------------------------------------------------------------

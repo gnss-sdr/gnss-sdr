@@ -18,7 +18,7 @@
 
 set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES 
      gps_l1_ca_telemetry_decoder_cc.cc
-#    direct_resampler_conditioner_ss.cc
+     galileo_e1b_telemetry_decoder_cc.cc
 )
       
 include_directories(

@@ -44,8 +44,18 @@
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "gps_navigation_message.h"
-#include "control_thread.h"
 
+#include "gps_ephemeris.h"
+#include "gps_almanac.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
+
+#include "galileo_ephemeris.h"
+#include "galileo_almanac.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+
+#include "control_thread.h"
 
 //#include "arithmetic/complex_arithmetic_libc.cc"
 //#include "arithmetic/correlations_libc.cc"
@@ -81,6 +91,16 @@ concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 concurrent_map<Gps_Almanac> global_gps_almanac_map;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
+// For GALILEO NAVIGATION
+concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
+concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
+concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
+concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
+
+concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
+concurrent_map<Galileo_Iono> global_galileo_iono_map;
+concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
+concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
 
 int main(int argc, char **argv)
 {

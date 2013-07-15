@@ -16,7 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(TELEMETRY_DECODER_ADAPTER_SOURCES gps_l1_ca_telemetry_decoder.cc )
+set(TELEMETRY_DECODER_ADAPTER_SOURCES 
+	gps_l1_ca_telemetry_decoder.cc 
+	galileo_e1b_telemetry_decoder.cc
+)
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)

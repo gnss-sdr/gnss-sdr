@@ -31,6 +31,10 @@
 #ifndef GNSS_SDR_CONCURRENT_QUEUE_H
 #define GNSS_SDR_CONCURRENT_QUEUE_H
 
+#include <queue>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
+
 template<typename Data>
 
 /*!

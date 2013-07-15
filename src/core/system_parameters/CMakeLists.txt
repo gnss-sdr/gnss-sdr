@@ -27,6 +27,11 @@ set(SYSTEM_PARAMETERS_SOURCES
 	 gps_acq_assist.cc
 	 gps_ref_time.cc
 	 gps_ref_location.cc
+	 galileo_utc_model.cc
+	 galileo_ephemeris.cc
+	 galileo_almanac.cc
+	 galileo_iono.cc
+	 galileo_navigation_message.cc
 )
 
 include_directories(

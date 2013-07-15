@@ -2,6 +2,8 @@
  * \file Galileo_E1.h
  * \brief  Defines system parameters for Galileo E1 signal and NAV data
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
+ * \author Javier Arribas 2013. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -34,6 +36,9 @@
 #include <complex>
 #include <gnss_satellite.h>
 #include <string>
+#include <vector>
+#include <utility> // std::pair
+#include "MATH_CONSTANTS.h"
 
 // carrier and code frequencies
 const double Galileo_E1_FREQ_HZ = 1.57542e9; //!< E1 [Hz]
@@ -43,8 +48,37 @@ const double Galileo_E1_SUB_CARRIER_A_RATE_HZ = 1.023e6; //!< Galileo E1 sub-car
 const double Galileo_E1_SUB_CARRIER_B_RATE_HZ = 6.138e6; //!< Galileo E1 sub-carrier 'b' rate [Hz]
 const double Galileo_E1_B_CODE_LENGTH_CHIPS = 4092.0; //!< Galileo E1-B code length [chips]
 const double Galileo_E1_B_SYMBOL_RATE_BPS = 250.0; //!< Galileo E1-B symbol rate [bits/second]
+
 const int Galileo_E1_NUMBER_OF_CODES = 50;
 
+// Galileo INAV Telemetry structure
+
+#define GALILEO_INAV_PREAMBLE {0, 1, 0, 1, 1, 0, 0, 0, 0, 0}
+
+const int GALILEO_INAV_PREAMBLE_LENGTH_BITS = 10;
+const int GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS = 250;
+const int GALILEO_INAV_PAGE_PART_SYMBOLS = 250; //!< Each Galileo INAV pages are composed of two parts (even and odd) each of 250 symbols, including preamble. See Galileo ICD 4.3.2
+const int GALILEO_INAV_PAGE_SYMBOLS = 500; //!< The complete Galileo INAV page length
+
+const int GALILEO_INAV_INTERLEAVER_ROWS = 8;
+const int GALILEO_INAV_INTERLEAVER_COLS = 30;
+
+const int GALILEO_PAGE_TYPE_BITS = 6;
+const int GALILEO_DATA_JK_BITS =128;
+
+const std::vector<std::pair<int,int>> type({{1,6}});
+
+/*Page 1*/
+const std::vector<std::pair<int,int>> PAGE_TYPE_bit({{1,6}});
+const std::vector<std::pair<int,int>> IOD_nav_page1({{7,10}});
+const std::vector<std::pair<int,int>> T0E_bit({{17,14}});
+const double t0e_LSB = 60;
+const std::vector<std::pair<int,int>> M0_bit({{31,32}});
+const double M0_LSB = TWO_N31;
+const std::vector<std::pair<int,int>> e_bit({{63,32}});
+const double e_LSB = TWO_N33;
+const std::vector<std::pair<int,int>> A_bit({{95,32}});
+const double A_LSB = TWO_N19;
 
 // Galileo E1 primary codes
 

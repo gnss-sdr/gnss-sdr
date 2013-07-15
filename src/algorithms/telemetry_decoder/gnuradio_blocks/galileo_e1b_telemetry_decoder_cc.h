@@ -1,0 +1,132 @@
+/*!
+ * \file galileo_e1b_telemetry_decoder_cc.h
+ * \brief Interface of a Galileo NAV message demodulator block
+ * \author Javier Arribas 2013. jarribas(at)cttc.es
+ * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
+
+#ifndef GNSS_SDR_galileo_e1b_TELEMETRY_DECODER_CC_H
+#define GNSS_SDR_galileo_e1b_TELEMETRY_DECODER_CC_H
+
+
+#include "Galileo_E1.h"
+#include "concurrent_queue.h"
+#include <fstream>
+#include <bitset>
+#include <gnuradio/block.h>
+#include <gnuradio/msg_queue.h>
+
+#include "gnuradio/trellis/interleaver.h"
+#include "gnuradio/trellis/permutation.h"
+#include "gnuradio/fec/viterbi.h"
+
+//#include <gnuradio/gr_sync_block.h>
+#include "gnss_satellite.h"
+//#include "galileo_inav_fsm.h"
+#include "galileo_navigation_message.h"
+#include "galileo_ephemeris.h"
+#include "galileo_almanac.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+
+class galileo_e1b_telemetry_decoder_cc;
+
+typedef boost::shared_ptr<galileo_e1b_telemetry_decoder_cc> galileo_e1b_telemetry_decoder_cc_sptr;
+
+galileo_e1b_telemetry_decoder_cc_sptr
+galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
+    int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+
+/*!
+ * \brief This class implements a block that decodes the INAV data defined in Galileo ICD
+ *
+ */
+class galileo_e1b_telemetry_decoder_cc : public gr::block
+{
+public:
+    ~galileo_e1b_telemetry_decoder_cc();
+    void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
+    void set_channel(int channel);                 //!< Set receiver's channel
+    /*!
+     * \brief Set the satellite data queue
+     */
+    void set_ephemeris_queue(concurrent_queue<Galileo_Ephemeris> *ephemeris_queue);
+    void set_iono_queue(concurrent_queue<Galileo_Iono> *iono_queue);
+    void set_almanac_queue(concurrent_queue<Galileo_Almanac> *almanac_queue);
+    void set_utc_model_queue(concurrent_queue<Galileo_Utc_Model> *utc_model_queue);
+
+    int general_work (int noutput_items, gr_vector_int &ninput_items,
+            gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+
+private:
+    friend galileo_e1b_telemetry_decoder_cc_sptr
+    galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
+            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    galileo_e1b_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
+            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+
+    unsigned short int d_preambles_bits[GALILEO_INAV_PREAMBLE_LENGTH_BITS];
+
+    signed int *d_preambles_symbols;
+    unsigned int d_samples_per_symbol;
+    int d_symbols_per_preamble;
+
+    long unsigned int d_sample_counter;
+    long unsigned int d_preamble_index;
+    unsigned int d_stat;
+    bool d_flag_frame_sync;
+
+    bool d_flag_parity;
+    bool d_flag_preamble;
+
+    long d_fs_in;
+
+    //gr::trellis::interleaver d_interleaver;
+
+    // navigation message vars
+    Galileo_Navigation_Message d_nav;
+
+    //GalileoINAVFsm d_Galileo_INAV_FSM;
+
+    boost::shared_ptr<gr::msg_queue> d_queue;
+    unsigned int d_vector_length;
+    bool d_dump;
+    Gnss_Satellite d_satellite;
+    int d_channel;
+
+    double d_preamble_time_seconds;
+
+    double d_TOW_at_Preamble;
+    double d_TOW_at_current_symbol;
+    double Prn_timestamp_at_preamble_ms;
+    bool flag_TOW_set;
+
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+};
+
+#endif

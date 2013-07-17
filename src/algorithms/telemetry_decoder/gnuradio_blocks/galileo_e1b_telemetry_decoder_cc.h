@@ -89,6 +89,10 @@ private:
     galileo_e1b_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
             int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
+    void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
+
+    void deinterleaver(int rows, int cols, double *in, double *out);
+
     unsigned short int d_preambles_bits[GALILEO_INAV_PREAMBLE_LENGTH_BITS];
 
     signed int *d_preambles_symbols;

@@ -1,6 +1,6 @@
 /*!
  * \file galileo_e1b_telemetry_decoder_cc.cc
- * \brief Implementation of a NAV message demodulator block
+ * \brief Implementation of a Galileo INAV message demodulator block
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas 2013. jarribas(at)cttc.es
  *
@@ -42,6 +42,8 @@
 
 #include "gnss_synchro.h"
 
+#include "convolutional.h"
+
 using google::LogMessage;
 
 
@@ -62,6 +64,59 @@ void galileo_e1b_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_in
             ninput_items_required[i] = GALILEO_INAV_PAGE_SYMBOLS; //set the required sample history
         }
 }
+
+
+void galileo_e1b_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, int *page_part_bits)
+{
+
+	int CodeLength=240;
+	int DataLength;
+	int	nn, KK, mm, max_states;
+	int g_encoder[2];
+
+	nn = 2; //Coding rate 1/n
+	KK = 7; //Constraint Length
+	g_encoder[0]=121; // Polynomial G1
+	g_encoder[1]=91; // Polinomial G2
+
+	mm = KK - 1;
+	max_states = 1 << mm;			/* 2^mm */
+	DataLength = (CodeLength/nn)-mm;
+
+	/* create appropriate transition matrices */
+	int     *out0, *out1, *state0, *state1;
+	out0 = (int*)calloc( max_states, sizeof(int) );
+	out1 = (int*)calloc( max_states, sizeof(int) );
+	state0 = (int*)calloc( max_states, sizeof(int) );
+	state1 = (int*)calloc( max_states, sizeof(int) );
+
+	nsc_transit( out0, state0, 0, g_encoder, KK, nn );
+	nsc_transit( out1, state1, 1, g_encoder, KK, nn );
+
+	Viterbi( page_part_bits, out0, state0, out1, state1,
+			page_part_symbols, KK, nn, DataLength );
+
+
+	/* Clean up memory */
+	free( out0 );
+	free( out1 );
+	free( state0 );
+	free( state1 );
+
+}
+
+
+void galileo_e1b_telemetry_decoder_cc::deinterleaver(int rows, int cols, double *in, double *out)
+{
+	for (int r=0;r<rows;r++)
+	{
+		for(int c=0;c<cols;c++)
+		{
+			out[c*rows+r]=in[r*cols+c];
+		}
+	}
+}
+
 
 galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
         Gnss_Satellite satellite,
@@ -120,19 +175,6 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_TOW_at_current_symbol = 0;
     flag_TOW_set = false;
 
-    // set up de-interleaver table
-//    std::vector<int> positions;
-//    for (int rows=0;rows<GALILEO_INAV_INTERLEAVER_ROWS;rows++)
-//    {
-//    	for (int cols=0;cols<GALILEO_INAV_INTERLEAVER_COLS;cols++)
-//    	{
-//    		positions.push_back(rows*GALILEO_INAV_INTERLEAVER_ROWS+cols);
-//    	}
-//    }
-//    d_interleaver= new gr::trellis::interleaver();
-
-    // set up trellis decoder
-
 }
 
 
@@ -174,10 +216,8 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
     if (abs(corr_value) >= d_symbols_per_preamble)
         {
     		//std::cout << "Positive preamble correlation for Galileo SAT " << this->d_satellite << std::endl;
-            //TODO: Rewrite with state machine
             if (d_stat == 0)
                 {
-                    //d_GPS_FSM.Event_gps_word_preamble();
                     d_preamble_index = d_sample_counter;//record the preamble sample stamp
                     std::cout << "Preamble detection for Galileo SAT " << this->d_satellite << std::endl;
                     d_stat = 1; // enter into frame pre-detection status
@@ -188,14 +228,88 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     //std::cout << "preamble_diff="<< preamble_diff <<" for Galileo SAT " << this->d_satellite << std::endl;
                     if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) < 1)
                         {
+
+                    		//std::cout<<"d_sample_counter="<<d_sample_counter<<std::endl;
+                    		//std::cout<<"corr_value="<<corr_value<<std::endl;
                     		// NEW Galileo page part is received
+                    	    // 0. fetch the symbols into an array
+                    	    int frame_length=GALILEO_INAV_PAGE_PART_SYMBOLS-d_symbols_per_preamble;
+                    	    double page_part_symbols[frame_length];
+                    	    double page_part_symbols_deint[frame_length];
+
+                    	    for (int i=0;i<frame_length;i++)
+                    	    {
+                    	    	page_part_symbols[i]=in[0][i+d_symbols_per_preamble].Prompt_I; // because last symbol of the preamble is just received now!
+                    	    }
+
                     		// 1. De-interleave
+                    	    deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS,GALILEO_INAV_INTERLEAVER_COLS,page_part_symbols, page_part_symbols_deint);
 
                     		// 2. Viterbi decoder
+                    	    // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
+                    	    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180º
+                    	    for (int i=0;i<frame_length;i++)
+                    	    {
+                    	    	if (corr_value<0)
+                    	    	{
+                    	    		page_part_symbols_deint[i]=-page_part_symbols_deint[i];
+                    	    	}
+                    	    	if (i%2==0)
+                    	    	{
+                    	    		page_part_symbols_deint[i]=-page_part_symbols_deint[i];
+                    	    	}
+                    	    }
+
+                    	    int page_part_bits[frame_length/2];
+                    	    viterbi_decoder(page_part_symbols_deint, page_part_bits);
 
                     		// 3. Call the Galileo page decoder
 
-                            //d_GPS_FSM.Event_gps_word_preamble();
+//                    	    std::cout<<"frame_symbols=[";
+//                    	    for (int i=0;i<frame_length;i++)
+//                    	     {
+//                    	    	if (page_part_symbols[i]>0)
+//                    	    	{
+//                    	    		std::cout<<",1";
+//                    	    	}else{
+//                    	    		std::cout<<",0";
+//                    	    	}
+//                    	     }
+//                    	    std::cout<<"]"<<std::endl;
+//                      	    std::cout<<"frame_symbols_deint=[";
+//                        	    for (int i=0;i<frame_length;i++)
+//                        	     {
+//                        	    	if (page_part_symbols_deint[i]>0)
+//                        	    	{
+//                        	    		std::cout<<",1";
+//                        	    	}else{
+//                        	    		std::cout<<",0";
+//                        	    	}
+//                        	     }
+//                        	    std::cout<<"]"<<std::endl;
+//
+//                          	    std::cout<<"frame_bits=[";
+//                            	    for (int i=0;i<frame_length/2;i++)
+//                            	     {
+//                            	    	if (page_part_bits[i]>0)
+//                            	    	{
+//                            	    		std::cout<<",1";
+//                            	    	}else{
+//                            	    		std::cout<<",0";
+//                            	    	}
+//                            	     }
+//                            	    std::cout<<"]"<<std::endl;
+
+                             if (page_part_bits[0]==1)
+                             {
+                            	 std::cout<<"Page Odd"<<std::endl;
+                             }else
+                             {
+                            	 std::cout<<"Page Even"<<std::endl;
+                             }
+                            //ToDo: Call here the frame decoder
+
+
                             d_flag_preamble = true;
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
                             d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;// - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble

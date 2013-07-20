@@ -525,18 +525,16 @@ void GNSSFlowgraph::init()
 void GNSSFlowgraph::set_signals_list()
 {
     /*
-     * Sets a sequential list of satellites (1, 2, ...32)
+     * Sets a sequential list of GNSS satellites
      */
+
+    std::set<unsigned int>::iterator available_gnss_prn_iter;
 
     /*
      * \TODO Describe GNSS satellites more nicely, with RINEX notation
      * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf (page 5)
      */
-    std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
-            29, 30, 31, 32 };
 
-    std::set<unsigned int>::iterator available_gnss_prn_iter;
 
 
     /*
@@ -547,6 +545,9 @@ void GNSSFlowgraph::set_signals_list()
     /*
      * Loop to create GPS L1 C/A signals
      */
+    std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
+            29, 30, 31, 32 };
 
     for (available_gnss_prn_iter = available_gps_prn.begin(); available_gnss_prn_iter
     != available_gps_prn.end(); available_gnss_prn_iter++)
@@ -555,12 +556,24 @@ void GNSSFlowgraph::set_signals_list()
     				*available_gnss_prn_iter), std::string("1C")));
         }
 
+
+    /*
+     * Loop to create SBAS L1 C/A signals
+     */
+    std::set<unsigned int> available_sbas_prn = { 120, 124, 126};
+
+    for (available_gnss_prn_iter = available_sbas_prn.begin(); available_gnss_prn_iter
+    != available_sbas_prn.end(); available_gnss_prn_iter++)
+        {
+            available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("SBAS"),
+                    *available_gnss_prn_iter), std::string("1C")));
+        }
+
+
     /*
      * Loop to create the list of Galileo E1 B signals
      */
-
     std::set<unsigned int> available_galileo_prn = { 11, 12, 19, 20 };
-
 
     for (available_gnss_prn_iter = available_galileo_prn.begin(); available_gnss_prn_iter
     != available_galileo_prn.end(); available_gnss_prn_iter++)
@@ -568,6 +581,7 @@ void GNSSFlowgraph::set_signals_list()
 			available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
 				*available_gnss_prn_iter), std::string("1B")));
         }
+
 
     /*
      * Ordering the list of signals from configuration file

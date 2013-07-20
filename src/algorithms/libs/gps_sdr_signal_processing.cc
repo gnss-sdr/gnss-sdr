@@ -43,15 +43,26 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, uns
     unsigned int feedback1, feedback2;
     unsigned int lcv, lcv2;
     unsigned int delay;
-    signed int prn = _prn-1; //Move the PRN code to fit an array indices
+    signed int prn_idx;
 
     /* G2 Delays as defined in GPS-ISD-200D */
-    signed int delays[51] = {5, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254 ,255, 256, 257, 258, 469, 470, 471, 472,
-            473, 474, 509, 512, 513, 514, 515, 516, 859, 860, 861, 862, 145, 175, 52, 21, 237, 235, 886, 657, 634, 762,
-            355, 1012, 176, 603, 130, 359, 595, 68, 386};
+    signed int delays[51] = {5 /*PRN1*/, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254 ,255, 256, 257, 258, 469, 470, 471, 472,
+            473, 474, 509, 512, 513, 514, 515, 516, 859, 860, 861, 862 /*PRN32*/,
+            145 /*PRN120*/, 175, 52, 21, 237, 235, 886, 657, 634, 762,
+            355, 1012, 176, 603, 130, 359, 595, 68, 386 /*PRN138*/};
+
+    // compute delay array index for given PRN number
+    if(120 <= _prn && _prn <= 138)
+    {
+    	prn_idx = _prn - 88;	// SBAS PRNs are at array indices 31 to 50 (offset: -120+33-1 =-88)
+    }
+    else
+    {
+    	prn_idx = _prn-1;
+    }
 
     /* A simple error check */
-    if((prn < 0) || (prn > 51))
+    if((prn_idx < 0) || (prn_idx > 51))
         return;
 
     for(lcv = 0; lcv < 10; lcv++)
@@ -80,7 +91,7 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, uns
         }
 
     /* Set the delay */
-    delay = 1023 - delays[prn];
+    delay = 1023 - delays[prn_idx];
     delay += _chip_shift;
     delay %= 1023;
     /* Generate PRN from G1 and G2 Registers */

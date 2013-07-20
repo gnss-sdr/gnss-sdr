@@ -179,7 +179,9 @@ gr::basic_block_sptr Channel::get_right_block()
 void Channel::set_signal(Gnss_Signal gnss_signal)
 {
     gnss_signal_ = gnss_signal;
-    gnss_signal_.get_signal().copy(gnss_synchro_.Signal,2,0);
+    const char * str = gnss_signal_.get_signal().c_str(); // get a C style null terminated string
+    std::memcpy((void*)gnss_synchro_.Signal, str,3); // copy string into synchro char array: 2 char + null
+    gnss_synchro_.Signal[2] = 0; // make sure that string length is only two characters
     gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
     gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];
     acq_->init();

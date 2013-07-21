@@ -35,6 +35,7 @@
 #include <gnuradio/hier_block2.h>
 #include "gnss_block_interface.h"
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/file_sink.h>
 
 class ConfigurationInterface;
 
@@ -46,7 +47,7 @@ class Gn3sSignalSource: public GNSSBlockInterface
 public:
 	Gn3sSignalSource(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
-            unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_stream, gr::msg_queue::sptr queue);
 
     virtual ~Gn3sSignalSource();
     std::string role()

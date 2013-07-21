@@ -39,16 +39,14 @@
 using google::LogMessage;
 
 Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
-        std::string role, unsigned int in_stream, unsigned int out_stream, gr::blocks::file_sink::sptr queue) :
+        std::string role, unsigned int in_stream, unsigned int out_stream, gr::msg_queue::sptr queue) :
         role_(role), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
     std::string default_item_type = "short";
     std::string default_dump_file = "./data/gn3s_source.dat";
-    item_type_ = configuration->property(role + ".item_type",
-            default_item_type);
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename",
-            default_dump_file);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     if (item_type_.compare("gr_complex") == 0)
         {

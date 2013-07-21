@@ -65,10 +65,10 @@ public:
     {
         return item_size_;
     }
-    void connect(gr_top_block_sptr top_block);
-    void disconnect(gr_top_block_sptr top_block);
-    gr_basic_block_sptr get_left_block();
-    gr_basic_block_sptr get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
 private:
     std::string role_;

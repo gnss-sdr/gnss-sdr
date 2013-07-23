@@ -19,6 +19,7 @@
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -65,8 +66,8 @@ class pcps_acquisition_cc;
 typedef boost::shared_ptr<pcps_acquisition_cc> pcps_acquisition_cc_sptr;
 
 pcps_acquisition_cc_sptr
-pcps_make_acquisition_cc(unsigned int sampled_ms,
-        unsigned int doppler_max, long freq, long fs_in, int samples_per_ms,
+pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
+        long freq, long fs_in, int samples_per_ms, int samples_per_code,
         gr::msg_queue::sptr queue, bool dump, std::string dump_filename);
 
 /*!
@@ -79,47 +80,49 @@ class pcps_acquisition_cc: public gr::block
 {
 private:
     friend pcps_acquisition_cc_sptr
-    pcps_make_acquisition_cc(unsigned int sampled_ms,
-            unsigned int doppler_max, long freq, long fs_in,
-            int samples_per_ms, gr::msg_queue::sptr queue, bool dump,
-            std::string dump_filename);
+    pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
+            long freq, long fs_in, int samples_per_ms, int samples_per_code,
+            gr::msg_queue::sptr queue, bool dump, std::string dump_filename);
 
-    pcps_acquisition_cc(unsigned int sampled_ms,
-            unsigned int doppler_max, long freq, long fs_in,
-            int samples_per_ms, gr::msg_queue::sptr d_queue, bool dump,
-            std::string dump_filename);
+    pcps_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
+            long freq, long fs_in, int samples_per_ms, int samples_per_code,
+            gr::msg_queue::sptr queue, bool dump, std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
             int doppler_offset);
 
-    long d_fs_in;
-    long d_freq;
-    int d_samples_per_ms;
-    unsigned int d_doppler_resolution;
-    float d_threshold;
-    std::string d_satellite_str;
-    unsigned int d_doppler_max;
-    unsigned int d_doppler_step;
-    unsigned int d_sampled_ms;
-    unsigned int d_fft_size;
-    unsigned long int d_sample_counter;
-    gr_complex* d_carrier;
-    gr_complex* d_fft_codes;
-    gr::fft::fft_complex* d_fft_if;
-    gr::fft::fft_complex* d_ifft;
-    Gnss_Synchro *d_gnss_synchro;
-    unsigned int d_code_phase;
-    float d_doppler_freq;
-    float d_mag;
-    float d_input_power;
-    float d_test_statistics;
+
+	long d_fs_in;
+	long d_freq;
+	int d_samples_per_ms;
+    int d_samples_per_code;
+	unsigned int d_doppler_resolution;
+	float d_threshold;
+	std::string d_satellite_str;
+	unsigned int d_doppler_max;
+	unsigned int d_doppler_step;
+	unsigned int d_sampled_ms;
+	unsigned int d_fft_size;
+	unsigned long int d_sample_counter;
+    gr_complex** d_grid_doppler_wipeoffs;
+    unsigned int d_num_doppler_bins;
+	gr_complex* d_fft_codes;
+	gr::fft::fft_complex* d_fft_if;
+	gr::fft::fft_complex* d_ifft;
+	Gnss_Synchro *d_gnss_synchro;
+	unsigned int d_code_phase;
+	float d_doppler_freq;
+	float d_mag;
+    float* d_magnitude;
+	float d_input_power;
+	float d_test_statistics;
     gr::msg_queue::sptr d_queue;
-    concurrent_queue<int> *d_channel_internal_queue;
-    std::ofstream d_dump_file;
-    bool d_active;
-    bool d_dump;
-    unsigned int d_channel;
-    std::string d_dump_filename;
+	concurrent_queue<int> *d_channel_internal_queue;
+	std::ofstream d_dump_file;
+	bool d_active;
+	bool d_dump;
+	unsigned int d_channel;
+	std::string d_dump_filename;
 
 public:
     /*!

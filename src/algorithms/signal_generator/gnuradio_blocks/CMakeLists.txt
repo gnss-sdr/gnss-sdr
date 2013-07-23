@@ -16,17 +16,20 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(acquisition)
-add_subdirectory(channel)
-add_subdirectory(libs)
-add_subdirectory(conditioner)
-add_subdirectory(data_type_adapter)
-add_subdirectory(observables)
-add_subdirectory(telemetry_decoder)
-add_subdirectory(output_filter)
-add_subdirectory(resampler)
-add_subdirectory(signal_generator)
-add_subdirectory(signal_source)
-add_subdirectory(input_filter)
-add_subdirectory(tracking)
-add_subdirectory(PVT)
+set(SIGNAL_GENERATOR_BLOCK_SOURCES signal_generator_c.cc)
+
+include_directories(
+     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_SOURCE_DIR}/src/core/system_parameters
+     ${CMAKE_SOURCE_DIR}/src/core/interfaces
+     ${CMAKE_SOURCE_DIR}/src/core/receiver
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+)
+
+add_library(signal_generator_blocks ${SIGNAL_GENERATOR_BLOCK_SOURCES})
+target_link_libraries(signal_generator_blocks gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES})
+
+

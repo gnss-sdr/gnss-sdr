@@ -4,6 +4,7 @@
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -43,25 +44,25 @@
 using google::LogMessage;
 
 pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
-        unsigned int sampled_ms, unsigned int doppler_max, long freq,
-        long fs_in, int samples_per_ms, gr::msg_queue::sptr queue, bool dump,
-        std::string dump_filename)
+        unsigned int sampled_ms, unsigned int doppler_max,
+        long freq, long fs_in, int samples_per_ms, int samples_per_code,
+        gr::msg_queue::sptr queue, bool dump, std::string dump_filename)
 {
 
     return pcps_acquisition_cc_sptr(
-            new pcps_acquisition_cc(sampled_ms, doppler_max, freq,
-                    fs_in, samples_per_ms, queue, dump, dump_filename));
+            new pcps_acquisition_cc(sampled_ms, doppler_max, freq, fs_in,
+                    samples_per_ms, samples_per_code, queue, dump, dump_filename));
 }
 
 
 
 pcps_acquisition_cc::pcps_acquisition_cc(
-        unsigned int sampled_ms, unsigned int doppler_max, long freq,
-        long fs_in, int samples_per_ms, gr::msg_queue::sptr queue, bool dump,
-        std::string dump_filename) :
-        gr::block("pcps_acquisition_cc",
-        gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
-        gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
+        unsigned int sampled_ms, unsigned int doppler_max,
+        long freq, long fs_in, int samples_per_ms, int samples_per_code,
+        gr::msg_queue::sptr queue, bool dump, std::string dump_filename) :
+    gr::block("pcps_acquisition_cc",
+    gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
+    gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
@@ -69,15 +70,17 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
+    d_samples_per_code = samples_per_code;
     d_sampled_ms = sampled_ms;
     d_doppler_max = doppler_max;
     d_fft_size = d_sampled_ms * d_samples_per_ms;
     d_mag = 0;
     d_input_power = 0.0;
+    d_num_doppler_bins = 0;
 
     //todo: do something if posix_memalign fails
-    if (posix_memalign((void**)&d_carrier, 16, d_fft_size * sizeof(gr_complex)) == 0){};
     if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
+    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(gr_complex)) == 0){};
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -94,8 +97,22 @@ pcps_acquisition_cc::pcps_acquisition_cc(
 
 pcps_acquisition_cc::~pcps_acquisition_cc()
 {
-    free(d_carrier);
+
+
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+        {
+            free(d_grid_doppler_wipeoffs[doppler_index]);
+        }
+
+
+    if (d_num_doppler_bins > 0)
+        {
+            delete[] d_grid_doppler_wipeoffs;
+        }
+
     free(d_fft_codes);
+    free(d_magnitude);
+
     delete d_ifft;
     delete d_fft_if;
     if (d_dump)
@@ -108,7 +125,19 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 
 void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 {
-	memcpy(d_fft_if->get_inbuf(),code, sizeof(gr_complex)*d_fft_size);
+    memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex)*d_fft_size);
+
+    d_fft_if->execute(); // We need the FFT of local code
+
+    //Conjugate the local code
+    if (is_unaligned())
+        {
+            volk_32fc_conjugate_32fc_u(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
+        }
+    else
+        {
+            volk_32fc_conjugate_32fc_a(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
+        }
 }
 
 
@@ -121,13 +150,18 @@ void pcps_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    d_fft_if->execute(); // We need the FFT of local code
+    // Create the carrier Doppler wipeoff signals
+    d_num_doppler_bins=floor(2*std::abs((int)d_doppler_max)/d_doppler_step);
+    d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
+    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+        {
+            if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
+                               d_fft_size * sizeof(gr_complex)) == 0){};
 
-    //Conjugate the local code
-    for (unsigned int i = 0; i < d_fft_size; i++)
-    {
-        d_fft_codes[i] = std::complex<float>(conj(d_fft_if->get_outbuf()[i]));
-    }
+            int doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
+                                 d_freq + doppler, d_fs_in, d_fft_size);
+        }
 }
 
 
@@ -158,7 +192,6 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             int doppler;
             unsigned int indext = 0;
             float magt = 0.0;
-            float tmp_magt = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
             bool positive_acquisition = false;
             int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
@@ -175,35 +208,41 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             d_input_power = 0.0;
 
             DLOG(INFO) << "Channel: " << d_channel
-                       << " , doing acquisition of satellite: " << d_gnss_synchro->System
-                       << " "<< d_gnss_synchro->PRN
-                       << " ,sample stamp: " << d_sample_counter << ", threshold: "
-                       << d_threshold << ", doppler_max: " << d_doppler_max
-                       << ", doppler_step: " << d_doppler_step;
+                    << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
+                    << " ,sample stamp: " << d_sample_counter << ", threshold: "
+                    << d_threshold << ", doppler_max: " << d_doppler_max
+                    << ", doppler_step: " << d_doppler_step;
 
             // 1- Compute the input signal power estimation
-            for (i = 0; i < d_fft_size; i++)
+            if (is_unaligned())
                 {
-                    d_input_power += std::norm(in[i]);
+                    volk_32fc_magnitude_squared_32f_u(d_magnitude, in, d_fft_size);
+                    for (i = 0; i < d_fft_size; i++)
+                        d_input_power += d_magnitude[i];
                 }
-            d_input_power = d_input_power / (float)d_fft_size;
+            else
+                {
+                    volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
+                    volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
+                }
+            d_input_power /= (float)d_fft_size;
 
             // 2- Doppler frequency search loop
-            for (doppler = (int)(-d_doppler_max); doppler <= (int)d_doppler_max; doppler += d_doppler_step)
+            for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
                 {
                     // doppler search steps
-            		//TODO: Create a run time lookup table with all the required Doppler wipe-off LO signals, by allocating a memory space (aligned) and by initializing it when the Doppler step is assigned
-            		// then, use the arrays to multiply the incomming signal, instead of computing the sine and cosine online.
-                    // Perform the carrier wipe-off
-                    complex_exp_gen_conj(d_carrier, d_freq + doppler, d_fs_in, d_fft_size);
-                    if (is_unaligned()==true)
+
+                    doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+
+                    if (is_unaligned())
                         {
-                            volk_32fc_x2_multiply_32fc_u(d_fft_if->get_inbuf(), in, d_carrier, d_fft_size);
+                            volk_32fc_x2_multiply_32fc_u(d_fft_if->get_inbuf(), in,
+                                        d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
                         }
                     else
                         {
-                            //use directly the input vector
-                            volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in, d_carrier, d_fft_size);
+                            volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in,
+                                        d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
                         }
 
                     // 3- Perform the FFT-based convolution  (parallel time search)
@@ -212,32 +251,52 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
                     // Multiply carrier wiped--off, Fourier transformed incoming signal
                     // with the local FFT'd code reference using SIMD operations with VOLK library
-                    volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
+                    if (is_unaligned())
+                        {
+                            volk_32fc_x2_multiply_32fc_u(d_ifft->get_inbuf(),
+                                        d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
+                        }
+                    else
+                        {
+                            volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+                                        d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
+                        }
 
                     // compute the inverse FFT
                     d_ifft->execute();
 
                     // Search maximum
                     indext = 0;
-                    magt = 0;
+                    magt = 0.0;
+
                     fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
-                    for (i = 0; i < d_fft_size; i++)
+
+                    if (is_unaligned())
                         {
-                            tmp_magt = std::norm(d_ifft->get_outbuf()[i]);
-                            if (tmp_magt > magt)
+                            volk_32fc_magnitude_squared_32f_u(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
+                            for (i = 0; i < d_fft_size; i++)
                                 {
-                                    magt = tmp_magt;
-                                    indext = i;
+                                    if(d_magnitude[i] > magt)
+                                        {
+                                            magt = d_magnitude[i];
+                                            indext = i;
+                                        }
                                 }
                         }
+                    else
+                        {
+                            volk_32fc_magnitude_squared_32f_a(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
+                            volk_32f_index_max_16u_a(&indext, d_magnitude, d_fft_size);
+                        }
+
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
-                    magt = magt / (fft_normalization_factor * fft_normalization_factor);
+                    magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
 
                     // 4- record the maximum peak and the associated synchronization parameters
                     if (d_mag < magt)
                         {
                             d_mag = magt;
-                            d_gnss_synchro->Acq_delay_samples = (double)indext;
+                            d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
                             d_gnss_synchro->Acq_doppler_hz = (double)doppler;
                         }
 
@@ -298,6 +357,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                 {
                     acquisition_message = 2;
                 }
+
             d_channel_internal_queue->push(acquisition_message);
             consume_each(1);
         }

@@ -115,6 +115,8 @@ public:
      */
     void init();
 
+    void set_local_code();
+
     /*!
      * \brief Returns the maximum peak of grid search
      */

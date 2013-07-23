@@ -76,7 +76,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     unsigned int doppler_step = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_)
     		+ ".doppler_step",0);
-    if(doppler_step==0)	doppler_step = configuration->property("Acquisition.doppler_step",0);
+    if(doppler_step==0)	doppler_step = configuration->property("Acquisition.doppler_step",500);
 
     DLOG(INFO) << "Channel "<< channel_<<" Doppler_step = " << doppler_step << std::endl;
 
@@ -88,6 +88,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     acq_->set_threshold(threshold);
 
+    acq_->init();
 
     repeat_ = configuration->property("Acquisition" + boost::lexical_cast<
             std::string>(channel_) + ".repeat_satellite", false);
@@ -184,7 +185,7 @@ void Channel::set_signal(Gnss_Signal gnss_signal)
     gnss_synchro_.Signal[2] = 0; // make sure that string length is only two characters
     gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
     gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];
-    acq_->init();
+    acq_->set_local_code();
     nav_->set_satellite(gnss_signal_.get_satellite());
 }
 

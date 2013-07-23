@@ -114,6 +114,12 @@ public:
     void init();
 
     /*!
+     * \brief Sets local code for Galileo E1 PCPS acquisition algorithm.
+     */
+
+    void set_local_code();
+
+    /*!
      * \brief Returns the maximum peak of grid search
      */
     signed int mag();

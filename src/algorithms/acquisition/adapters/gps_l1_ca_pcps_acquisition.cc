@@ -65,7 +65,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration_->property(role + ".ifreq", 0);
     dump_ = configuration_->property(role + ".dump", false);
-    shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
+    shift_resolution_ = configuration_->property(role + ".doppler_max", 10000);
     sampled_ms_ = configuration_->property(role + ".sampled_ms", 1);
     dump_filename_ = configuration_->property(role + ".dump_filename",
             default_dump_filename);
@@ -74,16 +74,16 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     vector_length_ = round(fs_in_
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    code_= new gr_complex[vector_length_];
+    code_= new gr_complex[vector_length_ * sampled_ms_];
 
     if (item_type_.compare("gr_complex") == 0)
     {
         item_size_ = sizeof(gr_complex);
         acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_,
-                shift_resolution_, if_, fs_in_, vector_length_, queue_,
+                shift_resolution_, if_, fs_in_, vector_length_, vector_length_, queue_,
                 dump_, dump_filename_);
 
-        stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+        stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_*sampled_ms_);
 
         DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id()
                 << ")";
@@ -123,13 +123,13 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
                  pfa = configuration_->property(role_+".pfa", 0.0);
         }
 	if(pfa==0.0)
-	{
-		threshold_ = threshold;
-	}
+		{
+			threshold_ = threshold;
+		}
 	else
-	{
-		threshold_ = calculate_threshold(pfa);
-	}
+		{
+			threshold_ = calculate_threshold(pfa);
+		}
 
 	DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
 
@@ -195,15 +195,29 @@ signed int GpsL1CaPcpsAcquisition::mag()
 }
 
 
-void GpsL1CaPcpsAcquisition::init(){
-    if (item_type_.compare("gr_complex") == 0)
-    {
-    	gps_l1_ca_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_, 0);
-    	acquisition_cc_->set_local_code(code_);
-        acquisition_cc_->init();
-    }
+void GpsL1CaPcpsAcquisition::init()
+{
+    acquisition_cc_->init();
+    set_local_code();
 }
 
+void GpsL1CaPcpsAcquisition::set_local_code()
+{
+    if (item_type_.compare("gr_complex") == 0)
+    {
+        std::complex<float>* code = new std::complex<float>[vector_length_];
+
+        gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+
+        for (unsigned int i = 0; i < sampled_ms_; i++)
+            {
+                memcpy(&(code_[i*vector_length_]), code,
+                       sizeof(gr_complex)*vector_length_);
+            }
+
+        acquisition_cc_->set_local_code(code_);
+    }
+}
 
 void GpsL1CaPcpsAcquisition::reset()
 {
@@ -238,9 +252,9 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
 void GpsL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
-    {
-        top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
-    }
+        {
+            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
+        }
 
 }
 

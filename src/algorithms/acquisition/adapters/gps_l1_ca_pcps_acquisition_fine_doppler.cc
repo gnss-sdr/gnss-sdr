@@ -146,10 +146,17 @@ signed int GpsL1CaPcpsAcquisitionFineDoppler::mag()
 }
 
 
-void GpsL1CaPcpsAcquisitionFineDoppler::init(){
-    	gps_l1_ca_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_, 0);
-    	acquisition_cc_->set_local_code(code_);
-        acquisition_cc_->init();
+void GpsL1CaPcpsAcquisitionFineDoppler::init()
+{
+    acquisition_cc_->init();
+    set_local_code();
+}
+
+
+void GpsL1CaPcpsAcquisitionFineDoppler::set_local_code()
+{
+    gps_l1_ca_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_, 0);
+    acquisition_cc_->set_local_code(code_);
 }
 
 

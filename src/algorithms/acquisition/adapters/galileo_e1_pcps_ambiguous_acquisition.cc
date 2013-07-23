@@ -71,17 +71,20 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
             fs_in_
             / (Galileo_E1_CODE_CHIP_RATE_HZ
                     / Galileo_E1_B_CODE_LENGTH_CHIPS));
+
     int samples_per_ms = vector_length_ / 4;
 
-    code_ = new gr_complex[vector_length_];
+    vector_length_ = samples_per_ms * 4;
+
+    code_ = new gr_complex[samples_per_ms*sampled_ms_];
 
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_,
-                    shift_resolution_, if_, fs_in_, samples_per_ms, queue_,
-                    dump_, dump_filename_);
-            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+                    shift_resolution_, if_, fs_in_, samples_per_ms, vector_length_,
+                    queue_, dump_, dump_filename_);
+            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, samples_per_ms * sampled_ms_);
             DLOG(INFO) << "stream_to_vector("
                     << stream_to_vector_->unique_id() << ")";
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id()
@@ -115,6 +118,7 @@ GalileoE1PcpsAmbiguousAcquisition::set_channel(unsigned int channel)
 void
 GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
 {
+
 	float pfa = configuration_->property(role_+ boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
 	if(pfa==0.0) pfa = configuration_->property(role_+".pfa", 0.0);
@@ -124,7 +128,7 @@ GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
 		threshold_ = threshold;
 	}
 	else
-	{
+    {
 		threshold_ = calculate_threshold(pfa);
 	}
 
@@ -203,15 +207,31 @@ GalileoE1PcpsAmbiguousAcquisition::mag()
 void
 GalileoE1PcpsAmbiguousAcquisition::init()
 {
+    acquisition_cc_->init();
+    set_local_code();
+}
+
+void
+GalileoE1PcpsAmbiguousAcquisition::set_local_code()
+{
     if (item_type_.compare("gr_complex") == 0)
         {
             bool cboc = configuration_->property(
                     "Acquisition" + boost::lexical_cast<std::string>(channel_)
                             + ".cboc", false);
-            galileo_e1_code_gen_complex_sampled(code_, gnss_synchro_->Signal,
-                    cboc, gnss_synchro_->PRN, fs_in_, 0);
+
+            std::complex<float> * code = new std::complex<float>[vector_length_];
+
+            galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+                    cboc, gnss_synchro_->PRN, fs_in_, 0, false);
+
+            for (unsigned int i = 0; i < sampled_ms_/4; i++)
+                {
+                    memcpy(&(code_[i*vector_length_]), code,
+                           sizeof(gr_complex)*vector_length_);
+                }
+
             acquisition_cc_->set_local_code(code_);
-            acquisition_cc_->init();
         }
 }
 
@@ -227,8 +247,6 @@ GalileoE1PcpsAmbiguousAcquisition::reset()
 
 float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
 {
-	//Calculate the threshold
-
 	unsigned int frequency_bins = 0;
 	for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
 	{

@@ -74,7 +74,7 @@ if(RTLSDR_DRIVER)
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${RTL_DRIVER_INCLUDE_DIRS}) 
 endif(RTLSDR_DRIVER)
 
-set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc uhd_signal_source.cc ${OPT_DRIVER_SOURCES})
+set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc gen_signal_source.cc uhd_signal_source.cc ${OPT_DRIVER_SOURCES})
 
 
 include_directories(

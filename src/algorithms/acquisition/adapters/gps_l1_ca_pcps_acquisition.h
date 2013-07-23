@@ -5,7 +5,7 @@
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          </ul> *
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
@@ -115,6 +115,12 @@ public:
      * \brief Initializes acquisition algorithm.
      */
     void init();
+
+    /*!
+     * \brief Sets local code for GPS L1/CA PCPS acquisition algorithm.
+     */
+
+    void set_local_code();
 
     /*!
      * \brief Returns the maximum peak of grid search

@@ -194,21 +194,33 @@ void FrontEndCal::set_configuration(ConfigurationInterface *configuration)
     configuration_= configuration;
 }
 
-void FrontEndCal::get_ephemeris()
+bool FrontEndCal::get_ephemeris()
 {
 	bool read_ephemeris_from_xml=configuration_->property("GNSS-SDR.read_eph_from_xml",false);
 
 	if (read_ephemeris_from_xml==true)
 	{
-		std::cout<< "Trying to read ephemeris from XML file"<<std::endl;
+		std::cout<< "Trying to read ephemeris from XML file..."<<std::endl;
 		if (read_assistance_from_XML()==false)
 		{
-			std::cout<< "ERROR: Could not read Ephemeris file: Trying to get ephemeris from SUPL client.."<<std::endl;
-			Get_SUPL_Assist();
+			std::cout<< "ERROR: Could not read Ephemeris file: Trying to get ephemeris from SUPL server.."<<std::endl;
+			if (Get_SUPL_Assist()==1)
+			{
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			return true;
 		}
 	}else{
-		std::cout<< "Trying to read ephemeris from SUPL server"<<std::endl;
-		Get_SUPL_Assist();
+		std::cout<< "Trying to read ephemeris from SUPL server..."<<std::endl;
+		if (Get_SUPL_Assist()==0)
+		{
+			return true;
+		}else{
+			return false;
+		}
 	}
 }
 

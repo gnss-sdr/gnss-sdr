@@ -80,7 +80,7 @@ using google::LogMessage;
 
 DECLARE_string(log_dir);
 
-DEFINE_string(config_file, "../conf/gnss-sdr.conf",
+DEFINE_string(config_file, "../conf/front-end-cal.conf",
 		"Path to the file containing the configuration parameters");
 
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
@@ -123,10 +123,10 @@ void wait_message()
     		{
     		case 1: // Positive acq
     		    gnss_sync_vector.push_back(*gnss_synchro);
-    			acquisition->reset();
+    			//acquisition->reset();
     			break;
     		case 2: // negative acq
-    			acquisition->reset();
+    			//acquisition->reset();
     			break;
     		case 3:
         		stop=true;
@@ -162,7 +162,7 @@ bool front_end_capture(ConfigurationInterface *configuration)
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
     int nsamples=samples_per_code*50;
 
-    int skip_samples=fs_in_; // skip 5 seconds
+    int skip_samples=fs_in_*5; // skip 5 seconds
 
     gr::block_sptr head = gr::blocks::head::make(sizeof(gr_complex), nsamples);
 
@@ -190,6 +190,19 @@ bool front_end_capture(ConfigurationInterface *configuration)
 
 }
 
+static time_t utc_time(int week, long tow) {
+  time_t t;
+
+  /* Jan 5/6 midnight 1980 - beginning of GPS time as Unix time */
+  t = 315964801;
+
+  /* soon week will wrap again, uh oh... */
+  /* TS 44.031: GPSTOW, range 0-604799.92, resolution 0.08 sec, 23-bit presentation */
+  t += (1024 + week) * 604800 + tow*0.08;
+
+  return t;
+}
+
 int main(int argc, char** argv)
 {
     const std::string intro_help(
@@ -215,7 +228,7 @@ int main(int argc, char** argv)
 
                  << "/tmp"
                  << std::endl
-                 << "Use gnss-sdr --log_dir=/path/to/log to change that."
+                 << "Use front-end-cal --log_dir=/path/to/log to change that."
                  << std::endl;
         }
     else
@@ -243,7 +256,17 @@ int main(int argc, char** argv)
     configuration= new FileConfiguration(FLAGS_config_file);
     front_end_cal.set_configuration(configuration);
 
-    // Capture file
+
+    // 2. Get SUPL information from server: Ephemeris record, assistance info and TOW
+    if (front_end_cal.get_ephemeris()==true)
+    {
+    	std::cout<<"SUPL data received OK!"<<std::endl;
+    }else{
+    	std::cout<<"Failure connecting to SUPL server"<<std::endl;
+    }
+
+
+    // 3. Capture some front-end samples to hard disk
 
     if (front_end_capture(configuration))
     {
@@ -252,7 +275,7 @@ int main(int argc, char** argv)
     	std::cout<<"Failure capturing front-end samples"<<std::endl;
     }
 
-    // 3. Setup GNU Radio flowgraph (RTL-SDR -> Acquisition_10m)
+    // 4. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
 
     gr::top_block_sptr top_block;
     boost::shared_ptr<gr::msg_queue> queue;
@@ -297,7 +320,9 @@ int main(int argc, char** argv)
     	std::cout<<"Failure connecting the GNU Radio blocks "<<std::endl;
     }
 
-    // 4. Run the flowgraph
+    // 5. Run the flowgraph
+    // Get visible GPS satellites (positive acquisitions with Doppler measurements)
+    // Compute Doppler estimations
 
     std::map<int,double> doppler_measurements_map;
     std::map<int,double> cn0_measurements_map;
@@ -321,7 +346,7 @@ int main(int argc, char** argv)
         top_block->run();
         if (start_msg==true)
         {
-        	std::cout<<"Searchig for GPS Satellites..."<<std::endl;
+        	std::cout<<"Searching for GPS Satellites in L1 band..."<<std::endl;
         	std::cout<<"[";
         	start_msg=false;
         }
@@ -354,46 +379,68 @@ int main(int argc, char** argv)
         << ((double)(end - begin))/1000000.0
         << " [seconds]" << std::endl;
 
-    // 5. Get visible GPS satellites (positive acquisitions with Doppler measurements)
-
-    // 2. Get SUPL information from server: Ephemeris record, assistance info and TOW
-    front_end_cal.get_ephemeris();
-
-    // 6. Compute Doppler estimations
-
-    //find TOW from SUPL assistance
+    //6. find TOW from SUPL assistance
 
     double current_TOW=0;
-        if (global_gps_ephemeris_map.size()>0)
-        {
-        	std::map<int,Gps_Ephemeris> Eph_map;
-        	Eph_map=global_gps_ephemeris_map.get_map_copy();
-        	current_TOW=Eph_map.begin()->second.d_TOW;
-        	std::cout<<"Current TOW obtained from SUPL assistance = "<<current_TOW<<std::endl;
-        }else{
-        	std::cout<<"Unable to get Ephemeris SUPL assistance. TOW is unknown!"<<std::endl;
-        }
+    if (global_gps_ephemeris_map.size()>0)
+    {
+    	std::map<int,Gps_Ephemeris> Eph_map;
+    	Eph_map=global_gps_ephemeris_map.get_map_copy();
+    	current_TOW=Eph_map.begin()->second.d_TOW;
+
+    	time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int)current_TOW);
+
+    	fprintf(stdout, "Reference Time:\n");
+    	fprintf(stdout, "  GPS Week: %ld\n", Eph_map.begin()->second.i_GPS_week);
+    	fprintf(stdout, "  GPS TOW:  %ld %lf\n", (long int)current_TOW, (long int)current_TOW*0.08);
+    	fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
+    	std::cout<<"Current TOW obtained from SUPL assistance = "<<current_TOW<<std::endl;
+    }else{
+    	std::cout<<"Unable to get Ephemeris SUPL assistance. TOW is unknown!"<<std::endl;
+        delete configuration;
+        delete acquisition;
+        delete gnss_synchro;
+        google::ShutDownCommandLineFlags();
+        std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
+    	return 0;
+    }
+
     //Get user position from config file (or from SUPL using GSM Cell ID)
     double lat_deg = configuration->property("GNSS-SDR.init_latitude_deg", 41.0);
     double lon_deg = configuration->property("GNSS-SDR.init_longitude_deg", 2.0);
     double altitude_m = configuration->property("GNSS-SDR.init_altitude_m", 100);
 
+    std::cout<<"Reference location (defined in config file):"<<std::endl;
+
+    std::cout<<"Latitude="<<lat_deg<<" [º]"<<std::endl;
+    std::cout<<"Longitude="<<lon_deg<<" [º]"<<std::endl;
+    std::cout<<"Altitude="<<altitude_m<<" [m]"<<std::endl;
+
+    if (doppler_measurements_map.size()==0)
+    {
+    	std::cout<<"Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..."<<std::endl;
+        delete configuration;
+        delete acquisition;
+        delete gnss_synchro;
+        google::ShutDownCommandLineFlags();
+        std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
+    	return 0;
+    }
+
     std::map<int,double> f_if_estimation_Hz_map;
     std::map<int,double> f_fs_estimation_Hz_map;
     std::map<int,double> f_ppm_estimation_Hz_map;
 
-	std::cout <<std::setiosflags(std::ios::fixed)<<std::setprecision(2)<<
+    std::cout <<std::setiosflags(std::ios::fixed)<<std::setprecision(2)<<
 			"Doppler analysis results:"<<std::endl;
 
     std::cout << "SV ID  Measured [Hz]   Predicted [Hz]" <<std::endl;
 
     for (std::map<int,double>::iterator it = doppler_measurements_map.begin() ; it != doppler_measurements_map.end(); ++it)
       {
-    	//std::cout << "Doppler measured for (SV=" << it->first<<")="<<it->second<<" [Hz]"<<std::endl;
     	try{
     		double doppler_estimated_hz;
     		doppler_estimated_hz=front_end_cal.estimate_doppler_from_eph(it->first,current_TOW,lat_deg,lon_deg,altitude_m);
-    		//std::cout << "Doppler estimated for (SV=" << it->first<<")="<<doppler_estimated_hz<<" [Hz]"<<std::endl;
     		std::cout << "  "<<it->first<<"   "<<it->second<<"   "<<doppler_estimated_hz<<std::endl;
     		// 7. Compute front-end IF and sampling frequency estimation
     		// Compare with the measurements and compute clock drift using FE model
@@ -406,7 +453,6 @@ int main(int argc, char** argv)
 
     	}catch(int ex)
     	{
-    		//std::cout<<"Eph not found for SV "<<it->first<<std::endl;
     		std::cout << "  "<<it->first<<"   "<<it->second<<"  (Eph not found)"<<std::endl;
     	}
       }
@@ -427,9 +473,6 @@ int main(int argc, char** argv)
     mean_f_if_Hz/=n_elements;
     mean_fs_Hz/=n_elements;
     mean_osc_err_ppm/=n_elements;
-
-
-
 
 	std::cout <<std::setiosflags(std::ios::fixed)<<std::setprecision(2)<<"FE parameters estimation for Elonics E4000 Front-End:"<<std::endl;
 

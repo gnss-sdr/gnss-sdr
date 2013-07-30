@@ -145,8 +145,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
                     samples_ = floor((double)size / (double)item_size() - ceil(0.002 * (double)sampling_frequency_)); //process all the samples available in the file excluding the last 2 ms
                 }
         }
-    std::cout << samples_ << std::endl;
-    //if(samples_ > 0) samples_ = 0;
+
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
     signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);

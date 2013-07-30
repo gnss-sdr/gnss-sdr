@@ -1,5 +1,5 @@
 /*!
- * \file pcps_assisted_acquisition_cc.h
+ * \file pcps_acquisition_fine_doppler_acquisition_cc.h
  * \brief This class implements a Parallel Code Phase Search Acquisition with multi-dwells and fine Doppler estimation
  *
  *  Acquisition strategy (Kay Borre book + CFAR threshold).
@@ -95,9 +95,8 @@ private:
 	int estimate_Doppler(gr_vector_const_void_star &input_items, int available_samples);
 	float estimate_input_power(gr_vector_const_void_star &input_items);
 	double search_maximum();
-	void get_assistance();
 	void reset_grid();
-	void redefine_grid();
+	void update_carrier_wipeoff();
 	void free_grid_memory();
 
 	long d_fs_in;
@@ -108,8 +107,6 @@ private:
 	int d_gnuradio_forecast_samples;
 	float d_threshold;
 	std::string d_satellite_str;
-	int d_doppler_max;
-	int d_doppler_min;
 	int d_config_doppler_max;
 	int d_config_doppler_min;
 
@@ -120,6 +117,7 @@ private:
 	unsigned long int d_sample_counter;
 	gr_complex* d_carrier;
 	gr_complex* d_fft_codes;
+	float* d_magnitude;
 
 	float** d_grid_data;
 	gr_complex** d_grid_doppler_wipeoffs;
@@ -136,7 +134,6 @@ private:
 	std::ofstream d_dump_file;
 	int d_state;
 	bool d_active;
-	bool d_disable_assist;
 	int d_well_count;
 	bool d_dump;
 	unsigned int d_channel;
@@ -213,7 +210,7 @@ public:
 	  */
 	 void set_doppler_max(unsigned int doppler_max)
 	 {
-		 d_doppler_max = doppler_max;
+		 d_config_doppler_max = doppler_max;
 	 }
 
 	 /*!

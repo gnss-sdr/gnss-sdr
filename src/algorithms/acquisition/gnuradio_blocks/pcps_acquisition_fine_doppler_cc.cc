@@ -1,5 +1,5 @@
 /*!
- * \file pcps_assisted_acquisition_cc.cc
+ * \file pcps_acquisition_fine_doppler_acquisition_cc.cc
  * \brief This class implements a Parallel Code Phase Search Acquisition with multi-dwells and fine Doppler estimation
  * \authors <ul>
  *          <li> Javier Arribas, 2013. jarribas(at)cttc.es
@@ -34,7 +34,6 @@
 #include "gnss_signal_processing.h"
 #include "gps_sdr_signal_processing.h"
 #include "control_message_factory.h"
-#include "gps_acq_assist.h"
 #include <gnuradio/io_signature.h>
 #include <sstream>
 #include <glog/log_severity.h>
@@ -44,7 +43,6 @@
 #include "concurrent_map.h"
 #include <algorithm>    // std::rotate
 
-extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 using google::LogMessage;
 
@@ -84,10 +82,10 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
 	d_gnuradio_forecast_samples=d_fft_size;
 	d_input_power = 0.0;
 	d_state=0;
-	d_disable_assist=false;
 	//todo: do something if posix_memalign fails
 	if (posix_memalign((void**)&d_carrier, 16, d_fft_size * sizeof(gr_complex)) == 0){};
 	if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
+    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
 
 	// Direct FFT
 	d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -103,6 +101,19 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
 void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_step)
 {
 	d_doppler_step = doppler_step;
+	// Create the search grid array
+
+	d_num_doppler_points=floor(std::abs(d_config_doppler_max-d_config_doppler_min)/d_doppler_step);
+
+	d_grid_data=new float*[d_num_doppler_points];
+	for (int i=0;i<d_num_doppler_points;i++)
+	{
+		if (posix_memalign((void**)&d_grid_data[i], 16, d_fft_size * sizeof(float)) == 0){};
+
+	}
+
+	update_carrier_wipeoff();
+
 }
 
 void pcps_acquisition_fine_doppler_cc::free_grid_memory()
@@ -113,6 +124,7 @@ void pcps_acquisition_fine_doppler_cc::free_grid_memory()
 		delete[] d_grid_doppler_wipeoffs[i];
 	}
 	delete d_grid_data;
+	delete d_grid_doppler_wipeoffs;
 }
 pcps_acquisition_fine_doppler_cc::~pcps_acquisition_fine_doppler_cc()
 {
@@ -124,16 +136,20 @@ pcps_acquisition_fine_doppler_cc::~pcps_acquisition_fine_doppler_cc()
 	{
 		d_dump_file.close();
 	}
+	free_grid_memory();
 }
 
 
 
 void pcps_acquisition_fine_doppler_cc::set_local_code(std::complex<float> * code)
 {
+
 	memcpy(d_fft_if->get_inbuf(),code,sizeof(gr_complex)*d_fft_size);
+	d_fft_if->execute(); // We need the FFT of local code
+	//Conjugate the local code
+	volk_32fc_conjugate_32fc_a(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
+
 }
-
-
 
 void pcps_acquisition_fine_doppler_cc::init()
 {
@@ -141,16 +157,9 @@ void pcps_acquisition_fine_doppler_cc::init()
 	d_gnss_synchro->Acq_doppler_hz = 0.0;
 	d_gnss_synchro->Acq_samplestamp_samples = 0;
 	d_input_power = 0.0;
-
 	d_state=0;
 
-	d_fft_if->execute(); // We need the FFT of local code
-
-	//Conjugate the local code
-	volk_32fc_conjugate_32fc_a(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
-
 }
-
 
 void pcps_acquisition_fine_doppler_cc::forecast (int noutput_items,
 		gr_vector_int &ninput_items_required)
@@ -159,28 +168,6 @@ void pcps_acquisition_fine_doppler_cc::forecast (int noutput_items,
 }
 
 
-void pcps_acquisition_fine_doppler_cc::get_assistance()
-{
-	Gps_Acq_Assist gps_acq_assisistance;
-	if (global_gps_acq_assist_map.read(this->d_gnss_synchro->PRN,gps_acq_assisistance)==true)
-	{
-		//TODO: use the LO tolerance here
-		if (gps_acq_assisistance.dopplerUncertainty>=1000)
-		{
-			d_doppler_max=gps_acq_assisistance.d_Doppler0+gps_acq_assisistance.dopplerUncertainty*2;
-			d_doppler_min=gps_acq_assisistance.d_Doppler0-gps_acq_assisistance.dopplerUncertainty*2;
-		}else{
-			d_doppler_max=gps_acq_assisistance.d_Doppler0+1000;
-			d_doppler_min=gps_acq_assisistance.d_Doppler0-1000;
-		}
-		this->d_disable_assist=false;
-		std::cout<<"Acq assist ENABLED for GPS SV "<<this->d_gnss_synchro->PRN<<" (Doppler max,Doppler min)=("
-				<<d_doppler_max<<","<<d_doppler_min<<")"<<std::endl;
-	}else{
-		this->d_disable_assist=true;
-		//std::cout<<"Acq assist DISABLED for GPS SV "<<this->d_gnss_synchro->PRN<<std::endl;
-	}
-}
 void pcps_acquisition_fine_doppler_cc::reset_grid()
 {
 	d_well_count=0;
@@ -192,23 +179,8 @@ void pcps_acquisition_fine_doppler_cc::reset_grid()
 		}
 	}
 }
-void pcps_acquisition_fine_doppler_cc::redefine_grid()
+void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
 {
-	if (this->d_disable_assist==true)
-	{
-		d_doppler_max=d_config_doppler_max;
-		d_doppler_min=d_config_doppler_min;
-	}
-	// Create the search grid array
-	d_num_doppler_points=floor(std::abs(d_doppler_max-d_doppler_min)/d_doppler_step);
-
-	d_grid_data=new float*[d_num_doppler_points];
-	for (int i=0;i<d_num_doppler_points;i++)
-	{
-		if (posix_memalign((void**)&d_grid_data[i], 16, d_fft_size * sizeof(float)) == 0){};
-
-	}
-
 	// create the carrier Doppler wipeoff signals
 	int doppler_hz;
     float phase_step_rad;
@@ -216,7 +188,7 @@ void pcps_acquisition_fine_doppler_cc::redefine_grid()
 	for (int doppler_index=0;doppler_index<d_num_doppler_points;doppler_index++)
 		{
 
-		doppler_hz=d_doppler_min+d_doppler_step*doppler_index;
+		doppler_hz=d_config_doppler_min+d_doppler_step*doppler_index;
 		// doppler search steps
 		// compute the carrier doppler wipe-off signal and store it
 	    phase_step_rad = (float)GPS_TWO_PI*doppler_hz / (float)d_fs_in;
@@ -239,22 +211,23 @@ double pcps_acquisition_fine_doppler_cc::search_maximum()
 		volk_32f_index_max_16u_a(&tmp_intex_t,d_grid_data[i],d_fft_size);
 		if (d_grid_data[i][tmp_intex_t] > magt)
 		{
-			magt = d_grid_data[i][index_time];
+			magt = d_grid_data[i][tmp_intex_t];
+			//std::cout<<magt<<std::endl;
 			index_doppler = i;
 			index_time = tmp_intex_t;
 		}
 	}
 
 	// Normalize the maximum value to correct the scale factor introduced by FFTW
-	fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+	fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;;
 	magt = magt / (fft_normalization_factor * fft_normalization_factor);
 
 	// 5- Compute the test statistics and compare to the threshold
-	d_test_statistics = 2 * d_fft_size * magt /(d_input_power*d_well_count);
+	d_test_statistics = magt/(d_input_power*std::sqrt(d_well_count));
 
 	// 4- record the maximum peak and the associated synchronization parameters
 	d_gnss_synchro->Acq_delay_samples = (double)index_time;
-	d_gnss_synchro->Acq_doppler_hz = (double)(index_doppler*d_doppler_step+d_doppler_min);
+	d_gnss_synchro->Acq_doppler_hz = (double)(index_doppler*d_doppler_step+d_config_doppler_min);
 	d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 
 	// Record results to file if required
@@ -278,16 +251,22 @@ double pcps_acquisition_fine_doppler_cc::search_maximum()
 float pcps_acquisition_fine_doppler_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
 	const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
-	// 1- Compute the input signal power estimation
-	float* p_tmp_vector;
-	if (posix_memalign((void**)&p_tmp_vector, 16, d_fft_size * sizeof(float)) == 0){};
-	volk_32fc_magnitude_squared_32f_u(p_tmp_vector, in, d_fft_size);
-
-	const float* p_const_tmp_vector=p_tmp_vector;
+    // 1- Compute the input signal power estimation
 	float power;
-	volk_32f_accumulator_s32f_a(&power, p_const_tmp_vector, d_fft_size);
-	free(p_tmp_vector);
-	return ( power / (float)d_fft_size);
+	power=0;
+    if (is_unaligned())
+        {
+            volk_32fc_magnitude_squared_32f_u(d_magnitude, in, d_fft_size);
+            volk_32f_accumulator_s32f_a(&power, d_magnitude, d_fft_size);
+        }
+    else
+        {
+            volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
+            volk_32f_accumulator_s32f_a(&power, d_magnitude, d_fft_size);
+        }
+    power /= (float)d_fft_size;
+    return power;
+
 }
 
 int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
@@ -298,8 +277,10 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
 	DLOG(INFO) << "Channel: " << d_channel
 			<< " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
 			<< " ,sample stamp: " << d_sample_counter << ", threshold: "
-			<< d_threshold << ", doppler_max: " << d_doppler_max
+			<< d_threshold << ", doppler_max: " << d_config_doppler_max
 			<< ", doppler_step: " << d_doppler_step;
+
+
 
 	// 2- Doppler frequency search loop
 	float* p_tmp_vector;
@@ -309,7 +290,7 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
 		{
 		// doppler search steps
 		// Perform the carrier wipe-off
-		volk_32fc_x2_multiply_32fc_u(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
+        volk_32fc_x2_multiply_32fc_u(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
 		// 3- Perform the FFT-based convolution  (parallel time search)
 		// Compute the FFT of the carrier wiped--off incoming signal
 		d_fft_if->execute();
@@ -322,26 +303,15 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
 		d_ifft->execute();
 
 		// save the grid matrix delay file
+
 		volk_32fc_magnitude_squared_32f_a(p_tmp_vector, d_ifft->get_outbuf(), d_fft_size);
 		const float*  old_vector=d_grid_data[doppler_index];
 		volk_32f_x2_add_32f_u(d_grid_data[doppler_index],old_vector,p_tmp_vector,d_fft_size);
 
 	}
+
 	free(p_tmp_vector);
 	return d_fft_size;
-}
-
-inline int pow2roundup (int x)
-{
-    if (x < 0)
-        return 0;
-    --x;
-    x |= x >> 1;
-    x |= x >> 2;
-    x |= x >> 4;
-    x |= x >> 8;
-    x |= x >> 16;
-    return x+1;
 }
 
 int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star &input_items, int available_samples)
@@ -350,7 +320,6 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 	// Direct FFT
 	int zero_padding_factor=8;
 	int fft_size_extended=d_fft_size*zero_padding_factor;
-
 	gr::fft::fft_complex *fft_operator=new gr::fft::fft_complex(fft_size_extended,true);
 	//zero padding the entire vector
 	memset(fft_operator->get_inbuf(),0,fft_size_extended*sizeof(gr_complex));
@@ -361,9 +330,13 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 	gps_l1_ca_code_gen_complex_sampled(code_replica, d_gnss_synchro->PRN, d_fs_in, 0);
 
 	int shift_index=(int)d_gnss_synchro->Acq_delay_samples;
+
 	//std::cout<<"shift_index="<<shift_index<<std::endl;
 	// Rotate to align the local code replica using acquisition time delay estimation
-	std::rotate(code_replica,code_replica+(d_fft_size-shift_index),code_replica+d_fft_size-1);
+	if (shift_index!=0)
+		{
+		std::rotate(code_replica,code_replica+(d_fft_size-shift_index),code_replica+d_fft_size-1);
+		}
 
 	//2. Perform code wipe-off
 	const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
@@ -376,9 +349,10 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 	// 4. Compute the magnitude and find the maximum
 	float* p_tmp_vector;
 	if (posix_memalign((void**)&p_tmp_vector, 16, fft_size_extended * sizeof(float)) == 0){};
+
 	volk_32fc_magnitude_squared_32f_a(p_tmp_vector, fft_operator->get_outbuf(), fft_size_extended);
 
-	unsigned int tmp_index_freq;
+	unsigned int tmp_index_freq=0;
 	volk_32f_index_max_16u_a(&tmp_index_freq,p_tmp_vector,fft_size_extended);
 
 	//std::cout<<"FFT maximum index present at "<<tmp_index_freq<<std::endl;
@@ -438,6 +412,10 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 	}
 
 
+	// free memory!!
+	delete fft_operator;
+	free(code_replica);
+	free(p_tmp_vector);
 	return d_fft_size;
 }
 int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
@@ -449,15 +427,12 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 	 * TODO: 	High sensitivity acquisition algorithm:
 	 * 			State Mechine:
 	 * 			S0. StandBy. If d_active==1 -> S1
-	 * 			S1. GetAssist. Define search grid with assistance information. Reset grid matrix -> S2
-	 * 			S2. ComputeGrid. Perform the FFT acqusition doppler and delay grid.
+	 * 			S1. ComputeGrid. Perform the FFT acqusition doppler and delay grid.
 	 * 				Accumulate the search grid matrix (#doppler_bins x #fft_size)
 	 * 				Compare maximum to threshold and decide positive or negative
 	 * 				If T>=gamma -> S4 else
 	 * 				If d_well_count<max_dwells -> S2
-	 * 				else if !disable_assist -> S3
 	 * 				else -> S5.
-	 * 			S3. RedefineGrid. Open the grid search to unasisted acquisition. Reset counters and grid. -> S2
 	 * 			S4. Positive_Acq: Send message and stop acq -> S0
 	 * 			S5. Negative_Acq: Send message and stop acq -> S0
 	 */
@@ -465,66 +440,44 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 	switch (d_state)
 	{
 	case 0: // S0. StandBy
-		if (d_active==true) d_state=1;
-		d_sample_counter += ninput_items[0]; // sample counter
-		consume_each(ninput_items[0]);
+		//DLOG(INFO) <<"S0"<<std::endl;
+		if (d_active==true)
+			{
+				reset_grid();
+				d_state=1;
+			}
 		break;
-	case 1: // S1. GetAssist
-		get_assistance();
-		redefine_grid();
-		reset_grid();
-		d_sample_counter += ninput_items[0]; // sample counter
-		consume_each(ninput_items[0]);
-		d_state=2;
-		break;
-	case 2: // S2. ComputeGrid
-		int consumed_samples;
-		consumed_samples=compute_and_accumulate_grid(input_items);
+	case 1: // S1. ComputeGrid
+		//DLOG(INFO) <<"S1"<<std::endl;
+		compute_and_accumulate_grid(input_items);
 		d_well_count++;
 		if (d_well_count>=d_max_dwells)
 		{
-			d_state=3;
+			d_state=2;
 		}
-		d_sample_counter+=consumed_samples;
-		//consume_each(consumed_samples);
-		consume_each(0);
 		break;
-	case 3: // Compute test statistics and decide
+	case 2: // Compute test statistics and decide
+		//DLOG(INFO) <<"S2"<<std::endl;
 		d_input_power=estimate_input_power(input_items);
 		d_test_statistics=search_maximum();
 		if (d_test_statistics > d_threshold)
 		{
-			d_state=5; //perform fine doppler estimation
+			d_state=3; //perform fine doppler estimation
 		}else{
-			if (d_disable_assist==false)
-			{
-				d_disable_assist=true;
-				//std::cout<<"Acq assist DISABLED for GPS SV "<<this->d_gnss_synchro->PRN<<std::endl;
-				d_state=4;
-			}else{
-				d_state=7; //negative acquisition
-			}
+			d_state=5; //negative acquisition
 		}
-		//d_sample_counter += ninput_items[0]; // sample counter
-		//consume_each(ninput_items[0]);
-		consume_each(0);
 		break;
-	case 4: // RedefineGrid
-		free_grid_memory();
-		redefine_grid();
-		reset_grid();
-		d_sample_counter += ninput_items[0]; // sample counter
-		consume_each(ninput_items[0]);
-		d_state=2;
-		break;
-	case 5: // Fine doppler estimation
+
+
+
+	case 3: // Fine doppler estimation
+		//DLOG(INFO) <<"S3"<<std::endl;
 		DLOG(INFO) << "Performing fine Doppler estimation";
 		estimate_Doppler(input_items, ninput_items[0]); //disabled in repo
-		d_sample_counter += ninput_items[0]; // sample counter
-		consume_each(ninput_items[0]);
-		d_state=6;
+		d_state=4;
 		break;
-	case 6: // Positive_Acq
+	case 4: // Positive_Acq
+		//DLOG(INFO) <<"S4"<<std::endl;
 		DLOG(INFO) << "positive acquisition";
 		DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
 		DLOG(INFO) << "sample_stamp " << d_sample_counter;
@@ -537,13 +490,10 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 		d_active = false;
 		// Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 		d_channel_internal_queue->push(1); // 1-> positive acquisition
-		free_grid_memory();
-		// consume samples to not block the GNU Radio flowgraph
-		d_sample_counter += ninput_items[0]; // sample counter
-		consume_each(ninput_items[0]);
 		d_state=0;
 		break;
-	case 7: // Negative_Acq
+	case 5: // Negative_Acq
+		//DLOG(INFO) <<"S5"<<std::endl;
 		DLOG(INFO) << "negative acquisition";
 		DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
 		DLOG(INFO) << "sample_stamp " << d_sample_counter;
@@ -556,15 +506,15 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 		d_active = false;
 		// Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 		d_channel_internal_queue->push(2); // 2-> negative acquisition
-		free_grid_memory();
-		// consume samples to not block the GNU Radio flowgraph
-		d_sample_counter += ninput_items[0]; // sample counter
-		consume_each(ninput_items[0]);
 		d_state=0;
 		break;
 	default:
 		d_state=0;
 		break;
 	}
+
+	//DLOG(INFO)<<"d_sample_counter="<<d_sample_counter<<std::endl;
+	d_sample_counter += d_fft_size; // sample counter
+	consume_each(d_fft_size);
 	return 0;
 }

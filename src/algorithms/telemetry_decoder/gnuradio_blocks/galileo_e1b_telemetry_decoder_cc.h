@@ -70,6 +70,7 @@ public:
     ~galileo_e1b_telemetry_decoder_cc();
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
+    int flag_even_word_arrived;
     /*!
      * \brief Set the satellite data queue
      */
@@ -108,6 +109,7 @@ private:
     bool d_flag_preamble;
 
     long d_fs_in;
+
 
     //gr::trellis::interleaver d_interleaver;
 

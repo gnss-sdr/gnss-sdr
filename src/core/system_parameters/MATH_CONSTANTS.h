@@ -51,8 +51,15 @@ const double TWO_P32 = (4294967296.0);            //!< 2^32 this is too big for 
 const double TWO_P56 = (7.205759403792794e+016);  //!< 2^56
 const double TWO_P57 = (1.441151880758559e+017);  //!< 2^57
 
+const double TWO_N2 = (0.25);					  //!< 2^-2
 const double TWO_N5 = (0.03125);                  //!< 2^-5
+const double TWO_N8 = (0.00390625);				  //!< 2^-8
+const double TWO_N9 = (0.001953125);   			  //!< 2^-9
+
 const double TWO_N11 = (4.882812500000000e-004);  //!< 2^-11
+const double TWO_N14 = (0.00006103515625);          //!< 2^-14
+const double TWO_N15 = (0.00003051757813);		  //!< 2^-15
+const double TWO_N16 = (0.0000152587890625);      //!< 2^-16
 const double TWO_N19 = (1.907348632812500e-006);  //!< 2^-19
 const double TWO_N20 = (9.536743164062500e-007);  //!< 2^-20
 const double TWO_N21 = (4.768371582031250e-007);  //!< 2^-21
@@ -64,10 +71,17 @@ const double TWO_N30 = (9.313225746154785e-010);  //!< 2^-30
 const double TWO_N31 = (4.656612873077393e-010);  //!< 2^-31
 const double TWO_N32 = (2.328306436538696e-010);  //!< 2^-32
 const double TWO_N33 = (1.164153218269348e-010);  //!< 2^-33
+const double TWO_N34 = (5.82076609134674e-011);	  //!< 2^-34
+const double TWO_N35 = (2.91038304567337e-011);	  //!< 2^-35
+
 const double TWO_N38 = (3.637978807091713e-012);  //!< 2^-38
 const double TWO_N43 = (1.136868377216160e-013);  //!< 2^-43
+const double TWO_N46 = (1.4210854715202e-014);    //!< 2^-46
+
 const double TWO_N50 = (8.881784197001252e-016);  //!< 2^-50
+const double TWO_N51 = (4.44089209850063e+016);   //!< 2^-51
 const double TWO_N55 = (2.775557561562891e-017);  //!< 2^-55
+const double TWO_N59 = (1.73472347597681e-018);   //!< 2^-59
 
 const double PI_TWO_N19 = (5.992112452678286e-006);  //!< Pi*2^-19
 const double PI_TWO_N43 = (3.571577341960839e-013);  //!< Pi*2^-43

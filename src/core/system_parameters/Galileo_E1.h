@@ -67,18 +67,209 @@ const int GALILEO_PAGE_TYPE_BITS = 6;
 const int GALILEO_DATA_JK_BITS =128;
 
 const std::vector<std::pair<int,int>> type({{1,6}});
+const std::vector<std::pair<int,int>> PAGE_TYPE_bit({{1,6}});;
 
-/*Page 1*/
-const std::vector<std::pair<int,int>> PAGE_TYPE_bit({{1,6}});
-const std::vector<std::pair<int,int>> IOD_nav_page1({{7,10}});
-const std::vector<std::pair<int,int>> T0E_bit({{17,14}});
-const double t0e_LSB = 60;
-const std::vector<std::pair<int,int>> M0_bit({{31,32}});
-const double M0_LSB = TWO_N31;
-const std::vector<std::pair<int,int>> e_bit({{63,32}});
-const double e_LSB = TWO_N33;
-const std::vector<std::pair<int,int>> A_bit({{95,32}});
-const double A_LSB = TWO_N19;
+/*Page 1 - Word type 1: Ephemeris (1/4)*/
+const std::vector<std::pair<int,int>> IOD_nav_1_bit({{7,10}});
+const std::vector<std::pair<int,int>> T0E_1_bit({{17,14}});
+const double t0e_1_LSB = 60;
+const std::vector<std::pair<int,int>> M0_1_bit({{31,32}});
+const double M0_1_LSB = TWO_N31;
+const std::vector<std::pair<int,int>> e_1_bit({{63,32}});
+const double e_1_LSB = TWO_N33;
+const std::vector<std::pair<int,int>> A_1_bit({{95,32}});
+const double A_1_LSB_gal = TWO_N19;
+//last two bits are reserved
+
+
+/*Page 2 - Word type 2: Ephemeris (2/4)*/
+const std::vector<std::pair<int,int>> IOD_nav_2_bit({{7,10}});
+const std::vector<std::pair<int,int>> OMEGA_0_2_bit({{17,32}});
+const double OMEGA_0_2_LSB = TWO_N31;
+const std::vector<std::pair<int,int>> i_0_2_bit({{49,32}});
+const double i_0_2_LSB = TWO_N31;
+const std::vector<std::pair<int,int>> omega_2_bit({{81,32}});
+const double omega_2_LSB = TWO_N31;
+const std::vector<std::pair<int,int>> iDot_2_bit({{113,14}});
+const double iDot_2_LSB = TWO_N43;
+//last two bits are reserved
+
+
+/*Word type 3: Ephemeris (3/4) and SISA*/
+const std::vector<std::pair<int,int>> IOD_nav_3_bit({{7,10}});
+const std::vector<std::pair<int,int>> OMEGA_dot_3_bit({{17,24}});
+const double OMEGA_dot_3_LSB = TWO_N43;
+const std::vector<std::pair<int,int>> delta_n_3_bit({{41,16}});
+const double delta_n_3_LSB = TWO_N43;
+const std::vector<std::pair<int,int>> C_uc_3_bit({{57,16}});
+const double C_uc_3_LSB = TWO_N29;
+const std::vector<std::pair<int,int>> C_us_3_bit({{73,16}});
+const double C_us_3_LSB = TWO_N29;
+const std::vector<std::pair<int,int>> C_rc_3_bit({{89,16}});
+const double C_rc_3_LSB = TWO_N5;
+const std::vector<std::pair<int,int>> C_rs_3_bit({{105,16}});
+const double C_rs_3_LSB = TWO_N5;
+const std::vector<std::pair<int,int>> SISA_3_bit({{121,8}});
+
+
+/*Word type 4: Ephemeris (4/4) and Clock correction parameters*/
+const std::vector<std::pair<int,int>> IOD_nav_4_bit({{7,10}});
+const std::vector<std::pair<int,int>> SV_ID_PRN_4_bit({{17,6}});
+const std::vector<std::pair<int,int>> C_ic_4_bit({{23,16}});
+const double C_ic_4_LSB = TWO_N29;
+const std::vector<std::pair<int,int>> C_is_4_bit({{39,16}});
+const double C_is_4_LSB = TWO_N29;
+const std::vector<std::pair<int,int>> t0c_4_bit({{55,14}});			//
+const double t0c_4_LSB = 60;
+const std::vector<std::pair<int,int>> af0_4_bit({{69,31}});			//
+const double af0_4_LSB = TWO_N34;
+const std::vector<std::pair<int,int>> af1_4_bit({{100,21}});			//
+const double af1_4_LSB = TWO_N46;
+const std::vector<std::pair<int,int>> af2_4_bit({{121,6}});
+const double af2_4_LSB = TWO_N59;
+const std::vector<std::pair<int,int>> spare_4_bit({{121,6}});
+//last two bits are reserved
+
+
+/*Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST*/
+/*Ionospheric correction*/
+/*Az*/
+const std::vector<std::pair<int,int>> ai0_5_bit({{7,11}});		//
+const double ai0_5_LSB = TWO_N2;
+const std::vector<std::pair<int,int>> ai1_5_bit({{18,11}});		//
+const double ai1_5_LSB = TWO_N8;
+const std::vector<std::pair<int,int>> ai2_5_bit({{29,14}});		//
+const double ai2_5_LSB = TWO_N15;
+/*Ionospheric disturbance flag*/
+const std::vector<std::pair<int,int>> Region1_5_bit({{43,1}});	//
+const std::vector<std::pair<int,int>> Region2_5_bit({{44,1}});	//
+const std::vector<std::pair<int,int>> Region3_5_bit({{45,1}});	//
+const std::vector<std::pair<int,int>> Region4_5_bit({{46,1}});	//
+const std::vector<std::pair<int,int>> Region5_5_bit({{47,1}});	//
+const std::vector<std::pair<int,int>> BGD_E1E5a_5_bit({{48,10}});	//
+const double BGD_E1E5a_5_LSB = TWO_N32;
+const std::vector<std::pair<int,int>> BGD_E1E5b_5_bit({{58,10}});	//
+const double BGD_E1E5b_5_LSB = TWO_N35;
+const std::vector<std::pair<int,int>> E5b_HS_5_bit({{68,2}});		//
+const std::vector<std::pair<int,int>> E1B_HS_5_bit({{70,2}});		//
+const std::vector<std::pair<int,int>> E5b_DVS_5_bit({{72,1}});	//
+const std::vector<std::pair<int,int>> E1B_DVS_5_bit({{73,1}});	//
+/*GST*/
+const std::vector<std::pair<int,int>> WN_5_bit({{74,12}});
+const std::vector<std::pair<int,int>> TOW_5_bit({{86,20}});
+const std::vector<std::pair<int,int>> spare_5_bit({{106,23}});
+
+
+/* Page 6 */
+const std::vector<std::pair<int,int>> A0_6_bit({{7,32}});
+const double A0_6_LSB = TWO_N30;
+const std::vector<std::pair<int,int>> A1_6_bit({{39,24}});
+const double A1_6_LSB = TWO_N50;
+const std::vector<std::pair<int,int>> Delta_tLS_6_bit({{63,8}});
+const std::vector<std::pair<int,int>> t0t_6_bit({{71,8}});
+const double t0t_6_LSB = 3600;
+const std::vector<std::pair<int,int>> WNot_6_bit({{79,8}});
+const std::vector<std::pair<int,int>> WN_LSF_6_bit({{86,8}});
+const std::vector<std::pair<int,int>> DN_6_bit({{95,3}});
+const std::vector<std::pair<int,int>> Delta_tLSF_6_bit({{97,8}});
+const std::vector<std::pair<int,int>> TOW_6_bit({{106,20}});
+
+/* Page 7 */
+const std::vector<std::pair<int,int>>IOD_a_7_bit({{7,4}});
+const std::vector<std::pair<int,int>>WN_a_7_bit({{11,2}});
+const std::vector<std::pair<int,int>>t0a_7_bit({{13,10}});
+const double t0a_7_LSB = 600;
+const std::vector<std::pair<int,int>>SVID1_7_bit({{23,6}});
+const std::vector<std::pair<int,int>>Delta_alpha_7_bit({{29,13}});
+const double Delta_alpha_7_LSB = TWO_N9;
+const std::vector<std::pair<int,int>>e_7_bit({{42,11}});
+const double e_7_LSB = TWO_N16;
+const std::vector<std::pair<int,int>>omega_7_bit({{53,16}});
+const double omega_7_LSB = TWO_N15;
+const std::vector<std::pair<int,int>>delta_i_7_bit({{69,11}});
+const double delta_i_7_LSB = TWO_N14;
+const std::vector<std::pair<int,int>>Omega0_7_bit({{80,16}});
+const double Omega0_7_LSB = TWO_N15;
+const std::vector<std::pair<int,int>>Omega_dot_7_bit({{96,11}});
+const double Omega_dot_7_LSB = TWO_N33;
+const std::vector<std::pair<int,int>>M0_7_bit({{107,16}});
+const double M0_7_LSB = TWO_N15;
+/* Page 8 */
+const std::vector<std::pair<int,int>>IOD_a_8_bit({{7,4}});
+const std::vector<std::pair<int,int>>af0_8_bit({{11,16}});
+const double af0_8_LSB = TWO_N19;
+const std::vector<std::pair<int,int>>af1_8_bit({{27,13}});
+const double af1_8_LSB = TWO_N38;
+const std::vector<std::pair<int,int>>E5b_HS_8_bit({{40,2}});
+const std::vector<std::pair<int,int>>E1B_HS_8_bit({{42,2}});
+const std::vector<std::pair<int,int>>SVID2_8_bit({{44,6}});
+const std::vector<std::pair<int,int>>DELTA_A_8_bit({{50,13}});
+const double DELTA_A_8_LSB = TWO_N9;
+const std::vector<std::pair<int,int>>e_8_bit({{63,11}});
+const double e_8_LSB = TWO_N16;
+const std::vector<std::pair<int,int>>omega_8_bit({{74,16}});
+const double omega_8_LSB = TWO_N15;
+const std::vector<std::pair<int,int>>delta_i_8_bit({{90,11}});
+const double delta_i_8_LSB = TWO_N14;
+const std::vector<std::pair<int,int>>Omega0_8_bit({{101,16}});
+const double Omega0_8_LSB = TWO_N15;
+const std::vector<std::pair<int,int>>Omega_dot_8_bit({{117,11}});
+const double Omega_dot_8_LSB = TWO_N33;
+
+/* Page 9 */
+const std::vector<std::pair<int,int>>IOD_a_9_bit({{7,4}});
+const std::vector<std::pair<int,int>>WN_a_9_bit({{11,2}});
+const std::vector<std::pair<int,int>>t0a_9_bit({{13,10}});
+const double t0a_9_LSB = 600;
+const std::vector<std::pair<int,int>>M0_9_bit({{23,16}});
+const double M0_9_LSB = TWO_N15;
+const std::vector<std::pair<int,int>>af0_9_bit({{39,16}});
+const double af0_9_LSB = TWO_N19;
+const std::vector<std::pair<int,int>>af1_9_bit({{54,13}});
+const double af1_9_LSB = TWO_N38;
+const std::vector<std::pair<int,int>>E5b_HS_9_bit({{68,2}});
+const std::vector<std::pair<int,int>>E1B_HS_9_bit({{70,2}});
+const std::vector<std::pair<int,int>>SVID3_9_bit({{72,6}});
+const std::vector<std::pair<int,int>>DELTA_A_9_bit({{78,13}});
+const double DELTA_A_9_LSB = TWO_N9;
+const std::vector<std::pair<int,int>>e_9_bit({{91,11}});
+const double e_9_LSB = TWO_N16;
+const std::vector<std::pair<int,int>>omega_9_bit({{102,16}});
+const double omega_9_LSB = TWO_N15;
+const std::vector<std::pair<int,int>>delta_i_9_bit({{118,11}});
+const double delta_i_9_LSB = TWO_N14;
+
+/* Page 10 */
+const std::vector<std::pair<int,int>>IOD_a_10_bit({{7,4}});
+const std::vector<std::pair<int,int>>Omega0_10_bit({{11,16}});
+const double Omega0_10_LSB = TWO_N15;
+const std::vector<std::pair<int,int>>Omega_dot_10_bit({{27,11}});
+const double Omega_dot_10_LSB = TWO_N33;
+const std::vector<std::pair<int,int>>M0_10_bit({{38,16}});
+const double M0_10_LSB = TWO_N15;
+const std::vector<std::pair<int,int>>af0_10_bit({{54,16}});
+const double af0_10_LSB = TWO_N19;
+const std::vector<std::pair<int,int>>af1_10_bit({{70,13}});
+const double af1_10_LSB = TWO_N38;
+const std::vector<std::pair<int,int>>E5b_HS_10_bit({{83,2}});
+const std::vector<std::pair<int,int>>E1B_HS_10_bit({{85,2}});
+const std::vector<std::pair<int,int>> A_0G_10_bit({{87,16}});
+const double A_0G_10_LSB = TWO_N35;
+const std::vector<std::pair<int,int>>A_1G_10_bit({{103,12}});
+const double A_1G_10_LSB = TWO_N51;
+
+const std::vector<std::pair<int,int>>t_0G_10_bit({{115,9}});
+const double t_0G_10_LSB = 3600;
+const std::vector<std::pair<int,int>>WN_0G_10_bit({{123,6}});
+
+
+/* Page 0 */
+const std::vector<std::pair<int,int>>Time_0_bit({{7,2}});
+const std::vector<std::pair<int,int>>WN_0_bit({{97,12}});
+const std::vector<std::pair<int,int>> TOW_0_bit({{109,20}});
+
+
+
 
 // Galileo E1 primary codes
 

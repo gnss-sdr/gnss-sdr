@@ -215,6 +215,11 @@ By default, CMake will build the Release version, meaning that the compiler will
 
 $ cd gnss-sdr/build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
+
+for eclipse
+cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../
+
+
 $ make
 $ make install
 

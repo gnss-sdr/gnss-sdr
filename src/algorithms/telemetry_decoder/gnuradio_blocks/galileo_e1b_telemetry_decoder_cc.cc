@@ -229,8 +229,8 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) < 1)
                         {
 
-                    		//std::cout<<"d_sample_counter="<<d_sample_counter<<std::endl;
-                    		//std::cout<<"corr_value="<<corr_value<<std::endl;
+                    		std::cout<<"d_sample_counter="<<d_sample_counter<<std::endl;
+                    		std::cout<<"corr_value="<<corr_value<<std::endl;
                     		// NEW Galileo page part is received
                     	    // 0. fetch the symbols into an array
                     	    int frame_length=GALILEO_INAV_PAGE_PART_SYMBOLS-d_symbols_per_preamble;
@@ -239,9 +239,14 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 
                     	    for (int i=0;i<frame_length;i++)
                     	    {
-                    	    	page_part_symbols[i]=in[0][i+d_symbols_per_preamble].Prompt_I; // because last symbol of the preamble is just received now!
-                    	    }
+                    	    	if (corr_value>0)
+                    	    	{
+                    	    		page_part_symbols[i]=in[0][i+d_symbols_per_preamble].Prompt_I; // because last symbol of the preamble is just received now!
 
+                    	    	}else{
+                    	    		page_part_symbols[i]=-in[0][i+d_symbols_per_preamble].Prompt_I; // because last symbol of the preamble is just received now!
+                    	    	}
+                    	    }
                     		// 1. De-interleave
                     	    deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS,GALILEO_INAV_INTERLEAVER_COLS,page_part_symbols, page_part_symbols_deint);
 
@@ -250,11 +255,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     	    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180º
                     	    for (int i=0;i<frame_length;i++)
                     	    {
-                    	    	if (corr_value<0)
-                    	    	{
-                    	    		page_part_symbols_deint[i]=-page_part_symbols_deint[i];
-                    	    	}
-                    	    	if (i%2==0)
+                    	    	if ((i+1)%2==0)
                     	    	{
                     	    		page_part_symbols_deint[i]=-page_part_symbols_deint[i];
                     	    	}
@@ -265,49 +266,44 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 
                     		// 3. Call the Galileo page decoder
 
-//                    	    std::cout<<"frame_symbols=[";
-//                    	    for (int i=0;i<frame_length;i++)
-//                    	     {
-//                    	    	if (page_part_symbols[i]>0)
-//                    	    	{
-//                    	    		std::cout<<",1";
-//                    	    	}else{
-//                    	    		std::cout<<",0";
-//                    	    	}
-//                    	     }
-//                    	    std::cout<<"]"<<std::endl;
-//                      	    std::cout<<"frame_symbols_deint=[";
-//                        	    for (int i=0;i<frame_length;i++)
-//                        	     {
-//                        	    	if (page_part_symbols_deint[i]>0)
-//                        	    	{
-//                        	    		std::cout<<",1";
-//                        	    	}else{
-//                        	    		std::cout<<",0";
-//                        	    	}
-//                        	     }
-//                        	    std::cout<<"]"<<std::endl;
-//
-//                          	    std::cout<<"frame_bits=[";
-//                            	    for (int i=0;i<frame_length/2;i++)
-//                            	     {
-//                            	    	if (page_part_bits[i]>0)
-//                            	    	{
-//                            	    		std::cout<<",1";
-//                            	    	}else{
-//                            	    		std::cout<<",0";
-//                            	    	}
-//                            	     }
-//                            	    std::cout<<"]"<<std::endl;
+                     	    std::string page_String;
 
-                             if (page_part_bits[0]==1)
-                             {
-                            	 std::cout<<"Page Odd"<<std::endl;
-                             }else
-                             {
-                            	 std::cout<<"Page Even"<<std::endl;
-                             }
-                            //ToDo: Call here the frame decoder
+                      	    //std::cout<<"frame_bits=[";
+                     	    for(int i=0; i < (frame_length/2); i++)
+                     	    {
+                     	    	if (page_part_bits[i]>0)
+                     	    	{
+                     	    		page_String.push_back('1');
+                    	    		//std::cout<<",1";
+                     	    	}else{
+                     	    		page_String.push_back('0');
+                    	    		//std::cout<<",0";
+                     	    	}
+
+                     	    	//sprintf(&page_String[i], "%d", page_part_bits[i]); // this produces a memory core dumped...
+                     	    }
+                    	    //std::cout<<"]"<<std::endl;
+
+                     	    Galileo_Navigation_Message decode_page;
+
+                     	    std::cout<<"page_string="<<page_String<<std::endl; //correctly transformed to char
+
+
+             	             if (page_part_bits[0]==1)
+                              {
+                             	 std::cout<<"Page Odd"<<std::endl;
+                             	 decode_page.split_page(page_String.c_str(), flag_even_word_arrived);
+                             	 flag_even_word_arrived=0;
+                             	 std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
+                               }
+                              else
+                              {
+                             	 std::cout<<"Page Even"<<std::endl;
+                             	 decode_page.split_page(page_String.c_str(), flag_even_word_arrived);
+                             	 flag_even_word_arrived=1;
+                             	 std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
+                              }
+
 
 
                             d_flag_preamble = true;

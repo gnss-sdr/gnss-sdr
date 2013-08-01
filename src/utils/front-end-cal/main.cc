@@ -265,7 +265,6 @@ int main(int argc, char** argv)
     	std::cout<<"Failure connecting to SUPL server"<<std::endl;
     }
 
-
     // 3. Capture some front-end samples to hard disk
 
     if (front_end_capture(configuration))
@@ -357,7 +356,6 @@ int main(int argc, char** argv)
             for (std::vector<Gnss_Synchro>::iterator it = gnss_sync_vector.begin() ; it != gnss_sync_vector.end(); ++it)
               {
             	doppler_measurement_hz+=(*it).Acq_doppler_hz;
-            	//std::cout << "Doppler (SV=" << (*it).PRN<<")="<<(*it).Acq_doppler_hz<<"[Hz]"<<std::endl;
               }
             doppler_measurement_hz=doppler_measurement_hz/gnss_sync_vector.size();
             doppler_measurements_map.insert(std::pair<int,double>(PRN,doppler_measurement_hz));
@@ -474,11 +472,29 @@ int main(int argc, char** argv)
     mean_fs_Hz/=n_elements;
     mean_osc_err_ppm/=n_elements;
 
-	std::cout <<std::setiosflags(std::ios::fixed)<<std::setprecision(2)<<"FE parameters estimation for Elonics E4000 Front-End:"<<std::endl;
+	std::cout <<std::setiosflags(std::ios::fixed)<<std::setprecision(2)<<"Parameters estimation for Elonics E4000 Front-End:"<<std::endl;
 
 	std::cout<<"Sampling frequency ="<<mean_fs_Hz<<" [Hz]"<<std::endl;
 	std::cout<<"IF bias present in baseband="<<mean_f_if_Hz<<" [Hz]"<<std::endl;
 	std::cout<<"Reference oscillator error ="<<mean_osc_err_ppm<<" [ppm]"<<std::endl;
+
+
+    std::cout <<std::setiosflags(std::ios::fixed)<<std::setprecision(2)<<
+			"Corrected Doppler vs. Predicted"<<std::endl;
+    std::cout << "SV ID  Corrected [Hz]   Predicted [Hz]" <<std::endl;
+
+
+    for (std::map<int,double>::iterator it = doppler_measurements_map.begin() ; it != doppler_measurements_map.end(); ++it)
+      {
+    	try{
+    		double doppler_estimated_hz;
+    		doppler_estimated_hz=front_end_cal.estimate_doppler_from_eph(it->first,current_TOW,lat_deg,lon_deg,altitude_m);
+    		std::cout << "  "<<it->first<<"   "<<it->second -mean_f_if_Hz<<"   "<<doppler_estimated_hz<<std::endl;
+    	}catch(int ex)
+    	{
+    		std::cout << "  "<<it->first<<"   "<<it->second-mean_f_if_Hz<<"  (Eph not found)"<<std::endl;
+    	}
+      }
 
     // 8. Generate GNSS-SDR config file.
 
@@ -488,14 +504,4 @@ int main(int argc, char** argv)
 
     google::ShutDownCommandLineFlags();
     std::cout << "GNSS-SDR Front-end calibration program ended." << std::endl;
-
-//    if (global_gps_acq_assist_map.size()>0)
-//    {
-//    	std::map<int,Gps_Acq_Assist> Acq_Assist_map;
-//    	Acq_Assist_map=global_gps_acq_assist_map.get_map_copy();
-//    	current_TOW=Acq_Assist_map.begin()->second.d_TOW;
-//    	std::cout<<"Current TOW obtained from acquisition assistance = "<<current_TOW<<std::endl;
-//    }else{
-//    	std::cout<<"Unable to get acquisition assistance information. TOW is unknown!"<<std::endl;
-//    }
 }

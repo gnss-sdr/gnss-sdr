@@ -318,7 +318,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 {
 
 	// Direct FFT
-	int zero_padding_factor=8;
+	int zero_padding_factor=16;
 	int fft_size_extended=d_fft_size*zero_padding_factor;
 	gr::fft::fft_complex *fft_operator=new gr::fft::fft_complex(fft_size_extended,true);
 	//zero padding the entire vector
@@ -364,13 +364,13 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 
 	for (int k=0;k<(fft_size_extended/2);k++)
 	{
-		fftFreqBins[counter]=((d_fs_in/2)*k)/(fft_size_extended/2);
+		fftFreqBins[counter]=(((float)d_fs_in/2.0)*(float)k)/((float)fft_size_extended/2.0);
 		counter++;
 	}
 
 	for (int k=fft_size_extended/2;k>0;k--)
 	{
-		fftFreqBins[counter]=((-d_fs_in/2)*k)/(fft_size_extended/2);
+		fftFreqBins[counter]=((-(float)d_fs_in/2)*(float)k)/((float)fft_size_extended/2.0);
 		counter++;
 	}
 
@@ -380,7 +380,8 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 		d_gnss_synchro->Acq_doppler_hz=(double)fftFreqBins[tmp_index_freq];
 		//std::cout<<"FFT maximum present at "<<fftFreqBins[tmp_index_freq]<<" [Hz]"<<std::endl;
 	}else{
-		//std::cout<<"Error estimating fine frequency Doppler"<<std::endl;
+		DLOG(INFO)<<"Abs(Grid Doppler - FFT Doppler)="<<abs(fftFreqBins[tmp_index_freq]-d_gnss_synchro->Acq_doppler_hz)<<std::endl;
+		DLOG(INFO)<<std::endl<<"Error estimating fine frequency Doppler"<<std::endl;
 		//debug log
 //
 //		std::cout<<"FFT maximum present at "<<fftFreqBins[tmp_index_freq]<<" [Hz]"<<std::endl;

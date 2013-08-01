@@ -35,6 +35,9 @@
 #endif
 
 #include <boost/filesystem.hpp>
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception_ptr.hpp>
+
 #include <gflags/gflags.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -150,8 +153,16 @@ int main(int argc, char** argv)
     gettimeofday(&tv, NULL);
     long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    control_thread->run();
-
+    try{
+    	control_thread->run();
+    }catch( boost::exception & e )
+    {
+    	DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+    }
+    catch(std::exception const&  ex)
+    {
+    	DLOG(FATAL) <<"STD exception: "<<ex.what();
+    }
     // report the elapsed time
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;

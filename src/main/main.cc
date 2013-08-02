@@ -31,13 +31,12 @@
  * -------------------------------------------------------------------------
  */
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.1"
+#define GNSS_SDR_VERSION "0.0.2"
 #endif
 
 #include <boost/filesystem.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
-
 #include <gflags/gflags.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -48,17 +47,14 @@
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
-
 #include "gps_ephemeris.h"
 #include "gps_almanac.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-
 #include <sys/time.h>
 #include <ctime>
 #include <memory>
@@ -143,7 +139,7 @@ int main(int argc, char** argv)
                     boost::filesystem::create_directory(p);
                 }
             std::cout << "Logging with be done at "
-                << FLAGS_log_dir << std::endl;
+                      << FLAGS_log_dir << std::endl;
         }
 
     std::unique_ptr<ControlThread> control_thread(new ControlThread());
@@ -153,22 +149,24 @@ int main(int argc, char** argv)
     gettimeofday(&tv, NULL);
     long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    try{
-    	control_thread->run();
-    }catch( boost::exception & e )
+    try
     {
-    	DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+            control_thread->run();
+    }
+    catch( boost::exception & e )
+    {
+            DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
     }
     catch(std::exception const&  ex)
     {
-    	DLOG(FATAL) <<"STD exception: "<<ex.what();
+            DLOG(FATAL) << "STD exception: " << ex.what();
     }
     // report the elapsed time
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     std::cout << "Total GNSS-SDR run time "
-        << ((double)(end - begin))/1000000.0
-        << " [seconds]" << std::endl;
+              << ((double)(end - begin))/1000000.0
+              << " [seconds]" << std::endl;
 
     google::ShutDownCommandLineFlags();
     std::cout << "GNSS-SDR program ended." << std::endl;

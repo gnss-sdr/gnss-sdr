@@ -135,20 +135,18 @@ void gnss_sdr_supl_client::print_assistance()
                         }
                 }
         }
-
 }
 
 
 int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_ci)
 {
-
     // SET SUPL CLIENT INFORMATION
     // GSM CELL PARAMETERS
     mcc = i_mcc;
     mns = i_mns;
     lac = i_lac;
     ci = i_ci;
-    supl_set_gsm_cell(&ctx,mcc,mns,lac,ci);
+    supl_set_gsm_cell(&ctx, mcc, mns, lac, ci);
 
     // PERFORM SUPL COMMUNICATION
     char *cstr = new char[server_name.length() + 1];
@@ -159,7 +157,7 @@ int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
 
     //std::cout<<"mcc="<<mcc<<"mns="<<mns<<"lac="<<lac<<"ci="<<ci<<std::endl;
     err = supl_get_assist(&ctx, cstr, &assist);
-    if (err==0)
+    if (err == 0)
         {
             read_supl_data();
         }
@@ -186,7 +184,6 @@ void gnss_sdr_supl_client::read_supl_data()
             gps_time.d_tv_sec = (double)assist.time.stamp.tv_sec;
             gps_time.d_tv_usec = (double)assist.time.stamp.tv_usec;
             gps_time.valid = true;
-
         }
 
     // READ UTC MODEL
@@ -215,8 +212,7 @@ void gnss_sdr_supl_client::read_supl_data()
             gps_iono.d_beta1 = (double)assist.iono.b1 * BETA_1_LSB;
             gps_iono.d_beta2 = (double)assist.iono.b2 * BETA_2_LSB;
             gps_iono.d_beta3 = (double)assist.iono.b3 * BETA_3_LSB;
-            gps_iono.valid=true;
-
+            gps_iono.valid = true;
         }
 
     // READ SV ALMANAC
@@ -279,7 +275,7 @@ void gnss_sdr_supl_client::read_supl_data()
                     gps_eph_iterator->second.i_satellite_PRN = e->prn;
                     // SV navigation model
                     gps_eph_iterator->second.i_code_on_L2 = e->bits;
-                    gps_eph_iterator->second.i_SV_accuracy = e->ura;//User Range Accuracy (URA)
+                    gps_eph_iterator->second.i_SV_accuracy = e->ura; //User Range Accuracy (URA)
                     gps_eph_iterator->second.i_SV_health = e->health;
                     gps_eph_iterator->second.d_IODC = (double)e->IODC;
                     //miss P flag (1 bit)
@@ -343,8 +339,8 @@ void gnss_sdr_supl_client::read_supl_data()
         }
 }
 
-bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string file_name)
 
+bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string file_name)
 {
     try
     {
@@ -356,14 +352,14 @@ bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string file_name)
     }
     catch (std::exception& e)
     {
-            LOG_AT_LEVEL(ERROR)<< e.what() << "File: "<< file_name;
+            LOG_AT_LEVEL(ERROR) << e.what() << "File: " << file_name;
             return false;
     }
     return true;
 }
 
-bool gnss_sdr_supl_client::save_ephemeris_xml(const std::string file_name)
 
+bool gnss_sdr_supl_client::save_ephemeris_xml(const std::string file_name)
 {
     try
     {

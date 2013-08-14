@@ -30,12 +30,19 @@
  */
 
 #include "galileo_navigation_message.h"
-#include "boost/date_time/posix_time/posix_time.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/crc.hpp>      // for boost::crc_basic, boost::crc_optimal
+#include <boost/dynamic_bitset.hpp>
+
+
 #include <iostream>
 #include <cstring>
 #include <string>
 
 using namespace std;
+
+typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_Galileo_INAV_type;
+
 
 void Galileo_Navigation_Message::reset()
 {
@@ -188,6 +195,37 @@ Galileo_Navigation_Message::Galileo_Navigation_Message()
     reset();
 }
 
+
+bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits,boost::uint32_t checksum)
+{
+
+	CRC_Galileo_INAV_type CRC_Galileo;
+
+    boost::uint32_t crc_computed;
+    // Galileo INAV frame for CRC is not an integer multiple of bytes
+    // it needs to be filled with zeroes at the start of the frame.
+    // This operation is done in the transformation from bits to bytes
+    // using boost::dynamic_bitset.
+    // ToDo: Use boost::dynamic_bitset for all the bitset operations in this class
+
+    boost::dynamic_bitset<unsigned char> frame_bits(std::string(bits.to_string()));
+
+    std::vector<unsigned char> bytes;
+    boost::to_block_range(frame_bits, std::back_inserter(bytes));
+    std::reverse(bytes.begin(),bytes.end());
+
+
+    CRC_Galileo.process_bytes( bytes.data(), GALILEO_DATA_FRAME_BYTES );
+
+    crc_computed=CRC_Galileo.checksum();
+    if (checksum==crc_computed){
+    	return true;
+    }else{
+    	return false;
+    }
+
+
+}
 unsigned long int Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int,int> > parameter)
 {
     unsigned long int value = 0;
@@ -312,6 +350,10 @@ bool Galileo_Navigation_Message::read_navigation_bool(std::bitset<GALILEO_DATA_J
 
 
 void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word){
+
+	// ToDo: Replace all the C structures and string operations with std::string and std::stringstream C++ classes.
+	// ToDo: Clean all the tests and create an independent google test code for the telemetry decoder.
+
 	cout << "--------------------------------------------------------------------------" << endl;
 	cout << "Entered in Galileo_Navigation_Message::split_page(char *page)" << endl << endl;;
 
@@ -323,6 +365,7 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 	char Reserved_1[40]={'\0'};
 	char SAR[22]={'\0'};
 	char Spare[2]={'\0'};
+
 	char CRC_data[24]={'\0'};
 	char Reserved_2[8]={'\0'};
 	char Tail_odd[6]={'\0'};
@@ -397,7 +440,27 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 								std::cout << "Tail odd is not correct!" << endl;
 					else std::cout<<"Tail odd is correct!"<<endl;
 
-					/************ CRC cycle control *********/
+					//************ CRC checksum control *******/
+					std::stringstream TLM_word_for_CRC_stream;
+
+					TLM_word_for_CRC_stream<<page_INAV;
+					std::string TLM_word_for_CRC;
+					TLM_word_for_CRC=TLM_word_for_CRC_stream.str().substr(0,GALILEO_DATA_FRAME_BITS);
+
+					std::cout <<"frame for CRC="<<TLM_word_for_CRC<<std::endl;
+					std::cout <<"frame length="<<TLM_word_for_CRC.length()<<std::endl;
+					std::bitset<GALILEO_DATA_FRAME_BITS> TLM_word_for_CRC_bits(TLM_word_for_CRC);
+					std::bitset<24> checksum(CRC_data);
+
+					if (CRC_test(TLM_word_for_CRC_bits,checksum.to_ulong())==true)
+					{
+						// CRC correct: Decode word
+						std::cout<<"CRC correct!"<<std::endl;
+					}else{
+						// CRC wrong.. discard frame
+						std::cout<<"CRC error!"<<std::endl;
+					}
+					//********** end of CRC checksum control ***/
 
 					strncpy(page_number_bits, &Data_k[0], 6);
 					std::cout << "Page number bits from Data k" << endl << page_number_bits << endl;

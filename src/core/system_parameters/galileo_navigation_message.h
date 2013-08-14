@@ -38,7 +38,8 @@
 #include <string>
 #include <algorithm>
 #include <bitset>
-#include "boost/assign.hpp"
+#include <boost/assign.hpp>
+#include <boost/cstdint.hpp>  // for boost::uint16_t
 #include <cmath>
 #include <utility>
 
@@ -51,6 +52,7 @@ class Galileo_Navigation_Message {
 private:
 
 
+	bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits,boost::uint32_t checksum);
 	bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int,int> > parameter);
 	//void print_galileo_word_bytes(unsigned int GPS_word);
 	unsigned long int read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector< std::pair<int,int> > parameter);

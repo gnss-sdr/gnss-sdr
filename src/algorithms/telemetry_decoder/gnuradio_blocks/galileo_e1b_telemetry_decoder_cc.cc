@@ -229,8 +229,8 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) < 1)
                         {
 
-                    		std::cout<<"d_sample_counter="<<d_sample_counter<<std::endl;
-                    		std::cout<<"corr_value="<<corr_value<<std::endl;
+                    		//std::cout<<"d_sample_counter="<<d_sample_counter<<std::endl;
+                    		//std::cout<<"corr_value="<<corr_value<<std::endl;
                     		// NEW Galileo page part is received
                     	    // 0. fetch the symbols into an array
                     	    int frame_length=GALILEO_INAV_PAGE_PART_SYMBOLS-d_symbols_per_preamble;
@@ -268,43 +268,57 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 
                      	    std::string page_String;
 
-                      	    //std::cout<<"frame_bits=[";
                      	    for(int i=0; i < (frame_length/2); i++)
                      	    {
                      	    	if (page_part_bits[i]>0)
                      	    	{
                      	    		page_String.push_back('1');
-                    	    		//std::cout<<",1";
                      	    	}else{
                      	    		page_String.push_back('0');
-                    	    		//std::cout<<",0";
                      	    	}
 
-                     	    	//sprintf(&page_String[i], "%d", page_part_bits[i]); // this produces a memory core dumped...
                      	    }
-                    	    //std::cout<<"]"<<std::endl;
 
-                     	    Galileo_Navigation_Message decode_page;
-
-                     	    std::cout<<"page_string="<<page_String<<std::endl; //correctly transformed to char
-
+                     	    // Galileo_Navigation_Message d_nav; // Now is a class member object, to store the intermediate results from call to call
+                     	    //std::cout<<"page_string="<<page_String<<std::endl; //correctly transformed to char
 
              	             if (page_part_bits[0]==1)
                               {
                              	 std::cout<<"Page Odd"<<std::endl;
-                             	 decode_page.split_page(page_String.c_str(), flag_even_word_arrived);
+                             	 d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
                              	 flag_even_word_arrived=0;
                              	 std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
                                }
                               else
                               {
                              	 std::cout<<"Page Even"<<std::endl;
-                             	 decode_page.split_page(page_String.c_str(), flag_even_word_arrived);
+                             	 d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
                              	 flag_even_word_arrived=1;
                              	 std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
                               }
 
+             	            // 4. Push the new navigation data to the queues
+                      	    //ToDo: Decide if we have an updated ephemeris for the current satellite,
+             	            //      fill the ephemeris class and push the object to the concurrent queue
+             	            //      Do the same for the
+             	            // sample from Gps queues
 
+							if (d_nav.have_new_ephemeris()==true)
+							{
+								// get ephemeris object for this SV
+								Galileo_Ephemeris ephemeris=d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
+								d_ephemeris_queue->push(ephemeris);
+							}
+							if (d_nav.have_new_iono()==true)
+							{
+								Galileo_Iono iono=d_nav.get_iono(); //notice that the read operation will clear the valid flag
+								d_iono_queue->push(iono);
+							}
+							if (d_nav.have_new_utc_model()==true)
+							{
+								Galileo_Utc_Model utc_model=d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+								d_utc_model_queue->push(utc_model);
+							}
 
                             d_flag_preamble = true;
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
@@ -339,22 +353,14 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
     //1. Copy the current tracking output
     current_synchro_data = in[0][0];
     //2. Add the telemetry decoder information
-    //if (this->d_flag_preamble==true and d_GPS_FSM.d_nav.d_TOW>0) //update TOW at the preamble instant (todo: check for valid d_TOW)
     if (this->d_flag_preamble==true) //update TOW at the preamble instant (todo: check for valid d_TOW)
         {
-            //d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
-            //d_TOW_at_current_symbol = d_TOW_at_Preamble + GALILEO_INAV_PREAMBLE_LENGTH_BITS/Galileo_E1_B_SYMBOL_RATE_BPS;
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
-            ///if (flag_TOW_set==false)
-                //{
-                //    flag_TOW_set = true;
-                //}
         }
     else
         {
             //d_TOW_at_current_symbol = d_TOW_at_current_symbol + Galileo_E1_CODE_PERIOD;
         }
-
 
     current_synchro_data.d_TOW = d_TOW_at_Preamble;
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
@@ -391,7 +397,6 @@ void galileo_e1b_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
-    //d_GPS_FSM.i_satellite_PRN = d_satellite.get_PRN();
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
 
@@ -399,7 +404,6 @@ void galileo_e1b_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 void galileo_e1b_telemetry_decoder_cc::set_channel(int channel)
 {
     d_channel = channel;
-    //d_GPS_FSM.i_channel_ID = channel;
     DLOG(INFO) << "Navigation channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -425,19 +429,19 @@ void galileo_e1b_telemetry_decoder_cc::set_channel(int channel)
 
 void galileo_e1b_telemetry_decoder_cc::set_ephemeris_queue(concurrent_queue<Galileo_Ephemeris> *ephemeris_queue)
 {
-	//d_Galileo_INAV_FSM.d_ephemeris_queue = ephemeris_queue;
+	d_ephemeris_queue = ephemeris_queue;
 }
 void galileo_e1b_telemetry_decoder_cc::set_iono_queue(concurrent_queue<Galileo_Iono> *iono_queue)
 {
-	//d_Galileo_INAV_FSM.d_iono_queue = iono_queue;
+	d_iono_queue = iono_queue;
 }
 void galileo_e1b_telemetry_decoder_cc::set_almanac_queue(concurrent_queue<Galileo_Almanac> *almanac_queue)
 {
-	//d_Galileo_INAV_FSM.d_almanac_queue = almanac_queue;
+	d_almanac_queue = almanac_queue;
 }
 void galileo_e1b_telemetry_decoder_cc::set_utc_model_queue(concurrent_queue<Galileo_Utc_Model> *utc_model_queue)
 {
-	//d_Galileo_INAV_FSM.d_utc_model_queue = utc_model_queue;
+	d_utc_model_queue = utc_model_queue;
 }
 
 

@@ -43,14 +43,19 @@
 #include "gnuradio/trellis/permutation.h"
 #include "gnuradio/fec/viterbi.h"
 
-//#include <gnuradio/gr_sync_block.h>
 #include "gnss_satellite.h"
-//#include "galileo_inav_fsm.h"
 #include "galileo_navigation_message.h"
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
+
+// Galileo Navigation Message structures
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_almanac.h"
+#include "galileo_utc_model.h"
+
 
 class galileo_e1b_telemetry_decoder_cc;
 
@@ -110,13 +115,18 @@ private:
 
     long d_fs_in;
 
-
-    //gr::trellis::interleaver d_interleaver;
-
     // navigation message vars
     Galileo_Navigation_Message d_nav;
 
-    //GalileoINAVFsm d_Galileo_INAV_FSM;
+    //ToDo: Update the Galileo_Ephemeris,Galileo_Iono,Galileo_Utc_Model, and Galileo_Almanac classes to store the Galileo parameters
+    // Galileo ephemeris queue
+    concurrent_queue<Galileo_Ephemeris> *d_ephemeris_queue;
+    // ionospheric parameters queue
+    concurrent_queue<Galileo_Iono> *d_iono_queue;
+    // UTC model parameters queue
+    concurrent_queue<Galileo_Utc_Model> *d_utc_model_queue;
+    // Almanac queue
+    concurrent_queue<Galileo_Almanac> *d_almanac_queue;
 
     boost::shared_ptr<gr::msg_queue> d_queue;
     unsigned int d_vector_length;

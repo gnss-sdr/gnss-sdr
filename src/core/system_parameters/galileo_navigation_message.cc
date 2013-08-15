@@ -506,6 +506,61 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 }
 
 
+bool Galileo_Navigation_Message::have_new_ephemeris()
+{
+	//ToDo: Check if whe have a new ephemeris data set stored in the galileo navigation class
+	return false;
+}
+
+bool Galileo_Navigation_Message::have_new_iono()
+{
+	//ToDo: Check if whe have a new iono data set stored in the galileo navigation class
+	return false;
+}
+bool Galileo_Navigation_Message::have_new_utc_model()
+{
+	//ToDo: Check if whe have a new utc data set stored in the galileo navigation class
+	return false;
+}
+bool Galileo_Navigation_Message::have_new_almanac()
+{
+	//ToDo: Check if whe have a new almanac data set stored in the galileo navigation class
+	return false;
+}
+
+Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
+{
+
+	Galileo_Ephemeris ephemeris;
+	//ToDo:: fill the object
+	return ephemeris;
+}
+
+
+Galileo_Iono Galileo_Navigation_Message::get_iono()
+{
+	Galileo_Iono iono;
+	//ToDo:: fill the object
+	return iono;
+}
+
+
+Galileo_Utc_Model Galileo_Navigation_Message::get_utc_model()
+{
+	Galileo_Utc_Model utc_model;
+	//ToDo:: fill the object
+	return utc_model;
+}
+
+
+Galileo_Almanac Galileo_Navigation_Message::get_almanac()
+{
+	Galileo_Almanac almanac;
+	//ToDo:: fill the object
+	return almanac;
+}
+
+
 int Galileo_Navigation_Message::page_jk_decoder(char *data_jk)
 {
 	std::cout << "--------------------------------------------------------------------------" << endl;

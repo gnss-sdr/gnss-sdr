@@ -43,6 +43,12 @@
 #include <cmath>
 #include <utility>
 
+// Galileo Navigation Message structures
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_almanac.h"
+#include "galileo_utc_model.h"
+
 #include "Galileo_E1.h"
 
 
@@ -205,15 +211,61 @@ public:
 			double TOW_0;
 
 
+	/*
+	 * \brief Takes in input a page (Odd or Even) of 120 bit, split it according ICD 4.3.2.3 and join Data_k with Data_j
+	 */
+	void split_page(const char *page, int flag_even_word);
+	/*
+	 * \brief Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
+	 */
+	int page_jk_decoder(char *data_jk);
 
-	void split_page(const char *page, int flag_even_word); 			/* Takes in input a page (Odd or Even) of 120 bit, split it according ICD 4.3.2.3 and join Data_k with Data_j*/
 
-	int page_jk_decoder(char *data_jk);		/* Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5*/
+	/*
+	 * \brief Write doxigen function description here
+	 */
 
 	void reset();
 
+	/*
+	 * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed
+	 */
+	bool have_new_ephemeris();
+	/*
+	 * \brief Returns true if new Iono model has arrived. The flag is set to false when the function is executed
+	 */
+	bool have_new_iono();
+	/*
+	 * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
+	 */
+	bool have_new_utc_model();
 
-	/* Default constructor */
+	/*
+	 * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
+	 */
+	bool have_new_almanac();
+
+
+	/*
+	 * \brief Returns a Galileo_Ephemeris object filled with the latest navigation data received
+	 */
+	Galileo_Ephemeris get_ephemeris();
+
+	/*
+	 * \brief Returns a Galileo_Iono object filled with the latest navigation data received
+	 */
+	Galileo_Iono get_iono();
+
+	/*
+	 * \brief Returns a Galileo_Utc_Model object filled with the latest navigation data received
+	 */
+	Galileo_Utc_Model get_utc_model();
+
+	/*
+	 * \brief Returns a Galileo_Almanac object filled with the latest navigation data received
+	 */
+	Galileo_Almanac get_almanac();
+
 
 	Galileo_Navigation_Message();
 };

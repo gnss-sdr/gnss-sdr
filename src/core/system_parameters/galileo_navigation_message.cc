@@ -769,8 +769,8 @@ int Galileo_Navigation_Message::page_jk_decoder(char *data_jk)
         	    SVID1_7= (double)read_navigation_unsigned(data_jk_bits, SVID1_7_bit);
         	    std::cout << "SVID1_7= " << SVID1_7 << std::endl;
 
-        	    Delta_alpha_7= (double)read_navigation_unsigned(data_jk_bits, Delta_alpha_7_bit);
-        	    Delta_alpha_7= Delta_alpha_7 * Delta_alpha_7_LSB;
+        	    Delta_alpha_7= (double)read_navigation_unsigned(data_jk_bits, DELTA_A_7_bit);
+        	    Delta_alpha_7= Delta_alpha_7 * DELTA_A_7_LSB;
         	    std::cout << "Delta_alpha_7= " << Delta_alpha_7 << std::endl;
 
         	    e_7= (double)read_navigation_unsigned(data_jk_bits, e_7_bit);

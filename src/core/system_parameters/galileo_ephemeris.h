@@ -1,8 +1,8 @@
 /*!
- * \file gps_navigation_message.h
+ * \file galileo_navigation_message.h
  * \brief  Interface of a GPS EPHEMERIS storage
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
- *
+ * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
@@ -36,22 +36,64 @@
 #include <map>
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
-
+#include "Galileo_E1.h"
 
 /*!
- * \brief This class is a storage and orbital model functions for the Galileo SV ephemeris data as described in Galileo ICD
+ * \brief This class is a storage and orbital model functions for the Galileo SV ephemeris data as described in Galileo ICD paragraph 5.1.1
  *
  */
-/*
- * ToDo: Rewrite the class to include all the parameters described in Galileo ICD (this is just a copy of GPS ephemeris!)
- */
+
 class Galileo_Ephemeris
 {
 private:
 
 public:
 
-    unsigned int i_satellite_PRN; // SV PRN NUMBER
+	/*Galileo ephemeris are 16 parameters and here are reported following the ICD order, paragraph 5.1.1.
+	The number in the name after underscore (_1, _2, _3 and so on) refers to the page were we can find that parameter */
+
+	double M0_1;		// Mean anomaly at reference time [semi-circles]
+	double delta_n_3;		// Mean motion difference from computed value  [semi-circles/sec]
+	double e_1;		// Eccentricity
+	double A_1;   	// Square root of the semi-major axis [metres^1/2]
+	double OMEGA_0_2; // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+	double i_0_2;     // Inclination angle at reference time  [semi-circles]
+	double omega_2;   // Argument of perigee [semi-circles]
+	double OMEGA_dot_3;		// Rate of right ascension [semi-circles/sec]
+	double iDot_2;    // Rate of inclination angle [semi-circles/sec]
+	double C_uc_3;			// Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+	double C_us_3;			// Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+	double C_rc_3;			// Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+	double C_rs_3;			// Amplitude of the sine harmonic correction term to the orbit radius [meters]
+	double C_ic_4;		// Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
+	double C_is_4;		// Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+	double t0e_1; 	// Ephemeris reference time [s]
+
+	/*Clock correction parameters*/
+	double t0c_4;			//Clock correction data reference Time of Week [sec]
+	double af0_4;			//SV clock bias correction coefficient [s]
+	double af1_4;			//SV clock drift correction coefficient [s/s]
+	double af2_4;			//SV clock drift rate correction coefficient [s/s^2]
+
+	/*GST*/
+	double WN_5; //Week number
+	double TOW_5; //Time of Week
+
+	double Galileo_satClkDrift;
+	double Galileo_dtr;            // relativistic clock correction term
+
+	// satellite positions
+	double galileo_satpos_X;       //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
+	double galileo_satpos_Y;       //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
+	double galileo_satpos_Z;       //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
+    // Satellite velocity
+	double galileo_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
+	double galileo_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
+	double galileo_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
+
+
+    /*The following parameters refers to GPS
+	unsigned int i_satellite_PRN; // SV PRN NUMBER
     double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     double d_Crs;            //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
     double d_Delta_n;        //!< Mean Motion Difference From Computed Value [semi-circles/s]
@@ -113,9 +155,9 @@ public:
 
 
     template<class Archive>
-    /*
-     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
-     */
+
+     \\brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
+
     void serialize(Archive& archive, const unsigned int version)
     {
         using boost::serialization::make_nvp;
@@ -161,15 +203,19 @@ public:
         archive & make_nvp("b_antispoofing_flag",b_antispoofing_flag); //!<  If true, the AntiSpoofing mode is ON in that SV
     }
 
-    /*!
-     * \brief Compute the ECEF SV coordinates and ECEF velocity
-     * [Insert here the reference in Galileo ICD]
+
+     \\brief Compute the ECEF SV coordinates and ECEF velocity
+     \\http://ec.europa.eu/enterprise/policies/satnav/galileo/open-service/
      */
     void satellitePosition(double transmitTime);
 
-    /*!
-     * Default constructor
-     */
+    double Galileo_System_Time(double WN, double TOW); 			// Galileo System Time (GST), ICD paragraph 5.1.2
+    double sv_clock_drift(double transmitTime); 				//Satellite Time Correction Algorithm, ICD 5.1.4
+    double sv_clock_relativistic_term(double transmitTime); 	//Satellite Time Correction Algorithm, ICD 5.1.4
+    //Default constructor
+
+
+
     Galileo_Ephemeris();
 };
 

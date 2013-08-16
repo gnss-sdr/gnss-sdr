@@ -40,6 +40,12 @@
 #include <utility> // std::pair
 #include "MATH_CONSTANTS.h"
 
+// Physical constants
+const double GALILEO_PI         		 = 3.1415926535898;  //!< Pi as defined in GALILEO ICD
+const double GALILEO_GM                  = 3.986004418e14;      //!< Geocentric gravitational constant[m^3/s^2]
+const double GALILEO_OMEGA_EARTH_DOT     = 7.2921151467e-5;  //!< Mean angular velocity of the Earth [rad/s]
+const double GALILEO_C_m_s      		 = 299792458.0;      //!< The speed of light, [m/s]
+const double GALILEO_F                   = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 // carrier and code frequencies
 const double Galileo_E1_FREQ_HZ = 1.57542e9; //!< E1 [Hz]
 const double Galileo_E1_CODE_CHIP_RATE_HZ = 1.023e6; //!< Galileo E1 code rate [chips/s]
@@ -151,7 +157,7 @@ const std::vector<std::pair<int,int>> Region5_5_bit({{47,1}});	//
 const std::vector<std::pair<int,int>> BGD_E1E5a_5_bit({{48,10}});	//
 const double BGD_E1E5a_5_LSB = TWO_N32;
 const std::vector<std::pair<int,int>> BGD_E1E5b_5_bit({{58,10}});	//
-const double BGD_E1E5b_5_LSB = TWO_N35;
+const double BGD_E1E5b_5_LSB = TWO_N32;
 const std::vector<std::pair<int,int>> E5b_HS_5_bit({{68,2}});		//
 const std::vector<std::pair<int,int>> E1B_HS_5_bit({{70,2}});		//
 const std::vector<std::pair<int,int>> E5b_DVS_5_bit({{72,1}});	//
@@ -182,8 +188,8 @@ const std::vector<std::pair<int,int>>WN_a_7_bit({{11,2}});
 const std::vector<std::pair<int,int>>t0a_7_bit({{13,10}});
 const double t0a_7_LSB = 600;
 const std::vector<std::pair<int,int>>SVID1_7_bit({{23,6}});
-const std::vector<std::pair<int,int>>Delta_alpha_7_bit({{29,13}});
-const double Delta_alpha_7_LSB = TWO_N9;
+const std::vector<std::pair<int,int>>DELTA_A_7_bit({{29,13}});
+const double DELTA_A_7_LSB = TWO_N9;
 const std::vector<std::pair<int,int>>e_7_bit({{42,11}});
 const double e_7_LSB = TWO_N16;
 const std::vector<std::pair<int,int>>omega_7_bit({{53,16}});
@@ -227,7 +233,7 @@ const std::vector<std::pair<int,int>>M0_9_bit({{23,16}});
 const double M0_9_LSB = TWO_N15;
 const std::vector<std::pair<int,int>>af0_9_bit({{39,16}});
 const double af0_9_LSB = TWO_N19;
-const std::vector<std::pair<int,int>>af1_9_bit({{54,13}});
+const std::vector<std::pair<int,int>>af1_9_bit({{55,13}});
 const double af1_9_LSB = TWO_N38;
 const std::vector<std::pair<int,int>>E5b_HS_9_bit({{68,2}});
 const std::vector<std::pair<int,int>>E1B_HS_9_bit({{70,2}});

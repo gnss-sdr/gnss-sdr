@@ -50,6 +50,9 @@
 #include "galileo_utc_model.h"
 
 #include "Galileo_E1.h"
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
 
 
 
@@ -134,81 +137,92 @@ public:
 		double spare_5;
 		/*Word type 6: GST-UTC conversion parameters*/
 
-			double A0_6;
-			double A1_6;
-			double Delta_tLS_6;
-			double t0t_6;
-			double WNot_6;
-			double WN_LSF_6;
-			double DN_6;
-			double Delta_tLSF_6;
-			double TOW_6;
+		double A0_6;
+		double A1_6;
+		double Delta_tLS_6;
+		double t0t_6;
+		double WNot_6;
+		double WN_LSF_6;
+		double DN_6;
+		double Delta_tLSF_6;
+		double TOW_6;
 
-			/*Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number*/
-			int IOD_a_7;
-			double WN_a_7;
-			double t0a_7;
-			int SVID1_7;
-			double Delta_alpha_7;
-			double e_7;
-			double omega_7;
-			double delta_i_7;
-			double Omega0_7;
-			double Omega_dot_7;
-			double M0_7;
+		/*Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number*/
+		int IOD_a_7;
+		double WN_a_7;
+		double t0a_7;
+		int SVID1_7;
+		double DELTA_A_7;
+		double e_7;
+		double omega_7;
+		double delta_i_7;
+		double Omega0_7;
+		double Omega_dot_7;
+		double M0_7;
 
-			/*Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)*/
-			int IOD_a_8;
-			double af0_8;
-			double af1_8;
-			double E5b_HS_8;
-			double E1B_HS_8;
-			int SVID2_8;
-			double DELTA_A_8;
-			double e_8;
-			double omega_8;
-			double delta_i_8;
-			double Omega0_8;
-			double Omega_dot_8;
+		/*Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)*/
+		int IOD_a_8;
+		double af0_8;
+		double af1_8;
+		double E5b_HS_8;
+		double E1B_HS_8;
+		int SVID2_8;
+		double DELTA_A_8;
+		double e_8;
+		double omega_8;
+		double delta_i_8;
+		double Omega0_8;
+		double Omega_dot_8;
 
-			/*Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)*/
-
-			int IOD_a_9;
-			double WN_a_9;
-			double t0a_9;
-			double M0_9;
-			double af0_9;
-			double af1_9;
-			double E5b_HS_9;
-			double E1B_HS_9;
-			int SVID3_9;
-			double DELTA_A_9;
-			double e_9;
-			double omega_9;
-			double delta_i_9;
-
-
-			/*Word type 10: Almanac for SVID3 (2/2) and GST-GPS conversion parameters*/
-
-			int IOD_a_10;
-			double Omega0_10;
-			double Omega_dot_10;
-			double M0_10;
-			double af0_10;
-			double af1_10;
-			double E5b_HS_10;
-			double E1B_HS_10;
-			double A_0G_10;
-			double A_1G_10;
-			double t_0G_10;
-			double WN_0G_10;
+		/*Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)*/
+		int IOD_a_9;
+		double WN_a_9;
+		double t0a_9;
+		double M0_9;
+		double af0_9;
+		double af1_9;
+		double E5b_HS_9;
+		double E1B_HS_9;
+		int SVID3_9;
+		double DELTA_A_9;
+		double e_9;
+		double omega_9;
+		double delta_i_9;
 
 
+		/*Word type 10: Almanac for SVID3 (2/2) and GST-GPS conversion parameters*/
+		int IOD_a_10;
+		double Omega0_10;
+		double Omega_dot_10;
+		double M0_10;
+		double af0_10;
+		double af1_10;
+		double E5b_HS_10;
+		double E1B_HS_10;
+		// GST-GPS conversion
+		double A_0G_10;  //constant term of the offset Δt systems
+		double A_1G_10;  //rate of change of the offset Δt systems
+		double t_0G_10;  //reference time for GGTO data
+		double WN_0G_10; //Week Number of GGTO reference
 
-			/*Word type 0: I/NAV Spare Word*/
-			double Time_0;
-			double WN_0;
-			double TOW_0;
+		/*Word type 0: I/NAV Spare Word*/
+		double Time_0;
+		double WN_0;
+		double TOW_0;
+
+
+		double Galileo_satClkDrift;
+		double Galileo_dtr;            // relativistic clock correction term
+
+		// satellite positions
+		double galileo_satpos_X;       //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
+		double galileo_satpos_Y;       //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
+		double galileo_satpos_Z;       //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
+	    // Satellite velocity
+		double galileo_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
+		double galileo_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
+		double galileo_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
+
 
 
 	/*
@@ -218,12 +232,7 @@ public:
 	/*
 	 * \brief Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
 	 */
-	int page_jk_decoder(char *data_jk);
-
-
-	/*
-	 * \brief Write doxigen function description here
-	 */
+	int page_jk_decoder(const char *data_jk);		/* Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5*/
 
 	void reset();
 
@@ -266,6 +275,15 @@ public:
 	 */
 	Galileo_Almanac get_almanac();
 
+	void satellitePosition(double transmitTime);
+
+	double Galileo_System_Time(double WN, double TOW); 			// Galileo System Time (GST), ICD paragraph 5.1.2
+
+	double sv_clock_drift(double transmitTime); 				//Satellite Time Correction Algorithm, ICD 5.1.4
+
+	double sv_clock_relativistic_term(double transmitTime); 	//Satellite Time Correction Algorithm, ICD 5.1.4
+
+	double GST_to_UTC_time(double t_e, int WN);                 //GST-UTC Conversion Algorithm and Parameters
 
 	Galileo_Navigation_Message();
 };

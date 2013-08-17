@@ -39,10 +39,14 @@
 #include <glog/logging.h>
 #include <boost/lexical_cast.hpp>
 #include "control_message_factory.h"
-
+#include "galileo_navigation_message.h"
 #include "gnss_synchro.h"
 
 #include "convolutional.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
 
 using google::LogMessage;
 
@@ -286,15 +290,18 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                               {
                              	 std::cout<<"Page Odd"<<std::endl;
                              	 d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
+                             	 //decode_page.split_page(page_String, flag_even_word_arrived);
                              	 flag_even_word_arrived=0;
-                             	 std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
+                             	 std::cout << "page odd" << page_String << std::endl;
+                             	 //std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
                                }
                               else
                               {
                              	 std::cout<<"Page Even"<<std::endl;
                              	 d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
                              	 flag_even_word_arrived=1;
-                             	 std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
+                             	 std::cout << "page even" << std::endl << page_String << std::endl;
+                             	 //std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
                               }
 
              	            // 4. Push the new navigation data to the queues

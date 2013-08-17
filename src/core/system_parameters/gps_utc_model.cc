@@ -42,6 +42,8 @@ Gps_Utc_Model::Gps_Utc_Model()
 	i_DN = 0;
 	d_DeltaT_LSF = 0;
 
+
+
 }
 
 double Gps_Utc_Model::utc_time(double gpstime_corrected, int i_GPS_week)

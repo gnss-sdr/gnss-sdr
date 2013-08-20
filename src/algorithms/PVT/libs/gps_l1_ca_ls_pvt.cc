@@ -336,7 +336,12 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             mypos = leastSquarePos(satpos, obs, W);
             DLOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos << std::endl;
             gps_l1_ca_ls_pvt::cart2geo(mypos(0), mypos(1), mypos(2), 4);
-
+            //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
+            if (d_height_m>50000)
+            {
+            	b_valid_position=false;
+            	return false; //erratic PVT
+            }
             // Compute UTC time and print PVT solution
             double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
             boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek*(double)GPS_week);

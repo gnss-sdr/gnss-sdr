@@ -84,7 +84,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     float threshold = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_)
     		+ ".threshold",0.0);
-    if(threshold==0.0)	threshold = configuration->property("Acquisition.threshold",0);
+    if(threshold==0.0)	threshold = configuration->property("Acquisition.threshold",0.0);
 
     acq_->set_threshold(threshold);
 

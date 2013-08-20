@@ -73,6 +73,21 @@ private:
 public:
 	int flag_even_word;
 
+	bool flag_all_ephemeris; // flag indicating that all words containing ephemeris have been received
+	bool flag_ephemeris_1;    // flag indicating that ephemeris 1/4 (word 1) have been received
+	bool flag_ephemeris_2;    // flag indicating that ephemeris 2/4 (word 2) have been received
+	bool flag_ephemeris_3;    // flag indicating that ephemeris 3/4 (word 3) have been received
+	bool flag_ephemeris_4;    // flag indicating that ephemeris 4/4 (word 4) have been received
+
+	bool flag_iono_and_GST;   // flag indicating that ionospheric and GST parameters (word 5) have been received
+	bool flag_utc_model;      // flag indicating that utc model parameters (word 6) have been received
+
+	bool flag_all_almanac;	  // flag indicating that all almanac have been received
+	bool flag_almanac_1;      // flag indicating that almanac 1/4 (word 7) have been received
+	bool flag_almanac_2;      // flag indicating that almanac 2/4 (word 8) have been received
+	bool flag_almanac_3;      // flag indicating that almanac 3/4 (word 9) have been received
+	bool flag_almanac_4;      // flag indicating that almanac 4/4 (word 10) have been received
+
 	/*Word type 1: Ephemeris (1/4)*/
 		int IOD_nav_1;  // IOD_nav page 1
 		double t0e_1; 	// Ephemeris reference time [s]
@@ -243,7 +258,7 @@ public:
 	/*
 	 * \brief Returns true if new Iono model has arrived. The flag is set to false when the function is executed
 	 */
-	bool have_new_iono();
+	bool have_new_iono_and_GST();
 	/*
 	 * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed
 	 */

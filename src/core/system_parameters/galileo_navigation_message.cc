@@ -45,6 +45,24 @@ typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_Galileo_I
 void Galileo_Navigation_Message::reset()
 {
 	 flag_even_word = 0;
+
+	 flag_all_ephemeris = false; // flag indicating that all words containing ephemeris have been received
+	 flag_ephemeris_1 = false;    // flag indicating that ephemeris 1/4 (word 1) have been received
+	 flag_ephemeris_2 = false;    // flag indicating that ephemeris 2/4 (word 2) have been received
+	 flag_ephemeris_3 = false;    // flag indicating that ephemeris 3/4 (word 3) have been received
+	 flag_ephemeris_4 = false;    // flag indicating that ephemeris 4/4 (word 4) have been received
+
+	 flag_iono_and_GST = false;   // flag indicating that ionospheric parameters (word 5) have been received
+	 flag_utc_model = false;      // flag indicating that utc model parameters (word 6) have been received
+
+	 flag_all_almanac = false;	  // flag indicating that all almanac have been received
+	 flag_almanac_1 = false;      // flag indicating that almanac 1/4 (word 7) have been received
+	 flag_almanac_2 = false;      // flag indicating that almanac 2/4 (word 8) have been received
+	 flag_almanac_3 = false;      // flag indicating that almanac 3/4 (word 9) have been received
+	 flag_almanac_4 = false;      // flag indicating that almanac 4/4 (word 10) have been received
+
+
+
 	 /*Word type 1: Ephemeris (1/4)*/
 	 IOD_nav_1 = 0;
 	 t0e_1 = 0;
@@ -345,7 +363,6 @@ bool Galileo_Navigation_Message::read_navigation_bool(std::bitset<GALILEO_DATA_J
 
 void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word){
 
-	// ToDo: Replace all the C structures and string operations with std::string and std::stringstream C++ classes.
 	// ToDo: Clean all the tests and create an independent google test code for the telemetry decoder.
 
 
@@ -405,37 +422,55 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 					std::string TLM_word_for_CRC;
 					TLM_word_for_CRC=TLM_word_for_CRC_stream.str().substr(0,GALILEO_DATA_FRAME_BITS);
 
-					std::cout <<"frame for CRC="<<TLM_word_for_CRC<<std::endl;
-					std::cout <<"frame length="<<TLM_word_for_CRC.length()<<std::endl;
 					std::bitset<GALILEO_DATA_FRAME_BITS> TLM_word_for_CRC_bits(TLM_word_for_CRC);
 					std::bitset<24> checksum(CRC_data);
 
-					if (Tail_odd.compare(correct_tail) != 0)
-							std::cout << "Tail odd is not correct!" << std::endl;
-					else std::cout<<"Tail odd is correct!"<<std::endl;
+					//if (Tail_odd.compare(correct_tail) != 0)
+					//		std::cout << "Tail odd is not correct!" << std::endl;
+					//else std::cout<<"Tail odd is correct!"<<std::endl;
 
 					if (CRC_test(TLM_word_for_CRC_bits,checksum.to_ulong())==true)
 					{
 						// CRC correct: Decode word
 						std::cout<<"CRC correct!"<<std::endl;
+
+						std::string page_number_bits = Data_k.substr (0,6);
+						//std::cout << "Page number bits from Data k" << std::endl << page_number_bits << std::endl;
+
+						std::bitset<GALILEO_PAGE_TYPE_BITS> page_type_bits (page_number_bits); // from string to bitset
+						Page_type = (int)read_page_type_unsigned(page_type_bits, type);
+						std::cout << "Page number (first 6 bits of Data k converted to decimal) = " << Page_type << std::endl;
+						std::string Data_jk_ephemeris = Data_k + Data_j;
+						//std::cout<<"Data j k ephemeris" << endl << Data_jk_ephemeris << endl;
+
+						page_jk_decoder(Data_jk_ephemeris.c_str()); // Corresponding to ephemeris_decode.m in matlab code
+
+						/*if (have_new_ephemeris()==true){
+							std::cout<<"All ephemeris have been received" << std::endl;
+						}*/
+
+						double t_GST;
+						if ((have_new_iono_and_GST() == true) and (flag_all_ephemeris==true))
+						{
+							std::cout <<"GST and ephemeris parameters have been received, now it is possible to compute satellite position"<< std::endl;
+							t_GST = Galileo_System_Time(WN_5, TOW_5);
+							std::cout << "Galileo System Time [sec]: " << t_GST << std::endl;
+							satellitePosition(t_GST);
+							flag_all_ephemeris=false;
+						}
+
+						double t_UTC;
+						if ((have_new_iono_and_GST() == true) and (have_new_utc_model() == true))
+						{
+							t_UTC = GST_to_UTC_time(t_GST, WN_5);
+							std::cout << "UTC [sec]: " << t_UTC << std::endl;
+						}
+
 					}else{
 						// CRC wrong.. discard frame
 						std::cout<<"CRC error!"<<std::endl;
 					}
 					//********** end of CRC checksum control ***/
-
-
-					std::string page_number_bits = Data_k.substr (0,6);
-					//std::cout << "Page number bits from Data k" << std::endl << page_number_bits << std::endl;
-
-					std::bitset<GALILEO_PAGE_TYPE_BITS> page_type_bits (page_number_bits); // from string to bitset
-					Page_type = (int)read_page_type_unsigned(page_type_bits, type);
-					std::cout << "Page number (first 6 bits of Data k converted to decimal) = " << Page_type << std::endl;
-					std::string Data_jk_ephemeris = Data_k + Data_j;
-					//std::cout<<"Data j k ephemeris" << endl << Data_jk_ephemeris << endl;
-
-					page_jk_decoder(Data_jk_ephemeris.c_str()); // Corresponding to ephemeris_decode.m in matlab code
-
 				}
 
 		} /*end if (page_string.at(0)=='1') */
@@ -445,35 +480,73 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 	//std::cout << "Page even in split page" << std::endl << page_Even << std::endl;
 	std::string tail_Even =  page_string.substr (114,6);
 	//std::cout << "tail_even_string: " << tail_Even <<std::endl;
-	if (tail_Even.compare(correct_tail) != 0)
-		 std::cout << "Tail even is not correct!" << std::endl;
-	else std::cout<<"Tail even is correct!"<< std::endl;
+	//if (tail_Even.compare(correct_tail) != 0)
+	//	 std::cout << "Tail even is not correct!" << std::endl;
+	//else std::cout<<"Tail even is correct!"<< std::endl;
 
 	}
 
 }
 
 
-bool Galileo_Navigation_Message::have_new_ephemeris()
+bool Galileo_Navigation_Message::have_new_ephemeris() //Check if we have a new ephemeris stored in the galileo navigation class
 {
-	//ToDo: Check if whe have a new ephemeris data set stored in the galileo navigation class
-	return false;
+	/*std::cout << "flag ephememeris 1: " << flag_ephemeris_1 <<std::endl;
+	std::cout << "flag ephememeris 2: " << flag_ephemeris_2 <<std::endl;
+	std::cout << "flag ephememeris 3: " << flag_ephemeris_3 <<std::endl;
+	std::cout << "flag ephememeris 4: " << flag_ephemeris_4 <<std::endl;*/
+	if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_ephemeris_4 == true))
+	{
+		std::cout<< "All ephemeris have been received"<< std::endl;
+		flag_ephemeris_1 = false;// clear the flag
+		flag_ephemeris_2 = false;// clear the flag
+		flag_ephemeris_3 = false;// clear the flag
+		flag_ephemeris_4 = false;// clear the flag
+		flag_all_ephemeris = true;
+		return true;
+	 }
+	else
+		return false;
 }
 
-bool Galileo_Navigation_Message::have_new_iono()
+
+bool Galileo_Navigation_Message::have_new_iono_and_GST() //Check if we have a new iono data set stored in the galileo navigation class
 {
-	//ToDo: Check if whe have a new iono data set stored in the galileo navigation class
-	return false;
+	if (flag_iono_and_GST == true)
+	{
+		flag_iono_and_GST=false; // clear the flag
+		return true;
+	}else
+		return false;
 }
-bool Galileo_Navigation_Message::have_new_utc_model()
+
+
+bool Galileo_Navigation_Message::have_new_utc_model() // Check if we have a new utc data set stored in the galileo navigation class
 {
-	//ToDo: Check if whe have a new utc data set stored in the galileo navigation class
-	return false;
+	if (flag_utc_model == true)
+	{
+		flag_utc_model=false; // clear the flag
+		return true;
+	}
+	else
+		return false;
 }
-bool Galileo_Navigation_Message::have_new_almanac()
+
+
+bool Galileo_Navigation_Message::have_new_almanac() //Check if we have a new almanac data set stored in the galileo navigation class
 {
-	//ToDo: Check if whe have a new almanac data set stored in the galileo navigation class
-	return false;
+	if ((flag_almanac_1 == true) and (flag_almanac_2 == true) and (flag_almanac_3 == true) and (flag_almanac_4 == true))
+	{
+		//std::cout<< "All almanac have been received"<< std::endl;
+		flag_almanac_1 = false;
+		flag_almanac_2 = false;
+		flag_almanac_3 = false;
+		flag_almanac_4 = false;
+		flag_all_almanac = true;
+		return true;
+	 }
+	else
+		return false;
 }
 
 Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
@@ -646,7 +719,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         		A_1 = (double)read_navigation_unsigned(data_jk_bits, A_1_bit);
         		A_1 = A_1 * A_1_LSB_gal;
         		std::cout << "A_1= " << A_1 <<std::endl;
-
+        		flag_ephemeris_1 = true;
         		break;
 
         	case 2:  /*Word type 2: Ephemeris (2/4)*/
@@ -665,6 +738,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         		iDot_2 = (double)read_navigation_unsigned(data_jk_bits, iDot_2_bit);
         		iDot_2 = iDot_2 * iDot_2_LSB;
         		std::cout<<"iDot_2= "<< iDot_2 <<std::endl;
+        		flag_ephemeris_2 = true;
         		break;
 
         	case 3:  /*Word type 3: Ephemeris (3/4) and SISA*/
@@ -690,6 +764,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         		std::cout<<"C_rs_3= "<< C_rs_3 <<std::endl;
         		SISA_3 = (double)read_navigation_unsigned(data_jk_bits, SISA_3_bit);
         		std::cout<<"SISA_3= "<< SISA_3 <<std::endl;
+        		flag_ephemeris_3 = true;
         		break;
 
         	case 4: /* Word type 4: Ephemeris (4/4) and Clock correction parameters*/
@@ -718,6 +793,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         		std::cout<<"af2_4 = "<< af2_4  <<std::endl;
         		spare_4 = (double)read_navigation_unsigned(data_jk_bits, spare_4_bit);
         		std::cout<<"spare_4 = "<< spare_4  <<std::endl;
+        		flag_ephemeris_4 = true;
         		break;
 
         	case 5: /*Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST*/
@@ -764,6 +840,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         		std::cout<<"TOW_5= "<< TOW_5 <<std::endl;
         		spare_5 = (double)read_navigation_unsigned(data_jk_bits, spare_5_bit);
         		std::cout<<"spare_5= "<< spare_5 <<std::endl;
+        		flag_iono_and_GST = true;
         		break;
 
         	case 6: /*Word type 6: GST-UTC conversion parameters*/
@@ -796,7 +873,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
 
         	    TOW_6= (double)read_navigation_unsigned(data_jk_bits, TOW_6_bit);
         	    std::cout << "TOW_6= " << TOW_6 << std::endl;
-
+        	    flag_utc_model = true;
         	    break;
 
          case 7: /*Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number*/
@@ -841,7 +918,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         	    M0_7= (double)read_navigation_unsigned(data_jk_bits, M0_7_bit);
         	    M0_7= M0_7 * M0_7_LSB;
         	    std::cout << "M0_7= " << M0_7 << std::endl;
-
+        	    flag_almanac_1 = true;
         	    break;
 
         case 8: /*Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)*/
@@ -889,7 +966,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         	    Omega_dot_8= (double)read_navigation_unsigned(data_jk_bits, Omega_dot_8_bit);
         	    Omega_dot_8= Omega_dot_8 * Omega_dot_8_LSB;
         	    std::cout << "Omega_dot_8= " << Omega_dot_8 << std::endl;
-
+        	    flag_almanac_2 = true;
         	    break;
 
         	case 9: /*Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)*/
@@ -941,7 +1018,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         	    delta_i_9= (double)read_navigation_unsigned(data_jk_bits, delta_i_9_bit);
         	    delta_i_9= delta_i_9 * delta_i_9_LSB;
         	    std::cout << "delta_i_9= " << delta_i_9 << std::endl;
-
+        	    flag_almanac_3 = true;
         	    break;
 
         case 10: /*Word type 10: Almanac for SVID3 (2/2) and GST-GPS conversion parameters*/
@@ -989,8 +1066,8 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
 
         	    WN_0G_10= (double)read_navigation_unsigned(data_jk_bits, WN_0G_10_bit);
         	    std::cout << "WN_0G_10= " << WN_0G_10 << std::endl;
-
-        	   break;
+        	    flag_almanac_4 = true;
+        	    break;
 
        case 0: /*Word type 0: I/NAV Spare Word*/
         	    Time_0= (double)read_navigation_unsigned(data_jk_bits, Time_0_bit);
@@ -1007,82 +1084,6 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
 
    return page_number;
 }
-
-/*Galileo_Ephemeris Galileo_Navigation_Message::get_Galileo_ephemeris()
-{
-	Galileo_Ephemeris Gal_ephemeris;
-	Gal_ephemeris.M0_1 = M0_1;		// Mean anomaly at reference time [semi-circles]
-	Gal_ephemeris.delta_n_3 = delta_n_3;		// Mean motion difference from computed value  [semi-circles/sec]
-	Gal_ephemeris.e_1 =	e_1;	// Eccentricity
-	Gal_ephemeris.A_1 =  A_1; 	// Square root of the semi-major axis [metres^1/2]
-	Gal_ephemeris.OMEGA_0_2 = OMEGA_0_2;// Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-	Gal_ephemeris.i_0_2 = i_0_2;    // Inclination angle at reference time  [semi-circles]
-	Gal_ephemeris.omega_2 = omega_2;  // Argument of perigee [semi-circles]
-	Gal_ephemeris.OMEGA_dot_3 =	OMEGA_dot_3;	// Rate of right ascension [semi-circles/sec]
-	Gal_ephemeris.iDot_2 = iDot_2;   // Rate of inclination angle [semi-circles/sec]
-	Gal_ephemeris.C_uc_3 = C_uc_3;		// Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-	Gal_ephemeris.C_us_3 = C_us_3;			// Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-	Gal_ephemeris.C_rc_3 = C_rc_3;			// Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-	Gal_ephemeris.C_rs_3 = C_rs_3;			// Amplitude of the sine harmonic correction term to the orbit radius [meters]
-	Gal_ephemeris.C_ic_4 = C_ic_4;		// Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
-	Gal_ephemeris.C_is_4 = C_is_4;		// Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-	Gal_ephemeris.t0e_1 = t0e_1;	// Ephemeris reference time [s]
-
-	/*Clock correction parameters*
-	Gal_ephemeris.t0c_4 = t0c_4;			//Clock correction data reference Time of Week [sec]
-	Gal_ephemeris.af0_4 = af0_4;			//SV clock bias correction coefficient [s]
-	Gal_ephemeris.af1_4 = af1_4;		//SV clock drift correction coefficient [s/s]
-	Gal_ephemeris.af2_4 = af2_4;		//SV clock drift rate correction coefficient [s/s^2]
-
-	/*GST*
-	Gal_ephemeris.WN_5 = WN_5;//Week number
-	Gal_ephemeris.TOW_5 = TOW_5;//Time of Week
-
-	return Gal_ephemeris;
-}*/
-
-
-/*Galileo_Iono Galileo_Navigation_Message::get_Galileo_Iono()
-{
-	Galileo_Iono Gal_iono;
-	 /*Ionospheric correction
-	 /*Az
-	 Gal_iono.ai0_5 = ai0_5;		//Effective Ionisation Level 1st order parameter [sfu]
-	 Gal_iono.ai1_5 = ai1_5;		//Effective Ionisation Level 2st order parameter [sfu/degree]
-	 Gal_iono.ai2_5 = ai2_5;		//Effective Ionisation Level 3st order parameter [sfu/degree]
-
-	 /*Ionospheric disturbance flag
-	 Gal_iono.Region1_flag_5 = Region1_flag_5;	// Ionospheric Disturbance Flag for region 1
-	 Gal_iono.Region2_flag_5 = Region2_flag_5;	// Ionospheric Disturbance Flag for region 2
-	 Gal_iono.Region3_flag_5 = Region3_flag_5;	// Ionospheric Disturbance Flag for region 3
-	 Gal_iono.Region4_flag_5 = Region4_flag_5;	// Ionospheric Disturbance Flag for region 4
-	 Gal_iono.Region5_flag_5 = Region5_flag_5;	// Ionospheric Disturbance Flag for region 5
-
-	return Gal_iono;
-}*/
-
-
-/*Galileo_Utc_Model Galileo_Navigation_Message::get_Galileo_utc_model()
-{
-	Galileo_Utc_Model Gal_utc_model;
-
-	//Gal_utc_model.valid = flag_utc_model_valid;
-    /*Word type 6: GST-UTC conversion parameters
-    Gal_utc_model.A0_6 = A0_6;
-    Gal_utc_model.A1_6 = A1_6;
-    Gal_utc_model.Delta_tLS_6 = Delta_tLS_6;
-    Gal_utc_model.t0t_6 = t0t_6;
-    Gal_utc_model.WNot_6 = WNot_6;
-    Gal_utc_model.WN_LSF_6 = WN_LSF_6;
-    Gal_utc_model.DN_6 = DN_6;
-    Gal_utc_model.Delta_tLSF_6 = Delta_tLSF_6;
-
-    /*GST
-    //Gal_utc_model.WN_5 = WN_5; //Week number
-    //Gal_utc_model.TOW_5 = WN_5; //Time of Week
-
-    return Gal_utc_model;
-}*/
 
 
 
@@ -1175,12 +1176,17 @@ void Galileo_Navigation_Message::satellitePosition(double transmitTime) //when t
     galileo_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega); //***********************NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
     galileo_satpos_Z = sin(u) * r * sin(i);
 
+    std::cout << "Galileo satellite position X [m]: " << galileo_satpos_X << std::endl;
+    std::cout << "Galileo satellite position Y [m]: " << galileo_satpos_Y << std::endl;
+    std::cout << "Galileo satellite position Z [m]: " << galileo_satpos_Z << std::endl;
+    double vector_position = sqrt(galileo_satpos_X*galileo_satpos_X + galileo_satpos_Y*galileo_satpos_Y + galileo_satpos_Z*galileo_satpos_Z);
+    std::cout << "Vector Earth Center-Satellite [Km]: " << vector_position/1000 << std::endl;
+
     // Satellite's velocity. Can be useful for Vector Tracking loops
     double Omega_dot = OMEGA_dot_3 - GALILEO_OMEGA_EARTH_DOT;
     galileo_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + galileo_satpos_X * cos(Omega) - galileo_satpos_Y * cos(i) * sin(Omega);
     galileo_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + galileo_satpos_X * sin(Omega) + galileo_satpos_Y * cos(i) * cos(Omega);
     galileo_satvel_Z = galileo_satpos_Y * sin(i);
-
 
 }
 
@@ -1215,7 +1221,7 @@ double Galileo_Navigation_Message::Galileo_System_Time(double WN, double TOW){
 	double t=0;
 	double sec_in_day = 86400;
 	double day_in_week = 7;
-	t = WN*sec_in_day*day_in_week+ TOW; // second from the origin of the Galileo time
+	t = WN * sec_in_day * day_in_week + TOW; // second from the origin of the Galileo time
 
 	return t;
 
@@ -1286,7 +1292,7 @@ double Galileo_Navigation_Message::sv_clock_relativistic_term(double transmitTim
     return Galileo_dtr;
 }
 
-double Galileo_Navigation_Message::GST_to_UTC_time(double t_e, int WN)
+double Galileo_Navigation_Message::GST_to_UTC_time(double t_e, int WN) //t_e is GST (WN+TOW) in second
 {
 	double t_Utc;
 		double t_Utc_daytime;

@@ -118,7 +118,7 @@ private:
     // navigation message vars
     Galileo_Navigation_Message d_nav;
 
-    //ToDo: Update the Galileo_Ephemeris,Galileo_Iono,Galileo_Utc_Model, and Galileo_Almanac classes to store the Galileo parameters
+
     // Galileo ephemeris queue
     concurrent_queue<Galileo_Ephemeris> *d_ephemeris_queue;
     // ionospheric parameters queue

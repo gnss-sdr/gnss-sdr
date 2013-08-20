@@ -284,46 +284,44 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                      	    }
 
                      	    // Galileo_Navigation_Message d_nav; // Now is a class member object, to store the intermediate results from call to call
-                     	    //std::cout<<"page_string="<<page_String<<std::endl; //correctly transformed to char
 
              	             if (page_part_bits[0]==1)
                               {
-                             	 std::cout<<"Page Odd"<<std::endl;
+                             	 //std::cout<<"Page Odd"<<std::endl;
                              	 d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
                              	 //decode_page.split_page(page_String, flag_even_word_arrived);
                              	 flag_even_word_arrived=0;
-                             	 std::cout << "page odd" << page_String << std::endl;
+                             	 //std::cout << "page odd" << page_String << std::endl;
                              	 //std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
                                }
                               else
                               {
-                             	 std::cout<<"Page Even"<<std::endl;
+                             	 //std::cout<<"Page Even"<<std::endl;
                              	 d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
                              	 flag_even_word_arrived=1;
-                             	 std::cout << "page even" << std::endl << page_String << std::endl;
+                             	 //std::cout << "page even" << std::endl << page_String << std::endl;
                              	 //std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
                               }
 
              	            // 4. Push the new navigation data to the queues
-                      	    //ToDo: Decide if we have an updated ephemeris for the current satellite,
-             	            //      fill the ephemeris class and push the object to the concurrent queue
-             	            //      Do the same for the
-             	            // sample from Gps queues
 
 							if (d_nav.have_new_ephemeris()==true)
 							{
 								// get ephemeris object for this SV
 								Galileo_Ephemeris ephemeris=d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
+								std::cout<<"New Galileo Ephemeris received for SV "<<d_satellite.get_PRN()<<std::endl;
 								d_ephemeris_queue->push(ephemeris);
 							}
-							if (d_nav.have_new_iono()==true)
+							if (d_nav.have_new_iono_and_GST()==true)
 							{
 								Galileo_Iono iono=d_nav.get_iono(); //notice that the read operation will clear the valid flag
+								std::cout<<"New Galileo IONO model received for SV "<<d_satellite.get_PRN()<<std::endl;
 								d_iono_queue->push(iono);
 							}
 							if (d_nav.have_new_utc_model()==true)
 							{
 								Galileo_Utc_Model utc_model=d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+								std::cout<<"New Galileo UTC model received for SV "<<d_satellite.get_PRN()<<std::endl;
 								d_utc_model_queue->push(utc_model);
 							}
 

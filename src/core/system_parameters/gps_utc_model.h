@@ -33,6 +33,8 @@
 #define GNSS_SDR_GPS_UTC_MODEL_H_
 
 #include "GPS_L1_CA.h"
+#include "boost/assign.hpp"
+#include <boost/serialization/nvp.hpp>
 
 
 /*!
@@ -58,6 +60,25 @@ public:
      * Default constructor
      */
     Gps_Utc_Model();
+
+    template<class Archive>
+    /*
+     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
+     */
+    void serialize(Archive& archive, const unsigned int version)
+    {
+        using boost::serialization::make_nvp;
+
+        archive & make_nvp("valid",valid);
+        archive & make_nvp("d_A1",d_A1);
+        archive & make_nvp("d_A0",d_A0);
+        archive & make_nvp("d_t_OT",d_t_OT);
+        archive & make_nvp("i_WN_T",i_WN_T);
+        archive & make_nvp("d_DeltaT_LS",d_DeltaT_LS);
+        archive & make_nvp("i_WN_LSF",i_WN_LSF);
+        archive & make_nvp("i_DN",i_DN);
+        archive & make_nvp("d_DeltaT_LSF",d_DeltaT_LSF);
+    }
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and

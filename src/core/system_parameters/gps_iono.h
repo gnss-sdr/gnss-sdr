@@ -33,6 +33,8 @@
 #define GNSS_SDR_GPS_IONO_H_
 
 #include "GPS_L1_CA.h"
+#include "boost/assign.hpp"
+#include <boost/serialization/nvp.hpp>
 
 
 /*!
@@ -60,6 +62,25 @@ public:
      * Default constructor
      */
     Gps_Iono();
+
+
+    template<class Archive>
+    /*
+     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
+     */
+    void serialize(Archive& archive, const unsigned int version)
+    {
+        using boost::serialization::make_nvp;
+
+        archive & make_nvp("d_alpha0",d_alpha0);
+        archive & make_nvp("d_alpha1",d_alpha1);
+        archive & make_nvp("d_alpha2",d_alpha2);
+        archive & make_nvp("d_alpha3",d_alpha3);
+        archive & make_nvp("d_beta0",d_beta0);
+        archive & make_nvp("d_beta1",d_beta1);
+        archive & make_nvp("d_beta2",d_beta2);
+        archive & make_nvp("d_beta3",d_beta3);
+    }
 };
 
 #endif

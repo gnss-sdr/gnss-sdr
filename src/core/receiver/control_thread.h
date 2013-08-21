@@ -117,13 +117,48 @@ private:
     int supl_ci;  // Cell Identity (16 bits, 0-65535 are valid values).
 
     void init();
+    /*
+     * \brief Read ephemeris assistance from a local XML file previously recorded
+     */
     bool read_assistance_from_XML();
+
     void read_control_messages();
+
     void process_control_messages();
+
+    /*
+     * \brief Blocking function that reads the GPS ephemeris queue and updates the shared ephemeris map, accessible from the PVT block
+     */
     void gps_ephemeris_data_collector();
+    /*
+     * \brief Writes the ephemeris map to a local XML file
+     */
+    void gps_ephemeris_data_write_to_XML();
+    /*
+     * \brief Blocking function that reads the UTC model queue and updates the shared map, accessible from the PVT block
+     */
     void gps_utc_model_data_collector();
+
+    /*
+     * \brief Write the latest GPS UTC model to XML file
+     */
+    void gps_utc_model_data_write_to_XML();
+
+    /*
+     * \brief Blocking function that reads the iono model queue and updates the shared map, accessible from the PVT block
+     */
     void gps_iono_data_collector();
+
+    /*
+     * \brief Write the latest GPS IONO model to XML file
+     */
+    void gps_iono_data_write_to_XML();
+
+    /*
+     * \brief Blocking function that reads the GPS assistance queue
+     */
     void gps_acq_assist_data_collector();
+
     void apply_action(unsigned int what);
     GNSSFlowgraph *flowgraph_;
     ConfigurationInterface *configuration_;

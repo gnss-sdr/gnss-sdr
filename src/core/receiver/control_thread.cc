@@ -87,6 +87,11 @@ ControlThread::ControlThread(ConfigurationInterface *configuration)
 
 ControlThread::~ControlThread()
 {
+	// save navigation data to files
+	gps_ephemeris_data_write_to_XML();
+	gps_iono_data_write_to_XML();
+	gps_utc_model_data_write_to_XML();
+
     delete flowgraph_;
     if (delete_configuration_) delete configuration_;
     delete control_message_factory_;
@@ -479,7 +484,7 @@ void ControlThread::gps_utc_model_data_collector()
 	while(stop_==false)
 	{
 		global_gps_utc_model_queue.wait_and_pop(gps_utc);
-		std::cout << "New UTC MODEL record has arrived "<< std::endl;
+		std::cout << "New UTC MODEL record has arrived with A0="<< gps_utc.d_A0<< std::endl;
 			// insert new ephemeris record to the global ephemeris map
 			if (global_gps_utc_model_map.read(0,gps_utc_old))
 			{
@@ -489,6 +494,80 @@ void ControlThread::gps_utc_model_data_collector()
 				// insert new ephemeris record
 				global_gps_utc_model_map.write(0,gps_utc);
 			}
+	}
+}
+
+
+void ControlThread::gps_ephemeris_data_write_to_XML()
+{
+	//Save ephemeris to XML file
+	std::string eph_xml_filename="gps_ephemeris_rx.xml";
+	std::map<int,Gps_Ephemeris> eph_copy;
+
+	eph_copy=global_gps_ephemeris_map.get_map_copy();
+	if (eph_copy.size()>0)
+	{
+		try
+		{
+				std::ofstream ofs(eph_xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+				boost::archive::xml_oarchive xml(ofs);
+				xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_copy);
+				ofs.close();
+				std::cout<<"Saved Ephemeris data"<<std::endl;
+		}
+		catch (std::exception& e)
+		{
+				LOG_AT_LEVEL(ERROR) << e.what();
+		}
+	}
+}
+
+void ControlThread::gps_utc_model_data_write_to_XML()
+{
+	//Save ephemeris to XML file
+	std::string xml_filename="gps_utc_model_rx.xml";
+	std::map<int,Gps_Utc_Model> map_copy;
+
+    map_copy=global_gps_utc_model_map.get_map_copy();
+	if (map_copy.size()>0)
+	{
+		try
+		{
+				std::ofstream ofs(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+				boost::archive::xml_oarchive xml(ofs);
+				xml << boost::serialization::make_nvp("GNSS-SDR_utc_map", map_copy);
+				ofs.close();
+				std::cout<<"Saved UTC Model data"<<std::endl;
+		}
+		catch (std::exception& e)
+		{
+				LOG_AT_LEVEL(ERROR) << e.what();
+		}
+	}
+}
+
+void ControlThread::gps_iono_data_write_to_XML()
+{
+	//Save ephemeris to XML file
+	std::string xml_filename="gps_iono_rx.xml";
+	std::map<int,Gps_Iono> map_copy;
+    std::map<int,Gps_Iono>::iterator gps_iono_iter;
+
+    map_copy=global_gps_iono_map.get_map_copy();
+	if (map_copy.size()>0)
+	{
+		try
+		{
+				std::ofstream ofs(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+				boost::archive::xml_oarchive xml(ofs);
+				xml << boost::serialization::make_nvp("GNSS-SDR_iono_map", map_copy);
+				ofs.close();
+				std::cout<<"Saved IONO Model data"<<std::endl;
+		}
+		catch (std::exception& e)
+		{
+				LOG_AT_LEVEL(ERROR) << e.what();
+		}
 	}
 }
 

@@ -197,7 +197,9 @@ static time_t utc_time(int week, long tow) {
 
     /* soon week will wrap again, uh oh... */
     /* TS 44.031: GPSTOW, range 0-604799.92, resolution 0.08 sec, 23-bit presentation */
-    t += (1024 + week) * 604800 + tow*0.08;
+    /* The factor 0.08 was applied in the ephemeris SUPL class */
+    /* here the tow is in [s] */
+    t += (1024 + week) * 604800 + tow;
 
     return t;
 }
@@ -417,8 +419,8 @@ int main(int argc, char** argv)
 
     std::cout << "Reference location (defined in config file):" << std::endl;
 
-    std::cout << "Latitude=" << lat_deg << " [¼]" << std::endl;
-    std::cout << "Longitude=" << lon_deg << " [¼]" << std::endl;
+    std::cout << "Latitude=" << lat_deg << " [ï¿½]" << std::endl;
+    std::cout << "Longitude=" << lon_deg << " [ï¿½]" << std::endl;
     std::cout << "Altitude=" << altitude_m << " [m]" << std::endl;
 
     if (doppler_measurements_map.size() == 0)

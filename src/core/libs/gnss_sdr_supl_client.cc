@@ -179,7 +179,8 @@ void gnss_sdr_supl_client::read_supl_data()
     // READ REFERENCE TIME
     if (assist.set & SUPL_RRLP_ASSIST_REFTIME)
         {
-            gps_time.d_TOW = (double)assist.time.gps_tow;
+        	/* TS 44.031: GPSTOW, range 0-604799.92, resolution 0.08 sec, 23-bit presentation */
+            gps_time.d_TOW = ((double)assist.time.gps_tow)*0.08;
             gps_time.d_Week = (double)assist.time.gps_week;
             gps_time.d_tv_sec = (double)assist.time.stamp.tv_sec;
             gps_time.d_tv_usec = (double)assist.time.stamp.tv_usec;
@@ -265,7 +266,8 @@ void gnss_sdr_supl_client::read_supl_data()
                     if (gps_time.valid)
                         {
                             gps_eph_iterator->second.i_GPS_week = assist.time.gps_week;
-                            gps_eph_iterator->second.d_TOW = assist.time.gps_tow;
+                            /* TS 44.031: GPSTOW, range 0-604799.92, resolution 0.08 sec, 23-bit presentation */
+                            gps_eph_iterator->second.d_TOW = ((double)assist.time.gps_tow)*0.08;
                         }
                     else
                         {

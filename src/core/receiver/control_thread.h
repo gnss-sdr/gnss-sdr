@@ -159,6 +159,13 @@ private:
      */
     void gps_acq_assist_data_collector();
 
+    /*
+     * \brief Blocking function that reads the Galileo ephemeris queue and updates the shared ephemeris map, accessible from the PVT block
+     */
+    void galileo_ephemeris_data_collector();
+
+
+
     void apply_action(unsigned int what);
     GNSSFlowgraph *flowgraph_;
     ConfigurationInterface *configuration_;
@@ -174,6 +181,9 @@ private:
     boost::thread gps_iono_data_collector_thread_;
     boost::thread gps_utc_model_data_collector_thread_;
     boost::thread gps_acq_assist_data_collector_thread_;
+
+    boost::thread galileo_ephemeris_data_collector_thread_;
+
     void keyboard_listener();
 };
 

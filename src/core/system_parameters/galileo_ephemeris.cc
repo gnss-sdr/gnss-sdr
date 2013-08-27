@@ -35,32 +35,33 @@
 
 Galileo_Ephemeris::Galileo_Ephemeris()
 {
-		double M0_1 = 0;		// Mean anomaly at reference time [semi-circles]
-		double delta_n_3 = 0;		// Mean motion difference from computed value  [semi-circles/sec]
-		double e_1 = 0;		// Eccentricity
-		double A_1 = 0;   	// Square root of the semi-major axis [metres^1/2]
-		double OMEGA_0_2 = 0; // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-		double i_0_2 = 0;     // Inclination angle at reference time  [semi-circles]
-		double omega_2 = 0;   // Argument of perigee [semi-circles]
-		double OMEGA_dot_3 = 0;		// Rate of right ascension [semi-circles/sec]
-		double iDot_2 = 0;    // Rate of inclination angle [semi-circles/sec]
-		double C_uc_3 = 0;			// Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-		double C_us_3 = 0;			// Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-		double C_rc_3 = 0;			// Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-		double C_rs_3 = 0;			// Amplitude of the sine harmonic correction term to the orbit radius [meters]
-		double C_ic_4 = 0;		// Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
-		double C_is_4 = 0;		// Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-		double t0e_1 = 0; 	// Ephemeris reference time [s]
+	 SV_ID_PRN_4 = 0;
+	 M0_1 = 0;		// Mean anomaly at reference time [semi-circles]
+	 delta_n_3 = 0;		// Mean motion difference from computed value  [semi-circles/sec]
+	 e_1 = 0;		// Eccentricity
+	 A_1 = 0;   	// Square root of the semi-major axis [metres^1/2]
+	 OMEGA_0_2 = 0; // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+	 i_0_2 = 0;     // Inclination angle at reference time  [semi-circles]
+	 omega_2 = 0;   // Argument of perigee [semi-circles]
+	 OMEGA_dot_3 = 0;		// Rate of right ascension [semi-circles/sec]
+	 iDot_2 = 0;    // Rate of inclination angle [semi-circles/sec]
+	 C_uc_3 = 0;			// Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+	 C_us_3 = 0;			// Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+	 C_rc_3 = 0;			// Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+	 C_rs_3 = 0;			// Amplitude of the sine harmonic correction term to the orbit radius [meters]
+	 C_ic_4 = 0;		// Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
+	 C_is_4 = 0;		// Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+	 t0e_1 = 0; 	// Ephemeris reference time [s]
 
-		/*Clock correction parameters*/
-		double t0c_4 = 0; 			//Clock correction data reference Time of Week [sec]
-		double af0_4 = 0; 			//SV clock bias correction coefficient [s]
-		double af1_4 = 0; 			//SV clock drift correction coefficient [s/s]
-		double af2_4 = 0;			//SV clock drift rate correction coefficient [s/s^2]
+	/*Clock correction parameters*/
+	 t0c_4 = 0; 			//Clock correction data reference Time of Week [sec]
+	 af0_4 = 0; 			//SV clock bias correction coefficient [s]
+	 af1_4 = 0; 			//SV clock drift correction coefficient [s/s]
+	 af2_4 = 0;			//SV clock drift rate correction coefficient [s/s^2]
 
-		/*GST*/
-		double WN_5 = 0;
-		double TOW_5 = 0;
+	/*GST*/
+	 WN_5 = 0;
+	 TOW_5 = 0;
 
 }
 

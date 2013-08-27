@@ -38,6 +38,12 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include "gps_almanac.h"
+
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+#include "galileo_almanac.h"
+
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include <unistd.h>
@@ -62,6 +68,19 @@ extern concurrent_queue<Gps_Iono> global_gps_iono_queue;
 extern concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
 extern concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
 extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+
+extern concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
+extern concurrent_map<Galileo_Iono> global_galileo_iono_map;
+extern concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
+extern concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
+//extern concurrent_map<Galileo_Acq_Assist> global_gps_acq_assist_map;
+
+extern concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
+extern concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
+extern concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
+extern concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
+//extern concurrent_queue<Galileo_Acq_Assist> global_gps_acq_assist_queue;
+
 
 using google::LogMessage;
 
@@ -141,6 +160,8 @@ void ControlThread::run()
     gps_utc_model_data_collector_thread_ =boost::thread(&ControlThread::gps_utc_model_data_collector, this);
     gps_acq_assist_data_collector_thread_=boost::thread(&ControlThread::gps_acq_assist_data_collector,this);
 
+    galileo_ephemeris_data_collector_thread_ =boost::thread(&ControlThread::galileo_ephemeris_data_collector, this);
+
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
         {
@@ -150,10 +171,17 @@ void ControlThread::run()
         }
     std::cout<<"Stopping GNSS-SDR, please wait!"<<std::endl;
     flowgraph_->stop();
+
+    // Join GPS threads
     gps_ephemeris_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
     gps_iono_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
     gps_utc_model_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
     gps_acq_assist_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
+
+    //Join Galileo threads
+    galileo_ephemeris_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
+
+    //Join keyboard threads
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
 
     LOG_AT_LEVEL(INFO) << "Flowgraph stopped";
@@ -450,6 +478,51 @@ void ControlThread::gps_ephemeris_data_collector()
 			}
 	}
 }
+
+void ControlThread::galileo_ephemeris_data_collector()
+{
+
+	// ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
+	Galileo_Ephemeris galileo_eph;
+	Galileo_Ephemeris galileo_eph_old;
+	while(stop_==false)
+	{
+		global_galileo_ephemeris_queue.wait_and_pop(galileo_eph);
+
+			// DEBUG MESSAGE
+			std::cout << "Ephemeris record has arrived from SAT ID "
+					<< galileo_eph.SV_ID_PRN_4 << std::endl;
+     		// insert new ephemeris record to the global ephemeris map
+			if (global_galileo_ephemeris_map.read(galileo_eph.SV_ID_PRN_4,galileo_eph_old))
+			{
+				// Check the EPHEMERIS timestamp. If it is newer, then update the ephemeris
+				if (galileo_eph.WN_5 > galileo_eph_old.WN_5)
+				{
+					std::cout << "Ephemeris record updated -- GALILEO Week Number ="<<galileo_eph.WN_5<<std::endl;
+					global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4,galileo_eph);
+				}else{
+					if (galileo_eph.TOW_5 > galileo_eph_old.TOW_5)
+					{
+						std::cout << "Ephemeris record updated -- GALILEO TOW ="<<galileo_eph.TOW_5<<std::endl;
+						global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4,galileo_eph);
+
+						std::cout << "Ephemeris tow OLD: " << galileo_eph_old.TOW_5<<std::endl;
+						std::cout << "Ephemeris satellite: " << galileo_eph.SV_ID_PRN_4<<std::endl;
+
+					}else{
+						std::cout<<"Not updating the existing ephemeris"<<std::endl;
+					}
+				}
+//
+			}else{
+			// insert new ephemeris record
+				std::cout << "New Ephemeris record inserted with TOW="<<galileo_eph.TOW_5<<" and GALILEO Week Number="<< galileo_eph.WN_5 << std::endl;
+				global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4, galileo_eph);
+			}
+	}
+
+}
+
 
 void ControlThread::gps_iono_data_collector()
 {

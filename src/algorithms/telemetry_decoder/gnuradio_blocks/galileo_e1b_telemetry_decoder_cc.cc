@@ -292,6 +292,8 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                              	 //decode_page.split_page(page_String, flag_even_word_arrived);
                              	 flag_even_word_arrived=0;
                              	 //std::cout << "page odd" << page_String << std::endl;
+                             	DLOG(INFO) << "mara prova print page odd" << page_String;
+
                              	 //std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
                                }
                               else
@@ -300,6 +302,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                              	 d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
                              	 flag_even_word_arrived=1;
                              	 //std::cout << "page even" << std::endl << page_String << std::endl;
+                             	DLOG(INFO) << "Page type =" << page_part_bits[1];
                              	 //std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
                               }
 

@@ -553,6 +553,7 @@ Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
 {
 
 	Galileo_Ephemeris ephemeris;
+	ephemeris.SV_ID_PRN_4 = SV_ID_PRN_4;
 	ephemeris.M0_1 = M0_1;		// Mean anomaly at reference time [semi-circles]
 	ephemeris.delta_n_3 = delta_n_3;		// Mean motion difference from computed value  [semi-circles/sec]
 	ephemeris.e_1 =	e_1;	// Eccentricity

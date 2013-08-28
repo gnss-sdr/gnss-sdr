@@ -17,10 +17,15 @@
 #
 
 set(ACQ_ADAPTER_SOURCES 
-     galileo_e1_pcps_ambiguous_acquisition.cc
-     gps_l1_ca_pcps_acquisition.cc 
+     gps_l1_ca_pcps_acquisition.cc
+     gps_l1_ca_pcps_multithread_acquisition.cc
      gps_l1_ca_pcps_assisted_acquisition.cc
      gps_l1_ca_pcps_acquisition_fine_doppler.cc
+     gps_l1_ca_pcps_tong_acquisition.cc
+     galileo_e1_pcps_ambiguous_acquisition.cc
+     galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc
+     galileo_e1_pcps_tong_ambiguous_acquisition.cc
+     galileo_e1_pcps_8ms_ambiguous_acquisition.cc
 )
 
 include_directories(

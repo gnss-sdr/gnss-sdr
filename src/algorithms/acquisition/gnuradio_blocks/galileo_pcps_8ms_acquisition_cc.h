@@ -1,26 +1,8 @@
 /*!
- * \file pcps_acquisition_cc.h
- * \brief This class implements a Parallel Code Phase Search Acquisition
- *
- *  Acquisition strategy (Kay Borre book + CFAR threshold).
- *  <ol>
- *  <li> Compute the input signal power estimation
- *  <li> Doppler serial search loop
- *  <li> Perform the FFT-based circular convolution (parallel time search)
- *  <li> Record the maximum peak and the associated synchronization parameters
- *  <li> Compute the test statistics and compare to the threshold
- *  <li> Declare positive or negative acquisition using a message queue
- *  </ol>
- *
- * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach", Birkha user, 2007. pp 81-84
- *
- * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
- *          </ul>
+ * \file galileo_pcps_8ms_acquisition_cc.h
+ * \brief This class implements a Parallel Code Phase Search Acquisition for
+ * Galileo E1 signals with coherent integration time = 8 ms (two codes)
+ * \author Marc Molina, 2013. marc.molina.pena(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -47,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_ACQUISITION_CC_H_
-#define GNSS_SDR_PCPS_ACQUISITION_CC_H_
+#ifndef GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H_
+#define GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H_
 
 #include <fstream>
 #include <gnuradio/block.h>
@@ -61,42 +43,37 @@
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
 
-class pcps_acquisition_cc;
+class galileo_pcps_8ms_acquisition_cc;
 
-typedef boost::shared_ptr<pcps_acquisition_cc> pcps_acquisition_cc_sptr;
+typedef boost::shared_ptr<galileo_pcps_8ms_acquisition_cc> galileo_pcps_8ms_acquisition_cc_sptr;
 
-pcps_acquisition_cc_sptr
-pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-                         unsigned int doppler_max, long freq, long fs_in,
-                         int samples_per_ms, int samples_per_code,
-                         bool bit_transition_flag,
-                         gr::msg_queue::sptr queue, bool dump,
-                         std::string dump_filename);
-
-/*!
- * \brief This class implements a Parallel Code Phase Search Acquisition.
- *
- * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
- * Algorithm 1, for a pseudocode description of this implementation.
- */
-class pcps_acquisition_cc: public gr::block
-{
-private:
-    friend pcps_acquisition_cc_sptr
-    pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+galileo_pcps_8ms_acquisition_cc_sptr
+galileo_pcps_8ms_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                              unsigned int doppler_max, long freq, long fs_in,
                              int samples_per_ms, int samples_per_code,
-                             bool bit_transition_flag,
                              gr::msg_queue::sptr queue, bool dump,
                              std::string dump_filename);
 
+/*!
+ * \brief This class implements a Parallel Code Phase Search Acquisition for
+ * Galileo E1 signals with coherent integration time = 8 ms (two codes)
+ */
+class galileo_pcps_8ms_acquisition_cc: public gr::block
+{
+private:
+    friend galileo_pcps_8ms_acquisition_cc_sptr
+    galileo_pcps_8ms_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+                                 unsigned int doppler_max, long freq, long fs_in,
+                                 int samples_per_ms, int samples_per_code,
+                                 gr::msg_queue::sptr queue, bool dump,
+                                 std::string dump_filename);
 
-    pcps_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-                        unsigned int doppler_max, long freq, long fs_in,
-                        int samples_per_ms, int samples_per_code,
-                        bool bit_transition_flag,
-                        gr::msg_queue::sptr queue, bool dump,
-                        std::string dump_filename);
+
+    galileo_pcps_8ms_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+                            unsigned int doppler_max, long freq, long fs_in,
+                            int samples_per_ms, int samples_per_code,
+                            gr::msg_queue::sptr queue, bool dump,
+                            std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
             int doppler_offset);
@@ -118,7 +95,8 @@ private:
 	unsigned long int d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
     unsigned int d_num_doppler_bins;
-	gr_complex* d_fft_codes;
+    gr_complex* d_fft_code_A;
+    gr_complex* d_fft_code_B;
 	gr::fft::fft_complex* d_fft_if;
 	gr::fft::fft_complex* d_ifft;
     Gnss_Synchro *d_gnss_synchro;
@@ -128,7 +106,6 @@ private:
     float* d_magnitude;
 	float d_input_power;
 	float d_test_statistics;
-    bool d_bit_transition_flag;
     gr::msg_queue::sptr d_queue;
 	concurrent_queue<int> *d_channel_internal_queue;
 	std::ofstream d_dump_file;
@@ -142,7 +119,7 @@ public:
     /*!
      * \brief Default destructor.
      */
-    ~pcps_acquisition_cc();
+    ~galileo_pcps_8ms_acquisition_cc();
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -238,4 +215,4 @@ public:
             gr_vector_void_star &output_items);
 };
 
-#endif /* GNSS_SDR_PCPS_ACQUISITION_CC_H_*/
+#endif /* GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H_*/

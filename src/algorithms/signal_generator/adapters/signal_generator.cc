@@ -1,6 +1,6 @@
 /*!
  * \file signal_generator.cc
- * \brief Signal generator.
+ * \brief Adapter of a class that generates synthesized GNSS signal.
  * \author Marc Molina, 2013. marc.molina.pena@gmail.com
  *
  *

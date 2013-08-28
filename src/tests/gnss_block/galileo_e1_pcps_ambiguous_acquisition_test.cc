@@ -98,7 +98,7 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
 	config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
 	config->set_property("Acquisition.item_type", "gr_complex");
 	config->set_property("Acquisition.if", "0");
-	config->set_property("Acquisition.sampled_ms", "4");
+    config->set_property("Acquisition.coherent_integration_time_ms", "4");
 	config->set_property("Acquisition.dump", "false");
 	config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
 	config->set_property("Acquisition.threshold", "0.005");

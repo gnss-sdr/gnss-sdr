@@ -1,12 +1,12 @@
 /*!
- * \file galileo_e1_pcps_ambiguous_acquisition.cc
- * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
+ * \file galileo_e1_pcps_tong_ambiguous_acquisition.cc
+ * \brief Adapts a PCPS Tong acquisition block to an Acq1uisitionInterface for
  *  Galileo E1 Signals
- * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ * \author Marc Molina, 2013. marc.molina.pena(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
+#include "galileo_e1_pcps_tong_ambiguous_acquisition.h"
 #include "galileo_e1_signal_processing.h"
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
@@ -42,7 +42,7 @@
 
 using google::LogMessage;
 
-GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
+GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
@@ -72,16 +72,8 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
         }
 
-    bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
-
-    if (!bit_transition_flag_)
-        {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-        }
-    else
-        {
-            max_dwells_ = 2;
-        }
+    tong_init_val_ = configuration->property(role + ".tong_init_val", 1);
+    tong_max_val_ = configuration->property(role + ".tong_max_val", 2);
 
     dump_filename_ = configuration_->property(role + ".dump_filename",
             default_dump_filename);
@@ -102,9 +94,10 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
-                    shift_resolution_, if_, fs_in_, samples_per_ms, code_length_,
-                    bit_transition_flag_, queue_, dump_, dump_filename_);
+            acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, shift_resolution_,
+                    if_, fs_in_, samples_per_ms, code_length_, tong_init_val_,
+                    tong_max_val_, queue_, dump_, dump_filename_);
+
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
             DLOG(INFO) << "stream_to_vector("
                     << stream_to_vector_->unique_id() << ")";
@@ -119,14 +112,14 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 }
 
 
-GalileoE1PcpsAmbiguousAcquisition::~GalileoE1PcpsAmbiguousAcquisition()
+GalileoE1PcpsTongAmbiguousAcquisition::~GalileoE1PcpsTongAmbiguousAcquisition()
 {
     delete[] code_;
 }
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::set_channel(unsigned int channel)
+GalileoE1PcpsTongAmbiguousAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
     if (item_type_.compare("gr_complex") == 0)
@@ -137,7 +130,7 @@ GalileoE1PcpsAmbiguousAcquisition::set_channel(unsigned int channel)
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
+GalileoE1PcpsTongAmbiguousAcquisition::set_threshold(float threshold)
 {
 
 	float pfa = configuration_->property(role_+ boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
@@ -163,7 +156,7 @@ GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::set_doppler_max(unsigned int doppler_max)
+GalileoE1PcpsTongAmbiguousAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
 
@@ -175,18 +168,19 @@ GalileoE1PcpsAmbiguousAcquisition::set_doppler_max(unsigned int doppler_max)
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step)
+GalileoE1PcpsTongAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
     if (item_type_.compare("gr_complex") == 0)
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
+
 }
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::set_channel_queue(
+GalileoE1PcpsTongAmbiguousAcquisition::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
@@ -198,7 +192,7 @@ GalileoE1PcpsAmbiguousAcquisition::set_channel_queue(
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::set_gnss_synchro(
+GalileoE1PcpsTongAmbiguousAcquisition::set_gnss_synchro(
         Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -210,7 +204,7 @@ GalileoE1PcpsAmbiguousAcquisition::set_gnss_synchro(
 
 
 signed int
-GalileoE1PcpsAmbiguousAcquisition::mag()
+GalileoE1PcpsTongAmbiguousAcquisition::mag()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -224,7 +218,7 @@ GalileoE1PcpsAmbiguousAcquisition::mag()
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::init()
+GalileoE1PcpsTongAmbiguousAcquisition::init()
 {
     acquisition_cc_->init();
     set_local_code();
@@ -232,7 +226,7 @@ GalileoE1PcpsAmbiguousAcquisition::init()
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::set_local_code()
+GalileoE1PcpsTongAmbiguousAcquisition::set_local_code()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -259,7 +253,7 @@ GalileoE1PcpsAmbiguousAcquisition::set_local_code()
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::reset()
+GalileoE1PcpsTongAmbiguousAcquisition::reset()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -267,7 +261,8 @@ GalileoE1PcpsAmbiguousAcquisition::reset()
         }
 }
 
-float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
+
+float GalileoE1PcpsTongAmbiguousAcquisition::calculate_threshold(float pfa)
 {
 	unsigned int frequency_bins = 0;
 	for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
@@ -277,19 +272,19 @@ float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
 
 	DLOG(INFO) <<"Channel "<<channel_<<"  Pfa = "<< pfa;
 
-    unsigned int ncells = vector_length_*frequency_bins;
+	unsigned int ncells = vector_length_*frequency_bins;
 	double exponent = 1/(double)ncells;
 	double val = pow(1.0-pfa,exponent);
-    double lambda = double(vector_length_);
+	double lambda = double(vector_length_);
 	boost::math::exponential_distribution<double> mydist (lambda);
 	float threshold = (float)quantile(mydist,val);
 
-    return threshold;
+	return threshold;
 }
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
+GalileoE1PcpsTongAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -299,7 +294,7 @@ GalileoE1PcpsAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
 
 
 void
-GalileoE1PcpsAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
+GalileoE1PcpsTongAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -308,13 +303,13 @@ GalileoE1PcpsAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_left_block()
+gr::basic_block_sptr GalileoE1PcpsTongAmbiguousAcquisition::get_left_block()
 {
     return stream_to_vector_;
 }
 
 
-gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_right_block()
+gr::basic_block_sptr GalileoE1PcpsTongAmbiguousAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }

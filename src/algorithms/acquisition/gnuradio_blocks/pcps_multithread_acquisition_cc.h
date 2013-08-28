@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_cc.h
+ * \file pcps_multithread_acquisition_cc.h
  * \brief This class implements a Parallel Code Phase Search Acquisition
  *
  *  Acquisition strategy (Kay Borre book + CFAR threshold).
@@ -47,8 +47,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_ACQUISITION_CC_H_
-#define GNSS_SDR_PCPS_ACQUISITION_CC_H_
+#ifndef GNSS_SDR_PCPS_MULTITHREAD_ACQUISITION_CC_H_
+#define GNSS_SDR_PCPS_MULTITHREAD_ACQUISITION_CC_H_
 
 #include <fstream>
 #include <gnuradio/block.h>
@@ -61,12 +61,12 @@
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
 
-class pcps_acquisition_cc;
+class pcps_multithread_acquisition_cc;
 
-typedef boost::shared_ptr<pcps_acquisition_cc> pcps_acquisition_cc_sptr;
+typedef boost::shared_ptr<pcps_multithread_acquisition_cc> pcps_multithread_acquisition_cc_sptr;
 
-pcps_acquisition_cc_sptr
-pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+pcps_multithread_acquisition_cc_sptr
+pcps_make_multithread_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag,
@@ -79,11 +79,11 @@ pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class pcps_acquisition_cc: public gr::block
+class pcps_multithread_acquisition_cc: public gr::block
 {
 private:
-    friend pcps_acquisition_cc_sptr
-    pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+    friend pcps_multithread_acquisition_cc_sptr
+    pcps_make_multithread_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                              unsigned int doppler_max, long freq, long fs_in,
                              int samples_per_ms, int samples_per_code,
                              bool bit_transition_flag,
@@ -91,7 +91,7 @@ private:
                              std::string dump_filename);
 
 
-    pcps_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+    pcps_multithread_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                         unsigned int doppler_max, long freq, long fs_in,
                         int samples_per_ms, int samples_per_code,
                         bool bit_transition_flag,
@@ -142,7 +142,7 @@ public:
     /*!
      * \brief Default destructor.
      */
-    ~pcps_acquisition_cc();
+    ~pcps_multithread_acquisition_cc();
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -236,6 +236,8 @@ public:
     int general_work(int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items,
             gr_vector_void_star &output_items);
+
+    void perform_acquisition(const gr_complex* in, const unsigned int samplestamp);
 };
 
-#endif /* GNSS_SDR_PCPS_ACQUISITION_CC_H_*/
+#endif /* GNSS_SDR_PCPS_MULTITHREAD_ACQUISITION_CC_H_*/

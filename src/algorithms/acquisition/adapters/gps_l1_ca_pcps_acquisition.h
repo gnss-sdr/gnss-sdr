@@ -5,6 +5,7 @@
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -119,7 +120,6 @@ public:
     /*!
      * \brief Sets local code for GPS L1/CA PCPS acquisition algorithm.
      */
-
     void set_local_code();
 
     /*!
@@ -139,13 +139,15 @@ private:
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
-    //unsigned int satellite_;
+    unsigned int code_length_;
+    bool bit_transition_flag_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int shift_resolution_;
     unsigned int sampled_ms_;
+    unsigned int max_dwells_;
     long fs_in_;
     long if_;
     bool dump_;

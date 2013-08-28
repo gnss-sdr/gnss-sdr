@@ -1,26 +1,27 @@
 /*!
- * \file pcps_acquisition_cc.h
- * \brief This class implements a Parallel Code Phase Search Acquisition
+ * \file pcps_tong_acquisition_cc.h
+ * \brief This class implements a Parallel Code Phase Search Acquisition with
+ * Tong algorithm.
+ * \author Marc Molina, 2013. marc.molina.pena(at)gmail.com
  *
- *  Acquisition strategy (Kay Borre book + CFAR threshold).
+ *  Acquisition strategy (Kaplan book + CFAR threshold).
  *  <ol>
- *  <li> Compute the input signal power estimation
- *  <li> Doppler serial search loop
- *  <li> Perform the FFT-based circular convolution (parallel time search)
- *  <li> Record the maximum peak and the associated synchronization parameters
- *  <li> Compute the test statistics and compare to the threshold
- *  <li> Declare positive or negative acquisition using a message queue
+ *  <li> Compute the input signal power estimation.
+ *  <li> Doppler serial search loop.
+ *  <li> Perform the FFT-based circular convolution (parallel time search).
+ *  <li> Compute the tests statistics for all the cells.
+ *  <li> Accumulate the grid of tests statistics with the previous grids.
+ *  <li> Record the maximum peak and the associated synchronization parameters.
+ *  <li> Compare the maximum averaged test statistics with a threshold.
+ *  <li> If the test statistics exceeds the threshold, increment the Tong counter.
+ *  <li>   Otherwise, decrement the Tong counter.
+ *  <li> If the Tong counter is equal to a given maximum value, declare positive
+ *  <li>   acquisition. If the Tong counter is equa to zero, declare negative
+ *  <li>   acquisition. Otherwise, process the next block.
  *  </ol>
  *
- * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach", Birkha user, 2007. pp 81-84
- *
- * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
- *          </ul>
+ * Kaplan book: D.Kaplan, J.Hegarty, "Understanding GPS. Principles
+ * and Applications", Artech House, 2006, pp 223-227
  *
  * -------------------------------------------------------------------------
  *
@@ -47,8 +48,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_ACQUISITION_CC_H_
-#define GNSS_SDR_PCPS_ACQUISITION_CC_H_
+#ifndef GNSS_SDR_PCPS_TONG_acquisition_cc_H_
+#define GNSS_SDR_PCPS_TONG_acquisition_cc_H_
 
 #include <fstream>
 #include <gnuradio/block.h>
@@ -61,42 +62,37 @@
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
 
-class pcps_acquisition_cc;
+class pcps_tong_acquisition_cc;
 
-typedef boost::shared_ptr<pcps_acquisition_cc> pcps_acquisition_cc_sptr;
+typedef boost::shared_ptr<pcps_tong_acquisition_cc> pcps_tong_acquisition_cc_sptr;
 
-pcps_acquisition_cc_sptr
-pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-                         unsigned int doppler_max, long freq, long fs_in,
-                         int samples_per_ms, int samples_per_code,
-                         bool bit_transition_flag,
-                         gr::msg_queue::sptr queue, bool dump,
-                         std::string dump_filename);
+pcps_tong_acquisition_cc_sptr
+pcps_tong_make_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
+                              long freq, long fs_in, int samples_per_ms,
+                              int samples_per_code, unsigned int tong_init_val,
+                              unsigned int tong_max_val, gr::msg_queue::sptr queue,
+                              bool dump, std::string dump_filename);
 
 /*!
- * \brief This class implements a Parallel Code Phase Search Acquisition.
- *
- * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
- * Algorithm 1, for a pseudocode description of this implementation.
+ * \brief This class implements a Parallel Code Phase Search Acquisition with
+ * Tong algorithm.
  */
-class pcps_acquisition_cc: public gr::block
+class pcps_tong_acquisition_cc: public gr::block
 {
 private:
-    friend pcps_acquisition_cc_sptr
-    pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-                             unsigned int doppler_max, long freq, long fs_in,
-                             int samples_per_ms, int samples_per_code,
-                             bool bit_transition_flag,
-                             gr::msg_queue::sptr queue, bool dump,
-                             std::string dump_filename);
+    friend pcps_tong_acquisition_cc_sptr
+    pcps_tong_make_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
+                                  long freq, long fs_in, int samples_per_ms,
+                                  int samples_per_code, unsigned int tong_init_val,
+                                  unsigned int tong_max_val, gr::msg_queue::sptr queue,
+                                  bool dump, std::string dump_filename);
 
 
-    pcps_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
-                        unsigned int doppler_max, long freq, long fs_in,
-                        int samples_per_ms, int samples_per_code,
-                        bool bit_transition_flag,
-                        gr::msg_queue::sptr queue, bool dump,
-                        std::string dump_filename);
+    pcps_tong_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
+                        long freq, long fs_in, int samples_per_ms,
+                        int samples_per_code, unsigned int tong_init_val,
+                        unsigned int tong_max_val, gr::msg_queue::sptr queue,
+                        bool dump, std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
             int doppler_offset);
@@ -112,13 +108,16 @@ private:
 	unsigned int d_doppler_max;
 	unsigned int d_doppler_step;
 	unsigned int d_sampled_ms;
-    unsigned int d_max_dwells;
     unsigned int d_well_count;
+    unsigned int d_tong_count;
+    unsigned int d_tong_init_val;
+    unsigned int d_tong_max_val;
 	unsigned int d_fft_size;
 	unsigned long int d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
     unsigned int d_num_doppler_bins;
-	gr_complex* d_fft_codes;
+    gr_complex* d_fft_codes;
+    float** d_grid_data;
 	gr::fft::fft_complex* d_fft_if;
 	gr::fft::fft_complex* d_ifft;
     Gnss_Synchro *d_gnss_synchro;
@@ -128,7 +127,6 @@ private:
     float* d_magnitude;
 	float d_input_power;
 	float d_test_statistics;
-    bool d_bit_transition_flag;
     gr::msg_queue::sptr d_queue;
 	concurrent_queue<int> *d_channel_internal_queue;
 	std::ofstream d_dump_file;
@@ -142,7 +140,7 @@ public:
     /*!
      * \brief Default destructor.
      */
-    ~pcps_acquisition_cc();
+    ~pcps_tong_acquisition_cc();
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -168,7 +166,7 @@ public:
     void init();
 
     /*!
-     * \brief Sets local code for PCPS acquisition algorithm.
+     * \brief Sets local code for TONG acquisition algorithm.
      * \param code - Pointer to the PRN code.
      */
     void set_local_code(std::complex<float> * code);
@@ -193,7 +191,7 @@ public:
     }
 
     /*!
-     * \brief Set statistics threshold of PCPS algorithm.
+     * \brief Set statistics threshold of TONG algorithm.
      * \param threshold - Threshold for signal detection (check \ref Navitec2012,
      * Algorithm 1, for a definition of this threshold).
      */
@@ -238,4 +236,4 @@ public:
             gr_vector_void_star &output_items);
 };
 
-#endif /* GNSS_SDR_PCPS_ACQUISITION_CC_H_*/
+#endif /* GNSS_SDR_PCPS_TONG_acquisition_cc_H_ */

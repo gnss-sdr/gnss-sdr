@@ -98,7 +98,7 @@ void GpsL1CaPcpsAcquisitionTest::init()
     config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.sampled_ms", "1");
+    config->set_property("Acquisition.coherent_integration_time_ms", "1");
     config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.005");
@@ -219,6 +219,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test."<< std::endl;
 
     start_queue();
+
     acquisition->init();
     acquisition->reset();
 

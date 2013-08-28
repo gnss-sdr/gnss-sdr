@@ -1,11 +1,27 @@
 /*!
- * \file pcps_acquisition_cc.cc
- * \brief This class implements a Parallel Code Phase Search Acquisition
- * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
- *          </ul>
+ * \file pcps_tong_acquisition_cc.h
+ * \brief This class implements a Parallel Code Phase Search Acquisition with
+ * Tong algorithm.
+ * \author Marc Molina, 2013. marc.molina.pena(at)gmail.com
+ *
+ *  Acquisition strategy (Kaplan book + CFAR threshold).
+ *  <ol>
+ *  <li> Compute the input signal power estimation.
+ *  <li> Doppler serial search loop.
+ *  <li> Perform the FFT-based circular convolution (parallel time search).
+ *  <li> Compute the tests statistics for all the cells.
+ *  <li> Accumulate the grid of tests statistics with the previous grids.
+ *  <li> Record the maximum peak and the associated synchronization parameters.
+ *  <li> Compare the maximum averaged test statistics with a threshold.
+ *  <li> If the test statistics exceeds the threshold, increment the Tong counter.
+ *  <li>   Otherwise, decrement the Tong counter.
+ *  <li> If the Tong counter is equal to a given maximum value, declare positive
+ *  <li>   acquisition. If the Tong counter is equa to zero, declare negative
+ *  <li>   acquisition. Otherwise, process the next block.
+ *  </ol>
+ *
+ * Kaplan book: D.Kaplan, J.Hegarty, "Understanding GPS. Principles
+ * and Applications", Artech House, 2006, pp 223-227
  *
  * -------------------------------------------------------------------------
  *
@@ -32,7 +48,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "pcps_acquisition_cc.h"
+#include "pcps_tong_acquisition_cc.h"
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
 #include <gnuradio/io_signature.h>
@@ -43,29 +59,26 @@
 
 using google::LogMessage;
 
-pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
-                                 unsigned int sampled_ms, unsigned int max_dwells,
-                                 unsigned int doppler_max, long freq, long fs_in,
-                                 int samples_per_ms, int samples_per_code,
-                                 bool bit_transition_flag,
-                                 gr::msg_queue::sptr queue, bool dump,
-                                 std::string dump_filename)
+pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
+                              unsigned int sampled_ms, unsigned int doppler_max,
+                              long freq, long fs_in, int samples_per_ms,
+                              int samples_per_code, unsigned int tong_init_val,
+                              unsigned int tong_max_val, gr::msg_queue::sptr queue,
+                              bool dump, std::string dump_filename)
 {
-
-    return pcps_acquisition_cc_sptr(
-            new pcps_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                                     samples_per_code, bit_transition_flag, queue, dump, dump_filename));
+    return pcps_tong_acquisition_cc_sptr(
+            new pcps_tong_acquisition_cc(sampled_ms, doppler_max, freq, fs_in, samples_per_ms, samples_per_code,
+                                    tong_init_val, tong_max_val, queue, dump, dump_filename));
 }
 
 
-pcps_acquisition_cc::pcps_acquisition_cc(
-                         unsigned int sampled_ms, unsigned int max_dwells,
-                         unsigned int doppler_max, long freq, long fs_in,
-                         int samples_per_ms, int samples_per_code,
-                         bool bit_transition_flag,
-                         gr::msg_queue::sptr queue, bool dump,
-                         std::string dump_filename) :
-    gr::block("pcps_acquisition_cc",
+pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
+                         unsigned int sampled_ms, unsigned int doppler_max,
+                         long freq, long fs_in, int samples_per_ms,
+                         int samples_per_code, unsigned int tong_init_val,
+                         unsigned int tong_max_val, gr::msg_queue::sptr queue,
+                         bool dump, std::string dump_filename) :
+    gr::block("pcps_tong_acquisition_cc",
     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
     gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
@@ -78,18 +91,19 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_samples_per_ms = samples_per_ms;
     d_samples_per_code = samples_per_code;
     d_sampled_ms = sampled_ms;
-    d_max_dwells = max_dwells;
     d_well_count = 0;
+    d_tong_max_val = tong_max_val;
+    d_tong_init_val = tong_init_val;
+    d_tong_count = d_tong_init_val;
     d_doppler_max = doppler_max;
     d_fft_size = d_sampled_ms * d_samples_per_ms;
     d_mag = 0;
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
-    d_bit_transition_flag = bit_transition_flag;
 
     //todo: do something if posix_memalign fails
     if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
+    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(gr_complex)) == 0){};
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -103,18 +117,20 @@ pcps_acquisition_cc::pcps_acquisition_cc(
 }
 
 
-pcps_acquisition_cc::~pcps_acquisition_cc()
+pcps_tong_acquisition_cc::~pcps_tong_acquisition_cc()
 {
 
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             free(d_grid_doppler_wipeoffs[doppler_index]);
+            free(d_grid_data[doppler_index]);
         }
 
 
     if (d_num_doppler_bins > 0)
         {
             delete[] d_grid_doppler_wipeoffs;
+            delete[] d_grid_data;
         }
 
     free(d_fft_codes);
@@ -130,7 +146,7 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 }
 
 
-void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
+void pcps_tong_acquisition_cc::set_local_code(std::complex<float> * code)
 {
     memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex)*d_fft_size);
 
@@ -148,7 +164,7 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 }
 
 
-void pcps_acquisition_cc::init()
+void pcps_tong_acquisition_cc::init()
 {
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
@@ -163,32 +179,32 @@ void pcps_acquisition_cc::init()
         d_num_doppler_bins++;
     }
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
+    d_grid_data = new float*[d_num_doppler_bins];
     for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
         {
             if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
                                d_fft_size * sizeof(gr_complex)) == 0){};
 
             int doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
+
+            if (posix_memalign((void**)&(d_grid_data[doppler_index]), 16,
+                               d_fft_size * sizeof(float)) == 0){};
+
+            for (unsigned int i = 0; i < d_fft_size; i++)
+                {
+                    d_grid_data[doppler_index][i] = 0;
+                }
         }
 }
 
 
-int pcps_acquisition_cc::general_work(int noutput_items,
+int pcps_tong_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    /*
-     * By J.Arribas and L.Esteve
-     * Acquisition strategy (Kay Borre book + CFAR threshold):
-     * 1. Compute the input signal power estimation
-     * 2. Doppler serial search loop
-     * 3. Perform the FFT-based circular convolution (parallel time search)
-     * 4. Record the maximum peak and the associated synchronization parameters
-     * 5. Compute the test statistics and compare to the threshold
-     * 6. Declare positive or negative acquisition using a message queue
-     */
 
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
@@ -203,9 +219,18 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     d_gnss_synchro->Acq_doppler_hz = 0.0;
                     d_gnss_synchro->Acq_samplestamp_samples = 0;
                     d_well_count = 0;
+                    d_tong_count = d_tong_init_val;
                     d_mag = 0.0;
                     d_input_power = 0.0;
                     d_test_statistics = 0.0;
+
+                    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+                        {
+                            for (unsigned int i = 0; i < d_fft_size; i++)
+                                {
+                                    d_grid_data[doppler_index][i] = 0;
+                                }
+                        }
 
                     d_state = 1;
                 }
@@ -239,20 +264,8 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
             // 1- Compute the input signal power estimation
             volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
-
-//            for(int i =0; i < 10 ;i++){
-//                DLOG(INFO) << "d_magnitude["<< i <<"] " << d_magnitude[i];
-//            }
-
             volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
-
-//            DLOG(INFO) << "d_input_power before " << d_input_power;
-
             d_input_power /= (float)d_fft_size;
-
-//            DLOG(INFO) << "d_fft_size " << d_fft_size;
-//            DLOG(INFO) << "d_input_power " << d_input_power;
-
 
             // 2- Doppler frequency search loop
             for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
@@ -278,26 +291,25 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
                     // Search maximum
                     volk_32fc_magnitude_squared_32f_a(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-                    volk_32f_index_max_16u_a(&indext, d_magnitude, d_fft_size);
+
+                    volk_32f_s32f_multiply_32f_a(d_magnitude, d_magnitude,
+                                                1/(fft_normalization_factor*fft_normalization_factor*d_input_power),
+                                                d_fft_size);
+
+                    volk_32f_x2_add_32f_a(d_grid_data[doppler_index], d_magnitude, d_grid_data[doppler_index], d_fft_size);
+
+                    volk_32f_index_max_16u_a(&indext, d_grid_data[doppler_index], d_fft_size);
 
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
-                    magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
+                    magt = d_grid_data[doppler_index][indext];
 
                     // 4- record the maximum peak and the associated synchronization parameters
                     if (d_mag < magt)
                         {
                             d_mag = magt;
-
-                            if (d_test_statistics < (magt / d_input_power) || !d_bit_transition_flag)
-                            {
-                                d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
-                                d_gnss_synchro->Acq_doppler_hz = (double)doppler;
-                                d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
-
-                                // 5- Compute the test statistics and compare to the threshold
-                                //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
-                                d_test_statistics = d_mag / d_input_power;
-                            }
+                            d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
+                            d_gnss_synchro->Acq_doppler_hz = (double)doppler;
+                            d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
                         }
 
                     // Record results to file if required
@@ -315,32 +327,24 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                         }
                 }
 
-            if (!d_bit_transition_flag)
+            // 5- Compute the test statistics and compare to the threshold
+            //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+            d_test_statistics = d_mag;
+
+            if (d_test_statistics > d_threshold*d_well_count)
                 {
-                    if (d_test_statistics > d_threshold)
+                    d_tong_count++;
+                    if (d_tong_count == d_tong_max_val)
                         {
                             d_state = 2; // Positive acquisition
-                        }
-                    else
-                        {
-                            if (d_well_count == d_max_dwells)
-                                {
-                                    d_state = 3; // Negative acquisition
-                                }
                         }
                 }
             else
                 {
-                    if (d_well_count == d_max_dwells)
+                    d_tong_count--;
+                    if (d_tong_count == 0)
                         {
-                            if (d_test_statistics > d_threshold)
-                                {
-                                    d_state = 2; // Positive acquisition
-                                }
-                            else
-                                {
-                                    d_state = 3; // Negative acquisition
-                                }
+                            d_state = 3; // Negative acquisition
                         }
                 }
 

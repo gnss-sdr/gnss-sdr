@@ -54,9 +54,13 @@
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
 #include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
+#include "galileo_e1_pcps_8ms_ambiguous_acquisition.h"
+#include "galileo_e1_pcps_tong_ambiguous_acquisition.h"
+#include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_pll_optim_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
@@ -332,14 +336,39 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             block = new GpsL1CaPcpsAssistedAcquisition(configuration, role, in_streams,
                     out_streams, queue);
         }
-    else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
+    else if (implementation.compare("GPS_L1_CA_PCPS_Tong_Acquisition") == 0)
         {
-            block = new GalileoE1PcpsAmbiguousAcquisition(configuration, role, in_streams,
+            block = new GpsL1CaPcpsTongAcquisition(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+    else if (implementation.compare("GPS_L1_CA_PCPS_Multithread_Acquisition") == 0)
+        {
+            block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
         {
             block = new GpsL1CaPcpsAcquisitionFineDoppler(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+    else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
+        {
+            block = new GalileoE1PcpsAmbiguousAcquisition(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+    else if (implementation.compare("Galileo_E1_PCPS_8ms_Ambiguous_Acquisition") == 0)
+        {
+            block = new GalileoE1Pcps8msAmbiguousAcquisition(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+    else if (implementation.compare("Galileo_E1_PCPS_Tong_Ambiguous_Acquisition") == 0)
+        {
+            block = new GalileoE1PcpsTongAmbiguousAcquisition(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+    else if (implementation.compare("Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition") == 0)
+        {
+            block = new GalileoE1PcpsCccwsrAmbiguousAcquisition(configuration, role, in_streams,
                     out_streams, queue);
         }
 

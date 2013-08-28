@@ -4,7 +4,6 @@
  *  Galileo E1 Signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
- *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
@@ -42,8 +41,8 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
- *  for Galileo E1 Signals
+ * \brief This class adapts a PCPS acquisition block to an
+ *  AcquisitionInterface for Galileo E1 Signals
  */
 class GalileoE1PcpsAmbiguousAcquisition: public AcquisitionInterface
 {
@@ -116,7 +115,6 @@ public:
     /*!
      * \brief Sets local code for Galileo E1 PCPS acquisition algorithm.
      */
-
     void set_local_code();
 
     /*!
@@ -136,13 +134,15 @@ private:
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
-    //unsigned int satellite_;
+    unsigned int code_length_;
+    bool bit_transition_flag_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int shift_resolution_;
     unsigned int sampled_ms_;
+    unsigned int max_dwells_;
     long fs_in_;
     long if_;
     bool dump_;

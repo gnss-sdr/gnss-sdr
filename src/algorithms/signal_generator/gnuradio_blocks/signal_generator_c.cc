@@ -1,5 +1,5 @@
 /*!
- * \file signal_generator_c.h
+ * \file signal_generator_c.cc
  * \brief GNU Radio source block that generates synthesized GNSS signal.
  * \author Marc Molina, 2013. marc.molina.pena@gmail.com
  *
@@ -27,9 +27,9 @@
  *
  * -------------------------------------------------------------------------
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+//#ifdef HAVE_CONFIG_H
+//#include "config.h"
+//#endif
 
 #include "signal_generator_c.h"
 #include <gnuradio/io_signature.h>
@@ -73,7 +73,7 @@ signal_generator_c::signal_generator_c (std::vector<std::string> system, const s
   fs_in_(fs_in),
   num_sats_(PRN.size()),
   vector_length_(vector_length),
-  BW_BB_(BW_BB*(float)fs_in/2)
+  BW_BB_(BW_BB*(float)fs_in/2.0)
 {
     init();
     generate_codes();
@@ -122,14 +122,14 @@ void signal_generator_c::init()
 //    for (unsigned int i = 0; i < num_sats_; i++)
 //    {
 //        std::cout << "Sat " << i << ": " << std::endl;
-//        std::cout << "System " << system_[i] << ": " << std::endl;
+//        std::cout << "  System " << system_[i] << ": " << std::endl;
 //        std::cout << "  PRN: " << PRN_[i] << std::endl;
 //        std::cout << "  CN0: " << CN0_dB_[i] << std::endl;
 //        std::cout << "  Doppler: " << doppler_Hz_[i] << std::endl;
 //        std::cout << "  Delay: " << delay_chips_[i] << std::endl;
-//        std::cout << "Samples per code = " << samples_per_code_[i] << std::endl;
-//        std::cout << "codes per vector = " << num_of_codes_per_vector_[i] << std::endl;
-//        std::cout << "data_bit_duration = " << data_bit_duration_ms_[i] << std::endl;
+//        std::cout << "  Samples per code = " << samples_per_code_[i] << std::endl;
+//        std::cout << "  codes per vector = " << num_of_codes_per_vector_[i] << std::endl;
+//        std::cout << "  data_bit_duration = " << data_bit_duration_ms_[i] << std::endl;
 //    }
 }
 
@@ -152,9 +152,12 @@ void signal_generator_c::generate_codes()
                                     (int)GPS_L1_CA_CODE_LENGTH_CHIPS-delay_chips_[sat]);
 
                     // Obtain the desired CN0 assuming that Pn = 1.
-                    for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
+                    if (noise_flag_)
                         {
-                            code[i] *= sqrt(pow(10,CN0_dB_[sat]/10)/BW_BB_);
+                            for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
+                                {
+                                    code[i] *= sqrt(pow(10,CN0_dB_[sat]/10)/BW_BB_);
+                                }
                         }
 
                     // Concatenate "num_of_codes_per_vector_" codes
@@ -175,9 +178,12 @@ void signal_generator_c::generate_codes()
                                     (int)Galileo_E1_B_CODE_LENGTH_CHIPS-delay_chips_[sat]);
 
                     // Obtain the desired CN0 assuming that Pn = 1.
-                    for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
+                    if (noise_flag_)
                         {
-                            code[i] *= sqrt(pow(10,CN0_dB_[sat]/10)/BW_BB_/2);
+                            for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
+                                {
+                                    code[i] *= sqrt(pow(10,CN0_dB_[sat]/10)/BW_BB_/2);
+                                }
                         }
 
                     // Concatenate "num_of_codes_per_vector_" codes
@@ -197,9 +203,12 @@ void signal_generator_c::generate_codes()
                                                         (int)Galileo_E1_B_CODE_LENGTH_CHIPS-delay_chips_[sat], true);
 
                     // Obtain the desired CN0 assuming that Pn = 1.
-                    for (unsigned int i = 0; i < vector_length_; i++)
+                    if (noise_flag_)
                         {
-                            sampled_code_pilot_[sat][i] *= sqrt(pow(10,CN0_dB_[sat]/10)/BW_BB_/2);
+                            for (unsigned int i = 0; i < vector_length_; i++)
+                                {
+                                    sampled_code_pilot_[sat][i] *= sqrt(pow(10,CN0_dB_[sat]/10)/BW_BB_/2);
+                                }
                         }
                 }
         }
@@ -257,20 +266,19 @@ signal_generator_c::general_work (int noutput_items,
 
                     for (i = 0; i < num_of_codes_per_vector_[sat]; i++)
                         {
-                            gr_complex prev_data_bit = current_data_bits_[sat];
+                            for (k = 0; k < delay_samples; k++)
+                                {
+                                    out[out_idx] += sampled_code_data_[sat][out_idx]
+                                                    * current_data_bits_[sat]
+                                                    * complex_phase_[out_idx];
+                                    out_idx++;
+                                }
+
                             if (ms_counter_[sat] == 0 && data_flag_)
                                  {
                                      // New random data bit
                                      current_data_bits_[sat] = gr_complex((rand()%2) == 0 ? 1 : -1, 0);
                                  }
-
-                            for (k = 0; k < delay_samples; k++)
-                                {
-                                    out[out_idx] += sampled_code_data_[sat][out_idx]
-                                                    * prev_data_bit
-                                                    * complex_phase_[out_idx];
-                                    out_idx++;
-                                }
 
                             for (k = delay_samples; k < samples_per_code_[sat]; k++)
                                 {
@@ -292,19 +300,18 @@ signal_generator_c::general_work (int noutput_items,
 
                     for (i = 0; i < num_of_codes_per_vector_[sat]; i++)
                         {
-                            gr_complex prev_data_bit = current_data_bits_[sat];
-                            if (ms_counter_[sat] == 0 && data_flag_)
-                                {
-                                    // New random data bit
-                                    current_data_bits_[sat] = gr_complex((rand()%2) == 0 ? -1 : 1, 0);
-                                }
-
                             for (k = 0; k < delay_samples; k++)
                                 {
-                                    out[out_idx] += (sampled_code_data_[sat][out_idx] * prev_data_bit
+                                    out[out_idx] += (sampled_code_data_[sat][out_idx] * current_data_bits_[sat]
                                                     -  sampled_code_pilot_[sat][out_idx])
                                                     * complex_phase_[out_idx];
                                     out_idx++;
+                                }
+
+                            if (ms_counter_[sat] == 0 && data_flag_)
+                                {
+                                    // New random data bit
+                                    current_data_bits_[sat] = gr_complex((rand()%2) == 0 ? 1 : -1, 0);
                                 }
 
                             for (k = delay_samples; k < samples_per_code_[sat]; k++)

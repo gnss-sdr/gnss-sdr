@@ -69,10 +69,20 @@
 #include "gnss_block/file_output_filter_test.cc"
 #include "gnss_block/file_signal_source_test.cc"
 #include "gnss_block/fir_filter_test.cc"
-#include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
-#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc"
-//#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"//
+
+//#include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
+#include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
+#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
+#include "gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
+//#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc"
+//#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
+#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc"
+#include "gnss_block/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
+#include "gnss_block/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
+#include "gnss_block/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
+
 #include "gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc"
+
 #include "gnss_block/gnss_block_factory_test.cc"
 #include "gnuradio_block/gnss_sdr_valve_test.cc"
 #include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"

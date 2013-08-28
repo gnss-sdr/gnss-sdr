@@ -1,10 +1,8 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition_fine_doppler.h
- * \brief Adapts a PCPS acquisition block with fine Doppler estimation to an AcquisitionInterface for
- *  GPS L1 C/A signals
- * \authors <ul>
- *          <li> Javier Arribas, 2013. jarribas(at)cttc.es
- *          </ul> *
+ * \file galileo_e1_pcps_8ms_ambiguous_acquisition.h
+ * \brief Adapts a PCPS 8ms acquisition block to an
+ * AcquisitionInterface for Galileo E1 Signals
+ * \author Marc Molina, 2013. marc.molina.pena(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -31,30 +29,29 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H_
-#define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H_
+#ifndef GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
+#define GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_
 
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
-#include "pcps_acquisition_fine_doppler_cc.h"
+#include "galileo_pcps_8ms_acquisition_cc.h"
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
-
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class Adapts a PCPS acquisition block with fine Doppler estimation to an AcquisitionInterface for
- *  GPS L1 C/A signals
+ * \brief Adapts a PCPS 8ms acquisition block to an
+ * AcquisitionInterface for Galileo E1 Signals
  */
-class GpsL1CaPcpsAcquisitionFineDoppler: public AcquisitionInterface
+class GalileoE1Pcps8msAmbiguousAcquisition: public AcquisitionInterface
 {
 public:
-	GpsL1CaPcpsAcquisitionFineDoppler(ConfigurationInterface* configuration,
+    GalileoE1Pcps8msAmbiguousAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 
-    virtual ~GpsL1CaPcpsAcquisitionFineDoppler();
+    virtual ~GalileoE1Pcps8msAmbiguousAcquisition();
 
     std::string role()
     {
@@ -62,21 +59,21 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L1_CA_PCPS_Assisted_Acquisition"
+     * \brief Returns "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition"
      */
     std::string implementation()
     {
-        return "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler";
+        return "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition";
     }
     size_t item_size()
     {
         return item_size_;
     }
 
-    void connect(boost::shared_ptr<gr::top_block> top_block);
-    void disconnect(boost::shared_ptr<gr::top_block> top_block);
-    boost::shared_ptr<gr::basic_block> get_left_block();
-    boost::shared_ptr<gr::basic_block> get_right_block();
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -115,6 +112,9 @@ public:
      */
     void init();
 
+    /*!
+     * \brief Sets local code for Galileo E1 PCPS acquisition algorithm.
+     */
     void set_local_code();
 
     /*!
@@ -128,17 +128,20 @@ public:
     void reset();
 
 private:
-    pcps_acquisition_fine_doppler_cc_sptr acquisition_cc_;
+    ConfigurationInterface* configuration_;
+    galileo_pcps_8ms_acquisition_cc_sptr acquisition_cc_;
+    gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;
+    unsigned int code_length_;
     unsigned int channel_;
     float threshold_;
-    int doppler_max_;
+    unsigned int doppler_max_;
     unsigned int doppler_step_;
-    int doppler_min_;
+    unsigned int shift_resolution_;
     unsigned int sampled_ms_;
-    int max_dwells_;
+    unsigned int max_dwells_;
     long fs_in_;
     long if_;
     bool dump_;
@@ -150,6 +153,7 @@ private:
     unsigned int out_streams_;
     boost::shared_ptr<gr::msg_queue> queue_;
     concurrent_queue<int> *channel_internal_queue_;
+    float calculate_threshold(float pfa);
 };
 
-#endif /* GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H_ */
+#endif /* GNSS_SDR_GALILEO_E1_PCPS_8MS_AMBIGUOUS_ACQUISITION_H_ */

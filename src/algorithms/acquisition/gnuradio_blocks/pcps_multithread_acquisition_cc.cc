@@ -1,5 +1,5 @@
 /*!
- * \file pcps_acquisition_cc.cc
+ * \file pcps_multithread_acquisition_cc.cc
  * \brief This class implements a Parallel Code Phase Search Acquisition
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
@@ -32,7 +32,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "pcps_acquisition_cc.h"
+#include "pcps_multithread_acquisition_cc.h"
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
 #include <gnuradio/io_signature.h>
@@ -43,7 +43,7 @@
 
 using google::LogMessage;
 
-pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
+pcps_multithread_acquisition_cc_sptr pcps_make_multithread_acquisition_cc(
                                  unsigned int sampled_ms, unsigned int max_dwells,
                                  unsigned int doppler_max, long freq, long fs_in,
                                  int samples_per_ms, int samples_per_code,
@@ -52,20 +52,20 @@ pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
                                  std::string dump_filename)
 {
 
-    return pcps_acquisition_cc_sptr(
-            new pcps_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
+    return pcps_multithread_acquisition_cc_sptr(
+            new pcps_multithread_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
                                      samples_per_code, bit_transition_flag, queue, dump, dump_filename));
 }
 
 
-pcps_acquisition_cc::pcps_acquisition_cc(
+pcps_multithread_acquisition_cc::pcps_multithread_acquisition_cc(
                          unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag,
                          gr::msg_queue::sptr queue, bool dump,
                          std::string dump_filename) :
-    gr::block("pcps_acquisition_cc",
+    gr::block("pcps_multithread_acquisition_cc",
     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
     gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
@@ -89,7 +89,7 @@ pcps_acquisition_cc::pcps_acquisition_cc(
 
     //todo: do something if posix_memalign fails
     if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
+    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(gr_complex)) == 0){};
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -103,7 +103,7 @@ pcps_acquisition_cc::pcps_acquisition_cc(
 }
 
 
-pcps_acquisition_cc::~pcps_acquisition_cc()
+pcps_multithread_acquisition_cc::~pcps_multithread_acquisition_cc()
 {
 
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
@@ -130,7 +130,7 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 }
 
 
-void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
+void pcps_multithread_acquisition_cc::set_local_code(std::complex<float> * code)
 {
     memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex)*d_fft_size);
 
@@ -147,8 +147,130 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
         }
 }
 
+void pcps_multithread_acquisition_cc::perform_acquisition(const gr_complex* in, unsigned int samplestamp)
+{
+    // initialize acquisition algorithm
+    int doppler;
+    unsigned int indext = 0;
+    float magt = 0.0;
+    float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+    d_input_power = 0.0;
+    d_mag = 0.0;
 
-void pcps_acquisition_cc::init()
+    d_well_count++;
+
+    DLOG(INFO) << "Channel: " << d_channel
+            << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
+            << " ,sample stamp: " << d_sample_counter << ", threshold: "
+            << d_threshold << ", doppler_max: " << d_doppler_max
+            << ", doppler_step: " << d_doppler_step;
+
+    // 1- Compute the input signal power estimation
+    volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
+    volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
+    d_input_power /= (float)d_fft_size;
+
+    // 2- Doppler frequency search loop
+    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+        {
+            // doppler search steps
+
+            doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+
+            volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in,
+                        d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
+
+            // 3- Perform the FFT-based convolution  (parallel time search)
+            // Compute the FFT of the carrier wiped--off incoming signal
+            d_fft_if->execute();
+
+            // Multiply carrier wiped--off, Fourier transformed incoming signal
+            // with the local FFT'd code reference using SIMD operations with VOLK library
+            volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+                        d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
+
+            // compute the inverse FFT
+            d_ifft->execute();
+
+            // Search maximum
+            volk_32fc_magnitude_squared_32f_a(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
+            volk_32f_index_max_16u_a(&indext, d_magnitude, d_fft_size);
+
+            // Normalize the maximum value to correct the scale factor introduced by FFTW
+            magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
+
+            // 4- record the maximum peak and the associated synchronization parameters
+            if (d_mag < magt)
+                {
+                    d_mag = magt;
+
+                    if (d_test_statistics < (magt / d_input_power) || !d_bit_transition_flag)
+                    {
+                        d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
+                        d_gnss_synchro->Acq_doppler_hz = (double)doppler;
+                        d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
+
+                        // 5- Compute the test statistics and compare to the threshold
+                        //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
+                        d_test_statistics = d_mag / d_input_power;
+                    }
+                }
+
+            // Record results to file if required
+            if (d_dump)
+                {
+                    std::stringstream filename;
+                    std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
+                    filename.str("");
+                    filename << "../data/test_statistics_" << d_gnss_synchro->System
+                             <<"_" << d_gnss_synchro->Signal << "_sat_"
+                             << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
+                    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
+                    d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
+                    d_dump_file.close();
+                }
+        }
+
+    if (!d_bit_transition_flag)
+        {
+            if (d_test_statistics > d_threshold)
+                {
+                    d_state = 3; // Positive acquisition
+                }
+            else
+                {
+                    if (d_well_count == d_max_dwells)
+                        {
+                            d_state = 4; // Negative acquisition
+                        }
+                    else
+                        {
+                            d_state = 1; // Process next block
+                        }
+                }
+        }
+    else
+        {
+            if (d_well_count == d_max_dwells)
+                {
+                    if (d_test_statistics > d_threshold)
+                        {
+                            d_state = 3; // Positive acquisition
+                        }
+                    else
+                        {
+                            d_state = 4; // Negative acquisition
+                        }
+                }
+            else
+                {
+                    d_state = 1; // Process next block
+                }
+        }
+}
+
+
+void pcps_multithread_acquisition_cc::init()
 {
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
@@ -175,20 +297,10 @@ void pcps_acquisition_cc::init()
 }
 
 
-int pcps_acquisition_cc::general_work(int noutput_items,
+int pcps_multithread_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    /*
-     * By J.Arribas and L.Esteve
-     * Acquisition strategy (Kay Borre book + CFAR threshold):
-     * 1. Compute the input signal power estimation
-     * 2. Doppler serial search loop
-     * 3. Perform the FFT-based circular convolution (parallel time search)
-     * 4. Record the maximum peak and the associated synchronization parameters
-     * 5. Compute the test statistics and compare to the threshold
-     * 6. Declare positive or negative acquisition using a message queue
-     */
 
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
@@ -218,132 +330,10 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
     case 1:
         {
-            // initialize acquisition algorithm
-            int doppler;
-            unsigned int indext = 0;
-            float magt = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
-            float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
-            d_input_power = 0.0;
-            d_mag = 0.0;
-
             d_sample_counter += d_fft_size; // sample counter
-
-            d_well_count++;
-
-            DLOG(INFO) << "Channel: " << d_channel
-                    << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
-                    << " ,sample stamp: " << d_sample_counter << ", threshold: "
-                    << d_threshold << ", doppler_max: " << d_doppler_max
-                    << ", doppler_step: " << d_doppler_step;
-
-            // 1- Compute the input signal power estimation
-            volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
-
-//            for(int i =0; i < 10 ;i++){
-//                DLOG(INFO) << "d_magnitude["<< i <<"] " << d_magnitude[i];
-//            }
-
-            volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
-
-//            DLOG(INFO) << "d_input_power before " << d_input_power;
-
-            d_input_power /= (float)d_fft_size;
-
-//            DLOG(INFO) << "d_fft_size " << d_fft_size;
-//            DLOG(INFO) << "d_input_power " << d_input_power;
-
-
-            // 2- Doppler frequency search loop
-            for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
-                {
-                    // doppler search steps
-
-                    doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
-
-                    volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in,
-                                d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
-
-                    // 3- Perform the FFT-based convolution  (parallel time search)
-                    // Compute the FFT of the carrier wiped--off incoming signal
-                    d_fft_if->execute();
-
-                    // Multiply carrier wiped--off, Fourier transformed incoming signal
-                    // with the local FFT'd code reference using SIMD operations with VOLK library
-                    volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
-                                d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
-
-                    // compute the inverse FFT
-                    d_ifft->execute();
-
-                    // Search maximum
-                    volk_32fc_magnitude_squared_32f_a(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-                    volk_32f_index_max_16u_a(&indext, d_magnitude, d_fft_size);
-
-                    // Normalize the maximum value to correct the scale factor introduced by FFTW
-                    magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
-
-                    // 4- record the maximum peak and the associated synchronization parameters
-                    if (d_mag < magt)
-                        {
-                            d_mag = magt;
-
-                            if (d_test_statistics < (magt / d_input_power) || !d_bit_transition_flag)
-                            {
-                                d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
-                                d_gnss_synchro->Acq_doppler_hz = (double)doppler;
-                                d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
-
-                                // 5- Compute the test statistics and compare to the threshold
-                                //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
-                                d_test_statistics = d_mag / d_input_power;
-                            }
-                        }
-
-                    // Record results to file if required
-                    if (d_dump)
-                        {
-                            std::stringstream filename;
-                            std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
-                            filename.str("");
-                            filename << "../data/test_statistics_" << d_gnss_synchro->System
-                                     <<"_" << d_gnss_synchro->Signal << "_sat_"
-                                     << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
-                            d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                            d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
-                            d_dump_file.close();
-                        }
-                }
-
-            if (!d_bit_transition_flag)
-                {
-                    if (d_test_statistics > d_threshold)
-                        {
-                            d_state = 2; // Positive acquisition
-                        }
-                    else
-                        {
-                            if (d_well_count == d_max_dwells)
-                                {
-                                    d_state = 3; // Negative acquisition
-                                }
-                        }
-                }
-            else
-                {
-                    if (d_well_count == d_max_dwells)
-                        {
-                            if (d_test_statistics > d_threshold)
-                                {
-                                    d_state = 2; // Positive acquisition
-                                }
-                            else
-                                {
-                                    d_state = 3; // Negative acquisition
-                                }
-                        }
-                }
-
+            boost::thread(&pcps_multithread_acquisition_cc::perform_acquisition, this, in, d_sample_counter);
+            d_state = 2;
             consume_each(1);
 
             break;
@@ -351,7 +341,14 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
     case 2:
         {
-            // 6.1- Declare positive acquisition using a message queue
+            d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
+            consume_each(ninput_items[0]);
+            break;
+        }
+    case 3:
+        {
+
+            // Declare positive acquisition using a message queue
             DLOG(INFO) << "positive acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;
@@ -374,9 +371,9 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             break;
         }
 
-    case 3:
+    case 4:
         {
-            // 6.2- Declare negative acquisition using a message queue
+            // Declare negative acquisition using a message queue
             DLOG(INFO) << "negative acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;

@@ -17,9 +17,13 @@
 #
 
 set(ACQ_GR_BLOCKS_SOURCES 
-	pcps_acquisition_cc.cc 
+        pcps_acquisition_cc.cc
+        pcps_multithread_acquisition_cc.cc
 	pcps_assisted_acquisition_cc.cc
 	pcps_acquisition_fine_doppler_cc.cc
+        pcps_tong_acquisition_cc.cc
+        pcps_cccwsr_acquisition_cc.cc
+        galileo_pcps_8ms_acquisition_cc.cc
 )
 
 include_directories(

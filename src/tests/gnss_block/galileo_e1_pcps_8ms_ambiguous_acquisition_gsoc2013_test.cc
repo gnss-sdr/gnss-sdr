@@ -475,7 +475,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                 EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
                 if (message == 1)
                     {
-                        EXPECT_EQ(1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                        EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                     }
 
             }

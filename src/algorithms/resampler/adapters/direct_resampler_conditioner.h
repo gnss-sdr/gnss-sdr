@@ -74,7 +74,7 @@ private:
     unsigned int out_stream_;
     std::string item_type_;
     size_t item_size_;
-    long samples_;
+    unsigned long long samples_;
     bool dump_;
     std::string dump_filename_;
     double sample_freq_in_;

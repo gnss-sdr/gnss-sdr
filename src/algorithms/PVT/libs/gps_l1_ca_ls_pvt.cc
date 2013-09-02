@@ -216,21 +216,12 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
     try
     {
             //-- compute the Dilution Of Precision values
-            arma::mat Q;
-            Q       = arma::inv(arma::htrans(A)*A);
-            d_GDOP  = sqrt(arma::trace(Q));                 // Geometric DOP
-            d_PDOP  = sqrt(Q(0,0) + Q(1,1) + Q(2,2));       // PDOP
-            d_HDOP  = sqrt(Q(0,0) + Q(1,1));                // HDOP
-            d_VDOP  = sqrt(Q(2,2));                         // VDOP
-            d_TDOP  = sqrt(Q(3,3));                         // TDOP
+            //arma::mat Q;
+            d_Q       = arma::inv(arma::htrans(A)*A);
     }
-    catch(std::exception e)
+    catch(std::exception& e)
     {
-            d_GDOP  = -1;
-            d_PDOP  = -1;
-            d_HDOP  = -1;
-            d_VDOP  = -1;
-            d_TDOP  = -1;
+            d_Q=arma::zeros(4,4);
     }
     return pos;
 }
@@ -352,6 +343,46 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             DLOG(INFO) << "(new)Position at " << boost::posix_time::to_simple_string(p_time)
                 << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
                 << " [deg], Height= " << d_height_m << " [m]" << std::endl;
+
+            // ###### Compute DOPs ########
+
+            // 1- Rotation matrix from ECEF coordinates to ENU coordinates
+            // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
+
+			arma::mat F=arma::zeros(3,3);
+			F(0,0)=-sin(GPS_TWO_PI*(d_longitude_d/360.0));
+			F(0,1)=-sin(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
+			F(0,2)=cos(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
+
+			F(1,0)=cos((GPS_TWO_PI*d_longitude_d)/360.0);
+			F(1,1)=-sin((GPS_TWO_PI*d_latitude_d)/360.0)*sin((GPS_TWO_PI*d_longitude_d)/360.0);
+			F(1,2)=cos((GPS_TWO_PI*d_latitude_d/360.0))*sin((GPS_TWO_PI*d_longitude_d)/360.0);
+
+			F(2,0)=0;
+			F(2,1)=cos((GPS_TWO_PI*d_latitude_d)/360.0);
+			F(2,2)=sin((GPS_TWO_PI*d_latitude_d/360.0));
+
+			// 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
+
+			arma::mat Q_ECEF=d_Q.submat( 0, 0, 2, 2);
+			arma::mat DOP_ENU=arma::zeros(3,3);
+
+		    try
+		    {
+		    	DOP_ENU=arma::htrans(F)*Q_ECEF*F;
+				d_GDOP  = sqrt(arma::trace(DOP_ENU));                 // Geometric DOP
+				d_PDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1) + DOP_ENU(2,2));       // PDOP
+				d_HDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1));                // HDOP
+				d_VDOP  = sqrt(DOP_ENU(2,2));                         // VDOP
+				d_TDOP  = sqrt(d_Q(3,3));	// TDOP
+		    }catch(std::exception& ex)
+		    {
+				d_GDOP  = -1;                 // Geometric DOP
+				d_PDOP  = -1;       // PDOP
+				d_HDOP  = -1;               // HDOP
+				d_VDOP  = -1;                        // VDOP
+				d_TDOP  = -1;	// TDOP
+		    }
 
             // ######## LOG FILE #########
             if(d_flag_dump_enabled == true)

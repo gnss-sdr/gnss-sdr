@@ -106,6 +106,7 @@ public:
 
     // DOP estimations
 
+    arma::mat d_Q;
     double d_GDOP;
     double d_PDOP;
     double d_HDOP;

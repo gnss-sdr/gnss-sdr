@@ -42,7 +42,7 @@
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include <gperftools/profiler.h>
+//#include <gperftools/profiler.h>  // ToDo: detect presence of gperftools
 
 using google::LogMessage;
 

@@ -69,7 +69,7 @@ int gnss_sdr_valve::work (int noutput_items,
             delete cmf;
             return -1;	// Done!
         }
-    unsigned long long n = std::min(d_nitems - d_ncopied_items, noutput_items);
+    unsigned long long n = std::min(d_nitems - d_ncopied_items, (long long unsigned int)noutput_items);
     if (n == 0) return 0;
     memcpy (output_items[0], input_items[0], n * input_signature()->sizeof_stream_item(0));
     d_ncopied_items += n;

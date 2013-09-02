@@ -45,7 +45,7 @@ private:
 public:
 
 	// valid flag
-    bool valid;
+    //bool valid;
 
     /*Ionospheric correction*/
     /*Az*/
@@ -60,16 +60,12 @@ public:
     bool Region4_flag_5;	// Ionospheric Disturbance Flag for region 4
     bool Region5_flag_5;	// Ionospheric Disturbance Flag for region 5
 
-    // Ionospheric parameters GPS
-    /*double d_alpha0;      //!< Coefficient 0 of a cubic equation representing the amplitude of the vertical delay [s]
-    double d_alpha1;      //!< Coefficient 1 of a cubic equation representing the amplitude of the vertical delay [s/semi-circle]
-    double d_alpha2;      //!< Coefficient 2 of a cubic equation representing the amplitude of the vertical delay [s(semi-circle)^2]
-    double d_alpha3;      //!< Coefficient 3 of a cubic equation representing the amplitude of the vertical delay [s(semi-circle)^3]
-    double d_beta0;       //!< Coefficient 0 of a cubic equation representing the period of the model [s]
-    double d_beta1;       //!< Coefficient 1 of a cubic equation representing the period of the model [s/semi-circle]
-    double d_beta2;       //!< Coefficient 2 of a cubic equation representing the period of the model [s(semi-circle)^2]
-    double d_beta3;       //!< Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]*/
-    /*!
+    /*from page 6 (UTC) to have a timestamp*/
+	double t0t_6;//UTC data reference Time of Week [s]
+	double WNot_6; //UTC data reference Week number [week]
+
+
+     /*!
      * Default constructor
      */
     Galileo_Iono();

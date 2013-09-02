@@ -318,7 +318,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 							if (d_nav.have_new_iono_and_GST()==true)
 							{
 								Galileo_Iono iono=d_nav.get_iono(); //notice that the read operation will clear the valid flag
-								std::cout<<"New Galileo IONO model received for SV "<<d_satellite.get_PRN()<<std::endl;
+								std::cout<<"New Galileo IONO model (and UTC) received for SV "<<d_satellite.get_PRN()<<std::endl;
 								d_iono_queue->push(iono);
 							}
 							if (d_nav.have_new_utc_model()==true)

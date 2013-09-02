@@ -42,7 +42,7 @@ Galileo_Utc_Model::Galileo_Utc_Model()
 	WN_LSF_6 = 0;
 	DN_6 = 0;
 	Delta_tLSF_6 = 0;
-
+	flag_utc_model = false;
 }
 
 double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)

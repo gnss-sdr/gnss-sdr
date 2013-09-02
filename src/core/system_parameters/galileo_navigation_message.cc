@@ -62,7 +62,7 @@ void Galileo_Navigation_Message::reset()
 	 flag_almanac_4 = false;      // flag indicating that almanac 4/4 (word 10) have been received
 
 
-
+	 IOD_ephemeris = 0;
 	 /*Word type 1: Ephemeris (1/4)*/
 	 IOD_nav_1 = 0;
 	 t0e_1 = 0;
@@ -444,11 +444,7 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 						//std::cout<<"Data j k ephemeris" << endl << Data_jk_ephemeris << endl;
 
 						page_jk_decoder(Data_jk_ephemeris.c_str()); // Corresponding to ephemeris_decode.m in matlab code
-
-						/*if (have_new_ephemeris()==true){
-							std::cout<<"All ephemeris have been received" << std::endl;
-						}*/
-
+/*this block is just to try some function, it must be eliminated
 						double t_GST;
 						if ((have_new_iono_and_GST() == true) and (flag_all_ephemeris==true))
 						{
@@ -465,7 +461,7 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 							t_UTC = GST_to_UTC_time(t_GST, WN_5);
 							std::cout << "UTC [sec]: " << t_UTC << std::endl;
 						}
-
+*/
 					}else{
 						// CRC wrong.. discard frame
 						std::cout<<"CRC error!"<<std::endl;
@@ -491,19 +487,23 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 
 bool Galileo_Navigation_Message::have_new_ephemeris() //Check if we have a new ephemeris stored in the galileo navigation class
 {
-	/*std::cout << "flag ephememeris 1: " << flag_ephemeris_1 <<std::endl;
-	std::cout << "flag ephememeris 2: " << flag_ephemeris_2 <<std::endl;
-	std::cout << "flag ephememeris 3: " << flag_ephemeris_3 <<std::endl;
-	std::cout << "flag ephememeris 4: " << flag_ephemeris_4 <<std::endl;*/
 	if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_ephemeris_4 == true))
 	{
-		std::cout<< "All ephemeris have been received"<< std::endl;
-		flag_ephemeris_1 = false;// clear the flag
-		flag_ephemeris_2 = false;// clear the flag
-		flag_ephemeris_3 = false;// clear the flag
-		flag_ephemeris_4 = false;// clear the flag
-		flag_all_ephemeris = true;
-		return true;
+		//if all ephemeris pages have the same IOD, then they belong to the same block
+			if ((IOD_nav_1 == IOD_nav_2) and (IOD_nav_3 == IOD_nav_4) and (IOD_nav_1 == IOD_nav_3))
+			{
+				std::cout<< "Ephemeris (1, 2, 3, 4) have been received and belong to the same batch"<< std::endl;
+				flag_ephemeris_1 = false;// clear the flag
+				flag_ephemeris_2 = false;// clear the flag
+				flag_ephemeris_3 = false;// clear the flag
+				flag_ephemeris_4 = false;// clear the flag
+				flag_all_ephemeris = true;
+				IOD_ephemeris = IOD_nav_1;
+				std::cout << "Batch number: "<< IOD_ephemeris << std::endl;
+					return true;
+			}else{
+				return false;
+			}
 	 }
 	else
 		return false;
@@ -512,7 +512,7 @@ bool Galileo_Navigation_Message::have_new_ephemeris() //Check if we have a new e
 
 bool Galileo_Navigation_Message::have_new_iono_and_GST() //Check if we have a new iono data set stored in the galileo navigation class
 {
-	if (flag_iono_and_GST == true)
+	if ((flag_iono_and_GST == true) and (flag_utc_model == true)) //the condition on flag_utc_model is added to have a time stamp for iono
 	{
 		flag_iono_and_GST=false; // clear the flag
 		return true;
@@ -553,6 +553,8 @@ Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
 {
 
 	Galileo_Ephemeris ephemeris;
+	ephemeris.flag_all_ephemeris = flag_all_ephemeris;
+	ephemeris.IOD_ephemeris = IOD_ephemeris;
 	ephemeris.SV_ID_PRN_4 = SV_ID_PRN_4;
 	ephemeris.M0_1 = M0_1;		// Mean anomaly at reference time [semi-circles]
 	ephemeris.delta_n_3 = delta_n_3;		// Mean motion difference from computed value  [semi-circles/sec]
@@ -600,6 +602,8 @@ Galileo_Iono Galileo_Navigation_Message::get_iono()
 	 iono.Region4_flag_5 = Region4_flag_5;	// Ionospheric Disturbance Flag for region 4
 	 iono.Region5_flag_5 = Region5_flag_5;	// Ionospheric Disturbance Flag for region 5
 
+	 iono.t0t_6 = t0t_6;
+     iono.WNot_6 = WNot_6;
 	return iono;
 }
 
@@ -617,7 +621,7 @@ Galileo_Utc_Model Galileo_Navigation_Message::get_utc_model()
 	utc_model.WN_LSF_6 = WN_LSF_6;
 	utc_model.DN_6 = DN_6;
 	utc_model.Delta_tLSF_6 = Delta_tLSF_6;
-
+    utc_model.flag_utc_model = flag_utc_model;
 	/*GST*/
 	//utc_model.WN_5 = WN_5; //Week number
 	//utc_model.TOW_5 = WN_5; //Time of Week

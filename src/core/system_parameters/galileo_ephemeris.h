@@ -51,6 +51,9 @@ public:
 
 	/*Galileo ephemeris are 16 parameters and here are reported following the ICD order, paragraph 5.1.1.
 	The number in the name after underscore (_1, _2, _3 and so on) refers to the page were we can find that parameter */
+	bool flag_all_ephemeris;
+	int IOD_ephemeris;
+	int IOD_nav_1;
 
 	int SV_ID_PRN_4;
 	double M0_1;		// Mean anomaly at reference time [semi-circles]

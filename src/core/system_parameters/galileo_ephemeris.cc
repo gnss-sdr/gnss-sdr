@@ -35,6 +35,10 @@
 
 Galileo_Ephemeris::Galileo_Ephemeris()
 {
+	flag_all_ephemeris = false;
+	IOD_ephemeris = 0;
+	IOD_nav_1 = 0;
+
 	 SV_ID_PRN_4 = 0;
 	 M0_1 = 0;		// Mean anomaly at reference time [semi-circles]
 	 delta_n_3 = 0;		// Mean motion difference from computed value  [semi-circles/sec]

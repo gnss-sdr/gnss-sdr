@@ -88,6 +88,7 @@ public:
 	bool flag_almanac_3;      // flag indicating that almanac 3/4 (word 9) have been received
 	bool flag_almanac_4;      // flag indicating that almanac 4/4 (word 10) have been received
 
+	int IOD_ephemeris;
 	/*Word type 1: Ephemeris (1/4)*/
 		int IOD_nav_1;  // IOD_nav page 1
 		double t0e_1; 	// Ephemeris reference time [s]

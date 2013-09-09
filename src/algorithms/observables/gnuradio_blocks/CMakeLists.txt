@@ -16,7 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(OBS_GR_BLOCKS_SOURCES gps_l1_ca_observables_cc.cc )
+set(OBS_GR_BLOCKS_SOURCES 
+	gps_l1_ca_observables_cc.cc 
+	galileo_e1_observables_cc.cc
+)
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)

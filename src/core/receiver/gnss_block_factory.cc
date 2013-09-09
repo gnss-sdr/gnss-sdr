@@ -70,6 +70,7 @@
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "galileo_e1b_telemetry_decoder.h"
 #include "gps_l1_ca_observables.h"
+#include "galileo_e1_observables.h"
 #include "gps_l1_ca_pvt.h"
 
 #if GN3S_DRIVER
@@ -148,6 +149,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetObservables(
         ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "GPS_L1_CA_Observables";
+
     std::string implementation = configuration->property(
             "Observables.implementation", default_implementation);
     DLOG(INFO) << "Getting Observables with implementation "
@@ -421,6 +423,12 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             block = new GpsL1CaObservables(configuration, role, in_streams,
                     out_streams, queue);
         }
+
+    else if (implementation.compare("Galileo_E1B_Observables") == 0)
+                {
+                   block = new GalileoE1Observables(configuration, role, in_streams,
+                            out_streams, queue);
+                }
 
     // PVT -------------------------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_PVT") == 0)

@@ -72,6 +72,7 @@
 #include "gps_l1_ca_observables.h"
 #include "galileo_e1_observables.h"
 #include "gps_l1_ca_pvt.h"
+#include "galileo_e1_pvt.h"
 
 #if GN3S_DRIVER
 	#include "gn3s_signal_source.h"
@@ -436,7 +437,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             block = new GpsL1CaPvt(configuration, role, in_streams,
                     out_streams, queue);
         }
-
+    else if (implementation.compare("GALILEO_E1_PVT") == 0)
+        {
+            block = new GalileoE1Pvt(configuration, role, in_streams,
+                    out_streams, queue);
+        }
     // OUTPUT FILTERS --------------------------------------------------------------
     else if (implementation.compare("Null_Sink_Output_Filter") == 0)
         {

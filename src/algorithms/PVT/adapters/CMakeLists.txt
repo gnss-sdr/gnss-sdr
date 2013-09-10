@@ -16,7 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(PVT_ADAPTER_SOURCES gps_l1_ca_pvt.cc)
+set(PVT_ADAPTER_SOURCES 
+	gps_l1_ca_pvt.cc
+	galileo_e1_pvt.cc
+)
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)

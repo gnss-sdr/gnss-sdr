@@ -18,6 +18,7 @@
 
 set(PVT_LIB_SOURCES 
      gps_l1_ca_ls_pvt.cc
+     galileo_e1_ls_pvt.cc
      kml_printer.cc
      rinex_printer.cc
      nmea_printer.cc    

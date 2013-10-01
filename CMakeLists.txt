@@ -71,6 +71,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 
+########################################################################
+# Find OpenCL installation
+########################################################################
+find_package(OpenCL)
+
 
 ################################################################################
 # Googletest - http://code.google.com/p/googletest/
@@ -519,4 +524,5 @@ add_custom_target(uninstall
 # Add subdirectories (in order of deps)
 ########################################################################
 add_subdirectory(src)
+
 

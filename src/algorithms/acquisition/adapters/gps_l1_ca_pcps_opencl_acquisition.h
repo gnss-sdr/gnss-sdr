@@ -1,6 +1,6 @@
 /*!
- * \file gps_l1_ca_pcps_multithread_acquisition.h
- * \brief Adapts a multithread PCPS acquisition block to an
+ * \file gps_l1_ca_pcps_opencl_acquisition.h
+ * \brief Adapts an OpenCL PCPS acquisition block to an
  *  AcquisitionInterface for GPS L1 C/A signals
  * \author Marc Molina, 2013. marc.molina.pena(at)gmail.com
  *
@@ -29,12 +29,12 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_PCPS_MULTITHREAD_ACQUISITION_H_
-#define GNSS_SDR_GPS_L1_CA_PCPS_MULTITHREAD_ACQUISITION_H_
+#ifndef GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
+#define GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_
 
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
-#include "pcps_multithread_acquisition_cc.h"
+#include "pcps_opencl_acquisition_cc.h"
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 
@@ -42,17 +42,17 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class adapts a multithread PCPS acquisition block to an
+ * \brief This class adapts an OpenCL PCPS acquisition block to an
  *  AcquisitionInterface for GPS L1 C/A signals
  */
-class GpsL1CaPcpsMultithreadAcquisition: public AcquisitionInterface
+class GpsL1CaPcpsOpenClAcquisition: public AcquisitionInterface
 {
 public:
-    GpsL1CaPcpsMultithreadAcquisition(ConfigurationInterface* configuration,
+    GpsL1CaPcpsOpenClAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 
-    virtual ~GpsL1CaPcpsMultithreadAcquisition();
+    virtual ~GpsL1CaPcpsOpenClAcquisition();
 
     std::string role()
     {
@@ -60,11 +60,11 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L1_CA_PCPS_Multithread_Acquisition"
+     * \brief Returns "GPS_L1_CA_PCPS_OpenCl_Acquisition"
      */
     std::string implementation()
     {
-        return "GPS_L1_CA_PCPS_Multithread_Acquisition";
+        return "GPS_L1_CA_PCPS_OpenCl_Acquisition";
     }
     size_t item_size()
     {
@@ -130,7 +130,7 @@ public:
 
 private:
     ConfigurationInterface* configuration_;
-    pcps_multithread_acquisition_cc_sptr acquisition_cc_;
+    pcps_opencl_acquisition_cc_sptr acquisition_cc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     size_t item_size_;
     std::string item_type_;
@@ -159,4 +159,4 @@ private:
     float calculate_threshold(float pfa);
 };
 
-#endif /* GNSS_SDR_GPS_L1_CA_PCPS_MULTITHREAD_ACQUISITION_H_ */
+#endif /* GNSS_SDR_GPS_L1_CA_PCPS_OPENCL_ACQUISITION_H_ */

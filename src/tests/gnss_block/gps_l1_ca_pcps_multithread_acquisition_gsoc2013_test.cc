@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition_gsoc2013_test.cc
+ * \file gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc
  * \brief  This class implements an acquisition test for
  * GpsL1CaPcpsMultithreadAcquisition class.
  * \author Marc Molina, 2013. marc.molina.pena(at)gmail.com
@@ -205,7 +205,7 @@ void GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test::config_2()
     std::string signal = "1C";
     signal.copy(gnss_synchro.Signal,2,0);
 
-    integration_time_ms = 4;
+    integration_time_ms = 1;
     fs_in = 4e6;
 
     expected_delay_chips = 600;
@@ -237,13 +237,13 @@ void GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test::config_2()
     config->set_property("SignalSource.doppler_Hz_1", "1000");
     config->set_property("SignalSource.delay_chips_1", "100");
 
-    config->set_property("SignalSource.system_2", "E");
+    config->set_property("SignalSource.system_2", "G");
     config->set_property("SignalSource.PRN_2", "21");
     config->set_property("SignalSource.CN0_dB_2", "44");
     config->set_property("SignalSource.doppler_Hz_2", "2000");
     config->set_property("SignalSource.delay_chips_2", "200");
 
-    config->set_property("SignalSource.system_3", "E");
+    config->set_property("SignalSource.system_3", "G");
     config->set_property("SignalSource.PRN_3", "22");
     config->set_property("SignalSource.CN0_dB_3", "44");
     config->set_property("SignalSource.doppler_Hz_3", "3000");
@@ -278,10 +278,10 @@ void GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test::config_2()
                          std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Multithread_Acquisition");
-    config->set_property("Acquisition.pfa", "1e-1");
+    config->set_property("Acquisition.pfa", "0.1");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
-    config->set_property("Acquisition.bit_transition_flag", "true");
+    config->set_property("Acquisition.bit_transition_flag", "false");
     config->set_property("Acquisition.dump", "false");
 }
 

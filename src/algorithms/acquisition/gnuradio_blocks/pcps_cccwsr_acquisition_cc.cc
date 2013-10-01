@@ -60,7 +60,6 @@ pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
                     samples_per_ms, samples_per_code, queue, dump, dump_filename));
 }
 
-
 pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
                     unsigned int sampled_ms, unsigned int max_dwells,
                     unsigned int doppler_max, long freq, long fs_in,
@@ -108,18 +107,14 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
     d_dump_filename = dump_filename;
 }
 
-
 pcps_cccwsr_acquisition_cc::~pcps_cccwsr_acquisition_cc()
 {
-
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            free(d_grid_doppler_wipeoffs[doppler_index]);
-        }
-
-
     if (d_num_doppler_bins > 0)
         {
+            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+                {
+                    free(d_grid_doppler_wipeoffs[i]);
+                }
             delete[] d_grid_doppler_wipeoffs;
         }
 
@@ -140,10 +135,10 @@ pcps_cccwsr_acquisition_cc::~pcps_cccwsr_acquisition_cc()
         }
 }
 
-
 void pcps_cccwsr_acquisition_cc::set_local_code(std::complex<float> * code_data,
                                            std::complex<float> * code_pilot)
 {
+    // Data code (E1B)
     memcpy(d_fft_if->get_inbuf(), code_data, sizeof(gr_complex)*d_fft_size);
 
     d_fft_if->execute(); // We need the FFT of local code
@@ -158,6 +153,7 @@ void pcps_cccwsr_acquisition_cc::set_local_code(std::complex<float> * code_data,
             volk_32fc_conjugate_32fc_a(d_fft_code_data,d_fft_if->get_outbuf(),d_fft_size);
         }
 
+    // Pilot code (E1C)
     memcpy(d_fft_if->get_inbuf(), code_pilot, sizeof(gr_complex)*d_fft_size);
 
     d_fft_if->execute(); // We need the FFT of local code
@@ -173,7 +169,6 @@ void pcps_cccwsr_acquisition_cc::set_local_code(std::complex<float> * code_data,
         }
 }
 
-
 void pcps_cccwsr_acquisition_cc::init()
 {
     d_gnss_synchro->Acq_delay_samples = 0.0;
@@ -182,12 +177,16 @@ void pcps_cccwsr_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    // Create the carrier Doppler wipeoff signals
-    d_num_doppler_bins = 0;//floor(2*std::abs((int)d_doppler_max)/d_doppler_step);
-    for (int doppler = (int)(-d_doppler_max); doppler <= (int)d_doppler_max; doppler += d_doppler_step)
+    // Count the number of bins
+    d_num_doppler_bins = 0;
+    for (int doppler = (int)(-d_doppler_max);
+         doppler <= (int)d_doppler_max;
+         doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
     }
+
+    // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
         {
@@ -199,7 +198,6 @@ void pcps_cccwsr_acquisition_cc::init()
                                  d_freq + doppler, d_fs_in, d_fft_size);
         }
 }
-
 
 int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -274,21 +272,29 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                     d_fft_if->execute();
 
                     // Multiply carrier wiped--off, Fourier transformed incoming signal
-                    // with the local FFT'd code reference {data+j*pilot} using SIMD operations with VOLK library
+                    // with the local FFT'd data code reference (E1B) using SIMD operations
+                    // with VOLK library
                     volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
                                 d_fft_if->get_outbuf(), d_fft_code_data, d_fft_size);
 
                     // compute the inverse FFT
                     d_ifft->execute();
 
+                    // Copy the result of the correlation between wiped--off signal and data code in
+                    // d_data_correlation.
                     memcpy(d_data_correlation, d_ifft->get_outbuf(), sizeof(gr_complex)*d_fft_size);
 
-
+                    // Multiply carrier wiped--off, Fourier transformed incoming signal
+                    // with the local FFT'd pilot code reference (E1C) using SIMD operations
+                    // with VOLK library
                     volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
                                 d_fft_if->get_outbuf(), d_fft_code_pilot, d_fft_size);
 
+                    // Compute the inverse FFT
                     d_ifft->execute();
 
+                    // Copy the result of the correlation between wiped--off signal and pilot code in
+                    // d_data_correlation.
                     memcpy(d_pilot_correlation, d_ifft->get_outbuf(), sizeof(gr_complex)*d_fft_size);
 
                     for (unsigned int i = 0; i < d_fft_size; i++)
@@ -354,13 +360,12 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                 {
                     d_state = 2; // Positive acquisition
                 }
-            else
+            else if (d_well_count == d_max_dwells)
                 {
-                    if (d_well_count == d_max_dwells)
-                        {
-                            d_state = 3; // Negative acquisition
-                        }
+                    d_state = 3; // Negative acquisition
                 }
+
+            consume_each(1);
 
             break;
         }

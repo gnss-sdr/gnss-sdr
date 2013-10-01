@@ -71,7 +71,6 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
                                     tong_init_val, tong_max_val, queue, dump, dump_filename));
 }
 
-
 pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
                          unsigned int sampled_ms, unsigned int doppler_max,
                          long freq, long fs_in, int samples_per_ms,
@@ -103,7 +102,7 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
 
     //todo: do something if posix_memalign fails
     if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(gr_complex)) == 0){};
+    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -116,19 +115,15 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     d_dump_filename = dump_filename;
 }
 
-
 pcps_tong_acquisition_cc::~pcps_tong_acquisition_cc()
 {
-
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            free(d_grid_doppler_wipeoffs[doppler_index]);
-            free(d_grid_data[doppler_index]);
-        }
-
-
     if (d_num_doppler_bins > 0)
         {
+            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+                {
+                    free(d_grid_doppler_wipeoffs[i]);
+                    free(d_grid_data[i]);
+                }
             delete[] d_grid_doppler_wipeoffs;
             delete[] d_grid_data;
         }
@@ -144,7 +139,6 @@ pcps_tong_acquisition_cc::~pcps_tong_acquisition_cc()
             d_dump_file.close();
         }
 }
-
 
 void pcps_tong_acquisition_cc::set_local_code(std::complex<float> * code)
 {
@@ -163,7 +157,6 @@ void pcps_tong_acquisition_cc::set_local_code(std::complex<float> * code)
         }
 }
 
-
 void pcps_tong_acquisition_cc::init()
 {
     d_gnss_synchro->Acq_delay_samples = 0.0;
@@ -172,12 +165,16 @@ void pcps_tong_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    // Create the carrier Doppler wipeoff signals
-    d_num_doppler_bins = 0;//floor(2*std::abs((int)d_doppler_max)/d_doppler_step);
-    for (int doppler = (int)(-d_doppler_max); doppler <= (int)d_doppler_max; doppler += d_doppler_step)
+    // Count the number of bins
+    d_num_doppler_bins = 0;
+    for (int doppler = (int)(-d_doppler_max);
+         doppler <= (int)d_doppler_max;
+         doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
     }
+
+    // Create the carrier Doppler wipeoff signals and allocate data grid.
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     d_grid_data = new float*[d_num_doppler_bins];
     for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
@@ -199,7 +196,6 @@ void pcps_tong_acquisition_cc::init()
                 }
         }
 }
-
 
 int pcps_tong_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -289,18 +285,20 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                     // compute the inverse FFT
                     d_ifft->execute();
 
-                    // Search maximum
+                    // Compute magnitude
                     volk_32fc_magnitude_squared_32f_a(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
 
+                    // Compute vector of test statistics corresponding to current doppler index.
                     volk_32f_s32f_multiply_32f_a(d_magnitude, d_magnitude,
                                                 1/(fft_normalization_factor*fft_normalization_factor*d_input_power),
                                                 d_fft_size);
 
+                    // Accumulate test statistics in d_grid_data.
                     volk_32f_x2_add_32f_a(d_grid_data[doppler_index], d_magnitude, d_grid_data[doppler_index], d_fft_size);
 
+                    // Search maximum
                     volk_32f_index_max_16u_a(&indext, d_grid_data[doppler_index], d_fft_size);
 
-                    // Normalize the maximum value to correct the scale factor introduced by FFTW
                     magt = d_grid_data[doppler_index][indext];
 
                     // 4- record the maximum peak and the associated synchronization parameters
@@ -328,7 +326,6 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                 }
 
             // 5- Compute the test statistics and compare to the threshold
-            //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
             d_test_statistics = d_mag;
 
             if (d_test_statistics > d_threshold*d_well_count)

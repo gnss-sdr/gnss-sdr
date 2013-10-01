@@ -54,6 +54,7 @@
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
 #include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l1_ca_pcps_multithread_acquisition.h"
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
@@ -73,6 +74,10 @@
 #include "galileo_e1_observables.h"
 #include "gps_l1_ca_pvt.h"
 #include "galileo_e1_pvt.h"
+
+#if OPENCL
+    #include "gps_l1_ca_pcps_opencl_acquisition.h"
+#endif
 
 #if GN3S_DRIVER
 	#include "gn3s_signal_source.h"
@@ -346,9 +351,18 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         }
     else if (implementation.compare("GPS_L1_CA_PCPS_Multithread_Acquisition") == 0)
         {
-            block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
+            block = new GpsL1CaPcpsMultithreadAcquisition(configuration, role, in_streams,
                     out_streams, queue);
         }
+
+#if OPENCL
+    else if (implementation.compare("GPS_L1_CA_PCPS_OpenCl_Acquisition") == 0)
+        {
+            block = new GpsL1CaPcpsOpenClAcquisition(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+#endif
+
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
         {
             block = new GpsL1CaPcpsAcquisitionFineDoppler(configuration, role, in_streams,

@@ -1,7 +1,7 @@
 /*!
- * \file galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc
+ * \file gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc
  * \brief  This class implements an acquisition test for
- * GalileoE1PcpsAmbiguousAcquisition class.
+ * GpsL1CaPcpsOpenClAcquisition class.
  * \author Marc Molina, 2013. marc.molina.pena(at)gmail.com
  *
  *
@@ -43,23 +43,23 @@
 #include <gnuradio/blocks/null_sink.h>
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
+#include "configuration_interface.h"
 #include "gnss_synchro.h"
-#include "galileo_e1_pcps_ambiguous_acquisition.h"
+#include "gps_l1_ca_pcps_opencl_acquisition.h"
 #include "signal_generator.h"
 //#include "signal_generator.cc"
 #include "signal_generator_c.h"
 //#include "signal_generator_c.cc"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
-#include "boost/shared_ptr.hpp"
 #include "gnss_sdr_valve.h"
+#include "boost/shared_ptr.hpp"
 
 
-
-class GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test: public ::testing::Test
+class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test: public ::testing::Test
 {
 protected:
-    GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test()
+    GpsL1CaPcpsOpenClAcquisitionGSoC2013Test()
     {
         queue = gr::msg_queue::make(0);
         top_block = gr::make_top_block("Acquisition test");
@@ -68,7 +68,7 @@ protected:
         message = 0;
     }
 
-    ~GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test()
+    ~GpsL1CaPcpsOpenClAcquisitionGSoC2013Test()
     {
     }
 
@@ -82,7 +82,7 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    GalileoE1PcpsAmbiguousAcquisition *acquisition;
+    GpsL1CaPcpsOpenClAcquisition *acquisition;
     InMemoryConfiguration* config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -114,8 +114,7 @@ protected:
     double Pfa_a;
 };
 
-
-void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::init()
+void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::init()
 {
     message = 0;
     realization_counter = 0;
@@ -130,14 +129,14 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::init()
     Pfa_a = 0;
 }
 
-void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
+void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::config_1()
 {
     gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = 'E';
+    gnss_synchro.System = 'G';
     std::string signal = "1C";
     signal.copy(gnss_synchro.Signal,2,0);
 
-    integration_time_ms = 4;
+    integration_time_ms = 1;
     fs_in = 4e6;
 
     expected_delay_chips = 600;
@@ -157,13 +156,11 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
 
     config->set_property("SignalSource.num_satellites", "1");
 
-    config->set_property("SignalSource.system_0", "E");
+    config->set_property("SignalSource.system_0", "G");
     config->set_property("SignalSource.PRN_0", "10");
     config->set_property("SignalSource.CN0_dB_0", "44");
-    config->set_property("SignalSource.doppler_Hz_0",
-                         std::to_string(expected_doppler_hz));
-    config->set_property("SignalSource.delay_chips_0",
-                         std::to_string(expected_delay_chips));
+    config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
+    config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
 
     config->set_property("SignalSource.noise_flag", "false");
     config->set_property("SignalSource.data_flag", "false");
@@ -193,22 +190,22 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
     config->set_property("Acquisition.coherent_integration_time_ms",
                          std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
-    config->set_property("Acquisition.bit_transition_flag","false");
-    config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
-    config->set_property("Acquisition.threshold", "0.3");
+    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_OpenCl_Acquisition");
+    config->set_property("Acquisition.threshold", "0.8");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
+    config->set_property("Acquisition.bit_transition_flag", "false");
     config->set_property("Acquisition.dump", "false");
 }
 
-void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
+void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::config_2()
 {
     gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = 'E';
+    gnss_synchro.System = 'G';
     std::string signal = "1C";
     signal.copy(gnss_synchro.Signal,2,0);
 
-    integration_time_ms = 4;
+    integration_time_ms = 1;
     fs_in = 4e6;
 
     expected_delay_chips = 600;
@@ -228,27 +225,25 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
 
     config->set_property("SignalSource.num_satellites", "4");
 
-    config->set_property("SignalSource.system_0", "E");
+    config->set_property("SignalSource.system_0", "G");
     config->set_property("SignalSource.PRN_0", "10");
     config->set_property("SignalSource.CN0_dB_0", "44");
-    config->set_property("SignalSource.doppler_Hz_0",
-                         std::to_string(expected_doppler_hz));
-    config->set_property("SignalSource.delay_chips_0",
-                         std::to_string(expected_delay_chips));
+    config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
+    config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
 
-    config->set_property("SignalSource.system_1", "E");
+    config->set_property("SignalSource.system_1", "G");
     config->set_property("SignalSource.PRN_1", "15");
     config->set_property("SignalSource.CN0_dB_1", "44");
     config->set_property("SignalSource.doppler_Hz_1", "1000");
     config->set_property("SignalSource.delay_chips_1", "100");
 
-    config->set_property("SignalSource.system_2", "E");
+    config->set_property("SignalSource.system_2", "G");
     config->set_property("SignalSource.PRN_2", "21");
     config->set_property("SignalSource.CN0_dB_2", "44");
     config->set_property("SignalSource.doppler_Hz_2", "2000");
     config->set_property("SignalSource.delay_chips_2", "200");
 
-    config->set_property("SignalSource.system_3", "E");
+    config->set_property("SignalSource.system_3", "G");
     config->set_property("SignalSource.PRN_3", "22");
     config->set_property("SignalSource.CN0_dB_3", "44");
     config->set_property("SignalSource.doppler_Hz_3", "3000");
@@ -282,21 +277,21 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
     config->set_property("Acquisition.coherent_integration_time_ms",
                          std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
-    config->set_property("Acquisition.bit_transition_flag","false");
-    config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
+    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_OpenCl_Acquisition");
     config->set_property("Acquisition.pfa", "0.1");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
+    config->set_property("Acquisition.bit_transition_flag", "false");
     config->set_property("Acquisition.dump", "false");
 }
 
-void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::start_queue()
+void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
-    ch_thread = boost::thread(&GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::wait_message, this);
+    ch_thread = boost::thread(&GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::wait_message, this);
 }
 
-void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::wait_message()
+void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::wait_message()
 {
     struct timeval tv;
     long long int begin = 0;
@@ -320,7 +315,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::wait_message()
         }
 }
 
-void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::process_message()
+void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::process_message()
 {
     if (message == 1)
         {
@@ -337,6 +332,9 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::process_message()
                 {
                     correct_estimation_counter++;
                 }
+
+//            std::cout << "Acq delay samples = " << (double)gnss_synchro.Acq_delay_samples << std::endl;
+//            std::cout << "Acq doppler Hz = " << (double)gnss_synchro.Acq_doppler_hz << std::endl;
         }
 
     realization_counter++;
@@ -361,20 +359,20 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::process_message()
         }
 }
 
-void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::stop_queue()
+void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::stop_queue()
 {
     stop = true;
 }
 
-TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, Instantiate)
+TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsOpenClAcquisition(config, "Acquisition", 1, 1, queue);
     delete acquisition;
     delete config;
 }
 
-TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
+TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ConnectAndRun)
 {
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
     struct timeval tv;
@@ -382,8 +380,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
     long long int end = 0;
 
     config_1();
-
-    acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsOpenClAcquisition(config, "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -399,7 +396,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
         end = tv.tv_sec *1e6 + tv.tv_usec;
-    }) << "Failure running he top_block."<< std::endl;
+    }) << "Failure running the top_block."<< std::endl;
 
     std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 
@@ -407,11 +404,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
     delete config;
 }
 
-TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
+TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
 
-    acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsOpenClAcquisition(config, "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -482,6 +479,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                     {
                         EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                     }
+
             }
             else if (i == 1)
             {
@@ -493,11 +491,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     delete config;
 }
 
-TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
+TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {
     config_2();
 
-    acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsOpenClAcquisition(config, "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);

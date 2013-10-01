@@ -40,6 +40,7 @@
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
+#include <sys/time.h>
 
 using google::LogMessage;
 
@@ -56,7 +57,6 @@ pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
             new pcps_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
                                      samples_per_code, bit_transition_flag, queue, dump, dump_filename));
 }
-
 
 pcps_acquisition_cc::pcps_acquisition_cc(
                          unsigned int sampled_ms, unsigned int max_dwells,
@@ -102,18 +102,14 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_dump_filename = dump_filename;
 }
 
-
 pcps_acquisition_cc::~pcps_acquisition_cc()
 {
-
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            free(d_grid_doppler_wipeoffs[doppler_index]);
-        }
-
-
     if (d_num_doppler_bins > 0)
         {
+            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+                {
+                    free(d_grid_doppler_wipeoffs[i]);
+                }
             delete[] d_grid_doppler_wipeoffs;
         }
 
@@ -128,7 +124,6 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
             d_dump_file.close();
         }
 }
-
 
 void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 {
@@ -147,7 +142,6 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
         }
 }
 
-
 void pcps_acquisition_cc::init()
 {
     d_gnss_synchro->Acq_delay_samples = 0.0;
@@ -156,12 +150,16 @@ void pcps_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    // Create the carrier Doppler wipeoff signals
-    d_num_doppler_bins = 0;//floor(2*std::abs((int)d_doppler_max)/d_doppler_step);
-    for (int doppler = (int)(-d_doppler_max); doppler <= (int)d_doppler_max; doppler += d_doppler_step)
+    // Count the number of bins
+    d_num_doppler_bins = 0;
+    for (int doppler = (int)(-d_doppler_max);
+         doppler <= (int)d_doppler_max;
+         doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
     }
+
+    // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
         {
@@ -174,13 +172,12 @@ void pcps_acquisition_cc::init()
         }
 }
 
-
 int pcps_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
     /*
-     * By J.Arribas and L.Esteve
+     * By J.Arribas, L.Esteve and M.Molina
      * Acquisition strategy (Kay Borre book + CFAR threshold):
      * 1. Compute the input signal power estimation
      * 2. Doppler serial search loop
@@ -239,20 +236,8 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
             // 1- Compute the input signal power estimation
             volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
-
-//            for(int i =0; i < 10 ;i++){
-//                DLOG(INFO) << "d_magnitude["<< i <<"] " << d_magnitude[i];
-//            }
-
             volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
-
-//            DLOG(INFO) << "d_input_power before " << d_input_power;
-
             d_input_power /= (float)d_fft_size;
-
-//            DLOG(INFO) << "d_fft_size " << d_fft_size;
-//            DLOG(INFO) << "d_input_power " << d_input_power;
-
 
             // 2- Doppler frequency search loop
             for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
@@ -288,7 +273,14 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                         {
                             d_mag = magt;
 
-                            if (d_test_statistics < (magt / d_input_power) || !d_bit_transition_flag)
+                            // In case that d_bit_transition_flag = true, we compare the potentially
+                            // new maximum test statistics (d_mag/d_input_power) with the value in
+                            // d_test_statistics. When the second dwell is being processed, the value
+                            // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
+                            // the maximum test statistics in the previous dwell is greater than
+                            // current d_mag/d_input_power). Note that d_test_statistics is not
+                            // restarted between consecutive dwells in multidwell operation.
+                            if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
                             {
                                 d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
                                 d_gnss_synchro->Acq_doppler_hz = (double)doppler;
@@ -321,17 +313,14 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                         {
                             d_state = 2; // Positive acquisition
                         }
-                    else
+                    else if (d_well_count == d_max_dwells)
                         {
-                            if (d_well_count == d_max_dwells)
-                                {
-                                    d_state = 3; // Negative acquisition
-                                }
+                            d_state = 3; // Negative acquisition
                         }
                 }
             else
                 {
-                    if (d_well_count == d_max_dwells)
+                    if (d_well_count == d_max_dwells) // d_max_dwells = 2
                         {
                             if (d_test_statistics > d_threshold)
                                 {

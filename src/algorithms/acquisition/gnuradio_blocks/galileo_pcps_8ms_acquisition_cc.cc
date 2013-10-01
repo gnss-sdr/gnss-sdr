@@ -53,7 +53,6 @@ galileo_pcps_8ms_acquisition_cc_sptr galileo_pcps_8ms_make_acquisition_cc(
                                      samples_per_code, queue, dump, dump_filename));
 }
 
-
 galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
                          unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
@@ -84,7 +83,7 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
     //todo: do something if posix_memalign fails
     if (posix_memalign((void**)&d_fft_code_A, 16, d_fft_size * sizeof(gr_complex)) == 0){};
     if (posix_memalign((void**)&d_fft_code_B, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(gr_complex)) == 0){};
+    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -97,18 +96,14 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
     d_dump_filename = dump_filename;
 }
 
-
 galileo_pcps_8ms_acquisition_cc::~galileo_pcps_8ms_acquisition_cc()
 {
-
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            free(d_grid_doppler_wipeoffs[doppler_index]);
-        }
-
-
     if (d_num_doppler_bins > 0)
         {
+            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+                {
+                    free(d_grid_doppler_wipeoffs[i]);
+                }
             delete[] d_grid_doppler_wipeoffs;
         }
 
@@ -125,10 +120,10 @@ galileo_pcps_8ms_acquisition_cc::~galileo_pcps_8ms_acquisition_cc()
         }
 }
 
-
 void galileo_pcps_8ms_acquisition_cc::set_local_code(std::complex<float> * code)
 {
-    memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex)*d_fft_size);
+   // code A: two replicas of a primary code
+   memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex)*d_fft_size);
 
     d_fft_if->execute(); // We need the FFT of local code
 
@@ -142,7 +137,7 @@ void galileo_pcps_8ms_acquisition_cc::set_local_code(std::complex<float> * code)
             volk_32fc_conjugate_32fc_a(d_fft_code_A,d_fft_if->get_outbuf(),d_fft_size);
         }
 
-
+    // code B: two replicas of a primary code; the second replica is inverted.
     volk_32fc_s32fc_multiply_32fc_a(&(d_fft_if->get_inbuf())[d_samples_per_code],
                                     &code[d_samples_per_code], gr_complex(-1,0),
                                     d_samples_per_code);
@@ -160,7 +155,6 @@ void galileo_pcps_8ms_acquisition_cc::set_local_code(std::complex<float> * code)
         }
 }
 
-
 void galileo_pcps_8ms_acquisition_cc::init()
 {
     d_gnss_synchro->Acq_delay_samples = 0.0;
@@ -169,12 +163,16 @@ void galileo_pcps_8ms_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    // Create the carrier Doppler wipeoff signals
-    d_num_doppler_bins = 0;//floor(2*std::abs((int)d_doppler_max)/d_doppler_step);
-    for (int doppler = (int)(-d_doppler_max); doppler <= (int)d_doppler_max; doppler += d_doppler_step)
+    // Count the number of bins
+    d_num_doppler_bins = 0;
+    for (int doppler = (int)(-d_doppler_max);
+         doppler <= (int)d_doppler_max;
+         doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
     }
+
+    // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
         {
@@ -186,7 +184,6 @@ void galileo_pcps_8ms_acquisition_cc::init()
                                  d_freq + doppler, d_fs_in, d_fft_size);
         }
 }
-
 
 int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -264,7 +261,8 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                     d_fft_if->execute();
 
                     // Multiply carrier wiped--off, Fourier transformed incoming signal
-                    // with the local FFT'd code reference using SIMD operations with VOLK library
+                    // with the local FFT'd code A reference using SIMD operations with
+                    // VOLK library
                     volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
                                 d_fft_if->get_outbuf(), d_fft_code_A, d_fft_size);
 
@@ -279,7 +277,8 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                     magt_A = d_magnitude[indext_A] / (fft_normalization_factor * fft_normalization_factor);
 
                     // Multiply carrier wiped--off, Fourier transformed incoming signal
-                    // with the local FFT'd code reference using SIMD operations with VOLK library
+                    // with the local FFT'd code B reference using SIMD operations with
+                    // VOLK library
                     volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
                                 d_fft_if->get_outbuf(), d_fft_code_B, d_fft_size);
 
@@ -293,6 +292,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
                     magt_B = d_magnitude[indext_B] / (fft_normalization_factor * fft_normalization_factor);
 
+                    // Take the greater magnitude
                     if (magt_A >= magt_B)
                     {
                         magt = magt_A;
@@ -336,12 +336,9 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                 {
                     d_state = 2; // Positive acquisition
                 }
-            else
+            else if (d_well_count == d_max_dwells)
                 {
-                    if (d_well_count == d_max_dwells)
-                        {
-                            d_state = 3; // Negative acquisition
-                        }
+                    d_state = 3; // Negative acquisition
                 }
 
             consume_each(1);

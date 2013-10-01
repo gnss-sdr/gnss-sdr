@@ -238,14 +238,14 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::config_2()
     config->set_property("SignalSource.doppler_Hz_1", "1000");
     config->set_property("SignalSource.delay_chips_1", "100");
 
-    config->set_property("SignalSource.system_2", "G");
-    config->set_property("SignalSource.PRN_2", "10");
+    config->set_property("SignalSource.system_2", "E");
+    config->set_property("SignalSource.PRN_2", "21");
     config->set_property("SignalSource.CN0_dB_2", "44");
     config->set_property("SignalSource.doppler_Hz_2", "2000");
     config->set_property("SignalSource.delay_chips_2", "200");
 
-    config->set_property("SignalSource.system_3", "G");
-    config->set_property("SignalSource.PRN_3", "20");
+    config->set_property("SignalSource.system_3", "E");
+    config->set_property("SignalSource.PRN_3", "22");
     config->set_property("SignalSource.CN0_dB_3", "44");
     config->set_property("SignalSource.doppler_Hz_3", "3000");
     config->set_property("SignalSource.delay_chips_3", "300");
@@ -279,7 +279,7 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::config_2()
                          std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_8ms_Ambiguous_Acquisition");
-    config->set_property("Acquisition.pfa", "1e-1");
+    config->set_property("Acquisition.pfa", "0.1");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.dump", "false");    

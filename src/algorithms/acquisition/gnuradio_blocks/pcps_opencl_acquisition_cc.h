@@ -1,6 +1,7 @@
 /*!
- * \file pcps_multithread_acquisition_cc.h
+ * \file pcps_opencl_acquisition_cc.h
  * \brief This class implements a Parallel Code Phase Search Acquisition
+ * using OpenCL to offload some functions to the GPU.
  *
  *  Acquisition strategy (Kay Borre book + CFAR threshold).
  *  <ol>
@@ -47,8 +48,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_MULTITHREAD_ACQUISITION_CC_H_
-#define GNSS_SDR_PCPS_MULTITHREAD_ACQUISITION_CC_H_
+#ifndef GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
+#define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 
 #include <fstream>
 #include <gnuradio/block.h>
@@ -59,14 +60,21 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
+#include "fft_internal.h"
 #include "gnss_synchro.h"
 
-class pcps_multithread_acquisition_cc;
+#ifdef APPLE
+    #include <OpenCL/cl.hpp>
+#else
+    #include <CL/cl.hpp>
+#endif
 
-typedef boost::shared_ptr<pcps_multithread_acquisition_cc> pcps_multithread_acquisition_cc_sptr;
+class pcps_opencl_acquisition_cc;
 
-pcps_multithread_acquisition_cc_sptr
-pcps_make_multithread_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+typedef boost::shared_ptr<pcps_opencl_acquisition_cc> pcps_opencl_acquisition_cc_sptr;
+
+pcps_opencl_acquisition_cc_sptr
+pcps_make_opencl_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag,
@@ -79,11 +87,11 @@ pcps_make_multithread_acquisition_cc(unsigned int sampled_ms, unsigned int max_d
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class pcps_multithread_acquisition_cc: public gr::block
+class pcps_opencl_acquisition_cc: public gr::block
 {
 private:
-    friend pcps_multithread_acquisition_cc_sptr
-    pcps_make_multithread_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+    friend pcps_opencl_acquisition_cc_sptr
+    pcps_make_opencl_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                              unsigned int doppler_max, long freq, long fs_in,
                              int samples_per_ms, int samples_per_code,
                              bool bit_transition_flag,
@@ -91,7 +99,7 @@ private:
                              std::string dump_filename);
 
 
-    pcps_multithread_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
+    pcps_opencl_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                         unsigned int doppler_max, long freq, long fs_in,
                         int samples_per_ms, int samples_per_code,
                         bool bit_transition_flag,
@@ -101,6 +109,7 @@ private:
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
             int doppler_offset);
 
+    int init_opencl_environment(std::string kernel_filename);
 
 	long d_fs_in;
 	long d_freq;
@@ -115,6 +124,8 @@ private:
     unsigned int d_max_dwells;
     unsigned int d_well_count;
 	unsigned int d_fft_size;
+    unsigned int d_fft_size_pow2;
+    int* d_max_doppler_indexs;
 	unsigned long int d_sample_counter;
     gr_complex** d_grid_doppler_wipeoffs;
     unsigned int d_num_doppler_bins;
@@ -135,18 +146,35 @@ private:
 	bool d_active;
     int d_state;
     bool d_core_working;
-	bool d_dump;
+    bool d_dump;
 	unsigned int d_channel;
 	std::string d_dump_filename;
+    gr_complex* d_zero_vector;
     gr_complex** d_in_buffer;
     std::vector<unsigned long int> d_sample_counter_buffer;
     unsigned int d_in_dwell_count;
+
+    cl::Platform d_cl_platform;
+    cl::Device d_cl_device;
+    cl::Context d_cl_context;
+    cl::Program d_cl_program;
+    cl::Buffer* d_cl_buffer_in;
+    cl::Buffer* d_cl_buffer_fft_codes;
+    cl::Buffer* d_cl_buffer_1;
+    cl::Buffer* d_cl_buffer_2;
+    cl::Buffer* d_cl_buffer_magnitude;
+    cl::Buffer** d_cl_buffer_grid_doppler_wipeoffs;
+    cl::CommandQueue* d_cl_queue;
+    clFFT_Plan d_cl_fft_plan;
+    cl_int d_cl_fft_batch_size;
+
+    int d_opencl;
 
 public:
     /*!
      * \brief Default destructor.
      */
-    ~pcps_multithread_acquisition_cc();
+    ~pcps_opencl_acquisition_cc();
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -241,7 +269,9 @@ public:
             gr_vector_const_void_star &input_items,
             gr_vector_void_star &output_items);
 
-    void acquisition_core();
+    void acquisition_core_volk();
+
+    void acquisition_core_opencl();
 };
 
-#endif /* GNSS_SDR_PCPS_MULTITHREAD_ACQUISITION_CC_H_*/
+#endif /* GNSS_SDR_pcps_opencl_acquisition_cc_H_*/

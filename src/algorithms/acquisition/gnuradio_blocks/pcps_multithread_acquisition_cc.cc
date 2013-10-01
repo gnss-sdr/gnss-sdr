@@ -57,7 +57,6 @@ pcps_multithread_acquisition_cc_sptr pcps_make_multithread_acquisition_cc(
                                      samples_per_code, bit_transition_flag, queue, dump, dump_filename));
 }
 
-
 pcps_multithread_acquisition_cc::pcps_multithread_acquisition_cc(
                          unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
@@ -72,6 +71,7 @@ pcps_multithread_acquisition_cc::pcps_multithread_acquisition_cc(
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
+    d_core_working = false;
     d_queue = queue;
     d_freq = freq;
     d_fs_in = fs_in;
@@ -86,10 +86,19 @@ pcps_multithread_acquisition_cc::pcps_multithread_acquisition_cc(
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
     d_bit_transition_flag = bit_transition_flag;
+    d_in_dwell_count = 0;
+
+    d_in_buffer = new gr_complex*[d_max_dwells];
 
     //todo: do something if posix_memalign fails
+    for (unsigned int i = 0; i < d_max_dwells; i++)
+        {
+            if (posix_memalign((void**)&d_in_buffer[i], 16,
+                        d_fft_size * sizeof(gr_complex)) == 0){};
+
+        }
     if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(gr_complex)) == 0){};
+    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -102,20 +111,22 @@ pcps_multithread_acquisition_cc::pcps_multithread_acquisition_cc(
     d_dump_filename = dump_filename;
 }
 
-
 pcps_multithread_acquisition_cc::~pcps_multithread_acquisition_cc()
 {
-
-    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            free(d_grid_doppler_wipeoffs[doppler_index]);
-        }
-
-
     if (d_num_doppler_bins > 0)
         {
+            for (unsigned int i = 0; i < d_num_doppler_bins; i++)
+                {
+                    free(d_grid_doppler_wipeoffs[i]);
+                }
             delete[] d_grid_doppler_wipeoffs;
         }
+
+    for (unsigned int i = 0; i < d_max_dwells; i++)
+        {
+            free(d_in_buffer[i]);
+        }
+    delete[] d_in_buffer;
 
     free(d_fft_codes);
     free(d_magnitude);
@@ -129,6 +140,35 @@ pcps_multithread_acquisition_cc::~pcps_multithread_acquisition_cc()
         }
 }
 
+void pcps_multithread_acquisition_cc::init()
+{
+    d_gnss_synchro->Acq_delay_samples = 0.0;
+    d_gnss_synchro->Acq_doppler_hz = 0.0;
+    d_gnss_synchro->Acq_samplestamp_samples = 0;
+    d_mag = 0.0;
+    d_input_power = 0.0;
+
+    // Count the number of bins
+    d_num_doppler_bins = 0;
+    for (int doppler = (int)(-d_doppler_max);
+         doppler <= (int)d_doppler_max;
+         doppler += d_doppler_step)
+    {
+        d_num_doppler_bins++;
+    }
+
+    // Create the carrier Doppler wipeoff signals
+    d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
+    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+        {
+            if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
+                               d_fft_size * sizeof(gr_complex)) == 0){};
+
+            int doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
+                                 d_freq + doppler, d_fs_in, d_fft_size);
+        }
+}
 
 void pcps_multithread_acquisition_cc::set_local_code(std::complex<float> * code)
 {
@@ -147,13 +187,16 @@ void pcps_multithread_acquisition_cc::set_local_code(std::complex<float> * code)
         }
 }
 
-void pcps_multithread_acquisition_cc::perform_acquisition(const gr_complex* in, unsigned int samplestamp)
+void pcps_multithread_acquisition_cc::acquisition_core()
 {
     // initialize acquisition algorithm
     int doppler;
     unsigned int indext = 0;
     float magt = 0.0;
     float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+    gr_complex* in = d_in_buffer[d_well_count];
+    unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
+
     d_input_power = 0.0;
     d_mag = 0.0;
 
@@ -204,7 +247,14 @@ void pcps_multithread_acquisition_cc::perform_acquisition(const gr_complex* in, 
                 {
                     d_mag = magt;
 
-                    if (d_test_statistics < (magt / d_input_power) || !d_bit_transition_flag)
+                    // In case that d_bit_transition_flag = true, we compare the potentially
+                    // new maximum test statistics (d_mag/d_input_power) with the value in
+                    // d_test_statistics. When the second dwell is being processed, the value
+                    // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
+                    // the maximum test statistics in the previous dwell is greater than
+                    // current d_mag/d_input_power). Note that d_test_statistics is not
+                    // restarted between consecutive dwells in multidwell operation.
+                    if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
                     {
                         d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
                         d_gnss_synchro->Acq_doppler_hz = (double)doppler;
@@ -235,67 +285,30 @@ void pcps_multithread_acquisition_cc::perform_acquisition(const gr_complex* in, 
         {
             if (d_test_statistics > d_threshold)
                 {
-                    d_state = 3; // Positive acquisition
+                    d_state = 2; // Positive acquisition
                 }
-            else
+            else if (d_well_count == d_max_dwells)
                 {
-                    if (d_well_count == d_max_dwells)
-                        {
-                            d_state = 4; // Negative acquisition
-                        }
-                    else
-                        {
-                            d_state = 1; // Process next block
-                        }
+                    d_state = 3; // Negative acquisition
                 }
         }
     else
         {
-            if (d_well_count == d_max_dwells)
+            if (d_well_count == d_max_dwells) // d_max_dwells = 2
                 {
                     if (d_test_statistics > d_threshold)
                         {
-                            d_state = 3; // Positive acquisition
+                            d_state = 2; // Positive acquisition
                         }
                     else
                         {
-                            d_state = 4; // Negative acquisition
+                            d_state = 3; // Negative acquisition
                         }
                 }
-            else
-                {
-                    d_state = 1; // Process next block
-                }
         }
+
+    d_core_working = false;
 }
-
-
-void pcps_multithread_acquisition_cc::init()
-{
-    d_gnss_synchro->Acq_delay_samples = 0.0;
-    d_gnss_synchro->Acq_doppler_hz = 0.0;
-    d_gnss_synchro->Acq_samplestamp_samples = 0;
-    d_mag = 0.0;
-    d_input_power = 0.0;
-
-    // Create the carrier Doppler wipeoff signals
-    d_num_doppler_bins = 0;//floor(2*std::abs((int)d_doppler_max)/d_doppler_step);
-    for (int doppler = (int)(-d_doppler_max); doppler <= (int)d_doppler_max; doppler += d_doppler_step)
-    {
-        d_num_doppler_bins++;
-    }
-    d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
-    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
-        {
-            if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
-                               d_fft_size * sizeof(gr_complex)) == 0){};
-
-            int doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
-            complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
-                                 d_freq + doppler, d_fs_in, d_fft_size);
-        }
-}
-
 
 int pcps_multithread_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -318,36 +331,65 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
                     d_mag = 0.0;
                     d_input_power = 0.0;
                     d_test_statistics = 0.0;
+                    d_in_dwell_count = 0;
+                    d_sample_counter_buffer.clear();
 
                     d_state = 1;
                 }
 
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
-            consume_each(ninput_items[0]);
 
             break;
         }
 
     case 1:
         {
-            const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
-            d_sample_counter += d_fft_size; // sample counter
-            boost::thread(&pcps_multithread_acquisition_cc::perform_acquisition, this, in, d_sample_counter);
-            d_state = 2;
-            consume_each(1);
+            if (d_in_dwell_count < d_max_dwells)
+                {
+                    // Fill internal buffer with d_max_dwells signal blocks. This step ensures that
+                    // consecutive signal blocks will be processed in multi-dwell operation. This is
+                    // essential when d_bit_transition_flag = true.
+                    unsigned int num_dwells = std::min((int)(d_max_dwells-d_in_dwell_count),ninput_items[0]);
+                    for (unsigned int i = 0; i < num_dwells; i++)
+                        {
+                            memcpy(d_in_buffer[d_in_dwell_count++], (gr_complex*)input_items[i],
+                                    sizeof(gr_complex)*d_fft_size);
+                            d_sample_counter += d_fft_size;
+                            d_sample_counter_buffer.push_back(d_sample_counter);
+                        }
+
+                    if (ninput_items[0] > (int)num_dwells)
+                        {
+                            d_sample_counter += d_fft_size * (ninput_items[0]-num_dwells);
+                        }
+                }
+            else
+                {
+                    // We already have d_max_dwells consecutive blocks in the internal buffer,
+                    // just skip input blocks.
+                    d_sample_counter += d_fft_size * ninput_items[0];
+                }
+
+            // We create a new thread to process next block if the following
+            // conditions are fulfilled:
+            //   1. There are new blocks in d_in_buffer that have not been processed yet
+            //      (d_well_count < d_in_dwell_count).
+            //   2. No other acquisition_core thead is working (!d_core_working).
+            //   3. d_state==1. We need to check again d_state because it can be modified at any
+            //      moment by the external thread (may have changed since checked in the switch()).
+            //      If the external thread has already declared positive (d_state=2) or negative
+            //      (d_state=3) acquisition, we don't have to process next block!!
+            if ((d_well_count < d_in_dwell_count) && !d_core_working && d_state==1)
+                {
+                    d_core_working = true;
+                    boost::thread(&pcps_multithread_acquisition_cc::acquisition_core, this);
+                }
 
             break;
         }
 
     case 2:
         {
-            d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
-            consume_each(ninput_items[0]);
-            break;
-        }
-    case 3:
-        {
-
             // Declare positive acquisition using a message queue
             DLOG(INFO) << "positive acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
@@ -363,7 +405,6 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
             d_state = 0;
 
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
-            consume_each(ninput_items[0]);
 
             acquisition_message = 1;
             d_channel_internal_queue->push(acquisition_message);
@@ -371,7 +412,7 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
             break;
         }
 
-    case 4:
+    case 3:
         {
             // Declare negative acquisition using a message queue
             DLOG(INFO) << "negative acquisition";
@@ -388,7 +429,6 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
             d_state = 0;
 
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
-            consume_each(ninput_items[0]);
 
             acquisition_message = 2;
             d_channel_internal_queue->push(acquisition_message);
@@ -396,6 +436,8 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
             break;
         }
     }
+
+    consume_each(ninput_items[0]);
 
     return 0;
 }

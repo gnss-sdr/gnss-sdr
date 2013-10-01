@@ -129,6 +129,7 @@ add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_acquisition_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc

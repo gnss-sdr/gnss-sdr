@@ -16,15 +16,28 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(ACQ_GR_BLOCKS_SOURCES 
-        pcps_acquisition_cc.cc
-        pcps_multithread_acquisition_cc.cc
-	pcps_assisted_acquisition_cc.cc
-	pcps_acquisition_fine_doppler_cc.cc
-        pcps_tong_acquisition_cc.cc
-        pcps_cccwsr_acquisition_cc.cc
-        galileo_pcps_8ms_acquisition_cc.cc
-)
+if(OPENCL_FOUND)
+    set(ACQ_GR_BLOCKS_SOURCES
+            pcps_acquisition_cc.cc
+            pcps_multithread_acquisition_cc.cc
+            pcps_assisted_acquisition_cc.cc
+            pcps_acquisition_fine_doppler_cc.cc
+            pcps_tong_acquisition_cc.cc
+            pcps_cccwsr_acquisition_cc.cc
+            galileo_pcps_8ms_acquisition_cc.cc
+            pcps_opencl_acquisition_cc.cc # Needs OpenCL
+    )
+else(OPENCL_FOUND)
+    set(ACQ_GR_BLOCKS_SOURCES
+            pcps_acquisition_cc.cc
+            pcps_multithread_acquisition_cc.cc
+            pcps_assisted_acquisition_cc.cc
+            pcps_acquisition_fine_doppler_cc.cc
+            pcps_tong_acquisition_cc.cc
+            pcps_cccwsr_acquisition_cc.cc
+            galileo_pcps_8ms_acquisition_cc.cc
+    )
+endif(OPENCL_FOUND)
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
@@ -37,6 +50,11 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
+if(OPENCL_FOUND)
+    include_directories( ${OPENCL_INCLUDE_DIRS} )
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+endif(OPENCL_FOUND)
+
 add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES})
-target_link_libraries(acq_gr_blocks gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES})
+target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${OPT_LIBRARIES})
 

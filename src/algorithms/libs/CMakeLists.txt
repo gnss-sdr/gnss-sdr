@@ -25,15 +25,30 @@
 #     pass_through.cc
 #)
 #else(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-set(GNSS_SPLIBS_SOURCES 
-     galileo_e1_signal_processing.cc 
-     gnss_sdr_valve.cc 
-     gnss_signal_processing.cc 
-     gps_sdr_signal_processing.cc
-     nco_lib.cc
-     pass_through.cc
-)
 #endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+if(OPENCL_FOUND)
+    set(GNSS_SPLIBS_SOURCES
+         galileo_e1_signal_processing.cc
+         gnss_sdr_valve.cc
+         gnss_signal_processing.cc
+         gps_sdr_signal_processing.cc
+         nco_lib.cc
+         pass_through.cc
+         fft_execute.cc # Needs OpenCL
+         fft_setup.cc # Needs OpenCL
+         fft_kernelstring.cc # Needs OpenCL
+    )
+else(OPENCL_FOUND)
+    set(GNSS_SPLIBS_SOURCES
+         galileo_e1_signal_processing.cc
+         gnss_sdr_valve.cc
+         gnss_signal_processing.cc
+         gps_sdr_signal_processing.cc
+         nco_lib.cc
+         pass_through.cc
+    )
+endif(OPENCL_FOUND)
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
@@ -45,5 +60,10 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
 )
 
+if(OPENCL_FOUND)
+    include_directories( ${OPENCL_INCLUDE_DIRS} )
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+endif(OPENCL_FOUND)
+
 add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES})
-target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} gnss_rx)
+target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${OPT_LIBRARIES} gnss_rx)

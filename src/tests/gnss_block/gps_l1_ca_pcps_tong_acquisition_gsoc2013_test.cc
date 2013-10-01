@@ -191,8 +191,8 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_1()
                          std::to_string(integration_time_ms));
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
     config->set_property("Acquisition.threshold", "0.8");
-    config->set_property("Acquisition.tong_init_val", "5");
-    config->set_property("Acquisition.tong_max_val", "10");
+    config->set_property("Acquisition.tong_init_val", "1");
+    config->set_property("Acquisition.tong_max_val", "8");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.dump", "false");
@@ -237,14 +237,14 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_2()
     config->set_property("SignalSource.doppler_Hz_1", "1000");
     config->set_property("SignalSource.delay_chips_1", "100");
 
-    config->set_property("SignalSource.system_2", "E");
-    config->set_property("SignalSource.PRN_2", "10");
+    config->set_property("SignalSource.system_2", "G");
+    config->set_property("SignalSource.PRN_2", "21");
     config->set_property("SignalSource.CN0_dB_2", "44");
     config->set_property("SignalSource.doppler_Hz_2", "2000");
     config->set_property("SignalSource.delay_chips_2", "200");
 
-    config->set_property("SignalSource.system_3", "E");
-    config->set_property("SignalSource.PRN_3", "20");
+    config->set_property("SignalSource.system_3", "G");
+    config->set_property("SignalSource.PRN_3", "22");
     config->set_property("SignalSource.CN0_dB_3", "44");
     config->set_property("SignalSource.doppler_Hz_3", "3000");
     config->set_property("SignalSource.delay_chips_3", "300");
@@ -277,9 +277,9 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_2()
     config->set_property("Acquisition.coherent_integration_time_ms",
                          std::to_string(integration_time_ms));
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Tong_Acquisition");
-    config->set_property("Acquisition.threshold", "0.002");
-    config->set_property("Acquisition.tong_init_val", "5");
-    config->set_property("Acquisition.tong_max_val", "10");
+    config->set_property("Acquisition.threshold", "0.00108"); // Pfa,a = 0.1
+    config->set_property("Acquisition.tong_init_val", "1");
+    config->set_property("Acquisition.tong_max_val", "8");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.dump", "false");
@@ -532,7 +532,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-    std::cout << "Probability of false alarm (target) = " << 0.0 << std::endl;
+    std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
 
     // i = 0 --> sallite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)

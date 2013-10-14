@@ -36,6 +36,7 @@
 #include "gnss_synchro.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/filter/freq_xlating_fir_filter_ccf.h>
+#include <gnuradio/filter/freq_xlating_fir_filter_fcf.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
 
@@ -82,10 +83,12 @@ public:
 
 private:
     gr::filter::freq_xlating_fir_filter_ccf::sptr freq_xlating_fir_filter_ccf_;
+    gr::filter::freq_xlating_fir_filter_fcf::sptr freq_xlating_fir_filter_fcf_;
     ConfigurationInterface* config_;
     bool dump_;
     std::string dump_filename_;
     std::string input_item_type_;
+    size_t input_size_;
     std::string output_item_type_;
     std::string taps_item_type_;
     std::vector <float> taps_;

@@ -44,6 +44,7 @@
 #include "gnss_block_interface.h"
 #include "pass_through.h"
 #include "file_signal_source.h"
+#include "nsr_file_signal_source.h"
 #include "null_sink_output_filter.h"
 #include "file_output_filter.h"
 #include "channel.h"
@@ -276,6 +277,21 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             try
             {
                     block = new FileSignalSource(configuration, role, in_streams,
+                            out_streams, queue);
+            }
+            catch (const std::exception &e)
+            {
+                    std::cout << "GNSS-SDR program ended." << std::endl;
+                    LOG_AT_LEVEL(INFO) << implementation
+                            << ": Source file not found";
+                    exit(1);
+            }
+        }
+    else if (implementation.compare("Nsr_File_Signal_Source") == 0)
+        {
+            try
+            {
+                    block = new NsrFileSignalSource(configuration, role, in_streams,
                             out_streams, queue);
             }
             catch (const std::exception &e)

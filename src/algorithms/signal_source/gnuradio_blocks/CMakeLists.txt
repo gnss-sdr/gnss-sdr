@@ -16,5 +16,17 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(adapters)
-add_subdirectory(gnuradio_blocks)
+
+set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES 
+     unpack_byte_2bit_samples.cc
+)
+
+include_directories(
+     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+)
+
+add_library(signal_source_gr_blocks ${SIGNAL_SOURCE_GR_BLOCKS_SOURCES})
+target_link_libraries(signal_source_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

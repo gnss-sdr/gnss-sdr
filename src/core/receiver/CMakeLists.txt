@@ -34,6 +34,7 @@ include_directories(
 	 ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs

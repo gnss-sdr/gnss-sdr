@@ -32,7 +32,6 @@
 #include "configuration_interface.h"
 #include <string>
 #include <boost/lexical_cast.hpp>
-//#include <gnuradio/io_signature.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/pm_remez.h>
 #include <glog/log_severity.h>
@@ -55,14 +54,24 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
     if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
             && (output_item_type_.compare("gr_complex") == 0))
         {
-            item_size = sizeof(gr_complex);
+            item_size = sizeof(gr_complex); //output
+            input_size_=sizeof(gr_complex); //input
             freq_xlating_fir_filter_ccf_ = gr::filter::freq_xlating_fir_filter_ccf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_ccf_->unique_id() << ")";
+        }
+    else if((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("float") == 0)
+            && (output_item_type_.compare("gr_complex") == 0))
+        {
+            item_size = sizeof(gr_complex);
+            input_size_=sizeof(float); //input
+            freq_xlating_fir_filter_fcf_ = gr::filter::freq_xlating_fir_filter_fcf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
+            DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_fcf_->unique_id() << ")";
         }
     else
         {
             LOG_AT_LEVEL(ERROR) << taps_item_type_ << " unknown input filter item type";
         }
+
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
@@ -82,7 +91,12 @@ void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->connect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
+    		if (input_size_==sizeof(float))
+    		{
+    			top_block->connect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
+    		}else{
+    			top_block->connect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
+    		}
         }
     else
         {
@@ -96,7 +110,12 @@ void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->connect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
+		if (input_size_==sizeof(float))
+		{
+			top_block->disconnect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
+		}else{
+			top_block->disconnect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
+		}
         }
 
 }
@@ -104,13 +123,24 @@ void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
 {
-    return freq_xlating_fir_filter_ccf_;
+	if (input_size_==sizeof(float))
+	{
+		return freq_xlating_fir_filter_fcf_;
+	}else{
+		return freq_xlating_fir_filter_ccf_;
+	}
+
 }
 
 
 gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
 {
-    return freq_xlating_fir_filter_ccf_;
+	if (input_size_==sizeof(float))
+	{
+		return freq_xlating_fir_filter_fcf_;
+	}else{
+		return freq_xlating_fir_filter_ccf_;
+	}
 }
 
 

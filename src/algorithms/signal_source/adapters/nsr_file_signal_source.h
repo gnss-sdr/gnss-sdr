@@ -1,11 +1,11 @@
 /*!
- * \file file_signal_source.h
- * \brief Interface of a class that reads signals samples from a file
- * and adapts it to a SignalSourceInterface
- * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ * \file nsr_file_signal_source.h
+ * \brief Implementation of a class that reads signals samples from a NSR 2 bits sampler front-end file
+ * and adapts it to a SignalSourceInterface. More information about the front-end here
+ * http://www.ifen.com/products/sx-scientific-gnss-solutions/nsr-software-receiver.html
+ * \author Javier Arribas, 2013 jarribas(at)cttc.es
  *
- * This class represents a file signal source. Internally it uses a GNU Radio's
- * gr_file_source as a connector to the data.
+ * This class represents a file signal source.
  *
  * -------------------------------------------------------------------------
  *
@@ -32,11 +32,12 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FILE_SIGNAL_SOURCE_H_
-#define GNSS_SDR_FILE_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_
+#define GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_
 
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_source.h>
+#include "unpack_byte_2bit_samples.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
@@ -48,25 +49,25 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class FileSignalSource: public GNSSBlockInterface
+class NsrFileSignalSource: public GNSSBlockInterface
 {
 public:
-    FileSignalSource(ConfigurationInterface* configuration, std::string role,
+    NsrFileSignalSource(ConfigurationInterface* configuration, std::string role,
             unsigned int in_streams, unsigned int out_streams,
             boost::shared_ptr<gr::msg_queue> queue);
 
-    virtual ~FileSignalSource();
+    virtual ~NsrFileSignalSource();
     std::string role()
     {
         return role_;
     }
 
     /*!
-     * \brief Returns "File_Signal_Source".
+     * \brief Returns "Nsr_File_Signal_Source".
      */
     std::string implementation()
     {
-        return "File_Signal_Source";
+        return "Nsr_File_Signal_Source";
     }
     size_t item_size()
     {
@@ -109,6 +110,7 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
     gr::blocks::file_source::sptr file_source_;
+    unpack_byte_2bit_samples_sptr unpack_byte_;
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr  throttle_;
@@ -118,4 +120,4 @@ private:
     bool enable_throttle_control_;
 };
 
-#endif /*GNSS_SDR_FILE_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H_*/

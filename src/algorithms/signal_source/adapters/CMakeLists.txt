@@ -74,7 +74,7 @@ if(RTLSDR_DRIVER)
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${RTL_DRIVER_INCLUDE_DIRS}) 
 endif(RTLSDR_DRIVER)
 
-set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc gen_signal_source.cc uhd_signal_source.cc ${OPT_DRIVER_SOURCES})
+set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc gen_signal_source.cc uhd_signal_source.cc nsr_file_signal_source.cc ${OPT_DRIVER_SOURCES})
 
 
 include_directories(
@@ -83,6 +83,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
      ${UHD_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}     
@@ -90,4 +91,4 @@ include_directories(
 )
 
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES})
-target_link_libraries(signal_source_adapters ${Boost_LIBRARIES}  ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${UHD_LIBRARIES}  ${GNURADIO_UHD_LIBRARIES} ${OPT_LIBRARIES}  gnss_sp_libs)
+target_link_libraries(signal_source_adapters signal_source_gr_blocks ${Boost_LIBRARIES}  ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${UHD_LIBRARIES}  ${GNURADIO_UHD_LIBRARIES} ${OPT_LIBRARIES} gnss_sp_libs)

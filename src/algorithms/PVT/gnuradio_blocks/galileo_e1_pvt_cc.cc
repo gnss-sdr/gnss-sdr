@@ -151,7 +151,10 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
 
     // ############ 1. READ EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
 
-    d_ls_pvt->galileo_ephemeris_map = global_galileo_ephemeris_map.get_map_copy();
+    if (global_galileo_ephemeris_map.size()>0)
+    {
+    	d_ls_pvt->galileo_ephemeris_map = global_galileo_ephemeris_map.get_map_copy();
+    }
 
     if (global_galileo_utc_model_map.size()>0)
         {
@@ -162,7 +165,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
     if (global_galileo_iono_map.size()>0)
         {
             // IONO data is shared for all the Galileo satellites. Read always at ID=0
-            global_galileo_iono_map.read(0,d_ls_pvt->galileo_iono);
+    		global_galileo_iono_map.read(0,d_ls_pvt->galileo_iono);
         }
 
     // ############ 2 COMPUTE THE PVT ################################
@@ -243,7 +246,8 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
 //                }
 //        }
 //
-//    consume_each(1); //one by one
+
+    consume_each(1); //one by one
     return 0;
 }
 

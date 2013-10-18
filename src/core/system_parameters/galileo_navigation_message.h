@@ -71,8 +71,9 @@ private:
 	int x,y;
 
 public:
+	int Page_type_time_stamp;
 	int flag_even_word;
-
+    bool flag_CRC_test;
 	bool flag_all_ephemeris; // flag indicating that all words containing ephemeris have been received
 	bool flag_ephemeris_1;    // flag indicating that ephemeris 1/4 (word 1) have been received
 	bool flag_ephemeris_2;    // flag indicating that ephemeris 2/4 (word 2) have been received
@@ -80,6 +81,9 @@ public:
 	bool flag_ephemeris_4;    // flag indicating that ephemeris 4/4 (word 4) have been received
 
 	bool flag_iono_and_GST;   // flag indicating that ionospheric and GST parameters (word 5) have been received
+	bool flag_TOW_5;
+	bool flag_TOW_6;
+	bool flag_TOW_set; 		  // it is true when page 5 or page 6 arrives
 	bool flag_utc_model;      // flag indicating that utc model parameters (word 6) have been received
 
 	bool flag_all_almanac;	  // flag indicating that all almanac have been received

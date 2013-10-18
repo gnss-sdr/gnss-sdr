@@ -45,6 +45,8 @@ const double GALILEO_PI         		 = 3.1415926535898;  //!< Pi as defined in GAL
 const double GALILEO_GM                  = 3.986004418e14;      //!< Geocentric gravitational constant[m^3/s^2]
 const double GALILEO_OMEGA_EARTH_DOT     = 7.2921151467e-5;  //!< Mean angular velocity of the Earth [rad/s]
 const double GALILEO_C_m_s      		 = 299792458.0;      //!< The speed of light, [m/s]
+const double GALILEO_C_m_ms              = 299792.4580;      //!< The speed of light, [m/ms]
+
 const double GALILEO_F                   = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 // carrier and code frequencies
 const double Galileo_E1_FREQ_HZ = 1.57542e9; //!< E1 [Hz]
@@ -57,6 +59,9 @@ const double Galileo_E1_B_SYMBOL_RATE_BPS = 250.0; //!< Galileo E1-B symbol rate
 const double Galileo_E1_C_SECONDARY_CODE_LENGTH = 25.0; //!< Galileo E1-C secondary code length [chips]
 const int Galileo_E1_NUMBER_OF_CODES = 50;
 
+//#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
+const double GALILEO_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)
+
 // Galileo INAV Telemetry structure
 
 #define GALILEO_INAV_PREAMBLE {0, 1, 0, 1, 1, 0, 0, 0, 0, 0}
@@ -65,14 +70,15 @@ const int GALILEO_INAV_PREAMBLE_LENGTH_BITS = 10;
 const int GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS = 250;
 const int GALILEO_INAV_PAGE_PART_SYMBOLS = 250; //!< Each Galileo INAV pages are composed of two parts (even and odd) each of 250 symbols, including preamble. See Galileo ICD 4.3.2
 const int GALILEO_INAV_PAGE_SYMBOLS = 500; //!< The complete Galileo INAV page length
-
+const int GALILEO_PAGE_SECONDS = 1; //a page last 1 sec
 const int GALILEO_INAV_INTERLEAVER_ROWS = 8;
 const int GALILEO_INAV_INTERLEAVER_COLS = 30;
-
+const int GALILEO_TELEMETRY_RATE_BITS_SECOND = 250; //bps
 const int GALILEO_PAGE_TYPE_BITS = 6;
 const int GALILEO_DATA_JK_BITS =128;
 const int GALILEO_DATA_FRAME_BITS =196;
 const int GALILEO_DATA_FRAME_BYTES =25;
+const double GALIELO_E1_CODE_PERIOD = 0.004;
 
 const std::vector<std::pair<int,int>> type({{1,6}});
 const std::vector<std::pair<int,int>> PAGE_TYPE_bit({{1,6}});;

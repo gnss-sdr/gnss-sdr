@@ -1,8 +1,7 @@
 /*!
- * \file gps_iono.cc
+ * \file galileo_iono.cc
  * \brief  Interface of a GPS IONOSPHERIC MODEL storage
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -35,21 +34,21 @@
 Galileo_Iono::Galileo_Iono()
 {
     //valid = false;
-	/*Ionospheric correction*/
-	/*Az*/
-	 ai0_5 = 0;	//Effective Ionisation Level 1st order parameter [sfu]
-	 ai1_5 = 0;		//Effective Ionisation Level 2st order parameter [sfu/degree]
-	 ai2_5 = 0;		//Effective Ionisation Level 3st order parameter [sfu/degree]
+    /* Ionospheric correction */
+    /* Az */
+    ai0_5 = 0;	        //Effective Ionisation Level 1st order parameter [sfu]
+    ai1_5 = 0;		//Effective Ionisation Level 2st order parameter [sfu/degree]
+    ai2_5 = 0;		//Effective Ionisation Level 3st order parameter [sfu/degree]
 
-	/*Ionospheric disturbance flag*/
-	 Region1_flag_5 = false;	// Ionospheric Disturbance Flag for region 1
-	 Region2_flag_5 = false;	// Ionospheric Disturbance Flag for region 2
-	 Region3_flag_5 = false;	// Ionospheric Disturbance Flag for region 3
-	 Region4_flag_5 = false;	// Ionospheric Disturbance Flag for region 4
-	 Region5_flag_5 = false;	// Ionospheric Disturbance Flag for region 5
+    /* Ionospheric disturbance flag */
+    Region1_flag_5 = false;	// Ionospheric Disturbance Flag for region 1
+    Region2_flag_5 = false;	// Ionospheric Disturbance Flag for region 2
+    Region3_flag_5 = false;	// Ionospheric Disturbance Flag for region 3
+    Region4_flag_5 = false;	// Ionospheric Disturbance Flag for region 4
+    Region5_flag_5 = false;	// Ionospheric Disturbance Flag for region 5
 
-	 t0t_6 = 0;
-     WNot_6 = 0;
+    t0t_6 = 0;
+    WNot_6 = 0;
 
 }
 

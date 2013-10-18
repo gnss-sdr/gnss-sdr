@@ -16,17 +16,6 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-#if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-#set(GNSS_SPLIBS_SOURCES 
-#     galileo_e1_signal_processing.cc 
-#     gnss_sdr_valve.cc 
-#     gnss_signal_processing.cc 
-#     gps_sdr_signal_processing.cc
-#     pass_through.cc
-#)
-#else(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-#endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
 if(OPENCL_FOUND)
     set(GNSS_SPLIBS_SOURCES
          galileo_e1_signal_processing.cc
@@ -62,7 +51,11 @@ include_directories(
 
 if(OPENCL_FOUND)
     include_directories( ${OPENCL_INCLUDE_DIRS} )
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+    if(OS_IS_MACOSX)
+         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL") 
+    else(OS_IS_MACOSX)
+         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+    endif(OS_IS_MACOSX)
 endif(OPENCL_FOUND)
 
 add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES})

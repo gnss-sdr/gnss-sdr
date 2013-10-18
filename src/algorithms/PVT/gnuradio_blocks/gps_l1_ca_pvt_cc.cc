@@ -56,11 +56,19 @@ gps_l1_ca_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> q
 }
 
 
-gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname) :
-		                		        gr::block("gps_l1_ca_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
-		                		                gr::io_signature::make(1, 1, sizeof(gr_complex)))
+gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
+        boost::shared_ptr<gr::msg_queue> queue,
+        bool dump, std::string dump_filename,
+        int averaging_depth,
+        bool flag_averaging,
+        int output_rate_ms,
+        int display_rate_ms,
+        bool flag_nmea_tty_port,
+        std::string nmea_dump_filename,
+        std::string nmea_dump_devname) :
+             gr::block("gps_l1_ca_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
+             gr::io_signature::make(1, 1, sizeof(gr_complex)) )
 {
-
     d_output_rate_ms = output_rate_ms;
     d_display_rate_ms = display_rate_ms;
     d_queue = queue;
@@ -186,7 +194,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                                     if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                         {
                                             rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second,d_rx_time);
-                                            rp->rinex_nav_header(rp->navFile,d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
+                                            rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
                                             b_rinex_header_writen = true; // do not write header anymore
                                         }
                                 }
@@ -194,10 +202,10 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                                 {
                                     // Limit the RINEX navigation output rate to 1/6 seg
                                     // Notice that d_sample_counter period is 1ms (for GPS correlators)
-                                    if ((d_sample_counter-d_last_sample_nav_output)>=6000)
+                                    if ((d_sample_counter - d_last_sample_nav_output) >= 6000)
                                         {
                                             rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
-                                            d_last_sample_nav_output=d_sample_counter;
+                                            d_last_sample_nav_output = d_sample_counter;
                                         }
                                     std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
                                     gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
@@ -219,7 +227,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                     std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
                     << " is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = " <<
                     d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP <<
-                    " GDOP = " << d_ls_pvt->d_GDOP <<std::endl;
+                    " GDOP = " << d_ls_pvt->d_GDOP << std::endl;
                 }
             // MULTIPLEXED FILE RECORDING - Record results to file
             if(d_dump == true)

@@ -1,11 +1,11 @@
 /*!
- * \file concurrent_queue.h
+ * \file concurrent_map.h
  * \brief Interface of a thread-safe std::map
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

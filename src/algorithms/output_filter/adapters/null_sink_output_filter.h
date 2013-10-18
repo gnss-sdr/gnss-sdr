@@ -77,7 +77,6 @@ public:
     gr::basic_block_sptr get_right_block();
 
 private:
-    //gr_block_sptr sink_;
     gr::blocks::null_sink::sptr sink_;
     size_t item_size_;
     std::string item_type_;

@@ -24,12 +24,12 @@ endif(NOT EXISTS GTEST_DIR_LOCAL)
 
 if(NOT GTEST_DIR_LOCAL)
      # if GTEST_DIR is not defined, we download and build it
-     set(gtest_RELEASE 1.6.0)
+     set(gtest_RELEASE 1.7.0)
      ExternalProject_Add(
           gtest-${gtest_RELEASE}
           URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../download/gtest-${gtest_RELEASE}
-          URL_MD5 "4577b49f2973c90bf9ba69aa8166b786"
+          URL_MD5 "2d6ec8ccdf5c46b05ba54a9fd1d130d7"
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
           UPDATE_COMMAND ""
@@ -88,7 +88,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
- #    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
 )
 
@@ -100,7 +100,11 @@ find_library(
            /usr/lib
            /usr/lib64
 )
-
+if(OS_IS_MACOSX)
+     # Tell the linker where the libraries installed by MacPorts are
+     link_directories( /opt/local/lib ) # not very elegant, to be fixed
+     # set(MAC_LIBRARIES sdtc++)
+endif(OS_IS_MACOSX)
 
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 target_link_libraries(run_tests ${Boost_LIBRARIES}  ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_ANALOG_LIBRARIES} gnss_sp_libs gnss_rx)

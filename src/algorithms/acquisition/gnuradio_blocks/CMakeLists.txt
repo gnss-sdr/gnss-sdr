@@ -50,10 +50,16 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
+
 if(OPENCL_FOUND)
     include_directories( ${OPENCL_INCLUDE_DIRS} )
-    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+    if(OS_IS_MACOSX)
+         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL") 
+    else(OS_IS_MACOSX)
+         set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
+    endif(OS_IS_MACOSX)
 endif(OPENCL_FOUND)
+
 
 add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES})
 target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${OPT_LIBRARIES})

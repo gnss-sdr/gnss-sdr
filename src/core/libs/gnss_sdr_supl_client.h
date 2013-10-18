@@ -1,5 +1,5 @@
 /*!
- * \file supl_client.h
+ * \file gnss_sdr_supl_client.h
  * \brief class that implements a C++ interface to external Secure User Location Protocol (SUPL) client library.
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *

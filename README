@@ -5,7 +5,7 @@ This document describes how to set up the compilation environment and build GNSS
 
 GNU/Linux 
 -----------------------------------------------------------
-Tested distributions: Ubuntu 12.04 (32 and 64 bits), Debian 6.0.6, Fedora 18
+Tested distributions: Ubuntu 12.04 (32 and 64 bits), Debian 6.0.6, Fedora 18 (newer versions should work, too)
 
 * Install GNU Radio:
 
@@ -29,9 +29,9 @@ In order to avoid defining these variables each time you enter a session, you ma
 - Download, compile, and install the Armadillo linear algebra library
 
 $ sudo apt-get install libatlas-dev
-$ wget http://sourceforge.net/projects/arma/files/armadillo-3.6.1.tar.gz
-$ tar xvfz armadillo-3.6.1.tar.gz
-$ cd armadillo-3.6.1
+$ wget http://sourceforge.net/projects/arma/files/armadillo-3.900.7.tar.gz
+$ tar xvfz armadillo-3.900.7.tar.gz
+$ cd armadillo-3.900.7
 $ cmake .
 $ make
 $ sudo make install
@@ -41,9 +41,9 @@ The full stop separated from "cmake" by a space is important. CMake will figure 
 
 - Download, unzip, configure, build and install gperftools, a set of performance analysis tools:
 
-$ wget http://gperftools.googlecode.com/files/gperftools-2.0.tar.gz 
-$ tar xvfz gperftools-2.0.tar.gz 
-$ cd gperftools-2.0
+$ wget http://gperftools.googlecode.com/files/gperftools-2.1.tar.gz 
+$ tar xvfz gperftools-2.1.tar.gz 
+$ cd gperftools-2.1
 $ ./configure --enable-frame-pointers
 $ make
 $ sudo make install
@@ -51,17 +51,17 @@ $ sudo make install
 
 - Download, unzip, configure, and build Google C++ Testing Framework (also known as Google Test):
 
-$ wget http://googletest.googlecode.com/files/gtest-1.6.0.zip
-$ unzip gtest-1.6.0.zip
-$ cd gtest-1.6.0
+$ wget http://googletest.googlecode.com/files/gtest-1.7.0.zip
+$ unzip gtest-1.7.0.zip
+$ cd gtest-1.7.0
 $ ./configure
 $ make
 
 Please DO NOT install gtest (do not do "sudo make install"). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of #if in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of gtest its own tests; it is only required that you tell the system where the gtest folder that you downloaded resides. Just add to your $HOME/.bashrc file the following line:
 
-$ export GTEST_DIR=/home/username/gtest-1.6.0
+$ export GTEST_DIR=/home/username/gtest-1.7.0
 
-changing /home/username/gtest-1.6.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your $HOME/.bashrc file.
+changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your $HOME/.bashrc file.
 
 
 - Download, unzip, configure, build and install Google's gflags package, a commandline flags processing module for C++:
@@ -245,8 +245,8 @@ If you have still not installed Apple's Xcode Developer Tools and MacPorts, plea
 
 Once MacPorts is properly installed on your system, open a terminal and type:
 
-$ sudo port install gcc47
-$ sudo port select --set gcc mp-gcc47
+$ sudo port install gcc48
+$ sudo port select --set gcc mp-gcc48
 $ sudo port install gnuradio +full
 $ sudo port install subversion
 $ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
@@ -263,16 +263,7 @@ and can be viewed doing:
 
 $ open ../docs/html/index.html
 
-  
 
-WARNING: GNU Radio's VOLK component (which handles vector optimized instructions and routines) compiles best when using GCC. 
-The default compiler for macports is CLANG, which will result in a fully functioning GNU Radio install but the VOLK component will not utilize the CPU's capabilities.
-In order to take advantage of VOLK, compile it with the (rather old) GCC 4.2:
-
-$ sudo port install gnuradio-devel +grc +python27 +uhd +orc +swig +qtgui +wxgui configure.compiler=llvm-gcc-4.2
-
-However, GNSS-SDR cannot be compiled by GCC 4.2. It has been succesfully built with GCC 4.6 and 4.7, and (could) work in 4.5. If you compile GNU Radio with clang, apart from neglecting the benefits of VOLK, then the problem for building GNSS-SDR is Armadillo.
-Check out http://llvm.org/bugs/show_bug.cgi?id=14768 in order to see the status of this bottleneck.
 
 
 GETTING STARTED

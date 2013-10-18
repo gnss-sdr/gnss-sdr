@@ -103,7 +103,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_well_count = 0;
     d_doppler_max = doppler_max;
     d_fft_size = d_sampled_ms * d_samples_per_ms;
-    d_fft_size_pow2 = pow(2,ceil(log2(2*d_fft_size)));
+    d_fft_size_pow2 = pow(2, ceil(log2(2*d_fft_size)));
     d_mag = 0;
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
@@ -235,7 +235,7 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(std::string kernel_filen
         (std::istreambuf_iterator<char>()));
     kernel_file.close();
 
-//    std::cout << "Kernel code: \n" << kernel_code << std::endl;
+    // std::cout << "Kernel code: \n" << kernel_code << std::endl;
 
     cl::Program::Sources sources;
 
@@ -308,22 +308,22 @@ void pcps_opencl_acquisition_cc::init()
             d_cl_buffer_grid_doppler_wipeoffs = new cl::Buffer*[d_num_doppler_bins];
         }
 
-    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
                                d_fft_size * sizeof(gr_complex)) == 0){};
 
-            int doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            int doppler= -(int)d_doppler_max + d_doppler_step*doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
 
             if (d_opencl == 0)
                 {
                     d_cl_buffer_grid_doppler_wipeoffs[doppler_index] =
-                            new cl::Buffer(d_cl_context,CL_MEM_READ_WRITE,sizeof(gr_complex)*d_fft_size);
+                            new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex)*d_fft_size);
 
                     d_cl_queue->enqueueWriteBuffer(*(d_cl_buffer_grid_doppler_wipeoffs[doppler_index]),
-                                                   CL_TRUE,0,sizeof(gr_complex)*d_fft_size,
+                                                   CL_TRUE, 0, sizeof(gr_complex)*d_fft_size,
                                                    d_grid_doppler_wipeoffs[doppler_index]);
                 }
         }
@@ -331,8 +331,8 @@ void pcps_opencl_acquisition_cc::init()
     // zero padding in buffer_1 (FFT input)
     if (d_opencl == 0)
     {
-        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_1,CL_TRUE,sizeof(gr_complex)*d_fft_size,
-                                       sizeof(gr_complex)*(d_fft_size_pow2-d_fft_size),d_zero_vector);
+        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_1, CL_TRUE, sizeof(gr_complex)*d_fft_size,
+                                       sizeof(gr_complex)*(d_fft_size_pow2 - d_fft_size), d_zero_vector);
     }
 }
 
@@ -340,14 +340,14 @@ void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> * code)
 {
     if(d_opencl == 0)
     {
-        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2,CL_TRUE,0,
+        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, 0,
                                        sizeof(gr_complex)*d_fft_size, code);
 
-        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2,CL_TRUE,sizeof(gr_complex)*d_fft_size,
+        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, sizeof(gr_complex)*d_fft_size,
                                        sizeof(gr_complex)*(d_fft_size_pow2 - 2*d_fft_size),
                                        d_zero_vector);
 
-        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2,CL_TRUE,sizeof(gr_complex)
+        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, sizeof(gr_complex)
                                        *(d_fft_size_pow2 - d_fft_size),
                                        sizeof(gr_complex)*d_fft_size, code);
 
@@ -356,10 +356,10 @@ void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> * code)
                                   0, NULL, NULL);
 
         //Conjucate the local code
-        cl::Kernel kernel=cl::Kernel(d_cl_program,"conj_vector");
-        kernel.setArg(0,*d_cl_buffer_2); //input
-        kernel.setArg(1,*d_cl_buffer_fft_codes); //output
-        d_cl_queue->enqueueNDRangeKernel(kernel,cl::NullRange,cl::NDRange(d_fft_size_pow2),cl::NullRange);
+        cl::Kernel kernel = cl::Kernel(d_cl_program, "conj_vector");
+        kernel.setArg(0, *d_cl_buffer_2);         //input
+        kernel.setArg(1, *d_cl_buffer_fft_codes); //output
+        d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size_pow2), cl::NullRange);
     }
     else
     {
@@ -370,11 +370,11 @@ void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> * code)
         //Conjugate the local code
         if (is_unaligned())
             {
-                volk_32fc_conjugate_32fc_u(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
+                volk_32fc_conjugate_32fc_u(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
             }
         else
             {
-                volk_32fc_conjugate_32fc_a(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
+                volk_32fc_conjugate_32fc_a(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
             }
     }
 }
@@ -406,11 +406,11 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
     d_input_power /= (float)d_fft_size;
 
     // 2- Doppler frequency search loop
-    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
 
-            doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
 
 
             volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in,
@@ -517,7 +517,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     d_mag = 0.0;
 
     // write input vector in buffer of OpenCL device
-    d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_in,CL_TRUE,0,sizeof(gr_complex)*d_fft_size,in);
+    d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_in, CL_TRUE, 0, sizeof(gr_complex)*d_fft_size, in);
 
     d_well_count++;
 
@@ -529,7 +529,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 //    begin = tv.tv_sec *1e6 + tv.tv_usec;
 
     DLOG(INFO) << "Channel: " << d_channel
-            << " , doing acquisition of satellite: " << d_gnss_synchro->System << " "<< d_gnss_synchro->PRN
+            << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
             << " ,sample stamp: " << d_sample_counter << ", threshold: "
             << d_threshold << ", doppler_max: " << d_doppler_max
             << ", doppler_step: " << d_doppler_step;
@@ -542,17 +542,17 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     cl::Kernel kernel;
 
     // 2- Doppler frequency search loop
-    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
 
-            doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
 
             //Multiply input signal with doppler wipe-off
-            kernel = cl::Kernel(d_cl_program,"mult_vectors");
-            kernel.setArg(0,*d_cl_buffer_in); //input 1
-            kernel.setArg(1,*d_cl_buffer_grid_doppler_wipeoffs[doppler_index]); //input 2
-            kernel.setArg(2,*d_cl_buffer_1); //output
+            kernel = cl::Kernel(d_cl_program, "mult_vectors");
+            kernel.setArg(0, *d_cl_buffer_in); //input 1
+            kernel.setArg(1, *d_cl_buffer_grid_doppler_wipeoffs[doppler_index]); //input 2
+            kernel.setArg(2, *d_cl_buffer_1); //output
             d_cl_queue->enqueueNDRangeKernel(kernel,cl::NullRange, cl::NDRange(d_fft_size),
                                              cl::NullRange);
 
@@ -566,10 +566,10 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 
             // Multiply carrier wiped--off, Fourier transformed incoming signal
             // with the local FFT'd code reference
-            kernel = cl::Kernel(d_cl_program,"mult_vectors");
-            kernel.setArg(0,*d_cl_buffer_2); //input 1
-            kernel.setArg(1,*d_cl_buffer_fft_codes); //input 2
-            kernel.setArg(2,*d_cl_buffer_2); //output
+            kernel = cl::Kernel(d_cl_program, "mult_vectors");
+            kernel.setArg(0, *d_cl_buffer_2);         //input 1
+            kernel.setArg(1, *d_cl_buffer_fft_codes); //input 2
+            kernel.setArg(2, *d_cl_buffer_2);         //output
             d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size_pow2),
                                              cl::NullRange);
 
@@ -579,9 +579,9 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                                       0, NULL, NULL);
 
             // Compute magnitude
-            kernel = cl::Kernel(d_cl_program,"magnitude_squared");
-            kernel.setArg(0,*d_cl_buffer_2); //input 1
-            kernel.setArg(1,*d_cl_buffer_magnitude); //output
+            kernel = cl::Kernel(d_cl_program, "magnitude_squared");
+            kernel.setArg(0, *d_cl_buffer_2);         //input 1
+            kernel.setArg(1, *d_cl_buffer_magnitude); //output
             d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size),
                                              cl::NullRange);
 
@@ -628,7 +628,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                     std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
                     filename.str("");
                     filename << "../data/test_statistics_" << d_gnss_synchro->System
-                             <<"_" << d_gnss_synchro->Signal << "_sat_"
+                             << "_" << d_gnss_synchro->Signal << "_sat_"
                              << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                     d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
                     d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?

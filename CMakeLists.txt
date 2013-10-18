@@ -418,6 +418,14 @@ if(NOT ARMADILLO_FOUND)
 endif(NOT ARMADILLO_FOUND)
 
 
+
+########################################################################
+# OpenCL
+########################################################################
+find_package(OpenCL)
+
+
+
 ################################################################################
 # Setup of optional drivers
 ################################################################################
@@ -441,6 +449,8 @@ if( $ENV{RTLSDR_DRIVER} )
 endif($ENV{RTLSDR_DRIVER} )
 
 
+
+
 ########################################################################
 # Setup the include paths
 ########################################################################
@@ -460,6 +470,8 @@ endif($ENV{RTLSDR_DRIVER} )
 #)
 
 
+
+
 ########################################################################
 # Set compiler flags
 ########################################################################
@@ -470,7 +482,7 @@ if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
      set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++0x")
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wno-c++11-narrowing")
+    #set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wno-c++11-narrowing")
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 # Add warning flags 

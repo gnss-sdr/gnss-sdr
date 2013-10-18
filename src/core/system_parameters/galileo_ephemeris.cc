@@ -1,5 +1,5 @@
 /*!
- * \file gps_ephemeris.cc
+ * \file galileo_ephemeris.cc
  * \brief  Interface of a GPS EPHEMERIS storage and orbital model functions
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
@@ -35,45 +35,45 @@
 
 Galileo_Ephemeris::Galileo_Ephemeris()
 {
-	flag_all_ephemeris = false;
-	IOD_ephemeris = 0;
-	IOD_nav_1 = 0;
+    flag_all_ephemeris = false;
+    IOD_ephemeris = 0;
+    IOD_nav_1 = 0;
 
-	 SV_ID_PRN_4 = 0;
-	 M0_1 = 0;		// Mean anomaly at reference time [semi-circles]
-	 delta_n_3 = 0;		// Mean motion difference from computed value  [semi-circles/sec]
-	 e_1 = 0;		// Eccentricity
-	 A_1 = 0;   	// Square root of the semi-major axis [metres^1/2]
-	 OMEGA_0_2 = 0; // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-	 i_0_2 = 0;     // Inclination angle at reference time  [semi-circles]
-	 omega_2 = 0;   // Argument of perigee [semi-circles]
-	 OMEGA_dot_3 = 0;		// Rate of right ascension [semi-circles/sec]
-	 iDot_2 = 0;    // Rate of inclination angle [semi-circles/sec]
-	 C_uc_3 = 0;			// Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-	 C_us_3 = 0;			// Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-	 C_rc_3 = 0;			// Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-	 C_rs_3 = 0;			// Amplitude of the sine harmonic correction term to the orbit radius [meters]
-	 C_ic_4 = 0;		// Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
-	 C_is_4 = 0;		// Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-	 t0e_1 = 0; 	// Ephemeris reference time [s]
+    SV_ID_PRN_4 = 0;
+    M0_1 = 0;           // Mean anomaly at reference time [semi-circles]
+    delta_n_3 = 0;      // Mean motion difference from computed value  [semi-circles/sec]
+    e_1 = 0;	        // Eccentricity
+    A_1 = 0;            // Square root of the semi-major axis [metres^1/2]
+    OMEGA_0_2 = 0;      // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+    i_0_2 = 0;          // Inclination angle at reference time  [semi-circles]
+    omega_2 = 0;        // Argument of perigee [semi-circles]
+    OMEGA_dot_3 = 0;	// Rate of right ascension [semi-circles/sec]
+    iDot_2 = 0;         // Rate of inclination angle [semi-circles/sec]
+    C_uc_3 = 0;	        // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+    C_us_3 = 0;	        // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    C_rc_3 = 0;         // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+    C_rs_3 = 0;	        // Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    C_ic_4 = 0;	        // Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
+    C_is_4 = 0;         // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+    t0e_1 = 0; 	        // Ephemeris reference time [s]
 
-	/*Clock correction parameters*/
-	 t0c_4 = 0; 			//Clock correction data reference Time of Week [sec]
-	 af0_4 = 0; 			//SV clock bias correction coefficient [s]
-	 af1_4 = 0; 			//SV clock drift correction coefficient [s/s]
-	 af2_4 = 0;			//SV clock drift rate correction coefficient [s/s^2]
+    /*Clock correction parameters*/
+    t0c_4 = 0;          // Clock correction data reference Time of Week [sec]
+    af0_4 = 0;          // SV clock bias correction coefficient [s]
+    af1_4 = 0;          // SV clock drift correction coefficient [s/s]
+    af2_4 = 0;	        //SV clock drift rate correction coefficient [s/s^2]
 
-	/*GST*/
-	 WN_5 = 0;
-	 TOW_5 = 0;
+    /*GST*/
+    WN_5 = 0;
+    TOW_5 = 0;
 
 }
 
 
 double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW){
-	/* GALIELO SYSTEM TIME, ICD 5.1.2
-	 * input parameter:
-	 * WN: The Week Number is an integer counter that gives the sequential week number
+    /* GALIELO SYSTEM TIME, ICD 5.1.2
+     * input parameter:
+     * WN: The Week Number is an integer counter that gives the sequential week number
 	   from the origin of the Galileo time. It covers 4096 weeks (about 78 years).
 	   Then the counter is reset to zero to cover additional period modulo 4096
 
@@ -95,23 +95,22 @@ double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW){
 	   will be measured relative to the leading edge of the first chip of the
 	   first code sequence of the first page symbol. The transmission timing of the navigation
 	   message provided through the TOW is synchronised to each satellite’s version of Galileo System Time (GST).
-	 *
-	 */
-	double t=0;
-	double sec_in_day = 86400;
-	double day_in_week = 7;
-	t = WN*sec_in_day*day_in_week+ TOW; // second from the origin of the Galileo time
+     *
+     */
+    double t = 0;
+    double sec_in_day = 86400;
+    double day_in_week = 7;
+    t = WN*sec_in_day*day_in_week + TOW; // second from the origin of the Galileo time
 
-	return t;
-
+    return t;
 }
 
 
 
 double Galileo_Ephemeris::sv_clock_drift(double transmitTime){
-	/* Satellite Time Correction Algorithm, ICD 5.1.4
-	 *
-	 */
+    /* Satellite Time Correction Algorithm, ICD 5.1.4
+     *
+     */
     double dt;
     dt = transmitTime - t0c_4;
     Galileo_satClkDrift = af0_4 + af1_4*dt + (af2_4 * dt)*(af2_4 * dt) + Galileo_dtr;
@@ -130,40 +129,40 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) //Sate
     double dE;
     double M;
 
-      // Restore semi-major axis
-      a = A_1*A_1;
+    // Restore semi-major axis
+    a = A_1*A_1;
 
-      n0 = sqrt(GALILEO_GM / (a*a*a));
+    n0 = sqrt(GALILEO_GM / (a*a*a));
 
-      // Time from ephemeris reference epoch
-      //tk = check_t(transmitTime - d_Toe); this is tk for GPS; for Galileo it is different
-      //t = WN_5*86400*7 + TOW_5; //WN_5*86400*7 are the second from the origin of the Galileo time
-      tk = transmitTime - t0e_1;
+    // Time from ephemeris reference epoch
+    //tk = check_t(transmitTime - d_Toe); this is tk for GPS; for Galileo it is different
+    //t = WN_5*86400*7 + TOW_5; //WN_5*86400*7 are the second from the origin of the Galileo time
+    tk = transmitTime - t0e_1;
 
-      // Corrected mean motion
-      n = n0 + delta_n_3;
+    // Corrected mean motion
+    n = n0 + delta_n_3;
 
-      // Mean anomaly
-      M = M0_1 + n * tk;
+    // Mean anomaly
+    M = M0_1 + n * tk;
 
-      // Reduce mean anomaly to between 0 and 2pi
-      M = fmod((M + 2* GALILEO_PI), (2* GALILEO_PI));
+    // Reduce mean anomaly to between 0 and 2pi
+    M = fmod((M + 2* GALILEO_PI), (2* GALILEO_PI));
 
-      // Initial guess of eccentric anomaly
-      E = M;
+    // Initial guess of eccentric anomaly
+    E = M;
 
-      // --- Iteratively compute eccentric anomaly ----------------------------
-      for (int ii = 1; ii<20; ii++)
-          {
-              E_old   = E;
-              E       = M + e_1 * sin(E);
-              dE      = fmod(E - E_old, 2*GALILEO_PI);
-              if (fabs(dE) < 1e-12)
-                  {
-                      //Necessary precision is reached, exit from the loop
-                       break;
-                   }
-           }
+    // --- Iteratively compute eccentric anomaly ----------------------------
+    for (int ii = 1; ii<20; ii++)
+        {
+            E_old   = E;
+            E       = M + e_1 * sin(E);
+            dE      = fmod(E - E_old, 2*GALILEO_PI);
+            if (fabs(dE) < 1e-12)
+                {
+                    //Necessary precision is reached, exit from the loop
+                    break;
+                }
+        }
 
 
     // Compute relativistic correction term
@@ -268,6 +267,4 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime) //when this funct
     galileo_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + galileo_satpos_X * cos(Omega) - galileo_satpos_Y * cos(i) * sin(Omega);
     galileo_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + galileo_satpos_X * sin(Omega) + galileo_satpos_Y * cos(i) * cos(Omega);
     galileo_satvel_Z = galileo_satpos_Y * sin(i);
-
-
 }

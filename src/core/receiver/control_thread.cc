@@ -663,26 +663,26 @@ void ControlThread::galileo_utc_model_data_collector()
 
 void ControlThread::gps_ephemeris_data_write_to_XML()
 {
-	//Save ephemeris to XML file
-	std::string eph_xml_filename="gps_ephemeris_rx.xml";
-	std::map<int,Gps_Ephemeris> eph_copy;
+    //Save ephemeris to XML file
+    std::string eph_xml_filename ="gps_ephemeris_rx.xml";
+    std::map<int,Gps_Ephemeris> eph_copy;
 
-	eph_copy=global_gps_ephemeris_map.get_map_copy();
-	if (eph_copy.size()>0)
-	{
-		try
-		{
-				std::ofstream ofs(eph_xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
-				boost::archive::xml_oarchive xml(ofs);
-				xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_copy);
-				ofs.close();
-				std::cout<<"Saved Ephemeris data"<<std::endl;
-		}
-		catch (std::exception& e)
-		{
-				LOG_AT_LEVEL(ERROR) << e.what();
-		}
-	}
+    eph_copy = global_gps_ephemeris_map.get_map_copy();
+    if (eph_copy.size() > 0)
+        {
+            try
+            {
+                    std::ofstream ofs(eph_xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_copy);
+                    ofs.close();
+                    std::cout << "Saved Ephemeris data" << std::endl;
+            }
+            catch (std::exception& e)
+            {
+                    LOG_AT_LEVEL(ERROR) << e.what();
+            }
+        }
 }
 
 void ControlThread::gps_utc_model_data_write_to_XML()

@@ -63,8 +63,8 @@
 #include "fft_internal.h"
 #include "gnss_synchro.h"
 
-#ifdef APPLE
-    #include <OpenCL/cl.hpp>
+#ifdef __APPLE__
+   #include "cl.hpp"
 #else
     #include <CL/cl.hpp>
 #endif

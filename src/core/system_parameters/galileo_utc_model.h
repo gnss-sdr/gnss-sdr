@@ -1,6 +1,6 @@
 /*!
- * \file gps_utc_model.h
- * \brief  Interface of a GPS UTC MODEL storage
+ * \file galileo_utc_model.h
+ * \brief  Interface of a Galileo UTC MODEL storage
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  *
@@ -45,29 +45,24 @@
 class Galileo_Utc_Model
 {
 public:
+    //bool valid;
+    /*Word type 6: GST-UTC conversion parameters*/
+    double A0_6;
+    double A1_6;
+    double Delta_tLS_6;
+    double t0t_6;       //UTC data reference Time of Week [s]
+    double WNot_6;      //UTC data reference Week number [week]
+    double WN_LSF_6;
+    double DN_6;
+    double Delta_tLSF_6;
+    bool flag_utc_model;
+    //double TOW_6;
 
-	//bool valid;
-	/*Word type 6: GST-UTC conversion parameters*/
-	double A0_6;
-	double A1_6;
-	double Delta_tLS_6;
-	double t0t_6;//UTC data reference Time of Week [s]
-	double WNot_6; //UTC data reference Week number [week]
-	double WN_LSF_6;
-	double DN_6;
-	double Delta_tLSF_6;
-	bool flag_utc_model;
-	//double TOW_6;
-
-
-
-	double GST_to_UTC_time(double t_e, int WN);
-     /*!
+    double GST_to_UTC_time(double t_e, int WN);
+    /*!
      * Default constructor
      */
-
     Galileo_Utc_Model();
-
 };
 
 #endif

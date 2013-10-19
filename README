@@ -29,9 +29,9 @@ In order to avoid defining these variables each time you enter a session, you ma
 - Download, compile, and install the Armadillo linear algebra library
 
 $ sudo apt-get install libatlas-dev
-$ wget http://sourceforge.net/projects/arma/files/armadillo-3.900.7.tar.gz
-$ tar xvfz armadillo-3.900.7.tar.gz
-$ cd armadillo-3.900.7
+$ wget http://sourceforge.net/projects/arma/files/armadillo-3.920.2.tar.gz
+$ tar xvfz armadillo-3.920.2.tar.gz
+$ cd armadillo-3.920.2
 $ cmake .
 $ make
 $ sudo make install

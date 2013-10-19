@@ -373,8 +373,8 @@ if(NOT ARMADILLO_FOUND)
      message (" Armadillo has not been found.")
      message (" Armadillo will be downloaded and built automatically ")
      message (" when doing 'make'. ")
-     set(armadillo_RELEASE 3.810.2)
-     set(armadillo_MD5 "f91e3aff360d6a21fa7db36bb3dfe35f")
+     set(armadillo_RELEASE 3.920.2)
+     set(armadillo_MD5 "3d0396513e2802c08152f50e18b4a1cd")
      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
           set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
           file(WRITE ${ARMADILLO_PATCH_FILE} "")
@@ -385,7 +385,7 @@ if(NOT ARMADILLO_FOUND)
 < set(ARMA_USE_WRAPPER true )
 ---
 > set(ARMA_USE_WRAPPER false)
-292c292
+323c323
 < add_library( armadillo SHARED src/wrap_libs )
 ---
 > add_library( armadillo STATIC src/wrap_libs )

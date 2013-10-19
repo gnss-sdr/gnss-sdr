@@ -397,8 +397,7 @@ if(NOT ARMADILLO_FOUND)
           URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
           URL_MD5 ${armadillo_MD5}    
-          PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} 
-          CONFIGURE_COMMAND <BINARY_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}     
+          PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE}  
           BUILD_IN_SOURCE 1
           BUILD_COMMAND make
           UPDATE_COMMAND ""

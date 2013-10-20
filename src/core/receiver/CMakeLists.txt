@@ -82,6 +82,13 @@ if( RTLSDR_DRIVER )
     add_definitions(-DRTLSDR_DRIVER=1)
 endif( RTLSDR_DRIVER )
 
+#Enable OpenCL if found in the system
+if ( OPENCL_FOUND )
+    message( "Adding processing blocks implemented using Open CL" )
+    add_definitions(-DOPENCL=1)
+endif( OPENCL_FOUND )
+
+
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES})
 target_link_libraries(gnss_rx ${Boost_LIBRARIES} ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} 
       gnss_system_parameters gnss_sp_libs 

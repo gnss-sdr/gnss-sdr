@@ -239,19 +239,38 @@ $ rm -rf gnss-sdr/build/*
 
 Mac OS X 
 ------------------------------
-Tested version: 10.8.2 (Mountain Lion)
+Tested version: 10.8.5 (Mountain Lion)
 
-If you have still not installed Apple's Xcode Developer Tools and MacPorts, please do it now following the instructions from http://www.macports.org/install.php. All the required packages are available for free.
+If you still have not installed Xcode, do it now from the App Store (it's free). Once installed, download and install the command line tools:
+
+Xcode -> Preferences -> Downloads -> Components -> Command Line Tools
+
+Then, install Macports via Mac OS X Package (.pkg) installer from http://www.macports.org/install.php
 
 Once MacPorts is properly installed on your system, open a terminal and type:
 
+$ sudo port selfupdate
 $ sudo port install gcc48
 $ sudo port select --set gcc mp-gcc48
+
+Install X11 via XQuartz-2.7.4.dmg (needed by gnuradio-companion but not by GNSS-SDR) from http://xquartz.macosforge.org/landing/
+
+Install GNU Radio:
+
 $ sudo port install gnuradio +full
-$ sudo port install subversion
+
+Install other dependencies:
+
+$ sudo port install subversion armadillo
+
+The libraries gflags and glog should be installed manually, and in that particular order (same steps as above). If they are not already installed
+when building GNSS-SDR, cmake will download, build and link them statically but they will not remain installed in the system.
+
+Finally, you are ready to checkout the GNSS-SDR repository and build the software:
+
 $ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
 $ cd gnss-sdr/build
-$ cmake ../ -DCMAKE_CXX_COMPILER=gcc
+$ cmake ../ -DCMAKE_CXX_COMPILER=g++
 $ make
 $ make install
 

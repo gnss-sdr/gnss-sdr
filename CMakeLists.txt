@@ -492,7 +492,11 @@ set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall")
 # See http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html#i386-and-x86_002d64-Options
 # Change to '-mtune=generic' when building for distribution
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -march=native -mfpmath=sse")
+     if(OS_IS_MACOSX)
+         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -march=corei7 -mfpmath=sse")
+     else(OS_IS_MACOSX)
+         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -march=native -mfpmath=sse")
+     endif(OS_IS_MACOSX)
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)

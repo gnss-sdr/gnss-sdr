@@ -481,7 +481,7 @@ if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
      set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++0x")
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    #set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wno-c++11-narrowing")
+    set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wno-c++11-narrowing") 
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 # Add warning flags 

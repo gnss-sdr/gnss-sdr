@@ -145,7 +145,7 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
         }
     if (system.compare("GPS") == 0)
         {
-            if (PRN_ < 1 or PRN > 32)
+            if (PRN_ < 1 or PRN_ > 32)
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -157,7 +157,7 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
         }
     else if (system.compare("Glonass") == 0)
            {
-               if (PRN_ < 1 or PRN > 24)
+               if (PRN_ < 1 or PRN_ > 24)
                    {
                        DLOG(INFO) << "This PRN is not defined";
                        PRN = 0;
@@ -181,29 +181,17 @@ void Gnss_Satellite::set_PRN(unsigned int PRN_)
                 }
         }
     else if (system.compare("Galileo") == 0)
+        {
+        if (PRN_ < 1 or PRN_ > 36)
             {
-                if (PRN_ == 11)
-                    {
-                        PRN = 11;
-                    }
-                else if (PRN_ == 12)
-                    {
-                        PRN = 12;
-                    }
-                else if (PRN_ == 19)
-                    {
-                        PRN = 19;
-                    }
-                else if (PRN_ == 20)
-                    {
-                        PRN = 20;
-                    }
-                else
-                    {
-                        DLOG(INFO) << "This PRN is not defined";
-                        PRN = 0;
-                    }
+                DLOG(INFO) << "This PRN is not defined";
+                PRN = 0;
             }
+        else
+            {
+                PRN = PRN_;
+            }
+        }
     else
         {
             DLOG(INFO) << "System " << system << " is not defined";
@@ -517,7 +505,7 @@ void Gnss_Satellite::set_block(std::string system_, unsigned int PRN_ )
                 block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4)
                 break;
             default:
-                block = std::string("Unknown");
+                block = std::string("Unknown(Simulated)");
             }
         }
 }

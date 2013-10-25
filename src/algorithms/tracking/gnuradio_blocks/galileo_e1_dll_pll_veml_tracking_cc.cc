@@ -441,7 +441,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             *out[0] = current_synchro_data;
-
             // ########## DEBUG OUTPUT
             /*!
              *  \todo The stop timer has to be moved to the signal source!
@@ -455,7 +454,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                             std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
                             std::cout << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
                                                             << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
-
                         }
                 }
             else
@@ -475,8 +473,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             *d_Late = gr_complex(0,0);
             Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output stream pointer
             // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            Gnss_Synchro current_synchro_data;
-            *out[0] = current_synchro_data;
+            *out[0] = *d_acquisition_gnss_synchro;
         }
 
     if(d_dump)

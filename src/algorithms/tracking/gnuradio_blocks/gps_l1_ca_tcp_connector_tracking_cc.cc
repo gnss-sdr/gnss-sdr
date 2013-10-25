@@ -571,8 +571,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             *d_Late = gr_complex(0,0);
             Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
             // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            Gnss_Synchro current_synchro_data;
-            *out[0] = current_synchro_data;
+            *out[0] = *d_acquisition_gnss_synchro;
 
             //! When tracking is disabled an array of 1's is sent to maintain the TCP connection
             boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> tx_variables_array = {{1,1,1,1,1,1,1,1,0}};

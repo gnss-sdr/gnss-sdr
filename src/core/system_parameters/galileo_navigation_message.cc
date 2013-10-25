@@ -438,7 +438,7 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 					{
 						flag_CRC_test = true;
 						// CRC correct: Decode word
-						//std::cout<<"CRC correct!"<<std::endl;
+						std::cout<<"CRC correct!"<<std::endl;
 
 						std::string page_number_bits = Data_k.substr (0,6);
 						//std::cout << "Page number bits from Data k" << std::endl << page_number_bits << std::endl;
@@ -472,6 +472,7 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 					}else{
 						// CRC wrong.. discard frame
 						std::cout<<"CRC error!"<<std::endl;
+						flag_CRC_test= false;
 					}
 					//********** end of CRC checksum control ***/
 				}

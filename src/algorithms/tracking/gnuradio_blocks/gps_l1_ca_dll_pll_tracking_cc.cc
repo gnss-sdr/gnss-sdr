@@ -537,8 +537,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             *d_Late = gr_complex(0,0);
             Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
             // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            Gnss_Synchro current_synchro_data;
-            *out[0] = current_synchro_data;
+            *out[0] = *d_acquisition_gnss_synchro;
         }
 
     if(d_dump)

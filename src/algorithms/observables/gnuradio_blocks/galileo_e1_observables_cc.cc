@@ -90,20 +90,12 @@ galileo_e1_observables_cc::~galileo_e1_observables_cc()
 {
     d_dump_file.close();
 }
-//
-//bool galileo_e1_observables_cc::pairCompare_gnss_synchro_Prn_delay_ms( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
-//{
-//    return (a.second.Prn_timestamp_ms) < (b.second.Prn_timestamp_ms);
-//}
+
 bool Galileo_pairCompare_gnss_synchro_Prn_delay_ms( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
 {
     return (a.second.Prn_timestamp_ms) < (b.second.Prn_timestamp_ms);
 }
 
-//bool galileo_e1_observables_cc::pairCompare_gnss_synchro_d_TOW_at_current_symbol( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
-//{
-//    return (a.second.d_TOW_at_current_symbol) < (b.second.d_TOW_at_current_symbol);
-//}
 
 bool Galileo_pairCompare_gnss_synchro_d_TOW_at_current_symbol( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
 {
@@ -121,7 +113,6 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
     Gnss_Synchro current_gnss_synchro[d_nchannels];
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
     std::map<int,Gnss_Synchro>::iterator gnss_synchro_iter;
-// std::cout<<"entrato nella funzione general work linea 121***********************************"<<std::endl;
     d_sample_counter++; //count for the processed samples
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels
@@ -152,15 +143,10 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
              */
             //;
             // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
-    	//IL CANALE CON IL TIME COUNTER TOW PIÙ BASSO VIENE PRESO COME RIFERIMENTO
-
     	      gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), Galileo_pairCompare_gnss_synchro_d_TOW_at_current_symbol);
               double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
-              //std::cout<< "accedo agli elementi di syncro d_TOW_reference =" << gnss_synchro_iter->second.d_TOW_at_current_symbol<<std::endl;
               double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
-              //std::cout<< "accedo agli elementi di syncro d_ref_PRN_rx_time_ms=" << gnss_synchro_iter->second.Prn_timestamp_ms<<std::endl;
-              int reference_channel= gnss_synchro_iter->second.Channel_ID;
-              //std::cout<< "reference_channel=" << reference_channel<<std::endl;
+              //int reference_channel= gnss_synchro_iter->second.Channel_ID;
 
               // Now compute RX time differences due to the PRN alignement in the correlators
               double traveltime_ms;
@@ -168,52 +154,50 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
               double delta_rx_time_ms;
               for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
               {
-//            	  //std::cout<<"entrato nell'iterator di common reception time 147***********************************"<<std::endl;
-//            	// compute the required symbol history shift in order to match the reference symbol
+            	// compute the required symbol history shift in order to match the reference symbol
             	delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms-d_ref_PRN_rx_time_ms;
-            	//std::cout<<"gnss_synchro_iter->second.Prn_timestamp_ms="<<gnss_synchro_iter->second.Prn_timestamp_ms << std::endl;
-            	//std::cout<<"d_ref_PRN_rx_time_ms="<<d_ref_PRN_rx_time_ms << std::endl;
-//            	//compute the pseudorange
+            	//std::cout<<"delta_rx_time_ms["<<gnss_synchro_iter->second.Channel_ID<<"]="<<delta_rx_time_ms<<std::endl;
+            	//compute the pseudorange
             	traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GALILEO_STARTOFFSET_ms;
             	//std::cout<<"traveltime_ms="<<traveltime_ms<<std::endl;
                 pseudorange_m = traveltime_ms * GALILEO_C_m_ms; // [m]
-            	//std::cout<<"pseudorange_m="<<pseudorange_m<<std::endl;
+            	//std::cout<<"pseudorange_m["<<gnss_synchro_iter->second.Channel_ID<<"]="<<pseudorange_m<<std::endl;
             	// update the pseudorange object
                 //current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000)/1000 + GALILEO_STARTOFFSET_ms/1000.0;
-                //std::cout<<"current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m=" << current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m <<std::endl;
               }
+
         }
 
-//
-//      if(d_dump == true)
-//        {
-//            // MULTIPLEXED FILE RECORDING - Record results to file
-//            try
-//            {
-//                    double tmp_double;
-//                    for (unsigned int i=0; i<d_nchannels ; i++)
-//                        {
-//                            tmp_double = current_gnss_synchro[i].d_TOW_at_current_symbol;
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            tmp_double = current_gnss_synchro[i].Prn_timestamp_ms;
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            tmp_double = current_gnss_synchro[i].Pseudorange_m;
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            tmp_double = 0;
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            tmp_double = current_gnss_synchro[i].PRN;
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                        }
-//            }
-//            catch (std::ifstream::failure e)
-//            {
-//                    std::cout << "Exception writing observables dump file " << e.what() << std::endl;
-//            }
-//        }
-//
+
+      if(d_dump == true)
+        {
+            // MULTIPLEXED FILE RECORDING - Record results to file
+            try
+            {
+                    double tmp_double;
+                    for (unsigned int i=0; i<d_nchannels ; i++)
+                        {
+                            tmp_double = current_gnss_synchro[i].d_TOW_at_current_symbol;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            tmp_double = current_gnss_synchro[i].Prn_timestamp_ms;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            tmp_double = current_gnss_synchro[i].Pseudorange_m;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            tmp_double = 0;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            tmp_double = current_gnss_synchro[i].PRN;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                        }
+            }
+            catch (const std::ifstream::failure& e)
+            {
+                    std::cout << "Exception writing observables dump file " << e.what() << std::endl;
+            }
+        }
+
     consume_each(1); //one by one
     for (unsigned int i=0; i<d_nchannels ; i++)
         {

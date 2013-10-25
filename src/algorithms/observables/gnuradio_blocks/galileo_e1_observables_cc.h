@@ -69,9 +69,6 @@ private:
     galileo_e1_make_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
     galileo_e1_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
-    bool pairCompare_gnss_synchro_Prn_delay_ms( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b);
-    bool pairCompare_gnss_synchro_d_TOW_at_current_symbol( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b);
-
     // class private vars
     boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;

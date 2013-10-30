@@ -73,6 +73,7 @@ private:
 public:
 	int Page_type_time_stamp;
 	int flag_even_word;
+	std::string page_Even;
     bool flag_CRC_test;
 	bool flag_all_ephemeris; // flag indicating that all words containing ephemeris have been received
 	bool flag_ephemeris_1;    // flag indicating that ephemeris 1/4 (word 1) have been received
@@ -248,7 +249,7 @@ public:
 	/*
 	 * \brief Takes in input a page (Odd or Even) of 120 bit, split it according ICD 4.3.2.3 and join Data_k with Data_j
 	 */
-	void split_page(const char *page, int flag_even_word);
+	void split_page(std::string page_string, int flag_even_word);
 	/*
 	 * \brief Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
 	 */

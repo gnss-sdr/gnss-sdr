@@ -39,7 +39,6 @@
 #include "galileo_e1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
-#include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
 #include <boost/lexical_cast.hpp>
@@ -252,7 +251,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
         }
     memcpy(d_early_code, &d_very_early_code[very_early_late_spc_samples - early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
     memcpy(d_prompt_code, &d_very_early_code[very_early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
-    memcpy(d_late_code, &d_very_early_code[2*very_early_late_spc_samples - early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
+    memcpy(d_late_code, &d_very_early_code[very_early_late_spc_samples + early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
     memcpy(d_very_late_code, &d_very_early_code[2*very_early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
 }
 
@@ -491,6 +490,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             tmp_P = std::abs<float>(*d_Prompt);
             tmp_L = std::abs<float>(*d_Late);
             tmp_VL = std::abs<float>(*d_Very_Late);
+            //std::cout<<"VE="<<tmp_VE<<",E="<<tmp_E<<",L="<<tmp_L<<",VL="<<tmp_VL<<std::endl;
 
             try
             {

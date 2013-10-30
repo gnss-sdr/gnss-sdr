@@ -366,20 +366,13 @@ bool Galileo_Navigation_Message::read_navigation_bool(std::bitset<GALILEO_DATA_J
 }*/
 
 
-void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word){
+void Galileo_Navigation_Message::split_page(std::string page_string, int flag_even_word){
 
 	// ToDo: Clean all the tests and create an independent google test code for the telemetry decoder.
-
-
-	//std::cout << "Entered in Galileo_Navigation_Message::split_page(const char *page, int flag_even_word" << std::endl << std::endl;;
-	std::string page_string = page;
 	//char correct_tail[7]="011110"; //the viterbi decoder output change the tail to this value (why?)
-
 	char correct_tail[7]="000000";
 
 	int Page_type=0;
-	static std::string page_Even; //declare in this way it can "remember the previous even page while reading the odd page..ok!
-
 	//std::cout << "Start decoding Galileo I/NAV " << std::endl;
 
 	if(page_string.at(0)=='1')// if page is odd
@@ -427,6 +420,7 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 					std::string TLM_word_for_CRC;
 					TLM_word_for_CRC=TLM_word_for_CRC_stream.str().substr(0,GALILEO_DATA_FRAME_BITS);
 
+					//std::cout<<"Complete word for CRC test: "<<TLM_word_for_CRC<<std::endl;
 					std::bitset<GALILEO_DATA_FRAME_BITS> TLM_word_for_CRC_bits(TLM_word_for_CRC);
 					std::bitset<24> checksum(CRC_data);
 
@@ -438,8 +432,6 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 					{
 						flag_CRC_test = true;
 						// CRC correct: Decode word
-						std::cout<<"CRC correct!"<<std::endl;
-
 						std::string page_number_bits = Data_k.substr (0,6);
 						//std::cout << "Page number bits from Data k" << std::endl << page_number_bits << std::endl;
 
@@ -471,7 +463,6 @@ void Galileo_Navigation_Message::split_page(const char *page, int flag_even_word
 */
 					}else{
 						// CRC wrong.. discard frame
-						std::cout<<"CRC error!"<<std::endl;
 						flag_CRC_test= false;
 					}
 					//********** end of CRC checksum control ***/
@@ -564,6 +555,7 @@ Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
 	ephemeris.flag_all_ephemeris = flag_all_ephemeris;
 	ephemeris.IOD_ephemeris = IOD_ephemeris;
 	ephemeris.SV_ID_PRN_4 = SV_ID_PRN_4;
+	ephemeris.i_satellite_PRN=SV_ID_PRN_4;
 	ephemeris.M0_1 = M0_1;		// Mean anomaly at reference time [semi-circles]
 	ephemeris.delta_n_3 = delta_n_3;		// Mean motion difference from computed value  [semi-circles/sec]
 	ephemeris.e_1 =	e_1;	// Eccentricity

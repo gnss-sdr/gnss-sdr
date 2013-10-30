@@ -104,7 +104,7 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             std::cout << "PVT dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure& e)
                     {
                             std::cout << "Exception opening PVT dump file " << e.what() << std::endl;
                     }
@@ -169,14 +169,15 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
         }
 
     // ############ 2 COMPUTE THE PVT ################################
-//    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() >0)
-//        {
-//            // compute on the fly PVT solution
-//            //mod 8/4/2012 Set the PVT computation rate in this block
-//            if ((d_sample_counter % d_output_rate_ms) == 0)
-//                {
-//                    bool pvt_result;
-//                    pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
+    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() >0)
+        {
+            // compute on the fly PVT solution
+            if ((d_sample_counter % d_output_rate_ms) == 0)
+                {
+                    bool pvt_result;
+                    pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
+
+                    //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
 //                    if (pvt_result==true)
 //                        {
 //                            d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
@@ -210,42 +211,41 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
 //                                        }
 //                                }
 //                        }
-//                }
-//
-//            // DEBUG MESSAGE: Display position in console output
-//            if (((d_sample_counter % d_display_rate_ms) == 0) and d_ls_pvt->b_valid_position == true)
-//                {
-//                    std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-//                    << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
-//                    << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
-//
-//                    std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-//                    << " is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = " <<
-//                    d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP <<
-//                    " GDOP = " << d_ls_pvt->d_GDOP <<std::endl;
-//                }
+                }
+
+            // DEBUG MESSAGE: Display position in console output
+            if (((d_sample_counter % d_display_rate_ms) == 0) and d_ls_pvt->b_valid_position == true)
+                {
+                    std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+                    << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                    << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
+
+                    std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+                    << " is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = " <<
+                    d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP <<
+                    " GDOP = " << d_ls_pvt->d_GDOP <<std::endl;
+                }
 //            // MULTIPLEXED FILE RECORDING - Record results to file
-//            if(d_dump == true)
-//                {
-//                    try
-//                    {
-//                            double tmp_double;
-//                            for (unsigned int i=0; i<d_nchannels ; i++)
-//                                {
-//                                    tmp_double = in[i][0].Pseudorange_m;
-//                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                                    tmp_double = 0;
-//                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                                    d_dump_file.write((char*)&d_rx_time, sizeof(double));
-//                                }
-//                    }
-//                    catch (std::ifstream::failure e)
-//                    {
-//                            std::cout << "Exception writing observables dump file " << e.what() << std::endl;
-//                    }
-//                }
-//        }
-//
+            if(d_dump == true)
+                {
+                    try
+                    {
+                            double tmp_double;
+                            for (unsigned int i=0; i<d_nchannels ; i++)
+                                {
+                                    tmp_double = in[i][0].Pseudorange_m;
+                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    tmp_double = 0;
+                                    d_dump_file.write((char*)&tmp_double, sizeof(double));
+                                    d_dump_file.write((char*)&d_rx_time, sizeof(double));
+                                }
+                    }
+                    catch (const std::ifstream::failure& e)
+                    {
+                            std::cout << "Exception writing observables dump file " << e.what() << std::endl;
+                    }
+                }
+        }
 
     consume_each(1); //one by one
     return 0;

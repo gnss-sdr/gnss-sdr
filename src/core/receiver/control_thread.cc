@@ -493,7 +493,7 @@ void ControlThread::galileo_ephemeris_data_collector()
 		global_galileo_ephemeris_queue.wait_and_pop(galileo_eph);
 
 			// DEBUG MESSAGE
-			std::cout << "Ephemeris record has arrived from SAT ID "
+			std::cout << "Galileo Ephemeris record has arrived from SAT ID "
 					<< galileo_eph.SV_ID_PRN_4 << std::endl;
 
 			// insert new ephemeris record to the global ephemeris map
@@ -502,26 +502,26 @@ void ControlThread::galileo_ephemeris_data_collector()
 				// Check the EPHEMERIS timestamp. If it is newer, then update the ephemeris
 					if (galileo_eph.WN_5 > galileo_eph_old.WN_5) //further check because it is not clear when IOD is reset
 					{
-						std::cout << "Ephemeris record in global map updated -- GALILEO Week Number ="<<galileo_eph.WN_5<<std::endl;
+						std::cout << "Galileo Ephemeris record in global map updated -- GALILEO Week Number ="<<galileo_eph.WN_5<<std::endl;
 						global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4,galileo_eph);
 					}else{
 						if (galileo_eph.IOD_ephemeris > galileo_eph_old.IOD_ephemeris)
 						{
-							std::cout << "Ephemeris record updated in global map-- IOD_ephemeris ="<<galileo_eph.IOD_ephemeris<<std::endl;
+							std::cout << "Galileo Ephemeris record updated in global map-- IOD_ephemeris ="<<galileo_eph.IOD_ephemeris<<std::endl;
 							global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4,galileo_eph);
 
 							std::cout << "IOD_ephemeris OLD: " << galileo_eph_old.IOD_ephemeris<<std::endl;
 							std::cout << "satellite: " << galileo_eph.SV_ID_PRN_4<<std::endl;
 						}
 						else{
-							std::cout<<"Not updating the existing ephemeris, IOD is not changing"<<std::endl;
+							std::cout<<"Not updating the existing Galileo ephemeris, IOD is not changing"<<std::endl;
 						}
 					}
 
 //
 			}else{
 			// insert new ephemeris record
-				std::cout << "New Ephemeris record inserted in global map with TOW ="<<galileo_eph.TOW_5
+				std::cout << "Galileo New Ephemeris record inserted in global map with TOW ="<<galileo_eph.TOW_5
 						  <<", GALILEO Week Number ="<< galileo_eph.WN_5
 						  << " and Ephemeris IOD = " << galileo_eph.IOD_ephemeris << std::endl;
 				global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4, galileo_eph);

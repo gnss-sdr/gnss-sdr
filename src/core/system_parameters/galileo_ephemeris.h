@@ -87,17 +87,17 @@ public:
 	double Galileo_dtr;            // relativistic clock correction term
 
 	// satellite positions
-	double galileo_satpos_X;       //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
-	double galileo_satpos_Y;       //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
-	double galileo_satpos_Z;       //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
+	double d_satpos_X;       //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
+	double d_satpos_Y;       //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
+	double d_satpos_Z;       //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
     // Satellite velocity
-	double galileo_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
-	double galileo_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
-	double galileo_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
+	double d_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
+	double d_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
+	double d_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
 
+	unsigned int i_satellite_PRN; // SV PRN NUMBER
 
     /*The following parameters refers to GPS
-	unsigned int i_satellite_PRN; // SV PRN NUMBER
     double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     double d_Crs;            //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
     double d_Delta_n;        //!< Mean Motion Difference From Computed Value [semi-circles/s]

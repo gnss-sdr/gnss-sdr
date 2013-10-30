@@ -93,9 +93,11 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
             / (Galileo_E1_CODE_CHIP_RATE_HZ
                     / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
-    vector_length_ = code_length_ * (int)(sampled_ms_/4);
 
-    int samples_per_ms = code_length_ / 4;
+
+    int samples_per_ms = round(code_length_ / 4.0);
+
+    vector_length_ = sampled_ms_ * samples_per_ms;
 
     code_ = new gr_complex[vector_length_];
 

@@ -99,6 +99,8 @@ private:
 
     void deinterleaver(int rows, int cols, double *in, double *out);
 
+    void decode_word(double *symbols,int frame_length);
+
     unsigned short int d_preambles_bits[GALILEO_INAV_PREAMBLE_LENGTH_BITS];
 
     signed int *d_preambles_symbols;
@@ -112,6 +114,7 @@ private:
 
     bool d_flag_parity;
     bool d_flag_preamble;
+    int d_CRC_error_counter;
 
     long d_fs_in;
 

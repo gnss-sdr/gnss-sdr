@@ -47,6 +47,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define CRC_ERROR_LIMIT 6
 
 using google::LogMessage;
 
@@ -178,9 +179,10 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_TOW_at_Preamble= 0;
     d_TOW_at_current_symbol = 0;
 
+    d_CRC_error_counter=0;
+
 
 }
-
 
 galileo_e1b_telemetry_decoder_cc::~galileo_e1b_telemetry_decoder_cc()
 {
@@ -188,7 +190,83 @@ galileo_e1b_telemetry_decoder_cc::~galileo_e1b_telemetry_decoder_cc()
     d_dump_file.close();
 }
 
+void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int frame_length)
+{
+	double page_part_symbols_deint[frame_length];
+	// 1. De-interleave
+	deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS,GALILEO_INAV_INTERLEAVER_COLS,page_part_symbols, page_part_symbols_deint);
 
+	// 2. Viterbi decoder
+	// 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
+	// 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180º
+	for (int i=0;i<frame_length;i++)
+	{
+		if ((i+1)%2==0)
+		{
+			page_part_symbols_deint[i]=-page_part_symbols_deint[i];
+		}
+	}
+
+	int page_part_bits[frame_length/2];
+	viterbi_decoder(page_part_symbols_deint, page_part_bits);
+
+	// 3. Call the Galileo page decoder
+
+	std::string page_String;
+
+	for(int i=0; i < (frame_length/2); i++)
+	{
+		if (page_part_bits[i]>0)
+		{
+			page_String.push_back('1');
+		}else{
+			page_String.push_back('0');
+		}
+
+	}
+
+	//std::cout<<"ch["<<d_channel<<"] frame part bits: "<<page_String<<std::endl;
+	if (page_part_bits[0]==1)
+	{
+		// DECODE COMPLETE WORD (even + odd) and TEST CRC
+		d_nav.split_page(page_String, flag_even_word_arrived);
+		if(d_nav.flag_CRC_test==true)
+		{
+			std::cout<<"Galileo CRC correct on channel "<<d_channel<<std::endl;
+		}else{
+			std::cout<<"Galileo CRC error on channel "<<d_channel<<std::endl;
+		}
+		flag_even_word_arrived=0;
+	}
+	else
+	{
+		// STORE HALF WORD (even page)
+		d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
+		flag_even_word_arrived=1;
+	}
+
+	// 4. Push the new navigation data to the queues
+
+	if (d_nav.have_new_ephemeris()==true)
+	{
+		// get ephemeris object for this SV
+		Galileo_Ephemeris ephemeris=d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
+		//std::cout<<"New Galileo Ephemeris received for SV "<<d_satellite.get_PRN()<<std::endl;
+		d_ephemeris_queue->push(ephemeris);
+	}
+	if (d_nav.have_new_iono_and_GST()==true)
+	{
+		Galileo_Iono iono=d_nav.get_iono(); //notice that the read operation will clear the valid flag
+		//std::cout<<"New Galileo IONO model (and UTC) received for SV "<<d_satellite.get_PRN()<<std::endl;
+		d_iono_queue->push(iono);
+	}
+	if (d_nav.have_new_utc_model()==true)
+	{
+		Galileo_Utc_Model utc_model=d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+		//std::cout<<"New Galileo UTC model received for SV "<<d_satellite.get_PRN()<<std::endl;
+		d_utc_model_queue->push(utc_model);
+	}
+}
 int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
@@ -217,29 +295,42 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
     d_flag_preamble = false;
 
     //******* frame sync ******************
-    if (abs(corr_value) >= d_symbols_per_preamble)
-        {
-    		//std::cout << "Positive preamble correlation for Galileo SAT " << this->d_satellite << std::endl;
-            if (d_stat == 0)
+            if (d_stat == 0) //no preamble information
                 {
-                    d_preamble_index = d_sample_counter;//record the preamble sample stamp
-                    std::cout << "Preamble detection for Galileo SAT " << this->d_satellite << std::endl;
-                    d_stat = 1; // enter into frame pre-detection status
+                	if (abs(corr_value) >= d_symbols_per_preamble)
+                    {
+						d_preamble_index = d_sample_counter;//record the preamble sample stamp
+						std::cout << "Preamble detection for Galileo SAT " << this->d_satellite << std::endl;
+						d_stat = 1; // enter into frame pre-detection status
+                    }
                 }
-            else if (d_stat == 1) //check preamble separation
+            else if (d_stat == 1) // posible preamble lock
                 {
-                    preamble_diff = abs(d_sample_counter - d_preamble_index);
-                    //std::cout << "preamble_diff="<< preamble_diff <<" for Galileo SAT " << this->d_satellite << std::endl;
-                    if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) < 1)
-                        {
-
-                    		//std::cout<<"d_sample_counter="<<d_sample_counter<<std::endl;
-                    		//std::cout<<"corr_value="<<corr_value<<std::endl;
+							if (abs(corr_value) >= d_symbols_per_preamble)
+							{
+								//check preamble separation
+								preamble_diff = abs(d_sample_counter - d_preamble_index);
+								if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
+									{
+										//try to decode frame
+										std::cout<<"Starting page decoder for Galileo SAT " << this->d_satellite<<std::endl;
+										d_preamble_index=d_sample_counter;//record the preamble sample stamp
+										d_stat=2;
+									}
+							}else{
+									if (preamble_diff>GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS)
+									{
+										d_stat=0; // start again
+									}
+							}
+                }else if (d_stat==2)
+                {
+                    	if (d_sample_counter==d_preamble_index+GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS)
+                    	{
                     		// NEW Galileo page part is received
                     	    // 0. fetch the symbols into an array
                     	    int frame_length=GALILEO_INAV_PAGE_PART_SYMBOLS-d_symbols_per_preamble;
                     	    double page_part_symbols[frame_length];
-                    	    double page_part_symbols_deint[frame_length];
 
                     	    for (int i=0;i<frame_length;i++)
                     	    {
@@ -251,110 +342,45 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     	    		page_part_symbols[i]=-in[0][i+d_symbols_per_preamble].Prompt_I; // because last symbol of the preamble is just received now!
                     	    	}
                     	    }
-                    		// 1. De-interleave
-                    	    deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS,GALILEO_INAV_INTERLEAVER_COLS,page_part_symbols, page_part_symbols_deint);
-
-                    		// 2. Viterbi decoder
-                    	    // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
-                    	    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180º
-                    	    for (int i=0;i<frame_length;i++)
+                    	    //debug
+                    	    //std::cout<<"ch["<<d_channel<<"] Decoder call at preamble index "<<d_sample_counter<<std::endl;
+//                    	    std::cout<<"ch["<<d_channel<<"] frame symbols: ";
+//                    	    for (int j=0;j<frame_length;j++)
+//                    	    {
+//                    	    	if (page_part_symbols[j]>0)
+//                    	    	{
+//                    	    		std::cout<<"1";
+//                    	    	}else{
+//                    	    		std::cout<<"0";
+//                    	    	}
+//                    	    }
+//                    	    std::cout<<std::endl;
+                    	    //end debug
+                    	    //call the decoder
+                    	    decode_word(page_part_symbols,frame_length);
+                    	    if (d_nav.flag_CRC_test==true)
                     	    {
-                    	    	if ((i+1)%2==0)
+								d_CRC_error_counter=0;
+								d_flag_preamble = true; //valid preamble indicator (initialized to false every work())
+								d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
+								d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;// - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
+								if (!d_flag_frame_sync)
+								{
+									d_flag_frame_sync = true;
+									std::cout <<" Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]" << std::endl;
+								}
+                    	    }else{
+                    	    	d_CRC_error_counter++;
+                    	    	d_preamble_index = d_sample_counter;  //record the preamble sample stamp
+                    	    	if (d_CRC_error_counter>CRC_ERROR_LIMIT)
                     	    	{
-                    	    		page_part_symbols_deint[i]=-page_part_symbols_deint[i];
+                    	    		std::cout << "Lost of frame sync SAT " << this->d_satellite << std::endl;
+                    	    		d_flag_frame_sync=false;
+                    	    		d_stat=0;
                     	    	}
                     	    }
-
-                    	    int page_part_bits[frame_length/2];
-                    	    viterbi_decoder(page_part_symbols_deint, page_part_bits);
-
-                    		// 3. Call the Galileo page decoder
-
-                     	    std::string page_String;
-
-                     	    for(int i=0; i < (frame_length/2); i++)
-                     	    {
-                     	    	if (page_part_bits[i]>0)
-                     	    	{
-                     	    		page_String.push_back('1');
-                     	    	}else{
-                     	    		page_String.push_back('0');
-                     	    	}
-
-                     	    }
-
-                     	    // Galileo_Navigation_Message d_nav; // Now is a class member object, to store the intermediate results from call to call
-
-             	             if (page_part_bits[0]==1)
-                              {
-                             	 //std::cout<<"Page Odd"<<std::endl;
-                             	 d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
-                             	 //decode_page.split_page(page_String, flag_even_word_arrived);
-                             	 flag_even_word_arrived=0;
-                             	 //std::cout << "page odd" << page_String << std::endl;
-                             	DLOG(INFO) << "mara prova print page odd" << page_String;
-
-                             	 //std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
-                               }
-                              else
-                              {
-                             	 //std::cout<<"Page Even"<<std::endl;
-                             	 d_nav.split_page(page_String.c_str(), flag_even_word_arrived);
-                             	 flag_even_word_arrived=1;
-                             	 //std::cout << "page even" << std::endl << page_String << std::endl;
-                             	DLOG(INFO) << "Page type =" << page_part_bits[1];
-                             	 //std::cout<<"Page type ="<< page_part_bits[1]<<std::endl;
-                              }
-
-             	            // 4. Push the new navigation data to the queues
-
-							if (d_nav.have_new_ephemeris()==true)
-							{
-								// get ephemeris object for this SV
-								Galileo_Ephemeris ephemeris=d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
-								std::cout<<"New Galileo Ephemeris received for SV "<<d_satellite.get_PRN()<<std::endl;
-								d_ephemeris_queue->push(ephemeris);
-							}
-							if (d_nav.have_new_iono_and_GST()==true)
-							{
-								Galileo_Iono iono=d_nav.get_iono(); //notice that the read operation will clear the valid flag
-								std::cout<<"New Galileo IONO model (and UTC) received for SV "<<d_satellite.get_PRN()<<std::endl;
-								d_iono_queue->push(iono);
-							}
-							if (d_nav.have_new_utc_model()==true)
-							{
-								Galileo_Utc_Model utc_model=d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
-								std::cout<<"New Galileo UTC model received for SV "<<d_satellite.get_PRN()<<std::endl;
-								d_utc_model_queue->push(utc_model);
-							}
-
-                            d_flag_preamble = true;
-                            d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
-                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;// - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
-
-                            if (!d_flag_frame_sync)
-                                {
-                                    d_flag_frame_sync = true;
-                                    std::cout <<" Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]" << std::endl;
-                                }
                         }
-                }
         }
-    else
-        {
-            if (d_stat == 1)
-                {
-                    preamble_diff = d_sample_counter - d_preamble_index;
-                    if (preamble_diff > GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS)
-                        {
-                            std::cout << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff << std::endl;
-                            d_stat = 0; //lost of frame sync
-                            d_flag_frame_sync = false;
-                            //flag_TOW_set=false;
-                        }
-                }
-        }
-
     consume_each(1); //one by one
     // UPDATE GNSS SYNCHRO DATA
     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
@@ -370,11 +396,9 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
             {
             	//std::cout<< "Using TOW_5 for timestamping" << std::endl;
             	d_TOW_at_Preamble = d_nav.TOW_5+GALILEO_PAGE_SECONDS; //TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later
-            	 std::cout << "d_TOW_at_Preamble="<< d_TOW_at_Preamble<< std::endl;
             	 /* 1 sec (GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD) is added because if we have a TOW value it means that we are at the and of the odd page*/
             	 d_TOW_at_current_symbol = d_TOW_at_Preamble + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
             	 //std::cout << "d_TOW_at_current_symbol="<< d_TOW_at_current_symbol << std::endl;
-
             	 d_nav.flag_TOW_5 = 0;
            }
 
@@ -473,7 +497,7 @@ void galileo_e1b_telemetry_decoder_cc::set_channel(int channel)
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             std::cout << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure& e)
                     {
                             std::cout << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
                     }

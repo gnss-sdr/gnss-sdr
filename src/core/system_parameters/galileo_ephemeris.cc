@@ -258,13 +258,13 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime) //when this funct
     Omega = fmod((Omega + 2*GALILEO_PI), (2*GALILEO_PI));
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
-    galileo_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
-    galileo_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega); //***********************NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
-    galileo_satpos_Z = sin(u) * r * sin(i);
+    d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
+    d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega); //***********************NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
+    d_satpos_Z = sin(u) * r * sin(i);
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
     double Omega_dot = OMEGA_dot_3 - GALILEO_OMEGA_EARTH_DOT;
-    galileo_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + galileo_satpos_X * cos(Omega) - galileo_satpos_Y * cos(i) * sin(Omega);
-    galileo_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + galileo_satpos_X * sin(Omega) + galileo_satpos_Y * cos(i) * cos(Omega);
-    galileo_satvel_Z = galileo_satpos_Y * sin(i);
+    d_satvel_X = - Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
+    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
+    d_satvel_Z = d_satpos_Y * sin(i);
 }

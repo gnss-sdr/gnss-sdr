@@ -80,7 +80,6 @@ public:
     // new iono storage
     Galileo_Iono galileo_iono;
 
-    //double d_GPS_current_time;
     double d_galileo_current_time;
     boost::posix_time::ptime d_position_UTC_time;
 

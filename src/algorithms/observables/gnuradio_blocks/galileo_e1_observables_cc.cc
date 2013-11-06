@@ -157,6 +157,7 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
             	// compute the required symbol history shift in order to match the reference symbol
             	delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms-d_ref_PRN_rx_time_ms;
             	//std::cout<<"delta_rx_time_ms["<<gnss_synchro_iter->second.Channel_ID<<"]="<<delta_rx_time_ms<<std::endl;
+            	//std::cout<<"d_TOW_at_current_symbol["<<gnss_synchro_iter->second.Channel_ID<<"]="<<gnss_synchro_iter->second.d_TOW_at_current_symbol<<std::endl;
             	//compute the pseudorange
             	traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GALILEO_STARTOFFSET_ms;
             	//std::cout<<"traveltime_ms="<<traveltime_ms<<std::endl;

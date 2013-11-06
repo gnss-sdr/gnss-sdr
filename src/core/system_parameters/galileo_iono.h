@@ -60,9 +60,9 @@ public:
     bool Region4_flag_5;	// Ionospheric Disturbance Flag for region 4
     bool Region5_flag_5;	// Ionospheric Disturbance Flag for region 5
 
-    /*from page 6 (UTC) to have a timestamp*/
-	double t0t_6;//UTC data reference Time of Week [s]
-	double WNot_6; //UTC data reference Week number [week]
+    /*from page 5 (UTC) to have a timestamp*/
+	double TOW_5;//UTC data reference Time of Week [s]
+	double WN_5; //UTC data reference Week number [week]
 
 
      /*!

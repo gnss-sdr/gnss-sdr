@@ -444,26 +444,28 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             /*!
              *  \todo The stop timer has to be moved to the signal source!
              */
-            // debug: Second counter in channel 0
-            if (d_channel == 0)
-                {
-                    if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                        {
-                            d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                                            << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
-                        }
-                }
-            else
-                {
-                    if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                        {
-                            d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                                            << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
-                        }
-                }
+        	// stream to collect cout calls to improve thread safety
+        	std::stringstream tmp_str_stream;
+			if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+				{
+					d_last_seg = floor(d_sample_counter / d_fs_in);
+
+					if (d_channel == 0)
+					{
+						// debug: Second counter in channel 0
+						tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
+						std::cout << tmp_str_stream.rdbuf() << std::flush;
+					}
+
+					tmp_str_stream << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+									   << ", Doppler="<<d_carrier_doppler_hz<<" [Hz] CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+					std::cout << tmp_str_stream.rdbuf() << std::flush;
+
+					//std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
+					//if (d_channel == 0 || d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
+				}
+
+
         }
     else
         {

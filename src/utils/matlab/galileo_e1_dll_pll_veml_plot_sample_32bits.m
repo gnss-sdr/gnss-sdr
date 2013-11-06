@@ -29,10 +29,10 @@
 %  */ 
 close all;
 clear all;
-samplingFreq       = 64e6/8;     %[Hz]
-channels=2;
+samplingFreq       = 20480000/4;     %[Hz]
+channels=8;
 %path='/home/javier/workspace/gnss-sdr/trunk/install/';
-path='/home/javier/workspace/gnss-sdr/trunk/data/';
+path='/home/gnss/workspace/gnss-sdr/trunk/data/';
 clear PRN_absolute_sample_start;
 for N=1:1:channels
     tracking_log_path=[path 'veml_tracking_ch_' num2str(N-1) '.dat'];

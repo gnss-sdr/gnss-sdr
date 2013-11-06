@@ -64,10 +64,7 @@ galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, lo
 
 void galileo_e1b_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
 {
-    for (unsigned i = 0; i < 3; i++)
-        {
-            ninput_items_required[i] = GALILEO_INAV_PAGE_SYMBOLS; //set the required sample history
-        }
+  ninput_items_required[0] = GALILEO_INAV_PAGE_SYMBOLS; //set the required sample history
 }
 
 
@@ -386,50 +383,45 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
     //1. Copy the current tracking output
     current_synchro_data = in[0][0];
-    //std::cout<<"flag TOW before add the telemetry decoder information: d_nav.flag_TOW_set"<<std::endl;
     //2. Add the telemetry decoder information
-    if (this->d_flag_preamble==true and d_nav.flag_TOW_set==true) //update TOW at the preamble instant (todo: check for valid d_TOW) //flag preamble is true after the all page (even or odd) is recevived
+    if (this->d_flag_preamble==true and d_nav.flag_TOW_set==true)
+    	//update TOW at the preamble instant
+    	//flag preamble is true after the all page (even and odd) is recevived. I/NAV page period is 2 SECONDS
         {
-    	//std::cout<<"time stamp, identified preamble and TOW set" << std::endl;
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
-            if((d_nav.flag_TOW_5 == 1) and (d_nav.Page_type_time_stamp == 5)) //page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
+            if(d_nav.flag_TOW_5 == true) //page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
             {
             	//std::cout<< "Using TOW_5 for timestamping" << std::endl;
-            	d_TOW_at_Preamble = d_nav.TOW_5+GALILEO_PAGE_SECONDS; //TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later
-            	 /* 1 sec (GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD) is added because if we have a TOW value it means that we are at the and of the odd page*/
-            	 d_TOW_at_current_symbol = d_TOW_at_Preamble + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
-            	 //std::cout << "d_TOW_at_current_symbol="<< d_TOW_at_current_symbol << std::endl;
-            	 d_nav.flag_TOW_5 = 0;
+            	d_TOW_at_Preamble = d_nav.TOW_5+GALILEO_INAV_PAGE_PART_SECONDS; //TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later
+				/* 1  sec (GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD) is added because
+				* if we have a TOW value it means that we are at the begining of the last page part
+				* (GNU Radio history keeps in a buffer the rest of the incomming frame part)*/
+            	 d_TOW_at_current_symbol = d_TOW_at_Preamble;// + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
+            	 d_nav.flag_TOW_5 = false;
            }
 
-            else if((d_nav.flag_TOW_6 == 1) and (d_nav.Page_type_time_stamp == 6)) //page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
+            else if(d_nav.flag_TOW_6 == true) //page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
 			{
             	//std::cout<< "Using TOW_6 for timestamping" << std::endl;
-				d_TOW_at_Preamble = d_nav.TOW_6+GALILEO_PAGE_SECONDS; //TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later
-				//std::cout << "d_TOW_at_Preamble="<< d_TOW_at_Preamble<< std::endl;
-				d_TOW_at_current_symbol = d_TOW_at_Preamble + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
-				//std::cout << "d_TOW_at_current_symbol="<< d_TOW_at_current_symbol << std::endl;
-
-				d_nav.flag_TOW_6 = 0;
+				d_TOW_at_Preamble = d_nav.TOW_6+GALILEO_INAV_PAGE_PART_SECONDS;
+				//TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later
+				/* 1  sec (GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD) is added because
+				* if we have a TOW value it means that we are at the begining of the last page part
+				* (GNU Radio history keeps in a buffer the rest of the incomming frame part)*/
+				d_TOW_at_current_symbol = d_TOW_at_Preamble;// + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
+				d_nav.flag_TOW_6 = false;
 			}
-
-
             else
             {
-            	d_TOW_at_Preamble = d_TOW_at_Preamble + GALILEO_PAGE_SECONDS; //this is the even preamble after the last odd preamble
-            	//std::cout << "d_TOW_at_Preamble="<< d_TOW_at_Preamble << std::endl;
-            	d_TOW_at_current_symbol = d_TOW_at_Preamble + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
-            	//std::cout << "d_TOW_at_current_symbol="<< d_TOW_at_current_symbol << std::endl;
-
+            	//this page has no timming information
+            	d_TOW_at_Preamble = d_TOW_at_Preamble + GALILEO_INAV_PAGE_SECONDS;
+            	d_TOW_at_current_symbol =  d_TOW_at_current_symbol + GALIELO_E1_CODE_PERIOD;// + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
             }
-            //std::cout << "Prn_timestamp_at_preamble_ms ="<< Prn_timestamp_at_preamble_ms << std::endl;
-
 
         }
     else //if there is not a new preamble, we define the TOW of the current symbol
         {
             d_TOW_at_current_symbol = d_TOW_at_current_symbol + GALIELO_E1_CODE_PERIOD;
-            //std::cout << "d_TOW_at_current_symbol="<<  d_TOW_at_current_symbol << std::endl;
         }
 
     //if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
@@ -442,7 +434,6 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 
     current_synchro_data.d_TOW = d_TOW_at_Preamble;
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
-    //current_synchro_data.Flag_valid_word = (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true);
     current_synchro_data.Flag_preamble = d_flag_preamble;
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
     current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;

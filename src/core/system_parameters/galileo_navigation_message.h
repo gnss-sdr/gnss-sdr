@@ -296,15 +296,15 @@ public:
 	 */
 	Galileo_Almanac get_almanac();
 
-	void satellitePosition(double transmitTime);
-
-	double Galileo_System_Time(double WN, double TOW); 			// Galileo System Time (GST), ICD paragraph 5.1.2
-
-	double sv_clock_drift(double transmitTime); 				//Satellite Time Correction Algorithm, ICD 5.1.4
-
-	double sv_clock_relativistic_term(double transmitTime); 	//Satellite Time Correction Algorithm, ICD 5.1.4
-
-	double GST_to_UTC_time(double t_e, int WN);                 //GST-UTC Conversion Algorithm and Parameters
+//	void satellitePosition(double transmitTime);
+//
+//	double Galileo_System_Time(double WN, double TOW); 			// Galileo System Time (GST), ICD paragraph 5.1.2
+//
+//	double sv_clock_drift(double transmitTime); 				//Satellite Time Correction Algorithm, ICD 5.1.4
+//
+//	double sv_clock_relativistic_term(double transmitTime); 	//Satellite Time Correction Algorithm, ICD 5.1.4
+//
+//	double GST_to_UTC_time(double t_e, int WN);                 //GST-UTC Conversion Algorithm and Parameters
 
 	Galileo_Navigation_Message();
 };

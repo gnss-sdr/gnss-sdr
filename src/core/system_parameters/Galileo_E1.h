@@ -70,7 +70,8 @@ const int GALILEO_INAV_PREAMBLE_LENGTH_BITS = 10;
 const int GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS = 250;
 const int GALILEO_INAV_PAGE_PART_SYMBOLS = 250; //!< Each Galileo INAV pages are composed of two parts (even and odd) each of 250 symbols, including preamble. See Galileo ICD 4.3.2
 const int GALILEO_INAV_PAGE_SYMBOLS = 500; //!< The complete Galileo INAV page length
-const int GALILEO_PAGE_SECONDS = 1; //a page last 1 sec
+const int GALILEO_INAV_PAGE_PART_SECONDS = 1; //a page part last 2 sec
+const int GALILEO_INAV_PAGE_SECONDS = 2; //a full page last 2 sec
 const int GALILEO_INAV_INTERLEAVER_ROWS = 8;
 const int GALILEO_INAV_INTERLEAVER_COLS = 30;
 const int GALILEO_TELEMETRY_RATE_BITS_SECOND = 250; //bps
@@ -88,7 +89,7 @@ const std::vector<std::pair<int,int>> IOD_nav_1_bit({{7,10}});
 const std::vector<std::pair<int,int>> T0E_1_bit({{17,14}});
 const double t0e_1_LSB = 60;
 const std::vector<std::pair<int,int>> M0_1_bit({{31,32}});
-const double M0_1_LSB = TWO_N31;
+const double M0_1_LSB = PI_TWO_N31;
 const std::vector<std::pair<int,int>> e_1_bit({{63,32}});
 const double e_1_LSB = TWO_N33;
 const std::vector<std::pair<int,int>> A_1_bit({{95,32}});
@@ -99,22 +100,22 @@ const double A_1_LSB_gal = TWO_N19;
 /*Page 2 - Word type 2: Ephemeris (2/4)*/
 const std::vector<std::pair<int,int>> IOD_nav_2_bit({{7,10}});
 const std::vector<std::pair<int,int>> OMEGA_0_2_bit({{17,32}});
-const double OMEGA_0_2_LSB = TWO_N31;
+const double OMEGA_0_2_LSB = PI_TWO_N31;
 const std::vector<std::pair<int,int>> i_0_2_bit({{49,32}});
-const double i_0_2_LSB = TWO_N31;
+const double i_0_2_LSB = PI_TWO_N31;
 const std::vector<std::pair<int,int>> omega_2_bit({{81,32}});
-const double omega_2_LSB = TWO_N31;
+const double omega_2_LSB = PI_TWO_N31;
 const std::vector<std::pair<int,int>> iDot_2_bit({{113,14}});
-const double iDot_2_LSB = TWO_N43;
+const double iDot_2_LSB = PI_TWO_N43;
 //last two bits are reserved
 
 
 /*Word type 3: Ephemeris (3/4) and SISA*/
 const std::vector<std::pair<int,int>> IOD_nav_3_bit({{7,10}});
 const std::vector<std::pair<int,int>> OMEGA_dot_3_bit({{17,24}});
-const double OMEGA_dot_3_LSB = TWO_N43;
+const double OMEGA_dot_3_LSB = PI_TWO_N43;
 const std::vector<std::pair<int,int>> delta_n_3_bit({{41,16}});
-const double delta_n_3_LSB = TWO_N43;
+const double delta_n_3_LSB = PI_TWO_N43;
 const std::vector<std::pair<int,int>> C_uc_3_bit({{57,16}});
 const double C_uc_3_LSB = TWO_N29;
 const std::vector<std::pair<int,int>> C_us_3_bit({{73,16}});
@@ -272,7 +273,7 @@ const double A_0G_10_LSB = TWO_N35;
 const std::vector<std::pair<int,int>>A_1G_10_bit({{103,12}});
 const double A_1G_10_LSB = TWO_N51;
 
-const std::vector<std::pair<int,int>>t_0G_10_bit({{115,9}});
+const std::vector<std::pair<int,int>>t_0G_10_bit({{115,8}});
 const double t_0G_10_LSB = 3600;
 const std::vector<std::pair<int,int>>WN_0G_10_bit({{123,6}});
 

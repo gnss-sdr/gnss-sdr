@@ -245,7 +245,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
     double TX_time_corrected_s;
     double SV_clock_bias_s = 0;
 
-    double GST=0;
+    //double GST=0;
 
     d_flag_averaging = flag_averaging;
 
@@ -269,7 +269,18 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
 
                     // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
                     // first estimate of transmit time
+                    //Galileo_week_number = galileo_ephemeris_iter->second.WN_5;//for GST
+                    //double sec_in_day = 86400;
+                    //double day_in_week = 7;
+                    //   t = WN*sec_in_day*day_in_week + TOW; // t is Galileo System Time to use to compute satellite positions
+
+                    //JAVIER VERSION:
                     double Rx_time = galileo_current_time;
+
+
+                    //to compute satellite position we need GST = WN+TOW (everything expressed in seconds)
+                    //double Rx_time = galileo_current_time + Galileo_week_number*sec_in_day*day_in_week;
+
                     double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GALILEO_C_m_s;
 
                     // 2- compute the clock drift using the clock model (broadcast) for this SV
@@ -299,11 +310,12 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                     double GST=galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number,galileo_current_time);
                     utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
                     // get time string gregorian calendar
+                    //std::cout<<"UTC_raw="<<utc<<std::endl;
                     boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
                     // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
                     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
                     d_position_UTC_time = p_time;
-                    std::cout << "Galileo RX time at " << boost::posix_time::to_simple_string(p_time)<<std::endl;
+                    //std::cout << "Galileo RX time at " << boost::posix_time::to_simple_string(p_time)<<std::endl;
                     //end debug
 
                     // SV ECEF DEBUG OUTPUT
@@ -345,12 +357,16 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
             // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             d_position_UTC_time = p_time;
-            std::cout << "Galileo RX time at " << boost::posix_time::to_simple_string(p_time)<<std::endl;
+            //std::cout << "Galileo RX time at " << boost::posix_time::to_simple_string(p_time)<<std::endl;
 
             DLOG(INFO) << "Galileo Position at TOW=" << galileo_current_time << " in ECEF (X,Y,Z) = " << mypos << std::endl;
             cart2geo((double)mypos(0), (double)mypos(1), (double)mypos(2), 4);
-            // TODO: Compute UTC time and print PVT solution
-
+            //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
+            if (d_height_m>50000)
+            {
+            	b_valid_position=false;
+            	return false; //erratic PVT
+            }
             DLOG(INFO) << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
                 << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
                 << " [deg], Height= " << d_height_m << " [m]" << std::endl;

@@ -47,8 +47,8 @@ Galileo_Iono::Galileo_Iono()
     Region4_flag_5 = false;	// Ionospheric Disturbance Flag for region 4
     Region5_flag_5 = false;	// Ionospheric Disturbance Flag for region 5
 
-    t0t_6 = 0;
-    WNot_6 = 0;
+    TOW_5 = 0;
+    WN_5 = 0;
 
 }
 

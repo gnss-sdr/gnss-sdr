@@ -43,7 +43,7 @@
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
-#include "galileo_e1_ls_pvt.h" //this file is just a copy of gps
+#include "galileo_e1_ls_pvt.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 

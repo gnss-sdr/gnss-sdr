@@ -571,12 +571,12 @@ void ControlThread::galileo_iono_data_collector()
 			if (global_galileo_iono_map.read(0,galileo_iono_old))
      		{
 				// Check the Iono timestamp from UTC page (page 6). If it is newer, then update the Iono parameters
-					if (galileo_iono.WNot_6 > galileo_iono_old.WNot_6)
+					if (galileo_iono.WN_5 > galileo_iono_old.WN_5)
 					{
 						std::cout << "IONO record updated in global map--new GALILEO UTC-IONO Week Number"<< std::endl;
 						global_galileo_iono_map.write(0,galileo_iono);
 					}else{
-						if (galileo_iono.t0t_6 > galileo_iono_old.t0t_6)
+						if (galileo_iono.TOW_5 > galileo_iono_old.TOW_5)
 						{
 							std::cout << "IONO record updated in global map--new GALILEO UTC-IONO time of Week" << std::endl;
 							global_galileo_iono_map.write(0,galileo_iono);

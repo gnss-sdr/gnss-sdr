@@ -177,10 +177,11 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                     bool pvt_result;
                     pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
 
+
+                    if (pvt_result==true)
+                        {
+                            d_kml_dump.print_position_galileo(d_ls_pvt, d_flag_averaging);
                     //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
-//                    if (pvt_result==true)
-//                        {
-//                            d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
 //                            d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
 //
 //                            if (!b_rinex_header_writen) //  & we have utc data in nav message!
@@ -210,7 +211,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
 //                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
 //                                        }
 //                                }
-//                        }
+                        }
                 }
 
             // DEBUG MESSAGE: Display position in console output

@@ -205,6 +205,7 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime) //when this funct
     //t = WN_5*86400*7 + TOW_5; //WN_5*86400*7 are the second from the origin of the Galileo time
     tk = transmitTime - t0e_1;
 
+    //std::cout<<"Diff t_tx-t_oe="<<tk<<std::endl;
     // Corrected mean motion
     n = n0 + delta_n_3;
 

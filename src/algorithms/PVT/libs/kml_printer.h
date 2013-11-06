@@ -30,12 +30,13 @@
  */
 
 
-#ifndef GNSS_SDR_KML_PRINTER_H_
-#define	GNSS_SDR_KML_PRINTER_H_
+#ifndef    GNSS_SDR_KML_PRINTER_H_
+#define 	GNSS_SDR_KML_PRINTER_H_
 
 #include <iostream>
 #include <fstream>
 #include "gps_l1_ca_ls_pvt.h"
+#include "galileo_e1_ls_pvt.h"
 
 
 /*!
@@ -50,6 +51,7 @@ private:
 public:
     bool set_headers(std::string filename);
     bool print_position(gps_l1_ca_ls_pvt* position, bool print_average_values);
+    bool print_position_galileo(galileo_e1_ls_pvt* position, bool print_average_values);
     bool close_file();
     Kml_Printer();
     ~Kml_Printer();

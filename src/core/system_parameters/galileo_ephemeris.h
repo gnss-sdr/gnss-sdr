@@ -80,6 +80,7 @@ public:
 	double af2_4;			//SV clock drift rate correction coefficient [s/s^2]
 
 	/*GST*/
+	//Not belong to ephemeris set (page 1 to 4)
 	double WN_5; //Week number
 	double TOW_5; //Time of Week
 
@@ -97,67 +98,7 @@ public:
 
 	unsigned int i_satellite_PRN; // SV PRN NUMBER
 
-    /*The following parameters refers to GPS
-    double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-    double d_Crs;            //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
-    double d_Delta_n;        //!< Mean Motion Difference From Computed Value [semi-circles/s]
-    double d_M_0;            //!< Mean Anomaly at Reference Time [semi-circles]
-    double d_Cuc;            //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
-    double d_e_eccentricity; //!< Eccentricity [dimensionless]
-    double d_Cus;            //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
-    double d_sqrt_A;         //!< Square Root of the Semi-Major Axis [sqrt(m)]
-    double d_Toe;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
-    double d_Toc;            //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
-    double d_Cic;            //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
-    double d_OMEGA0;         //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
-    double d_Cis;            //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
-    double d_i_0;            //!< Inclination Angle at Reference Time [semi-circles]
-    double d_Crc;            //!< Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius [m]
-    double d_OMEGA;          //!< Argument of Perigee [semi-cicles]
-    double d_OMEGA_DOT;      //!< Rate of Right Ascension [semi-circles/s]
-    double d_IDOT;           //!< Rate of Inclination Angle [semi-circles/s]
-    int i_code_on_L2;        //!< If 1, P code ON in L2;  if 2, C/A code ON in L2;
-    int i_GPS_week;          //!< GPS week number, aka WN [week]
-    bool b_L2_P_data_flag;   //!< When true, indicates that the NAV data stream was commanded OFF on the P-code of the L2 channel
-    int i_SV_accuracy;       //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200E)
-    int i_SV_health;
-    double d_TGD;            //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
-    double d_IODC;           //!< Issue of Data, Clock
-    int i_AODO;              //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
-
-    bool b_fit_interval_flag;//!< indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
-    double d_spare1;
-    double d_spare2;
-
-    double d_A_f0;          //!< Coefficient 0 of code phase offset model [s]
-    double d_A_f1;          //!< Coefficient 1 of code phase offset model [s/s]
-    double d_A_f2;          //!< Coefficient 2 of code phase offset model [s/s^2]
-
-
-    // Flags
-
-    bool b_integrity_status_flag;
-    bool b_alert_flag;      //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
-    bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
-
-    // clock terms derived from ephemeris data
-    double d_satClkDrift;    // GPS clock error
-    double d_dtr;            // relativistic clock correction term
-
-    // satellite positions
-    double d_satpos_X;       //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
-    double d_satpos_Y;       //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
-    double d_satpos_Z;       //!< Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
-
-    // Satellite velocity
-    double d_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
-    double d_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
-    double d_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
-
-
-    std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
-
-
+	/*
     template<class Archive>
 
      \\brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.

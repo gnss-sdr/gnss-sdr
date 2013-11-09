@@ -55,6 +55,12 @@
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
+#include "sbas_telemetry_data.h"
+#include "sbas_ionospheric_correction.h"
+#include "sbas_satellite_correction.h"
+#include "sbas_ephemeris.h"
+#include "sbas_time.h"
+
 #include <sys/time.h>
 #include <ctime>
 #include <memory>
@@ -68,7 +74,7 @@ DECLARE_string(log_dir);
  */
 
 /*
- * Concurrent queue that communicates the Telemetry Decoder
+ * Concurrent queues that communicates the Telemetry Decoder
  * to the Observables modules
  */
 
@@ -96,6 +102,15 @@ concurrent_map<Galileo_Iono> global_galileo_iono_map;
 concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
 concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
 
+// For SBAS CORRECTIONS
+concurrent_queue<Sbas_Raw_Msg> global_sbas_raw_msg_queue;
+concurrent_queue<Sbas_Ionosphere_Correction> global_sbas_iono_queue;
+concurrent_queue<Sbas_Satellite_Correction> global_sbas_sat_corr_queue;
+concurrent_queue<Sbas_Ephemeris> global_sbas_ephemeris_queue;
+
+concurrent_map<Sbas_Ionosphere_Correction> global_sbas_iono_map;
+concurrent_map<Sbas_Satellite_Correction> global_sbas_sat_corr_map;
+concurrent_map<Sbas_Ephemeris> global_sbas_ephemeris_map;
 
 int main(int argc, char** argv)
 {

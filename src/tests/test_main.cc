@@ -55,6 +55,12 @@
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 
+#include "sbas_ephemeris.h"
+#include "sbas_telemetry_data.h"
+#include "sbas_ionospheric_correction.h"
+#include "sbas_satellite_correction.h"
+#include "sbas_time.h"
+
 #include "control_thread.h"
 
 //#include "arithmetic/complex_arithmetic_libc.cc"
@@ -65,20 +71,26 @@
 #include "control_thread/control_message_factory_test.cc"
 //#include "control_thread/control_thread_test.cc"
 #include "flowgraph/pass_through_test.cc"
+
+#include "gnss_block/gnss_block_factory_test.cc"
+#include "gnuradio_block/gnss_sdr_valve_test.cc"
+#include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
+#include "string_converter/string_converter_test.cc"
+
 //#include "flowgraph/gnss_flowgraph_test.cc"
 #include "gnss_block/file_output_filter_test.cc"
 #include "gnss_block/file_signal_source_test.cc"
 #include "gnss_block/fir_filter_test.cc"
 
-//#include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
+#include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
-#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
+//#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
 #if OPENCL
     #include "gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
 #endif
 #include "gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
-//#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc"
-//#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
+#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc"
+#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
 #include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
@@ -86,10 +98,7 @@
 
 #include "gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc"
 
-#include "gnss_block/gnss_block_factory_test.cc"
-#include "gnuradio_block/gnss_sdr_valve_test.cc"
-#include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
-#include "string_converter/string_converter_test.cc"
+
 
 
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
@@ -114,6 +123,18 @@ concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
 concurrent_map<Galileo_Iono> global_galileo_iono_map;
 concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
 concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
+
+// For SBAS CORRECTIONS
+concurrent_queue<Sbas_Raw_Msg> global_sbas_raw_msg_queue;
+concurrent_queue<Sbas_Ionosphere_Correction> global_sbas_iono_queue;
+concurrent_queue<Sbas_Satellite_Correction> global_sbas_sat_corr_queue;
+concurrent_queue<Sbas_Ephemeris> global_sbas_ephemeris_queue;
+
+concurrent_map<Sbas_Ionosphere_Correction> global_sbas_iono_map;
+concurrent_map<Sbas_Satellite_Correction> global_sbas_sat_corr_map;
+concurrent_map<Sbas_Ephemeris> global_sbas_ephemeris_map;
+
+
 
 int main(int argc, char **argv)
 {

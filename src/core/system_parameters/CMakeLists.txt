@@ -32,10 +32,15 @@ set(SYSTEM_PARAMETERS_SOURCES
 	 galileo_almanac.cc
 	 galileo_iono.cc
 	 galileo_navigation_message.cc
+	 sbas_ephemeris.cc
+	 sbas_ionospheric_correction.cc
+	 sbas_satellite_correction.cc
+	 sbas_telemetry_data.cc
 )
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${GLOG_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}

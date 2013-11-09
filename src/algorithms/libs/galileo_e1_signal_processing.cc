@@ -122,8 +122,8 @@ galileo_e1_gen(std::complex<float>* _dest, int* _prn, char _Signal[3])
     const float alpha = sqrt(10.0 / 11.0);
     const float beta = sqrt(1.0 / 11.0);
 
-    std::complex<float> sinboc_11[_codeLength]; // 12*4092 (_codeLength not accepted by Clang )
-    std::complex<float> sinboc_61[_codeLength];
+    std::complex<float> sinboc_11[12*4092]; //  _codeLength not accepted by Clang
+    std::complex<float> sinboc_61[12*4092];
 
     galileo_e1_sinboc_11_gen(sinboc_11, _prn, _codeLength); //generate sinboc(1,1) 12 samples per chip
     galileo_e1_sinboc_61_gen(sinboc_61, _prn, _codeLength); //generate sinboc(6,1) 12 samples per chip
@@ -154,7 +154,7 @@ galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
         bool _secondary_flag)
 {
 
-    // This function is based on the GNU software GPS for MATLAB in the Kay Borre bookç
+    // This function is based on the GNU software GPS for MATLAB in Kay Borre's book
 
     std::string _galileo_signal = _Signal;
     unsigned int _samplesPerCode;

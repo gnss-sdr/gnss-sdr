@@ -68,6 +68,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      set(OS_IS_MACOSX TRUE)
      set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
      set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+     exec_program(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
+     string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
+     if(${DARWIN_VERSION} MATCHES "13")
+         set(MACOSX_MAVERICKS TRUE)
+     endif(${DARWIN_VERSION} MATCHES "13")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 
@@ -120,32 +125,6 @@ endif(NOT Boost_FOUND)
 # GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
 ################################################################################
 
-if(INSTALL_GNURADIO)
-     if(OperatingSystem MATCHES "Linux")
-          message("Trying to install GNU Radio and all its dependencies.")
-          message("This process can take a long time.")
-          #set(GNURADIO_RELEASE "3.7.0")
-          #set(UHD_RELEASE "003_005_003")
-          set(INSTALL_GNURADIO CACHE BOOL OFF FORCE)
-          file(DOWNLOAD http://www.sbrac.org/files/build-gnuradio
-               ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
-          )
-          file(COPY ${CMAKE_CURRENT_BINARY_DIR}/download/build-gnuradio
-               DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
-               FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-          )
-          execute_process(
-               COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/build-gnuradio -l ${CMAKE_CURRENT_BINARY_DIR}/build-gnuradio.log
-               WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
-          )
-          #  The flags -gt v${GNURADIO_RELEASE} -ut release_${UHD_RELEASE} do not work :-(     
-     else(OperatingSystem MATCHES "Linux")
-          message( "The script http://www.sbrac.org/files/build-gnuradio does not work in your operating system.")
-          message( "Please visit http://gnuradio.org and find out how to install GNU Radio.")
-          message( "Once installed, run 'cmake ${RELATIVE_CMAKE_CALL}' again.")
-     endif(OperatingSystem MATCHES "Linux")
-endif(INSTALL_GNURADIO)
-
 
 find_package(GnuradioRuntime)
 find_package(GnuradioBlocks)
@@ -156,25 +135,25 @@ find_package(GnuradioFilter)
 find_package(GnuradioFft)
 find_package(Volk)
 if(NOT GNURADIO_RUNTIME_FOUND)
-    message(FATAL_ERROR "gnuradio-runtime 3.7 or later is required to build gnss-sdr")
+   # message(FATAL_ERROR "gnuradio-runtime 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_BLOCKS_FOUND)
-    message(FATAL_ERROR "gnuradio-blocks 3.7 or later is required to build gnss-sdr")
+    #message(FATAL_ERROR "gnuradio-blocks 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT UHD_FOUND)
-    message(FATAL_ERROR "UHD is required to build gnss-sdr")
+    #message(FATAL_ERROR "UHD is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_UHD_FOUND)
-    message(FATAL_ERROR "gnuradio-uhd 3.7 or later is required to build gnss-sdr")
+    #message(FATAL_ERROR "gnuradio-uhd 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FILTER_FOUND)
-    message(FATAL_ERROR "gnuradio-filter 3.7 or later is required to build gnss-sdr")
+    #message(FATAL_ERROR "gnuradio-filter 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FFT_FOUND)
-    message(FATAL_ERROR "gnuradio-fft 3.7 or later is required to build gnss-sdr")
+    #message(FATAL_ERROR "gnuradio-fft 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT VOLK_FOUND)
-    message(FATAL_ERROR "VOLK is required to build gnss-sdr")
+    #message(FATAL_ERROR "VOLK is required to build gnss-sdr")
 endif()
 
 
@@ -470,7 +449,6 @@ endif($ENV{RTLSDR_DRIVER} )
 
 
 
-
 ########################################################################
 # Set compiler flags
 ########################################################################
@@ -516,6 +494,7 @@ endif(GPERFTOOLS_FOUND)
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
      # message("64-bits architecture detected.") 
      #set(MY_CXX_FLAGS "${MY_CXX_FLAGS}  ...")
+     set(ARCH_64BITS TRUE)
      # link_libraries(pthread) # Needed by Fedora 18
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 

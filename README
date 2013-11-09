@@ -239,7 +239,68 @@ $ rm -rf gnss-sdr/build/*
 
 Mac OS X 
 ------------------------------
-Tested version: 10.8.5 (Mountain Lion)
+Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks)
+
+
+
+MAC OS X 10.9 Mavericks
+---------------------------
+If you still have not installed Xcode, do it now from the App Store (it's free). Once installed, open a terminal and type:
+
+$ xcode-select --install
+
+and follow the instructions in the screen.
+
+Install Macports: https://distfiles.macports.org/MacPorts/MacPorts-2.2.1-10.9-Mavericks.pkg
+
+(if you are upgrading from a previous installation, please folloe the migration rules at http://trac.macports.org/wiki/Migration)
+
+In a terminal, type:
+
+$ sudo port selfupdate
+$ sudo port upgrade outdated
+$ sudo port install doxygen +latex
+$ sudo port install gnuradio
+$ sudo port install armadillo
+
+Install GFlags manually from the trunk:
+
+$ svn checkout http://gflags.googlecode.com/svn/trunk gflags-trunk
+$ cd gflags-trunk
+$ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure  
+$ make
+$ sudo make install
+
+Install Glog manually from the trunk, after applying a patch:
+
+$ svn checkout -r139 http://google-glog.googlecode.com/svn/trunk/ google-glog
+$ cd google-glog
+ 
+Open your browser and go to: http://code.google.com/p/google-glog/issues/detail?id=121
+
+Download  libc++.diff (from comment #3)
+
+$ mv $HOME/Downloads/libc++.diff .
+$ cd src
+$ patch  < ../libc++.diff
+$ cd ..
+$ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure 
+$ make
+$ sudo make install
+
+Finally, you are ready to checkout the GNSS-SDR repository and build the software:
+
+$ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
+$ cd gnss-sdr/build
+$ cmake ../ -DCMAKE_CXX_COMPILER=/usr/bin/clang++
+$ make
+$ make install
+
+
+
+
+MAC OS X 10.8 Mountain Lion 
+---------------------------
 
 If you still have not installed Xcode, do it now from the App Store (it's free). Once installed, download and install the command line tools:
 

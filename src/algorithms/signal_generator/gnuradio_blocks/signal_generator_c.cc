@@ -27,9 +27,6 @@
  *
  * -------------------------------------------------------------------------
  */
-//#ifdef HAVE_CONFIG_H
-//#include "config.h"
-//#endif
 
 #include "signal_generator_c.h"
 #include <gnuradio/io_signature.h>
@@ -57,23 +54,23 @@ signal_make_generator_c (std::vector<std::string> system, const std::vector<unsi
  * The private constructor
  */
 signal_generator_c::signal_generator_c (std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-                              const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-                              const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
-                              unsigned int fs_in, unsigned int vector_length, float BW_BB) :
+        const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
+        const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
+        unsigned int fs_in, unsigned int vector_length, float BW_BB) :
 
-  gr::block ("signal_gen_cc", gr::io_signature::make(0, 0, sizeof(gr_complex)),
-                              gr::io_signature::make(1, 1, sizeof(gr_complex)*vector_length)),
-  system_(system),
-  PRN_(PRN),
-  CN0_dB_(CN0_dB),
-  doppler_Hz_(doppler_Hz),
-  delay_chips_(delay_chips),
-  data_flag_(data_flag),
-  noise_flag_(noise_flag),
-  fs_in_(fs_in),
-  num_sats_(PRN.size()),
-  vector_length_(vector_length),
-  BW_BB_(BW_BB*(float)fs_in/2.0)
+          gr::block ("signal_gen_cc", gr::io_signature::make(0, 0, sizeof(gr_complex)),
+                  gr::io_signature::make(1, 1, sizeof(gr_complex)*vector_length)),
+                  system_(system),
+                  PRN_(PRN),
+                  CN0_dB_(CN0_dB),
+                  doppler_Hz_(doppler_Hz),
+                  delay_chips_(delay_chips),
+                  data_flag_(data_flag),
+                  noise_flag_(noise_flag),
+                  fs_in_(fs_in),
+                  num_sats_(PRN.size()),
+                  vector_length_(vector_length),
+                  BW_BB_(BW_BB*(float)fs_in/2.0)
 {
     init();
     generate_codes();
@@ -143,7 +140,7 @@ void signal_generator_c::generate_codes()
             if (posix_memalign((void**)&(sampled_code_data_[sat]), 16,
                                vector_length_ * sizeof(gr_complex)) == 0){};
 
-            gr_complex code[samples_per_code_[sat]];
+            gr_complex code[8000];//[samples_per_code_[sat]];
 
             if (system_[sat] == "G")
                 {

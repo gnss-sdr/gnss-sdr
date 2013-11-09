@@ -52,7 +52,7 @@ include_directories(
 if(OPENCL_FOUND)
     include_directories( ${OPENCL_INCLUDE_DIRS} )
     if(OS_IS_MACOSX)
-         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL") 
+         set(OPT_LIBRARIES ${OPT_LIBRARIES} "-framework OpenCL")
     else(OS_IS_MACOSX)
          set(OPT_LIBRARIES ${OPT_LIBRARIES} ${OPENCL_LIBRARIES})
     endif(OS_IS_MACOSX)

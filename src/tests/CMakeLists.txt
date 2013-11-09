@@ -25,17 +25,32 @@ endif(NOT EXISTS GTEST_DIR_LOCAL)
 if(NOT GTEST_DIR_LOCAL)
      # if GTEST_DIR is not defined, we download and build it
      set(gtest_RELEASE 1.7.0)
-     ExternalProject_Add(
-          gtest-${gtest_RELEASE}
-          URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
-          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../download/gtest-${gtest_RELEASE}
-          URL_MD5 "2d6ec8ccdf5c46b05ba54a9fd1d130d7"
-          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
-          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
-          UPDATE_COMMAND ""
-          PATCH_COMMAND ""
-          INSTALL_COMMAND ""
-     )
+     if(MACOSX_MAVERICKS)
+         ExternalProject_Add(
+              gtest-${gtest_RELEASE}
+              URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
+              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../download/gtest-${gtest_RELEASE}
+              URL_MD5 "2d6ec8ccdf5c46b05ba54a9fd1d130d7"
+              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
+              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
+              CMAKE_ARGS -DCMAKE_CXX_COMPILER=/usr/bin/clang++
+              UPDATE_COMMAND ""
+              PATCH_COMMAND ""
+              INSTALL_COMMAND ""
+         )
+     else(MACOSX_MAVERICKS)
+         ExternalProject_Add(
+              gtest-${gtest_RELEASE}
+              URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
+              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../download/gtest-${gtest_RELEASE}
+              URL_MD5 "2d6ec8ccdf5c46b05ba54a9fd1d130d7"
+              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
+              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
+              UPDATE_COMMAND ""
+              PATCH_COMMAND ""
+              INSTALL_COMMAND ""
+         )
+     endif(MACOSX_MAVERICKS)
      # Set up variables
      # Set recently downloaded and build Googletest root folder
      set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}")
@@ -101,13 +116,17 @@ find_library(
            /usr/lib64
 )
 if(OS_IS_MACOSX)
-     # Tell the linker where the libraries installed by MacPorts are
-     link_directories( /opt/local/lib ) # not very elegant, to be fixed
-     # set(MAC_LIBRARIES sdtc++)
+     if(MACOSX_MAVERICKS)
+         # Tell the linker where the libraries installed by MacPorts are
+         link_directories(/opt/local/lib /usr/local/lib ) # not very elegant, to be fixed
+         set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11 -lgnuradio-runtime -lgnuradio-pmt -lgnuradio-blocks -lgnuradio-fft -lgnuradio-filter -lgnuradio-uhd")
+     else(MACOSX_MAVERICKS)
+         link_directories( /opt/local/lib ) # not very elegant, to be fixed
+     endif(MACOSX_MAVERICKS)
 endif(OS_IS_MACOSX)
 
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
-target_link_libraries(run_tests ${Boost_LIBRARIES}  ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_ANALOG_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(run_tests ${MAC_LIBRARIES} ${Boost_LIBRARIES}  ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_ANALOG_LIBRARIES} gnss_sp_libs gnss_rx  signal_generator_blocks)
 
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
 
@@ -145,7 +164,7 @@ add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gnss_block_factory_test.cc   
 )
-target_link_libraries(gnss_block_test ${Boost_LIBRARIES} ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(gnss_block_test ${Boost_LIBRARIES} ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx signal_generator_blocks)
 add_test(gnss_block_test gnss_block_test)
 
  

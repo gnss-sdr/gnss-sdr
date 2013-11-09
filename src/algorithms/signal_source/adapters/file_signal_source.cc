@@ -142,13 +142,16 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
             if (size > 0)
                 {
-                    samples_ = floor((double)size / (double)item_size() - ceil(0.002 * (double)sampling_frequency_)); //process all the samples available in the file excluding the last 2 ms
+                    samples_ = floor((double)size / (double)item_size() - ceil(0.002 * (double)sampling_frequency_)); //process all the samples available in the file excluding at least the last 1 ms
                 }
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
     signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
+#ifdef ARCH_64BITS
+    signal_duration_s /= 2;
+#endif
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 

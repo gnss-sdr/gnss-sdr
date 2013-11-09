@@ -90,5 +90,9 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
 )
 
+if(ARCH_64BITS)
+    add_definitions(-DARCH_64BITS=1)
+endif(ARCH_64BITS)
+
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES})
 target_link_libraries(signal_source_adapters signal_source_gr_blocks ${Boost_LIBRARIES}  ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${UHD_LIBRARIES}  ${GNURADIO_UHD_LIBRARIES} ${OPT_LIBRARIES} gnss_sp_libs)

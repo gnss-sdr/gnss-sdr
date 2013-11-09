@@ -34,9 +34,13 @@ include_directories(
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
 if(OS_IS_MACOSX)
-     # Tell the linker where the libraries installed by MacPorts are
-     link_directories( /opt/local/lib ) # Not very elegant, to be fixed
-     set(MAC_LIBRARIES "-lstdc++")
+     if (MACOSX_MAVERICKS)
+         link_directories( /opt/local/lib /usr/local/lib) # Not very elegant, to be fixed
+         set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11 -lgnuradio-runtime -lgnuradio-pmt -lgnuradio-blocks -lgnuradio-fft -lgnuradio-filter -lgnuradio-uhd ${GFlags_LIBS} ${GLOG_LIBRARIES}")
+     else(MACOSX_MAVERICKS)
+         link_directories( /opt/local/lib )  # Not very elegant, to be fixed
+         set(MAC_LIBRARIES "-lstdc++")
+     endif(MACOSX_MAVERICKS)
 endif(OS_IS_MACOSX)
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)

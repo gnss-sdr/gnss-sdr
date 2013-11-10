@@ -42,12 +42,19 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "gnss_synchro.h"
 #include "concurrent_map.h"
+#include "sbas_telemetry_data.h"
+#include "sbas_ionospheric_correction.h"
 
 using google::LogMessage;
 
 extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 extern concurrent_map<Gps_Iono> global_gps_iono_map;
 extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
+
+extern concurrent_queue<Sbas_Raw_Msg> global_sbas_raw_msg_queue;
+extern concurrent_map<Sbas_Ionosphere_Correction> global_sbas_iono_map;
+extern concurrent_map<Sbas_Satellite_Correction> global_sbas_sat_corr_map;
+extern concurrent_map<Sbas_Ephemeris> global_sbas_ephemeris_map;
 
 gps_l1_ca_pvt_cc_sptr
 gps_l1_ca_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname)
@@ -99,6 +106,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     d_rx_time = 0.0;
 
     b_rinex_header_writen = false;
+    b_rinex_sbs_header_writen = false;
     rp = new Rinex_Printer();
 
     // ############# ENABLE DATA FILE LOG #################
@@ -171,6 +179,52 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
         {
             // IONO data is shared for all the GPS satellites. Read always at ID=0
             global_gps_iono_map.read(0,d_ls_pvt->gps_iono);
+        }
+
+    // update SBAS data collections
+    if (global_sbas_iono_map.size() > 0)
+        {
+            // SBAS ionosperic correction is shared for all the GPS satellites. Read always at ID=0
+            global_sbas_iono_map.read(0, d_ls_pvt->sbas_iono);
+        }
+    d_ls_pvt->sbas_sat_corr_map = global_sbas_sat_corr_map.get_map_copy();
+    d_ls_pvt->sbas_ephemeris_map = global_sbas_ephemeris_map.get_map_copy();
+
+    // read SBAS raw messages directly from queue and write them into rinex file
+    Sbas_Raw_Msg sbas_raw_msg;
+    while (global_sbas_raw_msg_queue.try_pop(sbas_raw_msg))
+        {
+            // create the header of not yet done
+            if(!b_rinex_sbs_header_writen)
+                {
+                    rp->rinex_sbs_header(rp->sbsFile);
+                    b_rinex_sbs_header_writen = true;
+                }
+
+            // Define the RX time of the SBAS message by using the GPS time.
+            // It has only an effect if there has not been yet a SBAS MT12 available
+            // when the message was received.
+            if(sbas_raw_msg.get_rx_time_obj().is_related() == false
+                    && gnss_pseudoranges_map.size() > 0
+                    && d_ls_pvt->gps_ephemeris_map.size() > 0)
+                {
+                    // doesn't matter which channel/satellite we choose
+                    Gnss_Synchro gs = gnss_pseudoranges_map.begin()->second;
+                    Gps_Ephemeris eph = d_ls_pvt->gps_ephemeris_map.begin()->second;
+
+                    double relative_rx_time = gs.Tracking_timestamp_secs;
+                    int gps_week = eph.i_GPS_week;
+                    double gps_sec = gs.d_TOW_at_current_symbol;
+
+                    Sbas_Time_Relation time_rel(relative_rx_time,gps_week,gps_sec);
+                    sbas_raw_msg.relate(time_rel);
+                }
+
+            // send the message to the rinex logger if it has a valid GPS time stamp
+            if(sbas_raw_msg.get_rx_time_obj().is_related())
+                {
+                    rp->log_rinex_sbs(rp->sbsFile, sbas_raw_msg);
+                }
         }
 
     // ############ 2 COMPUTE THE PVT ################################

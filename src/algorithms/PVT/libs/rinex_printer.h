@@ -61,6 +61,8 @@
 #include "GPS_L1_CA.h"
 #include "gnss_synchro.h"
 
+class Sbas_Raw_Msg;
+
 /*!
  * \brief Class that handles the generation of Receiver
  * INdependent EXchange format (RINEX) files
@@ -80,6 +82,7 @@ public:
 
     std::ofstream obsFile ; //<! Output file stream for RINEX observation file
     std::ofstream navFile ; //<! Output file stream for RINEX navigation data file
+    std::ofstream sbsFile ; //<! Output file stream for RINEX SBAS raw data file
 
     /*!
      *  \brief Generates the Navigation Data header
@@ -90,6 +93,11 @@ public:
      *  \brief Generates the Observation data header
      */
     void rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, double d_TOW_first_observation);
+
+    /*!
+     *  \brief Generates the SBAS raw data header
+     */
+    void rinex_sbs_header(std::ofstream& out);
 
     /*!
      *  \brief Computes the UTC time and returns a boost::posix_time::ptime object
@@ -111,6 +119,17 @@ public:
      *  \brief Writes observables into the RINEX file
      */
     void log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
+
+    /*!
+     * \brief Represents GPS time in the date time format. Leap years are considered, but leap seconds are not.
+     */
+    void to_date_time(int gps_week, int gps_tow, int &year, int &month, int &day, int &hour, int &minute, int &second);
+
+    /*!
+     *  \brief Writes raw SBAS messages into the RINEX file
+     */
+    void log_rinex_sbs(std::ofstream& out, Sbas_Raw_Msg sbs_message);
+
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     std::map<std::string,std::string> observationCode; //<! GNSS observation descriptors
@@ -144,6 +163,7 @@ private:
 
     std::string navfilename;
     std::string obsfilename;
+    std::string sbsfilename;
 
     /*
      * Generates the data for the PGM / RUN BY / DATE line
@@ -320,6 +340,7 @@ private:
      */
     template <class X>
     inline std::string asString(const X x);
+    inline std::string asFixWidthString(const int x, const int width, char fill_digit);
 };
 
 
@@ -518,6 +539,15 @@ inline std::string Rinex_Printer::asString(const double x, const std::string::si
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(precision) << x;
     return ss.str();
+}
+
+
+inline std::string Rinex_Printer::asFixWidthString(const int x, const int width, char fill_digit)
+{
+    std::ostringstream ss;
+    ss << std::setfill(fill_digit) << std::setw(width) << x;
+    //std::cout << "asFixWidthString(): x=" << x << " width=" << width << " fill_digit=" << fill_digit << " ss=" << ss.str() << std::endl;
+    return ss.str().substr(ss.str().size() - width);
 }
 
 

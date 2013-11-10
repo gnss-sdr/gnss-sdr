@@ -65,6 +65,7 @@ private:
     boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool b_rinex_header_writen;
+    bool b_rinex_sbs_header_writen;
     Rinex_Printer *rp;
     unsigned int d_nchannels;
     std::string d_dump_filename;

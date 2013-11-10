@@ -38,7 +38,6 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-//#include <math.h>
 #include <cmath>
 #include <map>
 #include <algorithm>
@@ -50,6 +49,11 @@
 #include "gnss_synchro.h"
 #include "gps_ephemeris.h"
 #include "gps_utc_model.h"
+
+#include "sbas_telemetry_data.h"
+#include "sbas_ionospheric_correction.h"
+#include "sbas_satellite_correction.h"
+#include "sbas_ephemeris.h"
 
 #define PVT_MAX_CHANNELS 24
 
@@ -80,6 +84,10 @@ public:
     Gps_Utc_Model gps_utc_model;
     // new iono storage
     Gps_Iono gps_iono;
+    // new SBAS storage
+    Sbas_Ionosphere_Correction sbas_iono;
+    std::map<int,Sbas_Satellite_Correction> sbas_sat_corr_map;
+    std::map<int,Sbas_Ephemeris> sbas_ephemeris_map;
 
     double d_GPS_current_time;
     boost::posix_time::ptime d_position_UTC_time;

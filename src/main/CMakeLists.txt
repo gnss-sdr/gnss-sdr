@@ -36,7 +36,7 @@ add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 if(OS_IS_MACOSX)
      if (MACOSX_MAVERICKS)
          link_directories( /opt/local/lib /usr/local/lib) # Not very elegant, to be fixed
-         set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11 -lgnuradio-runtime -lgnuradio-pmt -lgnuradio-blocks -lgnuradio-fft -lgnuradio-filter -lgnuradio-uhd ${GFlags_LIBS} ${GLOG_LIBRARIES}")
+         set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11 -framework Accelerate")
      else(MACOSX_MAVERICKS)
          link_directories( /opt/local/lib )  # Not very elegant, to be fixed
          set(MAC_LIBRARIES "-lstdc++")

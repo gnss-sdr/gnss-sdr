@@ -1,6 +1,6 @@
 /*
  * \file sbas_ephemeris.cc
- * \brief  Interface of a SBAS REFERENCE LOCATION storage
+ * \brief  Implementation of a SBAS REFERENCE LOCATION storage
  *
  * \author Daniel Fehr, 2013. daniel.co(at)bluewin.ch
  *
@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <iostream>
-
 #include "sbas_ephemeris.h"
 
 void Sbas_Ephemeris::print(std::ostream &out)

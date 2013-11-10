@@ -92,11 +92,6 @@ bool Sbas_Ionosphere_Correction::apply(double sample_stamp, double latitude_d, d
 }
 
 
-#define PI          3.1415926535897932  /* pi */
-#define D2R         (PI/180.0)          /* deg to rad */
-#define R2D         (180.0/PI)         /* rad to deg */
-#define MAXBAND     10                  /* max SBAS band of IGP */
-#define RE_WGS84    6378137.0           /* earth semimajor axis (WGS84) (m) */
 
 /* geometric distance ----------------------------------------------------------
 * compute geometric distance and receiver-to-satellite unit vector
@@ -139,9 +134,9 @@ void Sbas_Ionosphere_Correction::matmul(const char *tr, int n, int k, int m, dou
         const double *A, const double *B, double beta, double *C)
 {
     double d;
-    int i, j, x, f = tr[0]=='N'?(tr[1]=='N'?1:2):(tr[1]=='N'?3:4);
+    int i, j, x, f = tr[0]=='N' ? (tr[1]=='N'?1:2):(tr[1]=='N'?3:4);
 
-    for (i=0; i<n; i++) for (j=0;j<k;j++)
+    for (i=0; i<n; i++) for (j=0; j<k; j++)
         {
             d = 0.0;
             switch (f)
@@ -151,7 +146,14 @@ void Sbas_Ionosphere_Correction::matmul(const char *tr, int n, int k, int m, dou
             case 3: for (x=0; x<m; x++) d += A[x+i*m]*B[x+j*m]; break;
             case 4: for (x=0; x<m; x++) d += A[x+i*m]*B[j+x*k]; break;
             }
-            if (beta==0.0) C[i+j*n] = alpha*d; else C[i+j*n] = alpha*d + beta*C[i+j*n];
+            if (beta == 0.0)
+                {
+                    C[i+j*n] = alpha*d;
+                }
+            else
+                {
+                    C[i+j*n] = alpha*d + beta*C[i+j*n];
+                }
         }
 }
 
@@ -161,20 +163,19 @@ void Sbas_Ionosphere_Correction::matmul(const char *tr, int n, int k, int m, dou
 * args   : double *pos      I   geodetic position {lat,lon} (rad)
 *          double *E        O   ecef to local coord transformation matrix (3x3)
 * return : none
-* notes  : matirix stored by column-major order (fortran convention)
+* notes  : matrix stored by column-major order (fortran convention)
 *-----------------------------------------------------------------------------*/
 void Sbas_Ionosphere_Correction::xyz2enu(const double *pos, double *E)
 {
     double sinp = sin(pos[0]), cosp = cos(pos[0]), sinl = sin(pos[1]), cosl = cos(pos[1]);
-
     E[0] = -sinl;      E[3] = cosl;       E[6] = 0.0;
     E[1] = -sinp*cosl; E[4] = -sinp*sinl; E[7] = cosp;
     E[2] = cosp*cosl;  E[5] = cosp*sinl;  E[8] = sinp;
 }
 
 
-/* transform ecef vector to local tangental coordinate -------------------------
-* transform ecef vector to local tangental coordinate
+/* transform ecef vector to local tangential coordinate -------------------------
+* transform ecef vector to local tangential coordinate
 * args   : double *pos      I   geodetic position {lat,lon} (rad)
 *          double *r        I   vector in ecef coordinate {x,y,z}
 *          double *e        O   vector in local tangental coordinate {e,n,u}
@@ -183,11 +184,17 @@ void Sbas_Ionosphere_Correction::xyz2enu(const double *pos, double *E)
 void Sbas_Ionosphere_Correction::ecef2enu(const double *pos, const double *r, double *e)
 {
     double E[9];
-
     xyz2enu(pos, E);
     matmul("NN", 3, 1, 3, 1.0, E, r, 0.0, e);
 }
 
+
+
+const double PI = 3.1415926535897932; /* pi */
+//const double D2R = (PI/180.0);        /* deg to rad */
+//const double R2D = (180.0/PI);        /* rad to deg */
+//const double MAXBAND = 10;            /* max SBAS band of IGP */
+//const double RE_WGS84 = 6378137.0;    /* earth semimajor axis (WGS84) (m) */
 
 
 /* satellite azimuth/elevation angle -------------------------------------------
@@ -200,19 +207,21 @@ void Sbas_Ionosphere_Correction::ecef2enu(const double *pos, const double *r, do
 *-----------------------------------------------------------------------------*/
 double Sbas_Ionosphere_Correction::satazel(const double *pos, const double *e, double *azel)
 {
-    double az = 0.0, el=PI/2.0, enu[3];
+    const double RE_WGS84 = 6378137.0;    /* earth semimajor axis (WGS84) (m) */
+
+    double az = 0.0, el = PI/2.0, enu[3];
 
     if (pos[2] > -RE_WGS84)
         {
-        ecef2enu(pos,e,enu);
-        az = dot(enu,enu,2) < 1E-12?0.0:atan2(enu[0], enu[1]);
-        if (az<0.0) az += 2*PI;
+        ecef2enu(pos, e, enu);
+        az = dot(enu ,enu, 2) < 1E-12 ? 0.0:atan2(enu[0], enu[1]);
+        if (az < 0.0) az += 2*PI;
         el = asin(enu[2]);
     }
     if (azel)
         {
-            azel[0]=az;
-            azel[1]=el;
+            azel[0] = az;
+            azel[1] = el;
         }
     return el;
 }
@@ -242,6 +251,8 @@ double Sbas_Ionosphere_Correction::ionppp(const double *pos, const double *azel,
         double re, double hion, double *posp)
 {
     double cosaz, rp, ap, sinap, tanap;
+    const double D2R = (PI/180.0);        /* deg to rad */
+    //const double R2D = (180.0/PI);        /* rad to deg */
 
     rp = re/(re+hion)*cos(azel[1]);
     ap = PI/2.0-azel[1]-asin(rp);
@@ -250,8 +261,8 @@ double Sbas_Ionosphere_Correction::ionppp(const double *pos, const double *azel,
     cosaz = cos(azel[0]);
     posp[0] = asin(sin(pos[0])*cos(ap) + cos(pos[0])*sinap*cosaz);
 
-    if ((pos[0] > 70.0*D2R && tanap*cosaz > tan(PI/2.0-pos[0]))||
-            (pos[0] < -70.0*D2R && - tanap*cosaz > tan(PI/2.0+pos[0])))
+    if ((pos[0] > 70.0*D2R && tanap*cosaz > tan(PI/2.0 - pos[0])) ||
+            (pos[0] < -70.0*D2R && - tanap*cosaz > tan(PI/2.0 + pos[0])))
         {
             posp[1] = pos[1] + PI - asin(sinap*sin(azel[0])/cos(posp[0]));
         }
@@ -259,7 +270,7 @@ double Sbas_Ionosphere_Correction::ionppp(const double *pos, const double *azel,
         {
             posp[1] = pos[1] + asin(sinap*sin(azel[0])/cos(posp[0]));
         }
-    return 1.0/sqrt(1.0-rp*rp);
+    return 1.0 / sqrt(1.0 - rp*rp);
 }
 
 
@@ -270,7 +281,7 @@ double Sbas_Ionosphere_Correction::varicorr(int give)
         0.0084, 0.0333, 0.0749, 0.1331, 0.2079, 0.2994, 0.4075, 0.5322, 0.6735, 0.8315,
         1.1974, 1.8709, 3.326, 20.787, 187.0826
     };
-    return 0<=give&&give<15?var[give]:0.0;
+    return 0 <= give && give < 15 ? var[give]:0.0;
 }
 
 
@@ -280,6 +291,9 @@ void Sbas_Ionosphere_Correction::searchigp(const double *pos, const Igp **igp, d
     int i;
     int latp[2];
     int lonp[4];
+    //const double D2R = (PI/180.0);        /* deg to rad */
+    const double R2D = (180.0/PI);        /* rad to deg */
+
     double lat = pos[0]*R2D;
     double lon = pos[1]*R2D;
 
@@ -381,6 +395,8 @@ int Sbas_Ionosphere_Correction::sbsioncorr(const double sample_stamp, const doub
     double t;
     double w[4] = {0};
     const Igp *igp[4] = {0}; /* {ws,wn,es,en} */
+    //const double D2R = (PI/180.0);        /* deg to rad */
+    const double R2D = (180.0/PI);        /* rad to deg */
 
     trace(4, "sbsioncorr: pos=%.3f %.3f azel=%.3f %.3f", pos[0]*R2D, pos[1]*R2D, azel[0]*R2D, azel[1]*R2D);
 

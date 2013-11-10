@@ -1,6 +1,6 @@
 /*!
  * \file sbas_l1_telemetry_decoder.cc
- * \brief Implementation of an adapter of a SBAS telemtry data decoder block
+ * \brief Implementation of an adapter of a SBAS telemetry data decoder block
  * to a TelemetryDecoderInterface
  * \author Daniel Fehr 2013. daniel.co(at)bluewin.ch
  *

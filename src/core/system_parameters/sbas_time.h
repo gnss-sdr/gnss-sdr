@@ -61,7 +61,7 @@ public:
     bool to_gps_time(double time_stamp_sec, int &gps_week, double &gps_sec)
     {
         int delta_weeks = int(trunc(time_stamp_sec + d_delta_sec))/604800;
-        gps_sec = time_stamp_sec+d_delta_sec-delta_weeks*604800;
+        gps_sec = time_stamp_sec + d_delta_sec - delta_weeks*604800;
         gps_week = i_gps_week + delta_weeks;
         VLOG(FLOW) << "<<R>> to gps time: time_stamp_sec=" << time_stamp_sec << " gps_week=" << gps_week << " gps_sec=" << gps_sec;
         return b_valid;
@@ -86,18 +86,16 @@ private:
 };
 
 
-/*
- * Sbas_Time relates the relative sample stamp time scale with the absolute GPS time scale.
+/*!
+ * \brief Sbas_Time relates the relative sample stamp time scale with the absolute GPS time scale.
  * There are three different states for a Sbas_Time object:
  * 	- only relative time (sample stamp) is known
  * 	- only absolute time (gps time) is known
  * 	- absolute and relative time and their relation is known
  */
-
 class Sbas_Time
 {
 public:
-
     enum Sbas_Time_State {RELATIVE, /*ABSOLUTE,*/ RELATED, UNDEFINED};
 
     Sbas_Time()
@@ -177,10 +175,10 @@ public:
         return (/*e_state == ABSOLUTE ||*/ e_state == RELATED);
     }
 
-    bool is_only_relativ() {return e_state == RELATIVE;}
+    bool is_only_relativ() { return e_state == RELATIVE; }
     //bool is_only_absolute() {return e_state == ABSOLUTE;}
-    bool is_related() {return e_state == RELATED;}
-    Sbas_Time_State get_state() {return e_state;}
+    bool is_related() { return e_state == RELATED; }
+    Sbas_Time_State get_state() { return e_state; }
 
 private:
     Sbas_Time_State e_state;
@@ -190,4 +188,4 @@ private:
 };
 
 
-#endif /* SBAS_TIME_H_ */
+#endif /* GNSS_SDR_SBAS_TIME_H_ */

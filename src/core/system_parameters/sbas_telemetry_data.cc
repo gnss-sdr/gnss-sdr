@@ -47,7 +47,7 @@
 
 Sbas_Telemetry_Data::Sbas_Telemetry_Data()
 {
-    fp_trace = NULL;     /* file pointer of trace */
+    fp_trace = nullptr;;     /* file pointer of trace */
     level_trace = 0;       /* level of trace */
     tick_trace = 0; /* tick time at traceopen (ms) */
 
@@ -174,7 +174,7 @@ void Sbas_Telemetry_Data::updated_sbas_ephemeris(Sbas_Raw_Msg msg)
 
     Sbas_Ephemeris seph;
 
-    int satidx = msg.get_prn()-MINPRNSBS;
+    int satidx = msg.get_prn() - MINPRNSBS;
     seph_t seph_rtklib = d_nav.seph[satidx];
 
     // copy data
@@ -237,8 +237,9 @@ void Sbas_Telemetry_Data::received_iono_correction()
     if(iono_queue != NULL) iono_queue->push(iono_corr);
 }
 
+
 // helper for comparing two POD structures with undefined padding between members
-// not garanted to work always properly -> don't use it for critical tasks
+// not guaranteed to work always properly -> don't use it for critical tasks
 template <class Struct>
 inline bool are_equal(const Struct &s1, const Struct &s2)
 {
@@ -254,31 +255,11 @@ inline bool are_equal(const Struct &s1, const Struct &s2)
     s1_ = (Struct*) calloc (1, struct_size);
     s2_ = (Struct*) calloc (1, struct_size);
 
-    /*	is_equal = !memcmp(s1_, s2_, sizeof(Struct));
-
-	bool is_equal_manual = true;
-	std::stringstream ss;
-	ss << "\n<<cmp>> compare original objects of size=" << sizeof(Struct) << ":" << std::endl;
-	for (size_t i = 0; i < sizeof(Struct); ++i)
-	{
-		char byte1 = ((const char *)&s1)[i];
-		char byte2 = ((const char *)&s2)[i];
-		if(byte1 != byte2) is_equal_manual = false;
-		ss << "<<cmp>> s1=" << std::hex << std::setw(4) << std::setfill('0');
-		ss << (short)byte1;
-		ss << " s2=" << std::hex << std::setw(4) << std::setfill('0');
-		ss << (short)byte2;
-		ss << " equal=" << is_equal_manual;
-		ss << std::endl;
-	}*/
-
-    // use asignment constructor which doesn't copy paddings
+    // use assignment constructor which doesn't copy paddings
     *s1_ = s1;
     *s2_ = s2;
 
     // compare struct memory byte-wise
-    //is_equal = !memcmp(s1_, s2_, sizeof(Struct));
-
     is_equal_manual = true;
     ss.str();
     ss << "\n<<cmp>> compare objects of size=" << sizeof(Struct) << " (memcmp says is_equal=" << is_equal << ") :" << std::endl;
@@ -294,7 +275,6 @@ inline bool are_equal(const Struct &s1, const Struct &s2)
             ss << " equal=" << is_equal_manual;
             ss << std::endl;
         }
-    //VLOG(DETAIL) << ss.str();
 
     free(s1_);
     free(s2_);
@@ -307,7 +287,7 @@ inline bool are_equal(const Struct &s1, const Struct &s2)
 void Sbas_Telemetry_Data::updated_satellite_corrections()
 {
     VLOG(FLOW) << "<<T>> updated_satellite_corrections():";
-    // for each satellit in the RTKLIB structure
+    // for each satellite in the RTKLIB structure
     for (int i_sat = 0; i_sat < d_nav.sbssat.nsat; i_sat++)
         {
             std::stringstream ss;
@@ -404,7 +384,6 @@ void Sbas_Telemetry_Data::trace(int level, const char *format, ...)
 {
     va_list ap;
     char str[1000];
-
     va_start(ap, format);
     vsprintf(str, format, ap);
     va_end(ap);
@@ -433,7 +412,7 @@ int Sbas_Telemetry_Data::satno(int sys, int prn)
         return NSATGPS + NSATGLO + prn - MINPRNGAL + 1;
     case SYS_QZS:
         if (prn < MINPRNQZS || MAXPRNQZS < prn) return 0;
-        return NSATGPS+NSATGLO+NSATGAL+prn-MINPRNQZS+1;
+        return NSATGPS + NSATGLO + NSATGAL + prn - MINPRNQZS + 1;
     case SYS_CMP:
         if (prn < MINPRNCMP || MAXPRNCMP < prn) return 0;
         return NSATGPS + NSATGLO + NSATGAL + NSATQZS + prn - MINPRNCMP + 1;
@@ -443,13 +422,14 @@ int Sbas_Telemetry_Data::satno(int sys, int prn)
     }
     return 0;
 }
-/* extract unsigned/signed bits ------------------------------------------------
- * extract unsigned/signed bits from byte data
- * args   : unsigned char *buff I byte data
+
+/*!
+ * \brief Extracts unsigned/signed bits from byte data
+ * params : unsigned char *buff I byte data
  *          int    pos    I      bit position from start of data (bits)
  *          int    len    I      bit length (bits) (len<=32)
  * return : extracted unsigned/signed bits
- *-----------------------------------------------------------------------------*/
+ */
 unsigned int Sbas_Telemetry_Data::getbitu(const unsigned char *buff, int pos, int len)
 {
     unsigned int bits = 0;
@@ -479,12 +459,12 @@ Sbas_Telemetry_Data::gtime_t Sbas_Telemetry_Data::epoch2time(const double *ep)
 {
     const int doy[]={1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
     gtime_t time = {0};
-    int days, sec, year = (int)ep[0], mon=(int)ep[1], day=(int)ep[2];
+    int days, sec, year = (int)ep[0], mon = (int)ep[1], day = (int)ep[2];
 
-    if (year<1970 || 2099<year || mon<1 || 12<mon) return time;
+    if (year < 1970 || 2099 < year || mon < 1 || 12 < mon) return time;
 
     /* leap year if year%4==0 in 1901-2099 */
-    days = (year - 1970)*365 + (year - 1969)/4 + doy[mon-1] + day -2 + (year%4==0&&mon>=3?1:0);
+    days = (year - 1970)*365 + (year - 1969)/4 + doy[mon - 1] + day - 2 + (year % 4 == 0 && mon >= 3 ? 1 : 0);
     sec = (int)floor(ep[5]);
     time.time = (time_t)days*86400 + (int)ep[3]*3600 + (int)ep[4]*60 + sec;
     time.sec = ep[5] - sec;
@@ -579,8 +559,8 @@ const Sbas_Telemetry_Data::sbsigpband_t Sbas_Telemetry_Data::igpband2[2][5]={ /*
 /* decode type 1: prn masks --------------------------------------------------*/
 int Sbas_Telemetry_Data::decode_sbstype1(const sbsmsg_t *msg, sbssat_t *sbssat)
 {
-    int i,n,sat;
-    // see figure A-6: i coresponds to bit number (and for the GPS satellites is identically to the PRN), n to the PRN mask number
+    int i, n, sat;
+    // see figure A-6: i corresponds to bit number (and for the GPS satellites is identically to the PRN), n to the PRN mask number
 
     trace(4,"decode_sbstype1:");
 
@@ -588,14 +568,14 @@ int Sbas_Telemetry_Data::decode_sbstype1(const sbsmsg_t *msg, sbssat_t *sbssat)
         {
             if (getbitu(msg->msg, 13+i, 1))
                 {
-                    if      (i <= 37) sat = satno(SYS_GPS, i);    /*   0- 37: gps */
+                    if      (i <= 37) sat = satno(SYS_GPS, i);      /*   0- 37: gps */
                     else if (i <= 61) sat = satno(SYS_GLO, i - 37); /*  38- 61: glonass */
-                    else if (i <= 119) sat = 0;                   /*  62-119: future gnss */
-                    else if (i <= 138) sat = satno(SYS_SBS, i);    /* 120-138: geo/waas */
-                    else if (i <= 182) sat = 0;                   /* 139-182: reserved */
-                    else if (i <= 192) sat = satno(SYS_SBS,i+10); /* 183-192: qzss ref [2] */
-                    else if (i <= 202) sat = satno(SYS_QZS, i);    /* 193-202: qzss ref [2] */
-                    else sat = 0;                   /* 203-   : reserved */
+                    else if (i <= 119) sat = 0;                     /*  62-119: future gnss */
+                    else if (i <= 138) sat = satno(SYS_SBS, i);     /* 120-138: geo/waas */
+                    else if (i <= 182) sat = 0;                     /* 139-182: reserved */
+                    else if (i <= 192) sat = satno(SYS_SBS, i + 10);   /* 183-192: qzss ref [2] */
+                    else if (i <= 202) sat = satno(SYS_QZS, i);     /* 193-202: qzss ref [2] */
+                    else sat = 0;                                   /* 203-   : reserved */
                     sbssat->sat[n++].sat = sat;
                 }
         }
@@ -608,6 +588,8 @@ int Sbas_Telemetry_Data::decode_sbstype1(const sbsmsg_t *msg, sbssat_t *sbssat)
     trace(5, "decode_sbstype1: nprn=%d iodp=%d", n, sbssat->iodp);
     return 1;
 }
+
+
 /* decode type 2-5,0: fast corrections ---------------------------------------*/
 int Sbas_Telemetry_Data::decode_sbstype2(const sbsmsg_t *msg, sbssat_t *sbssat)
 {
@@ -617,20 +599,20 @@ int Sbas_Telemetry_Data::decode_sbstype2(const sbsmsg_t *msg, sbssat_t *sbssat)
 
     trace(4,"decode_sbstype2:");
 
-    if (sbssat->iodp!=(int)getbitu(msg->msg,16,2)) return 0;
+    if (sbssat->iodp != (int)getbitu(msg->msg, 16, 2)) return 0;
 
     type = getbitu(msg->msg, 8, 6);
     iodf = getbitu(msg->msg, 14, 2);
 
     for (i=0; i<13; i++)
         {
-            if ((j = 13*((type==0?2:type)-2)+i) >= sbssat->nsat) break;
+            if ((j = 13*((type == 0 ? 2 : type) - 2) + i) >= sbssat->nsat) break;
             udrei = getbitu(msg->msg, 174 + 4*i, 4);
             t0_past = sbssat->sat[j].fcorr.t0;
             prc = sbssat->sat[j].fcorr.prc;
             sbssat->sat[j].fcorr.t0 = msg->sample_stamp;
             sbssat->sat[j].fcorr.prc = getbits(msg->msg, 18 + i*12, 12)*0.125f;
-            sbssat->sat[j].fcorr.udre = udrei+1;
+            sbssat->sat[j].fcorr.udre = udrei + 1;
             dt = sbssat->sat[j].fcorr.t0 - t0_past;
             if (!sbssat->sat[j].fcorr.valid || dt <= 0.0 || 18.0 < dt || sbssat->sat[j].fcorr.ai == 0)
                 {
@@ -639,7 +621,7 @@ int Sbas_Telemetry_Data::decode_sbstype2(const sbsmsg_t *msg, sbssat_t *sbssat)
                 }
             else
                 {
-                    sbssat->sat[j].fcorr.rrc = (sbssat->sat[j].fcorr.prc-prc)/dt;
+                    sbssat->sat[j].fcorr.rrc = (sbssat->sat[j].fcorr.prc - prc)/dt;
                     sbssat->sat[j].fcorr.dt = dt;
                 }
             sbssat->sat[j].fcorr.valid = true;
@@ -669,7 +651,7 @@ int Sbas_Telemetry_Data::decode_sbstype6(const sbsmsg_t *msg, sbssat_t *sbssat)
         {
             if (!sbssat->sat[i].fcorr.valid || sbssat->sat[i].fcorr.iodf != iodf[i/13]) continue;
             udrei = getbitu(msg->msg, 22 + i*4, 4);
-            sbssat->sat[i].fcorr.udre = udrei+1;
+            sbssat->sat[i].fcorr.udre = udrei + 1;
         }
     trace(5, "decode_sbstype6: iodf=%d %d %d %d", iodf[0], iodf[1], iodf[2], iodf[3]);
     return 1;
@@ -681,13 +663,9 @@ int Sbas_Telemetry_Data::decode_sbstype6(const sbsmsg_t *msg, sbssat_t *sbssat)
 int Sbas_Telemetry_Data::decode_sbstype7(const sbsmsg_t *msg, sbssat_t *sbssat)
 {
     int i;
-
     trace(4,"decode_sbstype7");
-
-    if (sbssat->iodp!=(int)getbitu(msg->msg,18,2)) return 0;
-
-    sbssat->tlat = getbitu(msg->msg,14,4);
-
+    if (sbssat->iodp != (int)getbitu(msg->msg, 18, 2)) return 0;
+    sbssat->tlat = getbitu(msg->msg, 14, 4);
     for (i=0; i < sbssat->nsat && i < MAXSAT; i++)
         {
             sbssat->sat[i].fcorr.ai = getbitu(msg->msg, 22 + i*4, 4);
@@ -700,7 +678,7 @@ int Sbas_Telemetry_Data::decode_sbstype7(const sbsmsg_t *msg, sbssat_t *sbssat)
 /* decode type 9: geo navigation message -------------------------------------*/
 int Sbas_Telemetry_Data::decode_sbstype9(const sbsmsg_t *msg, nav_t *nav)
 {
-    seph_t seph={0};
+    seph_t seph = {0};
     int i;
     int sat;
 
@@ -719,17 +697,17 @@ int Sbas_Telemetry_Data::decode_sbstype9(const sbsmsg_t *msg, nav_t *nav)
     seph.t0 = getbitu(msg->msg, 22, 13)*16;
     seph.tof = msg->sample_stamp;
     seph.sva = getbitu(msg->msg, 35, 4);
-    seph.svh = seph.sva==15?1:0; /* unhealthy if ura==15 */
+    seph.svh = seph.sva == 15 ? 1 : 0; /* unhealthy if ura==15 */
 
-    seph.pos[0] = getbits(msg->msg, 39,30)*0.08;
-    seph.pos[1] = getbits(msg->msg, 69,30)*0.08;
-    seph.pos[2] = getbits(msg->msg, 99,25)*0.4;
-    seph.vel[0] = getbits(msg->msg,124,17)*0.000625;
-    seph.vel[1] = getbits(msg->msg,141,17)*0.000625;
-    seph.vel[2] = getbits(msg->msg,158,18)*0.004;
-    seph.acc[0] = getbits(msg->msg,176,10)*0.0000125;
-    seph.acc[1] = getbits(msg->msg,186,10)*0.0000125;
-    seph.acc[2] = getbits(msg->msg,196,10)*0.0000625;
+    seph.pos[0] = getbits(msg->msg, 39, 30)*0.08;
+    seph.pos[1] = getbits(msg->msg, 69, 30)*0.08;
+    seph.pos[2] = getbits(msg->msg, 99, 25)*0.4;
+    seph.vel[0] = getbits(msg->msg, 124, 17)*0.000625;
+    seph.vel[1] = getbits(msg->msg, 141, 17)*0.000625;
+    seph.vel[2] = getbits(msg->msg, 158, 18)*0.004;
+    seph.acc[0] = getbits(msg->msg, 176, 10)*0.0000125;
+    seph.acc[1] = getbits(msg->msg, 186, 10)*0.0000125;
+    seph.acc[2] = getbits(msg->msg, 196, 10)*0.0000625;
 
     seph.af0 = getbits(msg->msg, 206, 12)*P2_31;
     seph.af1 = getbits(msg->msg, 218, 8)*P2_39/2.0;
@@ -740,8 +718,8 @@ int Sbas_Telemetry_Data::decode_sbstype9(const sbsmsg_t *msg, nav_t *nav)
             VLOG(FLOW) << "<<T>> no change in ephemeris -> won't parse";
             return 0;
         }
-    nav->seph[NSATSBS+i] = nav->seph[i]; /* previous */
-    nav->seph[i] = seph;                 /* current */
+    nav->seph[NSATSBS + i] = nav->seph[i]; /* previous */
+    nav->seph[i] = seph;                   /* current */
 
     trace(5, "decode_sbstype9: prn=%d", msg->prn);
     return 1;
@@ -761,9 +739,10 @@ int Sbas_Telemetry_Data::decode_sbstype18(const sbsmsg_t *msg, sbsion_t *sbsion)
     else if (9 <= band && band <= 10) {p = igpband2[band - 9]; m = 5;}
     else return 0;
 
-    short iodi_new = (short)getbitu(msg->msg,22,2);
+    short iodi_new = (short)getbitu(msg->msg, 22, 2);
     if(sbsion[band].iodi != iodi_new)
-        {// IGP mask changed -> invalidate all IGPs in this band
+        {
+            // IGP mask changed -> invalidate all IGPs in this band
             igp_mask_changed(band);
         }
     sbsion[band].iodi = iodi_new;
@@ -773,9 +752,9 @@ int Sbas_Telemetry_Data::decode_sbstype18(const sbsmsg_t *msg, sbsion_t *sbsion)
             if (!getbitu(msg->msg, 23+i, 1)) continue;
             for (j=0; j<m; j++)
                 {
-                    if (i<p[j].bits||p[j].bite<i) continue;
-                    sbsion[band].igp[n].lat = band <= 8?p[j].y[i-p[j].bits]:p[j].x;
-                    sbsion[band].igp[n++].lon = band <= 8?p[j].x:p[j].y[i-p[j].bits];
+                    if (i < p[j].bits || p[j].bite < i) continue;
+                    sbsion[band].igp[n].lat = band <= 8 ? p[j].y[i - p[j].bits] : p[j].x;
+                    sbsion[band].igp[n++].lon = band <= 8 ? p[j].x : p[j].y[i - p[j].bits];
                     break;
                 }
         }
@@ -791,27 +770,27 @@ int Sbas_Telemetry_Data::decode_sbstype18(const sbsmsg_t *msg, sbsion_t *sbsion)
 /* decode half long term correction (vel code=0) -----------------------------*/
 int Sbas_Telemetry_Data::decode_longcorr0(const sbsmsg_t *msg, int p, sbssat_t *sbssat)
 {
-    int i,n = getbitu(msg->msg, p, 6);
+    int i, n = getbitu(msg->msg, p, 6);
 
     trace(4, "decode_longcorr0:");
 
-    if (n==0 || n>MAXSAT) return 0;
+    if (n == 0 || n > MAXSAT) return 0;
 
-    sbssat->sat[n-1].lcorr.iode = getbitu(msg->msg, p+6, 8);
+    sbssat->sat[n - 1].lcorr.iode = getbitu(msg->msg, p + 6, 8);
 
-    for (i=0;i<3;i++)
+    for (i=0; i<3; i++)
         {
-            sbssat->sat[n-1].lcorr.dpos[i] = getbits(msg->msg, p + 14 + 9*i, 9)*0.125;
-            sbssat->sat[n-1].lcorr.dvel[i] = 0.0;
+            sbssat->sat[n - 1].lcorr.dpos[i] = getbits(msg->msg, p + 14 + 9*i, 9)*0.125;
+            sbssat->sat[n - 1].lcorr.dvel[i] = 0.0;
         }
-    sbssat->sat[n-1].lcorr.daf0 = getbits(msg->msg,p+41,10)*P2_31;
-    sbssat->sat[n-1].lcorr.daf1 = 0.0;
+    sbssat->sat[n - 1].lcorr.daf0 = getbits(msg->msg, p + 41, 10)*P2_31;
+    sbssat->sat[n - 1].lcorr.daf1 = 0.0;
     //sbssat->sat[n-1].lcorr.t0=gpst2time(msg->week,msg->tow);
-    sbssat->sat[n-1].lcorr.trx = msg->sample_stamp; // vel=0 -> time of applicability is reception time
-    sbssat->sat[n-1].lcorr.tapp = 0;
-    sbssat->sat[n-1].lcorr.valid = true;
+    sbssat->sat[n - 1].lcorr.trx = msg->sample_stamp; // vel=0 -> time of applicability is reception time
+    sbssat->sat[n - 1].lcorr.tapp = 0;
+    sbssat->sat[n - 1].lcorr.valid = true;
 
-    trace(5, "decode_longcorr0:sat=%2d", sbssat->sat[n-1].sat);
+    trace(5, "decode_longcorr0:sat=%2d", sbssat->sat[n - 1].sat);
     return 1;
 }
 
@@ -827,25 +806,25 @@ int Sbas_Telemetry_Data::decode_longcorr1(const sbsmsg_t *msg, int p, sbssat_t *
 
     if (n==0 || n>MAXSAT) return 0;
 
-    sbssat->sat[n-1].lcorr.iode = getbitu(msg->msg, p + 6,8);
+    sbssat->sat[n - 1].lcorr.iode = getbitu(msg->msg, p + 6, 8);
 
     for (i=0; i<3; i++)
         {
-            sbssat->sat[n-1].lcorr.dpos[i] = getbits(msg->msg, p + 14 +i*11, 11)*0.125;
-            sbssat->sat[n-1].lcorr.dvel[i] = getbits(msg->msg, p + 58 +i* 8, 8)*P2_11;
+            sbssat->sat[n - 1].lcorr.dpos[i] = getbits(msg->msg, p + 14 + i*11, 11)*0.125;
+            sbssat->sat[n - 1].lcorr.dvel[i] = getbits(msg->msg, p + 58 + i*8, 8)*P2_11;
         }
-    sbssat->sat[n-1].lcorr.daf0 = getbits(msg->msg, p + 47, 11)*P2_31;
-    sbssat->sat[n-1].lcorr.daf1 = getbits(msg->msg, p + 82, 8)*P2_39;
+    sbssat->sat[n - 1].lcorr.daf0 = getbits(msg->msg, p + 47, 11)*P2_31;
+    sbssat->sat[n - 1].lcorr.daf1 = getbits(msg->msg, p + 82, 8)*P2_39;
     // vel=1 -> time of applicability is sent in message, needs to be corrected for rollover which can not be done here, since the absolute gps time is unknown. see IS-GPS-200G pdf page 116 for correction
     /*t=(int)getbitu(msg->msg,p+90,13)*16-(int)msg->tow%86400;
     if      (t<=-43200) t+=86400;
     else if (t>  43200) t-=86400;
     sbssat->sat[n-1].lcorr.t0=gpst2time(msg->week,msg->tow+t);*/
-    sbssat->sat[n-1].lcorr.trx = msg->sample_stamp;
-    sbssat->sat[n-1].lcorr.tapp = (int)getbitu(msg->msg, p + 90, 13)*16;
-    sbssat->sat[n-1].lcorr.vel = 1;
-    sbssat->sat[n-1].lcorr.valid = true;
-    trace(5, "decode_longcorr1: sat=%2d", sbssat->sat[n-1].sat);
+    sbssat->sat[n - 1].lcorr.trx = msg->sample_stamp;
+    sbssat->sat[n - 1].lcorr.tapp = (int)getbitu(msg->msg, p + 90, 13)*16;
+    sbssat->sat[n - 1].lcorr.vel = 1;
+    sbssat->sat[n - 1].lcorr.valid = true;
+    trace(5, "decode_longcorr1: sat=%2d", sbssat->sat[n - 1].sat);
     return 1;
 }
 
@@ -858,15 +837,16 @@ int Sbas_Telemetry_Data::decode_longcorrh(const sbsmsg_t *msg, int p, sbssat_t *
     trace(4,"decode_longcorrh:");
 
     if (getbitu(msg->msg, p, 1) == 0 )
-        { /* vel code=0 */
+        {
+            /* vel code=0 */
             if (sbssat->iodp == (int)getbitu(msg->msg, p + 103, 2))
                 {
-                    return decode_longcorr0(msg ,p+ 1,sbssat) && decode_longcorr0(msg, p + 52, sbssat);
+                    return decode_longcorr0(msg, p + 1, sbssat) && decode_longcorr0(msg, p + 52, sbssat);
                 }
         }
     else if (sbssat->iodp == (int)getbitu(msg->msg, p + 104, 2))
         {
-            return decode_longcorr1(msg, p+1, sbssat);
+            return decode_longcorr1(msg, p + 1, sbssat);
         }
     return 0;
 }
@@ -894,7 +874,7 @@ int Sbas_Telemetry_Data::decode_sbstype24(const sbsmsg_t *msg, sbssat_t *sbssat)
             //sbssat->sat[j].fcorr.t0  =gpst2time(msg->week,msg->tow);
             sbssat->sat[j].fcorr.t0   = msg->sample_stamp;
             sbssat->sat[j].fcorr.prc  = getbits(msg->msg, 14 + i*12, 12)*0.125f;
-            sbssat->sat[j].fcorr.udre = udre+1;
+            sbssat->sat[j].fcorr.udre = udre + 1;
             sbssat->sat[j].fcorr.iodf = iodf;
         }
     return decode_longcorrh(msg, 120, sbssat);
@@ -908,7 +888,7 @@ int Sbas_Telemetry_Data::decode_sbstype25(const sbsmsg_t *msg, sbssat_t *sbssat)
 {
     trace(4,"decode_sbstype25:");
 
-    return decode_longcorrh(msg,14,sbssat)&&decode_longcorrh(msg,120,sbssat);
+    return decode_longcorrh(msg, 14, sbssat) && decode_longcorrh(msg, 120, sbssat);
 }
 
 
@@ -925,13 +905,13 @@ int Sbas_Telemetry_Data::decode_sbstype26(const sbsmsg_t *msg, sbsion_t *sbsion)
 
     for (i=0; i<15; i++)
         {
-            if ((j = block*15+i) >= sbsion[band].nigp) continue;
+            if ((j = block*15 + i) >= sbsion[band].nigp) continue;
             give = getbitu(msg->msg, 2 + i*13 + 9, 4);
             delay = getbitu(msg->msg, 22 + i*13, 9);
             //sbsion[band].igp[j].t0=gpst2time(msg->week,msg->tow);
             sbsion[band].igp[j].t0 = msg->sample_stamp;
             sbsion[band].igp[j].valid = true;
-            sbsion[band].igp[j].delay = delay == 0x1FF?0.0f:delay*0.125f;
+            sbsion[band].igp[j].delay = delay == 0x1FF ? 0.0f : delay*0.125f;
             sbsion[band].igp[j].give = give;
 
             if(sbsion[band].igp[j].give > 15) sbsion[band].igp[j].give = 15; // give is not higher than 15, but to be sure
@@ -955,7 +935,7 @@ int Sbas_Telemetry_Data::decode_sbstype26(const sbsmsg_t *msg, sbsion_t *sbsion)
  *-----------------------------------------------------------------------------*/
 int Sbas_Telemetry_Data::sbsupdatecorr(const sbsmsg_t *msg, nav_t *nav)
 {
-    int type=getbitu(msg->msg,8,6),stat=-1;
+    int type = getbitu(msg->msg, 8, 6), stat = -1;
 
     trace(3,"sbsupdatecorr: type=%d",type);
 
@@ -963,15 +943,15 @@ int Sbas_Telemetry_Data::sbsupdatecorr(const sbsmsg_t *msg, nav_t *nav)
 
     switch (type)
     {
-    case  0: stat = decode_sbstype2 (msg, &nav->sbssat); break;
-    case  1: stat = decode_sbstype1 (msg, &nav->sbssat); break;
+    case  0: stat = decode_sbstype2(msg, &nav->sbssat); break;
+    case  1: stat = decode_sbstype1(msg, &nav->sbssat); break;
     case  2:
     case  3:
     case  4:
-    case  5: stat = decode_sbstype2 (msg, &nav->sbssat); break;
-    case  6: stat = decode_sbstype6 (msg, &nav->sbssat); break;
-    case  7: stat = decode_sbstype7 (msg, &nav->sbssat); break;
-    case  9: stat = decode_sbstype9 (msg, nav);          break;
+    case  5: stat = decode_sbstype2(msg, &nav->sbssat); break;
+    case  6: stat = decode_sbstype6(msg, &nav->sbssat); break;
+    case  7: stat = decode_sbstype7(msg, &nav->sbssat); break;
+    case  9: stat = decode_sbstype9(msg, nav);          break;
     case 10: trace(2, "unsupported sbas message: type=%d", type); break;
     case 12: trace(2, "unsupported sbas message: type=%d", type); break;
     case 17: trace(2, "unsupported sbas message: type=%d", type); break;
@@ -981,10 +961,11 @@ int Sbas_Telemetry_Data::sbsupdatecorr(const sbsmsg_t *msg, nav_t *nav)
     case 26: stat = decode_sbstype26(msg, nav ->sbsion); break;
     case 63: break; /* null message */
 
-    default: trace(2,"unsupported sbas message: type=%d",type); break;
+    default: trace(2, "Unsupported SBAS message: type=%d", type); break;
     }
-    return stat?type:-1;
+    return stat ? type : -1;
 }
+
 
 void Sbas_Telemetry_Data::prn_mask_changed()
 {
@@ -997,12 +978,14 @@ void Sbas_Telemetry_Data::prn_mask_changed()
         }
 }
 
+
 bool Sbas_Telemetry_Data::is_rtklib_sat_correction_valid(int sat)
 {
     return d_nav.sbssat.tlat > -1
             && d_nav.sbssat.sat[sat].fcorr.valid
             && d_nav.sbssat.sat[sat].lcorr.valid;
 }
+
 
 void Sbas_Telemetry_Data::igp_mask_changed(int band)
 {

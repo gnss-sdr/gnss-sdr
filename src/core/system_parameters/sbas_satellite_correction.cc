@@ -34,22 +34,25 @@
 #include <iostream>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include "sbas_satellite_correction.h"
 
 #define EVENT 2 // logs important events which don't occur every update() call
 #define FLOW 3  // logs the function calls of block processing functions
 
-void
-Sbas_Satellite_Correction::print(std::ostream &out)
+#define CLIGHT      299792458.0         /* speed of light (m/s) */
+#define MAXSBSAGEF  30.0                /* max age of SBAS fast correction (s) */
+#define MAXSBSAGEL  1800.0              /* max age of SBAS long term corr (s) */
+
+
+void Sbas_Satellite_Correction::print(std::ostream &out)
 {
     out << "<<S>> Sbas satellite corrections for PRN" << d_prn << ":" << std::endl;
     print_fast_correction(out);
     print_long_term_correction(out);
 }
 
-void
-Sbas_Satellite_Correction::print_fast_correction(std::ostream &out)
+
+void Sbas_Satellite_Correction::print_fast_correction(std::ostream &out)
 {
     Fast_Correction fcorr = d_fast_correction;
     out << "<<S>> Fast PRN" << d_prn << ":";
@@ -73,8 +76,7 @@ Sbas_Satellite_Correction::print_fast_correction(std::ostream &out)
 }
 
 
-void
-Sbas_Satellite_Correction::print_long_term_correction(std::ostream &out)
+void Sbas_Satellite_Correction::print_long_term_correction(std::ostream &out)
 {
     Long_Term_Correction lcorr = d_long_term_correction;
     out << "<<S>> Long PRN" << d_prn << ":";
@@ -94,178 +96,163 @@ int Sbas_Satellite_Correction::apply_fast(double sample_stamp, double &pr, doubl
 {
     int result;
     double prc = 0; // pseudo range correction
-
     result = sbsfastcorr(sample_stamp, &prc, &var);
-
     pr += prc;
-
     VLOG(FLOW) << "<<S>> fast correction applied: sample_stamp=" << sample_stamp << " prc=" << prc << " corr. pr=" << pr;
-
     return result;
 }
+
+
 
 int Sbas_Satellite_Correction::apply_long_term_sv_pos(double sample_stamp, double sv_pos[], double &var)
 {
     int result;
     double drs[3] = {0};
     double ddts = 0;
-
     result = sbslongcorr(sample_stamp, drs, &ddts);
     for (int i = 0; i < 3; i++) sv_pos[i] += drs[i];
-
     VLOG(FLOW) << "<<S>> long term sv pos correction applied: sample_stamp=" << sample_stamp << " drs=(x=" << drs[0] << " y=" << drs[1] << " z=" << drs[2] << ")";
-
     return result;
 }
+
+
 
 int Sbas_Satellite_Correction::apply_long_term_sv_clk(double sample_stamp, double &dts, double &var)
 {
     int result;
     double drs[3] = {0};
     double ddts = 0;
-
     result = sbslongcorr(sample_stamp, drs, &ddts);
     dts += ddts;
-
     VLOG(FLOW) << "<<S>> long term sv clock correction correction applied: sample_stamp=" << sample_stamp << " ddts=" << ddts;
-
     return result;
 }
 
+
 bool Sbas_Satellite_Correction::alarm()
 {
-	return this->d_fast_correction.d_udre == 16;
+    return this->d_fast_correction.d_udre == 16;
 }
 
 
-#define CLIGHT      299792458.0         /* speed of light (m/s) */
-#define MAXSBSAGEF  30.0                /* max age of SBAS fast correction (s) */
-#define MAXSBSAGEL  1800.0              /* max age of SBAS long term corr (s) */
 
 /* debug trace function -----------------------------------------------------*/
 void Sbas_Satellite_Correction::trace(int level, const char *format, ...)
 {
     va_list ap;
     char str[1000];
-
     va_start(ap,format);
     vsprintf(str,format,ap);
     va_end(ap);
     VLOG(FLOW) << "<<S>> " << std::string(str);
 }
 
+
 /* variance of fast correction (udre=UDRE+1) ---------------------------------*/
 double Sbas_Satellite_Correction::varfcorr(int udre)
 {
     const double var[14] = {
-        0.052,0.0924,0.1444,0.283,0.4678,0.8315,1.2992,1.8709,2.5465,3.326,
-        5.1968,20.7870,230.9661,2078.695
+        0.052, 0.0924, 0.1444, 0.283, 0.4678, 0.8315, 1.2992, 1.8709, 2.5465, 3.326,
+        5.1968, 20.7870, 230.9661, 2078.695
     };
-    return 0 < udre && udre <= 14 ? var[udre-1]:0.0;
+    return 0 < udre && udre <= 14 ? var[udre - 1] : 0.0;
 }
+
+
 /* fast correction degradation -----------------------------------------------*/
 double Sbas_Satellite_Correction::degfcorr(int ai)
 {
     const double degf[16] = {
-        0.00000,0.00005,0.00009,0.00012,0.00015,0.00020,0.00030,0.00045,
-        0.00060,0.00090,0.00150,0.00210,0.00270,0.00330,0.00460,0.00580
+        0.00000, 0.00005, 0.00009, 0.00012, 0.00015, 0.00020, 0.00030, 0.00045,
+        0.00060, 0.00090, 0.00150, 0.00210, 0.00270, 0.00330, 0.00460, 0.00580
     };
-    return 0 < ai && ai <= 15 ? degf[ai]:0.0058;
+    return 0 < ai && ai <= 15 ? degf[ai] : 0.0058;
 }
+
+
 
 /* long term correction ------------------------------------------------------*/
 int Sbas_Satellite_Correction::sbslongcorr(double time_stamp, double *drs, double *ddts)
 {
     double t = 0.0;
     int i;
-
     Long_Term_Correction lcorr = d_long_term_correction;
-
     trace(3, "sbslongcorr: prn=%2d", this->d_prn);
-
-	// if (p->sat!=sat||p->lcorr.t0.time==0) continue;
-
+    // if (p->sat!=sat||p->lcorr.t0.time==0) continue;
     // compute time of applicability
     if(d_long_term_correction.i_vel == 1)
-    { // time of applicability is the one sent, i.e., tapp
-    	// TODO: adapt for vel==1 case
-    	// t = tow-d_long_term_correction.i_tapp;
-        // vel=1 -> time of applicability is sent in message, needs to be corrected for rollover which can not be done here, since the absolute gps time is unknown. see IS-GPS-200G pdf page 116 for correction
-        /* t = (int)getbitu(msg->msg, p + 90, 13)*16 - (int)msg->tow%86400;
-        if (t <= -43200) t += 86400;
-        else if (t >  43200) t -= 86400;
-        sbssat->sat[n-1].lcorr.t0 = gpst2time(msg->week, msg->tow + t);*/
-    }
+        {
+            // time of applicability is the one sent, i.e., tapp
+            // TODO: adapt for vel==1 case
+            // t = tow-d_long_term_correction.i_tapp;
+            // vel=1 -> time of applicability is sent in message, needs to be corrected for rollover which can not be done here, since the absolute gps time is unknown. see IS-GPS-200G pdf page 116 for correction
+            /* t = (int)getbitu(msg->msg, p + 90, 13)*16 - (int)msg->tow%86400;
+            if (t <= -43200) t += 86400;
+            else if (t >  43200) t -= 86400;
+            sbssat->sat[n-1].lcorr.t0 = gpst2time(msg->week, msg->tow + t);*/
+        }
     else
-    { // time of applicability is time of reception
-    	t = time_stamp - lcorr.d_trx; // should not have any impact if vel==0 since d_dvel and d_daf1 are zero, is only used to check outdating
-    }
-
-	//t=time_stamp-lcorr.d_t0;
-
-	if (fabs(t) > MAXSBSAGEL)
-	{
-		trace(2,"sbas long-term correction expired: sat=%2d time_stamp=%5.0f", d_prn, time_stamp);
-		return 0;
-	}
-
-	// sv position correction
-	for (i=0; i<3; i++) drs[i] = lcorr.d_dpos[i] + lcorr.d_dvel[i]*t;
-
-	// sv clock correction correction
-	*ddts = lcorr.d_daf0 + lcorr.d_daf1*t;
-
-	trace(5, "sbslongcorr: sat=%2d drs=%7.2f%7.2f%7.2f ddts=%7.2f", d_prn, drs[0], drs[1], drs[2], *ddts*CLIGHT);
-
-	return 1;
-
+        {
+            // time of applicability is time of reception
+            t = time_stamp - lcorr.d_trx; // should not have any impact if vel==0 since d_dvel and d_daf1 are zero, is only used to check outdating
+        }
+    //t=time_stamp-lcorr.d_t0;
+    if (fabs(t) > MAXSBSAGEL)
+        {
+            trace(2,"sbas long-term correction expired: sat=%2d time_stamp=%5.0f", d_prn, time_stamp);
+            return 0;
+        }
+    // sv position correction
+    for (i=0; i<3; i++) drs[i] = lcorr.d_dpos[i] + lcorr.d_dvel[i]*t;
+    // sv clock correction correction
+    *ddts = lcorr.d_daf0 + lcorr.d_daf1*t;
+    trace(5, "sbslongcorr: sat=%2d drs=%7.2f%7.2f%7.2f ddts=%7.2f", d_prn, drs[0], drs[1], drs[2], *ddts * CLIGHT);
+    return 1;
     /* if sbas satellite without correction, no correction applied */
     //if (satsys(sat,NULL)==SYS_SBS) return 1;
-
     //trace(2,"no sbas long-term correction: %s sat=%2d\n",time_str(time,0),sat);
     //return 0;
 }
+
+
+
+
 /* fast correction -----------------------------------------------------------*/
 int Sbas_Satellite_Correction::sbsfastcorr(double time_stamp, double *prc, double *var)
 #define RRCENA
 {
     double t;
-
     Fast_Correction fcorr = d_fast_correction;
-
     trace(3, "sbsfastcorr: sat=%2d", this->d_prn);
-
-	//if (p->fcorr.t0.time==0) break; // time==0is only true if t0 hasn't been initialised -> it checks if the correction is valid
-	t = (time_stamp - fcorr.d_tof.get_time_stamp()) + fcorr.d_tlat; // delta t between now and tof
-
-	/* expire age of correction? */
-	if (fabs(t) > MAXSBSAGEF)
-            {
-	        trace(2, "no sbas fast correction (expired): time_stamp=%f prn=%2d", time_stamp, d_prn);
-                return 0;
-            }
-	/* UDRE==14 (not monitored)? */
-	else if(fcorr.d_udre == 15)
-	    {
-	        trace(2,"no sbas fast correction (not monitored): time_stamp=%f prn=%2d", time_stamp, d_prn);
-	        return 0;
-	    }
-	else if(fcorr.d_udre == 16)
-	{
-		trace(2,"SV is marked as unhealthy: time_stamp=%f prn=%2d", time_stamp, d_prn);
-        return 0;
-	}
-	*prc = fcorr.d_prc;
+    //if (p->fcorr.t0.time==0) break; // time==0is only true if t0 hasn't been initialised -> it checks if the correction is valid
+    t = (time_stamp - fcorr.d_tof.get_time_stamp()) + fcorr.d_tlat; // delta t between now and tof
+    /* expire age of correction? */
+    if (fabs(t) > MAXSBSAGEF)
+        {
+            trace(2, "no sbas fast correction (expired): time_stamp=%f prn=%2d", time_stamp, d_prn);
+            return 0;
+        }
+    /* UDRE==14 (not monitored)? */
+    else if(fcorr.d_udre == 15)
+        {
+            trace(2,"no sbas fast correction (not monitored): time_stamp=%f prn=%2d", time_stamp, d_prn);
+            return 0;
+        }
+    else if(fcorr.d_udre == 16)
+        {
+            trace(2,"SV is marked as unhealthy: time_stamp=%f prn=%2d", time_stamp, d_prn);
+            return 0;
+        }
+    *prc = fcorr.d_prc;
 #ifdef RRCENA
-	if (fcorr.d_ai > 0 && fabs(t) <= 8.0*fcorr.d_dt)
-	    {
-	        *prc += fcorr.d_rrc*t;
-	    }
+    if (fcorr.d_ai > 0 && fabs(t) <= 8.0*fcorr.d_dt)
+        {
+            *prc += fcorr.d_rrc*t;
+        }
 #endif
-	*var = varfcorr(fcorr.d_udre) + degfcorr(fcorr.d_ai)*t*t/2.0;
-
-	trace(5, "sbsfastcorr: sat=%3d prc=%7.2f sig=%7.2f t=%5.0f", d_prn, *prc, sqrt(*var), t);
-	return 1;
+    *var = varfcorr(fcorr.d_udre) + degfcorr(fcorr.d_ai) * t * t / 2.0;
+    trace(5, "sbsfastcorr: sat=%3d prc=%7.2f sig=%7.2f t=%5.0f", d_prn, *prc, sqrt(*var), t);
+    return 1;
 }
 
 
@@ -289,9 +276,7 @@ int Sbas_Satellite_Correction::sbssatcorr(double time_stamp, double *rs, double 
 {
     double drs[3] = {0}, dclk = 0.0, prc = 0.0;
     int i;
-
     trace(3,"sbssatcorr : sat=%2d",d_prn);
-
     /* sbas long term corrections */
     if (!sbslongcorr(time_stamp, drs, &dclk))
         {
@@ -303,12 +288,9 @@ int Sbas_Satellite_Correction::sbssatcorr(double time_stamp, double *rs, double 
             return 0;
         }
     for (i=0; i<3; i++) rs[i] += drs[i];
-
     dts[0] += dclk + prc/CLIGHT;
-
     trace(5,"sbssatcorr: sat=%2d drs=%6.3f %6.3f %6.3f dclk=%.3f %.3f var=%.3f",
             d_prn,drs[0],drs[1],drs[2],dclk,prc/CLIGHT,*var);
-
     return 1;
 }
 

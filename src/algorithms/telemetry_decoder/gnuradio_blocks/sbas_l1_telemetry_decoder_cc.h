@@ -103,15 +103,12 @@ private:
     public:
         sample_aligner();
         ~sample_aligner();
-
         void reset();
-
         /*
          * samples length must be a multiple of two
          * for block operation the
          */
-        bool get_symbols(const std::vector<double> samples, std::vector<double> &symbols);
-
+       bool get_symbols(const std::vector<double> samples, std::vector<double> &symbols);
     private:
         int d_n_smpls_in_history ;
         double d_iir_par;
@@ -128,11 +125,8 @@ private:
     public:
         symbol_aligner_and_decoder();
         ~symbol_aligner_and_decoder();
-
         void reset();
-
         bool get_bits(const std::vector<double> symbols, std::vector<int> &bits);
-
     private:
         int d_KK;
         Viterbi_Decoder * d_vd1;
@@ -141,17 +135,17 @@ private:
 
     } d_symbol_aligner_and_decoder;
 
+
     // helper class for detecting the preamble and collect the corresponding message candidates
     class frame_detector
     {
     public:
         void reset();
         void get_frame_candidates(const std::vector<int> bits, std::vector<std::pair<int, std::vector<int>>> &msg_candidates);
-
     private:
         std::deque<int> d_buffer;
-
     } d_frame_detector;
+
 
     // helper class for checking the CRC of the message candidates
     class crc_verifier
@@ -159,14 +153,13 @@ private:
     public:
         void reset();
         void get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
-
     private:
         typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
         crc_24_q_type d_checksum_agent;
         void zerropad_front_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
         void zerropad_back_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
-
     } d_crc_verifier;
+
 
     Sbas_Telemetry_Data sbas_telemetry_data;
 };

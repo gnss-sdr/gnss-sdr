@@ -28,6 +28,8 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
      ${Boost_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
 )
 
 add_library(telemetry_decoder_lib ${TELEMETRY_DECODER_LIB_SOURCES})

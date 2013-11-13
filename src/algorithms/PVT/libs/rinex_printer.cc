@@ -1553,6 +1553,3 @@ enum RINEX_enumMarkerType {
 
  */
 
-inline std::string Rinex_Printer::asString(const long double x,
-                const std::string::size_type precision) {
-}

@@ -66,12 +66,13 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      set(OperatingSystem "Mac OS X")
      set(OS_IS_MACOSX TRUE)
-     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
-     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
      exec_program(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
      string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
      if(${DARWIN_VERSION} MATCHES "13")
          set(MACOSX_MAVERICKS TRUE)
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+         set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION="com.apple.compilers.llvm.clang.1_0")
      endif(${DARWIN_VERSION} MATCHES "13")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -125,36 +126,56 @@ endif(NOT Boost_FOUND)
 # GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
 ################################################################################
 
+set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS UHD ANALOG FILTER FFT VOLK FEC TRELLIS)
 
-find_package(GnuradioRuntime)
-find_package(GnuradioBlocks)
-find_package(UHD)
-find_package(GnuradioUHD)
-#find_library(GnuradioAnalog) # Required at tests, added later
-find_package(GnuradioFilter)
-find_package(GnuradioFft)
+find_package(Gnuradio "3.7.0")
 find_package(Volk)
-if(NOT GNURADIO_RUNTIME_FOUND)
-   # message(FATAL_ERROR "gnuradio-runtime 3.7 or later is required to build gnss-sdr")
-endif()
+find_package(UHD)
+
 if(NOT GNURADIO_BLOCKS_FOUND)
-    #message(FATAL_ERROR "gnuradio-blocks 3.7 or later is required to build gnss-sdr")
+    message("*** gnuradio-blocks 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT UHD_FOUND)
-    #message(FATAL_ERROR "UHD is required to build gnss-sdr")
+    message("*** UHD is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_UHD_FOUND)
-    #message(FATAL_ERROR "gnuradio-uhd 3.7 or later is required to build gnss-sdr")
+    message("*** gnuradio-uhd 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FILTER_FOUND)
-    #message(FATAL_ERROR "gnuradio-filter 3.7 or later is required to build gnss-sdr")
+    message("*** gnuradio-filter 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FFT_FOUND)
-    #message(FATAL_ERROR "gnuradio-fft 3.7 or later is required to build gnss-sdr")
+    message("*** gnuradio-fft 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT VOLK_FOUND)
-    #message(FATAL_ERROR "VOLK is required to build gnss-sdr")
+    message("*** VOLK is required to build gnss-sdr")
 endif()
+if(NOT GNURADIO_ANALOG_FOUND)
+    message("*** gnuradio-analog 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_FEC_FOUND)
+    message("*** gnuradio-fec 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_TRELLIS_FOUND)
+    message("*** gnuradio-trellis 3.7 or later is required to build gnss-sdr")
+endif()
+
+
+if(NOT GNURADIO_RUNTIME_FOUND)
+   message(STATUS "cmake cannot find GNU Radio >= 3.7")
+   if(OS_IS_LINUX)
+       message("Go to http://gnuradio.org/redmine/projects/pybombs/wiki")
+       message("and follow the instructions to install GNU Radio in your system.")
+       message(FATAL_ERROR "GNU Radio 3.7 or later is required to build gnss-sdr")
+   endif(OS_IS_LINUX)
+   if(OS_IS_MACOSX)
+       message("You can install it easily via Macports.")
+       message("Open a terminal and type:")
+       message("sudo port install gnuradio ")
+       message(FATAL_ERROR "GNU Radio 3.7 or later is required to build gnss-sdr")
+   endif(OS_IS_MACOSX)
+endif(NOT GNURADIO_RUNTIME_FOUND)
+
 
 
 ################################################################################
@@ -425,27 +446,6 @@ if( $ENV{RTLSDR_DRIVER} )
     # find libosmosdr (done in src/algorithms/signal_sources/adapters)
     # find gr-osmosdr (done in src/algorithms/signal_sources/adapters)
 endif($ENV{RTLSDR_DRIVER} )
-
-
-
-
-########################################################################
-# Setup the include paths
-########################################################################
-
-#include_directories(
-#    ${Boost_INCLUDE_DIRS}
-#    ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-#    ${GNURADIO_BLOCKS_INCLUDE_DIRS}
-#    ${UHD_INCLUDE_DIRS}
-#    ${GNURADIO_UHD_INCLUDE_DIRS}
-#    ${GNURADIO_FILTER_INCLUDE_DIRS}
-#    ${GNURADIO_FFT_INCLUDE_DIRS}
-#    ${ARMADILLO_INCLUDE_DIRS}
-#    ${GLOG_INCLUDE_DIRS}
-#    ${GFlags_INCLUDE_DIRS}
-#    ${GPERFTOOLS_INCLUDE_DIRS}
-#)
 
 
 

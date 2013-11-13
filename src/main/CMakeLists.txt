@@ -35,7 +35,6 @@ add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
 if(OS_IS_MACOSX)
      if (MACOSX_MAVERICKS)
-         link_directories( /opt/local/lib /usr/local/lib) # Not very elegant, to be fixed
          set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11 -framework Accelerate")
      else(MACOSX_MAVERICKS)
          link_directories( /opt/local/lib )  # Not very elegant, to be fixed
@@ -44,7 +43,19 @@ if(OS_IS_MACOSX)
 endif(OS_IS_MACOSX)
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
-target_link_libraries(gnss-sdr ${MAC_LIBRARIES} ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES} gnss_sp_libs gnss_rx)
+
+target_link_libraries(gnss-sdr ${MAC_LIBRARIES} 
+                               ${Boost_LIBRARIES}
+                               ${GNURADIO_RUNTIME_LIBRARIES} 
+                               ${GNURADIO_BLOCKS_LIBRARIES} 
+                               ${GNURADIO_FFT_LIBRARIES} 
+                               ${GNURADIO_FILTER_LIBRARIES} 
+                               ${GFlags_LIBS} 
+                               ${GLOG_LIBRARIES} 
+                               ${ARMADILLO_LIBRARIES} 
+                               gnss_sp_libs 
+                               gnss_rx
+                               )
 
 
 install(TARGETS gnss-sdr

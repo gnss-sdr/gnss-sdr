@@ -253,7 +253,7 @@ and follow the instructions in the screen.
 
 Install Macports: https://distfiles.macports.org/MacPorts/MacPorts-2.2.1-10.9-Mavericks.pkg
 
-(if you are upgrading from a previous installation, please folloe the migration rules at http://trac.macports.org/wiki/Migration)
+(if you are upgrading from a previous installation, please follow the migration rules at http://trac.macports.org/wiki/Migration)
 
 In a terminal, type:
 

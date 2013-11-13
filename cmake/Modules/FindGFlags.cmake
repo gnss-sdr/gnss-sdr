@@ -74,7 +74,7 @@ IF(GFlags_ROOT_DIR)
      # set up include and link directory
      include_directories(${GFlags_INCLUDE_DIRS})
      link_directories(${GFlags_LIBRARY_DIRS})
-     message("gflags library found at ${GFlags_lib}")
+     message(STATUS "gflags library found at ${GFlags_lib}")
      SET(GFlags_LIBS ${GFlags_lib})
      SET(GFlags_FOUND true)
      MARK_AS_ADVANCED(GFlags_INCLUDE_DIRS)

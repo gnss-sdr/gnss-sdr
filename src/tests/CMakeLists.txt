@@ -75,8 +75,6 @@ else(NOT GTEST_DIR_LOCAL)
      set(GTEST_LIBRARIES gtest)
 endif(NOT GTEST_DIR_LOCAL)
 
-
-#find_library(GnuradioAnalog)
      
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}
@@ -107,26 +105,30 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
 )
 
-find_library(
-     GNURADIO_ANALOG_LIBRARIES
-     NAMES gnuradio-analog
-     PATHS /usr/local/lib
-           /usr/local/lib64
-           /usr/lib
-           /usr/lib64
-)
+
 if(OS_IS_MACOSX)
      if(MACOSX_MAVERICKS)
          # Tell the linker where the libraries installed by MacPorts are
-         link_directories(/opt/local/lib /usr/local/lib ) # not very elegant, to be fixed
-         set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11 -lgnuradio-runtime -lgnuradio-pmt -lgnuradio-blocks -lgnuradio-fft -lgnuradio-filter -lgnuradio-uhd")
+         set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11")
      else(MACOSX_MAVERICKS)
          link_directories( /opt/local/lib ) # not very elegant, to be fixed
      endif(MACOSX_MAVERICKS)
 endif(OS_IS_MACOSX)
 
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
-target_link_libraries(run_tests ${MAC_LIBRARIES} ${Boost_LIBRARIES}  ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_ANALOG_LIBRARIES} gnss_sp_libs gnss_rx  signal_generator_blocks)
+target_link_libraries(run_tests ${MAC_LIBRARIES} 
+                                ${Boost_LIBRARIES}  
+                                ${GFLAGS_LIBS} 
+                                ${GLOG_LIBRARIES} 
+                                ${GTEST_LIBRARIES} 
+                                ${GNURADIO_RUNTIME_LIBRARIES} 
+                                ${GNURADIO_BLOCKS_LIBRARIES} 
+                                ${GNURADIO_FILTER_LIBRARIES} 
+                                ${GNURADIO_ANALOG_LIBRARIES} 
+                                gnss_sp_libs 
+                                gnss_rx  
+                                signal_generator_blocks
+                                )
 
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
 
@@ -142,7 +144,14 @@ add_executable(control_thread_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_message_factory_test.cc
 )
-target_link_libraries(control_thread_test ${Boost_LIBRARIES} ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx)
+target_link_libraries(control_thread_test ${Boost_LIBRARIES} 
+                                          ${GFLAGS_LIBS} 
+                                          ${GLOG_LIBRARIES} 
+                                          ${GTEST_LIBRARIES} 
+                                          gnss_sp_libs 
+                                          gnss_rx
+                                          )
+                                          
 add_test(control_thread_test control_thread_test)
 
 add_executable(gnss_block_test EXCLUDE_FROM_ALL
@@ -164,7 +173,15 @@ add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gnss_block_factory_test.cc   
 )
-target_link_libraries(gnss_block_test ${Boost_LIBRARIES} ${GFLAGS_LIBS} ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} gnss_sp_libs gnss_rx signal_generator_blocks)
+target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
+                                      ${GFLAGS_LIBS} 
+                                      ${GLOG_LIBRARIES} 
+                                      ${GTEST_LIBRARIES} 
+                                      gnss_sp_libs 
+                                      gnss_rx 
+                                      signal_generator_blocks
+                                      )
+                                      
 add_test(gnss_block_test gnss_block_test)
 
  

@@ -207,7 +207,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(gnss_synchro.Channel_ID);
-    }) << "Failure setting channel."<< std::endl;
+    }) << "Failure setting channel." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
@@ -215,25 +215,25 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         acquisition->set_channel_queue(&channel_internal_queue);
-    }) << "Failure setting channel_internal_queue."<< std::endl;
+    }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."<< std::endl;
+    }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_max(config->property("Acquisition.doppler_max",
                 10000));
-    }) << "Failure setting doppler_max."<< std::endl;
+    }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_step(config->property("Acquisition.doppler_step",
                 500));
-    }) << "Failure setting doppler_step."<< std::endl;
+    }) << "Failure setting doppler_step." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."< < std::endl;
+    }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     ASSERT_NO_THROW( {
         std::string file = "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";

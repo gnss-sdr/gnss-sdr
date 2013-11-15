@@ -59,4 +59,11 @@ if(OPENCL_FOUND)
 endif(OPENCL_FOUND)
 
 add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES})
-target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} ${OPT_LIBRARIES} gnss_rx)
+
+target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES} 
+                                   ${GNURADIO_BLOCKS_LIBRARIES} 
+                                   ${GNURADIO_FFT_LIBRARIES} 
+                                   ${GNURADIO_FILTER_LIBRARIES} 
+                                   ${OPT_LIBRARIES} 
+                                   gnss_rx
+)

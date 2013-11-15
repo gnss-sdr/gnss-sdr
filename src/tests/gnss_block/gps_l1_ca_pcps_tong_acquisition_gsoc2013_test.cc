@@ -307,9 +307,9 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::wait_message()
             channel_internal_queue.wait_and_pop(message);
 
             gettimeofday(&tv, NULL);
-            end = tv.tv_sec *1e6 + tv.tv_usec;
+            end = tv.tv_sec*1e6 + tv.tv_usec;
 
-            mean_acq_time_us += (end-begin);
+            mean_acq_time_us += (end - begin);
 
             process_message();
         }
@@ -395,7 +395,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
         end = tv.tv_sec *1e6 + tv.tv_usec;
     }) << "Failure running the top_block."<< std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
     delete acquisition;
     delete config;
 }
@@ -466,7 +466,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
             {
@@ -555,18 +555,18 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
             {
-                std::cout << "Probability of detection = " << Pd << std::endl;
-                std::cout << "Probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                std::cout << "Estimated probability of detection = " << Pd << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
             else if (i == 1)
             {
-                std::cout << "Probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
         }
 

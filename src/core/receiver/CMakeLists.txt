@@ -24,6 +24,7 @@ set(GNSS_RECEIVER_SOURCES
      gnss_flowgraph.cc
      in_memory_configuration.cc
 )
+
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -90,12 +91,28 @@ endif( OPENCL_FOUND )
 
 
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES})
-target_link_libraries(gnss_rx ${Boost_LIBRARIES} ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} 
-      gnss_system_parameters gnss_sp_libs 
-      signal_source_adapters datatype_adapters 
-      input_filter_adapters 
-      conditioner_adapters resampler_adapters 
-      acq_adapters tracking_lib tracking_adapters 
-      channel_adapters telemetry_decoder_adapters 
-      obs_adapters pvt_adapters pvt_lib 
-      out_adapters rx_core_lib)
+
+target_link_libraries(gnss_rx ${Boost_LIBRARIES} 
+                              ${ARMADILLO_LIBRARIES} 
+                              ${GNURADIO_RUNTIME_LIBRARIES} 
+                              ${GNURADIO_BLOCKS_LIBRARIES} 
+                              ${GNURADIO_FFT_LIBRARIES} 
+                              ${GNURADIO_FILTER_LIBRARIES} 
+                              gnss_system_parameters 
+                              gnss_sp_libs 
+                              signal_source_adapters 
+                              datatype_adapters 
+                              input_filter_adapters 
+                              conditioner_adapters 
+                              resampler_adapters 
+                              acq_adapters 
+                              tracking_lib 
+                              tracking_adapters 
+                              channel_adapters 
+                              telemetry_decoder_adapters 
+                              obs_adapters 
+                              pvt_adapters 
+                              pvt_lib 
+                              out_adapters 
+                              rx_core_lib
+)

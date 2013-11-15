@@ -73,8 +73,8 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
             delay_chips.push_back(configuration->property("SignalSource.delay_chips_" + sat, 0));
         }
 
-    // If Gallileo signal is present                             -> vector duration = 100 ms (25 * 4 ms)
-    // If there is only GPS signal (Gallileo signal not present) -> vector duration = 1 ms
+    // If Galileo signal is present                             -> vector duration = 100 ms (25 * 4 ms)
+    // If there is only GPS signal (Galileo signal not present) -> vector duration = 1 ms
     unsigned int vector_length = 0;
     if (std::find(system.begin(), system.end(), "E") != system.end())
     {
@@ -103,8 +103,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
 
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
-                    << " unrecognized item type for resampler";
+            LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type for resampler";
             item_size_ = sizeof(short);
         }
 

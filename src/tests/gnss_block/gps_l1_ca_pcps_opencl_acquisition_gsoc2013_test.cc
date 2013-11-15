@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -47,9 +47,7 @@
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_opencl_acquisition.h"
 #include "signal_generator.h"
-//#include "signal_generator.cc"
 #include "signal_generator_c.h"
-//#include "signal_generator_c.cc"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
@@ -203,7 +201,7 @@ void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::config_2()
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'G';
     std::string signal = "1C";
-    signal.copy(gnss_synchro.Signal,2,0);
+    signal.copy(gnss_synchro.Signal, 2, 0);
 
     integration_time_ms = 1;
     fs_in = 4e6;
@@ -213,7 +211,7 @@ void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::config_2()
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
 
-    num_of_realizations = 100;
+    num_of_realizations = 10; // Change here the number of realizations
 
     config = new InMemoryConfiguration();
 
@@ -322,7 +320,7 @@ void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::process_message()
             detection_counter++;
 
             // The term -5 is here to correct the additional delay introduced by the FIR filter
-            double delay_error_chips = abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*1023.0/((double)fs_in*1e-3));
+            double delay_error_chips = abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples- 5 )*1023.0/((double)fs_in*1e-3));
             double doppler_error_hz = abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
             mse_delay += std::pow(delay_error_chips, 2);
@@ -398,7 +396,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ConnectAndRun)
         end = tv.tv_sec *1e6 + tv.tv_usec;
     }) << "Failure running the top_block."<< std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
     delete acquisition;
     delete config;
@@ -470,7 +468,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
             {
@@ -559,18 +557,18 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
             {
-                std::cout << "Probability of detection = " << Pd << std::endl;
-                std::cout << "Probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                std::cout << "Estimated probability of detection = " << Pd << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
             else if (i == 1)
             {
-                std::cout << "Probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
         }
 

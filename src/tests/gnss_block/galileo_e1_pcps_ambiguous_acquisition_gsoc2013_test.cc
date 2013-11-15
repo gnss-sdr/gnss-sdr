@@ -135,7 +135,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
     std::string signal = "1C";
-    signal.copy(gnss_synchro.Signal,2,0);
+    signal.copy(gnss_synchro.Signal, 2, 0);
 
     integration_time_ms = 4;
     fs_in = 4e6;
@@ -206,7 +206,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
     std::string signal = "1C";
-    signal.copy(gnss_synchro.Signal,2,0);
+    signal.copy(gnss_synchro.Signal, 2, 0);
 
     integration_time_ms = 4;
     fs_in = 4e6;
@@ -307,14 +307,14 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::wait_message()
             acquisition->reset();
 
             gettimeofday(&tv, NULL);
-            begin = tv.tv_sec *1e6 + tv.tv_usec;
+            begin = tv.tv_sec*1e6 + tv.tv_usec;
 
             channel_internal_queue.wait_and_pop(message);
 
             gettimeofday(&tv, NULL);
-            end = tv.tv_sec *1e6 + tv.tv_usec;
+            end = tv.tv_sec*1e6 + tv.tv_usec;
 
-            mean_acq_time_us += (end-begin);
+            mean_acq_time_us += (end - begin);
 
             process_message();
         }
@@ -345,19 +345,17 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::process_message()
 
     if (realization_counter == num_of_realizations)
         {
-            mse_delay /= num_of_realizations;
-            mse_doppler /= num_of_realizations;
+            mse_delay /= (double)num_of_realizations;
+            mse_doppler /= (double)num_of_realizations;
 
             Pd = (double)correct_estimation_counter / (double)num_of_realizations;
             Pfa_a = (double)detection_counter / (double)num_of_realizations;
             Pfa_p = (double)(detection_counter-correct_estimation_counter) / (double)num_of_realizations;
 
-            mean_acq_time_us /= num_of_realizations;
+            mean_acq_time_us /= (double)num_of_realizations;
 
             stop_queue();
             top_block->stop();
-
-            std::cout << std::endl;
         }
 }
 
@@ -366,6 +364,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::stop_queue()
     stop = true;
 }
 
+
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
@@ -373,6 +372,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, Instantiate)
     delete acquisition;
     delete config;
 }
+
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 {
@@ -391,17 +391,17 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
-    }) << "Failure connecting the blocks of acquisition test."<< std::endl;
+    }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1e6 + tv.tv_usec;
+        begin = tv.tv_sec*1e6 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1e6 + tv.tv_usec;
-    }) << "Failure running he top_block."<< std::endl;
+        end = tv.tv_sec*1e6 + tv.tv_usec;
+    }) << "Failure running the top_block."<< std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
     delete acquisition;
     delete config;
@@ -439,7 +439,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     acquisition->init();
 
@@ -452,7 +452,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-    // i = 0 --> sallite in acquisition is visible
+    // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
     for (unsigned int i = 0; i < 2; i++)
         {
@@ -473,7 +473,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
             {
@@ -487,11 +487,17 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
             {
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
+
+
+
+
         }
 
     delete acquisition;
     delete config;
 }
+
+
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {
@@ -561,18 +567,18 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabi
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
             {
-                std::cout << "Probability of detection = " << Pd << std::endl;
-                std::cout << "Probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                std::cout << "Estimated probability of detection = " << Pd << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
             else if (i == 1)
             {
-                std::cout << "Probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
         }
 

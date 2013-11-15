@@ -60,6 +60,11 @@ if(NOT GTEST_DIR_LOCAL)
      set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
      # Library
      ExternalProject_Get_Property(gtest-${gtest_RELEASE} binary_dir)
+     if(MACOSX_MAVERICKS)
+         if(CMAKE_GENERATOR STREQUAL Xcode)
+             set(binary_dir "${binary_dir}/Debug")
+         endif(CMAKE_GENERATOR STREQUAL Xcode)
+     endif(MACOSX_MAVERICKS)
      set(GTEST_LIBRARY_PATH "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a;${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a")
      set(GTEST_LIBRARY gtest-${gtest_RELEASE}) 
      set(GTEST_LIBRARIES 
@@ -111,11 +116,12 @@ if(OS_IS_MACOSX)
          # Tell the linker where the libraries installed by MacPorts are
          set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11")
      else(MACOSX_MAVERICKS)
-         link_directories( /opt/local/lib ) # not very elegant, to be fixed
+         link_directories( /opt/local/lib ) # not very elegant, to be fixed. Needed?
      endif(MACOSX_MAVERICKS)
 endif(OS_IS_MACOSX)
 
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
+
 target_link_libraries(run_tests ${MAC_LIBRARIES} 
                                 ${Boost_LIBRARIES}  
                                 ${GFLAGS_LIBS} 
@@ -128,7 +134,8 @@ target_link_libraries(run_tests ${MAC_LIBRARIES}
                                 gnss_sp_libs 
                                 gnss_rx  
                                 signal_generator_blocks
-                                )
+                                signal_generator_adapters
+)
 
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
 

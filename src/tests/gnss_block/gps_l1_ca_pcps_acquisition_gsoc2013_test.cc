@@ -47,9 +47,9 @@
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "signal_generator.h"
-#include "signal_generator.cc"
+//#include "signal_generator.cc"
 #include "signal_generator_c.h"
-#include "signal_generator_c.cc"
+//#include "signal_generator_c.cc"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
@@ -352,8 +352,6 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test::process_message()
 
             stop_queue();
             top_block->stop();
-
-            std::cout << std::endl;
         }
 }
 
@@ -561,14 +559,13 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 
             if (i == 0)
             {
-                std::cout << "Probability of detection = " << Pd << std::endl;
-                std::cout << "Probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
-            }
+                std::cout << "Estimated probability of detection = " << Pd << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;           }
             else if (i == 1)
             {
-                std::cout << "Probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
         }
 

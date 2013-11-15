@@ -131,8 +131,16 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message()
 {
     while (!stop)
         {
-            channel_internal_queue.wait_and_pop(message);
-            stop_queue();
+            try
+            {
+                    channel_internal_queue.wait_and_pop(message);
+                    stop_queue();
+            }
+            catch( boost::exception & e )
+            {
+                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+            }
+
         }
 }
 
@@ -176,14 +184,14 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        begin = tv.tv_sec*1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
-    }) << "Failure running he top_block."<< std::endl;
+        end = tv.tv_sec*1000000 + tv.tv_usec;
+    }) << "Failure running the top_block."<< std::endl;
 
     delete acquisition;
-    std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
 }
 
@@ -225,31 +233,37 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block."< < std::endl;
 
     ASSERT_NO_THROW( {
         std::string file = "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
-    }) << "Failure connecting the blocks of acquisition test."<< std::endl;
+    }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
+    ASSERT_NO_THROW( {
     start_queue();
     acquisition->init();
     acquisition->reset();
 
+
+    }) << "Failure !!!" << std::endl;
+
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        begin = tv.tv_sec*1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
-    }) << "Failure running he top_block."<< std::endl;
+        end = tv.tv_sec*1000000 + tv.tv_usec;
+    }) << "Failure running the top_block."<< std::endl;
 
-    ch_thread.join();
+    ASSERT_NO_THROW( {
+        ch_thread.timed_join(boost::posix_time::seconds(1));
+    }) << "Failure while waiting the queue to stop" << std::endl;
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "Acquired " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 

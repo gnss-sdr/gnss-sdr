@@ -61,7 +61,7 @@ public:
     }
 
     /*!
-     * \brief Returns "SignalGenerator".
+     * \brief Returns "GNSSSignalGenerator".
      */
     std::string implementation()
     {
@@ -77,7 +77,6 @@ public:
     gr::basic_block_sptr get_left_block();
     gr::basic_block_sptr get_right_block();
 
-
 private:
     std::string role_;
     unsigned int in_stream_;
@@ -90,7 +89,6 @@ private:
     gr::blocks::vector_to_stream::sptr vector_to_stream_;
     gr::blocks::file_sink::sptr file_sink_;
     boost::shared_ptr<gr::msg_queue> queue_;
-
 };
 
 #endif /*GNSS_SDR_SIGNAL_GENERATOR_H_*/

@@ -304,12 +304,19 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::wait_message()
             gettimeofday(&tv, NULL);
             begin = tv.tv_sec *1e6 + tv.tv_usec;
 
-            channel_internal_queue.wait_and_pop(message);
+            try
+            {
+                    channel_internal_queue.wait_and_pop(message);
+            }
+            catch( boost::exception & e )
+            {
+                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+            }
 
             gettimeofday(&tv, NULL);
-            end = tv.tv_sec *1e6 + tv.tv_usec;
+            end = tv.tv_sec*1e6 + tv.tv_usec;
 
-            mean_acq_time_us += (end-begin);
+            mean_acq_time_us += (end - begin);
 
             process_message();
         }
@@ -352,7 +359,7 @@ void GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test::process_message()
             stop_queue();
             top_block->stop();
 
-            std::cout << std::endl;
+            //std::cout << std::endl;
         }
 }
 
@@ -468,7 +475,7 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
             {
@@ -483,6 +490,11 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
             {
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
+
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+
         }
 
     delete acquisition;
@@ -561,15 +573,19 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
 
             if (i == 0)
             {
-                std::cout << "Probability of detection = " << Pd << std::endl;
-                std::cout << "Probability of false alarm (satellite present) = " << Pfa_p << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                std::cout << "Estimated probability of detection = " << Pd << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
             else if (i == 1)
             {
-                std::cout << "Probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
-//                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+                std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
+                std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+
         }
 
     delete acquisition;

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -80,13 +80,13 @@ void signal_generator_c::init()
 {
     if (posix_memalign((void**)&complex_phase_, 16, vector_length_ * sizeof(gr_complex)) == 0){};
 
-    // True if Gallileo satellites are present
+    // True if Galileo satellites are present
     bool gallileo_signal = std::find(system_.begin(), system_.end(), "E") != system_.end();
 
     for (unsigned int sat = 0; sat < num_sats_; sat++)
         {
             start_phase_rad_.push_back(0);
-            current_data_bits_.push_back(gr_complex(1,0));
+            current_data_bits_.push_back(gr_complex(1, 0));
             ms_counter_.push_back(0);
 
             if (system_[sat] == "G")
@@ -140,20 +140,20 @@ void signal_generator_c::generate_codes()
             if (posix_memalign((void**)&(sampled_code_data_[sat]), 16,
                                vector_length_ * sizeof(gr_complex)) == 0){};
 
-            gr_complex code[8000];//[samples_per_code_[sat]];
+            gr_complex code[64000];//[samples_per_code_[sat]];
 
             if (system_[sat] == "G")
                 {
                     // Generate one code-period of 1C signal
                     gps_l1_ca_code_gen_complex_sampled(code, PRN_[sat], fs_in_,
-                                    (int)GPS_L1_CA_CODE_LENGTH_CHIPS-delay_chips_[sat]);
+                                    (int)GPS_L1_CA_CODE_LENGTH_CHIPS - delay_chips_[sat]);
 
                     // Obtain the desired CN0 assuming that Pn = 1.
                     if (noise_flag_)
                         {
                             for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
                                 {
-                                    code[i] *= sqrt(pow(10,CN0_dB_[sat]/10)/BW_BB_);
+                                    code[i] *= sqrt(pow(10,CN0_dB_[sat] / 10) / BW_BB_);
                                 }
                         }
 
@@ -172,14 +172,14 @@ void signal_generator_c::generate_codes()
                     strcpy(signal, "1B");
 
                     galileo_e1_code_gen_complex_sampled(code, signal, cboc, PRN_[sat], fs_in_,
-                                    (int)Galileo_E1_B_CODE_LENGTH_CHIPS-delay_chips_[sat]);
+                                    (int)Galileo_E1_B_CODE_LENGTH_CHIPS - delay_chips_[sat]);
 
                     // Obtain the desired CN0 assuming that Pn = 1.
                     if (noise_flag_)
                         {
                             for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
                                 {
-                                    code[i] *= sqrt(pow(10,CN0_dB_[sat]/10)/BW_BB_/2);
+                                    code[i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_ / 2);
                                 }
                         }
 
@@ -204,7 +204,7 @@ void signal_generator_c::generate_codes()
                         {
                             for (unsigned int i = 0; i < vector_length_; i++)
                                 {
-                                    sampled_code_pilot_[sat][i] *= sqrt(pow(10,CN0_dB_[sat]/10)/BW_BB_/2);
+                                    sampled_code_pilot_[sat][i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_ / 2);
                                 }
                         }
                 }
@@ -230,8 +230,7 @@ signal_generator_c::~signal_generator_c()
 }
 
 
-int
-signal_generator_c::general_work (int noutput_items,
+int signal_generator_c::general_work (int noutput_items,
                    gr_vector_int &ninput_items,
 			       gr_vector_const_void_star &input_items,
 			       gr_vector_void_star &output_items)
@@ -249,7 +248,6 @@ signal_generator_c::general_work (int noutput_items,
 
     for (unsigned int sat = 0; sat < num_sats_; sat++)
         {
-
             float phase_step_rad = -(float)GPS_TWO_PI*doppler_Hz_[sat] / (float)fs_in_;
             fxp_nco(complex_phase_, vector_length_, start_phase_rad_[sat], phase_step_rad);
             start_phase_rad_[sat] += vector_length_ * phase_step_rad;

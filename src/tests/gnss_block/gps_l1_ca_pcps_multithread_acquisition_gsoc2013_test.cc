@@ -54,6 +54,10 @@
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
 #include "boost/shared_ptr.hpp"
+#include "signal_generator.h"
+#include "signal_generator.cc"
+#include "signal_generator_c.h"
+#include "signal_generator_c.cc"
 
 
 class GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test: public ::testing::Test

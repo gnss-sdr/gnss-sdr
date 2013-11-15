@@ -42,8 +42,7 @@ class signal_generator_c;
  * We use boost::shared_ptr's instead of raw pointers for all access
  * to gr_blocks (and many other data structures).  The shared_ptr gets
  * us transparent reference counting, which greatly simplifies storage
- * management issues.  This is especially helpful in our hybrid
- * C++ / Python system.
+ * management issues.
  *
  * See http://www.boost.org/libs/smart_ptr/smart_ptr.htm
  *
@@ -73,57 +72,57 @@ signal_make_generator_c (std::vector<std::string> system, const std::vector<unsi
 class signal_generator_c : public gr::block
 {
 private:
-  // The friend declaration allows gen_source to
-  // access the private constructor.
+    // The friend declaration allows gen_source to
+    // access the private constructor.
 
-  /* Create the signal_generator_c object*/
-  friend signal_generator_c_sptr
-  signal_make_generator_c (std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-                      const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-                      const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
-                      unsigned int fs_in, unsigned int vector_length, float BW_BB);
+    /* Create the signal_generator_c object*/
+    friend signal_generator_c_sptr
+    signal_make_generator_c (std::vector<std::string> system, const std::vector<unsigned int> &PRN,
+            const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
+            const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
+            unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
-  signal_generator_c (std::vector<std::string> system, const std::vector<unsigned int> &PRN,
-                 const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-                 const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
-                 unsigned int fs_in, unsigned int vector_length, float BW_BB);
+    signal_generator_c (std::vector<std::string> system, const std::vector<unsigned int> &PRN,
+            const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
+            const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
+            unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
-  void init();
-  void generate_codes();
+    void init();
+    void generate_codes();
 
-  std::vector<std::string> system_;
-  std::vector<unsigned int> PRN_;
-  std::vector<float> CN0_dB_;
-  std::vector<float> doppler_Hz_;
-  std::vector<unsigned int> delay_chips_;
-  bool data_flag_;
-  bool noise_flag_;
-  unsigned int fs_in_;
-  unsigned int num_sats_;
-  unsigned int vector_length_;
-  float BW_BB_;
+    std::vector<std::string> system_;
+    std::vector<unsigned int> PRN_;
+    std::vector<float> CN0_dB_;
+    std::vector<float> doppler_Hz_;
+    std::vector<unsigned int> delay_chips_;
+    bool data_flag_;
+    bool noise_flag_;
+    unsigned int fs_in_;
+    unsigned int num_sats_;
+    unsigned int vector_length_;
+    float BW_BB_;
 
-  std::vector<unsigned int> samples_per_code_;
-  std::vector<unsigned int> num_of_codes_per_vector_;
-  std::vector<unsigned int> data_bit_duration_ms_;
-  std::vector<unsigned int> ms_counter_;
-  std::vector<float> start_phase_rad_;
-  std::vector<gr_complex> current_data_bits_;
+    std::vector<unsigned int> samples_per_code_;
+    std::vector<unsigned int> num_of_codes_per_vector_;
+    std::vector<unsigned int> data_bit_duration_ms_;
+    std::vector<unsigned int> ms_counter_;
+    std::vector<float> start_phase_rad_;
+    std::vector<gr_complex> current_data_bits_;
 
-  boost::scoped_array<gr_complex*> sampled_code_data_;
-  boost::scoped_array<gr_complex*> sampled_code_pilot_;
-  gr::random* random_;
-  gr_complex* complex_phase_;
+    boost::scoped_array<gr_complex*> sampled_code_data_;
+    boost::scoped_array<gr_complex*> sampled_code_pilot_;
+    gr::random* random_;
+    gr_complex* complex_phase_;
 
- public:
-  ~signal_generator_c ();	// public destructor
+public:
+    ~signal_generator_c ();	// public destructor
 
-  // Where all the action really happens
+    // Where all the action really happens
 
-  int general_work (int noutput_items,
-		    gr_vector_int &ninput_items,
-		    gr_vector_const_void_star &input_items,
-		    gr_vector_void_star &output_items);
+    int general_work (int noutput_items,
+            gr_vector_int &ninput_items,
+            gr_vector_const_void_star &input_items,
+            gr_vector_void_star &output_items);
 };
 
 #endif /* GNSS_SDR_SIGNAL_GENERATOR_C_H */

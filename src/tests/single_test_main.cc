@@ -54,6 +54,27 @@ concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 concurrent_map<Gps_Iono> global_gps_iono_map;
 concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 
+
+concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
+concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
+concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
+concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
+
+concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
+concurrent_map<Galileo_Iono> global_galileo_iono_map;
+concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
+concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
+
+concurrent_queue<Sbas_Raw_Msg> global_sbas_raw_msg_queue;
+concurrent_queue<Sbas_Ionosphere_Correction> global_sbas_iono_queue;
+concurrent_queue<Sbas_Satellite_Correction> global_sbas_sat_corr_queue;
+concurrent_queue<Sbas_Ephemeris> global_sbas_ephemeris_queue;
+
+concurrent_map<Sbas_Ionosphere_Correction> global_sbas_iono_map;
+concurrent_map<Sbas_Satellite_Correction> global_sbas_sat_corr_map;
+concurrent_map<Sbas_Ephemeris> global_sbas_ephemeris_map;
+
+
 int main(int argc, char **argv)
 {
     google::ParseCommandLineFlags(&argc, &argv, true);

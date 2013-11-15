@@ -30,6 +30,11 @@ include_directories(
 )
 
 add_library(signal_generator_blocks ${SIGNAL_GENERATOR_BLOCK_SOURCES})
-target_link_libraries(signal_generator_blocks gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES})
+
+target_link_libraries(signal_generator_blocks gnss_system_parameters 
+                                              ${GNURADIO_RUNTIME_LIBRARIES} 
+                                              ${GNURADIO_FFT_LIBRARIES} 
+                                              ${VOLK_LIBRARIES}
+)
 
 

@@ -67,46 +67,48 @@ struct gps_subframe_fsm_S9;
 struct gps_subframe_fsm_S10;
 struct gps_subframe_fsm_S11;
 
+
+/*!
+ * \brief This class implements a Finite State Machine that handles the decoding
+ *  of the GPS L1 C/A NAV message
+ */
 class GpsL1CaSubframeFsm : public sc::state_machine< GpsL1CaSubframeFsm, gps_subframe_fsm_S0 >
 {
 public:
-  // channel and satellite info
-  int i_channel_ID;
-  unsigned int i_satellite_PRN;
+    GpsL1CaSubframeFsm(); //!< The constructor starts the Finite State Machine
 
-  // ephemeris queue
-  concurrent_queue<Gps_Ephemeris> *d_ephemeris_queue;
-  // ionospheric parameters queue
-  concurrent_queue<Gps_Iono> *d_iono_queue;
-  // UTC model parameters queue
-  concurrent_queue<Gps_Utc_Model> *d_utc_model_queue;
-  // Almanac queue
-  concurrent_queue<Gps_Almanac> *d_almanac_queue;
+    // channel and satellite info
+    int i_channel_ID;              //!< Channel id
+    unsigned int i_satellite_PRN;  //!< Satellite PRN number
 
-  // navigation message class
-  Gps_Navigation_Message d_nav;
+    concurrent_queue<Gps_Ephemeris> *d_ephemeris_queue; //!< Ephemeris queue
+    concurrent_queue<Gps_Iono> *d_iono_queue;           //!< Ionospheric parameters queue
+    concurrent_queue<Gps_Utc_Model> *d_utc_model_queue; //!< UTC model parameters queue
+    concurrent_queue<Gps_Almanac> *d_almanac_queue;     //!< Almanac queue
 
-  // GPS SV and System parameters
-  Gps_Ephemeris ephemeris;
-  Gps_Almanac almanac;
-  Gps_Utc_Model utc_model;
-  Gps_Iono iono;
+    Gps_Navigation_Message d_nav; //!< GPS L1 C/A navigation message object
 
+    // GPS SV and System parameters
+    Gps_Ephemeris ephemeris;  //!< Object that handles GPS ephemeris parameters
+    Gps_Almanac almanac;      //!< Object that handles GPS almanac data
+    Gps_Utc_Model utc_model;  //!< Object that handles UTM model parameters
+    Gps_Iono iono;            //!< Object that handles ionospheric parameters
 
-  char d_subframe[GPS_SUBFRAME_LENGTH];
-  char d_GPS_frame_4bytes[GPS_WORD_LENGTH];
+    char d_subframe[GPS_SUBFRAME_LENGTH];
+    char d_GPS_frame_4bytes[GPS_WORD_LENGTH];
+    double d_preamble_time_ms;
 
-  double d_preamble_time_ms;
+    void gps_word_to_subframe(int position); //!< inserts the word in the correct position of the subframe
 
-  void gps_word_to_subframe(int position);
-  void gps_subframe_to_nav_msg();
+    /*!
+     * \brief This function decodes a NAv message subframe and pushes the information to the right queues
+     */
+    void gps_subframe_to_nav_msg();
 
-  //FSM EVENTS
-  void Event_gps_word_valid();
-  void Event_gps_word_invalid();
-  void Event_gps_word_preamble();
-
-  GpsL1CaSubframeFsm();
+    //FSM EVENTS
+    void Event_gps_word_valid();    //!< FSM event: the received word is valid
+    void Event_gps_word_invalid();  //!< FSM event: the received word is not valid
+    void Event_gps_word_preamble(); //!< FSM event: word preamble detected
 };
 
 #endif

@@ -5,7 +5,7 @@
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -39,7 +39,6 @@
 #include <bitset>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-//#include <gnuradio/gr_sync_block.h>
 #include "gnss_satellite.h"
 
 
@@ -62,24 +61,35 @@ public:
     ~gps_l1_ca_telemetry_decoder_cc();
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
+
     /*!
      * \brief Set the satellite data queue
      */
-    void set_ephemeris_queue(concurrent_queue<Gps_Ephemeris> *ephemeris_queue){d_GPS_FSM.d_ephemeris_queue = ephemeris_queue;}
-    void set_iono_queue(concurrent_queue<Gps_Iono> *iono_queue){d_GPS_FSM.d_iono_queue = iono_queue;}
-    void set_almanac_queue(concurrent_queue<Gps_Almanac> *almanac_queue){d_GPS_FSM.d_almanac_queue = almanac_queue;}
-    void set_utc_model_queue(concurrent_queue<Gps_Utc_Model> *utc_model_queue){d_GPS_FSM.d_utc_model_queue = utc_model_queue;}
+    void set_ephemeris_queue(concurrent_queue<Gps_Ephemeris> *ephemeris_queue){d_GPS_FSM.d_ephemeris_queue = ephemeris_queue;} //!< Set the ephemeris data queue
+    void set_iono_queue(concurrent_queue<Gps_Iono> *iono_queue){d_GPS_FSM.d_iono_queue = iono_queue;}                          //!< Set the iono data queue
+    void set_almanac_queue(concurrent_queue<Gps_Almanac> *almanac_queue){d_GPS_FSM.d_almanac_queue = almanac_queue;}           //!< Set the almanac data queue
+    void set_utc_model_queue(concurrent_queue<Gps_Utc_Model> *utc_model_queue){d_GPS_FSM.d_utc_model_queue = utc_model_queue;} //!< Set the UTC model data queue
 
+    /*!
+     * \brief This is where all signal processing takes place
+     */
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
+    /*!
+     * \brief Function which tells the scheduler how many input items
+     *        are required to produce noutput_items output items.
+     */
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
     friend gps_l1_ca_telemetry_decoder_cc_sptr
     gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
             int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+
     gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
             int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+
     bool gps_word_parityCheck(unsigned int gpsword);
 
     // constants

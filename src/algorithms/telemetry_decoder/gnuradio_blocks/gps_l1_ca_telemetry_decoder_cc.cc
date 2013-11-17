@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -103,9 +103,9 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     // preamble bits to sampled symbols
     d_preambles_symbols = (signed int*)malloc(sizeof(signed int) * GPS_CA_PREAMBLE_LENGTH_BITS * d_samples_per_bit);
     int n = 0;
-    for (int i=0; i<GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+    for (int i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
         {
-            for (unsigned int j=0; j<d_samples_per_bit; j++)
+            for (unsigned int j = 0; j < d_samples_per_bit; j++)
                 {
                     if (d_preambles_bits[i] == 1)
                         {
@@ -164,7 +164,7 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
     // Now XOR the 5 6-bit fields together to produce the 6-bit final result.
     parity = t ^ _lrotl(t,6) ^ _lrotl(t,12) ^ _lrotl(t,18) ^ _lrotl(t,24);
     parity = parity & 0x3F;
-    if (parity == (gpsword&0x3F)) return(true);
+    if (parity == (gpsword & 0x3F)) return(true);
     else return(false);
 }
 
@@ -185,7 +185,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 
     // TODO Optimize me!
     //******* preamble correlation ********
-    for (unsigned int i=0; i<d_samples_per_bit*8; i++)
+    for (unsigned int i = 0; i < d_samples_per_bit*8; i++)
         {
             if (in[0][i].Prompt_I < 0)	// symbols clipping
                 {
@@ -297,7 +297,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 }
             else
                 {
-                    d_GPS_frame_4bytes<<=1; //shift 1 bit left the telemetry word
+                    d_GPS_frame_4bytes <<= 1; //shift 1 bit left the telemetry word
                 }
         }
     // output the frame
@@ -306,12 +306,12 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //1. Copy the current tracking output
     current_synchro_data = in[0][0];
     //2. Add the telemetry decoder information
-    if (this->d_flag_preamble==true and d_GPS_FSM.d_nav.d_TOW>0) //update TOW at the preamble instant (todo: check for valid d_TOW)
+    if (this->d_flag_preamble == true and d_GPS_FSM.d_nav.d_TOW > 0) //update TOW at the preamble instant (todo: check for valid d_TOW)
         {
             d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
             d_TOW_at_current_symbol = d_TOW_at_Preamble + GPS_CA_PREAMBLE_LENGTH_BITS/GPS_CA_TELEMETRY_RATE_BITS_SECOND;
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
-            if (flag_TOW_set==false)
+            if (flag_TOW_set == false)
                 {
                     flag_TOW_set = true;
                 }
@@ -320,7 +320,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         {
             d_TOW_at_current_symbol = d_TOW_at_current_symbol + GPS_L1_CA_CODE_PERIOD;
         }
-
 
     current_synchro_data.d_TOW = d_TOW_at_Preamble;
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
@@ -379,11 +378,13 @@ void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            std::cout << "Telemetry decoder dump enabled on channel " << d_channel
+                                      << " Log file: " << d_dump_filename.c_str() << std::endl;
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            std::cout << "channel " << d_channel
+                                      << " Exception opening trk dump file " << e.what() << std::endl;
                     }
                 }
         }

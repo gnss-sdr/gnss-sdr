@@ -1,5 +1,5 @@
 /*!
- * \file control_thread.h
+  * \file control_thread.h
  * \brief Interface of the receiver control plane
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
@@ -68,9 +68,13 @@ public:
     /*! \brief Runs the control thread
      *
      *  This is the main loop that reads and process the control messages:
+     *
      *  - Connect the GNSS receiver flowgraph;
+     *
      *  - Start the GNSS receiver flowgraph;
-     *  while (flowgraph_->running() && !stop)_{
+     *
+     *  while (flowgraph_->running() && !stop_){
+     *
      *  - Read control messages and process them; }
      */
     void run();
@@ -78,7 +82,7 @@ public:
     /*!
      * \brief Sets the control_queue
      *
-     * \param[in] gr_msg_queue_sptr control_queue
+     * \param[in] boost::shared_ptr<gr::msg_queue> control_queue
      */
     void set_control_queue(boost::shared_ptr<gr::msg_queue> control_queue);
 
@@ -105,10 +109,7 @@ public:
 
 
 private:
-
-    /*!
-     * \brief SUPL assistance classes
-     */
+    //SUPL assistance classes
     gnss_sdr_supl_client supl_client_acquisition_;
     gnss_sdr_supl_client supl_client_ephemeris_;
     int supl_mcc; // Current network MCC (Mobile country code), 3 digits.
@@ -117,9 +118,8 @@ private:
     int supl_ci;  // Cell Identity (16 bits, 0-65535 are valid values).
 
     void init();
-    /*
-     * \brief Read ephemeris assistance from a local XML file previously recorded
-     */
+
+    // Read ephemeris assistance from a local XML file previously recorded
     bool read_assistance_from_XML();
 
     void read_control_messages();

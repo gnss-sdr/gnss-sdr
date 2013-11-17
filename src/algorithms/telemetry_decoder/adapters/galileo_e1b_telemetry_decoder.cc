@@ -1,13 +1,13 @@
 /*!
- * \file galileo_l1_ca_telemetry_decoder.cc
+ * \file galileo_e1b_telemetry_decoder.cc
  * \brief Implementation of an adapter of a Galileo INAV data decoder block
  * to a TelemetryDecoderInterface
- * \author Javier Arribas 2013. jarribas(at)cttc.es
- * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
+ * \author Javier Arribas 2013. jarribas(at)cttc.es,
+ * Mara Branzanti 2013. mara.branzanti(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver

@@ -47,21 +47,21 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
     size_t item_size;
     (*this).init();
     if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-            && (output_item_type_.compare("gr_complex") == 0))
-        {
-            item_size = sizeof(gr_complex);
-            fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps_);
-            DLOG(INFO) << "input_filter(" << fir_filter_ccf_->unique_id() << ")";
-        }
-    else
-        {
-            LOG_AT_LEVEL(ERROR) << taps_item_type_ << " unknown input filter item type";
-        }
-    if (dump_)
+        && (output_item_type_.compare("gr_complex") == 0))
+    {
+        item_size = sizeof(gr_complex);
+        fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps_);
+        DLOG(INFO) << "input_filter(" << fir_filter_ccf_->unique_id() << ")";
+        if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
+    }
+    else
+    {
+        LOG_AT_LEVEL(ERROR) << taps_item_type_ << " unknown input filter item type";
+    }
 }
 
 

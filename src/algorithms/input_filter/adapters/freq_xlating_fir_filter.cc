@@ -42,8 +42,8 @@ using google::LogMessage;
 FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
-                config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams), queue_(queue)
+                        config_(configuration), role_(role), in_streams_(in_streams),
+                        out_streams_(out_streams), queue_(queue)
 {
     size_t item_size;
     (*this).init();
@@ -55,7 +55,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex); //output
-            input_size_=sizeof(gr_complex); //input
+            input_size_ = sizeof(gr_complex); //input
             freq_xlating_fir_filter_ccf_ = gr::filter::freq_xlating_fir_filter_ccf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_ccf_->unique_id() << ")";
         }
@@ -63,19 +63,20 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex);
-            input_size_=sizeof(float); //input
+            input_size_ = sizeof(float); //input
             freq_xlating_fir_filter_fcf_ = gr::filter::freq_xlating_fir_filter_fcf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_fcf_->unique_id() << ")";
         }
     else
         {
             LOG_AT_LEVEL(ERROR) << taps_item_type_ << " unknown input filter item type";
+            item_size = sizeof(gr_complex); //avoids unitialization
         }
 
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            std::cout<<"Dumping output into file " << dump_filename_<<std::endl;
+            std::cout << "Dumping output into file " << dump_filename_ << std::endl;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
 }
@@ -91,12 +92,14 @@ void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-    		if (input_size_==sizeof(float))
-    		{
-    			top_block->connect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
-    		}else{
-    			top_block->connect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
-    		}
+            if (input_size_ == sizeof(float))
+                {
+                    top_block->connect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->connect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
+                }
         }
     else
         {
@@ -110,12 +113,14 @@ void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-		if (input_size_==sizeof(float))
-		{
-			top_block->disconnect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
-		}else{
-			top_block->disconnect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
-		}
+            if (input_size_ == sizeof(float))
+                {
+                    top_block->disconnect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    top_block->disconnect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
+                }
         }
 
 }
@@ -123,24 +128,28 @@ void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
 {
-	if (input_size_==sizeof(float))
-	{
-		return freq_xlating_fir_filter_fcf_;
-	}else{
-		return freq_xlating_fir_filter_ccf_;
-	}
+    if (input_size_ == sizeof(float))
+        {
+            return freq_xlating_fir_filter_fcf_;
+        }
+    else
+        {
+            return freq_xlating_fir_filter_ccf_;
+        }
 
 }
 
 
 gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
 {
-	if (input_size_==sizeof(float))
-	{
-		return freq_xlating_fir_filter_fcf_;
-	}else{
-		return freq_xlating_fir_filter_ccf_;
-	}
+    if (input_size_ == sizeof(float))
+        {
+            return freq_xlating_fir_filter_fcf_;
+        }
+    else
+        {
+            return freq_xlating_fir_filter_ccf_;
+        }
 }
 
 

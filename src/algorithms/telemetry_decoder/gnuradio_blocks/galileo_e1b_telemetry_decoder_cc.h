@@ -1,8 +1,9 @@
 /*!
  * \file galileo_e1b_telemetry_decoder_cc.h
  * \brief Interface of a Galileo NAV message demodulator block
- * \author Javier Arribas 2013. jarribas(at)cttc.es
- * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
+ * \author Javier Arribas 2013 jarribas(at)cttc.es,
+ *         Mara Branzanti 2013 mara.branzanti(at)gmail.com
+ *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
@@ -28,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_galileo_e1b_TELEMETRY_DECODER_CC_H
-#define GNSS_SDR_galileo_e1b_TELEMETRY_DECODER_CC_H
+#ifndef GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_CC_H
+#define GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_CC_H
 
 
 #include "Galileo_E1.h"
@@ -38,7 +39,6 @@
 #include <bitset>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-
 #include "gnuradio/trellis/interleaver.h"
 #include "gnuradio/trellis/permutation.h"
 #include "gnuradio/fec/viterbi.h"
@@ -76,16 +76,20 @@ public:
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
     int flag_even_word_arrived;
+    void set_ephemeris_queue(concurrent_queue<Galileo_Ephemeris> *ephemeris_queue); //!< Set the satellite data queue
+    void set_iono_queue(concurrent_queue<Galileo_Iono> *iono_queue);                //!< Set the iono data queue
+    void set_almanac_queue(concurrent_queue<Galileo_Almanac> *almanac_queue);       //!< Set the almanac data queue
+    void set_utc_model_queue(concurrent_queue<Galileo_Utc_Model> *utc_model_queue); //!< Set the UTC model queue
     /*!
-     * \brief Set the satellite data queue
+     * \brief This is where all signal processing takes place
      */
-    void set_ephemeris_queue(concurrent_queue<Galileo_Ephemeris> *ephemeris_queue);
-    void set_iono_queue(concurrent_queue<Galileo_Iono> *iono_queue);
-    void set_almanac_queue(concurrent_queue<Galileo_Almanac> *almanac_queue);
-    void set_utc_model_queue(concurrent_queue<Galileo_Utc_Model> *utc_model_queue);
-
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
+    /*!
+     * \brief Function which tells the scheduler how many input items
+     *        are required to produce noutput_items output items.
+     */
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
@@ -120,7 +124,6 @@ private:
 
     // navigation message vars
     Galileo_Navigation_Message d_nav;
-
 
     // Galileo ephemeris queue
     concurrent_queue<Galileo_Ephemeris> *d_ephemeris_queue;

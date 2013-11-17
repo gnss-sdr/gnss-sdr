@@ -59,13 +59,21 @@ public:
     void set_channel(int channel);                 //!< Set receiver's channel
 
     // queues to communicate broadcasted SBAS data to other blocks of GNSS-SDR
-    void set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue);
-    void set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue);
-    void set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue);
-    void set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue);
+    void set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue);                 //!< Set raw msg queue
+    void set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue);         //!< Set iono queue
+    void set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue);  //!< Set sat correction queue
+    void set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue);           //!< Set SBAS ephemeis queue
 
+    /*!
+     * \brief This is where all signal processing takes place
+     */
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
+    /*!
+     * \brief Function which tells the scheduler how many input items
+     *        are required to produce noutput_items output items.
+     */
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:

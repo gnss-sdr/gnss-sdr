@@ -29,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_VITERBIDECODER_H_
-#define GNSS_SDR_VITERBIDECODER_H_
+#ifndef GNSS_SDR_VITERBI_DECODER_H_
+#define GNSS_SDR_VITERBI_DECODER_H_
 
 #include <deque>
 #include <iostream>
@@ -41,12 +41,22 @@ public:
     Viterbi_Decoder(const int g_encoder[], const int KK, const int nn);
     ~Viterbi_Decoder();
     void reset();
+
+    /*!
+     * \brief Uses the Viterbi algorithm to perform hard-decision decoding of a convolutional code.
+     *
+     * \param  input_c[]    The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
+     * \param  LL           The number of data bits to be decoded (does not include the mm zero-tail-bits)
+     *
+     * \return  output_u_int[] Hard decisions on the data bits (without the mm zero-tail-bits)
+     */
     float decode_block(const double input_c[], int* output_u_int, const int LL);
+
+
     float decode_continuous(const double sym[], const int traceback_depth, int output_u_int[],
             const int nbits_requested, int &nbits_decoded);
 
 private:
-
     class Prev
     {
     public:
@@ -111,4 +121,4 @@ private:
     int parity_counter(int symbol, int length);
 };
 
-#endif /* GNSS_SDR_VITERBIDECODER_H_ */
+#endif /* GNSS_SDR_VITERBI_DECODER_H_ */

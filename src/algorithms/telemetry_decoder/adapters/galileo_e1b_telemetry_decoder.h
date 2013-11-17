@@ -1,9 +1,9 @@
 /*!
- * \file galileo_l1_ca_telemetry_decoder.h
+ * \file galileo_e1b_telemetry_decoder.h
  * \brief Interface of an adapter of a GALILEO E1B NAV data decoder block
  * to a TelemetryDecoderInterface
- * \author Javier Arribas 2013. jarribas(at)cttc.es * \author Javier Arribas 2013. jarribas(at)cttc.es
- * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
+ * \author Javier Arribas 2013 jarribas(at)cttc.es,
+ *  Mara Branzanti 2013. mara.branzanti(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
@@ -59,6 +59,9 @@ public:
         return role_;
     }
 
+    /*!
+     * \brief Returns "Galileo_E1B_Telemetry_Decoder"
+     */
     std::string implementation()
     {
         return "Galileo_E1B_Telemetry_Decoder";

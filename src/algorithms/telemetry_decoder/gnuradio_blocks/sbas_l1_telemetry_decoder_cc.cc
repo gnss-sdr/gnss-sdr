@@ -56,6 +56,8 @@ sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long f
             fs_in, vector_length, queue, dump));
 }
 
+
+
 sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
         Gnss_Satellite satellite,
         long if_freq,
@@ -64,41 +66,42 @@ sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
         int vector_length,
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump) :
-                gr::block("sbas_l1_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                        gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+                gr::block("sbas_l1_telemetry_decoder_cc",
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "SBAS L1 TELEMETRY PROCESSING: satellite " << d_satellite;
     d_fs_in = fs_in;
-
     d_block_size = d_samples_per_symbol * d_symbols_per_bit * d_block_size_in_bits;
-
     set_output_multiple (1);
-
 }
+
+
 
 sbas_l1_telemetry_decoder_cc::~sbas_l1_telemetry_decoder_cc()
 {
     d_dump_file.close();
 }
 
+
+
 void sbas_l1_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
 {
     unsigned ninputs = ninput_items_required.size ();
     for (unsigned i = 0; i < ninputs; i++)
         ninput_items_required[i] = noutput_items;
-
     VLOG(LMORE) << "forecast(): " << "noutput_items=" << noutput_items << "\tninput_items_required ninput_items_required.size()=" << ninput_items_required.size();
 }
+
+
 
 int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
-
     VLOG(FLOW) << "general_work(): " << "noutput_items=" << noutput_items << "\toutput_items real size=" << output_items.size() <<  "\tninput_items size=" << ninput_items.size() << "\tinput_items real size=" << input_items.size() << "\tninput_items[0]=" << ninput_items[0];
-
     // get pointers on in- and output gnss-synchro objects
     const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
     Gnss_Synchro *out = (Gnss_Synchro *) output_items[0]; 	// output
@@ -147,7 +150,7 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int
                 {
                     int message_sample_offset =
                             (sample_alignment?0:-1)
-                            + d_samples_per_symbol*(symbol_alignment?-1:0)
+                            + d_samples_per_symbol*(symbol_alignment ? -1 : 0)
                             + d_samples_per_symbol * d_symbols_per_bit * it->first;
                     double message_sample_stamp = sample_stamp + ((double)message_sample_offset)/1000;
                     VLOG(EVENT) << "message_sample_stamp=" << message_sample_stamp
@@ -188,11 +191,13 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int
 }
 
 
+
 void sbas_l1_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "SBAS telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
 }
+
 
 
 void sbas_l1_telemetry_decoder_cc::set_channel(int channel)
@@ -241,7 +246,6 @@ bool sbas_l1_telemetry_decoder_cc::sample_aligner::get_symbols(const std::vector
 
     for (unsigned int i_sym = 0; i_sym < samples.size()/sbas_l1_telemetry_decoder_cc::d_samples_per_symbol; i_sym++)
         {
-
             // get the next samples
             for (int i = 0; i < d_n_smpls_in_history; i++)
                 {
@@ -266,7 +270,8 @@ bool sbas_l1_telemetry_decoder_cc::sample_aligner::get_symbols(const std::vector
 
             // sample alignment debug output
             VLOG(SAMP_SYNC) << std::setprecision(5)
-            << "smplp: " << std::setw(6) << smpls[0] << "   " << "smpl0: " << std::setw(6) << smpls[1] << "   " << "smpl1: " << std::setw(6) << smpls[2] <<  "\t"
+            << "smplp: " << std::setw(6) << smpls[0] << "   " << "smpl0: " << std::setw(6)
+            << smpls[1] << "   " << "smpl1: " << std::setw(6) << smpls[2] <<  "\t"
             //<< "Flag_valid_tracking: " << std::setw(1) << in[0][0].Flag_valid_tracking << " " << std::setw(1) << in[0][0].Flag_valid_tracking << "\t"
             << "d_corr_paired: " << std::setw(10) << d_corr_paired << "\t"
             << "d_corr_shifted: " << std::setw(10) << d_corr_shifted << "\t"
@@ -306,12 +311,14 @@ sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::~symbol_aligner_and_de
     delete d_vd2;
 }
 
+
 void sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::reset()
 {
     d_past_symbol = 0;
     d_vd1->reset();
     d_vd2->reset();
 }
+
 
 bool sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const std::vector<double> symbols, std::vector<int> &bits)
 {
@@ -322,7 +329,7 @@ bool sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const st
     std::vector<double> symbols_vd1(symbols); // aligned symbol vector -> copy input symbol vector
     std::vector<double> symbols_vd2;  // shifted symbol vector -> add past sample in front of input vector
     symbols_vd1.push_back(d_past_symbol);
-    for (std::vector<double>::const_iterator symbol_it = symbols.begin(); symbol_it != symbols.end()-1; ++symbol_it)
+    for (std::vector<double>::const_iterator symbol_it = symbols.begin(); symbol_it != symbols.end() - 1; ++symbol_it)
         {
             symbols_vd2.push_back(*symbol_it);
         }
@@ -333,7 +340,7 @@ bool sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const st
     float metric_vd1 = d_vd1->decode_continuous(symbols_vd1.data(), traceback_depth, bits_vd1, nbits_requested, nbits_decoded);
     float metric_vd2 = d_vd2->decode_continuous(symbols_vd2.data(), traceback_depth, bits_vd2, nbits_requested, nbits_decoded);
     // choose the bits with the better metric
-    for (int i = 0; i<nbits_decoded; i++)
+    for (int i = 0; i < nbits_decoded; i++)
         {
             if (metric_vd1 > metric_vd2)
                 {// symbols aligned
@@ -363,8 +370,8 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
     std::stringstream ss;
     unsigned int sbas_msg_length = 250;
     std::vector<std::vector<int>> preambles = {{0, 1, 0, 1, 0, 0, 1 ,1},
-            {1, 0, 0, 1, 1, 0, 1, 0},
-            {1, 1, 0, 0, 0, 1, 1, 0}};
+                                               {1, 0, 0, 1, 1, 0, 1, 0},
+                                               {1, 1, 0, 0, 0, 1, 1, 0}};
     VLOG(FLOW) << "get_frame_candidates(): " << "d_buffer.size()=" << d_buffer.size() << "\tbits.size()=" << bits.size();
     ss << "copy bits ";
     int count = 0;
@@ -399,7 +406,7 @@ void sbas_l1_telemetry_decoder_cc::frame_detector::get_frame_candidates(const st
                                 {
                                     // invert bits
                                     for (std::vector<int>::iterator candidate_bit_it = candidate.begin(); candidate_bit_it != candidate.end(); candidate_bit_it++)
-                                        *candidate_bit_it = *candidate_bit_it == 0 ? 1:0;
+                                        *candidate_bit_it = *candidate_bit_it == 0 ? 1 : 0;
                                 }
                             msg_candidates.push_back(std::pair<int,std::vector<int>>(relative_preamble_start, candidate));
                             ss.str("");
@@ -438,12 +445,13 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vec
             d_checksum_agent.reset(0);
             d_checksum_agent.process_bytes(candidate_bytes.data(), candidate_bytes.size());
             unsigned int crc = d_checksum_agent.checksum();
-            VLOG(SAMP_SYNC) << "candidate " << candidate_it - msg_candidates.begin() << ": final crc remainder= " << std::hex << crc
-                    << std::setfill(' ') << std::resetiosflags(std::ios::hex);
+            VLOG(SAMP_SYNC) << "candidate " << candidate_it - msg_candidates.begin()
+                            << ": final crc remainder= " << std::hex << crc
+                            << std::setfill(' ') << std::resetiosflags(std::ios::hex);
             //  the final remainder must be zero for a valid message, because the CRC is done over the received CRC value
             if (crc == 0)
                 {
-                    valid_msgs.push_back(msg_candiate_char_t(candidate_it->first,candidate_bytes));
+                    valid_msgs.push_back(msg_candiate_char_t(candidate_it->first, candidate_bytes));
                     ss << "Valid message found!";
                 }
             else
@@ -483,8 +491,9 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_by
                 }
         }
     bytes.push_back(byte); // implies: insert 6 zeros at the end to fit the 250bits into a multiple of bytes
-    VLOG(LMORE) << " -> byte=" << std::setw(2) << std::setfill('0') << std::hex << (unsigned int)byte
-            << std::setfill(' ') << std::resetiosflags(std::ios::hex);
+    VLOG(LMORE) << " -> byte=" << std::setw(2)
+                << std::setfill('0') << std::hex << (unsigned int)byte
+                << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
 
 
@@ -504,13 +513,15 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_b
             if (idx_bit % bits_per_byte == bits_per_byte - 1)
                 {
                     bytes.push_back(byte);
-                    VLOG(LMORE) << ss.str() << " -> byte=" << std::setw(2) << std::setfill('0') << std::hex << (unsigned int)byte; ss.str("");
+                    VLOG(LMORE) << ss.str() << " -> byte=" << std::setw(2)
+                                << std::setfill('0') << std::hex << (unsigned int)byte; ss.str("");
                     byte = 0;
                 }
             idx_bit++;
         }
-    VLOG(LMORE) << " -> byte=" << std::setw(2) << std::setfill('0') << std::hex << (unsigned int)byte
-            << std::setfill(' ') << std::resetiosflags(std::ios::hex);
+    VLOG(LMORE) << " -> byte=" << std::setw(2)
+                << std::setfill('0') << std::hex << (unsigned int)byte
+                << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
 
 

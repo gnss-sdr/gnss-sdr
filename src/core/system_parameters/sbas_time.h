@@ -54,7 +54,6 @@ public:
         i_gps_week = gps_week;
         d_delta_sec = gps_sec - time_stamp_sec;
         b_valid = true;
-
         VLOG(FLOW) << "<<R>> new time relation: i_gps_week=" << i_gps_week << " d_delta_sec=" << d_delta_sec;
     }
 

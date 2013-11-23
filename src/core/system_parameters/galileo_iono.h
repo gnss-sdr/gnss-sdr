@@ -1,6 +1,6 @@
 /*!
- * \file gps_iono.h
- * \brief  Interface of a GPS IONOSPHERIC MODEL storage
+ * \file galileo_iono.h
+ * \brief  Interface of a Galileo Ionospheric Model storage
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * -------------------------------------------------------------------------
@@ -40,32 +40,24 @@
  */
 class Galileo_Iono
 {
-private:
-
 public:
-
-	// valid flag
-    //bool valid;
-
     /*Ionospheric correction*/
-    /*Az*/
-    double ai0_5;		//Effective Ionisation Level 1st order parameter [sfu]
-    double ai1_5;		//Effective Ionisation Level 2st order parameter [sfu/degree]
-    double ai2_5;		//Effective Ionisation Level 3st order parameter [sfu/degree]
+    double ai0_5; //!< Effective Ionisation Level 1st order parameter [sfu]
+    double ai1_5; //!< Effective Ionisation Level 2st order parameter [sfu/degree]
+    double ai2_5; //!< Effective Ionisation Level 3st order parameter [sfu/degree]
 
     /*Ionospheric disturbance flag*/
-    bool Region1_flag_5;	// Ionospheric Disturbance Flag for region 1
-    bool Region2_flag_5;	// Ionospheric Disturbance Flag for region 2
-    bool Region3_flag_5;	// Ionospheric Disturbance Flag for region 3
-    bool Region4_flag_5;	// Ionospheric Disturbance Flag for region 4
-    bool Region5_flag_5;	// Ionospheric Disturbance Flag for region 5
+    bool Region1_flag_5; //!<  Ionospheric Disturbance Flag for region 1
+    bool Region2_flag_5; //!< Ionospheric Disturbance Flag for region 2
+    bool Region3_flag_5; //!< Ionospheric Disturbance Flag for region 3
+    bool Region4_flag_5; //!< Ionospheric Disturbance Flag for region 4
+    bool Region5_flag_5; //!< Ionospheric Disturbance Flag for region 5
 
     /*from page 5 (UTC) to have a timestamp*/
-	double TOW_5;//UTC data reference Time of Week [s]
-	double WN_5; //UTC data reference Week number [week]
+    double TOW_5; //!< UTC data reference Time of Week [s]
+    double WN_5;  //!< UTC data reference Week number [week]
 
-
-     /*!
+    /*!
      * Default constructor
      */
     Galileo_Iono();

@@ -40,7 +40,9 @@
 #include <string>
 #include <fstream>
 
-
+/*!
+ * \brief Struct that represents a Ionospheric Grid Point (IGP)
+ */
 struct Igp
 {
 public:
@@ -50,7 +52,6 @@ public:
     int d_longitude;
     int d_give;
     double d_delay;
-
 private:
     friend class boost::serialization::access;
     template<class Archive>
@@ -65,13 +66,14 @@ private:
 };
 
 
-
+/*!
+ * \brief Struct that represents the band of a Ionospheric Grid Point (IGP)
+ */
 struct Igp_Band
 {
     //int d_iodi;
     //int d_nigp;       // number if IGPs in this band (defined by IGP mask from MT18)
     std::vector<Igp> d_igps;
-
 private:
     friend class boost::serialization::access;
     template<class Archive>
@@ -81,50 +83,26 @@ private:
     }
 };
 
-// valid ionosphere correction for GPS
+
+
+/*!
+ * \brief Class that handles valid SBAS ionospheric correction for GPS
+ */
 class Sbas_Ionosphere_Correction
 {
 private:
-    //    /* type definitions ----------------------------------------------------------*/
-    //#define MAXBAND     10                  /* max SBAS band of IGP */
-    //#define MAXNIGP     201                 /* max number of IGP in SBAS band */
-    //
-    //    typedef struct {        /* time struct */
-    //        time_t time;        /* time (s) expressed by standard time_t */
-    //        double sec;         /* fraction of second under 1 s */
-    //    } gtime_t;
-    //
-    //    typedef struct {        /* SBAS ionospheric correction type */
-    //            gtime_t t0;         /* correction time */
-    //            short lat,lon;      /* latitude/longitude (deg) */
-    //            short give;         /* GIVI+1 */
-    //            float delay;        /* vertical delay estimate (m) */
-    //        } sbsigp_t;
-    //
-    //    typedef struct {        /* SBAS ionospheric corrections type */
-    //         int iodi;           /* IODI (issue of date ionos corr) */
-    //         int nigp;           /* number of igps */
-    //         sbsigp_t igp[MAXNIGP]; /* ionospheric correction */
-    //     } sbsion_t;
-
-
-    /*!
-     * \brief Inner product of vectors
+    /* Inner product of vectors
      * params : double *a,*b     I   vector a,b (n x 1)
      *          int    n         I   size of vector a,b
      * return : a'*b
      */
     double dot(const double *a, const double *b, int n);
 
-
-
-    /*!
-     * \brief  multiply matrix
-     */
+    /* Multiply matrix  */
     void matmul(const char *tr, int n, int k, int m, double alpha,
             const double *A, const double *B, double beta, double *C);
-    /*!
-     * \brief EFEC to local coordinate transfomartion matrix
+
+    /* EFEC to local coordinate transfomartion matrix
      * Compute ecef to local coordinate transfomartion matrix
      * params : double *pos      I   geodetic position {lat,lon} (rad)
      *          double *E        O   ecef to local coord transformation matrix (3x3)
@@ -133,8 +111,7 @@ private:
      */
     void xyz2enu(const double *pos, double *E);
 
-    /*!
-     * \brief Transforms ECEF vector into local tangential coordinates
+    /* Transforms ECEF vector into local tangential coordinates
      * params : double *pos      I   geodetic position {lat,lon} (rad)
      *          double *r        I   vector in ecef coordinate {x,y,z}
      *          double *e        O   vector in local tangental coordinate {e,n,u}
@@ -142,8 +119,7 @@ private:
      */
     void ecef2enu(const double *pos, const double *r, double *e);
 
-    /*!
-     * \brief Compute satellite azimuth/elevation angle
+    /* Compute satellite azimuth/elevation angle
      * params : double *pos      I   geodetic position {lat,lon,h} (rad,m)
      *          double *e        I   receiver-to-satellilte unit vevtor (ecef)
      *          double *azel     IO  azimuth/elevation {az,el} (rad) (NULL: no output)
@@ -152,9 +128,7 @@ private:
      */
     double satazel(const double *pos, const double *e, double *azel);
 
-    /*!
-     * \brief debug trace functions
-     */
+    /* Debug trace functions */
     void trace(int level, const char *format, ...);
 
     /* time difference -------------------------------------------------------------
@@ -164,8 +138,7 @@ private:
      *-----------------------------------------------------------------------------*/
     //double timediff(gtime_t t1, gtime_t t2);
 
-    /*!
-     * \brief Compute ionospheric pierce point (ipp) position and slant factor
+    /* Compute Ionospheric Pierce Point (IPP) position and slant factor
      * params : double *pos      I   receiver position {lat,lon,h} (rad,m)
      *          double *azel     I   azimuth/elevation angle {az,el} (rad)
      *          double re        I   earth radius (km)
@@ -178,18 +151,13 @@ private:
     double ionppp(const double *pos, const double *azel, double re,
             double hion, double *posp);
 
-    /*!
-     * \brief Variance of ionosphere correction (give=GIVEI+1)
-     */
+    /* Variance of ionosphere correction (give = GIVEI + 1) */
     double varicorr(int give);
 
-    /*!
-     * \brief Search igps
-     */
+    /* Search igps */
     void searchigp(const double *pos, const Igp **igp, double *x, double *y);
 
-    /*!
-     * \brief Compute sbas ionosphric delay correction
+    /* Compute sbas ionosphric delay correction
      * params : long     sample_stamp    I   sample stamp of observable on which the correction will be applied
      *          sbsion_t *ion    I   ionospheric correction data (implicit)
      *          double   *pos    I   receiver position {lat,lon,height} (rad/m)
@@ -211,6 +179,20 @@ private:
 public:
     std::vector<Igp_Band> d_bands;
     void print(std::ostream &out);
+
+    /*!
+     * \brief Computes SBAS ionospheric delay correction.
+     *
+     * \param[out] delay        Slant ionospheric delay (L1) (m)
+     * \param[out] var          Variance of ionospheric delay (m^2)
+     * \param[in]  sample_stamp Sample stamp of observable on which the correction will be applied
+     * \param[in]  longitude_d  Receiver's longitude in terms of WGS84 (degree)
+     * \param[in]  latitude_d   Receiver's latitude in terms of WGS84 (degree)
+     * \param[in]  azimuth_d    Satellite azimuth/elavation angle (rad). Azimuth is the angle of
+     *                             the satellite from the user’s location measured clockwise from north
+     * \param[in]  elevation_d  Elevation is the angle of the satellite from the user's location measured
+     *                             with respect to the local-tangent-plane
+     */
     bool apply(double sample_stamp, double latitude_d, double longitude_d,
             double azimut_d, double evaluation_d, double &delay, double &var);
 

@@ -44,11 +44,8 @@
  */
 class Gps_Iono
 {
-private:
-
 public:
-    // valid flag
-    bool valid;
+    bool valid;           //!< Valid flag
     // Ionospheric parameters
     double d_alpha0;      //!< Coefficient 0 of a cubic equation representing the amplitude of the vertical delay [s]
     double d_alpha1;      //!< Coefficient 1 of a cubic equation representing the amplitude of the vertical delay [s/semi-circle]
@@ -58,14 +55,12 @@ public:
     double d_beta1;       //!< Coefficient 1 of a cubic equation representing the period of the model [s/semi-circle]
     double d_beta2;       //!< Coefficient 2 of a cubic equation representing the period of the model [s(semi-circle)^2]
     double d_beta3;       //!< Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]
-    /*!
-     * Default constructor
-     */
-    Gps_Iono();
 
+    Gps_Iono();           //!< Default constructor
 
     template<class Archive>
-    /*
+
+    /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
     void serialize(Archive& archive, const unsigned int version)

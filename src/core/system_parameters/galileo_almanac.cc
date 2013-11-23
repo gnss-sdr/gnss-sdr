@@ -1,8 +1,6 @@
 /*!
- * \file gps_almanac.cc
- * \brief  Interface of a GPS ALMANAC storage
- *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * \file galileo_almanac.cc
+ * \brief  Implementation of a Galileo ALMANAC storage
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------

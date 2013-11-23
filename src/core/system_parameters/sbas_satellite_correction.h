@@ -44,19 +44,23 @@ struct Fast_Correction
     int d_tlat;
 };
 
+
 struct Long_Term_Correction
 {
-    double d_trx;     // time when message was received
-    int i_tapp;       // time of applicability (only valid if vel=1, equals the sent t0)
-    int i_vel;        // use velocity corrections if vel=1
+    double d_trx;     //!< Time when message was received
+    int i_tapp;       //!< Time of applicability (only valid if vel=1, equals the sent t0)
+    int i_vel;        //!< Use velocity corrections if vel=1
     int d_iode;
-    double d_dpos[3]; // position correction
-    double d_dvel[3]; // velocity correction
-    double d_daf0;    // clock offset correction
-    double d_daf1;    // clock drift correction
+    double d_dpos[3]; //!< position correction
+    double d_dvel[3]; //!< velocity correction
+    double d_daf0;    //!< clock offset correction
+    double d_daf1;    //!< clock drift correction
 };
 
-// valid long and fast term correction for one SV
+
+/*!
+ * \brief Valid long and fast term SBAS corrections for one SV
+ */
 class Sbas_Satellite_Correction
 {
 public:
@@ -70,7 +74,6 @@ public:
     int apply_long_term_sv_pos(double sample_stamp, double sv_pos[], double &var);
     int apply_long_term_sv_clk(double sample_stamp, double &dts, double &var);
     bool alarm();
-
 private:
     /* debug trace functions -----------------------------------------------------*/
     void trace(int level, const char *format, ...);

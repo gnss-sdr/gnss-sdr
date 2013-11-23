@@ -55,10 +55,9 @@ private:
      * \param[out] -  corrected time, in seconds
      */
     double check_t(double time);
-
 public:
     unsigned int i_satellite_PRN; // SV PRN NUMBER
-    double d_TOW; //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
+    double d_TOW;            //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
     double d_Crs;            //!< Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]
     double d_Delta_n;        //!< Mean Motion Difference From Computed Value [semi-circles/s]
     double d_M_0;            //!< Mean Anomaly at Reference Time [semi-circles]
@@ -93,7 +92,6 @@ public:
     double d_A_f1;          //!< Coefficient 1 of code phase offset model [s/s]
     double d_A_f2;          //!< Coefficient 2 of code phase offset model [s/s^2]
 
-
     // Flags
 
     /*! \brief If true, enhanced level of integrity assurance.
@@ -107,12 +105,12 @@ public:
      *  accompanying alert, is less than 1E-8 per hour.
      */
     bool b_integrity_status_flag;
-    bool b_alert_flag;      //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
+    bool b_alert_flag;         //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
     bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
 
     // clock terms derived from ephemeris data
-    double d_satClkDrift;    // GPS clock error
-    double d_dtr;            // relativistic clock correction term
+    double d_satClkDrift;    //!< GPS clock error
+    double d_dtr;            //!< relativistic clock correction term
 
     // satellite positions
     double d_satpos_X;       //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
@@ -124,12 +122,11 @@ public:
     double d_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
     double d_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
 
-
     std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
-
     template<class Archive>
-    /*
+
+    /*!
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
      */
     void serialize(Archive& archive, const unsigned int version)

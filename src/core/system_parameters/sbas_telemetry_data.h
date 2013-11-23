@@ -39,13 +39,9 @@
 #include <bitset>
 #include "boost/assign.hpp"
 #include <cmath>
-
-//#include "sbas_satellite_correction.h"
-//#include "sbas_ionospheric_correction.h"
-
 #include "concurrent_queue.h"
-
 #include "sbas_time.h"
+
 
 class Sbas_Ionosphere_Correction;
 class Sbas_Satellite_Correction;
@@ -53,26 +49,24 @@ struct Fast_Correction;
 struct Long_Term_Correction;
 class Sbas_Ephemeris;
 
-/*
- *  \brief Represents a raw SBAS message of 250cbits + 6 bits padding
- *        (8b preamble + 6b message type + 212b data + 24b CRC + 6b zero padding)
+
+/*!
+ * \brief Represents a raw SBAS message of 250cbits + 6 bits padding
+ *  (8b preamble + 6b message type + 212b data + 24b CRC + 6b zero padding)
  */
 class Sbas_Raw_Msg
 {
 public:
-    Sbas_Raw_Msg(){rx_time = Sbas_Time(0); i_prn = -1;};
-    //Sbas_Raw_Msg(int week, int tow, int prn, const std::vector<unsigned char> msg) : d_week(week), d_tow(tow), d_prn(prn), d_msg(msg) {}
+    Sbas_Raw_Msg(){ rx_time = Sbas_Time(0); i_prn = -1; };
     Sbas_Raw_Msg(double sample_stamp, int prn, const std::vector<unsigned char> msg) : rx_time(sample_stamp), i_prn(prn), d_msg(msg) {}
-    //int get_week() {return d_week;}
-    //int get_tow() {return d_tow;}
-    double get_sample_stamp() {return rx_time.get_time_stamp();} // time of reception sample stamp (first sample of preample)
+    double get_sample_stamp() { return rx_time.get_time_stamp(); } //!< Time of reception sample stamp (first sample of preample)
     void relate(Sbas_Time_Relation time_relation)
     {
         rx_time.relate(time_relation);
     }
-    Sbas_Time get_rx_time_obj(){return rx_time;}
-    int get_prn() {return i_prn;}
-    std::vector<unsigned char> get_msg() const {return d_msg;}
+    Sbas_Time get_rx_time_obj(){ return rx_time; }
+    int get_prn() { return i_prn; }
+    std::vector<unsigned char> get_msg() const { return d_msg; }
     int get_preamble()
     {
         return d_msg[0];
@@ -88,10 +82,7 @@ public:
         unsigned char crc_first_byte = (d_msg[28] << 2) && (d_msg[29] >> 6);
         return ((unsigned int)(crc_first_byte) << 16) && ((unsigned int)(crc_middle_byte) << 8) && crc_last_byte;
     }
-
 private:
-    //int d_week; /* reception time */
-    //int d_tow;  /* reception time */
     Sbas_Time rx_time;
     int i_prn;                        /* SBAS satellite PRN number */
     std::vector<unsigned char> d_msg; /* SBAS message (226 bit) padded by 0 */
@@ -411,6 +402,7 @@ private:
      * return : satellite number (0:error)
      *-----------------------------------------------------------------------------*/
     int satno(int sys, int prn);
+
     /* extract unsigned/signed bits ------------------------------------------------
      * extract unsigned/signed bits from byte data
      * args   : unsigned char *buff I byte data
@@ -419,6 +411,7 @@ private:
      * return : extracted unsigned/signed bits
      *-----------------------------------------------------------------------------*/
     unsigned int getbitu(const unsigned char *buff, int pos, int len);
+
     int getbits(const unsigned char *buff, int pos, int len);
 
     /* convert calendar day/time to time -------------------------------------------
@@ -428,12 +421,14 @@ private:
      * notes  : proper in 1970-2037 or 1970-2099 (64bit time_t)
      *-----------------------------------------------------------------------------*/
     gtime_t epoch2time(const double *ep);
+
     /* time difference -------------------------------------------------------------
      * difference between gtime_t structs
      * args   : gtime_t t1,t2    I   gtime_t structs
      * return : time difference (t1-t2) (s)
      *-----------------------------------------------------------------------------*/
     double timediff(gtime_t t1, gtime_t t2);
+
     /* gps time to time ------------------------------------------------------------
      * convert week and tow in gps time to gtime_t struct
      * args   : int    week      I   week number in gps time

@@ -33,14 +33,13 @@
 
 
 /*!
- * \brief This class is a storage for the GALIELO ALMANAC data as described in GALILEO ICD
+ * \brief This class is a storage for the GALILEO ALMANAC data as described in GALILEO ICD
  *
- * See http:http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf paragraph 5.1.10
+ * See http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf paragraph 5.1.10
  */
 class Galileo_Almanac
 {
 public:
-
     /*Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number*/
     int IOD_a_7;
     double WN_a_7;
@@ -83,7 +82,6 @@ public:
     double omega_9;
     double delta_i_9;
 
-
     /*Word type 10: Almanac for SVID3 (2/2)*/
     int IOD_a_10;
     double Omega0_10;
@@ -93,10 +91,8 @@ public:
     double af1_10;
     double E5b_HS_10;
     double E1B_HS_10;
-    /*!
-     * Default constructor
-     */
-    Galileo_Almanac();
+
+    Galileo_Almanac();  //!< Default constructor
 };
 
 #endif

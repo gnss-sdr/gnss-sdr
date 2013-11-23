@@ -45,41 +45,47 @@
 #define FLOW 3  // logs the function calls of block processing functions
 #define DETAIL 4
 
+
+
 Sbas_Telemetry_Data::Sbas_Telemetry_Data()
 {
-    fp_trace = nullptr;;     /* file pointer of trace */
-    level_trace = 0;       /* level of trace */
-    tick_trace = 0; /* tick time at traceopen (ms) */
+    fp_trace = nullptr; // file pointer of trace
+    level_trace = 0;    // level of trace
+    tick_trace = 0;     // tick time at traceopen (ms)
 
-    raw_msg_queue = NULL;
-    iono_queue = NULL;
-    sat_corr_queue = NULL;
-    ephemeris_queue = NULL;
+    raw_msg_queue = nullptr;
+    iono_queue = nullptr;
+    sat_corr_queue = nullptr;
+    ephemeris_queue = nullptr;
 
     d_nav.sbssat.iodp = -1; // make sure that in any case iodp is not equal to the received one
-    prn_mask_changed(); // invalidate all satellite corrections
+    prn_mask_changed();     // invalidate all satellite corrections
 
     for(size_t band = 0; band < sizeof(d_nav.sbsion)/sizeof(sbsion_t); band++)
         {
-            d_nav.sbsion[band].iodi = -1; // make sure that in any case iodi is not euqual to the received one
+            d_nav.sbsion[band].iodi = -1; // make sure that in any case iodi is not equal to the received one
             igp_mask_changed(band);
         }
 }
+
 
 void Sbas_Telemetry_Data::set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue)
 {
     this->raw_msg_queue = raw_msg_queue;
 }
 
+
 void Sbas_Telemetry_Data::set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue)
 {
     this->iono_queue = iono_queue;
 }
 
+
 void Sbas_Telemetry_Data::set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue)
 {
     this->sat_corr_queue = sat_corr_queue;
 }
+
 
 void Sbas_Telemetry_Data::set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue)
 {
@@ -121,7 +127,7 @@ int Sbas_Telemetry_Data::update(Sbas_Raw_Msg sbas_raw_msg)
                     int i = it - msg_bytes.begin();
                     sbas_raw_msg_rtklib.msg[i] = *it;
                 }
-            parsing_result =  sbsupdatecorr(&sbas_raw_msg_rtklib, &d_nav);
+            parsing_result = sbsupdatecorr(&sbas_raw_msg_rtklib, &d_nav);
             VLOG(FLOW) << "<<T>> RTKLIB parsing result: " << parsing_result;
         }
 
@@ -137,7 +143,7 @@ int Sbas_Telemetry_Data::update(Sbas_Raw_Msg sbas_raw_msg)
     case  7:
     case 24:
     case 25: updated_satellite_corrections(); break;
-    case 18: break; // new iono band mask recieved -> dont update iono corrections because delays are not
+    case 18: break; // new iono band mask received -> dont update iono corrections because delays are not
     case 26: received_iono_correction(); break;
     case  9: /*updated_sbas_ephemeris(sbas_raw_msg);*/ break;
 
@@ -145,20 +151,25 @@ int Sbas_Telemetry_Data::update(Sbas_Raw_Msg sbas_raw_msg)
     }
 
     // send it to raw message queue
-    if(raw_msg_queue != NULL) raw_msg_queue->push(sbas_raw_msg);
+    if(raw_msg_queue != nullptr) raw_msg_queue->push(sbas_raw_msg);
     return parsing_result;
 }
 
+
 unsigned int getbitu(const unsigned char *buff, int pos, int len);
 
+
+
 int getbits(const unsigned char *buff, int pos, int len);
+
+
 
 int Sbas_Telemetry_Data::decode_mt12(Sbas_Raw_Msg sbas_raw_msg)
 {
     const double rx_delay = 38000.0/300000.0; // estimated sbas signal geosat to ground signal travel time
     unsigned char * msg = sbas_raw_msg.get_msg().data();
     uint32_t gps_tow = getbitu(msg, 121, 20);
-    uint32_t gps_week = getbitu(msg, 141, 10)+1024; // consider last gps time week overflow
+    uint32_t gps_week = getbitu(msg, 141, 10) + 1024; // consider last gps time week overflow
     double gps_tow_rx = double(gps_tow) + rx_delay;
     mt12_time_ref = Sbas_Time_Relation(sbas_raw_msg.get_sample_stamp(), gps_week, gps_tow_rx);
     VLOG(FLOW) << "<<T>> extracted GPS time from MT12: gps_tow=" << gps_tow << " gps_week=" << gps_week;
@@ -170,13 +181,10 @@ int Sbas_Telemetry_Data::decode_mt12(Sbas_Raw_Msg sbas_raw_msg)
 
 void Sbas_Telemetry_Data::updated_sbas_ephemeris(Sbas_Raw_Msg msg)
 {
-    VLOG(FLOW) << "<<T>> updated_sbas_ephemeris():"<< std::endl;
-
+    VLOG(FLOW) << "<<T>> updated_sbas_ephemeris():" << std::endl;
     Sbas_Ephemeris seph;
-
     int satidx = msg.get_prn() - MINPRNSBS;
     seph_t seph_rtklib = d_nav.seph[satidx];
-
     // copy data
     seph.i_prn = msg.get_prn();
     seph.i_t0 = seph_rtklib.t0;
@@ -188,12 +196,12 @@ void Sbas_Telemetry_Data::updated_sbas_ephemeris(Sbas_Raw_Msg msg)
     memcpy(seph.d_acc, seph_rtklib.acc, sizeof(seph.d_acc));
     seph.d_af0 = seph_rtklib.af0;
     seph.d_af1 = seph_rtklib.af1;
-
+    // print ephemeris for debugging purposes
     std::stringstream ss;
     seph.print(ss);
     VLOG(FLOW) << ss.str();
 
-    if(ephemeris_queue != NULL) ephemeris_queue->push(seph);
+    if(ephemeris_queue != nullptr) ephemeris_queue->push(seph);
 }
 
 
@@ -234,7 +242,7 @@ void Sbas_Telemetry_Data::received_iono_correction()
     VLOG(EVENT) << ss.str();
 
     // send to SBAS ionospheric correction queue
-    if(iono_queue != NULL) iono_queue->push(iono_corr);
+    if(iono_queue != nullptr) iono_queue->push(iono_corr);
 }
 
 
@@ -327,7 +335,7 @@ void Sbas_Telemetry_Data::updated_satellite_corrections()
 
                     // check if fast corrections got updated
                     std::map<int, Fast_Correction>::iterator it_old_fcorr = emitted_fast_corrections.find(prn);
-                    if(it_old_fcorr == emitted_fast_corrections.end() || !are_equal<Fast_Correction>(fcorr, it_old_fcorr->second ))
+                    if(it_old_fcorr == emitted_fast_corrections.end() || !are_equal < Fast_Correction>(fcorr, it_old_fcorr->second ))
                         {
                             // got updated
                             ss << " fast_correction_updated=" << true;
@@ -339,7 +347,7 @@ void Sbas_Telemetry_Data::updated_satellite_corrections()
 
                     // check if long term corrections got updated
                     std::map<int, Long_Term_Correction>::iterator it_old_lcorr = emitted_long_term_corrections.find(prn);
-                    if(it_old_lcorr == emitted_long_term_corrections.end() || !are_equal<Long_Term_Correction>(lcorr, it_old_lcorr->second ))
+                    if(it_old_lcorr == emitted_long_term_corrections.end() || !are_equal < Long_Term_Correction>(lcorr, it_old_lcorr->second ))
                         {
                             // got updated
                             ss << " long_term_correction_updated=" << true;
@@ -368,7 +376,7 @@ void Sbas_Telemetry_Data::updated_satellite_corrections()
 
                     if(fast_correction_updated || long_term_correction_updated)
                         {
-                            if(sat_corr_queue != NULL) sat_corr_queue->push(sbas_satelite_correction);
+                            if(sat_corr_queue != nullptr) sat_corr_queue->push(sbas_satelite_correction);
                         }
                 }
             VLOG(FLOW) << ss.str(); ss.str("");
@@ -389,6 +397,8 @@ void Sbas_Telemetry_Data::trace(int level, const char *format, ...)
     va_end(ap);
     VLOG(FLOW) << "<<T>> " << std::string(str);
 }
+
+
 
 /* satellite system+prn/slot number to satellite number ------------------------
  * convert satellite system+prn/slot number to satellite number
@@ -434,7 +444,7 @@ unsigned int Sbas_Telemetry_Data::getbitu(const unsigned char *buff, int pos, in
 {
     unsigned int bits = 0;
     int i;
-    for (i=pos; i<pos+len; i++) bits = (bits<<1) + ((buff[i/8]>>(7-i%8))&1u);
+    for (i = pos; i < pos + len; i++) bits = (bits << 1) + ((buff[i/8] >> (7 - i % 8)) & 1u);
     return bits;
 }
 
@@ -442,8 +452,8 @@ unsigned int Sbas_Telemetry_Data::getbitu(const unsigned char *buff, int pos, in
 
 int Sbas_Telemetry_Data::getbits(const unsigned char *buff, int pos, int len)
 {
-    unsigned int bits=getbitu(buff,pos,len);
-    if (len<=0 || 32<=len || !(bits&(1u<<(len-1)))) return (int)bits;
+    unsigned int bits = getbitu(buff,pos,len);
+    if (len <= 0 || 32 <= len || !(bits & (1u << (len - 1)))) return (int)bits;
     return (int)(bits|(~0u << len)); /* extend sign */
 }
 
@@ -505,27 +515,27 @@ Sbas_Telemetry_Data::gtime_t Sbas_Telemetry_Data::gpst2time(int week, double sec
 
 /* sbas igp definition -------------------------------------------------------*/
 const short
-Sbas_Telemetry_Data::x1[]={-75,-65,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,- 5,  0,  5, 10, 15, 20,
+Sbas_Telemetry_Data::x1[] = {-75,-65,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,- 5,  0,  5, 10, 15, 20,
                             25, 30, 35, 40, 45, 50, 55, 65, 75, 85},
-Sbas_Telemetry_Data::x2[]={-55,-50,-45,-40,-35,-30,-25,-20,-15,-10, -5,  0,  5, 10, 15, 20, 25, 30,
+Sbas_Telemetry_Data::x2[] = {-55,-50,-45,-40,-35,-30,-25,-20,-15,-10, -5,  0,  5, 10, 15, 20, 25, 30,
                             35, 40, 45, 50, 55},
-Sbas_Telemetry_Data::x3[]={-75,-65,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,- 5,  0,  5, 10, 15, 20,
+Sbas_Telemetry_Data::x3[] = {-75,-65,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,- 5,  0,  5, 10, 15, 20,
                             25, 30, 35, 40, 45, 50, 55, 65, 75},
-Sbas_Telemetry_Data::x4[]={-85,-75,-65,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,- 5,  0,  5, 10, 15,
+Sbas_Telemetry_Data::x4[] = {-85,-75,-65,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,- 5,  0,  5, 10, 15,
                             20, 25, 30, 35, 40, 45, 50, 55, 65, 75},
-Sbas_Telemetry_Data::x5[]={-180,-175,-170,-165,-160,-155,-150,-145,-140,-135,-130,-125,-120,-115,
+Sbas_Telemetry_Data::x5[] = {-180,-175,-170,-165,-160,-155,-150,-145,-140,-135,-130,-125,-120,-115,
                            -110,-105,-100,- 95,- 90,- 85,- 80,- 75,- 70,- 65,- 60,- 55,- 50,- 45,
                            - 40,- 35,- 30,- 25,- 20,- 15,- 10,-  5,   0,   5,  10,  15,  20,  25,
                              30,  35,  40,  45,  50,  55,  60,  65,  70,  75,  80,  85,  90,  95,
                             100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165,
                             170, 175},
-Sbas_Telemetry_Data::x6[]={-180,-170,-160,-150,-140,-130,-120,-110,-100,- 90,- 80,- 70,- 60,- 50,
+Sbas_Telemetry_Data::x6[] = {-180,-170,-160,-150,-140,-130,-120,-110,-100,- 90,- 80,- 70,- 60,- 50,
                             -40, -30, -20, -10,   0,  10,  20,  30,  40,  50,  60,  70,  80,  90,
                             100, 110, 120, 130, 140, 150, 160, 170},
-Sbas_Telemetry_Data::x7[]={-180,-150,-120,- 90,- 60,- 30,   0,  30,  60,  90, 120, 150},
-Sbas_Telemetry_Data::x8[]={-170,-140,-110,- 80,- 50,- 20,  10,  40,  70, 100, 130, 160};
+Sbas_Telemetry_Data::x7[] = {-180,-150,-120,- 90,- 60,- 30,   0,  30,  60,  90, 120, 150},
+Sbas_Telemetry_Data::x8[] = {-170,-140,-110,- 80,- 50,- 20,  10,  40,  70, 100, 130, 160};
 
-const Sbas_Telemetry_Data::sbsigpband_t Sbas_Telemetry_Data::igpband1[9][8]={ /* band 0-8 */
+const Sbas_Telemetry_Data::sbsigpband_t Sbas_Telemetry_Data::igpband1[9][8] = { /* band 0-8 */
         {{-180,x1,  1, 28},{-175,x2, 29, 51},{-170,x3, 52, 78},{-165,x2, 79,101},
          {-160,x3,102,128},{-155,x2,129,151},{-150,x3,152,178},{-145,x2,179,201}},
         {{-140,x4,  1, 28},{-135,x2, 29, 51},{-130,x3, 52, 78},{-125,x2, 79,101},
@@ -548,7 +558,7 @@ const Sbas_Telemetry_Data::sbsigpband_t Sbas_Telemetry_Data::igpband1[9][8]={ /*
 
 
 
-const Sbas_Telemetry_Data::sbsigpband_t Sbas_Telemetry_Data::igpband2[2][5]={ /* band 9-10 */
+const Sbas_Telemetry_Data::sbsigpband_t Sbas_Telemetry_Data::igpband2[2][5] = { /* band 9-10 */
         {{  60,x5,  1, 72},{  65,x6, 73,108},{  70,x6,109,144},{  75,x6,145,180},
          {  85,x7,181,192}},
         {{- 60,x5,  1, 72},{- 65,x6, 73,108},{- 70,x6,109,144},{- 75,x6,145,180},
@@ -562,20 +572,20 @@ int Sbas_Telemetry_Data::decode_sbstype1(const sbsmsg_t *msg, sbssat_t *sbssat)
     int i, n, sat;
     // see figure A-6: i corresponds to bit number (and for the GPS satellites is identically to the PRN), n to the PRN mask number
 
-    trace(4,"decode_sbstype1:");
+    trace(4, "decode_sbstype1:");
 
-    for (i=1, n=0; i<=210 && n<MAXSAT; i++)
+    for (i = 1, n = 0; i <= 210 && n < MAXSAT; i++)
         {
-            if (getbitu(msg->msg, 13+i, 1))
+            if (getbitu(msg->msg, 13 + i, 1))
                 {
-                    if      (i <= 37) sat = satno(SYS_GPS, i);      /*   0- 37: gps */
-                    else if (i <= 61) sat = satno(SYS_GLO, i - 37); /*  38- 61: glonass */
-                    else if (i <= 119) sat = 0;                     /*  62-119: future gnss */
-                    else if (i <= 138) sat = satno(SYS_SBS, i);     /* 120-138: geo/waas */
-                    else if (i <= 182) sat = 0;                     /* 139-182: reserved */
-                    else if (i <= 192) sat = satno(SYS_SBS, i + 10);   /* 183-192: qzss ref [2] */
-                    else if (i <= 202) sat = satno(SYS_QZS, i);     /* 193-202: qzss ref [2] */
-                    else sat = 0;                                   /* 203-   : reserved */
+                    if      (i <= 37) sat = satno(SYS_GPS, i);         /*   0 - 37: gps */
+                    else if (i <= 61) sat = satno(SYS_GLO, i - 37);    /*  38 - 61: glonass */
+                    else if (i <= 119) sat = 0;                        /*  62 - 119: future gnss */
+                    else if (i <= 138) sat = satno(SYS_SBS, i);        /* 120 - 138: geo/waas */
+                    else if (i <= 182) sat = 0;                        /* 139 - 182: reserved */
+                    else if (i <= 192) sat = satno(SYS_SBS, i + 10);   /* 183 - 192: qzss ref [2] */
+                    else if (i <= 202) sat = satno(SYS_QZS, i);        /* 193 - 202: qzss ref [2] */
+                    else sat = 0;                                      /* 203 -   : reserved */
                     sbssat->sat[n++].sat = sat;
                 }
         }
@@ -749,8 +759,8 @@ int Sbas_Telemetry_Data::decode_sbstype18(const sbsmsg_t *msg, sbsion_t *sbsion)
 
     for (i=1, n=0; i <= 201; i++)
         {
-            if (!getbitu(msg->msg, 23+i, 1)) continue;
-            for (j=0; j<m; j++)
+            if (!getbitu(msg->msg, 23 + i, 1)) continue;
+            for (j = 0; j < m; j++)
                 {
                     if (i < p[j].bits || p[j].bite < i) continue;
                     sbsion[band].igp[n].lat = band <= 8 ? p[j].y[i - p[j].bits] : p[j].x;
@@ -778,7 +788,7 @@ int Sbas_Telemetry_Data::decode_longcorr0(const sbsmsg_t *msg, int p, sbssat_t *
 
     sbssat->sat[n - 1].lcorr.iode = getbitu(msg->msg, p + 6, 8);
 
-    for (i=0; i<3; i++)
+    for (i = 0; i < 3; i++)
         {
             sbssat->sat[n - 1].lcorr.dpos[i] = getbits(msg->msg, p + 14 + 9*i, 9)*0.125;
             sbssat->sat[n - 1].lcorr.dvel[i] = 0.0;
@@ -804,7 +814,7 @@ int Sbas_Telemetry_Data::decode_longcorr1(const sbsmsg_t *msg, int p, sbssat_t *
 
     trace(4,"decode_longcorr1:");
 
-    if (n==0 || n>MAXSAT) return 0;
+    if (n == 0 || n > MAXSAT) return 0;
 
     sbssat->sat[n - 1].lcorr.iode = getbitu(msg->msg, p + 6, 8);
 
@@ -887,9 +897,10 @@ int Sbas_Telemetry_Data::decode_sbstype24(const sbsmsg_t *msg, sbssat_t *sbssat)
 int Sbas_Telemetry_Data::decode_sbstype25(const sbsmsg_t *msg, sbssat_t *sbssat)
 {
     trace(4,"decode_sbstype25:");
-
     return decode_longcorrh(msg, 14, sbssat) && decode_longcorrh(msg, 120, sbssat);
 }
+
+
 
 
 /* decode type 26: ionospheric delay corrections -----------------------------*/
@@ -903,7 +914,7 @@ int Sbas_Telemetry_Data::decode_sbstype26(const sbsmsg_t *msg, sbsion_t *sbsion)
 
     block = getbitu(msg->msg, 18, 4);
 
-    for (i=0; i<15; i++)
+    for (i = 0; i < 15; i++)
         {
             if ((j = block*15 + i) >= sbsion[band].nigp) continue;
             give = getbitu(msg->msg, 2 + i*13 + 9, 4);
@@ -915,7 +926,6 @@ int Sbas_Telemetry_Data::decode_sbstype26(const sbsmsg_t *msg, sbsion_t *sbsion)
             sbsion[band].igp[j].give = give;
 
             if(sbsion[band].igp[j].give > 15) sbsion[band].igp[j].give = 15; // give is not higher than 15, but to be sure
-
         }
     trace(5, "decode_sbstype26: band=%d block=%d", band, block);
     return 1;

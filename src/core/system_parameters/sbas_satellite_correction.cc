@@ -287,10 +287,10 @@ int Sbas_Satellite_Correction::sbssatcorr(double time_stamp, double *rs, double 
         {
             return 0;
         }
-    for (i=0; i<3; i++) rs[i] += drs[i];
+    for (i = 0; i < 3; i++) rs[i] += drs[i];
     dts[0] += dclk + prc/CLIGHT;
-    trace(5,"sbssatcorr: sat=%2d drs=%6.3f %6.3f %6.3f dclk=%.3f %.3f var=%.3f",
-            d_prn,drs[0],drs[1],drs[2],dclk,prc/CLIGHT,*var);
+    trace(5, "sbssatcorr: sat=%2d drs=%6.3f %6.3f %6.3f dclk=%.3f %.3f var=%.3f",
+            d_prn, drs[0], drs[1], drs[2], dclk,prc/CLIGHT, *var);
     return 1;
 }
 

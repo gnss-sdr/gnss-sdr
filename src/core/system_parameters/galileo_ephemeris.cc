@@ -1,8 +1,6 @@
 /*!
  * \file galileo_ephemeris.cc
- * \brief  Interface of a GPS EPHEMERIS storage and orbital model functions
- *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
+ * \brief  Interface of a Galileo EPHEMERIS storage and orbital model functions
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * -------------------------------------------------------------------------
@@ -38,7 +36,6 @@ Galileo_Ephemeris::Galileo_Ephemeris()
     flag_all_ephemeris = false;
     IOD_ephemeris = 0;
     IOD_nav_1 = 0;
-
     SV_ID_PRN_4 = 0;
     M0_1 = 0;           // Mean anomaly at reference time [semi-circles]
     delta_n_3 = 0;      // Mean motion difference from computed value  [semi-circles/sec]
@@ -56,21 +53,19 @@ Galileo_Ephemeris::Galileo_Ephemeris()
     C_ic_4 = 0;	        // Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
     C_is_4 = 0;         // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
     t0e_1 = 0; 	        // Ephemeris reference time [s]
-
     /*Clock correction parameters*/
     t0c_4 = 0;          // Clock correction data reference Time of Week [sec]
     af0_4 = 0;          // SV clock bias correction coefficient [s]
     af1_4 = 0;          // SV clock drift correction coefficient [s/s]
-    af2_4 = 0;	        //SV clock drift rate correction coefficient [s/s^2]
-
+    af2_4 = 0;	        // SV clock drift rate correction coefficient [s/s^2]
     /*GST*/
     WN_5 = 0;
     TOW_5 = 0;
-
 }
 
 
-double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW){
+double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW)
+{
     /* GALIELO SYSTEM TIME, ICD 5.1.2
      * input parameter:
      * WN: The Week Number is an integer counter that gives the sequential week number
@@ -101,24 +96,23 @@ double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW){
     double sec_in_day = 86400;
     double day_in_week = 7;
     t = WN*sec_in_day*day_in_week + TOW; // second from the origin of the Galileo time
-
     return t;
 }
 
 
 
-double Galileo_Ephemeris::sv_clock_drift(double transmitTime){
-    /* Satellite Time Correction Algorithm, ICD 5.1.4
-     *
-     */
+double Galileo_Ephemeris::sv_clock_drift(double transmitTime)
+{
+    // Satellite Time Correction Algorithm, ICD 5.1.4
     double dt;
     dt = transmitTime - t0c_4;
     Galileo_satClkDrift = af0_4 + af1_4*dt + (af2_4 * dt)*(af2_4 * dt) + Galileo_dtr;
     return Galileo_satClkDrift;
 }
 
+
 // compute the relativistic correction term
-double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) //Satellite Time Correction Algorithm, ICD 5.1.4
+double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) // Satellite Time Correction Algorithm, ICD 5.1.4
 {
     double tk;
     double a;
@@ -135,7 +129,6 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) //Sate
     n0 = sqrt(GALILEO_GM / (a*a*a));
 
     // Time from ephemeris reference epoch
-    //tk = check_t(transmitTime - d_Toe); this is tk for GPS; for Galileo it is different
     //t = WN_5*86400*7 + TOW_5; //WN_5*86400*7 are the second from the origin of the Galileo time
     tk = transmitTime - t0e_1;
 
@@ -146,13 +139,13 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) //Sate
     M = M0_1 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2* GALILEO_PI), (2* GALILEO_PI));
+    M = fmod((M + 2*GALILEO_PI), (2*GALILEO_PI));
 
     // Initial guess of eccentric anomaly
     E = M;
 
     // --- Iteratively compute eccentric anomaly ----------------------------
-    for (int ii = 1; ii<20; ii++)
+    for (int ii = 1; ii < 20; ii++)
         {
             E_old   = E;
             E       = M + e_1 * sin(E);
@@ -164,7 +157,6 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) //Sate
                 }
         }
 
-
     // Compute relativistic correction term
     Galileo_dtr = GALILEO_F * e_1* A_1 * sin(E);
     return Galileo_dtr;
@@ -172,23 +164,21 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime) //Sate
 
 
 
-
-
-void Galileo_Ephemeris::satellitePosition(double transmitTime) //when this function in used, the input must be the transmitted time (t) in second computed by Galileo_System_Time (above function)
+void Galileo_Ephemeris::satellitePosition(double transmitTime)
 {
-    double tk;  // Time from ephemeris reference epoch
-    //double t;   // Galileo System Time (ICD, paragraph 5.1.2)
-    double a;   // Semi-major axis
-    double n;   // Corrected mean motion
-    double n0;  // Computed mean motion
-    double M;   // Mean anomaly
-    double E;   //Eccentric Anomaly (to be solved by iteration)
+    // when this function in used, the input must be the transmitted time (t) in second computed by Galileo_System_Time (above function)
+    double tk;   // Time from ephemeris reference epoch
+    double a;    // Semi-major axis
+    double n;    // Corrected mean motion
+    double n0;   // Computed mean motion
+    double M;    // Mean anomaly
+    double E;    // Eccentric Anomaly (to be solved by iteration)
     double E_old;
     double dE;
-    double nu; //True anomaly
-    double phi; //argument of Latitude
-    double u;   // Correct argument of latitude
-    double r;  // Correct radius
+    double nu;   // True anomaly
+    double phi;  // Argument of Latitude
+    double u;    // Correct argument of latitude
+    double r;    // Correct radius
     double i;
     double Omega;
 
@@ -201,11 +191,8 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime) //when this funct
     n0 = sqrt(GALILEO_GM / (a*a*a));
 
     // Time from ephemeris reference epoch
-    //tk = check_t(transmitTime - d_Toe); this is tk for GPS; for Galileo it is different
-    //t = WN_5*86400*7 + TOW_5; //WN_5*86400*7 are the second from the origin of the Galileo time
     tk = transmitTime - t0e_1;
 
-    //std::cout<<"Diff t_tx-t_oe="<<tk<<std::endl;
     // Corrected mean motion
     n = n0 + delta_n_3;
 
@@ -260,7 +247,7 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime) //when this funct
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
     d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
-    d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega); //***********************NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
+    d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega); // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
     d_satpos_Z = sin(u) * r * sin(i);
 
     // Satellite's velocity. Can be useful for Vector Tracking loops

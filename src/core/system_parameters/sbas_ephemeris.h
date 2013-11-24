@@ -1,7 +1,6 @@
-/*
+/*!
  * \file sbas_ephemeris.h
  * \brief  Interface of a SBAS REFERENCE LOCATION storage
- *
  * \author Daniel Fehr, 2013. daniel.co(at)bluewin.ch
  *
  * -------------------------------------------------------------------------

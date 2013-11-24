@@ -1,11 +1,12 @@
 /*!
- * \file gps_l1_ca_observables_cc.h
- * \brief Interface of the pseudorange computation block for GPS L1 C/A
+ * \file galileo_e1_observables_cc.h
+ * \brief Interface of the observables computation block for Galileo E1
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas 2013. jarribas(at)cttc.es
+ *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -54,7 +55,7 @@ galileo_e1_observables_cc_sptr
 galileo_e1_make_observables_cc(unsigned int n_channels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
 /*!
- * \brief This class implements a block that computes Galielo observables
+ * \brief This class implements a block that computes Galileo observables
  */
 class galileo_e1_observables_cc : public gr::block
 {

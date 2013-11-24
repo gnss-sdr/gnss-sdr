@@ -83,9 +83,6 @@ private:
 
 public:
     ~gps_l1_ca_pvt_cc (); //!< Default destructor
-    /*!
-     * \brief Set the queue for getting navigation messages from the GpsL1CaTelemetryDecoder
-     */
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items); //!< PVT Signal Processing

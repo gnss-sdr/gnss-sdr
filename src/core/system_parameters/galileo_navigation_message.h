@@ -51,17 +51,17 @@
 /*!
  * \brief This class handles the Galileo I/NAV Data message, as described in the
  * Galileo Open Service Signal in Space Interface Control Document (OS SIS ICD), Issue 1.1 (Sept 2010).
+ * See http://ec.europa.eu/enterprise/policies/satnav/galileo/files/galileo-os-sis-icd-issue1-revision1_en.pdf
  */
 class Galileo_Navigation_Message
 {
 private:
-    bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits,boost::uint32_t checksum);
+    bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, boost::uint32_t checksum);
     bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int,int> > parameter);
     //void print_galileo_word_bytes(unsigned int GPS_word);
     unsigned long int read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector< std::pair<int,int> > parameter);
     unsigned long int read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector< std::pair<int,int> > parameter);
     signed long int read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int,int> > parameter);
-    int x,y;
 public:
     int Page_type_time_stamp;
     int flag_even_word;

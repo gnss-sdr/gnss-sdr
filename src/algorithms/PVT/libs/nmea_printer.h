@@ -1,6 +1,6 @@
 /*!
- * \file kml_printer.h
- * \brief Implementation of a NMEA 2.1 printer for GNSS-SDR
+ * \file nmea_printer.h
+ * \brief Interface of a NMEA 2.1 printer for GNSS-SDR
  * This class provides a implementation of a subset of the NMEA-0183 standard for interfacing
  * marine electronic devices as defined by the National Marine Electronics Association (NMEA).
  * See http://www.nmea.org/ for the NMEA 183 standard
@@ -41,6 +41,13 @@
 #include <fstream>
 #include "gps_l1_ca_ls_pvt.h"
 
+
+/*!
+ * \brief This class provides a implementation of a subset of the NMEA-0183 standard for interfacing
+ * marine electronic devices as defined by the National Marine Electronics Association (NMEA).
+ *
+ * See http://en.wikipedia.org/wiki/NMEA_0183
+ */
 class Nmea_Printer
 {
 public:
@@ -67,10 +74,10 @@ private:
     gps_l1_ca_ls_pvt* d_PVT_data;
     int init_serial (std::string serial_device); //serial port control
     void close_serial ();
-    std::string get_GPGGA();
-    std::string get_GPGSV();
-    std::string get_GPGSA();
-    std::string get_GPRMC();
+    std::string get_GPGGA(); // fix data
+    std::string get_GPGSV(); // satellite data
+    std::string get_GPGSA(); // overall satellite reception data
+    std::string get_GPRMC(); // minimum recommended data
     std::string get_UTC_NMEA_time(boost::posix_time::ptime d_position_UTC_time);
     std::string longitude_to_hm(double longitude);
     std::string latitude_to_hm(double lat);

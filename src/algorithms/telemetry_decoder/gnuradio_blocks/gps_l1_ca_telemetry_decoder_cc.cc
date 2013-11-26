@@ -46,8 +46,8 @@
 
 #include "gnss_synchro.h"
 
-#ifndef _lrotl
-#define _lrotl(X,N)  ((X << N) ^ (X >> (32-N)))  // Used in the parity check algorithm
+#ifndef _rotl
+#define _rotl(X,N)  ((X << N) ^ (X >> (32-N)))  // Used in the parity check algorithm
 #endif
 
 using google::LogMessage;
@@ -154,21 +154,19 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
        check algorithm described in IS-GPS-200E.  This avoids lengthy shift-
        and-xor loops. */
     d1 = gpsword & 0xFBFFBF00;
-    d2 = _lrotl(gpsword,1) & 0x07FFBF01;
-    d3 = _lrotl(gpsword,2) & 0xFC0F8100;
-    d4 = _lrotl(gpsword,3) & 0xF81FFE02;
-    d5 = _lrotl(gpsword,4) & 0xFC00000E;
-    d6 = _lrotl(gpsword,5) & 0x07F00001;
-    d7 = _lrotl(gpsword,6) & 0x00003000;
+    d2 = _rotl(gpsword,1) & 0x07FFBF01;
+    d3 = _rotl(gpsword,2) & 0xFC0F8100;
+    d4 = _rotl(gpsword,3) & 0xF81FFE02;
+    d5 = _rotl(gpsword,4) & 0xFC00000E;
+    d6 = _rotl(gpsword,5) & 0x07F00001;
+    d7 = _rotl(gpsword,6) & 0x00003000;
     t = d1 ^ d2 ^ d3 ^ d4 ^ d5 ^ d6 ^ d7;
     // Now XOR the 5 6-bit fields together to produce the 6-bit final result.
-    parity = t ^ _lrotl(t,6) ^ _lrotl(t,12) ^ _lrotl(t,18) ^ _lrotl(t,24);
+    parity = t ^ _rotl(t,6) ^ _rotl(t,12) ^ _rotl(t,18) ^ _rotl(t,24);
     parity = parity & 0x3F;
     if (parity == (gpsword & 0x3F)) return(true);
     else return(false);
 }
-
-
 
 
 int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,

@@ -94,9 +94,9 @@ $ export GTEST_DIR=/home/username/gtest-1.7.0
 
 changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your $HOME/.bashrc file.
 
-- Install Subversion
+- Install Subversion and the SSL development libraries:
 
-$ sudo apt-get install subversion
+$ sudo apt-get install libssl-dev subversion
 
 * Check out the latest version of GNSS-SDR
 
@@ -225,13 +225,20 @@ By default, CMake will build the Release version, meaning that the compiler will
 
 $ cd gnss-sdr/build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
-
-for eclipse
-cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../
-
-
 $ make
 $ make install
+
+If you are using Eclipse as your development environment, CMake can create the project for you. Type:
+
+$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../
+
+and then import the created project file into Eclipse:
+
+1) Import project using Menu File->Import
+2) Select General->Existing projects into workspace:
+3) Browse where your build tree is and select the root build tree directory. Keep "Copy projects into workspace" unchecked.
+4) You get a fully functional Eclipse project 
+
 
 Updating GNSS-SDR
 -----------------

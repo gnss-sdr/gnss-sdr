@@ -368,6 +368,30 @@ endif(DOXYGEN_FOUND)
 # Armadillo - http://arma.sourceforge.net/
 ################################################################################
 
+if(OS_IS_LINUX)
+    find_package(LAPACK)
+    if(NOT LAPACK_FOUND)
+        message(" A library with a LAPACK API has not been found.")
+        message(" You can try to install it by typing:")
+        message(" sudo apt-get install liblapack-dev")
+        message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
+    endif(NOT LAPACK_FOUND)
+    find_package(BLAS)
+    if(NOT BLAS_FOUND)
+        message(" A library with a BLAS API has not been found.")
+        message(" You can try to install it by typing:")
+        message(" sudo apt-get install libblas-dev")
+        message(FATAL_ERROR "BLAS is required to build gnss-sdr")
+    endif(NOT BLAS_FOUND)
+    find_library(GFORTRAN gfortran)
+    if(GFORTRAN-NOTFOUND)
+        message(" GFortran has not been found.")
+        message(" You can try to install it by typing:")
+        message(" sudo apt-get install gfortran")
+        message(FATAL_ERROR "Gfortran is required to build gnss-sdr")
+    endif(GFORTRAN-NOTFOUND)
+endif(OS_IS_LINUX)
+
 find_package(Armadillo)
 if(NOT ARMADILLO_FOUND)
      message (" Armadillo has not been found.")
@@ -418,11 +442,27 @@ endif(NOT ARMADILLO_FOUND)
 
 
 
-########################################################################
+###############################################################################
 # OpenCL
-########################################################################
+###############################################################################
 find_package(OpenCL)
 
+
+################################################################################
+# OpenSSL - http://www.openssl.org
+################################################################################
+find_package(OpenSSL)
+if(NOT OPENSSL_FOUND)
+    message(" The OpenSSL library has not been found.")
+    message(" You can try to install it by typing:")
+    if(OS_IS_LINUX)       
+        message(" sudo apt-get install libssl-dev")
+    endif(OS_IS_LINUX) 
+    if(OS_IS_MACOSX)
+        message(" sudo port install openssl")
+    endif(OS_IS_MACOSX)
+    message(FATAL_ERROR "OpenSSL libraries are required to build gnss-sdr")
+endif(NOT OPENSSL_FOUND)
 
 
 ################################################################################

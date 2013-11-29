@@ -4,11 +4,6 @@
  *  Minus Late) tracking block for Galileo E1 signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
- * Code DLL + carrier PLL according to the algorithms described in:
- * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
- * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
- * Birkhauser, 2007
- *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2012  (see AUTHORS file for a list of contributors)
@@ -42,19 +37,15 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include "correlator.h"
 
-
-
 class galileo_e1_dll_pll_veml_tracking_cc;
 
-typedef boost::shared_ptr<galileo_e1_dll_pll_veml_tracking_cc>
-galileo_e1_dll_pll_veml_tracking_cc_sptr;
+typedef boost::shared_ptr<galileo_e1_dll_pll_veml_tracking_cc> galileo_e1_dll_pll_veml_tracking_cc_sptr;
 
 galileo_e1_dll_pll_veml_tracking_cc_sptr
 galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
@@ -72,11 +63,9 @@ galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
  * \brief This class implements a code DLL + carrier PLL VEML (Very Early
  *  Minus Late) tracking block for Galileo E1 signals
  */
-
 class galileo_e1_dll_pll_veml_tracking_cc: public gr::block
 {
 public:
-
     ~galileo_e1_dll_pll_veml_tracking_cc();
 
     void set_channel(unsigned int channel);
@@ -84,15 +73,17 @@ public:
     void start_tracking();
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
-
+    /*!
+     * \brief Code DLL + carrier PLL according to the algorithms described in:
+     * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
+     * A Software-Defined GPS and Galileo Receiver. A Single-Frequency Approach,
+     * Birkhauser, 2007
+     */
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
-
 private:
-
     friend galileo_e1_dll_pll_veml_tracking_cc_sptr
     galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
             long fs_in, unsigned
@@ -196,7 +187,6 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
-
 };
 
 #endif //GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_CC_H

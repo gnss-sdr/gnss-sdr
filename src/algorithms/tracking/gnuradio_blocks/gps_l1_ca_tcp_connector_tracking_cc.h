@@ -42,7 +42,6 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-//#include <gnuradio/gr_sync_decimator.h>
 #include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
 #include "gnss_synchro.h"
@@ -54,8 +53,8 @@
 
 
 class Gps_L1_Ca_Tcp_Connector_Tracking_cc;
-typedef boost::shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc>
-        gps_l1_ca_tcp_connector_tracking_cc_sptr;
+
+typedef boost::shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc> gps_l1_ca_tcp_connector_tracking_cc_sptr;
 
 gps_l1_ca_tcp_connector_tracking_cc_sptr
 gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
@@ -69,7 +68,6 @@ gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
                                    float early_late_space_chips,
                                    size_t port_ch0);
 
-//class gps_l1_ca_tcp_connector_tracking_cc: public gr_sync_decimator
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
@@ -77,7 +75,6 @@ gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
 class Gps_L1_Ca_Tcp_Connector_Tracking_cc: public gr::block
 {
 public:
-
     ~Gps_L1_Ca_Tcp_Connector_Tracking_cc();
 
     void set_channel(unsigned int channel);
@@ -90,15 +87,11 @@ public:
      *
      * The user must override work to define the signal processing code
      */
-
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
-
 private:
-
     friend gps_l1_ca_tcp_connector_tracking_cc_sptr
     gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
             long fs_in, unsigned

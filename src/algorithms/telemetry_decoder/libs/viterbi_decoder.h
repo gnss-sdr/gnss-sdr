@@ -35,6 +35,9 @@
 #include <deque>
 #include <iostream>
 
+/*!
+ * \brief Class that implements a Viterbi decoder
+ */
 class Viterbi_Decoder
 {
 public:
@@ -45,8 +48,8 @@ public:
     /*!
      * \brief Uses the Viterbi algorithm to perform hard-decision decoding of a convolutional code.
      *
-     * \param  input_c[]    The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
-     * \param  LL           The number of data bits to be decoded (does not include the mm zero-tail-bits)
+     * \param[in]  input_c[]    The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
+     * \param[in]  LL           The number of data bits to be decoded (does not include the mm zero-tail-bits)
      *
      * \return  output_u_int[] Hard decisions on the data bits (without the mm zero-tail-bits)
      */

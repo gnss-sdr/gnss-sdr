@@ -1,10 +1,8 @@
 /*!
  * \file galileo_e1_pvt.h
  * \brief Interface of an adapter of a GALILEO E1 PVT solver block to a
- * PvtInterface
- * Position Velocity and Time
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
- *
+ * PvtInterface.
+ * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -43,12 +41,12 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a PvtInterface for GPS L1 C/A
+ * \brief This class implements a PvtInterface for Galileo E1
  */
 class GalileoE1Pvt : public PvtInterface
 {
 public:
-	GalileoE1Pvt(ConfigurationInterface* configuration,
+    GalileoE1Pvt(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
@@ -61,7 +59,7 @@ public:
         return role_;
     }
 
-    //!  Returns "GPS_L1_CA_PVT"
+    //!  Returns "GALILEO_E1_PVT"
     std::string implementation()
     {
         return "GALILEO_E1_PVT";

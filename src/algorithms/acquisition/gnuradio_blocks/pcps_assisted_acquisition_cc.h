@@ -45,8 +45,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PCPS_assisted_acquisition_cc_H_
-#define GNSS_SDR_PCPS_assisted_acquisition_cc_H_
+#ifndef GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H_
+#define GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H_
 
 #include <fstream>
 #include <gnuradio/block.h>
@@ -75,7 +75,6 @@ pcps_make_assisted_acquisition_cc(int max_dwells, unsigned int sampled_ms,
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-
 class pcps_assisted_acquisition_cc: public gr::block
 {
 private:
@@ -223,7 +222,6 @@ public:
      */
     void set_doppler_step(unsigned int doppler_step);
 
-
     /*!
      * \brief Set tracking channel internal queue.
      * \param channel_internal_queue - Channel's internal blocks information queue.
@@ -241,7 +239,6 @@ public:
             gr_vector_void_star &output_items);
 
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
 };
 
 #endif /* GNSS_SDR_PCPS_assisted_acquisition_cc_H_*/

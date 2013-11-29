@@ -50,8 +50,17 @@ class gps_l1_ca_pvt_cc;
 
 typedef boost::shared_ptr<gps_l1_ca_pvt_cc> gps_l1_ca_pvt_cc_sptr;
 
-gps_l1_ca_pvt_cc_sptr
-gps_l1_ca_make_pvt_cc(unsigned int n_channels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname);
+gps_l1_ca_pvt_cc_sptr gps_l1_ca_make_pvt_cc(unsigned int n_channels,
+                                            boost::shared_ptr<gr::msg_queue> queue,
+                                            bool dump,
+                                            std::string dump_filename,
+                                            int averaging_depth,
+                                            bool flag_averaging,
+                                            int output_rate_ms,
+                                            int display_rate_ms,
+                                            bool flag_nmea_tty_port,
+                                            std::string nmea_dump_filename,
+                                            std::string nmea_dump_devname);
 
 /*!
  * \brief This class implements a block that computes the PVT solution
@@ -59,9 +68,28 @@ gps_l1_ca_make_pvt_cc(unsigned int n_channels, boost::shared_ptr<gr::msg_queue> 
 class gps_l1_ca_pvt_cc : public gr::block
 {
 private:
-    friend gps_l1_ca_pvt_cc_sptr
-    gps_l1_ca_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname);
-    gps_l1_ca_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname);
+    friend gps_l1_ca_pvt_cc_sptr gps_l1_ca_make_pvt_cc(unsigned int nchannels,
+                                                       boost::shared_ptr<gr::msg_queue> queue,
+                                                       bool dump,
+                                                       std::string dump_filename,
+                                                       int averaging_depth,
+                                                       bool flag_averaging,
+                                                       int output_rate_ms,
+                                                       int display_rate_ms,
+                                                       bool flag_nmea_tty_port,
+                                                       std::string nmea_dump_filename,
+                                                       std::string nmea_dump_devname);
+    gps_l1_ca_pvt_cc(unsigned int nchannels,
+                     boost::shared_ptr<gr::msg_queue> queue,
+                     bool dump,
+                     std::string dump_filename,
+                     int averaging_depth,
+                     bool flag_averaging,
+                     int output_rate_ms,
+                     int display_rate_ms,
+                     bool flag_nmea_tty_port,
+                     std::string nmea_dump_filename,
+                     std::string nmea_dump_devname);
     boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool b_rinex_header_writen;

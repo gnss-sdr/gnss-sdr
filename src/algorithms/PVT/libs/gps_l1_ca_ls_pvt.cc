@@ -144,16 +144,6 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
     omc = arma::zeros(nmbOfSatellites, 1);
     az = arma::zeros(1, nmbOfSatellites);
     el = arma::zeros(1, nmbOfSatellites);
-    for (int i = 0; i < nmbOfSatellites; i++)
-        {
-            for (int j = 0; j < 4; j++)
-                {
-                    A(i, j) = 0.0; //Armadillo
-                }
-            omc(i, 0) = 0.0;
-            az(0, i) = 0.0;
-        }
-    el = az;
     arma::mat X = satpos;
     arma::vec Rot_X;
     double rho2;
@@ -207,7 +197,7 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
 
             //--- Apply position update --------------------------------------------
             pos = pos + x;
-            if (arma::norm(x,2)<1e-4)
+            if (arma::norm(x, 2) < 1e-4)
             {
             	break; // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
             }
@@ -216,12 +206,11 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
     try
     {
             //-- compute the Dilution Of Precision values
-            //arma::mat Q;
-            d_Q       = arma::inv(arma::htrans(A)*A);
+            d_Q = arma::inv(arma::htrans(A)*A);
     }
     catch(std::exception& e)
     {
-            d_Q=arma::zeros(4,4);
+            d_Q = arma::zeros(4, 4);
     }
     return pos;
 }
@@ -233,9 +222,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
     std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
     int valid_pseudoranges = gnss_pseudoranges_map.size();
 
-    arma::mat W = arma::eye(valid_pseudoranges,valid_pseudoranges); //channels weights matrix
+    arma::mat W = arma::eye(valid_pseudoranges, valid_pseudoranges); //channels weights matrix
     arma::vec obs = arma::zeros(valid_pseudoranges);         // pseudoranges observation vector
-    arma::mat satpos = arma::zeros(3,valid_pseudoranges);    //satellite positions matrix
+    arma::mat satpos = arma::zeros(3, valid_pseudoranges);    //satellite positions matrix
 
     int GPS_week = 0;
     double utc = 0;
@@ -280,9 +269,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     TX_time_corrected_s = Tx_time - SV_clock_bias_s;
                     gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
 
-                    satpos(0,obs_counter) = gps_ephemeris_iter->second.d_satpos_X;
-                    satpos(1,obs_counter) = gps_ephemeris_iter->second.d_satpos_Y;
-                    satpos(2,obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
+                    satpos(0, obs_counter) = gps_ephemeris_iter->second.d_satpos_X;
+                    satpos(1, obs_counter) = gps_ephemeris_iter->second.d_satpos_Y;
+                    satpos(2, obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
 
                     // 5- fill the observations vector with the corrected pseudorranges
                     obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s*GPS_C_m_s;
@@ -295,19 +284,18 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                             << " X=" << gps_ephemeris_iter->second.d_satpos_X
                             << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
                             << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
-                            << " [m] PR_obs=" << obs(obs_counter) << " [m]" << std::endl;
+                            << " [m] PR_obs=" << obs(obs_counter) << " [m]";
 
                     // compute the UTC time for this SV (just to print the asociated UTC timestamp)
                     GPS_week = gps_ephemeris_iter->second.i_GPS_week;
                     utc = gps_utc_model.utc_time(TX_time_corrected_s, GPS_week);
-
                 }
             else // the ephemeris are not available for this SV
                 {
                     // no valid pseudorange for the current SV
                     W(obs_counter, obs_counter) = 0; // SV de-activated
-                    obs(obs_counter) = 1; // to avoid algorithm problems (divide by zero)
-                    DLOG(INFO) << "No ephemeris data for SV "<< gnss_pseudoranges_iter->first << std::endl;
+                    obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
+                    DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->first;
                 }
             obs_counter++;
         }
@@ -316,22 +304,22 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
     // ****** SOLVE LEAST SQUARES******************************************************
     // ********************************************************************************
     d_valid_observations = valid_obs;
-    DLOG(INFO) << "(new)PVT: valid observations=" << valid_obs << std::endl;
+    DLOG(INFO) << "(new)PVT: valid observations=" << valid_obs;
 
     if (valid_obs >= 4)
         {
             arma::vec mypos;
-            DLOG(INFO) << "satpos=" << satpos << std::endl;
-            DLOG(INFO) << "obs="<< obs << std::endl;
-            DLOG(INFO) << "W=" << W <<std::endl;
+            DLOG(INFO) << "satpos=" << satpos;
+            DLOG(INFO) << "obs=" << obs;
+            DLOG(INFO) << "W=" << W;
             mypos = leastSquarePos(satpos, obs, W);
-            DLOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos << std::endl;
+            DLOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos;
             gps_l1_ca_ls_pvt::cart2geo(mypos(0), mypos(1), mypos(2), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
-            if (d_height_m>50000)
+            if (d_height_m > 50000)
             {
-            	b_valid_position=false;
-            	return false; //erratic PVT
+            	b_valid_position = false;
+            	return false;
             }
             // Compute UTC time and print PVT solution
             double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
@@ -342,47 +330,46 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
 
             DLOG(INFO) << "(new)Position at " << boost::posix_time::to_simple_string(p_time)
                 << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                << " [deg], Height= " << d_height_m << " [m]" << std::endl;
+                << " [deg], Height= " << d_height_m << " [m]";
 
             // ###### Compute DOPs ########
 
             // 1- Rotation matrix from ECEF coordinates to ENU coordinates
             // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
+            arma::mat F=arma::zeros(3,3);
+            F(0,0) = -sin(GPS_TWO_PI*(d_longitude_d/360.0));
+            F(0,1) = -sin(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
+            F(0,2) = cos(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
 
-			arma::mat F=arma::zeros(3,3);
-			F(0,0)=-sin(GPS_TWO_PI*(d_longitude_d/360.0));
-			F(0,1)=-sin(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
-			F(0,2)=cos(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
+            F(1,0) = cos((GPS_TWO_PI*d_longitude_d)/360.0);
+            F(1,1) = -sin((GPS_TWO_PI*d_latitude_d)/360.0)*sin((GPS_TWO_PI*d_longitude_d)/360.0);
+            F(1,2) = cos((GPS_TWO_PI*d_latitude_d/360.0))*sin((GPS_TWO_PI*d_longitude_d)/360.0);
 
-			F(1,0)=cos((GPS_TWO_PI*d_longitude_d)/360.0);
-			F(1,1)=-sin((GPS_TWO_PI*d_latitude_d)/360.0)*sin((GPS_TWO_PI*d_longitude_d)/360.0);
-			F(1,2)=cos((GPS_TWO_PI*d_latitude_d/360.0))*sin((GPS_TWO_PI*d_longitude_d)/360.0);
+            F(2,0) = 0;
+            F(2,1) = cos((GPS_TWO_PI*d_latitude_d)/360.0);
+            F(2,2) = sin((GPS_TWO_PI*d_latitude_d/360.0));
 
-			F(2,0)=0;
-			F(2,1)=cos((GPS_TWO_PI*d_latitude_d)/360.0);
-			F(2,2)=sin((GPS_TWO_PI*d_latitude_d/360.0));
+            // 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
+            arma::mat Q_ECEF = d_Q.submat(0, 0, 2, 2);
+            arma::mat DOP_ENU = arma::zeros(3, 3);
 
-			// 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
-
-			arma::mat Q_ECEF=d_Q.submat( 0, 0, 2, 2);
-			arma::mat DOP_ENU=arma::zeros(3,3);
-
-		    try
-		    {
-		    	DOP_ENU=arma::htrans(F)*Q_ECEF*F;
-				d_GDOP  = sqrt(arma::trace(DOP_ENU));                 // Geometric DOP
-				d_PDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1) + DOP_ENU(2,2));       // PDOP
-				d_HDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1));                // HDOP
-				d_VDOP  = sqrt(DOP_ENU(2,2));                         // VDOP
-				d_TDOP  = sqrt(d_Q(3,3));	// TDOP
-		    }catch(std::exception& ex)
-		    {
-				d_GDOP  = -1;                 // Geometric DOP
-				d_PDOP  = -1;       // PDOP
-				d_HDOP  = -1;               // HDOP
-				d_VDOP  = -1;                        // VDOP
-				d_TDOP  = -1;	// TDOP
-		    }
+            try
+            {
+                    DOP_ENU = arma::htrans(F)*Q_ECEF*F;
+                    d_GDOP = sqrt(arma::trace(DOP_ENU));                         // Geometric DOP
+                    d_PDOP = sqrt(DOP_ENU(0, 0) + DOP_ENU(1, 1) + DOP_ENU(2, 2));// PDOP
+                    d_HDOP = sqrt(DOP_ENU(0, 0) + DOP_ENU(1, 1));                // HDOP
+                    d_VDOP = sqrt(DOP_ENU(2, 2));                                // VDOP
+                    d_TDOP = sqrt(d_Q(3, 3));	                                 // TDOP
+            }
+            catch(std::exception& ex)
+            {
+                    d_GDOP = -1; // Geometric DOP
+                    d_PDOP = -1; // PDOP
+                    d_HDOP = -1; // HDOP
+                    d_VDOP = -1; // VDOP
+                    d_TDOP = -1; // TDOP
+            }
 
             // ######## LOG FILE #########
             if(d_flag_dump_enabled == true)
@@ -418,7 +405,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "Exception writing PVT LS dump file "<< e.what() << std::endl;
+                            std::cout << "Exception writing PVT LS dump file " << e.what() << std::endl;
                     }
                 }
 
@@ -439,7 +426,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                             d_avg_latitude_d = 0;
                             d_avg_longitude_d = 0;
                             d_avg_height_m = 0;
-                            for (unsigned int i=0; i<d_hist_longitude_d.size(); i++)
+                            for (unsigned int i = 0; i < d_hist_longitude_d.size(); i++)
                                 {
                                     d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
                                     d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
@@ -497,8 +484,8 @@ void gps_l1_ca_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_selec
     const double f[5] = {1/297, 1/298.247, 1/298.26, 1/298.257222101, 1/298.257223563};
 
     double lambda  = atan2(Y,X);
-    double ex2 = (2 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1 - f[elipsoid_selection])*(1 -f[elipsoid_selection]));
-    double c = a[elipsoid_selection] * sqrt(1+ex2);
+    double ex2 = (2 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1 - f[elipsoid_selection])*(1 - f[elipsoid_selection]));
+    double c = a[elipsoid_selection] * sqrt(1 + ex2);
     double phi = atan(Z / ((sqrt(X*X + Y*Y)*(1 - (2 - f[elipsoid_selection])) * f[elipsoid_selection])));
 
     double h = 0.1;
@@ -551,7 +538,7 @@ void gps_l1_ca_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a
     *h = 0;
     double tolsq = 1.e-10;  // tolerance to accept convergence
     int maxit = 10;         // max number of iterations
-    double rtd =  180/GPS_PI;
+    double rtd = 180/GPS_PI;
 
     // compute square of eccentricity
     double esq;
@@ -611,28 +598,28 @@ void gps_l1_ca_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a
     double dZ;
     double oneesq = 1 - esq;
 
-    for (int i=0; i<maxit; i++)
+    for (int i = 0; i < maxit; i++)
         {
-            sinphi  = sin(*dphi);
-            cosphi  = cos(*dphi);
+            sinphi = sin(*dphi);
+            cosphi = cos(*dphi);
 
-            //     compute radius of curvature in prime vertical direction
-            N_phi   = a / sqrt(1 - esq*sinphi*sinphi);
+            // compute radius of curvature in prime vertical direction
+            N_phi = a / sqrt(1 - esq*sinphi*sinphi);
 
-            //    compute residuals in P and Z
-            dP      = P - (N_phi + (*h)) * cosphi;
-            dZ      = Z - (N_phi*oneesq + (*h)) * sinphi;
+            // compute residuals in P and Z
+            dP = P - (N_phi + (*h)) * cosphi;
+            dZ = Z - (N_phi*oneesq + (*h)) * sinphi;
 
-            //    update height and latitude
-            *h       = *h + (sinphi*dZ + cosphi*dP);
-            *dphi    = *dphi + (cosphi*dZ - sinphi*dP)/(N_phi + (*h));
+            // update height and latitude
+            *h = *h + (sinphi*dZ + cosphi*dP);
+            *dphi = *dphi + (cosphi*dZ - sinphi*dP)/(N_phi + (*h));
 
             //     test for convergence
             if ((dP*dP + dZ*dZ) < tolsq)
                 {
                     break;
                 }
-            if (i == (maxit-1))
+            if (i == (maxit - 1))
                 {
                     DLOG(INFO) << "The computation of geodetic coordinates did not converge";
                 }
@@ -667,10 +654,10 @@ void gps_l1_ca_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, 
     // Transform x into geodetic coordinates
     togeod(&phi, &lambda, &h, a, finv, x(0), x(1), x(2));
 
-    double cl  = cos(lambda * dtr);
-    double sl  = sin(lambda * dtr);
-    double cb  = cos(phi * dtr);
-    double sb  = sin(phi * dtr);
+    double cl = cos(lambda * dtr);
+    double sl = sin(lambda * dtr);
+    double cb = cos(phi * dtr);
+    double sb = sin(phi * dtr);
 
     arma::mat F = arma::zeros(3,3);
 
@@ -713,5 +700,5 @@ void gps_l1_ca_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, 
             *Az = *Az + 360.0;
         }
 
-    *D   = sqrt(dx(0)*dx(0) + dx(1)*dx(1) + dx(2)*dx(2));
+    *D = sqrt(dx(0)*dx(0) + dx(1)*dx(1) + dx(2)*dx(2));
 }

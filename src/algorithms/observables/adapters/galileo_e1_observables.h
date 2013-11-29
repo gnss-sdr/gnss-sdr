@@ -41,7 +41,7 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements an ObservablesInterface for Galileo E1
+ * \brief This class implements an ObservablesInterface for Galileo E1B
  */
 class GalileoE1Observables : public ObservablesInterface
 {
@@ -57,6 +57,7 @@ public:
         return role_;
     }
 
+    //!  Returns "Galileo_E1B_Observables"
     std::string implementation()
     {
         return "Galileo_E1B_Observables";

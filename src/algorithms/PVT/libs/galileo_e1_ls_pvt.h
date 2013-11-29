@@ -3,9 +3,10 @@
  * \brief Interface of a Least Squares Position, Velocity, and Time (PVT)
  * solver, based on K.Borre's Matlab receiver.
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,7 +39,6 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-//#include <math.h>
 #include <cmath>
 #include <map>
 #include <algorithm>
@@ -46,10 +46,10 @@
 #include "galileo_navigation_message.h"
 #include "armadillo"
 #include "boost/date_time/posix_time/posix_time.hpp"
-
 #include "gnss_synchro.h"
 #include "galileo_ephemeris.h"
 #include "galileo_utc_model.h"
+
 #define PVT_MAX_CHANNELS 24
 
 /*!
@@ -63,21 +63,18 @@ private:
     void topocent(double *Az, double *El, double *D, arma::vec x, arma::vec dx);
     void togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
 public:
-    int d_nchannels;      //! Number of available channels for positioning
-    int d_valid_observations; //! Number of valid pseudorange observations (valid satellites)
-    int d_visible_satellites_IDs[PVT_MAX_CHANNELS]; //! Array with the IDs of the valid satellites
-    double d_visible_satellites_El[PVT_MAX_CHANNELS]; //! Array with the LOS Elevation of the valid satellites
-    double d_visible_satellites_Az[PVT_MAX_CHANNELS]; //! Array with the LOS Azimuth of the valid satellites
-    double d_visible_satellites_Distance[PVT_MAX_CHANNELS]; //! Array with the LOS Distance of the valid satellites
-    double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS]; //! Array with the IDs of the valid satellites
+    int d_nchannels;                                        //!< Number of available channels for positioning
+    int d_valid_observations;                               //!< Number of valid pseudorange observations (valid satellites)
+    int d_visible_satellites_IDs[PVT_MAX_CHANNELS];         //!< Array with the IDs of the valid satellites
+    double d_visible_satellites_El[PVT_MAX_CHANNELS];       //!< Array with the LOS Elevation of the valid satellites
+    double d_visible_satellites_Az[PVT_MAX_CHANNELS];       //!< Array with the LOS Azimuth of the valid satellites
+    double d_visible_satellites_Distance[PVT_MAX_CHANNELS]; //!< Array with the LOS Distance of the valid satellites
+    double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS];   //!< Array with the IDs of the valid satellites
 
     Galileo_Navigation_Message* d_ephemeris;
 
-    // new ephemeris storage
-    std::map<int,Galileo_Ephemeris> galileo_ephemeris_map;
-    // new utc_model storage
+    std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
     Galileo_Utc_Model galileo_utc_model;
-    // new iono storage
     Galileo_Iono galileo_iono;
 
     double d_galileo_current_time;
@@ -85,26 +82,24 @@ public:
 
     bool b_valid_position;
 
-    double d_latitude_d;  //! Latitude in degrees
-    double d_longitude_d; //! Longitude in degrees
-    double d_height_m;    //! Height [m]
+    double d_latitude_d;  //!< Latitude in degrees
+    double d_longitude_d; //!< Longitude in degrees
+    double d_height_m;    //!< Height [m]
 
     //averaging
     std::deque<double> d_hist_latitude_d;
     std::deque<double> d_hist_longitude_d;
     std::deque<double> d_hist_height_m;
-    int d_averaging_depth;    //! Length of averaging window
-
-    double d_avg_latitude_d;  //! Averaged latitude in degrees
-    double d_avg_longitude_d; //! Averaged longitude in degrees
-    double d_avg_height_m;    //! Averaged height [m]
+    int d_averaging_depth;    //!< Length of averaging window
+    double d_avg_latitude_d;  //!< Averaged latitude in degrees
+    double d_avg_longitude_d; //!< Averaged longitude in degrees
+    double d_avg_height_m;    //!< Averaged height [m]
 
     double d_x_m;
     double d_y_m;
     double d_z_m;
 
     // DOP estimations
-
     arma::mat d_Q;
     double d_GDOP;
     double d_PDOP;
@@ -121,6 +116,7 @@ public:
     void set_averaging_depth(int depth);
 
     galileo_e1_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file);
+
     ~galileo_e1_ls_pvt();
 
     bool get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double galileo_current_time, bool flag_averaging);

@@ -35,7 +35,7 @@
  */
 
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_OPTIM_TRACKING_CC_H
-#define	 GNSS_SDR_GPS_L1_CA_DLL_PLL_OPTIM_TRACKING_CC_H
+#define GNSS_SDR_GPS_L1_CA_DLL_PLL_OPTIM_TRACKING_CC_H
 
 #include <fstream>
 #include <queue>
@@ -43,33 +43,27 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-//#include <gnuradio/gr_sync_decimator.h>
 #include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-
 #include "correlator.h"
 
-
-
 class Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc;
-typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc>
-	gps_l1_ca_dll_pll_optim_tracking_cc_sptr;
 
-gps_l1_ca_dll_pll_optim_tracking_cc_sptr
-gps_l1_ca_dll_pll_make_optim_tracking_cc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   boost::shared_ptr<gr::msg_queue> queue,
-                                   bool dump,
-                                   std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float early_late_space_chips);
+typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc> gps_l1_ca_dll_pll_optim_tracking_cc_sptr;
 
-//class gps_l1_ca_dll_pll_tracking_cc: public gr_sync_decimator
+gps_l1_ca_dll_pll_optim_tracking_cc_sptr gps_l1_ca_dll_pll_make_optim_tracking_cc(long if_freq,
+                                                                                  long fs_in,
+                                                                                  unsigned int vector_length,
+                                                                                  boost::shared_ptr<gr::msg_queue> queue,
+                                                                                  bool dump,
+                                                                                  std::string dump_filename,
+                                                                                  float pll_bw_hz,
+                                                                                  float dll_bw_hz,
+                                                                                  float early_late_space_chips);
+
 
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
@@ -77,7 +71,6 @@ gps_l1_ca_dll_pll_make_optim_tracking_cc(long if_freq,
 class Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc: public gr::block
 {
 public:
-
     ~Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc();
 
     void set_channel(unsigned int channel);
@@ -85,20 +78,11 @@ public:
     void start_tracking();
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
-    /*
-     * \brief just like gr_block::general_work, only this arranges to call consume_each for you
-     *
-     * The user must override work to define the signal processing code
-     */
-
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
-
 private:
-
     friend gps_l1_ca_dll_pll_optim_tracking_cc_sptr
     gps_l1_ca_dll_pll_make_optim_tracking_cc(long if_freq,
             long fs_in, unsigned

@@ -43,13 +43,11 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-//#include <gnuradio/gr_sync_decimator.h>
 #include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
 #include "tracking_FLL_PLL_filter.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "gnss_synchro.h"
-//#include "GPS_L1_CA.h"
 #include "correlator.h"
 
 class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc;
@@ -71,7 +69,6 @@ gps_l1_ca_dll_fll_pll_make_tracking_cc(
         float dll_bw_hz,
         float early_late_space_chips);
 
-//class gps_l1_ca_dll_pll_tracking_cc: public gr_sync_decimator
 
 /*!
  * \brief This class implements a DLL and a FLL assisted PLL tracking loop block
@@ -79,7 +76,6 @@ gps_l1_ca_dll_fll_pll_make_tracking_cc(
 class Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc: public gr::block
 {
 public:
-
     ~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc();
 
     void set_channel(unsigned int channel);
@@ -103,10 +99,7 @@ public:
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
-
 private:
-
     friend gps_l1_ca_dll_fll_pll_tracking_cc_sptr
     gps_l1_ca_dll_fll_pll_make_tracking_cc(
             long if_freq,
@@ -162,7 +155,6 @@ private:
     gr_complex d_Prompt_prev;
 
     double d_early_late_spc_chips;
-
 
     double d_carrier_doppler_hz;
     double d_code_freq_hz;

@@ -73,13 +73,11 @@ const double GPS_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this
 const int GPS_CA_PREAMBLE_LENGTH_BITS = 8;
 const int GPS_CA_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
 const int GPS_CA_TELEMETRY_RATE_SYMBOLS_SECOND = GPS_CA_TELEMETRY_RATE_BITS_SECOND*20;   //!< NAV message bit rate [symbols/s]
-const int GPS_WORD_LENGTH = 4;                      // CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
-const int GPS_SUBFRAME_LENGTH = 40;                 // GPS_WORD_LENGTH x 10 = 40 bytes
+const int GPS_WORD_LENGTH = 4;                      //!< CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
+const int GPS_SUBFRAME_LENGTH = 40;                 //!< GPS_WORD_LENGTH x 10 = 40 bytes
 const int GPS_SUBFRAME_BITS = 300;                  //!< Number of bits per subframe in the NAV message [bits]
-const int GPS_SUBFRAME_SECONDS = 6;				    //!< Subframe duration [seconds]
+const int GPS_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [seconds]
 const int GPS_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
-
-
 
 // GPS NAVIGATION MESSAGE STRUCTURE
 // NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200E Appendix II)
@@ -92,7 +90,6 @@ const std::vector<std::pair<int,int> > ALERT_FLAG({{48,1}});
 const std::vector<std::pair<int,int> > ANTI_SPOOFING_FLAG({{49,1}});
 const std::vector<std::pair<int,int> > SUBFRAME_ID({{50,3}});
 
-
 // SUBFRAME 1
 const std::vector<std::pair<int,int>> GPS_WEEK({{61,10}});
 const std::vector<std::pair<int,int>> CA_OR_P_ON_L2({{71,2}}); //*
@@ -101,11 +98,9 @@ const std::vector<std::pair<int,int>> SV_HEALTH ({{77,6}});
 const std::vector<std::pair<int,int>> L2_P_DATA_FLAG ({{91,1}});
 const std::vector<std::pair<int,int>> T_GD({{197,8}});
 const double T_GD_LSB = TWO_N31;
-
 const std::vector<std::pair<int,int>> IODC({{83,2},{211,8}});
 const std::vector<std::pair<int,int>> T_OC({{219,16}});
 const double T_OC_LSB = TWO_P4;
-
 const std::vector<std::pair<int,int>> A_F2({{241,8}});
 const double A_F2_LSB = TWO_N55;
 const std::vector<std::pair<int,int>> A_F1({{249,16}});
@@ -114,7 +109,6 @@ const std::vector<std::pair<int,int>> A_F0({{271,22}});
 const double A_F0_LSB = TWO_N31;
 
 // SUBFRAME 2
-
 const std::vector<std::pair<int,int>> IODE_SF2({{61,8}});
 const std::vector<std::pair<int,int>> C_RS({{69,16}});
 const double C_RS_LSB = TWO_N5;
@@ -137,7 +131,6 @@ const std::vector<std::pair<int,int>> AODO({{272,5}});
 const int AODO_LSB = 900;
 
 // SUBFRAME 3
-
 const std::vector<std::pair<int,int>> C_IC({{61,16}});
 const double C_IC_LSB = TWO_N29;
 const std::vector<std::pair<int,int>> OMEGA_0({{77,8},{91,24}});
@@ -158,14 +151,11 @@ const double I_DOT_LSB = PI_TWO_N43;
 
 
 // SUBFRAME 4-5
-
 const std::vector<std::pair<int,int>> SV_DATA_ID({{61,2}});
 const std::vector<std::pair<int,int>> SV_PAGE({{63,6}});
 
 // SUBFRAME 4
-
 //! \todo read all pages of subframe 4
-
 // Page 18 - Ionospheric and UTC data
 const std::vector<std::pair<int,int>> ALPHA_0({{69,8}});
 const double ALPHA_0_LSB = TWO_N30;
@@ -211,12 +201,8 @@ const std::vector<std::pair<int,int>> HEALTH_SV31({{277,6}});
 const std::vector<std::pair<int,int>> HEALTH_SV32({{283,6}});
 
 
-
-
-
 // SUBFRAME 5
 //! \todo read all pages of subframe 5
-
 
 // page 25 - Health (PRN 1 - 24)
 const std::vector<std::pair<int,int>> T_OA({{69,8}});
@@ -246,75 +232,5 @@ const std::vector<std::pair<int,int>> HEALTH_SV21({{241,6}});
 const std::vector<std::pair<int,int>> HEALTH_SV22({{247,6}});
 const std::vector<std::pair<int,int>> HEALTH_SV23({{253,6}});
 const std::vector<std::pair<int,int>> HEALTH_SV24({{259,6}});
-
-/*
-
-inline void ca_code_generator_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
-{
-
-        unsigned int G1[1023];
-        unsigned int G2[1023];
-        unsigned int G1_register[10], G2_register[10];
-        unsigned int feedback1, feedback2;
-        unsigned int lcv, lcv2;
-        unsigned int delay;
-        signed int prn = _prn-1; //Move the PRN code to fit an array indices
-
-        // G2 Delays as defined in IS-GPS-200E
-        signed int delays[32] = {5, 6, 7, 8, 17, 18, 139, 140, 141, 251,
-                252, 254, 255, 256, 257, 258, 469, 470, 471, 472,
-                473, 474, 509, 512, 513, 514, 515, 516, 859, 860,
-                861, 862};
-        // PRN sequences 33 through 37 are reserved for other uses (e.g. ground transmitters)
-
-        // A simple error check
-        if((prn < 0) || (prn > 32))
-                return;
-
-        for(lcv = 0; lcv < 10; lcv++)
-        {
-                G1_register[lcv] = 1;
-                G2_register[lcv] = 1;
-        }
-
-        // Generate G1 & G2 Register
-        for(lcv = 0; lcv < 1023; lcv++)
-        {
-                G1[lcv] = G1_register[0];
-                G2[lcv] = G2_register[0];
-
-                feedback1 = G1_register[7]^G1_register[0];
-                feedback2 = (G2_register[8] + G2_register[7] + G2_register[4] + G2_register[2] + G2_register[1] + G2_register[0]) & 0x1;
-
-                for(lcv2 = 0; lcv2 < 9; lcv2++)
-                {
-                        G1_register[lcv2] = G1_register[lcv2 + 1];
-                        G2_register[lcv2] = G2_register[lcv2 + 1];
-                }
-
-                G1_register[9] = feedback1;
-                G2_register[9] = feedback2;
-        }
-
-        // Set the delay
-        delay = 1023 - delays[prn];
-        delay += _chip_shift;
-        delay %= 1023;
-        // Generate PRN from G1 and G2 Registers
-        for(lcv = 0; lcv < 1023; lcv++)
-        {
-                _dest[lcv] = std::complex<float>(G1[(lcv +  _chip_shift)%1023]^G2[delay], 0);
-                if(_dest[lcv].real() == 0.0) //javi
-                {
-                        _dest[lcv].real(-1.0);
-                }
-                delay++;
-                delay %= 1023;
-                //std::cout<<_dest[lcv].real(); //OK
-        }
-}
-
-*/
-
 
 #endif /* GNSS_SDR_GPS_L1_CA_H_ */

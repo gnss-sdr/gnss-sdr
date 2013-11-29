@@ -1,12 +1,12 @@
 /*!
  * \file galileo_e1b_telemetry_decoder_cc.h
- * \brief Interface of a Galileo NAV message demodulator block
+ * \brief Interface of a Galileo INAV message demodulator block
  * \author Javier Arribas 2013 jarribas(at)cttc.es,
  *         Mara Branzanti 2013 mara.branzanti(at)gmail.com
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -42,7 +42,6 @@
 #include "gnuradio/trellis/interleaver.h"
 #include "gnuradio/trellis/permutation.h"
 #include "gnuradio/fec/viterbi.h"
-
 #include "gnss_satellite.h"
 #include "galileo_navigation_message.h"
 #include "galileo_ephemeris.h"
@@ -50,19 +49,13 @@
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 
-// Galileo Navigation Message structures
-#include "galileo_ephemeris.h"
-#include "galileo_iono.h"
-#include "galileo_almanac.h"
-#include "galileo_utc_model.h"
 
 
 class galileo_e1b_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e1b_telemetry_decoder_cc> galileo_e1b_telemetry_decoder_cc_sptr;
 
-galileo_e1b_telemetry_decoder_cc_sptr
-galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
+galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
     int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
 /*!

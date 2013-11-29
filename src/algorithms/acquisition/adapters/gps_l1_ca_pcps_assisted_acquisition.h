@@ -50,7 +50,7 @@ class ConfigurationInterface;
 class GpsL1CaPcpsAssistedAcquisition: public AcquisitionInterface
 {
 public:
-	GpsL1CaPcpsAssistedAcquisition(ConfigurationInterface* configuration,
+    GpsL1CaPcpsAssistedAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 

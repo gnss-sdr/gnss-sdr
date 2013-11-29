@@ -44,12 +44,12 @@
 
 class ConfigurationInterface;
 
-
+/*!
+ * \brief This class implements a code DLL + carrier PLL/FLL Assisted tracking loop
+ */
 class GpsL1CaDllFllPllTracking : public TrackingInterface
 {
-
 public:
-
   GpsL1CaDllFllPllTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
@@ -80,19 +80,13 @@ public:
 
     void set_channel(unsigned int channel);
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
-
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
-
     void start_tracking();
 
-
 private:
-
     gps_l1_ca_dll_fll_pll_tracking_cc_sptr tracking_;
     size_t item_size_;
-
     unsigned int channel_;
-
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

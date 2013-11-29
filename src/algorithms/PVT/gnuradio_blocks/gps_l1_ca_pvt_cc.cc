@@ -156,7 +156,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
 
-    for (unsigned int i=0; i<d_nchannels; i++)
+    for (unsigned int i = 0; i < d_nchannels; i++)
         {
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
@@ -169,22 +169,22 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 
     d_ls_pvt->gps_ephemeris_map = global_gps_ephemeris_map.get_map_copy();
 
-    if (global_gps_utc_model_map.size()>0)
+    if (global_gps_utc_model_map.size() > 0)
         {
             // UTC MODEL data is shared for all the GPS satellites. Read always at ID=0
-            global_gps_utc_model_map.read(0,d_ls_pvt->gps_utc_model);
+            global_gps_utc_model_map.read(0, d_ls_pvt->gps_utc_model);
         }
 
-    if (global_gps_iono_map.size()>0)
+    if (global_gps_iono_map.size() > 0)
         {
             // IONO data is shared for all the GPS satellites. Read always at ID=0
-            global_gps_iono_map.read(0,d_ls_pvt->gps_iono);
+            global_gps_iono_map.read(0, d_ls_pvt->gps_iono);
         }
 
     // update SBAS data collections
     if (global_sbas_iono_map.size() > 0)
         {
-            // SBAS ionosperic correction is shared for all the GPS satellites. Read always at ID=0
+            // SBAS ionospheric correction is shared for all the GPS satellites. Read always at ID=0
             global_sbas_iono_map.read(0, d_ls_pvt->sbas_iono);
         }
     d_ls_pvt->sbas_sat_corr_map = global_sbas_sat_corr_map.get_map_copy();
@@ -216,7 +216,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                     int gps_week = eph.i_GPS_week;
                     double gps_sec = gs.d_TOW_at_current_symbol;
 
-                    Sbas_Time_Relation time_rel(relative_rx_time,gps_week,gps_sec);
+                    Sbas_Time_Relation time_rel(relative_rx_time, gps_week, gps_sec);
                     sbas_raw_msg.relate(time_rel);
                 }
 
@@ -236,7 +236,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                 {
                     bool pvt_result;
                     pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
-                    if (pvt_result==true)
+                    if (pvt_result == true)
                         {
                             d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
                             d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
@@ -289,7 +289,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                     try
                     {
                             double tmp_double;
-                            for (unsigned int i=0; i<d_nchannels ; i++)
+                            for (unsigned int i = 0; i < d_nchannels ; i++)
                                 {
                                     tmp_double = in[i][0].Pseudorange_m;
                                     d_dump_file.write((char*)&tmp_double, sizeof(double));

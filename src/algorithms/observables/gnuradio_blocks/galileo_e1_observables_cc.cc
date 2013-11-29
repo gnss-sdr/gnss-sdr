@@ -1,6 +1,6 @@
 /*!
- * \file gps_l1_ca_observables_cc.cc
- * \brief Implementation of the pseudorange computation block for GPS L1 C/A
+ * \file galileo_e1_observables_cc.cc
+ * \brief Implementation of the pseudorange computation block for Galileo E1
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas 2013. jarribas(at)cttc.es
  *
@@ -92,10 +92,13 @@ galileo_e1_observables_cc::~galileo_e1_observables_cc()
     d_dump_file.close();
 }
 
+
+
 bool Galileo_pairCompare_gnss_synchro_Prn_delay_ms( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
 {
     return (a.second.Prn_timestamp_ms) < (b.second.Prn_timestamp_ms);
 }
+
 
 
 bool Galileo_pairCompare_gnss_synchro_d_TOW_at_current_symbol( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
@@ -108,8 +111,8 @@ bool Galileo_pairCompare_gnss_synchro_d_TOW_at_current_symbol( std::pair<int,Gns
 int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
-    Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
-    Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; //Get the output pointer
+    Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0];   // Get the input pointer
+    Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; // Get the output pointer
 
     Gnss_Synchro current_gnss_synchro[d_nchannels];
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
@@ -118,22 +121,23 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels
      */
-    for (unsigned int i=0; i<d_nchannels ; i++) //legge gli input per ogni canale e prepare i dati da riempire
+    for (unsigned int i = 0; i < d_nchannels; i++)
         {
-    	    //Copy the telemetry decoder data to local copy
+            //Copy the telemetry decoder data to local copy
             current_gnss_synchro[i] = in[i][0];
             /*
              * 1.2 Assume no valid pseudoranges
              */
             current_gnss_synchro[i].Flag_valid_pseudorange = false;
             current_gnss_synchro[i].Pseudorange_m = 0.0;
-            if (current_gnss_synchro[i].Flag_valid_word) //if this channel have valid word, ciò viene definito nel telemetry decoder
-              {
-              	//record the word structure in a map for pseudorange computation
-                current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
-              }
+            if (current_gnss_synchro[i].Flag_valid_word)
+                {
+                    //record the word structure in a map for pseudorange computation
+                    current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
+                }
         }
-     /*
+
+    /*
      * 2. Compute RAW pseudoranges using COMMON RECEPTION TIME algorithm. Use only the valid channels (channels that are tracking a satellite)
      */
     if(current_gnss_synchro_map.size() > 0)
@@ -142,37 +146,30 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
              *  2.1 Use CURRENT set of measurements and find the nearest satellite
              *  common RX time algorithm
              */
-            //;
             // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
-    	      gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), Galileo_pairCompare_gnss_synchro_d_TOW_at_current_symbol);
-              double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
-              double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
-              //int reference_channel= gnss_synchro_iter->second.Channel_ID;
+            gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), Galileo_pairCompare_gnss_synchro_d_TOW_at_current_symbol);
+            double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
+            double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
+            //int reference_channel= gnss_synchro_iter->second.Channel_ID;
 
-              // Now compute RX time differences due to the PRN alignement in the correlators
-              double traveltime_ms;
-              double pseudorange_m;
-              double delta_rx_time_ms;
-              for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
-              {
-            	// compute the required symbol history shift in order to match the reference symbol
-            	delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms-d_ref_PRN_rx_time_ms;
-            	//std::cout<<"delta_rx_time_ms["<<gnss_synchro_iter->second.Channel_ID<<"]="<<delta_rx_time_ms<<std::endl;
-            	//std::cout<<"d_TOW_at_current_symbol["<<gnss_synchro_iter->second.Channel_ID<<"]="<<gnss_synchro_iter->second.d_TOW_at_current_symbol<<std::endl;
-            	//compute the pseudorange
-            	traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GALILEO_STARTOFFSET_ms;
-            	//std::cout<<"traveltime_ms="<<traveltime_ms<<std::endl;
-                pseudorange_m = traveltime_ms * GALILEO_C_m_ms; // [m]
-            	//std::cout<<"pseudorange_m["<<gnss_synchro_iter->second.Channel_ID<<"]="<<pseudorange_m<<std::endl;
-            	// update the pseudorange object
-                //current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000)/1000 + GALILEO_STARTOFFSET_ms/1000.0;
-              }
-
+            // Now compute RX time differences due to the PRN alignment in the correlators
+            double traveltime_ms;
+            double pseudorange_m;
+            double delta_rx_time_ms;
+            for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
+                {
+                    // compute the required symbol history shift in order to match the reference symbol
+                    delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms-d_ref_PRN_rx_time_ms;
+                    //compute the pseudorange
+                    traveltime_ms = (d_TOW_reference - gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GALILEO_STARTOFFSET_ms;
+                    pseudorange_m = traveltime_ms * GALILEO_C_m_ms; // [m]
+                    // update the pseudorange object
+                    //current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
+                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
+                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
+                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000)/1000 + GALILEO_STARTOFFSET_ms/1000.0;
+                }
         }
-
 
       if(d_dump == true)
         {
@@ -180,7 +177,7 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
             try
             {
                     double tmp_double;
-                    for (unsigned int i=0; i<d_nchannels ; i++)
+                    for (unsigned int i = 0; i < d_nchannels ; i++)
                         {
                             tmp_double = current_gnss_synchro[i].d_TOW_at_current_symbol;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
@@ -201,7 +198,7 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
         }
 
     consume_each(1); //one by one
-    for (unsigned int i=0; i<d_nchannels ; i++)
+    for (unsigned int i = 0; i < d_nchannels ; i++)
         {
             *out[i] = current_gnss_synchro[i];
         }

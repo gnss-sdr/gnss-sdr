@@ -45,11 +45,9 @@
 #include "GPS_L1_CA.h"
 #include "armadillo"
 #include "boost/date_time/posix_time/posix_time.hpp"
-
 #include "gnss_synchro.h"
 #include "gps_ephemeris.h"
 #include "gps_utc_model.h"
-
 #include "sbas_telemetry_data.h"
 #include "sbas_ionospheric_correction.h"
 #include "sbas_satellite_correction.h"
@@ -68,23 +66,21 @@ private:
     void topocent(double *Az, double *El, double *D, arma::vec x, arma::vec dx);
     void togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
 public:
-    int d_nchannels;      //! Number of available channels for positioning
-    int d_valid_observations; //! Number of valid pseudorange observations (valid satellites)
-    int d_visible_satellites_IDs[PVT_MAX_CHANNELS]; //! Array with the IDs of the valid satellites
-    double d_visible_satellites_El[PVT_MAX_CHANNELS]; //! Array with the LOS Elevation of the valid satellites
-    double d_visible_satellites_Az[PVT_MAX_CHANNELS]; //! Array with the LOS Azimuth of the valid satellites
-    double d_visible_satellites_Distance[PVT_MAX_CHANNELS]; //! Array with the LOS Distance of the valid satellites
-    double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS]; //! Array with the IDs of the valid satellites
+    int d_nchannels;                                        //!< Number of available channels for positioning
+    int d_valid_observations;                               //!< Number of valid pseudorange observations (valid satellites)
+    int d_visible_satellites_IDs[PVT_MAX_CHANNELS];         //!< Array with the IDs of the valid satellites
+    double d_visible_satellites_El[PVT_MAX_CHANNELS];       //!< Array with the LOS Elevation of the valid satellites
+    double d_visible_satellites_Az[PVT_MAX_CHANNELS];       //!< Array with the LOS Azimuth of the valid satellites
+    double d_visible_satellites_Distance[PVT_MAX_CHANNELS]; //!< Array with the LOS Distance of the valid satellites
+    double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS];   //!< Array with the IDs of the valid satellites
 
     Gps_Navigation_Message* d_ephemeris;
 
     // new ephemeris storage
-    std::map<int,Gps_Ephemeris> gps_ephemeris_map;
-    // new utc_model storage
+    std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new Gps_Ephemeris
     Gps_Utc_Model gps_utc_model;
-    // new iono storage
     Gps_Iono gps_iono;
-    // new SBAS storage
+
     Sbas_Ionosphere_Correction sbas_iono;
     std::map<int,Sbas_Satellite_Correction> sbas_sat_corr_map;
     std::map<int,Sbas_Ephemeris> sbas_ephemeris_map;
@@ -94,26 +90,24 @@ public:
 
     bool b_valid_position;
 
-    double d_latitude_d;  //! Latitude in degrees
-    double d_longitude_d; //! Longitude in degrees
-    double d_height_m;    //! Height [m]
+    double d_latitude_d;  //!< Latitude in degrees
+    double d_longitude_d; //!< Longitude in degrees
+    double d_height_m;    //!< Height [m]
 
     //averaging
     std::deque<double> d_hist_latitude_d;
     std::deque<double> d_hist_longitude_d;
     std::deque<double> d_hist_height_m;
-    int d_averaging_depth;    //! Length of averaging window
-
-    double d_avg_latitude_d;  //! Averaged latitude in degrees
-    double d_avg_longitude_d; //! Averaged longitude in degrees
-    double d_avg_height_m;    //! Averaged height [m]
+    int d_averaging_depth;    //!< Length of averaging window
+    double d_avg_latitude_d;  //!< Averaged latitude in degrees
+    double d_avg_longitude_d; //!< Averaged longitude in degrees
+    double d_avg_height_m;    //!< Averaged height [m]
 
     double d_x_m;
     double d_y_m;
     double d_z_m;
 
     // DOP estimations
-
     arma::mat d_Q;
     double d_GDOP;
     double d_PDOP;

@@ -45,7 +45,6 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
-//#include "math.h"
 #include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -78,11 +77,13 @@ galileo_e1_dll_pll_veml_make_tracking_cc(
             fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, very_early_late_space_chips));
 }
 
+
 void galileo_e1_dll_pll_veml_tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
     ninput_items_required[0] = (int)d_vector_length*2; //set the required available samples in each call
 }
+
 
 galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
         long if_freq,
@@ -123,7 +124,6 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
     d_ca_code = new gr_complex[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS + 4)];
 
-
     /* If an array is partitioned for more than one thread to operate on,
      * having the sub-array boundaries unaligned to cache lines could lead
      * to performance degradation. Here we allocate memory
@@ -144,7 +144,6 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     if (posix_memalign((void**)&d_Prompt, 16, sizeof(gr_complex)) == 0){};
     if (posix_memalign((void**)&d_Late, 16, sizeof(gr_complex)) == 0){};
     if (posix_memalign((void**)&d_Very_Late, 16, sizeof(gr_complex)) == 0){};
-
 
     //--- Initializations ------------------------------
     // Initial code frequency basis of NCO
@@ -183,16 +182,21 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
     d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
     // DLL/PLL filter initialization
-    d_carrier_loop_filter.initialize(); //initialize the carrier filter
-    d_code_loop_filter.initialize(); //initialize the code filter
+    d_carrier_loop_filter.initialize(); // initialize the carrier filter
+    d_code_loop_filter.initialize();    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 2 (2 samples per chip)
-    galileo_e1_code_gen_complex_sampled(&d_ca_code[2],d_acquisition_gnss_synchro->Signal, false, d_acquisition_gnss_synchro->PRN, 2*Galileo_E1_CODE_CHIP_RATE_HZ, 0);
+    galileo_e1_code_gen_complex_sampled(&d_ca_code[2],
+                                        d_acquisition_gnss_synchro->Signal,
+                                        false,
+                                        d_acquisition_gnss_synchro->PRN,
+                                        2*Galileo_E1_CODE_CHIP_RATE_HZ,
+                                        0);
     // Fill head and tail
     d_ca_code[0] = d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS)];
-    d_ca_code[1] = d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS+1)];
-    d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS+2)] = d_ca_code[2];
-    d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS+3)] = d_ca_code[3];
+    d_ca_code[1] = d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS + 1)];
+    d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS + 2)] = d_ca_code[2];
+    d_ca_code[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS + 3)] = d_ca_code[3];
 
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0.0;
@@ -204,18 +208,19 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
     d_current_prn_length_samples = d_vector_length;
 
     std::string sys_ = &d_acquisition_gnss_synchro->System;
-    sys = sys_.substr(0,1);
+    sys = sys_.substr(0, 1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    DLOG(INFO) << "Start tracking for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << " received" << std::endl;
+    std::cout << "Tracking start on channel " << d_channel
+              << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    DLOG(INFO) << "Start tracking for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << " received";
 
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
 
     std::cout << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
-            << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples << std::endl;
+              << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples << std::endl;
 }
 
 
@@ -243,7 +248,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
 
     epl_loop_length_samples = d_current_prn_length_samples + very_early_late_spc_samples*2;
 
-    for (int i=0; i<epl_loop_length_samples; i++)
+    for (int i = 0; i < epl_loop_length_samples; i++)
         {
             associated_chip_index = 2 + round(fmod(tcode_half_chips - 2*d_very_early_late_spc_chips, code_length_half_chips));
             d_very_early_code[i] = d_ca_code[associated_chip_index];
@@ -356,11 +361,11 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
             // New code Doppler frequency estimation
             d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ + ((d_carrier_doppler_hz * Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ);
-            //carrier phase accumulator for (K) doppler estimation
-            d_acc_carrier_phase_rad=d_acc_carrier_phase_rad+GPS_TWO_PI*d_carrier_doppler_hz*Galileo_E1_CODE_PERIOD;
-            //remanent carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad=d_rem_carr_phase_rad+GPS_TWO_PI*d_carrier_doppler_hz*Galileo_E1_CODE_PERIOD;
-            d_rem_carr_phase_rad=fmod(d_rem_carr_phase_rad,GPS_TWO_PI);
+            //carrier phase accumulator for (K) Doppler estimation
+            d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
+            //remnant carrier phase to prevent overflow in the code NCO
+            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI* d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
+            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
 
             // ################## DLL ##########################################################
             // DLL discriminator
@@ -369,9 +374,9 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
             //Code phase accumulator
             float code_error_filt_secs;
-            code_error_filt_secs=(Galileo_E1_CODE_PERIOD*code_error_filt_chips)/Galileo_E1_CODE_CHIP_RATE_HZ; //[seconds]
+            code_error_filt_secs = (Galileo_E1_CODE_PERIOD * code_error_filt_chips) / Galileo_E1_CODE_CHIP_RATE_HZ; //[seconds]
             //code_error_filt_secs=T_prn_seconds*code_error_filt_chips*T_chip_seconds*(float)d_fs_in; //[seconds]
-            d_acc_code_phase_secs=d_acc_code_phase_secs+code_error_filt_secs;
+            d_acc_code_phase_secs = d_acc_code_phase_secs  + code_error_filt_secs;
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
             // keep alignment parameters for the next input buffer
@@ -440,32 +445,29 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             *out[0] = current_synchro_data;
+
             // ########## DEBUG OUTPUT
             /*!
              *  \todo The stop timer has to be moved to the signal source!
              */
-        	// stream to collect cout calls to improve thread safety
-        	std::stringstream tmp_str_stream;
-			if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-				{
-					d_last_seg = floor(d_sample_counter / d_fs_in);
+            // stream to collect cout calls to improve thread safety
+            std::stringstream tmp_str_stream;
+            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+                {
+                    d_last_seg = floor(d_sample_counter / d_fs_in);
 
-					if (d_channel == 0)
-					{
-						// debug: Second counter in channel 0
-						tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-						std::cout << tmp_str_stream.rdbuf() << std::flush;
-					}
+                    if (d_channel == 0)
+                        {
+                            // debug: Second counter in channel 0
+                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
+                            std::cout << tmp_str_stream.rdbuf() << std::flush;
+                        }
 
-					tmp_str_stream << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-									   << ", Doppler="<<d_carrier_doppler_hz<<" [Hz] CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
-					std::cout << tmp_str_stream.rdbuf() << std::flush;
-
-					//std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
-					//if (d_channel == 0 || d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
-				}
-
-
+                    tmp_str_stream << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+                                   << ", Doppler=" << d_carrier_doppler_hz << " [Hz] CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                    std::cout << tmp_str_stream.rdbuf() << std::flush;
+                    //if (d_channel == 0 || d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
+                }
         }
     else
         {
@@ -492,7 +494,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             tmp_P = std::abs<float>(*d_Prompt);
             tmp_L = std::abs<float>(*d_Late);
             tmp_VL = std::abs<float>(*d_Very_Late);
-            //std::cout<<"VE="<<tmp_VE<<",E="<<tmp_E<<",L="<<tmp_L<<",VL="<<tmp_VL<<std::endl;
 
             try
             {

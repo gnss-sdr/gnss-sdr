@@ -114,20 +114,19 @@ private:
         void reset();
         /*
          * samples length must be a multiple of two
-         * for block operation the
+         * for block operation
          */
        bool get_symbols(const std::vector<double> samples, std::vector<double> &symbols);
     private:
         int d_n_smpls_in_history ;
         double d_iir_par;
-
         double d_corr_paired;
         double d_corr_shifted;
         bool d_aligned;
         double d_past_sample;
     } d_sample_aligner;
 
-    // helper class for symbol alignment and viterbi decoding
+    // helper class for symbol alignment and Viterbi decoding
     class symbol_aligner_and_decoder
     {
     public:
@@ -140,7 +139,6 @@ private:
         Viterbi_Decoder * d_vd1;
         Viterbi_Decoder * d_vd2;
         double d_past_symbol;
-
     } d_symbol_aligner_and_decoder;
 
 

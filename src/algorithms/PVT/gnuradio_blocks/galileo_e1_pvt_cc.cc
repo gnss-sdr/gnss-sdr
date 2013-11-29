@@ -1,10 +1,11 @@
 /*!
  * \file galileo_e1_pvt_cc.cc
  * \brief Implementation of a Position Velocity and Time computation block for GPS L1 C/A
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \author Javier Arribas, 2013. jarribas(at)cttc.es
+ *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -57,8 +58,8 @@ galileo_e1_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> 
 
 
 galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname) :
-		                		        gr::block("galileo_e1_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
-		                		                gr::io_signature::make(1, 1, sizeof(gr_complex)))
+		                		                gr::block("galileo_e1_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
+		                		                        gr::io_signature::make(1, 1, sizeof(gr_complex)))
 {
 
     d_output_rate_ms = output_rate_ms;
@@ -83,7 +84,7 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
     d_averaging_depth = averaging_depth;
     d_flag_averaging = flag_averaging;
 
-    d_ls_pvt = new galileo_e1_ls_pvt(nchannels,dump_ls_pvt_filename,d_dump);
+    d_ls_pvt = new galileo_e1_ls_pvt(nchannels, dump_ls_pvt_filename, d_dump);
     d_ls_pvt->set_averaging_depth(d_averaging_depth);
 
     d_sample_counter = 0;
@@ -140,7 +141,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
 
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
 
-    for (unsigned int i=0; i<d_nchannels; i++)
+    for (unsigned int i = 0; i < d_nchannels; i++)
         {
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
@@ -151,25 +152,25 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
 
     // ############ 1. READ EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
 
-    if (global_galileo_ephemeris_map.size()>0)
-    {
-    	d_ls_pvt->galileo_ephemeris_map = global_galileo_ephemeris_map.get_map_copy();
-    }
-
-    if (global_galileo_utc_model_map.size()>0)
+    if (global_galileo_ephemeris_map.size() > 0)
         {
-            // UTC MODEL data is shared for all the Galileo satellites. Read always at ID=0
-            global_galileo_utc_model_map.read(0,d_ls_pvt->galileo_utc_model);
+            d_ls_pvt->galileo_ephemeris_map = global_galileo_ephemeris_map.get_map_copy();
         }
 
-    if (global_galileo_iono_map.size()>0)
+    if (global_galileo_utc_model_map.size() > 0)
+        {
+            // UTC MODEL data is shared for all the Galileo satellites. Read always at ID=0
+            global_galileo_utc_model_map.read(0, d_ls_pvt->galileo_utc_model);
+        }
+
+    if (global_galileo_iono_map.size() > 0)
         {
             // IONO data is shared for all the Galileo satellites. Read always at ID=0
-    		global_galileo_iono_map.read(0,d_ls_pvt->galileo_iono);
+            global_galileo_iono_map.read(0, d_ls_pvt->galileo_iono);
         }
 
     // ############ 2 COMPUTE THE PVT ################################
-    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() >0)
+    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0)
         {
             // compute on the fly PVT solution
             if ((d_sample_counter % d_output_rate_ms) == 0)
@@ -178,39 +179,39 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                     pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
 
 
-                    if (pvt_result==true)
+                    if (pvt_result == true)
                         {
                             d_kml_dump.print_position_galileo(d_ls_pvt, d_flag_averaging);
-                    //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
-//                            d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
-//
-//                            if (!b_rinex_header_writen) //  & we have utc data in nav message!
-//                                {
-//                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
-//                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
-//                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
-//                                        {
-//                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second,d_rx_time);
-//                                            rp->rinex_nav_header(rp->navFile,d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
-//                                            b_rinex_header_writen = true; // do not write header anymore
-//                                        }
-//                                }
-//                            if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
-//                                {
-//                                    // Limit the RINEX navigation output rate to 1/6 seg
-//                                    // Notice that d_sample_counter period is 1ms (for GPS correlators)
-//                                    if ((d_sample_counter-d_last_sample_nav_output)>=6000)
-//                                        {
-//                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
-//                                            d_last_sample_nav_output=d_sample_counter;
-//                                        }
-//                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
-//                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
-//                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
-//                                        {
-//                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
-//                                        }
-//                                }
+                            //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
+                            //                            d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
+                            //
+                            //                            if (!b_rinex_header_writen) //  & we have utc data in nav message!
+                            //                                {
+                            //                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                            //                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                            //                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                            //                                        {
+                            //                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second,d_rx_time);
+                            //                                            rp->rinex_nav_header(rp->navFile,d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
+                            //                                            b_rinex_header_writen = true; // do not write header anymore
+                            //                                        }
+                            //                                }
+                            //                            if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
+                            //                                {
+                            //                                    // Limit the RINEX navigation output rate to 1/6 seg
+                            //                                    // Notice that d_sample_counter period is 1ms (for GPS correlators)
+                            //                                    if ((d_sample_counter-d_last_sample_nav_output)>=6000)
+                            //                                        {
+                            //                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
+                            //                                            d_last_sample_nav_output=d_sample_counter;
+                            //                                        }
+                            //                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                            //                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                            //                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                            //                                        {
+                            //                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                            //                                        }
+                            //                                }
                         }
                 }
 
@@ -226,13 +227,14 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                     d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP <<
                     " GDOP = " << d_ls_pvt->d_GDOP <<std::endl;
                 }
-//            // MULTIPLEXED FILE RECORDING - Record results to file
+
+            // MULTIPLEXED FILE RECORDING - Record results to file
             if(d_dump == true)
                 {
                     try
                     {
                             double tmp_double;
-                            for (unsigned int i=0; i<d_nchannels ; i++)
+                            for (unsigned int i = 0; i < d_nchannels; i++)
                                 {
                                     tmp_double = in[i][0].Pseudorange_m;
                                     d_dump_file.write((char*)&tmp_double, sizeof(double));

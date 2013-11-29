@@ -50,10 +50,9 @@
 #include "tcp_communication.h"
 
 
-
 class Galileo_E1_Tcp_Connector_Tracking_cc;
-typedef boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc>
-        galileo_e1_tcp_connector_tracking_cc_sptr;
+
+typedef boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc> galileo_e1_tcp_connector_tracking_cc_sptr;
 
 galileo_e1_tcp_connector_tracking_cc_sptr
 galileo_e1_tcp_connector_make_tracking_cc(long if_freq,
@@ -75,7 +74,6 @@ galileo_e1_tcp_connector_make_tracking_cc(long if_freq,
 class Galileo_E1_Tcp_Connector_Tracking_cc: public gr::block
 {
 public:
-
     ~Galileo_E1_Tcp_Connector_Tracking_cc();
 
     void set_channel(unsigned int channel);
@@ -83,15 +81,11 @@ public:
     void start_tracking();
     void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
-
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
-
-
 private:
-
     friend galileo_e1_tcp_connector_tracking_cc_sptr
     galileo_e1_tcp_connector_make_tracking_cc(long if_freq,
             long fs_in, unsigned

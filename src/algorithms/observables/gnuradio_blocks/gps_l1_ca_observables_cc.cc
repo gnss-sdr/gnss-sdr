@@ -90,6 +90,7 @@ gps_l1_ca_observables_cc::~gps_l1_ca_observables_cc()
     d_dump_file.close();
 }
 
+
 bool pairCompare_gnss_synchro_Prn_delay_ms( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
 {
     return (a.second.Prn_timestamp_ms) < (b.second.Prn_timestamp_ms);
@@ -105,8 +106,8 @@ bool pairCompare_gnss_synchro_d_TOW_at_current_symbol( std::pair<int,Gnss_Synchr
 int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
-    Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
-    Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; //Get the output pointer
+    Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0];   // Get the input pointer
+    Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; // Get the output pointer
 
     Gnss_Synchro current_gnss_synchro[d_nchannels];
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
@@ -116,7 +117,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels
      */
-    for (unsigned int i=0; i<d_nchannels ; i++)
+    for (unsigned int i = 0; i < d_nchannels; i++)
         {
             //Copy the telemetry decoder data to local copy
             current_gnss_synchro[i] = in[i][0];
@@ -131,6 +132,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
                 }
         }
+
     /*
      * 2. Compute RAW pseudoranges using COMMON RECEPTION TIME algorithm. Use only the valid channels (channels that are tracking a satellite)
      */
@@ -140,22 +142,20 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
              *  2.1 Use CURRENT set of measurements and find the nearest satellite
              *  common RX time algorithm
              */
-            //;
             // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
             gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), pairCompare_gnss_synchro_d_TOW_at_current_symbol);
             double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
             double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
             //int reference_channel= gnss_synchro_iter->second.Channel_ID;
 
-            // Now compute RX time differences due to the PRN alignement in the correlators
+            // Now compute RX time differences due to the PRN alignment in the correlators
             double traveltime_ms;
             double pseudorange_m;
             double delta_rx_time_ms;
             for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
             {
             	// compute the required symbol history shift in order to match the reference symbol
-            	delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms-d_ref_PRN_rx_time_ms;
-            	//std::cout<<"delta_rx_time_ms="<<delta_rx_time_ms<<std::endl;
+            	delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms - d_ref_PRN_rx_time_ms;
             	//compute the pseudorange
             	traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
             	pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
@@ -167,14 +167,13 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             }
         }
 
-
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
             try
             {
                     double tmp_double;
-                    for (unsigned int i=0; i<d_nchannels ; i++)
+                    for (unsigned int i = 0; i < d_nchannels; i++)
                         {
                             tmp_double = current_gnss_synchro[i].d_TOW_at_current_symbol;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
@@ -195,10 +194,10 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
         }
 
     consume_each(1); //one by one
-    for (unsigned int i=0; i<d_nchannels ; i++)
+    for (unsigned int i = 0; i < d_nchannels; i++)
         {
             *out[i] = current_gnss_synchro[i];
         }
-    return 1; //Output the observables
+    return 1; // Output the observables
 }
 

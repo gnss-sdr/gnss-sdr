@@ -36,7 +36,6 @@
 
 #include "gnss_synchro.h"
 #include "gps_l1_ca_dll_fll_pll_tracking_cc.h"
-//#include "gnss_signal_processing.h"
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "tracking_discriminators.h"
@@ -48,7 +47,6 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
-//#include "math.h"
 #include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -65,11 +63,10 @@
 
 using google::LogMessage;
 
-gps_l1_ca_dll_fll_pll_tracking_cc_sptr
-gps_l1_ca_dll_fll_pll_make_tracking_cc(
-		long if_freq,
-		long fs_in,
-		unsigned
+gps_l1_ca_dll_fll_pll_tracking_cc_sptr gps_l1_ca_dll_fll_pll_make_tracking_cc(
+        long if_freq,
+        long fs_in,
+        unsigned
         int vector_length,
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump, std::string dump_filename,
@@ -122,7 +119,7 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
     d_dump_filename = dump_filename;
 
     // Initialize tracking variables ==========================================
-    d_carrier_loop_filter.set_params(fll_bw_hz,pll_bw_hz,order);
+    d_carrier_loop_filter.set_params(fll_bw_hz, pll_bw_hz,order);
 
     d_code_loop_filter = Tracking_2nd_DLL_filter(GPS_L1_CA_CODE_PERIOD);
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
@@ -142,7 +139,6 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
     if (posix_memalign((void**)&d_prompt_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
     // space for carrier wipeoff and signal baseband vectors
     if (posix_memalign((void**)&d_carr_sign, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
-    // correlator outputs (scalar)
     if (posix_memalign((void**)&d_Early, 16, sizeof(gr_complex)) == 0){};
     if (posix_memalign((void**)&d_Prompt, 16, sizeof(gr_complex)) == 0){};
     if (posix_memalign((void**)&d_Late, 16, sizeof(gr_complex)) == 0){};
@@ -151,11 +147,8 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
     d_sample_counter = 0;
     d_acq_sample_stamp = 0;
     d_last_seg = 0;// this is for debug output only
-
-    d_code_phase_samples=0;
-
+    d_code_phase_samples = 0;
     d_enable_tracking = false;
-
     d_current_prn_length_samples = (int)d_vector_length;
 
     // CN0 estimation and lock detector buffers
@@ -181,7 +174,6 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::start_tracking()
     /*
      *  correct the code phase according to the delay between acq and trk
      */
-
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
@@ -251,13 +243,8 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::start_tracking()
     d_enable_tracking = true;
 
     std::cout << "PULL-IN Doppler [Hz]= " << d_carrier_doppler_hz
-            << " Code Phase correction [samples]=" << delay_correction_samples
-            << " PULL-IN Code Phase [samples]= " << d_acq_code_phase_samples << std::endl;
-
-
-
-
-
+              << " Code Phase correction [samples]=" << delay_correction_samples
+              << " PULL-IN Code Phase [samples]= " << d_acq_code_phase_samples << std::endl;
 }
 
 
@@ -279,12 +266,12 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_code()
     // unified loop for E, P, L code vectors
     tcode_chips = -rem_code_phase_chips;
     // Alternative EPL code generation (40% of speed improvement!)
-    early_late_spc_samples=round(d_early_late_spc_chips/code_phase_step_chips);
-    epl_loop_length_samples=d_current_prn_length_samples+early_late_spc_samples*2;
-    for (int i=0; i<epl_loop_length_samples; i++)
+    early_late_spc_samples = round(d_early_late_spc_chips/code_phase_step_chips);
+    epl_loop_length_samples = d_current_prn_length_samples + early_late_spc_samples*2;
+    for (int i = 0; i < epl_loop_length_samples; i++)
     {
     	associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
-    	d_early_code[i]=d_ca_code[associated_chip_index];
+    	d_early_code[i] = d_ca_code[associated_chip_index];
     	tcode_chips = tcode_chips + code_phase_step_chips;
     }
 
@@ -309,7 +296,7 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_code()
 
 void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_carrier()
 {
-	double phase, phase_step;
+    double phase, phase_step;
     phase_step = GPS_TWO_PI * d_carrier_doppler_hz / d_fs_in;
     phase = d_rem_carr_phase;
     for(int i = 0; i < d_current_prn_length_samples; i++)
@@ -340,31 +327,27 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc()
 
 
 
-/* Tracking signal processing
- * Notice that this is a class derived from gr_sync_decimator, so each of the ninput_items has vector_length samples
- */
 
 int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-
     double code_error_chips = 0;
-    double code_error_filt_chips =0;
+    double code_error_filt_chips = 0;
     double correlation_time_s = 0;
     double PLL_discriminator_hz = 0;
     double carr_nco_hz = 0;
     // get the sample in and out pointers
-    const gr_complex* in = (gr_complex*) input_items[0]; //block input samples pointer
-    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];         //block output streams pointer
+    const gr_complex* in = (gr_complex*) input_items[0];     // block input samples pointer
+    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; // block output streams pointer
 
     d_Prompt_prev = *d_Prompt; // for the FLL discriminator
 
     if (d_enable_tracking == true)
         {
-			// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-			Gnss_Synchro current_synchro_data;
-			// Fill the acquisition data
-			current_synchro_data=*d_acquisition_gnss_synchro;
+            // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+            Gnss_Synchro current_synchro_data;
+            // Fill the acquisition data
+            current_synchro_data = *d_acquisition_gnss_synchro;
             /*
              * Receiver signal alignment
              */
@@ -381,20 +364,19 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     d_pull_in = false;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
 
-    				// make an output to not stop the rest of the processing blocks
-    	            current_synchro_data.Prompt_I=0.0;
-    	            current_synchro_data.Prompt_Q=0.0;
-    	            current_synchro_data.Tracking_timestamp_secs=(double)d_sample_counter/d_fs_in;
-    	            current_synchro_data.Carrier_phase_rads=0.0;
-    	            current_synchro_data.Code_phase_secs=0.0;
-    	            current_synchro_data.CN0_dB_hz=0.0;
-    	            current_synchro_data.Flag_valid_tracking=false;
+                    // make an output to not stop the rest of the processing blocks
+                    current_synchro_data.Prompt_I = 0.0;
+                    current_synchro_data.Prompt_Q = 0.0;
+                    current_synchro_data.Tracking_timestamp_secs = (double)d_sample_counter/d_fs_in;
+                    current_synchro_data.Carrier_phase_rads = 0.0;
+                    current_synchro_data.Code_phase_secs = 0.0;
+                    current_synchro_data.CN0_dB_hz = 0.0;
+                    current_synchro_data.Flag_valid_tracking = false;
 
-    	            *out[0] =current_synchro_data;
+                    *out[0] = current_synchro_data;
 
                     return 1;
                 }
-
 
             update_local_code();
             update_local_carrier();
@@ -412,33 +394,33 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     is_unaligned());
             // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
             if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true )// or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
-			{
-				const int samples_available = ninput_items[0];
-				d_sample_counter = d_sample_counter + samples_available;
-				LOG_AT_LEVEL(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
-				consume_each(samples_available);
+                {
+                    const int samples_available = ninput_items[0];
+                    d_sample_counter = d_sample_counter + samples_available;
+                    LOG_AT_LEVEL(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
+                    consume_each(samples_available);
 
-				// make an output to not stop the rest of the processing blocks
-	            current_synchro_data.Prompt_I=0.0;
-	            current_synchro_data.Prompt_Q=0.0;
-	            current_synchro_data.Tracking_timestamp_secs=(double)d_sample_counter/d_fs_in;
-	            current_synchro_data.Carrier_phase_rads=0.0;
-	            current_synchro_data.Code_phase_secs=0.0;
-	            current_synchro_data.CN0_dB_hz=0.0;
-	            current_synchro_data.Flag_valid_tracking=false;
+                    // make an output to not stop the rest of the processing blocks
+                    current_synchro_data.Prompt_I = 0.0;
+                    current_synchro_data.Prompt_Q = 0.0;
+                    current_synchro_data.Tracking_timestamp_secs = (double)d_sample_counter/d_fs_in;
+                    current_synchro_data.Carrier_phase_rads = 0.0;
+                    current_synchro_data.Code_phase_secs = 0.0;
+                    current_synchro_data.CN0_dB_hz = 0.0;
+                    current_synchro_data.Flag_valid_tracking = false;
 
-	            *out[0] =current_synchro_data;
+                    *out[0] =current_synchro_data;
 
-				return 1;
-			}
+                    return 1;
+                }
 
             /*
              * DLL, FLL, and PLL discriminators
              */
             // Compute DLL error
-            code_error_chips = dll_nc_e_minus_l_normalized(*d_Early,*d_Late);
+            code_error_chips = dll_nc_e_minus_l_normalized(*d_Early, *d_Late);
             // Compute DLL filtered error
-            code_error_filt_chips=d_code_loop_filter.get_code_nco(code_error_chips);
+            code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips);
 
             //compute FLL error
             correlation_time_s = ((double)d_current_prn_length_samples) / d_fs_in;
@@ -462,7 +444,6 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
              */
             carr_nco_hz = d_carrier_loop_filter.get_carrier_error(d_FLL_discriminator_hz, PLL_discriminator_hz, correlation_time_s);
             d_carrier_doppler_hz = d_if_freq + carr_nco_hz;
-
 
             d_code_freq_hz = GPS_L1_CA_CODE_RATE_HZ + (((d_carrier_doppler_hz + d_if_freq) * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);
 
@@ -495,11 +476,12 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                         {
                             std::cout << "Channel " << d_channel << " loss of lock!" << std::endl;
-                        	ControlMessageFactory* cmf = new ControlMessageFactory();
-                        	if (d_queue != gr::msg_queue::sptr()) {
-                        		d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-                        	}
-                        	delete cmf;
+                            ControlMessageFactory* cmf = new ControlMessageFactory();
+                            if (d_queue != gr::msg_queue::sptr())
+                                {
+                                    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
+                                }
+                            delete cmf;
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }
@@ -564,7 +546,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             *d_Prompt = gr_complex(0,0);
             *d_Late   = gr_complex(0,0);
             Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
-            *out[0]=*d_acquisition_gnss_synchro;
+            *out[0] = *d_acquisition_gnss_synchro;
         }
 
 
@@ -578,9 +560,9 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             double tmp_double;
             prompt_I = (*d_Prompt).real();
             prompt_Q = (*d_Prompt).imag();
-            tmp_E=std::abs<float>(*d_Early);
-            tmp_P=std::abs<float>(*d_Prompt);
-            tmp_L=std::abs<float>(*d_Late);
+            tmp_E = std::abs<float>(*d_Early);
+            tmp_P = std::abs<float>(*d_Prompt);
+            tmp_L = std::abs<float>(*d_Late);
             try
             {
                     // EPR
@@ -591,40 +573,39 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     d_dump_file.write((char*)&prompt_I, sizeof(float));
                     d_dump_file.write((char*)&prompt_Q, sizeof(float));
                     // PRN start sample stamp
-                    //tmp_float=(float)d_sample_counter;
                     d_dump_file.write((char*)&d_sample_counter, sizeof(unsigned long int));
                     // accumulated carrier phase
-                    tmp_float=(float)d_acc_carrier_phase_rad;
+                    tmp_float = (float)d_acc_carrier_phase_rad;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
 
                     // carrier and code frequency
-                    tmp_float=(float)d_carrier_doppler_hz;
+                    tmp_float = (float)d_carrier_doppler_hz;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    tmp_float=(float)d_code_freq_hz;
+                    tmp_float = (float)d_code_freq_hz;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
 
                     //PLL commands
-                    tmp_float=(float)PLL_discriminator_hz;
+                    tmp_float = (float)PLL_discriminator_hz;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    tmp_float=(float)carr_nco_hz;
+                    tmp_float = (float)carr_nco_hz;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
 
                     //DLL commands
-                    tmp_float=(float)code_error_chips;
+                    tmp_float = (float)code_error_chips;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    tmp_float=(float)code_error_filt_chips;
+                    tmp_float = (float)code_error_filt_chips;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
 
                     // CN0 and carrier lock test
-                    tmp_float=(float)d_CN0_SNV_dB_Hz;
+                    tmp_float = (float)d_CN0_SNV_dB_Hz;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    tmp_float=(float)d_carrier_lock_test;
+                    tmp_float = (float)d_carrier_lock_test;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
 
                     // AUX vars (for debug purposes)
                     tmp_float = (float)d_rem_code_phase_samples;
                     d_dump_file.write((char*)&tmp_float, sizeof(float));
-                    tmp_double=(double)(d_sample_counter+d_current_prn_length_samples);
+                    tmp_double = (double)(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
             catch (std::ifstream::failure e)
@@ -632,7 +613,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     std::cout << "Exception writing trk dump file "<< e.what() << std::endl;
             }
         }
-    consume_each(d_current_prn_length_samples); // this is necesary in gr_block derivates
+    consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }

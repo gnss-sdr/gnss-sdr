@@ -31,7 +31,6 @@
 
 #include "viterbi_decoder.h"
 #include <iostream>
-
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 
@@ -47,8 +46,8 @@
 
 Viterbi_Decoder::Viterbi_Decoder(const int g_encoder[], const int KK, const int nn)
 {
-    d_nn = nn; //Coding rate 1/n
-    d_KK = KK; //Constraint Length
+    d_nn = nn; // Coding rate 1/n
+    d_KK = KK; // Constraint Length
 
     // derived code properties
     d_mm = d_KK - 1;
@@ -97,7 +96,7 @@ void Viterbi_Decoder::reset()
  Description: Uses the Viterbi algorithm to perform hard-decision decoding of a convolutional code.
  Input parameters:
  r[]	The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
- LL	The number of data bits to be decoded (doen't inlcude the mm zero-tail-bits)
+ LL	The number of data bits to be decoded (doesn't include the mm zero-tail-bits)
  Output parameters:
  output_u_int[]	Hard decisions on the data bits (without the mm zero-tail-bits)
  */
@@ -141,12 +140,10 @@ float Viterbi_Decoder::decode_continuous(const double sym[],
     // since it depends on the future values -> traceback, but don't decode
     state = do_traceback(traceback_depth);
     // traceback and decode
-    decoding_length_mismatch = do_tb_and_decode(traceback_depth, nbits_requested, state,  bits,
-            d_indicator_metric);
+    decoding_length_mismatch = do_tb_and_decode(traceback_depth, nbits_requested, state,  bits, d_indicator_metric);
     nbits_decoded = nbits_requested + decoding_length_mismatch;
 
-    VLOG(FLOW) << "decoding length mismatch (continuous decoding): "
-            << decoding_length_mismatch;
+    VLOG(FLOW) << "decoding length mismatch (continuous decoding): " << decoding_length_mismatch;
 
     return d_indicator_metric;
 }
@@ -332,8 +329,6 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
     indicator_metric = 0;
     for (it = d_trellis_paths.begin() + traceback_length + overstep_length; it < d_trellis_paths.end(); ++it)
         {
-            //VLOG(SAMPLE)<< "@t_out=" << t_out;
-            //VLOG(SAMPLE) << "tb&dec: @t=" << it->get_t() << " bit=" << it->get_bit_of_current_state(state) << " bm=" << it->get_metric_of_current_state(state);
             if(it - (d_trellis_paths.begin() + traceback_length + overstep_length) < n_of_branches_for_indicator_metric)
                 {
                     n_im++;

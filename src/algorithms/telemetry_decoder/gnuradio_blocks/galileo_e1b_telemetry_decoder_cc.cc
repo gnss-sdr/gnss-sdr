@@ -62,7 +62,7 @@ galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, lo
 
 void galileo_e1b_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
 {
-    ninput_items_required[0] = GALILEO_INAV_PAGE_SYMBOLS; //set the required sample history
+    ninput_items_required[0] = GALILEO_INAV_PAGE_SYMBOLS; // set the required sample history
 }
 
 
@@ -73,13 +73,13 @@ void galileo_e1b_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols
     int nn, KK, mm, max_states;
     int g_encoder[2];
 
-    nn = 2; //Coding rate 1/n
-    KK = 7; //Constraint Length
+    nn = 2;             // Coding rate 1/n
+    KK = 7;             // Constraint Length
     g_encoder[0] = 121; // Polynomial G1
-    g_encoder[1] = 91; // Polinomial G2
+    g_encoder[1] = 91;  // Polynomial G2
 
     mm = KK - 1;
-    max_states = 1 << mm;			/* 2^mm */
+    max_states = 1 << mm; /* 2^mm */
     DataLength = (CodeLength/nn) - mm;
 
     /* create appropriate transition matrices */
@@ -92,9 +92,8 @@ void galileo_e1b_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols
     nsc_transit( out0, state0, 0, g_encoder, KK, nn );
     nsc_transit( out1, state1, 1, g_encoder, KK, nn );
 
-    Viterbi( page_part_bits, out0, state0, out1, state1,
+    Viterbi(page_part_bits, out0, state0, out1, state1,
             page_part_symbols, KK, nn, DataLength );
-
 
     /* Clean up memory */
     free( out0 );

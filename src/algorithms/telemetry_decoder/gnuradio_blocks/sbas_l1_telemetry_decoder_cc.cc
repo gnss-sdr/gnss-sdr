@@ -149,7 +149,7 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int
                     it != valid_msgs.end(); ++it)
                 {
                     int message_sample_offset =
-                            (sample_alignment?0:-1)
+                            (sample_alignment ? 0 : -1)
                             + d_samples_per_symbol*(symbol_alignment ? -1 : 0)
                             + d_samples_per_symbol * d_symbols_per_bit * it->first;
                     double message_sample_stamp = sample_stamp + ((double)message_sample_offset)/1000;

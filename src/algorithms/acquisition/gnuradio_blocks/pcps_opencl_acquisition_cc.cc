@@ -146,6 +146,8 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
 
 }
 
+
+
 pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
 {
     if (d_num_doppler_bins > 0)
@@ -193,6 +195,8 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
             d_dump_file.close();
         }
 }
+
+
 
 int pcps_opencl_acquisition_cc::init_opencl_environment(std::string kernel_filename)
 {
@@ -252,11 +256,11 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(std::string kernel_filen
     d_cl_program = program;
 
     // create buffers on the device
-    d_cl_buffer_in = new cl::Buffer(d_cl_context,CL_MEM_READ_WRITE,sizeof(gr_complex)*d_fft_size);
-    d_cl_buffer_fft_codes = new cl::Buffer(d_cl_context,CL_MEM_READ_WRITE,sizeof(gr_complex)*d_fft_size_pow2);
-    d_cl_buffer_1 = new cl::Buffer(d_cl_context,CL_MEM_READ_WRITE,sizeof(gr_complex)*d_fft_size_pow2);
-    d_cl_buffer_2 = new cl::Buffer(d_cl_context,CL_MEM_READ_WRITE,sizeof(gr_complex)*d_fft_size_pow2);
-    d_cl_buffer_magnitude = new cl::Buffer(d_cl_context,CL_MEM_READ_WRITE,sizeof(float)*d_fft_size);
+    d_cl_buffer_in = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex)*d_fft_size);
+    d_cl_buffer_fft_codes = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex)*d_fft_size_pow2);
+    d_cl_buffer_1 = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex)*d_fft_size_pow2);
+    d_cl_buffer_2 = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex)*d_fft_size_pow2);
+    d_cl_buffer_magnitude = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(float)*d_fft_size);
 
     //create queue to which we will push commands for the device.
     d_cl_queue = new cl::CommandQueue(d_cl_context,d_cl_device);
@@ -283,6 +287,8 @@ int pcps_opencl_acquisition_cc::init_opencl_environment(std::string kernel_filen
 
     return 0;
 }
+
+
 
 void pcps_opencl_acquisition_cc::init()
 {
@@ -669,13 +675,13 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     d_core_working = false;
 }
 
+
+
 int pcps_opencl_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
-
     switch (d_state)
     {
     case 0:
@@ -708,7 +714,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                     // Fill internal buffer with d_max_dwells signal blocks. This step ensures that
                     // consecutive signal blocks will be processed in multi-dwell operation. This is
                     // essential when d_bit_transition_flag = true.
-                    unsigned int num_dwells = std::min((int)(d_max_dwells-d_in_dwell_count),ninput_items[0]);
+                    unsigned int num_dwells = std::min((int)(d_max_dwells-d_in_dwell_count), ninput_items[0]);
                     for (unsigned int i = 0; i < num_dwells; i++)
                         {
                             memcpy(d_in_buffer[d_in_dwell_count++], (gr_complex*)input_items[i],
@@ -719,7 +725,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
 
                     if (ninput_items[0] > (int)num_dwells)
                         {
-                            d_sample_counter += d_fft_size * (ninput_items[0]-num_dwells);
+                            d_sample_counter += d_fft_size * (ninput_items[0] - num_dwells);
                         }
                 }
             else
@@ -738,7 +744,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
             //      moment by the external thread (may have changed since checked in the switch()).
             //      If the external thread has already declared positive (d_state=2) or negative
             //      (d_state=3) acquisition, we don't have to process next block!!
-            if ((d_well_count < d_in_dwell_count) && !d_core_working && d_state==1)
+            if ((d_well_count < d_in_dwell_count) && !d_core_working && d_state == 1)
                 {
                     d_core_working = true;
                     if (d_opencl == 0)

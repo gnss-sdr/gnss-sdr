@@ -40,11 +40,9 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
-
 #include "galileo_navigation_message.h"
 #include "rinex_printer.h"
 #include "Galileo_E1.h"
-
 #include "gnss_synchro.h"
 
 class galileo_e1_observables_cc;

@@ -98,20 +98,27 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     d_dump_filename = dump_filename;
 }
 
+
+
 void pcps_assisted_acquisition_cc::set_doppler_step(unsigned int doppler_step)
 {
     d_doppler_step = doppler_step;
 }
 
+
+
 void pcps_assisted_acquisition_cc::free_grid_memory()
 {
-    for (int i=0;i<d_num_doppler_points;i++)
+    for (int i = 0; i < d_num_doppler_points; i++)
         {
             delete[] d_grid_data[i];
             delete[] d_grid_doppler_wipeoffs[i];
         }
     delete d_grid_data;
 }
+
+
+
 pcps_assisted_acquisition_cc::~pcps_assisted_acquisition_cc()
 {
     free(d_carrier);
@@ -139,15 +146,14 @@ void pcps_assisted_acquisition_cc::init()
     d_gnss_synchro->Acq_doppler_hz = 0.0;
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_input_power = 0.0;
-
     d_state = 0;
 
     d_fft_if->execute(); // We need the FFT of local code
 
     //Conjugate the local code
     volk_32fc_conjugate_32fc_a(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
-
 }
+
 
 
 void pcps_assisted_acquisition_cc::forecast (int noutput_items,
@@ -155,6 +161,7 @@ void pcps_assisted_acquisition_cc::forecast (int noutput_items,
 {
     ninput_items_required[0] = d_gnuradio_forecast_samples ; //set the required available samples in each call
 }
+
 
 
 void pcps_assisted_acquisition_cc::get_assistance()
@@ -175,7 +182,7 @@ void pcps_assisted_acquisition_cc::get_assistance()
                 }
             this->d_disable_assist = false;
             std::cout << "Acq assist ENABLED for GPS SV "<< this->d_gnss_synchro->PRN <<" (Doppler max,Doppler min)=("
-                    << d_doppler_max << "," << d_doppler_min << ")" << std::endl;
+                      << d_doppler_max << "," << d_doppler_min << ")" << std::endl;
         }
     else
         {
@@ -183,20 +190,26 @@ void pcps_assisted_acquisition_cc::get_assistance()
             std::cout << "Acq assist DISABLED for GPS SV "<< this->d_gnss_synchro->PRN << std::endl;
         }
 }
+
+
+
 void pcps_assisted_acquisition_cc::reset_grid()
 {
     d_well_count = 0;
-    for (int i=0;i<d_num_doppler_points;i++)
+    for (int i = 0; i < d_num_doppler_points; i++)
         {
-            for (unsigned int j=0;j<d_fft_size;j++)
+            for (unsigned int j = 0; j < d_fft_size; j++)
                 {
                     d_grid_data[i][j] = 0.0;
                 }
         }
 }
+
+
+
 void pcps_assisted_acquisition_cc::redefine_grid()
 {
-    if (this->d_disable_assist==true)
+    if (this->d_disable_assist == true)
         {
             d_doppler_max = d_config_doppler_max;
             d_doppler_min = d_config_doppler_min;
@@ -204,8 +217,8 @@ void pcps_assisted_acquisition_cc::redefine_grid()
     // Create the search grid array
     d_num_doppler_points = floor(std::abs(d_doppler_max-d_doppler_min)/d_doppler_step);
 
-    d_grid_data=new float*[d_num_doppler_points];
-    for (int i=0; i<d_num_doppler_points; i++)
+    d_grid_data = new float*[d_num_doppler_points];
+    for (int i = 0; i < d_num_doppler_points; i++)
         {
             d_grid_data[i] = new float[d_fft_size];
         }
@@ -214,17 +227,18 @@ void pcps_assisted_acquisition_cc::redefine_grid()
     int doppler_hz;
     float phase_step_rad;
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_points];
-    for (int doppler_index=0; doppler_index<d_num_doppler_points; doppler_index++)
+    for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
-
-            doppler_hz = d_doppler_min+d_doppler_step*doppler_index;
+            doppler_hz = d_doppler_min + d_doppler_step*doppler_index;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
             phase_step_rad = (float)GPS_TWO_PI*doppler_hz / (float)d_fs_in;
             d_grid_doppler_wipeoffs[doppler_index] = new gr_complex[d_fft_size];
-            fxp_nco(d_grid_doppler_wipeoffs[doppler_index], d_fft_size,0, phase_step_rad);
+            fxp_nco(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, 0, phase_step_rad);
         }
 }
+
+
 
 double pcps_assisted_acquisition_cc::search_maximum()
 {
@@ -274,6 +288,8 @@ double pcps_assisted_acquisition_cc::search_maximum()
     return d_test_statistics;
 }
 
+
+
 float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items)
 {
     const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
@@ -288,6 +304,8 @@ float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_st
     free(p_tmp_vector);
     return ( power / (float)d_fft_size);
 }
+
+
 
 int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_void_star &input_items)
 {
@@ -305,7 +323,7 @@ int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_vo
     float* p_tmp_vector;
     if (posix_memalign((void**)&p_tmp_vector, 16, d_fft_size * sizeof(float)) == 0){};
 
-    for (int doppler_index=0; doppler_index<d_num_doppler_points; doppler_index++)
+    for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
             // doppler search steps
             // Perform the carrier wipe-off
@@ -325,7 +343,6 @@ int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_vo
             volk_32fc_magnitude_squared_32f_a(p_tmp_vector, d_ifft->get_outbuf(), d_fft_size);
             const float*  old_vector = d_grid_data[doppler_index];
             volk_32f_x2_add_32f_a(d_grid_data[doppler_index], old_vector, p_tmp_vector, d_fft_size);
-
         }
     free(p_tmp_vector);
     return d_fft_size;
@@ -334,7 +351,6 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-
     /*!
      * TODO: 	High sensitivity acquisition algorithm:
      * 			State Mechine:
@@ -355,7 +371,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
     switch (d_state)
     {
     case 0: // S0. StandBy
-        if (d_active==true) d_state = 1;
+        if (d_active == true) d_state = 1;
         d_sample_counter += ninput_items[0]; // sample counter
         consume_each(ninput_items[0]);
         break;
@@ -371,7 +387,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         int consumed_samples;
         consumed_samples = compute_and_accumulate_grid(input_items);
         d_well_count++;
-        if (d_well_count>=d_max_dwells)
+        if (d_well_count >= d_max_dwells)
             {
                 d_state=3;
             }
@@ -418,7 +434,6 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
         DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
         DLOG(INFO) << "input signal power " << d_input_power;
-
         d_active = false;
         // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCESS 2=ACQ_FAIL
         d_channel_internal_queue->push(1); // 1-> positive acquisition
@@ -437,7 +452,6 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
         DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
         DLOG(INFO) << "input signal power " << d_input_power;
-
         d_active = false;
         // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCESS 2=ACQ_FAIL
         d_channel_internal_queue->push(2); // 2-> negative acquisition

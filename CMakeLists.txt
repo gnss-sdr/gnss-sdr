@@ -369,27 +369,38 @@ endif(DOXYGEN_FOUND)
 ################################################################################
 
 if(OS_IS_LINUX)
-    find_package(LAPACK)
-    if(NOT LAPACK_FOUND)
-        message(" A library with a LAPACK API has not been found.")
+    find_library(LAPACK lapack)
+    if(NOT LAPACK)
+        message(" The LAPACK library has not been found.")
         message(" You can try to install it by typing:")
         message(" sudo apt-get install liblapack-dev")
         message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
-    endif(NOT LAPACK_FOUND)
-    find_package(BLAS)
-    if(NOT BLAS_FOUND)
-        message(" A library with a BLAS API has not been found.")
+    endif(NOT LAPACK)
+    find_library(BLAS blas)
+    if(NOT BLAS)
+        message(" The BLAS library has not been found.")
         message(" You can try to install it by typing:")
         message(" sudo apt-get install libblas-dev")
         message(FATAL_ERROR "BLAS is required to build gnss-sdr")
-    endif(NOT BLAS_FOUND)
-    find_library(GFORTRAN gfortran)
-    if(GFORTRAN-NOTFOUND)
-        message(" GFortran has not been found.")
+    endif(NOT BLAS)
+    list(APPEND CMAKE_FIND_LIBRARY_SUFFIXES ".so.3")
+    find_library(GFORTRAN NAMES gfortran
+                 PATHS /usr/lib
+                       /usr/local/lib
+                       /usr/lib/gcc/x86_64-linux-gnu
+                       /usr/lib/gcc/i686-linux-gnu
+                       /usr/lib/gcc/i386-linux-gnu
+                       /usr/lib/gcc/x86_64-linux-gnu/4.7
+                       /usr/lib/gcc/i686-linux-gnu/4.7
+                       /usr/lib/gcc/x86_64-linux-gnu/4.8
+                       /usr/lib/gcc/i686-linux-gnu/4.8
+                )
+    if(NOT GFORTRAN)
+        message(" The gfortran library has not been found.")
         message(" You can try to install it by typing:")
         message(" sudo apt-get install gfortran")
-        message(FATAL_ERROR "Gfortran is required to build gnss-sdr")
-    endif(GFORTRAN-NOTFOUND)
+        message(FATAL_ERROR "gfortran is required to build gnss-sdr")
+    endif(NOT GFORTRAN)
 endif(OS_IS_LINUX)
 
 find_package(Armadillo)
@@ -446,6 +457,10 @@ endif(NOT ARMADILLO_FOUND)
 # OpenCL
 ###############################################################################
 find_package(OpenCL)
+if(NOT OPENCL_FOUND)
+    message(STATUS "Processing blocks using OpenCL will not be built.")
+endif(NOT OPENCL_FOUND)
+
 
 
 ################################################################################

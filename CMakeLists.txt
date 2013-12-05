@@ -383,7 +383,6 @@ if(OS_IS_LINUX)
         message(" sudo apt-get install libblas-dev")
         message(FATAL_ERROR "BLAS is required to build gnss-sdr")
     endif(NOT BLAS)
-    list(APPEND CMAKE_FIND_LIBRARY_SUFFIXES ".so.3")
     find_library(GFORTRAN NAMES gfortran
                  PATHS /usr/lib
                        /usr/local/lib

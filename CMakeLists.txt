@@ -478,6 +478,8 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/x86_64-linux-gnu
                        /usr/lib/gcc/i686-linux-gnu
                        /usr/lib/gcc/i386-linux-gnu
+                       /usr/lib/gcc/x86_64-linux-gnu/4.6
+                       /usr/lib/gcc/i686-linux-gnu/4.6
                        /usr/lib/gcc/x86_64-linux-gnu/4.7
                        /usr/lib/gcc/i686-linux-gnu/4.7
                        /usr/lib/gcc/x86_64-linux-gnu/4.8

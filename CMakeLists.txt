@@ -27,26 +27,13 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 cmake_minimum_required(VERSION 2.8)
 project(gnss-sdr CXX C)
 
-#select the release build type by default to get optimization flags
-if(NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE "Release")
-   message(STATUS "Build type not specified: defaulting to release.")
-endif(NOT CMAKE_BUILD_TYPE)
-set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
-list(APPEND CMAKE_MODULE_PATH ${gnss-sdr_project_SOURCE_DIR}/cmake/Modules)
 
 # Set the version information here
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT    2)
 set(VERSION_INFO_MINOR_VERSION 0.svn)
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
-
-# Append -O2 optimization flag for Debug builds
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
-
-option(INSTALL_GNURADIO "Install GNU Radio and all its dependencies" OFF)
 
 file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -56,13 +43,94 @@ file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRE
 ########################################################################
 include(ExternalProject)
 
+# Detect 64-bits machine
+if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+     set(ARCH_64BITS TRUE)
+endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+
 set(OS_IS_MACOSX "")
 set(OS_IS_LINUX "")
+
+# Detect Linux Distribution 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      set(OperatingSystem "Linux")
      set(OS_IS_LINUX TRUE)
+     if(ARCH_64BITS)
+         set(ARCH_ "(64 bits)")
+     else(ARCH_64BITS)
+         set(ARCH_ "(32 bits)")
+     endif(ARCH_64BITS)
+     if(EXISTS "/etc/fedora-release")
+         set(LINUX_DISTRIBUTION "Fedora")
+     elseif(EXISTS "/etc/lsb-release")
+         execute_process(COMMAND cat /etc/lsb-release
+                         COMMAND grep DISTRIB_ID
+                         COMMAND awk -F= "{ print $2 }"
+                         COMMAND tr "\n" " "
+                         COMMAND sed "s/ //"
+                         OUTPUT_VARIABLE LINUX_DISTRIBUTION
+                         RESULT_VARIABLE LINUX_ID_RESULT
+         )
+         execute_process(COMMAND cat /etc/lsb-release
+                         COMMAND grep DISTRIB_RELEASE
+                         COMMAND awk -F= "{ print $2 }"
+                         COMMAND tr "\n" " "
+                         COMMAND sed "s/ //"
+                         OUTPUT_VARIABLE LINUX_VER
+                         RESULT_VARIABLE LINUX_VER_RESULT
+         )
+     endif(EXISTS "/etc/fedora-release")
+     if(NOT LINUX_DISTRIBUTION)
+         if(EXISTS "/etc/os-release")
+             execute_process(COMMAND cat  /etc/os-release
+                             COMMAND grep NAME
+                             COMMAND awk -F= "{ print $2 }"
+                             COMMAND tr "\n" " "
+                             COMMAND sed "s/ //"
+                             OUTPUT_VARIABLE LINUX_DISTRIBUTION
+                             RESULT_VARIABLE LINUX_ID_RESULT
+             )
+             execute_process(COMMAND cat /etc/os-release
+                             COMMAND grep VERSION_ID
+                             COMMAND awk -F= "{ print $2 }"
+                             COMMAND tr "\n" " "
+                             COMMAND sed "s/ //"
+                             OUTPUT_VARIABLE LINUX_VER
+                             RESULT_VARIABLE LINUX_VER_RESULT
+             )
+         endif(EXISTS "/etc/os-release")  
+     endif(NOT LINUX_DISTRIBUTION)
+     if(NOT LINUX_DISTRIBUTION)
+         if(EXISTS "/etc/redhat-release")
+             set(LINUX_DISTRIBUTION "Red Hat")
+             file (READ /etc/redhat-release LINUX_VER)
+         endif(EXISTS "/etc/redhat-release")
+         if(EXISTS "/etc/linuxmint/info")
+             set(LINUX_DISTRIBUTION "Mint")
+             execute_process(COMMAND cat  /etc/linuxmint/info
+                             COMMAND grep RELEASE
+                             COMMAND awk -F= "{ print $2 }"
+                             COMMAND tr "\n" " "
+                             COMMAND sed "s/ //"
+                             OUTPUT_VARIABLE LINUX_VER
+                             RESULT_VARIABLE LINUX_VER_RESULT
+             )
+         endif(EXISTS "/etc/linuxmint/info")
+     endif(NOT LINUX_DISTRIBUTION)
+     if(NOT LINUX_DISTRIBUTION)
+         if(EXISTS "/etc/debian_version")
+             set(LINUX_DISTRIBUTION "Debian")
+             file (READ /etc/debian_version LINUX_VER)
+         endif(EXISTS "/etc/debian_version")
+     endif(NOT LINUX_DISTRIBUTION)
+     if(NOT LINUX_DISTRIBUTION)
+         set(LINUX_DISTRIBUTION "Generic")
+         set(LINUX_VER "Unknown")
+     endif(NOT LINUX_DISTRIBUTION)      
+     message(STATUS "Configuring GNSS-SDR to be built on ${LINUX_DISTRIBUTION} Release ${LINUX_VER} ${ARCH_}")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
+# Detect Mac OS X Version
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      set(OperatingSystem "Mac OS X")
      set(OS_IS_MACOSX TRUE)
@@ -73,14 +141,28 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
          set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION="com.apple.compilers.llvm.clang.1_0")
+         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.9 Mavericks")
      endif(${DARWIN_VERSION} MATCHES "13")
+     if(${DARWIN_VERSION} MATCHES "12")
+         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.8 Mountain Lion")
+     endif(${DARWIN_VERSION} MATCHES "12")
+     if(${DARWIN_VERSION} MATCHES "11")
+         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.7 Lion")
+     endif(${DARWIN_VERSION} MATCHES "11")
+     if(${DARWIN_VERSION} MATCHES "10")
+         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.6 Snow Leopard")
+     endif(${DARWIN_VERSION} MATCHES "10")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
+#select the release build type by default to get optimization flags
+if(NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE "Release")
+   message(STATUS "Build type not specified: defaulting to Release.")
+endif(NOT CMAKE_BUILD_TYPE)
+set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
-########################################################################
-# Find OpenCL installation
-########################################################################
-find_package(OpenCL)
+# Append -O2 optimization flag for Debug builds
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
 
 ################################################################################
@@ -89,12 +171,12 @@ find_package(OpenCL)
 enable_testing()
 set(GTEST_DIR $ENV{GTEST_DIR})
 if(GTEST_DIR)
-     message("GTEST root folder at ${GTEST_DIR}")
+     message(STATUS "GTEST root folder at ${GTEST_DIR}")
 else()
-     message (" Googletest has not been found because the variable ")
-     message (" GTEST_DIR is not defined.")
-     message (" Googletest will be downloaded and built automatically ")
-     message (" when doing 'make'. ")
+     message (STATUS " Googletest has not been found because the environment variable ")
+     message (STATUS " GTEST_DIR is not defined.")
+     message (STATUS " Googletest will be downloaded and built automatically ")
+     message (STATUS " when doing 'make'. ")
 endif(GTEST_DIR)
 
 
@@ -132,35 +214,6 @@ find_package(Gnuradio "3.7.0")
 find_package(Volk)
 find_package(UHD)
 
-if(NOT GNURADIO_BLOCKS_FOUND)
-    message("*** gnuradio-blocks 3.7 or later is required to build gnss-sdr")
-endif()
-if(NOT UHD_FOUND)
-    message("*** UHD is required to build gnss-sdr")
-endif()
-if(NOT GNURADIO_UHD_FOUND)
-    message("*** gnuradio-uhd 3.7 or later is required to build gnss-sdr")
-endif()
-if(NOT GNURADIO_FILTER_FOUND)
-    message("*** gnuradio-filter 3.7 or later is required to build gnss-sdr")
-endif()
-if(NOT GNURADIO_FFT_FOUND)
-    message("*** gnuradio-fft 3.7 or later is required to build gnss-sdr")
-endif()
-if(NOT VOLK_FOUND)
-    message("*** VOLK is required to build gnss-sdr")
-endif()
-if(NOT GNURADIO_ANALOG_FOUND)
-    message("*** gnuradio-analog 3.7 or later is required to build gnss-sdr")
-endif()
-if(NOT GNURADIO_FEC_FOUND)
-    message("*** gnuradio-fec 3.7 or later is required to build gnss-sdr")
-endif()
-if(NOT GNURADIO_TRELLIS_FOUND)
-    message("*** gnuradio-trellis 3.7 or later is required to build gnss-sdr")
-endif()
-
-
 if(NOT GNURADIO_RUNTIME_FOUND)
    message(STATUS "cmake cannot find GNU Radio >= 3.7")
    if(OS_IS_LINUX)
@@ -175,6 +228,34 @@ if(NOT GNURADIO_RUNTIME_FOUND)
        message(FATAL_ERROR "GNU Radio 3.7 or later is required to build gnss-sdr")
    endif(OS_IS_MACOSX)
 endif(NOT GNURADIO_RUNTIME_FOUND)
+
+if(NOT GNURADIO_BLOCKS_FOUND)
+    message(FATAL_ERROR "*** gnuradio-blocks 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT UHD_FOUND)
+    message(FATAL_ERROR "*** UHD is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_UHD_FOUND)
+    message(FATAL_ERROR "*** gnuradio-uhd 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_FILTER_FOUND)
+    message(FATAL_ERROR "*** gnuradio-filter 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_FFT_FOUND)
+    message(FATAL_ERROR "*** gnuradio-fft 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT VOLK_FOUND)
+    message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_ANALOG_FOUND)
+    message(FATAL_ERROR "*** gnuradio-analog 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_FEC_FOUND)
+    message(FATAL_ERROR "*** gnuradio-fec 3.7 or later is required to build gnss-sdr")
+endif()
+if(NOT GNURADIO_TRELLIS_FOUND)
+    message(FATAL_ERROR "*** gnuradio-trellis 3.7 or later is required to build gnss-sdr")
+endif()
 
 
 
@@ -299,9 +380,9 @@ endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
 set(GCC_GPERFTOOLS_FLAGS "")
 find_package(Gperftools)
 if ( NOT GPERFTOOLS_FOUND )
-  message("The optional library GPerftools has not been found.")
+  message(STATUS "The optional library GPerftools has not been found.")
 else( NOT GPERFTOOLS_FOUND )
-  message ( "GPerftools library found." )
+  message (STATUS "GPerftools library found." )
   link_libraries(profiler tcmalloc)
 endif( NOT GPERFTOOLS_FOUND )
 list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
@@ -315,7 +396,7 @@ list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-     message( "Doxygen found.")
+     message(STATUS "Doxygen found.")
      message(STATUS "You can build the documentation with 'make doc'." )
      message(STATUS "When done, point your browser to ${CMAKE_SOURCE_DIR}/html/index.html")
      set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
@@ -373,14 +454,22 @@ if(OS_IS_LINUX)
     if(NOT LAPACK)
         message(" The LAPACK library has not been found.")
         message(" You can try to install it by typing:")
-        message(" sudo apt-get install liblapack-dev")
+         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo yum install lapack-devel") 
+        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo apt-get install liblapack-dev") 
+        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
     endif(NOT LAPACK)
     find_library(BLAS blas)
     if(NOT BLAS)
         message(" The BLAS library has not been found.")
         message(" You can try to install it by typing:")
-        message(" sudo apt-get install libblas-dev")
+        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo yum install blas-devel") 
+        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo apt-get install libblas-dev") 
+        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "BLAS is required to build gnss-sdr")
     endif(NOT BLAS)
     find_library(GFORTRAN NAMES gfortran
@@ -393,11 +482,19 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/i686-linux-gnu/4.7
                        /usr/lib/gcc/x86_64-linux-gnu/4.8
                        /usr/lib/gcc/i686-linux-gnu/4.8
+                       /usr/lib/gcc/x86_64-redhat-linux/4.7.2 # Fedora 18
+                       /usr/lib/gcc/i686-redhat-linux/4.7.2
+                       /usr/lib/gcc/x86_64-redhat-linux/4.8.1 # Fedora 19
+                       /usr/lib/gcc/i686-redhat-linux/4.8.1
                 )
     if(NOT GFORTRAN)
         message(" The gfortran library has not been found.")
-        message(" You can try to install it by typing:")
-        message(" sudo apt-get install gfortran")
+        message(" You can try to install it by typing:")    
+        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo yum install libgfortran") 
+        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo apt-get install gfortran") 
+        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "gfortran is required to build gnss-sdr")
     endif(NOT GFORTRAN)
 endif(OS_IS_LINUX)
@@ -469,8 +566,12 @@ find_package(OpenSSL)
 if(NOT OPENSSL_FOUND)
     message(" The OpenSSL library has not been found.")
     message(" You can try to install it by typing:")
-    if(OS_IS_LINUX)       
-        message(" sudo apt-get install libssl-dev")
+    if(OS_IS_LINUX)      
+        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo yum install openssl-devel") 
+        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(" sudo apt-get install libssl-dev") 
+        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
     endif(OS_IS_LINUX) 
     if(OS_IS_MACOSX)
         message(" sudo port install openssl")
@@ -483,20 +584,20 @@ endif(NOT OPENSSL_FOUND)
 # Setup of optional drivers
 ################################################################################
 if( $ENV{GN3S_DRIVER} )
-    message( "GN3S_DRIVER variable found." )
+    message(STATUS "GN3S_DRIVER variable found." )
     # copy firmware to install folder
     # Build project gr-gn3s
 else( $ENV{GN3S_DRIVER} )
     if( GN3S_DRIVER )
-       message("GN3S driver will be compiled")
+       message(STATUS "GN3S driver will be compiled")
     else( GNSS_DRIVER )
-       message( "GN3S_DRIVER is not defined." )
-       message( "Define it with 'export GN3S_DRIVER=1' to add support for the GN3S dongle." )
+       message(STATUS "GN3S_DRIVER is not defined." )
+       message(STATUS "Define it with 'export GN3S_DRIVER=1' to add support for the GN3S dongle." )
     endif( GN3S_DRIVER )
 endif($ENV{GN3S_DRIVER} )
 
 if( $ENV{RTLSDR_DRIVER} )
-    message( "RTLSDR_DRIVER variable found." )
+    message(STATUS "RTLSDR_DRIVER variable found." )
     # find libosmosdr (done in src/algorithms/signal_sources/adapters)
     # find gr-osmosdr (done in src/algorithms/signal_sources/adapters)
 endif($ENV{RTLSDR_DRIVER} )
@@ -544,15 +645,13 @@ if(GPERFTOOLS_FOUND)
      endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 endif(GPERFTOOLS_FOUND)
 
-# Detect 64-bits machine
-if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-     # message("64-bits architecture detected.") 
-     #set(MY_CXX_FLAGS "${MY_CXX_FLAGS}  ...")
-     set(ARCH_64BITS TRUE)
-     # link_libraries(pthread) # Needed by Fedora 18
-endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-
 list(APPEND CMAKE_CXX_FLAGS ${MY_CXX_FLAGS})
+
+if(OS_IS_LINUX)      
+    if(${LINUX_DISTRIBUTION} MATCHES "Fedora")
+        link_libraries(pthread)
+    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora")
+endif(OS_IS_LINUX) 
 
 
 ########################################################################

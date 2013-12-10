@@ -65,27 +65,27 @@ include_directories(
 
 #Enable GN3S module if the flag is present
 if( $ENV{GN3S_DRIVER} )
-    message( "Support for RF front-end GN3S v2 enabled" )
+    message(STATUS "Support for RF front-end GN3S v2 enabled" )
     add_definitions(-DGN3S_DRIVER=1)
 endif( $ENV{GN3S_DRIVER} )
 if( GN3S_DRIVER )
-    message( "Support for RF front-end GN3S v2 enabled" )
+    message(STATUS "Support for RF front-end GN3S v2 enabled" )
     add_definitions(-DGN3S_DRIVER=1)
 endif( GN3S_DRIVER )
 
 #Enable RTL-SDR module if the flag is present
 if( $ENV{RTLSDR_DRIVER} )
-    message( "Support for RF front-end based on RTL dongle enabled" )
+    message(STATUS "Support for RF front-end based on RTL dongle enabled" )
     add_definitions(-DRTLSDR_DRIVER=1)
 endif( $ENV{RTLSDR_DRIVER} )
 if( RTLSDR_DRIVER )
-    message( "Support for RF front-end based on RTL dongle enabled" )
+    message(STATUS "Support for RF front-end based on RTL dongle enabled" )
     add_definitions(-DRTLSDR_DRIVER=1)
 endif( RTLSDR_DRIVER )
 
 #Enable OpenCL if found in the system
 if ( OPENCL_FOUND )
-    message( "Adding processing blocks implemented using Open CL" )
+    message(STATUS "Adding processing blocks implemented using OpenCL" )
     add_definitions(-DOPENCL=1)
 endif( OPENCL_FOUND )
 

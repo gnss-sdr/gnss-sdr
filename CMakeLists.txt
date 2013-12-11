@@ -60,9 +60,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      else(ARCH_64BITS)
          set(ARCH_ "(32 bits)")
      endif(ARCH_64BITS)
-     if(EXISTS "/etc/fedora-release")
-         set(LINUX_DISTRIBUTION "Fedora")
-     elseif(EXISTS "/etc/lsb-release")
+     if(EXISTS "/etc/lsb-release")
          execute_process(COMMAND cat /etc/lsb-release
                          COMMAND grep DISTRIB_ID
                          COMMAND awk -F= "{ print $2 }"
@@ -79,11 +77,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
                          OUTPUT_VARIABLE LINUX_VER
                          RESULT_VARIABLE LINUX_VER_RESULT
          )
-     endif(EXISTS "/etc/fedora-release")
+     endif(EXISTS "/etc/lsb-release")
      if(NOT LINUX_DISTRIBUTION)
          if(EXISTS "/etc/os-release")
-             execute_process(COMMAND cat  /etc/os-release
-                             COMMAND grep NAME
+             execute_process(COMMAND cat /etc/os-release
+                             COMMAND grep -m1 NAME
                              COMMAND awk -F= "{ print $2 }"
                              COMMAND tr "\n" " "
                              COMMAND sed "s/ //"
@@ -106,9 +104,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
              file (READ /etc/redhat-release LINUX_VER)
          endif(EXISTS "/etc/redhat-release")
          if(EXISTS "/etc/linuxmint/info")
-             set(LINUX_DISTRIBUTION "Mint")
-             execute_process(COMMAND cat  /etc/linuxmint/info
-                             COMMAND grep RELEASE
+             set(LINUX_DISTRIBUTION "LinuxMint")
+             execute_process(COMMAND cat /etc/linuxmint/info
+                             COMMAND grep -m1 RELEASE
                              COMMAND awk -F= "{ print $2 }"
                              COMMAND tr "\n" " "
                              COMMAND sed "s/ //"
@@ -208,11 +206,7 @@ endif(NOT Boost_FOUND)
 # GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
 ################################################################################
 
-set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS UHD ANALOG FILTER FFT VOLK FEC TRELLIS)
-
-find_package(Gnuradio "3.7.0")
-find_package(Volk)
-find_package(UHD)
+find_package(Gnuradio)
 
 if(NOT GNURADIO_RUNTIME_FOUND)
    message(STATUS "cmake cannot find GNU Radio >= 3.7")
@@ -229,11 +223,14 @@ if(NOT GNURADIO_RUNTIME_FOUND)
    endif(OS_IS_MACOSX)
 endif(NOT GNURADIO_RUNTIME_FOUND)
 
+find_package(Volk)
+find_package(UHD)
+
 if(NOT GNURADIO_BLOCKS_FOUND)
     message(FATAL_ERROR "*** gnuradio-blocks 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT UHD_FOUND)
-    message(FATAL_ERROR "*** UHD is required to build gnss-sdr")
+    message(FATAL_ERROR "*** UHD is required to build gnss-sdr. Please check http://code.ettus.com/redmine/ettus/projects/uhd/wiki")
 endif()
 if(NOT GNURADIO_UHD_FOUND)
     message(FATAL_ERROR "*** gnuradio-uhd 3.7 or later is required to build gnss-sdr")
@@ -478,7 +475,7 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/x86_64-linux-gnu
                        /usr/lib/gcc/i686-linux-gnu
                        /usr/lib/gcc/i386-linux-gnu
-                       /usr/lib/gcc/x86_64-linux-gnu/4.6
+                       /usr/lib/gcc/x86_64-linux-gnu/4.6 # Ubuntu 12.04
                        /usr/lib/gcc/i686-linux-gnu/4.6
                        /usr/lib/gcc/x86_64-linux-gnu/4.7
                        /usr/lib/gcc/i686-linux-gnu/4.7
@@ -488,12 +485,16 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/i686-redhat-linux/4.7.2
                        /usr/lib/gcc/x86_64-redhat-linux/4.8.1 # Fedora 19
                        /usr/lib/gcc/i686-redhat-linux/4.8.1
+                       /usr/lib/gcc/x86_64-redhat-linux/4.4.4 # CentOS 6
+                       /usr/lib/gcc/i686-redhat-linux/4.4.4
+                       /usr/lib/gcc/x86_64-redhat-linux/4.8.2
+                       /usr/lib/gcc/i686-redhat-linux/4.8.2
                 )
     if(NOT GFORTRAN)
         message(" The gfortran library has not been found.")
         message(" You can try to install it by typing:")    
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install libgfortran") 
+            message(" sudo yum install gcc-fortran") 
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo apt-get install gfortran") 
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")

@@ -30,4 +30,4 @@ include_directories(
 )
 
 add_library(channel_adapters ${CHANNEL_ADAPTER_SOURCES})
-target_link_libraries(channel_adapters channel_fsm ${GNURADIO_RUNTIME_LIBRARIES})
+target_link_libraries(channel_adapters channel_fsm ${GNURADIO_RUNTIME_LIBRARIES} ${Boost_LIBRARIES})

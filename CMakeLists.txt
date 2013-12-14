@@ -81,7 +81,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      if(NOT LINUX_DISTRIBUTION)
          if(EXISTS "/etc/os-release")
              execute_process(COMMAND cat /etc/os-release
-                             COMMAND grep -m1 NAME
+                             COMMAND grep -e "^[NAME]"
                              COMMAND awk -F= "{ print $2 }"
                              COMMAND tr "\n" " "
                              COMMAND sed "s/ //"
@@ -125,7 +125,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
          set(LINUX_DISTRIBUTION "Generic")
          set(LINUX_VER "Unknown")
      endif(NOT LINUX_DISTRIBUTION)      
-     message(STATUS "Configuring GNSS-SDR to be built on ${LINUX_DISTRIBUTION} Release ${LINUX_VER} ${ARCH_}")
+     message(STATUS "Configuring GNSS-SDR to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Detect Mac OS X Version
@@ -184,8 +184,14 @@ endif(GTEST_DIR)
 ################################################################################
 
 if(UNIX AND EXISTS "/usr/lib64")
-    list(APPEND BOOST_LIBRARYDIR "/usr/lib64") #fedora 64-bit fix
+    list(APPEND BOOST_LIBRARYDIR "/usr/lib64") # Fedora 64-bit fix
 endif(UNIX AND EXISTS "/usr/lib64")
+if(GNURADIO_INSTALL_PREFIX)
+    if(EXISTS "${GNURADIO_INSTALL_PREFIX}/lib/libboost_thread-mt.so")
+        list(APPEND BOOST_LIBRARYDIR "${GNURADIO_INSTALL_PREFIX}/lib")     # Boost installed by PyBOMBS
+        list(APPEND BOOST_INCLUDEDIR "${GNURADIO_INSTALL_PREFIX}/include") # Boost installed by PyBOMBS
+    endif(EXISTS "${GNURADIO_INSTALL_PREFIX}/lib/libboost_thread-mt.so")
+endif(GNURADIO_INSTALL_PREFIX)
 set(Boost_ADDITIONAL_VERSIONS
     "1.42.0" "1.42" "1.43.0" "1.43" "1.44.0" "1.44"
     "1.45.0" "1.45" "1.46.0" "1.46"                 "1.48.0" "1.48" "1.49.0" "1.49"

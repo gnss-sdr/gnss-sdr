@@ -32,7 +32,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-	 ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+     ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
@@ -60,6 +60,7 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 

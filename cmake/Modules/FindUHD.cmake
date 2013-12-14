@@ -12,6 +12,7 @@ FIND_PATH(
         ${PC_UHD_INCLUDEDIR}
     PATHS /usr/local/include
           /usr/include
+          ${GNURADIO_INSTALL_PREFIX}/include
 )
 
 FIND_LIBRARY(
@@ -21,6 +22,7 @@ FIND_LIBRARY(
         ${PC_UHD_LIBDIR}
     PATHS /usr/local/lib
           /usr/lib
+          ${GNURADIO_INSTALL_PREFIX}/lib
 )
 
 INCLUDE(FindPackageHandleStandardArgs)

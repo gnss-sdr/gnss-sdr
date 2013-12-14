@@ -1,3 +1,7 @@
+########################################################################
+# Find VOLK (Vector-Optimized Library of Kernels)
+########################################################################
+
 INCLUDE(FindPkgConfig)
 PKG_CHECK_MODULES(PC_VOLK volk)
 
@@ -8,6 +12,7 @@ FIND_PATH(
         ${PC_VOLK_INCLUDEDIR}
     PATHS /usr/local/include
           /usr/include
+          ${GNURADIO_INSTALL_PREFIX}/include
 )
 
 FIND_LIBRARY(
@@ -19,6 +24,7 @@ FIND_LIBRARY(
           /usr/local/lib64
           /usr/lib
           /usr/lib64
+          ${GNURADIO_INSTALL_PREFIX}/lib
 )
 
 INCLUDE(FindPackageHandleStandardArgs)

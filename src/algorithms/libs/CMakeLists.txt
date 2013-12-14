@@ -47,6 +47,7 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 if(OPENCL_FOUND)

@@ -24,11 +24,12 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-	 ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+     ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}  
      ${Boost_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
@@ -53,6 +54,7 @@ target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${GFlags_LIBS} 
                                ${GLOG_LIBRARIES} 
                                ${ARMADILLO_LIBRARIES} 
+                               ${UHD_LIBRARIES}
                                gnss_sp_libs 
                                gnss_rx
                                )

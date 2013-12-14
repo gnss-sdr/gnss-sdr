@@ -74,7 +74,12 @@ if(RTLSDR_DRIVER)
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${RTL_DRIVER_INCLUDE_DIRS}) 
 endif(RTLSDR_DRIVER)
 
-set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc gen_signal_source.cc uhd_signal_source.cc nsr_file_signal_source.cc ${OPT_DRIVER_SOURCES})
+set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc 
+                                  gen_signal_source.cc 
+                                  uhd_signal_source.cc 
+                                  nsr_file_signal_source.cc 
+                                  ${OPT_DRIVER_SOURCES}
+)
 
 
 include_directories(
@@ -95,4 +100,13 @@ if(ARCH_64BITS)
 endif(ARCH_64BITS)
 
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES})
-target_link_libraries(signal_source_adapters signal_source_gr_blocks ${Boost_LIBRARIES}  ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${UHD_LIBRARIES}  ${GNURADIO_UHD_LIBRARIES} ${OPT_LIBRARIES} gnss_sp_libs)
+
+target_link_libraries(signal_source_adapters signal_source_gr_blocks 
+                                             ${Boost_LIBRARIES} 
+                                             ${GNURADIO_PMT_LIBRARIES} 
+                                             ${GNURADIO_BLOCKS_LIBRARIES} 
+                                             ${UHD_LIBRARIES}  
+                                             ${GNURADIO_UHD_LIBRARIES} 
+                                             ${OPT_LIBRARIES} 
+                                             gnss_sp_libs
+)

@@ -30,6 +30,7 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
 add_library(telemetry_decoder_gr_blocks ${TELEMETRY_DECODER_GR_BLOCKS_SOURCES})

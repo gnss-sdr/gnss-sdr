@@ -5,7 +5,7 @@ This document describes how to set up the compilation environment and build GNSS
 
 GNU/Linux 
 -----------------------------------------------------------
-Tested distributions: Ubuntu 12.04, 12.10, 13.04 and 13.10 (32 and 64 bits), Debian 6.0.6, Fedora 18 (newer versions should work, too)
+Tested distributions: Ubuntu 12.04, 12.10, 13.04 and 13.10 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18 (newer versions should work, too)
 
 * Install GNU Radio:
 
@@ -16,13 +16,14 @@ $ cd pybombs
 
 Configure PyBOMBS:
 
-$ ./pybombs config 
+$ sudo ./pybombs config 
 
 You can safely accept the default options but for prefix. We recommend to put /usr/local there. After the configuration, you should get something similar to:
 
 gituser = username
 prefix = /usr/local
-satisfy_order = deb,src
+satisfy_order = deb,src  # For Debian/Ubuntu/LinuxMint
+satisfy_order = rpm,src  # For Fedora/CentOS/RHEL
 forcepkgs =
 timeout = 30
 cmakebuildtype = RelWithDebInfo
@@ -40,7 +41,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 
 - Download, compile, and install the Armadillo linear algebra library
 
-$ sudo apt-get install libblas-dev liblapack-dev gfortran
+$ sudo apt-get install libblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
+$ sudo yum install lapack-devel blas-devel gcc-fortran      # For Fedora/CentOS/RHEL
+
 $ wget http://sourceforge.net/projects/arma/files/armadillo-3.920.2.tar.gz
 $ tar xvfz armadillo-3.920.2.tar.gz
 $ cd armadillo-3.920.2
@@ -96,7 +99,8 @@ changing /home/username/gtest-1.7.0 by the actual directory where you downloaded
 
 - Install Subversion and the SSL development libraries:
 
-$ sudo apt-get install libssl-dev subversion
+$ sudo apt-get install libssl-dev subversion   # For Debian/Ubuntu/LinuxMint
+$ sudo yum install openssl-devel subversion    # For Fedora/CentOS/RHEL
 
 * Check out the latest version of GNSS-SDR
 

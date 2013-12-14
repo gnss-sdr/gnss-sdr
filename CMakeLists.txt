@@ -37,7 +37,6 @@ set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_I
 
 file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-
 ########################################################################
 # Environment setup
 ########################################################################
@@ -79,9 +78,22 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
          )
      endif(EXISTS "/etc/lsb-release")
      if(NOT LINUX_DISTRIBUTION)
+         if(EXISTS "/etc/linuxmint/info")
+             set(LINUX_DISTRIBUTION "LinuxMint")
+             execute_process(COMMAND cat /etc/linuxmint/info
+                             COMMAND grep -m1 RELEASE
+                             COMMAND awk -F= "{ print $2 }"
+                             COMMAND tr "\n" " "
+                             COMMAND sed "s/ //"
+                             OUTPUT_VARIABLE LINUX_VER
+                             RESULT_VARIABLE LINUX_VER_RESULT
+             )
+         endif(EXISTS "/etc/linuxmint/info")
+     endif(NOT LINUX_DISTRIBUTION)    
+     if(NOT LINUX_DISTRIBUTION)
          if(EXISTS "/etc/os-release")
              execute_process(COMMAND cat /etc/os-release
-                             COMMAND grep -e "^[NAME]"
+                             COMMAND grep -m1 NAME
                              COMMAND awk -F= "{ print $2 }"
                              COMMAND tr "\n" " "
                              COMMAND sed "s/ //"
@@ -96,6 +108,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
                              OUTPUT_VARIABLE LINUX_VER
                              RESULT_VARIABLE LINUX_VER_RESULT
              )
+             if(${LINUX_DISTRIBUTION} MATCHES "Debian")
+                 set(LINUX_DISTRIBUTION "Debian")
+             endif(${LINUX_DISTRIBUTION} MATCHES "Debian")
          endif(EXISTS "/etc/os-release")  
      endif(NOT LINUX_DISTRIBUTION)
      if(NOT LINUX_DISTRIBUTION)
@@ -103,17 +118,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
              set(LINUX_DISTRIBUTION "Red Hat")
              file (READ /etc/redhat-release LINUX_VER)
          endif(EXISTS "/etc/redhat-release")
-         if(EXISTS "/etc/linuxmint/info")
-             set(LINUX_DISTRIBUTION "LinuxMint")
-             execute_process(COMMAND cat /etc/linuxmint/info
-                             COMMAND grep -m1 RELEASE
-                             COMMAND awk -F= "{ print $2 }"
-                             COMMAND tr "\n" " "
-                             COMMAND sed "s/ //"
-                             OUTPUT_VARIABLE LINUX_VER
-                             RESULT_VARIABLE LINUX_VER_RESULT
-             )
-         endif(EXISTS "/etc/linuxmint/info")
      endif(NOT LINUX_DISTRIBUTION)
      if(NOT LINUX_DISTRIBUTION)
          if(EXISTS "/etc/debian_version")
@@ -441,9 +445,9 @@ if(DOXYGEN_FOUND)
           COMMENT "Cleaning documentation." VERBATIM
      )
 else(DOXYGEN_FOUND)
-     message( "Doxygen has not been found in your system.")
-     message( "You can get nice code documentation by using it!")
-     message( "Get it from http://www.stack.nl/~dimitri/doxygen/index.html")
+     message(STATUS " Doxygen has not been found in your system.")
+     message(STATUS " You can get nice code documentation by using it!")
+     message(STATUS " Get it from http://www.stack.nl/~dimitri/doxygen/index.html")
 endif(DOXYGEN_FOUND)
 
 
@@ -510,9 +514,9 @@ endif(OS_IS_LINUX)
 
 find_package(Armadillo)
 if(NOT ARMADILLO_FOUND)
-     message (" Armadillo has not been found.")
-     message (" Armadillo will be downloaded and built automatically ")
-     message (" when doing 'make'. ")
+     message (STATUS " Armadillo has not been found.")
+     message (STATUS " Armadillo will be downloaded and built automatically ")
+     message (STATUS " when doing 'make'. ")
      set(armadillo_RELEASE 3.920.2)
      set(armadillo_MD5 "3d0396513e2802c08152f50e18b4a1cd")
      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)

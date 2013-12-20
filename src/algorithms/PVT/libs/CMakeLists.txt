@@ -39,4 +39,4 @@ include_directories(
 
 add_library(pvt_lib ${PVT_LIB_SOURCES})
 target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES} )
-add_dependencies(input_filter_adapters armadillo-${armadillo_RELEASE} glog-${GLOG_RELEASE})
+add_dependencies(input_filter_adapters armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})

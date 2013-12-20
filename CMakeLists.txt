@@ -273,7 +273,7 @@ set(LOCAL_GFLAGS false CACHE STRING "GFlags installed on the system")
 set(GFlags_ROOT_DIR false)
 find_package(GFlags)
 
-if (NOT GFlags_FOUND)
+if (NOT GFlags_FOUND OR LOCAL_GLOG)
      message (STATUS " gflags library has not been found.")
      message (STATUS " gflags will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
@@ -298,19 +298,20 @@ if (NOT GFlags_FOUND)
      set(GFlags_INCLUDE_DIRS 
           ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/src CACHE PATH "Local Gflags headers"      
      )
-     set(GFlags_LIBS 
-          ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.a
-     )
+     
+     add_library(gflags UNKNOWN IMPORTED)
+     set_property(TARGET gflags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.a)
+     add_dependencies(gflags gflags-${gflags_RELEASE})
+     set(GFlags_LIBS gflags)
      set(GFlags_ROOT_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE} CACHE PATH "GFlags root folder" FORCE)
      file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
      set(GFlags_LIBRARY gflags-${gflags_RELEASE})
-     set(gflags gflags-${gflags_RELEASE})
-     set(GFlags_LIBRARY_PATH  ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs )
+     set(GFlags_LIBRARY_PATH ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs )
      link_directories(${GFlags_LIBRARY_PATH})
-     set(GFlags_lib ${GFlags_LIBS}  CACHE FILEPATH "Local Gflags library")
+     set(GFlags_lib ${GFlags_LIBS} CACHE FILEPATH "Local Gflags library")
      set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
-     set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and build automatically" FORCE)
-endif(NOT GFlags_FOUND)
+     set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and built automatically" FORCE)
+endif(NOT GFlags_FOUND OR LOCAL_GLOG)
 
 
 
@@ -376,7 +377,7 @@ export LIBS=${GFlags_SHARED_LIBS}
      set(GLOG_LIBRARIES 
           ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog.a 
      )
-     set(LOCAL_GLOG true)
+     set(LOCAL_GLOG true CACHE STRING "Glog downloaded and built automatically" FORCE)
 endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
 
 

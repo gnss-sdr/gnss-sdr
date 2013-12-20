@@ -31,5 +31,5 @@ include_directories(
 )
 
 add_library(input_filter_adapters ${INPUT_FILTER_ADAPTER_SOURCES})
-target_link_libraries(input_filter_adapters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES})
 add_dependencies(input_filter_adapters glog-${glog_RELEASE})
+target_link_libraries(input_filter_adapters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES})

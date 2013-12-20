@@ -49,5 +49,6 @@ include_directories(
 link_directories(${Boost_LIBRARY_DIR})
 
 add_library(gnss_system_parameters ${SYSTEM_PARAMETERS_SOURCES})
-target_link_libraries(gnss_system_parameters ${Boost_LIBRARIES})
 add_dependencies(gnss_system_parameters glog-${glog_RELEASE})
+target_link_libraries(gnss_system_parameters ${Boost_LIBRARIES})
+

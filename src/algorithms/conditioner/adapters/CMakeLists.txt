@@ -32,3 +32,4 @@ include_directories(
 )
 
 add_library(conditioner_adapters ${COND_ADAPTER_SOURCES})
+add_dependencies(conditioner_adapters glog-${GLOG_RELEASE})

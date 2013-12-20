@@ -30,3 +30,4 @@ include_directories(
 )
 
 add_library(resampler_gr_blocks ${RESAMPLER_GR_BLOCKS_SOURCES})
+add_dependencies(resampler_gr_blocks glog-${GLOG_RELEASE})

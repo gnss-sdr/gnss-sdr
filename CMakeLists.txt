@@ -274,9 +274,9 @@ set(GFlags_ROOT_DIR false)
 find_package(GFlags)
 
 if (NOT GFlags_FOUND)
-     message (" gflags library has not been found.")
-     message (" gflags will be downloaded and built automatically ")
-     message (" when doing 'make'. ")
+     message (STATUS " gflags library has not been found.")
+     message (STATUS " gflags will be downloaded and built automatically ")
+     message (STATUS " when doing 'make'. ")
      set(gflags_RELEASE 2.0 CACHE STRING "Local gflags release")
      set(gflags_MD5 "5fd4554d2ba84bf222a2fec0870d28df")
      
@@ -320,12 +320,12 @@ endif(NOT GFlags_FOUND)
 
 find_package(GLOG)
 if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
-     message (" glog library has not been found")
+     message (STATUS " glog library has not been found")
      if(NOT GFlags_FOUND)
-          message(" or it is likely not linked to gflags.")
+          message(STATUS " or it is likely not linked to gflags.")
      endif(NOT GFlags_FOUND)
-     message (" glog will be downloaded and built automatically ")
-     message (" when doing 'make'. ")
+     message (STATUS " glog will be downloaded and built automatically ")
+     message (STATUS " when doing 'make'. ")
      set(glog_RELEASE 0.3.3)
      set(glog_MD5 "a6fd2c22f8996846e34c763422717c18")
      if(LOCAL_GFLAGS)
@@ -355,6 +355,7 @@ export LIBS=${GFlags_SHARED_LIBS}
      set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)   
      ExternalProject_Add(
           glog-${glog_RELEASE}
+          DEPENDS gflags-${gflags_RELEASE}
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
           URL http://google-glog.googlecode.com/files/glog-${glog_RELEASE}.tar.gz
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}

@@ -31,3 +31,4 @@ include_directories(
 )
 
 add_library(channel_fsm ${CHANNEL_FSM_SOURCES})
+add_dependencies(channel_fsm glog-${GLOG_RELEASE})

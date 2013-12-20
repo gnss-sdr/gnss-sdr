@@ -30,3 +30,4 @@ include_directories(
 
 add_library(datatype_adapters ${DATATYPE_ADAPTER_SOURCES})
 target_link_libraries(datatype_adapters ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+add_dependencies(datatype_adapters glog-${GLOG_RELEASE})

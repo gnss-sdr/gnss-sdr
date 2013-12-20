@@ -32,3 +32,4 @@ include_directories(
 
 add_library(out_adapters ${OUTPUTFILTER_ADAPTER_SOURCES})
 target_link_libraries(out_adapters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+add_dependencies(out_adapters glog-${GLOG_RELEASE})

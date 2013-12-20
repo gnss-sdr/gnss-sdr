@@ -21,7 +21,8 @@ set(PVT_LIB_SOURCES
      galileo_e1_ls_pvt.cc
      kml_printer.cc
      rinex_printer.cc
-     nmea_printer.cc    
+     nmea_printer.cc  
+#     rtcm_printer.cc  
 )
 
 include_directories(
@@ -38,3 +39,4 @@ include_directories(
 
 add_library(pvt_lib ${PVT_LIB_SOURCES})
 target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES} )
+add_dependencies(input_filter_adapters armadillo-${armadillo_RELEASE} glog-${GLOG_RELEASE})

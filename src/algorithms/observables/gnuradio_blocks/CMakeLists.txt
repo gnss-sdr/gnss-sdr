@@ -35,3 +35,4 @@ include_directories(
 
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} )
 target_link_libraries(obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})
+add_dependencies(obs_gr_blocks glog-${GLOG_RELEASE})

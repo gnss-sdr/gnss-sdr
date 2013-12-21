@@ -519,8 +519,8 @@ if(NOT ARMADILLO_FOUND)
      message (STATUS " Armadillo has not been found.")
      message (STATUS " Armadillo will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-     set(armadillo_RELEASE 3.920.2)
-     set(armadillo_MD5 "3d0396513e2802c08152f50e18b4a1cd")
+     set(armadillo_RELEASE 3.930.2)
+     set(armadillo_MD5 "eef486a0fdde9a23b1067e9c57f146e4")
      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
           set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
           file(WRITE ${ARMADILLO_PATCH_FILE} "")
@@ -531,10 +531,10 @@ if(NOT ARMADILLO_FOUND)
 < set(ARMA_USE_WRAPPER true )
 ---
 > set(ARMA_USE_WRAPPER false)
-323c323
-< add_library( armadillo SHARED src/wrap_libs )
+343c343
+< add_library( armadillo SHARED src/wrapper )
 ---
-> add_library( armadillo STATIC src/wrap_libs )
+> add_library( armadillo STATIC src/wrapper )
 ")                     
      endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
      ExternalProject_Add(
@@ -546,7 +546,7 @@ if(NOT ARMADILLO_FOUND)
           PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE}  
           BUILD_IN_SOURCE 1
           BUILD_COMMAND make
-          UPDATE_COMMAND ""
+          UPDATE_COMMAND "" 
           INSTALL_COMMAND ""
      )
      # Set up variables
@@ -626,15 +626,14 @@ endif($ENV{RTLSDR_DRIVER} )
 # Enable C++11 support in GCC
 # For "-std=c++0x"  GCC's support for C++11 see http://gcc.gnu.org/projects/cxx0x.html
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++0x")
+     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++0x -Wall")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wno-c++11-narrowing") 
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
+        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wno-unused-private-field") 
+    endif(CMAKE_BUILD_TYPE MATCHES "Release")
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
-# Add warning flags 
-# For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -Wall")
 
 # Processor-architecture related flags
 # See http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html#i386-and-x86_002d64-Options

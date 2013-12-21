@@ -29,9 +29,14 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
 	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
 	)
-	
-	
+
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
+        set(MY_C_FLAGS "${MY_C_FLAGS} -Wno-parentheses-equality")         
+    endif(CMAKE_BUILD_TYPE MATCHES "Release")
+endif(CMAKE_C_COMPILER_ID MATCHES "Clang")	
+list(APPEND CMAKE_C_FLAGS ${MY_C_FLAGS})	
 
 add_library (supl_library STATIC ${ASN_RRLP_SOURCES} ${ASN_SUPL_SOURCES} ${SUPL_SOURCES})
 target_link_libraries (supl_library ssl gnss_system_parameters) 
-SET_TARGET_PROPERTIES(supl_library PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(supl_library PROPERTIES LINKER_LANGUAGE C)

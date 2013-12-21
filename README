@@ -5,7 +5,7 @@ This document describes how to set up the compilation environment and build GNSS
 
 GNU/Linux 
 -----------------------------------------------------------
-Tested distributions: Ubuntu 12.04, 12.10, 13.04 and 13.10 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18 (newer versions should work, too)
+Tested distributions: Ubuntu 12.04, 12.10, 13.04 and 13.10 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 10 and 20 (newer versions should work, too)
 
 * Install GNU Radio:
 
@@ -44,9 +44,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 $ sudo apt-get install libblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel gcc-fortran      # For Fedora/CentOS/RHEL
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-3.920.2.tar.gz
-$ tar xvfz armadillo-3.920.2.tar.gz
-$ cd armadillo-3.920.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-3.930.2.tar.gz
+$ tar xvfz armadillo-3.930.2.tar.gz
+$ cd armadillo-3.930.2
 $ cmake .
 $ make
 $ sudo make install
@@ -67,7 +67,7 @@ $ sudo ldconfig
 
 $ wget http://google-glog.googlecode.com/files/glog-0.3.3.tar.gz 
 $ tar xvfz glog-0.3.3.tar.gz 
-$ cd glog-0.3.2
+$ cd glog-0.3.3
 $ ./configure
 $ make
 $ sudo make install

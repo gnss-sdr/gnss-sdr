@@ -475,6 +475,8 @@ if(OS_IS_LINUX)
         message(" You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo yum install lapack-devel") 
+        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+            message(" sudo zypper install lapack-devel")
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo apt-get install liblapack-dev") 
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -511,12 +513,16 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/i686-redhat-linux/4.4.4
                        /usr/lib/gcc/x86_64-redhat-linux/4.8.2
                        /usr/lib/gcc/i686-redhat-linux/4.8.2
+                       /usr/lib/gcc/i586-suse-linux/4.8  # OpenSUSE 13.1
+                       /usr/lib/gcc/x86_64-suse-linux/4.8
                 )
     if(NOT GFORTRAN)
         message(" The gfortran library has not been found.")
         message(" You can try to install it by typing:")    
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo yum install gcc-fortran") 
+        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+            message(" sudo zypper install gcc-fortran")
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo apt-get install gfortran") 
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
@@ -547,6 +553,20 @@ if(NOT ARMADILLO_FOUND)
 > add_library( armadillo STATIC src/wrapper )
 ")                     
      endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+     # Check if the patch command is available (does not come by default on Fedora or openSUSE)
+     find_program(PATCH_EXECUTABLE NAME patch PATHS ENV PATH)     
+     if(NOT PATCH_EXECUTABLE)
+          message(" The patch command has not been found.")
+          message(" You can try to install it by typing:")    
+          if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+              message(" sudo yum install patch") 
+          elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+              message(" sudo zypper install patch")
+          else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+              message(" sudo apt-get install patch") 
+          endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+          message(FATAL_ERROR "The patch command is required to download and build armadillo")
+     endif(NOT PATCH_EXECUTABLE)
      ExternalProject_Add(
           armadillo-${armadillo_RELEASE}
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
@@ -672,9 +692,9 @@ endif(GPERFTOOLS_FOUND)
 list(APPEND CMAKE_CXX_FLAGS ${MY_CXX_FLAGS})
 
 if(OS_IS_LINUX)      
-    if(${LINUX_DISTRIBUTION} MATCHES "Fedora")
+    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "openSUSE")
         link_libraries(pthread)
-    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora")
+    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "openSUSE")
 endif(OS_IS_LINUX) 
 
 

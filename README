@@ -5,7 +5,7 @@ This document describes how to set up the compilation environment and build GNSS
 
 GNU/Linux 
 -----------------------------------------------------------
-Tested distributions: Ubuntu 12.04, 12.10, 13.04 and 13.10 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 10 and 20 (newer versions should work, too)
+Tested distributions: Ubuntu 12.04, 12.10, 13.04 and 13.10 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 10 and 20 and openSUSE 13.1 (newer versions should work, too)
 
 * Install GNU Radio:
 
@@ -23,7 +23,7 @@ You can safely accept the default options but for prefix. We recommend to put /u
 gituser = username
 prefix = /usr/local
 satisfy_order = deb,src  # For Debian/Ubuntu/LinuxMint
-satisfy_order = rpm,src  # For Fedora/CentOS/RHEL
+satisfy_order = rpm,src  # For Fedora/CentOS/RHEL/openSUSE
 forcepkgs =
 timeout = 30
 cmakebuildtype = RelWithDebInfo
@@ -43,10 +43,11 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 
 $ sudo apt-get install libblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel gcc-fortran      # For Fedora/CentOS/RHEL
+$ sudo zypper install lapack-devel blas-devel gcc-fortran   # For OpenSUSE
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-3.930.2.tar.gz
-$ tar xvfz armadillo-3.930.2.tar.gz
-$ cd armadillo-3.930.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-4.000.0.tar.gz
+$ tar xvfz armadillo-4.000.0.tar.gz
+$ cd armadillo-4.000.0
 $ cmake .
 $ make
 $ sudo make install

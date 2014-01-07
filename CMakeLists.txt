@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -535,23 +535,34 @@ if(NOT ARMADILLO_FOUND)
      message (STATUS " Armadillo has not been found.")
      message (STATUS " Armadillo will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-     set(armadillo_RELEASE 3.930.2)
-     set(armadillo_MD5 "eef486a0fdde9a23b1067e9c57f146e4")
+     set(armadillo_RELEASE 4.000.0)
+     set(armadillo_MD5 "3110e2030ebf61ac61ba0d0423816790") 
      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
           set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
           file(WRITE ${ARMADILLO_PATCH_FILE} "")
      else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
           set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
+          set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
           file(WRITE ${ARMADILLO_PATCH_FILE}
-"35c35
-< set(ARMA_USE_WRAPPER true )
+"30c30
+< set(ARMA_USE_LAPACK    false)
+---
+> set(ARMA_USE_LAPACK true)
+36c36
+< set(ARMA_USE_WRAPPER   true )
 ---
 > set(ARMA_USE_WRAPPER false)
-343c343
-< add_library( armadillo SHARED src/wrapper )
+318c318
+< add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
 ---
-> add_library( armadillo STATIC src/wrapper )
-")                     
+> add_library( armadillo STATIC \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
+")
+           file(WRITE ${ARMADILLO_PATCH_FILE2}
+"12c12
+< // #define ARMA_USE_LAPACK
+---
+>    #define ARMA_USE_LAPACK 
+")               
      endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
      # Check if the patch command is available (does not come by default on Fedora or openSUSE)
      find_program(PATCH_EXECUTABLE NAME patch PATHS ENV PATH)     
@@ -573,7 +584,7 @@ if(NOT ARMADILLO_FOUND)
           URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
           URL_MD5 ${armadillo_MD5}    
-          PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE}  
+          PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} && patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE2} 
           BUILD_IN_SOURCE 1
           BUILD_COMMAND make
           UPDATE_COMMAND "" 
@@ -584,7 +595,7 @@ if(NOT ARMADILLO_FOUND)
      set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )     
      find_library(lapack NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
      find_library(blas NAMES blas HINTS /usr/lib /usr/local/lib /usr/lib64)
-     set(ARMADILLO_LIBRARIES ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a ${lapack} ${blas} gfortran)
+     set(ARMADILLO_LIBRARIES ${lapack} ${blas} gfortran ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true)
      # Save a copy at the thirdparty folder
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}

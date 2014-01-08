@@ -515,6 +515,11 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/i686-redhat-linux/4.8.2
                        /usr/lib/gcc/i586-suse-linux/4.8  # OpenSUSE 13.1
                        /usr/lib/gcc/x86_64-suse-linux/4.8
+                       /usr/lib/gcc/i486-linux-gnu # Debian 7
+                       /usr/lib/gcc/i486-linux-gnu/4.4
+                       /usr/lib/gcc/i486-linux-gnu/4.6
+                       /usr/lib/gcc/i486-linux-gnu/4.7
+                       /usr/lib/gcc/i486-linux-gnu/4.8
                 )
     if(NOT GFORTRAN)
         message(" The gfortran library has not been found.")

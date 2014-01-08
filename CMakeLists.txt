@@ -540,6 +540,8 @@ if(NOT ARMADILLO_FOUND)
      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
           set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
           file(WRITE ${ARMADILLO_PATCH_FILE} "")
+          set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no2.patch)
+          file(WRITE ${ARMADILLO_PATCH_FILE2} "")
      else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
           set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
           set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
@@ -563,6 +565,7 @@ if(NOT ARMADILLO_FOUND)
 ---
 >    #define ARMA_USE_LAPACK 
 ")               
+     
      endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
      # Check if the patch command is available (does not come by default on Fedora or openSUSE)
      find_program(PATCH_EXECUTABLE NAME patch PATHS ENV PATH)     
@@ -584,7 +587,7 @@ if(NOT ARMADILLO_FOUND)
           URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
           URL_MD5 ${armadillo_MD5}    
-          PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} && patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE2} 
+          PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} && patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE2}
           BUILD_IN_SOURCE 1
           BUILD_COMMAND make
           UPDATE_COMMAND "" 
@@ -596,7 +599,7 @@ if(NOT ARMADILLO_FOUND)
      find_library(lapack NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
      find_library(blas NAMES blas HINTS /usr/lib /usr/local/lib /usr/lib64)
      set(ARMADILLO_LIBRARIES ${lapack} ${blas} gfortran ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
-     set(LOCAL_ARMADILLO true)
+     set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
      # Save a copy at the thirdparty folder
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
           DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo

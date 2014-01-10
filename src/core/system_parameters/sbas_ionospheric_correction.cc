@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <iostream>
+#include <sstream>
 #include <boost/serialization/map.hpp>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
@@ -355,12 +356,12 @@ void Sbas_Ionosphere_Correction::searchigp(const double *pos, const Igp **igp, d
                 {
                     std::stringstream ss;
                     int give = igp_it->d_give;
-                    //ss << "IGP: give=" << give;
+                    ss << "IGP: give=" << give;
                     if(give < 15) // test if valid correction data is sent for current IGP
                         {
                             int lat = igp_it->d_latitude;
                             int lon = igp_it->d_longitude;
-                            //ss << " lat=" << lat << " lon=" << lon;
+                            ss << " lat=" << lat << " lon=" << lon;
                             if (lat == latp[0] && lon == lonp[0]) igp[0] = igp_it.base();
                             else if (lat == latp[1] && lon == lonp[1]) igp[1] = igp_it.base();
                             else if (lat == latp[0] && lon == lonp[2]) igp[2] = igp_it.base();

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,19 +30,22 @@
  */
 
 #include "channel.h"
+#include <iostream>
+#include <sstream>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread/thread.hpp>
+#include <glog/log_severity.h>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <gnuradio/message.h>
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 #include "configuration_interface.h"
 #include "gnss_flowgraph.h"
-#include <iostream>
-#include <sstream>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
-#include <gnuradio/io_signature.h>
-#include <gnuradio/message.h>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
+
+
+
 
 using google::LogMessage;
 
@@ -66,35 +69,27 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
 // IMPORTANT: Do not change the order between set_doppler_max, set_doppler_step and set_threshold
 
-    unsigned int doppler_max = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_)
-    		+ ".doppler_max",0);
-    if(doppler_max==0)	doppler_max = configuration->property("Acquisition.doppler_max",0);
-
-    DLOG(INFO) << "Channel "<< channel_<<" Doppler_max = " << doppler_max << std::endl;
+    unsigned int doppler_max = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_) + ".doppler_max", 0);
+    if(doppler_max == 0) doppler_max = configuration->property("Acquisition.doppler_max", 0);
+    DLOG(INFO) << "Channel "<< channel_ << " Doppler_max = " << doppler_max;
 
     acq_->set_doppler_max(doppler_max);
 
-    unsigned int doppler_step = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_)
-    		+ ".doppler_step",0);
-    if(doppler_step==0)	doppler_step = configuration->property("Acquisition.doppler_step",500);
-
-    DLOG(INFO) << "Channel "<< channel_<<" Doppler_step = " << doppler_step << std::endl;
+    unsigned int doppler_step = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_) + ".doppler_step" ,0);
+    if(doppler_step == 0) doppler_step = configuration->property("Acquisition.doppler_step", 500);
+    DLOG(INFO) << "Channel "<< channel_ << " Doppler_step = " << doppler_step;
 
     acq_->set_doppler_step(doppler_step);
 
-    float threshold = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_)
-    		+ ".threshold",0.0);
-    if(threshold==0.0)	threshold = configuration->property("Acquisition.threshold",0.0);
+    float threshold = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_) + ".threshold", 0.0);
+    if(threshold == 0.0) threshold = configuration->property("Acquisition.threshold", 0.0);
 
     acq_->set_threshold(threshold);
 
     acq_->init();
 
-    repeat_ = configuration->property("Acquisition" + boost::lexical_cast<
-            std::string>(channel_) + ".repeat_satellite", false);
-
-    DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_
-            << std::endl;
+    repeat_ = configuration->property("Acquisition" + boost::lexical_cast<std::string>(channel_) + ".repeat_satellite", false);
+    DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_;
 
     acq_->set_channel_queue(&channel_internal_queue_);
     trk_->set_channel_queue(&channel_internal_queue_);
@@ -181,7 +176,7 @@ void Channel::set_signal(Gnss_Signal gnss_signal)
 {
     gnss_signal_ = gnss_signal;
     const char * str = gnss_signal_.get_signal().c_str(); // get a C style null terminated string
-    std::memcpy((void*)gnss_synchro_.Signal, str,3); // copy string into synchro char array: 2 char + null
+    std::memcpy((void*)gnss_synchro_.Signal, str, 3); // copy string into synchro char array: 2 char + null
     gnss_synchro_.Signal[2] = 0; // make sure that string length is only two characters
     gnss_synchro_.PRN = gnss_signal_.get_satellite().get_PRN();
     gnss_synchro_.System = gnss_signal_.get_satellite().get_system_short().c_str()[0];

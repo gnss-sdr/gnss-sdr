@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,17 +33,15 @@
  * \todo Clean this code and move the telemetry definitions to GPS_L1_CA system definitions file
  */
 
-#include "gnss_synchro.h"
+
 #include "gps_l1_ca_telemetry_decoder_cc.h"
 #include <iostream>
 #include <sstream>
-#include <bitset>
+#include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include <boost/lexical_cast.hpp>
 #include "control_message_factory.h"
-
 #include "gnss_synchro.h"
 
 #ifndef _rotl

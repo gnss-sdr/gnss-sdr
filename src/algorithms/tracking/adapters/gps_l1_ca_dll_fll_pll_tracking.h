@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,9 +38,11 @@
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_H_
 #define GNSS_SDR_GPS_L1_CA_DLL_FLL_PLL_TRACKING_H_
 
+#include <string>
+#include <gnuradio/msg_queue.h>
 #include "tracking_interface.h"
 #include "gps_l1_ca_dll_fll_pll_tracking_cc.h"
-#include <gnuradio/msg_queue.h>
+
 
 class ConfigurationInterface;
 

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,6 +29,8 @@
  */
 
 #include "gps_l1_ca_subframe_fsm.h"
+#include <list>
+#include <string>
 
 
 //************ GPS WORD TO SUBFRAME DECODER STATE MACHINE **********

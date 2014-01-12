@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,11 +28,14 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #ifndef GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_CC_H
 #define GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_CC_H
 
 #include <fstream>
 #include <queue>
+#include <string>
+#include <map>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,10 +32,12 @@
 #ifndef GN3S_SIGNAL_SOURCE_H_
 #define GN3S_SIGNAL_SOURCE_H_
 
+#include <string>
 #include <gnuradio/hier_block2.h>
-#include "gnss_block_interface.h"
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
+#include "gnss_block_interface.h"
+
 
 class ConfigurationInterface;
 

@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,6 +34,13 @@
  * -------------------------------------------------------------------------
  */
 
+#include <cmath>
+#include <iostream>
+#include <sstream>
+#include <boost/lexical_cast.hpp>
+#include <glog/log_severity.h>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include "gnss_synchro.h"
 #include "gps_l1_ca_dll_fll_pll_tracking_cc.h"
 #include "gps_sdr_signal_processing.h"
@@ -43,15 +50,6 @@
 #include "tracking_FLL_PLL_filter.h"
 #include "control_message_factory.h"
 #include "gnss_flowgraph.h"
-#include <boost/lexical_cast.hpp>
-#include <iostream>
-#include <sstream>
-#include <cmath>
-#include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
-
-
 
 /*!
  * \todo Include in definition header file

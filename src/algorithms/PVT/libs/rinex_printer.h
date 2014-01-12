@@ -25,7 +25,7 @@
  * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -56,6 +56,7 @@
 #include <iostream>
 #include <sstream>  // for stringstream
 #include <iomanip>  // for setprecision
+#include <map>
 #include "gps_navigation_message.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "GPS_L1_CA.h"

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,10 +29,12 @@
  */
 
 #include "gps_l1_ca_channel_fsm.h"
-#include "control_message_factory.h"
-#include "channel.h"
+#include <list>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include "control_message_factory.h"
+#include "channel.h"
+
 
 struct Ev_gps_channel_start_acquisition: sc::event<
 		Ev_gps_channel_start_acquisition> {
@@ -140,6 +142,8 @@ void GpsL1CaChannelFsm::Event_gps_failed_acquisition_no_repeat() {
 	this->process_event(Ev_gps_channel_failed_acquisition_no_repeat());
 }
 
+
+// Something is wrong here, we are using a memory after it ts freed
 void GpsL1CaChannelFsm::Event_gps_failed_tracking_standby() {
 	this->process_event(Ev_gps_channel_failed_tracking_standby());
 }

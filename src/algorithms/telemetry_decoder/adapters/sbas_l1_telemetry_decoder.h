@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,9 +33,11 @@
 #ifndef GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_H_
 #define GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_H_
 
+#include <string>
+#include <gnuradio/msg_queue.h>
 #include "telemetry_decoder_interface.h"
 #include "sbas_l1_telemetry_decoder_cc.h"
-#include <gnuradio/msg_queue.h>
+
 
 
 class ConfigurationInterface;

@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,7 +35,7 @@
 #ifndef GNSS_SDR_CHANNEL_H_
 #define GNSS_SDR_CHANNEL_H_
 
-//#include <gnuradio/blocks/null_sink.h>
+#include <string>
 #include <gnuradio/msg_queue.h>
 #include "channel_interface.h"
 #include "gps_l1_ca_channel_fsm.h"
@@ -51,7 +51,9 @@ class TrackingInterface;
 class TelemetryDecoderInterface;
 
 /*!
- * \brief This class represents a GNSS channel.
+ * \brief This class represents a GNSS channel. It wraps an AcquisitionInterface,
+ * a Tracking Interface and a TelemetryDecoderInterface, and handles
+ * their interaction through a Finite State Machine
  *
  */
 class Channel: public ChannelInterface
@@ -78,9 +80,9 @@ public:
     AcquisitionInterface* acquisition(){ return acq_; }
     TrackingInterface* tracking(){ return trk_; }
     TelemetryDecoderInterface* telemetry(){ return nav_; }
-    void start_acquisition();
-    void set_signal(Gnss_Signal gnss_signal_);
-    void start();
+    void start_acquisition();                   //!< Start the State Machine
+    void set_signal(Gnss_Signal gnss_signal_);  //!< Sets the channel GNSS signal
+    void start();                               //!< Start the thread
     void standby();
     /*!
      * \brief Set stop_ to true and blocks the calling thread until

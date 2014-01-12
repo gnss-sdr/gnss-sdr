@@ -15,7 +15,7 @@
  *
  * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * "A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach", Birkha user, 2007. pp 81-84
+ * Approach", Birkhauser, 2007. pp 81-84
  *
  * \authors <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
@@ -25,7 +25,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -49,18 +49,21 @@
  */
 
 #include "pcps_opencl_acquisition_cc.h"
+#include <sys/time.h>
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <glog/log_severity.h>
+#include <glog/logging.h>
+#include <gnuradio/io_signature.h>
+#include <volk/volk.h>
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
 #include "fft_base_kernels.h"
 #include "fft_internal.h"
-#include <gnuradio/io_signature.h>
-#include <sstream>
-#include <fstream>
-#include <iostream>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
-#include <volk/volk.h>
-#include <sys/time.h>
+
+
 
 using google::LogMessage;
 

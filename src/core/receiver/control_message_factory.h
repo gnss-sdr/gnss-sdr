@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,11 +28,10 @@
  * -------------------------------------------------------------------------
  */
 
-
-
 #ifndef GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 #define GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 
+#include <vector>
 #include <gnuradio/message.h>
 
 //! Message described by who sent it and what it says

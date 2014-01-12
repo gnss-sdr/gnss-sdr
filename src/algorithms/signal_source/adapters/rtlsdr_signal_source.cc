@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,14 +30,15 @@
  */
 
 #include "rtlsdr_signal_source.h"
+#include <iostream>
+#include <boost/format.hpp>
+#include <glog/log_severity.h>
+#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
-#include <glog/log_severity.h>
-#include <glog/logging.h>
-#include <iostream>
 #include "GPS_L1_CA.h"
-#include <boost/format.hpp>
+
 
 using google::LogMessage;
 
@@ -58,7 +59,7 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
             default_dump_file);
 
     // RTLSDR Driver parameters
-    AGC_enabled_ = configuration->property(role + ".AGC_enabled",true);
+    AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     gain_ = configuration->property(role + ".gain", (double)40.0);
     rf_gain_ = configuration->property(role + ".rf_gain", (double)40.0);
@@ -74,7 +75,14 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the driver instance
-            rtlsdr_source_ = osmosdr::source::make();
+            try
+            {
+                    rtlsdr_source_ = osmosdr::source::make();
+            }
+            catch( boost::exception & e )
+            {
+                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+            }
 
             // 2 set sampling rate
             rtlsdr_source_->set_sample_rate(sample_rate_);
@@ -100,9 +108,9 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
             else
                 {
                     rtlsdr_source_->set_gain_mode(false);
-                    rtlsdr_source_->set_gain(gain_,0);
-                    rtlsdr_source_->set_if_gain(rf_gain_,0);
-                    rtlsdr_source_->set_bb_gain(if_gain_,0);
+                    rtlsdr_source_->set_gain(gain_, 0);
+                    rtlsdr_source_->set_if_gain(rf_gain_, 0);
+                    rtlsdr_source_->set_bb_gain(if_gain_, 0);
                     std::cout << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain() << std::endl;
                     LOG(INFO) << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain();
                 }

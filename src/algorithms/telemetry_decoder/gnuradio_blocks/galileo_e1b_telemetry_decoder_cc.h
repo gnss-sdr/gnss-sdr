@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,16 +32,15 @@
 #ifndef GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_CC_H
 #define GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_CC_H
 
-
-#include "Galileo_E1.h"
-#include "concurrent_queue.h"
 #include <fstream>
-#include <bitset>
+#include <string>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-#include "gnuradio/trellis/interleaver.h"
-#include "gnuradio/trellis/permutation.h"
-#include "gnuradio/fec/viterbi.h"
+#include <gnuradio/trellis/interleaver.h>
+#include <gnuradio/trellis/permutation.h>
+#include <gnuradio/fec/viterbi.h>
+#include "Galileo_E1.h"
+#include "concurrent_queue.h"
 #include "gnss_satellite.h"
 #include "galileo_navigation_message.h"
 #include "galileo_ephemeris.h"

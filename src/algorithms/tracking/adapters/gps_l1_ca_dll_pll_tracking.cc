@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,15 +35,13 @@
  * -------------------------------------------------------------------------
  */
 
+
+#include <glog/log_severity.h>
+#include <glog/logging.h>
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
-#ifdef GNSS_SDR_USE_BOOST_ROUND
-  #include <boost/math/special_functions/round.hpp>
-#endif
-//#include <gnuradio/gr_io_signature.h>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
+
 
 using google::LogMessage;
 
@@ -71,7 +69,7 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     float dll_bw_hz;
     float early_late_space_chips;
 
-    item_type = configuration->property(role + ".item_type",default_item_type);
+    item_type = configuration->property(role + ".item_type", default_item_type);
     //vector_length = configuration->property(role + ".vector_length", 2048);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     f_if = configuration->property(role + ".if", 0);
@@ -83,11 +81,8 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
-#ifdef GNSS_SDR_USE_BOOST_ROUND
-    vector_length = round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-#else
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-#endif
+
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {

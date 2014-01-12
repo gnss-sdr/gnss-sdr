@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,21 +32,24 @@
 #ifndef GNSS_SDR_GPS_L1_CA_CHANNEL_FSM_H
 #define GNSS_SDR_GPS_L1_CA_CHANNEL_FSM_H
 
+#include <cstring>
+#include <iostream>
+#include <queue>
 #include <boost/statechart/state_machine.hpp>
 #include <boost/statechart/simple_state.hpp>
 #include <boost/statechart/state.hpp>
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/custom_reaction.hpp>
 #include <boost/mpl/list.hpp>
-#include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
+#include <gnuradio/msg_queue.h>
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
-#include <gnuradio/msg_queue.h>
-#include <iostream>
-#include <cstring>
+
+
+
 
 namespace sc = boost::statechart;
 namespace mpl = boost::mpl;

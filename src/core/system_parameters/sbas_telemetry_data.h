@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,14 +31,14 @@
 #ifndef GNSS_SDR_SBAS_TELEMETRY_DATA_H_
 #define GNSS_SDR_SBAS_TELEMETRY_DATA_H_
 
-#include <iostream>
-#include <map>
-#include <vector>
-#include <string>
 #include <algorithm>
 #include <bitset>
-#include "boost/assign.hpp"
 #include <cmath>
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
+#include "boost/assign.hpp"
 #include "concurrent_queue.h"
 #include "sbas_time.h"
 

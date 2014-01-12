@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,6 +32,7 @@
 #define GNSS_SDR_CONCURRENT_MAP_H
 
 #include <map>
+#include <utility>
 
 template<typename Data>
 

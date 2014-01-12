@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,14 +36,11 @@
  */
 
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
-#include "GPS_L1_CA.h"
-#include "configuration_interface.h"
-#ifdef GNSS_SDR_USE_BOOST_ROUND
-  #include <boost/math/special_functions/round.hpp>
-#endif
-//#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include "GPS_L1_CA.h"
+#include "configuration_interface.h"
+
 
 using google::LogMessage;
 
@@ -91,11 +88,7 @@ GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
-    #ifdef GNSS_SDR_USE_BOOST_ROUND
-    vector_length = round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-    #else
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-    #endif
     
 
     //################# MAKE TRACKING GNURadio object ###################

@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,16 +38,18 @@
 #define GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H_
 
 #include <fstream>
+#include <queue>
+#include <string>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/shared_array.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include <queue>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
-#include <boost/shared_array.hpp>
+
 
 class pcps_cccwsr_acquisition_cc;
 

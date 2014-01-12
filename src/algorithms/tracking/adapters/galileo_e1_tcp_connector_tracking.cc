@@ -12,7 +12,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,15 +36,12 @@
  */
 
 #include "galileo_e1_tcp_connector_tracking.h"
+#include <glog/log_severity.h>
+#include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
-#ifdef GNSS_SDR_USE_BOOST_ROUND
-  #include <boost/math/special_functions/round.hpp>
-#endif
-//#include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
+
 
 using google::LogMessage;
 
@@ -87,11 +84,8 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
-#ifdef GNSS_SDR_USE_BOOST_ROUND
-    vector_length = round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
-#else
     vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
-#endif
+
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {

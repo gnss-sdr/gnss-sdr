@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,13 +28,14 @@
  * -------------------------------------------------------------------------
  */
 
+#include "sbas_satellite_correction.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include <math.h>
 #include <iostream>
+#include <string>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include "sbas_satellite_correction.h"
+
 
 #define EVENT 2 // logs important events which don't occur every update() call
 #define FLOW 3  // logs the function calls of block processing functions

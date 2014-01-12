@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,7 +33,16 @@
  */
 
 #include "control_thread.h"
+#include <unistd.h>
+#include <map>
+#include <string>
+#include <iostream>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread/thread.hpp>
+#include <gnuradio/message.h>
+#include <gflags/gflags.h>
+#include <glog/log_severity.h>
+#include <glog/logging.h>
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
@@ -44,16 +53,11 @@
 #include "galileo_almanac.h"
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
-#include <unistd.h>
-#include <gnuradio/message.h>
-#include <gflags/gflags.h>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
 #include "gnss_flowgraph.h"
 #include "file_configuration.h"
 #include "control_message_factory.h"
-#include <boost/thread/thread.hpp>
-#include <iostream>
+
+
 
 extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 extern concurrent_map<Gps_Iono> global_gps_iono_map;

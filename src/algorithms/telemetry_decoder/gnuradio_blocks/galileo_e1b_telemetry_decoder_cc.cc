@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,21 +29,21 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gnss_synchro.h"
+
 #include "galileo_e1b_telemetry_decoder_cc.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 #include <sstream>
-#include <bitset>
+#include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include <boost/lexical_cast.hpp>
 #include "control_message_factory.h"
 #include "galileo_navigation_message.h"
 #include "gnss_synchro.h"
 #include "convolutional.h"
-#include <stdio.h>
-#include <stdlib.h>
+
 
 #define CRC_ERROR_LIMIT 6
 
@@ -207,9 +207,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
     viterbi_decoder(page_part_symbols_deint, page_part_bits);
 
     // 3. Call the Galileo page decoder
-
     std::string page_String;
-
     for(int i = 0; i < (frame_length/2); i++)
         {
             if (page_part_bits[i] > 0)
@@ -220,10 +218,8 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
                 {
                     page_String.push_back('0');
                 }
-
         }
 
-    //std::cout<<"ch["<<d_channel<<"] frame part bits: "<<page_String<<std::endl;
     if (page_part_bits[0] == 1)
         {
             // DECODE COMPLETE WORD (even + odd) and TEST CRC
@@ -246,7 +242,6 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
         }
 
     // 4. Push the new navigation data to the queues
-
     if (d_nav.have_new_ephemeris() == true)
         {
             // get ephemeris object for this SV

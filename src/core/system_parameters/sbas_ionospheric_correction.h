@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,14 +31,15 @@
 #ifndef SBAS_IONOSPHERIC_CORRECTION_H_
 #define SBAS_IONOSPHERIC_CORRECTION_H_
 
+#include <fstream>
 #include <iostream>
+#include <string>
 #include <vector>
 #include <boost/serialization/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
-#include <string>
-#include <fstream>
+
 
 /*!
  * \brief Struct that represents a Ionospheric Grid Point (IGP)

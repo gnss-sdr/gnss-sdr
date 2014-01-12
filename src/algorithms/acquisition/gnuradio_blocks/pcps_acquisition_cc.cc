@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,14 +33,14 @@
  */
 
 #include "pcps_acquisition_cc.h"
-#include "gnss_signal_processing.h"
-#include "control_message_factory.h"
-#include <gnuradio/io_signature.h>
+#include <sys/time.h>
 #include <sstream>
+#include <gnuradio/io_signature.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include <sys/time.h>
+#include "gnss_signal_processing.h"
+#include "control_message_factory.h"
 
 using google::LogMessage;
 
@@ -161,12 +161,12 @@ void pcps_acquisition_cc::init()
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
-    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
                                d_fft_size * sizeof(gr_complex)) == 0){};
 
-            int doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            int doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
         }

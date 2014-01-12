@@ -5,7 +5,7 @@
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,20 +27,22 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #ifndef GNSS_SDR_GPS_L1_CA_LS_PVT_H_
 #define GNSS_SDR_GPS_L1_CA_LS_PVT_H_
 
-#include <fstream>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <stdlib.h>
-#include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-#include <cmath>
-#include <map>
 #include <algorithm>
+#include <cmath>
+#include <deque>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sstream>
+#include <string>
 #include "gps_navigation_message.h"
 #include "GPS_L1_CA.h"
 #include "armadillo"

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,13 +27,18 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H
 #define GNSS_SDR_SIGNAL_GENERATOR_C_H
 
-#include "gnss_signal.h"
+#include <string>
+#include <vector>
+#include <boost/scoped_array.hpp>
 #include <gnuradio/random.h>
 #include <gnuradio/block.h>
-#include <boost/scoped_array.hpp>
+#include "gnss_signal.h"
+
+
 
 
 class signal_generator_c;

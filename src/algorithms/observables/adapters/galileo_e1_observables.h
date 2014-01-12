@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,9 +34,11 @@
 #ifndef GNSS_SDR_GALILEO_E1_OBSERVABLES_H_
 #define GNSS_SDR_GALILEO_E1_OBSERVABLES_H_
 
+#include <string>
+#include <gnuradio/msg_queue.h>
 #include "observables_interface.h"
 #include "galileo_e1_observables_cc.h"
-#include <gnuradio/msg_queue.h>
+
 
 class ConfigurationInterface;
 

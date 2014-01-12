@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,10 +28,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include "sbas_time.h"
-
 #ifndef GNSS_SDR_SBAS_SATELLITE_CORRECTION_H_
 #define GNSS_SDR_SBAS_SATELLITE_CORRECTION_H_
+
+#include "sbas_time.h"
 
 struct Fast_Correction
 {

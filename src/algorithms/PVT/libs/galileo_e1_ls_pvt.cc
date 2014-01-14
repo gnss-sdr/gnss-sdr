@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,13 +29,11 @@
  * -------------------------------------------------------------------------
  */
 
-#include <armadillo>
 #include "galileo_e1_ls_pvt.h"
-#include "Galileo_E1.h"
 #include <glog/log_severity.h>
 #include <glog/logging.h>
-#include "boost/date_time/posix_time/posix_time.hpp"
-#include "gnss_synchro.h"
+#include "Galileo_E1.h"
+
 
 using google::LogMessage;
 

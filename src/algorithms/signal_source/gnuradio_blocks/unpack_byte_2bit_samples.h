@@ -5,7 +5,7 @@
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -28,8 +28,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_unpack_byte_2bit_samples_H
-#define 	 GNSS_SDR_unpack_byte_2bit_samples_H
+#ifndef GNSS_SDR_UNPACK_BYTE_2BIT_SAMPLES_H
+#define GNSS_SDR_UNPACK_BYTE_2BIT_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
 
@@ -51,8 +51,8 @@ private:
 public:
     unpack_byte_2bit_samples();
     ~unpack_byte_2bit_samples();
-    int work (int noutput_items,gr_vector_const_void_star &input_items,
-    		gr_vector_void_star &output_items);
+    int work (int noutput_items, gr_vector_const_void_star &input_items,
+              gr_vector_void_star &output_items);
 };
 
 #endif

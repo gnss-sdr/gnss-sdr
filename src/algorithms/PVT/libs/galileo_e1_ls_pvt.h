@@ -32,20 +32,18 @@
 #ifndef GNSS_SDR_GALILEO_E1_LS_PVT_H_
 #define GNSS_SDR_GALILEO_E1_LS_PVT_H_
 
-#include <sys/time.h>
-#include <time.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
+#include <cstdio>
 #include <deque>
 #include <fstream>
 #include <iostream>
 #include <map>
-#include <stdlib.h>
-#include <stdio.h>
 #include <sstream>
 #include <string>
-#include "armadillo"
-#include "boost/date_time/posix_time/posix_time.hpp"
+#include <armadillo>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "GPS_L1_CA.h"
 #include "galileo_navigation_message.h"
 #include "gnss_synchro.h"

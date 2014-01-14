@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,12 +29,11 @@
  */
 
 #include "fir_filter.h"
-#include "configuration_interface.h"
-#include <string>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/filter/pm_remez.h>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include "configuration_interface.h"
 
 using google::LogMessage;
 

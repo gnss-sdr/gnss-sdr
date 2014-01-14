@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -33,14 +33,15 @@
  * -------------------------------------------------------------------------
  */
 
+#include "nmea_printer.h"
+#include <fcntl.h>
+#include <termios.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
-#include "boost/date_time/posix_time/posix_time.hpp"
-#include <fcntl.h>
-#include <termios.h>
 #include "GPS_L1_CA.h"
-#include "nmea_printer.h"
+
 
 using google::LogMessage;
 

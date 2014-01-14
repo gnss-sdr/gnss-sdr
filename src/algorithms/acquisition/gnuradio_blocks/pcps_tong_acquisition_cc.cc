@@ -25,7 +25,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -49,13 +49,13 @@
  */
 
 #include "pcps_tong_acquisition_cc.h"
-#include "gnss_signal_processing.h"
-#include "control_message_factory.h"
-#include <gnuradio/io_signature.h>
 #include <sstream>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <volk/volk.h>
+#include "control_message_factory.h"
+#include "gnss_signal_processing.h"
 
 using google::LogMessage;
 
@@ -149,11 +149,11 @@ void pcps_tong_acquisition_cc::set_local_code(std::complex<float> * code)
     //Conjugate the local code
     if (is_unaligned())
         {
-            volk_32fc_conjugate_32fc_u(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
+            volk_32fc_conjugate_32fc_u(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
         }
     else
         {
-            volk_32fc_conjugate_32fc_a(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
+            volk_32fc_conjugate_32fc_a(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
         }
 }
 
@@ -177,7 +177,7 @@ void pcps_tong_acquisition_cc::init()
     // Create the carrier Doppler wipeoff signals and allocate data grid.
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     d_grid_data = new float*[d_num_doppler_bins];
-    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
                                d_fft_size * sizeof(gr_complex)) == 0){};
@@ -201,7 +201,6 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
     switch (d_state)
@@ -220,7 +219,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                     d_input_power = 0.0;
                     d_test_statistics = 0.0;
 
-                    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+                    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                         {
                             for (unsigned int i = 0; i < d_fft_size; i++)
                                 {
@@ -264,11 +263,11 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
             d_input_power /= (float)d_fft_size;
 
             // 2- Doppler frequency search loop
-            for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
                     // doppler search steps
 
-                    doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+                    doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
 
                     volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in,
                                 d_grid_doppler_wipeoffs[doppler_index], d_fft_size);

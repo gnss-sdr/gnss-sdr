@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,16 +31,16 @@
  */
 
 #include "pcps_assisted_acquisition_cc.h"
-#include "gnss_signal_processing.h"
-#include "control_message_factory.h"
-#include "gps_acq_assist.h"
-#include <gnuradio/io_signature.h>
 #include <sstream>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
+#include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include "nco_lib.h"
 #include "concurrent_map.h"
+#include "gnss_signal_processing.h"
+#include "control_message_factory.h"
+#include "gps_acq_assist.h"
 
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 

@@ -29,19 +29,16 @@
  */
 
 #include "rinex_printer.h"
-#include <stdlib.h>  // for getenv()
 #include <algorithm> // for min and max
-#include <cmath> // for floor
-#include <fstream>
-#include <iostream>
-#include <string>
+#include <cmath>     // for floor
+#include <cstdlib>   // for getenv()
 #include <ostream>
 #include <utility>
 #include <vector>
-#include "boost/date_time/time_zone_base.hpp"
-#include "boost/date_time/gregorian/gregorian.hpp"
-#include "boost/date_time/local_time/local_time.hpp"
-#include "boost/date_time/posix_time/posix_time.hpp"
+#include <boost/date_time/time_zone_base.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/local_time/local_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
@@ -50,9 +47,6 @@
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-#include "GPS_L1_CA.h"
-
-
 
 
 using google::LogMessage;

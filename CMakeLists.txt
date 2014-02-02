@@ -540,38 +540,6 @@ if(NOT ARMADILLO_FOUND)
      message (STATUS " Armadillo has not been found.")
      message (STATUS " Armadillo will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-     set(armadillo_RELEASE 4.000.0)
-     set(armadillo_MD5 "3110e2030ebf61ac61ba0d0423816790") 
-     if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-          set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
-          file(WRITE ${ARMADILLO_PATCH_FILE} "")
-          set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no2.patch)
-          file(WRITE ${ARMADILLO_PATCH_FILE2} "")
-     else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-          set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
-          set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
-          file(WRITE ${ARMADILLO_PATCH_FILE}
-"30c30
-< set(ARMA_USE_LAPACK    false)
----
-> set(ARMA_USE_LAPACK true)
-36c36
-< set(ARMA_USE_WRAPPER   true )
----
-> set(ARMA_USE_WRAPPER false)
-318c318
-< add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
----
-> add_library( armadillo STATIC \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
-")
-           file(WRITE ${ARMADILLO_PATCH_FILE2}
-"12c12
-< // #define ARMA_USE_LAPACK
----
->    #define ARMA_USE_LAPACK 
-")               
-     
-     endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
      # Check if the patch command is available (does not come by default on Fedora or openSUSE)
      find_program(PATCH_EXECUTABLE NAME patch PATHS ENV PATH)     
      if(NOT PATCH_EXECUTABLE)
@@ -586,18 +554,90 @@ if(NOT ARMADILLO_FOUND)
           endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
           message(FATAL_ERROR "The patch command is required to download and build armadillo")
      endif(NOT PATCH_EXECUTABLE)
-     ExternalProject_Add(
-          armadillo-${armadillo_RELEASE}
-          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-          URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
-          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
-          URL_MD5 ${armadillo_MD5}    
-          PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} && patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE2}
-          BUILD_IN_SOURCE 1
-          BUILD_COMMAND make
-          UPDATE_COMMAND "" 
-          INSTALL_COMMAND ""
-     )
+     set(OLD_GCC false)
+     if(CMAKE_COMPILER_IS_GNUCC)
+         execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+         if(GCC_VERSION VERSION_EQUAL 4.6 OR GCC_VERSION VERSION_LESS 4.6)
+             set(OLD_GCC true)
+         endif(GCC_VERSION VERSION_EQUAL 4.6 OR GCC_VERSION VERSION_LESS 4.6)
+     endif(CMAKE_COMPILER_IS_GNUCC)
+     
+     if(OLD_GCC)
+         set(armadillo_RELEASE 3.920.2)
+         set(armadillo_MD5 "3d0396513e2802c08152f50e18b4a1cd")
+         if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+             set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
+             file(WRITE ${ARMADILLO_PATCH_FILE} "")
+         else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+             set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
+             file(WRITE ${ARMADILLO_PATCH_FILE}
+"35c35
+< set(ARMA_USE_WRAPPER true )
+---
+> set(ARMA_USE_WRAPPER false)
+323c323
+< add_library( armadillo SHARED src/wrap_libs )
+---
+> add_library( armadillo STATIC src/wrap_libs )
+")                    
+             endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+         ExternalProject_Add(
+             armadillo-${armadillo_RELEASE}
+             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
+             URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
+             DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
+             URL_MD5 ${armadillo_MD5}   
+             PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} 
+             BUILD_IN_SOURCE 1
+             BUILD_COMMAND make
+             UPDATE_COMMAND ""
+            INSTALL_COMMAND ""
+         )
+     else(OLD_GCC)
+         set(armadillo_RELEASE 4.000.2)
+         set(armadillo_MD5 "b2891c7b59b96337c154c5d961fd40fb") 
+         if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+             set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
+             file(WRITE ${ARMADILLO_PATCH_FILE} "")
+             set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no2.patch)
+             file(WRITE ${ARMADILLO_PATCH_FILE2} "")
+         else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+             set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
+             set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
+             file(WRITE ${ARMADILLO_PATCH_FILE}
+"30c30
+< set(ARMA_USE_LAPACK    false)
+---
+> set(ARMA_USE_LAPACK true)
+36c36
+< set(ARMA_USE_WRAPPER   true )
+---
+> set(ARMA_USE_WRAPPER false)
+318c318
+< add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
+---
+> add_library( armadillo STATIC \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
+")
+             file(WRITE ${ARMADILLO_PATCH_FILE2}
+"12c12
+< // #define ARMA_USE_LAPACK
+---
+>    #define ARMA_USE_LAPACK 
+") 
+         endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+         ExternalProject_Add(
+             armadillo-${armadillo_RELEASE}
+             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
+             URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
+             DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
+             URL_MD5 ${armadillo_MD5}    
+             PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} && patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE2}
+             BUILD_IN_SOURCE 1
+             BUILD_COMMAND make
+             UPDATE_COMMAND "" 
+             INSTALL_COMMAND ""
+         )
+     endif(OLD_GCC)
      # Set up variables
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
      set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )     

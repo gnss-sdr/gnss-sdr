@@ -74,6 +74,11 @@ if( GN3S_DRIVER )
     add_definitions(-DGN3S_DRIVER=1)
 endif( GN3S_DRIVER )
 
+if( RAW_ARRAY_DRIVER )
+    message(STATUS "Support for CTTC RAW ARRAY enabled" )
+    add_definitions(-DRAW_ARRAY_DRIVER=1)
+endif( RAW_ARRAY_DRIVER )
+
 #Enable RTL-SDR module if the flag is present
 if( $ENV{RTLSDR_DRIVER} )
     message(STATUS "Support for RF front-end based on RTL dongle enabled" )

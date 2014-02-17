@@ -51,6 +51,33 @@ if($ENV{GN3S_DRIVER})
      )     
 endif($ENV{GN3S_DRIVER})
 
+if($ENV{RAW_ARRAY_DRIVER})
+     ##############################################
+     # GRDBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
+     ##############################################
+
+     # find_package(GrDbfcttc)
+     # if not found, build it with ExternalPackage_Add
+     include(ExternalProject)     
+     ExternalProject_Add(
+          gr-dbfcttc
+          SOURCE_DIR ${CMAKE_SOURCE_DIR}/drivers/gr-dbfcttc
+          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-dbfcttc
+          UPDATE_COMMAND ""
+          PATCH_COMMAND ""
+          INSTALL_COMMAND ""
+     )
+     
+     # Set up variables
+     #set(GRDBFCTTC_INCLUDE_DIRS ${GRDBFCTTC_DIR}/include ${GRDBFCTTC_DIR} ${GRDBFCTTC_DIR}/src)
+     #set(GRDBFCTTC_LIBRARIES 
+     #    "${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-dbfcttc/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gr-dbfcttc${CMAKE_SHARED_LIBRARY_SUFFIX}"
+     #) 
+     #set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRDBFCTTC_LIBRARIES})
+     #set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRDBFCTTC_INCLUDE_DIRS})
+     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
+     
+endif($ENV{RAW_ARRAY_DRIVER})
 
 
 if($ENV{RTLSDR_DRIVER})

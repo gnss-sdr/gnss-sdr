@@ -85,6 +85,10 @@
 	#include "gn3s_signal_source.h"
 #endif
 
+#if RAW_ARRAY_DRIVER
+	#include "raw_array_signal_source.h"
+#endif
+
 #if RTLSDR_DRIVER
 	#include "rtlsdr_signal_source.h"
 #endif
@@ -312,6 +316,14 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GN3S_Signal_Source") == 0)
         {
             block = new Gn3sSignalSource(configuration, role, in_streams,
+                    out_streams, queue);
+        }
+#endif
+
+#if RAW_ARRAY_DRIVER
+    else if (implementation.compare("Raw_Array_Signal_Source") == 0)
+        {
+            block = new RawArraySignalSource(configuration, role, in_streams,
                     out_streams, queue);
         }
 #endif

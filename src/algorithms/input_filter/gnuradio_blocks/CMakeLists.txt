@@ -16,5 +16,17 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(adapters)
-add_subdirectory(gnuradio_blocks)
+
+set(INPUT_FILTER_GR_BLOCKS_SOURCES 
+     beamformer.cc
+)
+
+include_directories(
+     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+)
+
+add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES})
+target_link_libraries(input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

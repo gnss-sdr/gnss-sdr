@@ -1,0 +1,10 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/swig/_dbfcttc_swig_swig_tag.cpp
+

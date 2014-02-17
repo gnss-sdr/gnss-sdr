@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<block>
+  <name>raw_array</name>
+  <key>dbfcttc_raw_array</key>
+  <category>dbfcttc</category>
+  <import>import dbfcttc</import>
+  <make>dbfcttc.raw_array($*src_device, $number_of_channels, $snapshots_per_frame, $inter_frame_delay, $sampling_freq)</make>
+  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
+       Sub-nodes:
+       * name
+       * key (makes the value accessible as $keyname, e.g. in the make node)
+       * type -->
+       
+   <param>
+		<name>Ethernet Device</name>
+		<key>src_device</key>
+		<value>en4</value>
+		<type>string</type>
+   </param>
+   <param>
+		<name>Number of Array channels</name>
+		<key>number_of_channels</key>
+		<value>8</value>
+		<type>int</type>
+   </param>
+   <param>
+		<name>Number of Snapshots per Ethernet frame</name>
+		<key>snapshots_per_frame</key>
+		<value>70</value>
+		<type>int</type>
+   </param>   
+   <param>
+		<name>Delay between frames [bytes]</name>
+		<key>inter_frame_delay</key>
+		<value>10</value>
+		<type>int</type>
+   </param>
+   <param>
+		<name>Sampling frequency [Hz]</name>
+		<key>sampling_freq</key>
+		<value>5000000</value>
+		<type>int</type>
+   </param> 
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <!-- Make one 'source' node per output. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <source>
+    <name>CH1</name>
+    <type>complex</type>
+  </source>
+    <source>
+    <name>CH2</name>
+    <type>complex</type>
+  </source>
+    <source>
+    <name>CH3</name>
+    <type>complex</type>
+  </source>
+    <source>
+    <name>CH4</name>
+    <type>complex</type>
+  </source>
+    <source>
+    <name>CH5</name>
+    <type>complex</type>
+  </source>
+    <source>
+    <name>CH6</name>
+    <type>complex</type>
+  </source>
+    <source>
+    <name>CH7</name>
+    <type>complex</type>
+  </source>
+    <source>
+    <name>CH8</name>
+    <type>complex</type>
+  </source>
+</block>

@@ -1,0 +1,9 @@
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/swig/CMakeFiles/_dbfcttc_swig.dir
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/swig/CMakeFiles/_dbfcttc_swig_swig_tag.dir
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/swig/CMakeFiles/dbfcttc_swig_swig_doc.dir
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/lib/CMakeFiles/gnuradio-dbfcttc.dir
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/apps/CMakeFiles/pygen_apps_9a6dd.dir
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/python/CMakeFiles/pygen_python_b7056.dir
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/swig/CMakeFiles/pygen_swig_541bd.dir
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/lib/CMakeFiles/test-dbfcttc.dir
+/home/usuario/sdr/gnss-sdr/gnss-sdr/drivers/gr-dbfcttc/build/CMakeFiles/uninstall.dir

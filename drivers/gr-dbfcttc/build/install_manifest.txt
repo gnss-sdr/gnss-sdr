@@ -1,0 +1,14 @@
+/usr/local/lib/cmake/dbfcttc/dbfcttcConfig.cmake
+/usr/local/include/dbfcttc/api.h
+/usr/local/include/dbfcttc/raw_array.h
+/usr/local/lib/libgnuradio-dbfcttc.so
+/usr/local/lib/python2.7/dist-packages/dbfcttc/_dbfcttc_swig.so
+/usr/local/lib/python2.7/dist-packages/dbfcttc/dbfcttc_swig.py
+/usr/local/lib/python2.7/dist-packages/dbfcttc/dbfcttc_swig.pyc
+/usr/local/lib/python2.7/dist-packages/dbfcttc/dbfcttc_swig.pyo
+/usr/local/include/dbfcttc/dbfcttc/swig/dbfcttc_swig.i
+/usr/local/include/dbfcttc/dbfcttc/swig/dbfcttc_swig_doc.i
+/usr/local/lib/python2.7/dist-packages/dbfcttc/__init__.py
+/usr/local/lib/python2.7/dist-packages/dbfcttc/__init__.pyc
+/usr/local/lib/python2.7/dist-packages/dbfcttc/__init__.pyo
+/usr/local/share/gnuradio/grc/blocks/dbfcttc_raw_array.xml

@@ -44,6 +44,8 @@
 #include "channel_interface.h"
 #include "gnss_block_factory.h"
 
+#define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8
+
 using google::LogMessage;
 
 GNSSFlowgraph::GNSSFlowgraph(ConfigurationInterface *configuration,
@@ -212,10 +214,27 @@ void GNSSFlowgraph::connect()
     DLOG(INFO) << "blocks connected internally";
 
     // Signal Source >  Signal conditioner >
+
+
     try
     {
-            top_block_->connect(signal_source()->get_right_block(), 0,
+    	if(signal_source()->implementation().compare("Raw_Array_Signal_Source")==0)
+    	{
+    		//Multichannel Array
+    		std::cout<<"ARRAY MODE"<<std::endl;
+    	    for (int i=0;i<GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS;i++)
+    	    {
+    	    	std::cout<<"connecting ch "<<i<<std::endl;
+        		top_block_->connect(signal_source()->get_right_block(), i,
+                        signal_conditioner()->get_left_block(), i);
+    	    }
+    	}else{
+    		//single channel
+    		std::cout<<"NORMAL MODE"<<std::endl;
+    		top_block_->connect(signal_source()->get_right_block(), 0,
                     signal_conditioner()->get_left_block(), 0);
+    	}
+
     }
     catch (std::exception& e)
     {

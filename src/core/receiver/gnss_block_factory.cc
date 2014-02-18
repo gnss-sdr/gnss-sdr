@@ -50,10 +50,12 @@
 #include "channel.h"
 #include "uhd_signal_source.h"
 #include "signal_conditioner.h"
+#include "array_signal_conditioner.h"
 #include "ishort_to_complex.h"
 #include "direct_resampler_conditioner.h"
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
+#include "beamformer_filter.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_multithread_acquisition.h"
 #include "gps_l1_ca_pcps_tong_acquisition.h"
@@ -148,11 +150,23 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
             << input_filter << ", and Resampler implementation: "
             << resampler;
 
-    return new SignalConditioner(configuration, GetBlock(configuration,
-    		"DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
-    		configuration,"InputFilter", input_filter, 1, 1, queue),
-    		GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
-    		"SignalConditioner", "Signal_Conditioner", queue);
+    if(signal_conditioner.compare("Array_Signal_Conditioner") == 0)
+    {
+    	//instantiate the array version
+ 	   return new ArraySignalConditioner(configuration, GetBlock(configuration,
+ 	    		"DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
+ 	    		configuration,"InputFilter", input_filter, 1, 1, queue),
+ 	    		GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
+ 	    		"SignalConditioner", "Signal_Conditioner", queue);
+    }else{
+    	//normal version
+    	   return new SignalConditioner(configuration, GetBlock(configuration,
+    	    		"DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
+    	    		configuration,"InputFilter", input_filter, 1, 1, queue),
+    	    		GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
+    	    		"SignalConditioner", "Signal_Conditioner", queue);
+    }
+
 }
 
 
@@ -353,6 +367,11 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         {
             block = new FreqXlatingFirFilter(configuration, role, in_streams,
                     out_streams, queue);
+        }
+    else if (implementation.compare("Beamformer_Filter") == 0)
+        {
+            block = new BeamformerFilter(configuration, role, in_streams,
+                    out_streams);
         }
 
     // RESAMPLER -------------------------------------------------------------------

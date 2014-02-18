@@ -1,7 +1,7 @@
 /*!
- * \file raw_array_signal_source.h
- * \brief CTTC Experimental GNSS 8 channels array signal source
- * \author Javier Arribas, jarribas(at)cttc.es
+ * \file beamformer_filter.h
+ * \brief Interface of an adapter of a digital beamformer
+ * \author Javier Arribas jarribas (at) cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -29,40 +29,35 @@
  */
 
 
-#ifndef RAW_ARRAY_SIGNAL_SOURCE_H_
-#define RAW_ARRAY_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_BEAMFORMER_FILTER_H_
+#define GNSS_SDR_BEAMFORMER_FILTER_H_
 
 #include <string>
 #include <gnuradio/hier_block2.h>
-#include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/file_sink.h>
 #include "gnss_block_interface.h"
-
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class reads samples from a GN3S USB dongle, a RF front-end signal sampler
+ * \brief Interface of an adapter of a direct resampler conditioner block
+ * to a SignalConditionerInterface
  */
-class RawArraySignalSource: public GNSSBlockInterface
+class BeamformerFilter: public GNSSBlockInterface
 {
 public:
-	RawArraySignalSource(ConfigurationInterface* configuration,
+    BeamformerFilter(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
-            unsigned int out_stream, gr::msg_queue::sptr queue);
+            unsigned int out_stream);
 
-    virtual ~RawArraySignalSource();
+    virtual ~BeamformerFilter();
     std::string role()
     {
         return role_;
     }
-
-    /*!
-     * \brief Returns "RawArraySignalSource".
-     */
+    //! returns "Direct_Resampler"
     std::string implementation()
     {
-        return "Raw_Array_Signal_Source";
+        return "Beamformer_Filter";
     }
     size_t item_size()
     {
@@ -79,13 +74,11 @@ private:
     unsigned int out_stream_;
     std::string item_type_;
     size_t item_size_;
-    long samples_;
+    unsigned long long samples_;
     bool dump_;
     std::string dump_filename_;
-    std::string eth_device_;
-    gr::block_sptr raw_array_source_;
-    gr::blocks::file_sink::sptr file_sink_;
-    boost::shared_ptr<gr::msg_queue> queue_;
+    gr::block_sptr beamformer_;
+    gr::block_sptr file_sink_;
 };
 
-#endif /*RAW_ARRAY_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_BEAMFORMER_FILTER_H_*/

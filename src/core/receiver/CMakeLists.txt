@@ -43,6 +43,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/adapters
@@ -74,6 +75,12 @@ if( GN3S_DRIVER )
     add_definitions(-DGN3S_DRIVER=1)
 endif( GN3S_DRIVER )
 
+
+if( $ENV{RAW_ARRAY_DRIVER} )
+    message(STATUS "Support for CTTC RAW ARRAY enabled" )
+    add_definitions(-DRAW_ARRAY_DRIVER=1)
+endif( $ENV{RAW_ARRAY_DRIVER} )
+
 if( RAW_ARRAY_DRIVER )
     message(STATUS "Support for CTTC RAW ARRAY enabled" )
     add_definitions(-DRAW_ARRAY_DRIVER=1)
@@ -84,6 +91,7 @@ if( $ENV{RTLSDR_DRIVER} )
     message(STATUS "Support for RF front-end based on RTL dongle enabled" )
     add_definitions(-DRTLSDR_DRIVER=1)
 endif( $ENV{RTLSDR_DRIVER} )
+
 if( RTLSDR_DRIVER )
     message(STATUS "Support for RF front-end based on RTL dongle enabled" )
     add_definitions(-DRTLSDR_DRIVER=1)

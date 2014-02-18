@@ -700,6 +700,19 @@ else( $ENV{GN3S_DRIVER} )
     endif( GN3S_DRIVER )
 endif($ENV{GN3S_DRIVER} )
 
+if( $ENV{RAW_ARRAY_DRIVER} )
+    message(STATUS "RAW_ARRAY_DRIVER variable found." )
+    # copy firmware to install folder
+    # Build project gr-dbfcttc
+else( $ENV{RAW_ARRAY_DRIVER} )
+    if( RAW_ARRAY_DRIVER )
+       message(STATUS "RAW_ARRAY_DRIVER driver will be compiled")
+    else( RAW_ARRAY_DRIVER )
+       message(STATUS "RAW_ARRAY_DRIVER is not defined." )
+       message(STATUS "Define it with 'export RAW_ARRAY_DRIVER=1' to add support for the CTTC experimental array front-end." )
+    endif( RAW_ARRAY_DRIVER )
+endif($ENV{RAW_ARRAY_DRIVER} )
+
 if( $ENV{RTLSDR_DRIVER} )
     message(STATUS "RTLSDR_DRIVER variable found." )
     # find libosmosdr (done in src/algorithms/signal_sources/adapters)

@@ -47,6 +47,8 @@ private:
     friend beamformer_sptr
     make_beamformer_sptr();
 
+    gr_complex* weight_vector;
+
 public:
     beamformer();
     ~beamformer();

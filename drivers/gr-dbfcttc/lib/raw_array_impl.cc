@@ -124,6 +124,7 @@ namespace gr {
         descr = pcap_open_live(d_src_device,1500,1,1000,errbuf);
         if(descr == NULL)
         {
+        		printf("Error openning ethernet device: %s\n",d_src_device);
         		printf("Fatal Error in pcap_open_live(): %s\n",errbuf);
         	    return false;
         }
@@ -253,15 +254,19 @@ namespace gr {
 		   }else{
 			   exit(1); //ethernet error!
 		   }
-    		fprintf(stdout,"Destructing DBFCTTC\n");
-    		fflush(stdout);
     		if(descr != NULL)
     		{
     			pcap_breakloop(descr);
     			d_pcap_thread->join();
     			pcap_close(descr);
     		}
-    		fprintf(stdout,"All stopped OK\n");
+
+     	   for (int i=0;i<DBFCTTC_NUM_CHANNELS;i++)
+     	   {
+     		   delete[] fifo_buff_ch[i];
+     	   }
+     	  delete fifo_buff_ch;
+    	  fprintf(stdout,"All stopped OK\n");
 
     }
 
@@ -282,11 +287,11 @@ namespace gr {
     	  // eth frame parameters
     	  int number_of_channels;
     	  unsigned short int snapshots_per_frame;
-//
-//        // **** CTTC DBF PACKET DECODER ****
+
+        // **** CTTC DBF PACKET DECODER ****
           if ((packet[12]==0xCD) & (packet[13]==0xBF))
           {
-              //printf(".");
+             //printf(".");
         	  // control parameters
         	  number_of_channels=(int)packet[14];
         	  //std::cout<<"number_of_channels="<<number_of_channels<<std::endl;
@@ -300,7 +305,9 @@ namespace gr {
     				  {
     					  real = (signed char)packet[17 + ch*2 + i * 16];
     					  imag = (signed char)packet[17 + ch*2 + 1 + i * 16];
-    					  fifo_buff_ch[ch][fifo_write_ptr] = std::complex<float>(real, imag);
+    					  //todo: invert IQ in FPGA
+    					  //fifo_buff_ch[ch][fifo_write_ptr] = std::complex<float>(real, imag);
+    					  fifo_buff_ch[ch][fifo_write_ptr] = std::complex<float>(imag, real); //inverted due to inversion in front-end
     					  //std::cout<<"["<<ch<<"]["<<fifo_write_ptr<<"]"<<fifo_buff_ch[ch][fifo_write_ptr]<<std::endl;
     				  }
     				  fifo_write_ptr++;
@@ -316,7 +323,7 @@ namespace gr {
                   }
 
               }
-//              //frame counter check for overflows!
+              //frame counter check for overflows!
               numframebyte=(unsigned char)packet[16+snapshots_per_frame*2*number_of_channels+1];
               //std::cout<<"numframebyte="<<numframebyte<<std::endl;
               //test RX
@@ -334,7 +341,7 @@ namespace gr {
            	                              if (abs(d_last_frame_counter-numframebyte)!=255 )
            	                              {
            	                                  d_num_rx_errors=d_num_rx_errors + 1;
-           	                                  printf("Error ethernet RX %d\n",numframebyte);
+           	                                  printf("RAW Array driver overflow RX %d\n",numframebyte);
            	                              }
            	                      }
            	              }

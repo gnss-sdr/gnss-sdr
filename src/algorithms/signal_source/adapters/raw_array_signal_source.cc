@@ -45,12 +45,15 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/raw_array_source.dat";
     item_type_ = configuration->property(role + ".item_type", default_item_type);
+
+
     //dump_ = configuration->property(role + ".dump", false);
     //dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     dump_=false;
-    std::string eth_device_;
-    eth_device_ = configuration->property(role + ".ethernet_dev", "eth0");
+
+    std::string default_ethernet_dev = "eth0";
+    eth_device_ = configuration->property(role + ".ethernet_dev", default_ethernet_dev);
 
     int channels_;
     channels_ = configuration->property(role + ".channels", 8);

@@ -17,7 +17,10 @@
 #
 
 
-set(COND_ADAPTER_SOURCES signal_conditioner.cc)
+set(COND_ADAPTER_SOURCES 
+	signal_conditioner.cc
+	array_signal_conditioner.cc
+)
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)

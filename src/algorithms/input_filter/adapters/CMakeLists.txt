@@ -18,13 +18,15 @@
 
 set(INPUT_FILTER_ADAPTER_SOURCES 
      fir_filter.cc 
-     freq_xlating_fir_filter.cc 
+     freq_xlating_fir_filter.cc
+     beamformer_filter.cc
 )
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
+     ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -32,4 +34,4 @@ include_directories(
 
 add_library(input_filter_adapters ${INPUT_FILTER_ADAPTER_SOURCES})
 add_dependencies(input_filter_adapters glog-${glog_RELEASE})
-target_link_libraries(input_filter_adapters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES})
+target_link_libraries(input_filter_adapters input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES})

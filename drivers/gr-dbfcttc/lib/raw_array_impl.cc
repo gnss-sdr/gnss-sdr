@@ -78,6 +78,7 @@ namespace gr {
     	  d_fifo_full=false;
     	  d_last_frame_counter=0;
     	  d_num_rx_errors=0;
+    	  flag_16_bits_sample=true;
 
     	   //allocate signal samples buffer
     	   //TODO: Check memory pointers
@@ -279,79 +280,134 @@ namespace gr {
        }
 
     void raw_array_impl::pcap_callback(u_char *args, const struct pcap_pkthdr* pkthdr,
-                                                 const u_char* packet)
+    		const u_char* packet)
     {
-    	 boost::mutex::scoped_lock lock(d_mutex); 	// hold mutex for duration of this function
-    	  int numframebyte;
-    	  short int real,imag;
-    	  // eth frame parameters
-    	  int number_of_channels;
-    	  unsigned short int snapshots_per_frame;
+    	boost::mutex::scoped_lock lock(d_mutex); 	// hold mutex for duration of this function
+    	int numframebyte;
+    	short int real,imag;
+    	// eth frame parameters
+    	int number_of_channels;
+    	unsigned short int snapshots_per_frame;
 
-        // **** CTTC DBF PACKET DECODER ****
-          if ((packet[12]==0xCD) & (packet[13]==0xBF))
-          {
-             //printf(".");
-        	  // control parameters
-        	  number_of_channels=(int)packet[14];
-        	  //std::cout<<"number_of_channels="<<number_of_channels<<std::endl;
-        	  snapshots_per_frame=packet[15] << 8 | packet[16];
-        	  //std::cout<<"snapshots_per_frame="<<snapshots_per_frame<<std::endl;
-        	  //snapshots reading..
-              for(int i=0;i<snapshots_per_frame;i++)
-              {
-                  if (fifo_items <= FIFO_SIZE) {
-    				  for (int ch=0;ch<number_of_channels;ch++)
-    				  {
-    					  real = (signed char)packet[17 + ch*2 + i * 16];
-    					  imag = (signed char)packet[17 + ch*2 + 1 + i * 16];
-    					  //todo: invert IQ in FPGA
-    					  //fifo_buff_ch[ch][fifo_write_ptr] = std::complex<float>(real, imag);
-    					  fifo_buff_ch[ch][fifo_write_ptr] = std::complex<float>(imag, real); //inverted due to inversion in front-end
-    					  //std::cout<<"["<<ch<<"]["<<fifo_write_ptr<<"]"<<fifo_buff_ch[ch][fifo_write_ptr]<<std::endl;
-    				  }
-    				  fifo_write_ptr++;
-    				  if (fifo_write_ptr == FIFO_SIZE) fifo_write_ptr = 0;
-    				  fifo_items++;
-                  }else{
-                	if (d_fifo_full==false)
-                	{
-                          printf("FIFO full\n");
-                          fflush(stdout);
-                          d_fifo_full=true;
-                	}
-                  }
+    	// **** CTTC DBF PACKET DECODER ****
+    	if ((packet[12]==0xCD) & (packet[13]==0xBF))
+    	{
+    		//printf(".");
+    		// control parameters
+    		number_of_channels=(int)packet[14];
+    		//std::cout<<"number_of_channels="<<number_of_channels<<std::endl;
+    		snapshots_per_frame=packet[15] << 8 | packet[16];
+    		//std::cout<<"snapshots_per_frame="<<snapshots_per_frame<<std::endl;
+    		//frame counter check for overflows!
+    		numframebyte=(unsigned char)packet[16+snapshots_per_frame*2*number_of_channels+1];
+    		//std::cout<<"numframebyte="<<numframebyte<<std::endl;
+    		//Overflow detector and mitigator
+    		if (d_flag_start_frame == true)
+    		{
+    			d_last_frame_counter=numframebyte;
+    			d_flag_start_frame=false;
+    		}else{
 
-              }
-              //frame counter check for overflows!
-              numframebyte=(unsigned char)packet[16+snapshots_per_frame*2*number_of_channels+1];
-              //std::cout<<"numframebyte="<<numframebyte<<std::endl;
-              //test RX
+    			if ((d_last_frame_counter-numframebyte)>1)
+    			{
+    				int missing_frames=abs(d_last_frame_counter-numframebyte);
+    				if (missing_frames!=255 )
+    				{
+    					//fake samples generation to help tracking loops
+    					std::complex<float> last_sample[DBFCTTC_NUM_CHANNELS];
+    					if (fifo_write_ptr == 0)
+    					{
+								for (int ch=0;ch<number_of_channels;ch++)
+								{
+									last_sample[ch]=fifo_buff_ch[ch][FIFO_SIZE];
+								}
+    					}else{
+								for (int ch=0;ch<number_of_channels;ch++)
+								{
+									last_sample[ch]=fifo_buff_ch[ch][fifo_write_ptr-1];
+								}
+    					}
+    					for(int i=0;i<(snapshots_per_frame*missing_frames);i++)
+    					{
+    						if (fifo_items <= FIFO_SIZE) {
+    							for (int ch=0;ch<number_of_channels;ch++)
+    							{
+    								fifo_buff_ch[ch][fifo_write_ptr] = last_sample[ch];
+    							}
+    							fifo_write_ptr++;
+    							if (fifo_write_ptr == FIFO_SIZE) fifo_write_ptr = 0;
+    							fifo_items++;
+    							if (d_fifo_full==true)
+    							{
+    								d_fifo_full=false;
+    							}
+    						}else{
+    							if (d_fifo_full==false)
+    							{
+    								printf("FIFO full\n");
+    								fflush(stdout);
+    								d_fifo_full=true;
+    							}
+    						}
+    					}
+    					d_num_rx_errors=d_num_rx_errors + 1;
+    					printf("RAW Array driver overflow RX %d\n",numframebyte);
+    				}
+    			}
+    		}
+    		d_last_frame_counter=numframebyte;
 
-           	  // **** CTTC DBF PACKET DECODER ***
+    	};
 
-           	              if (d_flag_start_frame == true)
-           	              {
-           	            	  	  d_last_frame_counter=numframebyte;
-           	                      d_flag_start_frame=false;
-           	              }else{
 
-           	                      if ((d_last_frame_counter-numframebyte)>1)
-           	                      {
-           	                              if (abs(d_last_frame_counter-numframebyte)!=255 )
-           	                              {
-           	                                  d_num_rx_errors=d_num_rx_errors + 1;
-           	                                  printf("RAW Array driver overflow RX %d\n",numframebyte);
-           	                              }
-           	                      }
-           	              }
-           	              d_last_frame_counter=numframebyte;
+    	//snapshots reading..
+    	for(int i=0;i<snapshots_per_frame;i++)
+    	{
+    		if (fifo_items <= FIFO_SIZE) {
+    			for (int ch=0;ch<number_of_channels;ch++)
+    			{
+    				if (flag_16_bits_sample==true)
+    				{
+    					//(2i+2q)*8channels =32 bytes
+    					real=(signed short int)(packet[17 + ch*4 + i * 32] << 8 | packet[17 + ch*4 + 1 + i * 32]);
+    					imag=(signed short int)(packet[17 + ch*4 + 2 + i * 32] << 8 | packet[17 + ch*4 + 3 + i * 32]);
+    				}else{
+    					//(1i+1q)*8channels =16 bytes
+						real = (signed char)packet[17 + ch*2 + i * 16];
+						imag = (signed char)packet[17 + ch*2 + 1 + i * 16];
+    				}
+    				//todo: invert IQ in FPGA
+    				//fifo_buff_ch[ch][fifo_write_ptr] = std::complex<float>(real, imag);
+    				fifo_buff_ch[ch][fifo_write_ptr] = std::complex<float>(imag, real); //inverted due to inversion in front-end
+    				//std::cout<<"["<<ch<<"]["<<fifo_write_ptr<<"]"<<fifo_buff_ch[ch][fifo_write_ptr]<<std::endl;
+    			}
+    			fifo_write_ptr++;
+    			if (fifo_write_ptr == FIFO_SIZE) fifo_write_ptr = 0;
+    			fifo_items++;
+    			if (d_fifo_full==true)
+    			{
+    				d_fifo_full=false;
+    			}
+    		}else{
+    			if (d_fifo_full==false)
+    			{
+    				printf("FIFO full\n");
+    				fflush(stdout);
+    				d_fifo_full=true;
+    			}
+    		}
 
-           	          };//else{
-           	        	  //std::cout<<"RX PKT ID="<<(int)packet[12]<<","<<(int)packet[13]<<std::endl;
-           	          //}
+    	}
 
-//           	        // *** END CTTC DBF PACKET DECODER ***
+
+    	//test RX
+
+    	// **** CTTC DBF PACKET DECODER ***
+    	//else{
+    	//std::cout<<"RX PKT ID="<<(int)packet[12]<<","<<(int)packet[13]<<std::endl;
+    	//}
+
+    	//           	        // *** END CTTC DBF PACKET DECODER ***
     }
 
 

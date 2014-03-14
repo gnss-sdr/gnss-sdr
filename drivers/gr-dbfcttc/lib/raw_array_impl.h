@@ -61,11 +61,13 @@ private:
 	int d_inter_frame_delay;
 	int d_sampling_freq;
 
+	bool flag_16_bits_sample;
 	bool d_flag_start_frame;
 	bool d_fifo_full;
 
 	int d_last_frame_counter;
 	int  d_num_rx_errors;
+
 
 	boost::thread *d_pcap_thread;
 	/*!

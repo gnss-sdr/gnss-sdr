@@ -79,7 +79,7 @@
 #include "gps_l1_ca_pvt.h"
 #include "galileo_e1_pvt.h"
 
-#if OPENCL
+#if OPENCL_BLOCKS
     #include "gps_l1_ca_pcps_opencl_acquisition.h"
 #endif
 
@@ -403,7 +403,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
                     out_streams, queue);
         }
 
-#if OPENCL
+#if OPENCL_BLOCKS
     else if (implementation.compare("GPS_L1_CA_PCPS_OpenCl_Acquisition") == 0)
         {
             block = new GpsL1CaPcpsOpenClAcquisition(configuration, role, in_streams,

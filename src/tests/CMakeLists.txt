@@ -80,6 +80,7 @@ else(NOT GTEST_DIR_LOCAL)
      set(GTEST_LIBRARIES gtest)
 endif(NOT GTEST_DIR_LOCAL)
 
+
      
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}
@@ -104,6 +105,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/pvt/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -120,6 +122,10 @@ if(OS_IS_MACOSX)
      endif(MACOSX_MAVERICKS)
 endif(OS_IS_MACOSX)
 
+if(OPENCL_FOUND)
+    add_definitions(-DOPENCL_BLOCKS_TEST=1)
+endif(OPENCL_FOUND)
+
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
 target_link_libraries(run_tests ${MAC_LIBRARIES} 
@@ -135,6 +141,8 @@ target_link_libraries(run_tests ${MAC_LIBRARIES}
                                 gnss_rx  
                                 signal_generator_blocks
                                 signal_generator_adapters
+                                out_adapters
+                                pvt_gr_blocks
 )
 
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
@@ -168,7 +176,7 @@ add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_acquisition_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc
+#     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc
@@ -187,6 +195,7 @@ target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
                                       gnss_sp_libs 
                                       gnss_rx 
                                       signal_generator_blocks
+                                      out_adapters
                                       )
                                       
 add_test(gnss_block_test gnss_block_test)

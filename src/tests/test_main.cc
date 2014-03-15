@@ -78,6 +78,7 @@
 #include "string_converter/string_converter_test.cc"
 
 //#include "flowgraph/gnss_flowgraph_test.cc"
+#include "gnss_block/rtcm_printer_test.cc"
 #include "gnss_block/file_output_filter_test.cc"
 #include "gnss_block/file_signal_source_test.cc"
 #include "gnss_block/fir_filter_test.cc"
@@ -85,7 +86,7 @@
 #include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 //#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
-#if OPENCL
+#if OPENCL_BLOCKS_TEST
     #include "gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
 #endif
 #include "gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"

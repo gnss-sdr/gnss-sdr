@@ -98,10 +98,12 @@ if( RTLSDR_DRIVER )
 endif( RTLSDR_DRIVER )
 
 #Enable OpenCL if found in the system
-if ( OPENCL_FOUND )
+if(OPENCL_FOUND)
     message(STATUS "Adding processing blocks implemented using OpenCL" )
-    add_definitions(-DOPENCL=1)
-endif( OPENCL_FOUND )
+    add_definitions(-DOPENCL_BLOCKS=1)
+else(OPENCL_FOUND)
+    add_definitions(-DOPENCL_BLOCKS=0)
+endif(OPENCL_FOUND)
 
 
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES})

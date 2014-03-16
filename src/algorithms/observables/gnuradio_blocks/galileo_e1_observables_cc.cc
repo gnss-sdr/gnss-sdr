@@ -30,17 +30,16 @@
  */
 
 #include "galileo_e1_observables_cc.h"
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <map>
 #include <algorithm>
 #include <bitset>
 #include <cmath>
-#include "control_message_factory.h"
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <vector>
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
+#include "control_message_factory.h"
 #include "gnss_synchro.h"
 
 

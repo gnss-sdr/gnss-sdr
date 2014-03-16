@@ -34,20 +34,21 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gnss_synchro.h"
 #include "galileo_e1_dll_pll_veml_tracking_cc.h"
+#include <cmath>
+#include <iostream>
+#include <sstream>
+#include <boost/lexical_cast.hpp>
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+#include "gnss_synchro.h"
 #include "galileo_e1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
-#include <boost/lexical_cast.hpp>
-#include <iostream>
-#include <sstream>
-#include <cmath>
-#include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
+
+
 
 /*!
  * \todo Include in definition header file
@@ -211,16 +212,15 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
     sys = sys_.substr(0, 1);
 
     // DEBUG OUTPUT
-    std::cout << "Tracking start on channel " << d_channel
-              << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    DLOG(INFO) << "Start tracking for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << " received";
+    std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
+    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
 
-    std::cout << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
-              << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples << std::endl;
+    LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
+              << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
 
@@ -420,7 +420,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                         }
                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                         {
-                            std::cout << "Channel " << d_channel << " loss of lock!" << std::endl ;
+                            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+                            LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
                             ControlMessageFactory* cmf = new ControlMessageFactory();
                             if (d_queue != gr::msg_queue::sptr())
                                 {
@@ -465,7 +466,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
 
                     tmp_str_stream << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
                                    << ", Doppler=" << d_carrier_doppler_hz << " [Hz] CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
-                    std::cout << tmp_str_stream.rdbuf() << std::flush;
+                    LOG(INFO) << tmp_str_stream.rdbuf() << std::flush;
                     //if (d_channel == 0 || d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
                 }
         }
@@ -530,7 +531,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             }
             catch (std::ifstream::failure e)
             {
-                    std::cout << "Exception writing trk dump file " << e.what() << std::endl;
+                    LOG(WARNING) << "Exception writing trk dump file " << e.what() << std::endl;
             }
         }
     consume_each(d_current_prn_length_samples); // this is required for gr_block derivates
@@ -543,7 +544,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
 void galileo_e1_dll_pll_veml_tracking_cc::set_channel(unsigned int channel)
 {
     d_channel = channel;
-    LOG_AT_LEVEL(INFO) << "Tracking Channel set to " << d_channel;
+    LOG(INFO) << "Tracking Channel set to " << d_channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {
@@ -555,11 +556,11 @@ void galileo_e1_dll_pll_veml_tracking_cc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
                     }
                 }
         }

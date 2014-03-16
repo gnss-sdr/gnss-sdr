@@ -32,10 +32,9 @@
 
 
 #include "gps_l1_ca_pvt.h"
+#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "gps_l1_ca_pvt_cc.h"
-#include <glog/log_severity.h>
-#include <glog/logging.h>
 
 using google::LogMessage;
 

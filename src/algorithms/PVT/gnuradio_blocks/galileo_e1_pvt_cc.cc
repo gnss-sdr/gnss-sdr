@@ -38,7 +38,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "gnss_synchro.h"
@@ -103,11 +102,11 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
                     {
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "PVT dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "PVT dump enabled Log file: " << d_dump_filename.c_str();
                     }
                     catch (const std::ifstream::failure& e)
                     {
-                            std::cout << "Exception opening PVT dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "Exception opening PVT dump file " << e.what();
                     }
                 }
         }
@@ -219,13 +218,17 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
             if (((d_sample_counter % d_display_rate_ms) == 0) and d_ls_pvt->b_valid_position == true)
                 {
                     std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                    << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
-                    << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
+                              << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                              << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
 
-                    std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                    << " is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = " <<
-                    d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP <<
-                    " GDOP = " << d_ls_pvt->d_GDOP <<std::endl;
+                    LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+                              << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                              << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]";
+
+                    LOG(INFO) << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
+                              << " is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = "
+                              << d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP
+                              << " GDOP = " << d_ls_pvt->d_GDOP;
                 }
 
             // MULTIPLEXED FILE RECORDING - Record results to file
@@ -245,7 +248,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                     }
                     catch (const std::ifstream::failure& e)
                     {
-                            std::cout << "Exception writing observables dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "Exception writing observables dump file " << e.what();
                     }
                 }
         }

@@ -96,7 +96,7 @@ private:
     bool dump_;
     std::string dump_filename_;
 
-    boost::shared_ptr<osmosdr::source> rtlsdr_source_;
+    osmosdr::source::sptr rtlsdr_source_;
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;

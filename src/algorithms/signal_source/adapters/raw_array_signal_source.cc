@@ -31,10 +31,10 @@
 #include "raw_array_signal_source.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <glog/logging.h>
 #include <dbfcttc/raw_array.h>
 #include "configuration_interface.h"
-#include <glog/log_severity.h>
-#include <glog/logging.h>
+
 
 using google::LogMessage;
 
@@ -83,8 +83,7 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
     //        }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
-                    << " unrecognized item type for raw_array_source_";
+            LOG(WARNING) << item_type_ << " unrecognized item type for raw_array_source_";
             item_size_ = sizeof(gr_complex);
         }
     if (dump_)
@@ -134,7 +133,7 @@ void RawArraySignalSource::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr RawArraySignalSource::get_left_block()
 {
-    LOG_AT_LEVEL(WARNING) << "Left block of a signal source should not be retrieved";
+    LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::block_sptr();
 }
 

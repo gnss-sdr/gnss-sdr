@@ -35,7 +35,6 @@
 #include <iostream>
 #include <queue>
 #include <gtest/gtest.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
 #include <boost/thread/mutex.hpp>
@@ -78,7 +77,7 @@
 #include "string_converter/string_converter_test.cc"
 
 //#include "flowgraph/gnss_flowgraph_test.cc"
-#include "gnss_block/rtcm_printer_test.cc"
+//#include "gnss_block/rtcm_printer_test.cc"
 #include "gnss_block/file_output_filter_test.cc"
 #include "gnss_block/file_signal_source_test.cc"
 #include "gnss_block/fir_filter_test.cc"

@@ -32,7 +32,6 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/pm_remez.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
 
@@ -68,7 +67,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
         }
     else
         {
-            LOG_AT_LEVEL(ERROR) << taps_item_type_ << " unknown input filter item type";
+            LOG(ERROR) << taps_item_type_ << " unknown input filter item type";
             item_size = sizeof(gr_complex); //avoids unitialization
         }
 

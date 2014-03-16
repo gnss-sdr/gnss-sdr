@@ -31,7 +31,6 @@
 
 #include "viterbi_decoder.h"
 #include <iostream>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 
 // logging

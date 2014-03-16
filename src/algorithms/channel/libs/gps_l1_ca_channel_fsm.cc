@@ -30,7 +30,6 @@
 
 #include "gps_l1_ca_channel_fsm.h"
 #include <list>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "channel.h"

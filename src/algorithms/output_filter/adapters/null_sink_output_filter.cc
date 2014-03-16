@@ -30,7 +30,6 @@
  */
 
 #include "null_sink_output_filter.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include "configuration_interface.h"
@@ -61,7 +60,7 @@ NullSinkOutputFilter::NullSinkOutputFilter(ConfigurationInterface* configuration
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Using float";
+            LOG(WARNING) << item_type_ << " unrecognized item type. Using float";
             item_size_ = sizeof(float);
         }
     sink_ = gr::blocks::null_sink::make(item_size_);
@@ -98,7 +97,7 @@ gr::basic_block_sptr NullSinkOutputFilter::get_left_block()
 
 gr::basic_block_sptr NullSinkOutputFilter::get_right_block()
 {
-    LOG_AT_LEVEL(WARNING) << "Right block of a signal sink should not be retrieved";
+    LOG(WARNING) << "Right block of a signal sink should not be retrieved";
     //return gr::blocks::sptr::make();
     return sink_;
 }

@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 
 

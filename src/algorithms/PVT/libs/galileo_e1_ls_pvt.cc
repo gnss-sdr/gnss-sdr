@@ -30,7 +30,6 @@
  */
 
 #include "galileo_e1_ls_pvt.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "Galileo_E1.h"
 
@@ -56,11 +55,11 @@ galileo_e1_ls_pvt::galileo_e1_ls_pvt(int nchannels, std::string dump_filename, b
                     {
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "PVT lib dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "PVT lib dump enabled Log file: " << d_dump_filename.c_str();
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "Exception opening PVT lib dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "Exception opening PVT lib dump file " << e.what();
                     }
                 }
         }
@@ -299,11 +298,11 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                     // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
                     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
                     d_position_UTC_time = p_time;
-                    DLOG(INFO) << "Galileo RX time at " << boost::posix_time::to_simple_string(p_time);
+                    LOG(INFO) << "Galileo RX time at " << boost::posix_time::to_simple_string(p_time);
                     //end debug
 
                     // SV ECEF DEBUG OUTPUT
-                    DLOG(INFO) << "ECEF satellite SV ID=" << galileo_ephemeris_iter->second.i_satellite_PRN
+                    LOG(INFO) << "ECEF satellite SV ID=" << galileo_ephemeris_iter->second.i_satellite_PRN
                                << " X=" << galileo_ephemeris_iter->second.d_satpos_X
                                << " [m] Y=" << galileo_ephemeris_iter->second.d_satpos_Y
                                << " [m] Z=" << galileo_ephemeris_iter->second.d_satpos_Z
@@ -322,7 +321,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
     // ****** SOLVE LEAST SQUARES******************************************************
     // ********************************************************************************
     d_valid_observations = valid_obs;
-    DLOG(INFO) << "Galileo PVT: valid observations=" << valid_obs;
+    LOG(INFO) << "Galileo PVT: valid observations=" << valid_obs;
 
     if (valid_obs >= 4)
         {
@@ -340,7 +339,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
             // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             d_position_UTC_time = p_time;
-            DLOG(INFO) << "Galileo Position at TOW=" << galileo_current_time << " in ECEF (X,Y,Z) = " << mypos;
+            LOG(INFO) << "Galileo Position at TOW=" << galileo_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
             cart2geo((double)mypos(0), (double)mypos(1), (double)mypos(2), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
@@ -349,9 +348,13 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                     b_valid_position = false;
                     return false;
                 }
-            DLOG(INFO) << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
-            << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-            << " [deg], Height= " << d_height_m << " [m]";
+            LOG(INFO) << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
+                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+                      << " [deg], Height= " << d_height_m << " [m]";
+
+            std::cout << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
+                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+                      << " [deg], Height= " << d_height_m << " [m]" << std::endl;
 
             // ###### Compute DOPs ########
             // 1- Rotation matrix from ECEF coordinates to ENU coordinates
@@ -425,7 +428,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                     }
                     catch (const std::ifstream::failure& e)
                     {
-                            std::cout << "Exception writing PVT LS dump file "<< e.what() << std::endl;
+                            LOG(WARNING) << "Exception writing PVT LS dump file "<< e.what();
                     }
                 }
 
@@ -522,7 +525,7 @@ void galileo_e1_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_sele
             iterations = iterations + 1;
             if (iterations > 100)
                 {
-                    std::cout << "Failed to approximate h with desired precision. h-oldh= " << h - oldh << std::endl;
+                    LOG(WARNING) << "Failed to approximate h with desired precision. h-oldh= " << h - oldh;
                     break;
                 }
         }
@@ -644,7 +647,7 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
                 }
             if (i == (maxit - 1))
                 {
-                    DLOG(INFO) << "The computation of geodetic coordinates did not converge";
+                    LOG(WARNING) << "The computation of geodetic coordinates did not converge";
                 }
         }
     *dphi = (*dphi) * rtd;

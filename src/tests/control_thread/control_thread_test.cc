@@ -34,6 +34,52 @@
 #include <gnuradio/msg_queue.h>
 #include "control_thread.h"
 #include "in_memory_configuration.h"
+#include "control_thread.h"
+#include <boost/lexical_cast.hpp>
+#include "gps_ephemeris.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
+#include "gps_almanac.h"
+
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+#include "galileo_almanac.h"
+
+#include "concurrent_queue.h"
+#include "concurrent_map.h"
+#include <unistd.h>
+#include <gnuradio/message.h>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include "gnss_flowgraph.h"
+#include "file_configuration.h"
+#include "control_message_factory.h"
+#include <boost/thread/thread.hpp>
+
+extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
+extern concurrent_map<Gps_Iono> global_gps_iono_map;
+extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
+extern concurrent_map<Gps_Almanac> global_gps_almanac_map;
+extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+
+extern concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
+extern concurrent_queue<Gps_Iono> global_gps_iono_queue;
+extern concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
+extern concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
+extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+
+extern concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
+extern concurrent_map<Galileo_Iono> global_galileo_iono_map;
+extern concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
+extern concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
+//extern concurrent_map<Galileo_Acq_Assist> global_gps_acq_assist_map;
+
+extern concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
+extern concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
+extern concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
+extern concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
+
 
 
 TEST(Control_Thread_Test, InstantiateRunControlMessages)
@@ -48,11 +94,9 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
     config->set_property("Channels.count", "2");
-    config->set_property("Acquisition1.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition1.item_type", "gr_complex");
-    config->set_property("Acquisition2.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition2.item_type", "gr_complex");
-    config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
+    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition.item_type", "gr_complex");
+    config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking.item_type", "gr_complex");
     config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder.item_type", "gr_complex");
@@ -63,7 +107,7 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
     config->set_property("OutputFilter.item_type", "gr_complex");
 
-    ControlThread *control_thread = new ControlThread(config);
+    std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
 
     gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
     ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
@@ -97,7 +141,7 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     EXPECT_EQ(expected1, control_thread->applied_actions());
 
     delete config;
-    delete control_thread;
+    //delete control_thread;
     delete control_msg_factory;
 }
 

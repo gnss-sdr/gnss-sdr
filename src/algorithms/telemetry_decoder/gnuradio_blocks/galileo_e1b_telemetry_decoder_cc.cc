@@ -37,7 +37,6 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "galileo_navigation_message.h"
@@ -130,7 +129,7 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_queue = queue;
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "GALILEO E1B TELEMETRY PROCESSING: satellite " << d_satellite;
+    LOG(INFO) << "GALILEO E1B TELEMETRY PROCESSING: satellite " << d_satellite;
     d_vector_length = vector_length;
     d_samples_per_symbol = ( Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS ) / Galileo_E1_B_SYMBOL_RATE_BPS;
     d_fs_in = fs_in;
@@ -226,11 +225,13 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
             d_nav.split_page(page_String, flag_even_word_arrived);
             if(d_nav.flag_CRC_test == true)
                 {
+                    LOG(INFO) << "Galileo CRC correct on channel " << d_channel;
                     std::cout << "Galileo CRC correct on channel " << d_channel << std::endl;
                 }
             else
                 {
                     std::cout << "Galileo CRC error on channel " << d_channel << std::endl;
+                    LOG(INFO)<< "Galileo CRC error on channel " << d_channel;
                 }
             flag_even_word_arrived = 0;
         }
@@ -299,7 +300,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {
                     d_preamble_index = d_sample_counter;//record the preamble sample stamp
-                    std::cout << "Preamble detection for Galileo SAT " << this->d_satellite << std::endl;
+                    LOG(INFO) << "Preamble detection for Galileo SAT " << this->d_satellite << std::endl;
                     d_stat = 1; // enter into frame pre-detection status
                 }
         }
@@ -312,7 +313,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
                             //try to decode frame
-                            std::cout << "Starting page decoder for Galileo SAT " << this->d_satellite << std::endl;
+                            LOG(INFO) << "Starting page decoder for Galileo SAT " << this->d_satellite << std::endl;
                             d_preamble_index = d_sample_counter; //record the preamble sample stamp
                             d_stat = 2;
                         }
@@ -371,7 +372,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
-                                    std::cout <<" Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]" << std::endl;
+                                    LOG(INFO) <<" Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
                                 }
                         }
                     else
@@ -380,7 +381,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp
                             if (d_CRC_error_counter > CRC_ERROR_LIMIT)
                                 {
-                                    std::cout << "Lost of frame sync SAT " << this->d_satellite << std::endl;
+                                    LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                     d_flag_frame_sync = false;
                                     d_stat = 0;
                                 }
@@ -464,7 +465,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
             }
             catch (const std::ifstream::failure& e)
             {
-                    std::cout << "Exception writing observables dump file " << e.what() << std::endl;
+                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }
         }
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
@@ -476,7 +477,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 void galileo_e1b_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
+    DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
 
@@ -484,7 +485,7 @@ void galileo_e1b_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 void galileo_e1b_telemetry_decoder_cc::set_channel(int channel)
 {
     d_channel = channel;
-    DLOG(INFO) << "Navigation channel set to " << channel;
+    LOG(INFO) << "Navigation channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {
@@ -497,13 +498,11 @@ void galileo_e1b_telemetry_decoder_cc::set_channel(int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: "
-                                      << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (const std::ifstream::failure& e)
                     {
-                            std::cout << "channel " << d_channel
-                                      << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }
                 }
         }

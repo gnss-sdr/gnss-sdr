@@ -32,10 +32,10 @@
 
 
 #include "galileo_e1_pvt.h"
+#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "galileo_e1_pvt_cc.h"
-#include <glog/log_severity.h>
-#include <glog/logging.h>
+
 
 using google::LogMessage;
 

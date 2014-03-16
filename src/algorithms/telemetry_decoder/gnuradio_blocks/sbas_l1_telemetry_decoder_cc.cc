@@ -31,7 +31,6 @@
 #include <iostream>
 #include <sstream>
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <boost/lexical_cast.hpp>
 #include "control_message_factory.h"
@@ -73,7 +72,7 @@ sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "SBAS L1 TELEMETRY PROCESSING: satellite " << d_satellite;
+    LOG(INFO) << "SBAS L1 TELEMETRY PROCESSING: satellite " << d_satellite;
     d_fs_in = fs_in;
     d_block_size = d_samples_per_symbol * d_symbols_per_bit * d_block_size_in_bits;
     set_output_multiple (1);
@@ -195,7 +194,7 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int
 void sbas_l1_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "SBAS telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
+    LOG(INFO) << "SBAS telemetry decoder in channel " << this->d_channel << " set to satellite " << d_satellite;
 }
 
 
@@ -203,7 +202,7 @@ void sbas_l1_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 void sbas_l1_telemetry_decoder_cc::set_channel(int channel)
 {
     d_channel = channel;
-    DLOG(INFO) << "SBAS channel set to " << channel;
+    LOG(INFO) << "SBAS channel set to " << channel;
 }
 
 

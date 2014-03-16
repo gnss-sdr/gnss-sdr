@@ -36,12 +36,12 @@
 #include <iomanip>
 #include <exception>
 #include <gflags/gflags.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "gnss_sdr_valve.h"
 #include "configuration_interface.h"
 
 using google::LogMessage;
+
 
 DEFINE_string(signal_source, "-",
 		"If defined, path to the file containing the signal samples (overrides the configuration file)");
@@ -83,7 +83,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
+            LOG(WARNING) << item_type_
                     << " unrecognized item type. Using gr_complex.";
             item_size_ = sizeof(gr_complex);
         }
@@ -108,7 +108,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             << std::endl
             <<"gnss-sdr --config_file=my_GNSS_SDR_configuration.conf"
             << std::endl;
-            LOG_AT_LEVEL(INFO) << "file_signal_source: Unable to open the samples file "
+            LOG(INFO) << "file_signal_source: Unable to open the samples file "
                                << filename_.c_str() << ", exiting the program.";
             throw(e);
     }
@@ -133,7 +133,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             else
                 {
                     std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << std::endl;
-                    LOG_AT_LEVEL(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
+                    LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
                 }
             std::cout << std::setprecision(16);
             std::cout << "Processing file " << filename_ << ", which contains " << (double)size << " [bytes]" << std::endl;
@@ -297,7 +297,7 @@ void FileSignalSource::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr FileSignalSource::get_left_block()
 {
-    LOG_AT_LEVEL(WARNING) << "Left block of a signal source should not be retrieved";
+    LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::blocks::file_source::sptr();
 }
 

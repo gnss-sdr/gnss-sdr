@@ -33,7 +33,6 @@
 #include "pcps_acquisition_fine_doppler_cc.h"
 #include <algorithm>    // std::rotate
 #include <sstream>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>

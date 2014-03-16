@@ -30,11 +30,11 @@
  */
 
 #include "signal_generator.h"
+#include <glog/logging.h>
 #include "configuration_interface.h"
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
-#include <glog/log_severity.h>
-#include <glog/logging.h>
+
 
 using google::LogMessage;
 
@@ -103,7 +103,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
 
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type for resampler";
+            LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
             item_size_ = sizeof(short);
         }
 
@@ -155,7 +155,7 @@ void SignalGenerator::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr SignalGenerator::get_left_block()
 {
-    LOG_AT_LEVEL(WARNING) << "Left block of a signal source should not be retrieved";
+    LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::block_sptr();
 }
 

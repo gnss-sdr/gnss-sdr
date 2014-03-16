@@ -31,7 +31,6 @@
 #include "fir_filter.h"
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/filter/pm_remez.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
 
@@ -59,7 +58,7 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
     }
     else
     {
-        LOG_AT_LEVEL(ERROR) << taps_item_type_ << " unknown input filter item type";
+        LOG(ERROR) << taps_item_type_ << " unknown input filter item type";
     }
 }
 

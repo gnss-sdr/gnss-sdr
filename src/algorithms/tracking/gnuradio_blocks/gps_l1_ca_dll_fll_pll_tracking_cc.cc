@@ -34,15 +34,14 @@
  * -------------------------------------------------------------------------
  */
 
+#include "gps_l1_ca_dll_fll_pll_tracking_cc.h"
 #include <cmath>
 #include <iostream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include "gnss_synchro.h"
-#include "gps_l1_ca_dll_fll_pll_tracking_cc.h"
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "tracking_discriminators.h"
@@ -234,13 +233,13 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::start_tracking()
 
     // DEBUG OUTPUT
     std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    DLOG(INFO) << "Start tracking for satellite " << d_acquisition_gnss_synchro->System << " "<< d_acquisition_gnss_synchro->PRN  << " received ";
+    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking Gnss_Satellite(systemName[&d_acquisition_gnss_synchro->System], d_acquisition_gnss_synchro->PRN)
     d_pull_in = true;
     d_enable_tracking = true;
 
-    std::cout << "PULL-IN Doppler [Hz]= " << d_carrier_doppler_hz
+    LOG(INFO) << "PULL-IN Doppler [Hz]= " << d_carrier_doppler_hz
               << " Code Phase correction [samples]=" << delay_correction_samples
               << " PULL-IN Code Phase [samples]= " << d_acq_code_phase_samples << std::endl;
 }
@@ -251,11 +250,11 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::start_tracking()
 
 void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_code()
 {
-	double tcode_chips;
-	double rem_code_phase_chips;
-	double code_phase_step_chips;
-	int early_late_spc_samples;
-	int epl_loop_length_samples;
+    double tcode_chips;
+    double rem_code_phase_chips;
+    double code_phase_step_chips;
+    int early_late_spc_samples;
+    int epl_loop_length_samples;
 
     int associated_chip_index;
     int code_length_chips = (int)GPS_L1_CA_CODE_LENGTH_CHIPS;
@@ -267,25 +266,25 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_code()
     early_late_spc_samples = round(d_early_late_spc_chips/code_phase_step_chips);
     epl_loop_length_samples = d_current_prn_length_samples + early_late_spc_samples*2;
     for (int i = 0; i < epl_loop_length_samples; i++)
-    {
-    	associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
-    	d_early_code[i] = d_ca_code[associated_chip_index];
-    	tcode_chips = tcode_chips + code_phase_step_chips;
-    }
+        {
+            associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
+            d_early_code[i] = d_ca_code[associated_chip_index];
+            tcode_chips = tcode_chips + code_phase_step_chips;
+        }
 
     memcpy(d_prompt_code,&d_early_code[early_late_spc_samples],d_current_prn_length_samples* sizeof(gr_complex));
     memcpy(d_late_code,&d_early_code[early_late_spc_samples*2],d_current_prn_length_samples* sizeof(gr_complex));
 
-//    for (int i=0; i<d_current_prn_length_samples; i++)
-//        {
-//            associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
-//            d_early_code[i] = d_ca_code[associated_chip_index];
-//            associated_chip_index = 1 + round(fmod(tcode_chips, code_length_chips));
-//            d_prompt_code[i] = d_ca_code[associated_chip_index];
-//            associated_chip_index = 1 + round(fmod(tcode_chips + d_early_late_spc_chips, code_length_chips));
-//            d_late_code[i] = d_ca_code[associated_chip_index];
-//            tcode_chips = tcode_chips + code_phase_step_chips;
-//        }
+    //    for (int i=0; i<d_current_prn_length_samples; i++)
+    //        {
+    //            associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
+    //            d_early_code[i] = d_ca_code[associated_chip_index];
+    //            associated_chip_index = 1 + round(fmod(tcode_chips, code_length_chips));
+    //            d_prompt_code[i] = d_ca_code[associated_chip_index];
+    //            associated_chip_index = 1 + round(fmod(tcode_chips + d_early_late_spc_chips, code_length_chips));
+    //            d_late_code[i] = d_ca_code[associated_chip_index];
+    //            tcode_chips = tcode_chips + code_phase_step_chips;
+    //        }
 }
 
 
@@ -395,7 +394,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                 {
                     const int samples_available = ninput_items[0];
                     d_sample_counter = d_sample_counter + samples_available;
-                    LOG_AT_LEVEL(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
+                    LOG(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
                     consume_each(samples_available);
 
                     // make an output to not stop the rest of the processing blocks
@@ -473,7 +472,8 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                         }
                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                         {
-                            std::cout << "Channel " << d_channel << " loss of lock!" << std::endl;
+                            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+                            LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
                             ControlMessageFactory* cmf = new ControlMessageFactory();
                             if (d_queue != gr::msg_queue::sptr())
                                 {
@@ -496,7 +496,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                         {
                             d_last_seg = floor(d_sample_counter/d_fs_in);
                             std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                            LOG(INFO) << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
                         }
                 }
             else
@@ -504,7 +504,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     if (floor(d_sample_counter/d_fs_in) != d_last_seg)
                         {
                             d_last_seg = floor(d_sample_counter/d_fs_in);
-                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                            LOG(INFO) << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
                         }
                 }
 
@@ -608,7 +608,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             }
             catch (std::ifstream::failure e)
             {
-                    std::cout << "Exception writing trk dump file "<< e.what() << std::endl;
+                    LOG(INFO) << "Exception writing trk dump file "<< e.what() << std::endl;
             }
         }
     consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
@@ -620,7 +620,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
 void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::set_channel(unsigned int channel)
 {
     d_channel = channel;
-    DLOG(INFO) << "Tracking Channel set to " << d_channel;
+    LOG(INFO) << "Tracking Channel set to " << d_channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {
@@ -632,11 +632,11 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }
                 }
         }

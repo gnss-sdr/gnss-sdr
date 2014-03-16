@@ -36,9 +36,8 @@
  */
 
 
-#include <glog/log_severity.h>
-#include <glog/logging.h>
 #include "gps_l1_ca_dll_pll_tracking.h"
+#include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 
@@ -49,15 +48,11 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams),
-        queue_(queue)
+                role_(role), in_streams_(in_streams), out_streams_(out_streams),
+                queue_(queue)
 {
-
     DLOG(INFO) << "role " << role;
-    //DLOG(INFO) << "vector length " << vector_length;
-
     //################# CONFIGURATION PARAMETERS ########################
-
     int fs_in;
     int vector_length;
     int f_if;
@@ -68,7 +63,6 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     float pll_bw_hz;
     float dll_bw_hz;
     float early_late_space_chips;
-
     item_type = configuration->property(role + ".item_type", default_item_type);
     //vector_length = configuration->property(role + ".vector_length", 2048);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -77,7 +71,6 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
-
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
@@ -88,7 +81,7 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_dll_pll_make_tracking_cc(
-            		f_if,
+                    f_if,
                     fs_in,
                     vector_length,
                     queue_,
@@ -100,15 +93,15 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type << " unknown tracking item type.";
+            LOG(WARNING) << item_type << " unknown tracking item type.";
         }
-
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
+
 GpsL1CaDllPllTracking::~GpsL1CaDllPllTracking()
-{
-}
+{}
+
 
 void GpsL1CaDllPllTracking::start_tracking()
 {
@@ -131,9 +124,7 @@ void GpsL1CaDllPllTracking::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
-
     tracking_->set_channel_queue(channel_internal_queue_);
-
 }
 
 void GpsL1CaDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)

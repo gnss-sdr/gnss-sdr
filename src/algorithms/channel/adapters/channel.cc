@@ -34,7 +34,6 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>
@@ -120,7 +119,7 @@ void Channel::connect(gr::top_block_sptr top_block)
 {
     if (connected_)
         {
-            LOG_AT_LEVEL(WARNING) << "channel already connected internally";
+            LOG(WARNING) << "channel already connected internally";
             return;
         }
     pass_through_->connect(top_block);
@@ -143,7 +142,7 @@ void Channel::disconnect(gr::top_block_sptr top_block)
 {
     if (!connected_)
         {
-            LOG_AT_LEVEL(WARNING) << "Channel already disconnected internally";
+            LOG(WARNING) << "Channel already disconnected internally";
             return;
         }
     top_block->disconnect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
@@ -267,7 +266,7 @@ void Channel::process_channel_messages()
             }
         break;
     default:
-        LOG_AT_LEVEL(WARNING) << "Default case, invalid message.";
+        LOG(WARNING) << "Default case, invalid message.";
         break;
     }
 }

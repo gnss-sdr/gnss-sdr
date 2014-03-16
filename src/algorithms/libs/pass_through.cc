@@ -34,7 +34,6 @@
 #include "pass_through.h"
 #include <iostream>
 //#include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
 
@@ -64,7 +63,7 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Using float";
+            LOG(WARNING) << item_type_ << " unrecognized item type. Using float";
             item_size_ = sizeof(float);
         }
     kludge_copy_ = gr::blocks::copy::make(item_size_);

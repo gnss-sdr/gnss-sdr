@@ -36,7 +36,6 @@
  */
 
 #include "galileo_e1_tcp_connector_tracking.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -52,12 +51,8 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
         role_(role), in_streams_(in_streams), out_streams_(out_streams),
         queue_(queue)
 {
-
     DLOG(INFO) << "role " << role;
-    //DLOG(INFO) << "vector length " << vector_length;
-
     //################# CONFIGURATION PARAMETERS ########################
-
     int fs_in;
     int vector_length;
     int f_if;
@@ -70,7 +65,6 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     float early_late_space_chips;
     float very_early_late_space_chips;
     size_t port_ch0;
-
     item_type = configuration->property(role + ".item_type",default_item_type);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     f_if = configuration->property(role + ".if", 0);
@@ -80,10 +74,8 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.15);
     very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", 0.6);
     port_ch0 = configuration->property(role + ".port_ch0", 2060);
-
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename",
-            default_dump_filename); //unused!
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename); //unused!
     vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     //################# MAKE TRACKING GNURadio object ###################
@@ -91,7 +83,7 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = galileo_e1_tcp_connector_make_tracking_cc(
-            		f_if,
+                    f_if,
                     fs_in,
                     vector_length,
                     queue_,
@@ -105,15 +97,16 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type << " unknown tracking item type.";
+            LOG(WARNING) << item_type << " unknown tracking item type.";
         }
 
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
+
 GalileoE1TcpConnectorTracking::~GalileoE1TcpConnectorTracking()
-{
-}
+{}
+
 
 void GalileoE1TcpConnectorTracking::start_tracking()
 {

@@ -34,7 +34,6 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "galileo_e1_signal_processing.h"
 #include "Galileo_E1.h"
@@ -66,7 +65,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
     if (sampled_ms_ % 4 != 0)
         {
             sampled_ms_ = (int)(sampled_ms_/4) * 4;
-            LOG_AT_LEVEL(WARNING) << "coherent_integration_time should be multiple of "
+            LOG(WARNING) << "coherent_integration_time should be multiple of "
                                      << "Galileo code length (4 ms). coherent_integration_time = "
                                      << sampled_ms_ << " ms will be used.";
 
@@ -104,7 +103,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
+            LOG(WARNING) << item_type_
                     << " unknown acquisition item type";
         }
 }
@@ -260,20 +259,20 @@ GalileoE1Pcps8msAmbiguousAcquisition::reset()
 
 float GalileoE1Pcps8msAmbiguousAcquisition::calculate_threshold(float pfa)
 {
-	unsigned int frequency_bins = 0;
-	for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
-	{
-	 	frequency_bins++;
-	}
+    unsigned int frequency_bins = 0;
+    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+        {
+            frequency_bins++;
+        }
 
-	DLOG(INFO) <<"Channel "<<channel_<<"  Pfa = "<< pfa;
+    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
 
     unsigned int ncells = vector_length_*frequency_bins;
-	double exponent = 1/(double)ncells;
-	double val = pow(1.0-pfa,exponent);
+    double exponent = 1/(double)ncells;
+    double val = pow(1.0 - pfa,exponent);
     double lambda = double(vector_length_);
-	boost::math::exponential_distribution<double> mydist (lambda);
-	float threshold = (float)quantile(mydist,val);
+    boost::math::exponential_distribution<double> mydist (lambda);
+    float threshold = (float)quantile(mydist,val);
 
     return threshold;
 }

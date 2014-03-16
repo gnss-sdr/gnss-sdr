@@ -52,6 +52,9 @@ if($ENV{GN3S_DRIVER})
 endif($ENV{GN3S_DRIVER})
 
 if($ENV{RAW_ARRAY_DRIVER})
+     set(RAW_ARRAY_DRIVER ON)
+endif($ENV{RAW_ARRAY_DRIVER})
+if(RAW_ARRAY_DRIVER)
      ##############################################
      # GRDBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
      ##############################################
@@ -65,6 +68,7 @@ if($ENV{RAW_ARRAY_DRIVER})
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-dbfcttc
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
+          CMAKE_ARGS -DCMAKE_CXX_COMPILER=/usr/bin/clang++
           INSTALL_COMMAND ""
      )
      
@@ -76,8 +80,7 @@ if($ENV{RAW_ARRAY_DRIVER})
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRDBFCTTC_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRDBFCTTC_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
-     
-endif($ENV{RAW_ARRAY_DRIVER})
+endif(RAW_ARRAY_DRIVER)
 
 
 if($ENV{RTLSDR_DRIVER})

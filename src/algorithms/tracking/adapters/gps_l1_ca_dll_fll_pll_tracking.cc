@@ -36,7 +36,6 @@
  */
 
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
@@ -55,12 +54,8 @@ GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
         out_streams_(out_streams),
         queue_(queue)
 {
-
     DLOG(INFO) << "role " << role;
-    //DLOG(INFO) << "vector length " << vector_length;
-
     //################# CONFIGURATION PARAMETERS ########################
-
     int fs_in;
     int vector_length;
     int f_if;
@@ -73,7 +68,6 @@ GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
     float dll_bw_hz;
     float early_late_space_chips;
     int order;
-
     item_type = configuration->property(role + ".item_type",default_item_type);
     //vector_length = configuration->property(role + ".vector_length", 2048);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -84,41 +78,40 @@ GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
     fll_bw_hz = configuration->property(role + ".fll_bw_hz", 100.0);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
-
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
     vector_length = std::round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
-    
 
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
-    {
-        item_size_ = sizeof(gr_complex);
-        tracking_ = gps_l1_ca_dll_fll_pll_make_tracking_cc(
-        		f_if,
-                fs_in,
-                vector_length,
-                queue_,
-                dump,
-                dump_filename,
-                order,
-                fll_bw_hz,
-                pll_bw_hz,
-                dll_bw_hz,
-                early_late_space_chips);
-    }
+        {
+            item_size_ = sizeof(gr_complex);
+            tracking_ = gps_l1_ca_dll_fll_pll_make_tracking_cc(
+                    f_if,
+                    fs_in,
+                    vector_length,
+                    queue_,
+                    dump,
+                    dump_filename,
+                    order,
+                    fll_bw_hz,
+                    pll_bw_hz,
+                    dll_bw_hz,
+                    early_late_space_chips);
+        }
     else
-    {
-        LOG_AT_LEVEL(WARNING) << item_type << " unknown tracking item type.";
-    }
+        {
+            LOG(WARNING) << item_type << " unknown tracking item type.";
+        }
 
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
+
 GpsL1CaDllFllPllTracking::~GpsL1CaDllFllPllTracking()
-{
-}
+{}
+
 
 void GpsL1CaDllFllPllTracking::start_tracking()
 {
@@ -135,9 +128,7 @@ void GpsL1CaDllFllPllTracking::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
-
     tracking_->set_channel_queue(channel_internal_queue_);
-
 }
 
 void GpsL1CaDllFllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)

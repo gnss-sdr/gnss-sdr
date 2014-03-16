@@ -33,7 +33,6 @@
 
 #include <cmath>
 #include <iostream>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 
 #define EVENT 2 // logs important events which don't occur every update() call

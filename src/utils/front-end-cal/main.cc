@@ -32,10 +32,16 @@
 #define FRONT_END_CAL_VERSION "0.0.1"
 #endif
 
+#include <ctime>
 #include <exception>
+#include <memory>
+#include <queue>
+#include <vector>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
 #include <gflags/gflags.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
@@ -44,41 +50,28 @@
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/file_sink.h>
-
-#include <queue>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/lexical_cast.hpp>
-#include <vector>
 #include "concurrent_map.h"
 #include "file_configuration.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-
 #include "gnss_signal.h"
 #include "gnss_synchro.h"
 #include "gnss_block_factory.h"
-
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
 #include "gps_almanac.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
-
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
-
 #include "sbas_telemetry_data.h"
 #include "sbas_ionospheric_correction.h"
 #include "sbas_satellite_correction.h"
 #include "sbas_ephemeris.h"
 #include "sbas_time.h"
-
 #include "gnss_sdr_supl_client.h"
-#include <sys/time.h>
-#include <ctime>
-#include <memory>
+
 
 #include "front_end_cal.h"
 
@@ -412,7 +405,7 @@ int main(int argc, char** argv)
             time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, (long int)current_TOW);
 
             fprintf(stdout, "Reference Time:\n");
-            fprintf(stdout, "  GPS Week: %ld\n", Eph_map.begin()->second.i_GPS_week);
+            fprintf(stdout, "  GPS Week: %d\n", Eph_map.begin()->second.i_GPS_week);
             fprintf(stdout, "  GPS TOW:  %ld %lf\n", (long int)current_TOW, (long int)current_TOW*0.08);
             fprintf(stdout, "  ~ UTC:    %s", ctime(&t));
             std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << std::endl;

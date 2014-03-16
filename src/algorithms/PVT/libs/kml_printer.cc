@@ -31,9 +31,9 @@
 
 #include "kml_printer.h"
 #include <ctime>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 
+using google::LogMessage;
 
 bool Kml_Printer::set_headers(std::string filename)
 {

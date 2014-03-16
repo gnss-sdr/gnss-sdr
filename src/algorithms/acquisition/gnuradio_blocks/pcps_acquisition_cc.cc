@@ -36,7 +36,6 @@
 #include <sys/time.h>
 #include <sstream>
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
 #include "gnss_signal_processing.h"

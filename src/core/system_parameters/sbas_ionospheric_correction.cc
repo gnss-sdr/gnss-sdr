@@ -28,15 +28,15 @@
  * -------------------------------------------------------------------------
  */
 
+#include "sbas_ionospheric_correction.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <boost/serialization/map.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
-#include "sbas_ionospheric_correction.h"
+
 
 enum V_Log_Level {EVENT = 2, // logs important events which don't occur every update() call
                   FLOW = 3,  // logs the function calls of block processing functions

@@ -32,12 +32,8 @@
 
 #include "gnss_sdr_valve.h"
 #include <algorithm> // for min
-#include <glog/log_severity.h>
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include "control_message_factory.h"
-
-using google::LogMessage;
 
 gnss_sdr_valve::gnss_sdr_valve (size_t sizeof_stream_item,
         unsigned long long nitems,

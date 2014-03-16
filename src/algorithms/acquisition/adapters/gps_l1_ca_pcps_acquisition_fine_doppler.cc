@@ -34,7 +34,6 @@
 
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include <iostream>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include "gps_sdr_signal_processing.h"
@@ -85,8 +84,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     }
     else
     {
-        LOG_AT_LEVEL(WARNING) << item_type_
-                << " unknown acquisition item type";
+        LOG(WARNING) << item_type_ << " unknown acquisition item type";
     }
 }
 

@@ -33,7 +33,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
 #include "gps_sdr_signal_processing.h"
@@ -102,8 +101,7 @@ GpsL1CaPcpsMultithreadAcquisition::GpsL1CaPcpsMultithreadAcquisition(
     }
     else
     {
-        LOG_AT_LEVEL(WARNING) << item_type_
-                << " unknown acquisition item type";
+        LOG(WARNING) << item_type_ << " unknown acquisition item type";
     }
 }
 
@@ -128,11 +126,11 @@ void GpsL1CaPcpsMultithreadAcquisition::set_threshold(float threshold)
 {
 	float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-	if(pfa==0.0)
+	if(pfa == 0.0)
         {
                  pfa = configuration_->property(role_+".pfa", 0.0);
         }
-	if(pfa==0.0)
+	if(pfa == 0.0)
 		{
 			threshold_ = threshold;
 		}

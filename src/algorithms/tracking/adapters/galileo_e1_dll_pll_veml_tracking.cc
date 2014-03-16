@@ -35,7 +35,6 @@
  */
 
 #include "galileo_e1_dll_pll_veml_tracking.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -51,12 +50,8 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         role_(role), in_streams_(in_streams), out_streams_(out_streams),
         queue_(queue)
 {
-
     DLOG(INFO) << "role " << role;
-    //DLOG(INFO) << "vector length " << vector_length;
-
     //################# CONFIGURATION PARAMETERS ########################
-
     int fs_in;
     int vector_length;
     int f_if;
@@ -82,6 +77,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
     vector_length = std::round(fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS));
+
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
@@ -100,15 +96,14 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type << " unknown tracking item type.";
+            LOG(WARNING) << item_type << " unknown tracking item type.";
         }
 
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
 GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking()
-{
-}
+{}
 
 void GalileoE1DllPllVemlTracking::start_tracking()
 {

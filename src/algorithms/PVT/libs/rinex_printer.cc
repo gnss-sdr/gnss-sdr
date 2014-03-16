@@ -39,9 +39,8 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
 #include <gflags/gflags.h>
+#include <glog/logging.h>
 #include "sbas_telemetry_data.h"
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
@@ -157,7 +156,7 @@ Rinex_Printer::Rinex_Printer()
            }
     else
         {
-            LOG_AT_LEVEL(ERROR) << "Unknown RINEX version " << FLAGS_RINEX_version << " (must be 2.11 or 3.01)" << std::endl;
+            LOG(ERROR) << "Unknown RINEX version " << FLAGS_RINEX_version << " (must be 2.11 or 3.01)" << std::endl;
         }
 
     numberTypesObservations = 2; // Number of available types of observable in the system
@@ -197,7 +196,7 @@ void Rinex_Printer::lengthCheck(std::string line)
 {
     if (line.length() != 80)
         {
-            LOG_AT_LEVEL(ERROR) << "Bad defined RINEX line: "
+            LOG(ERROR) << "Bad defined RINEX line: "
                     << line.length() << " characters (must be 80)" << std::endl
                     << line << std::endl
                     << "----|---1|0---|---2|0---|---3|0---|---4|0---|---5|0---|---6|0---|---7|0---|---8|" << std::endl;
@@ -712,9 +711,9 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris
             //    }
             //else
             //    {
-            //        LOG_AT_LEVEL(ERROR) << "Discontinued reception of Frame 2 and 3 " << std::endl;
+            //        LOG(ERROR) << "Discontinued reception of Frame 2 and 3 " << std::endl;
             //    }
-            double d_IODE_SF2=0;
+            double d_IODE_SF2 = 0;
             line += Rinex_Printer::doub2for(d_IODE_SF2, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_Crs, 18, 2);

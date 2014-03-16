@@ -32,7 +32,6 @@
 #include "rtlsdr_signal_source.h"
 #include <iostream>
 #include <boost/format.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include "configuration_interface.h"
@@ -117,7 +116,7 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Using short.";
+            LOG(WARNING) << item_type_ << " unrecognized item type. Using short.";
             item_size_ = sizeof(short);
         }
 
@@ -190,7 +189,7 @@ void RtlsdrSignalSource::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr RtlsdrSignalSource::get_left_block()
 {
-    LOG_AT_LEVEL(WARNING) << "Trying to get signal source left block.";
+    LOG(WARNING) << "Trying to get signal source left block.";
     return gr::basic_block_sptr();
 }
 

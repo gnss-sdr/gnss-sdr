@@ -29,7 +29,6 @@
  */
 
 #include "ishort_to_complex.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
 

@@ -34,17 +34,18 @@
 #define GNSS_SDR_VERSION "0.0.2"
 #endif
 
-#include <boost/filesystem.hpp>
+#include <ctime>
+#include <memory>
+#include <queue>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
 #include <gflags/gflags.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
 #include "control_thread.h"
-#include <queue>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "gps_ephemeris.h"
@@ -61,9 +62,6 @@
 #include "sbas_ephemeris.h"
 #include "sbas_time.h"
 
-#include <sys/time.h>
-#include <ctime>
-#include <memory>
 
 using google::LogMessage;
 
@@ -117,7 +115,7 @@ int main(int argc, char** argv)
     const std::string intro_help(
             std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n")
     +
-    "Copyright (C) 2010-2013 (see AUTHORS file for a list of contributors)\n"
+    "Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)\n"
     +
     "This program comes with ABSOLUTELY NO WARRANTY;\n"
     +
@@ -170,11 +168,11 @@ int main(int argc, char** argv)
     }
     catch( boost::exception & e )
     {
-            DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+            LOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
     }
     catch(std::exception const&  ex)
     {
-            DLOG(FATAL) << "STD exception: " << ex.what();
+            LOG(FATAL) << "STD exception: " << ex.what();
     }
     // report the elapsed time
     gettimeofday(&tv, NULL);

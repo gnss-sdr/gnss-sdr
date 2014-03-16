@@ -31,16 +31,15 @@
 
 #include <iostream>
 #include <queue>
-#include <gtest/gtest.h>
-#include "concurrent_map.h"
-#include <glog/log_severity.h>
-#include <glog/logging.h>
-#include <gflags/gflags.h>
-#include <gnuradio/msg_queue.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/filesystem.hpp>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <gnuradio/msg_queue.h>
 #include "concurrent_queue.h"
+#include "concurrent_map.h"
 #include "gps_navigation_message.h"
 
 

@@ -36,7 +36,6 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "gnss_flowgraph.h"
 
@@ -69,7 +68,7 @@ void SignalConditioner::connect(gr::top_block_sptr top_block)
 {
     if (connected_)
         {
-            LOG_AT_LEVEL(WARNING) << "Signal conditioner already connected internally";
+            LOG(WARNING) << "Signal conditioner already connected internally";
             return;
         }
     data_type_adapt_->connect(top_block);
@@ -95,7 +94,7 @@ void SignalConditioner::disconnect(gr::top_block_sptr top_block)
 {
     if (!connected_)
         {
-            LOG_AT_LEVEL(WARNING) << "Signal conditioner already disconnected internally";
+            LOG(WARNING) << "Signal conditioner already disconnected internally";
             return;
         }
 

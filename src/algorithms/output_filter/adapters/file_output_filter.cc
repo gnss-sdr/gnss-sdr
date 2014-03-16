@@ -30,7 +30,6 @@
  */
 
 #include "file_output_filter.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include "configuration_interface.h"
@@ -63,7 +62,7 @@ FileOutputFilter::FileOutputFilter(ConfigurationInterface* configuration,
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_ << " Unrecognized item type. Using short.";
+            LOG(WARNING) << item_type_ << " Unrecognized item type. Using short.";
             item_size_ = sizeof(short);
         }
     file_sink_ = gr::blocks::file_sink::make(item_size_, filename_.c_str());

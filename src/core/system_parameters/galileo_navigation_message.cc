@@ -34,7 +34,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/crc.hpp>      // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <iostream>
 #include <cstring>
@@ -656,7 +655,7 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
     //DLOG(INFO) << "Data_jk_bits (bitset)  "<< endl << data_jk_bits << endl;
 
     page_number = (int)read_navigation_unsigned(data_jk_bits, PAGE_TYPE_bit);
-    DLOG(INFO) << "Page number = " << page_number;
+    LOG(INFO) << "Page number = " << page_number;
 
     switch (page_number)
     {

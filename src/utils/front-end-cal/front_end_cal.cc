@@ -29,10 +29,13 @@
  * -------------------------------------------------------------------------
  */
 
+#include "front_end_cal.h"
+#include <cmath>
+#include <ctime>
+#include <memory>
 #include <exception>
 #include <boost/filesystem.hpp>
 #include <gflags/gflags.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
@@ -44,12 +47,6 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include "gnss_sdr_supl_client.h"
-#include <sys/time.h>
-#include <ctime>
-#include <memory>
-#include <math.h>
-#include "front_end_cal.h"
-
 
 extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 extern concurrent_map<Gps_Iono> global_gps_iono_map;
@@ -103,7 +100,7 @@ int FrontEndCal::Get_SUPL_Assist()
     if (enable_gps_supl_assistance == true)
         //SUPL SERVER TEST. Not operational yet!
         {
-            DLOG(INFO) << "SUPL RRLP GPS assistance enabled!" << std::endl;
+            LOG(INFO) << "SUPL RRLP GPS assistance enabled!" << std::endl;
             std::string default_acq_server = "supl.nokia.com";
             std::string default_eph_server = "supl.google.com";
             supl_client_ephemeris_.server_name = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_server", default_acq_server);

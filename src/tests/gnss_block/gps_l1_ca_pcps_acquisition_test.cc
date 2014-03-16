@@ -176,8 +176,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    double expected_delay_samples = 524;
-    double expected_doppler_hz = 1680;
+    double expected_delay_samples = 945;
+    double expected_doppler_hz = 4000;
     init();
     GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config, "Acquisition", 1, 1, queue);
 
@@ -194,7 +194,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 0.005));
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -235,6 +235,9 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
     ASSERT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+
+    std::cout <<  "----Aq_delay: " <<  gnss_synchro.Acq_delay_samples << std::endl;
+    std::cout <<  "----Doppler: " <<  gnss_synchro.Acq_doppler_hz << std::endl;
 
     double delay_error_samples = abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
     float delay_error_chips = (float)(delay_error_samples*1023/4000);

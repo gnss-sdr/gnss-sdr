@@ -33,7 +33,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
 #include "gps_sdr_signal_processing.h"
@@ -94,8 +93,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
-                    << " unknown acquisition item type";
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 }
 

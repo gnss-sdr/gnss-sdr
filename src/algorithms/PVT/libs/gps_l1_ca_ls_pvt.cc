@@ -27,12 +27,14 @@
  *
  * -------------------------------------------------------------------------
  */
+#define GLOG_NO_ABBREVIATED_SEVERITIES
 
 #include "gps_l1_ca_ls_pvt.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 
+
 using google::LogMessage;
+
 
 gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file)
 {
@@ -53,11 +55,11 @@ gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool
                     {
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "PVT lib dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "PVT lib dump enabled Log file: " << d_dump_filename.c_str();
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "Exception opening PVT lib dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "Exception opening PVT lib dump file " << e.what();
                     }
                 }
         }
@@ -276,7 +278,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     valid_obs++;
 
                     // SV ECEF DEBUG OUTPUT
-                    DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
+                    LOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
                             << " X=" << gps_ephemeris_iter->second.d_satpos_X
                             << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
                             << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
@@ -300,16 +302,16 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
     // ****** SOLVE LEAST SQUARES******************************************************
     // ********************************************************************************
     d_valid_observations = valid_obs;
-    DLOG(INFO) << "(new)PVT: valid observations=" << valid_obs;
+    LOG(INFO) << "(new)PVT: valid observations=" << valid_obs;
 
     if (valid_obs >= 4)
         {
             arma::vec mypos;
-            DLOG(INFO) << "satpos=" << satpos;
-            DLOG(INFO) << "obs=" << obs;
-            DLOG(INFO) << "W=" << W;
+            LOG(INFO) << "satpos=" << satpos;
+            LOG(INFO) << "obs=" << obs;
+            LOG(INFO) << "W=" << W;
             mypos = leastSquarePos(satpos, obs, W);
-            DLOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos;
+            LOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos;
             gps_l1_ca_ls_pvt::cart2geo(mypos(0), mypos(1), mypos(2), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
@@ -324,9 +326,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             d_position_UTC_time = p_time;
 
-            DLOG(INFO) << "(new)Position at " << boost::posix_time::to_simple_string(p_time)
-                << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                << " [deg], Height= " << d_height_m << " [m]";
+            LOG(INFO) << "(new)Position at " << boost::posix_time::to_simple_string(p_time)
+                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+                      << " [deg], Height= " << d_height_m << " [m]";
 
             // ###### Compute DOPs ########
 
@@ -401,7 +403,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "Exception writing PVT LS dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "Exception writing PVT LS dump file " << e.what();
                     }
                 }
 
@@ -497,7 +499,7 @@ void gps_l1_ca_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_selec
             iterations = iterations + 1;
             if (iterations > 100)
                 {
-                    std::cout << "Failed to approximate h with desired precision. h-oldh= " << h - oldh << std::endl;
+                    LOG(WARNING) << "Failed to approximate h with desired precision. h-oldh= " << h - oldh;
                     break;
                 }
         }
@@ -617,7 +619,7 @@ void gps_l1_ca_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a
                 }
             if (i == (maxit - 1))
                 {
-                    DLOG(INFO) << "The computation of geodetic coordinates did not converge";
+                    LOG(WARNING) << "The computation of geodetic coordinates did not converge";
                 }
         }
     *dphi = (*dphi) * rtd;

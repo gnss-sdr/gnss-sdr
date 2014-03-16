@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -29,10 +29,8 @@
  */
 
 #include "control_message_factory.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
-#include <vector>
-#include "string.h"
+
 
 using google::LogMessage;
 
@@ -40,24 +38,23 @@ using google::LogMessage;
 ControlMessageFactory::ControlMessageFactory()
 {}
 
+
 // Destructor
 ControlMessageFactory::~ControlMessageFactory()
 {}
 
+
 boost::shared_ptr<gr::message> ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what)
 {
     ControlMessage *control_message = new ControlMessage;
-
     control_message->who = who;
     control_message->what = what;
-
     boost::shared_ptr<gr::message> queue_message = gr::message::make(0, 0, 0, sizeof(ControlMessage));
     memcpy(queue_message->msg(), control_message, sizeof(ControlMessage));
-
     delete control_message;
-
     return queue_message;
 }
+
 
 std::vector<ControlMessage*>* ControlMessageFactory::GetControlMessages(boost::shared_ptr<gr::message> queue_message)
 {
@@ -65,9 +62,9 @@ std::vector<ControlMessage*>* ControlMessageFactory::GetControlMessages(boost::s
     unsigned int control_messages_count = queue_message->length() / sizeof(ControlMessage);
     if(queue_message->length() % sizeof(ControlMessage) != 0)
         {
-            LOG_AT_LEVEL(WARNING) << "Queue message has size " << queue_message->length() << " which is not" <<
-                    " multiple of control message size " << sizeof(ControlMessage);
-            LOG_AT_LEVEL(WARNING) << "Ignoring this queue message to prevent unexpected results.";
+            LOG(WARNING) << "Queue message has size " << queue_message->length() << ", which is not"
+                         << " multiple of control message size " << sizeof(ControlMessage);
+            LOG(WARNING) << "Ignoring this queue message to prevent unexpected results.";
             return control_messages;
         }
     for(unsigned int i=0; i<control_messages_count; i++)

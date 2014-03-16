@@ -31,14 +31,12 @@
  */
 
 #include "gen_signal_source.h"
-//#include "gnss_flowgraph.h"
 #include <iostream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 
 using google::LogMessage;
@@ -68,7 +66,7 @@ void GenSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (connected_)
         {
-            LOG_AT_LEVEL(WARNING) << "Signal conditioner already connected internally";
+            LOG(WARNING) << "Signal conditioner already connected internally";
             return;
         }
 
@@ -88,7 +86,7 @@ void GenSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (!connected_)
         {
-            LOG_AT_LEVEL(WARNING) << "Signal conditioner already disconnected internally";
+            LOG(WARNING) << "Signal conditioner already disconnected internally";
             return;
         }
 

@@ -13,7 +13,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,8 +36,15 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gnss_synchro.h"
 #include "galileo_e1_tcp_connector_tracking_cc.h"
+#include <cmath>
+#include <iostream>
+#include <sstream>
+#include <boost/asio.hpp>
+#include <boost/lexical_cast.hpp>
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+#include "gnss_synchro.h"
 #include "galileo_e1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
@@ -45,14 +52,6 @@
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
 #include "tcp_communication.h"
-#include <boost/lexical_cast.hpp>
-#include <iostream>
-#include <sstream>
-#include <cmath>
-#include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
-#include <boost/asio.hpp>
 #include "tcp_packet_data.h"
 
 /*!
@@ -119,11 +118,11 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_early_late_spc_chips = early_late_space_chips;           // Define early-late offset (in chips)
     d_very_early_late_spc_chips = very_early_late_space_chips; // Define very-early-late offset (in chips)
 
-	//--- TCP CONNECTOR variables --------------------------------------------------------
-	d_port_ch0 = port_ch0;
-	d_port = 0;
-	d_listen_connection = true;
-	d_control_id = 0;
+    //--- TCP CONNECTOR variables --------------------------------------------------------
+    d_port_ch0 = port_ch0;
+    d_port = 0;
+    d_listen_connection = true;
+    d_control_id = 0;
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
@@ -213,14 +212,13 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
 
     // DEBUG OUTPUT
     std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    DLOG(INFO) << "Start tracking for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << " received";
+    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
 
-    std::cout << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
-              << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples << std::endl;
+    LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
 
@@ -438,7 +436,8 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
                         }
                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                         {
-                            std::cout << "Channel " << d_channel << " loss of lock!" << std::endl ;
+                            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+                            LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
                             ControlMessageFactory* cmf = new ControlMessageFactory();
                             if (d_queue != gr::msg_queue::sptr())
                                 {
@@ -473,8 +472,8 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
                             std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                      << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                            LOG(INFO) << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+                                      << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
                         }
                 }
             else
@@ -482,9 +481,9 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
                     if (floor(d_sample_counter / d_fs_in) != d_last_seg)
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout << "Tracking CH " << d_channel
+                            LOG(INFO) << "Tracking CH " << d_channel
                                       <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                      << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                                      << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
                         }
                 }
         }
@@ -559,7 +558,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
             }
             catch (std::ifstream::failure e)
             {
-                    std::cout << "Exception writing trk dump file " << e.what() << std::endl;
+                    LOG(WARNING) << "Exception writing trk dump file " << e.what();
             }
         }
     consume_each(d_current_prn_length_samples); // this is needed in gr::block derivates
@@ -572,9 +571,9 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
 void Galileo_E1_Tcp_Connector_Tracking_cc::set_channel(unsigned int channel)
 {
     d_channel = channel;
-    LOG_AT_LEVEL(INFO) << "Tracking Channel set to " << d_channel;
+    LOG(INFO) << "Tracking Channel set to " << d_channel;
     // ############# ENABLE DATA FILE LOG #################
-    if (d_dump==true)
+    if (d_dump == true)
         {
             if (d_dump_file.is_open() == false)
                 {
@@ -584,11 +583,11 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }
                 }
         }

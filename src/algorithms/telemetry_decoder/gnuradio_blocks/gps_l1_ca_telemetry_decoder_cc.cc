@@ -39,7 +39,6 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "gnss_synchro.h"
@@ -87,7 +86,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_queue = queue;
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "TELEMETRY PROCESSING: satellite " << d_satellite;
+    LOG(INFO) << "TELEMETRY PROCESSING: satellite " << d_satellite;
     d_vector_length = vector_length;
     d_samples_per_bit = ( GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS ) / GPS_CA_TELEMETRY_RATE_BITS_SECOND;
     d_fs_in = fs_in;
@@ -202,7 +201,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 {
                     d_GPS_FSM.Event_gps_word_preamble();
                     d_preamble_index = d_sample_counter;//record the preamble sample stamp
-                    std::cout << "Preamble detection for SAT " << this->d_satellite << std::endl;
+                    LOG(INFO) << "Preamble detection for SAT " << this->d_satellite;
                     d_symbol_accumulator = 0; //sync the symbol to bits integrator
                     d_symbol_accumulator_counter = 0;
                     d_frame_bit_index = 8;
@@ -221,7 +220,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
-                                    std::cout <<" Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]" << std::endl;
+                                    LOG(INFO) <<" Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
                                 }
                         }
                 }
@@ -233,7 +232,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     preamble_diff = d_sample_counter - d_preamble_index;
                     if (preamble_diff > 6001)
                         {
-                            std::cout << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff << std::endl;
+                            LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff;
                             d_stat = 0; //lost of frame sync
                             d_flag_frame_sync = false;
                             flag_TOW_set=false;
@@ -339,7 +338,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
             }
             catch (std::ifstream::failure e)
             {
-                    std::cout << "Exception writing observables dump file " << e.what() << std::endl;
+                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }
         }
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
@@ -351,7 +350,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
+    LOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
     d_GPS_FSM.i_satellite_PRN = d_satellite.get_PRN();
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
@@ -374,13 +373,12 @@ void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "Telemetry decoder dump enabled on channel " << d_channel
-                                      << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
+                                      << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "channel " << d_channel
-                                      << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }
                 }
         }

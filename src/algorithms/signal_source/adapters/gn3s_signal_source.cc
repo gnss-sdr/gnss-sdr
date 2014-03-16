@@ -31,10 +31,10 @@
 #include "gn3s_signal_source.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
+#include <glog/logging.h>
 #include <gn3s/gn3s_source_cc.h>
 #include "configuration_interface.h"
-#include <glog/log_severity.h>
-#include <glog/logging.h>
+
 
 using google::LogMessage;
 
@@ -64,7 +64,7 @@ Gn3sSignalSource::Gn3sSignalSource(ConfigurationInterface* configuration,
     //        }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
+            LOG(WARNING) << item_type_
                     << " unrecognized item type for resampler";
             item_size_ = sizeof(short);
         }

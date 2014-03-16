@@ -34,14 +34,13 @@
 
 #include "control_thread.h"
 #include <unistd.h>
+#include <iostream>
 #include <map>
 #include <string>
-#include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
 #include <gnuradio/message.h>
 #include <gflags/gflags.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
@@ -135,22 +134,22 @@ void ControlThread::run()
     flowgraph_->connect();
     if (flowgraph_->connected())
         {
-            LOG_AT_LEVEL(INFO) << "Flowgraph connected";
+            LOG(INFO) << "Flowgraph connected";
         }
     else
         {
-            LOG_AT_LEVEL(ERROR) << "Unable to connect flowgraph";
+            LOG(ERROR) << "Unable to connect flowgraph";
             return;
         }
     // Start the flowgraph
     flowgraph_->start();
     if (flowgraph_->running())
         {
-            LOG_AT_LEVEL(INFO) << "Flowgraph started";
+            LOG(INFO) << "Flowgraph started";
         }
     else
         {
-            LOG_AT_LEVEL(ERROR) << "Unable to start flowgraph";
+            LOG(ERROR) << "Unable to start flowgraph";
             return;
         }
     // start the keyboard_listener thread
@@ -188,7 +187,7 @@ void ControlThread::run()
     //Join keyboard threads
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
 
-    LOG_AT_LEVEL(INFO) << "Flowgraph stopped";
+    LOG(INFO) << "Flowgraph stopped";
 }
 
 
@@ -197,7 +196,7 @@ void ControlThread::set_control_queue(boost::shared_ptr<gr::msg_queue> control_q
 {
     if (flowgraph_->running())
         {
-            LOG_AT_LEVEL(WARNING) << "Unable to set control queue while flowgraph is running";
+            LOG(WARNING) << "Unable to set control queue while flowgraph is running";
             return;
         }
     control_queue_ = control_queue;
@@ -728,7 +727,7 @@ void ControlThread::gps_ephemeris_data_write_to_XML()
             }
             catch (std::exception& e)
             {
-                    LOG_AT_LEVEL(ERROR) << e.what();
+                    LOG(ERROR) << e.what();
             }
         }
 }
@@ -754,7 +753,7 @@ void ControlThread::gps_utc_model_data_write_to_XML()
             }
             catch (std::exception& e)
             {
-                    LOG_AT_LEVEL(ERROR) << e.what();
+                    LOG(ERROR) << e.what();
             }
         }
 }
@@ -782,7 +781,7 @@ void ControlThread::gps_iono_data_write_to_XML()
             }
             catch (std::exception& e)
             {
-                    LOG_AT_LEVEL(ERROR) << e.what();
+                    LOG(ERROR) << e.what();
             }
         }
 }

@@ -37,7 +37,6 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
 #include "GPS_L1_CA.h"

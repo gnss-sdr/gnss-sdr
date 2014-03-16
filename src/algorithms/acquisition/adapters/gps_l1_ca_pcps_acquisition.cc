@@ -37,7 +37,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
 #include "gps_sdr_signal_processing.h"
@@ -106,7 +105,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     }
     else
     {
-        LOG_AT_LEVEL(WARNING) << item_type_
+        LOG(WARNING) << item_type_
                 << " unknown acquisition item type";
     }
 }
@@ -132,11 +131,11 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 {
 	float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-	if(pfa==0.0)
+	if(pfa == 0.0)
         {
                  pfa = configuration_->property(role_+".pfa", 0.0);
         }
-	if(pfa==0.0)
+	if(pfa == 0.0)
 		{
 			threshold_ = threshold;
 		}
@@ -248,24 +247,21 @@ void GpsL1CaPcpsAcquisition::reset()
 
 float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
 {
-	//Calculate the threshold
-
-	unsigned int frequency_bins = 0;
-	for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
-	{
-	 	frequency_bins++;
-	}
-
-	DLOG(INFO) <<"Channel "<<channel_<<"  Pfa = "<< pfa;
-
-	unsigned int ncells = vector_length_*frequency_bins;
-	double exponent = 1/(double)ncells;
-	double val = pow(1.0-pfa,exponent);
-	double lambda = double(vector_length_);
+    //Calculate the threshold
+    unsigned int frequency_bins = 0;
+    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+        {
+            frequency_bins++;
+        }
+    DLOG(INFO) << "Channel " << channel_<< "  Pfa = " << pfa;
+    unsigned int ncells = vector_length_*frequency_bins;
+    double exponent = 1/(double)ncells;
+    double val = pow(1.0 - pfa, exponent);
+    double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);
-	float threshold = (float)quantile(mydist,val);
+    float threshold = (float)quantile(mydist,val);
 
-	return threshold;
+    return threshold;
 }
 
 

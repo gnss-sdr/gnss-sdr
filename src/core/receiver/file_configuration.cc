@@ -35,7 +35,6 @@
 
 #include "file_configuration.h"
 #include <string>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "INIReader.h"
 #include "string_converter.h"
@@ -59,7 +58,7 @@ FileConfiguration::FileConfiguration()
 
 FileConfiguration::~FileConfiguration()
 {
-    LOG_AT_LEVEL(INFO) << "Destructor called";
+    LOG(INFO) << "Destructor called";
     delete ini_reader_;
     delete converter_;
     delete overrided_;
@@ -186,11 +185,11 @@ void FileConfiguration::init()
         }
     else if(error_ > 0)
         {
-            LOG_AT_LEVEL(WARNING) << "Configuration file " << filename_ << " contains errors in line " << error_;
+            LOG(WARNING) << "Configuration file " << filename_ << " contains errors in line " << error_;
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << "Unable to open configuration file " << filename_;
+            LOG(WARNING) << "Unable to open configuration file " << filename_;
         }
 }
 

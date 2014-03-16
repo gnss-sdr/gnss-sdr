@@ -31,7 +31,6 @@
 
 
 #include <gtest/gtest.h>
-
 #include "file_output_filter.h"
 #include "in_memory_configuration.h"
 

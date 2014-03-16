@@ -31,16 +31,14 @@
 
 
 #include "sbas_l1_telemetry_decoder.h"
-#include "configuration_interface.h"
-#include "sbas_l1_telemetry_decoder_cc.h"
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include "sbas_telemetry_data.h"
 #include "sbas_ionospheric_correction.h"
 #include "sbas_satellite_correction.h"
 #include "sbas_ephemeris.h"
+#include "configuration_interface.h"
+#include "sbas_l1_telemetry_decoder_cc.h"
 
 extern concurrent_queue<Sbas_Raw_Msg> global_sbas_raw_msg_queue;
 extern concurrent_queue<Sbas_Ionosphere_Correction> global_sbas_iono_queue;

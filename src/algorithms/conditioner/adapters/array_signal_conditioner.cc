@@ -36,7 +36,6 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "gnss_flowgraph.h"
 
@@ -70,7 +69,7 @@ void ArraySignalConditioner::connect(gr::top_block_sptr top_block)
 	// note: the array signal conditioner do not have data type adapter, and must use the array input filter (multichannel)
     if (connected_)
         {
-            LOG_AT_LEVEL(WARNING) << "Array Signal conditioner already connected internally";
+            LOG(WARNING) << "Array Signal conditioner already connected internally";
             return;
         }
     //data_type_adapt_->connect(top_block);
@@ -95,7 +94,7 @@ void ArraySignalConditioner::disconnect(gr::top_block_sptr top_block)
 {
     if (!connected_)
         {
-            LOG_AT_LEVEL(WARNING) << "Array Signal conditioner already disconnected internally";
+            LOG(WARNING) << "Array Signal conditioner already disconnected internally";
             return;
         }
 

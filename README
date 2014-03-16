@@ -45,9 +45,9 @@ $ sudo apt-get install libblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/
 $ sudo yum install lapack-devel blas-devel gcc-fortran      # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel gcc-fortran   # For OpenSUSE
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-4.000.0.tar.gz
-$ tar xvfz armadillo-4.000.0.tar.gz
-$ cd armadillo-4.000.0
+$ wget http://sourceforge.net/projects/arma/files/armadillo-4.100.2.tar.gz
+$ tar xvfz armadillo-4.100.2.tar.gz
+$ cd armadillo-4.100.2
 $ cmake .
 $ make
 $ sudo make install
@@ -289,19 +289,10 @@ $ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure
 $ make
 $ sudo make install
 
-Install Glog manually from the trunk, after applying a patch:
+Install Glog manually from the subversion repository. Revision 142 is known to work well:
 
-$ svn checkout -r139 http://google-glog.googlecode.com/svn/trunk/ google-glog
+$ svn checkout -r142 http://google-glog.googlecode.com/svn/trunk/ google-glog
 $ cd google-glog
- 
-Open your browser and go to: http://code.google.com/p/google-glog/issues/detail?id=121
-
-Download  libc++.diff (from comment #3)
-
-$ mv $HOME/Downloads/libc++.diff .
-$ cd src
-$ patch  < ../libc++.diff
-$ cd ..
 $ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure 
 $ make
 $ sudo make install

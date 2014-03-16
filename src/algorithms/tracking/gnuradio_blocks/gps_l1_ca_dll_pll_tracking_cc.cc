@@ -7,11 +7,11 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2011  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -34,20 +34,20 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gnss_synchro.h"
 #include "gps_l1_ca_dll_pll_tracking_cc.h"
+#include <cmath>
+#include <iostream>
+#include <sstream>
+#include <boost/lexical_cast.hpp>
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+#include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
-#include <boost/lexical_cast.hpp>
-#include <iostream>
-#include <sstream>
-#include <cmath>
-#include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
+
 
 /*!
  * \todo Include in definition header file
@@ -181,7 +181,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     unsigned long int acq_trk_diff_samples;
     float acq_trk_diff_seconds;
     acq_trk_diff_samples = d_sample_counter - d_acq_sample_stamp;//-d_vector_length;
-    std::cout << "acq_trk_diff_samples=" << acq_trk_diff_samples << std::endl;
+    LOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
     acq_trk_diff_seconds = (float)acq_trk_diff_samples / (float)d_fs_in;
     //doppler effect
     // Fd=(C/(C+Vr))*F
@@ -238,15 +238,16 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
 
     // DEBUG OUTPUT
     std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
-    DLOG(INFO) << "Start tracking for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << " received";
+    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
+
 
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
 
-    std::cout << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
+    LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
             << " Code Phase correction [samples]=" << delay_correction_samples
-            << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples << std::endl;
+            << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
 
 
@@ -380,7 +381,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                 {
                     const int samples_available = ninput_items[0];
                     d_sample_counter = d_sample_counter + samples_available;
-                    LOG_AT_LEVEL(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
+                    LOG(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
                     consume_each(samples_available);
 
                     // make an output to not stop the rest of the processing blocks
@@ -461,7 +462,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                         }
                     if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
                         {
-                            std::cout << "Channel " << d_channel << " loss of lock!" << std::endl ;
+                            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+                            LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
                             ControlMessageFactory* cmf = new ControlMessageFactory();
                             if (d_queue != gr::msg_queue::sptr())
                                 {
@@ -495,8 +497,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
                             std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                      << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                            LOG(INFO) << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+                                      << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
                             //if (d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
                         }
                 }
@@ -505,8 +507,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     if (floor(d_sample_counter / d_fs_in) != d_last_seg)
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                                    << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+                            LOG(INFO) << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+                                                    << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
                             //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
                         }
                 }
@@ -573,7 +575,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             }
             catch (std::ifstream::failure e)
             {
-                    std::cout << "Exception writing trk dump file " << e.what() << std::endl;
+                    LOG(WARNING) << "Exception writing trk dump file " << e.what();
             }
         }
 
@@ -587,7 +589,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
 {
     d_channel = channel;
-    LOG_AT_LEVEL(INFO) << "Tracking Channel set to " << d_channel;
+    LOG(INFO) << "Tracking Channel set to " << d_channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {
@@ -599,11 +601,11 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
                     }
                 }
         }

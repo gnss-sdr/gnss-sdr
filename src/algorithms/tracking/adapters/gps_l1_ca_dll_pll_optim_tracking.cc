@@ -37,12 +37,11 @@
  */
 
 #include "gps_l1_ca_dll_pll_optim_tracking.h"
-#include "GPS_L1_CA.h"
-#include "configuration_interface.h"
 #include <boost/math/special_functions/round.hpp>
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
+#include "GPS_L1_CA.h"
+#include "configuration_interface.h"
 
 using google::LogMessage;
 
@@ -53,11 +52,8 @@ GpsL1CaDllPllOptimTracking::GpsL1CaDllPllOptimTracking(
         role_(role), in_streams_(in_streams), out_streams_(out_streams),
         queue_(queue)
 {
-
     DLOG(INFO) << "role " << role;
-
     //################# CONFIGURATION PARAMETERS ########################
-
     int fs_in;
     int vector_length;
     int f_if;
@@ -68,7 +64,6 @@ GpsL1CaDllPllOptimTracking::GpsL1CaDllPllOptimTracking(
     float pll_bw_hz;
     float dll_bw_hz;
     float early_late_space_chips;
-
     item_type = configuration->property(role + ".item_type",default_item_type);
     //vector_length = configuration->property(role + ".vector_length", 2048);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -77,18 +72,16 @@ GpsL1CaDllPllOptimTracking::GpsL1CaDllPllOptimTracking(
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
-
     std::string default_dump_filename = "./track_ch";
-    dump_filename = configuration->property(role + ".dump_filename",
-            default_dump_filename); //unused!
-
+    dump_filename = configuration->property(role + ".dump_filename", default_dump_filename); //unused!
     vector_length = round(fs_in / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+
     //################# MAKE TRACKING GNURadio object ###################
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_dll_pll_make_optim_tracking_cc(
-            		f_if,
+                    f_if,
                     fs_in,
                     vector_length,
                     queue_,
@@ -100,15 +93,15 @@ GpsL1CaDllPllOptimTracking::GpsL1CaDllPllOptimTracking(
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type << " unknown tracking item type.";
+            LOG(WARNING) << item_type << " unknown tracking item type.";
         }
-
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
+
 GpsL1CaDllPllOptimTracking::~GpsL1CaDllPllOptimTracking()
-{
-}
+{}
+
 
 void GpsL1CaDllPllOptimTracking::start_tracking()
 {
@@ -131,9 +124,7 @@ void GpsL1CaDllPllOptimTracking::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
-
     tracking_->set_channel_queue(channel_internal_queue_);
-
 }
 
 void GpsL1CaDllPllOptimTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)

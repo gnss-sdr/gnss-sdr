@@ -36,7 +36,6 @@
 #include <algorithm>
 #include <iostream>
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 
 using google::LogMessage;

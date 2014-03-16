@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <cstring>
 #include <iostream>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "sbas_telemetry_data.h"
 #include "sbas_ionospheric_correction.h"

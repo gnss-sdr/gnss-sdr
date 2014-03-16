@@ -32,16 +32,14 @@
 
 
 #include "galileo_e1b_telemetry_decoder.h"
-#include "configuration_interface.h"
-#include "galileo_e1b_telemetry_decoder_cc.h"
 #include <gnuradio/io_signature.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
+#include "configuration_interface.h"
+#include "galileo_e1b_telemetry_decoder_cc.h"
 
 extern concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
 extern concurrent_queue<Galileo_Iono> global_galileo_iono_queue;

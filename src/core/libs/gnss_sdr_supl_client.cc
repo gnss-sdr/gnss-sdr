@@ -355,7 +355,7 @@ bool gnss_sdr_supl_client::load_ephemeris_xml(const std::string file_name)
     }
     catch (std::exception& e)
     {
-            LOG_AT_LEVEL(ERROR) << e.what() << "File: " << file_name;
+            LOG(ERROR) << e.what() << "File: " << file_name;
             return false;
     }
     return true;
@@ -373,7 +373,7 @@ bool gnss_sdr_supl_client::save_ephemeris_xml(const std::string file_name)
     }
     catch (std::exception& e)
     {
-            LOG_AT_LEVEL(ERROR) << e.what();
+            LOG(ERROR) << e.what();
             return false;
     }
     return true;

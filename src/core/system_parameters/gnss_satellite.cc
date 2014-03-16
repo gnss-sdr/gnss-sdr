@@ -29,7 +29,6 @@
  */
 
 #include "gnss_satellite.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 
 

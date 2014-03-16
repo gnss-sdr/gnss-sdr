@@ -30,7 +30,6 @@
  */
 
 #include "direct_resampler_conditioner.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include "direct_resampler_conditioner_cc.h"
@@ -73,8 +72,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     //        }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
-                                  << " unrecognized item type for resampler";
+            LOG(WARNING) << item_type_ << " unrecognized item type for resampler";
             item_size_ = sizeof(short);
         }
     if (dump_)

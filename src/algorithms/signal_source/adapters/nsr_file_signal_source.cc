@@ -36,7 +36,6 @@
 #include <iomanip>
 #include <iostream>
 #include <gflags/gflags.h>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "gnss_sdr_valve.h"
 #include "configuration_interface.h"
@@ -76,8 +75,7 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
-                    << " unrecognized item type. Using byte.";
+            LOG(WARNING) << item_type_  << " unrecognized item type. Using byte.";
             item_size_ = sizeof(char);
         }
     try
@@ -102,8 +100,8 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
             << std::endl
             <<"gnss-sdr --config_file=my_GNSS_SDR_configuration.conf"
             << std::endl;
-            LOG_AT_LEVEL(INFO) << "file_signal_source: Unable to open the samples file "
-                               << filename_.c_str() << ", exiting the program.";
+            LOG(WARNING) << "file_signal_source: Unable to open the samples file "
+                         << filename_.c_str() << ", exiting the program.";
             throw(e);
     }
 
@@ -122,28 +120,28 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
             if (file.is_open())
                 {
                     size = file.tellg();
-                    DLOG(INFO) << "Total samples in the file= " << floor((double)size / (double)item_size());
+                    LOG(INFO) << "Total samples in the file= " << floor((double)size / (double)item_size());
                 }
             else
                 {
                     std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << std::endl;
-                    LOG_AT_LEVEL(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
+                    LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
                 }
             std::cout << std::setprecision(16);
             std::cout << "Processing file " << filename_ << ", which contains " << (double)size << " [bytes]" << std::endl;
 
             if (size > 0)
                 {
-            	int sample_packet_factor=4; // 1 byte -> 4 samples
-                samples_ = floor((double)size / (double)item_size())*sample_packet_factor;
-                samples_=samples_- ceil(0.002 * (double)sampling_frequency_); //process all the samples available in the file excluding the last 2 ms
+                    int sample_packet_factor = 4; // 1 byte -> 4 samples
+                    samples_ = floor((double)size / (double)item_size())*sample_packet_factor;
+                    samples_ = samples_- ceil(0.002 * (double)sampling_frequency_); //process all the samples available in the file excluding the last 2 ms
                 }
         }
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
     signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
-    DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
+    LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 
     valve_ = gnss_sdr_make_valve(sizeof(float), samples_, queue_);
@@ -159,7 +157,6 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
     if (enable_throttle_control_)
         {
             throttle_ = gr::blocks::throttle::make(sizeof(float), sampling_frequency_);
-
         }
     DLOG(INFO) << "File source filename " << filename_;
     DLOG(INFO) << "Samples " << samples_;
@@ -188,7 +185,6 @@ void NsrFileSignalSource::connect(gr::top_block_sptr top_block)
                 {
                     top_block->connect(file_source_, 0, unpack_byte_, 0);
                     top_block->connect(unpack_byte_, 0,throttle_,0);
-
                     DLOG(INFO) << "connected file source to throttle";
                     top_block->connect(throttle_, 0, valve_, 0);
                     DLOG(INFO) << "connected throttle to valve";
@@ -275,8 +271,8 @@ void NsrFileSignalSource::disconnect(gr::top_block_sptr top_block)
         {
             if (enable_throttle_control_ == true)
                 {
-					top_block->disconnect(file_source_, 0, unpack_byte_, 0);
-					DLOG(INFO) << "disconnected file source to unpack_byte_";
+                    top_block->disconnect(file_source_, 0, unpack_byte_, 0);
+                    DLOG(INFO) << "disconnected file source to unpack_byte_";
                     top_block->disconnect(unpack_byte_, 0, throttle_, 0);
                     DLOG(INFO) << "disconnected unpack_byte_ to throttle";
                     if (dump_)
@@ -289,8 +285,8 @@ void NsrFileSignalSource::disconnect(gr::top_block_sptr top_block)
                 {
                     if (dump_)
                         {
-							top_block->disconnect(file_source_, 0, unpack_byte_, 0);
-							DLOG(INFO) << "disconnected file source to unpack_byte_";
+                            top_block->disconnect(file_source_, 0, unpack_byte_, 0);
+                            DLOG(INFO) << "disconnected file source to unpack_byte_";
                             top_block->disconnect(unpack_byte_, 0, sink_, 0);
                             DLOG(INFO) << "disconnected unpack_byte_ to sink";
                         }
@@ -304,7 +300,7 @@ void NsrFileSignalSource::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr NsrFileSignalSource::get_left_block()
 {
-    LOG_AT_LEVEL(WARNING) << "Left block of a signal source should not be retrieved";
+    LOG(WARNING) << "Left block of a signal source should not be retrieved";
     //return gr_block_sptr();
     return gr::blocks::file_source::sptr();
 }

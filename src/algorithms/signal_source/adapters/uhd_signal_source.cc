@@ -32,7 +32,6 @@
 #include <iostream>
 #include <uhd/types/device_addr.hpp>
 #include <uhd/exception.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
@@ -159,20 +158,20 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_ << " unrecognized item type. Using short.";
+            LOG(WARNING) << item_type_ << " unrecognized item type. Using short.";
             item_size_ = sizeof(short);
         }
 
     if (samples_ != 0)
         {
-            DLOG(INFO) << "Send STOP signal after " << samples_ << " samples";
+            LOG(INFO) << "Send STOP signal after " << samples_ << " samples";
             valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
             DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
         }
 
     if (dump_)
         {
-            DLOG(INFO) << "Dumping output into file " << dump_filename_;
+            LOG(INFO) << "Dumping output into file " << dump_filename_;
             //file_sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
@@ -215,7 +214,7 @@ void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
     if (samples_ != 0)
         {
             top_block->disconnect(uhd_source_, 0, valve_, 0);
-            DLOG(INFO) << "usrp source disconnected";
+            LOG(INFO) << "UHD source disconnected";
             if (dump_)
                 {
                     top_block->disconnect(valve_, 0, file_sink_, 0);
@@ -234,7 +233,7 @@ void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr UhdSignalSource::get_left_block()
 {
-    LOG_AT_LEVEL(WARNING) << "Trying to get signal source left block.";
+    LOG(WARNING) << "Trying to get signal source left block.";
     //return gr_basic_block_sptr();
     return gr::uhd::usrp_source::sptr();
 }

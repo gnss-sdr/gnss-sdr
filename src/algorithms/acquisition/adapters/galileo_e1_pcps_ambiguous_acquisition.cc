@@ -33,7 +33,6 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "galileo_e1_signal_processing.h"
 #include "Galileo_E1.h"
@@ -65,7 +64,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     if (sampled_ms_ % 4 != 0)
         {
             sampled_ms_ = (int)(sampled_ms_/4) * 4;
-            LOG_AT_LEVEL(WARNING) << "coherent_integration_time should be multiple of "
+            LOG(WARNING) << "coherent_integration_time should be multiple of "
                                      << "Galileo code length (4 ms). coherent_integration_time = "
                                      << sampled_ms_ << " ms will be used.";
 
@@ -114,7 +113,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
+            LOG(WARNING) << item_type_
                     << " unknown acquisition item type";
         }
 }

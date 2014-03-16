@@ -29,7 +29,6 @@
  */
 
 #include "beamformer_filter.h"
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include "beamformer.h"
@@ -60,7 +59,7 @@ BeamformerFilter::BeamformerFilter(
         }
     else
         {
-            LOG_AT_LEVEL(WARNING) << item_type_
+            LOG(WARNING) << item_type_
                                   << " unrecognized item type for beamformer";
             item_size_ = sizeof(gr_complex);
         }

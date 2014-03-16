@@ -54,49 +54,49 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
     int  weeksToLeapSecondEvent = WN_LSF_6 - (WN % 256);
 
     if ((weeksToLeapSecondEvent) >= 0) // is not in the past
-    {
-    	//Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
-    	int secondOfLeapSecondEvent = DN_6 * 24 * 60 * 60;
-    	if  (abs(t_e - secondOfLeapSecondEvent) > 21600)
-    	{
-    		/* 5.1.7a
-    		 * Whenever the leap second adjusted time indicated by the WN_LSF and the DN values
-    		 * is not in the past (relative to the user's present time), and the user's
-    		 * present time does not fall in the time span which starts at six hours prior
-    		 * to the effective time and ends at six hours after the effective time,
-    		 * the GST/Utc relationship is given by
-    		 */
-    		//std::cout<<"GST->UTC case a"<<std::endl;
-    		Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * (double)((WN % 256) - WNot_6));
-    		t_Utc_daytime = fmod(t_e - Delta_t_Utc, 86400);
-    	}
-    	else
-    	{
-    		/* 5.1.7b
-    		 * Whenever the user's current time falls within the time span of six hours
-    		 * prior to the leap second adjustment to six hours after the adjustment time, ,
-    		 * the effective time is computed according to the following equations:
-    		 */
-    		//std::cout<<"GST->UTC case b"<<std::endl;
-    		Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * (double)((WN % 256) - WNot_6));
-    		double W = fmod(t_e - Delta_t_Utc - 43200, 86400) + 43200;
-    		t_Utc_daytime = fmod(W, 86400 + Delta_tLSF_6 - Delta_tLS_6);
-    		//implement something to handle a leap second event!
-    	}
-    }
+        {
+            //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
+            int secondOfLeapSecondEvent = DN_6 * 24 * 60 * 60;
+            if  (abs(t_e - secondOfLeapSecondEvent) > 21600)
+                {
+                    /* 5.1.7a
+                     * Whenever the leap second adjusted time indicated by the WN_LSF and the DN values
+                     * is not in the past (relative to the user's present time), and the user's
+                     * present time does not fall in the time span which starts at six hours prior
+                     * to the effective time and ends at six hours after the effective time,
+                     * the GST/Utc relationship is given by
+                     */
+                    //std::cout<<"GST->UTC case a"<<std::endl;
+                    Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * (double)((WN % 256) - WNot_6));
+                    t_Utc_daytime = fmod(t_e - Delta_t_Utc, 86400);
+                }
+            else
+                {
+                    /* 5.1.7b
+                     * Whenever the user's current time falls within the time span of six hours
+                     * prior to the leap second adjustment to six hours after the adjustment time, ,
+                     * the effective time is computed according to the following equations:
+                     */
+                    //std::cout<<"GST->UTC case b"<<std::endl;
+                    Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * (double)((WN % 256) - WNot_6));
+                    double W = fmod(t_e - Delta_t_Utc - 43200, 86400) + 43200;
+                    t_Utc_daytime = fmod(W, 86400 + Delta_tLSF_6 - Delta_tLS_6);
+                    //implement something to handle a leap second event!
+                }
+        }
     else // the effectivity time is in the past
-    {
-    	/* 5.1.7c
-    	 * Whenever the leap second adjustment time, as indicated by the WN_LSF and DN values,
-    	 * is in the past (relative to the user’s current time) and the user’s present time does not
-    	 * fall in the time span which starts six hours prior to the leap second adjustment time and
-    	 * ends six hours after the adjustment time, the effective time is computed according to
-    	 * the following equation:
-    	 */
-    	//std::cout<<"GST->UTC case c"<<std::endl;
-    	Delta_t_Utc = Delta_tLSF_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * (double)((WN % 256) - WNot_6));
-    	t_Utc_daytime = fmod(t_e - Delta_t_Utc, 86400);
-    }
+        {
+            /* 5.1.7c
+             * Whenever the leap second adjustment time, as indicated by the WN_LSF and DN values,
+             * is in the past (relative to the user’s current time) and the user’s present time does not
+             * fall in the time span which starts six hours prior to the leap second adjustment time and
+             * ends six hours after the adjustment time, the effective time is computed according to
+             * the following equation:
+             */
+            //std::cout<<"GST->UTC case c"<<std::endl;
+            Delta_t_Utc = Delta_tLSF_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * (double)((WN % 256) - WNot_6));
+            t_Utc_daytime = fmod(t_e - Delta_t_Utc, 86400);
+        }
 
     double secondsOfWeekBeforeToday = 43200 * floor(t_e / 43200);
     t_Utc = secondsOfWeekBeforeToday + t_Utc_daytime;

@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -38,7 +38,6 @@
 #include <sstream>
 #include <iostream>
 #include <boost/lexical_cast.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "configuration_interface.h"
 #include "gnss_block_interface.h"
@@ -112,8 +111,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalSource(
     std::string default_implementation = "File_Signal_Source";
     std::string implementation = configuration->property(
             "SignalSource.implementation", default_implementation);
-    DLOG(INFO) << "Getting SignalSource with implementation "
-            << implementation;
+    LOG(INFO) << "Getting SignalSource with implementation " << implementation;
     return GetBlock(configuration, "SignalSource", implementation, 0, 1,
             queue);
 }
@@ -145,28 +143,29 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
                      "Resampler.implementation", default_implementation);
         }
 
-    DLOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
+    LOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
             << data_type_adapter << ", InputFilter implementation: "
             << input_filter << ", and Resampler implementation: "
             << resampler;
 
     if(signal_conditioner.compare("Array_Signal_Conditioner") == 0)
-    {
-    	//instantiate the array version
- 	   return new ArraySignalConditioner(configuration, GetBlock(configuration,
- 	    		"DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
- 	    		configuration,"InputFilter", input_filter, 1, 1, queue),
- 	    		GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
- 	    		"SignalConditioner", "Signal_Conditioner", queue);
-    }else{
-    	//normal version
-    	   return new SignalConditioner(configuration, GetBlock(configuration,
-    	    		"DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
-    	    		configuration,"InputFilter", input_filter, 1, 1, queue),
-    	    		GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
-    	    		"SignalConditioner", "Signal_Conditioner", queue);
-    }
-
+        {
+            //instantiate the array version
+            return new ArraySignalConditioner(configuration, GetBlock(configuration,
+                    "DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
+                            configuration,"InputFilter", input_filter, 1, 1, queue),
+                            GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
+                            "SignalConditioner", "Signal_Conditioner", queue);
+        }
+    else
+        {
+            //normal version
+            return new SignalConditioner(configuration, GetBlock(configuration,
+                    "DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
+                            configuration,"InputFilter", input_filter, 1, 1, queue),
+                            GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
+                            "SignalConditioner", "Signal_Conditioner", queue);
+        }
 }
 
 
@@ -175,15 +174,10 @@ GNSSBlockInterface* GNSSBlockFactory::GetObservables(
         ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "GPS_L1_CA_Observables";
-
-    std::string implementation = configuration->property(
-            "Observables.implementation", default_implementation);
-    DLOG(INFO) << "Getting Observables with implementation "
-            << implementation;
-    unsigned int channel_count =
-            configuration->property("Channels.count", 12);
-    return GetBlock(configuration, "Observables", implementation,
-            channel_count, channel_count, queue);
+    std::string implementation = configuration->property("Observables.implementation", default_implementation);
+    LOG(INFO) << "Getting Observables with implementation " << implementation;
+    unsigned int channel_count = configuration->property("Channels.count", 12);
+    return GetBlock(configuration, "Observables", implementation, channel_count, channel_count, queue);
 }
 
 
@@ -192,12 +186,10 @@ GNSSBlockInterface* GNSSBlockFactory::GetPVT(
         ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Pass_Through";
-    std::string implementation = configuration->property(
-            "PVT.implementation", default_implementation);
-    DLOG(INFO) << "Getting PVT with implementation " << implementation;
+    std::string implementation = configuration->property("PVT.implementation", default_implementation);
+    LOG(INFO) << "Getting PVT with implementation " << implementation;
     unsigned int channel_count = configuration->property("Channels.count", 12);
-    return GetBlock(configuration, "PVT", implementation, channel_count, 1,
-            queue);
+    return GetBlock(configuration, "PVT", implementation, channel_count, 1, queue);
 }
 
 
@@ -206,11 +198,9 @@ GNSSBlockInterface* GNSSBlockFactory::GetOutputFilter(
         ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Null_Sink_Output_Filter";
-    std::string implementation = configuration->property(
-            "OutputFilter.implementation", default_implementation);
-    DLOG(INFO) << "Getting OutputFilter with implementation " << implementation;
-    return GetBlock(configuration, "OutputFilter", implementation, 1, 0,
-            queue);
+    std::string implementation = configuration->property("OutputFilter.implementation", default_implementation);
+    LOG(INFO) << "Getting OutputFilter with implementation " << implementation;
+    return GetBlock(configuration, "OutputFilter", implementation, 1, 0, queue);
 }
 
 
@@ -222,10 +212,8 @@ GNSSBlockInterface* GNSSBlockFactory::GetChannel(
     std::stringstream stream;
     stream << channel;
     std::string id = stream.str();
-    DLOG(INFO) << "Instantiating channel " << id;
-    DLOG(INFO) << "Getting Channel " << id << " with" << std::endl << " Acquisition Implementation: "
-    		<< acq << std::endl << " Tracking Implementation: " << trk << std::endl << " Telemetry "
-    		"Decoder implementation: " << tlm;
+    LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
+    		<< acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
     return new Channel(configuration, channel, GetBlock(configuration,
             "Channel", "Pass_Through", 1, 1, queue),
@@ -243,17 +231,12 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
         ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Pass_Through";
-    unsigned int channel_count =
-            configuration->property("Channels.count", 12);
-    DLOG(INFO) << "Getting " << channel_count << " channels";
-    std::vector<GNSSBlockInterface*>* channels = new std::vector<
-            GNSSBlockInterface*>();
-    std::string tracking = configuration->property("Tracking.implementation",
-            default_implementation);
-    std::string telemetry_decoder = configuration->property(
-            "TelemetryDecoder.implementation", default_implementation);
-    std::string acquisition_implementation = configuration->property(
-    		"Acquisition.implementation", default_implementation);
+    unsigned int channel_count = configuration->property("Channels.count", 12);
+    LOG(INFO) << "Getting " << channel_count << " channels";
+    std::vector<GNSSBlockInterface*>* channels = new std::vector<GNSSBlockInterface*>();
+    std::string tracking = configuration->property("Tracking.implementation", default_implementation);
+    std::string telemetry_decoder = configuration->property("TelemetryDecoder.implementation", default_implementation);
+    std::string acquisition_implementation = configuration->property("Acquisition.implementation", default_implementation);
 
     for (unsigned int i = 0; i < channel_count; i++)
         {
@@ -272,11 +255,11 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
 }
 
 
-    /*
-     * Returns the block with the required configuration and implementation
-     *
-     * PLEASE ADD YOUR NEW BLOCK HERE!!
-     */
+/*
+ * Returns the block with the required configuration and implementation
+ *
+ * PLEASE ADD YOUR NEW BLOCK HERE!!
+ */
 GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         ConfigurationInterface *configuration, std::string role,
         std::string implementation, unsigned int in_streams,
@@ -301,8 +284,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             catch (const std::exception &e)
             {
                     std::cout << "GNSS-SDR program ended." << std::endl;
-                    LOG_AT_LEVEL(INFO) << implementation
-                            << ": Source file not found";
+                    LOG(ERROR) << implementation << ": Source file not found";
                     exit(1);
             }
         }
@@ -316,8 +298,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
             catch (const std::exception &e)
             {
                     std::cout << "GNSS-SDR program ended." << std::endl;
-                    LOG_AT_LEVEL(INFO) << implementation
-                            << ": Source file not found";
+                    LOG(ERROR) << implementation << ": Source file not found";
                     exit(1);
             }
         }
@@ -524,8 +505,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     else
         {
             // Log fatal. This causes execution to stop.
-            LOG_AT_LEVEL(ERROR) << implementation
-                    << ": Undefined implementation for block";
+            LOG(ERROR) << implementation << ": Undefined implementation for block";
         }
     return block;
 }

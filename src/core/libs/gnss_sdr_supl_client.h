@@ -41,7 +41,6 @@
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/serialization/map.hpp>
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 extern "C" {
 #include "supl.h"

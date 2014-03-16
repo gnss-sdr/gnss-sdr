@@ -243,12 +243,10 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     ASSERT_NO_THROW( {
-    start_queue();
-    acquisition->init();
-    acquisition->reset();
-
-
-    }) << "Failure !!!" << std::endl;
+        start_queue();
+        acquisition->init();
+        acquisition->reset();
+    }) << "Failure starting acquisition" << std::endl;
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);

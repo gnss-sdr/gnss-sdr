@@ -58,7 +58,9 @@ if(RAW_ARRAY_DRIVER)
      ##############################################
      # GRDBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
      ##############################################
-
+     if(OS_IS_MACOSX)
+          set(MACOSX_ARGS "-DCMAKE_CXX_COMPILER=/usr/bin/clang++")
+     endif(OS_IS_MACOSX)
      # find_package(GrDbfcttc)
      # if not found, build it with ExternalPackage_Add
      include(ExternalProject)     
@@ -68,7 +70,7 @@ if(RAW_ARRAY_DRIVER)
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-dbfcttc
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
-          CMAKE_ARGS -DCMAKE_CXX_COMPILER=/usr/bin/clang++
+          CMAKE_ARGS ${MACOSX_ARGS}
           INSTALL_COMMAND ""
      )
      

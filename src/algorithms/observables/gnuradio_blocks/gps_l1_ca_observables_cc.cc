@@ -72,11 +72,11 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, boost
                     {
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            std::cout << "Observables dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
                     }
                     catch (std::ifstream::failure e)
                     {
-                            std::cout << "Exception opening observables dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "Exception opening observables dump file " << e.what() << std::endl;
                     }
                 }
         }
@@ -188,7 +188,7 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             }
             catch (const std::ifstream::failure& e)
             {
-                    std::cout << "Exception writing observables dump file " << e.what() << std::endl;
+                    LOG(WARNING) << "Exception writing observables dump file " << e.what() << std::endl;
             }
         }
 

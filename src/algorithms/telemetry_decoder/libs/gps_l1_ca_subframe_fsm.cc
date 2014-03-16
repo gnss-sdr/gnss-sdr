@@ -249,9 +249,10 @@ void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
     int subframe_ID;
     // NEW GPS SUBFRAME HAS ARRIVED!
     subframe_ID = d_nav.subframe_decoder(this->d_subframe); //decode the subframe
-    std::cout << "NAVIGATION FSM: received subframe "
-              << subframe_ID << " for satellite "
+    std::cout << "NAV Message: received subframe "
+              << subframe_ID << " from satellite "
               << Gnss_Satellite(std::string("GPS"), i_satellite_PRN) << std::endl;
+
     d_nav.i_satellite_PRN = i_satellite_PRN;
     d_nav.i_channel_ID = i_channel_ID;
     d_nav.d_subframe_timestamp_ms = this->d_preamble_time_ms;

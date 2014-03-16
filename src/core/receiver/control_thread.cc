@@ -461,7 +461,7 @@ void ControlThread::gps_acq_assist_data_collector()
             else
                 {
                     // insert new acq record
-                    std::cout << "New acq assist record inserted" << std::endl;
+                    LOG(INFO) << "New acq assist record inserted";
                     global_gps_acq_assist_map.write(gps_acq.i_satellite_PRN, gps_acq);
                 }
         }
@@ -495,21 +495,21 @@ void ControlThread::gps_ephemeris_data_collector()
                         {
                             if (gps_eph.d_Toe > gps_eph_old.d_Toe)
                                 {
-                                    std::cout << "Ephemeris record updated (Toe=" << gps_eph.d_Toe << std::endl;
+                                    LOG(INFO) << "Ephemeris record updated (Toe=" << gps_eph.d_Toe;
                                     global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN, gps_eph);
                                 }
                             else
                                 {
-                                    std::cout << "Not updating the existing ephemeris" << std::endl;
+                                    LOG(INFO) << "Not updating the existing ephemeris";
                                 }
                         }
                 }
             else
                 {
                     // insert new ephemeris record
-                    std::cout << "New Ephemeris record inserted with Toe="
+                    LOG(INFO) << "New Ephemeris record inserted with Toe="
                               << gps_eph.d_Toe<<" and GPS Week="
-                              << gps_eph.i_GPS_week << std::endl;
+                              << gps_eph.i_GPS_week;
                     global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN, gps_eph);
                 }
         }
@@ -535,32 +535,32 @@ void ControlThread::galileo_ephemeris_data_collector()
                     // Check the EPHEMERIS timestamp. If it is newer, then update the ephemeris
                     if (galileo_eph.WN_5 > galileo_eph_old.WN_5) //further check because it is not clear when IOD is reset
                         {
-                            std::cout << "Galileo Ephemeris record in global map updated -- GALILEO Week Number ="
-                                      << galileo_eph.WN_5 << std::endl;
+                            LOG(INFO) << "Galileo Ephemeris record in global map updated -- GALILEO Week Number ="
+                                      << galileo_eph.WN_5;
                             global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4,galileo_eph);
                         }
                     else
                         {
                             if (galileo_eph.IOD_ephemeris > galileo_eph_old.IOD_ephemeris)
                                 {
-                                    std::cout << "Galileo Ephemeris record updated in global map-- IOD_ephemeris ="
+                                    LOG(INFO) << "Galileo Ephemeris record updated in global map-- IOD_ephemeris ="
                                               << galileo_eph.IOD_ephemeris << std::endl;
                                     global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4, galileo_eph);
-                                    std::cout << "IOD_ephemeris OLD: " << galileo_eph_old.IOD_ephemeris << std::endl;
-                                    std::cout << "satellite: " << galileo_eph.SV_ID_PRN_4 << std::endl;
+                                    LOG(INFO) << "IOD_ephemeris OLD: " << galileo_eph_old.IOD_ephemeris;
+                                    LOG(INFO) << "satellite: " << galileo_eph.SV_ID_PRN_4;
                                 }
                             else
                                 {
-                                    std::cout << "Not updating the existing Galileo ephemeris, IOD is not changing" << std::endl;
+                                    LOG(INFO) << "Not updating the existing Galileo ephemeris, IOD is not changing";
                                 }
                         }
                 }
             else
                 {
                     // insert new ephemeris record
-                    std::cout << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph.TOW_5
+                    LOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph.TOW_5
                               << ", GALILEO Week Number =" << galileo_eph.WN_5
-                              << " and Ephemeris IOD = " << galileo_eph.IOD_ephemeris << std::endl;
+                              << " and Ephemeris IOD = " << galileo_eph.IOD_ephemeris;
                     global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4, galileo_eph);
                 }
         }
@@ -577,7 +577,7 @@ void ControlThread::gps_iono_data_collector()
         {
             global_gps_iono_queue.wait_and_pop(gps_iono);
 
-            std::cout << "New IONO record has arrived " << std::endl;
+            LOG(INFO) << "New IONO record has arrived ";
             // insert new ephemeris record to the global ephemeris map
             if (global_gps_iono_map.read(0, gps_iono_old))
                 {
@@ -603,7 +603,7 @@ void ControlThread::galileo_iono_data_collector()
             global_galileo_iono_queue.wait_and_pop(galileo_iono);
 
             // DEBUG MESSAGE
-            std::cout << "Iono record has arrived" << std::endl;
+            LOG(INFO) << "Iono record has arrived";
 
             // insert new Iono record to the global Iono map
             if (global_galileo_iono_map.read(0, galileo_iono_old))
@@ -611,27 +611,27 @@ void ControlThread::galileo_iono_data_collector()
                     // Check the Iono timestamp from UTC page (page 6). If it is newer, then update the Iono parameters
                     if (galileo_iono.WN_5 > galileo_iono_old.WN_5)
                         {
-                            std::cout << "IONO record updated in global map--new GALILEO UTC-IONO Week Number" << std::endl;
+                            LOG(INFO) << "IONO record updated in global map--new GALILEO UTC-IONO Week Number";
                             global_galileo_iono_map.write(0, galileo_iono);
                         }
                     else
                         {
                             if (galileo_iono.TOW_5 > galileo_iono_old.TOW_5)
                                 {
-                                    std::cout << "IONO record updated in global map--new GALILEO UTC-IONO time of Week" << std::endl;
+                                    LOG(INFO) << "IONO record updated in global map--new GALILEO UTC-IONO time of Week";
                                     global_galileo_iono_map.write(0, galileo_iono);
                                     //std::cout << "GALILEO IONO time of Week old: " << galileo_iono_old.t0t_6<<std::endl;
                                 }
                             else
                                 {
-                                    std::cout << "Not updating the existing Iono parameters in global map, Iono timestamp is not changing" << std::endl;
+                                    LOG(INFO) << "Not updating the existing Iono parameters in global map, Iono timestamp is not changing";
                                 }
                         }
                 }
             else
                 {
                     // insert new ephemeris record
-                    std::cout << "New IONO record inserted in global map" << std::endl;
+                    LOG(INFO) << "New IONO record inserted in global map";
                     global_galileo_iono_map.write(0, galileo_iono);
                 }
         }
@@ -646,7 +646,7 @@ void ControlThread::gps_utc_model_data_collector()
     while(stop_ == false)
         {
             global_gps_utc_model_queue.wait_and_pop(gps_utc);
-            std::cout << "New UTC MODEL record has arrived with A0=" << gps_utc.d_A0 << std::endl;
+            LOG(INFO) << "New UTC MODEL record has arrived with A0=" << gps_utc.d_A0;
             // insert new ephemeris record to the global ephemeris map
             if (global_gps_utc_model_map.read(0, gps_utc_old))
                 {
@@ -672,7 +672,7 @@ void ControlThread::galileo_utc_model_data_collector()
             global_galileo_utc_model_queue.wait_and_pop(galileo_utc);
 
             // DEBUG MESSAGE
-            std::cout << "UTC record has arrived" << std::endl;
+            LOG(INFO) << "UTC record has arrived" << std::endl;
 
             // insert new UTC record to the global UTC map
             if (global_galileo_utc_model_map.read(0, galileo_utc_old))
@@ -693,14 +693,14 @@ void ControlThread::galileo_utc_model_data_collector()
                                 }
                             else
                                 {
-                                    std::cout << "Not updating the existing UTC in global map, timestamp is not changing" << std::endl;
+                                    LOG(INFO) << "Not updating the existing UTC in global map, timestamp is not changing" << std::endl;
                                 }
                         }
                 }
             else
                 {
                     // insert new ephemeris record
-                    std::cout << "New UTC record inserted in global map" << std::endl;
+                    LOG(INFO) << "New UTC record inserted in global map" << std::endl;
                     global_galileo_utc_model_map.write(0, galileo_utc);
                 }
         }
@@ -723,7 +723,7 @@ void ControlThread::gps_ephemeris_data_write_to_XML()
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_copy);
                     ofs.close();
-                    std::cout << "Saved Ephemeris data" << std::endl;
+                    LOG(INFO) << "Saved Ephemeris data";
             }
             catch (std::exception& e)
             {
@@ -749,7 +749,7 @@ void ControlThread::gps_utc_model_data_write_to_XML()
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_utc_map", map_copy);
                     ofs.close();
-                    std::cout << "Saved UTC Model data" << std::endl;
+                    LOG(INFO) << "Saved UTC Model data";
             }
             catch (std::exception& e)
             {
@@ -777,7 +777,7 @@ void ControlThread::gps_iono_data_write_to_XML()
                     boost::archive::xml_oarchive xml(ofs);
                     xml << boost::serialization::make_nvp("GNSS-SDR_iono_map", map_copy);
                     ofs.close();
-                    std::cout << "Saved IONO Model data" << std::endl;
+                    LOG(INFO) << "Saved IONO Model data";
             }
             catch (std::exception& e)
             {

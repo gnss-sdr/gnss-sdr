@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -63,7 +63,8 @@ bool FrontEndCal::read_assistance_from_XML()
 {
     gnss_sdr_supl_client supl_client_ephemeris_;
     std::string eph_xml_filename = "gps_ephemeris.xml";
-    std::cout <<  "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
+    std::cout << "SUPL: Trying to read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
+    LOG(INFO) << "SUPL: Trying to read GPS ephemeris from XML file " << eph_xml_filename;
     if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
         {
             std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
@@ -72,34 +73,37 @@ bool FrontEndCal::read_assistance_from_XML()
                     gps_eph_iter++)
                 {
                     std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
-                    std::cout << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.d_Toe << " and GPS Week=" << gps_eph_iter->second.i_GPS_week << std::endl;
+                    LOG(INFO) << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first;
+                    LOG(INFO) << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.d_Toe << " and GPS Week=" << gps_eph_iter->second.i_GPS_week;
                     global_gps_ephemeris_map.write(gps_eph_iter->second.i_satellite_PRN, gps_eph_iter->second);
                 }
             return true;
         }
     else
         {
-            std::cout <<  "ERROR: SUPL client error reading XML" << std::endl;
+            std::cout << "ERROR: SUPL client error reading XML" << std::endl;
+            LOG(WARNING) << "ERROR: SUPL client error reading XML";
             return false;
         }
 }
 
 int FrontEndCal::Get_SUPL_Assist()
 {
-    //#########GNSS Asistence #################################
+    //######### GNSS Assistance #################################
     gnss_sdr_supl_client supl_client_acquisition_;
     gnss_sdr_supl_client supl_client_ephemeris_;
     int supl_mcc; // Current network MCC (Mobile country code), 3 digits.
     int supl_mns; //Current network MNC (Mobile Network code), 2 or 3 digits.
     int supl_lac; // Current network LAC (Location area code),16 bits, 1-65520 are valid values.
     int supl_ci;  // Cell Identity (16 bits, 0-65535 are valid values).
+
     // GNSS Assistance configuration
     int error = 0;
     bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
     if (enable_gps_supl_assistance == true)
         //SUPL SERVER TEST. Not operational yet!
         {
-            LOG(INFO) << "SUPL RRLP GPS assistance enabled!" << std::endl;
+            LOG(INFO) << "SUPL RRLP GPS assistance enabled!";
             std::string default_acq_server = "supl.nokia.com";
             std::string default_eph_server = "supl.google.com";
             supl_client_ephemeris_.server_name = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_server", default_acq_server);
@@ -138,7 +142,8 @@ int FrontEndCal::Get_SUPL_Assist()
                 {
                     // Request ephemeris from SUPL server
                     supl_client_ephemeris_.request = 1;
-                    DLOG(INFO) << "SUPL: Trying to read GPS ephemeris from SUPL server...";
+                    LOG(INFO) << "SUPL: Trying to read GPS ephemeris from SUPL server...";
+                    std::cout << "SUPL: Trying to read GPS ephemeris from SUPL server..." << std::endl;
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
@@ -147,26 +152,27 @@ int FrontEndCal::Get_SUPL_Assist()
                                     gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
                                     gps_eph_iter++)
                                 {
-                                    DLOG(INFO)  << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first;
-                                    DLOG(INFO)  << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.d_Toe << " and GPS Week=" << gps_eph_iter->second.i_GPS_week;
+                                    LOG(INFO)  << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first;
+                                    std::cout << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
+                                    LOG(INFO)  << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.d_Toe << " and GPS Week=" << gps_eph_iter->second.i_GPS_week;
                                     global_gps_ephemeris_map.write(gps_eph_iter->second.i_satellite_PRN, gps_eph_iter->second);
                                 }
                             //Save ephemeris to XML file
                             std::string eph_xml_filename = "gps_ephemeris.xml";
                             if (supl_client_ephemeris_.save_ephemeris_xml(eph_xml_filename) == true)
                                 {
-                                    DLOG(INFO)  << "SUPL: XML Ephemeris file created.";
+                                    LOG(INFO)  << "SUPL: XML Ephemeris file created.";
                                 }
                         }
                     else
                         {
-                            DLOG(INFO) << "ERROR: SUPL client for Ephemeris returned " << error;
-                            DLOG(INFO) << "Please check Internet connection and SUPL server configuration" << error;
+                            LOG(WARNING) << "ERROR: SUPL client for Ephemeris returned " << error;
+                            std::cout << "ERROR in SUPL client. Please check your Internet connection and SUPL server configuration" << std::endl;
                         }
 
                     // Request almanac , IONO and UTC Model
                     supl_client_ephemeris_.request = 0;
-                    DLOG(INFO) << "SUPL: Try read Almanac, Iono, Utc Model, Ref Time and Ref Location from SUPL server...";
+                    LOG(INFO) << "SUPL: Try read Almanac, Iono, Utc Model, Ref Time and Ref Location from SUPL server...";
                     error = supl_client_ephemeris_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
                         {
@@ -175,29 +181,33 @@ int FrontEndCal::Get_SUPL_Assist()
                                     gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.end();
                                     gps_alm_iter++)
                                 {
-                                    DLOG(INFO)  << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first;
+                                    LOG(INFO) << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first;
+                                    std::cout << "SUPL: Received Almanac for GPS SV " << gps_alm_iter->first << std::endl;
                                     global_gps_almanac_map.write(gps_alm_iter->first, gps_alm_iter->second);
                                 }
                             if (supl_client_ephemeris_.gps_iono.valid == true)
                                 {
-                                    DLOG(INFO)  << "SUPL: Received GPS Iono";
+                                    LOG(INFO) << "SUPL: Received GPS Iono";
+                                    std::cout << "SUPL: Received GPS Iono" << std::endl;
                                     global_gps_iono_map.write(0,supl_client_ephemeris_.gps_iono);
                                 }
                             if (supl_client_ephemeris_.gps_utc.valid == true)
                                 {
-                                    DLOG(INFO)  << "SUPL: Received GPS UTC Model";
+                                    LOG(INFO)  << "SUPL: Received GPS UTC Model";
+                                    std::cout << "SUPL: Received GPS UTC Model" << std::endl;
                                     global_gps_utc_model_map.write(0, supl_client_ephemeris_.gps_utc);
                                 }
                         }
                     else
                         {
-                            DLOG(INFO) << "ERROR: SUPL client for Almanac returned " << error;
-                            DLOG(INFO) << "Please check Internet connection and SUPL server configuration" << error;
+                            LOG(WARNING) << "ERROR: SUPL client for Almanac returned " << error;
+                            std::cout << "ERROR in SUPL client. Please check your Internet connection and SUPL server configuration" << std::endl;
                         }
 
                     // Request acquisition assistance
                     supl_client_acquisition_.request = 2;
-                    DLOG(INFO) << "SUPL: Trying to read Acquisition assistance from SUPL server...";
+                    LOG(INFO) << "SUPL: Trying to read Acquisition assistance from SUPL server...";
+                    std::cout << "SUPL: Trying to read Acquisition assistance from SUPL server..." << std::endl;
 
                     error = supl_client_acquisition_.get_assistance(supl_mcc, supl_mns, supl_lac, supl_ci);
                     if (error == 0)
@@ -207,15 +217,16 @@ int FrontEndCal::Get_SUPL_Assist()
                                     gps_acq_iter != supl_client_acquisition_.gps_acq_map.end();
                                     gps_acq_iter++)
                                 {
-                                    DLOG(INFO) << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first;
-                                    DLOG(INFO) << "New acq assist record inserted";
+                                    LOG(INFO) << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first;
+                                    std::cout << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first << std::endl;
+                                    LOG(INFO) << "New acq assist record inserted";
                                     global_gps_acq_assist_map.write(gps_acq_iter->second.i_satellite_PRN, gps_acq_iter->second);
                                 }
                         }
                     else
                         {
-                            DLOG(INFO) << "ERROR: SUPL client for Acquisition assistance returned " << error;
-                            DLOG(INFO) << "Please check internet connection and SUPL server configuration" << error;
+                            LOG(WARNING) << "ERROR: SUPL client for Acquisition assistance returned " << error;
+                            std::cout << "ERROR in SUPL client. Please check your Internet connection and SUPL server configuration" << std::endl;
                         }
                 }
         }
@@ -231,14 +242,16 @@ void FrontEndCal::set_configuration(ConfigurationInterface *configuration)
 
 bool FrontEndCal::get_ephemeris()
 {
-    bool read_ephemeris_from_xml=configuration_->property("GNSS-SDR.read_eph_from_xml", false);
+    bool read_ephemeris_from_xml = configuration_->property("GNSS-SDR.read_eph_from_xml", false);
 
     if (read_ephemeris_from_xml == true)
         {
             std::cout <<  "Trying to read ephemeris from XML file..." << std::endl;
+            LOG(INFO) << "Trying to read ephemeris from XML file...";
             if (read_assistance_from_XML() == false)
                 {
-                    std::cout <<  "ERROR: Could not read Ephemeris file: Trying to get ephemeris from SUPL server..." << std::endl;
+                    std::cout << "ERROR: Could not read Ephemeris file: Trying to get ephemeris from SUPL server..." << std::endl;
+                    LOG(INFO) << "ERROR: Could not read Ephemeris file: Trying to get ephemeris from SUPL server...";
                     if (Get_SUPL_Assist() == 1)
                         {
                             return true;
@@ -255,7 +268,8 @@ bool FrontEndCal::get_ephemeris()
         }
     else
         {
-            std::cout <<  "Trying to read ephemeris from SUPL server..." << std::endl;
+            std::cout << "Trying to read ephemeris from SUPL server..." << std::endl;
+            LOG(INFO) << "Trying to read ephemeris from SUPL server...";
             if (Get_SUPL_Assist() == 0)
                 {
                     return true;
@@ -271,17 +285,14 @@ bool FrontEndCal::get_ephemeris()
 arma::vec FrontEndCal::lla2ecef(arma::vec lla)
 {
     // WGS84 flattening
-    double f;
-    f  = 1/298.257223563;
+    double f = 1/298.257223563;
 
     // WGS84 equatorial radius
-    double R;
-    R =  6378137;
+    double R = 6378137;
 
-    double phi, lambda;
     arma::vec ellipsoid = "0.0 0.0";
-    phi = (lla(0)/360.0) * GPS_TWO_PI;
-    lambda = (lla(1)/360.0) * GPS_TWO_PI;
+    double phi = (lla(0)/360.0) * GPS_TWO_PI;
+    double lambda = (lla(1)/360.0) * GPS_TWO_PI;
 
     ellipsoid(0) = R;
     ellipsoid(1) = sqrt(1-(1-f)*(1-f));
@@ -295,18 +306,11 @@ arma::vec FrontEndCal::lla2ecef(arma::vec lla)
 
 arma::vec FrontEndCal::geodetic2ecef(double phi, double lambda, double h, arma::vec ellipsoid)
 {
-    double a;
-    a  = ellipsoid(0);
-    double e2;
-    e2 = ellipsoid(1)*ellipsoid(1);
-
-    double sinphi, cosphi;
-
-    sinphi = sin(phi);
-    cosphi = cos(phi);
-    double N;
-    N  = a / sqrt(1 - e2 * sinphi*sinphi);
-
+    double a = ellipsoid(0);
+    double e2 = ellipsoid(1)*ellipsoid(1);
+    double sinphi = sin(phi);
+    double cosphi = cos(phi);
+    double N = a / sqrt(1 - e2 * sinphi*sinphi);
     arma::vec ecef = "0.0 0.0 0.0 0.0";
 
     ecef(0) = (N + h) * cosphi * cos(lambda);
@@ -322,7 +326,7 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
     int num_secs = 10;
     double step_secs = 0.5;
 
-    //Observer position ECEF
+    // Observer position ECEF
     arma::vec obs_ecef = "0.0 0.0 0.0 0.0";
     arma::vec lla = "0.0 0.0 0.0 0.0";
     lla(0) = lat;
@@ -330,7 +334,7 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
     lla(2) = height;
     obs_ecef = lla2ecef(lla);
 
-    //Satellite positions ECEF
+    // Satellite positions ECEF
     std::map<int,Gps_Ephemeris> eph_map;
     eph_map = global_gps_ephemeris_map.get_map_copy();
 
@@ -353,19 +357,17 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
                     SV_pos_ecef(1) = eph_it->second.d_satpos_Y;
                     SV_pos_ecef(2) = eph_it->second.d_satpos_Z;
                     // SV distances to observer (true range)
-                    ranges(i) = arma::norm(SV_pos_ecef-obs_ecef, 2);
-
+                    ranges(i) = arma::norm(SV_pos_ecef - obs_ecef, 2);
                     obs_time += step_secs;
                 }
             // Observer to satellite radial velocity
             // Numeric derivative: Positive slope means that the distance from obs to
             // satellite is increasing
             arma::vec obs_to_sat_velocity;
-            obs_to_sat_velocity = (ranges.subvec(1, (n_points-1)) - ranges.subvec(0, (n_points-2)))/step_secs;
+            obs_to_sat_velocity = (ranges.subvec(1, (n_points - 1)) - ranges.subvec(0, (n_points - 2)))/step_secs;
             // Doppler equations are formulated accounting for positive velocities if the
             // tx and rx are approaching to each other. So, the satellite velocity must
             // be redefined as:
-
             obs_to_sat_velocity = -obs_to_sat_velocity;
 
             //Doppler estimation
@@ -385,34 +387,28 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double TOW, doub
 
 void FrontEndCal::GPS_L1_front_end_model_E4000(double f_bb_true_Hz, double f_bb_meas_Hz, double fs_nominal_hz, double *estimated_fs_Hz, double *estimated_f_if_Hz, double *f_osc_err_ppm)
 {
-    double f_osc_n = 28.8e6;
+    const double f_osc_n = 28.8e6;
     //PLL registers settings (according to E4000 datasheet)
+    const double N = 109;
+    const double Y = 65536;
+    const double X = 26487;
+    const double R = 2;
 
-    double N = 109;
-    double Y = 65536;
-    double X = 26487;
-    double R = 2;
     // Obtained RF center frequency
-    double f_rf_pll;
-    f_rf_pll = (f_osc_n*(N+X/Y))/R;
+    double f_rf_pll = (f_osc_n*(N+X/Y))/R;
+
     // RF frequency error caused by fractional PLL roundings
-    double f_bb_err_pll;
-    f_bb_err_pll = GPS_L1_FREQ_HZ - f_rf_pll;
+    double f_bb_err_pll = GPS_L1_FREQ_HZ - f_rf_pll;
 
     // Measured F_rf error
-    double f_rf_err;
-    f_rf_err = (f_bb_meas_Hz - f_bb_true_Hz) - f_bb_err_pll;
-
-    double f_osc_err_hz;
-    f_osc_err_hz = (f_rf_err*R)/(N+X/Y);
+    double f_rf_err = (f_bb_meas_Hz - f_bb_true_Hz) - f_bb_err_pll;
+    double f_osc_err_hz = (f_rf_err*R)/(N+X/Y);
 
     // OJO,segun los datos gnss, la IF positiva hace disminuir la fs!!
     f_osc_err_hz = -f_osc_err_hz;
-
     *f_osc_err_ppm = f_osc_err_hz/(f_osc_n/1e6);
-    double frac;
-    frac = fs_nominal_hz/f_osc_n;
 
+    double frac = fs_nominal_hz/f_osc_n;
     *estimated_fs_Hz = frac*(f_osc_n + f_osc_err_hz);
     *estimated_f_if_Hz = f_rf_err;
 }

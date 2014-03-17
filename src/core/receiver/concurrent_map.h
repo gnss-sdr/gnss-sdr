@@ -33,6 +33,7 @@
 
 #include <map>
 #include <utility>
+#include <boost/thread/mutex.hpp>
 
 template<typename Data>
 

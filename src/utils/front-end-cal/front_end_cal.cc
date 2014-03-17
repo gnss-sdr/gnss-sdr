@@ -40,7 +40,6 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/lexical_cast.hpp>
-#include "file_configuration.h"
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
 #include "gps_almanac.h"

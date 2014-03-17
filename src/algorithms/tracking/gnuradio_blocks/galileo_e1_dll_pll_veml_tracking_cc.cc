@@ -174,6 +174,11 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
     systemName["E"] = std::string("Galileo");
+    *d_Very_Early=gr_complex(0,0);
+    *d_Early=gr_complex(0,0);
+    *d_Prompt=gr_complex(0,0);
+    *d_Late=gr_complex(0,0);
+    *d_Very_Late=gr_complex(0,0);
 }
 
 void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
@@ -471,14 +476,31 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                 }
         }
     else
-        {
-            *d_Early = gr_complex(0,0);
-            *d_Prompt = gr_complex(0,0);
-            *d_Late = gr_complex(0,0);
-            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output stream pointer
-            // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            *out[0] = *d_acquisition_gnss_synchro;
-        }
+    {
+    	// ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
+    	/*!
+    	 *  \todo The stop timer has to be moved to the signal source!
+    	 */
+    	// stream to collect cout calls to improve thread safety
+    	std::stringstream tmp_str_stream;
+    	if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+    	{
+    		d_last_seg = floor(d_sample_counter / d_fs_in);
+
+    		if (d_channel == 0)
+    		{
+    			// debug: Second counter in channel 0
+    			tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
+    			std::cout << tmp_str_stream.rdbuf() << std::flush;
+    		}
+    	}
+    	*d_Early = gr_complex(0,0);
+    	*d_Prompt = gr_complex(0,0);
+    	*d_Late = gr_complex(0,0);
+    	Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output stream pointer
+    	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+    	*out[0] = *d_acquisition_gnss_synchro;
+    }
 
     if(d_dump)
         {

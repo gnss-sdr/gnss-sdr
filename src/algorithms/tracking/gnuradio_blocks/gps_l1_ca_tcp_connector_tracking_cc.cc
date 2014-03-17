@@ -558,6 +558,23 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
         }
     else
         {
+			// ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
+			/*!
+			 *  \todo The stop timer has to be moved to the signal source!
+			 */
+			// stream to collect cout calls to improve thread safety
+			std::stringstream tmp_str_stream;
+			if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+			{
+				d_last_seg = floor(d_sample_counter / d_fs_in);
+
+				if (d_channel == 0)
+				{
+					// debug: Second counter in channel 0
+					tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
+					std::cout << tmp_str_stream.rdbuf() << std::flush;
+				}
+			}
             *d_Early = gr_complex(0,0);
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);

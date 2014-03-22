@@ -1,21 +1,20 @@
-# Copyright 2011,2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
-# This file is part of GNU Radio
+# This file is part of GNSS-SDR.
 #
-# GNU Radio is free software; you can redistribute it and/or modify
+# GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
+# the Free Software Foundation, either version 3 of the License, or
+# at your option) any later version.
 #
-# GNU Radio is distributed in the hope that it will be useful,
+# GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNU Radio; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street,
-# Boston, MA 02110-1301, USA.
+# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+#
 
 
 ########################################################################
@@ -84,13 +83,12 @@ endif()
 #  PCAP_LIBRARY              The libpcap library (possibly includes a thread
 #                            library e.g. required by pf_ring's libpcap)
 #  HAVE_PF_RING              If a found version of libpcap supports PF_RING
-
 find_package(PCAP)
 if(NOT PCAP_FOUND)
     message(FATAL_ERROR "PCAP required to compile dbfcttc")
 endif()
+get_filename_component(PCAP_LIBRARY_DIRS ${PCAP_LIBRARY} DIRECTORY CACHE)
 
-message(PCAP_INCLUDE_DIR ${PCAP_INCLUDE_DIR} PCAP_LIBRARY ${PCAP_LIBRARY})
 
 ########################################################################
 # Install directories
@@ -112,22 +110,13 @@ set(GRC_BLOCKS_DIR      ${GR_PKG_DATA_DIR}/grc/blocks)
 ########################################################################
 # Find gnuradio build dependencies
 ########################################################################
-#find_package(GnuradioRuntime)
 set(GR_REQUIRED_COMPONENTS RUNTIME PMT)
 find_package(Gnuradio)
-find_package(CppUnit)
-
-# To run a more advanced search for GNU Radio and it's components and
-# versions, use the following. Add any components required to the list
-# of GR_REQUIRED_COMPONENTS (in all caps) and change "version" to the
-# minimum API compatible version required.
-#
-# set(GR_REQUIRED_COMPONENTS RUNTIME BLOCKS FILTER ...)
-# find_package(Gnuradio "version")
-
 if(NOT GNURADIO_RUNTIME_FOUND)
     message(FATAL_ERROR "GnuRadio Runtime required to compile dbfcttc")
 endif()
+
+find_package(CppUnit)
 if(NOT CPPUNIT_FOUND)
     message(FATAL_ERROR "CppUnit required to compile dbfcttc")
 endif()
@@ -146,7 +135,7 @@ include_directories(
 )
 
 link_directories(
-    ${PCAP_LIBRARIES}
+    ${PCAP_LIBRARY_DIRS}
     ${Boost_LIBRARY_DIRS}
     ${CPPUNIT_LIBRARY_DIRS}
     ${GNURADIO_RUNTIME_LIBRARY_DIRS}
@@ -171,6 +160,18 @@ add_custom_target(uninstall
 ########################################################################
 # Add subdirectories
 ########################################################################
+
+# Workaround for Mac OS X
+if(APPLE)
+    # Detecting Macports with hardcoded locations...
+    if(EXISTS /opt/local/bin/python)
+        if(EXISTS /opt/local/bin/gnuradio-companion)
+            set(PYTHON_EXECUTABLE "/opt/local/bin/python" )
+            set(CMAKE_LIBRARY_PATH /opt/local/lib ${CMAKE_LIBRARY_PATH})
+        endif(EXISTS /opt/local/bin/gnuradio-companion)   
+    endif(EXISTS /opt/local/bin/python)
+endif(APPLE)
+
 add_subdirectory(include/dbfcttc)
 add_subdirectory(lib)
 add_subdirectory(swig)

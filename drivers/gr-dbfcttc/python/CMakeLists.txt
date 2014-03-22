@@ -1,21 +1,20 @@
-# Copyright 2011 Free Software Foundation, Inc.
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
-# This file is part of GNU Radio
+# This file is part of GNSS-SDR.
 #
-# GNU Radio is free software; you can redistribute it and/or modify
+# GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
+# the Free Software Foundation, either version 3 of the License, or
+# at your option) any later version.
 #
-# GNU Radio is distributed in the hope that it will be useful,
+# GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNU Radio; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street,
-# Boston, MA 02110-1301, USA.
+# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+#
 
 ########################################################################
 # Include python install macros
@@ -28,20 +27,11 @@ endif()
 ########################################################################
 # Install python sources
 ########################################################################
-if(APPLE)
-    	message("WARNING: Hardcoded macports python path!")
-		GR_PYTHON_INSTALL(
-		    	FILES
-		    	__init__.py
-		    	DESTINATION /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/dbfcttc
-		)
-else(APPLE)
-		GR_PYTHON_INSTALL(
-    			FILES
-    			__init__.py
-    			DESTINATION ${GR_PYTHON_DIR}/dbfcttc
-		)
-endif(APPLE)
+GR_PYTHON_INSTALL(
+    FILES
+    __init__.py
+    DESTINATION ${GR_PYTHON_DIR}/dbfcttc
+	)
 
 ########################################################################
 # Handle the unit tests

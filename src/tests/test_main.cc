@@ -42,6 +42,7 @@
 #include <boost/filesystem.hpp>
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
+#include "control_thread.h"
 #include "gps_navigation_message.h"
 
 #include "gps_ephemeris.h"
@@ -60,28 +61,27 @@
 #include "sbas_satellite_correction.h"
 #include "sbas_time.h"
 
-#include "control_thread.h"
 
-//#include "arithmetic/complex_arithmetic_libc.cc"
-//#include "arithmetic/correlations_libc.cc"
-//#include "arithmetic/cordic_test.cc"
+
+using google::LogMessage;
+
+DECLARE_string(log_dir);
+
+#include "arithmetic/complex_arithmetic_libc.cc"
 #include "configuration/file_configuration_test.cc"
 #include "configuration/in_memory_configuration_test.cc"
 #include "control_thread/control_message_factory_test.cc"
 //#include "control_thread/control_thread_test.cc"
 #include "flowgraph/pass_through_test.cc"
-
 #include "gnss_block/gnss_block_factory_test.cc"
 #include "gnuradio_block/gnss_sdr_valve_test.cc"
 #include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
 #include "string_converter/string_converter_test.cc"
-
 //#include "flowgraph/gnss_flowgraph_test.cc"
-//#include "gnss_block/rtcm_printer_test.cc"
+#include "gnss_block/rtcm_printer_test.cc"
 #include "gnss_block/file_output_filter_test.cc"
 #include "gnss_block/file_signal_source_test.cc"
 #include "gnss_block/fir_filter_test.cc"
-
 #include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 //#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
@@ -95,9 +95,7 @@
 #include "gnss_block/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
-
 #include "gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc"
-
 
 
 
@@ -138,8 +136,9 @@ concurrent_map<Sbas_Ephemeris> global_sbas_ephemeris_map;
 
 int main(int argc, char **argv)
 {
-    std::cout << "Running main() from test_main.cc" << std::endl;
+    std::cout << "Running GNSS-SDR Tests..." << std::endl;
     testing::InitGoogleTest(&argc, argv);
+    google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
     return RUN_ALL_TESTS();
 }

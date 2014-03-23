@@ -31,9 +31,7 @@
  */
 
 
-
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -46,9 +44,7 @@
 #include "gnss_synchro.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "signal_generator.h"
-//#include "signal_generator.cc"
 #include "signal_generator_c.h"
-//#include "signal_generator_c.cc"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "boost/shared_ptr.hpp"
@@ -195,7 +191,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.bit_transition_flag","false");
     config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Ambiguous_Acquisition");
-    config->set_property("Acquisition.threshold", "0.3");
+    config->set_property("Acquisition.threshold", "0.1");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.dump", "false");
@@ -487,10 +483,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
             {
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
-
-
-
-
         }
 
     delete acquisition;
@@ -567,7 +559,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabi
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block."<< std::endl;
+            }) << "Failure running the top_block." << std::endl;
 
             if (i == 0)
             {

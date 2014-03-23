@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,8 +32,8 @@
 
 
 
-#include <gtest/gtest.h>
-#include <sys/time.h>
+
+#include <ctime>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -41,15 +41,14 @@
 #include <gnuradio/analog/sig_source_c.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
+#include <gtest/gtest.h>
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
 #include "configuration_interface.h"
 #include "gnss_synchro.h"
 #include "galileo_e1_pcps_tong_ambiguous_acquisition.h"
 #include "signal_generator.h"
-//#include "signal_generator.cc"
 #include "signal_generator_c.h"
-//#include "signal_generator_c.cc"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
@@ -432,12 +431,12 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 0.000001));
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     acquisition->init();
 
@@ -450,7 +449,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-    // i = 0 --> sallite in acquisition is visible
+    // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
     for (unsigned int i = 0; i < 2; i++)
         {
@@ -485,10 +484,6 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
             {
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
-
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
         }
 
     delete acquisition;
@@ -522,7 +517,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 0.00028));
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -563,7 +558,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsPro
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block."<< std::endl;
+            }) << "Failure running the top_block." << std::endl;
 
             if (i == 0)
             {

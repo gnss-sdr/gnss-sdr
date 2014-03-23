@@ -1,9 +1,6 @@
 
 #include <gflags/gflags.h>
-
-#include <glog/log_severity.h>
 #include <glog/logging.h>
-
 #include <gr_sig_source_c.h>
 #include <gr_head.h>
 #include <gr_file_sink.h>

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,9 +31,7 @@
  */
 
 
-
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -185,7 +183,8 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
     }) << "Failure connecting tracking to the top_block."<< std::endl;
 
     ASSERT_NO_THROW( {
-        std::string file = "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+        std::string path = std::string(TEST_PATH);
+        std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex),file_name,false);
         gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);

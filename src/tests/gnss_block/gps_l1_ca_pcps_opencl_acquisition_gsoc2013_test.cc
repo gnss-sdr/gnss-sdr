@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,10 +31,9 @@
  */
 
 
-
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -51,7 +50,7 @@
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
-#include "boost/shared_ptr.hpp"
+
 
 
 class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test: public ::testing::Test

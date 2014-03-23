@@ -32,8 +32,7 @@
  */
 
 
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>

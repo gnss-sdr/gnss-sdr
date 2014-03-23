@@ -30,12 +30,27 @@
  * -------------------------------------------------------------------------
  */
 
+
+#include <unistd.h>
+#include <exception>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception_ptr.hpp>
 #include <gtest/gtest.h>
 #include <gnuradio/msg_queue.h>
-#include "control_thread.h"
+#include <gnuradio/message.h>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+//#include "control_thread.h"
 #include "in_memory_configuration.h"
+#include "control_message_factory.h"
+/*
 #include "control_thread.h"
-#include <boost/lexical_cast.hpp>
+#include "gnss_flowgraph.h"
+#include "file_configuration.h"
+
+
 #include "gps_ephemeris.h"
 #include "gps_iono.h"
 #include "gps_utc_model.h"
@@ -48,14 +63,6 @@
 
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
-#include <unistd.h>
-#include <gnuradio/message.h>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
-#include "gnss_flowgraph.h"
-#include "file_configuration.h"
-#include "control_message_factory.h"
-#include <boost/thread/thread.hpp>
 
 extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 extern concurrent_map<Gps_Iono> global_gps_iono_map;
@@ -79,7 +86,7 @@ extern concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
 extern concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
 extern concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
 extern concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
-
+*/
 
 
 TEST(Control_Thread_Test, InstantiateRunControlMessages)
@@ -87,7 +94,8 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     InMemoryConfiguration *config = new InMemoryConfiguration();
 
     config->set_property("SignalSource.implementation", "File_Signal_Source");
-    config->set_property("SignalSource.filename", "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat");
+    //config->set_property("SignalSource.filename", "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat");
+    config->set_property("SignalSource.filename", "../src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat");
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.repeat", "true");
@@ -96,6 +104,7 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("Channels.count", "2");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition.item_type", "gr_complex");
+    config->set_property("Acquisition.threshold", "0.8");
     config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking.item_type", "gr_complex");
     config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
@@ -110,39 +119,35 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
 
     gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
-    ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
+    //ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
+    std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
 
     control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
     control_queue->handle(control_msg_factory->GetQueueMessage(1,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(2,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(3,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(4,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(5,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(6,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(7,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(8,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(9,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(10,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(11,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(12,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(13,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(14,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(15,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(16,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
+   control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
 
     control_thread->set_control_queue(control_queue);
+    try
+    {
+            control_thread->run();
+    }
+    catch( boost::exception & e )
+    {
+            std::cout << "Boost exception: " << boost::diagnostic_information(e);
+    }
+    catch(std::exception const&  ex)
+    {
+            std::cout  << "STD exception: " << ex.what();
+    }
 
-    control_thread->run();
-
-    unsigned int expected18 = 18;
+    unsigned int expected3 = 3;
     unsigned int expected1 = 1;
-    EXPECT_EQ(expected18, control_thread->processed_control_messages());
+    EXPECT_EQ(expected3, control_thread->processed_control_messages());
     EXPECT_EQ(expected1, control_thread->applied_actions());
 
     delete config;
     //delete control_thread;
-    delete control_msg_factory;
+    //delete control_msg_factory;
 }
 
 
@@ -153,9 +158,11 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
 {
     InMemoryConfiguration *config = new InMemoryConfiguration();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
-    config->set_property("SignalSource.filename", "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat");
+    //config->set_property("SignalSource.filename", "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat");
+    config->set_property("SignalSource.filename", "../src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat");
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
+    config->set_property("SignalSource.repeat", "true");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
     config->set_property("Channels.count", "1");
@@ -172,26 +179,40 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
     config->set_property("OutputFilter.item_type", "gr_complex");
 
-    ControlThread *control_thread = new ControlThread(config);
+    //ControlThread *control_thread = new ControlThread(config);
+    std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
 
-    gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
-    ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
+    gr::msg_queue::sptr control_queue2 = gr::msg_queue::make(0);
+    //ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
+    std::unique_ptr<ControlMessageFactory> control_msg_factory2(new ControlMessageFactory());
 
-    control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
-    control_queue->handle(control_msg_factory->GetQueueMessage(0,2));
-    control_queue->handle(control_msg_factory->GetQueueMessage(0,1));
-    control_queue->handle(control_msg_factory->GetQueueMessage(0,3));
-    control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,2));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,1));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,3));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(200,0));
 
-    control_thread->set_control_queue(control_queue);
+    control_thread2->set_control_queue(control_queue2);
 
-    control_thread->run();
+    try
+    {
+            control_thread2->run();
+    }
+    catch( boost::exception & e )
+    {
+            std::cout << "Boost exception: " << boost::diagnostic_information(e);
+    }
+    catch(std::exception const&  ex)
+    {
+            std::cout  << "STD exception: " << ex.what();
+    }
+
     unsigned int expected5 = 5;
     unsigned int expected1 = 1;
-    EXPECT_EQ(expected5, control_thread->processed_control_messages());
-    EXPECT_EQ(expected1, control_thread->applied_actions());
+    EXPECT_EQ(expected5, control_thread2->processed_control_messages());
+    EXPECT_EQ(expected1, control_thread2->applied_actions());
 
     delete config;
-    delete control_thread;
-    delete control_msg_factory;
+    //delete control_thread;
+    //delete control_msg_factory;
 }

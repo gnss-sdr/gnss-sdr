@@ -110,6 +110,7 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
+     ${ARMADILLO_INCLUDE_DIRS}
 )
 
 
@@ -126,6 +127,9 @@ if(OPENCL_FOUND)
     add_definitions(-DOPENCL_BLOCKS_TEST=1)
 endif(OPENCL_FOUND)
 
+add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
+
+
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
 target_link_libraries(run_tests ${MAC_LIBRARIES} 
@@ -137,6 +141,7 @@ target_link_libraries(run_tests ${MAC_LIBRARIES}
                                 ${GNURADIO_BLOCKS_LIBRARIES} 
                                 ${GNURADIO_FILTER_LIBRARIES} 
                                 ${GNURADIO_ANALOG_LIBRARIES} 
+                                ${ARMADILLO_LIBRARIES}
                                 gnss_sp_libs 
                                 gnss_rx  
                                 signal_generator_blocks

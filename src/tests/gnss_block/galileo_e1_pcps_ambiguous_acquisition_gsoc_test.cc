@@ -41,9 +41,7 @@
  */
 
 
-
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -52,15 +50,14 @@
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
-
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_signal.h"
 #include "gnss_synchro.h"
-
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
+
 
 class GalileoE1PcpsAmbiguousAcquisitionGSoCTest: public ::testing::Test
 {
@@ -236,7 +233,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     ASSERT_NO_THROW( {
-        std::string file = "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+        std::string path = std::string(TEST_PATH);
+        std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
@@ -263,7 +261,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
-    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+    EXPECT_EQ(0, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
 
     delete acquisition;
 }

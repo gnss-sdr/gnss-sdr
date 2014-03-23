@@ -28,10 +28,9 @@
  * -------------------------------------------------------------------------
  */
 
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
+#include <gflags/gflags.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
@@ -43,7 +42,7 @@
 #include "gnss_sdr_valve.h"
 #include "fir_filter.h"
 
-DEFINE_string(filter_test_output_filename, "../src/tests/data/fir_filter_test_output.dat", "Dump filename");
+DEFINE_string(filter_test_output_filename, std::string(TEST_PATH) + "data/fir_filter_test_output.dat", "Dump filename");
 
 class Fir_Filter_Test: public ::testing::Test
 {

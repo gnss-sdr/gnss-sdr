@@ -31,9 +31,7 @@
  */
 
 
-
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -46,9 +44,7 @@
 #include "gnss_synchro.h"
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
 #include "signal_generator.h"
-//#include "signal_generator.cc"
 #include "signal_generator_c.h"
-//#include "signal_generator_c.cc"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "boost/shared_ptr.hpp"
@@ -450,7 +446,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-    // i = 0 --> sallite in acquisition is visible
+    // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
     for (unsigned int i = 0; i < 2; i++)
         {
@@ -471,7 +467,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block." << std::endl;
 
             if (i == 0)
             {
@@ -485,10 +481,6 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
             {
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
-
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
         }
 
     delete acquisition;
@@ -522,7 +514,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 0.00215));
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -563,7 +555,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
             {
@@ -576,9 +568,6 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
                 std::cout << "Probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                 std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
         }
 
     delete acquisition;

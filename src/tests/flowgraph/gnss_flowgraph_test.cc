@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -30,7 +30,6 @@
  * -------------------------------------------------------------------------
  */
 
-#include <gtest/gtest.h>
 #include <gnuradio/msg_queue.h>
 #include "gnss_flowgraph.h"
 #include "gnss_block_interface.h"
@@ -52,7 +51,9 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
     config->set_property("SignalSource.item_type", "gr_complex");
-    config->set_property("SignalSource.filename", "../src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat");
+    std::string path = std::string(TEST_PATH);
+    std::string filename = path + "signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
+    config->set_property("SignalSource.filename", filename);
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("Channels.count", "2");
     config->set_property("Channels.acquisition.implementation", "Pass_Through");

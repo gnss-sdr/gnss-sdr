@@ -30,15 +30,16 @@
  */
 
 
-#include <gtest/gtest.h>
 #include "file_output_filter.h"
 #include "in_memory_configuration.h"
 
 TEST(FileOutputFilter, Instantiate)
 {
-	InMemoryConfiguration* config = new InMemoryConfiguration();
-	config->set_property("Test.filename", "../data/output.dat");
-	config->set_property("Test.item_type", "float");
-	FileOutputFilter *output_filter = new FileOutputFilter(config, "Test", 1, 0);
-	delete output_filter;
+    InMemoryConfiguration* config = new InMemoryConfiguration();
+    std::string path = std::string(TEST_PATH);
+    std::string file = path + "data/output.dat";
+    config->set_property("Test.filename", file);
+    config->set_property("Test.item_type", "float");
+    FileOutputFilter *output_filter = new FileOutputFilter(config, "Test", 1, 0);
+    delete output_filter;
 }

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,9 +32,9 @@
 
 
 
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -47,13 +47,11 @@
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "signal_generator.h"
-//#include "signal_generator.cc"
 #include "signal_generator_c.h"
-//#include "signal_generator_c.cc"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
-#include "boost/shared_ptr.hpp"
+
 
 
 class GpsL1CaPcpsTongAcquisitionGSoC2013Test: public ::testing::Test
@@ -385,7 +383,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
-    }) << "Failure connecting the blocks of acquisition test."<< std::endl;
+    }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
@@ -393,7 +391,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
         end = tv.tv_sec *1e6 + tv.tv_usec;
-    }) << "Failure running the top_block."<< std::endl;
+    }) << "Failure running the top_block." << std::endl;
 
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
     delete acquisition;
@@ -432,7 +430,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     acquisition->init();
 

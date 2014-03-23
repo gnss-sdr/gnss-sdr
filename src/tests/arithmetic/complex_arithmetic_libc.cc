@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -31,43 +31,88 @@
  */
 
 
-
-
-#include <gtest/gtest.h>
-#include <gflags/gflags.h>
-#include <complex>
-#include <sys/time.h>
 #include <iostream>
-#include <glog/log_severity.h>
-#include <glog/logging.h>
-
-
-using google::LogMessage;
+#include <complex>
+#include <ctime>
+#include <armadillo>
+#include <gflags/gflags.h>
 
 DEFINE_int32(size_multiply_test, 100000, "Size of the arrays used for calculations");
 
-TEST(Multiply_Test, StandardCImplementation)
+TEST(Multiply_Test, StandardCComplexImplementation)
 {
-    //LOG_AT_LEVEL(INFO) << "Using standard C++ library implementation to perform complex arithmetic";
     std::complex<float>* input = new std::complex<float>[FLAGS_size_multiply_test];
     std::complex<float>* output = new std::complex<float>[FLAGS_size_multiply_test];
-
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_multiply_test);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    for(int i = 0; i < FLAGS_size_multiply_test; i++)
+        {
+            output[i] = input[i] * input[i];
+        }
+    gettimeofday(&tv, NULL);
+    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::cout <<  "Multiplication of "<< FLAGS_size_multiply_test
+              << " complex<float> finished in " << (end - begin)
+              << " microseconds" << std::endl;
+    ASSERT_LE(0, end - begin);
+}
 
-    //LOG_AT_LEVEL(INFO) << "Allocated two vectors containing " << FLAGS_size << " complex numbers";
-    //LOG_AT_LEVEL(INFO) << "Begin multiplications";
+TEST(Multiply_Test, StandardCDoubleImplementation)
+{
+    double input[FLAGS_size_multiply_test];
+    double output[FLAGS_size_multiply_test];
+    memset(input, 0, sizeof(double) * FLAGS_size_multiply_test);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    for(int i = 0; i < FLAGS_size_multiply_test; i++)
+        {
+            output[i] = input[i] * input[i];
+        }
+    gettimeofday(&tv, NULL);
+    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::cout << "Multiplication of "<< FLAGS_size_multiply_test
+              << " doubles finished in " << (end - begin)
+              << " microseconds" << std::endl;
+    ASSERT_LE(0, end - begin);
+}
+
+TEST(Multiply_Test, ArmadilloComplexImplementation)
+{
+    arma::cx_fvec input(FLAGS_size_multiply_test, arma::fill::zeros);
+    arma::cx_fvec output(FLAGS_size_multiply_test);
 
     struct timeval tv;
     gettimeofday(&tv, NULL);
     long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    for(int i=0; i<FLAGS_size_multiply_test; i++)
-        {
-            output[i] = input[i] * input[i];
-        }
+    output = input % input;
 
     gettimeofday(&tv, NULL);
-    long long int end = tv.tv_sec *1000000 + tv.tv_usec;
-   // LOG_AT_LEVEL(INFO) << "Finished in " << (end - begin) << " microseconds";
-    std::cout <<  "Multiplication of "<< FLAGS_size_multiply_test << " complex<float> finished in " << (end - begin) << " microseconds" << std::endl;
+    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::cout <<  "Element-wise multiplication of "<< FLAGS_size_multiply_test
+              << "-length complex armadillo vectors finished in " << (end - begin)
+              << " microseconds" << std::endl;
+    ASSERT_LE(0, end - begin);
+}
+
+TEST(Multiply_Test, ArmadilloImplementation)
+{
+    arma::vec input(FLAGS_size_multiply_test, arma::fill::zeros);
+    arma::vec output(FLAGS_size_multiply_test);
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+
+    output = input % input;
+
+    gettimeofday(&tv, NULL);
+    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::cout <<  "Element-wise multiplication of "<< FLAGS_size_multiply_test
+              << "-length armadillo vectors finished in " << (end - begin)
+              << " microseconds" << std::endl;
+    ASSERT_LE(0, end - begin);
 }

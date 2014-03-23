@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,9 +32,9 @@
 
 
 
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -47,13 +47,10 @@
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_multithread_acquisition.h"
 #include "signal_generator.h"
-//#include "signal_generator.cc"
 #include "signal_generator_c.h"
-//#include "signal_generator_c.cc"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
-#include "boost/shared_ptr.hpp"
 #include "signal_generator.h"
 #include "signal_generator.cc"
 #include "signal_generator_c.h"
@@ -560,7 +557,7 @@ TEST_F(GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test, ValidationOfResultsProbabi
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block." << std::endl;
 
             if (i == 0)
             {

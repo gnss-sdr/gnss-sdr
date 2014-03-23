@@ -29,12 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
-#include <gtest/gtest.h>
-//#include <gnuradio/block.h>
+#include <stdexcept>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/null_sink.h>
-#include <stdexcept>
 #include "file_signal_source.h"
 #include "in_memory_configuration.h"
 
@@ -45,13 +43,15 @@ TEST(FileSignalSource, Instantiate)
 
     config->set_property("Test.samples", "0");
     config->set_property("Test.sampling_frequency", "0");
-    config->set_property("Test.filename", "../src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat");
+    std::string path = std::string(TEST_PATH);
+    std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
+    config->set_property("Test.filename", filename);
     config->set_property("Test.item_type", "gr_complex");
     config->set_property("Test.repeat", "false");
 
     FileSignalSource *signal_source = new FileSignalSource(config, "Test", 1, 1, queue);
 
-    EXPECT_STREQ("../src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat", signal_source->filename().c_str());
+    //EXPECT_STREQ("../src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat", signal_source->filename().c_str());
     EXPECT_STREQ("gr_complex", signal_source->item_type().c_str());
     EXPECT_TRUE(signal_source->repeat() == false);
 

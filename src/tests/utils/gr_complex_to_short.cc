@@ -1,7 +1,5 @@
 
 #include <gflags/gflags.h>
-
-#include <glog/log_severity.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include <gr_complex_to_interleaved_short.h>

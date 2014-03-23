@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,15 +32,15 @@
 
 #include <string>
 #include <iostream>
-#include <gtest/gtest.h>
 #include "file_configuration.h"
-
 
 
 
 TEST(File_Configuration_Test, OverridedProperties)
 {
-    ConfigurationInterface *configuration = new FileConfiguration("./data/config_file_sample.txt");
+    std::string path = std::string(TEST_PATH);
+    std::string filename = path + "data/config_file_sample.txt";
+    ConfigurationInterface *configuration = new FileConfiguration(filename);
     std::string default_value = "default_value";
     std::string value = configuration->property("NotThere", default_value);
 
@@ -73,7 +73,9 @@ TEST(File_Configuration_Test, LoadFromNonExistentFile)
 
 TEST(File_Configuration_Test, PropertyDoesNotExist)
 {
-    ConfigurationInterface *configuration = new FileConfiguration("./data/config_file_sample.txt");
+    std::string path = std::string(TEST_PATH);
+    std::string filename = path + "data/config_file_sample.txt";
+    ConfigurationInterface *configuration = new FileConfiguration(filename);
     std::string default_value = "default_value";
     std::string value = configuration->property("whatever.whatever", default_value);
 

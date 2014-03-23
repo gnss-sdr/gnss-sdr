@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -32,8 +32,7 @@
 
 
 
-#include <gtest/gtest.h>
-#include <sys/time.h>
+#include <ctime>
 #include <iostream>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
@@ -176,8 +175,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    double expected_delay_samples = 945;
-    double expected_doppler_hz = 4000;
+    double expected_delay_samples = 127;
+    double expected_doppler_hz = -2400;
     init();
     GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config, "Acquisition", 1, 1, queue);
 
@@ -194,7 +193,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.005));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0001));
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -210,7 +209,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     ASSERT_NO_THROW( {
-        std::string file = "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+        std::string path = std::string(TEST_PATH);
+        std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
@@ -236,8 +236,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
-    std::cout <<  "----Aq_delay: " <<  gnss_synchro.Acq_delay_samples << std::endl;
-    std::cout <<  "----Doppler: " <<  gnss_synchro.Acq_doppler_hz << std::endl;
+    //std::cout <<  "----Aq_delay: " <<  gnss_synchro.Acq_delay_samples << std::endl;
+    //std::cout <<  "----Doppler: " <<  gnss_synchro.Acq_doppler_hz << std::endl;
 
     double delay_error_samples = abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
     float delay_error_chips = (float)(delay_error_samples*1023/4000);

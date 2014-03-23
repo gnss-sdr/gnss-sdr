@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -22,7 +22,7 @@ set(PVT_LIB_SOURCES
      kml_printer.cc
      rinex_printer.cc
      nmea_printer.cc  
-#     rtcm_printer.cc  
+     rtcm_printer.cc  
 )
 
 include_directories(
@@ -33,10 +33,10 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/adapters
      ${Boost_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
-     ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
 )
 
 add_library(pvt_lib ${PVT_LIB_SOURCES})
 add_dependencies(pvt_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
-target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES} )
+target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES})

@@ -168,15 +168,15 @@ TEST(Multiply_Test, VolkComplexImplementation)
               << "-length complex float vector using VOLK finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    /*
+
     float* mag = new float [FLAGS_size_multiply_test];
     volk_32fc_magnitude_32f(mag, output, FLAGS_size_multiply_test);
-    float* result = 0;
+    float* result = new float(0);
     volk_32f_accumulator_s32f(result, mag, FLAGS_size_multiply_test);
     // Comparing floating-point numbers is tricky.
     // Due to round-off errors, it is very unlikely that two floating-points will match exactly.
     // See http://code.google.com/p/googletest/wiki/AdvancedGuide#Floating-Point_Comparison
     float expected = 0;
-    ASSERT_FLOAT_EQ(expected, result[0]); */
+    ASSERT_FLOAT_EQ(expected, result[0]);
 }
 

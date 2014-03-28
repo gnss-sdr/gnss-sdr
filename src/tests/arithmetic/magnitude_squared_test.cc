@@ -63,8 +63,6 @@ TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
               << "-length vector computed in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    delete input;
-    delete output;
 }
 
 

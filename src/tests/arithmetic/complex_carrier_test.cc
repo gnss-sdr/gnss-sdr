@@ -79,8 +79,8 @@ TEST(ComplexCarrier_Test, OwnComplexImplementation)
     std::complex<float>* output = new std::complex<float>[FLAGS_size_carrier_test];
     double _f = 2000;
     double _fs = 2000000;
-    double phase_step = (double)((GPS_TWO_PI * _f) / _fs);
-    double phase = 0;
+    //double phase_step = (double)((GPS_TWO_PI * _f) / _fs);
+    //double phase = 0;
     struct timeval tv;
     gettimeofday(&tv, NULL);
     long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;

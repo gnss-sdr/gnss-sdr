@@ -105,20 +105,21 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
-     ${CMAKE_SOURCE_DIR}/src/algorithms/pvt/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
+     ${VOLK_INCLUDE_DIRS}
 )
 
 
 if(OS_IS_MACOSX)
      if(MACOSX_MAVERICKS)
-         # Tell the linker where the libraries installed by MacPorts are
          set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11")
      else(MACOSX_MAVERICKS)
+         # Tell the linker where the libraries installed by MacPorts are
          link_directories( /opt/local/lib ) # not very elegant, to be fixed. Needed?
      endif(MACOSX_MAVERICKS)
 endif(OS_IS_MACOSX)
@@ -142,6 +143,7 @@ target_link_libraries(run_tests ${MAC_LIBRARIES}
                                 ${GNURADIO_FILTER_LIBRARIES} 
                                 ${GNURADIO_ANALOG_LIBRARIES} 
                                 ${ARMADILLO_LIBRARIES}
+                                ${VOLK_LIBRARIES}
                                 gnss_sp_libs 
                                 gnss_rx  
                                 signal_generator_blocks

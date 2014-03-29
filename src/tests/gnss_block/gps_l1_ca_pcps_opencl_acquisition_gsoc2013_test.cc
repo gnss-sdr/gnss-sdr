@@ -52,7 +52,6 @@
 #include "gnss_sdr_valve.h"
 
 
-
 class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test: public ::testing::Test
 {
 protected:
@@ -66,8 +65,7 @@ protected:
     }
 
     ~GpsL1CaPcpsOpenClAcquisitionGSoC2013Test()
-    {
-    }
+    {}
 
     void init();
     void config_1();
@@ -329,9 +327,6 @@ void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::process_message()
                 {
                     correct_estimation_counter++;
                 }
-
-//            std::cout << "Acq delay samples = " << (double)gnss_synchro.Acq_delay_samples << std::endl;
-//            std::cout << "Acq doppler Hz = " << (double)gnss_synchro.Acq_doppler_hz << std::endl;
         }
 
     realization_counter++;
@@ -446,7 +441,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-    // i = 0 --> sallite in acquisition is visible
+    // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
     for (unsigned int i = 0; i < 2; i++)
         {
@@ -535,7 +530,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
 
     std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
 
-    // i = 0 --> sallite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
+    // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)
     for (unsigned int i = 0; i < 2; i++)
         {

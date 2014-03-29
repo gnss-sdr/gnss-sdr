@@ -59,12 +59,40 @@ TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
 
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
-    std::cout <<  "The squared magnitude of a " << FLAGS_size_magnitude_test
-              << "-length vector computed in " << (end - begin)
+    std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
+              << "-length vector in standard C computed in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
 }
 
+TEST(MagnitudeSquared_Test, C11ComplexImplementation)
+{
+    const std::vector<std::complex<float>> input(FLAGS_size_magnitude_test);
+    std::vector<std::complex<float>> output(FLAGS_size_magnitude_test);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    int pos = 0;
+    for (const auto &item : input)
+        {
+            output[pos] = std::norm(item);
+            pos++;
+        }
+    gettimeofday(&tv, NULL);
+    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
+              << " complex<float> vector (C++11-style) finished in " << (end - begin)
+              << " microseconds" << std::endl;
+    ASSERT_LE(0, end - begin);
+
+    std::complex<float> expected(0,0);
+    std::complex<float> result(0,0);
+    for (const auto &item : output)
+        {
+            result += item;
+        }
+    ASSERT_EQ(expected, result);
+}
 
 
 TEST(MagnitudeSquared_Test, ArmadilloComplexImplementation)
@@ -108,5 +136,5 @@ TEST(MagnitudeSquared_Test, VolkComplexImplementation)
     delete output;
 }
 
-//            volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
+//            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
 

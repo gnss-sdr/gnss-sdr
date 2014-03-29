@@ -56,7 +56,7 @@ TEST(Multiply_Test, StandardCDoubleImplementation)
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
-              << " doubles finished in " << (end - begin)
+              << " doubles in standard C finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
     double acc = 0;
@@ -85,7 +85,7 @@ TEST(Multiply_Test, ArmadilloImplementation)
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
-              << "-length double armadillo vectors finished in " << (end - begin)
+              << "-length double Armadillo vectors finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
     ASSERT_EQ(0, arma::norm(output));
@@ -110,7 +110,7 @@ TEST(Multiply_Test, StandardCComplexImplementation)
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
-              << " complex<float> finished in " << (end - begin)
+              << " complex<float> in standard C finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
     std::complex<float> expected(0,0);
@@ -125,6 +125,40 @@ TEST(Multiply_Test, StandardCComplexImplementation)
     delete output;
 }
 
+
+
+TEST(Multiply_Test, C11ComplexImplementation)
+{
+    const std::vector<std::complex<float>> input(FLAGS_size_multiply_test);
+    std::vector<std::complex<float>> output(FLAGS_size_multiply_test);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+
+    // Trying a range-based for
+    int pos = 0;
+    for (const auto &item : input)
+        {
+            output[pos] = item * item;
+            pos++;
+        }
+
+    gettimeofday(&tv, NULL);
+    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
+              << " complex<float> vector (C++11-style) finished in " << (end - begin)
+              << " microseconds" << std::endl;
+    ASSERT_LE(0, end - begin);
+
+    std::complex<float> expected(0,0);
+    std::complex<float> result(0,0);
+    // auto result = std::inner_product(output.begin(), output.end(), output.begin(), 0);
+    for (const auto &item : output)
+        {
+            result += item;
+        }
+    ASSERT_EQ(expected, result);
+}
 
 
 TEST(Multiply_Test, ArmadilloComplexImplementation)

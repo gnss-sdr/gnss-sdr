@@ -57,13 +57,41 @@ TEST(Conjugate_Test, StandardCComplexImplementation)
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
-              << "-length complex float vector finished in " << (end - begin)
+              << "-length complex float vector in standard C finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
     delete input;
     delete output;
 }
 
+
+TEST(Conjugate_Test, C11ComplexImplementation)
+{
+    const std::vector<std::complex<float>> input(FLAGS_size_conjugate_test);
+    std::vector<std::complex<float>> output(FLAGS_size_conjugate_test);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+    int pos = 0;
+    for (const auto &item : input)
+        {
+            output[pos++] = std::conj(item);
+        }
+    gettimeofday(&tv, NULL);
+    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
+              << " complex<float> vector (C++11-style) finished in " << (end - begin)
+              << " microseconds" << std::endl;
+    ASSERT_LE(0, end - begin);
+
+    std::complex<float> expected(0,0);
+    std::complex<float> result(0,0);
+    for (const auto &item : output)
+        {
+            result += item;
+        }
+    ASSERT_EQ(expected, result);
+}
 
 
 TEST(Conjugate_Test, ArmadilloComplexImplementation)

@@ -72,7 +72,7 @@ TEST(ComplexCarrier_Test, StandardComplexImplementation)
             mag[i] = output[i] * std::conj(output[i]);
             ASSERT_FLOAT_EQ(std::norm(expected), std::norm(mag[i]));
         }
-    delete output;
+    delete [] output;
 }
 
 
@@ -88,7 +88,6 @@ TEST(ComplexCarrier_Test, C11ComplexImplementation)
     struct timeval tv;
     gettimeofday(&tv, NULL);
     long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
-    int pos = 0;
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             output[i] = std::complex<float>(cos(phase), sin(phase));
@@ -136,5 +135,5 @@ TEST(ComplexCarrier_Test, OwnComplexImplementation)
             mag[i] = output[i] * std::conj(output[i]);
             ASSERT_NEAR(std::norm(expected), std::norm(mag[i]), 0.0001);
         }
-    delete output;
+    delete [] output;
 }

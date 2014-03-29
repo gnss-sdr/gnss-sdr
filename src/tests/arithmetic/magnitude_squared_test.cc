@@ -63,6 +63,8 @@ TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
               << "-length vector in standard C computed in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
+    delete [] input;
+    delete [] output;
 }
 
 TEST(MagnitudeSquared_Test, C11ComplexImplementation)
@@ -70,14 +72,15 @@ TEST(MagnitudeSquared_Test, C11ComplexImplementation)
     const std::vector<std::complex<float>> input(FLAGS_size_magnitude_test);
     std::vector<std::complex<float>> output(FLAGS_size_magnitude_test);
     struct timeval tv;
+    int pos = 0;
     gettimeofday(&tv, NULL);
     long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
-    int pos = 0;
+
     for (const auto &item : input)
         {
-            output[pos] = std::norm(item);
-            pos++;
+            output[pos++] = std::norm(item);
         }
+
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
@@ -132,8 +135,8 @@ TEST(MagnitudeSquared_Test, VolkComplexImplementation)
               << "-length vector using VOLK computed in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    delete input;
-    delete output;
+    delete [] input;
+    delete [] output;
 }
 
 //            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);

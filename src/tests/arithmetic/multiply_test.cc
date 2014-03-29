@@ -66,8 +66,8 @@ TEST(Multiply_Test, StandardCDoubleImplementation)
             acc += output[i];
         }
     ASSERT_EQ(expected, acc);
-    delete input;
-    delete output;
+    delete [] input;
+    delete [] output;
 }
 
 
@@ -121,8 +121,8 @@ TEST(Multiply_Test, StandardCComplexImplementation)
          }
 
     ASSERT_EQ(expected, result);
-    delete input;
-    delete output;
+    delete [] input;
+    delete [] output;
 }
 
 
@@ -131,16 +131,15 @@ TEST(Multiply_Test, C11ComplexImplementation)
 {
     const std::vector<std::complex<float>> input(FLAGS_size_multiply_test);
     std::vector<std::complex<float>> output(FLAGS_size_multiply_test);
+    int pos = 0;
     struct timeval tv;
     gettimeofday(&tv, NULL);
     long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
     // Trying a range-based for
-    int pos = 0;
     for (const auto &item : input)
         {
-            output[pos] = item * item;
-            pos++;
+            output[pos++] = item * item;
         }
 
     gettimeofday(&tv, NULL);
@@ -212,5 +211,8 @@ TEST(Multiply_Test, VolkComplexImplementation)
     // See http://code.google.com/p/googletest/wiki/AdvancedGuide#Floating-Point_Comparison
     float expected = 0;
     ASSERT_FLOAT_EQ(expected, result[0]);
+    delete [] input;
+    delete [] output;
+    delete [] mag;
 }
 

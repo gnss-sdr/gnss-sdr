@@ -60,8 +60,8 @@ TEST(Conjugate_Test, StandardCComplexImplementation)
               << "-length complex float vector in standard C finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    delete input;
-    delete output;
+    delete [] input;
+    delete [] output;
 }
 
 
@@ -132,6 +132,6 @@ TEST(Conjugate_Test, VolkComplexImplementation)
               << "-length complex float vector using VOLK finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    delete input;
-    delete output;
+    delete [] input;
+    delete [] output;
 }

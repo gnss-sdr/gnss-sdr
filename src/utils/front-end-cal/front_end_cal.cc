@@ -234,7 +234,7 @@ int FrontEndCal::Get_SUPL_Assist()
 }
 
 
-void FrontEndCal::set_configuration(ConfigurationInterface *configuration)
+void FrontEndCal::set_configuration(std::shared_ptr<ConfigurationInterface> configuration)
 {
     configuration_ = configuration;
 }

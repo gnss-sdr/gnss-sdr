@@ -38,6 +38,7 @@
 #define GNSS_SDR_FILE_CONFIGURATION_H_
 
 #include "configuration_interface.h"
+#include <memory>
 #include <string>
 
 class INIReader;
@@ -71,10 +72,10 @@ public:
 private:
     void init();
     std::string filename_;
-    INIReader *ini_reader_;
-    InMemoryConfiguration* overrided_;
+    std::shared_ptr<INIReader> ini_reader_;
+    std::shared_ptr<InMemoryConfiguration> overrided_;
+    std::unique_ptr<StringConverter> converter_;
     int error_;
-    StringConverter *converter_;
 };
 
 #endif /*GNSS_SDR_FILE_CONFIGURATION_H_*/

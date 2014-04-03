@@ -59,9 +59,6 @@ FileConfiguration::FileConfiguration()
 FileConfiguration::~FileConfiguration()
 {
     LOG(INFO) << "Destructor called";
-    delete ini_reader_;
-    delete converter_;
-    delete overrided_;
 }
 
 
@@ -175,9 +172,9 @@ void FileConfiguration::set_property(std::string property_name, std::string valu
 
 void FileConfiguration::init()
 {
-    converter_ = new StringConverter();
-    overrided_ = new InMemoryConfiguration();
-    ini_reader_ = new INIReader(filename_);
+    std::unique_ptr<StringConverter> converter_(new StringConverter);
+    overrided_ = std::make_shared<InMemoryConfiguration>();
+    ini_reader_ = std::make_shared<INIReader>(filename_);
     error_ = ini_reader_->ParseError();
     if(error_ == 0)
         {

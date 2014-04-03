@@ -60,8 +60,8 @@ public:
     /*!
      * \brief Constructor that initializes the receiver flowgraph
      */
-    GNSSFlowgraph(ConfigurationInterface* configuration,
-            boost::shared_ptr<gr::msg_queue> queue);
+    GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration,
+                  boost::shared_ptr<gr::msg_queue> queue);
 
     /*!
      * \brief Virtual destructor
@@ -91,7 +91,7 @@ public:
      */
     void apply_action(unsigned int who, unsigned int what);
 
-    void set_configuration(ConfigurationInterface* configuration);
+    void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
     GNSSBlockInterface* signal_source();
     GNSSBlockInterface* signal_conditioner();
@@ -120,7 +120,7 @@ private:
      */
     void set_signals_list();
     /*!
-     * \brief Initializes the channels state (start acquisition or keep stanby) using the configuration parameters (number of channels and max channels in acquisition)
+     * \brief Initializes the channels state (start acquisition or keep standby) using the configuration parameters (number of channels and max channels in acquisition)
      */
     void set_channels_state();
     bool connected_;
@@ -130,8 +130,8 @@ private:
     unsigned int max_acq_channels_;
     unsigned int applied_actions_;
     std::string config_file_;
-    ConfigurationInterface *configuration_;
-    GNSSBlockFactory *block_factory_;
+    std::shared_ptr<ConfigurationInterface> configuration_;
+    std::unique_ptr<GNSSBlockFactory> block_factory_;
     std::vector<GNSSBlockInterface*>* blocks_;
     gr::top_block_sptr top_block_;
     boost::shared_ptr<gr::msg_queue> queue_;

@@ -106,7 +106,7 @@ GNSSBlockFactory::~GNSSBlockFactory()
 
 
 GNSSBlockInterface* GNSSBlockFactory::GetSignalSource(
-        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
+        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "File_Signal_Source";
     std::string implementation = configuration->property(
@@ -119,7 +119,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalSource(
 
 
 GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
-        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
+        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Pass_Through";
     std::string signal_conditioner = configuration->property(
@@ -151,7 +151,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
     if(signal_conditioner.compare("Array_Signal_Conditioner") == 0)
         {
             //instantiate the array version
-            return new ArraySignalConditioner(configuration, GetBlock(configuration,
+            return new ArraySignalConditioner(configuration.get(), GetBlock(configuration,
                     "DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
                             configuration,"InputFilter", input_filter, 1, 1, queue),
                             GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
@@ -160,7 +160,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
     else
         {
             //normal version
-            return new SignalConditioner(configuration, GetBlock(configuration,
+            return new SignalConditioner(configuration.get(), GetBlock(configuration,
                     "DataTypeAdapter", data_type_adapter, 1, 1, queue), GetBlock(
                             configuration,"InputFilter", input_filter, 1, 1, queue),
                             GetBlock(configuration,"Resampler", resampler, 1, 1, queue),
@@ -170,8 +170,8 @@ GNSSBlockInterface* GNSSBlockFactory::GetSignalConditioner(
 
 
 
-GNSSBlockInterface* GNSSBlockFactory::GetObservables(
-        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
+GNSSBlockInterface* GNSSBlockFactory::GetObservables(std::shared_ptr<ConfigurationInterface> configuration,
+        boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "GPS_L1_CA_Observables";
     std::string implementation = configuration->property("Observables.implementation", default_implementation);
@@ -182,8 +182,8 @@ GNSSBlockInterface* GNSSBlockFactory::GetObservables(
 
 
 
-GNSSBlockInterface* GNSSBlockFactory::GetPVT(
-        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
+GNSSBlockInterface* GNSSBlockFactory::GetPVT(std::shared_ptr<ConfigurationInterface> configuration,
+        boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Pass_Through";
     std::string implementation = configuration->property("PVT.implementation", default_implementation);
@@ -194,8 +194,8 @@ GNSSBlockInterface* GNSSBlockFactory::GetPVT(
 
 
 
-GNSSBlockInterface* GNSSBlockFactory::GetOutputFilter(
-        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
+GNSSBlockInterface* GNSSBlockFactory::GetOutputFilter(std::shared_ptr<ConfigurationInterface> configuration,
+        boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Null_Sink_Output_Filter";
     std::string implementation = configuration->property("OutputFilter.implementation", default_implementation);
@@ -205,30 +205,28 @@ GNSSBlockInterface* GNSSBlockFactory::GetOutputFilter(
 
 
 GNSSBlockInterface* GNSSBlockFactory::GetChannel(
-        ConfigurationInterface *configuration, std::string acq,
-        std::string trk, std::string tlm, int channel,
+        std::shared_ptr<ConfigurationInterface> configuration,
+        std::string acq, std::string trk, std::string tlm, int channel,
         boost::shared_ptr<gr::msg_queue> queue)
 {
     std::stringstream stream;
     stream << channel;
     std::string id = stream.str();
     LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
-    		<< acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+              << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
-    return new Channel(configuration, channel, GetBlock(configuration,
+    return new Channel(configuration.get(), channel, GetBlock(configuration,
             "Channel", "Pass_Through", 1, 1, queue),
-            (AcquisitionInterface*)GetBlock(configuration, "Acquisition",
-                    acq, 1, 1, queue), (TrackingInterface*)GetBlock(
-                            configuration, "Tracking", trk, 1, 1, queue),
-                            (TelemetryDecoderInterface*)GetBlock(configuration,
-                                    "TelemetryDecoder", tlm, 1, 1, queue), "Channel",
-                                    "Channel", queue);
+            (AcquisitionInterface*)GetBlock(configuration, "Acquisition", acq, 1, 1, queue),
+            (TrackingInterface*)GetBlock(configuration, "Tracking", trk, 1, 1, queue),
+            (TelemetryDecoderInterface*)GetBlock(configuration, "TelemetryDecoder", tlm, 1, 1, queue),
+            "Channel", "Channel", queue);
 }
 
 
 
 std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
-        ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue)
+        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "Pass_Through";
     unsigned int channel_count = configuration->property("Channels.count", 12);
@@ -261,7 +259,8 @@ std::vector<GNSSBlockInterface*>* GNSSBlockFactory::GetChannels(
  * PLEASE ADD YOUR NEW BLOCK HERE!!
  */
 GNSSBlockInterface* GNSSBlockFactory::GetBlock(
-        ConfigurationInterface *configuration, std::string role,
+        std::shared_ptr<ConfigurationInterface> configuration,
+        std::string role,
         std::string implementation, unsigned int in_streams,
         unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue)
 {
@@ -270,7 +269,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     //PASS THROUGH ----------------------------------------------------------------
     if (implementation.compare("Pass_Through") == 0)
         {
-            block = new Pass_Through(configuration, role, in_streams, out_streams);
+            block = new Pass_Through(configuration.get(), role, in_streams, out_streams);
         }
 
     // SIGNAL SOURCES -------------------------------------------------------------
@@ -278,7 +277,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         {
             try
             {
-                    block = new FileSignalSource(configuration, role, in_streams,
+                    block = new FileSignalSource(configuration.get(), role, in_streams,
                             out_streams, queue);
             }
             catch (const std::exception &e)
@@ -292,7 +291,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         {
             try
             {
-                    block = new NsrFileSignalSource(configuration, role, in_streams,
+                    block = new NsrFileSignalSource(configuration.get(), role, in_streams,
                             out_streams, queue);
             }
             catch (const std::exception &e)
@@ -304,13 +303,13 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
         }
     else if (implementation.compare("UHD_Signal_Source") == 0)
         {
-            block = new UhdSignalSource(configuration, role, in_streams,
+            block = new UhdSignalSource(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 #if GN3S_DRIVER
     else if (implementation.compare("GN3S_Signal_Source") == 0)
         {
-            block = new Gn3sSignalSource(configuration, role, in_streams,
+            block = new Gn3sSignalSource(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 #endif
@@ -318,7 +317,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 #if RAW_ARRAY_DRIVER
     else if (implementation.compare("Raw_Array_Signal_Source") == 0)
         {
-            block = new RawArraySignalSource(configuration, role, in_streams,
+            block = new RawArraySignalSource(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 #endif
@@ -326,7 +325,7 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
 #if RTLSDR_DRIVER
     else if (implementation.compare("Rtlsdr_Signal_Source") == 0)
         {
-            block = new RtlsdrSignalSource(configuration, role, in_streams,
+            block = new RtlsdrSignalSource(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 #endif
@@ -334,172 +333,172 @@ GNSSBlockInterface* GNSSBlockFactory::GetBlock(
     // DATA TYPE ADAPTER -----------------------------------------------------------
     else if (implementation.compare("Ishort_To_Complex") == 0)
         {
-            block = new IshortToComplex(configuration, role, in_streams,
+            block = new IshortToComplex(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 
     // INPUT FILTER ----------------------------------------------------------------
     else if (implementation.compare("Fir_Filter") == 0)
         {
-            block = new FirFilter(configuration, role, in_streams,
+            block = new FirFilter(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Freq_Xlating_Fir_Filter") == 0)
         {
-            block = new FreqXlatingFirFilter(configuration, role, in_streams,
+            block = new FreqXlatingFirFilter(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Beamformer_Filter") == 0)
         {
-            block = new BeamformerFilter(configuration, role, in_streams,
+            block = new BeamformerFilter(configuration.get(), role, in_streams,
                     out_streams);
         }
 
     // RESAMPLER -------------------------------------------------------------------
     else if (implementation.compare("Direct_Resampler") == 0)
         {
-            block = new DirectResamplerConditioner(configuration, role,
+            block = new DirectResamplerConditioner(configuration.get(), role,
                     in_streams, out_streams);
         }
 
     // ACQUISITION BLOCKS ---------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
-            block = new GpsL1CaPcpsAcquisition(configuration, role, in_streams,
+            block = new GpsL1CaPcpsAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("GPS_L1_CA_PCPS_Assisted_Acquisition") == 0)
         {
-            block = new GpsL1CaPcpsAssistedAcquisition(configuration, role, in_streams,
+            block = new GpsL1CaPcpsAssistedAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("GPS_L1_CA_PCPS_Tong_Acquisition") == 0)
         {
-            block = new GpsL1CaPcpsTongAcquisition(configuration, role, in_streams,
+            block = new GpsL1CaPcpsTongAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("GPS_L1_CA_PCPS_Multithread_Acquisition") == 0)
         {
-            block = new GpsL1CaPcpsMultithreadAcquisition(configuration, role, in_streams,
+            block = new GpsL1CaPcpsMultithreadAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 
 #if OPENCL_BLOCKS
     else if (implementation.compare("GPS_L1_CA_PCPS_OpenCl_Acquisition") == 0)
         {
-            block = new GpsL1CaPcpsOpenClAcquisition(configuration, role, in_streams,
+            block = new GpsL1CaPcpsOpenClAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 #endif
 
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition_Fine_Doppler") == 0)
         {
-            block = new GpsL1CaPcpsAcquisitionFineDoppler(configuration, role, in_streams,
+            block = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
         {
-            block = new GalileoE1PcpsAmbiguousAcquisition(configuration, role, in_streams,
+            block = new GalileoE1PcpsAmbiguousAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1_PCPS_8ms_Ambiguous_Acquisition") == 0)
         {
-            block = new GalileoE1Pcps8msAmbiguousAcquisition(configuration, role, in_streams,
+            block = new GalileoE1Pcps8msAmbiguousAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1_PCPS_Tong_Ambiguous_Acquisition") == 0)
         {
-            block = new GalileoE1PcpsTongAmbiguousAcquisition(configuration, role, in_streams,
+            block = new GalileoE1PcpsTongAmbiguousAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition") == 0)
         {
-            block = new GalileoE1PcpsCccwsrAmbiguousAcquisition(configuration, role, in_streams,
+            block = new GalileoE1PcpsCccwsrAmbiguousAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 
     // TRACKING BLOCKS -------------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
         {
-            block = new GpsL1CaDllPllTracking(configuration, role, in_streams,
+            block = new GpsL1CaDllPllTracking(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_Optim_Tracking") == 0)
         {
-            block = new GpsL1CaDllPllOptimTracking(configuration, role, in_streams,
+            block = new GpsL1CaDllPllOptimTracking(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("GPS_L1_CA_DLL_FLL_PLL_Tracking") == 0)
         {
-            block = new GpsL1CaDllFllPllTracking(configuration, role, in_streams,
+            block = new GpsL1CaDllFllPllTracking(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("GPS_L1_CA_TCP_CONNECTOR_Tracking") == 0)
         {
-            block = new GpsL1CaTcpConnectorTracking(configuration, role, in_streams,
+            block = new GpsL1CaTcpConnectorTracking(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
         {
-            block = new GalileoE1DllPllVemlTracking(configuration, role, in_streams,
+            block = new GalileoE1DllPllVemlTracking(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
-            block = new GalileoE1TcpConnectorTracking(configuration, role, in_streams,
+            block = new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 
     // TELEMETRY DECODERS ----------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)
         {
-            block = new GpsL1CaTelemetryDecoder(configuration, role, in_streams,
+            block = new GpsL1CaTelemetryDecoder(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("Galileo_E1B_Telemetry_Decoder") == 0)
         {
-            block = new GalileoE1BTelemetryDecoder(configuration, role, in_streams,
+            block = new GalileoE1BTelemetryDecoder(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("SBAS_L1_Telemetry_Decoder") == 0)
         {
-            block = new SbasL1TelemetryDecoder(configuration, role, in_streams,
+            block = new SbasL1TelemetryDecoder(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 
     // OBSERVABLES -----------------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_Observables") == 0)
         {
-            block = new GpsL1CaObservables(configuration, role, in_streams,
+            block = new GpsL1CaObservables(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
 
     else if (implementation.compare("Galileo_E1B_Observables") == 0)
                 {
-                   block = new GalileoE1Observables(configuration, role, in_streams,
+                   block = new GalileoE1Observables(configuration.get(), role, in_streams,
                             out_streams, queue);
                 }
 
     // PVT -------------------------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_PVT") == 0)
         {
-            block = new GpsL1CaPvt(configuration, role, in_streams,
+            block = new GpsL1CaPvt(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     else if (implementation.compare("GALILEO_E1_PVT") == 0)
         {
-            block = new GalileoE1Pvt(configuration, role, in_streams,
+            block = new GalileoE1Pvt(configuration.get(), role, in_streams,
                     out_streams, queue);
         }
     // OUTPUT FILTERS --------------------------------------------------------------
     else if (implementation.compare("Null_Sink_Output_Filter") == 0)
         {
-            block = new NullSinkOutputFilter(configuration, role, in_streams,
+            block = new NullSinkOutputFilter(configuration.get(), role, in_streams,
                     out_streams);
         }
     else if (implementation.compare("File_Output_Filter") == 0)
         {
-            block = new FileOutputFilter(configuration, role, in_streams,
+            block = new FileOutputFilter(configuration.get(), role, in_streams,
                     out_streams);
         }
     else

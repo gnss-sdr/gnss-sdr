@@ -33,6 +33,7 @@
 
 #include <complex>
 #include <ctime>
+#include <numeric>
 #include <armadillo>
 #include <volk/volk.h>
 
@@ -150,12 +151,7 @@ TEST(Multiply_Test, C11ComplexImplementation)
     ASSERT_LE(0, end - begin);
 
     std::complex<float> expected(0,0);
-    std::complex<float> result(0,0);
-    // auto result = std::inner_product(output.begin(), output.end(), output.begin(), 0);
-    for (const auto &item : output)
-        {
-            result += item;
-        }
+    auto result = std::inner_product(output.begin(), output.end(), output.begin(), expected);
     ASSERT_EQ(expected, result);
 }
 

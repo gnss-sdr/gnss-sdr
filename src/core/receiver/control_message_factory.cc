@@ -46,12 +46,11 @@ ControlMessageFactory::~ControlMessageFactory()
 
 boost::shared_ptr<gr::message> ControlMessageFactory::GetQueueMessage(unsigned int who, unsigned int what)
 {
-    ControlMessage *control_message = new ControlMessage;
+    std::shared_ptr<ControlMessage> control_message = std::make_shared<ControlMessage>();
     control_message->who = who;
     control_message->what = what;
     boost::shared_ptr<gr::message> queue_message = gr::message::make(0, 0, 0, sizeof(ControlMessage));
-    memcpy(queue_message->msg(), control_message, sizeof(ControlMessage));
-    delete control_message;
+    memcpy(queue_message->msg(), control_message.get(), sizeof(ControlMessage));
     return queue_message;
 }
 

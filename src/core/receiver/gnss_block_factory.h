@@ -51,25 +51,25 @@ class GNSSBlockFactory
 public:
     GNSSBlockFactory();
     virtual ~GNSSBlockFactory();
-    GNSSBlockInterface* GetSignalSource(
-            ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue);
-    GNSSBlockInterface* GetSignalConditioner(
-            ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue);
-    GNSSBlockInterface* GetPVT(ConfigurationInterface *configuration,
+    GNSSBlockInterface* GetSignalSource(std::shared_ptr<ConfigurationInterface> configuration,
             boost::shared_ptr<gr::msg_queue> queue);
-    GNSSBlockInterface* GetObservables(ConfigurationInterface *configuration,
+    GNSSBlockInterface* GetSignalConditioner(std::shared_ptr<ConfigurationInterface> configuration,
             boost::shared_ptr<gr::msg_queue> queue);
-    GNSSBlockInterface* GetOutputFilter(
-            ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue);
-    GNSSBlockInterface* GetChannel(ConfigurationInterface *configuration,
+    GNSSBlockInterface* GetPVT(std::shared_ptr<ConfigurationInterface> configuration,
+            boost::shared_ptr<gr::msg_queue> queue);
+    GNSSBlockInterface* GetObservables(std::shared_ptr<ConfigurationInterface> configuration,
+            boost::shared_ptr<gr::msg_queue> queue);
+    GNSSBlockInterface* GetOutputFilter(std::shared_ptr<ConfigurationInterface> configuration,
+            boost::shared_ptr<gr::msg_queue> queue);
+    GNSSBlockInterface* GetChannel(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
             boost::shared_ptr<gr::msg_queue> queue);
-    std::vector<GNSSBlockInterface*>* GetChannels(
-            ConfigurationInterface *configuration, boost::shared_ptr<gr::msg_queue> queue);
+    std::vector<GNSSBlockInterface*>* GetChannels(std::shared_ptr<ConfigurationInterface> configuration,
+            boost::shared_ptr<gr::msg_queue> queue);
     /*
      * \brief Returns the block with the required configuration and implementation
      */
-    GNSSBlockInterface* GetBlock(ConfigurationInterface* configuration,
+    GNSSBlockInterface* GetBlock(std::shared_ptr<ConfigurationInterface> configuration,
             std::string role, std::string implementation,
             unsigned int in_streams, unsigned int out_streams,
             boost::shared_ptr<gr::msg_queue> queue);

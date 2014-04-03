@@ -40,34 +40,25 @@ TEST(File_Configuration_Test, OverridedProperties)
 {
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "data/config_file_sample.txt";
-    ConfigurationInterface *configuration = new FileConfiguration(filename);
+    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<FileConfiguration>(filename);
+    std::unique_ptr<ConfigurationInterface> configuration(new FileConfiguration(filename));
     std::string default_value = "default_value";
     std::string value = configuration->property("NotThere", default_value);
-
     EXPECT_STREQ("default_value", value.c_str());
-
     configuration->set_property("NotThere", "Yes!");
     value = configuration->property("NotThere", default_value);
-
     EXPECT_STREQ("Yes!", value.c_str());
-
-    delete configuration;
 }
 
 
 
 TEST(File_Configuration_Test, LoadFromNonExistentFile)
 {
-
-    ConfigurationInterface *configuration = new FileConfiguration("./i_dont_exist.conf");
+    std::unique_ptr<ConfigurationInterface> configuration(new FileConfiguration("./i_dont_exist.conf"));
     std::string default_value = "default_value";
     std::string value = configuration->property("whatever.whatever", default_value);
-
     EXPECT_STREQ("default_value", value.c_str());
-
-    delete configuration;
 }
-
 
 
 
@@ -75,11 +66,8 @@ TEST(File_Configuration_Test, PropertyDoesNotExist)
 {
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "data/config_file_sample.txt";
-    ConfigurationInterface *configuration = new FileConfiguration(filename);
+    std::unique_ptr<ConfigurationInterface> configuration(new FileConfiguration(filename));
     std::string default_value = "default_value";
     std::string value = configuration->property("whatever.whatever", default_value);
-
     EXPECT_STREQ("default_value", value.c_str());
-
-    delete configuration;
 }

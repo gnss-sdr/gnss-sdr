@@ -34,109 +34,86 @@
 
 TEST(InMemoryConfiguration, IsPresent)
 {
-    InMemoryConfiguration *configuration = new InMemoryConfiguration();
-
+    //std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    std::unique_ptr<InMemoryConfiguration> configuration(new InMemoryConfiguration);
     EXPECT_FALSE(configuration->is_present("NotThere"));
-
     configuration->set_property("NotThere", "Yes!");
     EXPECT_TRUE(configuration->is_present("NotThere"));
-
-    delete configuration;
 }
 
 TEST(InMemoryConfiguration, StoreAndRetrieve)
 {
-    ConfigurationInterface *configuration = new InMemoryConfiguration();
-
-    ((InMemoryConfiguration*)configuration)->set_property("Foo.property1", "value");
+    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<InMemoryConfiguration>();
+    std::unique_ptr<ConfigurationInterface> configuration(new InMemoryConfiguration);
+    configuration->set_property("Foo.property1", "value");
     std::string default_value = "default_value";
     std::string value = configuration->property("Foo.property1", default_value);
-
     EXPECT_STREQ("value", value.c_str());
-
-    delete configuration;
 }
 
 TEST(InMemoryConfiguration, NoStoringAndRetrieve)
 {
-    ConfigurationInterface *configuration = new InMemoryConfiguration();
+    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<InMemoryConfiguration>();
+    std::unique_ptr<ConfigurationInterface> configuration(new InMemoryConfiguration);
     std::string default_value = "default_value";
     std::string value = configuration->property("Foo.property1", default_value);
-
     EXPECT_STREQ("default_value", value.c_str());
-
-    delete configuration;
 }
 
 TEST(InMemoryConfiguration, RetrieveBool)
 {
-    ConfigurationInterface *configuration = new InMemoryConfiguration();
-
-    ((InMemoryConfiguration*)configuration)->set_property("Foo.property1", "true");
+    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<InMemoryConfiguration>();
+    std::unique_ptr<ConfigurationInterface> configuration(new InMemoryConfiguration);
+    configuration->set_property("Foo.property1", "true");
     bool value = configuration->property("Foo.property1", false);
     bool expectedtrue = true;
     EXPECT_EQ(expectedtrue, value);
-
-    delete configuration;
 }
 
 TEST(InMemoryConfiguration, RetrieveBoolFail)
 {
-    ConfigurationInterface *configuration = new InMemoryConfiguration();
-
-    ((InMemoryConfiguration*)configuration)->set_property("Foo.property1", "tru");
+    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<InMemoryConfiguration>();
+    std::unique_ptr<ConfigurationInterface> configuration(new InMemoryConfiguration);
+    configuration->set_property("Foo.property1", "tru");
     bool value = configuration->property("Foo.property1", false);
-
     bool expectedfalse = false;
     EXPECT_EQ(expectedfalse, value);
-
-    delete configuration;
 }
 
 TEST(InMemoryConfiguration, RetrieveBoolNoDefine)
 {
-    ConfigurationInterface *configuration = new InMemoryConfiguration();
-
+    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<InMemoryConfiguration>();
+    std::unique_ptr<ConfigurationInterface> configuration(new InMemoryConfiguration);
     bool value = configuration->property("Foo.property1", false);
-
     bool expectedfalse = false;
     EXPECT_EQ(expectedfalse, value);
-
-    delete configuration;
 }
 
 TEST(InMemoryConfiguration, RetrieveSizeT)
 {
-    ConfigurationInterface *configuration = new InMemoryConfiguration();
-
-    ((InMemoryConfiguration*)configuration)->set_property("Foo.property1", "8");
+    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<InMemoryConfiguration>();
+    std::unique_ptr<ConfigurationInterface> configuration(new InMemoryConfiguration);
+    configuration->set_property("Foo.property1", "8");
     unsigned int value = configuration->property("Foo.property1", 4);
-
     unsigned int expected8 = 8;
     EXPECT_EQ(expected8, value);
-
-    delete configuration;
 }
 
 TEST(InMemoryConfiguration, RetrieveSizeTFail)
 {
-    ConfigurationInterface *configuration = new InMemoryConfiguration();
-
-    ((InMemoryConfiguration*)configuration)->set_property("Foo.property1", "true");
+    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<InMemoryConfiguration>();
+    std::unique_ptr<ConfigurationInterface> configuration(new InMemoryConfiguration);
+    configuration->set_property("Foo.property1", "true");
     unsigned int value = configuration->property("Foo.property1", 4);
-
     unsigned int expected4 = 4;
     EXPECT_EQ(expected4, value);
-
-    delete configuration;
 }
 
-TEST(InMemoryConfiguration, RetrieveSizeTNoDefine) {
-    ConfigurationInterface *configuration = new InMemoryConfiguration();
-
+TEST(InMemoryConfiguration, RetrieveSizeTNoDefine)
+{
+    //std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<InMemoryConfiguration>();
+    std::unique_ptr<ConfigurationInterface> configuration(new InMemoryConfiguration);
     unsigned int value = configuration->property("Foo.property1", 4);
     unsigned int expected4 = 4;
     EXPECT_EQ(expected4, value);
-
-    delete configuration;
 }

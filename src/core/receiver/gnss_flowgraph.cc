@@ -35,6 +35,7 @@
 #include "unistd.h"
 #include <exception>
 #include <iostream>
+#include <memory>
 #include <set>
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
@@ -47,23 +48,20 @@
 
 using google::LogMessage;
 
-GNSSFlowgraph::GNSSFlowgraph(ConfigurationInterface *configuration,
+GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration,
         boost::shared_ptr<gr::msg_queue> queue)
 {
     connected_ = false;
     running_ = false;
     configuration_ = configuration;
     blocks_ = new std::vector<GNSSBlockInterface*>();
-    block_factory_ = new GNSSBlockFactory();
     queue_ = queue;
-    //available_GNSS_signals_ = new std::list<Gnss_Satellite>();
     init();
 }
 
 
 GNSSFlowgraph::~GNSSFlowgraph()
 {
-    delete block_factory_;
     for (unsigned int i = 0; i < blocks_->size(); i++)
         {
             delete blocks_->at(i);
@@ -425,7 +423,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 
 
 
-void GNSSFlowgraph::set_configuration(ConfigurationInterface* configuration)
+void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> configuration)
 {
     if (running_)
         {

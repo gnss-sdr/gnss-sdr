@@ -46,7 +46,7 @@
 
 TEST(GNSSFlowgraph, InstantiateConnectStartStop)
 {
-    InMemoryConfiguration* config = new InMemoryConfiguration();
+    std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.implementation", "File_Signal_Source");
@@ -58,6 +58,7 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     config->set_property("Channels.count", "2");
     config->set_property("Channels.acquisition.implementation", "Pass_Through");
     config->set_property("Channels.tracking.implementation", "Pass_Through");
+    config->set_property("Channels.telemetry.implementation", "Pass_Through");
     config->set_property("Channels.observables.implementation", "Pass_Through");
     config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
@@ -70,9 +71,11 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     EXPECT_STREQ("Channel", flowgraph->channel(0)->implementation().c_str());
     EXPECT_STREQ("Pass_Through", ((Channel*)flowgraph->channel(0))->acquisition()->implementation().c_str());
     EXPECT_STREQ("Pass_Through", ((Channel*)flowgraph->channel(0))->tracking()->implementation().c_str());
+    EXPECT_STREQ("Pass_Through", ((Channel*)flowgraph->channel(0))->telemetry()->implementation().c_str());
     EXPECT_STREQ("Channel", flowgraph->channel(1)->implementation().c_str());
     EXPECT_STREQ("Pass_Through", ((Channel*)flowgraph->channel(1))->acquisition()->implementation().c_str());
     EXPECT_STREQ("Pass_Through", ((Channel*)flowgraph->channel(1))->tracking()->implementation().c_str());
+    EXPECT_STREQ("Pass_Through", ((Channel*)flowgraph->channel(1))->telemetry()->implementation().c_str());
     EXPECT_STREQ("GPS_L1_CA_Observables", flowgraph->observables()->implementation().c_str());
     EXPECT_STREQ("GPS_L1_CA_PVT", flowgraph->pvt()->implementation().c_str());
     EXPECT_STREQ("Null_Sink_Output_Filter", flowgraph->output_filter()->implementation().c_str());

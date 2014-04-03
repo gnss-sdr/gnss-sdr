@@ -34,6 +34,7 @@
 
 #include <iostream>
 #include <queue>
+#include <memory>
 #include <gtest/gtest.h>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
@@ -77,11 +78,8 @@ DECLARE_string(log_dir);
 #include "control_thread/control_message_factory_test.cc"
 //#include "control_thread/control_thread_test.cc"
 #include "flowgraph/pass_through_test.cc"
-#include "gnss_block/gnss_block_factory_test.cc"
-#include "gnuradio_block/gnss_sdr_valve_test.cc"
-#include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
-#include "string_converter/string_converter_test.cc"
 //#include "flowgraph/gnss_flowgraph_test.cc"
+#include "gnss_block/gnss_block_factory_test.cc"
 #include "gnss_block/rtcm_printer_test.cc"
 #include "gnss_block/file_output_filter_test.cc"
 #include "gnss_block/file_signal_source_test.cc"
@@ -100,7 +98,9 @@ DECLARE_string(log_dir);
 #include "gnss_block/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc"
-
+#include "gnuradio_block/gnss_sdr_valve_test.cc"
+#include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
+#include "string_converter/string_converter_test.cc"
 
 
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;

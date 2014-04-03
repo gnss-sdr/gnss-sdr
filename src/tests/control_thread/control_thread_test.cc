@@ -33,6 +33,7 @@
 
 #include <unistd.h>
 #include <exception>
+#include <memory>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -42,60 +43,20 @@
 #include <gnuradio/message.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-//#include "control_thread.h"
+#include "control_thread.h"
 #include "in_memory_configuration.h"
 #include "control_message_factory.h"
-/*
-#include "control_thread.h"
-#include "gnss_flowgraph.h"
-#include "file_configuration.h"
-
-
-#include "gps_ephemeris.h"
-#include "gps_iono.h"
-#include "gps_utc_model.h"
-#include "gps_almanac.h"
-
-#include "galileo_ephemeris.h"
-#include "galileo_iono.h"
-#include "galileo_utc_model.h"
-#include "galileo_almanac.h"
-
-#include "concurrent_queue.h"
-#include "concurrent_map.h"
-
-extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-extern concurrent_map<Gps_Iono> global_gps_iono_map;
-extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-extern concurrent_map<Gps_Almanac> global_gps_almanac_map;
-extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
-
-extern concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
-extern concurrent_queue<Gps_Iono> global_gps_iono_queue;
-extern concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
-extern concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
-extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-
-extern concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
-extern concurrent_map<Galileo_Iono> global_galileo_iono_map;
-extern concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
-extern concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
-//extern concurrent_map<Galileo_Acq_Assist> global_gps_acq_assist_map;
-
-extern concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
-extern concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
-extern concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
-extern concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
-*/
 
 
 TEST(Control_Thread_Test, InstantiateRunControlMessages)
 {
-    InMemoryConfiguration *config = new InMemoryConfiguration();
+    std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("SignalSource.implementation", "File_Signal_Source");
-    //config->set_property("SignalSource.filename", "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat");
-    config->set_property("SignalSource.filename", "../src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat");
+    std::string path = std::string(TEST_PATH);
+    std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+    const char * file_name = file.c_str();
+    config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.repeat", "true");
@@ -124,7 +85,7 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
 
     control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
     control_queue->handle(control_msg_factory->GetQueueMessage(1,0));
-   control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
+    control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
 
     control_thread->set_control_queue(control_queue);
     try
@@ -144,10 +105,6 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     unsigned int expected1 = 1;
     EXPECT_EQ(expected3, control_thread->processed_control_messages());
     EXPECT_EQ(expected1, control_thread->applied_actions());
-
-    delete config;
-    //delete control_thread;
-    //delete control_msg_factory;
 }
 
 
@@ -156,10 +113,12 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
 
 TEST(Control_Thread_Test, InstantiateRunControlMessages2)
 {
-    InMemoryConfiguration *config = new InMemoryConfiguration();
+    std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("SignalSource.implementation", "File_Signal_Source");
-    //config->set_property("SignalSource.filename", "../src/tests/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat");
-    config->set_property("SignalSource.filename", "../src/tests/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat");
+    std::string path = std::string(TEST_PATH);
+    std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
+    const char * file_name = file.c_str();
+    config->set_property("SignalSource.filename", file_name);
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.sampling_frequency", "4000000");
     config->set_property("SignalSource.repeat", "true");
@@ -179,7 +138,6 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
     config->set_property("OutputFilter.item_type", "gr_complex");
 
-    //ControlThread *control_thread = new ControlThread(config);
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
 
     gr::msg_queue::sptr control_queue2 = gr::msg_queue::make(0);
@@ -211,8 +169,4 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     unsigned int expected1 = 1;
     EXPECT_EQ(expected5, control_thread2->processed_control_messages());
     EXPECT_EQ(expected1, control_thread2->applied_actions());
-
-    delete config;
-    //delete control_thread;
-    //delete control_msg_factory;
 }

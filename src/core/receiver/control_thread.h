@@ -61,7 +61,7 @@ public:
      *
      * \param[in] configuration Pointer to a ConfigurationInterface
      */
-    ControlThread(ConfigurationInterface *configuration);
+    ControlThread(std::shared_ptr<ConfigurationInterface> configuration);
 
     //! \brief Virtual destructor. Derived classes must implement the destructor
     virtual ~ControlThread();
@@ -105,7 +105,7 @@ public:
      */
     GNSSFlowgraph* flowgraph()
     {
-        return flowgraph_;
+        return flowgraph_.get();
     }
 
 
@@ -173,10 +173,10 @@ private:
 
 
     void apply_action(unsigned int what);
-    GNSSFlowgraph *flowgraph_;
-    ConfigurationInterface *configuration_;
+    std::shared_ptr<GNSSFlowgraph> flowgraph_;
+    std::shared_ptr<ConfigurationInterface> configuration_;
     boost::shared_ptr<gr::msg_queue> control_queue_;
-    ControlMessageFactory *control_message_factory_;
+    std::shared_ptr<ControlMessageFactory> control_message_factory_;
     std::vector<ControlMessage*> *control_messages_;
     bool stop_;
     bool delete_configuration_;

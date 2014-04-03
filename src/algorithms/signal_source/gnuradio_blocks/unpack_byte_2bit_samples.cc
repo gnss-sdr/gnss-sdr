@@ -44,44 +44,39 @@ unpack_byte_2bit_samples_sptr make_unpack_byte_2bit_samples()
     return unpack_byte_2bit_samples_sptr(new unpack_byte_2bit_samples());
 }
 
-unpack_byte_2bit_samples::unpack_byte_2bit_samples()
-	: sync_interpolator("unpack_byte_2bit_samples",
-            		gr::io_signature::make(1, 1,sizeof(signed char)),
-            		gr::io_signature::make(1, 1,sizeof(float)),
-            		4)
-{
-
-}
+unpack_byte_2bit_samples::unpack_byte_2bit_samples() : sync_interpolator("unpack_byte_2bit_samples",
+                                                                         gr::io_signature::make(1, 1, sizeof(signed char)),
+                                                                         gr::io_signature::make(1, 1, sizeof(float)),
+            	                                                         4)
+{}
 
 unpack_byte_2bit_samples::~unpack_byte_2bit_samples()
-{
+{}
 
-}
-
-int unpack_byte_2bit_samples::work(int noutput_items,gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+int unpack_byte_2bit_samples::work(int noutput_items,
+                                   gr_vector_const_void_star &input_items,
+                                   gr_vector_void_star &output_items)
 {
     const signed char *in = (const signed char *)input_items[0];
     float *out = (float*)output_items[0];
 
     byte_2bit_struct sample;
-    int n=0;
-    for(int i = 0; i < noutput_items/4; i++) {
-    	// Read packed input sample (1 byte = 4 samples)
-    	signed char c = in[i];
-        sample.two_bit_sample=c & 3;
-        out[n++]=(float)sample.two_bit_sample;
+    int n = 0;
+    for(int i = 0; i < noutput_items/4; i++)
+        {
+            // Read packed input sample (1 byte = 4 samples)
+            signed char c = in[i];
+            sample.two_bit_sample = c & 3;
+            out[n++] = (float)sample.two_bit_sample;
 
-        sample.two_bit_sample=(c>>2) & 3;
-        out[n++]=(float)sample.two_bit_sample;
+            sample.two_bit_sample = (c>>2) & 3;
+            out[n++] = (float)sample.two_bit_sample;
 
-        sample.two_bit_sample=(c>>4) & 3;
-        out[n++]=(float)sample.two_bit_sample;
+            sample.two_bit_sample = (c>>4) & 3;
+            out[n++] = (float)sample.two_bit_sample;
 
-        sample.two_bit_sample=(c>>6) & 3;
-        out[n++]=(float)sample.two_bit_sample;
-
-    }
-
+            sample.two_bit_sample = (c>>6) & 3;
+            out[n++] = (float)sample.two_bit_sample;
+        }
     return noutput_items;
 }

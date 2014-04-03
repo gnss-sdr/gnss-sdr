@@ -40,7 +40,7 @@
 class FrontEndCal
 {
 private:
-    ConfigurationInterface *configuration_;
+    std::shared_ptr<ConfigurationInterface> configuration_;
 
     /*!
      * \brief LLA2ECEF Convert geodetic coordinates to Earth-centered Earth-fixed
@@ -98,7 +98,7 @@ public:
      * \brief Sets the configuration data required by get_ephemeris function
      *
      */
-    void set_configuration(ConfigurationInterface *configuration);
+    void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
     /*!
      * \brief This function connects to a Secure User Location Protocol (SUPL) server to obtain

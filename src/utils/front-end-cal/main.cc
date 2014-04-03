@@ -146,7 +146,7 @@ void wait_message()
         }
 }
 
-bool front_end_capture(ConfigurationInterface *configuration)
+bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
 {
     gr::top_block_sptr top_block;
     GNSSBlockFactory block_factory;
@@ -158,8 +158,7 @@ bool front_end_capture(ConfigurationInterface *configuration)
     GNSSBlockInterface *source;
     source = block_factory.GetSignalSource(configuration, queue);
 
-    GNSSBlockInterface *conditioner;
-    conditioner = block_factory.GetSignalConditioner(configuration,queue);
+    GNSSBlockInterface *conditioner = block_factory.GetSignalConditioner(configuration,queue);
 
     gr::block_sptr sink;
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
@@ -192,7 +191,7 @@ bool front_end_capture(ConfigurationInterface *configuration)
             return false;
     }
 
-    delete conditioner;
+    //delete conditioner;
     delete source;
     return true;
 }
@@ -262,8 +261,8 @@ int main(int argc, char** argv)
 
     // 1. Load configuration parameters from config file
 
-    ConfigurationInterface *configuration;
-    configuration = new FileConfiguration(FLAGS_config_file);
+    std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<FileConfiguration>(FLAGS_config_file);
+    //configuration = new FileConfiguration(FLAGS_config_file);
     front_end_cal.set_configuration(configuration);
 
 
@@ -306,7 +305,7 @@ int main(int argc, char** argv)
     long fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
 
     GNSSBlockFactory block_factory;
-    acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration, "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1, queue);
 
     acquisition->set_channel(1);
     acquisition->set_gnss_synchro(gnss_synchro);
@@ -413,7 +412,7 @@ int main(int argc, char** argv)
     else
         {
             std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!" << std::endl;
-            delete configuration;
+            //delete configuration;
             delete acquisition;
             delete gnss_synchro;
             google::ShutDownCommandLineFlags();
@@ -435,7 +434,7 @@ int main(int argc, char** argv)
     if (doppler_measurements_map.size() == 0)
         {
             std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..." << std::endl;
-            delete configuration;
+            //delete configuration;
             delete acquisition;
             delete gnss_synchro;
             google::ShutDownCommandLineFlags();
@@ -517,7 +516,7 @@ int main(int argc, char** argv)
 
     // 8. Generate GNSS-SDR config file.
 
-    delete configuration;
+    //delete configuration;
     delete acquisition;
     delete gnss_synchro;
 

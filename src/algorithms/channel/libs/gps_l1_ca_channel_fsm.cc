@@ -30,171 +30,188 @@
 
 #include "gps_l1_ca_channel_fsm.h"
 #include <list>
+#include <memory>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "channel.h"
 
 
-struct Ev_gps_channel_start_acquisition: sc::event<
-		Ev_gps_channel_start_acquisition> {
-};
+struct Ev_gps_channel_start_acquisition: sc::event<Ev_gps_channel_start_acquisition>
+{};
 
-struct Ev_gps_channel_valid_acquisition: sc::event<
-		Ev_gps_channel_valid_acquisition> {
-};
+struct Ev_gps_channel_valid_acquisition: sc::event<Ev_gps_channel_valid_acquisition>
+{};
 
-struct Ev_gps_channel_failed_acquisition_repeat: sc::event<
-		Ev_gps_channel_failed_acquisition_repeat> {
-};
+struct Ev_gps_channel_failed_acquisition_repeat: sc::event<Ev_gps_channel_failed_acquisition_repeat>
+{};
 
-struct Ev_gps_channel_failed_acquisition_no_repeat: sc::event<
-		Ev_gps_channel_failed_acquisition_no_repeat> {
-};
+struct Ev_gps_channel_failed_acquisition_no_repeat: sc::event<Ev_gps_channel_failed_acquisition_no_repeat>
+{};
 
-struct Ev_gps_channel_failed_tracking_standby: sc::event<Ev_gps_channel_failed_tracking_standby> {
-};
+struct Ev_gps_channel_failed_tracking_standby: sc::event<Ev_gps_channel_failed_tracking_standby>
+{};
 
-//struct Ev_gps_channel_failed_tracking_reacq: sc::event<Ev_gps_channel_failed_tracking_reacq> {
-//};
+//struct Ev_gps_channel_failed_tracking_reacq: sc::event<Ev_gps_channel_failed_tracking_reacq>
+//{};
 
-struct gps_channel_idle_fsm_S0: public sc::state<gps_channel_idle_fsm_S0,
-		GpsL1CaChannelFsm> {
+struct gps_channel_idle_fsm_S0: public sc::state<gps_channel_idle_fsm_S0, GpsL1CaChannelFsm>
+{
 public:
-	// sc::transition(event, next state)
-	typedef sc::transition<Ev_gps_channel_start_acquisition,
-			gps_channel_acquiring_fsm_S1> reactions;
-	gps_channel_idle_fsm_S0(my_context ctx) :
-		my_base(ctx) {
-		//std::cout << "Enter Channel_Idle_S0 " << std::endl;
-	}
+    // sc::transition(event, next state)
+    typedef sc::transition<Ev_gps_channel_start_acquisition, gps_channel_acquiring_fsm_S1> reactions;
+    gps_channel_idle_fsm_S0(my_context ctx) : my_base(ctx)
+    {
+        //std::cout << "Enter Channel_Idle_S0 " << std::endl;
+    }
 };
 
-struct gps_channel_acquiring_fsm_S1: public sc::state<
-gps_channel_acquiring_fsm_S1, GpsL1CaChannelFsm> {
+
+struct gps_channel_acquiring_fsm_S1: public sc::state<gps_channel_acquiring_fsm_S1, GpsL1CaChannelFsm>
+{
 public:
-	typedef mpl::list<sc::transition<
-			Ev_gps_channel_failed_acquisition_no_repeat,
-			gps_channel_waiting_fsm_S3>, sc::transition<
-			Ev_gps_channel_failed_acquisition_repeat,
-			gps_channel_acquiring_fsm_S1>, sc::transition<
-			Ev_gps_channel_valid_acquisition, gps_channel_tracking_fsm_S2> >
-	reactions;
+    typedef mpl::list<sc::transition<Ev_gps_channel_failed_acquisition_no_repeat, gps_channel_waiting_fsm_S3>,
+                      sc::transition<Ev_gps_channel_failed_acquisition_repeat, gps_channel_acquiring_fsm_S1>,
+                      sc::transition<Ev_gps_channel_valid_acquisition, gps_channel_tracking_fsm_S2> > reactions;
 
-	gps_channel_acquiring_fsm_S1(my_context ctx) :
-		my_base(ctx) {
-		//std::cout << "Enter Channel_Acq_S1 " << std::endl;
-		context<GpsL1CaChannelFsm> ().start_acquisition();
-	}
+    gps_channel_acquiring_fsm_S1(my_context ctx) : my_base(ctx)
+    {
+        //std::cout << "Enter Channel_Acq_S1 " << std::endl;
+        context<GpsL1CaChannelFsm> ().start_acquisition();
+    }
 };
 
-struct gps_channel_tracking_fsm_S2: public sc::state<
-		gps_channel_tracking_fsm_S2, GpsL1CaChannelFsm> {
+
+struct gps_channel_tracking_fsm_S2: public sc::state<gps_channel_tracking_fsm_S2, GpsL1CaChannelFsm>
+{
 public:
-	typedef mpl::list<sc::transition<Ev_gps_channel_failed_tracking_standby,
-			gps_channel_idle_fsm_S0>,  sc::transition<Ev_gps_channel_start_acquisition,
-			gps_channel_acquiring_fsm_S1>> reactions;
+    typedef mpl::list<sc::transition<Ev_gps_channel_failed_tracking_standby, gps_channel_idle_fsm_S0>,
+                      sc::transition<Ev_gps_channel_start_acquisition, gps_channel_acquiring_fsm_S1>> reactions;
 
-	gps_channel_tracking_fsm_S2(my_context ctx) :
-		my_base(ctx) {
-		//std::cout << "Enter Channel_tracking_S2 " << std::endl;
-		context<GpsL1CaChannelFsm> ().start_tracking();
-	}
+    gps_channel_tracking_fsm_S2(my_context ctx) : my_base(ctx)
+    {
+        //std::cout << "Enter Channel_tracking_S2 " << std::endl;
+        context<GpsL1CaChannelFsm> ().start_tracking();
+    }
 
 };
 
-struct gps_channel_waiting_fsm_S3: public sc::state<gps_channel_waiting_fsm_S3,
-		GpsL1CaChannelFsm> {
+
+struct gps_channel_waiting_fsm_S3: public sc::state<gps_channel_waiting_fsm_S3, GpsL1CaChannelFsm>
+{
 public:
-	typedef sc::transition<Ev_gps_channel_start_acquisition,
-			gps_channel_acquiring_fsm_S1> reactions;
+    typedef sc::transition<Ev_gps_channel_start_acquisition,
+            gps_channel_acquiring_fsm_S1> reactions;
 
-	gps_channel_waiting_fsm_S3(my_context ctx) :
-		my_base(ctx) {
-		//std::cout << "Enter Channel_waiting_S3 " << std::endl;
-		context<GpsL1CaChannelFsm> ().request_satellite();
-	}
-	~gps_channel_waiting_fsm_S3(){}
+    gps_channel_waiting_fsm_S3(my_context ctx) :
+        my_base(ctx)
+    {
+        //std::cout << "Enter Channel_waiting_S3 " << std::endl;
+        context<GpsL1CaChannelFsm> ().request_satellite();
+    }
+    ~gps_channel_waiting_fsm_S3(){}
 };
 
-GpsL1CaChannelFsm::GpsL1CaChannelFsm() {
-	initiate(); //start the FSM
+
+
+GpsL1CaChannelFsm::GpsL1CaChannelFsm()
+{
+    initiate(); //start the FSM
 }
+
+
 
 GpsL1CaChannelFsm::GpsL1CaChannelFsm(AcquisitionInterface *acquisition) :
-	acq_(acquisition) {
-	initiate(); //start the FSM
+	        acq_(acquisition)
+{
+    initiate(); //start the FSM
 }
 
-void GpsL1CaChannelFsm::Event_gps_start_acquisition() {
-	this->process_event(Ev_gps_channel_start_acquisition());
+
+
+void GpsL1CaChannelFsm::Event_gps_start_acquisition()
+{
+    this->process_event(Ev_gps_channel_start_acquisition());
 }
 
-void GpsL1CaChannelFsm::Event_gps_valid_acquisition() {
-	this->process_event(Ev_gps_channel_valid_acquisition());
+
+void GpsL1CaChannelFsm::Event_gps_valid_acquisition()
+{
+    this->process_event(Ev_gps_channel_valid_acquisition());
 }
 
-void GpsL1CaChannelFsm::Event_gps_failed_acquisition_repeat() {
-	this->process_event(Ev_gps_channel_failed_acquisition_repeat());
+
+void GpsL1CaChannelFsm::Event_gps_failed_acquisition_repeat()
+{
+    this->process_event(Ev_gps_channel_failed_acquisition_repeat());
 }
 
-void GpsL1CaChannelFsm::Event_gps_failed_acquisition_no_repeat() {
-	this->process_event(Ev_gps_channel_failed_acquisition_no_repeat());
+void GpsL1CaChannelFsm::Event_gps_failed_acquisition_no_repeat()
+{
+    this->process_event(Ev_gps_channel_failed_acquisition_no_repeat());
 }
 
 
 // Something is wrong here, we are using a memory after it ts freed
-void GpsL1CaChannelFsm::Event_gps_failed_tracking_standby() {
-	this->process_event(Ev_gps_channel_failed_tracking_standby());
+void GpsL1CaChannelFsm::Event_gps_failed_tracking_standby()
+{
+    this->process_event(Ev_gps_channel_failed_tracking_standby());
 }
 
 //void GpsL1CaChannelFsm::Event_gps_failed_tracking_reacq() {
 //	this->process_event(Ev_gps_channel_failed_tracking_reacq());
 //}
 
-void GpsL1CaChannelFsm::set_acquisition(AcquisitionInterface *acquisition) {
-	acq_ = acquisition;
+void GpsL1CaChannelFsm::set_acquisition(AcquisitionInterface *acquisition)
+{
+    acq_ = acquisition;
 }
 
-void GpsL1CaChannelFsm::set_tracking(TrackingInterface *tracking) {
-	trk_ = tracking;
+void GpsL1CaChannelFsm::set_tracking(TrackingInterface *tracking)
+{
+    trk_ = tracking;
 }
 
-void GpsL1CaChannelFsm::set_queue(boost::shared_ptr<gr::msg_queue> queue) {
-	queue_ = queue;
+void GpsL1CaChannelFsm::set_queue(boost::shared_ptr<gr::msg_queue> queue)
+{
+    queue_ = queue;
 }
 
-void GpsL1CaChannelFsm::set_channel(unsigned int channel) {
-	channel_ = channel;
+void GpsL1CaChannelFsm::set_channel(unsigned int channel)
+{
+    channel_ = channel;
 }
 
-void GpsL1CaChannelFsm::start_acquisition() {
-	acq_->reset();
+void GpsL1CaChannelFsm::start_acquisition()
+{
+    acq_->reset();
 }
 
-void GpsL1CaChannelFsm::start_tracking() {
-	//LOG_AT_LEVEL(INFO) << "Channel " << channel_
-	//<< " passing prn code phase " << acq_->prn_code_phase();
-	//LOG_AT_LEVEL(INFO) << "Channel " << channel_
-	//<< " passing doppler freq shift " << acq_->doppler_freq_shift();
-	//LOG_AT_LEVEL(INFO) << "Channel " << channel_
-	//<< " passing acquisition sample stamp "
-	//<< acq_->get_sample_stamp();
-	//trk_->set_prn_code_phase(acq_->prn_code_phase());
-	//trk_->set_doppler_freq_shift(acq_->doppler_freq_shift());
-	//trk_->set_acq_sample_stamp(acq_->get_sample_stamp());
-	trk_->start_tracking();
-	ControlMessageFactory* cmf = new ControlMessageFactory();
-	if (queue_ != gr::msg_queue::make()) {
-		queue_->handle(cmf->GetQueueMessage(channel_, 1));
-	}
-	delete cmf;
+void GpsL1CaChannelFsm::start_tracking()
+{
+    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
+    //<< " passing prn code phase " << acq_->prn_code_phase();
+    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
+    //<< " passing doppler freq shift " << acq_->doppler_freq_shift();
+    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
+    //<< " passing acquisition sample stamp "
+    //<< acq_->get_sample_stamp();
+    //trk_->set_prn_code_phase(acq_->prn_code_phase());
+    //trk_->set_doppler_freq_shift(acq_->doppler_freq_shift());
+    //trk_->set_acq_sample_stamp(acq_->get_sample_stamp());
+    trk_->start_tracking();
+    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+    if (queue_ != gr::msg_queue::make())
+        {
+            queue_->handle(cmf->GetQueueMessage(channel_, 1));
+        }
 }
 
-void GpsL1CaChannelFsm::request_satellite() {
-	ControlMessageFactory* cmf = new ControlMessageFactory();
-	if (queue_ != gr::msg_queue::make()) {
-		queue_->handle(cmf->GetQueueMessage(channel_, 0));
-	}
-	delete cmf;
+void GpsL1CaChannelFsm::request_satellite()
+{
+    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+    if (queue_ != gr::msg_queue::make())
+        {
+            queue_->handle(cmf->GetQueueMessage(channel_, 0));
+        }
 }
 

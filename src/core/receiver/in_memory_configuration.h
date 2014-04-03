@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,6 +37,7 @@
 #define GNSS_SDR_IN_MEMORY_CONFIGURATION_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include "configuration_interface.h"
 
@@ -64,7 +65,7 @@ public:
     bool is_present(std::string property_name);
 private:
     std::map<std::string, std::string> properties_;
-    StringConverter *converter_;
+    std::unique_ptr<StringConverter> converter_;
 };
 
 #endif /*GNSS_SDR_IN_MEMORY_CONFIGURATION_H_*/

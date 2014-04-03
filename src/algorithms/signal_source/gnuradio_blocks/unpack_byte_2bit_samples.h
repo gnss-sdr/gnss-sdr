@@ -34,6 +34,7 @@
 #include <gnuradio/sync_interpolator.h>
 
 class unpack_byte_2bit_samples;
+
 typedef boost::shared_ptr<unpack_byte_2bit_samples> unpack_byte_2bit_samples_sptr;
 
 unpack_byte_2bit_samples_sptr make_unpack_byte_2bit_samples();
@@ -51,7 +52,8 @@ private:
 public:
     unpack_byte_2bit_samples();
     ~unpack_byte_2bit_samples();
-    int work (int noutput_items, gr_vector_const_void_star &input_items,
+    int work (int noutput_items,
+              gr_vector_const_void_star &input_items,
               gr_vector_void_star &output_items);
 };
 

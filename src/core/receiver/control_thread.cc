@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
@@ -90,16 +91,14 @@ DEFINE_string(config_file, "../conf/gnss-sdr.conf",
 
 ControlThread::ControlThread()
 {
-    configuration_ = new FileConfiguration(FLAGS_config_file);
-    delete_configuration_ = true;
+    configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
     init();
 }
 
 
-ControlThread::ControlThread(ConfigurationInterface *configuration)
+ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configuration)
 {
     configuration_ = configuration;
-    delete_configuration_ = false;
     init();
 }
 
@@ -111,10 +110,6 @@ ControlThread::~ControlThread()
     gps_ephemeris_data_write_to_XML();
     gps_iono_data_write_to_XML();
     gps_utc_model_data_write_to_XML();
-
-    delete flowgraph_;
-    if (delete_configuration_) delete configuration_;
-    delete control_message_factory_;
 }
 
 
@@ -234,8 +229,8 @@ void ControlThread::init()
 {
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = gr::msg_queue::make(0);
-    flowgraph_ = new GNSSFlowgraph(configuration_, control_queue_);
-    control_message_factory_ = new ControlMessageFactory();
+    flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
+    control_message_factory_ = std::make_shared<ControlMessageFactory>();
     stop_ = false;
     processed_control_messages_ = 0;
     applied_actions_ = 0;
@@ -544,7 +539,7 @@ void ControlThread::galileo_ephemeris_data_collector()
                             if (galileo_eph.IOD_ephemeris > galileo_eph_old.IOD_ephemeris)
                                 {
                                     LOG(INFO) << "Galileo Ephemeris record updated in global map-- IOD_ephemeris ="
-                                              << galileo_eph.IOD_ephemeris << std::endl;
+                                              << galileo_eph.IOD_ephemeris;
                                     global_galileo_ephemeris_map.write(galileo_eph.SV_ID_PRN_4, galileo_eph);
                                     LOG(INFO) << "IOD_ephemeris OLD: " << galileo_eph_old.IOD_ephemeris;
                                     LOG(INFO) << "satellite: " << galileo_eph.SV_ID_PRN_4;
@@ -587,7 +582,7 @@ void ControlThread::gps_iono_data_collector()
             else
                 {
                     // insert new ephemeris record
-                    global_gps_iono_map.write(0 ,gps_iono);
+                    global_gps_iono_map.write(0, gps_iono);
                 }
         }
 }
@@ -797,12 +792,11 @@ void ControlThread::keyboard_listener()
             if (c =='q')
                 {
                     std::cout << "Quit keystroke order received, stopping GNSS-SDR !!" << std::endl;
-                    ControlMessageFactory* cmf = new ControlMessageFactory();
+                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                     if (control_queue_ != gr::msg_queue::sptr())
                         {
                             control_queue_->handle(cmf->GetQueueMessage(200, 0));
                         }
-                    delete cmf;
                     read_keys = false;
                 }
         }

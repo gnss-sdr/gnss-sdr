@@ -171,7 +171,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 # Googletest - http://code.google.com/p/googletest/
 ################################################################################
 enable_testing()
-set(GTEST_DIR $ENV{GTEST_DIR})
+set(GTEST_DIR "$ENV{GTEST_DIR}")
 if(GTEST_DIR)
      message(STATUS "GTEST root folder at ${GTEST_DIR}")
 else()

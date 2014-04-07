@@ -16,10 +16,12 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(GTEST_DIR_LOCAL $ENV{GTEST_DIR})
-if(NOT EXISTS GTEST_DIR_LOCAL)
+set(GTEST_DIR_LOCAL "$ENV{GTEST_DIR}")
+if(NOT GTEST_DIR_LOCAL)
     set(GTEST_DIR_LOCAL false)
-endif(NOT EXISTS GTEST_DIR_LOCAL)
+else()
+	set(GTEST_DIR_LOCAL true)
+endif(NOT GTEST_DIR_LOCAL)
 
 
 if(NOT GTEST_DIR_LOCAL)

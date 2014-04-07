@@ -89,7 +89,7 @@ TEST(Multiply_Test, ArmadilloImplementation)
               << "-length double Armadillo vectors finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    ASSERT_EQ(0, arma::norm(output));
+    ASSERT_EQ(0, arma::norm(output,2));
 }
 
 
@@ -173,7 +173,7 @@ TEST(Multiply_Test, ArmadilloComplexImplementation)
               << "-length complex float Armadillo vectors finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    ASSERT_EQ(0, arma::norm(output));
+    ASSERT_EQ(0, arma::norm(output,2));
 }
 
 

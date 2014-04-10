@@ -121,12 +121,11 @@ int main(int argc, char** argv)
     +
     "See COPYING file to see a copy of the General Public License\n \n");
 
-
+    const std::string gnss_sdr_version(GNSS_SDR_VERSION);
     google::SetUsageMessage(intro_help);
-    google::SetVersionString(GNSS_SDR_VERSION);
+    google::SetVersionString(gnss_sdr_version);
     google::ParseCommandLineFlags(&argc, &argv, true);
-
-    std::cout << "Initializing GNSS-SDR... Please wait." << std::endl;
+    std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait." << std::endl;
 
     google::InitGoogleLogging(argv[0]);
     if (FLAGS_log_dir.empty())

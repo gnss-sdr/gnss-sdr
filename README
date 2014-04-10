@@ -16,7 +16,7 @@ $ cd pybombs
 
 Configure PyBOMBS:
 
-$ sudo ./pybombs config 
+$ ./pybombs config 
 
 You can safely accept the default options but for prefix. We recommend to put /usr/local there. After the configuration, you should get something similar to:
 
@@ -98,16 +98,16 @@ $ export GTEST_DIR=/home/username/gtest-1.7.0
 
 changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your $HOME/.bashrc file.
 
-- Install Subversion and the SSL development libraries:
+- Install Git and the SSL development libraries:
 
-$ sudo apt-get install libssl-dev subversion   # For Debian/Ubuntu/LinuxMint
-$ sudo yum install openssl-devel subversion    # For Fedora/CentOS/RHEL
+$ sudo apt-get install libssl-dev git        # For Debian/Ubuntu/LinuxMint
+$ sudo yum install openssl-devel git core    # For Fedora/CentOS/RHEL
 
-* Check out the latest version of GNSS-SDR
+* Clone GNSS-SDR's Git repository:
 
-$ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
+$ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
 
-Checking out GNSS-SDR as in the line above will create a folder named gnss-sdr with the following structure:
+Cloning the GNSS-SDR repository as in the line above will create a folder named gnss-sdr with the following structure:
 
  |-gnss-sdr
  |---build      <- where gnss-sdr is built
@@ -192,12 +192,12 @@ The default will be OSMOSDR_ROOT=/usr/local
 
 $ cd gnss-sdr/build
 
-- Configure and build the program*:
+- Configure and build the program:
 
 $ cmake ../
 $ make
 
-*By default, cmake is configured to build the release version. If you want to build the debug version, please use:
+By default, cmake is configured to build the release version. If you want to build the debug version, please use:
 
 cmake ../ -DCMAKE_BUILD_TYPE=Debug
 
@@ -248,10 +248,10 @@ and then import the created project file into Eclipse:
 Updating GNSS-SDR
 -----------------
 
-If you checked out GNSS-SDR some days ago, it is possible that some developer has updated files at the Subversion repository. You can update your working copy by doing:
+If you checked out GNSS-SDR some days ago, it is possible that some developer has updated files at the Git repository. You can update your working copy by doing:
 
-$ cd gnss-sdr
-$ svn up
+$ git checkout master      # Switch to branch you want to update
+$ git pull origin master   # Download the newest code from our repository
 
 Before rebuiling the source code, it is safe (and recommended) to remove the remainders of old builds:
 
@@ -278,7 +278,7 @@ In a terminal, type:
 $ sudo port selfupdate
 $ sudo port upgrade outdated
 $ sudo port install doxygen +latex
-$ sudo port install gnuradio
+$ sudo port install uhd gnuradio
 $ sudo port install armadillo
 
 Install GFlags manually from the trunk:
@@ -299,7 +299,7 @@ $ sudo make install
 
 Finally, you are ready to checkout the GNSS-SDR repository and build the software:
 
-$ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
+$ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
 $ cd gnss-sdr/build
 $ cmake ../ -DCMAKE_CXX_COMPILER=/usr/bin/clang++
 $ make
@@ -339,14 +339,14 @@ $ sudo port install gnuradio
 
 Install other dependencies:
 
-$ sudo port install subversion armadillo
+$ sudo port install armadillo
 
 The libraries gflags and glog should be installed manually, and in that particular order (same steps as above). If they are not already installed
 when building GNSS-SDR, cmake will download, build and link them statically but they will not remain installed in the system.
 
 Finally, you are ready to checkout the GNSS-SDR repository and build the software:
 
-$ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
+$ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
 $ cd gnss-sdr/build
 $ cmake ../ -DCMAKE_CXX_COMPILER=g++
 $ make

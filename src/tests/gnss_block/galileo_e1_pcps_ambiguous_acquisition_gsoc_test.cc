@@ -135,7 +135,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::wait_message()
             }
             catch( boost::exception & e )
             {
-                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+                    DLOG(WARNING) << "Boost exception: " << boost::diagnostic_information(e);
             }
 
         }
@@ -199,7 +199,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     long long int end = 0;
 
     init();
-    GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    std::unique_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition(new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue));
 
 
     ASSERT_NO_THROW( {
@@ -262,6 +262,4 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
     EXPECT_EQ(0, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
-
-    delete acquisition;
 }

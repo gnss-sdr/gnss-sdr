@@ -1,3 +1,9 @@
 *~
-build/
-data/
+build/*
+data/*
+install/*
+docs/doxygen/Doxyfile
+docs/html
+docs/latex
+src/tests/data/output.dat
+thirdparty/

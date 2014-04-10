@@ -158,7 +158,7 @@ private:
     /* Search igps */
     void searchigp(const double *pos, const Igp **igp, double *x, double *y);
 
-    /* Compute sbas ionosphric delay correction
+    /* Compute sbas ionospheric delay correction
      * params : long     sample_stamp    I   sample stamp of observable on which the correction will be applied
      *          sbsion_t *ion    I   ionospheric correction data (implicit)
      *          double   *pos    I   receiver position {lat,lon,height} (rad/m)
@@ -190,7 +190,7 @@ public:
      * \param[in]  longitude_d  Receiver's longitude in terms of WGS84 (degree)
      * \param[in]  latitude_d   Receiver's latitude in terms of WGS84 (degree)
      * \param[in]  azimuth_d    Satellite azimuth/elavation angle (rad). Azimuth is the angle of
-     *                             the satellite from the user’s location measured clockwise from north
+     *                             the satellite from the user's location measured clockwise from north
      * \param[in]  elevation_d  Elevation is the angle of the satellite from the user's location measured
      *                             with respect to the local-tangent-plane
      */

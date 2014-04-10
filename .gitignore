@@ -2,8 +2,10 @@
 build/*
 data/*
 install/*
+!install/math_kernel.cl
 docs/doxygen/Doxyfile
 docs/html
 docs/latex
 src/tests/data/output.dat
 thirdparty/
+.project

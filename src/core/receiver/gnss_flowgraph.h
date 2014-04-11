@@ -132,7 +132,9 @@ private:
     std::string config_file_;
     std::shared_ptr<ConfigurationInterface> configuration_;
     std::shared_ptr<GNSSBlockFactory> block_factory_;
-    std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_;
+    //std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_;
+    std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_ = std::make_shared<std::vector<std::shared_ptr<GNSSBlockInterface>>>();
+
     //std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_;
     gr::top_block_sptr top_block_;
     boost::shared_ptr<gr::msg_queue> queue_;

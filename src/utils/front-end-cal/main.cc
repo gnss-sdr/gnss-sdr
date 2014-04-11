@@ -155,10 +155,10 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     queue =  gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
-    GNSSBlockInterface *source;
+    std::shared_ptr<GNSSBlockInterface> source;
     source = block_factory.GetSignalSource(configuration, queue);
 
-    GNSSBlockInterface *conditioner = block_factory.GetSignalConditioner(configuration,queue);
+    std::shared_ptr<GNSSBlockInterface> conditioner = block_factory.GetSignalConditioner(configuration,queue);
 
     gr::block_sptr sink;
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
@@ -192,7 +192,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     }
 
     //delete conditioner;
-    delete source;
+    //delete source;
     return true;
 }
 

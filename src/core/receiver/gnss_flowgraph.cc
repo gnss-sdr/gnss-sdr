@@ -54,7 +54,8 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
     connected_ = false;
     running_ = false;
     configuration_ = configuration;
-    blocks_ = new std::vector<GNSSBlockInterface*>();
+    //blocks_ = new std::vector<GNSSBlockInterface*>();
+    std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_ = std::make_shared<std::vector<std::shared_ptr<GNSSBlockInterface>>>();
     queue_ = queue;
     init();
 }
@@ -64,10 +65,10 @@ GNSSFlowgraph::~GNSSFlowgraph()
 {
     for (unsigned int i = 0; i < blocks_->size(); i++)
         {
-            delete blocks_->at(i);
+            //delete blocks_->at(i);
         }
     blocks_->clear();
-    delete blocks_;
+    //delete blocks_;
 }
 
 
@@ -129,7 +130,10 @@ void GNSSFlowgraph::connect()
 
     try
     {
-            signal_source()->connect(top_block_);
+            std::cout << "helllllo" << std::endl;
+            //signal_source()->connect(top_block_);
+            blocks_->at(0)->connect(top_block_);
+            std::cout << "helllllo" << std::endl;
     }
     catch (std::exception& e)
     {
@@ -440,42 +444,55 @@ void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> co
 
 
 
-GNSSBlockInterface* GNSSFlowgraph::signal_source()
+std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::signal_source()
 {
-    return blocks_->at(0);
+    //std::shared_ptr<GNSSBlockInterface> cond_ { blocks_->at(0) };
+    //return cond_;
+    //return blocks_->at(0);
+    std::shared_ptr<GNSSBlockInterface> source_ = std::move(blocks_->at(0));
+    return source_;
+
 }
 
 
 
-GNSSBlockInterface* GNSSFlowgraph::signal_conditioner()
+std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::signal_conditioner()
 {
     return blocks_->at(1);
 }
 
 
 
-ChannelInterface* GNSSFlowgraph::channel(unsigned int index)
+std::shared_ptr<ChannelInterface> GNSSFlowgraph::channel(unsigned int index)
 {
-    return (ChannelInterface*) blocks_->at(index + 5);
+    //return (ChannelInterface*) blocks_->at(index + 5);
+    //std::shared_ptr<ChannelInterface> sptr = std::make_shared<GNSSBlockInterface>(blocks_->at(index + 5));
+    //return blocks_->at(index + 5);
+    std::shared_ptr<GNSSBlockInterface> chan_ = blocks_->at(index + 5);
+
+    std::shared_ptr<ChannelInterface> chan = std::dynamic_pointer_cast<ChannelInterface>(chan_);
+
+    return chan;
+    //return sptr;
 }
 
 
 
-GNSSBlockInterface* GNSSFlowgraph::observables()
+std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::observables()
 {
     return blocks_->at(2);
 }
 
 
 
-GNSSBlockInterface* GNSSFlowgraph::pvt()
+std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::pvt()
 {
     return blocks_->at(3);
 }
 
 
 
-GNSSBlockInterface* GNSSFlowgraph::output_filter()
+std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::output_filter()
 {
     return blocks_->at(4);
 }
@@ -487,24 +504,36 @@ void GNSSFlowgraph::init()
     /*
      * Instantiates the receiver blocks
      */
-    blocks_->push_back(block_factory_->GetSignalSource(configuration_, queue_));
-    blocks_->push_back(block_factory_->GetSignalConditioner(configuration_, queue_));
-    blocks_->push_back(block_factory_->GetObservables(configuration_, queue_));
-    blocks_->push_back(block_factory_->GetPVT(configuration_, queue_));
-    blocks_->push_back(block_factory_->GetOutputFilter(configuration_, queue_));
+    std::shared_ptr<GNSSBlockFactory> block_factory_ = std::make_shared<GNSSBlockFactory>();
+    std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_ = std::make_shared<std::vector<std::shared_ptr<GNSSBlockInterface>>>();
 
-    std::vector<GNSSBlockInterface*>* channels = block_factory_->GetChannels(configuration_, queue_);
+    std::unique_ptr<GNSSBlockInterface> signal_source_ = block_factory_->GetSignalSource(configuration_, queue_);
+    std::shared_ptr<GNSSBlockInterface> cond_ = block_factory_->GetSignalConditioner(configuration_, queue_);
+    std::shared_ptr<GNSSBlockInterface> obs_ = block_factory_->GetObservables(configuration_, queue_);
+    std::shared_ptr<GNSSBlockInterface> pvt_ = block_factory_->GetPVT(configuration_, queue_);
+    std::shared_ptr<GNSSBlockInterface> output_ = block_factory_->GetOutputFilter(configuration_, queue_);
+
+    blocks_->push_back(std::move(signal_source_));
+    blocks_->push_back(cond_);
+    blocks_->push_back(obs_);
+    blocks_->push_back(pvt_);
+    blocks_->push_back(output_);
+
+
+    std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
 
     channels_count_ = channels->size();
 
+
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            blocks_->push_back(channels->at(i));
+            std::shared_ptr<GNSSBlockInterface> chan_ = std::move(channels->at(i));
+            blocks_->push_back(chan_);
         }
 
     top_block_ = gr::make_top_block("GNSSFlowgraph");
 
-    delete channels;
+    //delete channels;
 
     // fill the available_GNSS_signals_ queue with the satellites ID's to be searched by the acquisition
 
@@ -543,37 +572,37 @@ void GNSSFlowgraph::set_signals_list()
 
     if (default_system.compare(std::string("GPS")) == 0)
     {
-		/*
-		 * Loop to create GPS L1 C/A signals
-		 */
-		std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-				11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
-				29, 30, 31, 32 };
+                /*
+                 * Loop to create GPS L1 C/A signals
+                 */
+                std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                                11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
+                                29, 30, 31, 32 };
 
-		for (available_gnss_prn_iter = available_gps_prn.begin();
-		        available_gnss_prn_iter != available_gps_prn.end();
-		        available_gnss_prn_iter++)
-		    {
-		        available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
-		                *available_gnss_prn_iter), std::string("1C")));
-		    }
+                for (available_gnss_prn_iter = available_gps_prn.begin();
+                        available_gnss_prn_iter != available_gps_prn.end();
+                        available_gnss_prn_iter++)
+                    {
+                        available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
+                                *available_gnss_prn_iter), std::string("1C")));
+                    }
     }
 
 
     if (default_system.compare(std::string("SBAS")) == 0)
     {
-		/*
-		 * Loop to create SBAS L1 C/A signals
-		 */
-		std::set<unsigned int> available_sbas_prn = {120, 124, 126};
+                /*
+                 * Loop to create SBAS L1 C/A signals
+                 */
+                std::set<unsigned int> available_sbas_prn = {120, 124, 126};
 
-		for (available_gnss_prn_iter = available_sbas_prn.begin();
-		        available_gnss_prn_iter != available_sbas_prn.end();
-		        available_gnss_prn_iter++)
-		    {
-		        available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("SBAS"),
-		                *available_gnss_prn_iter), std::string("1C")));
-		    }
+                for (available_gnss_prn_iter = available_sbas_prn.begin();
+                        available_gnss_prn_iter != available_sbas_prn.end();
+                        available_gnss_prn_iter++)
+                    {
+                        available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("SBAS"),
+                                *available_gnss_prn_iter), std::string("1C")));
+                    }
     }
 
 
@@ -636,7 +665,7 @@ void GNSSFlowgraph::set_signals_list()
 //    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
 //    != available_GNSS_signals_.end(); available_gnss_list_iter++)
 //    {
-//    	std::cout << *available_gnss_list_iter << std::endl;
+//      std::cout << *available_gnss_list_iter << std::endl;
 //    }
 }
 

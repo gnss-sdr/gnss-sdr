@@ -93,12 +93,12 @@ public:
 
     void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
-    GNSSBlockInterface* signal_source();
-    GNSSBlockInterface* signal_conditioner();
-    ChannelInterface* channel(unsigned int index);
-    GNSSBlockInterface* observables();
-    GNSSBlockInterface* pvt();
-    GNSSBlockInterface* output_filter();
+    std::shared_ptr<GNSSBlockInterface> signal_source();
+    std::shared_ptr<GNSSBlockInterface> signal_conditioner();
+    std::shared_ptr<ChannelInterface> channel(unsigned int index);
+    std::shared_ptr<GNSSBlockInterface> observables();
+    std::shared_ptr<GNSSBlockInterface> pvt();
+    std::shared_ptr<GNSSBlockInterface> output_filter();
 
     unsigned int applied_actions()
     {
@@ -131,8 +131,9 @@ private:
     unsigned int applied_actions_;
     std::string config_file_;
     std::shared_ptr<ConfigurationInterface> configuration_;
-    std::unique_ptr<GNSSBlockFactory> block_factory_;
-    std::vector<GNSSBlockInterface*>* blocks_;
+    std::shared_ptr<GNSSBlockFactory> block_factory_;
+    std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_;
+    //std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_;
     gr::top_block_sptr top_block_;
     boost::shared_ptr<gr::msg_queue> queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;

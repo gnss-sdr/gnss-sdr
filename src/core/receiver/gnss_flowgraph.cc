@@ -54,7 +54,8 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
     connected_ = false;
     running_ = false;
     configuration_ = configuration;
-    //blocks_ = new std::vector<GNSSBlockInterface*>();
+
+
     std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_ = std::make_shared<std::vector<std::shared_ptr<GNSSBlockInterface>>>();
     queue_ = queue;
     init();
@@ -63,12 +64,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
 
 GNSSFlowgraph::~GNSSFlowgraph()
 {
-    for (unsigned int i = 0; i < blocks_->size(); i++)
-        {
-            //delete blocks_->at(i);
-        }
     blocks_->clear();
-    //delete blocks_;
 }
 
 
@@ -130,7 +126,6 @@ void GNSSFlowgraph::connect()
 
     try
     {
-            // sig_source_ = signal_source();
             sig_source_ = std::move(blocks_->at(0));
             sig_source_->connect(top_block_);
     }
@@ -160,9 +155,8 @@ void GNSSFlowgraph::connect()
         {
             try
             {
-                   auto chan_ = std::move(blocks_->at(i + 5));
-                   std::shared_ptr<ChannelInterface> chan = std::dynamic_pointer_cast<ChannelInterface>(chan_);
-
+                    auto chan_ = std::move(blocks_->at(i + 5));
+                    std::shared_ptr<ChannelInterface> chan = std::dynamic_pointer_cast<ChannelInterface>(chan_);
                     channels_.push_back(chan);
                     channels_.at(i)->connect(top_block_);
             }
@@ -207,7 +201,6 @@ void GNSSFlowgraph::connect()
     {
             output_filter_ = std::move(blocks_->at(4));
             output_filter_->connect(top_block_);
-            std::cout << "helllllout" << std::endl;
     }
     catch (std::exception& e)
     {
@@ -220,8 +213,6 @@ void GNSSFlowgraph::connect()
     DLOG(INFO) << "blocks connected internally";
 
     // Signal Source >  Signal conditioner >
-
-    std::cout<< sig_source_->implementation().c_str() <<std::endl;
     try
     {
             if(sig_source_->implementation().compare("Raw_Array_Signal_Source") == 0)
@@ -237,7 +228,6 @@ void GNSSFlowgraph::connect()
             else
                 {
                     //single channel
-                    // std::cout<<"NORMAL MODE"<<std::endl;
                     top_block_->connect(sig_source_->get_right_block(), 0, sig_conditioner_->get_left_block(), 0);
                 }
 
@@ -282,12 +272,12 @@ void GNSSFlowgraph::connect()
                     top_block_->disconnect_all();
                     return;
             }
-            std::cout<<"NORMAL MODE"<<std::endl;
+
             channels_.at(i)->set_signal(available_GNSS_signals_.front());
             LOG(INFO) << "Channel " << i << " assigned to " << available_GNSS_signals_.front();
             available_GNSS_signals_.pop_front();
             channels_.at(i)->start();
-            std::cout<<"NORMAL MODE"<<std::endl;
+
             if (channels_state_[i] == 1)
                 {
                     channels_.at(i)->start_acquisition();
@@ -452,28 +442,19 @@ void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> co
 }
 
 
-
+/*
 std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::signal_source()
 {
-    //std::shared_ptr<GNSSBlockInterface> cond_ { blocks_->at(0) };
-    //return cond_;
-    //return blocks_->at(0);
-    //std::shared_ptr<GNSSBlockInterface> source_ = std::make_shared<std::shared_ptr<GNSSBlockInterface>>();
-
-    //auto source_ = std::move(blocks_->at(0));
-    sig_source_ = std::move(blocks_->at(0));
-    //sig_source_ =
-    //std::cout << source_->implementation().c_str() << std::endl;
+    auto sig_source_ = std::move(blocks_->at(0));
     return std::move(sig_source_);
-
 }
 
 
 
 std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::signal_conditioner()
 {
-    auto cond_ = std::move(blocks_->at(1));
-    return std::move(cond_);
+    auto sig_conditioner_ = std::move(blocks_->at(1));
+    return std::move(sig_conditioner_);
 }
 
 
@@ -489,15 +470,15 @@ std::shared_ptr<ChannelInterface> GNSSFlowgraph::channel(unsigned int index)
 
 std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::observables()
 {
-    auto obs_ = std::move(blocks_->at(2));
-    return std::move(obs_);
+    observables_ = std::move(blocks_->at(2));
+    return std::move(observables_);
 }
 
 
 
 std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::pvt()
 {
-    auto pvt_ = std::move(blocks_->at(3));
+    pvt_ = std::move(blocks_->at(3));
     return std::move(pvt_);
 }
 
@@ -508,7 +489,7 @@ std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::output_filter()
     auto output_ = std::move(blocks_->at(4));
     return std::move(output_);
 }
-
+*/
 
 
 void GNSSFlowgraph::init()
@@ -530,12 +511,9 @@ void GNSSFlowgraph::init()
     blocks_->push_back(pvt_);
     blocks_->push_back(output_);
 
-
     std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
 
     channels_count_ = channels->size();
-
-
     for (unsigned int i = 0; i < channels_count_; i++)
         {
             std::shared_ptr<GNSSBlockInterface> chan_ = std::move(channels->at(i));
@@ -545,14 +523,11 @@ void GNSSFlowgraph::init()
     top_block_ = gr::make_top_block("GNSSFlowgraph");
 
     // fill the available_GNSS_signals_ queue with the satellites ID's to be searched by the acquisition
-
     set_signals_list();
     set_channels_state();
-
     applied_actions_ = 0;
     std::vector<std::shared_ptr<ChannelInterface>> channels_(channels_count_);
 
-    //std::shared_ptr<GNSSBlockInterface> sig_source_ = signal_source();
     DLOG(INFO) << "Blocks instantiated. " << channels_count_ << " channels.";
 }
 

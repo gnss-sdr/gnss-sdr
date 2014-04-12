@@ -110,11 +110,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
         std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::string default_implementation = "File_Signal_Source";
-    std::string implementation = configuration->property(
-            "SignalSource.implementation", default_implementation);
+    std::string implementation = configuration->property("SignalSource.implementation", default_implementation);
     LOG(INFO) << "Getting SignalSource with implementation " << implementation;
-    return GetBlock(configuration, "SignalSource", implementation, 0, 1,
-            queue);
+    return GetBlock(configuration, "SignalSource", implementation, 0, 1, queue);
 }
 
 
@@ -148,7 +146,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
             << data_type_adapter << ", InputFilter implementation: "
             << input_filter << ", and Resampler implementation: "
             << resampler;
-    //std::unique_ptr<GNSSBlockInterface> conditioner_;
 
     if(signal_conditioner.compare("Array_Signal_Conditioner") == 0)
         {
@@ -569,7 +566,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
 {
     std::unique_ptr<AcquisitionInterface> block;
     // ACQUISITION BLOCKS ---------------------------------------------------------
-     if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
+    if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GpsL1CaPcpsAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue));
@@ -694,6 +691,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
          }
      return std::move(block);
 }
+
 
 std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
         std::shared_ptr<ConfigurationInterface> configuration,

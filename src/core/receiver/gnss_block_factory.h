@@ -68,10 +68,8 @@ public:
     std::unique_ptr<GNSSBlockInterface> GetChannel(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
             boost::shared_ptr<gr::msg_queue> queue);
-   //std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GetChannels(std::shared_ptr<ConfigurationInterface> configuration,
-    //std::vector<std::unique_ptr<GNSSBlockInterface>> GetChannels(std::shared_ptr<ConfigurationInterface> configuration,
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GetChannels(std::shared_ptr<ConfigurationInterface> configuration,
-    boost::shared_ptr<gr::msg_queue> queue);
+                                                                                  boost::shared_ptr<gr::msg_queue> queue);
     /*
      * \brief Returns the block with the required configuration and implementation
      */

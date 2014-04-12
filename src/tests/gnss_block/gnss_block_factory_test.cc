@@ -285,11 +285,8 @@ TEST(GNSS_Block_Factory_Test, InstantiateChannels)
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = std::move(factory->GetChannels(configuration, queue));
-
     EXPECT_EQ((unsigned int) 2, channels->size());
-
     channels->erase(channels->begin(), channels->end());
-    //channels->clear();
 }
 
 

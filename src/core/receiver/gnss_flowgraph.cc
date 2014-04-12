@@ -442,55 +442,6 @@ void GNSSFlowgraph::set_configuration(std::shared_ptr<ConfigurationInterface> co
 }
 
 
-/*
-std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::signal_source()
-{
-    auto sig_source_ = std::move(blocks_->at(0));
-    return std::move(sig_source_);
-}
-
-
-
-std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::signal_conditioner()
-{
-    auto sig_conditioner_ = std::move(blocks_->at(1));
-    return std::move(sig_conditioner_);
-}
-
-
-
-std::shared_ptr<ChannelInterface> GNSSFlowgraph::channel(unsigned int index)
-{
-    auto chan_ = std::move(blocks_->at(index + 5));
-    std::shared_ptr<ChannelInterface> chan = std::dynamic_pointer_cast<ChannelInterface>(chan_);
-    return chan;
-}
-
-
-
-std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::observables()
-{
-    observables_ = std::move(blocks_->at(2));
-    return std::move(observables_);
-}
-
-
-
-std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::pvt()
-{
-    pvt_ = std::move(blocks_->at(3));
-    return std::move(pvt_);
-}
-
-
-
-std::shared_ptr<GNSSBlockInterface> GNSSFlowgraph::output_filter()
-{
-    auto output_ = std::move(blocks_->at(4));
-    return std::move(output_);
-}
-*/
-
 
 void GNSSFlowgraph::init()
 {

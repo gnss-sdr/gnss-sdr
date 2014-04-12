@@ -93,20 +93,6 @@ public:
 
     void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
-    /*std::shared_ptr<GNSSBlockInterface> signal_source();
-    std::shared_ptr<GNSSBlockInterface> signal_conditioner();
-    std::shared_ptr<ChannelInterface> channel(unsigned int index);
-    std::shared_ptr<GNSSBlockInterface> observables();
-    std::shared_ptr<GNSSBlockInterface> pvt();
-    std::shared_ptr<GNSSBlockInterface> output_filter();*/
-
-    std::shared_ptr<GNSSBlockInterface> sig_source_;
-    std::shared_ptr<GNSSBlockInterface> sig_conditioner_;
-    std::shared_ptr<GNSSBlockInterface> observables_;
-    std::shared_ptr<GNSSBlockInterface> pvt_;
-    std::shared_ptr<GNSSBlockInterface> output_filter_;
-    std::vector<std::shared_ptr<ChannelInterface>> channels_;
-
     unsigned int applied_actions()
     {
         return applied_actions_;
@@ -122,11 +108,11 @@ public:
 
 private:
     void init();
-    /*!
+    /*
      * \brief Populates the SV PRN list available for acquisition and tracking
      */
     void set_signals_list();
-    /*!
+    /*
      * \brief Initializes the channels state (start acquisition or keep standby) using the configuration parameters (number of channels and max channels in acquisition)
      */
     void set_channels_state();
@@ -140,12 +126,12 @@ private:
     std::shared_ptr<ConfigurationInterface> configuration_;
     std::shared_ptr<GNSSBlockFactory> block_factory_;
     std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_ = std::make_shared<std::vector<std::shared_ptr<GNSSBlockInterface>>>();
-    /* std::shared_ptr<GNSSBlockInterface> sig_source_;
+    std::shared_ptr<GNSSBlockInterface> sig_source_;
     std::shared_ptr<GNSSBlockInterface> sig_conditioner_;
     std::shared_ptr<GNSSBlockInterface> observables_;
     std::shared_ptr<GNSSBlockInterface> pvt_;
     std::shared_ptr<GNSSBlockInterface> output_filter_;
-    std::vector<std::shared_ptr<ChannelInterface>> channels_; */
+    std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gr::top_block_sptr top_block_;
     boost::shared_ptr<gr::msg_queue> queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;

@@ -1,7 +1,15 @@
+Welcome to GNSS-SDR!
+
+Please see http://gnss-sdr.org for more information about this open source GNSS software defined receiver.
+
+If you have questions about GNSS-SDR, please subscribe to the gnss-sdr-developers mailing list (requires free subscription at http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers) and post your questions there.
+
+
+
 HOW TO BUILD GNSS-SDR
 ----------------------
 
-This document describes how to set up the compilation environment and build GNSS-SDR. See also http://gnss-sdr.org/documentation/building-guide
+This section describes how to set up the compilation environment in GNU/Linux or Mac OS X, and to build GNSS-SDR. See also http://gnss-sdr.org/documentation/building-guide
 
 GNU/Linux 
 -----------------------------------------------------------
@@ -39,7 +47,7 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 
 * Install other libraries used by GNSS-SDR:
 
-- Download, compile, and install the Armadillo linear algebra library
+- Download, compile, and install the Armadillo linear algebra library:
 
 $ sudo apt-get install libblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel gcc-fortran      # For Fedora/CentOS/RHEL
@@ -74,7 +82,7 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 
-- Download, unzip, configure, build and install gperftools, a set of performance analysis tools:
+- (Optional) Download, unzip, configure, build and install gperftools, a set of performance analysis tools:
 
 $ wget http://gperftools.googlecode.com/files/gperftools-2.1.tar.gz 
 $ tar xvfz gperftools-2.1.tar.gz 
@@ -98,10 +106,10 @@ $ export GTEST_DIR=/home/username/gtest-1.7.0
 
 changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your $HOME/.bashrc file.
 
-- Install Git and the SSL development libraries:
+- Install the SSL development libraries:
 
-$ sudo apt-get install libssl-dev git        # For Debian/Ubuntu/LinuxMint
-$ sudo yum install openssl-devel git core    # For Fedora/CentOS/RHEL
+$ sudo apt-get install libssl-dev    # For Debian/Ubuntu/LinuxMint
+$ sudo yum install openssl-devel     # For Fedora/CentOS/RHEL
 
 * Clone GNSS-SDR's Git repository:
 
@@ -383,7 +391,7 @@ We use the DBSRX to do the task, but you can try the newer ETTUS daughter boards
 
     2.3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: an USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20= 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX we obtained good results with G=50
 
-    2.4. Capture at least 80 seconds of signal in an open sky conditions (at this moment, the acquisition is not very sensitive..). During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using gr_complex<float>.
+    2.4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using gr_complex<float>.
 
 3. You are ready to configure the receiver to use your captured file among other parameters:
 
@@ -398,5 +406,5 @@ We use the DBSRX to do the task, but you can try the newer ETTUS daughter boards
 
     3.3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters.
 
-4. Run the receiver from the install directory. The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get a PVT fix. The program will write a Google Earth KML file and RINEX (yet experimental) files in the install directory. Among the console output, GNSS-SDR also writes log files in /tmp/.
+4. Run the receiver from the install directory. The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get a PVT fix. The program will write a .kml file and RINEX (yet experimental) files in the install directory. Among the console output, GNSS-SDR also writes log files in /tmp/.
 

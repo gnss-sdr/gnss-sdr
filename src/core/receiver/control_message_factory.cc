@@ -55,9 +55,9 @@ boost::shared_ptr<gr::message> ControlMessageFactory::GetQueueMessage(unsigned i
 }
 
 
-std::vector<ControlMessage*>* ControlMessageFactory::GetControlMessages(boost::shared_ptr<gr::message> queue_message)
+std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>>  ControlMessageFactory::GetControlMessages(boost::shared_ptr<gr::message> queue_message)
 {
-    std::vector<ControlMessage*>* control_messages = new std::vector<ControlMessage*>();
+    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>>  control_messages = std::make_shared<std::vector<std::shared_ptr<ControlMessage>>>();
     unsigned int control_messages_count = queue_message->length() / sizeof(ControlMessage);
     if(queue_message->length() % sizeof(ControlMessage) != 0)
         {
@@ -66,10 +66,10 @@ std::vector<ControlMessage*>* ControlMessageFactory::GetControlMessages(boost::s
             LOG(WARNING) << "Ignoring this queue message to prevent unexpected results.";
             return control_messages;
         }
-    for(unsigned int i=0; i<control_messages_count; i++)
+    for(unsigned int i = 0; i < control_messages_count; i++)
         {
-            control_messages->push_back(new ControlMessage);
-            memcpy(control_messages->at(i), queue_message->msg() + (i*sizeof(ControlMessage)), sizeof(ControlMessage));
+            control_messages->push_back(std::make_shared<ControlMessage>());
+            memcpy(control_messages->at(i).get(), queue_message->msg() + (i*sizeof(ControlMessage)), sizeof(ControlMessage));
         }
     return control_messages;
 }

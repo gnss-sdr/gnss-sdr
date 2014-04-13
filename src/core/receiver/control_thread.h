@@ -35,6 +35,7 @@
 #ifndef GNSS_SDR_CONTROL_THREAD_H_
 #define GNSS_SDR_CONTROL_THREAD_H_
 
+#include <memory>
 #include <vector>
 #include <boost/thread/thread.hpp>
 #include <gnuradio/msg_queue.h>
@@ -101,11 +102,11 @@ public:
     /*!
      * \brief Instantiates a flowgraph
      *
-     * \return Returns a flowgraph object
+     * \return Returns a pointer to a flowgraph object
      */
-    GNSSFlowgraph* flowgraph()
+    std::shared_ptr<GNSSFlowgraph> flowgraph()
     {
-        return flowgraph_.get();
+        return flowgraph_;
     }
 
 
@@ -177,7 +178,7 @@ private:
     std::shared_ptr<ConfigurationInterface> configuration_;
     boost::shared_ptr<gr::msg_queue> control_queue_;
     std::shared_ptr<ControlMessageFactory> control_message_factory_;
-    std::vector<ControlMessage*> *control_messages_;
+    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> control_messages_;
     bool stop_;
     bool delete_configuration_;
     unsigned int processed_control_messages_;

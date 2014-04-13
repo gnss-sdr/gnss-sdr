@@ -1,16 +1,17 @@
 /*!
  * \file gnss_block_factory.h
- * \brief Interface of a factory that returns instances of GNSS blocks.
+ * \brief Interface of a factory that returns smart pointers to GNSS blocks.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
+ *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
  *
  * This class encapsulates the complexity behind the instantiation
  * of GNSS blocks.
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -36,9 +37,9 @@
 #ifndef GNSS_SDR_BLOCK_FACTORY_H_
 #define GNSS_SDR_BLOCK_FACTORY_H_
 
-#include <vector>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 #include <gnuradio/msg_queue.h>
 
 class ConfigurationInterface;

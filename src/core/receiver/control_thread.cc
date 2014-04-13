@@ -402,11 +402,9 @@ void ControlThread::process_control_messages()
                 {
                     flowgraph_->apply_action(control_messages_->at(i)->who, control_messages_->at(i)->what);
                 }
-            delete control_messages_->at(i);
             processed_control_messages_++;
         }
     control_messages_->clear();
-    delete control_messages_;
     DLOG(INFO) << "Processed all control messages";
 }
 

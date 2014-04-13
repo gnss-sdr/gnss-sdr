@@ -3,6 +3,7 @@
  * \brief Implementation of a GNSS receiver flowgraph
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
  *
  * Detailed description of the file here if needed.
  *
@@ -35,7 +36,6 @@
 #include "unistd.h"
 #include <exception>
 #include <iostream>
-#include <memory>
 #include <set>
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>

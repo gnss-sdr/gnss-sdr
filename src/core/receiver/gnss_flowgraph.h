@@ -3,6 +3,7 @@
  * \brief Interface of a GNSS receiver flowgraph.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
  *
  * It contains a signal source,
  * a signal conditioner, a set of channels, a pvt and an output filter.
@@ -35,10 +36,11 @@
 #ifndef GNSS_SDR_GNSS_FLOWGRAPH_H_
 #define GNSS_SDR_GNSS_FLOWGRAPH_H_
 
+#include <list>
+#include <memory>
+#include <queue>
 #include <string>
 #include <vector>
-#include <queue>
-#include <list>
 #include <gnuradio/top_block.h>
 #include <gnuradio/msg_queue.h>
 #include "GPS_L1_CA.h"

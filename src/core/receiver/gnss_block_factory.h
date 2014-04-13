@@ -70,7 +70,7 @@ public:
             std::string acq, std::string trk, std::string tlm, int channel,
             boost::shared_ptr<gr::msg_queue> queue);
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GetChannels(std::shared_ptr<ConfigurationInterface> configuration,
-                                                                                  boost::shared_ptr<gr::msg_queue> queue);
+            boost::shared_ptr<gr::msg_queue> queue);
     /*
      * \brief Returns the block with the required configuration and implementation
      */
@@ -85,15 +85,15 @@ private:
             std::string implementation, unsigned int in_streams,
             unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
     std::unique_ptr<TrackingInterface> GetTrkBlock(
-               std::shared_ptr<ConfigurationInterface> configuration,
-               std::string role,
-               std::string implementation, unsigned int in_streams,
-               unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            std::shared_ptr<ConfigurationInterface> configuration,
+            std::string role,
+            std::string implementation, unsigned int in_streams,
+            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
     std::unique_ptr<TelemetryDecoderInterface> GetTlmBlock(
-               std::shared_ptr<ConfigurationInterface> configuration,
-               std::string role,
-               std::string implementation, unsigned int in_streams,
-               unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            std::shared_ptr<ConfigurationInterface> configuration,
+            std::string role,
+            std::string implementation, unsigned int in_streams,
+            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 };
 
 #endif /*GNSS_SDR_BLOCK_FACTORY_H_*/

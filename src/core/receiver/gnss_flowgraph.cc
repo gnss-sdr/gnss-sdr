@@ -487,7 +487,6 @@ void GNSSFlowgraph::set_signals_list()
     /*
      * Sets a sequential list of GNSS satellites
      */
-
     std::set<unsigned int>::iterator available_gnss_prn_iter;
 
     /*
@@ -498,7 +497,6 @@ void GNSSFlowgraph::set_signals_list()
     /*
      * Read GNSS-SDR default GNSS system and signal
      */
-
     std::string default_system = configuration_->property("Channel.system", std::string("GPS"));
     std::string default_signal = configuration_->property("Channel.signal", std::string("1C"));
 
@@ -506,60 +504,59 @@ void GNSSFlowgraph::set_signals_list()
      * Loop to create the list of GNSS Signals
      * To add signals from other systems, add another loop 'for'
      */
-
     if (default_system.compare(std::string("GPS")) == 0)
-    {
-                /*
-                 * Loop to create GPS L1 C/A signals
-                 */
-                std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                                11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
-                                29, 30, 31, 32 };
+        {
+            /*
+             * Loop to create GPS L1 C/A signals
+             */
+            std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
+                    29, 30, 31, 32 };
 
-                for (available_gnss_prn_iter = available_gps_prn.begin();
-                        available_gnss_prn_iter != available_gps_prn.end();
-                        available_gnss_prn_iter++)
-                    {
-                        available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
-                                *available_gnss_prn_iter), std::string("1C")));
-                    }
-    }
+            for (available_gnss_prn_iter = available_gps_prn.begin();
+                    available_gnss_prn_iter != available_gps_prn.end();
+                    available_gnss_prn_iter++)
+                {
+                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
+                            *available_gnss_prn_iter), std::string("1C")));
+                }
+        }
 
 
     if (default_system.compare(std::string("SBAS")) == 0)
-    {
-                /*
-                 * Loop to create SBAS L1 C/A signals
-                 */
-                std::set<unsigned int> available_sbas_prn = {120, 124, 126};
+        {
+            /*
+             * Loop to create SBAS L1 C/A signals
+             */
+            std::set<unsigned int> available_sbas_prn = {120, 124, 126};
 
-                for (available_gnss_prn_iter = available_sbas_prn.begin();
-                        available_gnss_prn_iter != available_sbas_prn.end();
-                        available_gnss_prn_iter++)
-                    {
-                        available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("SBAS"),
-                                *available_gnss_prn_iter), std::string("1C")));
-                    }
-    }
+            for (available_gnss_prn_iter = available_sbas_prn.begin();
+                    available_gnss_prn_iter != available_sbas_prn.end();
+                    available_gnss_prn_iter++)
+                {
+                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("SBAS"),
+                            *available_gnss_prn_iter), std::string("1C")));
+                }
+        }
 
 
     if (default_system.compare(std::string("Galileo")) == 0)
-    {
-    /*
-     * Loop to create the list of Galileo E1 B signals
-     */
-    std::set<unsigned int> available_galileo_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
-            29, 30, 31, 32, 33, 34, 35, 36};
-
-    for (available_gnss_prn_iter = available_galileo_prn.begin();
-            available_gnss_prn_iter != available_galileo_prn.end();
-            available_gnss_prn_iter++)
         {
-            available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-                    *available_gnss_prn_iter), std::string("1B")));
+            /*
+             * Loop to create the list of Galileo E1 B signals
+             */
+            std::set<unsigned int> available_galileo_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
+                    29, 30, 31, 32, 33, 34, 35, 36};
+
+            for (available_gnss_prn_iter = available_galileo_prn.begin();
+                    available_gnss_prn_iter != available_galileo_prn.end();
+                    available_gnss_prn_iter++)
+                {
+                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
+                            *available_gnss_prn_iter), std::string("1B")));
+                }
         }
-    }
 
     /*
      * Ordering the list of signals from configuration file
@@ -594,16 +591,16 @@ void GNSSFlowgraph::set_signals_list()
                     available_GNSS_signals_.insert(gnss_it, signal_value);
                 }
         }
-//    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
-//
+    //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
+    //
     //std::cout<<"default_system="<<default_system<<std::endl;
     //std::cout<<"default_signal="<<default_signal<<std::endl;
-//    std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-//    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-//    != available_GNSS_signals_.end(); available_gnss_list_iter++)
-//    {
-//      std::cout << *available_gnss_list_iter << std::endl;
-//    }
+    //    std::list<Gnss_Signal>::iterator available_gnss_list_iter;
+    //    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
+    //    != available_GNSS_signals_.end(); available_gnss_list_iter++)
+    //    {
+    //      std::cout << *available_gnss_list_iter << std::endl;
+    //    }
 }
 
 

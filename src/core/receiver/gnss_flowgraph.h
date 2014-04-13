@@ -109,15 +109,10 @@ public:
     }
 
 private:
-    void init();
-    /*
-     * \brief Populates the SV PRN list available for acquisition and tracking
-     */
+    void init(); // Populates the SV PRN list available for acquisition and tracking
     void set_signals_list();
-    /*
-     * \brief Initializes the channels state (start acquisition or keep standby) using the configuration parameters (number of channels and max channels in acquisition)
-     */
-    void set_channels_state();
+    void set_channels_state(); // Initializes the channels state (start acquisition or keep standby)
+                               // using the configuration parameters (number of channels and max channels in acquisition)
     bool connected_;
     bool running_;
     unsigned int channels_count_;

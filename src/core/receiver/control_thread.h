@@ -109,7 +109,6 @@ public:
         return flowgraph_;
     }
 
-
 private:
     //SUPL assistance classes
     gnss_sdr_supl_client supl_client_acquisition_;
@@ -171,7 +170,6 @@ private:
     void galileo_utc_model_data_collector();
 
     void galileo_iono_data_collector();
-
 
     void apply_action(unsigned int what);
     std::shared_ptr<GNSSFlowgraph> flowgraph_;

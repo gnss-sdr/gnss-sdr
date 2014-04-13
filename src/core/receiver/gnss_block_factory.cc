@@ -139,7 +139,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
             input_filter = configuration->property(
                     "InputFilter.implementation", default_implementation);
             resampler = configuration->property(
-                     "Resampler.implementation", default_implementation);
+                    "Resampler.implementation", default_implementation);
         }
 
     LOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
@@ -517,11 +517,11 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
 
     else if (implementation.compare("Galileo_E1B_Observables") == 0)
-                {
+        {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1Observables(configuration.get(), role, in_streams,
-                            out_streams, queue));
+                    out_streams, queue));
             block = std::move(block_);
-                }
+        }
 
     // PVT -------------------------------------------------------------------------
     else if (implementation.compare("GPS_L1_CA_PVT") == 0)
@@ -557,6 +557,11 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     return std::move(block);
 }
 
+
+/*
+ * Not very elegant, Acq, Ttk and Tlm blocks must be added here, too.
+ * To be fixed!
+ */
 
 std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
         std::shared_ptr<ConfigurationInterface> configuration,
@@ -631,11 +636,11 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
             block = std::move(block_);
         }
     else
-         {
-             // Log fatal. This causes execution to stop.
-             LOG(ERROR) << implementation << ": Undefined implementation for block";
-         }
-     return std::move(block);
+        {
+            // Log fatal. This causes execution to stop.
+            LOG(ERROR) << implementation << ": Undefined implementation for block";
+        }
+    return std::move(block);
 }
 
 
@@ -647,49 +652,49 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
 {
     std::unique_ptr<TrackingInterface> block;
 
-// TRACKING BLOCKS -------------------------------------------------------------
-  if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
-      {
-          std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTracking(configuration.get(), role, in_streams,
-                  out_streams, queue));
-          block = std::move(block_);
-      }
-  else if (implementation.compare("GPS_L1_CA_DLL_PLL_Optim_Tracking") == 0)
-      {
-          std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllOptimTracking(configuration.get(), role, in_streams,
-                  out_streams, queue));
-          block = std::move(block_);
-      }
-  else if (implementation.compare("GPS_L1_CA_DLL_FLL_PLL_Tracking") == 0)
-      {
-          std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllFllPllTracking(configuration.get(), role, in_streams,
-                  out_streams, queue));
-          block = std::move(block_);
-      }
-  else if (implementation.compare("GPS_L1_CA_TCP_CONNECTOR_Tracking") == 0)
-      {
-          std::unique_ptr<TrackingInterface> block_(new GpsL1CaTcpConnectorTracking(configuration.get(), role, in_streams,
-                  out_streams, queue));
-          block = std::move(block_);
-      }
-  else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
-      {
-          std::unique_ptr<TrackingInterface> block_(new GalileoE1DllPllVemlTracking(configuration.get(), role, in_streams,
-                  out_streams, queue));
-          block = std::move(block_);
-      }
-  else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
-      {
-          std::unique_ptr<TrackingInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
-                  out_streams, queue));
-          block = std::move(block_);
-      }
-  else
-         {
-             // Log fatal. This causes execution to stop.
-             LOG(ERROR) << implementation << ": Undefined implementation for block";
-         }
-     return std::move(block);
+    // TRACKING BLOCKS -------------------------------------------------------------
+    if (implementation.compare("GPS_L1_CA_DLL_PLL_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Optim_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllOptimTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GPS_L1_CA_DLL_FLL_PLL_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllFllPllTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GPS_L1_CA_TCP_CONNECTOR_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GpsL1CaTcpConnectorTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E1_DLL_PLL_VEML_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoE1DllPllVemlTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else
+        {
+            // Log fatal. This causes execution to stop.
+            LOG(ERROR) << implementation << ": Undefined implementation for block";
+        }
+    return std::move(block);
 }
 
 
@@ -701,29 +706,29 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
 {
     std::unique_ptr<TelemetryDecoderInterface> block;
 
-// TELEMETRY DECODERS ----------------------------------------------------------
- if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)
-    {
-        std::unique_ptr<TelemetryDecoderInterface> block_(new GpsL1CaTelemetryDecoder(configuration.get(), role, in_streams,
-                out_streams, queue));
-        block = std::move(block_);
-    }
-else if (implementation.compare("Galileo_E1B_Telemetry_Decoder") == 0)
-    {
-        std::unique_ptr<TelemetryDecoderInterface> block_(new GalileoE1BTelemetryDecoder(configuration.get(), role, in_streams,
-                out_streams, queue));
-        block = std::move(block_);
-    }
-else if (implementation.compare("SBAS_L1_Telemetry_Decoder") == 0)
-    {
-        std::unique_ptr<TelemetryDecoderInterface> block_(new SbasL1TelemetryDecoder(configuration.get(), role, in_streams,
-                out_streams, queue));
-        block = std::move(block_);
-    }
-else
-       {
-           // Log fatal. This causes execution to stop.
-           LOG(ERROR) << implementation << ": Undefined implementation for block";
-       }
-   return std::move(block);
+    // TELEMETRY DECODERS ----------------------------------------------------------
+    if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)
+        {
+            std::unique_ptr<TelemetryDecoderInterface> block_(new GpsL1CaTelemetryDecoder(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E1B_Telemetry_Decoder") == 0)
+        {
+            std::unique_ptr<TelemetryDecoderInterface> block_(new GalileoE1BTelemetryDecoder(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("SBAS_L1_Telemetry_Decoder") == 0)
+        {
+            std::unique_ptr<TelemetryDecoderInterface> block_(new SbasL1TelemetryDecoder(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else
+        {
+            // Log fatal. This causes execution to stop.
+            LOG(ERROR) << implementation << ": Undefined implementation for block";
+        }
+    return std::move(block);
 }

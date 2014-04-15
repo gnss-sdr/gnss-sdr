@@ -1,12 +1,12 @@
 /*!
  * \file file_output_filter_test.cc
  * \brief  This class implements a Unit Test for the class FileOutputFilter.
- * \author Carlos Avilés, 2010. carlos.avilesr(at)googlemail.com
+ * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,11 +35,13 @@
 
 TEST(FileOutputFilter, Instantiate)
 {
-    InMemoryConfiguration* config = new InMemoryConfiguration();
+    std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
     std::string path = std::string(TEST_PATH);
     std::string file = path + "data/output.dat";
     config->set_property("Test.filename", file);
     config->set_property("Test.item_type", "float");
-    FileOutputFilter *output_filter = new FileOutputFilter(config, "Test", 1, 0);
-    delete output_filter;
+    std::unique_ptr<FileOutputFilter> output_filter(new FileOutputFilter(config.get(), "Test", 1, 0));
+    unsigned int res = 0;
+    if (output_filter) res = 1;
+    ASSERT_EQ(1, res);
 }

@@ -51,22 +51,22 @@ protected:
     {
         queue = gr::msg_queue::make(0);
         top_block = gr::make_top_block("Fir filter test");
-        config = new InMemoryConfiguration();
+        config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
     }
     ~Fir_Filter_Test()
-    {
-        delete config;
-    }
+    {}
+
     void init();
     boost::shared_ptr<gr::msg_queue> queue;
     gr::top_block_sptr top_block;
-    InMemoryConfiguration* config;
+    std::shared_ptr<InMemoryConfiguration> config;
     size_t item_size;
 };
 
 void Fir_Filter_Test::init()
 {
+
     config->set_property("InputFilter.number_of_taps", "4");
     config->set_property("InputFilter.number_of_bands", "2");
 
@@ -92,8 +92,10 @@ void Fir_Filter_Test::init()
 TEST_F(Fir_Filter_Test, Instantiate)
 {
     init();
-    FirFilter *filter = new FirFilter(config, "InputFilter", 1, 1, queue);
-    delete filter;
+    std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1, queue));
+    unsigned int res = 0;
+    if (filter) res = 1;
+    ASSERT_EQ(1, res);
 }
 
 
@@ -107,7 +109,7 @@ TEST_F(Fir_Filter_Test, ConnectAndRun)
 
     init();
 
-    FirFilter *filter = new FirFilter(config, "InputFilter", 1, 1, queue);
+    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         filter->connect(top_block);
@@ -126,8 +128,6 @@ TEST_F(Fir_Filter_Test, ConnectAndRun)
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
         end = tv.tv_sec *1000000 + tv.tv_usec;
-    }) << "Failure running he top_block."<< std::endl;
-    std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
-
-    delete filter;
+    }) << "Failure running the top_block." << std::endl;
+    //std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 }

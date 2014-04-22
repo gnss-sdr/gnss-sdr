@@ -1,12 +1,12 @@
-## Welcome to GNSS-SDR!
+** Welcome to GNSS-SDR!**
 
-Please see [gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR's Homepage") for more information about this open source GNSS software defined receiver.
+Check [gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR's Homepage") for more information about this open source GNSS software defined receiver.
 
 If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers "Subscribe to the gnss-sdr-developers mailing list" ) and post your questions there.
 
 
 
-## How to build GNSS-SDR
+# How to build GNSS-SDR
 
 
 This section describes how to set up the compilation environment in GNU/Linux or Mac OS X, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
@@ -142,7 +142,7 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 ``` 
-- Set the environment variable ```GN3S_DRIVER=1``` in order to enable the GN3S_Signal_Source in GNSS-SDR (OPTIONAL):
+- Set the environment variable ```GN3S_DRIVER=1``` in order to enable the GN3S_Signal_Source in GNSS-SDR:
 ``` 
 $ export GN3S_DRIVER=1
 ``` 
@@ -152,7 +152,7 @@ It should be available in the same path where the application is called.
 GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/firmware/GN3S_v2/bin/gn3s_firmware.ihx. 
 Please copy this file to the application path. The GNSS-SDR default path is gnss-sdr/install
 
-(in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR)
+(in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR).
 
 ###### Build RTL-SDR support (OPTIONAL)
 
@@ -176,7 +176,7 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 ``` 
-- Set the environment variable ```RTLSDR_DRIVER=1``` in order to enable the Rtlsdr_Signal_Source in GNSS-SDR (OPTIONAL)
+- Set the environment variable ```RTLSDR_DRIVER=1``` in order to enable the Rtlsdr_Signal_Source in GNSS-SDR:
 ``` 
 $ export RTLSDR_DRIVER=1
 ``` 
@@ -194,7 +194,7 @@ The default will be ```OSMOSDR_ROOT=/usr/local```
 ``` 
 $ cd gnss-sdr/build
 ``` 
-- Configure and build the program:
+- Configure and build the application:
 ``` 
 $ cmake ../
 $ make
@@ -207,9 +207,9 @@ cmake ../ -DCMAKE_BUILD_TYPE=Debug
 ``` 
 $ make install
 ``` 
-If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. 
+- If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. 
 
-You can create the documentation by doing:
+- You can create the documentation by doing:
 ``` 
 $ make doc
 ``` 
@@ -228,14 +228,14 @@ $ make doc-clean
 ``` 
 will remove the content of previously-generated documentation.
 
-By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. Ifyou are working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
+- By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. Ifyou are working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 ``` 
 $ cd gnss-sdr/build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
 $ make install
 ``` 
-If you are using Eclipse as your development environment, CMake can create the project for you. Type:
+- If you are using Eclipse as your development environment, CMake can create the project for you. Type:
 ``` 
 $ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../
 ``` 
@@ -260,7 +260,7 @@ or, if you want to test the lastest developments:
 $ git checkout next 
 $ git pull origin next 
 ``` 
-Before rebuilding the source code, it is safe (and recommended) to remove the remainders of old builds:
+Before rebuilding the source code, it is safe (and recommended) to remove the remainders of old compilations:
 ``` 
 $ rm -rf gnss-sdr/build/*
 ``` 
@@ -380,6 +380,7 @@ Getting started
 We use the [DBSRX](https://www.ettus.com/product/details/DBSRX2) to do the task, but you can try the newer ETTUS daughter boards as well. 
   3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: an USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20 = 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX2 we obtained good results with ```G=50```.
   4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using ```gr_complex<float>```.
+  5. If you have no access to a RF front-end, ou can download a sample raw data file (that contains GPS and Galileo signals) from [here](http://sourceforge.net/projects/gnss-sdr/files/data/).
 3. You are ready to configure the receiver to use your captured file among other parameters:
   1. The default configuration file resides at [./conf/gnss-sdr.conf](./conf/gnss-sdr.conf).
   2. You need to modify at least the following settings:

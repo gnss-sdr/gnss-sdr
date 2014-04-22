@@ -86,7 +86,7 @@ $ sudo make install
 $ sudo ldconfig
 ``` 
 
-#### Build the [Google C++ Testing Framework](http://code.google.com/p/googletest/ "Googletest Homepage"),  (also known as googletest):
+#### Build the [Google C++ Testing Framework](http://code.google.com/p/googletest/ "Googletest Homepage"), also known as googletest:
 ``` 
 $ wget http://googletest.googlecode.com/files/gtest-1.7.0.zip
 $ unzip gtest-1.7.0.zip
@@ -95,7 +95,7 @@ $ ./configure
 $ make
 ``` 
 
-Please DO NOT install gtest (do not do "sudo make install"). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of ```#if``` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of gtest its own tests; it is only required that you tell the system where the gtest folder that you downloaded resides. Just add to your ```$HOME/.bashrc``` file the following line:
+Please **DO NOT install** gtest (do *not* type ```sudo make install```). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of ```#if``` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of gtest its own tests; it is only required that you tell the system where the gtest folder that you downloaded resides. Just add to your ```$HOME/.bashrc``` file the following line:
 ``` 
 $ export GTEST_DIR=/home/username/gtest-1.7.0
 ``` 
@@ -228,7 +228,7 @@ $ make doc-clean
 ``` 
 will remove the content of previously-generated documentation.
 
-- By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. Ifyou are working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
+- By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. If you are working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 ``` 
 $ cd gnss-sdr/build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
@@ -284,7 +284,7 @@ $ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure
 $ make
 $ sudo make install
 ``` 
-Finally, you are ready to checkout the GNSS-SDR repository and build the software:
+Finally, you are ready to clone the GNSS-SDR repository and build the software:
 ``` 
 $ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
 $ cd gnss-sdr/build
@@ -367,7 +367,7 @@ Before rebuilding the source code, it is safe (and recommended) to remove the re
 $ rm -rf gnss-sdr/build/*
 ``` 
 
-
+If you are interested in contributing to the development of GNSS-SDR, please check out [how to do it](http://gnss-sdr.org/documentation/how-contribute-source-code "How to contribute to GNSS-SDR source code").
 
 
 Getting started
@@ -379,7 +379,7 @@ Getting started
   1. The signal file can be easily recorded using the GNU Radio file sink in ```gr_complex<float>``` mode.
   2. You will need a GPS active antenna, a [USRP](http://www.ettus.com/product) and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
 We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, but you can try the newer Ettus' daughter boards as well. 
-  3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: an USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20 = 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX2 we obtained good results with ```G=50```.
+  3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: a USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20 = 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX2 we obtained good results with ```G=50```.
   4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using ```gr_complex<float>```.
   5. If you have no access to a RF front-end, you can download a sample raw data file (that contains GPS and Galileo signals) from [here](http://sourceforge.net/projects/gnss-sdr/files/data/).
 3. You are ready to configure the receiver to use your captured file among other parameters:

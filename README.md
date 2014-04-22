@@ -1,4 +1,4 @@
-# Welcome to GNSS-SDR!
+## Welcome to GNSS-SDR!
 
 Please see [gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR's Homepage") for more information about this open source GNSS software defined receiver.
 
@@ -6,19 +6,19 @@ If you have questions about GNSS-SDR, please subscribe to the gnss-sdr-developer
 
 
 
-HOW TO BUILD GNSS-SDR
-=====================
+## How to build GNSS-SDR
 
-This section describes how to set up the compilation environment in GNU/Linux or Mac OS X, and to build GNSS-SDR. See also http://gnss-sdr.org/documentation/building-guide
+
+This section describes how to set up the compilation environment in GNU/Linux or Mac OS X, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide")
 
 GNU/Linux 
 ----------
 
 Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 19 and 20 and openSUSE 13.1 (newer versions should work, too)
 
-## Install GNU Radio:
+### Install GNU Radio:
 
-- Downloading, building and installing GNU Radio and all its dependencies is not a simple task. We recommend to use PyBOMBS (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
+- Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki) (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
 ``` 
 $ git clone git://github.com/pybombs/pybombs 
 $ cd pybombs
@@ -39,17 +39,17 @@ timeout = 30
 cmakebuildtype = RelWithDebInfo
 builddocs = OFF
 ```
-Then, you are ready to download and install UHD (the Universal Hardware Driver), GNU Radio and all their required dependencies by doing:
+Then, you are ready to download and install [UHD](http://files.ettus.com/uhd_docs/manual/html/) (the Universal Hardware Driver), GNU Radio and all their required dependencies by doing:
 ```
 $ sudo ./pybombs install uhd gnuradio
 ```
 This can take some time (up to two hours to complete, depending on your system), and installs the latest versions of the Universal Hardware Driver (UHD) and GNU Radio in your system, including all their dependencies. 
-In case you do not want to use PyBOMBS and prefer to build and install GNU Radio manually from source, follow instructions at the GNU Radio Building Guide at http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide
+In case you do not want to use PyBOMBS and prefer to build and install GNU Radio manually from source, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide)
 
 
-## Install other libraries used by GNSS-SDR:
+### Install other libraries used by GNSS-SDR:
 
-### Download, compile, and install the Armadillo linear algebra library:
+#### Download, compile, and install the [Armadillo](http://arma.sourceforge.net/ "Armdillo's Homepage") C++ linear algebra library:
 ```
 $ sudo apt-get install libblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel gcc-fortran      # For Fedora/CentOS/RHEL
@@ -65,7 +65,7 @@ $ sudo make install
 
 The full stop separated from "cmake" by a space is important. CMake will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
 
-### Download, unzip, configure, build and install Google's gflags package, a commandline flags processing module for C++:
+#### Download, unzip, configure, build and install [Gflags](http://code.google.com/p/gflags/ "gflags' Homepage") package, a commandline flags processing module for C++:
 ``` 
 $ wget http://gflags.googlecode.com/files/gflags-2.0.zip
 $ unzip gflags-2.0.zip
@@ -75,7 +75,7 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 ``` 
-### Download, unzip, configure, build and install glog, a Google's library that implements application-level logging:
+#### Download, unzip, configure, build and install [glog](http://code.google.com/p/google-glog/ "Glog's Homepage"), a library that implements application-level logging:
 ``` 
 $ wget http://google-glog.googlecode.com/files/glog-0.3.3.tar.gz 
 $ tar xvfz glog-0.3.3.tar.gz 
@@ -85,17 +85,8 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 ``` 
-### Download, unzip, configure, build and install gperftools, a set of performance analysis tools (Optional):
-``` 
-$ wget http://gperftools.googlecode.com/files/gperftools-2.1.tar.gz 
-$ tar xvfz gperftools-2.1.tar.gz 
-$ cd gperftools-2.1
-$ ./configure --enable-frame-pointers
-$ make
-$ sudo make install
-``` 
 
-### Download, unzip, configure, and build Google C++ Testing Framework (also known as Google Test):
+#### Download, unzip, configure, and build the [Google C++ Testing Framework](http://code.google.com/p/googletest/ "Googletest Homepage"),  (also known as googletest):
 ``` 
 $ wget http://googletest.googlecode.com/files/gtest-1.7.0.zip
 $ unzip gtest-1.7.0.zip
@@ -110,12 +101,12 @@ $ export GTEST_DIR=/home/username/gtest-1.7.0
 ``` 
 changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your $HOME/.bashrc file.
 
-### Install the SSL development libraries:
+#### Install the (SSL development libraries)[https://www.openssl.org/ "OpenSSL's Homepage"):
 ``` 
 $ sudo apt-get install libssl-dev    # For Debian/Ubuntu/LinuxMint
 $ sudo yum install openssl-devel     # For Fedora/CentOS/RHEL
 ``` 
-## Clone GNSS-SDR's Git repository:
+### Clone GNSS-SDR's Git repository:
 ``` 
 $ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
 ``` 
@@ -139,7 +130,7 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
 ``` 
 
 
-#### Build GN3S V2 Custom firmware and driver (OPTIONAL)
+###### Build GN3S V2 Custom firmware and driver (OPTIONAL)
 
 - Go to GR-GN3S root directory, compile and install the driver:
   (read the drivers/gr-gn3s/README for more information)
@@ -163,9 +154,9 @@ Please copy this file to the application path. The GNSS-SDR default path is gnss
 
 (in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR)
 
-#### Build RTL-SDR support (OPTIONAL)
+###### Build RTL-SDR support (OPTIONAL)
 
-- Install the OsmoSDR library and GNU Radio source (http://sdr.osmocom.org/trac/) 
+- Install the [OsmoSDR](http://sdr.osmocom.org/trac/ "OsmoSDR's Homepage") library and GNU Radio's source block: 
 ``` 
 $ git clone git://git.osmocom.org/osmo-sdr.git
 $ cd osmo-sdr/software/libosmosdr
@@ -198,7 +189,7 @@ The default will be OSMOSDR_ROOT=/usr/local
 (in order to disable the Rtlsdr_Signal_Source compilation, you should remove the RTLSDR_DRIVER variable and build again GNSS-SDR)
 
 
-## Build GNSS-SDR
+### Build GNSS-SDR
 
 - Go to GNSS-SDR's build directory:
 ``` 
@@ -285,11 +276,11 @@ Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks)
 
 ## MAC OS X 10.9 Mavericks
 
-If you still have not installed Xcode, do it now from the App Store (it's free).
+If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free).
 
-Install Macports: http://www.macports.org/install.php
+Then, [install Macports](http://www.macports.org/install.php).
 
-(if you are upgrading from a previous installation, please follow the migration rules at http://trac.macports.org/wiki/Migration)
+(if you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration)
 
 In a terminal, type:
 ``` 
@@ -341,7 +332,7 @@ If you still have not installed Xcode, do it now from the App Store (it's free).
 
 Xcode -> Preferences -> Downloads -> Components -> Command Line Tools
 
-Then, install Macports via Mac OS X Package (.pkg) installer from http://www.macports.org/install.php
+Then, install Macports via [Mac OS X Package (.pkg) installer](http://www.macports.org/install.php)
 
 Once MacPorts is properly installed on your system, open a terminal and type:
 ``` 
@@ -349,7 +340,7 @@ $ sudo port selfupdate
 $ sudo port install gcc48
 $ sudo port select --set gcc mp-gcc48
 ``` 
-Install X11 via XQuartz-2.7.4.dmg (needed by gnuradio-companion but not by GNSS-SDR) from http://xquartz.macosforge.org/landing/
+Install [X11 via XQuartz-2.7.4.dmg](http://xquartz.macosforge.org/landing/) (needed by gnuradio-companion but not by GNSS-SDR).
 
 Install GNU Radio:
 ``` 
@@ -382,7 +373,7 @@ $ open ../docs/html/index.html
 
 
 GETTING STARTED
-===============
+---------------
 
 
 1. After building the code, you will find the gnss-sdr executable file at gnss-sdr/install 

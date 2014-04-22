@@ -9,12 +9,12 @@ If you have questions about GNSS-SDR, please subscribe to the gnss-sdr-developer
 ## How to build GNSS-SDR
 
 
-This section describes how to set up the compilation environment in GNU/Linux or Mac OS X, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide")
+This section describes how to set up the compilation environment in GNU/Linux or Mac OS X, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
 
 GNU/Linux 
 ----------
 
-Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 19 and 20 and openSUSE 13.1 (newer versions should work, too)
+Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 19 and 20 and openSUSE 13.1 (newer versions should work, too).
 
 ### Install GNU Radio:
 
@@ -44,12 +44,12 @@ Then, you are ready to download and install [UHD](http://files.ettus.com/uhd_doc
 $ sudo ./pybombs install uhd gnuradio
 ```
 This can take some time (up to two hours to complete, depending on your system), and installs the latest versions of the Universal Hardware Driver (UHD) and GNU Radio in your system, including all their dependencies. 
-In case you do not want to use PyBOMBS and prefer to build and install GNU Radio manually from source, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide)
+In case you do not want to use PyBOMBS and prefer to build and install GNU Radio manually from source, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide).
 
 
 ### Install other libraries used by GNSS-SDR:
 
-#### Download, compile, and install the [Armadillo](http://arma.sourceforge.net/ "Armdillo's Homepage") C++ linear algebra library:
+#### Install the [Armadillo](http://arma.sourceforge.net/ "Armdillo's Homepage") C++ linear algebra library:
 ```
 $ sudo apt-get install libblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel gcc-fortran      # For Fedora/CentOS/RHEL
@@ -65,7 +65,7 @@ $ sudo make install
 
 The full stop separated from "cmake" by a space is important. CMake will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
 
-#### Download, unzip, configure, build and install [Gflags](http://code.google.com/p/gflags/ "gflags' Homepage") package, a commandline flags processing module for C++:
+#### Install [Gflags](http://code.google.com/p/gflags/ "gflags' Homepage"), a commandline flags processing module for C++:
 ``` 
 $ wget http://gflags.googlecode.com/files/gflags-2.0.zip
 $ unzip gflags-2.0.zip
@@ -75,7 +75,7 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 ``` 
-#### Download, unzip, configure, build and install [glog](http://code.google.com/p/google-glog/ "Glog's Homepage"), a library that implements application-level logging:
+#### Install [glog](http://code.google.com/p/google-glog/ "Glog's Homepage"), a library that implements application-level logging:
 ``` 
 $ wget http://google-glog.googlecode.com/files/glog-0.3.3.tar.gz 
 $ tar xvfz glog-0.3.3.tar.gz 
@@ -86,7 +86,7 @@ $ sudo make install
 $ sudo ldconfig
 ``` 
 
-#### Download, unzip, configure, and build the [Google C++ Testing Framework](http://code.google.com/p/googletest/ "Googletest Homepage"),  (also known as googletest):
+#### Build the [Google C++ Testing Framework](http://code.google.com/p/googletest/ "Googletest Homepage"),  (also known as googletest):
 ``` 
 $ wget http://googletest.googlecode.com/files/gtest-1.7.0.zip
 $ unzip gtest-1.7.0.zip
@@ -101,7 +101,7 @@ $ export GTEST_DIR=/home/username/gtest-1.7.0
 ``` 
 changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your $HOME/.bashrc file.
 
-#### Install the (SSL development libraries)[https://www.openssl.org/ "OpenSSL's Homepage"):
+#### Install the [SSL development libraries](https://www.openssl.org/ "OpenSSL's Homepage"):
 ``` 
 $ sudo apt-get install libssl-dev    # For Debian/Ubuntu/LinuxMint
 $ sudo yum install openssl-devel     # For Fedora/CentOS/RHEL
@@ -130,7 +130,7 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
 ``` 
 
 
-###### Build GN3S V2 Custom firmware and driver (OPTIONAL)
+###### Build GN3S V2 Custom firmware and driver (OPTIONAL):
 
 - Go to GR-GN3S root directory, compile and install the driver:
   (read the drivers/gr-gn3s/README for more information)
@@ -242,16 +242,16 @@ $ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CD
 ``` 
 and then import the created project file into Eclipse:
 
-1) Import project using Menu File->Import
-2) Select General->Existing projects into workspace:
-3) Browse where your build tree is and select the root build tree directory. Keep "Copy projects into workspace" unchecked.
-4) You get a fully functional Eclipse project 
+1. Import project using Menu File -> Import
+2. Select General -> Existing projects into workspace:
+3. Browse where your build tree is and select the root build tree directory. Keep "Copy projects into workspace" unchecked.
+4. You get a fully functional Eclipse project 
 
 
 Updating GNSS-SDR
 -----------------
 
-If you checked out GNSS-SDR some days ago, it is possible that some developer has updated files at the Git repository. You can update your working copy by doing:
+If you cloned GNSS-SDR some days ago, it is possible that some developer has updated files at the Git repository. You can update your working copy by doing:
 ``` 
 $ git checkout master      # Switch to branch you want to update
 $ git pull origin master   # Download the newest code from our repository
@@ -274,13 +274,11 @@ Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks)
 
 
 
-## MAC OS X 10.9 Mavericks
+### MAC OS X 10.9 Mavericks
 
 If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free).
 
-Then, [install Macports](http://www.macports.org/install.php).
-
-(if you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration)
+Then, [install Macports](http://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
 
 In a terminal, type:
 ``` 
@@ -325,14 +323,14 @@ $ open ../docs/html/index.html
 ``` 
 
 
-## MAC OS X 10.8 Mountain Lion 
+### MAC OS X 10.8 Mountain Lion 
 
 
 If you still have not installed Xcode, do it now from the App Store (it's free). Once installed, download and install the command line tools:
 
 Xcode -> Preferences -> Downloads -> Components -> Command Line Tools
 
-Then, install Macports via [Mac OS X Package (.pkg) installer](http://www.macports.org/install.php)
+Then, install Macports via [Mac OS X Package (.pkg) installer](http://www.macports.org/install.php).
 
 Once MacPorts is properly installed on your system, open a terminal and type:
 ``` 
@@ -377,30 +375,21 @@ GETTING STARTED
 
 
 1. After building the code, you will find the gnss-sdr executable file at gnss-sdr/install 
-
 2. In post-processing mode, you have to provide a captured GNSS signal file.
-    
-    2.1. The signal file can be easily recorded using the GNU Radio file sink in gr_complex<float> mode.
-
-    2.2. You will need a GPS active antenna and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
+  1. The signal file can be easily recorded using the GNU Radio file sink in gr_complex<float> mode.
+  2. You will need a GPS active antenna and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
 We use the DBSRX to do the task, but you can try the newer ETTUS daughter boards as well. 
-
-    2.3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: an USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20= 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX we obtained good results with G=50
-
-    2.4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using gr_complex<float>.
-
+  3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: an USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20= 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX we obtained good results with G=50
+  4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using gr_complex<float>.
 3. You are ready to configure the receiver to use your captured file among other parameters:
-
-    3.1. The configuration file resides at ./conf/gnss-sdr.conf
-    3.2. You need to modify at least the following settings:
-        3.2.1. SignalSource.filename= (absolute or relative route to your GNSS signal captured file)
-        3.2.2. GNSS-SDR.internal_fs_hz=(captured file sampling rate in Hz)
-        3.2.3. SignalSource.sampling_frequency=(captured file sampling rate in Hz)
-        3.2.4. SignalConditioner.sample_freq_in=(captured file sampling rate in Hz)
-        3.2.5. SignalConditioner.sample_freq_out=(captured file sampling rate in Hz)
-        3.2.6. TelemetryDecoder.fs_in=(captured file sampling rate in Hz)
-
-    3.3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters.
-
+  1. The configuration file resides at ./conf/gnss-sdr.conf
+  2. You need to modify at least the following settings:
+    * ```SignalSource.filename=``` (absolute or relative route to your GNSS signal captured file)
+    * ```GNSS-SDR.internal_fs_hz=``` (captured file sampling rate in Hz)
+    * ```SignalSource.sampling_frequency=``` (captured file sampling rate in Hz)
+    * ```SignalConditioner.sample_freq_in=``` (captured file sampling rate in Hz)
+    * ```SignalConditioner.sample_freq_out=``` (captured file sampling rate in Hz)
+    *```TelemetryDecoder.fs_in=``` (captured file sampling rate in Hz)
+  3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters.
 4. Run the receiver from the install directory. The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get a PVT fix. The program will write a .kml file and RINEX (yet experimental) files in the install directory. Among the console output, GNSS-SDR also writes log files in /tmp/.
 

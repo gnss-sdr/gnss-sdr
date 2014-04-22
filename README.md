@@ -2,7 +2,7 @@
 
 Please see [gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR's Homepage") for more information about this open source GNSS software defined receiver.
 
-If you have questions about GNSS-SDR, please subscribe to the gnss-sdr-developers mailing list ([requires free subscription](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers "Subscribe to the gnss-sdr-developers mailing list" )) and post your questions there.
+If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers "Subscribe to the gnss-sdr-developers mailing list" ) and post your questions there.
 
 
 
@@ -28,7 +28,7 @@ Configure PyBOMBS:
 $ ./pybombs config 
 ```
 
-You can safely accept the default options but for prefix. We recommend to put /usr/local there. After the configuration, you should get something similar to:
+You can safely accept the default options but for ```prefix```. We recommend to put ```/usr/local``` there. After the configuration, you should get something similar to:
 ```
 gituser = username
 prefix = /usr/local
@@ -95,11 +95,11 @@ $ ./configure
 $ make
 ``` 
 
-Please DO NOT install gtest (do not do "sudo make install"). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of #if in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of gtest its own tests; it is only required that you tell the system where the gtest folder that you downloaded resides. Just add to your $HOME/.bashrc file the following line:
+Please DO NOT install gtest (do not do "sudo make install"). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of ```#if``` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of gtest its own tests; it is only required that you tell the system where the gtest folder that you downloaded resides. Just add to your ```$HOME/.bashrc``` file the following line:
 ``` 
 $ export GTEST_DIR=/home/username/gtest-1.7.0
 ``` 
-changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your $HOME/.bashrc file.
+changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your ```$HOME/.bashrc``` file.
 
 #### Install the [SSL development libraries](https://www.openssl.org/ "OpenSSL's Homepage"):
 ``` 
@@ -132,8 +132,8 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
 
 ###### Build GN3S V2 Custom firmware and driver (OPTIONAL):
 
-- Go to GR-GN3S root directory, compile and install the driver:
-  (read the drivers/gr-gn3s/README for more information)
+- Go to GR-GN3S root directory, compile and install the driver
+  (read the drivers/gr-gn3s/README for more information):
 ```   
 $ cd gnss-sdr/drivers/gr-gn3s
 $ cd build
@@ -142,7 +142,7 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 ``` 
-- Set the environment variable GN3S_DRIVER=1 in order to enable the GN3S_Signal_Source in GNSS-SDR (OPTIONAL)
+- Set the environment variable ```GN3S_DRIVER=1``` in order to enable the GN3S_Signal_Source in GNSS-SDR (OPTIONAL):
 ``` 
 $ export GN3S_DRIVER=1
 ``` 
@@ -176,7 +176,7 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 ``` 
-- Set the environment variable RTLSDR_DRIVER=1 in order to enable the Rtlsdr_Signal_Source in GNSS-SDR (OPTIONAL)
+- Set the environment variable ```RTLSDR_DRIVER=1``` in order to enable the Rtlsdr_Signal_Source in GNSS-SDR (OPTIONAL)
 ``` 
 $ export RTLSDR_DRIVER=1
 ``` 
@@ -184,10 +184,9 @@ $ export RTLSDR_DRIVER=1
 ``` 
 $ export OSMOSDR_ROOT=/path/to/gr-osmosdr
 ``` 
-The default will be OSMOSDR_ROOT=/usr/local
+The default will be ```OSMOSDR_ROOT=/usr/local```
 
-(in order to disable the Rtlsdr_Signal_Source compilation, you should remove the RTLSDR_DRIVER variable and build again GNSS-SDR)
-
+(in order to disable the Rtlsdr_Signal_Source compilation, you should remove the RTLSDR_DRIVER variable and build again GNSS-SDR).
 
 ### Build GNSS-SDR
 
@@ -204,11 +203,11 @@ By default, cmake is configured to build the release version. If you want to bui
 ``` 
 cmake ../ -DCMAKE_BUILD_TYPE=Debug
 ``` 
-- Move the executables to the install folder
+- Move the executables to the install folder:
 ``` 
 $ make install
 ``` 
-If everything goes well, two new executables will be created at gnss-sdr/install, namely gnss-sdr and run_tests. 
+If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. 
 
 You can create the documentation by doing:
 ``` 
@@ -223,7 +222,7 @@ will create a PDF manual at gnss-sdr/docs/GNSS-SDR_manual.pdf. Please note that 
 ``` 
 $ sudo apt-get install texlive-fonts-recommended
 ``` 
-and then run cmake ../ and make pdfmanual again. Finally,
+and then run ```cmake ../``` and make pdfmanual again. Finally,
 ``` 
 $ make doc-clean
 ``` 
@@ -242,10 +241,10 @@ $ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CD
 ``` 
 and then import the created project file into Eclipse:
 
-1. Import project using Menu File -> Import
-2. Select General -> Existing projects into workspace:
+1. Import project using Menu File -> Import.
+2. Select General -> Existing projects into workspace.
 3. Browse where your build tree is and select the root build tree directory. Keep "Copy projects into workspace" unchecked.
-4. You get a fully functional Eclipse project 
+4. You get a fully functional Eclipse project.
 
 
 Updating GNSS-SDR
@@ -270,7 +269,7 @@ $ rm -rf gnss-sdr/build/*
 Mac OS X 
 ---------
 
-Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks)
+Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks).
 
 
 
@@ -313,7 +312,7 @@ $ make
 $ make install
 ``` 
 
-This will create two executables at gnss-sdr/install, namely gnss-sdr and run_tests. The documentation can be built by:
+This will create two executables at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. The documentation can be built by:
 ``` 
 $ make doc
 ``` 
@@ -326,7 +325,7 @@ $ open ../docs/html/index.html
 ### MAC OS X 10.8 Mountain Lion 
 
 
-If you still have not installed Xcode, do it now from the App Store (it's free). Once installed, download and install the command line tools:
+If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free). Once installed, download and install the command line tools:
 
 Xcode -> Preferences -> Downloads -> Components -> Command Line Tools
 
@@ -359,7 +358,7 @@ $ cmake ../ -DCMAKE_CXX_COMPILER=g++
 $ make
 $ make install
 ``` 
-This will create two executables at gnss-sdr/install, namely gnss-sdr and run_tests. The documentation can be built by:
+This will create two executables at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. The documentation can be built by:
 ``` 
 $ make doc
 ``` 
@@ -370,26 +369,26 @@ $ open ../docs/html/index.html
 
 
 
-GETTING STARTED
+Getting started
 ---------------
 
 
-1. After building the code, you will find the gnss-sdr executable file at gnss-sdr/install 
+1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install.
 2. In post-processing mode, you have to provide a captured GNSS signal file.
-  1. The signal file can be easily recorded using the GNU Radio file sink in gr_complex<float> mode.
-  2. You will need a GPS active antenna and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
-We use the DBSRX to do the task, but you can try the newer ETTUS daughter boards as well. 
-  3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: an USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20= 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX we obtained good results with G=50
-  4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using gr_complex<float>.
+  1. The signal file can be easily recorded using the GNU Radio file sink in ```gr_complex<float>``` mode.
+  2. You will need a GPS active antenna, a [USRP](https://www.ettus.com/product) and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
+We use the [DBSRX](https://www.ettus.com/product/details/DBSRX2) to do the task, but you can try the newer ETTUS daughter boards as well. 
+  3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: an USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20 = 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX2 we obtained good results with ```G=50```.
+  4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using ```gr_complex<float>```.
 3. You are ready to configure the receiver to use your captured file among other parameters:
-  1. The configuration file resides at ./conf/gnss-sdr.conf
+  1. The default configuration file resides at [./conf/gnss-sdr.conf](./conf/gnss-sdr.conf).
   2. You need to modify at least the following settings:
     * ```SignalSource.filename=``` (absolute or relative route to your GNSS signal captured file)
     * ```GNSS-SDR.internal_fs_hz=``` (captured file sampling rate in Hz)
     * ```SignalSource.sampling_frequency=``` (captured file sampling rate in Hz)
     * ```SignalConditioner.sample_freq_in=``` (captured file sampling rate in Hz)
     * ```SignalConditioner.sample_freq_out=``` (captured file sampling rate in Hz)
-    *```TelemetryDecoder.fs_in=``` (captured file sampling rate in Hz)
+    * ```TelemetryDecoder.fs_in=``` (captured file sampling rate in Hz)
   3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters.
-4. Run the receiver from the install directory. The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get a PVT fix. The program will write a .kml file and RINEX (yet experimental) files in the install directory. Among the console output, GNSS-SDR also writes log files in /tmp/.
+4. Run the receiver from the install directory. The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get PVT fixes. The program will write a .kml file and RINEX (yet experimental) files in the install directory. In addition to the console output, GNSS-SDR also writes log files at /tmp/ (configurable with the commandline flag ```./gnss-sdr --log_dir=/path/to/log```).
 

@@ -18,9 +18,9 @@ It is based on the GNU Radio How-to-make-a-block cmake source v 3.6
 Installation in Ubuntu 11.04, 11.10, 12.04 (32 and 64 bits)
 -----------------------------------------------------------
 
-1- Install CMake through your OS's package manager or by some other means.
+1. Install CMake through your OS's package manager or by some other means.
 
-2- Install GNU Radio:
+2. Install GNU Radio:
 
 - Downloading, building and installing GNU Radio and all its dependencies is not a simple task. We recommend to use Marcus Leech's build-gnuradio script, which automatically does all the work for you. In a terminal, do:
 
@@ -31,15 +31,15 @@ $ ./build-gnuradio
 This can take a while (up to two hours to complete, depending on your system), and installs the latest versions of UHD and GNU Radio in your system, including all their dependencies. In case you do not want to use the script and prefer to build and install GNU Radio manually from source, follow instructions in http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide
 
 
-3- Install Subversion
+3. Install Subversion
 
 $ sudo apt-get install subversion
 
-4- Check out the latest version of GNSS-SDR
+4. Check out the latest version of GNSS-SDR
 
 $ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr
 
-5- Build GR-GN3S
+5. Build GR-GN3S
 
 - Go to GR-GN3S root directory and compile the driver:
 
@@ -48,12 +48,12 @@ $ cd build
 $ cmake ../
 $ make
 
-6- If everything went fine, install the driver as root
+6. If everything went fine, install the driver as root
 
 $ sudo make install
 $ sudo ldconfig
 
-7- Open gnuradio-companion and check the gn3s_source module under the GN3S tab. 
+7. Open gnuradio-companion and check the gn3s_source module under the GN3S tab. 
 In order to gain access to USB ports, gnuradio-companion should be used as root.
 In addition, the driver requires access to the GN3S firmware binary file. 
 It should be available in the same path where the application is called.

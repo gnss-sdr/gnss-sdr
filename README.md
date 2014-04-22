@@ -350,7 +350,7 @@ $ open ../docs/html/index.html
 
 
 Updating GNSS-SDR
------------------
+=================
 
 If you cloned GNSS-SDR some days ago, it is possible that some developer has updated files at the Git repository. You can update your working copy by doing:
 ``` 
@@ -386,7 +386,7 @@ We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, 
   5. If you have no access to a RF front-end, you can download a sample raw data file (that contains GPS and Galileo signals) from [here](http://sourceforge.net/projects/gnss-sdr/files/data/).
 3. You are ready to configure the receiver to use your captured file among other parameters:
   1. The default configuration file resides at [./conf/gnss-sdr.conf](./conf/gnss-sdr.conf).
-  2. You need to modify at least the following settings:
+  2. You need to review/modify at least the following settings:
     * ```SignalSource.filename=``` (absolute or relative route to your GNSS signal captured file)
     * ```GNSS-SDR.internal_fs_hz=``` (captured file sampling rate in Hz)
     * ```SignalSource.sampling_frequency=``` (captured file sampling rate in Hz)

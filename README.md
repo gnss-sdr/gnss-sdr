@@ -247,25 +247,6 @@ and then import the created project file into Eclipse:
 4. You get a fully functional Eclipse project.
 
 
-Updating GNSS-SDR
------------------
-
-If you cloned GNSS-SDR some days ago, it is possible that some developer has updated files at the Git repository. You can update your working copy by doing:
-``` 
-$ git checkout master      # Switch to branch you want to update
-$ git pull origin master   # Download the newest code from our repository
-``` 
-or, if you want to test the lastest developments:
-``` 
-$ git checkout next 
-$ git pull origin next 
-``` 
-Before rebuilding the source code, it is safe (and recommended) to remove the remainders of old compilations:
-``` 
-$ rm -rf gnss-sdr/build/*
-``` 
-
-
 Mac OS X 
 ---------
 
@@ -366,6 +347,26 @@ and can be viewed doing:
 ``` 
 $ open ../docs/html/index.html
 ``` 
+
+
+Updating GNSS-SDR
+-----------------
+
+If you cloned GNSS-SDR some days ago, it is possible that some developer has updated files at the Git repository. You can update your working copy by doing:
+``` 
+$ git checkout master      # Switch to branch you want to update
+$ git pull origin master   # Download the newest code from our repository
+``` 
+or, if you want to test the lastest developments:
+``` 
+$ git checkout next 
+$ git pull origin next 
+``` 
+Before rebuilding the source code, it is safe (and recommended) to remove the remainders of old compilations:
+``` 
+$ rm -rf gnss-sdr/build/*
+``` 
+
 
 
 

@@ -369,6 +369,8 @@ $ rm -rf gnss-sdr/build/*
 
 If you are interested in contributing to the development of GNSS-SDR, please check out [how to do it](http://gnss-sdr.org/documentation/how-contribute-source-code "How to contribute to GNSS-SDR source code").
 
+There is a more controlled way to upgrade your repository, which is to use the Git commands ```fetch``` and ```merge```, as described [here](http://gnss-sdr.org/source-code). 
+
 
 Getting started
 ===============

@@ -63,7 +63,7 @@ $ make
 $ sudo make install
 ```
 
-The full stop separated from "cmake" by a space is important. CMake will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
+The full stop separated from "cmake" by a space is important. [CMake](http://www.cmake.org/ "CMake's Homepage") will figure out what other libraries are currently installed and will modify Armadillo's configuration correspondingly. CMake will also generate a run-time armadillo library, which is a combined alias for all the relevant libraries present on your system (eg. BLAS, LAPACK and ATLAS).
 
 #### Install [Gflags](http://code.google.com/p/gflags/ "gflags' Homepage"), a commandline flags processing module for C++:
 ``` 
@@ -75,7 +75,7 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 ``` 
-#### Install [glog](http://code.google.com/p/google-glog/ "Glog's Homepage"), a library that implements application-level logging:
+#### Install [Glog](http://code.google.com/p/google-glog/ "Glog's Homepage"), a library that implements application-level logging:
 ``` 
 $ wget http://google-glog.googlecode.com/files/glog-0.3.3.tar.gz 
 $ tar xvfz glog-0.3.3.tar.gz 
@@ -199,7 +199,7 @@ $ cd gnss-sdr/build
 $ cmake ../
 $ make
 ``` 
-By default, cmake is configured to build the release version. If you want to build the debug version, please use:
+By default, CMake is configured to build the release version. If you want to build the debug version, please use:
 ``` 
 cmake ../ -DCMAKE_BUILD_TYPE=Debug
 ``` 
@@ -254,7 +254,7 @@ Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks).
 
 
 
-### MAC OS X 10.9 Mavericks
+### Mac OS X 10.9 Mavericks
 
 If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free).
 
@@ -268,7 +268,7 @@ $ sudo port install doxygen +latex
 $ sudo port install uhd gnuradio
 $ sudo port install armadillo
 ``` 
-Install GFlags manually from the trunk:
+Install [Gflags](http://code.google.com/p/gflags/ "gflags' Homepage") manually from the trunk:
 ``` 
 $ svn checkout http://gflags.googlecode.com/svn/trunk gflags-trunk
 $ cd gflags-trunk
@@ -276,7 +276,7 @@ $ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure
 $ make
 $ sudo make install
 ``` 
-Install Glog manually from the subversion repository. Revision 142 is known to work well:
+Install [Glog](http://code.google.com/p/google-glog/ "Glog's Homepage") manually from the subversion repository. Revision 142 is known to work well:
 ``` 
 $ svn checkout -r142 http://google-glog.googlecode.com/svn/trunk/ google-glog
 $ cd google-glog
@@ -303,7 +303,7 @@ $ open ../docs/html/index.html
 ``` 
 
 
-### MAC OS X 10.8 Mountain Lion 
+### Mac OS X 10.8 Mountain Lion 
 
 
 If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free). Once installed, download and install the command line tools:
@@ -328,10 +328,10 @@ Install other dependencies:
 ``` 
 $ sudo port install armadillo
 ``` 
-The libraries gflags and glog should be installed manually, and in that particular order (same steps as above). If they are not already installed
-when building GNSS-SDR, cmake will download, build and link them statically but they will not remain installed in the system.
+The libraries [Gflags](http://code.google.com/p/gflags/ "gflags' Homepage") and [Glog](http://code.google.com/p/google-glog/ "Glog's Homepage") should be installed manually, and in that particular order (same steps as above). If they are not already installed
+when building GNSS-SDR, [CMake](http://www.cmake.org/ "CMake's Homepage") will download, build and link them statically for you when doing ```make```, but they will not remain installed in the system.
 
-Finally, you are ready to checkout the GNSS-SDR repository and build the software:
+Then, you are ready to clone the GNSS-SDR repository and build the software:
 ``` 
 $ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
 $ cd gnss-sdr/build
@@ -371,7 +371,7 @@ If you are interested in contributing to the development of GNSS-SDR, please che
 
 
 Getting started
----------------
+===============
 
 
 1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install.

@@ -154,7 +154,7 @@ Please copy this file to the application path. The GNSS-SDR default path is gnss
 
 (in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR).
 
-###### Build RTL-SDR support (OPTIONAL)
+###### Build RTL-SDR support (OPTIONAL):
 
 - Install the [OsmoSDR](http://sdr.osmocom.org/trac/ "OsmoSDR's Homepage") library and GNU Radio's source block: 
 ``` 

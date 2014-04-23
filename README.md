@@ -18,7 +18,7 @@ Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bit
 
 ### Install GNU Radio:
 
-- Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki) (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
+Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki) (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
 
 
 ~~~~~~ 
@@ -153,7 +153,7 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
 
 ###### Build GN3S V2 Custom firmware and driver (OPTIONAL):
 
-- Go to GR-GN3S root directory, compile and install the driver (read the drivers/gr-gn3s/README for more information):
+Go to GR-GN3S root directory, compile and install the driver (read the drivers/gr-gn3s/README for more information):
 
 
 ~~~~~~   
@@ -166,7 +166,7 @@ $ sudo ldconfig
 ~~~~~~ 
 
 
-- Set the environment variable ```GN3S_DRIVER=1``` in order to enable the GN3S_Signal_Source in GNSS-SDR:
+Set the environment variable ```GN3S_DRIVER=1``` in order to enable the GN3S_Signal_Source in GNSS-SDR:
 
 
 ~~~~~~ 
@@ -180,7 +180,7 @@ GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/fi
 
 ###### Build RTL-SDR support (OPTIONAL):
 
-- Install the [OsmoSDR](http://sdr.osmocom.org/trac/ "OsmoSDR's Homepage") library and GNU Radio's source block: 
+Install the [OsmoSDR](http://sdr.osmocom.org/trac/ "OsmoSDR's Homepage") library and GNU Radio's source block: 
 
 
 ~~~~~~ 
@@ -204,7 +204,7 @@ $ sudo ldconfig
 ~~~~~~ 
 
 
-- Set the environment variable ```RTLSDR_DRIVER=1``` in order to enable the Rtlsdr_Signal_Source in GNSS-SDR:
+Set the environment variable ```RTLSDR_DRIVER=1``` in order to enable the Rtlsdr_Signal_Source in GNSS-SDR:
 
 
 ~~~~~~ 
@@ -212,7 +212,7 @@ $ export RTLSDR_DRIVER=1
 ~~~~~~ 
 
 
-- In order to compile the RTLSDR adapter you should also provide the path to the gr-osmosdr source code using:
+In order to compile the RTLSDR adapter you should also provide the path to the gr-osmosdr source code using:
 
 
 ~~~~~~ 
@@ -226,13 +226,13 @@ The default will be ```OSMOSDR_ROOT=/usr/local```
 
 ### Build GNSS-SDR
 
-- Go to GNSS-SDR's build directory:
+Go to GNSS-SDR's build directory:
 
 ~~~~~~ 
 $ cd gnss-sdr/build
 ~~~~~~ 
 
-- Configure and build the application:
+Configure and build the application:
 
 ~~~~~~ 
 $ cmake ../
@@ -245,15 +245,15 @@ By default, CMake is configured to build the release version. If you want to bui
 $ cmake ../ -DCMAKE_BUILD_TYPE=Debug
 ~~~~~~ 
 
-- Move the executables to the install folder:
+Move the executables to the install folder:
 
 ~~~~~~ 
 $ make install
 ~~~~~~ 
 
-- If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. 
+If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. 
 
-- You can create the documentation by doing:
+You can create the documentation by doing:
 
 ~~~~~~ 
 $ make doc
@@ -280,7 +280,7 @@ $ make doc-clean
 
 will remove the content of previously-generated documentation.
 
-- By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. If you are working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
+By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. If you are working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 
 ~~~~~~ 
 $ cd gnss-sdr/build
@@ -289,7 +289,7 @@ $ make
 $ make install
 ~~~~~~ 
 
-- If you are using Eclipse as your development environment, CMake can create the project for you. Type:
+If you are using Eclipse as your development environment, CMake can create the project for you. Type:
 
 ~~~~~~ 
 $ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../

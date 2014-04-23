@@ -190,7 +190,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-    unsigned long int acq_trk_diff_samples;
+    long int acq_trk_diff_samples;
     float acq_trk_diff_seconds;
     // jarribas: this patch correct a situation where the tracking sample counter
     // is equal to 0 (remains in the initial state) at the first acquisition to tracking transition
@@ -201,7 +201,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     //    }else{
     //    	acq_trk_diff_samples = d_sample_counter - d_acq_sample_stamp;//-d_vector_length;
     //    }
-    acq_trk_diff_samples = d_sample_counter - d_acq_sample_stamp;//-d_vector_length;
+    acq_trk_diff_samples = (long int)d_sample_counter - (long int)d_acq_sample_stamp;
     std::cout << "acq_trk_diff_samples=" << acq_trk_diff_samples << std::endl;
     acq_trk_diff_seconds = (float)acq_trk_diff_samples / (float)d_fs_in;
     //doppler effect

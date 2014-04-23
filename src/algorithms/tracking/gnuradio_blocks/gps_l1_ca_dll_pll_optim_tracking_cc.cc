@@ -179,9 +179,9 @@ void Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-    unsigned long int acq_trk_diff_samples;
+    long int acq_trk_diff_samples;
     float acq_trk_diff_seconds;
-    acq_trk_diff_samples = d_sample_counter - d_acq_sample_stamp; //-d_vector_length;
+    acq_trk_diff_samples = (long int)d_sample_counter - (long int)d_acq_sample_stamp; //-d_vector_length;
     LOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
     acq_trk_diff_seconds = (float)acq_trk_diff_samples / (float)d_fs_in;
     //doppler effect

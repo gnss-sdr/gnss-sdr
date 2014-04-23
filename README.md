@@ -33,7 +33,7 @@ $ ./pybombs config
 
 You can safely accept the default options but for ```prefix```. We recommend to put ```/usr/local``` there. After the configuration, you should get something similar to:
 
-```
+~~~~~~
 gituser = username
 prefix = /usr/local
 satisfy_order = deb,src  # For Debian/Ubuntu/LinuxMint
@@ -42,7 +42,8 @@ forcepkgs =
 timeout = 30
 cmakebuildtype = RelWithDebInfo
 builddocs = OFF
-```
+~~~~~~
+
 
 Then, you are ready to download and install [UHD](http://files.ettus.com/uhd_docs/manual/html/) (the Universal Hardware Driver), GNU Radio and all their required dependencies by doing:
 

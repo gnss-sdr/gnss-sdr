@@ -66,18 +66,15 @@ protected:
     {
         queue = gr::msg_queue::make(0);
         top_block = gr::make_top_block("Acquisition test");
-        factory = new GNSSBlockFactory();
-        config = new InMemoryConfiguration();
+        factory = std::make_shared<GNSSBlockFactory>();
+        config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
     }
 
     ~GalileoE1PcpsAmbiguousAcquisitionGSoCTest()
-    {
-        delete factory;
-        delete config;
-    }
+    {}
 
     void init();
     void start_queue();
@@ -86,8 +83,8 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    GNSSBlockFactory* factory;
-    InMemoryConfiguration* config;
+    std::shared_ptr<GNSSBlockFactory> factory;
+    std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
     concurrent_queue<int> channel_internal_queue;
@@ -98,7 +95,6 @@ protected:
 
 void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::init()
 {
-
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
     std::string signal = "1C";
@@ -150,14 +146,10 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoCTest::stop_queue()
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, Instantiate)
 {
-
     init();
-
-    GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
+    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     EXPECT_STREQ("Galileo_E1_PCPS_Ambiguous_Acquisition", acquisition->implementation().c_str());
-
-    delete acquisition;
-
 }
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
@@ -169,7 +161,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
     long long int end = 0;
 
     init();
-    GalileoE1PcpsAmbiguousAcquisition *acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
+    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -186,8 +179,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
         gettimeofday(&tv, NULL);
         end = tv.tv_sec*1000000 + tv.tv_usec;
     }) << "Failure running the top_block."<< std::endl;
-
-    delete acquisition;
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
 }
@@ -199,7 +190,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     long long int end = 0;
 
     init();
-    std::unique_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition(new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue));
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
+        std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 
 
     ASSERT_NO_THROW( {
@@ -219,13 +211,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max",
-                10000));
+        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
     }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step",
-                500));
+        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
     }) << "Failure setting doppler_step." << std::endl;
 
     ASSERT_NO_THROW( {

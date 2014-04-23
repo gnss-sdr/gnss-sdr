@@ -59,6 +59,7 @@ protected:
     {
         queue = gr::msg_queue::make(0);
         top_block = gr::make_top_block("Acquisition test");
+        factory = std::make_shared<GNSSBlockFactory>();
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
@@ -78,8 +79,9 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    GalileoE1PcpsCccwsrAmbiguousAcquisition *acquisition;
-    InMemoryConfiguration* config;
+    std::shared_ptr<AcquisitionInterface> acquisition;
+    std::shared_ptr<GNSSBlockFactory> factory;
+    std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
     concurrent_queue<int> channel_internal_queue;
@@ -142,7 +144,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_1()
 
     num_of_realizations = 1;
 
-    config = new InMemoryConfiguration();
+    config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
 
@@ -200,7 +202,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
     std::string signal = "1C";
-    signal.copy(gnss_synchro.Signal,2,0);
+    signal.copy(gnss_synchro.Signal, 2, 0);
 
     integration_time_ms = 4;
     fs_in = 4e6;
@@ -212,7 +214,7 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::config_2()
 
     num_of_realizations = 100;
 
-    config = new InMemoryConfiguration();
+    config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
 
@@ -363,9 +365,8 @@ void GalileoE1PcpsCccwsrAmbiguousAcquisitionTest::stop_queue()
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, Instantiate)
 {
     config_1();
-    acquisition = new GalileoE1PcpsCccwsrAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
-    delete acquisition;
-    delete config;
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 }
 
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
@@ -377,7 +378,8 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
 
     config_1();
 
-    acquisition = new GalileoE1PcpsCccwsrAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -393,19 +395,17 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
         end = tv.tv_sec *1e6 + tv.tv_usec;
-    }) << "Failure running he top_block."<< std::endl;
+    }) << "Failure running the top_block."<< std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
-
-    delete acquisition;
-    delete config;
+    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 }
 
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
 {
     config_1();
 
-    acquisition = new GalileoE1PcpsCccwsrAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -439,9 +439,9 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config, "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config, "InputFilter", 1, 1, queue);
-        signal_source.reset(new GenSignalSource(config, signal_generator, filter, "SignalSource", queue));
+        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
+        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
+        signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
@@ -482,16 +482,14 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
         }
-
-    delete acquisition;
-    delete config;
 }
 
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabilities)
 {
     config_2();
 
-    acquisition = new GalileoE1PcpsCccwsrAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -525,16 +523,16 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config, "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config, "InputFilter", 1, 1, queue);
-        signal_source.reset(new GenSignalSource(config, signal_generator, filter, "SignalSource", queue));
+        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
+        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
+        signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
 
-    // i = 0 --> sallite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
+    // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)
     for (unsigned int i = 0; i < 2; i++)
         {
@@ -569,7 +567,4 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
                 std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
         }
-
-    delete acquisition;
-    delete config;
 }

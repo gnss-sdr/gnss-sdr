@@ -1,8 +1,8 @@
-![GNSS-SDR logo](./docs/doxygen/images/gnss-sdr_logo.png)
+![GNSS-SDR logo](./docs/doxygen/images/gnss-sdr_logo.gif)
 
 **Welcome to GNSS-SDR!**
 
-Check [gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR's Homepage") for more information about this open source GNSS software defined receiver.
+Visit [gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR's Homepage") for more information about this open source GNSS software defined receiver.
 
 If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers "Subscribe to the gnss-sdr-developers mailing list" ) and post your questions there.
 

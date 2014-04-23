@@ -19,16 +19,20 @@ Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bit
 ### Install GNU Radio:
 
 - Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki) (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
+
 ``` 
 $ git clone git://github.com/pybombs/pybombs 
 $ cd pybombs
 ```
+
 Configure PyBOMBS:
+
 ```
 $ ./pybombs config 
 ```
 
 You can safely accept the default options but for ```prefix```. We recommend to put ```/usr/local``` there. After the configuration, you should get something similar to:
+
 ```
 gituser = username
 prefix = /usr/local
@@ -39,10 +43,13 @@ timeout = 30
 cmakebuildtype = RelWithDebInfo
 builddocs = OFF
 ```
+
 Then, you are ready to download and install [UHD](http://files.ettus.com/uhd_docs/manual/html/) (the Universal Hardware Driver), GNU Radio and all their required dependencies by doing:
+
 ```
 $ sudo ./pybombs install uhd gnuradio
 ```
+
 This can take some time (up to two hours to complete, depending on your system), and installs the latest versions of the Universal Hardware Driver (UHD) and GNU Radio in your system, including all their dependencies. 
 In case you do not want to use PyBOMBS and prefer to build and install GNU Radio manually from source, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide).
 

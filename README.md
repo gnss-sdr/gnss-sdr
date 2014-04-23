@@ -1,4 +1,4 @@
-![GNSS-SDR logo](./docs/doxygen/images/gnss-sdr_logo.gif)
+![](./docs/doxygen/images/gnss-sdr_logo.png)
 
 **Welcome to GNSS-SDR!**
 

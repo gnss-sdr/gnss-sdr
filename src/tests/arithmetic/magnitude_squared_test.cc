@@ -42,8 +42,6 @@ DEFINE_int32(size_magnitude_test, 100000, "Size of the arrays used for magnitude
 TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
 {
     std::complex<float>* input = new std::complex<float>[FLAGS_size_magnitude_test];
-    memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_magnitude_test);
-    const float* inputPtr = (float*)input;
     float* output = new float[FLAGS_size_magnitude_test];
     unsigned int number = 0;
     struct timeval tv;
@@ -52,9 +50,7 @@ TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
 
     for(number = 0; number < (unsigned int)FLAGS_size_magnitude_test; number++)
         {
-            const float real = *inputPtr++;
-            const float imag = *inputPtr++;
-            *output++ = (real*real) + (imag*imag);
+            output[number] = (input[number].real()*input[number].real()) + (input[number].imag()*input[number].imag());
         }
 
     gettimeofday(&tv, NULL);

@@ -1,3 +1,5 @@
+![GNSS-SDR logo](./docs/doxygen/images/gnss-sdr_logo.png)
+
 **Welcome to GNSS-SDR!**
 
 Check [gnss-sdr.org](http://gnss-sdr.org "GNSS-SDR's Homepage") for more information about this open source GNSS software defined receiver.

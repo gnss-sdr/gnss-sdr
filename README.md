@@ -20,6 +20,7 @@ Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bit
 
 - Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki) (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
 
+
 ~~~~~~ 
 $ git clone git://github.com/pybombs/pybombs 
 $ cd pybombs
@@ -152,8 +153,8 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
 
 ###### Build GN3S V2 Custom firmware and driver (OPTIONAL):
 
-- Go to GR-GN3S root directory, compile and install the driver
-  (read the drivers/gr-gn3s/README for more information):
+- Go to GR-GN3S root directory, compile and install the driver (read the drivers/gr-gn3s/README for more information):
+
 
 ~~~~~~   
 $ cd gnss-sdr/drivers/gr-gn3s
@@ -164,23 +165,23 @@ $ sudo make install
 $ sudo ldconfig
 ~~~~~~ 
 
+
 - Set the environment variable ```GN3S_DRIVER=1``` in order to enable the GN3S_Signal_Source in GNSS-SDR:
+
 
 ~~~~~~ 
 $ export GN3S_DRIVER=1
 ~~~~~~ 
 
-In order to gain access to USB ports, gnss-sdr should be used as root.
-In addition, the driver requires access to the GN3S firmware binary file. 
-It should be available in the same path where the application is called.
-GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/firmware/GN3S_v2/bin/gn3s_firmware.ihx. 
-Please copy this file to the application path. The GNSS-SDR default path is gnss-sdr/install
+In order to gain access to USB ports, gnss-sdr should be used as root. In addition, the driver requires access to the GN3S firmware binary file. It should be available in the same path where the application is called.
+GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/firmware/GN3S_v2/bin/gn3s_firmware.ihx. Please copy this file to the application path. The GNSS-SDR default path is gnss-sdr/install
 
 (in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR).
 
 ###### Build RTL-SDR support (OPTIONAL):
 
 - Install the [OsmoSDR](http://sdr.osmocom.org/trac/ "OsmoSDR's Homepage") library and GNU Radio's source block: 
+
 
 ~~~~~~ 
 $ git clone git://git.osmocom.org/osmo-sdr.git
@@ -202,17 +203,22 @@ $ sudo make install
 $ sudo ldconfig
 ~~~~~~ 
 
+
 - Set the environment variable ```RTLSDR_DRIVER=1``` in order to enable the Rtlsdr_Signal_Source in GNSS-SDR:
+
 
 ~~~~~~ 
 $ export RTLSDR_DRIVER=1
 ~~~~~~ 
 
+
 - In order to compile the RTLSDR adapter you should also provide the path to the gr-osmosdr source code using:
+
 
 ~~~~~~ 
 $ export OSMOSDR_ROOT=/path/to/gr-osmosdr
 ~~~~~~ 
+
 
 The default will be ```OSMOSDR_ROOT=/usr/local```
 
@@ -454,21 +460,21 @@ Getting started
 
 1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install.
 2. In post-processing mode, you have to provide a captured GNSS signal file.
-  1. The signal file can be easily recorded using the GNU Radio file sink in ```gr_complex<float>``` mode.
-  2. You will need a GPS active antenna, a [USRP](http://www.ettus.com/product) and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
+    1. The signal file can be easily recorded using the GNU Radio file sink in ```gr_complex<float>``` mode.
+    2. You will need a GPS active antenna, a [USRP](http://www.ettus.com/product) and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
 We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, but you can try the newer Ettus' daughter boards as well. 
-  3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: a USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20 = 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX2 we obtained good results with ```G=50```.
-  4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using ```gr_complex<float>```.
-  5. If you have no access to a RF front-end, you can download a sample raw data file (that contains GPS and Galileo signals) from [here](http://sourceforge.net/projects/gnss-sdr/files/data/).
+    3. The easiest way to capture a signal file is to use the GNU Radio Companion GUI. Only two blocks are needed: a USRP signal source connected to complex float file sink. You need to tune the USRP central frequency and decimation factor using USRP signal source properties box. We suggest using a decimation factor of 20 if you use the USRP2. This will give you 100/20 = 5 MSPS which will be enough to receive GPS L1 C/A signals. The front-end gain should also be configured. In our test with the DBSRX2 we obtained good results with ```G=50```.
+    4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using ```gr_complex<float>```.
+    5. If you have no access to a RF front-end, you can download a sample raw data file (that contains GPS and Galileo signals) from [here](http://sourceforge.net/projects/gnss-sdr/files/data/).
 3. You are ready to configure the receiver to use your captured file among other parameters:
-  1. The default configuration file resides at [./conf/gnss-sdr.conf](./conf/gnss-sdr.conf).
-  2. You need to review/modify at least the following settings:
-    * ```SignalSource.filename=``` (absolute or relative route to your GNSS signal captured file)
-    * ```GNSS-SDR.internal_fs_hz=``` (captured file sampling rate in Hz)
-    * ```SignalSource.sampling_frequency=``` (captured file sampling rate in Hz)
-    * ```SignalConditioner.sample_freq_in=``` (captured file sampling rate in Hz)
-    * ```SignalConditioner.sample_freq_out=``` (captured file sampling rate in Hz)
-    * ```TelemetryDecoder.fs_in=``` (captured file sampling rate in Hz)
-  3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters.
+    1. The default configuration file resides at [./conf/gnss-sdr.conf](./conf/gnss-sdr.conf).
+    2. You need to review/modify at least the following settings:
+        * ```SignalSource.filename=``` (absolute or relative route to your GNSS signal captured file)
+        * ```GNSS-SDR.internal_fs_hz=``` (captured file sampling rate in Hz)
+        * ```SignalSource.sampling_frequency=``` (captured file sampling rate in Hz)
+        * ```SignalConditioner.sample_freq_in=``` (captured file sampling rate in Hz)
+        * ```SignalConditioner.sample_freq_out=``` (captured file sampling rate in Hz)
+        * ```TelemetryDecoder.fs_in=``` (captured file sampling rate in Hz)
+    3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters.
 4. Run the receiver from the install directory. The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get PVT fixes. The program will write a .kml file and RINEX (yet experimental) files in the install directory. In addition to the console output, GNSS-SDR also writes log files at /tmp/ (configurable with the commandline flag ```./gnss-sdr --log_dir=/path/to/log```).
 

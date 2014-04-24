@@ -81,7 +81,7 @@ protected:
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
     GpsL1CaPcpsTongAcquisition *acquisition;
-    InMemoryConfiguration* config;
+    std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
     concurrent_queue<int> channel_internal_queue;
@@ -144,7 +144,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_1()
 
     num_of_realizations = 1;
 
-    config = new InMemoryConfiguration();
+    config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
 
@@ -213,7 +213,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::config_2()
 
     num_of_realizations = 100;
 
-    config = new InMemoryConfiguration();
+    config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
 
@@ -362,9 +362,8 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = new GpsL1CaPcpsTongAcquisition(config, "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsTongAcquisition(config.get(), "Acquisition", 1, 1, queue);
     delete acquisition;
-    delete config;
 }
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
@@ -375,7 +374,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
     long long int end = 0;
 
     config_1();
-    acquisition = new GpsL1CaPcpsTongAcquisition(config, "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsTongAcquisition(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -395,14 +394,13 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
 
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
     delete acquisition;
-    delete config;
 }
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
 
-    acquisition = new GpsL1CaPcpsTongAcquisition(config, "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsTongAcquisition(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -436,14 +434,14 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config, "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config, "InputFilter", 1, 1, queue);
-        signal_source.reset(new GenSignalSource(config, signal_generator, filter, "SignalSource", queue));
+        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
+        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
+        signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
-    // i = 0 --> sallite in acquisition is visible
+    // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
     for (unsigned int i = 0; i < 2; i++)
         {
@@ -482,14 +480,13 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
         }
 
     delete acquisition;
-    delete config;
 }
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {
     config_2();
 
-    acquisition = new GpsL1CaPcpsTongAcquisition(config, "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsTongAcquisition(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -523,16 +520,16 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config, "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config, "InputFilter", 1, 1, queue);
-        signal_source.reset(new GenSignalSource(config, signal_generator, filter, "SignalSource", queue));
+        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
+        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
+        signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
 
-    // i = 0 --> sallite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
+    // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)
     for (unsigned int i = 0; i < 2; i++)
         {
@@ -569,5 +566,4 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
         }
 
     delete acquisition;
-    delete config;
 }

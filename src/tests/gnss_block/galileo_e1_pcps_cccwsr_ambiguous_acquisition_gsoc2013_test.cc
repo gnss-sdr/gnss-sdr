@@ -33,6 +33,7 @@
 
 #include <ctime>
 #include <iostream>
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -47,7 +48,6 @@
 #include "signal_generator_c.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
-#include "boost/shared_ptr.hpp"
 #include "gnss_sdr_valve.h"
 
 
@@ -428,7 +428,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 0.00001));
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {

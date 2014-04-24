@@ -1,6 +1,6 @@
 /*!
  * \file string_converter_test.cc
- * \brief  This file implements unit tests for the valve custom block.
+ * \brief  This file implements unit tests for the StringConverter class.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
  *
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,17 +36,16 @@
 
 TEST(String_Converter_Test, StringToBool)
 {
-    StringConverter* converter;
-    converter = new StringConverter();
+    std::unique_ptr<StringConverter> converter(new StringConverter());
     bool conversion_result = converter->convert("false", true);
     bool expected_false = false;
     EXPECT_EQ(expected_false, conversion_result);
-    delete converter;
 }
 
 
 TEST(String_Converter_Test, StringToSizeT)
 {
+    // Example using a raw pointer
     StringConverter* converter;
     converter = new StringConverter();
     size_t conversion_result = converter->convert("8", 1);
@@ -60,12 +59,10 @@ TEST(String_Converter_Test, StringToSizeT)
 
 TEST(String_Converter_Test, StringToBoolFail)
 {
-    StringConverter* converter;
-    converter = new StringConverter();
+    std::unique_ptr<StringConverter> converter(new StringConverter());
     bool conversion_result = converter->convert("lse", true);
     bool expected_true = true;
     EXPECT_EQ(expected_true, conversion_result);
-    delete converter;
 }
 
 
@@ -73,10 +70,8 @@ TEST(String_Converter_Test, StringToBoolFail)
 
 TEST(String_Converter_Test, StringToSizeTFail)
 {
-    StringConverter* converter;
-    converter = new StringConverter();
+    std::unique_ptr<StringConverter> converter(new StringConverter());
     size_t conversion_result = converter->convert("false", 1);
     unsigned int expected1 = 1;
     EXPECT_EQ(expected1, conversion_result);
-    delete converter;
 }

@@ -1,3 +1,82 @@
+/*!
+* \file main.cc
+* \brief Main file of the GNSS-SDR program.
+* \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+*
+* It sets up the logging system, creates a ControlThread object,
+* makes it run, and releases memory back when the main thread has ended.
+*
+* -------------------------------------------------------------------------
+*
+* Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
+*
+* GNSS-SDR is a software defined Global Navigation
+* Satellite Systems receiver
+*
+* This file is part of GNSS-SDR.
+*
+* GNSS-SDR is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* GNSS-SDR is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+*
+* -------------------------------------------------------------------------
+*/
+#ifndef GNSS_SDR_VERSION
+#define GNSS_SDR_VERSION "0.0.2"
+#endif
+
+#include <ctime>
+#include <memory>
+#include <queue>
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception_ptr.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gnuradio/msg_queue.h>
+#include "control_thread.h"
+#include "concurrent_queue.h"
+#include "concurrent_map.h"
+#include "gps_ephemeris.h"
+#include "gps_almanac.h"
+#include "gps_iono.h"
+#include "gps_utc_model.h"
+#include "galileo_ephemeris.h"
+#include "galileo_almanac.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
+#include "sbas_telemetry_data.h"
+#include "sbas_ionospheric_correction.h"
+#include "sbas_satellite_correction.h"
+#include "sbas_ephemeris.h"
+#include "sbas_time.h"
+
+
+using google::LogMessage;
+
+DECLARE_string(log_dir);
+
+/*!
+* \todo make this queue generic for all the GNSS systems (javi)
+*/
+
+/*
+* Concurrent queues that communicates the Telemetry Decoder
+* to the Observables modules
+*/
+
+// For GPS NAVIGATION
 concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
 concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

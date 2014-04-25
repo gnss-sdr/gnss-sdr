@@ -141,9 +141,29 @@ private:
     void gps_utc_model_data_collector();
 
     /*
+     * \brief Blocking function that reads the ref location queue and updates the shared map
+     */
+    void gps_ref_location_data_collector();
+
+    /*
+     * \brief Blocking function that reads the ref time queue and updates the shared map
+     */
+    void gps_ref_time_data_collector();
+
+    /*
      * \brief Write the latest GPS UTC model to XML file
      */
     void gps_utc_model_data_write_to_XML();
+
+    /*
+     * \brief Write the latest ref location to XML file (AGPS)
+     */
+    void gps_ref_location_data_write_to_XML();
+
+    /*
+     * \brief Write the latest ref time to XML file (AGPS)
+     */
+    void gps_ref_time_data_write_to_XML();
 
     /*
      * \brief Blocking function that reads the iono model queue and updates the shared map, accessible from the PVT block
@@ -187,6 +207,8 @@ private:
     boost::thread gps_iono_data_collector_thread_;
     boost::thread gps_utc_model_data_collector_thread_;
     boost::thread gps_acq_assist_data_collector_thread_;
+    boost::thread gps_ref_location_data_collector_thread_;
+    boost::thread gps_ref_time_data_collector_thread_;
 
     boost::thread galileo_ephemeris_data_collector_thread_;
     boost::thread galileo_utc_model_data_collector_thread_;

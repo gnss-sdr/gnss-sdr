@@ -33,6 +33,8 @@
 #define GNSS_SDR_GPS_REF_LOCATION_H_
 
 #include "GPS_L1_CA.h"
+#include "boost/assign.hpp"
+#include <boost/serialization/nvp.hpp>
 
 
 /*!
@@ -50,6 +52,21 @@ public:
      * Default constructor
      */
     Gps_Ref_Location();
+
+    template<class Archive>
+
+    /*!
+     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the Ref location on disk file.
+     */
+    void serialize(Archive& archive, const unsigned int version)
+        {
+            using boost::serialization::make_nvp;
+
+            archive & make_nvp("valid", valid);
+            archive & make_nvp("lat", lat);
+            archive & make_nvp("lon", lon);
+            archive & make_nvp("uncertainty", uncertainty);
+        }
 };
 
 #endif

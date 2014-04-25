@@ -64,12 +64,16 @@ extern concurrent_map<Gps_Iono> global_gps_iono_map;
 extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 extern concurrent_map<Gps_Almanac> global_gps_almanac_map;
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+extern concurrent_map<Gps_Ref_Time> global_gps_ref_time_map;
+extern concurrent_map<Gps_Ref_Location> global_gps_ref_location_map;
 
 extern concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
 extern concurrent_queue<Gps_Iono> global_gps_iono_queue;
 extern concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
 extern concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
 extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+extern concurrent_queue<Gps_Ref_Location> global_gps_ref_location_queue;
+extern concurrent_queue<Gps_Ref_Time> global_gps_ref_time_queue;
 
 extern concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
 extern concurrent_map<Galileo_Iono> global_galileo_iono_map;
@@ -110,6 +114,8 @@ ControlThread::~ControlThread()
     gps_ephemeris_data_write_to_XML();
     gps_iono_data_write_to_XML();
     gps_utc_model_data_write_to_XML();
+    gps_ref_location_data_write_to_XML();
+    gps_ref_time_data_write_to_XML();
 }
 
 
@@ -155,6 +161,8 @@ void ControlThread::run()
     gps_iono_data_collector_thread_ = boost::thread(&ControlThread::gps_iono_data_collector, this);
     gps_utc_model_data_collector_thread_ = boost::thread(&ControlThread::gps_utc_model_data_collector, this);
     gps_acq_assist_data_collector_thread_= boost::thread(&ControlThread::gps_acq_assist_data_collector, this);
+    gps_ref_location_data_collector_thread_ = boost::thread(&ControlThread::gps_ref_location_data_collector, this);
+    gps_ref_time_data_collector_thread_ = boost::thread(&ControlThread::gps_ref_time_data_collector, this);
 
     galileo_ephemeris_data_collector_thread_ = boost::thread(&ControlThread::galileo_ephemeris_data_collector, this);
     galileo_iono_data_collector_thread_ = boost::thread(&ControlThread::galileo_iono_data_collector, this);
@@ -174,6 +182,8 @@ void ControlThread::run()
     gps_iono_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
     gps_utc_model_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
     gps_acq_assist_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
+    gps_ref_location_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
+    gps_ref_time_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
 
     //Join Galileo threads
     galileo_ephemeris_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
@@ -357,6 +367,16 @@ void ControlThread::init()
                                 {
                                     std::cout << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first << std::endl;
                                     global_gps_acq_assist_queue.push(gps_acq_iter->second);
+                                }
+                            if (supl_client_acquisition_.gps_ref_loc.valid == true)
+                                {
+                                    std::cout << "SUPL: Received Ref Location (Acquisition Assistance)" << std::endl;
+                                    global_gps_ref_location_queue.push(supl_client_acquisition_.gps_ref_loc);
+                                }
+                            if (supl_client_acquisition_.gps_time.valid == true)
+                                {
+                                    std::cout << "SUPL: Received Ref Time (Acquisition Assistance)" << std::endl;
+                                    global_gps_ref_time_queue.push(supl_client_acquisition_.gps_time);
                                 }
                         }
                     else
@@ -567,23 +587,13 @@ void ControlThread::gps_iono_data_collector()
 {
     // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
     Gps_Iono gps_iono;
-    Gps_Iono gps_iono_old;
     while(stop_ == false)
         {
             global_gps_iono_queue.wait_and_pop(gps_iono);
 
             LOG(INFO) << "New IONO record has arrived ";
-            // insert new ephemeris record to the global ephemeris map
-            if (global_gps_iono_map.read(0, gps_iono_old))
-                {
-                    // TODO: Check the IONO timestamp. If it is newer, then update the iono
-                    global_gps_iono_map.write(0, gps_iono);
-                }
-            else
-                {
-                    // insert new ephemeris record
-                    global_gps_iono_map.write(0, gps_iono);
-                }
+            // there is no timestamp for the iono data, new entries must always be added
+            global_gps_iono_map.write(0, gps_iono);
         }
 }
 
@@ -642,21 +652,75 @@ void ControlThread::gps_utc_model_data_collector()
         {
             global_gps_utc_model_queue.wait_and_pop(gps_utc);
             LOG(INFO) << "New UTC MODEL record has arrived with A0=" << gps_utc.d_A0;
-            // insert new ephemeris record to the global ephemeris map
+            // insert new utc record to the global utc model map
             if (global_gps_utc_model_map.read(0, gps_utc_old))
                 {
-                    // TODO: Check the UTC MODEL timestamp. If it is newer, then update the UTC MODEL
-                    global_gps_utc_model_map.write(0, gps_utc);
+                    if (gps_utc.i_WN_T > gps_utc_old.i_WN_T)
+                        {
+                            global_gps_utc_model_map.write(0, gps_utc);
+                        }
+                    else if ((gps_utc.i_WN_T == gps_utc_old.i_WN_T) and (gps_utc.d_t_OT > gps_utc_old.d_t_OT))
+                        {
+                            global_gps_utc_model_map.write(0, gps_utc);
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Not updating the existing utc model";
+                        }
                 }
             else
                 {
-                    // insert new ephemeris record
+                    // insert new utc model record
                     global_gps_utc_model_map.write(0, gps_utc);
                 }
         }
 }
 
+void ControlThread::gps_ref_location_data_collector()
+{
+    // ############ READ REF LOCATION ####################
+    Gps_Ref_Location gps_ref_location;
+    while(stop_ == false)
+        {
+            global_gps_ref_location_queue.wait_and_pop(gps_ref_location);
+            LOG(INFO) << "New ref location record has arrived with lat=" << gps_ref_location.lat << " lon=" << gps_ref_location.lon;
+            // insert new ref location record to the global ref location map
+            global_gps_ref_location_map.write(0, gps_ref_location);
+        }
+}
 
+void ControlThread::gps_ref_time_data_collector()
+{
+    // ############ READ REF TIME ####################
+    Gps_Ref_Time gps_ref_time;
+    Gps_Ref_Time gps_ref_time_old;
+    while(stop_ == false)
+        {
+            global_gps_ref_time_queue.wait_and_pop(gps_ref_time);
+            LOG(INFO) << "New ref time record has arrived with TOW=" << gps_ref_time.d_TOW << " Week=" << gps_ref_time.d_Week;
+            // insert new ref time record to the global ref time map
+            if (global_gps_ref_time_map.read(0, gps_ref_time_old))
+                {
+                    if (gps_ref_time.d_Week > gps_ref_time_old.d_Week)
+                        {
+                            global_gps_ref_time_map.write(0, gps_ref_time);
+                        }
+                    else if ((gps_ref_time.d_Week == gps_ref_time_old.d_Week) and (gps_ref_time.d_TOW > gps_ref_time_old.d_TOW))
+                        {
+                            global_gps_ref_time_map.write(0, gps_ref_time);
+                        }
+                    else
+                        {
+                            LOG(INFO) << "Not updating the existing ref time";
+                        }
+                }
+            else
+                {
+                    // insert new ref time record
+                    global_gps_ref_time_map.write(0, gps_ref_time);
+                }
+        }
+}
 
 void ControlThread::galileo_utc_model_data_collector()
 {
@@ -761,7 +825,6 @@ void ControlThread::gps_iono_data_write_to_XML()
     //Save ephemeris to XML file
     std::string xml_filename = "gps_iono_rx.xml";
     std::map<int,Gps_Iono> map_copy;
-    std::map<int,Gps_Iono>::iterator gps_iono_iter;
 
     map_copy = global_gps_iono_map.get_map_copy();
     if (map_copy.size() > 0)
@@ -781,6 +844,53 @@ void ControlThread::gps_iono_data_write_to_XML()
         }
 }
 
+void ControlThread::gps_ref_location_data_write_to_XML()
+{
+    //Save reference location to XML file
+    std::string xml_filename = "gps_ref_location_rx.xml";
+    std::map<int,Gps_Ref_Location> map_copy;
+
+    map_copy = global_gps_ref_location_map.get_map_copy();
+    if (map_copy.size() > 0)
+        {
+            try
+            {
+                    std::ofstream ofs(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_location_map", map_copy);
+                    ofs.close();
+                    LOG(INFO) << "Saved Ref Location data";
+            }
+            catch (std::exception& e)
+            {
+                    LOG(ERROR) << e.what();
+            }
+        }
+}
+
+void ControlThread::gps_ref_time_data_write_to_XML()
+{
+    //Save reference time to XML file
+    std::string xml_filename = "gps_ref_time_rx.xml";
+    std::map<int,Gps_Ref_Time> map_copy;
+
+    map_copy = global_gps_ref_time_map.get_map_copy();
+    if (map_copy.size() > 0)
+        {
+            try
+            {
+                    std::ofstream ofs(xml_filename.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ref_time_map", map_copy);
+                    ofs.close();
+                    LOG(INFO) << "Saved Ref Time data";
+            }
+            catch (std::exception& e)
+            {
+                    LOG(ERROR) << e.what();
+            }
+        }
+}
 
 void ControlThread::keyboard_listener()
 {

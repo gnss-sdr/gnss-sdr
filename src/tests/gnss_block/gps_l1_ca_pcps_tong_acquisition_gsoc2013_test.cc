@@ -80,7 +80,7 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    GpsL1CaPcpsTongAcquisition *acquisition;
+    std::shared_ptr<GpsL1CaPcpsTongAcquisition> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -362,8 +362,7 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = new GpsL1CaPcpsTongAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    delete acquisition;
+    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 }
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
@@ -374,7 +373,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
     long long int end = 0;
 
     config_1();
-    acquisition = new GpsL1CaPcpsTongAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -393,38 +392,37 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
     }) << "Failure running the top_block." << std::endl;
 
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
-    delete acquisition;
 }
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
 
-    acquisition = new GpsL1CaPcpsTongAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
-    }) << "Failure setting channel."<< std::endl;
+    }) << "Failure setting channel." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
+    }) << "Failure setting gnss_synchro." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_channel_queue(&channel_internal_queue);
-    }) << "Failure setting channel_internal_queue."<< std::endl;
+    }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."<< std::endl;
+    }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."<< std::endl;
+    }) << "Failure setting doppler_step." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."<< std::endl;
+    }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -462,7 +460,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block."<< std::endl;
+            }) << "Failure running the top_block." << std::endl;
 
             if (i == 0)
             {
@@ -478,43 +476,41 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
         }
-
-    delete acquisition;
 }
 
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {
     config_2();
 
-    acquisition = new GpsL1CaPcpsTongAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
-    }) << "Failure setting channel."<< std::endl;
+    }) << "Failure setting channel." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
+    }) << "Failure setting gnss_synchro." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_channel_queue(&channel_internal_queue);
-    }) << "Failure setting channel_internal_queue."<< std::endl;
+    }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."<< std::endl;
+    }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."<< std::endl;
+    }) << "Failure setting doppler_step." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."<< std::endl;
+    }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     acquisition->init();
 
@@ -550,7 +546,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block."<< std::endl;
+            }) << "Failure running the top_block." << std::endl;
 
             if (i == 0)
             {
@@ -564,6 +560,4 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
                 std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
         }
-
-    delete acquisition;
 }

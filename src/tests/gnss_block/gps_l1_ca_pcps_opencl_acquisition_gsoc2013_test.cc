@@ -77,7 +77,7 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    GpsL1CaPcpsOpenClAcquisition *acquisition;
+    std::shared_ptr<GpsL1CaPcpsOpenClAcquisition> acquisition;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -359,8 +359,7 @@ void GpsL1CaPcpsOpenClAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = new GpsL1CaPcpsOpenClAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    delete acquisition;
+    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 }
 
 TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ConnectAndRun)
@@ -371,7 +370,7 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ConnectAndRun)
     long long int end = 0;
 
     config_1();
-    acquisition = new GpsL1CaPcpsOpenClAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -390,15 +389,13 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ConnectAndRun)
     }) << "Failure running the top_block." << std::endl;
 
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
-
-    delete acquisition;
 }
 
 TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
 
-    acquisition = new GpsL1CaPcpsOpenClAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -476,15 +473,13 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResults)
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
         }
-
-    delete acquisition;
 }
 
 TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {
     config_2();
 
-    acquisition = new GpsL1CaPcpsOpenClAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsOpenClAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -562,6 +557,4 @@ TEST_F(GpsL1CaPcpsOpenClAcquisitionGSoC2013Test, ValidationOfResultsProbabilitie
                 std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
         }
-
-    delete acquisition;
 }

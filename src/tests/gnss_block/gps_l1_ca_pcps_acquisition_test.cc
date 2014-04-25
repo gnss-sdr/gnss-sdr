@@ -131,8 +131,7 @@ void GpsL1CaPcpsAcquisitionTest::stop_queue()
 TEST_F(GpsL1CaPcpsAcquisitionTest, Instantiate)
 {
     init();
-    GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    delete acquisition;
+    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 }
 
 TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
@@ -144,7 +143,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
     long long int end = 0;
 
     init();
-    GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -162,9 +161,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
         end = tv.tv_sec *1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
 
-    delete acquisition;
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
-
 }
 
 TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
@@ -175,7 +172,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     double expected_delay_samples = 127;
     double expected_doppler_hz = -2400;
     init();
-    GpsL1CaPcpsAcquisition *acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -242,7 +239,4 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
 
     EXPECT_LE(doppler_error_hz, 333) << "Doppler error exceeds the expected value: 333 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
-
-    delete acquisition;
-
 }

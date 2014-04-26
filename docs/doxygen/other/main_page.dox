@@ -27,7 +27,7 @@ GNSS-SDR is an open-source <a href="http://en.wikipedia.org/wiki/Software_GNSS_r
 
 For details about GNSS-SDR and using it, please see the <a
 href="http://gnss-sdr.org" target="_blank"><b>main project page</b></a> or browse the code at the <a
-href="http://sourceforge.net/p/gnss-sdr/code/311/tree/trunk/" target="_blank"><b>Sourceforge project page</b></a>. You could be also interested in
+href="http://sourceforge.net/p/gnss-sdr/cttc/ci/master/tree/" target="_blank"><b>Sourceforge project page</b></a>. You could be also interested in
 <a href="http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>subscribing to the mailing list</b></a>.
 
 \section toc Contents
@@ -99,9 +99,9 @@ dependencies and build process. Mainly, it consists on installing <a href="http:
 and, optionally,
 \li <a href="http://code.google.com/p/gperftools/" target="_blank">Gperftools</a>, which provides fast, multi-threaded malloc() and performance analysis tools.
 
-After all dependencies are installed, checkout the GNSS-SDR repository:
+After all dependencies are installed, clone the GNSS-SDR repository:
 \verbatim
-$ svn co http://svn.code.sf.net/p/gnss-sdr/code/trunk gnss-sdr 
+$ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr 
 \endverbatim
 
 This will create a folder named gnss-sdr with the following structure:
@@ -185,17 +185,17 @@ $ make install
 \endverbatim
 
 \subsection updating_gnss-sdr Updating GNSS-SDR
-If you checked out GNSS-SDR some days ago, it is possible that some developer had updated files at the Subversion repository. You can update your working copy by doing:
+If you checked out GNSS-SDR some days ago, it is possible that some developer had updated files at the Git repository. You can update your local copy by doing:
 \verbatim
-$ cd gnss-sdr
-$ svn up
+$ git checkout next
+$ git pull origin next
 \endverbatim
 Before rebuiling the source code, it is safe (and recommended) to remove the remainders of old builds:
 \verbatim
 $ rm -rf gnss-sdr/build/*
 \endverbatim
 
-You can also check <a href="http://svnbook.red-bean.com/" target="_blank">Version Control with Subversion</a> for more information about Subversion usage.
+You can also check <a href="http://git-scm.com/book" target="_blank">The Git Book</a> for more information about Git usage.
 
 \section using_gnss-sdr Using GNSS-SDR
 

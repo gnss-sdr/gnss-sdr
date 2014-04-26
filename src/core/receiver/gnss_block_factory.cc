@@ -266,6 +266,10 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
  * Returns the block with the required configuration and implementation
  *
  * PLEASE ADD YOUR NEW BLOCK HERE!!
+ *
+ * IMPORTANT NOTE: Acquisition, Tracking and telemetry blocks are only included here for testing purposes.
+ * To be included in a channel they must be also be included in GetAcqBlock(), GetTrkBlock() and GetTlmBlock()
+ * (see below)
  */
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         std::shared_ptr<ConfigurationInterface> configuration,
@@ -559,8 +563,11 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
 
 /*
- * Not very elegant, Acq, Ttk and Tlm blocks must be added here, too.
- * To be fixed!
+ *
+ * PLEASE ADD YOUR NEW BLOCK HERE!!
+ *
+ * Not very elegant, Acq, Trk and Tlm blocks must be added here, too.
+ * To be improved!
  */
 
 std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(

@@ -59,6 +59,7 @@ protected:
     {
         queue = gr::msg_queue::make(0);
         top_block = gr::make_top_block("Acquisition test");
+        factory = std::make_shared<GNSSBlockFactory>();
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
@@ -78,8 +79,9 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    GalileoE1PcpsAmbiguousAcquisition *acquisition;
-    InMemoryConfiguration* config;
+    std::shared_ptr<AcquisitionInterface> acquisition;
+    std::shared_ptr<GNSSBlockFactory> factory;
+    std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
     concurrent_queue<int> channel_internal_queue;
@@ -143,7 +145,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
 
     num_of_realizations = 1;
 
-    config = new InMemoryConfiguration();
+    config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
 
@@ -214,7 +216,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
 
     num_of_realizations = 100;
 
-    config = new InMemoryConfiguration();
+    config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
 
@@ -364,9 +366,8 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
-    delete acquisition;
-    delete config;
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 }
 
 
@@ -379,7 +380,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
 
     config_1();
 
-    acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -395,43 +397,41 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
         end = tv.tv_sec*1e6 + tv.tv_usec;
-    }) << "Failure running the top_block."<< std::endl;
+    }) << "Failure running the top_block." << std::endl;
 
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
-
-    delete acquisition;
-    delete config;
 }
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
 
-    acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
-    }) << "Failure setting channel."<< std::endl;
+    }) << "Failure setting channel." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
+    }) << "Failure setting gnss_synchro." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_channel_queue(&channel_internal_queue);
-    }) << "Failure setting channel_internal_queue."<< std::endl;
+    }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."<< std::endl;
+    }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."<< std::endl;
+    }) << "Failure setting doppler_step." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."<< std::endl;
+    }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -441,9 +441,9 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config, "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config, "InputFilter", 1, 1, queue);
-        signal_source.reset(new GenSignalSource(config, signal_generator, filter, "SignalSource", queue));
+        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
+        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
+        signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
@@ -469,7 +469,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block."<< std::endl;
+            }) << "Failure running the top_block." << std::endl;
 
             if (i == 0)
             {
@@ -484,9 +484,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
         }
-
-    delete acquisition;
-    delete config;
 }
 
 
@@ -495,50 +492,51 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabi
 {
     config_2();
 
-    acquisition = new GalileoE1PcpsAmbiguousAcquisition(config, "Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
+    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
-    }) << "Failure setting channel."<< std::endl;
+    }) << "Failure setting channel." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
+    }) << "Failure setting gnss_synchro." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_channel_queue(&channel_internal_queue);
-    }) << "Failure setting channel_internal_queue."<< std::endl;
+    }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."<< std::endl;
+    }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."<< std::endl;
+    }) << "Failure setting doppler_step." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."<< std::endl;
+    }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     acquisition->init();
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config, "SignalSource", 0, 1, queue);
-        FirFilter* filter = new FirFilter(config, "InputFilter", 1, 1, queue);
-        signal_source.reset(new GenSignalSource(config, signal_generator, filter, "SignalSource", queue));
+        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
+        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
+        signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;
 
-    // i = 0 --> sallite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
+    // i = 0 --> satellite in acquisition is visible (prob of detection and prob of detection with wrong estimation)
     // i = 1 --> satellite in acquisition is not visible (prob of false detection)
     for (unsigned int i = 0; i < 2; i++)
         {
@@ -573,7 +571,4 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabi
                 std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
         }
-
-    delete acquisition;
-    delete config;
 }

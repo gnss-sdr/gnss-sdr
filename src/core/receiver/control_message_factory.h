@@ -31,6 +31,7 @@
 #ifndef GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 #define GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_
 
+#include <memory>
 #include <vector>
 #include <gnuradio/message.h>
 
@@ -58,7 +59,7 @@ public:
     virtual ~ControlMessageFactory();
 
     boost::shared_ptr<gr::message> GetQueueMessage(unsigned int who, unsigned int what);
-    std::vector<ControlMessage*>* GetControlMessages(gr::message::sptr queue_message);
+    std::shared_ptr<std::vector<std::shared_ptr<ControlMessage>>> GetControlMessages(gr::message::sptr queue_message);
 };
 
 #endif /*GNSS_SDR_CONTROL_MESSAGE_FACTORY_H_*/

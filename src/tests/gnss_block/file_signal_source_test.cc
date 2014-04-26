@@ -39,7 +39,7 @@
 TEST(FileSignalSource, Instantiate)
 {
     boost::shared_ptr<gr::msg_queue> queue = gr::msg_queue::make(0);
-    InMemoryConfiguration* config = new InMemoryConfiguration();
+    std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("Test.samples", "0");
     config->set_property("Test.sampling_frequency", "0");
@@ -49,19 +49,16 @@ TEST(FileSignalSource, Instantiate)
     config->set_property("Test.item_type", "gr_complex");
     config->set_property("Test.repeat", "false");
 
-    FileSignalSource *signal_source = new FileSignalSource(config, "Test", 1, 1, queue);
+    std::unique_ptr<FileSignalSource> signal_source(new FileSignalSource(config.get(), "Test", 1, 1, queue));
 
-    //EXPECT_STREQ("../src/tests/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat", signal_source->filename().c_str());
     EXPECT_STREQ("gr_complex", signal_source->item_type().c_str());
     EXPECT_TRUE(signal_source->repeat() == false);
-
-    delete signal_source;
 }
 
 TEST(FileSignalSource, InstantiateFileNotExists)
 {
     boost::shared_ptr<gr::msg_queue> queue = gr::msg_queue::make(0);
-    InMemoryConfiguration* config = new InMemoryConfiguration();
+    std::shared_ptr<InMemoryConfiguration> config = std::make_shared<InMemoryConfiguration>();
 
     config->set_property("Test.samples", "0");
     config->set_property("Test.sampling_frequency", "0");
@@ -69,5 +66,5 @@ TEST(FileSignalSource, InstantiateFileNotExists)
     config->set_property("Test.item_type", "gr_complex");
     config->set_property("Test.repeat", "false");
 
-    EXPECT_THROW(new FileSignalSource(config, "Test", 1, 1, queue), std::exception);
+    EXPECT_THROW(auto uptr(new FileSignalSource(config.get(), "Test", 1, 1, queue)), std::exception);
 }

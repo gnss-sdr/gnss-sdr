@@ -60,7 +60,7 @@ public:
     FileConfiguration(std::string filename);
     FileConfiguration();
     //! Virtual destructor
-    virtual ~FileConfiguration();
+     ~FileConfiguration();
     std::string property(std::string property_name, std::string default_value);
     bool property(std::string property_name, bool default_value);
     long property(std::string property_name, long default_value);

@@ -42,8 +42,7 @@ TEST(Rtcm_Printer_Test, Instantiate)
     std::string filename = "hello.rtcm";
     bool flag_rtcm_tty_port = false;
     std::string rtcm_dump_devname = "/dev/pts/4";
-    Rtcm_Printer *RTCM_printer = new Rtcm_Printer(filename, flag_rtcm_tty_port, rtcm_dump_devname);
-    delete RTCM_printer;
+    std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, flag_rtcm_tty_port, rtcm_dump_devname));
 }
 
 TEST(Rtcm_Printer_Test, Instantiate_and_Run)
@@ -68,10 +67,9 @@ TEST(Rtcm_Printer_Test, Instantiate_and_Run)
     bool flag_rtcm_tty_port = false;
     std::string rtcm_dump_devname = "/dev/pts/4";
 
-    Rtcm_Printer *RTCM_printer = new Rtcm_Printer(filename, flag_rtcm_tty_port, rtcm_dump_devname);
+    std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, flag_rtcm_tty_port, rtcm_dump_devname));
     std::string reference_msg = "D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98";
     std::string testing_msg = RTCM_printer->print_M1005_test();
 
     EXPECT_EQ(reference_msg, testing_msg);
-    delete RTCM_printer;
 }

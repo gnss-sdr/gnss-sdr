@@ -3,6 +3,7 @@
  * \brief Interface of a GNSS receiver flowgraph.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
+ *         Carles Fernandez-Prades, 2014. cfernandez(at)cttc.es
  *
  * It contains a signal source,
  * a signal conditioner, a set of channels, a pvt and an output filter.
@@ -35,10 +36,11 @@
 #ifndef GNSS_SDR_GNSS_FLOWGRAPH_H_
 #define GNSS_SDR_GNSS_FLOWGRAPH_H_
 
+#include <list>
+#include <memory>
+#include <queue>
 #include <string>
 #include <vector>
-#include <queue>
-#include <list>
 #include <gnuradio/top_block.h>
 #include <gnuradio/msg_queue.h>
 #include "GPS_L1_CA.h"
@@ -93,13 +95,6 @@ public:
 
     void set_configuration(std::shared_ptr<ConfigurationInterface> configuration);
 
-    GNSSBlockInterface* signal_source();
-    GNSSBlockInterface* signal_conditioner();
-    ChannelInterface* channel(unsigned int index);
-    GNSSBlockInterface* observables();
-    GNSSBlockInterface* pvt();
-    GNSSBlockInterface* output_filter();
-
     unsigned int applied_actions()
     {
         return applied_actions_;
@@ -114,15 +109,10 @@ public:
     }
 
 private:
-    void init();
-    /*!
-     * \brief Populates the SV PRN list available for acquisition and tracking
-     */
+    void init(); // Populates the SV PRN list available for acquisition and tracking
     void set_signals_list();
-    /*!
-     * \brief Initializes the channels state (start acquisition or keep standby) using the configuration parameters (number of channels and max channels in acquisition)
-     */
-    void set_channels_state();
+    void set_channels_state(); // Initializes the channels state (start acquisition or keep standby)
+                               // using the configuration parameters (number of channels and max channels in acquisition)
     bool connected_;
     bool running_;
     unsigned int channels_count_;
@@ -131,8 +121,14 @@ private:
     unsigned int applied_actions_;
     std::string config_file_;
     std::shared_ptr<ConfigurationInterface> configuration_;
-    std::unique_ptr<GNSSBlockFactory> block_factory_;
-    std::vector<GNSSBlockInterface*>* blocks_;
+    std::shared_ptr<GNSSBlockFactory> block_factory_;
+    std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_ = std::make_shared<std::vector<std::shared_ptr<GNSSBlockInterface>>>();
+    std::shared_ptr<GNSSBlockInterface> sig_source_;
+    std::shared_ptr<GNSSBlockInterface> sig_conditioner_;
+    std::shared_ptr<GNSSBlockInterface> observables_;
+    std::shared_ptr<GNSSBlockInterface> pvt_;
+    std::shared_ptr<GNSSBlockInterface> output_filter_;
+    std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gr::top_block_sptr top_block_;
     boost::shared_ptr<gr::msg_queue> queue_;
     std::list<Gnss_Signal> available_GNSS_signals_;

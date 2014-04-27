@@ -513,10 +513,7 @@ We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, 
 Using GNSS-SDR
 ==============
 
-With GNSS-SDR, you can define you own receiver, work with captured raw data or from a RF front-end, dump into files intermediate signals, or tune every single algorithm used in the signal processing. All the configuration
-is done in a single file. Those configuration files reside at the [gnss-sdr/conf/](./conf/) folder. By default, the executable ```gnss-sdr``` will read the configuration
-available at ```gnss-sdr/conf/gnss-sdr.conf```. You can edit that file to fit your needs, or even better, define a new ```my_receiver.conf``` file with your own configuration. 
-This new receiver can be done by going to the ```gnss-sdr/install``` folder:
+With GNSS-SDR, you can define you own receiver, work with captured raw data or from a RF front-end, dump into files intermediate signals, or tune every single algorithm used in the signal processing. All the configuration is done in a single file. Those configuration files reside at the [gnss-sdr/conf/](./conf/) folder. By default, the executable ```gnss-sdr``` will read the configuration available at ```gnss-sdr/conf/gnss-sdr.conf```. You can edit that file to fit your needs, or even better, define a new ```my_receiver.conf``` file with your own configuration. This new receiver can be done by going to the ```gnss-sdr/install``` folder:
 
 ~~~~~~ 
 $ cd gnss-sdr/install
@@ -528,8 +525,7 @@ and invoking gnss-sdr with the ```--config_file``` flag pointing to your configu
 $ ./gnss-sdr --config_file=../conf/my_receiver.conf
 ~~~~~~ 
 
-You can see a guide of available implementations at ```gnss-sdr/conf/master.conf```. That folder contains other working examples as well. If you have a working
-configuration and want to share it will others, please tell us and we will be happy to upload it to the server.
+You can see a guide of available implementations at ```gnss-sdr/conf/master.conf```. That folder contains other working examples as well. If you have a working configuration and want to share it will others, please tell us and we will be happy to upload it to the server.
 
 You can use a single configuration file for processing different data files, specifying the file to be processed with the ```--signal_source``` flag:
 
@@ -591,7 +587,7 @@ GNU Radio's class ```gr::basic_block``` is the abstract base class for all signa
 
 A signal processing flow is constructed by creating a tree of hierarchical blocks, which at any level may also contain terminal nodes that actually implement signal processing functions.
 
-Class ```gr::top_block``` is the top-level hierarchical block representing a flowgraph. It defines GNU Radio runtime functions used during the execution of the program: run(), start(), stop(), wait(), etc. A a subclass called GNSSBlockInterface is the common interface for all the GNSS-SDR modules. It defines pure virtual methods, that are required to be implemented by a derived class.
+Class ```gr::top_block``` is the top-level hierarchical block representing a flowgraph. It defines GNU Radio runtime functions used during the execution of the program: run(), start(), stop(), wait(), etc. A a subclass called [GNSSBlockInterface](./src/core/interfaces/gnss_block_interface.h) is the common interface for all the GNSS-SDR modules. It defines pure virtual methods, that are required to be implemented by a derived class.
 
 Subclassing GNSSBlockInterface, we defined interfaces for the GNSS receiver blocks depicted in the figure above. This hierarchy provides the definition of different algorithms and different implementations, which will be instantiated according to the configuration. This strategy allows multiple implementations sharing a common interface, achieving the objective of decoupling interfaces from implementations: it defines a family of algorithms, encapsulates each one, and makes them interchangeable. Hence, we let the algorithm vary independently from the program that uses it.
 
@@ -951,9 +947,7 @@ OutputFilter.item_type=gr_complex
 About the software license
 ==========================
 
-GNSS-SDR is released under the [General Public License (GPL) v3](http://www.gnu.org/licenses/gpl.html), thus securing practical usability, inspection, 
-and continuous improvement by the research community, allowing the discussion based on tangible code and the analysis of results obtained with real signals. 
-The GPL implies that:
+GNSS-SDR is released under the [General Public License (GPL) v3](http://www.gnu.org/licenses/gpl.html), thus securing practical usability, inspection, and continuous improvement by the research community, allowing the discussion based on tangible code and the analysis of results obtained with real signals. The GPL implies that:
 
    1. Copies may be distributed free of charge or for money, but the source code has to be shipped or provided free of charge (or at cost price) on demand. The receiver of the source code has the same rights meaning he can share copies free of charge or resell.
    2. The licensed material may be analyzed or modified.

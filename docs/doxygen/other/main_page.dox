@@ -366,15 +366,15 @@ A channel encapsulates all signal processing devoted to a single satellite. Thus
   channels is selectable by the user in the configuration file, this approach helps improving the scalability and maintainability of the receiver.
 
 This module is also in charge of managing the interplay between acquisition and tracking. Acquisition can be initialized in several ways, depending on
- the prior information available (called cold start when the receiver has no information about its position nor the satellites almanac; warm start when
-  a rough location and the approximate time of day are available, and the receiver has a recently recorded almanac broadcast; or hot start when the receiver 
-  was tracking a satellite and the signal line of sight broke for a short period of time, but the ephemeris and almanac data is still valid, or this information
-   is provided by other means), and an acquisition process can finish deciding that the satellite is not present, that longer integration is needed in order to 
-   confirm the presence of the satellite, or declaring the satellite present. In the latter case, acquisition process should stop and trigger the tracking module
-    with coarse estimations of the synchronization parameters. The mathematical abstraction used to design this logic is known as finite state machine (FSM), that is
-     a behavior model composed of a finite number of states, transitions between those states, and actions. For the implementation, we used the 
-     <a href="http://www.boost.org/libs/statechart/doc/tutorial.html" target="_blank">Boost.Statechart library</a>, 
-     which provides desirable features such as support for asynchronous state machines, multi-threading, type-safety, error handling and compile-time validation.
+the prior information available (called cold start when the receiver has no information about its position nor the satellites almanac; warm start when 
+a rough location and the approximate time of day are available, and the receiver has a recently recorded almanac broadcast; or hot start when the receiver 
+was tracking a satellite and the signal line of sight broke for a short period of time, but the ephemeris and almanac data is still valid, or this information
+is provided by other means), and an acquisition process can finish deciding that the satellite is not present, that longer integration is needed in order to 
+confirm the presence of the satellite, or declaring the satellite present. In the latter case, acquisition process should stop and trigger the tracking module
+with coarse estimations of the synchronization parameters. The mathematical abstraction used to design this logic is known as finite state machine (FSM), that is
+a behavior model composed of a finite number of states, transitions between those states, and actions. For the implementation, we used the 
+<a href="http://www.boost.org/libs/statechart/doc/tutorial.html" target="_blank">Boost.Statechart library</a>, 
+which provides desirable features such as support for asynchronous state machines, multi-threading, type-safety, error handling and compile-time validation.
      
 The abstract class ChannelInterface represents an interface to a channel GNSS block. Check Channel for an actual implementation.
      
@@ -665,7 +665,7 @@ Please do not hesitate to <a href="http://gnss-sdr.org/contact-us" target="_blan
 
 Enjoy GNSS-SDR! 
 
-The Developer Team
+The Developer Team.
 */
 
 

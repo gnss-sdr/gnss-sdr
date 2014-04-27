@@ -521,104 +521,58 @@ Control plane
 
 ![](./docs/doxygen/images/GeneralBlockDiagram.png)
 
-GNSS-SDR's main method initializes the logging library, processes the command line flags, if any, provided by the user and instantiates a [ControlThread](./src/core/receiver/control_thread.h) object. 
-Its constructor reads the configuration file, creates a control queue and creates a flowgraph according to the configuration. Then, the program's main method 
-calls the run() method of the instantiated object, an action that connects the flowgraph and starts running it. After that, and until a stop message is received, 
-it reads control messages sent by the receiver's modules through a safe-thread queue and processes them. Finally, when a stop message is received, the main 
-method executes the destructor of the ControlThread object, which deallocates memory, does other cleanup and exits the program.
+GNSS-SDR's main method initializes the logging library, processes the command line flags, if any, provided by the user and instantiates a [ControlThread](./src/core/receiver/control_thread.h) object. Its constructor reads the configuration file, creates a control queue and creates a flowgraph according to the configuration. Then, the program's main method calls the run() method of the instantiated object, an action that connects the flowgraph and starts running it. After that, and until a stop message is received, it reads control messages sent by the receiver's modules through a safe-thread queue and processes them. Finally, when a stop message is received, the main method executes the destructor of the ControlThread object, which deallocates memory, does other cleanup and exits the program.
 
-The [GNSSFlowgraph](./src/core/receiver/gnss_flowgraph.h) class is responsible for preparing the graph of blocks according to the configuration, running it, modifying it during run-time and stopping it. 
-Blocks are identified by its role. This class knows which roles it has to instantiate and how to connect them. 
-It relies on the configuration to get the correct instances of the roles it needs and then it applies the connections between GNU Radio blocks to make the 
-graph ready to be started. The complexity related to managing the blocks and the data stream is handled by GNU Radio's ```gr::top_block``` class. GNSSFlowgraph wraps 
-the ```gr::top_block``` instance so we can take advantage of the ```gnss_block_factory``` (see below), the configuration system and the processing blocks. This class is also responsible 
-for applying changes to the configuration of the flowgraph during run-time, dynamically reconfiguring channels: it selects the strategy for selecting satellites. 
-This can range from a sequential search over all the satellites' ID to other more efficient approaches.
+The [GNSSFlowgraph](./src/core/receiver/gnss_flowgraph.h) class is responsible for preparing the graph of blocks according to the configuration, running it, modifying it during run-time and stopping it. Blocks are identified by its role. This class knows which roles it has to instantiate and how to connect them. It relies on the configuration to get the correct instances of the roles it needs and then it applies the connections between GNU Radio blocks to make the graph ready to be started. The complexity related to managing the blocks and the data stream is handled by GNU Radio's ```gr::top_block``` class. GNSSFlowgraph wraps the ```gr::top_block``` instance so we can take advantage of the ```gnss_block_factory``` (see below), the configuration system and the processing blocks. This class is also responsible for applying changes to the configuration of the flowgraph during run-time, dynamically reconfiguring channels: it selects the strategy for selecting satellites. This can range from a sequential search over all the satellites' ID to other more efficient approaches.
 
-The Control Plane is in charge of creating a flowgraph according to the configuration and then managing the modules. Configuration allows users to define in an easy way their own
-custom receiver by specifying the flowgraph (type of signal source, number of channels, algorithms to be used for each channel and each module, strategies for 
-satellite selection, type of output format, etc.). Since it is difficult to foresee what future module implementations will be needed in terms of configuration, 
-we used a very simple approach that can be extended without a major impact in the code. This can be achieved by simply mapping the names of the variables in the 
-modules with the names of the parameters in the configuration.
+The Control Plane is in charge of creating a flowgraph according to the configuration and then managing the modules. Configuration allows users to define in an easy way their own custom receiver by specifying the flowgraph (type of signal source, number of channels, algorithms to be used for each channel and each module, strategies for satellite selection, type of output format, etc.). Since it is difficult to foresee what future module implementations will be needed in terms of configuration, we used a very simple approach that can be extended without a major impact in the code. This can be achieved by simply mapping the names of the variables in the modules with the names of the parameters in the configuration.
 
 ### Configuration
 
-Properties are passed around within the program using the [ConfigurationInterface](./src/core/interfaces/configuration_interface.h) class. There are two implementations of this interface: [FileConfiguration](./src/core/receiver/file_configuration.h) and 
-[InMemoryConfiguration](./src/core/receiver/in_memory_configuration.h). FileConfiguration reads the properties (pairs of property name and value) from a file and stores them internally. InMemoryConfiguration does 
-not read from a file; it remains empty after instantiation and property values and names are set using the set property method. FileConfiguration is intended to be 
-used in the actual GNSS-SDR application whereas InMemoryConfiguration is intended to be used in tests to avoid file-dependency in the file system. Classes that 
-need to read configuration parameters will receive instances of ConfigurationInterface from where they will fetch the values. For instance, parameters related 
-to SignalSource should look like this:
+Properties are passed around within the program using the [ConfigurationInterface](./src/core/interfaces/configuration_interface.h) class. There are two implementations of this interface: [FileConfiguration](./src/core/receiver/file_configuration.h) and [InMemoryConfiguration](./src/core/receiver/in_memory_configuration.h). FileConfiguration reads the properties (pairs of property name and value) from a file and stores them internally. InMemoryConfiguration does not read from a file; it remains empty after instantiation and property values and names are set using the set property method. FileConfiguration is intended to be used in the actual GNSS-SDR application whereas InMemoryConfiguration is intended to be used in tests to avoid file-dependency in the file system. Classes that need to read configuration parameters will receive instances of ConfigurationInterface from where they will fetch the values. For instance, parameters related to SignalSource should look like this:
 
 ~~~~~~ 
 SignalSource.parameter1=value1
 SignalSource.parameter2=value2
 ~~~~~~ 
 
-The name of these parameters can be anything but one reserved word: implementation. This parameter indicates in its value the name of the class that has to be instantiated 
-by the factory for that role. For instance, if our signal source is providing data already at baseband and thus we want to use the implementation [Pass_Through](./src/algorithms/libs/pass_through.h) for module SignalConditioner, the corresponding line in the 
-configuration file would be
+The name of these parameters can be anything but one reserved word: implementation. This parameter indicates in its value the name of the class that has to be instantiated by the factory for that role. For instance, if our signal source is providing data already at baseband and thus we want to use the implementation [Pass_Through](./src/algorithms/libs/pass_through.h) for module SignalConditioner, the corresponding line in the configuration file would be
 
 ~~~~~~ 
 SignalConditioner.implementation=Pass_Through
 ~~~~~~ 
 
-Since the configuration is just a set of property names and values without any meaning or syntax, the system is very versatile and easily extendable. Adding new 
-properties to the system only implies modifications in the classes that will make use of these properties. In addition, the configuration files are not checked 
-against any strict syntax so it is always in a correct status (as long as it contains pairs of property names and values in the [INI format](http://en.wikipedia.org/wiki/INI_file)).
+Since the configuration is just a set of property names and values without any meaning or syntax, the system is very versatile and easily extendable. Adding new properties to the system only implies modifications in the classes that will make use of these properties. In addition, the configuration files are not checked against any strict syntax so it is always in a correct status (as long as it contains pairs of property names and values in the [INI format](http://en.wikipedia.org/wiki/INI_file)).
 
 ### GNSS block factory
 
-Hence, the application defines a simple accessor class to fetch the configuration pairs of values and passes them to a factory class called [GNSSBlockFactory](./src/core/receiver/gnss_block_factory.h). 
-This factory decides, according to the configuration, which class needs to be instantiated and which parameters should be passed to the constructor. Hence, the factory 
-encapsulates the complexity of blocks' instantiation. With that approach, adding a new block that requires new parameters will be as simple as adding the block 
-class and modifying the factory to be able to instantiate it. This loose coupling between the blocks' implementations and the syntax of the configuration 
-enables extending the application capacities in a high degree. It also allows to produce fully customized receivers, for instance a testbed for acquisition 
-algorithms, and to place observers at any point of the receiver chain.
+Hence, the application defines a simple accessor class to fetch the configuration pairs of values and passes them to a factory class called [GNSSBlockFactory](./src/core/receiver/gnss_block_factory.h). This factory decides, according to the configuration, which class needs to be instantiated and which parameters should be passed to the constructor. Hence, the factory encapsulates the complexity of blocks' instantiation. With that approach, adding a new block that requires new parameters will be as simple as adding the block class and modifying the factory to be able to instantiate it. This loose coupling between the blocks' implementations and the syntax of the configuration enables extending the application capacities in a high degree. It also allows to produce fully customized receivers, for instance a testbed for acquisition algorithms, and to place observers at any point of the receiver chain.
 
 
 Signal Processing plane
 -----------------------
 
-GNU Radio's class ```gr::basic_block``` is the abstract base class for all signal processing blocks, a bare abstraction of an entity that has a name and a set of 
-inputs and outputs. It is never instantiated directly; rather, this is the abstract parent class of both ```gr::hier_block2```, which is a recursive container that 
-adds or removes processing or hierarchical blocks to the internal graph, and ```gr::block```, which is the abstract base class for all the processing blocks. 
+GNU Radio's class ```gr::basic_block``` is the abstract base class for all signal processing blocks, a bare abstraction of an entity that has a name and a set of inputs and outputs. It is never instantiated directly; rather, this is the abstract parent class of both ```gr::hier_block2```, which is a recursive container that adds or removes processing or hierarchical blocks to the internal graph, and ```gr::block```, which is the abstract base class for all the processing blocks. 
 
 ![](./docs/doxygen/images/ClassHierarchy.png)
 
-A signal processing flow is constructed by creating a tree of hierarchical blocks, which at any level may also contain terminal nodes that actually implement signal 
-processing functions.
+A signal processing flow is constructed by creating a tree of hierarchical blocks, which at any level may also contain terminal nodes that actually implement signal processing functions.
 
-Class ```gr::top_block``` is the top-level hierarchical block representing a flowgraph. It defines GNU Radio runtime functions used during the execution of the 
-program: run(), start(), stop(), wait(), etc. A a subclass called GNSSBlockInterface is the common interface for all the GNSS-SDR modules. It defines pure virtual 
-methods, that are required to be implemented by a derived class.
+Class ```gr::top_block``` is the top-level hierarchical block representing a flowgraph. It defines GNU Radio runtime functions used during the execution of the program: run(), start(), stop(), wait(), etc. A a subclass called GNSSBlockInterface is the common interface for all the GNSS-SDR modules. It defines pure virtual methods, that are required to be implemented by a derived class.
 
-Subclassing GNSSBlockInterface, we defined interfaces for the GNSS receiver blocks depicted in the figure above. This hierarchy provides the definition of different 
-algorithms and different implementations, which will be instantiated according to the configuration. This strategy allows 
-multiple implementations sharing a common interface, achieving the objective of decoupling interfaces from implementations: it defines a family of algorithms, encapsulates each one, 
-and makes them interchangeable. Hence, we let the algorithm vary independently from the program that uses it.
+Subclassing GNSSBlockInterface, we defined interfaces for the GNSS receiver blocks depicted in the figure above. This hierarchy provides the definition of different algorithms and different implementations, which will be instantiated according to the configuration. This strategy allows multiple implementations sharing a common interface, achieving the objective of decoupling interfaces from implementations: it defines a family of algorithms, encapsulates each one, and makes them interchangeable. Hence, we let the algorithm vary independently from the program that uses it.
 
 ###  Signal Source
 
-The input of a software receiver are the raw bits that come out from the front-end's analog-to-digital converter (ADC). 
-Those bits can be read from a file stored in the hard disk or directly in real-time from a hardware device through USB or Ethernet buses. 
+The input of a software receiver are the raw bits that come out from the front-end's analog-to-digital converter (ADC). Those bits can be read from a file stored in the hard disk or directly in real-time from a hardware device through USB or Ethernet buses. 
 
-The Signal Source module is in charge of implementing the hardware driver, that is, the portion of the code that communicates with the RF front-end and receives 
-the samples coming from the ADC. This communication is usually performed through USB or Ethernet buses. Since real-time processing requires a highly optimized 
-implementation of the whole receiver, this module also allows to read samples from a file stored in a hard disk, and thus processing without time constraints. 
-Relevant parameters of those samples are the intermediate frequency (or baseband I&Q components), the sampling rate and number of bits per sample, that must be 
-specified by the user in the configuration file.
+The Signal Source module is in charge of implementing the hardware driver, that is, the portion of the code that communicates with the RF front-end and receives the samples coming from the ADC. This communication is usually performed through USB or Ethernet buses. Since real-time processing requires a highly optimized implementation of the whole receiver, this module also allows to read samples from a file stored in a hard disk, and thus processing without time constraints. Relevant parameters of those samples are the intermediate frequency (or baseband I&Q components), the sampling rate and number of bits per sample, that must be specified by the user in the configuration file.
 
-This module also performs bit-depth adaptation, since most of the existing RF front-ends provide samples quantized with 2 or 3 bits, while operations inside
- the processor are performed on 32- or 64-bit words, depending on its architecture. Although there are implementations of the most intensive computational 
- processes (mainly correlation) that take advantage of specific data types and architectures for the sake of 
- efficiency, the approach is processor-specific and hardly portable. We suggest to keep signal samples in standard data types and letting the compiler 
- select the best library version (implemented using SIMD or any other processor-specific technology) of the required routines for a given processor.
+This module also performs bit-depth adaptation, since most of the existing RF front-ends provide samples quantized with 2 or 3 bits, while operations inside the processor are performed on 32- or 64-bit words, depending on its architecture. Although there are implementations of the most intensive computational processes (mainly correlation) that take advantage of specific data types and architectures for the sake of efficiency, the approach is processor-specific and hardly portable. We suggest to keep signal samples in standard data types and letting the compiler select the best library version (implemented using SIMD or any other processor-specific technology) of the required routines for a given processor.
  
 ***Example: FileSignalSource***
 
-The user can configure the receiver for reading from a file, setting in the configuration file the data file location, sample format, 
-and the sampling frequency and intermediate frequency at what the signal was originally captured.
+The user can configure the receiver for reading from a file, setting in the configuration file the data file location, sample format, and the sampling frequency and intermediate frequency at what the signal was originally captured.
  
 ~~~~~~ 
 ;######### SIGNAL_SOURCE CONFIG ############
@@ -657,9 +611,7 @@ Other examples are available at [gnss-sdr/conf/](./conf/).
 
 ![](./docs/doxygen/images/SignalConditioner.png)
 
-The signal conditioner is in charge of resampling the signal and delivering a reference sample rate to the downstream processing blocks, acting as
-  a facade between the signal source and the synchronization channels, providing a simplified interface to the input signal. 
- In case of multiband front-ends, this module would be in charge of providing a separated data stream for each band.
+The signal conditioner is in charge of resampling the signal and delivering a reference sample rate to the downstream processing blocks, acting as a facade between the signal source and the synchronization channels, providing a simplified interface to the input signal. In case of multiband front-ends, this module would be in charge of providing a separated data stream for each band.
 
 If your signal source is providing baseband signal samples of type ```gr_complex``` at 4 Msps, you can bypass the Signal Conditioner block by:
 
@@ -755,19 +707,9 @@ Resampler.sample_freq_out=4000000 ; desired sample frequency of the output signa
 
 ###  Channel
 
-A channel encapsulates all signal processing devoted to a single satellite. Thus, it is a large composite object which encapsulates the acquisition,
-tracking and navigation data decoding modules. As a composite object, it can be treated as a single entity, meaning that it can be easily replicated. Since the number of
-  channels is selectable by the user in the configuration file, this approach helps improving the scalability and maintainability of the receiver.
+A channel encapsulates all signal processing devoted to a single satellite. Thus, it is a large composite object which encapsulates the acquisition, tracking and navigation data decoding modules. As a composite object, it can be treated as a single entity, meaning that it can be easily replicated. Since the number of channels is selectable by the user in the configuration file, this approach helps improving the scalability and maintainability of the receiver.
 
-This module is also in charge of managing the interplay between acquisition and tracking. Acquisition can be initialized in several ways, depending on
-the prior information available (called cold start when the receiver has no information about its position nor the satellites almanac; warm start when 
-a rough location and the approximate time of day are available, and the receiver has a recently recorded almanac broadcast; or hot start when the receiver 
-was tracking a satellite and the signal line of sight broke for a short period of time, but the ephemeris and almanac data is still valid, or this information
-is provided by other means), and an acquisition process can finish deciding that the satellite is not present, that longer integration is needed in order to 
-confirm the presence of the satellite, or declaring the satellite present. In the latter case, acquisition process should stop and trigger the tracking module
-with coarse estimations of the synchronization parameters. The mathematical abstraction used to design this logic is known as finite state machine (FSM), that is
-a behavior model composed of a finite number of states, transitions between those states, and actions. For the implementation, we use the [Boost.Statechart library](http://www.boost.org/libs/statechart/doc/tutorial.html), 
-which provides desirable features such as support for asynchronous state machines, multi-threading, type-safety, error handling and compile-time validation.
+This module is also in charge of managing the interplay between acquisition and tracking. Acquisition can be initialized in several ways, depending on the prior information available (called cold start when the receiver has no information about its position nor the satellites almanac; warm start when a rough location and the approximate time of day are available, and the receiver has a recently recorded almanac broadcast; or hot start when the receiver was tracking a satellite and the signal line of sight broke for a short period of time, but the ephemeris and almanac data is still valid, or this information is provided by other means), and an acquisition process can finish deciding that the satellite is not present, that longer integration is needed in order to confirm the presence of the satellite, or declaring the satellite present. In the latter case, acquisition process should stop and trigger the tracking module with coarse estimations of the synchronization parameters. The mathematical abstraction used to design this logic is known as finite state machine (FSM), that is a behavior model composed of a finite number of states, transitions between those states, and actions. For the implementation, we use the [Boost.Statechart library](http://www.boost.org/libs/statechart/doc/tutorial.html), which provides desirable features such as support for asynchronous state machines, multi-threading, type-safety, error handling and compile-time validation.
      
 The abstract class [ChannelInterface](./src/core/interfaces/channel_interface.h) represents an interface to a channel GNSS block. Check [Channel](./src/algorithms/channel/adapters/channel.h) for an actual implementation.
 
@@ -797,17 +739,9 @@ Channel1.repeat_satellite=false
      
 #### Acquisition
 
-The first task of a GNSS receiver is to detect the presence or absence of in-view satellites. This is done by the acquisition system process, which also provides a coarse estimation of two signal parameters: the frequency shift 
- with respect to the nominal IF frequency, and a delay term which allows the receiver to create a local code aligned with the incoming code.
-AcquisitionInterface is the common interface for all the acquisition algorithms and their corresponding implementations. Algorithms' interface, that may vary 
-depending on the use of information external to the receiver, such as in Assisted GNSS, is defined in classes referred to as *adapters*. 
-These adapters wrap the GNU Radio blocks interface into a compatible interface expected by AcquisitionInterface. This allows the use of existing GNU Radio blocks 
-derived from ```gr::block```, and ensures that newly developed implementations will also be reusable in other GNU Radio-based applications. 
-Moreover, it adds still another layer of abstraction, since each given acquisition algorithm can have different implementations (for instance using
- different numerical libraries). In such a way, implementations can be continuously improved without having any impact neither on the algorithm interface nor the general acquisition interface.
+The first task of a GNSS receiver is to detect the presence or absence of in-view satellites. This is done by the acquisition system process, which also provides a coarse estimation of two signal parameters: the frequency shift with respect to the nominal IF frequency, and a delay term which allows the receiver to create a local code aligned with the incoming code. [AcquisitionInterface](./src/core/interfaces/acquisition_interface.h) is the common interface for all the acquisition algorithms and their corresponding implementations. Algorithms' interface, that may vary depending on the use of information external to the receiver, such as in Assisted GNSS, is defined in classes referred to as *adapters*. These adapters wrap the GNU Radio blocks interface into a compatible interface expected by AcquisitionInterface. This allows the use of existing GNU Radio blocks derived from ```gr::block```, and ensures that newly developed implementations will also be reusable in other GNU Radio-based applications. Moreover, it adds still another layer of abstraction, since each given acquisition algorithm can have different implementations (for instance using different numerical libraries). In such a way, implementations can be continuously improved without having any impact neither on the algorithm interface nor the general acquisition interface.
 
-Check [GpsL1CaPcpsAcquisition](./src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.h) and [GalileoE1PcpsAmbiguousAcquisition](./src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.h) for examples of adapters from a Parallel Code Phase Search (PCPS) acquisition block, and
- [pcps_acquisition_cc](./src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.h) for an example of a block implementation. The source code of all the available acquisition algorithms is located at:
+Check [GpsL1CaPcpsAcquisition](./src/algorithms/acquisition/adapters/gps_l1_ca_pcps_acquisition.h) and [GalileoE1PcpsAmbiguousAcquisition](./src/algorithms/acquisition/adapters/galileo_e1_pcps_ambiguous_acquisition.h) for examples of adapters from a Parallel Code Phase Search (PCPS) acquisition block, and [pcps_acquisition_cc](./src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition_cc.h) for an example of a block implementation. The source code of all the available acquisition algorithms is located at:
  
 ~~~~~~ 
   |-gnss-sdr
@@ -858,13 +792,9 @@ Acquisition1.repeat_satellite = false
 
 #### Tracking
 
-When a satellite is declared present, the parameters estimated by the acquisition module are then fed to the receiver tracking module, which represents the
-second stage of the signal processing unit, aiming to perform a local search for accurate estimates of code delay and carrier phase, and following their eventual variations. 
+When a satellite is declared present, the parameters estimated by the acquisition module are then fed to the receiver tracking module, which represents the second stage of the signal processing unit, aiming to perform a local search for accurate estimates of code delay and carrier phase, and following their eventual variations. 
 
-Again, a class hierarchy consisting of a [TrackingInterface](./src/core/interfaces/tracking_interface.h) class and subclasses implementing algorithms provides a way of testing different approaches, 
-with full access to their parameters. Check [GpsL1CaDllPllTracking](./src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.h) or [GalileoE1DllPllVemlTracking](./src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.h) for examples of adapters, and [Gps_L1_Ca_Dll_Pll_Tracking_cc](./src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.h) for an example 
-of a signal processing block implementation. There are also available some useful classes and functions for signal tracking; take a look at [correlator.h](./src/algorithms/tracking/libs/correlator.h), [lock_detectors.h](./src/algorithms/tracking/libs/lock_detectors.h), [tracking_discriminators.h](./src/algorithms/tracking/libs/tracking_discriminators.h) or
-[tracking_2nd_DLL_filter.h](./src/algorithms/tracking/libs/tracking_2nd_DLL_filter.h). 
+Again, a class hierarchy consisting of a [TrackingInterface](./src/core/interfaces/tracking_interface.h) class and subclasses implementing algorithms provides a way of testing different approaches, with full access to their parameters. Check [GpsL1CaDllPllTracking](./src/algorithms/tracking/adapters/gps_l1_ca_dll_pll_tracking.h) or [GalileoE1DllPllVemlTracking](./src/algorithms/tracking/adapters/galileo_e1_dll_pll_veml_tracking.h) for examples of adapters, and [Gps_L1_Ca_Dll_Pll_Tracking_cc](./src/algorithms/tracking/gnuradio_blocks/gps_l1_ca_dll_pll_tracking_cc.h) for an example of a signal processing block implementation. There are also available some useful classes and functions for signal tracking; take a look at [correlator.h](./src/algorithms/tracking/libs/correlator.h), [lock_detectors.h](./src/algorithms/tracking/libs/lock_detectors.h), [tracking_discriminators.h](./src/algorithms/tracking/libs/tracking_discriminators.h) or [tracking_2nd_DLL_filter.h](./src/algorithms/tracking/libs/tracking_2nd_DLL_filter.h). 
 
 The source code of all the available tracking algorithms is located at:
 
@@ -896,15 +826,9 @@ Tracking.early_late_space_chips=0.5 ; correlator early-late space [chips].
 
 #### Decoding of the navigation message
 
-Most of GNSS signal links are modulated by a navigation message containing the time the message was transmitted, orbital parameters of satellites 
-(also known as ephemeris) and an almanac (information about the general system health, rough orbits of all satellites in the network as well as data related to 
-error correction). Navigation data bits are structured in words, pages, subframes, frames and superframes. Sometimes, bits corresponding to a single parameter are 
-spread over different words, and values extracted from different frames are required for proper decoding. Some words are for synchronization purposes, others for 
-error control an others contain actual information. There are also error control mechanisms, from parity checks to forward error correction (FEC) encoding and 
-interleaving, depending on the system. All this decoding complexity is managed by a finite state machine implemented with the [Boost.Statechart library](http://www.boost.org/libs/statechart/doc/tutorial.html).
+Most of GNSS signal links are modulated by a navigation message containing the time the message was transmitted, orbital parameters of satellites (also known as ephemeris) and an almanac (information about the general system health, rough orbits of all satellites in the network as well as data related to error correction). Navigation data bits are structured in words, pages, subframes, frames and superframes. Sometimes, bits corresponding to a single parameter are spread over different words, and values extracted from different frames are required for proper decoding. Some words are for synchronization purposes, others for error control an others contain actual information. There are also error control mechanisms, from parity checks to forward error correction (FEC) encoding and interleaving, depending on the system. All this decoding complexity is managed by a finite state machine implemented with the [Boost.Statechart library](http://www.boost.org/libs/statechart/doc/tutorial.html).
 
-The common interface is [TelemetryDecoderInterface](./src/core/interfaces/telemetry_decoder_interface.h). Check [GpsL1CaTelemetryDecoder](./src/algorithms/telemetry_decoder/adapters/gps_l1_ca_telemetry_decoder.h) for an example of the GPS L1 NAV message decoding adapter, and [gps_l1_ca_telemetry_decoder_cc](./src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_cc.h)
-for an actual implementation of a signal processing block. Configuration example:
+The common interface is [TelemetryDecoderInterface](./src/core/interfaces/telemetry_decoder_interface.h). Check [GpsL1CaTelemetryDecoder](./src/algorithms/telemetry_decoder/adapters/gps_l1_ca_telemetry_decoder.h) for an example of the GPS L1 NAV message decoding adapter, and [gps_l1_ca_telemetry_decoder_cc](./src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l1_ca_telemetry_decoder_cc.h) for an actual implementation of a signal processing block. Configuration example:
 
 ~~~~~~ 
 ;######### TELEMETRY DECODER CONFIG ############
@@ -915,11 +839,7 @@ TelemetryDecoder.dump=false
 
 #### Observables
 
-GNSS systems provide different kinds of observations. The most commonly used are the code observations, also called pseudoranges. The *pseudo* comes from 
-the fact that on the receiver side the clock error is unknown and thus the measurement is not a pure range observation. High accuracy applications also use the
- carrier phase observations, which are based on measuring the difference between the carrier phase transmitted by the GNSS satellites and the phase of the carrier
- generated in the receiver. Both observables are computed from the outputs of the tracking module and the decoding of the navigation message.
-This module collects all the data provided by every tracked channel, aligns all received data into a coherent set, and computes the observables.
+GNSS systems provide different kinds of observations. The most commonly used are the code observations, also called pseudoranges. The *pseudo* comes from the fact that on the receiver side the clock error is unknown and thus the measurement is not a pure range observation. High accuracy applications also use the carrier phase observations, which are based on measuring the difference between the carrier phase transmitted by the GNSS satellites and the phase of the carrier generated in the receiver. Both observables are computed from the outputs of the tracking module and the decoding of the navigation message. This module collects all the data provided by every tracked channel, aligns all received data into a coherent set, and computes the observables.
 
 The common interface is [ObservablesInterface](./src/core/interfaces/observables_interface.h). 
 
@@ -933,9 +853,7 @@ Observables.dump_filename=./observables.dat
 ~~~~~~ 
 
 #### Computation of Position, Velocity and Time
-Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute a simple least square
- solution and leaves room for more sophisticated positioning methods. The integration with libraries and software tools that are able to deal with multi-constellation
-  data such as [GPSTk](http://www.gpstk.org), [RTKLIB](http://www.rtklib.com/) or [gLAB](http://gage14.upc.es/gLAB/) appear as viable solutions for high performance, completely customizable GNSS receivers.
+Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute a simple least square solution and leaves room for more sophisticated positioning methods. The integration with libraries and software tools that are able to deal with multi-constellation data such as [GPSTk](http://www.gpstk.org), [RTKLIB](http://www.rtklib.com/) or [gLAB](http://gage14.upc.es/gLAB/) appear as viable solutions for high performance, completely customizable GNSS receivers.
 
 The common interface is [PvtInterface](./src/core/interfaces/pvt_interface.h). For instance, in order to use the implementation GpsL1CaPvt, add to the configuration file:
 
@@ -1043,19 +961,13 @@ For LaTeX users, these are the BibTeX cites for your convenience:
 Ok, now what?
 =============
 
-In order to start using GNSS-SDR, you may want to populate ```gnss-sdr/data``` folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output 
-of a Radio Frequency front-end's Analog-to-Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intemediate frequency (on the order of MHz). 
-Prepare your configuration file, and then you are ready for going to the ```gnss-sdr/install``` folder, running ```./gnss-sdr```, and seeing how the file is processed.
+In order to start using GNSS-SDR, you may want to populate ```gnss-sdr/data``` folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output of a Radio Frequency front-end's Analog-to-Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intemediate frequency (on the order of MHz). Prepare your configuration file, and then you are ready for going to the ```gnss-sdr/install``` folder, running ```./gnss-sdr```, and seeing how the file is processed.
 
-Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware such as the USRP family, for the GN3S v2 USB dongle
-and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
+Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware such as the USRP family, for the GN3S v2 USB dongle and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
 
-You can find more information at the [GNSS-SDR Documentation page](GNSS-SDR Documentation page] or directly asking to the 
-[GNSS-SDR Developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers). 
+You can find more information at the [GNSS-SDR Documentation page](GNSS-SDR Documentation page] or directly asking to the [GNSS-SDR Developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers). 
  
-You are also very welcome to contribute to the project, there are many ways to [participate in GNSS-SDR](http://gnss-sdr.org/participate).
-If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. 
-Please do not hesitate to [contact them](http://gnss-sdr.org/contact-us).
+You are also very welcome to contribute to the project, there are many ways to [participate in GNSS-SDR](http://gnss-sdr.org/participate). If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. Please do not hesitate to [contact them](http://gnss-sdr.org/contact-us).
 
 Enjoy GNSS-SDR! 
 

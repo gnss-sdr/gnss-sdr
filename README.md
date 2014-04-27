@@ -1026,7 +1026,7 @@ You can find more information at the [GNSS-SDR Documentation page](http://gnss-s
  
 You are also very welcome to contribute to the project, there are many ways to [participate in GNSS-SDR](http://gnss-sdr.org/participate). If you need some special feature not yet implemented, the Developer Team would love to be hired for developing it. Please do not hesitate to [contact them](http://gnss-sdr.org/contact-us).
 
-Enjoy GNSS-SDR! 
+**Enjoy GNSS-SDR!**
 
 The Developer Team.
 

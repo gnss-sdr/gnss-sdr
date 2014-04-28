@@ -93,6 +93,8 @@ private:
      */
     int Get_SUPL_Assist();
 
+    const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
+
 public:
     /*!
      * \brief Sets the configuration data required by get_ephemeris function

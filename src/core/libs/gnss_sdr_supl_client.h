@@ -113,7 +113,53 @@ public:
     /*!
      * \brief Save ephemeris map to XML file.
      */
-    bool save_ephemeris_xml(const std::string file_name);
+    bool save_ephemeris_map_xml(const std::string file_name,
+                                std::map<int,Gps_Ephemeris> eph_map);
+
+    /*!
+     * \brief Read utc model from XML file
+     */
+    bool load_utc_xml(const std::string file_name);
+
+    /*!
+     * \brief Save utc model map to XML file
+     * To be called by ControlThread::gps_utc_model_data_write_to_XML()
+     */
+    bool save_utc_map_xml(const std::string file_name,
+                          std::map<int, Gps_Utc_Model> utc_map);
+
+    /*!
+     * \brief Read iono from XML file
+     */
+    bool load_iono_xml(const std::string file_name);
+
+    /*!
+     * \brief Save iono map to XML file
+     */
+    bool save_iono_map_xml(const std::string file_name,
+                           std::map<int, Gps_Iono> iono_map);
+
+    /*!
+     * \brief Read ref time from XML file
+     */
+    bool load_ref_time_xml(const std::string file_name);
+
+    /*!
+     * \brief Save ref time map to XML file
+     */
+    bool save_ref_time_map_xml(const std::string file_name,
+                               std::map<int, Gps_Ref_Time> ref_time_map);
+
+    /*!
+     * \brief Read ref location from XML file
+     */
+    bool load_ref_location_xml(const std::string file_name);
+
+    /*!
+     * \brief Save ref location map to XML file
+     */
+    bool save_ref_location_map_xml(std::string file_name,
+                                   std::map<int, Gps_Ref_Location> ref_location_map);
 
     /*
      * Prints SUPL data to std::cout. Use it for debug purposes only.

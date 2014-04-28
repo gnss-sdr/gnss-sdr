@@ -123,8 +123,11 @@ private:
 
     void init();
 
-    // Read ephemeris assistance from a local XML file previously recorded
+    // Read {ephemeris, iono, utc, ref loc, ref time} assistance from a local XML file previously recorded
     bool read_assistance_from_XML();
+
+    // Save {ephemeris, iono, utc, ref loc, ref time} assistance to a local XML file
+    bool save_assistance_to_XML();
 
     void read_control_messages();
 
@@ -134,11 +137,6 @@ private:
      * Blocking function that reads the GPS ephemeris queue and updates the shared ephemeris map, accessible from the PVT block
      */
     void gps_ephemeris_data_collector();
-
-    /*
-     * Writes the ephemeris map to a local XML file
-     */
-    void gps_ephemeris_data_write_to_XML();
 
     /*
      * Blocking function that reads the UTC model queue and updates the shared map, accessible from the PVT block
@@ -156,29 +154,9 @@ private:
     void gps_ref_time_data_collector();
 
     /*
-     * Write the latest GPS UTC model to XML file
-     */
-    void gps_utc_model_data_write_to_XML();
-
-    /*
-     * \brief Write the latest ref location to XML file (AGPS)
-     */
-    void gps_ref_location_data_write_to_XML();
-
-    /*
-     * \brief Write the latest ref time to XML file (AGPS)
-     */
-    void gps_ref_time_data_write_to_XML();
-
-    /*
      * Blocking function that reads the iono model queue and updates the shared map, accessible from the PVT block
      */
     void gps_iono_data_collector();
-
-    /*
-     * Write the latest GPS IONO model to XML file
-     */
-    void gps_iono_data_write_to_XML();
 
     /*
      * Blocking function that reads the GPS assistance queue
@@ -223,6 +201,13 @@ private:
     boost::thread galileo_utc_model_data_collector_thread_;
     boost::thread galileo_iono_data_collector_thread_;
     void keyboard_listener();
+
+    // default filename for assistance data
+    const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
+    const std::string utc_default_xml_filename = "./gps_utc_model.xml";
+    const std::string iono_default_xml_filename = "./gps_iono.xml";
+    const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
+    const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
 };
 
 #endif /*GNSS_SDR_CONTROL_THREAD_H_*/

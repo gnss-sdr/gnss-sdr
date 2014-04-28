@@ -158,8 +158,8 @@ int FrontEndCal::Get_SUPL_Assist()
                                     global_gps_ephemeris_map.write(gps_eph_iter->second.i_satellite_PRN, gps_eph_iter->second);
                                 }
                             //Save ephemeris to XML file
-                            std::string eph_xml_filename = "gps_ephemeris.xml";
-                            if (supl_client_ephemeris_.save_ephemeris_xml(eph_xml_filename) == true)
+                            std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
+                            if (supl_client_ephemeris_.save_ephemeris_map_xml(eph_xml_filename, supl_client_ephemeris_.gps_ephemeris_map) == true)
                                 {
                                     LOG(INFO)  << "SUPL: XML Ephemeris file created.";
                                 }

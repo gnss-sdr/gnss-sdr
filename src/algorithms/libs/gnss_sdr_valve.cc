@@ -49,7 +49,8 @@ boost::shared_ptr<gr::block> gnss_sdr_make_valve (size_t sizeof_stream_item,
         unsigned long long nitems,
         gr::msg_queue::sptr queue)
 {
-    return boost::shared_ptr<gnss_sdr_valve> (new gnss_sdr_valve (sizeof_stream_item, nitems, queue));
+    boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, queue));
+    return valve_;
 }
 
 

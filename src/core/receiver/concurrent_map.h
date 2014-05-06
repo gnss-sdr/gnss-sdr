@@ -52,7 +52,15 @@ public:
     void write(int key, Data const& data)
     {
         boost::mutex::scoped_lock lock(the_mutex);
-        the_map.insert(std::pair<int, Data>(key, data));
+
+        Data_iterator data_iter;
+        data_iter = the_map.find(key);
+        if (data_iter != the_map.end())
+		{
+        	data_iter->second=data; //update
+		}else{
+			the_map.insert(std::pair<int, Data>(key, data));//insert SILENTLY fails if the item exist in the map!!
+		}
         lock.unlock();
     }
 

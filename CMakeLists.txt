@@ -182,12 +182,23 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 # Append -O2 optimization flag for Debug builds
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
+################################################################################
+# Checkout compiler version
+################################################################################
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
+          message(WARNING "Your GCC version is too old and could not support some C++11 features required by GNSS-SDR. GCC version must be at least 4.7")
+      endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
+endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
 ################################################################################
 # Googletest - http://code.google.com/p/googletest/
 ################################################################################
 enable_testing()
-set(GTEST_DIR "$ENV{GTEST_DIR}")
+if($ENV{GTEST_DIR})
+     set(GTEST_DIR $ENV{GTEST_DIR})
+endif($ENV{GTEST_DIR})
 if(GTEST_DIR)
      message(STATUS "GTEST root folder at ${GTEST_DIR}")
 else()
@@ -235,7 +246,7 @@ endif(NOT Boost_FOUND)
 find_package(Gnuradio)
 
 if(NOT GNURADIO_RUNTIME_FOUND)
-   message(STATUS "cmake cannot find GNU Radio >= 3.7")
+   message(STATUS "CMake cannot find GNU Radio >= 3.7")
    if(OS_IS_LINUX)
        message("Go to http://gnuradio.org/redmine/projects/pybombs/wiki")
        message("and follow the instructions to install GNU Radio in your system.")

@@ -642,6 +642,13 @@ Galileo_Almanac Galileo_Navigation_Message::get_almanac()
     almanac.af1_10 = af1_10;
     almanac.E5b_HS_10 = E5b_HS_10;
     almanac.E1B_HS_10 = E1B_HS_10;
+
+    /*GPS to Galileo GST conversion parameters*/
+    almanac.A_0G_10 = A_0G_10;
+    almanac.A_1G_10 = A_1G_10;
+    almanac.t_0G_10 = t_0G_10;
+    almanac.WN_0G_10 = WN_0G_10;
+
     return almanac;
 }
 

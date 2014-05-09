@@ -262,6 +262,19 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
             //std::cout<<"New Galileo UTC model received for SV "<<d_satellite.get_PRN()<<std::endl;
             d_utc_model_queue->push(utc_model);
         }
+    if (d_nav.have_new_almanac()==true)
+    {
+    	Galileo_Almanac almanac=d_nav.get_almanac();
+    	d_almanac_queue->push(almanac);
+    	//debug
+    	std::cout<<"Almanac received!"<<std::endl;
+    	std::cout<<"GPS_to_Galileo time conversion:"<<std::endl;
+    	std::cout<<"A0G="<<almanac.A_0G_10<<std::endl;
+    	std::cout<<"A1G="<<almanac.A_1G_10<<std::endl;
+    	std::cout<<"T0G="<<almanac.t_0G_10<<std::endl;
+    	std::cout<<"WN_0G_10="<<almanac.WN_0G_10<<std::endl;
+
+    }
 }
 
 

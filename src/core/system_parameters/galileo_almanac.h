@@ -92,6 +92,12 @@ public:
     double E5b_HS_10;
     double E1B_HS_10;
 
+    /*GPS to Galileo GST conversion parameters*/
+    double A_0G_10 = 0;
+    double A_1G_10 = 0;
+    double t_0G_10 = 0;
+    double WN_0G_10 = 0;
+
     Galileo_Almanac();  //!< Default constructor
 };
 

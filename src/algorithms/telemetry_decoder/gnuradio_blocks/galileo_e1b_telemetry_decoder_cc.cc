@@ -274,6 +274,15 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
     	std::cout<<"T0G="<<almanac.t_0G_10<<std::endl;
     	std::cout<<"WN_0G_10="<<almanac.WN_0G_10<<std::endl;
 
+    	std::cout<<"Actual parameters:"<<std::endl;
+    	std::cout<<"d_TOW_at_current_symbol="<<d_TOW_at_current_symbol<<std::endl;
+    	std::cout<<"d_nav.WN_0="<<d_nav.WN_0<<std::endl;
+
+    	double delta_t;
+    	delta_t=almanac.A_0G_10+almanac.A_1G_10*(d_TOW_at_current_symbol-almanac.t_0G_10+604800*(fmod((d_nav.WN_0-almanac.WN_0G_10),64)));
+
+    	std::cout<<"delta_t="<<delta_t<<"[s]"<<std::endl;
+
     }
 }
 

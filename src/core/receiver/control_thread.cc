@@ -209,8 +209,8 @@ void ControlThread::set_control_queue(boost::shared_ptr<gr::msg_queue> control_q
  */
 bool ControlThread::read_assistance_from_XML()
 {
-	// return variable (true == succeeded)
-	bool ret = false;
+    // return variable (true == succeeded)
+    bool ret = false;
     // getting names from the config file, if available
     std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
     std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
@@ -234,8 +234,7 @@ bool ControlThread::read_assistance_from_XML()
     else
         {
             std::cout << "ERROR: SUPL client error reading XML" << std::endl;
-            std::cout << "Disabling SUPL assistance.." << std::endl;
-            ret = false;
+            std::cout << "Disabling SUPL assistance..." << std::endl;
         }
     // Only look for {utc, iono, ref time, ref location} if SUPL is enabled
     bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
@@ -246,48 +245,43 @@ bool ControlThread::read_assistance_from_XML()
                 {
                     LOG(INFO) << "SUPL: Read XML UTC model";
                     global_gps_utc_model_queue.push(supl_client_acquisition_.gps_utc);
-                    //ret = true;
                 }
             else
                 {
-                    LOG(ERROR) << "SUPL: couldn't read UTC model XML";
-                    //ret = false;
+                    LOG(INFO) << "SUPL: couldn't read UTC model XML";
                 }
+
             // Try to read Iono model from XML
             if (supl_client_acquisition_.load_iono_xml(iono_xml_filename) == true)
                 {
                     LOG(INFO) << "SUPL: Read XML IONO model";
                     global_gps_iono_queue.push(supl_client_acquisition_.gps_iono);
-                    //ret = true;
                 }
             else
                 {
-                    LOG(ERROR) << "SUPL: couldn't read IONO model XML";
-                    //ret = false;
+                    LOG(INFO) << "SUPL: couldn't read IONO model XML";
                 }
+
             // Try to read Ref Time from XML
             if (supl_client_acquisition_.load_ref_time_xml(ref_time_xml_filename) == true)
                 {
                     LOG(INFO) << "SUPL: Read XML Ref Time";
                     global_gps_ref_time_queue.push(supl_client_acquisition_.gps_time);
-                    //ret = true;
                 }
             else
                 {
-                    LOG(ERROR) << "SUPL: couldn't read Ref Time XML";
-                    //ret = false;
+                    LOG(INFO) << "SUPL: couldn't read Ref Time XML";
                 }
+
             // Try to read Ref Location from XML
             if (supl_client_acquisition_.load_ref_location_xml(ref_location_xml_filename) == true)
                 {
                     LOG(INFO) << "SUPL: Read XML Ref Location";
                     global_gps_ref_location_queue.push(supl_client_acquisition_.gps_ref_loc);
-                    //ret = true;
                 }
             else
                 {
-                    LOG(ERROR) << "SUPL: couldn't read Ref Location XML";
-                    //ret = false;
+                    LOG(INFO) << "SUPL: couldn't read Ref Location XML";
                 }
         }
 
@@ -307,16 +301,16 @@ bool ControlThread::save_assistance_to_XML()
     std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
     std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
 
-    std::cout << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename << std::endl;
+    LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename;
     std::map<int, Gps_Ephemeris> eph_copy = global_gps_ephemeris_map.get_map_copy();
     if (supl_client_ephemeris_.save_ephemeris_map_xml(eph_xml_filename, eph_copy) == true)
         {
-            std::cout << "SUPL: Successfully saved ephemeris XML file" << std::endl;
+            LOG(INFO) << "SUPL: Successfully saved ephemeris XML file";
             ret = true;
         }
     else
         {
-            std::cout << "SUPL: Error while trying to save ephemeris XML file" << std::endl;
+            LOG(INFO) << "SUPL: Error while trying to save ephemeris XML file. Maybe an empty map?";
             ret = false;
         }
     // Only try to save {utc, iono, ref time, ref location} if SUPL is enabled
@@ -332,7 +326,7 @@ bool ControlThread::save_assistance_to_XML()
                 }
             else
                 {
-                    LOG(ERROR) << "SUPL: Error while trying to save utc XML file";
+                    LOG(INFO) << "SUPL: Error while trying to save utc XML file";
                     //ret = false;
                 }
             // try to save iono model xml file
@@ -344,7 +338,7 @@ bool ControlThread::save_assistance_to_XML()
                 }
             else
                 {
-                    LOG(ERROR) << "SUPL: Error while trying to save iono XML file";
+                    LOG(INFO) << "SUPL: Error while trying to save iono XML file";
                     //ret = false;
                 }
             // try to save ref time xml file
@@ -356,7 +350,7 @@ bool ControlThread::save_assistance_to_XML()
                 }
             else
                 {
-                    LOG(ERROR) << "SUPL: Error while trying to save ref time XML file";
+                    LOG(INFO) << "SUPL: Error while trying to save ref time XML file";
                     //ref = false;
                 }
             // try to save ref location xml file
@@ -368,7 +362,7 @@ bool ControlThread::save_assistance_to_XML()
                 }
             else
                 {
-                    LOG(ERROR) << "SUPL: Error while trying to save ref location XML file";
+                    LOG(INFO) << "SUPL: Error while trying to save ref location XML file";
                     //ret = false;
                 }
         }

@@ -21,6 +21,7 @@ else (WIN32)
      FIND_PATH(GFlags_ROOT_DIR
      libgflags.dylib
      HINTS
+     /opt/local/lib
      /usr/local/lib
 )
 endif (WIN32)
@@ -45,6 +46,7 @@ IF(GFlags_ROOT_DIR)
           FIND_PATH(GFlags_INCLUDE_DIRS
           gflags/gflags.h
           HINTS
+          /opt/local/include
           /usr/local/include
           ${GFlags_ROOT_DIR}/src
           )

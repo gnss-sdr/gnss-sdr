@@ -523,6 +523,7 @@ if(OS_IS_LINUX)
     find_library(GFORTRAN NAMES gfortran
                  PATHS /usr/lib
                        /usr/local/lib
+                       /usr/local/lib/i386
                        /usr/lib/gcc/x86_64-linux-gnu
                        /usr/lib/gcc/i686-linux-gnu
                        /usr/lib/gcc/i386-linux-gnu
@@ -618,11 +619,11 @@ if(NOT ARMADILLO_FOUND)
              BUILD_IN_SOURCE 1
              BUILD_COMMAND make
              UPDATE_COMMAND ""
-            INSTALL_COMMAND ""
+             INSTALL_COMMAND ""
          )
      else(OLD_GCC)
-         set(armadillo_RELEASE 4.100.2)
-         set(armadillo_MD5 "dd422706778cde656d531b3c3919766e")
+         set(armadillo_RELEASE 4.300.2)  
+         set(armadillo_MD5 "16c8bf27e989b2eaf6e4096a4c056269") 
          if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
              set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
              file(WRITE ${ARMADILLO_PATCH_FILE} "")
@@ -670,7 +671,7 @@ if(NOT ARMADILLO_FOUND)
      set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )     
      find_library(lapack NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
      find_library(blas NAMES blas HINTS /usr/lib /usr/local/lib /usr/lib64)
-     set(ARMADILLO_LIBRARIES ${lapack} ${blas} gfortran ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
+     set(ARMADILLO_LIBRARIES ${lapack} ${blas} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
      # Save a copy at the thirdparty folder
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}

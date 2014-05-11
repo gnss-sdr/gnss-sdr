@@ -348,26 +348,7 @@ $ sudo port upgrade outdated
 $ sudo port install doxygen +latex
 $ sudo port install uhd gnuradio
 $ sudo port install armadillo
-~~~~~~ 
-
-Install [Gflags](http://code.google.com/p/gflags/ "Gflags' Homepage") manually from the trunk:
-
-~~~~~~ 
-$ svn checkout http://gflags.googlecode.com/svn/trunk gflags-trunk
-$ cd gflags-trunk
-$ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure  
-$ make
-$ sudo make install
-~~~~~~ 
-
-Install [Glog](http://code.google.com/p/google-glog/ "Glog's Homepage") manually from the subversion repository. Revision 142 is known to work well:
-
-~~~~~~ 
-$ svn checkout -r142 http://google-glog.googlecode.com/svn/trunk/ google-glog
-$ cd google-glog
-$ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure 
-$ make
-$ sudo make install
+$ sudo port install google-glog +gflags
 ~~~~~~ 
 
 Finally, you are ready to clone the GNSS-SDR repository and build the software:

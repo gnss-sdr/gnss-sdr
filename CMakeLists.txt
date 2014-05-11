@@ -641,7 +641,7 @@ if(NOT ARMADILLO_FOUND)
 < set(ARMA_USE_WRAPPER   true )
 ---
 > set(ARMA_USE_WRAPPER false)
-318c318
+310c310
 < add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
 ---
 > add_library( armadillo STATIC \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )

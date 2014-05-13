@@ -437,7 +437,7 @@ void ControlThread::init()
                                     gps_eph_iter++)
                                 {
                                     std::cout << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
-                                    global_gps_ephemeris_queue.push(gps_eph_iter->second);
+                                    global_gps_ephemeris_map.write(gps_eph_iter->second.i_satellite_PRN, gps_eph_iter->second);
                                 }
                             //Save ephemeris to XML file
                             std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
@@ -478,12 +478,12 @@ void ControlThread::init()
                             if (supl_client_ephemeris_.gps_iono.valid == true)
                                 {
                                     std::cout << "SUPL: Received GPS Iono" << std::endl;
-                                    global_gps_iono_queue.push(supl_client_ephemeris_.gps_iono);
+                                    global_gps_iono_map.write(0, supl_client_ephemeris_.gps_iono);
                                 }
                             if (supl_client_ephemeris_.gps_utc.valid == true)
-                                {
+			        {
                                     std::cout << "SUPL: Received GPS UTC Model" << std::endl;
-                                    global_gps_utc_model_queue.push(supl_client_ephemeris_.gps_utc);
+                                    global_gps_utc_model_map.write(0, supl_client_ephemeris_.gps_utc);
                                 }
                         }
                     else
@@ -505,17 +505,17 @@ void ControlThread::init()
                                     gps_acq_iter++)
                                 {
                                     std::cout << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first << std::endl;
-                                    global_gps_acq_assist_queue.push(gps_acq_iter->second);
+                                    global_gps_acq_assist_map.write(gps_acq_iter->second.i_satellite_PRN, gps_acq_iter->second);
                                 }
                             if (supl_client_acquisition_.gps_ref_loc.valid == true)
                                 {
                                     std::cout << "SUPL: Received Ref Location (Acquisition Assistance)" << std::endl;
-                                    global_gps_ref_location_queue.push(supl_client_acquisition_.gps_ref_loc);
+                                    global_gps_ref_location_map.write(0, supl_client_acquisition_.gps_ref_loc);
                                 }
                             if (supl_client_acquisition_.gps_time.valid == true)
                                 {
                                     std::cout << "SUPL: Received Ref Time (Acquisition Assistance)" << std::endl;
-                                    global_gps_ref_time_queue.push(supl_client_acquisition_.gps_time);
+                                    global_gps_ref_time_map.write(0, supl_client_acquisition_.gps_time);
                                 }
                         }
                     else

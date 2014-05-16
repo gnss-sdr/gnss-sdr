@@ -622,8 +622,8 @@ if(NOT ARMADILLO_FOUND)
              INSTALL_COMMAND ""
          )
      else(OLD_GCC)
-         set(armadillo_RELEASE 4.300.2)  
-         set(armadillo_MD5 "16c8bf27e989b2eaf6e4096a4c056269") 
+         set(armadillo_RELEASE 4.300.3)  
+         set(armadillo_MD5 "cdcd41961c3b06ac8cef9645c38bdf50") # cdcd41961c3b06ac8cef9645c38bdf50
          if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
              set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
              file(WRITE ${ARMADILLO_PATCH_FILE} "")
@@ -641,7 +641,7 @@ if(NOT ARMADILLO_FOUND)
 < set(ARMA_USE_WRAPPER   true )
 ---
 > set(ARMA_USE_WRAPPER false)
-310c310
+312c312
 < add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
 ---
 > add_library( armadillo STATIC \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )

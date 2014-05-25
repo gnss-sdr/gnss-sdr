@@ -679,8 +679,8 @@ if(NOT ARMADILLO_FOUND)
              INSTALL_COMMAND ""
          )
      else(OLD_GCC)
-         set(armadillo_RELEASE 4.300.3)  
-         set(armadillo_MD5 "cdcd41961c3b06ac8cef9645c38bdf50") # cdcd41961c3b06ac8cef9645c38bdf50
+         set(armadillo_RELEASE 4.300.6)  
+         set(armadillo_MD5 "f9ff49e0a804c3f64e539885808a988f") 
          if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
              set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
              file(WRITE ${ARMADILLO_PATCH_FILE} "")

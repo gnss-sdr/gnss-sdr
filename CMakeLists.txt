@@ -306,6 +306,28 @@ if (NOT GFlags_FOUND OR LOCAL_GLOG)
      message (STATUS " when doing 'make'. ")
      set(gflags_RELEASE 2.0 CACHE STRING "Local gflags release")
      set(gflags_MD5 "5fd4554d2ba84bf222a2fec0870d28df")
+     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_osx
+"#!/bin/sh
+export CXXFLAGS=\"-stdlib=libc++\" 
+export CC=clang 
+export CXX=clang++
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}/configure")
+         file(COPY ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_osx
+                 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+          set(CONF_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/configure_osx)
+     else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_linux
+"#!/bin/sh
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}/configure")
+          file(COPY ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_linux
+                 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+          set(CONF_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/configure_linux)
+     endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
      
      ExternalProject_Add(
           gflags-${gflags_RELEASE}
@@ -315,7 +337,7 @@ if (NOT GFlags_FOUND OR LOCAL_GLOG)
           URL_MD5 ${gflags_MD5}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
-          CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          CONFIGURE_COMMAND ${CONF_SCRIPT} --prefix=${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}  
           BUILD_COMMAND make
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
@@ -357,7 +379,22 @@ if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
      set(glog_RELEASE 0.3.3)
      set(glog_MD5 "a6fd2c22f8996846e34c763422717c18")
      if(LOCAL_GFLAGS)
-          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+         if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+             file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+"#!/bin/sh
+export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
+export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
+export LIBS=${GFlags_SHARED_LIBS}
+export CXXFLAGS=\"-stdlib=libc++\" 
+export CC=clang 
+export CXX=clang++
+../../thirdparty/glog/glog-${glog_RELEASE}/configure")
+             file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+               DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+               FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                                GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+         else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+             file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
 export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
@@ -367,6 +404,7 @@ export LIBS=${GFlags_SHARED_LIBS}
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
                                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+         endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")                           
      else(LOCAL_GFLAGS)
      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
  "#!/bin/sh
@@ -381,21 +419,39 @@ export LIBS=${GFlags_SHARED_LIBS}
      endif(LOCAL_GFLAGS)
 
      set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)   
-     ExternalProject_Add(
-          glog-${glog_RELEASE}
-          DEPENDS gflags-${gflags_RELEASE}
-          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-          URL http://google-glog.googlecode.com/files/glog-${glog_RELEASE}.tar.gz
-          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
-          URL_MD5 ${glog_MD5}
-          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
-          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR> 
-          BUILD_COMMAND make
-          UPDATE_COMMAND ""
-          PATCH_COMMAND ""
-          INSTALL_COMMAND ""
-     )
+     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+          ExternalProject_Add(
+              glog-${glog_RELEASE}
+              DEPENDS gflags-${gflags_RELEASE}
+              PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+              SVN_REPOSITORY http://google-glog.googlecode.com/svn/trunk
+              SVN_REVISION -r "142"
+              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
+              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
+              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+              CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR> 
+              BUILD_COMMAND make
+              UPDATE_COMMAND ""
+              PATCH_COMMAND ""
+              INSTALL_COMMAND ""
+          )
+     else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+          ExternalProject_Add(
+              glog-${glog_RELEASE}
+              DEPENDS gflags-${gflags_RELEASE}
+              PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+              URL http://google-glog.googlecode.com/files/glog-${glog_RELEASE}.tar.gz
+              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
+              URL_MD5 ${glog_MD5}
+              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
+              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+              CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR> 
+              BUILD_COMMAND make
+              UPDATE_COMMAND ""
+              PATCH_COMMAND ""
+              INSTALL_COMMAND ""
+          )
+     endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
      # Set up variables
      set(GLOG_INCLUDE_DIRS 
           ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/src/ 
@@ -406,6 +462,7 @@ export LIBS=${GFlags_SHARED_LIBS}
      )
      set(LOCAL_GLOG true CACHE STRING "Glog downloaded and built automatically" FORCE)
 endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
+
 
 
 
@@ -622,8 +679,8 @@ if(NOT ARMADILLO_FOUND)
              INSTALL_COMMAND ""
          )
      else(OLD_GCC)
-         set(armadillo_RELEASE 4.300.2)  
-         set(armadillo_MD5 "16c8bf27e989b2eaf6e4096a4c056269") 
+         set(armadillo_RELEASE 4.300.3)  
+         set(armadillo_MD5 "cdcd41961c3b06ac8cef9645c38bdf50") # cdcd41961c3b06ac8cef9645c38bdf50
          if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
              set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
              file(WRITE ${ARMADILLO_PATCH_FILE} "")
@@ -641,7 +698,7 @@ if(NOT ARMADILLO_FOUND)
 < set(ARMA_USE_WRAPPER   true )
 ---
 > set(ARMA_USE_WRAPPER false)
-310c310
+312c312
 < add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
 ---
 > add_library( armadillo STATIC \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )

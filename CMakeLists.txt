@@ -196,9 +196,10 @@ endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 # Googletest - http://code.google.com/p/googletest/
 ################################################################################
 enable_testing()
-if($ENV{GTEST_DIR})
+if(EXISTS $ENV{GTEST_DIR})
      set(GTEST_DIR $ENV{GTEST_DIR})
-endif($ENV{GTEST_DIR})
+     message("++++++++++++++++++HEllo")
+endif(EXISTS $ENV{GTEST_DIR})
 if(GTEST_DIR)
      message(STATUS "GTEST root folder at ${GTEST_DIR}")
 else()

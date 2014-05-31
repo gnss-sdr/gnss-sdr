@@ -68,9 +68,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 #### Install the [Armadillo](http://arma.sourceforge.net/ "Armadillo's Homepage") C++ linear algebra library:
 
 ~~~~~~
-$ sudo apt-get install libblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
-$ sudo yum install lapack-devel blas-devel gcc-fortran      # For Fedora/CentOS/RHEL
-$ sudo zypper install lapack-devel blas-devel gcc-fortran   # For OpenSUSE
+$ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
+$ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
+$ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
 
 $ wget http://sourceforge.net/projects/arma/files/armadillo-4.300.6.tar.gz
 $ tar xvfz armadillo-4.300.6.tar.gz

@@ -72,9 +72,9 @@ $ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubu
 $ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-4.300.6.tar.gz
-$ tar xvfz armadillo-4.300.6.tar.gz
-$ cd armadillo-4.300.6
+$ wget http://sourceforge.net/projects/arma/files/armadillo-4.300.8.tar.gz
+$ tar xvfz armadillo-4.300.8.tar.gz
+$ cd armadillo-4.300.8
 $ cmake .
 $ make
 $ sudo make install

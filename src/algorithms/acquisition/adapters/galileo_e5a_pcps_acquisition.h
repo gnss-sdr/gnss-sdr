@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_pcps_ambiguous_acquisition.cc
+ * \file galileo_e5a_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  Galileo E5a data and pilot Signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
@@ -29,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GALILEO_E5A_PCPS_ACQUISITION_H_
-#define GALILEO_E5A_PCPS_ACQUISITION_H_
+#ifndef GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H_
+#define GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H_
 
 #include <string>
 #include <gnuradio/msg_queue.h>
@@ -154,4 +154,4 @@ private:
 	 float calculate_threshold(float pfa);
 };
 
-#endif /* GALILEO_E5A_PCPS_ACQUISITION_H_ */
+#endif /* GNSS_SDR_GALILEO_E5A_PCPS_ACQUISITION_H_ */

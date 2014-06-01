@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_pcps_ambiguous_acquisition.cc
+ * \file galileo_e5a_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  Galileo E5a data and pilot Signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
@@ -63,7 +63,17 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
     // sampled_ms is an integer, always multiple of primary code period
-    max_dwells_= configuration->property(role + ".max_dwells", 1);
+    bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
+
+    if (!bit_transition_flag_)
+        {
+            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
+        }
+    else
+        {
+            max_dwells_ = 2;
+        }
+
     dump_filename_ = configuration_->property(role + ".dump_filename",
             default_dump_filename);
 
@@ -206,8 +216,8 @@ void GalileoE5aPcpsAcquisition::set_local_code()
 
 		std::complex<float>* code = new std::complex<float>[code_length_];
 
-		galileo_e5_a_code_gen_complex_sampled(code,
-                pilot, gnss_synchro_->PRN, fs_in_, 0, false);
+		galileo_e5_a_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+		    gnss_synchro_->PRN, fs_in_, 0, false);
 
 		for (unsigned int i = 0; i < sampled_ms_/4; i++)
 		    {

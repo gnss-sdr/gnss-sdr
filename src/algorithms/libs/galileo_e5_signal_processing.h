@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_signal_processing.cc
+ * \file galileo_e5_signal_processing.cc
  * \brief This library implements various functions for Galileo E5 signals such
  * as replica code generation
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
@@ -31,8 +31,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GALILEO_E5_SIGNAL_PROCESSING_H_
-#define GALILEO_E5_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
+#define GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_
 
 #include <complex>
 #include <iostream>
@@ -44,15 +44,15 @@
  * \brief Generates Galileo E5a code at 1 sample/chip
  * bool _pilot generates E5aQ code if true and E5aI (data signal) if false.
  */
-void galileo_e5_a_code_gen_complex(std::complex<float>* _dest, signed int _prn, bool _pilot);
+void galileo_e5_a_code_gen_complex(std::complex<float>* _dest, signed int _prn, char _Signal[3]);
 
 /*!
  * \brief Generates Galileo E5a complex code, shifted to the desired chip and sampled at a frequency fs
  * bool _pilot generates E5aQ code if true and E5aI (data signal) if false.
  */
 void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest,
-        bool _pilot, unsigned int _prn, signed int _fs, unsigned int _chip_shift,
+		char _Signal[3], unsigned int _prn, signed int _fs, unsigned int _chip_shift,
         bool _secondary_flag);
 
 
-#endif /* GALILEO_E5_SIGNAL_PROCESSING_H_ */
+#endif /* GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H_ */

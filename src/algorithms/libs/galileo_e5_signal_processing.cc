@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_signal_processing.cc
+ * \file galileo_e5_signal_processing.cc
  * \brief This library implements various functions for Galileo E5 signals such
  * as replica code generation
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
@@ -33,8 +33,9 @@
 
 #include "galileo_e5_signal_processing.h"
 
-void galileo_e5_a_code_gen_complex(std::complex<float>* _dest, signed int _prn, bool _pilot)
+void galileo_e5_a_code_gen_complex(std::complex<float>* _dest, signed int _prn, char _Signal[3])
 {
+	std::string _galileo_signal = _Signal;
 	unsigned int prn=_prn-1;
 	unsigned int index=0;
 	//int _code_int[(int)Galileo_E5a_CODE_LENGTH_CHIPS];
@@ -44,7 +45,7 @@ void galileo_e5_a_code_gen_complex(std::complex<float>* _dest, signed int _prn, 
 	        {
 	            return;
 	        }
-	if (_pilot)
+	if (_galileo_signal.rfind("5Q") != std::string::npos && _galileo_signal.length() >= 2)
 	    {
             for (size_t i = 0; i < Galileo_E5a_Q_PRIMARY_CODE[prn].length(); i++)
                 {
@@ -61,7 +62,7 @@ void galileo_e5_a_code_gen_complex(std::complex<float>* _dest, signed int _prn, 
                     index = index + 4;
                 }
 	    }
-	else
+	else if (_galileo_signal.rfind("5I") != std::string::npos && _galileo_signal.length() >= 2)
 	    {
             for (size_t i = 0; i < Galileo_E5a_I_PRIMARY_CODE[prn].length(); i++)
                 {
@@ -78,13 +79,14 @@ void galileo_e5_a_code_gen_complex(std::complex<float>* _dest, signed int _prn, 
 	    }
 }
 
-void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, bool _pilot,
+void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
 		unsigned int _prn, signed int _fs, unsigned int _chip_shift,
         bool _secondary_flag)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
 
     std::complex<float> _code[Galileo_E5a_CODE_LENGTH_CHIPS];
+    std::string _galileo_signal = _Signal;
     signed int _samplesPerCode, _codeValueIndex;
     float _ts;
     float _tc;
@@ -96,7 +98,7 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, bool _pil
                                 % (int)Galileo_E5a_CODE_LENGTH_CHIPS)
                                 * _samplesPerCode / Galileo_E5a_CODE_LENGTH_CHIPS;
 
-    galileo_e5_a_code_gen_complex(_code , _prn , _pilot);
+    galileo_e5_a_code_gen_complex(_code , _prn , _Signal);
 
     if (_fs != _codeFreqBasis)
         {
@@ -106,8 +108,7 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, bool _pil
         	delete[] _code;
         	_code = _resampled_signal;
         }
-    // TODO generar codigo secundario cuando sepamos si se hace aqui o se replica en el tracking
-    // o en una funcion a parte en esta misma clase
+    // TODO secundary code generated here??
     for (unsigned int i = 0; i < _samplesPerCode; i++)
         {
             _dest[(i+delay)%_samplesPerCode] = _code[i];

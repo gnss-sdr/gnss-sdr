@@ -16,7 +16,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux 
 ----------
 
-Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 19 and 20 and openSUSE 13.1 (newer versions should work, too).
+Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 19 and 20 and openSUSE 13.1 (newer versions should work, too). You will need GCC 4.7 or newer.
 
 ### Install GNU Radio:
 

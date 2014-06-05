@@ -20,6 +20,7 @@ set(TELEMETRY_DECODER_ADAPTER_SOURCES
 	gps_l1_ca_telemetry_decoder.cc 
 	galileo_e1b_telemetry_decoder.cc
 	sbas_l1_telemetry_decoder.cc
+	galileo_e5a_telemetry_decoder.cc
 )
 
 include_directories(

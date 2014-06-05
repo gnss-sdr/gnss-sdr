@@ -85,13 +85,12 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
 
-    std::complex<float> _code[Galileo_E5a_CODE_LENGTH_CHIPS];
     std::string _galileo_signal = _Signal;
-    signed int _samplesPerCode, _codeValueIndex;
-    float _ts;
-    float _tc;
+    signed int _samplesPerCode;
     const int _codeFreqBasis = Galileo_E5a_CODE_CHIP_RATE_HZ; //Hz
     unsigned int _codeLength = Galileo_E5a_CODE_LENGTH_CHIPS;
+    std::complex<float>* _code;
+    _code=new std::complex<float>[_codeLength];
     std::complex<float> primary_code_E5a_chips[(int)Galileo_E5a_CODE_LENGTH_CHIPS];
     _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
     const unsigned int delay = (((int)Galileo_E5a_CODE_LENGTH_CHIPS - _chip_shift)
@@ -108,7 +107,7 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
         	delete[] _code;
         	_code = _resampled_signal;
         }
-    // TODO secundary code generated here??
+    // TODO secondary code generated here??
     for (unsigned int i = 0; i < _samplesPerCode; i++)
         {
             _dest[(i+delay)%_samplesPerCode] = _code[i];

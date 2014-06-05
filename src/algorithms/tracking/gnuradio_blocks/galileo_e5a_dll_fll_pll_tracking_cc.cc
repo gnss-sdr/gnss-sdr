@@ -39,6 +39,7 @@
 #include "gnss_synchro.h"
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E5a.h"
+#include "Galileo_E1.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
 #include "tracking_FLL_PLL_filter.h"
@@ -110,10 +111,11 @@ galileo_e5a_dll_fll_pll_tracking_cc::galileo_e5a_dll_fll_pll_tracking_cc(
     d_early_late_spc_chips = (double)early_late_space_chips; // Define early-late offset (in chips)
     d_dump_filename = dump_filename;
 
+    //d_sampled_codeLength = round(d_fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
     // Initialize tracking variables ==========================================
     d_carrier_loop_filter.set_params(fll_bw_hz, pll_bw_hz,order);
 
-    d_code_loop_filter = Tracking_2nd_DLL_filter(Galileo_E5a_CODE_LENGTH_CHIPS/Galileo_E5a_CODE_CHIP_RATE_HZ);
+    d_code_loop_filter = Tracking_2nd_DLL_filter(GALILEO_E5a_CODE_PERIOD);
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
 
     // Get space for a vector with the C/A code replica sampled 1x/chip
@@ -210,7 +212,7 @@ void galileo_e5a_dll_fll_pll_tracking_cc::start_tracking()
     d_FLL_wait = 1;
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    galileo_e5_a_code_gen_complex(&d_ca_code[1], d_acquisition_gnss_synchro->PRN, d_acquisition_gnss_synchro->Signal);
+    galileo_e5_a_code_gen_complex_sampled(&d_ca_code[1], d_acquisition_gnss_synchro->Signal, d_acquisition_gnss_synchro->PRN, d_fs_in,0,false);
 
     d_ca_code[0] = d_ca_code[(int)Galileo_E5a_CODE_LENGTH_CHIPS];
     d_ca_code[(int)Galileo_E5a_CODE_LENGTH_CHIPS + 1] = d_ca_code[1];

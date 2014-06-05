@@ -38,24 +38,18 @@
 #include <utility> // std::pair
 #include "MATH_CONSTANTS.h"
 
-// Physical constants
-const double GALILEO_PI = 3.1415926535898; //!< Pi as defined in GALILEO ICD
-const double GALILEO_GM = 3.986004418e14;  //!< Geocentric gravitational constant[m^3/s^2]
-const double GALILEO_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Mean angular velocity of the Earth [rad/s]
-const double GALILEO_C_m_s = 299792458.0;  //!< The speed of light, [m/s]
-const double GALILEO_C_m_ms = 299792.4580; //!< The speed of light, [m/ms]
-const double GALILEO_F = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
+// Physical constants already defined in E1
 
 // Carrier and code frequencies
 const double Galileo_E5a_FREQ_HZ = 1.176450e9;             //!< Galileo E5a carrier frequency [Hz]
 const double Galileo_E5a_CODE_CHIP_RATE_HZ = 1.023e7;     //!< Galileo E5a code rate [chips/s]
 const double Galileo_E5a_I_TIERED_CODE_PERIOD = 0.020;             //!< Galileo E5a-I tiered code period [s]
 const double Galileo_E5a_Q_TIERED_CODE_PERIOD = 0.100;             //!< Galileo E5a-Q tiered code period [s]
-const double Galileo_E5a_CODE_LENGTH_CHIPS = 10230.0;    //!< Galileo E5a primary code length [chips]
-const double Galileo_E5a_I_SECONDARY_CODE_LENGTH = 20.0;  //!< Galileo E5a-I secondary code length [chips]
-const double Galileo_E5a_Q_SECONDARY_CODE_LENGTH = 100.0;  //!< Galileo E5a-Q secondary code length [chips]
+const int Galileo_E5a_CODE_LENGTH_CHIPS = 10230;    //!< Galileo E5a primary code length [chips]
+const int Galileo_E5a_I_SECONDARY_CODE_LENGTH = 20;  //!< Galileo E5a-I secondary code length [chips]
+const int Galileo_E5a_Q_SECONDARY_CODE_LENGTH = 100;  //!< Galileo E5a-Q secondary code length [chips]
 const double GALILEO_E5a_CODE_PERIOD = 0.001;
-const double Galileo_E5a_SYMBOL_RATE_BPS = 50.0;       //!< Galileo E5a symbol rate [bits/second]
+const int Galileo_E5a_SYMBOL_RATE_BPS = 50;       //!< Galileo E5a symbol rate [bits/second]
 const int Galileo_E5a_NUMBER_OF_CODES = 50;
 
 // F/NAV message structure

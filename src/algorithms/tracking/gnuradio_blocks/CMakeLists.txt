@@ -23,6 +23,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      gps_l1_ca_dll_pll_optim_tracking_cc.cc
      gps_l1_ca_dll_pll_tracking_cc.cc
      gps_l1_ca_tcp_connector_tracking_cc.cc
+     galileo_e5a_dll_fll_pll_tracking_cc.cc
 )
       
 include_directories(

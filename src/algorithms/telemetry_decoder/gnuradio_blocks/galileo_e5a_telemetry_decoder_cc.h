@@ -47,6 +47,8 @@
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 
+//#include "convolutional.h"
+
 class galileo_e5a_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e5a_telemetry_decoder_cc> galileo_e5a_telemetry_decoder_cc_sptr;

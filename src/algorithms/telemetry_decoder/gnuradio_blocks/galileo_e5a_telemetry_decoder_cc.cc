@@ -37,7 +37,8 @@
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
-#include "galileo_navigation_message.h"
+//#include "galileo_navigation_message.h"
+#include "galileo_fnav_message.h"
 #include "gnss_synchro.h"
 #include "convolutional.h"
 
@@ -110,7 +111,7 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
 {
     double page_symbols_deint[frame_length];
     // 1. De-interleave
-    deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
+    galileo_e5a_telemetry_decoder_cc::deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
@@ -123,7 +124,7 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
                 }
         }
     int page_part_bits[frame_length];
-    viterbi_decoder(page_symbols_deint, page_part_bits);
+    galileo_e5a_telemetry_decoder_cc::viterbi_decoder(page_symbols_deint, page_part_bits);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -242,7 +243,6 @@ galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
 int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
-    int corr_value = 0;
     int preamble_diff = 0;
     int corr_sign=0;
     bool corr_flag=true;

@@ -136,6 +136,7 @@ private:
     int d_last_seg;
     double d_if_freq;
     double d_fs_in;
+    //int d_sampled_codeLength;
 
     gr_complex* d_ca_code;
 

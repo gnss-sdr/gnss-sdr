@@ -37,10 +37,13 @@
 #include "tracking_interface.h"
 #include "galileo_e5a_dll_fll_pll_tracking_cc.h"
 
+class ConfigurationInterface;
+
 class GalileoE5aDllFllPllTracking: public TrackingInterface
 {
 public:
-	GalileoE5aDllFllPllTracking(ConfigurationInterface* configuration,
+
+    GalileoE5aDllFllPllTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,

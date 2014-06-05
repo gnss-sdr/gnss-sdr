@@ -30,6 +30,13 @@
  */
 
 #include "galileo_fnav_message.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/crc.hpp>      // for boost::crc_basic, boost::crc_optimal
+#include <boost/dynamic_bitset.hpp>
+#include <glog/logging.h>
+#include <iostream>
+#include <cstring>
+#include <string>
 
 typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_Galileo_FNAV_type;
 
@@ -186,7 +193,7 @@ void Galileo_Fnav_Message::split_page(std::string page_string)
     std::string CRC_data = page_string.substr(214,24);
     std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> Word_for_CRC_bits(message_word);
     std::bitset<24> checksum(CRC_data);
-    if (CRC_test(Word_for_CRC_bits, checksum.to_ulong()) == true)
+    if (_CRC_test(Word_for_CRC_bits, checksum.to_ulong()) == true)
         {
             flag_CRC_test = true;
             // CRC correct: Decode word
@@ -198,7 +205,7 @@ void Galileo_Fnav_Message::split_page(std::string page_string)
 	}
 }
 
-bool Galileo_Fnav_Message::CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits,boost::uint32_t checksum)
+bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits,boost::uint32_t checksum)
 {
     CRC_Galileo_FNAV_type CRC_Galileo;
 

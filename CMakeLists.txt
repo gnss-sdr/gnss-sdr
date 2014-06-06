@@ -572,7 +572,9 @@ if(OS_IS_LINUX)
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
     endif(NOT LAPACK)
-    find_library(BLAS blas)
+    if(NOT BLAS)
+        find_library(BLAS blas)
+    endif(NOT BLAS)
     if(NOT BLAS)
         message(" The BLAS library has not been found.")
         message(" You can try to install it by typing:")
@@ -660,10 +662,6 @@ if(NOT ARMADILLO_FOUND)
 < set(ARMA_USE_LAPACK    false)
 ---
 > set(ARMA_USE_LAPACK true)
-36c36
-< set(ARMA_USE_WRAPPER   true )
----
-> set(ARMA_USE_WRAPPER false)
 312c312
 < add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
 ---
@@ -693,9 +691,8 @@ if(NOT ARMADILLO_FOUND)
      # Set up variables
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
      set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )     
-     find_library(lapack NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
-     find_library(blas NAMES blas HINTS /usr/lib /usr/local/lib /usr/lib64)
-     set(ARMADILLO_LIBRARIES ${lapack} ${blas} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
+     find_library(LAPACK NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
+     set(ARMADILLO_LIBRARIES ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
      # Save a copy at the thirdparty folder
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}

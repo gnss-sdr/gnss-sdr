@@ -559,6 +559,9 @@ endif(DOXYGEN_FOUND)
 ################################################################################
 
 if(OS_IS_LINUX)
+    #############################################
+    # Check that LAPACK is found in the system 
+    #############################################
     find_library(LAPACK lapack)
     if(NOT LAPACK)
         message(" The LAPACK library has not been found.")
@@ -572,9 +575,10 @@ if(OS_IS_LINUX)
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
     endif(NOT LAPACK)
-    if(NOT BLAS)
-        find_library(BLAS blas)
-    endif(NOT BLAS)
+    #############################################
+    # Check that BLAS is found in the system
+    #############################################
+    find_library(BLAS blas)
     if(NOT BLAS)
         message(" The BLAS library has not been found.")
         message(" You can try to install it by typing:")
@@ -585,6 +589,9 @@ if(OS_IS_LINUX)
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "BLAS is required to build gnss-sdr")
     endif(NOT BLAS)
+    #############################################
+    # Check that GFORTRAN is found in the system
+    #############################################
     find_library(GFORTRAN NAMES gfortran
                  PATHS /usr/lib
                        /usr/local/lib

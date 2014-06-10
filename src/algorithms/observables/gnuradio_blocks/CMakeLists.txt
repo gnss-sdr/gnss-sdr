@@ -19,6 +19,7 @@
 set(OBS_GR_BLOCKS_SOURCES 
 	gps_l1_ca_observables_cc.cc 
 	galileo_e1_observables_cc.cc
+	hybrid_observables_cc.cc
 )
 
 include_directories(

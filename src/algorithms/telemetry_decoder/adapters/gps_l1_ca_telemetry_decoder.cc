@@ -75,6 +75,10 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
     telemetry_decoder_->set_iono_queue(&global_gps_iono_queue);
     telemetry_decoder_->set_almanac_queue(&global_gps_almanac_queue);
     telemetry_decoder_->set_utc_model_queue(&global_gps_utc_model_queue);
+
+    //decimation factor
+    int decimation_factor=configuration->property(role + ".decimation_factor", 1);
+    telemetry_decoder_->set_decimation(decimation_factor);
     DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";
 }
 

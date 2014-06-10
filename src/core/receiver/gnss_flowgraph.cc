@@ -271,6 +271,13 @@ void GNSSFlowgraph::connect()
                     return;
             }
 
+            //discriminate between systems
+            //TODO: add a specific string member to the channel template, and not re-use the implementation field!
+            while (channels_.at(i)->implementation()!= available_GNSS_signals_.front().get_satellite().get_system())
+                {
+                    available_GNSS_signals_.push_back(available_GNSS_signals_.front());
+                    available_GNSS_signals_.pop_front();
+                }
             channels_.at(i)->set_signal(available_GNSS_signals_.front());
             LOG(INFO) << "Channel " << i << " assigned to " << available_GNSS_signals_.front();
             available_GNSS_signals_.pop_front();
@@ -325,9 +332,6 @@ void GNSSFlowgraph::connect()
     top_block_->dump();
 }
 
-
-
-
 void GNSSFlowgraph::wait()
 {
     if (!running_)
@@ -339,10 +343,6 @@ void GNSSFlowgraph::wait()
     DLOG(INFO) << "Flowgraph finished calculations";
     running_ = false;
 }
-
-
-
-
 
 /*
  * Applies an action to the flowgraph
@@ -493,16 +493,15 @@ void GNSSFlowgraph::set_signals_list()
      */
 
     /*
-     * Read GNSS-SDR default GNSS system and signal
+     * Read GNSS-SDR default GNSS system
      */
     std::string default_system = configuration_->property("Channel.system", std::string("GPS"));
-    std::string default_signal = configuration_->property("Channel.signal", std::string("1C"));
 
     /*
      * Loop to create the list of GNSS Signals
      * To add signals from other systems, add another loop 'for'
      */
-    if (default_system.compare(std::string("GPS")) == 0)
+    if (default_system.find(std::string("GPS")) != std::string::npos)
         {
             /*
              * Loop to create GPS L1 C/A signals
@@ -521,7 +520,7 @@ void GNSSFlowgraph::set_signals_list()
         }
 
 
-    if (default_system.compare(std::string("SBAS")) == 0)
+    if (default_system.find(std::string("SBAS")) != std::string::npos)
         {
             /*
              * Loop to create SBAS L1 C/A signals
@@ -538,7 +537,7 @@ void GNSSFlowgraph::set_signals_list()
         }
 
 
-    if (default_system.compare(std::string("Galileo")) == 0)
+    if (default_system.find(std::string("Galileo")) != std::string::npos)
         {
             /*
              * Loop to create the list of Galileo E1 B signals
@@ -559,6 +558,7 @@ void GNSSFlowgraph::set_signals_list()
     /*
      * Ordering the list of signals from configuration file
      */
+    std::string default_signal = configuration_->property("Channel.signal", std::string("1C"));
 
     std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
 
@@ -591,14 +591,14 @@ void GNSSFlowgraph::set_signals_list()
         }
     //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
     //
-    //std::cout<<"default_system="<<default_system<<std::endl;
-    //std::cout<<"default_signal="<<default_signal<<std::endl;
-    //    std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-    //    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-    //    != available_GNSS_signals_.end(); available_gnss_list_iter++)
-    //    {
-    //      std::cout << *available_gnss_list_iter << std::endl;
-    //    }
+    std::cout<<"default_system="<<default_system<<std::endl;
+    std::cout<<"default_signal="<<default_signal<<std::endl;
+        std::list<Gnss_Signal>::iterator available_gnss_list_iter;
+        for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
+        != available_GNSS_signals_.end(); available_gnss_list_iter++)
+        {
+          std::cout << *available_gnss_list_iter << std::endl;
+        }
 }
 
 

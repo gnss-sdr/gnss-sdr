@@ -130,7 +130,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_TOW_at_Preamble = 0;
     d_TOW_at_current_symbol = 0;
     flag_TOW_set = false;
-
+    d_average_count=0;
     //set_history(d_samples_per_bit*8); // At least a history of 8 bits are needed to correlate with the preamble
 }
 
@@ -341,11 +341,27 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }
         }
-    //3. Make the output (copy the object contents to the GNURadio reserved memory)
-    *out[0] = current_synchro_data;
-    return 1;
+
+    //todo: implement averaging
+    d_average_count++;
+    if (d_average_count==d_decimation_output_factor)
+    {
+    	d_average_count=0;
+        //3. Make the output (copy the object contents to the GNURadio reserved memory)
+        *out[0] = current_synchro_data;
+        //std::cout<<"GPS TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
+        return 1;
+    }else{
+    	return 0;
+    }
+
 }
 
+
+void gps_l1_ca_telemetry_decoder_cc::set_decimation(int decimation)
+{
+	d_decimation_output_factor=decimation;
+}
 
 void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {

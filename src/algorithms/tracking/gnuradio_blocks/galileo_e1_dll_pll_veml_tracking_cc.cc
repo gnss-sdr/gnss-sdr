@@ -558,6 +558,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
         }
     consume_each(d_current_prn_length_samples); // this is required for gr_block derivates
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
+    //std::cout<<"Galileo tracking output at sample "<<d_sample_counter<<std::endl;
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

@@ -492,6 +492,8 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
         }
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_synchro_data;
+
+    //std::cout<<"Galileo TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter<<std::endl;
     return 1;
 }
 

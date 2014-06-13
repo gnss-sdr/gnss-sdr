@@ -169,7 +169,7 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_flag_parity = false;
     d_TOW_at_Preamble = 0;
     d_TOW_at_current_symbol = 0;
-
+    delta_t = 0;
     d_CRC_error_counter = 0;
 }
 
@@ -193,7 +193,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
-    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180¼
+    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180ï¿½
     for (int i = 0; i < frame_length; i++)
         {
             if ((i + 1) % 2 == 0)
@@ -278,7 +278,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
     	std::cout<<"d_TOW_at_current_symbol="<<d_TOW_at_current_symbol<<std::endl;
     	std::cout<<"d_nav.WN_0="<<d_nav.WN_0<<std::endl;
 
-    	double delta_t;
+    	//double delta_t; declared out of this function to be used in the observable block
     	delta_t=almanac.A_0G_10+almanac.A_1G_10*(d_TOW_at_current_symbol-almanac.t_0G_10+604800*(fmod((d_nav.WN_0-almanac.WN_0G_10),64)));
 
     	std::cout<<"delta_t="<<delta_t<<"[s]"<<std::endl;
@@ -445,9 +445,10 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                 }
             else
                 {
-                    //this page has no timming information
+                    //this page has no timing information
                     d_TOW_at_Preamble = d_TOW_at_Preamble + GALILEO_INAV_PAGE_SECONDS;
                     d_TOW_at_current_symbol =  d_TOW_at_current_symbol + GALIELO_E1_CODE_PERIOD;// + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
+
                 }
 
         }
@@ -457,6 +458,14 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
         }
 
     //if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.flag_CRC_test == true)
+
+    if(d_nav.flag_GGTO_1 == true  and  d_nav.flag_GGTO_2 == true and  d_nav.flag_GGTO_3 == true and  d_nav.flag_GGTO_4 == true) //all GGTO parameters arrived
+        {
+    	delta_t=d_nav.A_0G_10+d_nav.A_1G_10*(d_TOW_at_current_symbol-d_nav.t_0G_10+604800*(fmod((d_nav.WN_0-d_nav.WN_0G_10),64)));
+        }
+
+
+
     if (d_flag_frame_sync == true and d_nav.flag_TOW_set == true)
         {
             current_synchro_data.Flag_valid_word = true;
@@ -466,8 +475,12 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
             current_synchro_data.Flag_valid_word = false;
         }
 
+
+
     current_synchro_data.d_TOW = d_TOW_at_Preamble;
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
+    current_synchro_data.d_TOW_hybrid_at_current_symbol= current_synchro_data.d_TOW_at_current_symbol - delta_t; //delta_t = t_gal - t_gps  ---->  t_gps = t_gal -delta_t
+    std::cout<< "delta_t = " << delta_t << std::endl;
     current_synchro_data.Flag_preamble = d_flag_preamble;
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
     current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;

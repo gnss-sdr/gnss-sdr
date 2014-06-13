@@ -70,6 +70,8 @@ public:
     bool Flag_preamble;     //!< Set by Telemetry Decoder processing block
     double d_TOW;           //!< Set by Telemetry Decoder processing block
     double d_TOW_at_current_symbol;
+    double d_TOW_hybrid_at_current_symbol; //Galileo TOW is expressed in the GPS time scale (it will be the same for any other constellation)
+
     // Pseudorange
     double Pseudorange_m;
     bool Flag_valid_pseudorange;

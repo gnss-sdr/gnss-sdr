@@ -66,6 +66,12 @@ void Galileo_Navigation_Message::reset()
     flag_TOW_5 = 0;
     flag_TOW_set = false;
 
+    flag_GGTO= false;
+    flag_GGTO_1= false;
+    flag_GGTO_2= false;
+    flag_GGTO_3= false;
+    flag_GGTO_4= false;
+
     IOD_ephemeris = 0;
     /*Word type 1: Ephemeris (1/4)*/
     IOD_nav_1 = 0;
@@ -974,14 +980,18 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         DLOG(INFO) << "E1B_HS_10= " << E1B_HS_10;
         A_0G_10 = (double)read_navigation_signed(data_jk_bits, A_0G_10_bit);
         A_0G_10 = A_0G_10 * A_0G_10_LSB;
+        flag_GGTO_1=true;
         DLOG(INFO) << "A_0G_10= " << A_0G_10;
         A_1G_10 = (double)read_navigation_signed(data_jk_bits, A_1G_10_bit);
         A_1G_10 = A_1G_10 * A_1G_10_LSB;
+        flag_GGTO_2=true;
         DLOG(INFO) << "A_1G_10= " << A_1G_10;
         t_0G_10 = (double)read_navigation_unsigned(data_jk_bits, t_0G_10_bit);
         t_0G_10 = t_0G_10 * t_0G_10_LSB;
+        flag_GGTO_3=true;
         DLOG(INFO) << "t_0G_10= " << t_0G_10;
         WN_0G_10 = (double)read_navigation_unsigned(data_jk_bits, WN_0G_10_bit);
+        flag_GGTO_4=true;
         DLOG(INFO) << "WN_0G_10= " << WN_0G_10;
         flag_almanac_4 = true;
         DLOG(INFO) << "flag_tow_set" << flag_TOW_set;

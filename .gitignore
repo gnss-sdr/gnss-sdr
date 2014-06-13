@@ -6,4 +6,5 @@ docs/GNSS-SDR_manual.pdf
 src/tests/data/output.dat
 thirdparty/
 .project
+.cproject
 /install

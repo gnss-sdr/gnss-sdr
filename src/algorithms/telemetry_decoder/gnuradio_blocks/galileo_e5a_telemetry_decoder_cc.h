@@ -37,7 +37,7 @@
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/trellis/interleaver.h>
 #include <gnuradio/trellis/permutation.h>
-#include <gnuradio/fec/viterbi.h>
+//#include <gnuradio/fec/viterbi.h>
 #include "Galileo_E5a.h"
 #include "concurrent_queue.h"
 #include "gnss_satellite.h"

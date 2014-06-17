@@ -33,6 +33,7 @@
 #ifndef GNSS_SDR_SIGNAL_GENERATOR_H_
 #define GNSS_SDR_SIGNAL_GENERATOR_H_
 
+
 #include <string>
 #include <vector>
 #include <gnuradio/blocks/file_sink.h>
@@ -45,9 +46,9 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class generates synthesized GNSS signal.
- *
- */
+* \brief This class generates synthesized GNSS signal.
+*
+*/
 class SignalGenerator: public GNSSBlockInterface
 {
 public:
@@ -62,8 +63,8 @@ public:
     }
 
     /*!
-     * \brief Returns "GNSSSignalGenerator".
-     */
+* \brief Returns "GNSSSignalGenerator".
+*/
     std::string implementation()
     {
         return "GNSSSignalGenerator";
@@ -91,5 +92,4 @@ private:
     gr::blocks::file_sink::sptr file_sink_;
     boost::shared_ptr<gr::msg_queue> queue_;
 };
-
 #endif /*GNSS_SDR_SIGNAL_GENERATOR_H_*/

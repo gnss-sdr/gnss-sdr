@@ -32,11 +32,14 @@
 #include "galileo_e5a_pcps_acquisition.h"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
+#include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
+#include <gnuradio/msg_queue.h>
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E5a.h"
 #include "configuration_interface.h"
+//#include  <tgmath.h>
 
 using google::LogMessage;
 
@@ -44,20 +47,18 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
-        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
+    configuration_ = configuration;
+    std::string default_item_type = "gr_complex";
+    std::string default_dump_filename = "../data/acquisition.dat";
 
-	configuration_ = configuration;
-	std::string default_item_type = "gr_complex";
-	std::string default_dump_filename = "../data/acquisition.dat";
+    DLOG(INFO) << "role " << role;
 
-	DLOG(INFO) << "role " << role;
-
-	item_type_ = configuration_->property(role + ".item_type",
+    item_type_ = configuration_->property(role + ".item_type",
 	        default_item_type);
-	//TODO descubrir que ponemos de default value
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
-    //
+
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 12000000);
     if_ = configuration_->property(role + ".ifreq", 0);
     dump_ = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
@@ -78,10 +79,13 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
             default_dump_filename);
 
     //--- Find number of samples per spreading code (1ms)-------------------------
-    code_length_ = round(fs_in_
-            / (Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS));
+    code_length_ = round(fs_in_/ Galileo_E5a_CODE_CHIP_RATE_HZ*Galileo_E5a_CODE_LENGTH_CHIPS);
 
     vector_length_=code_length_ * sampled_ms_;
+
+    std::cout << sampled_ms_ << " sampledms" << code_length_ << " cdelength" << std::endl;
+
+    //if (posix_memalign((void**)&(code_), 16,vector_length_ * sizeof(gr_complex)) == 0){};
 
     code_= new gr_complex[vector_length_];
 
@@ -210,16 +214,13 @@ void GalileoE5aPcpsAcquisition::set_local_code()
 {
 	if (item_type_.compare("gr_complex")==0)
 	{
-		bool pilot = configuration_->property(
-                "Acquisition" + boost::lexical_cast<std::string>(channel_)
-                        + ".pilot", true);
 
 		std::complex<float>* code = new std::complex<float>[code_length_];
 
 		galileo_e5_a_code_gen_complex_sampled(code, gnss_synchro_->Signal,
 		    gnss_synchro_->PRN, fs_in_, 0, false);
 
-		for (unsigned int i = 0; i < sampled_ms_/4; i++)
+		for (unsigned int i = 0; i < sampled_ms_; i++)
 		    {
 		        memcpy(&(code_[i*code_length_]), code,
 		             sizeof(gr_complex)*code_length_);

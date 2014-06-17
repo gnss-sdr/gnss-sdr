@@ -41,6 +41,7 @@
 #include "galileo_fnav_message.h"
 #include "gnss_synchro.h"
 #include "convolutional.h"
+//#include "galileo_e1b_telemetry_decoder_cc.h"
 
 #define CRC_ERROR_LIMIT 6
 
@@ -73,10 +74,11 @@ void galileo_e5a_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols
     g_encoder[1] = 91;  // Polynomial G2
 
     mm = KK - 1;
-    max_states = 1 << mm; /* 2^mm */
+    max_states = 1 << mm; // 2^mm
     DataLength = (CodeLength/nn) - mm;
 
-    /* create appropriate transition matrices */
+    //create appropriate transition matrices
+
     int *out0, *out1, *state0, *state1;
     out0 = (int*)calloc( max_states, sizeof(int) );
     out1 = (int*)calloc( max_states, sizeof(int) );
@@ -89,12 +91,13 @@ void galileo_e5a_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols
     Viterbi(page_part_bits, out0, state0, out1, state1,
             page_part_symbols, KK, nn, DataLength );
 
-    /* Clean up memory */
+    //Clean up memory
     free( out0 );
     free( out1 );
     free( state0 );
     free( state1 );
 }
+
 
 void galileo_e5a_telemetry_decoder_cc::deinterleaver(int rows, int cols, double *in, double *out)
 {
@@ -111,6 +114,7 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
 {
     double page_symbols_deint[frame_length];
     // 1. De-interleave
+
     galileo_e5a_telemetry_decoder_cc::deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
 
     // 2. Viterbi decoder
@@ -124,7 +128,8 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
                 }
         }
     int page_part_bits[frame_length];
-    galileo_e5a_telemetry_decoder_cc::viterbi_decoder(page_symbols_deint, page_part_bits);
+
+    viterbi_decoder(page_symbols_deint, page_part_bits);
 
     // 3. Call the Galileo page decoder
     std::string page_String;

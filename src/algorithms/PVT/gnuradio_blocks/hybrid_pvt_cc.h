@@ -43,10 +43,14 @@
 #include "galileo_ephemeris.h"
 #include "galileo_utc_model.h"
 #include "galileo_iono.h"
+#include "gps_navigation_message.h"
+#include "gps_ephemeris.h"
+#include "gps_utc_model.h"
+#include "gps_iono.h"
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
-#include "galileo_e1_ls_pvt.h"
+#include "hybrid_ls_pvt.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 
@@ -109,7 +113,9 @@ private:
     Kml_Printer d_kml_dump;
     Nmea_Printer *d_nmea_printer;
     double d_rx_time;
-    galileo_e1_ls_pvt *d_ls_pvt;
+    double  d_TOW_at_curr_symbol_constellation;
+
+    hybrid_ls_pvt *d_ls_pvt;
     bool pseudoranges_pairCompare_min(std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b);
 
 public:

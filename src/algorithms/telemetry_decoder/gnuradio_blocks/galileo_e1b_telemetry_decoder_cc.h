@@ -136,6 +136,7 @@ private:
 
     double d_TOW_at_Preamble;
     double d_TOW_at_current_symbol;
+
     double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;
     double delta_t; //GPS-GALILEO time offset

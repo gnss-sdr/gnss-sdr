@@ -278,7 +278,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
     	std::cout<<"d_TOW_at_current_symbol="<<d_TOW_at_current_symbol<<std::endl;
     	std::cout<<"d_nav.WN_0="<<d_nav.WN_0<<std::endl;
 
-    	//double delta_t; declared out of this function to be used in the observable block
+
     	delta_t=almanac.A_0G_10+almanac.A_1G_10*(d_TOW_at_current_symbol-almanac.t_0G_10+604800*(fmod((d_nav.WN_0-almanac.WN_0G_10),64)));
 
     	std::cout<<"delta_t="<<delta_t<<"[s]"<<std::endl;
@@ -481,7 +481,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
     current_synchro_data.d_TOW_hybrid_at_current_symbol= current_synchro_data.d_TOW_at_current_symbol - delta_t; //delta_t = t_gal - t_gps  ---->  t_gps = t_gal -delta_t
     std::cout<< "delta_t = " << delta_t << std::endl;
-    current_synchro_data.Flag_preamble = d_flag_preamble;
+      current_synchro_data.Flag_preamble = d_flag_preamble;
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
     current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
 

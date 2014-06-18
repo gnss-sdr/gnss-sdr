@@ -49,6 +49,10 @@ extern concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
 extern concurrent_map<Galileo_Iono> global_galileo_iono_map;
 extern concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
 
+extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
+extern concurrent_map<Gps_Iono> global_gps_iono_map;
+extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
+
 hybrid_pvt_cc_sptr
 hybrid_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname)
 {
@@ -83,13 +87,13 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_q
     d_averaging_depth = averaging_depth;
     d_flag_averaging = flag_averaging;
 
-    d_ls_pvt = new galileo_e1_ls_pvt(nchannels, dump_ls_pvt_filename, d_dump);
+    d_ls_pvt = new hybrid_ls_pvt(nchannels, dump_ls_pvt_filename, d_dump);
     d_ls_pvt->set_averaging_depth(d_averaging_depth);
 
     d_sample_counter = 0;
     d_last_sample_nav_output = 0;
     d_rx_time = 0.0;
-
+    d_TOW_at_curr_symbol_constellation = 0.0;
     b_rinex_header_writen = false;
     rp = new Rinex_Printer();
 
@@ -145,11 +149,15 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
                     gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
-                    d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
+                    //d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
+                    d_TOW_at_curr_symbol_constellation=in[i][0].d_TOW_at_current_symbol; // d_TOW_at_current_symbol not corrected by delta t (just for debug)
+                    d_rx_time = in[i][0].d_TOW_hybrid_at_current_symbol; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges)
+                    std::cout<<"Ch PVT = "<< i  << ", d_TOW = " << d_TOW_at_curr_symbol_constellation<<", rx_time_hybrid_PVT = " << d_rx_time << " same RX timestamp (common RX time pseudoranges)"<< std::endl;
+
                 }
         }
 
-    // ############ 1. READ EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
+    // ############ 1. READ GALILEO EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
 
     if (global_galileo_ephemeris_map.size() > 0)
         {
@@ -168,9 +176,30 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
             global_galileo_iono_map.read(0, d_ls_pvt->galileo_iono);
         }
 
-    // ############ 2 COMPUTE THE PVT ################################
-    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0)
+    // ############ 1. READ GPS EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
+
+    if (global_gps_ephemeris_map.size() > 0)
         {
+            d_ls_pvt->gps_ephemeris_map = global_gps_ephemeris_map.get_map_copy();
+        }
+
+    if (global_gps_utc_model_map.size() > 0)
+        {
+            // UTC MODEL data is shared for all the Galileo satellites. Read always at ID=0
+            global_gps_utc_model_map.read(0, d_ls_pvt->gps_utc_model);
+        }
+
+    if (global_gps_iono_map.size() > 0)
+        {
+            // IONO data is shared for all the Galileo satellites. Read always at ID=0
+            global_gps_iono_map.read(0, d_ls_pvt->gps_iono);
+        }
+
+
+    // ############ 2 COMPUTE THE PVT ################################
+    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
+        {
+    	std::cout << "Both GPS and Galileo ephemeris map have been filled " << std::endl;
             // compute on the fly PVT solution
             if ((d_sample_counter % d_output_rate_ms) == 0)
                 {
@@ -180,7 +209,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
 
                     if (pvt_result == true)
                         {
-                            d_kml_dump.print_position_galileo(d_ls_pvt, d_flag_averaging);
+                    	    //IMPLEMENT KML OUTPUT            d_kml_dump.print_position_galileo(d_ls_pvt, d_flag_averaging);
                             //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
                             //                            d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
                             //

@@ -152,7 +152,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                     //d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
                     d_TOW_at_curr_symbol_constellation=in[i][0].d_TOW_at_current_symbol; // d_TOW_at_current_symbol not corrected by delta t (just for debug)
                     d_rx_time = in[i][0].d_TOW_hybrid_at_current_symbol; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges)
-                    std::cout<<"Ch PVT = "<< i  << ", d_TOW = " << d_TOW_at_curr_symbol_constellation<<", rx_time_hybrid_PVT = " << d_rx_time << " same RX timestamp (common RX time pseudoranges)"<< std::endl;
+                    std::cout<<"CH PVT = "<< i  << ", d_TOW = " << d_TOW_at_curr_symbol_constellation<<", rx_time_hybrid_PVT = " << d_rx_time << " same RX timestamp (common RX time pseudoranges)"<< std::endl;
 
                 }
         }
@@ -205,7 +205,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                 {
                     bool pvt_result;
                     pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
-
+                    std::cout << "pvt_result  = " << pvt_result  << std::endl;
 
                     if (pvt_result == true)
                         {

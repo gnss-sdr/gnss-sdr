@@ -40,7 +40,8 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
-    d_ephemeris = new Galileo_Navigation_Message[nchannels];
+    d_Gal_ephemeris = new Galileo_Navigation_Message[nchannels];
+    d_GPS_ephemeris = new Gps_Navigation_Message[nchannels];
     d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
     d_averaging_depth = 0;
@@ -75,7 +76,8 @@ void hybrid_ls_pvt::set_averaging_depth(int depth)
 hybrid_ls_pvt::~hybrid_ls_pvt()
 {
     d_dump_file.close();
-    delete[] d_ephemeris;
+    delete[] d_Gal_ephemeris;
+    delete[] d_GPS_ephemeris;
 }
 
 
@@ -215,10 +217,11 @@ arma::vec hybrid_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma::m
 }
 
 
-bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double galileo_current_time, bool flag_averaging)
+bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double hybrid_current_time, bool flag_averaging)
 {
     std::map<int,Gnss_Synchro>::iterator gnss_pseudoranges_iter;
     std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
+    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
     int valid_pseudoranges = gnss_pseudoranges_map.size();
 
     arma::mat W = arma::eye(valid_pseudoranges, valid_pseudoranges); //channels weights matrix
@@ -226,7 +229,9 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     arma::mat satpos = arma::zeros(3, valid_pseudoranges);           //satellite positions matrix
 
     int Galileo_week_number = 0;
+    int GPS_week;
     double utc = 0;
+    double utc_tx_corrected = 0; //utc computed at tx_time_corrected, added for Galileo constellation (in GPS utc is directly computed at TX_time_corrected_s)
     double SV_clock_drift_s = 0;
     double SV_relativistic_clock_corr_s = 0;
     double TX_time_corrected_s;
@@ -243,79 +248,165 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             gnss_pseudoranges_iter != gnss_pseudoranges_map.end();
             gnss_pseudoranges_iter++)
         {
-            // 1- find the ephemeris for the current SV observation. The SV PRN ID is the map key
-            galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_pseudoranges_iter->first);
-            if (galileo_ephemeris_iter != galileo_ephemeris_map.end())
-                {
-                    /*!
-                     * \todo Place here the satellite CN0 (power level, or weight factor)
-                     */
-                    W(obs_counter, obs_counter) = 1;
 
-                    // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
-                    // first estimate of transmit time
-                    //Galileo_week_number = galileo_ephemeris_iter->second.WN_5;//for GST
-                    //double sec_in_day = 86400;
-                    //double day_in_week = 7;
-                    //   t = WN*sec_in_day*day_in_week + TOW; // t is Galileo System Time to use to compute satellite positions
+    		if (gnss_pseudoranges_iter->second.System == 'E')
+    			{
+    				std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
+    				// 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
+    				galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_pseudoranges_iter->first);
+    				if (galileo_ephemeris_iter != galileo_ephemeris_map.end())
+ 			                 {
+    			                    /*!
+    			                     * \todo Place here the satellite CN0 (power level, or weight factor)
+    			                     */
+    			                    W(obs_counter, obs_counter) = 1;
 
-                    //JAVIER VERSION:
-                    double Rx_time = galileo_current_time;
+    			                    // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
+    			                    // first estimate of transmit time
+    			                    //Galileo_week_number = galileo_ephemeris_iter->second.WN_5;//for GST
+    			                    //double sec_in_day = 86400;
+    			                    //double day_in_week = 7;
+    			                    //   t = WN*sec_in_day*day_in_week + TOW; // t is Galileo System Time to use to compute satellite positions
 
-                    //to compute satellite position we need GST = WN+TOW (everything expressed in seconds)
-                    //double Rx_time = galileo_current_time + Galileo_week_number*sec_in_day*day_in_week;
+    			                    //JAVIER VERSION:
+    			                    double Rx_time = hybrid_current_time;
+    			                    std::cout<<"Gal_Rx_time = "<< Rx_time << std::endl;
+    			                    //to compute satellite position we need GST = WN+TOW (everything expressed in seconds)
+    			                    //double Rx_time = galileo_current_time + Galileo_week_number*sec_in_day*day_in_week;
 
-                    double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GALILEO_C_m_s;
+    			                    double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GALILEO_C_m_s;
+    			                    //std::cout<<"Gal_Tx_time = "<< Tx_time << std::endl;
+    			                    // 2- compute the clock drift using the clock model (broadcast) for this SV
+    			                    SV_clock_drift_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
 
-                    // 2- compute the clock drift using the clock model (broadcast) for this SV
-                    SV_clock_drift_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
+    			                    // 3- compute the relativistic clock drift using the clock model (broadcast) for this SV
+    			                    SV_relativistic_clock_corr_s = galileo_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
 
-                    // 3- compute the relativistic clock drift using the clock model (broadcast) for this SV
-                    SV_relativistic_clock_corr_s = galileo_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
+    			                    // 4- compute the current ECEF position for this SV using corrected TX time
+    			                    SV_clock_bias_s = SV_clock_drift_s + SV_relativistic_clock_corr_s;
 
-                    // 4- compute the current ECEF position for this SV using corrected TX time
-                    SV_clock_bias_s = SV_clock_drift_s + SV_relativistic_clock_corr_s;
-                    TX_time_corrected_s = Tx_time - SV_clock_bias_s;
-                    galileo_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
+    			                    TX_time_corrected_s = Tx_time - SV_clock_bias_s;
+    			                    //std::cout<<"Gal_TX_time_corrected_s = "<< TX_time_corrected_s << std::endl;
+    			                    galileo_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
 
-                    satpos(0,obs_counter) = galileo_ephemeris_iter->second.d_satpos_X;
-                    satpos(1,obs_counter) = galileo_ephemeris_iter->second.d_satpos_Y;
-                    satpos(2,obs_counter) = galileo_ephemeris_iter->second.d_satpos_Z;
+    			                    satpos(0,obs_counter) = galileo_ephemeris_iter->second.d_satpos_X;
+    			                    satpos(1,obs_counter) = galileo_ephemeris_iter->second.d_satpos_Y;
+    			                    satpos(2,obs_counter) = galileo_ephemeris_iter->second.d_satpos_Z;
 
-                    // 5- fill the observations vector with the corrected pseudoranges
-                    obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s*GALILEO_C_m_s;
-                    d_visible_satellites_IDs[valid_obs] = galileo_ephemeris_iter->second.i_satellite_PRN;
-                    d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
-                    valid_obs++;
+    			                    // 5- fill the observations vector with the corrected pseudoranges
+    			                    obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s*GALILEO_C_m_s;
+    			                    d_visible_satellites_IDs[valid_obs] = galileo_ephemeris_iter->second.i_satellite_PRN;
+    			                    d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
+    			                    valid_obs++;
 
-                    Galileo_week_number = galileo_ephemeris_iter->second.WN_5; //for GST
+    			                    Galileo_week_number = galileo_ephemeris_iter->second.WN_5; //for GST
 
-                    //debug
-                    double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, galileo_current_time);
-                    utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
-                    // get time string gregorian calendar
-                    boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
-                    // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
-                    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-                    d_position_UTC_time = p_time;
-                    LOG(INFO) << "Galileo RX time at " << boost::posix_time::to_simple_string(p_time);
-                    //end debug
+    			                    //debug
+    			                    double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
+    			                    utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number); // this shoud be removed and it should be considered the  utc_tx_corrected
+    			                    utc_tx_corrected = galileo_utc_model.GST_to_UTC_time(TX_time_corrected_s, Galileo_week_number);
+    			                    //std::cout<<"Gal UTC at TX_time_corrected_s = "<<utc_tx_corrected<< std::endl;
+    			                    //std::cout<<"Gal_week = "<<Galileo_week_number<< std::endl;
+    			                    //std::cout << "Gal UTC = " <<  utc << std::endl;
+    			                    // get time string gregorian calendar
+    			                    boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
+    			                    // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
+    			                    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    			                    d_position_UTC_time = p_time;
+    			                    LOG(INFO) << "Galileo RX time at " << boost::posix_time::to_simple_string(p_time);
+    			                    //end debug
 
-                    // SV ECEF DEBUG OUTPUT
-                    LOG(INFO) << "ECEF satellite SV ID=" << galileo_ephemeris_iter->second.i_satellite_PRN
-                               << " X=" << galileo_ephemeris_iter->second.d_satpos_X
-                               << " [m] Y=" << galileo_ephemeris_iter->second.d_satpos_Y
-                               << " [m] Z=" << galileo_ephemeris_iter->second.d_satpos_Z
-                               << " [m] PR_obs=" << obs(obs_counter) << " [m]";
-                }
-            else // the ephemeris are not available for this SV
-                {
-                    // no valid pseudorange for the current SV
-                    W(obs_counter, obs_counter) = 0; // SV de-activated
-                    obs(obs_counter) = 1; // to avoid algorithm problems (divide by zero)
-                    DLOG(INFO) << "No ephemeris data for SV "<< gnss_pseudoranges_iter->first;
-                }
-            obs_counter++;
+    			                    // SV ECEF DEBUG OUTPUT
+    			                    LOG(INFO) << "ECEF satellite SV ID=" << galileo_ephemeris_iter->second.i_satellite_PRN
+    			                               << " X=" << galileo_ephemeris_iter->second.d_satpos_X
+    			                               << " [m] Y=" << galileo_ephemeris_iter->second.d_satpos_Y
+    			                               << " [m] Z=" << galileo_ephemeris_iter->second.d_satpos_Z
+    			                               << " [m] PR_obs=" << obs(obs_counter) << " [m]";
+    			                    std::cout<<"E"<<galileo_ephemeris_iter->second.i_satellite_PRN<< " satellite position computed"<< std::endl;
+    			             }
+
+    				else // the ephemeris are not available for this SV
+                             {
+                                    // no valid pseudorange for the current SV
+                                    W(obs_counter, obs_counter) = 0; // SV de-activated
+                                    obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
+                                    DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->first;
+                             }
+
+
+    			}
+    		else if (gnss_pseudoranges_iter->second.System == 'G')
+    		    {
+    				std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
+    				// 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
+    				gps_ephemeris_iter = gps_ephemeris_map.find(gnss_pseudoranges_iter->first);
+    			    if (gps_ephemeris_iter != gps_ephemeris_map.end())
+    			            {
+									/*!
+									 * \todo Place here the satellite CN0 (power level, or weight factor)
+									 */
+									W(obs_counter, obs_counter) = 1;
+
+									// COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
+									// first estimate of transmit time
+									double Rx_time = hybrid_current_time;
+									std::cout<<"Gps_Rx_time = "<< Rx_time << std::endl;
+									double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GPS_C_m_s;
+									//std::cout<<"Gps_Tx_time = "<< Tx_time << std::endl;
+									// 2- compute the clock drift using the clock model (broadcast) for this SV
+									SV_clock_drift_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
+
+									// 3- compute the relativistic clock drift using the clock model (broadcast) for this SV
+									SV_relativistic_clock_corr_s = gps_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
+
+									// 4- compute the current ECEF position for this SV using corrected TX time
+									SV_clock_bias_s = SV_clock_drift_s + SV_relativistic_clock_corr_s - gps_ephemeris_iter->second.d_TGD;
+									TX_time_corrected_s = Tx_time - SV_clock_bias_s;
+									gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
+
+									satpos(0, obs_counter) = gps_ephemeris_iter->second.d_satpos_X;
+									satpos(1, obs_counter) = gps_ephemeris_iter->second.d_satpos_Y;
+									satpos(2, obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
+
+									// 5- fill the observations vector with the corrected pseudorranges
+									obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s*GPS_C_m_s;
+									d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
+									d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
+									valid_obs++;
+
+									// SV ECEF DEBUG OUTPUT
+									LOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
+											<< " X=" << gps_ephemeris_iter->second.d_satpos_X
+											<< " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
+											<< " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
+											<< " [m] PR_obs=" << obs(obs_counter) << " [m]";
+									std::cout<<"G"<<gps_ephemeris_iter->second.i_satellite_PRN<< " satellite position computed"<< std::endl;
+
+
+
+									// compute the UTC time for this SV (just to print the asociated UTC timestamp)
+									GPS_week = gps_ephemeris_iter->second.i_GPS_week;
+									//std::cout<<"GPS_week = "<< GPS_week << std::endl;
+									utc = gps_utc_model.utc_time(TX_time_corrected_s, GPS_week);
+									//std::cout << "GPS UTC at TX_time_corrected_s= " <<  utc << std::endl;
+							}
+    			            else // the ephemeris are not available for this SV
+    			                    {
+    			                    // no valid pseudorange for the current SV
+    			                    W(obs_counter, obs_counter) = 0; // SV de-activated
+    			                    obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
+    			                    DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->first;
+    			                    }
+
+    		    		}
+
+
+
+
+
+    		 obs_counter++;
+             std::cout<<"Number of observations in PVT = " <<  obs_counter << std::endl;
+
         }
     // ********************************************************************************
     // ****** SOLVE LEAST SQUARES******************************************************
@@ -325,163 +416,164 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 
     if (valid_obs >= 4)
         {
-            arma::vec mypos;
-            DLOG(INFO) << "satpos=" << satpos;
-            DLOG(INFO) << "obs="<< obs;
-            DLOG(INFO) << "W=" << W;
-            mypos = leastSquarePos(satpos, obs, W);
 
-            // Compute GST and Gregorian time
-            double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, galileo_current_time);
-            utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
-            // get time string Gregorian calendar
-            boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
-            // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
-            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-            d_position_UTC_time = p_time;
-            LOG(INFO) << "Galileo Position at TOW=" << galileo_current_time << " in ECEF (X,Y,Z) = " << mypos;
-
-            cart2geo((double)mypos(0), (double)mypos(1), (double)mypos(2), 4);
-            //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
-            if (d_height_m > 50000)
-                {
-                    b_valid_position = false;
-                    return false;
-                }
-            LOG(INFO) << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
-                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                      << " [deg], Height= " << d_height_m << " [m]";
-
-            std::cout << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
-                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                      << " [deg], Height= " << d_height_m << " [m]" << std::endl;
-
-            // ###### Compute DOPs ########
-            // 1- Rotation matrix from ECEF coordinates to ENU coordinates
-            // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
-            arma::mat F = arma::zeros(3,3);
-            F(0,0) = -sin(GPS_TWO_PI*(d_longitude_d/360.0));
-            F(0,1) = -sin(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
-            F(0,2) = cos(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
-
-            F(1,0) = cos((GPS_TWO_PI*d_longitude_d)/360.0);
-            F(1,1) = -sin((GPS_TWO_PI*d_latitude_d)/360.0)*sin((GPS_TWO_PI*d_longitude_d)/360.0);
-            F(1,2) = cos((GPS_TWO_PI*d_latitude_d/360.0))*sin((GPS_TWO_PI*d_longitude_d)/360.0);
-
-            F(2,0) = 0;
-            F(2,1) = cos((GPS_TWO_PI*d_latitude_d)/360.0);
-            F(2,2) = sin((GPS_TWO_PI*d_latitude_d/360.0));
-
-            // 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
-            arma::mat Q_ECEF = d_Q.submat(0, 0, 2, 2);
-            arma::mat DOP_ENU = arma::zeros(3, 3);
-
-            try
-            {
-                    DOP_ENU = arma::htrans(F)*Q_ECEF*F;
-                    d_GDOP  = sqrt(arma::trace(DOP_ENU));                       // Geometric DOP
-                    d_PDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1) + DOP_ENU(2,2)); // PDOP
-                    d_HDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1));                // HDOP
-                    d_VDOP  = sqrt(DOP_ENU(2,2));                               // VDOP
-                    d_TDOP  = sqrt(d_Q(3,3));                                   // TDOP
-            }
-            catch(std::exception& ex)
-            {
-                    d_GDOP = -1;   // Geometric DOP
-                    d_PDOP = -1;   // PDOP
-                    d_HDOP = -1;   // HDOP
-                    d_VDOP = -1;   // VDOP
-                    d_TDOP = -1;   // TDOP
-            }
-
-            // ######## LOG FILE #########
-            if(d_flag_dump_enabled == true)
-                {
-                    // MULTIPLEXED FILE RECORDING - Record results to file
-                    try
-                    {
-                            double tmp_double;
-                            //  PVT GPS time
-                            tmp_double = galileo_current_time;
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // ECEF User Position East [m]
-                            tmp_double = mypos(0);
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // ECEF User Position North [m]
-                            tmp_double = mypos(1);
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // ECEF User Position Up [m]
-                            tmp_double = mypos(2);
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // User clock offset [s]
-                            tmp_double = mypos(3);
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // GEO user position Latitude [deg]
-                            tmp_double = d_latitude_d;
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // GEO user position Longitude [deg]
-                            tmp_double = d_longitude_d;
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            // GEO user position Height [m]
-                            tmp_double = d_height_m;
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-                    }
-                    catch (const std::ifstream::failure& e)
-                    {
-                            LOG(WARNING) << "Exception writing PVT LS dump file "<< e.what();
-                    }
-                }
-
-            // MOVING AVERAGE PVT
-            if (flag_averaging == true)
-                {
-                    if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
-                        {
-                            // Pop oldest value
-                            d_hist_longitude_d.pop_back();
-                            d_hist_latitude_d.pop_back();
-                            d_hist_height_m.pop_back();
-                            // Push new values
-                            d_hist_longitude_d.push_front(d_longitude_d);
-                            d_hist_latitude_d.push_front(d_latitude_d);
-                            d_hist_height_m.push_front(d_height_m);
-
-                            d_avg_latitude_d = 0;
-                            d_avg_longitude_d = 0;
-                            d_avg_height_m = 0;
-                            for (unsigned int i = 0; i < d_hist_longitude_d.size(); i++)
-                                {
-                                    d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
-                                    d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
-                                    d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
-                                }
-                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
-                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
-                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
-                            b_valid_position = true;
-                            return true; //indicates that the returned position is valid
-                        }
-                    else
-                        {
-                            // int current_depth=d_hist_longitude_d.size();
-                            // Push new values
-                            d_hist_longitude_d.push_front(d_longitude_d);
-                            d_hist_latitude_d.push_front(d_latitude_d);
-                            d_hist_height_m.push_front(d_height_m);
-
-                            d_avg_latitude_d = d_latitude_d;
-                            d_avg_longitude_d = d_longitude_d;
-                            d_avg_height_m = d_height_m;
-                            b_valid_position = false;
-                            return false; //indicates that the returned position is not valid yet
-                        }
-                }
-            else
-                {
-                    b_valid_position = true;
-                    return true; //indicates that the returned position is valid
-                }
-        }
+//            arma::vec mypos;
+//            DLOG(INFO) << "satpos=" << satpos;
+//            DLOG(INFO) << "obs="<< obs;
+//            DLOG(INFO) << "W=" << W;
+//            mypos = leastSquarePos(satpos, obs, W);
+//
+//            // Compute GST and Gregorian time
+//            double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
+//            utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
+//            // get time string Gregorian calendar
+//            boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
+//            // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
+//            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+//            d_position_UTC_time = p_time;
+//            LOG(INFO) << "Galileo Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
+//
+//            cart2geo((double)mypos(0), (double)mypos(1), (double)mypos(2), 4);
+//            //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
+//            if (d_height_m > 50000)
+//                {
+//                    b_valid_position = false;
+//                    return false;
+//                }
+//            LOG(INFO) << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
+//                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+//                      << " [deg], Height= " << d_height_m << " [m]";
+//
+//            std::cout << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
+//                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+//                      << " [deg], Height= " << d_height_m << " [m]" << std::endl;
+//
+//            // ###### Compute DOPs ########
+//            // 1- Rotation matrix from ECEF coordinates to ENU coordinates
+//            // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
+//            arma::mat F = arma::zeros(3,3);
+//            F(0,0) = -sin(GPS_TWO_PI*(d_longitude_d/360.0));
+//            F(0,1) = -sin(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
+//            F(0,2) = cos(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
+//
+//            F(1,0) = cos((GPS_TWO_PI*d_longitude_d)/360.0);
+//            F(1,1) = -sin((GPS_TWO_PI*d_latitude_d)/360.0)*sin((GPS_TWO_PI*d_longitude_d)/360.0);
+//            F(1,2) = cos((GPS_TWO_PI*d_latitude_d/360.0))*sin((GPS_TWO_PI*d_longitude_d)/360.0);
+//
+//            F(2,0) = 0;
+//            F(2,1) = cos((GPS_TWO_PI*d_latitude_d)/360.0);
+//            F(2,2) = sin((GPS_TWO_PI*d_latitude_d/360.0));
+//
+//            // 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
+//            arma::mat Q_ECEF = d_Q.submat(0, 0, 2, 2);
+//            arma::mat DOP_ENU = arma::zeros(3, 3);
+//
+//            try
+//            {
+//                    DOP_ENU = arma::htrans(F)*Q_ECEF*F;
+//                    d_GDOP  = sqrt(arma::trace(DOP_ENU));                       // Geometric DOP
+//                    d_PDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1) + DOP_ENU(2,2)); // PDOP
+//                    d_HDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1));                // HDOP
+//                    d_VDOP  = sqrt(DOP_ENU(2,2));                               // VDOP
+//                    d_TDOP  = sqrt(d_Q(3,3));                                   // TDOP
+//            }
+//            catch(std::exception& ex)
+//            {
+//                    d_GDOP = -1;   // Geometric DOP
+//                    d_PDOP = -1;   // PDOP
+//                    d_HDOP = -1;   // HDOP
+//                    d_VDOP = -1;   // VDOP
+//                    d_TDOP = -1;   // TDOP
+//            }
+//
+//            // ######## LOG FILE #########
+//            if(d_flag_dump_enabled == true)
+//                {
+//                    // MULTIPLEXED FILE RECORDING - Record results to file
+//                    try
+//                    {
+//                            double tmp_double;
+//                            //  PVT GPS time
+//                            tmp_double = hybrid_current_time;
+//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+//                            // ECEF User Position East [m]
+//                            tmp_double = mypos(0);
+//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+//                            // ECEF User Position North [m]
+//                            tmp_double = mypos(1);
+//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+//                            // ECEF User Position Up [m]
+//                            tmp_double = mypos(2);
+//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+//                            // User clock offset [s]
+//                            tmp_double = mypos(3);
+//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+//                            // GEO user position Latitude [deg]
+//                            tmp_double = d_latitude_d;
+//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+//                            // GEO user position Longitude [deg]
+//                            tmp_double = d_longitude_d;
+//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+//                            // GEO user position Height [m]
+//                            tmp_double = d_height_m;
+//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+//                    }
+//                    catch (const std::ifstream::failure& e)
+//                    {
+//                            LOG(WARNING) << "Exception writing PVT LS dump file "<< e.what();
+//                    }
+//                }
+//
+//            // MOVING AVERAGE PVT
+//            if (flag_averaging == true)
+//                {
+//                    if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
+//                        {
+//                            // Pop oldest value
+//                            d_hist_longitude_d.pop_back();
+//                            d_hist_latitude_d.pop_back();
+//                            d_hist_height_m.pop_back();
+//                            // Push new values
+//                            d_hist_longitude_d.push_front(d_longitude_d);
+//                            d_hist_latitude_d.push_front(d_latitude_d);
+//                            d_hist_height_m.push_front(d_height_m);
+//
+//                            d_avg_latitude_d = 0;
+//                            d_avg_longitude_d = 0;
+//                            d_avg_height_m = 0;
+//                            for (unsigned int i = 0; i < d_hist_longitude_d.size(); i++)
+//                                {
+//                                    d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
+//                                    d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
+//                                    d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
+//                                }
+//                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
+//                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
+//                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
+//                            b_valid_position = true;
+//                            return true; //indicates that the returned position is valid
+//                        }
+//                    else
+//                        {
+//                            // int current_depth=d_hist_longitude_d.size();
+//                            // Push new values
+//                            d_hist_longitude_d.push_front(d_longitude_d);
+//                            d_hist_latitude_d.push_front(d_latitude_d);
+//                            d_hist_height_m.push_front(d_height_m);
+//
+//                            d_avg_latitude_d = d_latitude_d;
+//                            d_avg_longitude_d = d_longitude_d;
+//                            d_avg_height_m = d_height_m;
+//                            b_valid_position = false;
+//                            return false; //indicates that the returned position is not valid yet
+//                        }
+//                }
+//            else
+//                {
+//                    b_valid_position = true;
+//                    return true; //indicates that the returned position is valid
+//                }
+       }
     else
         {
             b_valid_position = false;

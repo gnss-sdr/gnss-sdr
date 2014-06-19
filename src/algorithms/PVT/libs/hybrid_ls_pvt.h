@@ -74,8 +74,8 @@ public:
     double d_visible_satellites_Distance[PVT_MAX_CHANNELS]; //!< Array with the LOS Distance of the valid satellites
     double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS];   //!< Array with the IDs of the valid satellites
 
-    Galileo_Navigation_Message* d_ephemeris;
-    //Gps_Navigation_Message* d_ephemeris;
+    Galileo_Navigation_Message* d_Gal_ephemeris;
+    Gps_Navigation_Message* d_GPS_ephemeris;
 
     std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
     std::map<int,Gps_Ephemeris> gps_ephemeris_map; //!< Map storing new Galileo_Ephemeris
@@ -127,7 +127,7 @@ public:
 
     ~hybrid_ls_pvt();
 
-    bool get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double galileo_current_time, bool flag_averaging);
+    bool get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double hybrid_current_time, bool flag_averaging);
 
     /*!
      * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical

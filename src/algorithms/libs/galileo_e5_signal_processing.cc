@@ -240,11 +240,11 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
             _dest[(i+delay)%_samplesPerCode] = _code[i];
         }
 
-    if (_code[0]==gr_complex(0,0))
-	{
-	    std::cout <<"ERROR: first chip is 0. prn:"<< _prn << std::endl;
-	    std::cout << _Signal << "signal" << std::endl;
-	}
+//    if (_code[0]==gr_complex(0,0))
+//	{
+//	    std::cout <<"ERROR: first chip is 0. prn:"<< _prn << std::endl;
+//	    std::cout << _Signal << "signal" << std::endl;
+//	}
 
     //std::cout << "no problem gen sampled code" <<_prn << " " << _code[0] <<std::endl;
     free(_code);

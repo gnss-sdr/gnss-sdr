@@ -45,10 +45,10 @@
 signal_generator_c_sptr
 signal_make_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
                     const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-                    const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
+                    const std::vector<unsigned int> &delay_chips, const std::vector<unsigned int> &delay_sec,bool data_flag, bool noise_flag,
                     unsigned int fs_in, unsigned int vector_length, float BW_BB)
 {
-    return gnuradio::get_initial_sptr(new signal_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips,
+    return gnuradio::get_initial_sptr(new signal_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips,delay_sec,
                                                         data_flag, noise_flag, fs_in, vector_length, BW_BB));
 }
 
@@ -57,7 +57,7 @@ signal_make_generator_c (std::vector<std::string> signal1, std::vector<std::stri
 */
 signal_generator_c::signal_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
         const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-        const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
+        const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec ,bool data_flag, bool noise_flag,
         unsigned int fs_in, unsigned int vector_length, float BW_BB) :
 
           gr::block ("signal_gen_cc", gr::io_signature::make(0, 0, sizeof(gr_complex)),
@@ -68,6 +68,7 @@ signal_generator_c::signal_generator_c (std::vector<std::string> signal1, std::v
                   CN0_dB_(CN0_dB),
                   doppler_Hz_(doppler_Hz),
                   delay_chips_(delay_chips),
+                  delay_sec_(delay_sec),
                   data_flag_(data_flag),
                   noise_flag_(noise_flag),
                   fs_in_(fs_in),
@@ -98,6 +99,9 @@ void signal_generator_c::init()
             data_modulation_.push_back((Galileo_E5a_I_SECONDARY_CODE.at(0)=='0' ? 1 : -1));
             pilot_modulation_.push_back((Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat]].at(0)=='0' ? 1 : -1));
 
+            std::cout << "data bit init" << current_data_bits_[sat] << std::endl;
+
+            std::cout << "data bit init" << current_data_bit_int_[sat] << std::endl;
 
             if (system_[sat] == "G")
                 {
@@ -207,6 +211,7 @@ void signal_generator_c::generate_codes()
         		    galileo_e5_a_code_gen_complex_sampled(sampled_code_data_[sat] , signal, PRN_[sat], fs_in_,
         		                                          (int)Galileo_E5a_CODE_LENGTH_CHIPS - delay_chips_[sat],false);
 
+        		    std::cout << "PRN "<< PRN_[sat] << " first two bytes "<< sampled_code_data_[sat][0] << sampled_code_data_[sat][1] << sampled_code_data_[sat][2] << sampled_code_data_[sat][3] << sampled_code_data_[sat][4] << sampled_code_data_[sat][5] << sampled_code_data_[sat][6] << sampled_code_data_[sat][7] << std::endl;
 ////        		    std::ofstream myfile;
 //        		    //myfile.open ("example_sink_gencode.dat");
 //        		    std::ofstream myfile("example_sink_gencode.bin",std::ios_base::binary);
@@ -314,7 +319,7 @@ gr_vector_void_star &output_items)
     gr_complex *out = (gr_complex *) output_items[0];
 
     work_counter_++;
-    std::cout<<"work counter = "<<work_counter_<<std::endl;
+    //std::cout<<"work counter = "<<work_counter_<<std::endl;
 
     unsigned int out_idx = 0;
     unsigned int i = 0;
@@ -383,13 +388,23 @@ gr_vector_void_star &output_items)
 					    * complex_phase_[out_idx];
 				    out_idx++;
 				}
+
 			    if (ms_counter_[sat]%data_bit_duration_ms_[sat] == 0 && data_flag_)
 				{
 				    // New random data bit
 				    current_data_bit_int_[sat] = (rand()%2) == 0 ? 1 : -1;
-	        		    data_modulation_[sat] = current_data_bit_int_[sat] * (Galileo_E5a_I_SECONDARY_CODE.at(ms_counter_[sat]%20)=='0' ? 1 : -1);
-	        		    pilot_modulation_[sat] = (Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat]].at(ms_counter_[sat]%100)=='0' ? 1 : -1);
 				}
+        		    data_modulation_[sat] = current_data_bit_int_[sat] * (Galileo_E5a_I_SECONDARY_CODE.at((ms_counter_[sat]+delay_sec_[sat])%20)=='0' ? 1 : -1);
+        		    pilot_modulation_[sat] = (Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat]-1].at((ms_counter_[sat]+delay_sec_[sat])%100)=='0' ? 1 : -1);
+
+//        		    if (work_counter_==1)
+//        			{
+        			    std::cout << "ms " << ms_counter_[sat] << " pilot mod " << pilot_modulation_[sat] << " data bit " << current_data_bit_int_[sat] << " data mod " << data_modulation_[sat] << " sat " << sat << " PRN" << PRN_[sat];
+        			    std::cout << " delay_sec " << delay_sec_[sat] << std::endl;
+        			    //std::cout << "code 1st 2 byte " << out[0] << out[1] << out[2] << out[3] << out[4] << out[5] << out[6] << out[7] << std::endl;
+//        			}
+        		    ms_counter_[sat] = ms_counter_[sat] + (int)round(1e3*GALILEO_E5a_CODE_PERIOD);
+
 			    for (k = delay_samples; k < samples_per_code_[sat]; k++)
 				{
 				    out[out_idx] += (gr_complex(sampled_code_data_[sat][out_idx].real()*data_modulation_[sat] ,
@@ -398,7 +413,7 @@ gr_vector_void_star &output_items)
 				    out_idx++;
 				}
 
-			    ms_counter_[sat] = ms_counter_[sat] + (int)round(1e3*GALILEO_E5a_CODE_PERIOD);
+
 
         		}
         	    else

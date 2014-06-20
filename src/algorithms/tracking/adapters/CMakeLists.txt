@@ -25,6 +25,7 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l1_ca_dll_pll_tracking.cc
      gps_l1_ca_tcp_connector_tracking.cc
      galileo_e5a_dll_fll_pll_tracking.cc
+     galileo_e5a_dll_pll_tracking.cc
 )
 
 include_directories(

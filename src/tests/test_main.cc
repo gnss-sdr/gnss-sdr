@@ -105,6 +105,7 @@ DECLARE_string(log_dir);
 //#include "gnss_block/galileo_e5a_pcps_acquisition_test.cc"
 //#include "gnss_block/galileo_e5a_pcps_acquisition_test_2.cc"
 #include "gnss_block/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
+#include "gnss_block/galileo_e5a_tracking_test.cc"
 
 
 

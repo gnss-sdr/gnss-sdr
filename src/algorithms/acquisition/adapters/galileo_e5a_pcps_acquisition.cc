@@ -62,8 +62,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
     if_ = configuration_->property(role + ".ifreq", 0);
     dump_ = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
-    // sampled_ms is an integer, always multiple of primary code period
+    sampled_ms_ = 2; // needed 2 ms of input in presence of secondary code.
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     if (!bit_transition_flag_)
@@ -81,9 +80,11 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
     //--- Find number of samples per spreading code (1ms)-------------------------
     code_length_ = round(fs_in_/ Galileo_E5a_CODE_CHIP_RATE_HZ*Galileo_E5a_CODE_LENGTH_CHIPS);
 
-    vector_length_=code_length_ * sampled_ms_;
+    // WARNING: In presence of secondary codes, 2ms must be correlated with 1ms
+    // of primary code and 1ms of padded zeros.
+    vector_length_=2*code_length_;// * sampled_ms_;
 
-    std::cout << sampled_ms_ << " sampledms" << code_length_ << " cdelength" << std::endl;
+    //std::cout << sampled_ms_ << " sampledms" << code_length_ << " cdelength" << std::endl;
 
     //if (posix_memalign((void**)&(code_), 16,vector_length_ * sizeof(gr_complex)) == 0){};
 
@@ -215,20 +216,26 @@ void GalileoE5aPcpsAcquisition::set_local_code()
 	if (item_type_.compare("gr_complex")==0)
 	{
 
-		std::complex<float>* code = new std::complex<float>[code_length_];
+		// WARNING: In presence of secondary codes, 2ms must be correlated with 1ms
+		// of primary code and 1ms of padded zeros.
+		//std::complex<float>* code = new std::complex<float>[2*code_length_];
 
-		galileo_e5_a_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+		std::cout << "ADAPTER E5a. SIGNAL = " << gnss_synchro_->Signal << " PRN = " << gnss_synchro_->PRN << std::endl;
+		galileo_e5_a_code_gen_complex_sampled(code_, gnss_synchro_->Signal,
 		    gnss_synchro_->PRN, fs_in_, 0, false);
 
-		for (unsigned int i = 0; i < sampled_ms_; i++)
-		    {
-		        memcpy(&(code_[i*code_length_]), code,
-		             sizeof(gr_complex)*code_length_);
-		    }
+		// WARNING: In presence of secondary codes, 2ms of input signal are required
+		// which are correlated with 1ms of primary code and 1ms of zero padding
+//		for (unsigned int i = 0; i < sampled_ms_; i++)
+//		    {
+//		        memcpy(&(code_[i*code_length_]), code,
+//		             sizeof(gr_complex)*code_length_);
+//
+//		    }
 
 		acquisition_cc_->set_local_code(code_);
 
-		delete[] code;
+		//delete[] code;
 	}
 
 }

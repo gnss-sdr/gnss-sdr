@@ -1,0 +1,201 @@
+/*
+ * galileo_e5a_tracking_test.cc
+ *
+ *  Created on: Jun 19, 2014
+ *      Author: marc
+ */
+
+
+#include <ctime>
+#include <iostream>
+#include <gnuradio/top_block.h>
+#include <gnuradio/blocks/file_source.h>
+#include <gnuradio/analog/sig_source_waveform.h>
+#include <gnuradio/analog/sig_source_c.h>
+#include <gnuradio/msg_queue.h>
+#include <gnuradio/blocks/null_sink.h>
+#include <gnuradio/blocks/skiphead.h>
+#include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
+#include "in_memory_configuration.h"
+#include "gnss_sdr_valve.h"
+#include "gnss_synchro.h"
+//#include "galileo_e1_dll_pll_veml_tracking.h"
+#include "galileo_e5a_dll_pll_tracking.h"
+
+
+class GalileoE5aTrackingTest: public ::testing::Test
+{
+protected:
+    GalileoE5aTrackingTest()
+    {
+        queue = gr::msg_queue::make(0);
+        top_block = gr::make_top_block("Tracking test");
+        std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
+        config = std::make_shared<InMemoryConfiguration>();
+        item_size = sizeof(gr_complex);
+        stop = false;
+        message = 0;
+    }
+
+    ~GalileoE5aTrackingTest()
+    {}
+
+    void init();
+
+    gr::msg_queue::sptr queue;
+    gr::top_block_sptr top_block;
+    std::shared_ptr<GNSSBlockFactory> factory;
+    std::shared_ptr<InMemoryConfiguration> config;
+    Gnss_Synchro gnss_synchro;
+    size_t item_size;
+    concurrent_queue<int> channel_internal_queue;
+    bool stop;
+    int message;
+};
+
+
+void GalileoE5aTrackingTest::init()
+{
+    gnss_synchro.Channel_ID = 0;
+    gnss_synchro.System = 'E';
+    std::string signal = "5X";
+    signal.copy(gnss_synchro.Signal, 2, 0);
+    gnss_synchro.PRN = 11;
+
+    config->set_property("GNSS-SDR.internal_fs_hz", "12000000");
+    config->set_property("Tracking.item_type", "gr_complex");
+    config->set_property("Tracking.dump", "true");
+    config->set_property("Tracking.dump_filename", "../data/e5a_tracking_ch_");
+    config->set_property("Tracking.implementation", "Galileo_E5a_DLL_PLL_Tracking");
+    config->set_property("Tracking.early_late_space_chips", "0.5");
+    config->set_property("Tracking.pll_bw_hz", "50.0");
+    config->set_property("Tracking.dll_bw_hz", "2.0");
+    config->set_property("Tracking.fll_bw_hz", "10.0");
+
+}
+
+TEST_F(GalileoE5aTrackingTest, InstantiateTrack)
+{
+
+    init();
+    auto tracking = factory->GetBlock(config, "Tracking", "Galileo_E5a_DLL_PLL_Tracking", 1, 1, queue);
+    EXPECT_STREQ("Galileo_E5a_DLL_PLL_Tracking", tracking->implementation().c_str());
+//    auto tracking = factory->GetBlock(config, "Tracking", "Galileo_E1_DLL_PLL_VEML_Tracking", 1, 1, queue);
+//    EXPECT_STREQ("Galileo_E1_DLL_PLL_VEML_Tracking", tracking->implementation().c_str());
+
+}
+
+TEST_F(GalileoE5aTrackingTest, ConnectAndRun)
+{
+    int fs_in = 16000000;
+    int nsamples = 160000000;
+    struct timeval tv;
+    long long int begin;
+    long long int end;
+    init();
+
+    // Example using smart pointers and the block factory
+    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", "Galileo_E5a_DLL_PLL_Tracking", 1, 1, queue);
+    std::shared_ptr<GalileoE5aDllPllTracking> tracking = std::dynamic_pointer_cast<GalileoE5aDllPllTracking>(trk_);
+
+    ASSERT_NO_THROW( {
+        tracking->set_channel(gnss_synchro.Channel_ID);
+    }) << "Failure setting channel." << std::endl;
+
+    ASSERT_NO_THROW( {
+        tracking->set_gnss_synchro(&gnss_synchro);
+    }) << "Failure setting gnss_synchro." << std::endl;
+
+    ASSERT_NO_THROW( {
+        tracking->set_channel_queue(&channel_internal_queue);
+    }) << "Failure setting channel_internal_queue." << std::endl;
+
+
+    ASSERT_NO_THROW( {
+        tracking->connect(top_block);
+        gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
+        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
+        gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+        top_block->connect(source, 0, valve, 0);
+        top_block->connect(valve, 0, tracking->get_left_block(), 0);
+        top_block->connect(tracking->get_right_block(), 0, sink, 0);
+
+    }) << "Failure connecting the blocks of tracking test." << std::endl;
+
+    tracking->start_tracking();
+
+    EXPECT_NO_THROW( {
+        gettimeofday(&tv, NULL);
+        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        top_block->run();   //Start threads and wait
+        gettimeofday(&tv, NULL);
+        end = tv.tv_sec *1000000 + tv.tv_usec;
+    }) << "Failure running the top_block." << std::endl;
+
+    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+}
+
+TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
+{
+    struct timeval tv;
+    long long int begin = 0;
+    long long int end = 0;
+    // int num_samples = 40000000; // 4 Msps
+    // unsigned int skiphead_sps = 24000000; // 4 Msps
+    int num_samples = 120000000; // 12 Msps
+    unsigned int skiphead_sps = 1000000; // 1 Msample
+    init();
+
+    // Example using smart pointers and the block factory
+    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", "Galileo_E5a_DLL_PLL_Tracking", 1, 1, queue);
+    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
+
+    // gnss_synchro.Acq_delay_samples = 1753; // 4 Msps
+    // gnss_synchro.Acq_doppler_hz = -9500; // 4 Msps
+    gnss_synchro.Acq_delay_samples = 17256; // 8 Msps
+    gnss_synchro.Acq_doppler_hz = -8750; // 8 Msps
+    gnss_synchro.Acq_samplestamp_samples = 0;
+
+    ASSERT_NO_THROW( {
+        tracking->set_channel(gnss_synchro.Channel_ID);
+    }) << "Failure setting channel." << std::endl;
+
+    ASSERT_NO_THROW( {
+        tracking->set_gnss_synchro(&gnss_synchro);
+    }) << "Failure setting gnss_synchro." << std::endl;
+
+    ASSERT_NO_THROW( {
+        tracking->set_channel_queue(&channel_internal_queue);
+    }) << "Failure setting channel_internal_queue." << std::endl;
+
+    ASSERT_NO_THROW( {
+        tracking->connect(top_block);
+    }) << "Failure connecting tracking to the top_block." << std::endl;
+
+    ASSERT_NO_THROW( {
+        std::string file = "/home/marc/E5a_acquisitions/Tiered_sink_4sat.dat";
+        const char * file_name = file.c_str();
+        gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex),file_name,false);
+        gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);
+        boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), num_samples, queue);
+        gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+        top_block->connect(file_source, 0, skip_head, 0);
+        top_block->connect(skip_head, 0, valve, 0);
+        top_block->connect(valve, 0, tracking->get_left_block(), 0);
+        top_block->connect(tracking->get_right_block(), 0, sink, 0);
+    }) << "Failure connecting the blocks of tracking test." << std::endl;
+
+    tracking->start_tracking();
+
+    EXPECT_NO_THROW( {
+        gettimeofday(&tv, NULL);
+        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        top_block->run(); // Start threads and wait
+        gettimeofday(&tv, NULL);
+        end = tv.tv_sec *1000000 + tv.tv_usec;
+    }) << "Failure running the top_block." << std::endl;
+
+    std::cout <<  "Tracked " << num_samples << " samples in " << (end - begin) << " microseconds" << std::endl;
+}
+

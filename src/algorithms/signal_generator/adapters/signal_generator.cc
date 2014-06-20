@@ -66,6 +66,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     std::vector<float> CN0_dB;
     std::vector<float> doppler_Hz;
     std::vector<unsigned int> delay_chips;
+    std::vector<unsigned int> delay_sec;
 
     for (unsigned int sat_idx = 0; sat_idx < num_satellites; sat_idx++)
         {
@@ -76,6 +77,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
             CN0_dB.push_back(configuration->property("SignalSource.CN0_dB_" + sat, 10));
             doppler_Hz.push_back(configuration->property("SignalSource.doppler_Hz_" + sat, 0));
             delay_chips.push_back(configuration->property("SignalSource.delay_chips_" + sat, 0));
+            delay_sec.push_back(configuration->property("SignalSource.delay_sec_" + sat, 0));
         }
 
     // If Galileo signal is present -> vector duration = 100 ms (25 * 4 ms)
@@ -108,7 +110,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             item_size_ = sizeof(gr_complex);
             DLOG(INFO) << "Item size " << item_size_;
-            gen_source_ = signal_make_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips,
+            gen_source_ = signal_make_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
                                              data_flag, noise_flag, fs_in, vector_length, BW_BB);
 
             vector_to_stream_ = gr::blocks::vector_to_stream::make(item_size_, vector_length);

@@ -167,7 +167,7 @@ typedef boost::shared_ptr<signal_generator_c> signal_generator_c_sptr;
 signal_generator_c_sptr
 signal_make_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
                     const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-                    const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
+                    const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
                     unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
 /*!
@@ -186,12 +186,12 @@ private:
     friend signal_generator_c_sptr
     signal_make_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
             const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-            const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
+            const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
             unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
     signal_generator_c (std::vector<std::string> signal1, std::vector<std::string> system, const std::vector<unsigned int> &PRN,
             const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
-            const std::vector<unsigned int> &delay_chips, bool data_flag, bool noise_flag,
+            const std::vector<unsigned int> &delay_chips,const std::vector<unsigned int> &delay_sec, bool data_flag, bool noise_flag,
             unsigned int fs_in, unsigned int vector_length, float BW_BB);
 
     void init();
@@ -203,6 +203,7 @@ private:
     std::vector<float> CN0_dB_;
     std::vector<float> doppler_Hz_;
     std::vector<unsigned int> delay_chips_;
+    std::vector<unsigned int> delay_sec_;
     bool data_flag_;
     bool noise_flag_;
     unsigned int fs_in_;

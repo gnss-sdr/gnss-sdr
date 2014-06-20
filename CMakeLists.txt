@@ -374,6 +374,7 @@ endif(NOT GFlags_FOUND OR LOCAL_GLOG)
 ################################################################################
 
 find_package(GLOG)
+set(glog_RELEASE 0.3.3)
 if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
      message (STATUS " glog library has not been found")
      if(NOT GFlags_FOUND)
@@ -466,6 +467,9 @@ export LIBS=${GFlags_SHARED_LIBS}
           ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog.a 
      )
      set(LOCAL_GLOG true CACHE STRING "Glog downloaded and built automatically" FORCE)
+else(NOT GLOG_FOUND OR LOCAL_GFLAGS)    
+     add_library(glog-${glog_RELEASE} UNKNOWN IMPORTED)
+     set_property(TARGET glog-${glog_RELEASE} PROPERTY IMPORTED_LOCATION "${GLOG_LIBRARIES}")
 endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
 
 
@@ -704,6 +708,10 @@ if(NOT ARMADILLO_FOUND)
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
           DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo
      )
+else(NOT ARMADILLO_FOUND)
+     set(armadillo_RELEASE ${ARMADILLO_VERSION_STRING})  
+     add_library(armadillo-${armadillo_RELEASE} UNKNOWN IMPORTED)
+     set_property(TARGET armadillo-${armadillo_RELEASE} PROPERTY IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}")
 endif(NOT ARMADILLO_FOUND)
 
 

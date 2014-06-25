@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "galileo_e5a_pcps_acquisition.h"
+#include "galileo_e5a_pilot_3ms_acquisition.h"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <stdexcept>
@@ -43,7 +43,7 @@
 
 using google::LogMessage;
 
-GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
+GalileoE5aPilot_3msAcquisition::GalileoE5aPilot_3msAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
@@ -62,17 +62,10 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
     if_ = configuration_->property(role + ".ifreq", 0);
     dump_ = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
-    sampled_ms_ = 1; // try luck without zero padding to achieve better gain when bit transition coincides.
-    bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
-
-    if (!bit_transition_flag_)
-        {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-        }
-    else
-        {
-            max_dwells_ = 2;
-        }
+    sampled_ms_ = 3; // needed 3 ms of input in presence of secondary code.
+//    sampled_ms_ = 15;
+    //bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
+    max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
     dump_filename_ = configuration_->property(role + ".dump_filename",
             default_dump_filename);
@@ -80,8 +73,10 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
     //--- Find number of samples per spreading code (1ms)-------------------------
     code_length_ = round(fs_in_/ Galileo_E5a_CODE_CHIP_RATE_HZ*Galileo_E5a_CODE_LENGTH_CHIPS);
 
-    // Several dwells will be needed without zero-padding. Only 1ms in this implementation.
-    vector_length_=code_length_;// * sampled_ms_;
+    // WARNING: In presence of secondary codes, 2ms must be correlated with 1ms
+    // of primary code and 1ms of padded zeros.
+    vector_length_=3*code_length_;// * sampled_ms_;
+//    vector_length_=15*code_length_;
 
     //std::cout << sampled_ms_ << " sampledms" << code_length_ << " cdelength" << std::endl;
 
@@ -92,7 +87,7 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+            acquisition_cc_ = galileo_e5a_pilot_3ms_make_acquisition_cc(max_dwells_,
                     shift_resolution_, if_, fs_in_, code_length_, code_length_,
                     bit_transition_flag_, queue_, dump_, dump_filename_);
 
@@ -111,12 +106,12 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
 
 }
 
-GalileoE5aPcpsAcquisition::~GalileoE5aPcpsAcquisition()
+GalileoE5aPilot_3msAcquisition::~GalileoE5aPilot_3msAcquisition()
 {
 	delete[] code_;
 }
 
-void GalileoE5aPcpsAcquisition::set_channel(unsigned int channel)
+void GalileoE5aPilot_3msAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
     if (item_type_.compare("gr_complex") == 0)
@@ -125,7 +120,7 @@ void GalileoE5aPcpsAcquisition::set_channel(unsigned int channel)
         }
 }
 
-void GalileoE5aPcpsAcquisition::set_threshold(float threshold)
+void GalileoE5aPilot_3msAcquisition::set_threshold(float threshold)
 {
 
 	float pfa = configuration_->property(role_+ boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
@@ -150,7 +145,7 @@ void GalileoE5aPcpsAcquisition::set_threshold(float threshold)
 }
 
 
-void GalileoE5aPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
+void GalileoE5aPilot_3msAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
 
@@ -160,7 +155,7 @@ void GalileoE5aPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
         }
 }
 
-void GalileoE5aPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
+void GalileoE5aPilot_3msAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
     if (item_type_.compare("gr_complex") == 0)
@@ -169,7 +164,7 @@ void GalileoE5aPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
         }
 }
 
-void GalileoE5aPcpsAcquisition::set_channel_queue(
+void GalileoE5aPilot_3msAcquisition::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
@@ -180,7 +175,7 @@ void GalileoE5aPcpsAcquisition::set_channel_queue(
 }
 
 
-void GalileoE5aPcpsAcquisition::set_gnss_synchro(
+void GalileoE5aPilot_3msAcquisition::set_gnss_synchro(
         Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -191,7 +186,7 @@ void GalileoE5aPcpsAcquisition::set_gnss_synchro(
 }
 
 
-signed int GalileoE5aPcpsAcquisition::mag()
+signed int GalileoE5aPilot_3msAcquisition::mag()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -204,42 +199,45 @@ signed int GalileoE5aPcpsAcquisition::mag()
 }
 
 
-void GalileoE5aPcpsAcquisition::init()
+void GalileoE5aPilot_3msAcquisition::init()
 {
     acquisition_cc_->init();
     set_local_code();
 }
 
-void GalileoE5aPcpsAcquisition::set_local_code()
+void GalileoE5aPilot_3msAcquisition::set_local_code()
 {
 	if (item_type_.compare("gr_complex")==0)
 	{
 
 		// WARNING: In presence of secondary codes, 2ms must be correlated with 1ms
 		// of primary code and 1ms of padded zeros.
-		//std::complex<float>* code = new std::complex<float>[2*code_length_];
+		std::complex<float>* code = new std::complex<float>[code_length_];
 
-		std::cout << "ADAPTER E5a. SIGNAL = " << gnss_synchro_->Signal << " PRN = " << gnss_synchro_->PRN << std::endl;
-		galileo_e5_a_code_gen_complex_sampled(code_, gnss_synchro_->Signal,
+		std::cout << "ADAPTER E5a 3ms. SIGNAL = " << gnss_synchro_->Signal << " PRN = " << gnss_synchro_->PRN << std::endl;
+
+		char a[3];
+		strcpy(a,"5X");
+		galileo_e5_a_code_gen_complex_sampled(code, a,
 		    gnss_synchro_->PRN, fs_in_, 0, false);
 
-		// WARNING: In presence of secondary codes, 2ms of input signal are required
-		// which are correlated with 1ms of primary code and 1ms of zero padding
-//		for (unsigned int i = 0; i < sampled_ms_; i++)
-//		    {
-//		        memcpy(&(code_[i*code_length_]), code,
-//		             sizeof(gr_complex)*code_length_);
-//
-//		    }
+		// WARNING: 3ms are coherently integrated. Secondary sequence (1,1,1)
+		// is generated, and modulated in the 'block'.
+		for (unsigned int i = 0; i < 3; i++)
+		    {
+		        memcpy(&(code_[i*code_length_]), code,
+		             sizeof(gr_complex)*code_length_);
+
+		    }
 
 		acquisition_cc_->set_local_code(code_);
 
-		//delete[] code;
+		delete[] code;
 	}
 
 }
 
-void GalileoE5aPcpsAcquisition::reset()
+void GalileoE5aPilot_3msAcquisition::reset()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -248,7 +246,7 @@ void GalileoE5aPcpsAcquisition::reset()
 }
 
 
-float GalileoE5aPcpsAcquisition::calculate_threshold(float pfa)
+float GalileoE5aPilot_3msAcquisition::calculate_threshold(float pfa)
 {
     //Calculate the threshold
     unsigned int frequency_bins = 0;
@@ -268,7 +266,7 @@ float GalileoE5aPcpsAcquisition::calculate_threshold(float pfa)
 }
 
 
-void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block)
+void GalileoE5aPilot_3msAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -277,7 +275,7 @@ void GalileoE5aPcpsAcquisition::connect(gr::top_block_sptr top_block)
 }
 
 
-void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
+void GalileoE5aPilot_3msAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -285,16 +283,14 @@ void GalileoE5aPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
         }
 }
 
-gr::basic_block_sptr GalileoE5aPcpsAcquisition::get_left_block()
+gr::basic_block_sptr GalileoE5aPilot_3msAcquisition::get_left_block()
 {
     return stream_to_vector_;
 }
 
 
-gr::basic_block_sptr GalileoE5aPcpsAcquisition::get_right_block()
+gr::basic_block_sptr GalileoE5aPilot_3msAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }
-
-
 

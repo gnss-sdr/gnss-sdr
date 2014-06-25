@@ -99,6 +99,7 @@ galileo_e5a_dll_fll_pll_tracking_cc::galileo_e5a_dll_fll_pll_tracking_cc(
         gr::block("galileo_e5a_dll_fll_pll_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    this->set_relative_rate(1.0/vector_length);
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;

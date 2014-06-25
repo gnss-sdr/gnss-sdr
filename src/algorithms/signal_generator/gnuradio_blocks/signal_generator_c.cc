@@ -399,8 +399,8 @@ gr_vector_void_star &output_items)
 
 //        		    if (work_counter_==1)
 //        			{
-        			    std::cout << "ms " << ms_counter_[sat] << " pilot mod " << pilot_modulation_[sat] << " data bit " << current_data_bit_int_[sat] << " data mod " << data_modulation_[sat] << " sat " << sat << " PRN" << PRN_[sat];
-        			    std::cout << " delay_sec " << delay_sec_[sat] << std::endl;
+        			    std::cout << "ms " << ms_counter_[sat] << " sat " << sat << " PRN" << PRN_[sat];
+        			    std::cout << " delay_secI " << (ms_counter_[sat]+delay_sec_[sat])%20 << " delay_secQ " << (ms_counter_[sat]+delay_sec_[sat])%100 << std::endl;//" pilot mod " << pilot_modulation_[sat] << " data bit " << current_data_bit_int_[sat] << " data mod " << data_modulation_[sat] << std::endl;
         			    //std::cout << "code 1st 2 byte " << out[0] << out[1] << out[2] << out[3] << out[4] << out[5] << out[6] << out[7] << std::endl;
 //        			}
         		    ms_counter_[sat] = ms_counter_[sat] + (int)round(1e3*GALILEO_E5a_CODE_PERIOD);

@@ -210,7 +210,6 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
     d_code_loop_filter.initialize();    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    gps_l1_ca_code_gen_complex(&d_code[1], d_acquisition_gnss_synchro->PRN, 0);
     galileo_e5_a_code_gen_complex_primary(&d_code[1], d_acquisition_gnss_synchro->PRN, d_acquisition_gnss_synchro->Signal);
 
     d_code[0] = d_code[(int)Galileo_E5a_CODE_LENGTH_CHIPS];

@@ -1,11 +1,11 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -38,6 +38,7 @@ set(SYSTEM_PARAMETERS_SOURCES
 	 sbas_telemetry_data.cc
 )
 
+
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/receiver
@@ -47,8 +48,9 @@ include_directories(
 )
 
 link_directories(${Boost_LIBRARY_DIR})
-
-add_library(gnss_system_parameters ${SYSTEM_PARAMETERS_SOURCES})
+file(GLOB SYSTEM_PARAMETERS_HEADERS "*.h")
+add_library(gnss_system_parameters ${SYSTEM_PARAMETERS_SOURCES} ${SYSTEM_PARAMETERS_HEADERS})
+source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
 add_dependencies(gnss_system_parameters glog-${glog_RELEASE})
 target_link_libraries(gnss_system_parameters ${Boost_LIBRARIES})
 

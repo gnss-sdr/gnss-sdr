@@ -43,7 +43,9 @@ if(RTLSDR_DRIVER)
          ${Boost_INCLUDE_DIRS}
     )
 
-    add_library(front_end_cal_lib ${FRONT_END_CAL_SOURCES})
+    file(GLOB FRONT_END_CAL_HEADERS "*.h")
+    add_library(front_end_cal_lib ${FRONT_END_CAL_SOURCES} ${FRONT_END_CAL_HEADERS})
+    source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
     
     target_link_libraries(front_end_cal_lib ${Boost_LIBRARIES} 
                                             ${GNURADIO_RUNTIME_LIBRARIES} 

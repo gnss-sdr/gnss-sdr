@@ -1,11 +1,11 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -29,8 +29,9 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-add_library(signal_generator_blocks ${SIGNAL_GENERATOR_BLOCK_SOURCES})
-
+file(GLOB SIGNAL_GENERATOR_BLOCK_HEADERS "*.h")
+add_library(signal_generator_blocks ${SIGNAL_GENERATOR_BLOCK_SOURCES} ${SIGNAL_GENERATOR_BLOCK_HEADERS})
+source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
 target_link_libraries(signal_generator_blocks gnss_system_parameters 
                                               ${GNURADIO_RUNTIME_LIBRARIES} 
                                               ${GNURADIO_FFT_LIBRARIES} 

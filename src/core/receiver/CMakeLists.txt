@@ -1,11 +1,11 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -105,8 +105,10 @@ else(OPENCL_FOUND)
     add_definitions(-DOPENCL_BLOCKS=0)
 endif(OPENCL_FOUND)
 
-
-add_library(gnss_rx ${GNSS_RECEIVER_SOURCES})
+file(GLOB GNSS_RECEIVER_HEADERS "*.h")
+file(GLOB GNSS_RECEIVER_INTERFACE_HEADERS "../interfaces/*.h")
+add_library(gnss_rx ${GNSS_RECEIVER_SOURCES} ${GNSS_RECEIVER_HEADERS} ${GNSS_RECEIVER_INTERFACE_HEADERS})
+source_group(Headers FILES ${GNSS_RECEIVER_HEADERS} ${GNSS_RECEIVER_INTERFACE_HEADERS})
 
 target_link_libraries(gnss_rx ${Boost_LIBRARIES} 
                               ${ARMADILLO_LIBRARIES} 

@@ -152,7 +152,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                     //d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
                     d_TOW_at_curr_symbol_constellation=in[i][0].d_TOW_at_current_symbol; // d_TOW_at_current_symbol not corrected by delta t (just for debug)
                     d_rx_time = in[i][0].d_TOW_hybrid_at_current_symbol; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges)
-                    std::cout<<"CH PVT = "<< i  << ", d_TOW = " << d_TOW_at_curr_symbol_constellation<<", rx_time_hybrid_PVT = " << d_rx_time << " same RX timestamp (common RX time pseudoranges)"<< std::endl;
+                    //std::cout<<"CH PVT = "<< i  << ", d_TOW = " << d_TOW_at_curr_symbol_constellation<<", rx_time_hybrid_PVT = " << d_rx_time << " same RX timestamp (common RX time pseudoranges)"<< std::endl;
 
                 }
         }
@@ -197,19 +197,21 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
 
 
     // ############ 2 COMPUTE THE PVT ################################
-    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
+    // ToDo: relax this condition because the receiver shuld work even with NO GALILEO SATELLITES
+    //if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
+    if (gnss_pseudoranges_map.size() > 0)
         {
-    	std::cout << "Both GPS and Galileo ephemeris map have been filled " << std::endl;
+    	//std::cout << "Both GPS and Galileo ephemeris map have been filled " << std::endl;
             // compute on the fly PVT solution
             if ((d_sample_counter % d_output_rate_ms) == 0)
                 {
-                    bool pvt_result;
-                    pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
-                    std::cout << "pvt_result  = " << pvt_result  << std::endl;
+                    //bool pvt_result;
+                    d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
+                    //std::cout << "pvt_result  = " << pvt_result  << std::endl;
 
-                    if (pvt_result == true)
+                    if (d_ls_pvt->b_valid_position == true)
                         {
-                    	    //IMPLEMENT KML OUTPUT            d_kml_dump.print_position_galileo(d_ls_pvt, d_flag_averaging);
+                    		d_kml_dump.print_position_hybrid(d_ls_pvt, d_flag_averaging);
                             //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
                             //                            d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
                             //
@@ -247,15 +249,15 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
             if (((d_sample_counter % d_display_rate_ms) == 0) and d_ls_pvt->b_valid_position == true)
                 {
                     std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                              << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                              << " using "<<d_ls_pvt->d_valid_observations<<" observations is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
                               << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
 
                     LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                              << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                              << " using "<<d_ls_pvt->d_valid_observations<<" observations is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
                               << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]";
 
                     LOG(INFO) << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                              << " is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = "
+                              << " using "<<d_ls_pvt->d_valid_observations<<" observations is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = "
                               << d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP
                               << " GDOP = " << d_ls_pvt->d_GDOP;
                 }

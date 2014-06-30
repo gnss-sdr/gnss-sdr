@@ -142,6 +142,34 @@ bool Kml_Printer::print_position_galileo(galileo_e1_ls_pvt* position,bool print_
         }
 }
 
+bool Kml_Printer::print_position_hybrid(hybrid_ls_pvt* position,bool print_average_values)
+{
+    double latitude;
+    double longitude;
+    double height;
+    if (print_average_values == false)
+        {
+            latitude = position->d_latitude_d;
+            longitude = position->d_longitude_d;
+            height = position->d_height_m;
+        }
+    else
+        {
+            latitude = position->d_avg_latitude_d;
+            longitude = position->d_avg_longitude_d;
+            height = position->d_avg_height_m;
+        }
+
+    if (kml_file.is_open())
+        {
+            kml_file << longitude << "," << latitude << "," << height << std::endl;
+            return true;
+        }
+    else
+        {
+            return false;
+        }
+}
 
 bool Kml_Printer::close_file()
 {

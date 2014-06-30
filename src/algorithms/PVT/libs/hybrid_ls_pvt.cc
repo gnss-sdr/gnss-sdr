@@ -251,7 +251,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 
     		if (gnss_pseudoranges_iter->second.System == 'E')
     			{
-    				std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
+    				//std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
     				// 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
     				galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_pseudoranges_iter->first);
     				if (galileo_ephemeris_iter != galileo_ephemeris_map.end())
@@ -270,7 +270,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 
     			                    //JAVIER VERSION:
     			                    double Rx_time = hybrid_current_time;
-    			                    std::cout<<"Gal_Rx_time = "<< Rx_time << std::endl;
+    			                    //std::cout<<"Gal_Rx_time = "<< Rx_time << std::endl;
     			                    //to compute satellite position we need GST = WN+TOW (everything expressed in seconds)
     			                    //double Rx_time = galileo_current_time + Galileo_week_number*sec_in_day*day_in_week;
 
@@ -322,7 +322,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     			                               << " [m] Y=" << galileo_ephemeris_iter->second.d_satpos_Y
     			                               << " [m] Z=" << galileo_ephemeris_iter->second.d_satpos_Z
     			                               << " [m] PR_obs=" << obs(obs_counter) << " [m]";
-    			                    std::cout<<"E"<<galileo_ephemeris_iter->second.i_satellite_PRN<< " satellite position computed"<< std::endl;
+    			                    //std::cout<<"E"<<galileo_ephemeris_iter->second.i_satellite_PRN<< " satellite position computed"<< std::endl;
     			             }
 
     				else // the ephemeris are not available for this SV
@@ -337,7 +337,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     			}
     		else if (gnss_pseudoranges_iter->second.System == 'G')
     		    {
-    				std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
+    				//std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
     				// 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
     				gps_ephemeris_iter = gps_ephemeris_map.find(gnss_pseudoranges_iter->first);
     			    if (gps_ephemeris_iter != gps_ephemeris_map.end())
@@ -350,7 +350,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 									// COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
 									// first estimate of transmit time
 									double Rx_time = hybrid_current_time;
-									std::cout<<"Gps_Rx_time = "<< Rx_time << std::endl;
+									//std::cout<<"Gps_Rx_time = "<< Rx_time << std::endl;
 									double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GPS_C_m_s;
 									//std::cout<<"Gps_Tx_time = "<< Tx_time << std::endl;
 									// 2- compute the clock drift using the clock model (broadcast) for this SV
@@ -380,7 +380,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 											<< " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
 											<< " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
 											<< " [m] PR_obs=" << obs(obs_counter) << " [m]";
-									std::cout<<"G"<<gps_ephemeris_iter->second.i_satellite_PRN<< " satellite position computed"<< std::endl;
+									//std::cout<<"G"<<gps_ephemeris_iter->second.i_satellite_PRN<< " satellite position computed"<< std::endl;
 
 
 
@@ -405,174 +405,180 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 
 
     		 obs_counter++;
-             std::cout<<"Number of observations in PVT = " <<  obs_counter << std::endl;
 
         }
+    //std::cout<<"Number of observations in PVT = " <<  obs_counter << std::endl;
     // ********************************************************************************
     // ****** SOLVE LEAST SQUARES******************************************************
     // ********************************************************************************
     d_valid_observations = valid_obs;
-    LOG(INFO) << "Galileo PVT: valid observations=" << valid_obs;
+    LOG(INFO) << "HYBRID PVT: valid observations=" << valid_obs;
 
     if (valid_obs >= 4)
         {
+    	 //std::cout<<"LS SOLVER CALLED " <<  obs_counter << std::endl;
+            arma::vec mypos;
+            //std::cout << "satpos=" << satpos;
+            //std::cout << "obs="<< obs;
+            //std::cout << "W=" << W;
+            DLOG(INFO) << "satpos=" << satpos;
+            DLOG(INFO) << "obs="<< obs;
+            DLOG(INFO) << "W=" << W;
+            mypos = leastSquarePos(satpos, obs, W);
 
-//            arma::vec mypos;
-//            DLOG(INFO) << "satpos=" << satpos;
-//            DLOG(INFO) << "obs="<< obs;
-//            DLOG(INFO) << "W=" << W;
-//            mypos = leastSquarePos(satpos, obs, W);
-//
-//            // Compute GST and Gregorian time
-//            double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
-//            utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
-//            // get time string Gregorian calendar
-//            boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
-//            // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
-//            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-//            d_position_UTC_time = p_time;
-//            LOG(INFO) << "Galileo Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
-//
-//            cart2geo((double)mypos(0), (double)mypos(1), (double)mypos(2), 4);
-//            //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
-//            if (d_height_m > 50000)
-//                {
-//                    b_valid_position = false;
-//                    return false;
-//                }
-//            LOG(INFO) << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
-//                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-//                      << " [deg], Height= " << d_height_m << " [m]";
-//
-//            std::cout << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
-//                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-//                      << " [deg], Height= " << d_height_m << " [m]" << std::endl;
-//
-//            // ###### Compute DOPs ########
-//            // 1- Rotation matrix from ECEF coordinates to ENU coordinates
-//            // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
-//            arma::mat F = arma::zeros(3,3);
-//            F(0,0) = -sin(GPS_TWO_PI*(d_longitude_d/360.0));
-//            F(0,1) = -sin(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
-//            F(0,2) = cos(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
-//
-//            F(1,0) = cos((GPS_TWO_PI*d_longitude_d)/360.0);
-//            F(1,1) = -sin((GPS_TWO_PI*d_latitude_d)/360.0)*sin((GPS_TWO_PI*d_longitude_d)/360.0);
-//            F(1,2) = cos((GPS_TWO_PI*d_latitude_d/360.0))*sin((GPS_TWO_PI*d_longitude_d)/360.0);
-//
-//            F(2,0) = 0;
-//            F(2,1) = cos((GPS_TWO_PI*d_latitude_d)/360.0);
-//            F(2,2) = sin((GPS_TWO_PI*d_latitude_d/360.0));
-//
-//            // 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
-//            arma::mat Q_ECEF = d_Q.submat(0, 0, 2, 2);
-//            arma::mat DOP_ENU = arma::zeros(3, 3);
-//
-//            try
-//            {
-//                    DOP_ENU = arma::htrans(F)*Q_ECEF*F;
-//                    d_GDOP  = sqrt(arma::trace(DOP_ENU));                       // Geometric DOP
-//                    d_PDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1) + DOP_ENU(2,2)); // PDOP
-//                    d_HDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1));                // HDOP
-//                    d_VDOP  = sqrt(DOP_ENU(2,2));                               // VDOP
-//                    d_TDOP  = sqrt(d_Q(3,3));                                   // TDOP
-//            }
-//            catch(std::exception& ex)
-//            {
-//                    d_GDOP = -1;   // Geometric DOP
-//                    d_PDOP = -1;   // PDOP
-//                    d_HDOP = -1;   // HDOP
-//                    d_VDOP = -1;   // VDOP
-//                    d_TDOP = -1;   // TDOP
-//            }
-//
-//            // ######## LOG FILE #########
-//            if(d_flag_dump_enabled == true)
-//                {
-//                    // MULTIPLEXED FILE RECORDING - Record results to file
-//                    try
-//                    {
-//                            double tmp_double;
-//                            //  PVT GPS time
-//                            tmp_double = hybrid_current_time;
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            // ECEF User Position East [m]
-//                            tmp_double = mypos(0);
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            // ECEF User Position North [m]
-//                            tmp_double = mypos(1);
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            // ECEF User Position Up [m]
-//                            tmp_double = mypos(2);
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            // User clock offset [s]
-//                            tmp_double = mypos(3);
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            // GEO user position Latitude [deg]
-//                            tmp_double = d_latitude_d;
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            // GEO user position Longitude [deg]
-//                            tmp_double = d_longitude_d;
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                            // GEO user position Height [m]
-//                            tmp_double = d_height_m;
-//                            d_dump_file.write((char*)&tmp_double, sizeof(double));
-//                    }
-//                    catch (const std::ifstream::failure& e)
-//                    {
-//                            LOG(WARNING) << "Exception writing PVT LS dump file "<< e.what();
-//                    }
-//                }
-//
-//            // MOVING AVERAGE PVT
-//            if (flag_averaging == true)
-//                {
-//                    if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
-//                        {
-//                            // Pop oldest value
-//                            d_hist_longitude_d.pop_back();
-//                            d_hist_latitude_d.pop_back();
-//                            d_hist_height_m.pop_back();
-//                            // Push new values
-//                            d_hist_longitude_d.push_front(d_longitude_d);
-//                            d_hist_latitude_d.push_front(d_latitude_d);
-//                            d_hist_height_m.push_front(d_height_m);
-//
-//                            d_avg_latitude_d = 0;
-//                            d_avg_longitude_d = 0;
-//                            d_avg_height_m = 0;
-//                            for (unsigned int i = 0; i < d_hist_longitude_d.size(); i++)
-//                                {
-//                                    d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
-//                                    d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
-//                                    d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
-//                                }
-//                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
-//                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
-//                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
-//                            b_valid_position = true;
-//                            return true; //indicates that the returned position is valid
-//                        }
-//                    else
-//                        {
-//                            // int current_depth=d_hist_longitude_d.size();
-//                            // Push new values
-//                            d_hist_longitude_d.push_front(d_longitude_d);
-//                            d_hist_latitude_d.push_front(d_latitude_d);
-//                            d_hist_height_m.push_front(d_height_m);
-//
-//                            d_avg_latitude_d = d_latitude_d;
-//                            d_avg_longitude_d = d_longitude_d;
-//                            d_avg_height_m = d_height_m;
-//                            b_valid_position = false;
-//                            return false; //indicates that the returned position is not valid yet
-//                        }
-//                }
-//            else
-//                {
-//                    b_valid_position = true;
-//                    return true; //indicates that the returned position is valid
-//                }
+            // Compute GST and Gregorian time
+            double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
+            utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
+            // get time string Gregorian calendar
+            boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
+            // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
+            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+            d_position_UTC_time = p_time;
+            LOG(INFO) << "HYBRID Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
+
+            cart2geo((double)mypos(0), (double)mypos(1), (double)mypos(2), 4);
+            //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
+            if (d_height_m > 50000)
+                {
+                    b_valid_position = false;
+                    LOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
+                              << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+                              << " [deg], Height= " << d_height_m << " [m]";
+
+                    std::cout << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
+                              << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+                              << " [deg], Height= " << d_height_m << " [m]" << std::endl;
+                    return false;
+                }
+
+            LOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
+                      << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+                      << " [deg], Height= " << d_height_m << " [m]";
+            // ###### Compute DOPs ########
+            // 1- Rotation matrix from ECEF coordinates to ENU coordinates
+            // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
+            arma::mat F = arma::zeros(3,3);
+            F(0,0) = -sin(GPS_TWO_PI*(d_longitude_d/360.0));
+            F(0,1) = -sin(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
+            F(0,2) = cos(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
+
+            F(1,0) = cos((GPS_TWO_PI*d_longitude_d)/360.0);
+            F(1,1) = -sin((GPS_TWO_PI*d_latitude_d)/360.0)*sin((GPS_TWO_PI*d_longitude_d)/360.0);
+            F(1,2) = cos((GPS_TWO_PI*d_latitude_d/360.0))*sin((GPS_TWO_PI*d_longitude_d)/360.0);
+
+            F(2,0) = 0;
+            F(2,1) = cos((GPS_TWO_PI*d_latitude_d)/360.0);
+            F(2,2) = sin((GPS_TWO_PI*d_latitude_d/360.0));
+
+            // 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
+            arma::mat Q_ECEF = d_Q.submat(0, 0, 2, 2);
+            arma::mat DOP_ENU = arma::zeros(3, 3);
+
+            try
+            {
+                    DOP_ENU = arma::htrans(F)*Q_ECEF*F;
+                    d_GDOP  = sqrt(arma::trace(DOP_ENU));                       // Geometric DOP
+                    d_PDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1) + DOP_ENU(2,2)); // PDOP
+                    d_HDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1));                // HDOP
+                    d_VDOP  = sqrt(DOP_ENU(2,2));                               // VDOP
+                    d_TDOP  = sqrt(d_Q(3,3));                                   // TDOP
+            }
+            catch(std::exception& ex)
+            {
+                    d_GDOP = -1;   // Geometric DOP
+                    d_PDOP = -1;   // PDOP
+                    d_HDOP = -1;   // HDOP
+                    d_VDOP = -1;   // VDOP
+                    d_TDOP = -1;   // TDOP
+            }
+
+            // ######## LOG FILE #########
+            if(d_flag_dump_enabled == true)
+                {
+                    // MULTIPLEXED FILE RECORDING - Record results to file
+                    try
+                    {
+                            double tmp_double;
+                            //  PVT GPS time
+                            tmp_double = hybrid_current_time;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            // ECEF User Position East [m]
+                            tmp_double = mypos(0);
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            // ECEF User Position North [m]
+                            tmp_double = mypos(1);
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            // ECEF User Position Up [m]
+                            tmp_double = mypos(2);
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            // User clock offset [s]
+                            tmp_double = mypos(3);
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            // GEO user position Latitude [deg]
+                            tmp_double = d_latitude_d;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            // GEO user position Longitude [deg]
+                            tmp_double = d_longitude_d;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            // GEO user position Height [m]
+                            tmp_double = d_height_m;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                    }
+                    catch (const std::ifstream::failure& e)
+                    {
+                            LOG(WARNING) << "Exception writing PVT LS dump file "<< e.what();
+                    }
+                }
+
+            // MOVING AVERAGE PVT
+            if (flag_averaging == true)
+                {
+                    if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
+                        {
+                            // Pop oldest value
+                            d_hist_longitude_d.pop_back();
+                            d_hist_latitude_d.pop_back();
+                            d_hist_height_m.pop_back();
+                            // Push new values
+                            d_hist_longitude_d.push_front(d_longitude_d);
+                            d_hist_latitude_d.push_front(d_latitude_d);
+                            d_hist_height_m.push_front(d_height_m);
+
+                            d_avg_latitude_d = 0;
+                            d_avg_longitude_d = 0;
+                            d_avg_height_m = 0;
+                            for (unsigned int i = 0; i < d_hist_longitude_d.size(); i++)
+                                {
+                                    d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
+                                    d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
+                                    d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
+                                }
+                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
+                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
+                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
+                            b_valid_position = true;
+                            return true; //indicates that the returned position is valid
+                        }
+                    else
+                        {
+                            // int current_depth=d_hist_longitude_d.size();
+                            // Push new values
+                            d_hist_longitude_d.push_front(d_longitude_d);
+                            d_hist_latitude_d.push_front(d_latitude_d);
+                            d_hist_height_m.push_front(d_height_m);
+
+                            d_avg_latitude_d = d_latitude_d;
+                            d_avg_longitude_d = d_longitude_d;
+                            d_avg_height_m = d_height_m;
+                            b_valid_position = false;
+                            return false; //indicates that the returned position is not valid yet
+                        }
+                }
+            else
+                {
+                    b_valid_position = true;
+                    return true; //indicates that the returned position is valid
+                }
        }
     else
         {

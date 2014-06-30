@@ -301,10 +301,15 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //1. Copy the current tracking output
     current_synchro_data = in[0][0];
     //2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_GPS_FSM.d_nav.d_TOW > 0) //update TOW at the preamble instant (todo: check for valid d_TOW)
+    if (this->d_flag_preamble == true and d_GPS_FSM.d_nav.d_TOW > 0)
+    	//update TOW at the preamble instant (todo: check for valid d_TOW)
+    	// JAVI: 30/06/2014
+    	// TOW, in GPS, is referred to the START of the SUBFRAME, that is, THE FIRST SYMBOL OF THAT SUBFRAME, NOT THE PREAMBLE.
+    	// thus, no correction should be done. d_TOW_at_Preamble should be renamed to d_TOW_at_subframe_start.
+    	// Sice we detected the preable, then, we are in the last symbol of that preamble, or just at the start of the first subframe symbol.
         {
             d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
-            d_TOW_at_current_symbol = d_TOW_at_Preamble + GPS_CA_PREAMBLE_LENGTH_BITS/GPS_CA_TELEMETRY_RATE_BITS_SECOND;
+            d_TOW_at_current_symbol = d_TOW_at_Preamble;//GPS_L1_CA_CODE_PERIOD;// + (double)GPS_CA_PREAMBLE_LENGTH_BITS/(double)GPS_CA_TELEMETRY_RATE_BITS_SECOND;
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
             if (flag_TOW_set == false)
                 {
@@ -345,6 +350,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         }
 
     //todo: implement averaging
+
     d_average_count++;
     if (d_average_count==d_decimation_output_factor)
     {

@@ -418,6 +418,10 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
     //2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_nav.flag_TOW_set == true)
         //update TOW at the preamble instant
+    	// JAVI: 30/06/2014
+    	// TOW, in Galileo, is referred to the START of the PAGE PART, that is, THE FIRST SYMBOL OF THAT PAGE, NOT THE PREAMBLE.
+    	// thus, no correction should be done. d_TOW_at_Preamble should be renamed to d_TOW_at_page_start.
+    	// Sice we detected the preable, then, we are in the last symbol of that preable, or just at the start of the first page symbol.
         //flag preamble is true after the all page (even and odd) is recevived. I/NAV page period is 2 SECONDS
         {
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
@@ -428,7 +432,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     /* 1  sec (GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD) is added because
                      * if we have a TOW value it means that we are at the begining of the last page part
                      * (GNU Radio history keeps in a buffer the rest of the incomming frame part)*/
-                    d_TOW_at_current_symbol = d_TOW_at_Preamble;// + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
+                    d_TOW_at_current_symbol=d_TOW_at_Preamble;//-GALIELO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
                     d_nav.flag_TOW_5 = false;
                 }
 
@@ -440,7 +444,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     /* 1  sec (GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD) is added because
                      * if we have a TOW value it means that we are at the begining of the last page part
                      * (GNU Radio history keeps in a buffer the rest of the incomming frame part)*/
-                    d_TOW_at_current_symbol = d_TOW_at_Preamble;// + GALILEO_INAV_PAGE_PART_SYMBOLS*GALIELO_E1_CODE_PERIOD;
+                    d_TOW_at_current_symbol=d_TOW_at_Preamble;//-GALIELO_E1_CODE_PERIOD;//+ (double)GALILEO_INAV_PREAMBLE_LENGTH_BITS/(double)GALILEO_TELEMETRY_RATE_BITS_SECOND;
                     d_nav.flag_TOW_6 = false;
                 }
             else
@@ -461,7 +465,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 
     if(d_nav.flag_GGTO_1 == true  and  d_nav.flag_GGTO_2 == true and  d_nav.flag_GGTO_3 == true and  d_nav.flag_GGTO_4 == true) //all GGTO parameters arrived
         {
-    	delta_t=d_nav.A_0G_10+d_nav.A_1G_10*(d_TOW_at_current_symbol-d_nav.t_0G_10+604800*(fmod((d_nav.WN_0-d_nav.WN_0G_10),64)));
+    	delta_t=d_nav.A_0G_10+d_nav.A_1G_10*(d_TOW_at_current_symbol-d_nav.t_0G_10+604800.0*(fmod((d_nav.WN_0-d_nav.WN_0G_10),64)));
         }
 
 
@@ -480,7 +484,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
     current_synchro_data.d_TOW = d_TOW_at_Preamble;
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
     current_synchro_data.d_TOW_hybrid_at_current_symbol= current_synchro_data.d_TOW_at_current_symbol - delta_t; //delta_t = t_gal - t_gps  ---->  t_gps = t_gal -delta_t
-    std::cout<< "delta_t = " << delta_t << std::endl;
+    DLOG(INFO)<< "delta_t = " << delta_t << std::endl;
       current_synchro_data.Flag_preamble = d_flag_preamble;
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
     current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;

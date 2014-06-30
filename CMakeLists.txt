@@ -5,7 +5,7 @@
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -48,7 +48,7 @@ execute_process(
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT    0)
-set(VERSION_INFO_MINOR_VERSION 2.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+set(VERSION_INFO_MINOR_VERSION 3.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
 
 file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -145,7 +145,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
          set(LINUX_DISTRIBUTION "Generic")
          set(LINUX_VER "Unknown")
      endif(NOT LINUX_DISTRIBUTION)      
-     message(STATUS "Configuring GNSS-SDR to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
+     message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Detect Mac OS X Version
@@ -159,16 +159,16 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
          set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION="com.apple.compilers.llvm.clang.1_0")
-         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.9 Mavericks")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.9 Mavericks")
      endif(${DARWIN_VERSION} MATCHES "13")
      if(${DARWIN_VERSION} MATCHES "12")
-         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.8 Mountain Lion")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.8 Mountain Lion")
      endif(${DARWIN_VERSION} MATCHES "12")
      if(${DARWIN_VERSION} MATCHES "11")
-         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.7 Lion")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.7 Lion")
      endif(${DARWIN_VERSION} MATCHES "11")
      if(${DARWIN_VERSION} MATCHES "10")
-         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.6 Snow Leopard")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.6 Snow Leopard")
      endif(${DARWIN_VERSION} MATCHES "10")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 

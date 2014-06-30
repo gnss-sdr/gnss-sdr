@@ -129,7 +129,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
          set(LINUX_DISTRIBUTION "Generic")
          set(LINUX_VER "Unknown")
      endif(NOT LINUX_DISTRIBUTION)      
-     message(STATUS "Configuring GNSS-SDR to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
+     message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Detect Mac OS X Version

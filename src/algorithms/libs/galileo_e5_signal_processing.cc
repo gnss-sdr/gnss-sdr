@@ -97,7 +97,7 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed in
 	    // last 2 bits are filled up zeros
 	    hex_to_binary_converter(a,
 	    		 Galileo_E5a_I_PRIMARY_CODE[prn].at(Galileo_E5a_I_PRIMARY_CODE[prn].length()-1));
-	    hex_to_binary_converter(a,
+	    hex_to_binary_converter(b,
 	    		 Galileo_E5a_Q_PRIMARY_CODE[prn].at(Galileo_E5a_Q_PRIMARY_CODE[prn].length()-1));
 	    _dest[index]=std::complex<float>(float(a[0]),float(b[0]));
 	    _dest[index+1]=std::complex<float>(float(a[1]),float(b[1]));

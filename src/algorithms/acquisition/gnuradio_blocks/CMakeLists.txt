@@ -27,6 +27,7 @@ if(OPENCL_FOUND)
             galileo_pcps_8ms_acquisition_cc.cc
             galileo_e5a_pilot_3ms_acquisition_cc.cc
             galileo_e5ax_2ms_pcps_acquisition_cc.cc
+            galileo_e5a_3ms_noncoherent_iq_acquisition_cc.cc
             pcps_opencl_acquisition_cc.cc # Needs OpenCL
     )
 else(OPENCL_FOUND)
@@ -40,6 +41,7 @@ else(OPENCL_FOUND)
             galileo_pcps_8ms_acquisition_cc.cc
             galileo_e5a_pilot_3ms_acquisition_cc.cc
             galileo_e5ax_2ms_pcps_acquisition_cc.cc
+            galileo_e5a_3ms_noncoherent_iq_acquisition_cc.cc
     )
 endif(OPENCL_FOUND)
 

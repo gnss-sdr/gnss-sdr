@@ -1,8 +1,32 @@
-/*
- * galileo_e5a_dll_pll_tracking_cc.h
+/*!
+ * \file galileo_e5a_dll_fll_pll_tracking_cc.h
+ * \brief Implementation of a code DLL + carrier PLL
+ *  tracking block for Galileo E5a signals
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
  *
- *  Created on: Jun 19, 2014
- *      Author: marc
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
 
 #ifndef GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_CC_H_
@@ -82,7 +106,7 @@ private:
             float early_late_space_chips);
     void update_local_code();
     void update_local_carrier();
-
+    void acquire_secondary();
     // tracking configuration vars
     boost::shared_ptr<gr::msg_queue> d_queue;
     concurrent_queue<int> *d_channel_internal_queue;
@@ -147,6 +171,10 @@ private:
     // control vars
     bool d_enable_tracking;
     bool d_pull_in;
+
+    // Secondary code acquisition
+    bool d_secondary_lock;
+    int d_secondary_delay;
 
     // file dump
     std::string d_dump_filename;

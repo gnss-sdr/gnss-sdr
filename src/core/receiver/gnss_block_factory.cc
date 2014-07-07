@@ -68,6 +68,7 @@
 #include "galileo_e5a_pcps_acquisition.h" //
 #include "galileo_e5a_pilot_3ms_acquisition.h"
 #include "galileo_e5ax_2ms_pcps_acquisition.h"
+#include "galileo_e5a_3ms_noncoherent_iq_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_pll_optim_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
@@ -477,6 +478,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
+    else if (implementation.compare("Galileo_E5a_3ms_Noncoherent_IQ_Acquisition") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5a3msNoncoherentIQAcquisition(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
 
 
     // TRACKING BLOCKS -------------------------------------------------------------
@@ -700,6 +707,12 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else if (implementation.compare("Galileo_E5ax_2ms_Pcps_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GalileoE5ax2msPcpsAcquisition(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E5a_3ms_Noncoherent_IQ_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5a3msNoncoherentIQAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

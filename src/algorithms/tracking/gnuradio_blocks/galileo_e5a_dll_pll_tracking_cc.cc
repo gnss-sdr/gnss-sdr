@@ -1,8 +1,32 @@
-/*
- * galileo_e5a_dll_pll_tracking_cc.cc
+/*!
+ * \file galileo_e5a_dll_fll_pll_tracking_cc.h
+ * \brief Implementation of a code DLL + carrier PLL
+ *  tracking block for Galileo E5a signals
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
  *
- *  Created on: Jun 19, 2014
- *      Author: marc
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
 
 #include "galileo_e5a_dll_pll_tracking_cc.h"
@@ -24,7 +48,8 @@
 /*!
  * \todo Include in definition header file
  */
-#define CN0_ESTIMATION_SAMPLES 20
+//#define CN0_ESTIMATION_SAMPLES 20
+#define CN0_ESTIMATION_SAMPLES 80
 #define MINIMUM_VALID_CN0 25
 #define MAXIMUM_LOCK_FAIL_COUNTER 50
 #define CARRIER_LOCK_THRESHOLD 0.85
@@ -77,8 +102,8 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
-    d_code_loop_filter = Tracking_2nd_DLL_filter(Galileo_E1_CODE_PERIOD);
-    d_carrier_loop_filter = Tracking_2nd_PLL_filter(Galileo_E1_CODE_PERIOD);
+    d_code_loop_filter = Tracking_2nd_DLL_filter(GALILEO_E5a_CODE_PERIOD);
+    d_carrier_loop_filter = Tracking_2nd_PLL_filter(GALILEO_E5a_CODE_PERIOD);
 
     // Initialize tracking  ==========================================
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
@@ -123,6 +148,9 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     d_enable_tracking = false;
     d_pull_in = false;
     d_last_seg = 0;
+
+    d_secondary_lock=false;
+    d_secondary_delay=0;
 
     d_current_prn_length_samples = (int)d_vector_length;
 
@@ -210,7 +238,9 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
     d_code_loop_filter.initialize();    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    galileo_e5_a_code_gen_complex_primary(&d_code[1], d_acquisition_gnss_synchro->PRN, d_acquisition_gnss_synchro->Signal);
+    char sig_pilot[3];
+    strcpy(sig_pilot,"5Q");
+    galileo_e5_a_code_gen_complex_primary(&d_code[1], d_acquisition_gnss_synchro->PRN, sig_pilot);
 
     d_code[0] = d_code[(int)Galileo_E5a_CODE_LENGTH_CHIPS];
     d_code[(int)Galileo_E5a_CODE_LENGTH_CHIPS + 1] = d_code[1];
@@ -239,7 +269,71 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
             << " Code Phase correction [samples]=" << delay_correction_samples
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
-
+void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
+{
+    //d_Prompt_buffer
+    //CN0_ESTIMATION_SAMPLES
+    //d_secondary_lock
+    //d_secondary_delay
+    // 1. Transform replica to 1 and -1
+    int sec_code_signed[Galileo_E5a_Q_SECONDARY_CODE_LENGTH];
+    for (unsigned int i=0; i<Galileo_E5a_Q_SECONDARY_CODE_LENGTH; i++)
+	{
+	    if (Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(i) == '0')
+		{
+		    sec_code_signed[i]=1;
+		}
+	    else
+		{
+		    sec_code_signed[i]=-1;
+		}
+	}
+    // 2. Transform buffer to 1 and -1
+    int in_corr[CN0_ESTIMATION_SAMPLES];
+    for (unsigned int i=0; i<CN0_ESTIMATION_SAMPLES; i++)
+	{
+	    std::cout << d_Prompt_buffer[i] << std::endl;
+	    if (d_Prompt_buffer[i].real() >0)
+		{
+		    in_corr[i]=1;
+		}
+	    else
+		{
+		    in_corr[i]=-1;
+		}
+	}
+    // 3. Serial search
+    int out_corr;
+    int current_best_=0;
+    for (unsigned int i=0; i<Galileo_E5a_Q_SECONDARY_CODE_LENGTH; i++)
+	{
+	    out_corr=0;
+	    for (unsigned int j=0; j<CN0_ESTIMATION_SAMPLES; j++)
+		{
+		    //reverse replica sign since i*i=-1 (conjugated complex)
+		    out_corr += in_corr[j] * -sec_code_signed[(j+i)%Galileo_E5a_Q_SECONDARY_CODE_LENGTH];
+		}
+	    // VOLK function uses floats, possibly slower
+//	    if (is_unaligned())
+//		{
+//		    volk_32f_x2_dot_prod_32f_u();
+//		}
+//	    else
+//		{
+//		    volk_32f_x2_dot_prod_32f_a();
+//		}
+	    if (abs(out_corr) > current_best_)
+		{
+		    current_best_ = abs(out_corr);
+		    d_secondary_delay=i;
+		}
+	}
+    //if (current_best_ > SECONDARY_THRESHOLD)
+    if (current_best_ >= 0.8*CN0_ESTIMATION_SAMPLES)
+	{
+	    d_secondary_lock = true;
+	}
+}
 void Galileo_E5a_Dll_Pll_Tracking_cc::update_local_code()
 {
     double tcode_chips;
@@ -254,7 +348,10 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::update_local_code()
     code_phase_step_chips = ((double)d_code_freq_chips) / ((double)d_fs_in);
     rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
     tcode_chips = -rem_code_phase_chips;
+// SPACING USING QUADRATURE COMPONENT as 0.5 CHIP
+    double corr_spc_samples = d_early_late_spc_chips / code_phase_step_chips;
 
+// CONVENTIONAL
     // Alternative EPL code generation (40% of speed improvement!)
     early_late_spc_samples = round(d_early_late_spc_chips / code_phase_step_chips);
     epl_loop_length_samples = d_current_prn_length_samples + early_late_spc_samples*2;
@@ -267,6 +364,11 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::update_local_code()
 
     memcpy(d_prompt_code,&d_early_code[early_late_spc_samples],d_current_prn_length_samples* sizeof(gr_complex));
     memcpy(d_late_code,&d_early_code[early_late_spc_samples*2],d_current_prn_length_samples* sizeof(gr_complex));
+
+//EXPERIMENTAL
+
+
+
 }
 
 
@@ -296,159 +398,187 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 
     if (d_enable_tracking == true)
         {
-            // Receiver signal alignment
-            if (d_pull_in == true)
-                {
-                    int samples_offset;
-                    float acq_trk_shif_correction_samples;
-                    int acq_to_trk_delay_samples;
-                    acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_current_prn_length_samples);
-                    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
-                    //d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / (double)d_fs_in);
-                    d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
-                    d_pull_in = false;
-                    //std::cout<<" samples_offset="<<samples_offset<<"\r\n";
-                    consume_each(samples_offset); //shift input to perform alignment with local replica
-                    return 1;
-                }
+	    if (d_secondary_lock==false)
+		{
+		    // Receiver signal alignment
+		    if (d_pull_in == true)
+			{
+			    int samples_offset;
+			    float acq_trk_shif_correction_samples;
+			    int acq_to_trk_delay_samples;
+			    acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
+			    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_current_prn_length_samples);
+			    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+			    // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
+			    //d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / (double)d_fs_in);
+			    d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
+			    d_pull_in = false;
+			    std::cout<<" samples_offset="<<samples_offset<<"\r\n";
+			    consume_each(samples_offset); //shift input to perform alignment with local replica
+			    return 1;
+			}
 
-            // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            Gnss_Synchro current_synchro_data;
-            // Fill the acquisition data
-            current_synchro_data = *d_acquisition_gnss_synchro;
+		    // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+		    Gnss_Synchro current_synchro_data;
+		    // Fill the acquisition data
+		    current_synchro_data = *d_acquisition_gnss_synchro;
 
-            // Block input data and block output stream pointers
-            const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
-            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+		    // Block input data and block output stream pointers
+		    const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
+		    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
-            // Generate local code and carrier replicas (using \hat{f}_d(k-1))
-            update_local_code();
-            update_local_carrier();
+		    // Generate local code and carrier replicas (using \hat{f}_d(k-1))
+		    update_local_code();
+		    update_local_carrier();
 
-            // perform carrier wipe-off and compute Early, Prompt and Late correlation
-            d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
-                    in,
-                    d_carr_sign,
-                    d_early_code,
-                    d_prompt_code,
-                    d_late_code,
-                    d_Early,
-                    d_Prompt,
-                    d_Late,
-                    is_unaligned());
+		    // perform carrier wipe-off and compute Early, Prompt and Late correlation
+		    d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
+		                                              in,
+		                                              d_carr_sign,
+		                                              d_early_code,
+		                                              d_prompt_code,
+		                                              d_late_code,
+		                                              d_Early,
+		                                              d_Prompt,
+		                                              d_Late,
+		                                              is_unaligned());
 
-            // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
-            if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true ) // or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
-                {
-                    const int samples_available = ninput_items[0];
-                    d_sample_counter = d_sample_counter + samples_available;
-                    LOG(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
-                    consume_each(samples_available);
+		    // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
+		    if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true ) // or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
+			{
+			    const int samples_available = ninput_items[0];
+			    d_sample_counter = d_sample_counter + samples_available;
+			    LOG(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
+			    consume_each(samples_available);
 
-                    // make an output to not stop the rest of the processing blocks
-                    current_synchro_data.Prompt_I = 0.0;
-                    current_synchro_data.Prompt_Q = 0.0;
-                    current_synchro_data.Tracking_timestamp_secs = (double)d_sample_counter/(double)d_fs_in;
-                    current_synchro_data.Carrier_phase_rads = 0.0;
-                    current_synchro_data.Code_phase_secs = 0.0;
-                    current_synchro_data.CN0_dB_hz = 0.0;
-                    current_synchro_data.Flag_valid_tracking = false;
+			    // make an output to not stop the rest of the processing blocks
+			    current_synchro_data.Prompt_I = 0.0;
+			    current_synchro_data.Prompt_Q = 0.0;
+			    current_synchro_data.Tracking_timestamp_secs = (double)d_sample_counter/(double)d_fs_in;
+			    current_synchro_data.Carrier_phase_rads = 0.0;
+			    current_synchro_data.Code_phase_secs = 0.0;
+			    current_synchro_data.CN0_dB_hz = 0.0;
+			    current_synchro_data.Flag_valid_tracking = false;
 
-                    *out[0] = current_synchro_data;
+			    *out[0] = current_synchro_data;
 
-                    return 1;
-                }
+			    return 1;
+			}
 
-            // ################## PLL ##########################################################
-            // PLL discriminator
-            carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)GALILEO_PI*2;
-            // Carrier discriminator filter
-            carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
-            // New carrier Doppler frequency estimation
-            d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
-            // New code Doppler frequency estimation
-            d_code_freq_chips = Galileo_E5a_CODE_CHIP_RATE_HZ + ((d_carrier_doppler_hz * Galileo_E5a_CODE_CHIP_RATE_HZ) / Galileo_E5a_FREQ_HZ);
-            //carrier phase accumulator for (K) doppler estimation
-            d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + 2*GALILEO_PI*d_carrier_doppler_hz*GPS_L1_CA_CODE_PERIOD;
-            //remanent carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad = d_rem_carr_phase_rad+2*GALILEO_PI*d_carrier_doppler_hz*GALILEO_E5a_CODE_PERIOD;
-            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, 2*GALILEO_PI);
+		    // ################## PLL ##########################################################
+		    // PLL discriminator
+		    carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)GALILEO_PI*2;
+		    // Carrier discriminator filter
+		    carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
+		    // New carrier Doppler frequency estimation
+		    d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
+		    // New code Doppler frequency estimation
+		    d_code_freq_chips = Galileo_E5a_CODE_CHIP_RATE_HZ + ((d_carrier_doppler_hz * Galileo_E5a_CODE_CHIP_RATE_HZ) / Galileo_E5a_FREQ_HZ);
+		    //carrier phase accumulator for (K) doppler estimation
+		    d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + 2*GALILEO_PI*d_carrier_doppler_hz*GALILEO_E5a_CODE_PERIOD;
+		    //remanent carrier phase to prevent overflow in the code NCO
+		    d_rem_carr_phase_rad = d_rem_carr_phase_rad+2*GALILEO_PI*d_carrier_doppler_hz*GALILEO_E5a_CODE_PERIOD;
+		    d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, 2*GALILEO_PI);
 
-            // ################## DLL ##########################################################
-            // DLL discriminator
-            code_error_chips = dll_nc_e_minus_l_normalized(*d_Early, *d_Late); //[chips/Ti]
-            // Code discriminator filter
-            code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
-            //Code phase accumulator
-            float code_error_filt_secs;
-            code_error_filt_secs = (GALILEO_E5a_CODE_PERIOD*code_error_filt_chips)/Galileo_E5a_CODE_CHIP_RATE_HZ; //[seconds]
-            d_acc_code_phase_secs = d_acc_code_phase_secs + code_error_filt_secs;
+		    // ################## DLL ##########################################################
+		    // DLL discriminator
+		    code_error_chips = dll_nc_e_minus_l_normalized(*d_Early, *d_Late); //[chips/Ti]
+		    // Code discriminator filter
+		    code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
+		    //Code phase accumulator
+		    float code_error_filt_secs;
+		    code_error_filt_secs = (GALILEO_E5a_CODE_PERIOD*code_error_filt_chips)/Galileo_E5a_CODE_CHIP_RATE_HZ; //[seconds]
+		    d_acc_code_phase_secs = d_acc_code_phase_secs + code_error_filt_secs;
 
-            // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
-            // keep alignment parameters for the next input buffer
-            float T_chip_seconds;
-            float T_prn_seconds;
-            float T_prn_samples;
-            float K_blk_samples;
-            // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
-            T_chip_seconds = 1 / d_code_freq_chips;
-            T_prn_seconds = T_chip_seconds * Galileo_E5a_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * (float)d_fs_in;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs*(float)d_fs_in;
-            d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
-            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
+		    std::cout<< "Early " << *d_Early << std::endl;
+		    std::cout<< "Prompt " << *d_Prompt << std::endl;
+		    std::cout<< "Late " << *d_Late << std::endl;
+		    // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+		    // keep alignment parameters for the next input buffer
+		    float T_chip_seconds;
+		    float T_prn_seconds;
+		    float T_prn_samples;
+		    float K_blk_samples;
+		    // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
+		    T_chip_seconds = 1 / d_code_freq_chips;
+		    T_prn_seconds = T_chip_seconds * Galileo_E5a_CODE_LENGTH_CHIPS;
+		    T_prn_samples = T_prn_seconds * (float)d_fs_in;
+		    K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs*(float)d_fs_in;
+		    d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
+		    d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
-            // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
-                {
-                    // fill buffer with prompt correlator output values
-                    d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
-                    d_cn0_estimation_counter++;
-                }
-            else
-                {
-                    d_cn0_estimation_counter = 0;
-                    // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, Galileo_E5a_CODE_LENGTH_CHIPS);
-                    // Carrier lock indicator
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
-                    // Loss of lock detection
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
-                        {
-                            d_carrier_lock_fail_counter++;
-                        }
-                    else
-                        {
-                            if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
-                        }
-                    if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
-                        {
-                            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
-                            LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            ControlMessageFactory* cmf = new ControlMessageFactory();
-                            if (d_queue != gr::msg_queue::sptr())
-                                {
-                                    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-                                }
-                            delete cmf;
-                            d_carrier_lock_fail_counter = 0;
-                            d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
-                        }
-                }
-            // ########### Output the tracking data to navigation and PVT ##########
-            current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
-            current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
-            // Tracking_timestamp_secs is aligned with the PRN start sample
-            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples)/(double)d_fs_in;
-            // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
-            current_synchro_data.Code_phase_secs = 0;
-            current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
-            current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
-            current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
-            *out[0] = current_synchro_data;
+		    // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
+		    if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
+			{
+			    // fill buffer with prompt correlator output values
+			    d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
+			    d_cn0_estimation_counter++;
+			}
+		    else
+			{
+			    // ATTEMPT SECONDARY CODE ACQUISITION
+			    acquire_secondary(); // changes d_secondary_lock and d_secondary_delay
+			    //
+			    d_cn0_estimation_counter = 0;
+			    // Code lock indicator
+			    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, Galileo_E5a_CODE_LENGTH_CHIPS);
+			    // Carrier lock indicator
+			    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
+			    // Loss of lock detection
+			    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
+				{
+				    d_carrier_lock_fail_counter++;
+				}
+			    else
+				{
+				    if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
+				}
+			    if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+				{
+				    std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+				    LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
+				    ControlMessageFactory* cmf = new ControlMessageFactory();
+				    if (d_queue != gr::msg_queue::sptr())
+					{
+					    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
+					}
+				    delete cmf;
+				    d_carrier_lock_fail_counter = 0;
+				    d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
+				}
+			}
 
+		    // make an output to not stop the rest of the processing blocks
+		    current_synchro_data.Prompt_I = 0.0;
+		    current_synchro_data.Prompt_Q = 0.0;
+		    current_synchro_data.Tracking_timestamp_secs = (double)d_sample_counter/(double)d_fs_in;
+		    current_synchro_data.Carrier_phase_rads = 0.0;
+		    current_synchro_data.Code_phase_secs = 0.0;
+		    current_synchro_data.CN0_dB_hz = 0.0;
+		    current_synchro_data.Flag_valid_tracking = false;
+
+		    *out[0] = current_synchro_data;
+
+
+
+		}
+	    else
+		{
+		    // code with known secondary chip delay
+		    // ########### Output the tracking data to navigation and PVT ##########
+		    /*
+		    current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
+		    current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
+		    // Tracking_timestamp_secs is aligned with the PRN start sample
+		    current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples)/(double)d_fs_in;
+		    // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
+		    current_synchro_data.Code_phase_secs = 0;
+		    current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;
+		    current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
+		    current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
+		    *out[0] = current_synchro_data;
+		    */
+		}
             // ########## DEBUG OUTPUT
             /*!
              *  \todo The stop timer has to be moved to the signal source!

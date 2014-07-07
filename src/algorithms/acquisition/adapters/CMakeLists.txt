@@ -31,6 +31,7 @@ if(OPENCL_FOUND)
          galileo_e5a_pcps_acquisition.cc
          galileo_e5a_pilot_3ms_acquisition.cc
          galileo_e5ax_2ms_pcps_acquisition.cc
+         galileo_e5a_3ms_noncoherent_iq_acquisition.cc
     )
 else(OPENCL_FOUND)
     set(ACQ_ADAPTER_SOURCES
@@ -46,6 +47,7 @@ else(OPENCL_FOUND)
          galileo_e5a_pcps_acquisition.cc
          galileo_e5a_pilot_3ms_acquisition.cc
          galileo_e5ax_2ms_pcps_acquisition.cc
+         galileo_e5a_3ms_noncoherent_iq_acquisition.cc
     )
 endif(OPENCL_FOUND)
 

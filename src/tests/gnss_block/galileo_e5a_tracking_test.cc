@@ -1,8 +1,33 @@
-/*
- * galileo_e5a_tracking_test.cc
+/*!
+ * \file galileo_e1_dll_pll_veml_tracking_test.cc
+ * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
+ *  implementation based on some input parameters.
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
  *
- *  Created on: Jun 19, 2014
- *      Author: marc
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
 
 
@@ -61,20 +86,23 @@ void GalileoE5aTrackingTest::init()
     gnss_synchro.System = 'E';
     std::string signal = "5X";
     signal.copy(gnss_synchro.Signal, 2, 0);
-    gnss_synchro.PRN = 11;
+    //gnss_synchro.PRN = 19;//real
+    gnss_synchro.PRN = 11;//sim
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "12000000");
+    config->set_property("GNSS-SDR.internal_fs_hz", "32000000");
     config->set_property("Tracking.item_type", "gr_complex");
     config->set_property("Tracking.dump", "true");
     config->set_property("Tracking.dump_filename", "../data/e5a_tracking_ch_");
     config->set_property("Tracking.implementation", "Galileo_E5a_DLL_PLL_Tracking");
     config->set_property("Tracking.early_late_space_chips", "0.5");
-    config->set_property("Tracking.pll_bw_hz", "50.0");
+    config->set_property("Tracking.pll_bw_hz", "5.0");
     config->set_property("Tracking.dll_bw_hz", "2.0");
-    config->set_property("Tracking.fll_bw_hz", "10.0");
+    //config->set_property("Tracking.fll_bw_hz", "10.0");
+//    config->set_property("Tracking.pll_bw_hz", "20.0");
+//    config->set_property("Tracking.dll_bw_hz", "1.0");
 
 }
-
+/*
 TEST_F(GalileoE5aTrackingTest, InstantiateTrack)
 {
 
@@ -84,12 +112,12 @@ TEST_F(GalileoE5aTrackingTest, InstantiateTrack)
 //    auto tracking = factory->GetBlock(config, "Tracking", "Galileo_E1_DLL_PLL_VEML_Tracking", 1, 1, queue);
 //    EXPECT_STREQ("Galileo_E1_DLL_PLL_VEML_Tracking", tracking->implementation().c_str());
 
-}
-
+}*/
+/*
 TEST_F(GalileoE5aTrackingTest, ConnectAndRun)
 {
-    int fs_in = 16000000;
-    int nsamples = 160000000;
+    int fs_in = 21000000;
+    int nsamples = 21000000;
     struct timeval tv;
     long long int begin;
     long long int end;
@@ -135,27 +163,32 @@ TEST_F(GalileoE5aTrackingTest, ConnectAndRun)
 
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 }
-
+*/
 TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
 {
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    // int num_samples = 40000000; // 4 Msps
-    // unsigned int skiphead_sps = 24000000; // 4 Msps
-    int num_samples = 120000000; // 12 Msps
-    unsigned int skiphead_sps = 1000000; // 1 Msample
+    int num_samples = 3200000000; // 32 Msps
+    //unsigned int skiphead_sps = 98000; // 1 Msample
+    unsigned int skiphead_sps = 0; // 1 Msample
     init();
 
     // Example using smart pointers and the block factory
     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", "Galileo_E5a_DLL_PLL_Tracking", 1, 1, queue);
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
-    // gnss_synchro.Acq_delay_samples = 1753; // 4 Msps
-    // gnss_synchro.Acq_doppler_hz = -9500; // 4 Msps
-    gnss_synchro.Acq_delay_samples = 17256; // 8 Msps
-    gnss_synchro.Acq_doppler_hz = -8750; // 8 Msps
+//REAL
+//    gnss_synchro.Acq_delay_samples = 15579; // 32 Msps
+//    gnss_synchro.Acq_doppler_hz = 3500; // 32 Msps
+////    gnss_synchro.Acq_samplestamp_samples = 98000;
+//    gnss_synchro.Acq_samplestamp_samples = 0;
+//SIM
+    gnss_synchro.Acq_delay_samples = 14001; // 32 Msps
+    gnss_synchro.Acq_doppler_hz = 2750; // 32 Msps (real 2800)
+//    gnss_synchro.Acq_samplestamp_samples = 98000;
     gnss_synchro.Acq_samplestamp_samples = 0;
+
 
     ASSERT_NO_THROW( {
         tracking->set_channel(gnss_synchro.Channel_ID);
@@ -174,7 +207,10 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     }) << "Failure connecting tracking to the top_block." << std::endl;
 
     ASSERT_NO_THROW( {
-        std::string file = "/home/marc/E5a_acquisitions/Tiered_sink_4sat.dat";
+        //std::string file = "/home/marc/E5a_acquisitions/Tiered_sink_4sat.dat";
+        //std::string file =  "/home/marc/E5a_acquisitions/32MS_complex.dat";
+        std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11.dat";
+
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex),file_name,false);
         gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);

@@ -39,6 +39,7 @@
 #include "galileo_e1_tcp_connector_tracking_cc.h"
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
@@ -391,20 +392,20 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
             code_error_filt_chips = tcp_data.proc_pack_code_error;
             //Code phase accumulator
             float code_error_filt_secs;
-            code_error_filt_secs=(Galileo_E1_CODE_PERIOD*code_error_filt_chips)/Galileo_E1_CODE_CHIP_RATE_HZ; //[seconds]
-            d_acc_code_phase_secs=d_acc_code_phase_secs+code_error_filt_secs;
+            code_error_filt_secs = (Galileo_E1_CODE_PERIOD * code_error_filt_chips) / Galileo_E1_CODE_CHIP_RATE_HZ; //[seconds]
+            d_acc_code_phase_secs = d_acc_code_phase_secs + code_error_filt_secs;
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
             // keep alignment parameters for the next input buffer
-            float T_chip_seconds;
-            float T_prn_seconds;
-            float T_prn_samples;
-            float K_blk_samples;
+            double T_chip_seconds;
+            double T_prn_seconds;
+            double T_prn_samples;
+            double K_blk_samples;
             // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
-            T_chip_seconds = 1 / d_code_freq_chips;
+            T_chip_seconds = 1 / (double)d_code_freq_chips;
             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * (float)d_fs_in;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs*(float)d_fs_in;
+            T_prn_samples = T_prn_seconds * (double)d_fs_in;
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * (double)d_fs_in;
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
@@ -438,12 +439,11 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            ControlMessageFactory* cmf = new ControlMessageFactory();
+                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                             if (d_queue != gr::msg_queue::sptr())
                                 {
                                     d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                                 }
-                            delete cmf;
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }
@@ -489,23 +489,23 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
         }
     else
         {
-			// ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-			/*!
-			 *  \todo The stop timer has to be moved to the signal source!
-			 */
-			// stream to collect cout calls to improve thread safety
-			std::stringstream tmp_str_stream;
-			if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-			{
-				d_last_seg = floor(d_sample_counter / d_fs_in);
+            // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
+            /*!
+             *  \todo The stop timer has to be moved to the signal source!
+             */
+            // stream to collect cout calls to improve thread safety
+            std::stringstream tmp_str_stream;
+            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+                {
+                    d_last_seg = floor(d_sample_counter / d_fs_in);
 
-				if (d_channel == 0)
-				{
-					// debug: Second counter in channel 0
-					tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-					std::cout << tmp_str_stream.rdbuf() << std::flush;
-				}
-			}
+                    if (d_channel == 0)
+                        {
+                            // debug: Second counter in channel 0
+                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
+                            std::cout << tmp_str_stream.rdbuf() << std::flush;
+                        }
+                }
             *d_Early = gr_complex(0,0);
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);

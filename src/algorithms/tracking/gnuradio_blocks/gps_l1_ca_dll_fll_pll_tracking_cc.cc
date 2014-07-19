@@ -21,7 +21,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -474,12 +474,11 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            ControlMessageFactory* cmf = new ControlMessageFactory();
+                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                             if (d_queue != gr::msg_queue::sptr())
                                 {
                                     d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                                 }
-                            delete cmf;
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }
@@ -513,12 +512,12 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             double T_prn_seconds;
             double T_prn_samples;
             double K_blk_samples;
-            T_chip_seconds = 1/d_code_freq_hz;
+            T_chip_seconds = 1 / (double)d_code_freq_hz;
             T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * d_fs_in;
 
             float code_error_filt_samples;
-            code_error_filt_samples = T_prn_seconds*code_error_filt_chips*T_chip_seconds*(float)d_fs_in; //[seconds]
+            code_error_filt_samples = T_prn_seconds * code_error_filt_chips * T_chip_seconds * (double)d_fs_in; //[seconds]
             d_acc_code_phase_samples = d_acc_code_phase_samples + code_error_filt_samples;
 
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_samples;
@@ -529,7 +528,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
             current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             // Tracking_timestamp_secs is aligned with the PRN start sample
-            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + d_rem_code_phase_samples)/d_fs_in;
+            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples) / (double)d_fs_in;
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;

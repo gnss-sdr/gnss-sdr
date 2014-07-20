@@ -23,12 +23,9 @@ endif(MSVC)
 
 macro(_FIND_GLOG_LIBRARIES _var)
      find_library(${_var}
-          NAMES
-          ${ARGN}
-          PATHS
-          ${LIB_PATHS}
-          PATH_SUFFIXES 
-          lib
+          NAMES  ${ARGN}
+          PATHS ${LIB_PATHS} /opt/local/lib
+          PATH_SUFFIXES lib
       )
      mark_as_advanced(${_var})
 endmacro()
@@ -53,6 +50,7 @@ else(MSVC)
      find_path(GLOG_INCLUDE_DIR NAMES raw_logging.h
      PATHS
      ${GLOG_ROOT}/include/glog
+     /opt/local/include/glog   # default location in Macports
      )
 endif(MSVC)
 

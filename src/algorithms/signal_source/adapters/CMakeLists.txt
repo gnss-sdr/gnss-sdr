@@ -1,11 +1,11 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -132,8 +132,9 @@ if(ARCH_64BITS)
     add_definitions(-DARCH_64BITS=1)
 endif(ARCH_64BITS)
 
-add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES})
-
+file(GLOB SIGNAL_SOURCE_ADAPTER_HEADERS "*.h")
+add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
+source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 target_link_libraries(signal_source_adapters signal_source_gr_blocks 
                                              ${Boost_LIBRARIES} 
                                              ${GNURADIO_PMT_LIBRARIES} 

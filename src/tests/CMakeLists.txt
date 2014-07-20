@@ -16,11 +16,17 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(GTEST_DIR_LOCAL "$ENV{GTEST_DIR}")
+
+if(EXISTS $ENV{GTEST_DIR})
+   set(GTEST_DIR_LOCAL $ENV{GTEST_DIR})
+endif(EXISTS $ENV{GTEST_DIR})
+if(GTEST_DIR)
+    set(GTEST_DIR_LOCAL ${GTEST_DIR})
+endif(GTEST_DIR)
 if(NOT GTEST_DIR_LOCAL)
-    set(GTEST_DIR_LOCAL false)
+    set(GTEST_DIR_LOCAL false CACHE STRING "Gtest downloaded and built automatically")
 else()
-	set(GTEST_DIR_LOCAL true)
+	set(GTEST_DIR_LOCAL true CACHE STRING "Gtest already downloaded")
 endif(NOT GTEST_DIR_LOCAL)
 
 

@@ -36,11 +36,11 @@ if(PYTHON_EXECUTABLE)
 else(PYTHON_EXECUTABLE)
 
     #use the built-in find script
-    find_package(PythonInterp)
+    find_package(PythonInterp 2)
 
     #and if that fails use the find program routine
     if(NOT PYTHONINTERP_FOUND)
-        find_program(PYTHON_EXECUTABLE NAMES python python2.7 python2.6 python2.5)
+        find_program(PYTHON_EXECUTABLE NAMES python python2 python2.7 python2.6 python2.5)
         if(PYTHON_EXECUTABLE)
             set(PYTHONINTERP_FOUND TRUE)
         endif(PYTHON_EXECUTABLE)
@@ -48,8 +48,15 @@ else(PYTHON_EXECUTABLE)
 
 endif(PYTHON_EXECUTABLE)
 
+if (CMAKE_CROSSCOMPILING)
+    set(QA_PYTHON_EXECUTABLE "/usr/bin/python")
+else (CMAKE_CROSSCOMPILING)
+    set(QA_PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
+endif(CMAKE_CROSSCOMPILING)
+
 #make the path to the executable appear in the cmake gui
 set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter")
+set(QA_PYTHON_EXECUTABLE ${QA_PYTHON_EXECUTABLE} CACHE FILEPATH "python interpreter for QA tests")
 
 #make sure we can use -B with python (introduced in 2.6)
 if(PYTHON_EXECUTABLE)
@@ -185,7 +192,7 @@ function(GR_PYTHON_INSTALL)
         file(TO_NATIVE_PATH ${PYTHON_EXECUTABLE} pyexe_native)
 
         if (CMAKE_CROSSCOMPILING)
-           set(pyexe_native /usr/bin/env python)
+           set(pyexe_native "/usr/bin/env python")
         endif()
 
         foreach(pyfile ${GR_PYTHON_INSTALL_PROGRAMS})
@@ -200,8 +207,9 @@ function(GR_PYTHON_INSTALL)
             add_custom_command(
                 OUTPUT ${pyexefile} DEPENDS ${pyfile}
                 COMMAND ${PYTHON_EXECUTABLE} -c
-                \"open('${pyexefile}', 'w').write('\#!${pyexe_native}\\n'+open('${pyfile}').read())\"
+                "open('${pyexefile}','w').write('\#!${pyexe_native}\\n'+open('${pyfile}').read())"
                 COMMENT "Shebangin ${pyfile_name}"
+                VERBATIM
             )
 
             #on windows, python files need an extension to execute

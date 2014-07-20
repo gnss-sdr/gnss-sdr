@@ -5,7 +5,7 @@
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,7 +37,8 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
 )
-
-add_library(pvt_lib ${PVT_LIB_SOURCES})
+file(GLOB PVT_LIB_HEADERS "*.h")
+add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
+source_group(Headers FILES ${PVT_LIB_HEADERS})
 add_dependencies(pvt_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
 target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES})

@@ -16,7 +16,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux 
 ----------
 
-Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 19 and 20 and openSUSE 13.1 (newer versions should work, too).
+Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 19 and 20 and openSUSE 13.1 (newer versions should work, too). You will need GCC 4.7 or newer.
 
 ### Install GNU Radio:
 
@@ -68,13 +68,13 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 #### Install the [Armadillo](http://arma.sourceforge.net/ "Armadillo's Homepage") C++ linear algebra library:
 
 ~~~~~~
-$ sudo apt-get install libblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
-$ sudo yum install lapack-devel blas-devel gcc-fortran      # For Fedora/CentOS/RHEL
-$ sudo zypper install lapack-devel blas-devel gcc-fortran   # For OpenSUSE
+$ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
+$ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
+$ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-4.100.2.tar.gz
-$ tar xvfz armadillo-4.100.2.tar.gz
-$ cd armadillo-4.100.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-4.300.9.tar.gz
+$ tar xvfz armadillo-4.300.9.tar.gz
+$ cd armadillo-4.300.9
 $ cmake .
 $ make
 $ sudo make install
@@ -348,26 +348,7 @@ $ sudo port upgrade outdated
 $ sudo port install doxygen +latex
 $ sudo port install uhd gnuradio
 $ sudo port install armadillo
-~~~~~~ 
-
-Install [Gflags](http://code.google.com/p/gflags/ "Gflags' Homepage") manually from the trunk:
-
-~~~~~~ 
-$ svn checkout http://gflags.googlecode.com/svn/trunk gflags-trunk
-$ cd gflags-trunk
-$ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure  
-$ make
-$ sudo make install
-~~~~~~ 
-
-Install [Glog](http://code.google.com/p/google-glog/ "Glog's Homepage") manually from the subversion repository. Revision 142 is known to work well:
-
-~~~~~~ 
-$ svn checkout -r142 http://google-glog.googlecode.com/svn/trunk/ google-glog
-$ cd google-glog
-$ CXXFLAGS="-stdlib=libc++" CC=clang CXX=clang++ ./configure 
-$ make
-$ sudo make install
+$ sudo port install google-glog +gflags
 ~~~~~~ 
 
 Finally, you are ready to clone the GNSS-SDR repository and build the software:

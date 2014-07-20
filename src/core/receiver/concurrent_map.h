@@ -15,7 +15,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -44,7 +44,7 @@ template<typename Data>
  */
 class concurrent_map
 {
-    typedef typename std::map<int,Data>::iterator Data_iterator; //iterator is ambit dependant
+    typedef typename std::map<int,Data>::iterator Data_iterator; // iterator is scope dependent
 private:
     std::map<int,Data> the_map;
     boost::mutex the_mutex;
@@ -52,15 +52,16 @@ public:
     void write(int key, Data const& data)
     {
         boost::mutex::scoped_lock lock(the_mutex);
-
         Data_iterator data_iter;
         data_iter = the_map.find(key);
         if (data_iter != the_map.end())
-		{
-        	data_iter->second=data; //update
-		}else{
-			the_map.insert(std::pair<int, Data>(key, data));//insert SILENTLY fails if the item exist in the map!!
-		}
+            {
+                data_iter->second = data; // update
+            }
+        else
+            {
+                the_map.insert(std::pair<int, Data>(key, data)); // insert SILENTLY fails if the item already exists in the map!
+            }
         lock.unlock();
     }
 

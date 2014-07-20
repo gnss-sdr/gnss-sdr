@@ -147,6 +147,7 @@ int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
     mns = i_mns;
     lac = i_lac;
     ci = i_ci;
+    if (supl_ctx_new(&ctx)) {} // clean it before using
     supl_set_gsm_cell(&ctx, mcc, mns, lac, ci);
 
     // PERFORM SUPL COMMUNICATION
@@ -161,6 +162,15 @@ int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
     if (err == 0)
         {
             read_supl_data();
+	    if (supl_ctx_free(&ctx)) {} // clean it up before leaving
+        }
+    else
+        {
+	  /*
+	   * If supl_get_assist() fails, the connection remains open
+	   * and the memory/files are not released.
+	   */
+	  supl_close(&ctx);
         }
     delete [] cstr;
     return err;
@@ -383,7 +393,7 @@ bool gnss_sdr_supl_client::save_ephemeris_map_xml(const std::string file_name, s
         }
     else
         {
-            LOG(ERROR) << "Failed to save Ephemeris, map is empty";
+            LOG(WARNING) << "Failed to save Ephemeris, map is empty";
             return false;
         }
 }
@@ -427,7 +437,7 @@ bool gnss_sdr_supl_client::save_utc_map_xml(const std::string file_name, std::ma
         }
     else
         {
-            LOG(ERROR) << "Failed to save UTC model, map is empty";
+            LOG(WARNING) << "Failed to save UTC model, map is empty";
             return false;
         }
 }
@@ -471,7 +481,7 @@ bool gnss_sdr_supl_client::save_iono_map_xml(const std::string file_name, std::m
         }
     else
         {
-            LOG(ERROR) << "Failed to save IONO model, map is empty";
+            LOG(WARNING) << "Failed to save IONO model, map is empty";
             return false;
         }
 }
@@ -515,27 +525,27 @@ bool gnss_sdr_supl_client::save_ref_time_map_xml(const std::string file_name, st
         }
     else
         {
-            LOG(ERROR) << "Failed to save Ref Time, map is empty";
+            LOG(WARNING) << "Failed to save Ref Time, map is empty";
             return false;
         }
 }
 
 bool gnss_sdr_supl_client::load_ref_location_xml(const std::string file_name)
 {
-	try
-	{
-	    std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
-        boost::archive::xml_iarchive xml(ifs);
-        xml >> boost::serialization::make_nvp("GNSS-SDR_ref_location_map", this->gps_ref_loc);
-        ifs.close();
-        LOG(INFO) << "Loaded Ref Location data";
-	}
-	catch (std::exception& e)
-	{
-	    LOG(ERROR) << e.what() << "File: " << file_name;
-	    return false;
-	}
-	return true;
+    try
+    {
+            std::ifstream ifs(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GNSS-SDR_ref_location_map", this->gps_ref_loc);
+            ifs.close();
+            LOG(INFO) << "Loaded Ref Location data";
+    }
+    catch (std::exception& e)
+    {
+            LOG(ERROR) << e.what() << "File: " << file_name;
+            return false;
+    }
+    return true;
 }
 
 bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name, std::map<int, Gps_Ref_Location> ref_location_map)
@@ -559,7 +569,7 @@ bool gnss_sdr_supl_client::save_ref_location_map_xml(const std::string file_name
         }
     else
         {
-            LOG(ERROR) << "Failed to save Ref Location, map is empty";
+            LOG(WARNING) << "Failed to save Ref Location, map is empty";
             return false;
         }
 }

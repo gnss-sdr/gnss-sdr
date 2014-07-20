@@ -182,12 +182,29 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 # Append -O2 optimization flag for Debug builds
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
+################################################################################
+# Checkout compiler version
+################################################################################
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+      if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
+          message(STATUS "Your GCC version is too old and does not support some C++11 features required by GNSS-SDR. GCC version must be at least 4.7")
+          if(${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
+              if(${LINUX_VER} MATCHES "12.04")
+                  message(STATUS "For instructions on how to upgrade GCC, check http://askubuntu.com/a/271561")
+              endif(${LINUX_VER} MATCHES "12.04")
+          endif(${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
+          message(FATAL_ERROR "Fatal error: GCC >= 4.7 required.")
+      endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
+endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
 ################################################################################
 # Googletest - http://code.google.com/p/googletest/
 ################################################################################
 enable_testing()
-set(GTEST_DIR "$ENV{GTEST_DIR}")
+if(EXISTS $ENV{GTEST_DIR})
+     set(GTEST_DIR $ENV{GTEST_DIR})
+endif(EXISTS $ENV{GTEST_DIR})
 if(GTEST_DIR)
      message(STATUS "GTEST root folder at ${GTEST_DIR}")
 else()
@@ -213,7 +230,6 @@ if(GNURADIO_INSTALL_PREFIX)
     endif(EXISTS "${GNURADIO_INSTALL_PREFIX}/lib/libboost_thread-mt.so")
 endif(GNURADIO_INSTALL_PREFIX)
 set(Boost_ADDITIONAL_VERSIONS
-    "1.42.0" "1.42" "1.43.0" "1.43" "1.44.0" "1.44"
     "1.45.0" "1.45" "1.46.0" "1.46"                 "1.48.0" "1.48" "1.49.0" "1.49"
     "1.50.0" "1.50" "1.51.0" "1.51"                 "1.53.0" "1.53" "1.54.0" "1.54"
     "1.55.0" "1.55" "1.56.0" "1.56" "1.57.0" "1.57" "1.58.0" "1.58" "1.59.0" "1.59"
@@ -235,7 +251,7 @@ endif(NOT Boost_FOUND)
 find_package(Gnuradio)
 
 if(NOT GNURADIO_RUNTIME_FOUND)
-   message(STATUS "cmake cannot find GNU Radio >= 3.7")
+   message(STATUS "CMake cannot find GNU Radio >= 3.7")
    if(OS_IS_LINUX)
        message("Go to http://gnuradio.org/redmine/projects/pybombs/wiki")
        message("and follow the instructions to install GNU Radio in your system.")
@@ -295,6 +311,28 @@ if (NOT GFlags_FOUND OR LOCAL_GLOG)
      message (STATUS " when doing 'make'. ")
      set(gflags_RELEASE 2.0 CACHE STRING "Local gflags release")
      set(gflags_MD5 "5fd4554d2ba84bf222a2fec0870d28df")
+     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_osx
+"#!/bin/sh
+export CXXFLAGS=\"-stdlib=libc++\" 
+export CC=clang 
+export CXX=clang++
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}/configure")
+         file(COPY ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_osx
+                 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+          set(CONF_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/configure_osx)
+     else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_linux
+"#!/bin/sh
+${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}/configure")
+          file(COPY ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_linux
+                 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+          set(CONF_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/configure_linux)
+     endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
      
      ExternalProject_Add(
           gflags-${gflags_RELEASE}
@@ -304,7 +342,7 @@ if (NOT GFlags_FOUND OR LOCAL_GLOG)
           URL_MD5 ${gflags_MD5}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
-          CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          CONFIGURE_COMMAND ${CONF_SCRIPT} --prefix=${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}  
           BUILD_COMMAND make
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
@@ -336,6 +374,7 @@ endif(NOT GFlags_FOUND OR LOCAL_GLOG)
 ################################################################################
 
 find_package(GLOG)
+set(glog_RELEASE 0.3.3)
 if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
      message (STATUS " glog library has not been found")
      if(NOT GFlags_FOUND)
@@ -346,7 +385,22 @@ if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
      set(glog_RELEASE 0.3.3)
      set(glog_MD5 "a6fd2c22f8996846e34c763422717c18")
      if(LOCAL_GFLAGS)
-          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+         if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+             file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+"#!/bin/sh
+export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
+export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
+export LIBS=${GFlags_SHARED_LIBS}
+export CXXFLAGS=\"-stdlib=libc++\" 
+export CC=clang 
+export CXX=clang++
+../../thirdparty/glog/glog-${glog_RELEASE}/configure")
+             file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+               DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+               FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                                GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+         else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+             file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
 export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
@@ -356,6 +410,7 @@ export LIBS=${GFlags_SHARED_LIBS}
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
                                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+         endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")                           
      else(LOCAL_GFLAGS)
      file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
  "#!/bin/sh
@@ -370,21 +425,39 @@ export LIBS=${GFlags_SHARED_LIBS}
      endif(LOCAL_GFLAGS)
 
      set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)   
-     ExternalProject_Add(
-          glog-${glog_RELEASE}
-          DEPENDS gflags-${gflags_RELEASE}
-          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-          URL http://google-glog.googlecode.com/files/glog-${glog_RELEASE}.tar.gz
-          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
-          URL_MD5 ${glog_MD5}
-          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
-          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR> 
-          BUILD_COMMAND make
-          UPDATE_COMMAND ""
-          PATCH_COMMAND ""
-          INSTALL_COMMAND ""
-     )
+     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+          ExternalProject_Add(
+              glog-${glog_RELEASE}
+              DEPENDS gflags-${gflags_RELEASE}
+              PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+              SVN_REPOSITORY http://google-glog.googlecode.com/svn/trunk
+              SVN_REVISION -r "142"
+              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
+              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
+              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+              CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR> 
+              BUILD_COMMAND make
+              UPDATE_COMMAND ""
+              PATCH_COMMAND ""
+              INSTALL_COMMAND ""
+          )
+     else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+          ExternalProject_Add(
+              glog-${glog_RELEASE}
+              DEPENDS gflags-${gflags_RELEASE}
+              PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+              URL http://google-glog.googlecode.com/files/glog-${glog_RELEASE}.tar.gz
+              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
+              URL_MD5 ${glog_MD5}
+              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
+              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+              CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR> 
+              BUILD_COMMAND make
+              UPDATE_COMMAND ""
+              PATCH_COMMAND ""
+              INSTALL_COMMAND ""
+          )
+     endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
      # Set up variables
      set(GLOG_INCLUDE_DIRS 
           ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/src/ 
@@ -394,7 +467,11 @@ export LIBS=${GFlags_SHARED_LIBS}
           ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog.a 
      )
      set(LOCAL_GLOG true CACHE STRING "Glog downloaded and built automatically" FORCE)
+else(NOT GLOG_FOUND OR LOCAL_GFLAGS)    
+     add_library(glog-${glog_RELEASE} UNKNOWN IMPORTED)
+     set_property(TARGET glog-${glog_RELEASE} PROPERTY IMPORTED_LOCATION "${GLOG_LIBRARIES}")
 endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
+
 
 
 
@@ -405,10 +482,10 @@ endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
 set(GCC_GPERFTOOLS_FLAGS "")
 find_package(Gperftools)
 if ( NOT GPERFTOOLS_FOUND )
-  message(STATUS "The optional library GPerftools has not been found.")
+    message(STATUS "The optional library GPerftools has not been found.")
 else( NOT GPERFTOOLS_FOUND )
-  message (STATUS "GPerftools library found." )
-  link_libraries(profiler tcmalloc)
+    message (STATUS "GPerftools library found." )
+    link_libraries(${GPERFTOOLS_PROFILER} ${GPERFTOOLS_TCMALLOC})
 endif( NOT GPERFTOOLS_FOUND )
 list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
 
@@ -485,6 +562,9 @@ endif(DOXYGEN_FOUND)
 ################################################################################
 
 if(OS_IS_LINUX)
+    #############################################
+    # Check that LAPACK is found in the system 
+    #############################################
     find_library(LAPACK lapack)
     if(NOT LAPACK)
         message(" The LAPACK library has not been found.")
@@ -498,6 +578,9 @@ if(OS_IS_LINUX)
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
     endif(NOT LAPACK)
+    #############################################
+    # Check that BLAS is found in the system
+    #############################################
     find_library(BLAS blas)
     if(NOT BLAS)
         message(" The BLAS library has not been found.")
@@ -505,13 +588,17 @@ if(OS_IS_LINUX)
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo yum install blas-devel") 
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install libblas-dev") 
+            message(" sudo apt-get install libopenblas-dev") 
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "BLAS is required to build gnss-sdr")
     endif(NOT BLAS)
+    #############################################
+    # Check that GFORTRAN is found in the system
+    #############################################
     find_library(GFORTRAN NAMES gfortran
                  PATHS /usr/lib
                        /usr/local/lib
+                       /usr/local/lib/i386
                        /usr/lib/gcc/x86_64-linux-gnu
                        /usr/lib/gcc/i686-linux-gnu
                        /usr/lib/gcc/i386-linux-gnu
@@ -570,101 +657,61 @@ if(NOT ARMADILLO_FOUND)
           endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
           message(FATAL_ERROR "The patch command is required to download and build armadillo")
      endif(NOT PATCH_EXECUTABLE)
-     set(OLD_GCC false)
-     if(CMAKE_COMPILER_IS_GNUCC)
-         execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-         if(GCC_VERSION VERSION_EQUAL 4.6 OR GCC_VERSION VERSION_LESS 4.6)
-             set(OLD_GCC true)
-         endif(GCC_VERSION VERSION_EQUAL 4.6 OR GCC_VERSION VERSION_LESS 4.6)
-     endif(CMAKE_COMPILER_IS_GNUCC)
-     
-     if(OLD_GCC)
-         set(armadillo_RELEASE 3.920.2)
-         set(armadillo_MD5 "3d0396513e2802c08152f50e18b4a1cd")
-         if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-             set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
-             file(WRITE ${ARMADILLO_PATCH_FILE} "")
-         else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-             set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
-             file(WRITE ${ARMADILLO_PATCH_FILE}
-"35c35
-< set(ARMA_USE_WRAPPER true )
----
-> set(ARMA_USE_WRAPPER false)
-323c323
-< add_library( armadillo SHARED src/wrap_libs )
----
-> add_library( armadillo STATIC src/wrap_libs )
-")                    
-             endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-         ExternalProject_Add(
-             armadillo-${armadillo_RELEASE}
-             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-             URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
-             DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
-             URL_MD5 ${armadillo_MD5}   
-             PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} 
-             BUILD_IN_SOURCE 1
-             BUILD_COMMAND make
-             UPDATE_COMMAND ""
-            INSTALL_COMMAND ""
-         )
-     else(OLD_GCC)
-         set(armadillo_RELEASE 4.100.2)
-         set(armadillo_MD5 "dd422706778cde656d531b3c3919766e")
-         if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-             set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
-             file(WRITE ${ARMADILLO_PATCH_FILE} "")
-             set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no2.patch)
-             file(WRITE ${ARMADILLO_PATCH_FILE2} "")
-         else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-             set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
-             set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
-             file(WRITE ${ARMADILLO_PATCH_FILE}
+     set(armadillo_RELEASE 4.300.9)  
+     set(armadillo_MD5 "d51d1beb2a335f3002702d112c4814f3") 
+     if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+         set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
+         file(WRITE ${ARMADILLO_PATCH_FILE} "")
+         set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no2.patch)
+         file(WRITE ${ARMADILLO_PATCH_FILE2} "")
+     else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+         set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
+         set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
+         file(WRITE ${ARMADILLO_PATCH_FILE}
 "30c30
 < set(ARMA_USE_LAPACK    false)
 ---
 > set(ARMA_USE_LAPACK true)
-36c36
-< set(ARMA_USE_WRAPPER   true )
----
-> set(ARMA_USE_WRAPPER false)
-318c318
+312c312
 < add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
 ---
 > add_library( armadillo STATIC \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
 ")
-             file(WRITE ${ARMADILLO_PATCH_FILE2}
+         file(WRITE ${ARMADILLO_PATCH_FILE2}
 "12c12
 < // #define ARMA_USE_LAPACK
 ---
 >    #define ARMA_USE_LAPACK 
 ") 
-         endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-         ExternalProject_Add(
-             armadillo-${armadillo_RELEASE}
-             PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-             URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
-             DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
-             URL_MD5 ${armadillo_MD5}    
-             PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} && patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE2}
-             BUILD_IN_SOURCE 1
-             BUILD_COMMAND make
-             UPDATE_COMMAND "" 
-             INSTALL_COMMAND ""
-         )
-     endif(OLD_GCC)
+     endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+     ExternalProject_Add(
+         armadillo-${armadillo_RELEASE}
+         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
+         URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
+         DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
+         URL_MD5 ${armadillo_MD5}    
+         PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} && patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE2}
+         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+         BUILD_IN_SOURCE 1
+         BUILD_COMMAND make
+         UPDATE_COMMAND "" 
+         INSTALL_COMMAND ""
+     )
+
      # Set up variables
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
      set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )     
-     find_library(lapack NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
-     find_library(blas NAMES blas HINTS /usr/lib /usr/local/lib /usr/lib64)
-     set(ARMADILLO_LIBRARIES ${lapack} ${blas} gfortran ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
+     find_library(LAPACK NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
+     set(ARMADILLO_LIBRARIES ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
      # Save a copy at the thirdparty folder
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
           DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/armadillo
      )
+else(NOT ARMADILLO_FOUND)
+     set(armadillo_RELEASE ${ARMADILLO_VERSION_STRING})  
+     add_library(armadillo-${armadillo_RELEASE} UNKNOWN IMPORTED)
+     set_property(TARGET armadillo-${armadillo_RELEASE} PROPERTY IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}")
 endif(NOT ARMADILLO_FOUND)
 
 

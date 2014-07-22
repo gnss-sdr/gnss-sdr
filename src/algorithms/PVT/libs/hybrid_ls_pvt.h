@@ -68,6 +68,8 @@ private:
 public:
     int d_nchannels;                                        //!< Number of available channels for positioning
     int d_valid_observations;                               //!< Number of valid pseudorange observations (valid satellites)
+    int d_valid_GPS_obs;									//!< Number of valid GPS pseudorange observations (valid GPS satellites) -- used for hybrid configuration
+    int d_valid_GAL_obs;									//!< Number of valid GALILEO pseudorange observations (valid GALILEO satellites) -- used for hybrid configuration
     int d_visible_satellites_IDs[PVT_MAX_CHANNELS];         //!< Array with the IDs of the valid satellites
     double d_visible_satellites_El[PVT_MAX_CHANNELS];       //!< Array with the LOS Elevation of the valid satellites
     double d_visible_satellites_Az[PVT_MAX_CHANNELS];       //!< Array with the LOS Azimuth of the valid satellites
@@ -87,13 +89,14 @@ public:
 
     double d_galileo_current_time;
     boost::posix_time::ptime d_position_UTC_time;
-
     bool b_valid_position;
-
+    int count_valid_position;
     double d_latitude_d;  //!< Latitude in degrees
     double d_longitude_d; //!< Longitude in degrees
     double d_height_m;    //!< Height [m]
-
+    double X;
+    double Y;
+    double Z;
     //averaging
     std::deque<double> d_hist_latitude_d;
     std::deque<double> d_hist_longitude_d;

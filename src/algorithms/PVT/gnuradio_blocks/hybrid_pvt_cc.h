@@ -109,11 +109,106 @@ private:
     int d_output_rate_ms;
     int d_display_rate_ms;
     long unsigned int d_sample_counter;
+    long unsigned int valid_solution_counter;
+    long unsigned int valid_solution_16_sat_counter;
     long unsigned int d_last_sample_nav_output;
     Kml_Printer d_kml_dump;
     Nmea_Printer *d_nmea_printer;
     double d_rx_time;
     double  d_TOW_at_curr_symbol_constellation;
+    /* *********variable used for final statistics****/
+
+    std::vector<double> GDOP_vect;
+    std::vector<double> PDOP_vect;
+
+    double PDOP_sum;
+    double PDOP_mean;
+    double GDOP_sum;
+    double GDOP_mean;
+    std::vector<double> tot_obs_vect;
+    std::vector<double> Gal_obs_vect;
+    std::vector<double> GPS_obs_vect;
+
+    std::vector<boost::posix_time::ptime> time_vect;
+
+    std::vector<double> longitude_vect;
+    std::vector<double> latitude_vect;
+    std::vector<double> h_vect;
+    std::vector<double> X_vect;
+    std::vector<double> X_vect_res;
+    std::vector<double> X_vect_res_precision;
+    std::vector<double> Y_vect;
+    std::vector<double> Y_vect_res;
+    std::vector<double> Y_vect_res_precision;
+    std::vector<double> Z_vect;
+    std::vector<double> Z_vect_res;
+    std::vector<double> Z_vect_res_precision;
+    std::vector<double> E_res;
+    std::vector<double> N_res;
+    std::vector<double> Up_res;
+    std::vector<double> E_res_precision;
+    std::vector<double> N_res_precision;
+    std::vector<double> Up_res_precision;
+
+    double longitude_vect_sum;
+    double longitude_mean;
+    double latitude_vect_sum;
+    double latitude_mean;
+
+    double X_vect_sum;
+    double X_vect_mean;
+    double X_vect_sq_sum;
+    double X_vect_stdev;
+
+    double Y_vect_sum;
+    double Y_vect_mean;
+    double Y_vect_sq_sum;
+    double Y_vect_stdev;
+
+    double Z_vect_sum;
+    double Z_vect_mean;
+    double Z_vect_sq_sum;
+    double Z_vect_stdev;
+
+    //precision
+    double E_res_sum_precision;
+	double E_res_mean_precision;
+	double E_res_sq_sum_precision;
+	double E_res_stdev_precision;
+
+	double N_res_sum_precision;
+	double N_res_mean_precision;
+	double N_res_sq_sum_precision;
+	double N_res_stdev_precision;
+
+	double Up_res_sum_precision;
+	double Up_res_mean_precision;
+	double Up_res_sq_sum_precision;
+	double Up_res_stdev_precision;
+
+    //accuracy
+    double E_res_sum;
+	double E_res_mean;
+	double E_res_sq_sum;
+	double E_res_stdev;
+
+	double N_res_sum;
+	double N_res_mean;
+	double N_res_sq_sum;
+	double N_res_stdev;
+
+	double Up_res_sum;
+	double Up_res_mean;
+	double Up_res_sq_sum;
+	double Up_res_stdev;
+
+	double DRMS; //2D-65%
+	double DUE_DRMS; //2D-95%
+	double CEP; //2D-50%
+	double MRSE; //3D-61%
+	double SEP; //3D-50%
+	/* END variable used for final statistics */
+
 
     hybrid_ls_pvt *d_ls_pvt;
     bool pseudoranges_pairCompare_min(std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b);

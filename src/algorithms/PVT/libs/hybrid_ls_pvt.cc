@@ -244,6 +244,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     // ********************************************************************************
     int valid_obs = 0; //valid observations counter
     int obs_counter = 0;
+    int valid_obs_GPS_counter = 0;
+    int valid_obs_GALILEO_counter = 0;
     for(gnss_pseudoranges_iter = gnss_pseudoranges_map.begin();
             gnss_pseudoranges_iter != gnss_pseudoranges_map.end();
             gnss_pseudoranges_iter++)
@@ -298,7 +300,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     			                    d_visible_satellites_IDs[valid_obs] = galileo_ephemeris_iter->second.i_satellite_PRN;
     			                    d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
     			                    valid_obs++;
-
+    			                    valid_obs_GALILEO_counter ++;
     			                    Galileo_week_number = galileo_ephemeris_iter->second.WN_5; //for GST
 
     			                    //debug
@@ -332,6 +334,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                                     obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
                                     DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->first;
                              }
+
+
 
 
     			}
@@ -373,7 +377,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 									d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
 									d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
 									valid_obs++;
-
+									valid_obs_GPS_counter++;
 									// SV ECEF DEBUG OUTPUT
 									LOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
 											<< " X=" << gps_ephemeris_iter->second.d_satpos_X
@@ -398,6 +402,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     			                    DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->first;
     			                    }
 
+
     		    		}
 
 
@@ -412,6 +417,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     // ****** SOLVE LEAST SQUARES******************************************************
     // ********************************************************************************
     d_valid_observations = valid_obs;
+    d_valid_GPS_obs = valid_obs_GPS_counter;
+    d_valid_GAL_obs = valid_obs_GALILEO_counter;
     LOG(INFO) << "HYBRID PVT: valid observations=" << valid_obs;
 
     if (valid_obs >= 4)
@@ -454,6 +461,14 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             LOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
                       << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
                       << " [deg], Height= " << d_height_m << " [m]";
+            //std::cout <<"X = " << mypos(0) << "Y = " << mypos(1) << "Z = " << mypos(2) << std::endl;
+            X = (double)mypos(0);
+            Y = (double)mypos(1);
+            Z = (double)mypos(2);
+            int count_solutions;
+
+
+
             // ###### Compute DOPs ########
             // 1- Rotation matrix from ECEF coordinates to ENU coordinates
             // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
@@ -470,7 +485,20 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             F(2,1) = cos((GPS_TWO_PI*d_latitude_d)/360.0);
             F(2,2) = sin((GPS_TWO_PI*d_latitude_d/360.0));
 
+//            std::fstream fs;
+//            fs.open ("append_all_solutions.txt", std::fstream::out | std::fstream::app); //file printed for debug purposes
+//            fs.setf(fs.fixed, fs.floatfield);
+//            fs << std::setprecision(5);
+//            fs << boost::posix_time::to_simple_string(p_time)  <<'\t'<< '\t'<<  X << '\t'<< '\t'<< Y << '\t'<< '\t'<< Z << '\t'<< '\t' <<
+//            		d_latitude_d << '\t'<< '\t'<< d_longitude_d << '\t'<< '\t'<< d_height_m << '\t'<< '\t' <<
+//            		valid_obs << '\t'<< '\t'<< valid_obs_GALILEO_counter <<'\t'<< '\t'<< valid_obs_GPS_counter << std::endl;
+//            fs.close();
+
+
             // 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
+
+
+
             arma::mat Q_ECEF = d_Q.submat(0, 0, 2, 2);
             arma::mat DOP_ENU = arma::zeros(3, 3);
 

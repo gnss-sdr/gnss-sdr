@@ -253,19 +253,19 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
 										  longitude_mean =  longitude_vect_sum /  longitude_vect.size();
 
 										  //IFEN true solutions
-//										  double ref_longitude= 11.80800563;
-//										  double ref_latitude= 48.17149767;
-//
-//										  double ref_X=4171691.011;
-//										  double ref_Y=872120.003;
-//										  double ref_Z=4730005.761;
+										  double ref_longitude= 11.80800563;
+										  double ref_latitude= 48.17149767;
 
-										  //REAL CAPTURE reference solutions (obtained with 4 Galileo)
-										  double ref_longitude= 1.987686994;
-										  double ref_latitude= 41.274786935;
-										  double ref_X=4797680.560;
-										  double ref_Y= 166506.414;
-										  double ref_Z=4185453.947;
+										  double ref_X=4171691.011;
+										  double ref_Y=872120.003;
+										  double ref_Z=4730005.761;
+
+//										  //REAL CAPTURE reference solutions (obtained with 4 Galileo)
+//										  double ref_longitude= 1.987686994;
+//										  double ref_latitude= 41.274786935;
+//										  double ref_X=4797680.560;
+//										  double ref_Y= 166506.414;
+//										  double ref_Z=4185453.947;
 
 										  //compute mean value for precision
 										  latitude_vect_sum = std::accumulate( latitude_vect.begin(),  latitude_vect.end(), 0.0);

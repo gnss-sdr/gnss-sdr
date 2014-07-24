@@ -82,9 +82,7 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    //GalileoE1PcpsQuickSyncAmbiguousAcquisition *acquisition;
     std::shared_ptr<GalileoE1PcpsQuickSyncAmbiguousAcquisition> acquisition;
-    //InMemoryConfiguration* config;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
@@ -405,7 +403,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::stop_queue()
 TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, Instantiate)
 {
     config_1();
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Quicksync_Ambiguous_Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition", 1, 1, queue);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsQuickSyncAmbiguousAcquisition>(acq_);
 }
 
@@ -420,7 +418,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ConnectAndRun)
 
     config_1();
 
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Quicksync_Ambiguous_Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition", 1, 1, queue);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsQuickSyncAmbiguousAcquisition>(acq_);
 
     ASSERT_NO_THROW( {
@@ -452,7 +450,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     LOG(INFO)<<"Start validation of results test";
     config_1();
 
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Quicksync_Ambiguous_Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition", 1, 1, queue);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsQuickSyncAmbiguousAcquisition>(acq_);
 
     ASSERT_NO_THROW( {
@@ -539,7 +537,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
 {
     config_2();
 
-    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Quicksync_Ambiguous_Acquisition", 1, 1, queue);
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition", 1, 1, queue);
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsQuickSyncAmbiguousAcquisition>(acq_);
 
     ASSERT_NO_THROW( {

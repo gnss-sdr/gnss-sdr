@@ -220,8 +220,8 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
 
-    threshold_config2 = 8.0000;
-    CN0_dB_0 = 50;
+    threshold_config2 = 1.7800;
+    CN0_dB_0 = 41;
 
 
     num_of_realizations = 100;

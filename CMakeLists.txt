@@ -657,27 +657,14 @@ if(NOT ARMADILLO_FOUND)
           endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
           message(FATAL_ERROR "The patch command is required to download and build armadillo")
      endif(NOT PATCH_EXECUTABLE)
-     set(armadillo_RELEASE 4.300.9)  
-     set(armadillo_MD5 "d51d1beb2a335f3002702d112c4814f3") 
+     set(armadillo_RELEASE 4.320.0)  
+     set(armadillo_MD5 "d174ebcb5bffde6c8da8f47f06147386") 
      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
          set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
          file(WRITE ${ARMADILLO_PATCH_FILE} "")
-         set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no2.patch)
-         file(WRITE ${ARMADILLO_PATCH_FILE2} "")
      else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-         set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
-         set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
+         set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
          file(WRITE ${ARMADILLO_PATCH_FILE}
-"30c30
-< set(ARMA_USE_LAPACK    false)
----
-> set(ARMA_USE_LAPACK true)
-312c312
-< add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
----
-> add_library( armadillo STATIC \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
-")
-         file(WRITE ${ARMADILLO_PATCH_FILE2}
 "12c12
 < // #define ARMA_USE_LAPACK
 ---
@@ -689,9 +676,9 @@ if(NOT ARMADILLO_FOUND)
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
          URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
-         URL_MD5 ${armadillo_MD5}    
-         PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} && patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE2}
-         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+         URL_MD5 ${armadillo_MD5}
+         PATCH_COMMAND patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE}
+         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF
          BUILD_IN_SOURCE 1
          BUILD_COMMAND make
          UPDATE_COMMAND "" 

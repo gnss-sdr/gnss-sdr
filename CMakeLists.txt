@@ -562,9 +562,10 @@ endif(DOXYGEN_FOUND)
 ################################################################################
 
 if(OS_IS_LINUX)
-    #############################################
+    #############################################################################
     # Check that LAPACK is found in the system 
-    #############################################
+    # LAPACK is required for matrix decompositions (eg. SVD) and matrix inverse.
+    #############################################################################
     find_library(LAPACK lapack)
     if(NOT LAPACK)
         message(" The LAPACK library has not been found.")
@@ -578,9 +579,11 @@ if(OS_IS_LINUX)
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
     endif(NOT LAPACK)
-    #############################################
+    #############################################################################
     # Check that BLAS is found in the system
-    #############################################
+    # BLAS is used for matrix multiplication.
+    #ÊWithout BLAS, matrix multiplication will still work, but might be slower.
+    #############################################################################
     find_library(BLAS blas)
     if(NOT BLAS)
         message(" The BLAS library has not been found.")
@@ -668,7 +671,11 @@ if(NOT ARMADILLO_FOUND)
 "12c12
 < // #define ARMA_USE_LAPACK
 ---
->    #define ARMA_USE_LAPACK 
+>    #define ARMA_USE_LAPACK
+19c19
+< // #define ARMA_USE_BLAS
+---
+>    #define ARMA_USE_BLAS
 ") 
      endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
      ExternalProject_Add(
@@ -689,7 +696,11 @@ if(NOT ARMADILLO_FOUND)
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
      set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )     
      find_library(LAPACK NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
-     set(ARMADILLO_LIBRARIES ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
+     find_package(OpenBLAS)
+     if(OPENBLAS_FOUND)
+         set(BLAS OPENBLAS)
+     endif(OPENBLAS_FOUND)
+     set(ARMADILLO_LIBRARIES ${BLAS} ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
      # Save a copy at the thirdparty folder
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}

@@ -582,7 +582,7 @@ if(OS_IS_LINUX)
     #############################################################################
     # Check that BLAS is found in the system
     # BLAS is used for matrix multiplication.
-    #ÊWithout BLAS, matrix multiplication will still work, but might be slower.
+    # Without BLAS, matrix multiplication will still work, but might be slower.
     #############################################################################
     find_library(BLAS blas)
     if(NOT BLAS)
@@ -698,7 +698,7 @@ if(NOT ARMADILLO_FOUND)
      find_library(LAPACK NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
      find_package(OpenBLAS)
      if(OPENBLAS_FOUND)
-         set(BLAS OPENBLAS)
+         set(BLAS ${OPENBLAS})
      endif(OPENBLAS_FOUND)
      set(ARMADILLO_LIBRARIES ${BLAS} ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)

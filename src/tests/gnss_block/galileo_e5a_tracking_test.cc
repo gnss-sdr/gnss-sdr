@@ -84,10 +84,9 @@ void GalileoE5aTrackingTest::init()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
-    std::string signal = "5X";
+    std::string signal = "5Q";
     signal.copy(gnss_synchro.Signal, 2, 0);
-    //gnss_synchro.PRN = 19;//real
-    gnss_synchro.PRN = 11;//sim
+
 
     config->set_property("GNSS-SDR.internal_fs_hz", "32000000");
     config->set_property("Tracking.item_type", "gr_complex");
@@ -97,10 +96,11 @@ void GalileoE5aTrackingTest::init()
     config->set_property("Tracking.early_late_space_chips", "0.5");
     config->set_property("Tracking.pll_bw_hz", "5.0");
     config->set_property("Tracking.dll_bw_hz", "2.0");
-    //config->set_property("Tracking.fll_bw_hz", "10.0");
-//    config->set_property("Tracking.pll_bw_hz", "20.0");
-//    config->set_property("Tracking.dll_bw_hz", "1.0");
 
+    config->set_property("Tracking.pll_bw_hz_init","20.0");
+    config->set_property("Tracking.dll_bw_hz_init","20.0");
+    config->set_property("Tracking.ti_ms","3");
+    //config->set_property("Tracking.fll_bw_hz", "10.0");
 }
 /*
 TEST_F(GalileoE5aTrackingTest, InstantiateTrack)
@@ -169,9 +169,10 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    int num_samples = 3200000000; // 32 Msps
+    int num_samples = 32000000000; // 32 Msps
     //unsigned int skiphead_sps = 98000; // 1 Msample
-    unsigned int skiphead_sps = 0; // 1 Msample
+    unsigned int skiphead_sps = 0; // 1 Msampl
+//    unsigned int skiphead_sps = 104191; // 1 Msampl
     init();
 
     // Example using smart pointers and the block factory
@@ -179,16 +180,22 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
 
 //REAL
-//    gnss_synchro.Acq_delay_samples = 15579; // 32 Msps
-//    gnss_synchro.Acq_doppler_hz = 3500; // 32 Msps
-////    gnss_synchro.Acq_samplestamp_samples = 98000;
-//    gnss_synchro.Acq_samplestamp_samples = 0;
-//SIM
-    gnss_synchro.Acq_delay_samples = 14001; // 32 Msps
-    gnss_synchro.Acq_doppler_hz = 2750; // 32 Msps (real 2800)
+    gnss_synchro.Acq_delay_samples = 15579+1; // 32 Msps
+    gnss_synchro.Acq_doppler_hz = 3500; // 32 Msps
 //    gnss_synchro.Acq_samplestamp_samples = 98000;
     gnss_synchro.Acq_samplestamp_samples = 0;
+//SIM
+//    gnss_synchro.Acq_delay_samples = 14001+1; // 32 Msps
+//    //gnss_synchro.Acq_doppler_hz = 2750; // 32 Msps (real 2800)
+//    gnss_synchro.Acq_doppler_hz = 2800; // 32 Msps (real 2800)
+//    //gnss_synchro.Acq_doppler_hz = 0; // 32 Msps (real 2800)
+////    gnss_synchro.Acq_samplestamp_samples = 98000;
+//    gnss_synchro.Acq_samplestamp_samples = 0;
 
+//SIM2
+//    gnss_synchro.Acq_delay_samples = 5810; // 32 Msps
+//    gnss_synchro.Acq_doppler_hz = 2750;
+//    gnss_synchro.Acq_samplestamp_samples = 0;
 
     ASSERT_NO_THROW( {
         tracking->set_channel(gnss_synchro.Channel_ID);
@@ -207,9 +214,11 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     }) << "Failure connecting tracking to the top_block." << std::endl;
 
     ASSERT_NO_THROW( {
-        //std::string file = "/home/marc/E5a_acquisitions/Tiered_sink_4sat.dat";
-        //std::string file =  "/home/marc/E5a_acquisitions/32MS_complex.dat";
-        std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11.dat";
+        std::string file =  "/home/marc/E5a_acquisitions/32MS_complex.dat";
+        //std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11_long.dat";
+        //std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11_long_0dopp.dat";
+        gnss_synchro.PRN = 19;//real
+        //gnss_synchro.PRN = 11;//sim
 
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex),file_name,false);

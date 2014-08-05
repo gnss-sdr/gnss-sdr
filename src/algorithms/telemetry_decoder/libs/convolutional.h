@@ -441,7 +441,7 @@ static void Viterbi(int output_u_int[],
     for (t = 0; t < LL + mm; t++)
         {
             for (i = 0; i < nn; i++)
-                rec_array[i] = (float)input_c[nn*t + i];
+        	    rec_array[i] = (float)input_c[nn*t + i];
 
             /* precompute all possible branch metrics */
             for (i = 0; i < number_symbols; i++)

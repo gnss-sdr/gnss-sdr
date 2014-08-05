@@ -54,15 +54,13 @@ const int Galileo_E5a_NUMBER_OF_CODES = 50;
 
 // F/NAV message structure
 
-#define GALILEO_FNAV_PREAMBLE {1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0}
-
 const int GALILEO_FNAV_PREAMBLE_LENGTH_BITS = 12;
-const int GALILEO_FNAV_SAMPLES_PER_SYMBOL = 20; // (chip rate/ code length)/telemetry bps
-//const int GALILEO_FNAV_SYMBOLS_PER_PREAMBLE=240;
-const int GALILEO_FNAV_SAMPLES_PER_PREAMBLE = 240; // bits preamble * samples/symbol
+const std::string GALILEO_FNAV_PREAMBLE = {"101101110000"};
+const int GALILEO_FNAV_CODES_PER_SYMBOL = 20; // (chip rate/ code length)/telemetry bps
+const int GALILEO_FNAV_CODES_PER_PREAMBLE = 240; // bits preamble * codes/symbol
 const int GALILEO_FNAV_SYMBOLS_PER_PAGE = 500; //Total symbols per page including preamble. See Galileo ICD 4.2.2
 const int GALILEO_FNAV_SECONDS_PER_PAGE = 10;
-const int GALILEO_FNAV_SAMPLES_PER_PAGE = 10000; // symbols * samples/symbol, where each 'sample' is a primary code
+const int GALILEO_FNAV_CODES_PER_PAGE = 10000; // symbols * codes/symbol, where code stands for primary code
 
 const int GALILEO_FNAV_INTERLEAVER_ROWS = 8;
 const int GALILEO_FNAV_INTERLEAVER_COLS = 61;

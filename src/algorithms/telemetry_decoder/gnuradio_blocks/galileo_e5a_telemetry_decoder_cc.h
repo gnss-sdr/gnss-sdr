@@ -96,15 +96,20 @@ private:
 
     void decode_word(double *page_symbols,int frame_length);
 
-    unsigned short int d_preambles_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-
-    signed int *d_preambles_symbols;
+    signed int d_preamble_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+//    signed int d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+    double d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+    signed int *d_preamble_symbols;
+    float d_current_symbol_float;
+    long unsigned int d_symbol_counter;
+    int d_prompt_counter;
 
     long unsigned int d_sample_counter;
     long unsigned int d_preamble_index;
 
     bool d_preamble_lock;
     bool d_flag_frame_sync;
+    int d_state;
 
     bool d_flag_preamble;
     int d_CRC_error_counter;

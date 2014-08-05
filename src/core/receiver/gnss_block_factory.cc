@@ -65,21 +65,17 @@
 #include "galileo_e1_pcps_8ms_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_tong_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
-#include "galileo_e5a_pcps_acquisition.h" //
-#include "galileo_e5a_pilot_3ms_acquisition.h"
-#include "galileo_e5ax_2ms_pcps_acquisition.h"
-#include "galileo_e5a_3ms_noncoherent_iq_acquisition.h"
+#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_pll_optim_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "galileo_e1_dll_pll_veml_tracking.h"
 #include "galileo_e1_tcp_connector_tracking.h"
-#include "galileo_e5a_dll_fll_pll_tracking.h" //
 #include "galileo_e5a_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "galileo_e1b_telemetry_decoder.h"
-#include "galileo_e5a_telemetry_decoder.h" // problematic
+#include "galileo_e5a_telemetry_decoder.h"
 #include "sbas_l1_telemetry_decoder.h"
 #include "gps_l1_ca_observables.h"
 #include "galileo_e1_observables.h"
@@ -460,27 +456,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
-    else if (implementation.compare("Galileo_E5a_PCPS_Acquisition") == 0)
+    else if (implementation.compare("Galileo_E5a_Noncoherent_IQ_Acquisition_CAF") == 0)
         {
-            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aPcpsAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("Galileo_E5a_Pilot_3ms_Acquisition") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aPilot_3msAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("Galileo_E5ax_2ms_Pcps_Acquisition") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5ax2msPcpsAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("Galileo_E5a_3ms_Noncoherent_IQ_Acquisition") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5a3msNoncoherentIQAcquisition(configuration.get(), role, in_streams,
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aNoncoherentIQAcquisitionCaf(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }
@@ -520,12 +498,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("Galileo_E5a_DLL_FLL_PLL_Tracking") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aDllFllPllTracking(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }
@@ -692,27 +664,9 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
-    else if (implementation.compare("Galileo_E5a_PCPS_Acquisition") == 0)
+    else if (implementation.compare("Galileo_E5a_Noncoherent_IQ_Acquisition_CAF") == 0)
         {
-            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5aPcpsAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("Galileo_E5a_Pilot_3ms_Acquisition") == 0)
-        {
-            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5aPilot_3msAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("Galileo_E5ax_2ms_Pcps_Acquisition") == 0)
-        {
-            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5ax2msPcpsAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("Galileo_E5a_3ms_Noncoherent_IQ_Acquisition") == 0)
-        {
-            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5a3msNoncoherentIQAcquisition(configuration.get(), role, in_streams,
+            std::unique_ptr<AcquisitionInterface> block_(new GalileoE5aNoncoherentIQAcquisitionCaf(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }
@@ -767,12 +721,6 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("Galileo_E5a_DLL_FLL_PLL_Tracking") == 0)
-        {
-            std::unique_ptr<TrackingInterface> block_(new GalileoE5aDllFllPllTracking(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

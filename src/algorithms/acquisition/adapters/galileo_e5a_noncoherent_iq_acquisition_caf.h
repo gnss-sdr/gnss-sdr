@@ -1,8 +1,14 @@
 /*!
- * \file galileo_e5a_pcps_acquisition.cc
+ * \file galileo_e5a_noncoherent_iq_acquisition_caf.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  Galileo E5a data and pilot Signals
- * \author Marc Sales, 2014. marcsales92(at)gmail.com
+  * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
@@ -29,37 +35,37 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GALILEO_E5A_PILOT_3MS_ACQUISITION_H_
-#define GALILEO_E5A_PILOT_3MS_ACQUISITION_H_
+#ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
+#define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_
 
 #include <string>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
-#include "galileo_e5a_pilot_3ms_acquisition_cc.h"
+#include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
 
 class ConfigurationInterface;
 
-class GalileoE5aPilot_3msAcquisition: public AcquisitionInterface
+class GalileoE5aNoncoherentIQAcquisitionCaf: public AcquisitionInterface
 {
 public:
-    GalileoE5aPilot_3msAcquisition(ConfigurationInterface* configuration,
+    GalileoE5aNoncoherentIQAcquisitionCaf(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 
-	virtual ~GalileoE5aPilot_3msAcquisition();
+	virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
 
 	std::string role()
 	    {
 	        return role_;
 	    }
 	/*!
-	 * \brief Returns "Galileo_E5a_Pilot_3ms_Acquisition"
+	 * \brief Returns "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF"
 	 */
 	 std::string implementation()
 	    {
-	        return "Galileo_E5a_Pilot_3ms_Acquisition";
+	        return "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF";
 	    }
 	 size_t item_size()
 	    {
@@ -70,7 +76,6 @@ public:
 	 void disconnect(gr::top_block_sptr top_block);
 	 gr::basic_block_sptr get_left_block();
 	 gr::basic_block_sptr get_right_block();
-
 
 	 /*!
 	  * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -110,7 +115,7 @@ public:
 	 void init();
 
 	 /*!
-	  * \brief Sets local Galileo E5a (pilot) code for PCPS acquisition algorithm.
+	  * \brief Sets local Galileo E5a code for PCPS acquisition algorithm.
 	  */
 	 void set_local_code();
 
@@ -126,7 +131,7 @@ public:
 
 private:
 	 ConfigurationInterface* configuration_;
-	 galileo_e5a_pilot_3ms_acquisition_cc_sptr acquisition_cc_;
+	 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr acquisition_cc_;
 	 gr::blocks::stream_to_vector::sptr stream_to_vector_;
 	 size_t item_size_;
 	 std::string item_type_;
@@ -144,7 +149,11 @@ private:
 	 long if_;
 	 bool dump_;
 	 std::string dump_filename_;
-	 std::complex<float> * code_;
+	 int Zero_padding;
+	 int CAF_window_hz_;
+	 std::complex<float> * codeI_;
+	 std::complex<float> * codeQ_;
+	 bool both_signal_components;
 	 Gnss_Synchro * gnss_synchro_;
 	 std::string role_;
 	 unsigned int in_streams_;
@@ -153,5 +162,4 @@ private:
 	 concurrent_queue<int> *channel_internal_queue_;
 	 float calculate_threshold(float pfa);
 };
-
-#endif /* GALILEO_E5A_PILOT_3MS_ACQUISITION_H_ */
+#endif /* GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_ */

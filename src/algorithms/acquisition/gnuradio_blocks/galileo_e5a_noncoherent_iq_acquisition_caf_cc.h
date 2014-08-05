@@ -1,8 +1,14 @@
 /*!
- * \file galileo_e5a_3ms_noncoherent_iq_acquisition_cc.h
+ * \file galileo_e5a_noncoherent_iq_acquisition_caf_cc.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  Galileo E5a data and pilot Signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
@@ -29,8 +35,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GALILEO_E5A_3MS_NONCOHERENT_IQ_ACQUISITION_CC_H_
-#define GALILEO_E5A_3MS_NONCOHERENT_IQ_ACQUISITION_CC_H_
+#ifndef GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_
+#define GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_
 
 #include <fstream>
 #include <queue>
@@ -44,18 +50,20 @@
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
 
-class galileo_e5a_3ms_noncoherentIQ_acquisition_cc;
+class galileo_e5a_noncoherentIQ_acquisition_caf_cc;
 
-typedef boost::shared_ptr<galileo_e5a_3ms_noncoherentIQ_acquisition_cc> galileo_e5a_3ms_noncoherentIQ_acquisition_cc_sptr;
+typedef boost::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc> galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr;
 
-galileo_e5a_3ms_noncoherentIQ_acquisition_cc_sptr
-galileo_e5a_3ms_noncoherentIQ_make_acquisition_cc(unsigned int sampled_ms,
+galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr
+galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(unsigned int sampled_ms,
 			 unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag,
                          gr::msg_queue::sptr queue, bool dump,
-                         std::string dump_filename);
+                         std::string dump_filename,
+                         bool both_signal_components_,
+                         int CAF_window_hz_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -63,27 +71,31 @@ galileo_e5a_3ms_noncoherentIQ_make_acquisition_cc(unsigned int sampled_ms,
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
  */
-class galileo_e5a_3ms_noncoherentIQ_acquisition_cc: public gr::block
+class galileo_e5a_noncoherentIQ_acquisition_caf_cc: public gr::block
 {
 private:
-    friend galileo_e5a_3ms_noncoherentIQ_acquisition_cc_sptr
-    galileo_e5a_3ms_noncoherentIQ_make_acquisition_cc(
+    friend galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr
+    galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
 	    unsigned int sampled_ms,
 	    unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag,
             gr::msg_queue::sptr queue, bool dump,
-            std::string dump_filename);
+            std::string dump_filename,
+            bool both_signal_components_,
+            int CAF_window_hz_);
 
-    galileo_e5a_3ms_noncoherentIQ_acquisition_cc(
+    galileo_e5a_noncoherentIQ_acquisition_caf_cc(
 	    unsigned int sampled_ms,
 	    unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag,
             gr::msg_queue::sptr queue, bool dump,
-            std::string dump_filename);
+            std::string dump_filename,
+            bool both_signal_components_,
+            int CAF_window_hz_);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
             int doppler_offset);
@@ -128,6 +140,15 @@ private:
     bool d_active;
     int d_state;
     bool d_dump;
+    bool d_both_signal_components;
+//    bool d_CAF_filter;
+    int d_CAF_window_hz;
+    float* d_CAF_vector;
+    float* d_CAF_vector_I;
+    float* d_CAF_vector_Q;
+//    double* d_CAF_vector;
+//    double* d_CAF_vector_I;
+//    double* d_CAF_vector_Q;
     unsigned int d_channel;
     std::string d_dump_filename;
     unsigned int d_buffer_count;
@@ -137,7 +158,7 @@ public:
     /*!
      * \brief Default destructor.
      */
-     ~galileo_e5a_3ms_noncoherentIQ_acquisition_cc();
+     ~galileo_e5a_noncoherentIQ_acquisition_caf_cc();
 
      /*!
       * \brief Set acquisition/tracking common Gnss_Synchro object pointer
@@ -232,6 +253,5 @@ public:
              gr_vector_const_void_star &input_items,
              gr_vector_void_star &output_items);
 
-     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 };
-#endif /* GALILEO_E5A_3MS_NONCOHERENT_IQ_ACQUISITION_CC_H_ */
+#endif /* GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H_ */

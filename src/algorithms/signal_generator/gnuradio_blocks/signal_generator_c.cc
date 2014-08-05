@@ -199,59 +199,22 @@ void signal_generator_c::generate_codes()
         	    if(signal_[sat].at(0)=='5')
         		{
         		    char signal[3];
-//        		    strcpy(signal,"5I");
         		    strcpy(signal,"5X");
 
         		    if (posix_memalign((void**)&(sampled_code_data_[sat]), 16,
         		                       vector_length_ * sizeof(gr_complex)) == 0){};
 
-//        		    galileo_e5_a_code_gen_complex_sampled(sampled_code_data_[sat] , signal, PRN_[sat], fs_in_,
-//        		                                          (int)Galileo_E5a_Q_SECONDARY_CODE_LENGTH - delay_chips_[sat], true);
 
         		    galileo_e5_a_code_gen_complex_sampled(sampled_code_data_[sat] , signal, PRN_[sat], fs_in_,
-        		                                          (int)Galileo_E5a_CODE_LENGTH_CHIPS-delay_chips_[sat],false);
+        		                                          (int)Galileo_E5a_CODE_LENGTH_CHIPS-delay_chips_[sat]);
 
-        		    std::cout << "PRN "<< PRN_[sat] << " first two bytes "<< sampled_code_data_[sat][0] << sampled_code_data_[sat][1] << sampled_code_data_[sat][2] << sampled_code_data_[sat][3] << sampled_code_data_[sat][4] << sampled_code_data_[sat][5] << sampled_code_data_[sat][6] << sampled_code_data_[sat][7] << std::endl;
-        		    ///////////
-        		    /*
-        		    std::ofstream d_dump_file;
-                            std::stringstream filename;
-                            std::streamsize n = 2 * sizeof(float) * (Galileo_E5a_CODE_LENGTH_CHIPS); // complex file write
-                            filename.str("");
-                            filename << "../data/PRN11_Xcode_noiseless" << ".dat";
-                            d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                            d_dump_file.write((char*)&sampled_code_data_[sat][0], n);
-                            d_dump_file.close();
-                            */
-                            /////////////////////
-        		    ////        		    std::ofstream myfile;
-//        		    //myfile.open ("example_sink_gencode.dat");
-//        		    std::ofstream myfile("example_sink_gencode.bin",std::ios_base::binary);
-////        		    for (int k=0; k< vector_length_; k++)
-////        			{
-//        			    myfile.write((char*)&sampled_code_data_[sat],sizeof(gr_complex)*vector_length_);
-//                		    //myfile << sampled_code_data_[sat][k];
-////        			}
-//
-//        		    myfile.close();
 
-        		    //std::cout << "checking tiered code" << sampled_code_data_[sat][0] << sampled_code_data_[sat][1] << sampled_code_data_[sat][2] << sampled_code_data_[sat][3] << sampled_code_data_[sat][4] << sampled_code_data_[sat][1200000] << sampled_code_data_[sat][1200000-1] << std::endl;
-
-        		    // PILOT
-//        		    if (posix_memalign((void**)&(sampled_code_pilot_[sat]), 16,
-//        		                       vector_length_ * sizeof(gr_complex)) == 0){};
-//
-//        		    strcpy(signal, "5Q");
-//
-//        		    galileo_e5_a_code_gen_complex_sampled(sampled_code_pilot_[sat] , signal, PRN_[sat], fs_in_,
-//        		                                          (int)Galileo_E5a_CODE_LENGTH_CHIPS - delay_chips_[sat], false);
         		    //noise
         		    if (noise_flag_)
         			{
         			    for (unsigned int i = 0; i < vector_length_; i++)
         				{
         				    sampled_code_data_[sat][i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_ / 2);
-        				    //sampled_code_pilot_[sat][i] *= sqrt(pow(10, CN0_dB_[sat] / 10) / BW_BB_ / 2);
         				}
         			}
 
@@ -389,7 +352,6 @@ gr_vector_void_star &output_items)
         	    if(signal_[sat].at(0)=='5')
         		{
         		    // EACH WORK outputs 1 modulated primary code
-        		    //int codelen = (int)(Galileo_E5a_CODE_LENGTH_CHIPS * Galileo_E5a_Q_SECONDARY_CODE_LENGTH);
         		    int codelen = (int)Galileo_E5a_CODE_LENGTH_CHIPS;
         		    unsigned int delay_samples = (delay_chips_[sat] % codelen)
         		                	      * samples_per_code_[sat] / codelen;
@@ -409,12 +371,6 @@ gr_vector_void_star &output_items)
         		    data_modulation_[sat] = current_data_bit_int_[sat] * (Galileo_E5a_I_SECONDARY_CODE.at((ms_counter_[sat]+delay_sec_[sat])%20)=='0' ? 1 : -1);
         		    pilot_modulation_[sat] = (Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat]-1].at((ms_counter_[sat]+delay_sec_[sat])%100)=='0' ? 1 : -1);
 
-//        		    if (work_counter_==1)
-//        			{
-        			    //std::cout << "ms " << ms_counter_[sat] << " sat " << sat << " PRN" << PRN_[sat];
-        			    //std::cout << " delay_secI " << (ms_counter_[sat]+delay_sec_[sat])%20 << " delay_secQ " << (ms_counter_[sat]+delay_sec_[sat])%100 << std::endl;//" pilot mod " << pilot_modulation_[sat] << " data bit " << current_data_bit_int_[sat] << " data mod " << data_modulation_[sat] << std::endl;
-        			    //std::cout << "code 1st 2 byte " << out[0] << out[1] << out[2] << out[3] << out[4] << out[5] << out[6] << out[7] << std::endl;
-//        			}
         		    ms_counter_[sat] = ms_counter_[sat] + (int)round(1e3*GALILEO_E5a_CODE_PERIOD);
 
 			    for (k = delay_samples; k < samples_per_code_[sat]; k++)
@@ -424,8 +380,6 @@ gr_vector_void_star &output_items)
 					    * complex_phase_[out_idx];
 				    out_idx++;
 				}
-
-
 
         		}
         	    else
@@ -473,19 +427,7 @@ gr_vector_void_star &output_items)
                     out[out_idx] += gr_complex(random_->gasdev(),random_->gasdev());
                 }
         }
-/*
-if (work_counter_==1)
-	{
-	    std::ofstream d_dump_file;
-	    std::stringstream filename;
-	    std::streamsize n = 2 * sizeof(float) * (samples_per_code_[0]); // complex file write
-	    filename.str("");
-	    filename << "../data/PRN11_Xcode_genwork" << ".dat";
-	    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-	    d_dump_file.write((char*)out, n);
-	    d_dump_file.close();
-	}
-*/
+
     // Tell runtime system how many output items we produced.
     return 1;
 }

@@ -113,6 +113,80 @@ void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples, const g
     //}
 }
 
+//void Correlator::Carrier_wipeoff_and_EPL_volk_IQ(int prn_length_samples,int integration_time ,const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* P_data_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* P_data_out, bool input_vector_unaligned)
+//{
+//    gr_complex* bb_signal;
+//    //gr_complex* input_aligned;
+//
+//    //todo: do something if posix_memalign fails
+//    if (posix_memalign((void**)&bb_signal, 16, integration_time * prn_length_samples * sizeof(gr_complex)) == 0) {};
+//
+//    if (input_vector_unaligned == true)
+//        {
+//            //todo: do something if posix_memalign fails
+//            //if (posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex)) == 0){};
+//            //memcpy(input_aligned,input,signal_length_samples * sizeof(gr_complex));
+//
+//            volk_32fc_x2_multiply_32fc_u(bb_signal, input, carrier, integration_time * prn_length_samples);
+//        }
+//    else
+//        {
+//            /*
+//             * todo: There is a problem with the aligned version of volk_32fc_x2_multiply_32fc_a.
+//             * It crashes even if the is_aligned() work function returns true. Im keeping the unaligned version in both cases..
+//             */
+//            //use directly the input vector
+//            volk_32fc_x2_multiply_32fc_u(bb_signal, input, carrier, integration_time * prn_length_samples);
+//        }
+//
+//    volk_32fc_x2_dot_prod_32fc_a(E_out, bb_signal, E_code, integration_time * prn_length_samples);
+//    volk_32fc_x2_dot_prod_32fc_a(P_out, bb_signal, P_code, integration_time * prn_length_samples);
+//    volk_32fc_x2_dot_prod_32fc_a(L_out, bb_signal, L_code, integration_time * prn_length_samples);
+//    // Vector of Prompts of I code
+//    for (int i = 0; i < integration_time; i++)
+//	{
+//	    volk_32fc_x2_dot_prod_32fc_a(&P_data_out[i], &bb_signal[i*prn_length_samples], P_data_code, prn_length_samples);
+//	}
+//
+//    free(bb_signal);
+//
+//}
+void Correlator::Carrier_wipeoff_and_EPL_volk_IQ(int signal_length_samples ,const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* P_data_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* P_data_out, bool input_vector_unaligned)
+{
+    gr_complex* bb_signal;
+    //gr_complex* input_aligned;
+
+    //todo: do something if posix_memalign fails
+    if (posix_memalign((void**)&bb_signal, 16, signal_length_samples * sizeof(gr_complex)) == 0) {};
+
+    if (input_vector_unaligned == true)
+        {
+            //todo: do something if posix_memalign fails
+            //if (posix_memalign((void**)&input_aligned, 16, signal_length_samples * sizeof(gr_complex)) == 0){};
+            //memcpy(input_aligned,input,signal_length_samples * sizeof(gr_complex));
+
+            volk_32fc_x2_multiply_32fc_u(bb_signal, input, carrier, signal_length_samples);
+        }
+    else
+        {
+            /*
+             * todo: There is a problem with the aligned version of volk_32fc_x2_multiply_32fc_a.
+             * It crashes even if the is_aligned() work function returns true. Im keeping the unaligned version in both cases..
+             */
+            //use directly the input vector
+            volk_32fc_x2_multiply_32fc_u(bb_signal, input, carrier, signal_length_samples);
+        }
+
+    volk_32fc_x2_dot_prod_32fc_a(E_out, bb_signal, E_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(P_out, bb_signal, P_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(L_out, bb_signal, L_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc_a(P_data_out, bb_signal, P_data_code, signal_length_samples);
+
+
+    free(bb_signal);
+
+}
+
 void Correlator::Carrier_wipeoff_and_EPL_volk_custom(int signal_length_samples, const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, bool input_vector_unaligned)
 {
     volk_cw_epl_corr_u(input, carrier, E_code, P_code, L_code, E_out, P_out, L_out, signal_length_samples);

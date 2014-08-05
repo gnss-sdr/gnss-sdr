@@ -42,10 +42,7 @@
 #include "in_memory_configuration.h"
 #include "configuration_interface.h"
 #include "gnss_synchro.h"
-#include "galileo_e5a_pcps_acquisition.h"
-#include "galileo_e5a_pilot_3ms_acquisition.h"
-#include "galileo_e5ax_2ms_pcps_acquisition.h"
-#include "galileo_e5a_3ms_noncoherent_iq_acquisition.h"
+#include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
 #include "fir_filter.h"
@@ -86,10 +83,8 @@ protected:
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
     //std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
-//    GalileoE5aPcpsAcquisition *acquisition;
-    //GalileoE5aPilot_3msAcquisition *acquisition;
-    //GalileoE5ax2msPcpsAcquisition *acquisition;
-    GalileoE5a3msNoncoherentIQAcquisition *acquisition;
+    GalileoE5aNoncoherentIQAcquisitionCaf *acquisition;
+
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
@@ -115,6 +110,8 @@ protected:
     double expected_doppler_hz3;
     float max_doppler_error_hz;
     float max_delay_error_chips;
+    int CAF_window_hz;
+    int Zero_padding;
 
     unsigned int num_of_realizations;
     unsigned int realization_counter;
@@ -152,22 +149,28 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
-    std::string signal = "5I";
-    //std::string signal = "5Q";
-    //std::string signal = "5X";
+//    std::string signal = "5I";
+//    std::string signal = "5Q";
+    std::string signal = "5X";
     signal.copy(gnss_synchro.Signal,2,0);
 
 
-    integration_time_ms = 3;
-    //fs_in = 10.24e6;
+    integration_time_ms = 1;
+    //fs_in = 11e6;
     //fs_in = 18e6;
     fs_in = 32e6;
+    //fs_in = 30.69e6;
+    //fs_in = 20.47e6;
 
 //    unsigned int delay_samples = (delay_chips_[sat] % codelen)
 //                	      * samples_per_code_[sat] / codelen;
     expected_delay_chips = round(14000*((double)10230000/(double)fs_in));
     expected_doppler_hz = 2800;
+    //expected_doppler_hz = 0;
     expected_delay_sec = 94;
+    CAF_window_hz = 2000;
+//    CAF_window_hz = 0;
+    Zero_padding = 0;
 
     //expected_delay_chips = 1000;
     //expected_doppler_hz = 250;
@@ -181,7 +184,12 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
 
     config = std::make_shared<InMemoryConfiguration>();
 
+
+    config->set_property("Channel.signal",signal);
+
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+    int a = config->property("GNSS-SDR.internal_fs_hz",10);
+    std::cout << "fs "<< a <<std::endl;
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
 
@@ -228,11 +236,12 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("Acquisition.coherent_integration_time_ms",
                          std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
-//    config->set_property("Acquisition.implementation", "Galileo_E5a_PCPS_Acquisition");
-    //config->set_property("Acquisition.implementation", "Galileo_E5a_Pilot_3ms_Acquisition");
+    config->set_property("Acquisition.CAF_window_hz",std::to_string(CAF_window_hz));
+    config->set_property("Acquisition.Zero_padding",std::to_string(Zero_padding));
 
-    config->set_property("Acquisition.implementation", "Galileo_E5a_3ms_Noncoherent_IQ_Acquisition");
-    config->set_property("Acquisition.threshold", "0.1");
+    config->set_property("Acquisition.implementation", "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF");
+    config->set_property("Acquisition.pfa","0.003");
+//    config->set_property("Acquisition.threshold", "0.01");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
@@ -602,9 +611,10 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     config_1();
 
     //int nsamples = floor(fs_in*integration_time_ms*1e-3);
-//    acquisition = new GalileoE5aPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    acquisition = new GalileoE5a3msNoncoherentIQAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    unsigned int skiphead_sps = 0; // 32 Msps
+    acquisition = new GalileoE5aNoncoherentIQAcquisitionCaf(config.get(), "Acquisition", 1, 1, queue);
+    unsigned int skiphead_sps = 28000; // 32 Msps
+//    unsigned int skiphead_sps = 0;
+    //unsigned int skiphead_sps = 84000;
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -662,23 +672,19 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
 */
 
     ASSERT_NO_THROW( {
-	//std::string path = std::string(TEST_PATH);
-	//std::string file =  "/home/marc/E5a_acquisitions/signal_source_21MPrimary.dat";
-	//noiseless
-	std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11.dat";
-	//std::string file =  "/home/marc/E5a_acquisitions/signal_source_21MSecondary.dat";
+	//noiseless sim
+	std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11_long.dat";
+	// real
 	//std::string file =  "/home/marc/E5a_acquisitions/32MS_complex.dat";
-	//std::string file =  "/home/marc/E5a_acquisitions/galileo_E5_8M_r2_upsampled_12.dat";
-	//CN040
 
 	const char * file_name = file.c_str();
 	gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
 
-//	gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);
-//	top_block->connect(file_source, 0, skip_head, 0);
-//	top_block->connect(skip_head, 0, acquisition->get_left_block(), 0);
+	gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);
+	top_block->connect(file_source, 0, skip_head, 0);
+	top_block->connect(skip_head, 0, acquisition->get_left_block(), 0);
 
-	top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
+//	top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     // i = 0 --> satellite in acquisition is visible

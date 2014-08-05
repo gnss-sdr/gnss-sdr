@@ -61,6 +61,9 @@ galileo_e5a_dll_pll_make_tracking_cc(long if_freq,
                                    std::string dump_filename,
                                    float pll_bw_hz,
                                    float dll_bw_hz,
+                                   float pll_bw_init_hz,
+                                   float dll_bw_init_hz,
+                                   int ti_ms,
                                    float early_late_space_chips);
 
 
@@ -93,6 +96,9 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
+            float pll_bw_init_hz,
+            float dll_bw_init_hz,
+            int ti_ms,
             float early_late_space_chips);
 
     Galileo_E5a_Dll_Pll_Tracking_cc(long if_freq,
@@ -103,6 +109,9 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
+            float pll_bw_init_hz,
+            float dll_bw_init_hz,
+            int ti_ms,
             float early_late_space_chips);
     void update_local_code();
     void update_local_carrier();
@@ -111,7 +120,10 @@ private:
     boost::shared_ptr<gr::msg_queue> d_queue;
     concurrent_queue<int> *d_channel_internal_queue;
     unsigned int d_vector_length;
+    int d_current_ti_ms;
+    int d_ti_ms;
     bool d_dump;
+
 
     Gnss_Synchro* d_acquisition_gnss_synchro;
     unsigned int d_channel;
@@ -120,17 +132,25 @@ private:
     long d_fs_in;
 
     double d_early_late_spc_chips;
+    float d_dll_bw_hz;
+    float d_pll_bw_hz;
+    float d_dll_bw_init_hz;
+    float d_pll_bw_init_hz;
 
-    gr_complex* d_code;
+    gr_complex* d_codeQ;
+    gr_complex* d_codeI;
 
     gr_complex* d_early_code;
     gr_complex* d_late_code;
     gr_complex* d_prompt_code;
+    gr_complex* d_prompt_data_code;
     gr_complex* d_carr_sign;
 
-    gr_complex *d_Early;
-    gr_complex *d_Prompt;
-    gr_complex *d_Late;
+    gr_complex d_Early;
+    gr_complex d_Prompt;
+    gr_complex d_Late;
+    gr_complex d_Prompt_data;
+
 
     // remaining code phase and carrier phase between tracking loops
     float d_rem_code_phase_samples;
@@ -152,6 +172,7 @@ private:
     float d_acc_carrier_phase_rad;
     float d_code_phase_samples;
     float d_acc_code_phase_secs;
+    float d_code_error_filt_secs;
 
     //PRN period in samples
     int d_current_prn_length_samples;
@@ -169,12 +190,13 @@ private:
     int d_carrier_lock_fail_counter;
 
     // control vars
-    bool d_enable_tracking;
-    bool d_pull_in;
+    int d_state;
+    bool d_first_transition;
 
     // Secondary code acquisition
     bool d_secondary_lock;
     int d_secondary_delay;
+    unsigned int d_integration_counter;
 
     // file dump
     std::string d_dump_filename;

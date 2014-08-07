@@ -1,11 +1,11 @@
-# Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -89,6 +89,16 @@ else(NOT GTEST_DIR_LOCAL)
 endif(NOT GTEST_DIR_LOCAL)
 
 
+set(GNSS_SDR_TEST_OPTIONAL_LIBS "")
+set(GNSS_SDR_TEST_OPTIONAL_HEADERS "")
+
+if(ENABLE_GPERFTOOLS)
+    if(GPERFTOOLS_FOUND)
+        set(GNSS_SDR_TEST_OPTIONAL_LIBS "${GNSS_SDR_TEST_OPTIONAL_LIBS};${GPERFTOOLS_LIBRARIES}")
+        set(GNSS_SDR_TEST_OPTIONAL_HEADERS "${GNSS_SDR_TEST_OPTIONAL_HEADERS};${GPERFTOOLS_INCLUDE_DIR}")
+    endif(GPERFTOOLS_FOUND)
+endif(ENABLE_GPERFTOOLS)
+
      
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}
@@ -120,6 +130,7 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
+     ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
 )
 
 
@@ -158,6 +169,7 @@ target_link_libraries(run_tests ${MAC_LIBRARIES}
                                 signal_generator_adapters
                                 out_adapters
                                 pvt_gr_blocks
+                                ${GNSS_SDR_TEST_OPTIONAL_LIBS}
 )
 
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)

@@ -1,11 +1,11 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -16,6 +16,15 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+set(GNSS_SDR_OPTIONAL_LIBS "")
+set(GNSS_SDR_OPTIONAL_HEADERS "")
+
+if(ENABLE_GPERFTOOLS)
+    if(GPERFTOOLS_FOUND)
+        set(GNSS_SDR_OPTIONAL_LIBS "${GNSS_SDR_OPTIONAL_LIBS};${GPERFTOOLS_LIBRARIES}")
+        set(GNSS_SDR_OPTIONAL_HEADERS "${GNSS_SDR_OPTIONAL_HEADERS};${GPERFTOOLS_INCLUDE_DIR}")
+    endif(GPERFTOOLS_FOUND)
+endif(ENABLE_GPERFTOOLS)
 
 include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -30,6 +39,7 @@ include_directories(
      ${ARMADILLO_INCLUDE_DIRS}  
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${GNSS_SDR_OPTIONAL_HEADERS}
 )
 
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
@@ -57,6 +67,7 @@ target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${UHD_LIBRARIES}
                                gnss_sp_libs 
                                gnss_rx
+                               ${GNSS_SDR_OPTIONAL_LIBS}
                                )
 
 

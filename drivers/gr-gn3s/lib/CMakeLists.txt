@@ -22,7 +22,7 @@
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
 
-add_library(gr-gn3s SHARED gn3s_source_cc.cc gn3s_source.cc gn3s.cc fusb.cc fusb_linux.cc)
+add_library(gr-gn3s SHARED gn3s_source_cc.cc gn3s_source.cc gn3s.cc fusb.cc fx2.cc fusb_linux.cc)
 target_link_libraries(gr-gn3s ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} "usb" ${LIBUSB_LIBRARIES})
 set_target_properties(gr-gn3s PROPERTIES DEFINE_SYMBOL "gr_gn3s_EXPORTS")
 

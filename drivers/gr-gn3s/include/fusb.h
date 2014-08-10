@@ -23,9 +23,8 @@
 #ifndef _FUSB_H_
 #define _FUSB_H_
 
-#include "libusb_types.h"
 
-struct 	libusb_context;
+struct  usb_dev_handle;
 class   fusb_ephandle;
 
 /*!
@@ -34,15 +33,15 @@ class   fusb_ephandle;
 class fusb_devhandle {
 private:
   // NOT IMPLEMENTED
-  fusb_devhandle (const fusb_devhandle &rhs);		  // no copy constructor
+  fusb_devhandle (const fusb_devhandle &rhs);             // no copy constructor
   fusb_devhandle &operator= (const fusb_devhandle &rhs);  // no assignment operator
 
 protected:
-  libusb_device_handle		*d_udh;
+  usb_dev_handle                *d_udh;
 
 public:
   // CREATORS
-  fusb_devhandle (libusb_device_handle *udh);
+  fusb_devhandle (usb_dev_handle *udh);
   virtual ~fusb_devhandle ();
 
   // MANIPULATORS
@@ -51,10 +50,10 @@ public:
    * \brief return an ephandle of the correct subtype
    */
   virtual fusb_ephandle *make_ephandle (int endpoint, bool input_p,
-					int block_size = 0, int nblocks = 0) = 0;
+                                        int block_size = 0, int nblocks = 0) = 0;
   
   // ACCESSORS
-  libusb_device_handle *get_usb_dev_handle () const { return d_udh; }
+  usb_dev_handle *get_usb_dev_handle () const { return d_udh; }
 };
 
 
@@ -64,23 +63,23 @@ public:
 class fusb_ephandle {
 private:
   // NOT IMPLEMENTED
-  fusb_ephandle (const fusb_ephandle &rhs);	        // no copy constructor
+  fusb_ephandle (const fusb_ephandle &rhs);             // no copy constructor
   fusb_ephandle &operator= (const fusb_ephandle &rhs);  // no assignment operator
 
 protected:
-  int				d_endpoint;
-  bool				d_input_p;
-  int				d_block_size;
-  int				d_nblocks;
-  bool				d_started;
+  int                           d_endpoint;
+  bool                          d_input_p;
+  int                           d_block_size;
+  int                           d_nblocks;
+  bool                          d_started;
 
 public:
   fusb_ephandle (int endpoint, bool input_p,
-		 int block_size = 0, int nblocks = 0);
+                 int block_size = 0, int nblocks = 0);
   virtual ~fusb_ephandle ();
 
-  virtual bool start () = 0;  	//!< begin streaming i/o
-  virtual bool stop () = 0;	//!< stop streaming i/o
+  virtual bool start () = 0;    //!< begin streaming i/o
+  virtual bool stop () = 0;     //!< stop streaming i/o
 
   /*!
    * \returns \p nbytes if write was successfully enqueued, else -1.
@@ -115,8 +114,7 @@ public:
   /*!
    * \brief returns fusb_devhandle or throws if trouble
    */
-  static fusb_devhandle *make_devhandle (libusb_device_handle *udh,
-                                         libusb_context *ctx = 0);
+  static fusb_devhandle *make_devhandle (usb_dev_handle *udh);
 
   /*!
    * \brief Returns max block size in bytes (hard limit).

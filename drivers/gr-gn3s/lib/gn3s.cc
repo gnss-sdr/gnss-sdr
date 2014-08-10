@@ -25,525 +25,276 @@
 */
 /*----------------------------------------------------------------------------------------------*/
 
-#include "gn3s.h"
-#include <iostream>
-#include <fstream>
-#include <stdlib.h>
-#include <usb.h>
-#include "fusb_linux.h"
+#include "sdr.h"
+#include "fx2.h"
 
-static char debug = 1; //!< 1 = Verbose
+/* global variables ----------------------------------------------------------*/
+using namespace std;
+Fx2_dev fx2_d;
 
-/*----------------------------------------------------------------------------------------------*/
-gn3s::gn3s(int _which)
+/* GN3S initialization ---------------------------------------------------------
+* search front end and initialization
+* args   : none
+* return : int                  status 0:okay -1:failure
+*-----------------------------------------------------------------------------*/
+extern int gn3s_init(void)
 {
+    char version; /* version of modules */
+    unsigned char uc_flags[5];
 
-		//int fsize;
-		bool ret;
-		which = _which;
-
-		fx2_device 	= NULL;
-		fx2_handle 	= NULL;
-		gn3s_vid 	= GN3S_VID;
-		gn3s_pid 	= GN3S_PID;
-
-		/* Get the firmware embedded in the executable */
-		//fstart = (int) &_binary_usrp_gn3s_firmware_ihx_start;
-		//fsize = strlen(_binary_usrp_gn3s_firmware_ihx_start);
-		//gn3s_firmware = new char[fsize + 10];
-		//memcpy(&gn3s_firmware[0], (void *)fstart, fsize);
-
-		// Load the firmware from external file (Javier)
-
-
-		//gn3s_firmware[fsize] = NULL;
-
-		/* Search all USB busses for the device specified by VID/PID */
-		fx2_device = usb_fx2_find(gn3s_vid, gn3s_pid, debug, 0);
-		if (!fx2_device)
-		{
-			/* Program the board */
-			ret = prog_gn3s_board();
-			if(ret)
-			{
-				fprintf(stdout, "Could not flash GN3S device\n");
-				throw(1);
-			}
-
-			/* Need to wait to catch change */
-			sleep(2);
-
-			/* Search all USB busses for the device specified by VID/PID */
-			fx2_device = usb_fx2_find(gn3s_vid, gn3s_pid, debug, 0);
-		}
-		else
-		{
-			fprintf(stdout, "Found GN3S Device\n");
-		}
-
-		/* Open and configure FX2 device if found... */
-		ret = usb_fx2_configure(fx2_device, &fx2_config);
-		if(ret)
-		{
-			fprintf(stdout, "Could not obtain a handle to the GN3S device\n");
-			throw(1);
-
-	}
-
-}
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-gn3s::~gn3s()
-{
-
-	usrp_xfer(VRQ_XFER, 0);
-
-	//delete gn3s_firmware;
-	delete fx2_config.d_ephandle;
-	delete fx2_config.d_devhandle;
-
-	usb_release_interface(fx2_config.udev, fx2_config.interface);
-	usb_close(fx2_config.udev);
-
-}
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-int gn3s::prog_gn3s_board()
-{
-
-	char a;
-	struct usb_bus *bus;
-	struct usb_device *dev;
-	//struct usb_dev_handle *han;
-	int vid, pid;
-
-	dev = NULL;
-
-	usb_init();
-	usb_find_busses();
-	usb_find_devices();
-
-	vid = (VID_OLD);
-	pid = (PID_OLD);
-
-	for(bus = usb_busses; bus; bus = bus->next)
-	{
-		for(dev = bus->devices; dev; dev = dev->next)
-		{
-			if((dev->descriptor.idVendor == vid) &&	(dev->descriptor.idProduct == pid))
-			{
-				fx2_device = dev;
-				fprintf(stdout,"GN3S Device Found... awaiting firmware flash \n");
-				break;
-			}
-		}
-	}
-
-	if(fx2_device == NULL)
-	{
-		fprintf(stderr,"Cannot find vid 0x%x pid 0x%x \n", vid, pid);
-		return -1;
-	}
-
-	printf("Using device vendor id 0x%04x product id 0x%04x\n",
-			fx2_device->descriptor.idVendor, fx2_device->descriptor.idProduct);
-
-	fx2_handle = usb_open(fx2_device);
-
-	/* Do the first set 0xE600 1 */
-	char c[] = "1";
-	char d[] = "0";
-
-	a = atoz(c);
-
-	fprintf(stdout,"GN3S flashing ... \n");
-
-	upload_ram(&a, (PROG_SET_CMD),1);
-
-	program_fx2(NULL, 1);
-
-	a = atoz(d);
-
-	upload_ram(&a, (PROG_SET_CMD),1);
-
-	fprintf(stdout,"GN3S flash complete! \n");
-
-	usb_close(fx2_handle);
-
-	return(0);
-}
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-int gn3s::atoz(char *s)
-{
-    int a;
-    if(!strncasecmp("0x", s, 2)){
-        sscanf(s, "%x", &a);
-        return a;
+    /* Look for a device */
+    fx2_d = Fx2_dev(1); /* PID 0x0b39 */
+    if (fx2_d.usb_fx2_find() != 0) {
+        version = 2;
+        if (sdrini.fend!=FEND_GN3SV2) {
+            SDRPRINTF("error: wrong frontend type, GN3SV2 is found\n");
+            return -1;
+        }
+    } else {
+        fx2_d = Fx2_dev(2); /* PID 0x0b3a */
+        if (fx2_d.usb_fx2_find() != 0) {
+            version = 3;
+            if (sdrini.fend!=FEND_GN3SV3) {
+                SDRPRINTF("error: wrong frontend type, GN3SV3 is found\n");
+                return -1;
+            }
+        } else {
+            fx2_d = Fx2_dev(3); /* PID 0x0b3f */
+            if(fx2_d.usb_fx2_find()!=0) {
+                version = 3;
+                if (sdrini.fend!=FEND_GN3SV3) {
+                    SDRPRINTF("error: wrong frontend type, GN3SV3 is found\n");
+                    return -1;
+                }
+            } else {
+                SDRPRINTF("error: no GN3S frontend found\n");
+                return -1;
+            }
+        }
     }
-    return atoi(s);
+    fx2_d.usb_fx2_init();
+    /* version 2 */
+    if (version==2) {
+        fx2_d.usrp_xfer(VRQ_XFER, 1);
+    }
+    /* version 3 */
+    if (version==3) {
+        fx2_d.usrp_xfer (VRQ_AGC,0); /* AGC OFF */
+        fx2_d.usrp_xfer (VRQ_CMODE,132 );
+        fx2_d.usrp_xfer (VRQ_XFER, 0 );
+        fx2_d.usrp_xfer (VRQ_XFER, 1);
+        fx2_d.usrp_xfer2(VRQ_FLAGS, 0, uc_flags, 5);
+        fx2_d.usrp_xfer (VRQ_XFER, 0 );
+        fx2_d.usrp_xfer(VRQ_CMODE,GN3S_MODE);
+        fx2_d.usrp_xfer(VRQ_XFER, 1);
+    }
+    return 0;
 }
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-void gn3s::upload_ram(char *buf, int start, int len)
+/* stop front-end --------------------------------------------------------------
+* stop grabber of front end
+* args   : none
+* return : none
+*-----------------------------------------------------------------------------*/
+extern void gn3s_quit(void)
 {
-	int i;
-	int tlen;
-	int quanta = 16;
-	int a;
-
-	for (i = start; i < start + len; i += quanta) {
-		tlen = len + start - i;
-
-		if (tlen > quanta)
-			tlen = quanta;
-
-		if (debug >= 3)
-			printf("i = %d, tlen = %d \n", i, tlen);
-		a = usb_control_msg(fx2_handle, 0x40, 0xa0, i, 0,
-				buf + (i - start), tlen, 1000);
-
-		if (a < 0) {
-			fprintf(stderr, "Request to upload ram contents failed: %s\n",
-					usb_strerror());
-			return;
-		}
-	}
+    fx2_d.close();
+    fx2_d.~Fx2_dev();
 }
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-void gn3s::program_fx2(char *filename, char mem)
+/* data expansion to binary (GN3S v2) ------------------------------------------
+* get current data buffer from memory buffer
+* args   : char   *buf      I   memory buffer
+*          int    n         I   number of grab data
+*          char   *expbuff  O   extracted data buffer
+* return : none
+*-----------------------------------------------------------------------------*/
+extern void gn3s_exp_v2(unsigned char *buf, int n, char *expbuf)
 {
-	FILE *f;
-	char s[1024];
-	char data[256];
-	char checksum, a;
-	int length, addr, type, i;
-	unsigned int b;
+    int i;
+    char LUT_1bit[2]={1,-1};
+    char shift=0, endshift=0;
 
-	// *** mod javier: load firmware from external file ***
+    /* data shift (refer gn3s-full.cc) */
+    /* http://ccar.colorado.edu/gnss/files/GN3Sv2.7z */
+    if ((buf[  0]&0x02)!=2) shift=1;
+    if ((buf[n-1]&0x02)!=0) endshift=1;
 
-	//f = tmpfile();
-
-	/* Dump firmware into temp file */
-	//fputs(gn3s_firmware, f);
-	//rewind(f);
-
-	  f = fopen ("gn3s_firmware.ihx","r");
-	  if (f!=NULL)
-	  {
-		printf("GN3S firmware file found!\n");
-	  }else{
-		  printf("Could not open GN3S firmware file!\n");
-		  return;
-	  }
-
-	while (!feof(f)) {
-		fgets(s, 1024, f); /* we should not use more than 263 bytes normally */
-
-		if (s[0] != ':') {
-			fprintf(stderr, "%s: invalid string: \"%s\"\n", filename, s);
-			continue;
-		}
-
-		sscanf(s + 1, "%02x", &length);
-		sscanf(s + 3, "%04x", &addr);
-		sscanf(s + 7, "%02x", &type);
-
-		if (type == 0) {
-			// printf("Programming %3d byte%s starting at 0x%04x",
-			//     length, length==1?" ":"s", addr);
-			a = length + (addr & 0xff) + (addr >> 8) + type;
-
-			for (i = 0; i < length; i++) {
-				sscanf(s + 9 + i * 2, "%02x", &b);
-				data[i] = b;
-				a = a + data[i];
-			}
-
-			sscanf(s + 9 + length * 2, "%02x", &b);
-			checksum = b;
-
-			if (((a + checksum) & 0xff) != 0x00) {
-				printf("  ** Checksum failed: got 0x%02x versus 0x%02x\n", (-a)
-						& 0xff, checksum);
-				continue;
-			} else {
-				//printf(", checksum ok\n");
-			}
-
-			upload_ram(data, addr, length);
-
-		} else {
-			if (type == 0x01) {
-				printf("End of file\n");
-				fclose(f);
-
-				return;
-			} else {
-				if (type == 0x02) {
-					printf("Extended address: whatever I do with it ?\n");
-					continue;
-				}
-			}
-		}
-	}
-
-	fclose(f);
+    for (i=0;i<n;i++) {
+        if (shift) {
+            if ((i==(n-1))&&!endshift)     expbuf[i]=0;
+            else if ((i==(n-1))&&endshift) expbuf[i-1]=0;
+            else expbuf[i]=LUT_1bit[buf[i+1]&0x01];
+        } else {
+            if ((i==(n-1))&&endshift) expbuf[i]=0;
+            else expbuf[i]=LUT_1bit[buf[i]&0x01];
+        }
+    }
 }
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-struct usb_device* gn3s::usb_fx2_find(int vid, int pid, char info, int ignore)
+/* get current data buffer (GN3S v2) -------------------------------------------
+* get current data buffer from memory buffer
+* args   : uint64_t buffloc I   buffer location
+*          int    n         I   number of grab data
+*          int    dtype     I   data type (DTYPEI or DTYPEIQ)
+*          char   *expbuff  O   extracted data buffer
+* return : none
+*-----------------------------------------------------------------------------*/
+extern void gn3s_getbuff_v2(uint64_t buffloc, int n, int dtype, char *expbuf)
 {
-	struct usb_bus *bus;
-	struct usb_device *dev;
-	struct usb_device *fx2 = NULL;
-	usb_dev_handle *udev;
-	int count = 0;
-	int ret;
-	char str[256];
+    uint64_t membuffloc=2*buffloc%(MEMBUFFLEN*GN3S_BUFFSIZE);
+    int nout;
+    n=2*n;
+    nout=(int)((membuffloc+n)-(MEMBUFFLEN*GN3S_BUFFSIZE));
 
-	usb_init();
-	usb_find_busses();
-	usb_find_devices();
-
-	for(bus = usb_busses; bus; bus = bus->next)
-	{
-		for(dev = bus->devices; dev; dev = dev->next)
-		{
-			if((dev->descriptor.idVendor == vid) && (dev->descriptor.idProduct == pid))
-			{
-				fx2 = dev;
-			}
-
-			if(fx2 != NULL && info)
-			{
-				udev = usb_open(fx2);
-				if(udev && dev->descriptor.idVendor == vid && dev->descriptor.idProduct == pid && count < ignore)
-				{
-					if(fx2->descriptor.iManufacturer)
-					{
-						ret = usb_get_string_simple(udev, fx2->descriptor.iManufacturer, str, sizeof(str));
-
-						if(ret > 0)
-							printf("- Manufacturer : %s\n", str);
-						else
-							printf("- Unable to fetch manufacturer string\n");
-					}
-
-					if(fx2->descriptor.iProduct)
-					{
-						ret = usb_get_string_simple(udev, fx2->descriptor.iProduct, str, sizeof(str));
-
-						if(ret > 0)
-							printf("- Product : %s\n", str);
-						else
-							printf("- Unable to fetch product string\n");
-					}
-
-					if(fx2->descriptor.iSerialNumber)
-					{
-						ret = usb_get_string_simple(udev, fx2->descriptor.iSerialNumber, str, sizeof(str));
-
-						if(ret > 0)
-							printf("- Serial Number: %s\n", str);
-						else
-							printf("- Unable to fetch serial number string\n");
-					}
-
-					usb_close (udev);
-					return fx2;
-				}
-				else if(udev && dev->descriptor.idVendor == vid && dev->descriptor.idProduct == pid && count >= ignore)
-				{
-					count++;
-				}
-
-				if(!fx2->config)
-				{
-					printf(" Could not retrieve descriptors\n");
-					continue;
-				}
-
-				for(int i = 0; i < fx2->descriptor.bNumConfigurations; i++)
-				{
-					//print_configuration(&fx2->config[i]);
-				}
-			}
-		}
-	}
-
-	return fx2;
+    mlock(hbuffmtx);
+    if (nout>0) {
+        gn3s_exp_v2(&sdrstat.buff[membuffloc],n-nout,expbuf);
+        gn3s_exp_v2(&sdrstat.buff[0],nout,&expbuf[n-nout]);
+    } else {
+        gn3s_exp_v2(&sdrstat.buff[membuffloc],n,expbuf);
+    }
+    unmlock(hbuffmtx);
 }
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-bool gn3s::usb_fx2_configure(struct usb_device *fx2, fx2Config *fx2c)
+/* data expansion to binary (GN3S v3) ------------------------------------------
+* get current data buffer from memory buffer
+* args   : char   *buf      I   memory buffer
+*          int    n         I   number of grab data
+*          int    i_mode    I   GN3S data grabber mode
+*          char   *expbuff  O   extracted data buffer
+* return : none
+*-----------------------------------------------------------------------------*/
+extern void gn3s_exp_v3(unsigned char *buf, int n, int i_mode, char *expbuf)
 {
+    int i=0;
+    int i_idx=0;
+    int i_dtype=0;
+    char LUT_2bit[4]={1,-1,3,-3};
+    char LUT_I_4bit[16]={1,-1,0,0,3,-3,0,0,0,0,0,0,0,0,0,0};
+    char LUT_Q_4bit[16]={1,0,-1,0,0,0,0,0,3,0,-3,0,0,0,0,0};
+    char MASK_2bit=0x03;
+    char MASK_4bit_I=0x05;
+    char MASK_4bit_Q=0x0A;
 
-  char status = 0;
-  int interface = RX_INTERFACE;
-  int altinterface = RX_ALTINTERFACE;
-  usb_dev_handle *udev;
-  fusb_ephandle *d_ephandle;
-  fusb_devhandle *d_devhandle;
+    /* determine  mode */
+    if (((i_mode% 100)==32)|| ((i_mode% 100)==38)) {
+        i_dtype =2;
+    }
+    if (((i_mode% 100)==36)|| ((i_mode% 100)==42)) {
+        i_dtype =4;
+    }
 
-  udev = usb_open(fx2);
-
-  if(!udev)
-  {
-      fprintf(stdout, "Could not obtain a handle to GNSS Front-End device \n");
-      return -1;
-  }
-  else
-  {
-	  if(debug)
-		  printf("Received handle for GNSS Front-End device \n");
-
-      if(usb_set_configuration (udev, 1) < 0)
-      {
-          fprintf (stdout,
-                  "error in %s, \n%s \n",
-                  __FUNCTION__,
-                  usb_strerror());
-          usb_close (udev);
-          status = -1;
-      }
-
-      if(usb_claim_interface (udev, interface) < 0)
-      {
-          fprintf (stdout,
-                  "error in %s, \n%s \n",
-                  __FUNCTION__,
-                  usb_strerror());
-          usb_close (udev);
-          fprintf (stdout, "\nDevice not programmed? \n");
-          usb_close (udev);
-          status = -1;
-          throw(0);
-      }
-
-      if(usb_set_altinterface (udev, altinterface) < 0)
-      {
-          fprintf (stdout,
-                  "error in %s, \n%s \n",
-                  __FUNCTION__,
-                  usb_strerror());
-          usb_close (udev);
-          usb_release_interface (udev, interface);
-          usb_close (udev);
-          status = -1;
-      }
-
-      d_devhandle = make_devhandle(udev);
-      d_ephandle = d_devhandle->make_ephandle(RX_ENDPOINT, true, FUSB_BLOCK_SIZE, FUSB_NBLOCKS);
-
-      if(!d_ephandle->start())
-      {
-          fprintf (stdout, "usrp0_rx: failed to start end point streaming");
-          usb_strerror ();
-          status = -1;
-      }
-
-      if(status == 0)
-      {
-          fx2c->interface = interface;
-          fx2c->altinterface = altinterface;
-          fx2c->udev = udev;
-          fx2c->d_devhandle = d_devhandle;
-          fx2c->d_ephandle = d_ephandle;
-          return 0;
-      }
-      else
-      {
-          return -1;
-      }
-  }
+    for (i=0;i<n;i++) {
+        switch (i_dtype) {
+        case 2:
+            expbuf[i_idx]=LUT_2bit[buf[i] & MASK_2bit];
+            i_idx++;
+            break;
+        case 4:
+            expbuf[i_idx]=LUT_I_4bit[buf[i] & MASK_4bit_I];
+            i_idx++;
+            expbuf[i_idx]=LUT_Q_4bit[buf[i] & MASK_4bit_Q];
+            i_idx++;
+            break;
+        }
+    }
 }
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-fusb_devhandle* gn3s::make_devhandle(usb_dev_handle *udh)
+/* get current data buffer (GN3S v3) -------------------------------------------
+* get current data buffer from memory buffer
+* args   : uint64_t buffloc I   buffer location
+*          int    n         I   number of grab data
+*          int    dtype     I   data type (DTYPEI or DTYPEIQ)
+*          char   *expbuff  O   extracted data buffer
+* return : none
+*-----------------------------------------------------------------------------*/
+extern void gn3s_getbuff_v3(uint64_t buffloc, int n, int dtype, char *expbuf)
 {
-  return new fusb_devhandle_linux(udh);
+    uint64_t membuffloc=buffloc%(MEMBUFFLEN*GN3S_BUFFSIZE);
+    int nout=(int)((membuffloc+n)-(MEMBUFFLEN*GN3S_BUFFSIZE));
+
+    mlock(hbuffmtx);
+    if (nout>0) {
+        gn3s_exp_v3(&sdrstat.buff[membuffloc],n-nout,GN3S_MODE,expbuf);
+        gn3s_exp_v3(&sdrstat.buff[0],nout,GN3S_MODE,&expbuf[dtype*(n-nout)]);
+    } else {
+        gn3s_exp_v3(&sdrstat.buff[membuffloc],n,GN3S_MODE,expbuf);
+    }
+    unmlock(hbuffmtx);
 }
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-int gn3s::read(void *buff, int bytes)
+/* push data to memory buffer --------------------------------------------------
+* push data to memory buffer from GN3S front end
+* args   : none
+* return : none
+*-----------------------------------------------------------------------------*/
+extern int gn3s_pushtomembuf(void)
 {
-	return(fx2_config.d_ephandle->read(buff, bytes));
+    bool b_overrun=false;
+    int nbuff;
+
+    /* check buffer overrun */
+    fx2_d.check_rx_overrun(&b_overrun);
+    if (b_overrun) return -1;
+
+    mlock(hbuffmtx);
+    nbuff=fx2_d.read_IF(
+        &sdrstat.buff[(sdrstat.buffcnt%MEMBUFFLEN)*GN3S_BUFFSIZE]);
+    unmlock(hbuffmtx);
+
+    if (nbuff!=GN3S_BUFFSIZE) {
+        SDRPRINTF("GN3S read IF error...\n");
+    }
+
+    mlock(hreadmtx);
+    sdrstat.buffcnt++;
+    unmlock(hreadmtx);
+
+
+    return 0;
 }
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-bool gn3s::check_rx_overrun()
+/* push data to memory buffer --------------------------------------------------
+* post-processing function: push data to memory buffer from GN3S binary IF file
+* args   : none
+* return : none
+*-----------------------------------------------------------------------------*/
+extern void fgn3s_pushtomembuf(void)
 {
-	bool overrun;
+    size_t nread;
 
-	_get_status(GS_RX_OVERRUN, &overrun);
+    mlock(hbuffmtx);
 
-	return(overrun);
+    nread=fread(&sdrstat.buff[(sdrstat.buffcnt%MEMBUFFLEN)*GN3S_BUFFSIZE],
+        1,GN3S_BUFFSIZE,sdrini.fp1);
+
+    unmlock(hbuffmtx);
+
+    if (nread<GN3S_BUFFSIZE) {
+        sdrstat.stopflag=ON;
+        SDRPRINTF("end of file!\n");
+    }
+
+    mlock(hreadmtx);
+    sdrstat.buffcnt++;
+    unmlock(hreadmtx);
 }
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-bool gn3s::_get_status(int command, bool *trouble)
+/* get current data buffer from IF file ----------------------------------------
+* post-processing function: get current data buffer from memory buffer
+* args   : uint64_t buffloc I   buffer location
+*          int    n         I   number of grab data
+*          int    dtype     I   data type (DTYPEI or DTYPEIQ)
+*          char   *expbuff  O   extracted data buffer
+* return : none
+*-----------------------------------------------------------------------------*/
+extern void fgn3s_getbuff(uint64_t buffloc, int n, int dtype, char *expbuf)
 {
-	unsigned char status;
+    uint64_t membuffloc=dtype*buffloc%(MEMBUFFLEN*dtype*GN3S_BUFFSIZE);
+    int nout;
 
-	if(write_cmd(VRQ_GET_STATUS, 0, command, &status, sizeof(status)) != sizeof (status))
-		return false;
+    n=dtype*n;
+    nout=(int)((membuffloc+n)-(MEMBUFFLEN*dtype*GN3S_BUFFSIZE));
 
-	*trouble = status;
-	return true;
+    mlock(hbuffmtx);
+    if (nout>0) {
+        memcpy(expbuf,&sdrstat.buff[membuffloc],n-nout);
+        memcpy(&expbuf[(n-nout)],&sdrstat.buff[0],nout);
+    } else {
+        memcpy(expbuf,&sdrstat.buff[membuffloc],n);
+    }
+    unmlock(hbuffmtx);
 }
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-bool gn3s::usrp_xfer(char VRQ_TYPE, bool start)
-{
-  int r;
-
-  r = write_cmd(VRQ_TYPE, start, 0, 0, 0);
-
-  return(r == 0);
-}
-/*----------------------------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------------------------------*/
-int gn3s::write_cmd(int request, int value, int index, unsigned char *bytes, int len)
-{
-	int requesttype;
-	int r;
-
-	requesttype = (request & 0x80) ? VRT_VENDOR_IN : VRT_VENDOR_OUT;
-	r = usb_control_msg (fx2_config.udev, requesttype, request, value, index, (char *) bytes, len, 1000);
-	if(r < 0)
-	{
-		/* We get EPIPE if the firmware stalls the endpoint. */
-		if(errno != EPIPE)
-			fprintf (stdout, "usb_control_msg failed: %s\n", usb_strerror());
-	}
-	return r;
-}
-/*----------------------------------------------------------------------------------------------*/

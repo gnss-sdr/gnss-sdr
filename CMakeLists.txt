@@ -186,10 +186,16 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      endif(${DARWIN_VERSION} MATCHES "10")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
+
 #select the release build type by default to get optimization flags
 if(NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE "Release")
-   message(STATUS "Build type not specified: defaulting to Release.")
+    if(ENABLE_GPERFTOOLS)
+        set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+        message(STATUS "Build type not specified: defaulting to RelWithDebInfo.")
+    else(ENABLE_GPERFTOOLS)
+        set(CMAKE_BUILD_TYPE "Release")
+        message(STATUS "Build type not specified: defaulting to Release.")
+    endif(ENABLE_GPERFTOOLS)   
 endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 

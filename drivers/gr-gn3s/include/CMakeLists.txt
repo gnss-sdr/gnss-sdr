@@ -27,6 +27,7 @@ install(FILES
     gn3s_defines.h
     gn3s.h
     fusb.h
+    fx2.h
     libusb_types.h
     fusb_linux.h
     DESTINATION include/gn3s

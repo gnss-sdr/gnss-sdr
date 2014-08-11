@@ -30,30 +30,113 @@
 #define GN3S_H_
 
 
-#define MODE_NARROW_16_I   32  /* SF:16.368MHz, IF:4.092MHz, 2bit, I */
-#define MODE_NARROW_8_IQ   36  /* SF: 8.184MHz, IF:    0MHz, 4bit, IQ */
-#define MODE_NARROW_5_I    38  /* SF: 5.456MHz, IF:4.092MHz, 2bit, I */
-#define MODE_NARROW_4_IQ   42  /* SF: 4.092MHz, IF:    0MHz, 4bit, IQ */
-#define MODE_WIDE_16_I     132 /* SF:16.368MHz, IF:4.092MHz, 2bit, I */
-#define MODE_WIDE_8_IQ     136 /* SF: 8.184MHz, IF:    0MHz, 4bit, IQ */
-#define MODE_WIDE_5_I      138 /* SF: 5.456MHz, IF:4.092MHz, 2bit, I */
-#define MODE_WIDE_4_IQ     142 /* SF: 4.092MHz, IF:    0MHz, 4bit, IQ */
-
-#define GN3S_MODE          MODE_NARROW_16_I /* GN3S operating mode */
-#define GN3S_DECIMATE      1      /* decimate mode */
-#define GN3S_PACK          1      /* pack mode */
-#define GN3S_BUFFSIZE      32*512 /* buffer size: 16 kB */
-
-/* global functions */
-extern int  gn3s_init(void);
-extern void gn3s_quit(void);
-extern void gn3s_exp_v2(unsigned char *buf, int n, char *expbuf);
-extern void gn3s_getbuff_v2(uint64_t buffloc, int n, int dtype, char *expbuf);
-extern void gn3s_exp_v3(unsigned char *buf, int n, int i_mode, char *expbuf);
-extern void gn3s_getbuff_v3(uint64_t buffloc, int n, int dtype, char *expbuf);
-extern int  gn3s_pushtomembuf(void);
-extern void fgn3s_pushtomembuf(void);
-extern void fgn3s_getbuff(uint64_t buffloc, int n, int dtype, char *expbuf);
+/* Includes */
+/*--------------------------------------------------------------*/
+#include <unistd.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <math.h>
+#include "fusb.h"
+#include "fusb_linux.h"
+//#include "usrp_bytesex.h"
+//#include "usrp_prims.h"
+/*--------------------------------------------------------------*/
 
 
-#endif
+/* FX2 Configuration Structure */
+/*--------------------------------------------------------------*/
+struct fx2Config
+{
+	int interface;
+	int altinterface;
+	usb_dev_handle *udev;
+	fusb_ephandle *d_ephandle;
+	fusb_devhandle *d_devhandle;
+};
+/*--------------------------------------------------------------*/
+
+
+/* FX2 Stuff */
+/*--------------------------------------------------------------*/
+#define RX_ENDPOINT		(0x86)
+#define VRT_VENDOR_IN	(0xC0)
+#define VRT_VENDOR_OUT	(0x40)
+#define RX_INTERFACE	(2)
+#define RX_ALTINTERFACE (0)
+#define VRQ_GET_STATUS	(0x80)
+#define GS_RX_OVERRUN	(1)  //!< Returns 1 byte
+#define VRQ_XFER		(0x01)
+/*--------------------------------------------------------------*/
+
+
+/* GN3S Stuff */
+/*--------------------------------------------------------------*/
+#define GN3S_VID 	 		(0x16C0)
+#define GN3S_PID 	 		(0x072F)
+#define VID_OLD  	 		(0x1781)
+#define PID_OLD  	 		(0x0B39)
+#define PROG_SET_CMD 		(0xE600)
+#define FUSB_BUFFER_SIZE 	(16 * (1L << 20)) 	//!< 8 MB
+#define FUSB_BLOCK_SIZE  	(16 * (1L << 10)) 	//!< 16KB is hard limit
+#define FUSB_NBLOCKS		(FUSB_BUFFER_SIZE / FUSB_BLOCK_SIZE)
+/*--------------------------------------------------------------*/
+
+
+/* The firmware is embedded into the executable */
+/*--------------------------------------------------------------*/
+extern char _binary_usrp_gn3s_firmware_ihx_start[];
+/*--------------------------------------------------------------*/
+
+
+/*--------------------------------------------------------------*/
+/*! \ingroup CLASSES
+ *
+ */
+class gn3s
+{
+
+	private:
+
+		/* First or second board */
+		int which;
+
+		/* GN3S FX2 Stuff */
+		struct fx2Config fx2_config;
+		struct usb_device *fx2_device;
+		struct usb_dev_handle *fx2_handle;
+
+		/* USB IDs */
+		unsigned int gn3s_vid, gn3s_pid;
+
+		/* Pull in the binary firmware */
+		int fstart;
+		int fsize;
+		//char *gn3s_firmware;
+
+	public:
+
+		gn3s(int _which);		//!< Constructor
+		~gn3s();				//!< Destructor
+
+		/* FX2 functions */
+		struct usb_device* usb_fx2_find(int vid, int pid, char info, int ignore);
+		bool usb_fx2_configure(struct usb_device *fx2, fx2Config *fx2c);
+		fusb_devhandle* make_devhandle (usb_dev_handle *udh);
+		int read(void *buff, int bytes);
+		int write_cmd(int request, int value, int index, unsigned char *bytes, int len);
+		bool _get_status(int which, bool *trouble);
+		bool check_rx_overrun();
+		bool usrp_xfer(char VRQ_TYPE, bool start);
+
+		/* Used to flash the GN3S */
+		int atoz(char *s);
+		void upload_ram(char *buf, int start, int len);
+		void program_fx2(char *filename, char mem);
+		int prog_gn3s_board();
+
+};
+/*--------------------------------------------------------------*/
+
+
+#endif /*GN3S_H_ */

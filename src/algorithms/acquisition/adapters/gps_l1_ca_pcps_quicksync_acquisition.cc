@@ -63,15 +63,16 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     dump_ = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
+    
 
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    vector_length_ = code_length_ * sampled_ms_;
-
+    
     /*Calculate the folding factor value based on the calculations*/
-    folding_factor_ = (unsigned int)ceil(sqrt(log2(code_length_)));
+    unsigned int temp = (unsigned int)ceil(sqrt(log2(code_length_)));
+    folding_factor_ = configuration_->property(role + ".folding_factor", temp);
 
     if ( sampled_ms_ % folding_factor_ != 0)
         {
@@ -91,7 +92,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
                     << sampled_ms_ << " ms will be used instead.";
 
         }
-
+	vector_length_ = code_length_ * sampled_ms_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     if (!bit_transition_flag_)
@@ -109,7 +110,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     code_= new gr_complex[code_length_];
     /*Object relevant information for debugging*/
     LOG(INFO) <<"Implementation: "<<this->implementation()
-                         <<", Vector Length: "<<code_length_*sampled_ms_
+                         <<", Vector Length: "<<vector_length_
                          <<", Samples per ms: "<<samples_per_ms
                          <<", Folding factor: "<<folding_factor_
                          <<", Sampled  ms: "<<sampled_ms_
@@ -124,7 +125,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
                     dump_, dump_filename_);
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_,
-                    code_length_ * folding_factor_);
+                    code_length_*folding_factor_);
 
             DLOG(INFO) << "stream_to_vector_quicksync(" << stream_to_vector_->unique_id() << ")";
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
@@ -252,14 +253,14 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 
             gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
-            /*
-       for (unsigned int i = 0; i < sampled_ms_; i++)
+            
+            for (unsigned int i = 0; i < (sampled_ms_/folding_factor_); i++)
             {
                 memcpy(&(code_[i*code_length_]), code,
                        sizeof(gr_complex)*code_length_);
             }
-             */
-            memcpy(code_, code,sizeof(gr_complex)*code_length_);
+            
+            //memcpy(code_, code,sizeof(gr_complex)*code_length_);
             acquisition_cc_->set_local_code(code_);
 
             delete[] code;
@@ -285,10 +286,10 @@ float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
             frequency_bins++;
         }
     DLOG(INFO) << "Channel " << channel_<< "  Pfa = " << pfa;
-    unsigned int ncells = code_length_*frequency_bins;
+    unsigned int ncells = (code_length_/folding_factor_)*frequency_bins;
     double exponent = 1/(double)ncells;
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(code_length_);
+    double lambda = double((code_length_/folding_factor_));
     boost::math::exponential_distribution<double> mydist (lambda);
     float threshold = (float)quantile(mydist,val);
 
@@ -327,7 +328,3 @@ gr::basic_block_sptr GpsL1CaPcpsQuickSyncAcquisition::get_right_block()
 }
 
 
-unsigned int GpsL1CaPcpsQuickSyncAcquisition::get_folding_factor()
-{
-    return folding_factor_;
-}

@@ -132,10 +132,6 @@ public:
      */
     void reset();
 
-    /*!
-     * \brief Get the folding factor value
-     */
-    unsigned int get_folding_factor();
 
 private:
     ConfigurationInterface* configuration_;

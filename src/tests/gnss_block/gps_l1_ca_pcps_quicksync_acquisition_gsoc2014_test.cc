@@ -49,6 +49,9 @@
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_quicksync_acquisition.h"
 
+DEFINE_double(value_threshold, 0.3, "Value of the threshold for the acquisition");
+DEFINE_int32(value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
+
 using google::LogMessage;
 
 class GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test: public ::testing::Test
@@ -70,6 +73,7 @@ protected:
     void init();
     void config_1();
     void config_2();
+    void config_3();
     void start_queue();
     void wait_message();
     void process_message();
@@ -112,9 +116,8 @@ protected:
     double Pmd;
 
     std::ofstream pdpfafile;
-    double threshold_config2;
     unsigned int miss_detection_counter;
-    unsigned int CN0_dB_0;
+    bool dump_test_results;
 };
 
 
@@ -145,7 +148,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_1()
     signal.copy(gnss_synchro.Signal,2,0);
 
     integration_time_ms = 4;
-    fs_in = 4e6;
+    fs_in = 8e6;
 
     expected_delay_chips = 600;
     expected_doppler_hz = 750;
@@ -155,7 +158,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_1()
     num_of_realizations = 1;
 
     config = std::make_shared<InMemoryConfiguration>();
-
+Notice how
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
@@ -213,18 +216,18 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
     signal.copy(gnss_synchro.Signal,2,0);
 
     integration_time_ms = 4;
-    fs_in = 4e6;
+    fs_in = 8e6;
 
     expected_delay_chips = 600;
     expected_doppler_hz = 750;
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
-
-    threshold_config2 = 1.7800;
-    CN0_dB_0 = 41;
-
-
-    num_of_realizations = 100;
+	
+	/*Unset this flag to eliminates data logging for the Validation of results
+	probabilities test*/
+    dump_test_results = true;
+    
+    num_of_realizations = 10000;
 
     config = std::make_shared<InMemoryConfiguration>();
 
@@ -238,7 +241,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
 
     config->set_property("SignalSource.system_0", "G");
     config->set_property("SignalSource.PRN_0", "10");
-    config->set_property("SignalSource.CN0_dB_0", std::to_string(CN0_dB_0));
+    config->set_property("SignalSource.CN0_dB_0", std::to_string(FLAGS_value_CN0_dB_0));
     config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
     config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
 
@@ -289,11 +292,102 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
             std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_QuickSync_Acquisition");
-    config->set_property("Acquisition.threshold", std::to_string(threshold_config2));
+    config->set_property("Acquisition.threshold", std::to_string(FLAGS_value_threshold));
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
     config->set_property("Acquisition.dump", "false");
+}
+
+void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
+{
+    gnss_synchro.Channel_ID = 0;
+    gnss_synchro.System = 'G';
+    std::string signal = "1C";
+    signal.copy(gnss_synchro.Signal,2,0);
+
+    integration_time_ms = 4;
+    fs_in = 4e6;
+
+    expected_delay_chips = 600;
+    expected_doppler_hz = 750;
+    max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
+    max_delay_error_chips = 0.50;
+	
+	/*Unset this flag to eliminates data logging for the Validation of results
+	probabilities test*/
+    dump_test_results = true;
+    
+    num_of_realizations = 1;
+
+    config = std::make_shared<InMemoryConfiguration>();
+
+    config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
+
+    config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
+
+    config->set_property("SignalSource.item_type", "gr_complex");
+
+    config->set_property("SignalSource.num_satellites", "4");
+
+    config->set_property("SignalSource.system_0", "G");
+    config->set_property("SignalSource.PRN_0", "10");
+    config->set_property("SignalSource.CN0_dB_0", std::to_string(FLAGS_value_CN0_dB_0));
+    config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
+    config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
+
+    config->set_property("SignalSource.system_1", "G");
+    config->set_property("SignalSource.PRN_1", "15");
+    config->set_property("SignalSource.CN0_dB_1", "44");
+    config->set_property("SignalSource.doppler_Hz_1", "1000");
+    config->set_property("SignalSource.delay_chips_1", "100");
+
+    config->set_property("SignalSource.system_2", "G");
+    config->set_property("SignalSource.PRN_2", "21");
+    config->set_property("SignalSource.CN0_dB_2", "44");
+    config->set_property("SignalSource.doppler_Hz_2", "2000");
+    config->set_property("SignalSource.delay_chips_2", "200");
+
+    config->set_property("SignalSource.system_3", "G");
+    config->set_property("SignalSource.PRN_3", "22");
+    config->set_property("SignalSource.CN0_dB_3", "44");
+    config->set_property("SignalSource.doppler_Hz_3", "3000");
+    config->set_property("SignalSource.delay_chips_3", "300");
+
+    config->set_property("SignalSource.noise_flag", "true");
+    config->set_property("SignalSource.data_flag", "true");
+    config->set_property("SignalSource.BW_BB", "0.97");
+
+    config->set_property("InputFilter.implementation", "Fir_Filter");
+    config->set_property("InputFilter.input_item_type", "gr_complex");
+    config->set_property("InputFilter.output_item_type", "gr_complex");
+    config->set_property("InputFilter.taps_item_type", "float");
+    config->set_property("InputFilter.number_of_taps", "11");
+    config->set_property("InputFilter.number_of_bands", "2");
+    config->set_property("InputFilter.band1_begin", "0.0");
+    config->set_property("InputFilter.band1_end", "0.97");
+    config->set_property("InputFilter.band2_begin", "0.98");
+    config->set_property("InputFilter.band2_end", "1.0");
+    config->set_property("InputFilter.ampl1_begin", "1.0");
+    config->set_property("InputFilter.ampl1_end", "1.0");
+    config->set_property("InputFilter.ampl2_begin", "0.0");
+    config->set_property("InputFilter.ampl2_end", "0.0");
+    config->set_property("InputFilter.band1_error", "1.0");
+    config->set_property("InputFilter.band2_error", "1.0");
+    config->set_property("InputFilter.filter_type", "bandpass");
+    config->set_property("InputFilter.grid_density", "16");
+
+    config->set_property("Acquisition.item_type", "gr_complex");
+    config->set_property("Acquisition.if", "0");
+    config->set_property("Acquisition.coherent_integration_time_ms",
+            std::to_string(integration_time_ms));
+    config->set_property("Acquisition.max_dwells", "1");
+    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_QuickSync_Acquisition");
+    config->set_property("Acquisition.threshold", "1.2");
+    config->set_property("Acquisition.doppler_max", "10000");
+    config->set_property("Acquisition.doppler_step", "250");
+    config->set_property("Acquisition.bit_transition_flag", "false");
+    config->set_property("Acquisition.dump", "true");
 }
 
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::start_queue()
@@ -478,7 +572,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
                 }
 
             acquisition->set_local_code();
-            folding_factor = acquisition->get_folding_factor();
             start_queue();
 
             EXPECT_NO_THROW( {
@@ -505,6 +598,97 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "----Acquired: " << nsamples << " samples"<< std::endl;
 }
+
+
+TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise)
+{
+    config_3();
+
+    acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+
+    ASSERT_NO_THROW( {
+        acquisition->set_channel(1);
+    }) << "Failure setting channel."<< std::endl;
+
+    ASSERT_NO_THROW( {
+        acquisition->set_gnss_synchro(&gnss_synchro);
+    }) << "Failure setting gnss_synchro."<< std::endl;
+
+    ASSERT_NO_THROW( {
+        acquisition->set_channel_queue(&channel_internal_queue);
+    }) << "Failure setting channel_internal_queue."<< std::endl;
+
+    ASSERT_NO_THROW( {
+        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
+    }) << "Failure setting doppler_max."<< std::endl;
+
+    ASSERT_NO_THROW( {
+        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 250));
+    }) << "Failure setting doppler_step."<< std::endl;
+
+    ASSERT_NO_THROW( {
+        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+    }) << "Failure setting threshold."<< std::endl;
+
+    ASSERT_NO_THROW( {
+        acquisition->connect(top_block);
+    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+
+    acquisition->init();
+
+    ASSERT_NO_THROW( {
+        boost::shared_ptr<GenSignalSource> signal_source;
+        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
+        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
+        signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
+        signal_source->connect(top_block);
+        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+
+    // i = 0 --> satellite in acquisition is visible
+    // i = 1 --> satellite in acquisition is not visible
+
+    for (unsigned int i = 0; i < 2; i++)
+        {
+            init();
+
+            if (i == 0)
+                {
+                    gnss_synchro.PRN = 10; // This satellite is visible
+                }
+            else if (i == 1)
+                {
+                    gnss_synchro.PRN = 20; // This satellite is not visible
+                }
+
+            acquisition->set_local_code();
+            start_queue();
+
+            EXPECT_NO_THROW( {
+                top_block->run(); // Start threads and wait
+            }) << "Failure running the top_block." << std::endl;
+
+            if (i == 0)
+                {
+                    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+                    if (message == 1)
+                        {
+
+                            EXPECT_EQ((unsigned int)1, correct_estimation_counter)
+                                << "Acquisition failure. Incorrect parameters estimation.";
+                        }
+
+                }
+            else if (i == 1)
+                {
+                    EXPECT_EQ(2, message)
+                        << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                }
+        }
+    unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
+    std::cout <<  "----Acquired: " << nsamples << " samples"<< std::endl;
+}
+
 
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabilities)
 {
@@ -581,18 +765,20 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                     std::cout << "Estimated probability of detection = " << Pd << std::endl;
                     std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
                     std::cout << "Estimated probability of miss detection (satellite present) = " << Pmd << std::endl;
-
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+					
+					if(dump_test_results)
+					{
+		                std::stringstream filenamepd;
+		                filenamepd.str("");
+		                filenamepd << "../data/test_statistics_" << gnss_synchro.System
+		                           << "_" << gnss_synchro.Signal << "_sat_"
+		                           << gnss_synchro.PRN  << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";
 
-                    std::stringstream filenamepd;
-                    filenamepd.str("");
-                    filenamepd << "../data/test_statistics_" << gnss_synchro.System
-                               << "_" << gnss_synchro.Signal << "_sat_"
-                               << gnss_synchro.PRN  << "CN0_dB_0_" << CN0_dB_0 << "_dBHz.csv";
-
-                    pdpfafile.open(filenamepd.str().c_str(), std::ios::app | std::ios::out);
-                    pdpfafile << threshold_config2 << "," << Pd << "," << Pfa_p << "," << Pmd << std::endl;
-                    pdpfafile.close();
+		                pdpfafile.open(filenamepd.str().c_str(), std::ios::app | std::ios::out);
+		                pdpfafile << FLAGS_value_threshold << "," << Pd << "," << Pfa_p << "," << Pmd << std::endl;
+		                pdpfafile.close();
+                    }
 
 
                 }
@@ -600,26 +786,19 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                 {
                     std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
+					
+					if(dump_test_results)
+					{
+		                std::stringstream filenamepf;
+		                filenamepf.str("");
+		                filenamepf << "../data/test_statistics_" << gnss_synchro.System
+		                           << "_" << gnss_synchro.Signal << "_sat_"
+		                           << gnss_synchro.PRN  << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";
 
-                    std::stringstream filenamepf;
-                    filenamepf.str("");
-                    filenamepf << "../data/test_statistics_" << gnss_synchro.System
-                               << "_" << gnss_synchro.Signal << "_sat_"
-                               << gnss_synchro.PRN  << "CN0_dB_0_" << CN0_dB_0 << "_dBHz.csv";
-
-                    std::cout << filenamepf.str().c_str() << std::endl;
-                    pdpfafile.open(filenamepf.str().c_str(), std::ios::app | std::ios::out);
-                    if (pdpfafile.is_open())
-                        {
-                            std::cout << "File successfully open" << std::endl;
-                            pdpfafile << threshold_config2 << "," << Pfa_a << std::endl;
-                            pdpfafile.close();
-                        }
-                    else
-                        {
-                            std::cout << "Error opening file" << std::endl;
-                        }
-
+		                pdpfafile.open(filenamepf.str().c_str(), std::ios::app | std::ios::out);
+		                pdpfafile << FLAGS_value_threshold << "," << Pfa_a << std::endl;
+		                pdpfafile.close();
+                    }
                 }
         }
 }

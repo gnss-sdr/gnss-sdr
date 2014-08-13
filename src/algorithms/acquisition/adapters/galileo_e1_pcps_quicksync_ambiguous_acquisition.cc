@@ -60,7 +60,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     if_ = configuration_->property(role + ".ifreq", 0);
     dump_ = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 16);
+    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 8);
 
     /*--- Find number of samples per spreading code (4 ms)  -----------------*/
     code_length_ = round(
@@ -69,12 +69,17 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
                     / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
     int samples_per_ms = round(code_length_ / 4.0);
-    vector_length_ = sampled_ms_ * samples_per_ms;
-
-    /*Calculate the folding factor value based on the calculations*/
-    folding_factor_ = (unsigned int)ceil(sqrt(log2(code_length_)));
 
 
+    /*Calculate the folding factor value based on the formula described in the paper.
+    This may be a bug, but acquisition also work by variying the folding factor at va-
+    lues different that the expressed in the paper. In adition, it is important to point
+    out that by making the folding factor smaller we were able to get QuickSync work with 
+    Galileo. Future work should be directed to test this asumption statistically.*/
+    
+    //folding_factor_ = (unsigned int)ceil(sqrt(log2(code_length_)));
+    folding_factor_ = configuration_->property(role + ".folding_factor", 2);
+    
     if (sampled_ms_ % (folding_factor_*4) != 0)
         {
             LOG(WARNING) << "QuickSync Algorithm requires a coherent_integration_time"
@@ -94,7 +99,8 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
                     << sampled_ms_ << " ms will be used.";
 
         }
-
+   // vector_length_ = (sampled_ms_/folding_factor_) * code_length_;
+	vector_length_ = sampled_ms_ * samples_per_ms;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     if (!bit_transition_flag_)
@@ -110,7 +116,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
             default_dump_filename);
 
     code_ = new gr_complex[code_length_];
-    LOG(INFO) <<"Vector Length: "<<code_length_
+    LOG(INFO) <<"Vector Length: "<<vector_length_
             <<", Samples per ms: "<<samples_per_ms
             <<", Folding factor: "<<folding_factor_
             <<", Sampled  ms: "<<sampled_ms_
@@ -123,7 +129,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
                     samples_per_ms, code_length_, bit_transition_flag_, queue_,
                     dump_, dump_filename_);
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_,
-                    code_length_ * folding_factor_);
+                    vector_length_);
             DLOG(INFO) << "stream_to_vector_quicksync("
                     << stream_to_vector_->unique_id() << ")";
             DLOG(INFO) << "acquisition_quicksync(" << acquisition_cc_->unique_id()
@@ -263,14 +269,14 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_local_code()
             galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
                     cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
-            /*
-           for (unsigned int i = 0; i < sampled_ms_/4; i++)
+           
+           for (unsigned int i = 0; i < (sampled_ms_/(folding_factor_*4)); i++)
                {
                    memcpy(&(code_[i*code_length_]), code,
                           sizeof(gr_complex)*code_length_);
                }
-             */
-            memcpy(code_, code,sizeof(gr_complex)*code_length_);
+            
+           // memcpy(code_, code,sizeof(gr_complex)*code_length_);
             acquisition_cc_->set_local_code(code_);
 
             delete[] code;
@@ -298,10 +304,10 @@ float GalileoE1PcpsQuickSyncAmbiguousAcquisition::calculate_threshold(float pfa)
 
     DLOG(INFO) <<"Channel "<<channel_<<"  Pfa = "<< pfa;
 
-    unsigned int ncells = code_length_ * frequency_bins;
+    unsigned int ncells = code_length_/folding_factor_ * frequency_bins;
     double exponent = 1 / (double)ncells;
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(code_length_);
+    double lambda = double(code_length_/folding_factor_);
     boost::math::exponential_distribution<double> mydist (lambda);
     float threshold = (float)quantile(mydist,val);
 
@@ -340,8 +346,3 @@ gr::basic_block_sptr GalileoE1PcpsQuickSyncAmbiguousAcquisition::get_right_block
     return acquisition_cc_;
 }
 
-
-unsigned int GalileoE1PcpsQuickSyncAmbiguousAcquisition::get_folding_factor()
-{
-    return folding_factor_;
-}

@@ -104,7 +104,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     if (posix_memalign((void**)&d_magnitude_folded, 16, d_fft_size * sizeof(float)) == 0){};
 
     d_possible_delay = new unsigned int[d_folding_factor];
-
+	d_corr_output_f = new float[d_folding_factor];
 
     /*Create the d_code signal , which would store the values of the code in its
     original form to perform later correlation in time domain*/
@@ -147,7 +147,8 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
     d_code = NULL;
     delete d_possible_delay;
     d_possible_delay = NULL;
-
+    delete d_corr_output_f;
+	d_corr_output_f = NULL;
     if (d_dump)
         {
             d_dump_file.close();
@@ -404,7 +405,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                 {
                                     unsigned int detected_delay_samples_folded = 0;
                                     detected_delay_samples_folded = (indext % d_samples_per_code);
-                                    float corr_output_f[d_folding_factor];
+                                    //float d_corr_output_f[d_folding_factor];
                                     gr_complex complex_acumulator[100];
                                     //gr_complex complex_acumulator[d_folding_factor];
                                     //const int ff = d_folding_factor;
@@ -442,21 +443,10 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                         }
                                     /*Obtain maximun value of correlation given the
                                possible delay selected */
-                                    volk_32fc_magnitude_squared_32f_a(corr_output_f,
+                                    volk_32fc_magnitude_squared_32f_a(d_corr_output_f,
                                             complex_acumulator, d_folding_factor);
-                                    volk_32f_index_max_16u_a(&indext, corr_output_f,
+                                    volk_32f_index_max_16u_a(&indext, d_corr_output_f,
                                             d_folding_factor);
-
-                                    /*Display correlation results for galileo satellites*/
-                                    /*Display correlation results for gps satellites*/
-                                    LOG_IF(INFO, (d_possible_delay[0] == 351) || (d_possible_delay[0] == 2351))
-                                    << " Doppler: " << doppler
-                                    << ", Mag: " << d_mag
-                                    << ", Corr_value: "
-                                    << corr_output_f[0] << " "
-                                    << corr_output_f[1] << " "
-                                    << corr_output_f[2] << " "
-                                    << corr_output_f[3] << "\n";
 
                                     /*Now save the real code phase in the gnss_syncro
                                block for use in other stages*/
@@ -553,8 +543,8 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             DLOG(INFO) << "test statistics value " << d_test_statistics;
             DLOG(INFO) << "test statistics threshold " << d_threshold;
             DLOG(INFO) << "folding factor " << d_folding_factor;
-            DLOG(INFO) << "possible delay";
-            for (int i = 0; i < (int)d_folding_factor; i++) DLOG(INFO) << d_possible_delay[i];
+            DLOG(INFO) << "possible delay	correlation output";
+            for (int i = 0; i < (int)d_folding_factor; i++) DLOG(INFO) << d_possible_delay[i] <<"\t\t\t"<<d_corr_output_f[i];
             DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
             DLOG(INFO) << "magnitude folded " << d_mag;
@@ -582,8 +572,8 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             DLOG(INFO) << "test statistics value " << d_test_statistics;
             DLOG(INFO) << "test statistics threshold " << d_threshold;
             DLOG(INFO) << "folding factor "<<d_folding_factor;
-            DLOG(INFO) << "possible delay ";
-            for (int i = 0; i < (int)d_folding_factor; i++) DLOG(INFO) << d_possible_delay[i];
+            DLOG(INFO) << "possible delay	corr output";
+            for (int i = 0; i < (int)d_folding_factor; i++) DLOG(INFO) << d_possible_delay[i] <<"\t\t\t"<<d_corr_output_f[i];
             DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
             DLOG(INFO) << "magnitude folded " << d_mag;

@@ -158,7 +158,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_1()
     num_of_realizations = 1;
 
     config = std::make_shared<InMemoryConfiguration>();
-Notice how
+
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
 
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
@@ -223,11 +223,11 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
 	
-	/*Unset this flag to eliminates data logging for the Validation of results
+    /*Unset this flag to eliminates data logging for the Validation of results
 	probabilities test*/
     dump_test_results = true;
     
-    num_of_realizations = 10000;
+    num_of_realizations = 100;
 
     config = std::make_shared<InMemoryConfiguration>();
 

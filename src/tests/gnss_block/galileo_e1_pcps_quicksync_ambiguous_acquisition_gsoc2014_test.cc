@@ -235,7 +235,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_2()
 	probabilities test*/
     dump_test_results = true;
 
-    num_of_realizations = 10000;
+    num_of_realizations = 100;
 
     config = std::make_shared<InMemoryConfiguration>();
 
@@ -472,7 +472,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::process_message()
 
             Pd = (double)correct_estimation_counter / (double)num_of_realizations;
             Pfa_a = (double)detection_counter / (double)num_of_realizations;
-            Pfa_p = (double)(detection_counter-correct_estimation_counter) / (double)num_of_realizations;
+            Pfa_p = (double)(detection_counter - correct_estimation_counter) / (double)num_of_realizations;
             Pmd = (double)miss_detection_counter / (double)num_of_realizations;
 
             mean_acq_time_us /= (double)num_of_realizations;
@@ -498,7 +498,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, Instantiate)
 
 TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ConnectAndRun)
 {
-    LOG(INFO)<<"**Start connect and run test";
+    LOG(INFO) << "**Start connect and run test";
     int nsamples = floor(fs_in*integration_time_ms*1e-3);
     struct timeval tv;
     long long int begin = 0;
@@ -528,14 +528,14 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ConnectAndRun)
         end = tv.tv_sec * 1e6 + tv.tv_usec;
     }) << "Failure running the top_block."<< std::endl;
 
-    std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
-    LOG(INFO) <<"----end connect and run test-----";
-    LOG(INFO) <<"**End connect and run test";
+    std::cout << "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
+    LOG(INFO) << "----end connect and run test-----";
+    LOG(INFO) << "**End connect and run test";
 }
 
 TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResults)
 {
-    LOG(INFO)<<"Start validation of results test";
+    LOG(INFO) << "Start validation of results test";
     config_1();
 
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition", 1, 1, queue);
@@ -621,7 +621,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
 
 TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResultsWithNoise)
 {
-    LOG(INFO)<<"Start validation of results with noise+interference test";
+    LOG(INFO) << "Start validation of results with noise+interference test";
     config_3();
 
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition", 1, 1, queue);

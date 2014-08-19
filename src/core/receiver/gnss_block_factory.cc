@@ -61,10 +61,12 @@
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
+#include "gps_l1_ca_pcps_quicksync_acquisition.h"
 #include "galileo_e1_pcps_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_8ms_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_tong_ambiguous_acquisition.h"
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
+#include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_pll_optim_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
@@ -429,6 +431,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L1_CA_PCPS_QuickSync_Acquisition") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_( new GpsL1CaPcpsQuickSyncAcquisition(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1PcpsAmbiguousAcquisition(configuration.get(), role, in_streams,
@@ -450,6 +458,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1PcpsCccwsrAmbiguousAcquisition(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_( new GalileoE1PcpsQuickSyncAmbiguousAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }
@@ -618,6 +632,12 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
+    else if (implementation.compare("GPS_L1_CA_PCPS_QuickSync_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_( new GpsL1CaPcpsQuickSyncAcquisition(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GalileoE1PcpsAmbiguousAcquisition(configuration.get(), role, in_streams,
@@ -639,6 +659,12 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else if (implementation.compare("Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GalileoE1PcpsCccwsrAmbiguousAcquisition(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_( new GalileoE1PcpsQuickSyncAmbiguousAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

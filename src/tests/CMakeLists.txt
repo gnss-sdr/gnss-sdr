@@ -205,11 +205,13 @@ add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc
 #     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc
      #${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc

@@ -728,7 +728,6 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
 //                {
 //                    gnss_synchro.PRN = 19; // This satellite is not visible
 //                }
-
             acquisition->set_local_code();
 
             start_queue();

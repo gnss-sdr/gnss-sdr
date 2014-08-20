@@ -1,7 +1,12 @@
 /*!
  * \file galileo_e5a_telemetry_decoder_cc.cc
  * \brief Implementation of a Galileo FNAV message demodulator block
- * \author Marc Sales 2014. marcsales92(at)gmail.com
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          </ul>
+ *
  *
  * -------------------------------------------------------------------------
  *
@@ -100,9 +105,10 @@ private:
 //    signed int d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
     double d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
     signed int *d_preamble_symbols;
-    float d_current_symbol_float;
+    double d_current_symbol;
     long unsigned int d_symbol_counter;
     int d_prompt_counter;
+    int d_sign_init;
 
     long unsigned int d_sample_counter;
     long unsigned int d_preamble_index;

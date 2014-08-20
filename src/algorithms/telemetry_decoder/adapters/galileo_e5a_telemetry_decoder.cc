@@ -2,7 +2,12 @@
  * \file galileo_e5a_telemetry_decoder.h
  * \brief Interface of an adapter of a GALILEO E5a FNAV data decoder block
  * to a TelemetryDecoderInterface
- * \author Marc Sales 2014 marcsales92(at)gmail.com
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          </ul>
+ *
  *
  * -------------------------------------------------------------------------
  *

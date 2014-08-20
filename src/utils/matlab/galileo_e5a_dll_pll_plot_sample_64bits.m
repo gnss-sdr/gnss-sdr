@@ -51,8 +51,10 @@ for N=1:1:channels
         trackResults(N).pllDiscr       = GNSS_tracking(N).carr_error.';
         trackResults(N).pllDiscrFilt   = GNSS_tracking(N).carr_nco.';
 
-        trackResults(N).I_P=GNSS_tracking(N).prompt_I.';
-        trackResults(N).Q_P=GNSS_tracking(N).prompt_Q.';
+        trackResults(N).I_PN=GNSS_tracking(N).prompt_I.';
+        trackResults(N).Q_PN=GNSS_tracking(N).prompt_Q.';
+        trackResults(N).Q_P=zeros(1,length(GNSS_tracking(N).P));
+        trackResults(N).I_P=GNSS_tracking(N).P.';
 
         trackResults(N).I_E= GNSS_tracking(N).E.';
         trackResults(N).I_L = GNSS_tracking(N).L.';
@@ -63,7 +65,7 @@ for N=1:1:channels
         % Use original MATLAB tracking plot function
         settings.numberOfChannels=channels;
         settings.msToProcess=length(GNSS_tracking(N).E);
-        plotTracking(N,trackResults,settings)
+        plotTrackingE5a(N,trackResults,settings)
 end
 
 for N=1:1:channels

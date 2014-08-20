@@ -94,12 +94,18 @@ void GalileoE5aTrackingTest::init()
     config->set_property("Tracking.dump_filename", "../data/e5a_tracking_ch_");
     config->set_property("Tracking.implementation", "Galileo_E5a_DLL_PLL_Tracking");
     config->set_property("Tracking.early_late_space_chips", "0.5");
-    config->set_property("Tracking.pll_bw_hz", "5.0");
-    config->set_property("Tracking.dll_bw_hz", "2.0");
 
     config->set_property("Tracking.pll_bw_hz_init","20.0");
-    config->set_property("Tracking.dll_bw_hz_init","20.0");
-    config->set_property("Tracking.ti_ms","3");
+//    config->set_property("Tracking.pll_bw_hz_init","5.0");
+    config->set_property("Tracking.dll_bw_hz_init","2.0");
+
+    config->set_property("Tracking.pll_bw_hz", "5");
+    config->set_property("Tracking.dll_bw_hz", "2");
+    config->set_property("Tracking.ti_ms","1");
+
+//    config->set_property("Tracking.pll_bw_hz", "5");
+//    config->set_property("Tracking.dll_bw_hz", "2");
+//    config->set_property("Tracking.ti_ms","1");
     //config->set_property("Tracking.fll_bw_hz", "10.0");
 }
 /*
@@ -169,7 +175,7 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    int num_samples = 32000000000; // 32 Msps
+    int num_samples = 320000000*1.5; // 32 Msps
     //unsigned int skiphead_sps = 98000; // 1 Msample
     unsigned int skiphead_sps = 0; // 1 Msampl
 //    unsigned int skiphead_sps = 104191; // 1 Msampl
@@ -181,20 +187,21 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
 
 //REAL
     gnss_synchro.Acq_delay_samples = 15579+1; // 32 Msps
-    gnss_synchro.Acq_doppler_hz = 3500; // 32 Msps
+//    gnss_synchro.Acq_doppler_hz = 3500; // 32 Msps
+    gnss_synchro.Acq_doppler_hz = 3750; // 500 Hz resolution
 //    gnss_synchro.Acq_samplestamp_samples = 98000;
     gnss_synchro.Acq_samplestamp_samples = 0;
 //SIM
 //    gnss_synchro.Acq_delay_samples = 14001+1; // 32 Msps
 //    //gnss_synchro.Acq_doppler_hz = 2750; // 32 Msps (real 2800)
-//    gnss_synchro.Acq_doppler_hz = 2800; // 32 Msps (real 2800)
-//    //gnss_synchro.Acq_doppler_hz = 0; // 32 Msps (real 2800)
+////    gnss_synchro.Acq_doppler_hz = 2800; // 32 Msps (real 2800)
+//    gnss_synchro.Acq_doppler_hz = 0; // 32 Msps (real 2800)
 ////    gnss_synchro.Acq_samplestamp_samples = 98000;
 //    gnss_synchro.Acq_samplestamp_samples = 0;
 
 //SIM2
 //    gnss_synchro.Acq_delay_samples = 5810; // 32 Msps
-//    gnss_synchro.Acq_doppler_hz = 2750;
+//    gnss_synchro.Acq_doppler_hz = 2800;
 //    gnss_synchro.Acq_samplestamp_samples = 0;
 
     ASSERT_NO_THROW( {

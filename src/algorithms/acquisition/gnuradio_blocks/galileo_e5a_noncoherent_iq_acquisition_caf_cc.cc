@@ -55,12 +55,13 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
                                  gr::msg_queue::sptr queue, bool dump,
                                  std::string dump_filename,
                                  bool both_signal_components_,
-                                 int CAF_window_hz_)
+                                 int CAF_window_hz_,
+                                 int Zero_padding_)
 {
 
     return galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr(
             new galileo_e5a_noncoherentIQ_acquisition_caf_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                                     samples_per_code, bit_transition_flag, queue, dump, dump_filename, both_signal_components_, CAF_window_hz_));
+                                     samples_per_code, bit_transition_flag, queue, dump, dump_filename, both_signal_components_, CAF_window_hz_, Zero_padding_));
 }
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisition_caf_cc(
@@ -72,7 +73,8 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
                          gr::msg_queue::sptr queue, bool dump,
                          std::string dump_filename,
                          bool both_signal_components_,
-                         int CAF_window_hz_) :
+                         int CAF_window_hz_,
+                         int Zero_padding_) :
     gr::block("galileo_e5a_noncoherentIQ_acquisition_caf_cc",
 		gr::io_signature::make(1, 1, sizeof(gr_complex)),
 		gr::io_signature::make(0, 0, sizeof(gr_complex)))
@@ -88,6 +90,14 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_max_dwells = max_dwells;
     d_well_count = 0;
     d_doppler_max = doppler_max;
+    if (Zero_padding_ > 0)
+	{
+	    d_sampled_ms = 1;
+	}
+    else
+	{
+	    d_sampled_ms = sampled_ms;
+	}
     d_fft_size = sampled_ms * d_samples_per_ms;
     d_mag = 0;
     d_input_power = 0.0;
@@ -95,8 +105,6 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_bit_transition_flag = bit_transition_flag;
     d_buffer_count=0;
     d_both_signal_components = both_signal_components_;
-//    d_CAF_filter = true;
-//    d_CAF_window_hz = 6000;
     d_CAF_window_hz = CAF_window_hz_;
 
     //todo: do something if posix_memalign fails
@@ -109,8 +117,8 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
 	    if (posix_memalign((void**)&d_fft_code_Q_A, 16, d_fft_size * sizeof(gr_complex)) == 0){};
 	    if (posix_memalign((void**)&d_magnitudeQA, 16, d_fft_size * sizeof(float)) == 0){};
 	}
-    // IF INTEGRATION TIME > 1
-    if (d_samples_per_ms != d_fft_size)
+    // IF COHERENT INTEGRATION TIME > 1
+    if (d_sampled_ms > 1)
 	{
 	    if (posix_memalign((void**)&d_fft_code_I_B, 16, d_fft_size * sizeof(gr_complex)) == 0){};
 	    if (posix_memalign((void**)&d_magnitudeIB, 16, d_fft_size * sizeof(float)) == 0){};
@@ -158,7 +166,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::~galileo_e5a_noncoherentIQ_acquisi
 	    free(d_magnitudeQA);
 	}
     // IF INTEGRATION TIME > 1
-    if (d_samples_per_ms != d_fft_size)
+    if (d_sampled_ms > 1)
 	{
 	    free(d_fft_code_I_B);
 	    free(d_magnitudeIB);
@@ -217,7 +225,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
 	}
     // IF INTEGRATION TIME > 1 code, we need to evaluate the other possible combination
     // Note: max integration time allowed = 3ms (dealt in adapter)
-    if (d_samples_per_ms != d_fft_size)
+    if (d_sampled_ms > 1)
 	{
 	    // DATA CODE B: First replica is inverted (0,1,1)
 	    volk_32fc_s32fc_multiply_32fc_a(&(d_fft_if->get_inbuf())[0],
@@ -430,7 +438,6 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 			// Search maximum
 			volk_32fc_magnitude_squared_32f_a(d_magnitudeIA, d_ifft->get_outbuf(), d_fft_size);
 			volk_32f_index_max_16u_a(&indext_IA, d_magnitudeIA, d_fft_size);
-
 			// Normalize the maximum value to correct the scale factor introduced by FFTW
 			magt_IA = d_magnitudeIA[indext_IA] / (fft_normalization_factor * fft_normalization_factor);
 
@@ -444,7 +451,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 				volk_32f_index_max_16u_a(&indext_QA, d_magnitudeQA, d_fft_size);
 				magt_QA = d_magnitudeQA[indext_QA] / (fft_normalization_factor * fft_normalization_factor);
 			    }
-			if (d_samples_per_ms != d_fft_size) // If Integration time > 1 code
+			if (d_sampled_ms > 1) // If Integration time > 1 code
 			    {
 				// REPEAT FOR ALL CODES. CODE_IB
 				volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
@@ -470,7 +477,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 			// and store the result in the I channel.
 			// If CAF filter to resolve doppler ambiguity is needed,
 			// peak is stored before non-coherent integration.
-			if (d_samples_per_ms != d_fft_size) // T_integration > 1 code
+			if (d_sampled_ms > 1) // T_integration > 1 code
 			    {
 				if (magt_IA >= magt_IB)
 				    {
@@ -580,7 +587,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 				filename << "../data/test_statistics_E5a_sat_"
 					<< d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
 				d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-				if (d_samples_per_ms != d_fft_size) // If integration time > 1 code
+				if (d_sampled_ms > 1) // If integration time > 1 code
 				    {
 					if (magt_IA >= magt_IB)
 					    {
@@ -598,7 +605,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 				d_dump_file.close();
 			    }
 		    }
-		std::cout << "d_mag " << d_mag << ".d_sample_counter " << d_sample_counter << std::endl;
+//		std::cout << "d_mag " << d_mag << ".d_sample_counter " << d_sample_counter << ". acq delay " << d_gnss_synchro->Acq_delay_samples<< " indext "<< indext << std::endl;
 		// 6 OPTIONAL: CAF filter to avoid Doppler ambiguity in bit transition.
 		if (d_CAF_window_hz > 0)
 		    {
@@ -607,7 +614,10 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 //			double* accum;
 			if (posix_memalign((void**)&accum, 16, sizeof(float)) == 0){};
 			CAF_bins_half = d_CAF_window_hz/(2*d_doppler_step);
-			std::cout << "CAF_bins_half " << CAF_bins_half << std::endl;
+			float weighting_factor;
+			weighting_factor = 0.5/(float)CAF_bins_half;
+//			weighting_factor = 0;
+//			std::cout << "weighting_factor " << weighting_factor << std::endl;
 			// Initialize first iterations
 			for (int doppler_index=0;doppler_index<CAF_bins_half;doppler_index++)
 			    {
@@ -615,20 +625,20 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 //				volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], d_CAF_vector_I, CAF_bins_half+doppler_index+1);
 				for (int i = 0; i < CAF_bins_half+doppler_index+1; i++)
 				    {
-					d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-0.1*(abs(doppler_index - i)));
+					d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-weighting_factor*(unsigned int)(abs(doppler_index - i)));
 				    }
 //				d_CAF_vector[doppler_index] /= CAF_bins_half+doppler_index+1;
-				d_CAF_vector[doppler_index] /= 1+CAF_bins_half+doppler_index - 0.1*CAF_bins_half*(CAF_bins_half+1)/2 - 0.1*doppler_index*(doppler_index+1)/2; // triangles = [n*(n+1)/2]
+				d_CAF_vector[doppler_index] /= 1+CAF_bins_half+doppler_index - weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2 - weighting_factor*doppler_index*(doppler_index+1)/2; // triangles = [n*(n+1)/2]
 				if (d_both_signal_components)
 				    {
 					accum[0] = 0;
 //					volk_32f_accumulator_s32f_a(&accum[0], d_CAF_vector_Q, CAF_bins_half+doppler_index+1);
 					for (int i = 0; i < CAF_bins_half+doppler_index+1; i++)
 					    {
-						accum[0] += d_CAF_vector_Q[i] * (1-0.1*(abs(doppler_index - i)));
+						accum[0] += d_CAF_vector_Q[i] * (1-weighting_factor*(unsigned int)(abs(doppler_index - i)));
 					    }
 //					accum[0] /= CAF_bins_half+doppler_index+1;
-					accum[0] /= 1+CAF_bins_half+doppler_index - 0.1*CAF_bins_half*(CAF_bins_half+1)/2 - 0.1*doppler_index*(doppler_index+1)/2; // triangles = [n*(n+1)/2]
+					accum[0] /= 1+CAF_bins_half+doppler_index - weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2 - weighting_factor*doppler_index*(doppler_index+1)/2; // triangles = [n*(n+1)/2]
 					d_CAF_vector[doppler_index] += accum[0];
 				    }
 			    }
@@ -639,20 +649,20 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 //				volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], 2*CAF_bins_half+1);
 				for (int i = doppler_index-CAF_bins_half; i < doppler_index+CAF_bins_half+1; i++)
 				    {
-					d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-0.1*(abs(doppler_index - i)));
+					d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-weighting_factor*(unsigned int)(abs(doppler_index - i)));
 				    }
 //				d_CAF_vector[doppler_index] /= 2*CAF_bins_half+1;
-				d_CAF_vector[doppler_index] /= 1+2*CAF_bins_half - 2*0.1*CAF_bins_half*(CAF_bins_half+1)/2;
+				d_CAF_vector[doppler_index] /= 1+2*CAF_bins_half - 2*weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2;
 				if (d_both_signal_components)
 				    {
 					accum[0] = 0;
 //					volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], 2*CAF_bins_half);
 					for (int i = doppler_index-CAF_bins_half; i < doppler_index+CAF_bins_half+1; i++)
 					    {
-						accum[0] += d_CAF_vector_Q[i] * (1-0.1*(abs(doppler_index - i)));
+						accum[0] += d_CAF_vector_Q[i] * (1-weighting_factor*(unsigned int)(abs(doppler_index - i)));
 					    }
 //					accum[0] /= 2*CAF_bins_half+1;
-					accum[0] /= 1+2*CAF_bins_half - 2*0.1*CAF_bins_half*(CAF_bins_half+1)/2;
+					accum[0] /= 1+2*CAF_bins_half - 2*weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2;
 					d_CAF_vector[doppler_index] += accum[0];
 				    }
 			    }
@@ -663,20 +673,20 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 //				volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
 				for (int i = doppler_index-CAF_bins_half; i < d_num_doppler_bins; i++)
 				    {
-					d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-0.1*(abs(doppler_index - i)));
+					d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-weighting_factor*(abs(doppler_index - i)));
 				    }
 //				d_CAF_vector[doppler_index] /= CAF_bins_half+(d_num_doppler_bins-doppler_index);
-				d_CAF_vector[doppler_index] /= 1+CAF_bins_half+(d_num_doppler_bins-doppler_index-1) -0.1*CAF_bins_half*(CAF_bins_half+1)/2 -0.1*(d_num_doppler_bins-doppler_index-1)*(d_num_doppler_bins-doppler_index)/2;
+				d_CAF_vector[doppler_index] /= 1+CAF_bins_half+(d_num_doppler_bins-doppler_index-1) -weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2 -weighting_factor*(d_num_doppler_bins-doppler_index-1)*(d_num_doppler_bins-doppler_index)/2;
 				if (d_both_signal_components)
 				    {
 					accum[0] = 0;
 //					volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
 					for (int i = doppler_index-CAF_bins_half; i < d_num_doppler_bins; i++)
 					    {
-						accum[0] += d_CAF_vector_Q[i] * (1-0.1*(abs(doppler_index - i)));
+						accum[0] += d_CAF_vector_Q[i] * (1-weighting_factor*(abs(doppler_index - i)));
 					    }
 //					accum[0] /= CAF_bins_half+(d_num_doppler_bins-doppler_index);
-					accum[0] /= 1+CAF_bins_half+(d_num_doppler_bins-doppler_index-1) -0.1*CAF_bins_half*(CAF_bins_half+1)/2 -0.1*(d_num_doppler_bins-doppler_index-1)*(d_num_doppler_bins-doppler_index)/2;
+					accum[0] /= 1+CAF_bins_half+(d_num_doppler_bins-doppler_index-1) -weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2 -weighting_factor*(d_num_doppler_bins-doppler_index-1)*(d_num_doppler_bins-doppler_index)/2;
 					d_CAF_vector[doppler_index] += accum[0];
 				    }
 			    }

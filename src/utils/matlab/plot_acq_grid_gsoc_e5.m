@@ -83,7 +83,7 @@ if (CAF > 0)
     filename=[path 'test_statistics_E5a_sat_' num2str(sat) '_CAF.dat'];
     fid=fopen(filename,'r');
     xx=fread(fid,'float');%floats from squared correlation
-    acq_grid(:,col)=abs(xx);
+    acq_grid(:,col(1))=abs(xx);
     Doppler_error_Hz = Doppler_axes(xx==max(xx))
     maximum_correlation_peak = max(xx)
 else

@@ -63,7 +63,8 @@ galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(unsigned int sampled_ms,
                          gr::msg_queue::sptr queue, bool dump,
                          std::string dump_filename,
                          bool both_signal_components_,
-                         int CAF_window_hz_);
+                         int CAF_window_hz_,
+                         int Zero_padding_);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -84,7 +85,8 @@ private:
             gr::msg_queue::sptr queue, bool dump,
             std::string dump_filename,
             bool both_signal_components_,
-            int CAF_window_hz_);
+            int CAF_window_hz_,
+            int Zero_padding_);
 
     galileo_e5a_noncoherentIQ_acquisition_caf_cc(
 	    unsigned int sampled_ms,
@@ -95,7 +97,8 @@ private:
             gr::msg_queue::sptr queue, bool dump,
             std::string dump_filename,
             bool both_signal_components_,
-            int CAF_window_hz_);
+            int CAF_window_hz_,
+            int Zero_padding_);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
             int doppler_offset);
@@ -104,6 +107,7 @@ private:
     long d_fs_in;
     long d_freq;
     int d_samples_per_ms;
+    int d_sampled_ms;
     int d_samples_per_code;
     unsigned int d_doppler_resolution;
     float d_threshold;

@@ -1,7 +1,12 @@
 /*!
  * \file galileo_e5a_telemetry_decoder_cc.cc
  * \brief Implementation of a Galileo FNAV message demodulator block
- * \author Marc Sales 2014. marcsales92(at)gmail.com
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          </ul>
+ *
  *
  * -------------------------------------------------------------------------
  *
@@ -246,7 +251,7 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     d_preamble_index = 0;
     d_preamble_time_seconds = 0;
     d_flag_frame_sync = false;
-    d_current_symbol_float = 0;
+    d_current_symbol = 0;
     d_prompt_counter = 0;
     d_symbol_counter = 0;
 
@@ -254,6 +259,7 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     d_TOW_at_current_symbol = 0;
 
     d_CRC_error_counter = 0;
+    d_sign_init = 0;
 }
 
 galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
@@ -282,10 +288,10 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 	    {
 		if (in[0][0].Prompt_I != 0)
 		    {
-			d_current_symbol_float += (float)in[0][0].Prompt_I;
+			d_current_symbol += in[0][0].Prompt_I;
 			if (d_prompt_counter == GALILEO_FNAV_CODES_PER_SYMBOL - 1)
 			    {
-				if (d_current_symbol_float > 0)
+				if (d_current_symbol > 0)
 				    {
 					d_page_symbols[d_symbol_counter] = 1;
 				    }
@@ -293,7 +299,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 				    {
 					d_page_symbols[d_symbol_counter] = -1;
 				    }
-				d_current_symbol_float = 0;
+				d_current_symbol = 0;
 				d_symbol_counter++;
 				d_prompt_counter = 0;
 				if (d_symbol_counter == GALILEO_FNAV_PREAMBLE_LENGTH_BITS-1)
@@ -310,10 +316,10 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 	    }
 	case 1:
 	    {
-		d_current_symbol_float += (float)in[0][0].Prompt_I;
+		d_current_symbol += in[0][0].Prompt_I;
 		if (d_prompt_counter == GALILEO_FNAV_CODES_PER_SYMBOL - 1)
 		    {
-			if (d_current_symbol_float > 0)
+			if (d_current_symbol > 0)
 			    {
 				d_page_symbols[d_symbol_counter] = 1;
 			    }
@@ -322,7 +328,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 				d_page_symbols[d_symbol_counter] = -1;
 			    }
 //			d_page_symbols[d_symbol_counter] = d_current_symbol_float/(float)GALILEO_FNAV_CODES_PER_SYMBOL;
-			d_current_symbol_float = 0;
+			d_current_symbol = 0;
 			d_symbol_counter++;
 			d_prompt_counter = 0;
 			// **** Attempt Preamble correlation ****
@@ -384,10 +390,10 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 	    }
 	case 2:
 	    {
-		d_current_symbol_float += (float)in[0][0].Prompt_I;
+		d_current_symbol += in[0][0].Prompt_I;
 		if (d_prompt_counter == GALILEO_FNAV_CODES_PER_SYMBOL - 1)
 		    {
-			if (d_current_symbol_float > 0)
+			if (d_current_symbol > 0)
 			    {
 				d_page_symbols[d_symbol_counter] = 1;
 			    }
@@ -396,7 +402,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 				d_page_symbols[d_symbol_counter] = -1;
 			    }
 //			d_page_symbols[d_symbol_counter] = d_current_symbol_float/(float)GALILEO_FNAV_CODES_PER_SYMBOL;
-			d_current_symbol_float = 0;
+			d_current_symbol = 0;
 			d_symbol_counter++;
 			d_prompt_counter = 0;
 			// At the right sample stamp, check preamble synchro
@@ -444,15 +450,6 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 				if (corr_flag==true) // NEW PREAMBLE RECEIVED. DECODE PAGE
 				    {
 					d_preamble_index = d_sample_counter - GALILEO_FNAV_CODES_PER_PREAMBLE;//record the preamble sample stamp
-					// Change sign if necessary
-//					if (corr_sign < 0)
-//					    {
-//						// NOTE: exists volk library for integers ???
-//						for (int i = 0; i < d_symbol_counter; i++)
-//						    {
-//							d_page_symbols[i] = -d_page_symbols[i];
-//						    }
-//					    }
 					// DECODE WORD
 					decode_word(d_page_symbols, GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS);
 					// CHECK CRC

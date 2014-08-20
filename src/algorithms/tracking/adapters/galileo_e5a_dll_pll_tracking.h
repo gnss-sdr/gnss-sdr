@@ -1,8 +1,39 @@
-/*
- * galileo_e5a_dll_pll_tracking.h
+/*!
+ * \file galileo_e5a_dll_fll_pll_tracking.h
+ * \brief Adapts a code DLL + carrier PLL
+ *  tracking block to a TrackingInterface for Galileo E5a signals
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
+ *  Galileo E5a data and pilot Signals
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
- *  Created on: Jun 19, 2014
- *      Author: marc
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
 
 #ifndef GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_

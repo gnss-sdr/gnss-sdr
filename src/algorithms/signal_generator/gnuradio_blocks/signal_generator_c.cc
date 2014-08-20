@@ -83,7 +83,6 @@ signal_generator_c::signal_generator_c (std::vector<std::string> signal1, std::v
 void signal_generator_c::init()
 {
     work_counter_ = 0;
-    std::cout << "work counter reset to 0"<< std::endl;
 
     if (posix_memalign((void**)&complex_phase_, 16, vector_length_ * sizeof(gr_complex)) == 0){};
 
@@ -99,9 +98,6 @@ void signal_generator_c::init()
             data_modulation_.push_back((Galileo_E5a_I_SECONDARY_CODE.at(0)=='0' ? 1 : -1));
             pilot_modulation_.push_back((Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat]].at(0)=='0' ? 1 : -1));
 
-            std::cout << "data bit init" << current_data_bits_[sat] << std::endl;
-
-            std::cout << "data bit init" << current_data_bit_int_[sat] << std::endl;
 
             if (system_[sat] == "G")
                 {
@@ -115,14 +111,11 @@ void signal_generator_c::init()
                 {
         	    if (signal_[sat].at(0)=='5')
         		{
-//        		    int codelen = (int)(Galileo_E5a_CODE_LENGTH_CHIPS * Galileo_E5a_Q_SECONDARY_CODE_LENGTH);
-
         		    int codelen = (int)Galileo_E5a_CODE_LENGTH_CHIPS;
         		    samples_per_code_.push_back(round((float)fs_in_ / (Galileo_E5a_CODE_CHIP_RATE_HZ
         			    / codelen)));
         		    num_of_codes_per_vector_.push_back(1);
 
-//        		    num_of_codes_per_vector_.push_back((int)Galileo_E5a_Q_SECONDARY_CODE_LENGTH);
         		    data_bit_duration_ms_.push_back(1e3/Galileo_E5a_SYMBOL_RATE_BPS);
         		}
         	    else
@@ -138,25 +131,25 @@ void signal_generator_c::init()
 
     random_ = new gr::random();
 
- std::cout << "fs_in: " << fs_in_ << std::endl;
- std::cout << "data_flag: " << data_flag_ << std::endl;
- std::cout << "noise_flag_: " << noise_flag_ << std::endl;
- std::cout << "num_sats_: " << num_sats_ << std::endl;
- std::cout << "vector_length_: " << vector_length_ << std::endl;
- std::cout << "BW_BB_: " << BW_BB_ << std::endl;
+// std::cout << "fs_in: " << fs_in_ << std::endl;
+// std::cout << "data_flag: " << data_flag_ << std::endl;
+// std::cout << "noise_flag_: " << noise_flag_ << std::endl;
+// std::cout << "num_sats_: " << num_sats_ << std::endl;
+// std::cout << "vector_length_: " << vector_length_ << std::endl;
+// std::cout << "BW_BB_: " << BW_BB_ << std::endl;
 
- for (unsigned int i = 0; i < num_sats_; i++)
- {
- std::cout << "Sat " << i << ": " << std::endl;
- std::cout << " System " << system_[i] << ": " << std::endl;
- std::cout << " PRN: " << PRN_[i] << std::endl;
- std::cout << " CN0: " << CN0_dB_[i] << std::endl;
- std::cout << " Doppler: " << doppler_Hz_[i] << std::endl;
- std::cout << " Delay: " << delay_chips_[i] << std::endl;
- std::cout << " Samples per code = " << samples_per_code_[i] << std::endl;
- std::cout << " codes per vector = " << num_of_codes_per_vector_[i] << std::endl;
- std::cout << " data_bit_duration = " << data_bit_duration_ms_[i] << std::endl;
- }
+// for (unsigned int i = 0; i < num_sats_; i++)
+// {
+// std::cout << "Sat " << i << ": " << std::endl;
+// std::cout << " System " << system_[i] << ": " << std::endl;
+// std::cout << " PRN: " << PRN_[i] << std::endl;
+// std::cout << " CN0: " << CN0_dB_[i] << std::endl;
+// std::cout << " Doppler: " << doppler_Hz_[i] << std::endl;
+// std::cout << " Delay: " << delay_chips_[i] << std::endl;
+// std::cout << " Samples per code = " << samples_per_code_[i] << std::endl;
+// std::cout << " codes per vector = " << num_of_codes_per_vector_[i] << std::endl;
+// std::cout << " data_bit_duration = " << data_bit_duration_ms_[i] << std::endl;
+// }
 }
 
 void signal_generator_c::generate_codes()
@@ -170,7 +163,6 @@ void signal_generator_c::generate_codes()
                                vector_length_ * sizeof(gr_complex)) == 0){};
 
             gr_complex code[64000];//[samples_per_code_[sat]];
-            //gr_complex code[64000];
 
             if (system_[sat] == "G")
                 {
@@ -294,7 +286,6 @@ gr_vector_void_star &output_items)
     gr_complex *out = (gr_complex *) output_items[0];
 
     work_counter_++;
-    //std::cout<<"work counter = "<<work_counter_<<std::endl;
 
     unsigned int out_idx = 0;
     unsigned int i = 0;

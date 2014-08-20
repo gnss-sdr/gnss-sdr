@@ -107,7 +107,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(sampled_ms_, max_dwells_,
                     shift_resolution_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, queue_, dump_, dump_filename_, both_signal_components, CAF_window_hz_);
+                    bit_transition_flag_, queue_, dump_, dump_filename_, both_signal_components, CAF_window_hz_,Zero_padding);
         }
         else
         {

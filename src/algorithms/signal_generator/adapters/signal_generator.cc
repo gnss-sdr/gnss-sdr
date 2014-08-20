@@ -89,9 +89,6 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
 	    {
 		vector_length = round((float) fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ
 			/ Galileo_E5a_CODE_LENGTH_CHIPS));
-//		vector_length = round((float) fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ
-//		                      / Galileo_E5a_CODE_LENGTH_CHIPS))
-//		                	      * Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
 	    }
 	else
 	    {

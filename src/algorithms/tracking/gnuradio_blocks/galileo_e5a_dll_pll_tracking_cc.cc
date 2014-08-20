@@ -3,6 +3,11 @@
  * \brief Implementation of a code DLL + carrier PLL
  *  tracking block for Galileo E5a signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
@@ -144,11 +149,7 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     if (posix_memalign((void**)&d_Early, 16, sizeof(gr_complex)) == 0){};
     if (posix_memalign((void**)&d_Prompt, 16, sizeof(gr_complex)) == 0){};
     if (posix_memalign((void**)&d_Late, 16, sizeof(gr_complex)) == 0){};
-//    if (posix_memalign((void**)&d_Prompt_data, 16, sizeof(gr_complex)*MAX_INTEGRATION_TIME_MS) == 0){};
     if (posix_memalign((void**)&d_Prompt_data, 16, sizeof(gr_complex)) == 0){};
-    // space for buffer, notice max Ti+1 to ensure enough space since code samples is doppler dependant.
-//    if (posix_memalign((void**)&d_inbuffer, 16, (MAX_INTEGRATION_TIME_MS+1)*d_vector_length*sizeof(gr_complex)) == 0){};
-
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
     d_code_freq_chips = Galileo_E5a_CODE_CHIP_RATE_HZ;
@@ -165,15 +166,12 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     d_sample_counter = 0;
     d_acq_sample_stamp = 0;
 
-    //d_enable_tracking = false;
-    //d_pull_in = false;
     d_last_seg = 0;
     d_first_transition = false;
 
     d_secondary_lock=false;
     d_secondary_delay=0;
     d_integration_counter = 0;
-//    d_buffer_counter = 0;
 
     d_current_prn_length_samples = (int)d_vector_length;
 
@@ -451,13 +449,10 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 		acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
 		acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_current_prn_length_samples);
 		samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-		// /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
 		d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
 		std::cout<<" samples_offset="<<samples_offset<<"\r\n";
 		d_state = 2; // start in Ti = 1 code, until secondary code lock.
 
-		std::cout << "acq_code_phase" << d_acq_code_phase_samples << " d_sample_counter" << d_sample_counter << " d_acq_sample_stamp " << d_acq_sample_stamp << std::endl;
-		std::cout << "acq doppler " << d_acq_carrier_doppler_hz << std::endl;
 		// make an output to not stop the rest of the processing blocks
 		current_synchro_data.Prompt_I = 0.0;
 		current_synchro_data.Prompt_Q = 0.0;
@@ -480,8 +475,10 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 		// Secondary code Chip
 		if (d_secondary_lock)
 		    {
-			sec_sign_Q = gr_complex((Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(d_secondary_delay)=='0' ? 1 : -1),0);
-			sec_sign_I = gr_complex((Galileo_E5a_I_SECONDARY_CODE.at(d_secondary_delay%Galileo_E5a_I_SECONDARY_CODE_LENGTH))=='0' ? 1 : -1,0);
+//			sec_sign_Q = gr_complex((Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(d_secondary_delay)=='0' ? 1 : -1),0);
+//			sec_sign_I = gr_complex((Galileo_E5a_I_SECONDARY_CODE.at(d_secondary_delay%Galileo_E5a_I_SECONDARY_CODE_LENGTH)=='0' ? 1 : -1),0);
+			sec_sign_Q = gr_complex((Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(d_secondary_delay)=='0' ? -1 : 1),0);
+			sec_sign_I = gr_complex((Galileo_E5a_I_SECONDARY_CODE.at(d_secondary_delay%Galileo_E5a_I_SECONDARY_CODE_LENGTH)=='0' ? -1 : 1),0);
 		    }
 		else
 		    {
@@ -522,7 +519,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 		                                             &d_Prompt_data,
 		                                             is_unaligned());
 
-		// Accumulate results (coherent integration)
+		// Accumulate results (coherent integration since there are no bit transitions in pilot signal)
 		d_Early += single_early * sec_sign_Q;
 		d_Prompt += single_prompt * sec_sign_Q;
 		d_Late += single_late * sec_sign_Q;
@@ -565,9 +562,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 
 			// Carrier discriminator filter
 			carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
-			// TEST
-//			carr_error_filt_hz = 0;
-			//
 			// New carrier Doppler frequency estimation
 			d_carrier_doppler_hz = d_acq_carrier_doppler_hz + carr_error_filt_hz;
 			// New code Doppler frequency estimation
@@ -586,34 +580,25 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 			code_error_chips = dll_nc_e_minus_l_normalized(d_Early, d_Late); //[chips/Ti]
 			// Code discriminator filter
 			code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
-			// TEST
-//			code_error_filt_chips = 0;
-			//
 			//Code phase accumulator
-
 			d_code_error_filt_secs = (GALILEO_E5a_CODE_PERIOD*code_error_filt_chips)/Galileo_E5a_CODE_CHIP_RATE_HZ; //[seconds]
 		    }
 		d_acc_code_phase_secs = d_acc_code_phase_secs + d_code_error_filt_secs;
 
-//		std::cout<< "Early " << d_Early << std::endl;
-//		std::cout<< "Prompt " << d_Prompt << std::endl;
-//		std::cout<< "Late " << d_Late << std::endl;
-//		std::cout<< "Prompt data " << d_Prompt_data << std::endl;
-
-		// ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
+		// ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
 		// keep alignment parameters for the next input buffer
 		double T_chip_seconds;
 		double T_prn_seconds;
-		float T_prn_samples;
-		float K_blk_samples;
+//		float T_prn_samples;
+//		float K_blk_samples;
 		//double T_chip_seconds;
 //		double T_prn_seconds;
-//		double T_prn_samples;
-//		double K_blk_samples;
+		double T_prn_samples;
+		double K_blk_samples;
 		// Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
 		T_chip_seconds = 1 / (double)d_code_freq_chips;
 		T_prn_seconds = T_chip_seconds * Galileo_E5a_CODE_LENGTH_CHIPS;
-		T_prn_samples = T_prn_seconds * (float)d_fs_in;
+		T_prn_samples = T_prn_seconds * (double)d_fs_in;
 		K_blk_samples = T_prn_samples + d_rem_code_phase_samples + d_code_error_filt_secs*(float)d_fs_in;
 		d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
 		d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
@@ -624,7 +609,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 			// fill buffer with prompt correlator output values
 			d_Prompt_buffer[d_cn0_estimation_counter] = d_Prompt;
 			d_cn0_estimation_counter++;
-			//			d_cn0_estimation_counter += d_integration_t_ms;
 		    }
 		else
 		    {
@@ -635,27 +619,18 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 				acquire_secondary(); // changes d_secondary_lock and d_secondary_delay
 				if (d_secondary_lock == true)
 				    {
-//					std::cout << "first prompt=" << d_Prompt_buffer[0] << std::endl;
 					std::cout << "Secondary code locked." << std::endl;
 					d_current_ti_ms = d_ti_ms;
-					d_integration_counter = 0;
 					// Change loop parameters ==========================================
-
 					d_code_loop_filter.set_pdi(d_current_ti_ms * GALILEO_E5a_CODE_PERIOD);
 					d_carrier_loop_filter.set_pdi(d_current_ti_ms * GALILEO_E5a_CODE_PERIOD);
-					d_code_loop_filter.initialize();
-					d_carrier_loop_filter.initialize();
+//					d_code_loop_filter.initialize();
+//					d_carrier_loop_filter.initialize();
 					d_code_loop_filter.set_DLL_BW(d_dll_bw_hz);
 					d_carrier_loop_filter.set_PLL_BW(d_pll_bw_hz);
-
-					consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
-					d_secondary_delay = (d_secondary_delay + 1)%Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
-					d_sample_counter += d_current_prn_length_samples; //count for the processed samples
-					return 1;
 				    }
 				else
 				    {
-//					std::cout << "first prompt=" << d_Prompt_buffer[0] << std::endl;
 					std::cout << "Secondary code delay couldn't be resolved." << std::endl;
 					d_carrier_lock_fail_counter++;
 					if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
@@ -676,12 +651,9 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 			else // Secondary lock achieved, monitor carrier lock.
 			    {
 				// Code lock indicator
-				d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, Galileo_E5a_CODE_LENGTH_CHIPS);
+				d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in,d_current_ti_ms * Galileo_E5a_CODE_LENGTH_CHIPS);
 				// Carrier lock indicator
 				d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
-
-				// TODO: tune Time integration period and filter parameters according to CN0 levels
-
 				// Loss of lock detection
 				if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
 				    {
@@ -747,12 +719,11 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
             // MULTIPLEXED FILE RECORDING - Record results to file
             float prompt_I;
             float prompt_Q;
-            float tmp_E, tmp_P, tmp_L;
             float tmp_float;
             double tmp_double;
             prompt_I = d_Prompt_data.real();
             prompt_Q = d_Prompt_data.imag();
-            if (d_integration_counter == d_current_ti_ms)
+	    if (d_integration_counter == d_current_ti_ms)
         	{
         	    tmp_E = std::abs<float>(d_Early);
         	    tmp_P = std::abs<float>(d_Prompt);
@@ -765,7 +736,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
         	d_dump_file.write((char*)&tmp_P, sizeof(float));
         	d_dump_file.write((char*)&tmp_L, sizeof(float));
         	// PROMPT I and Q (to analyze navigation symbols)
-        	//TODO: save all nav symbols, not only the first of the integration time.
         	d_dump_file.write((char*)&prompt_I, sizeof(float));
         	d_dump_file.write((char*)&prompt_Q, sizeof(float));
         	// PRN start sample stamp
@@ -801,9 +771,9 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
             }
         }
 
-    consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
     d_secondary_delay = (d_secondary_delay + 1)%Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
+    consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

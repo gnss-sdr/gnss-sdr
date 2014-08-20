@@ -3,6 +3,11 @@
  * \brief Implementation of a code DLL + carrier PLL
  *  tracking block for Galileo E5a signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *          </ul>
  *
  * -------------------------------------------------------------------------
  *
@@ -151,7 +156,9 @@ private:
     gr_complex d_Late;
     gr_complex d_Prompt_data;
 
-
+    float tmp_E;
+    float tmp_P;
+    float tmp_L;
     // remaining code phase and carrier phase between tracking loops
     float d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
@@ -196,7 +203,7 @@ private:
     // Secondary code acquisition
     bool d_secondary_lock;
     int d_secondary_delay;
-    unsigned int d_integration_counter;
+    int d_integration_counter;
 
     // file dump
     std::string d_dump_filename;

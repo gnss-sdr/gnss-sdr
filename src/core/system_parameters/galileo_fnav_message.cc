@@ -2,7 +2,12 @@
  * \file galileo_fnav_message.h
  * \brief  Implementation of a Galileo F/NAV Data message
  *         as described in Galileo OS SIS ICD Issue 1.1 (Sept. 2010)
- * \author Marc Sales 2014. marcsales92(at)gmail.com
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          </ul>
+ *
  *
  * -------------------------------------------------------------------------
  *

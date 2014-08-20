@@ -155,7 +155,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     signal.copy(gnss_synchro.Signal,2,0);
 
 
-    integration_time_ms = 1;
+    integration_time_ms = 3;
     //fs_in = 11e6;
     //fs_in = 18e6;
     fs_in = 32e6;
@@ -168,8 +168,8 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     expected_doppler_hz = 2800;
     //expected_doppler_hz = 0;
     expected_delay_sec = 94;
-    CAF_window_hz = 2000;
-//    CAF_window_hz = 0;
+//    CAF_window_hz = 3000;
+    CAF_window_hz = 0;
     Zero_padding = 0;
 
     //expected_delay_chips = 1000;
@@ -244,6 +244,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
 //    config->set_property("Acquisition.threshold", "0.01");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
+//    config->set_property("Acquisition.doppler_step", "500");
     config->set_property("Acquisition.bit_transition_flag", "false");
     config->set_property("Acquisition.dump", "true");
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
@@ -304,7 +305,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     signal.copy(gnss_synchro.Signal,2,0);
 
 
-    integration_time_ms = 1;
+    integration_time_ms = 3;
     //fs_in = 10.24e6;
     //fs_in = 12e6;
     fs_in = 12e6;
@@ -612,9 +613,9 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
 
     //int nsamples = floor(fs_in*integration_time_ms*1e-3);
     acquisition = new GalileoE5aNoncoherentIQAcquisitionCaf(config.get(), "Acquisition", 1, 1, queue);
-    unsigned int skiphead_sps = 28000; // 32 Msps
+    unsigned int skiphead_sps = 28000+32000; // 32 Msps
 //    unsigned int skiphead_sps = 0;
-    //unsigned int skiphead_sps = 84000;
+//    unsigned int skiphead_sps = 84000;
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -645,6 +646,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     }) << "Failure connecting acquisition to the top_block."<< std::endl;
 
     acquisition->init();
+    // USING SIGNAL GENERATOR
 /*
     ASSERT_NO_THROW( {
 	//std::string filename_ = "../data/Tiered_sink.dat";
@@ -670,12 +672,13 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
 
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 */
+// USING SIGNAL FROM FILE SOURCE
 
     ASSERT_NO_THROW( {
 	//noiseless sim
-	std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11_long.dat";
+	//std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11_long.dat";
 	// real
-	//std::string file =  "/home/marc/E5a_acquisitions/32MS_complex.dat";
+	std::string file =  "/home/marc/E5a_acquisitions/32MS_complex.dat";
 
 	const char * file_name = file.c_str();
 	gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
@@ -697,8 +700,8 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             {
         	case 0:
         	    {
-        		//gnss_synchro.PRN = 19; //real
-        		gnss_synchro.PRN = 11; //sim
+        		gnss_synchro.PRN = 19; //real
+        		//gnss_synchro.PRN = 11; //sim
         		break;
         	    }
 //        	case 1:

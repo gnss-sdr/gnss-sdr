@@ -11,7 +11,7 @@ If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-develope
 # How to build GNSS-SDR
 
 
-This section describes how to set up the compilation environment in GNU/Linux or Mac OS X, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
+This section describes how to set up the compilation environment in GNU/Linux or <a href="macosx">Mac OS X</a>, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
 
 GNU/Linux 
 ----------
@@ -307,7 +307,7 @@ $ make && make install
 
 
 
-Mac OS X 
+<a name="macosx">Mac OS X</a> 
 ---------
 
 Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks).
@@ -325,7 +325,7 @@ $ xcode-select --install
 Agree to Xcode license: 
 
 ~~~~~~ 
-sudo xcodebuild -license
+$ sudo xcodebuild -license
 ~~~~~~ 
 
 Then, [install Macports](http://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).

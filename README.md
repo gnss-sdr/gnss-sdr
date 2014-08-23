@@ -184,7 +184,7 @@ $ make
 $ make install
 ~~~~~~ 
 
-By default, CMake is configured to build the release version. If you want to build the debug version, please use:
+By default, CMake will build the Release version, meaning that the compiler will generate a fast, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 
 ~~~~~~ 
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
@@ -290,11 +290,22 @@ $ cmake -DENABLE_RTLSDR=ON ../
 $ make && make install
 ~~~~~~ 
 
-(in order to disable the Rtlsdr_Signal_Source compilation, you can pass -DENABLE_GN3S=OFF to cmake and build GNSS-SDR again).
+(in order to disable the Rtlsdr_Signal_Source compilation, you can pass -DENABLE_RTLSDR=OFF to cmake and build GNSS-SDR again).
 
 
 
-   
+###### Build OpenCL support (OPTIONAL):
+
+In order to enable the building of blocks that use OpenCL, type:
+
+~~~~~~ 
+$ cmake -DENABLE_OPENCL=ON ../
+$ make && make install
+~~~~~~ 
+
+
+
+
 
 Mac OS X 
 ---------

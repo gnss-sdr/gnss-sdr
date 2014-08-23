@@ -316,7 +316,17 @@ Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks).
 
 ### Mac OS X 10.9 Mavericks
 
-If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free).
+If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
+
+~~~~~~ 
+$ xcode-select --install
+~~~~~~ 
+
+Agree to Xcode license: 
+
+~~~~~~ 
+sudo xcodebuild -license
+~~~~~~ 
 
 Then, [install Macports](http://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
 
@@ -326,7 +336,7 @@ In a terminal, type:
 $ sudo port selfupdate
 $ sudo port upgrade outdated
 $ sudo port install doxygen +latex
-$ sudo port install uhd gnuradio
+$ sudo port install gnuradio
 $ sudo port install armadillo
 $ sudo port install google-glog +gflags
 ~~~~~~ 

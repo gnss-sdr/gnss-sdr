@@ -185,7 +185,7 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                             //--- Find delay due to troposphere (in meters)
                             if(rho2 < 1.0e+17 && nmbOfSatellites > 3)
                                 {
-                                    std::cout << h << " h " << iter << "  iter" <<std::endl;
+                                    //std::cout << h << " h " << iter << "  iter" <<std::endl;
                                     //std::cout << d_visible_satellites_El[i] << " d_visible_satellites_El[i]" << std::endl;
                                     tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
                                     if(trop > 100.0 ) trop = 0.0;
@@ -790,7 +790,7 @@ void gps_l1_ca_ls_pvt::tropo(double *ddr_m, double sinel, double hsta_km, double
 
                 }
 
-            arma::rowvec alpha = {2 * a, pow(2*a, 2) + 4 * b /3, a * (pow(a, 2) + 3 * b),
+            arma::rowvec alpha = {2 * a, 2*pow(a, 2) + 4 * b /3, a * (pow(a, 2) + 3 * b),
                     pow(a, 4)/5 + 2.4 * pow(a, 2) * b + 1.2 * pow(b, 2), 2 * a * b * (pow(a, 2) + 3 * b)/3,
                     pow(b, 2) * (6 * pow(a, 2) + 4 * b) * 1.428571e-1, 0, 0};
 

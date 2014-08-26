@@ -107,7 +107,7 @@ arma::vec gps_l1_ca_ls_pvt::rotateSatellite(double traveltime, arma::vec X_sat)
     R3(1, 2) = 0.0;
     R3(2, 0) = 0.0;
     R3(2, 1) = 0.0;
-    R3(2, 2) = 1;
+    R3(2, 2) = 1.0;
 
     //--- Do the rotation ------------------------------------------------------
     arma::vec X_sat_rot;
@@ -147,6 +147,9 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
     double rho2;
     double traveltime;
     double trop;
+    double dlambda;
+    double dphi;
+    double h;
     arma::mat mat_tmp;
     arma::vec x;
 
@@ -164,21 +167,34 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                     else
                         {
                             //--- Update equations -----------------------------------------
-                            rho2 = (X(0, i) - pos(0)) *
-                                    (X(0, i) - pos(0))  + (X(1, i) - pos(1)) *
-                                    (X(1, i) - pos(1)) + (X(2,i) - pos(2)) *
-                                    (X(2,i) - pos(2));
+                            rho2 = (X(0, i) - pos(0)) * (X(0, i) - pos(0))
+                                                 + (X(1, i) - pos(1)) * (X(1, i) - pos(1))
+                                                 + (X(2, i) - pos(2)) * (X(2, i) - pos(2));
                             traveltime = sqrt(rho2) / GPS_C_m_s;
 
                             //--- Correct satellite position (do to earth rotation) --------
                             Rot_X = rotateSatellite(traveltime, X.col(i)); //armadillo
 
-                            //--- Find DOA and range of satellites
+                            //--- Find satellites' DOA
                             topocent(&d_visible_satellites_Az[i], &d_visible_satellites_El[i],
                                     &d_visible_satellites_Distance[i], pos.subvec(0,2), Rot_X - pos.subvec(0,2));
-                            //[az(i), el(i), dist] = topocent(pos(1:3, :), Rot_X - pos(1:3, :));
 
+                            //--- Find receiver's height
+                            togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
+
+                            //--- Find delay due to troposphere (in meters)
+                            if(rho2 < 1.0e+17 && nmbOfSatellites > 3)
+                                {
+                                    std::cout << h << " h " << iter << "  iter" <<std::endl;
+                                    //std::cout << d_visible_satellites_El[i] << " d_visible_satellites_El[i]" << std::endl;
+                                    tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                    if(trop > 100.0 ) trop = 0.0;
+                                    //std::cout << rho2 << " rho2" << std::endl;
+                                    std::cout << trop << " trop " <<  i << "i" << std::endl;
+                                }
                         }
+
+
                     //--- Apply the corrections ----------------------------------------
                     omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0,2),2) - pos(3) - trop); // Armadillo
 
@@ -189,16 +205,16 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                     A(i,2) = (-(Rot_X(2) - pos(2))) / obs(i);
                     A(i,3) = 1.0;
                 }
-                
+
             //--- Find position update ---------------------------------------------
             x = arma::solve(w*A, w*omc); // Armadillo
 
             //--- Apply position update --------------------------------------------
             pos = pos + x;
             if (arma::norm(x, 2) < 1e-4)
-            {
-            	break; // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
-            }
+                {
+                    break; // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
+                }
         }
 
     try
@@ -566,7 +582,7 @@ void gps_l1_ca_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a
         {
             *dlambda = *dlambda + 360.0;
         }
-    double r = sqrt(P*P + Z*Z); // r is distance from origin (0,0,0)
+    double r = sqrt(P * P + Z * Z); // r is distance from origin (0,0,0)
 
     double sinphi;
     if (r > 1.0E-20)
@@ -587,7 +603,7 @@ void gps_l1_ca_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a
             return;
         }
 
-    *h = r - a*(1-sinphi*sinphi/finv);
+    *h = r - a * (1 - sinphi * sinphi / finv);
 
     // iterate
     double cosphi;
@@ -602,18 +618,18 @@ void gps_l1_ca_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a
             cosphi = cos(*dphi);
 
             // compute radius of curvature in prime vertical direction
-            N_phi = a / sqrt(1 - esq*sinphi*sinphi);
+            N_phi = a / sqrt(1 - esq * sinphi * sinphi);
 
             // compute residuals in P and Z
             dP = P - (N_phi + (*h)) * cosphi;
             dZ = Z - (N_phi*oneesq + (*h)) * sinphi;
 
             // update height and latitude
-            *h = *h + (sinphi*dZ + cosphi*dP);
-            *dphi = *dphi + (cosphi*dZ - sinphi*dP)/(N_phi + (*h));
+            *h = *h + (sinphi * dZ + cosphi * dP);
+            *dphi = *dphi + (cosphi * dZ - sinphi * dP)/(N_phi + (*h));
 
             //     test for convergence
-            if ((dP*dP + dZ*dZ) < tolsq)
+            if ((dP * dP + dZ * dZ) < tolsq)
                 {
                     break;
                 }
@@ -645,9 +661,9 @@ void gps_l1_ca_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, 
     double lambda;
     double phi;
     double h;
-    double dtr = GPS_PI/180.0;
-    double a = 6378137.0;        // semi-major axis of the reference ellipsoid WGS-84
-    double finv = 298.257223563; // inverse of flattening of the reference ellipsoid WGS-84
+    double dtr = GPS_PI / 180.0;
+    double a = 6378137.0;          // semi-major axis of the reference ellipsoid WGS-84
+    double finv = 298.257223563;   // inverse of flattening of the reference ellipsoid WGS-84
 
     // Transform x into geodetic coordinates
     togeod(&phi, &lambda, &h, a, finv, x(0), x(1), x(2));
@@ -660,12 +676,12 @@ void gps_l1_ca_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, 
     arma::mat F = arma::zeros(3,3);
 
     F(0,0) = -sl;
-    F(0,1) = -sb*cl;
-    F(0,2) = cb*cl;
+    F(0,1) = -sb * cl;
+    F(0,2) = cb * cl;
 
     F(1,0) = cl;
-    F(1,1) = -sb*sl;
-    F(1,2) = cb*sl;
+    F(1,1) = -sb * sl;
+    F(1,2) = cb * sl;
 
     F(2,0) = 0;
     F(2,1) = cb;
@@ -680,7 +696,7 @@ void gps_l1_ca_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, 
     double U = local_vector(2);
 
     double hor_dis;
-    hor_dis = sqrt(E*E + N*N);
+    hor_dis = sqrt(E * E + N * N);
 
     if (hor_dis < 1.0E-20)
         {
@@ -689,8 +705,8 @@ void gps_l1_ca_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, 
         }
     else
         {
-            *Az = atan2(E, N)/dtr;
-            *El = atan2(U, hor_dis)/dtr;
+            *Az = atan2(E, N) / dtr;
+            *El = atan2(U, hor_dis) / dtr;
         }
 
     if (*Az < 0)
@@ -698,5 +714,106 @@ void gps_l1_ca_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, 
             *Az = *Az + 360.0;
         }
 
-    *D = sqrt(dx(0)*dx(0) + dx(1)*dx(1) + dx(2)*dx(2));
+    *D = sqrt(dx(0) * dx(0) + dx(1) * dx(1) + dx(2) * dx(2));
+}
+
+
+void gps_l1_ca_ls_pvt::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km)
+{
+    /*   Inputs:
+           sinel     - sin of elevation angle of satellite
+           hsta_km   - height of station in km
+           p_mb      - atmospheric pressure in mb at height hp_km
+           t_kel     - surface temperature in degrees Kelvin at height htkel_km
+           hum       - humidity in % at height hhum_km
+           hp_km     - height of pressure measurement in km
+           htkel_km  - height of temperature measurement in km
+           hhum_km   - height of humidity measurement in km
+
+       Outputs:
+           ddr_m     - range correction (meters)
+
+     Reference
+     Goad, C.C. & Goodman, L. (1974) A Modified Tropospheric
+     Refraction Correction Model. Paper presented at the
+     American Geophysical Union Annual Fall Meeting, San
+     Francisco, December 12-17
+
+     Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
+     */
+
+    const double a_e    = 6378.137;    // semi-major axis of earth ellipsoid
+    const double b0     = 7.839257e-5;
+    const double tlapse = -6.5;
+    const double em     = -978.77 / (2.8704e6 * tlapse * 1.0e-5);
+
+    double tkhum  = t_kel + tlapse * (hhum_km - htkel_km);
+    double atkel  = 7.5*(tkhum - 273.15) / (237.3 + tkhum - 273.15);
+    double e0     = 0.0611 * hum * pow(10, atkel);
+    double tksea  = t_kel - tlapse * htkel_km;
+    double tkelh  = tksea + tlapse * hhum_km;
+    double e0sea  = e0 * pow((tksea / tkelh), (4 * em));
+    double tkelp  = tksea + tlapse * hp_km;
+    double psea   = p_mb * pow((tksea / tkelp), em);
+
+    if(sinel < 0) { sinel = 0.0; }
+
+    double tropo_delay   = 0.0;
+    bool done      = false;
+    double refsea  = 77.624e-6 / tksea;
+    double htop    = 1.1385e-5 / refsea;
+    refsea         = refsea * psea;
+    double ref     = refsea * pow(((htop - hsta_km) / htop), 4);
+
+    double a;
+    double b;
+    double rtop;
+
+    while(1)
+        {
+            rtop = pow((a_e + htop), 2) - pow((a_e + hsta_km), 2) * (1 - pow(sinel, 2));
+
+            // check to see if geometry is crazy
+            if(rtop < 0) { rtop = 0; }
+
+            rtop = sqrt(rtop) - (a_e + hsta_km) * sinel;
+
+            a    = -sinel / (htop - hsta_km);
+            b    = -b0 * (1 - pow(sinel,2)) / (htop - hsta_km);
+
+            arma::vec rn = arma::vec(8);
+            rn.zeros();
+
+            for(int i = 0; i<8; i++)
+                {
+                    rn(i) = pow(rtop, (i+1+1));
+
+                }
+
+            arma::rowvec alpha = {2 * a, pow(2*a, 2) + 4 * b /3, a * (pow(a, 2) + 3 * b),
+                    pow(a, 4)/5 + 2.4 * pow(a, 2) * b + 1.2 * pow(b, 2), 2 * a * b * (pow(a, 2) + 3 * b)/3,
+                    pow(b, 2) * (6 * pow(a, 2) + 4 * b) * 1.428571e-1, 0, 0};
+
+            if(pow(b, 2) > 1.0e-35)
+                {
+                    alpha(6) = a * pow(b, 3) /2;
+                    alpha(7) = pow(b, 4) / 9;
+                }
+
+            double dr = rtop;
+            arma::mat aux_ = alpha * rn;
+            dr = dr + aux_(0, 0);
+            tropo_delay = tropo_delay + dr * ref * 1000;
+
+            if(done == true)
+                {
+                    *ddr_m = tropo_delay;
+                    break;
+                }
+
+            done    = true;
+            refsea  = (371900.0e-6 / tksea - 12.92e-6) / tksea;
+            htop    = 1.1385e-5 * (1255 / tksea + 0.05) / refsea;
+            ref     = refsea * e0sea * pow(((htop - hsta_km) / htop), 4);
+        }
 }

@@ -27,14 +27,16 @@
  *
  * -------------------------------------------------------------------------
  */
-#define GLOG_NO_ABBREVIATED_SEVERITIES
+
 
 #include "gps_l1_ca_ls_pvt.h"
+#include <gflags/gflags.h>
 #include <glog/logging.h>
 
 
 using google::LogMessage;
 
+DEFINE_bool(tropo, true, "Apply tropospheric correction");
 
 gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file)
 {
@@ -179,18 +181,19 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                             topocent(&d_visible_satellites_Az[i], &d_visible_satellites_El[i],
                                     &d_visible_satellites_Distance[i], pos.subvec(0,2), Rot_X - pos.subvec(0,2));
 
-                            //--- Find receiver's height
-                            togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
-
-                            //--- Find delay due to troposphere (in meters)
-                            if(rho2 < 1.0e+17 && nmbOfSatellites > 3)
+                            if(FLAGS_tropo)
                                 {
-                                    //std::cout << h << " h " << iter << "  iter" <<std::endl;
-                                    //std::cout << d_visible_satellites_El[i] << " d_visible_satellites_El[i]" << std::endl;
-                                    tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
-                                    if(trop > 100.0 ) trop = 0.0;
-                                    //std::cout << rho2 << " rho2" << std::endl;
-                                    std::cout << trop << " trop " <<  i << "i" << std::endl;
+                            
+                                    if(traveltime < 0.1 && nmbOfSatellites > 3)
+                                        {
+                                            //--- Find receiver's height
+                                            togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
+
+                                            //--- Find delay due to troposphere (in meters)
+                                            tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                            if(trop > 50.0 ) trop = 0.0;
+
+                                        }
                                 }
                         }
 
@@ -790,7 +793,7 @@ void gps_l1_ca_ls_pvt::tropo(double *ddr_m, double sinel, double hsta_km, double
 
                 }
 
-            arma::rowvec alpha = {2 * a, 2*pow(a, 2) + 4 * b /3, a * (pow(a, 2) + 3 * b),
+            arma::rowvec alpha = {2 * a, 2 * pow(a, 2) + 4 * b /3, a * (pow(a, 2) + 3 * b),
                     pow(a, 4)/5 + 2.4 * pow(a, 2) * b + 1.2 * pow(b, 2), 2 * a * b * (pow(a, 2) + 3 * b)/3,
                     pow(b, 2) * (6 * pow(a, 2) + 4 * b) * 1.428571e-1, 0, 0};
 

@@ -170,8 +170,8 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                         {
                             //--- Update equations -----------------------------------------
                             rho2 = (X(0, i) - pos(0)) * (X(0, i) - pos(0))
-                                                 + (X(1, i) - pos(1)) * (X(1, i) - pos(1))
-                                                 + (X(2, i) - pos(2)) * (X(2, i) - pos(2));
+                                 + (X(1, i) - pos(1)) * (X(1, i) - pos(1))
+                                 + (X(2, i) - pos(2)) * (X(2, i) - pos(2));
                             traveltime = sqrt(rho2) / GPS_C_m_s;
 
                             //--- Correct satellite position (do to earth rotation) --------
@@ -182,8 +182,7 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                                     &d_visible_satellites_Distance[i], pos.subvec(0,2), Rot_X - pos.subvec(0,2));
 
                             if(FLAGS_tropo)
-                                {
-                            
+                                {                         
                                     if(traveltime < 0.1 && nmbOfSatellites > 3)
                                         {
                                             //--- Find receiver's height
@@ -192,7 +191,6 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                                             //--- Find delay due to troposphere (in meters)
                                             tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
                                             if(trop > 50.0 ) trop = 0.0;
-
                                         }
                                 }
                         }
@@ -737,7 +735,7 @@ void gps_l1_ca_ls_pvt::tropo(double *ddr_m, double sinel, double hsta_km, double
            ddr_m     - range correction (meters)
 
      Reference
-     Goad, C.C. & Goodman, L. (1974) A Modified Tropospheric
+     Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
      Refraction Correction Model. Paper presented at the
      American Geophysical Union Annual Fall Meeting, San
      Francisco, December 12-17

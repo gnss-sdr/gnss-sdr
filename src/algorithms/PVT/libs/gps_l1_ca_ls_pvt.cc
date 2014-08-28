@@ -189,7 +189,7 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
                                             togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
 
                                             //--- Find delay due to troposphere (in meters)
-                                            tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                            tropo(&trop, sin(d_visible_satellites_El[i] * GPS_PI / 180.0), h / 1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
                                             if(trop > 50.0 ) trop = 0.0;
                                         }
                                 }
@@ -238,13 +238,11 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
     int valid_pseudoranges = gnss_pseudoranges_map.size();
 
     arma::mat W = arma::eye(valid_pseudoranges, valid_pseudoranges); //channels weights matrix
-    arma::vec obs = arma::zeros(valid_pseudoranges);         // pseudoranges observation vector
-    arma::mat satpos = arma::zeros(3, valid_pseudoranges);    //satellite positions matrix
+    arma::vec obs = arma::zeros(valid_pseudoranges);                 // pseudoranges observation vector
+    arma::mat satpos = arma::zeros(3, valid_pseudoranges);           //satellite positions matrix
 
     int GPS_week = 0;
     double utc = 0;
-    double SV_clock_drift_s = 0;
-    double SV_relativistic_clock_corr_s = 0;
     double TX_time_corrected_s;
     double SV_clock_bias_s = 0;
 
@@ -271,16 +269,12 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
                     // first estimate of transmit time
                     double Rx_time = GPS_current_time;
-                    double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GPS_C_m_s;
+                    double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m / GPS_C_m_s;
 
-                    // 2- compute the clock drift using the clock model (broadcast) for this SV
-                    SV_clock_drift_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
+                    // 2- compute the clock drift using the clock model (broadcast) for this SV, including relativistic effect
+                    SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time); //- gps_ephemeris_iter->second.d_TGD;
 
-                    // 3- compute the relativistic clock drift using the clock model (broadcast) for this SV
-                    SV_relativistic_clock_corr_s = gps_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
-
-                    // 4- compute the current ECEF position for this SV using corrected TX time
-                    SV_clock_bias_s = SV_clock_drift_s + SV_relativistic_clock_corr_s - gps_ephemeris_iter->second.d_TGD;
+                    // 3- compute the current ECEF position for this SV using corrected TX time
                     TX_time_corrected_s = Tx_time - SV_clock_bias_s;
                     gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
 
@@ -288,8 +282,8 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     satpos(1, obs_counter) = gps_ephemeris_iter->second.d_satpos_Y;
                     satpos(2, obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
 
-                    // 5- fill the observations vector with the corrected pseudorranges
-                    obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s*GPS_C_m_s;
+                    // 4- fill the observations vector with the corrected pseudoranges
+                    obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
                     d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
                     d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
                     valid_obs++;
@@ -301,7 +295,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                             << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
                             << " [m] PR_obs=" << obs(obs_counter) << " [m]";
 
-                    // compute the UTC time for this SV (just to print the asociated UTC timestamp)
+                    // compute the UTC time for this SV (just to print the associated UTC timestamp)
                     GPS_week = gps_ephemeris_iter->second.i_GPS_week;
                     utc = gps_utc_model.utc_time(TX_time_corrected_s, GPS_week);
                 }
@@ -749,7 +743,7 @@ void gps_l1_ca_ls_pvt::tropo(double *ddr_m, double sinel, double hsta_km, double
     const double em     = -978.77 / (2.8704e6 * tlapse * 1.0e-5);
 
     double tkhum  = t_kel + tlapse * (hhum_km - htkel_km);
-    double atkel  = 7.5*(tkhum - 273.15) / (237.3 + tkhum - 273.15);
+    double atkel  = 7.5 * (tkhum - 273.15) / (237.3 + tkhum - 273.15);
     double e0     = 0.0611 * hum * pow(10, atkel);
     double tksea  = t_kel - tlapse * htkel_km;
     double tkelh  = tksea + tlapse * hhum_km;

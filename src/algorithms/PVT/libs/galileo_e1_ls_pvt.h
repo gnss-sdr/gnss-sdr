@@ -62,6 +62,7 @@ private:
     arma::vec rotateSatellite(double traveltime, arma::vec X_sat);
     void topocent(double *Az, double *El, double *D, arma::vec x, arma::vec dx);
     void togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
+    void tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
 public:
     int d_nchannels;                                        //!< Number of available channels for positioning
     int d_valid_observations;                               //!< Number of valid pseudorange observations (valid satellites)

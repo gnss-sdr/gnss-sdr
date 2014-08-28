@@ -137,7 +137,7 @@ double Gps_Ephemeris::sv_clock_drift(double transmitTime)
 {
     double dt;
     dt = check_t(transmitTime - d_Toc);
-    d_satClkDrift = d_A_f0 + d_A_f1*dt + (d_A_f2 * dt)*(d_A_f2 * dt);
+    d_satClkDrift = d_A_f0 + d_A_f1 * dt + d_A_f2 * (dt * dt) + sv_clock_relativistic_term(transmitTime);
     return d_satClkDrift;
 }
 

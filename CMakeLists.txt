@@ -5,7 +5,7 @@
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -16,20 +16,34 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-########################################################################
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(FATAL_ERROR "Prevented in-tree build. This is bad practice. Try 'cd build && cmake ../' ")
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 
 ########################################################################
 # Project setup
 ########################################################################
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(FATAL_ERROR "Prevented in-tree build. This is bad practice. Try 'cd build && cmake ../' ")
+endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 cmake_minimum_required(VERSION 2.8)
 project(gnss-sdr CXX C)
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Set the version information here
+
+########################################################################
+# Determine optional blocks/libraries to be built (default: not built)
+# Enable them here or at the command line by doing 'cmake -DENABLE_XXX=ON ../'
+########################################################################
+
+option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
+option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
+option(ENABLE_RTLSDR "Enable the use of RTL dongles as signal source (experimental)" OFF)
+option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
+option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
+
+
+###############################
+# GNSS-SDR version information 
+###############################
 # Get the current working branch
 execute_process(
     COMMAND git rev-parse --abbrev-ref HEAD
@@ -48,10 +62,10 @@ execute_process(
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT    0)
-set(VERSION_INFO_MINOR_VERSION 2.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+set(VERSION_INFO_MINOR_VERSION 3.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
 
-file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
 
 ########################################################################
 # Environment setup
@@ -145,7 +159,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
          set(LINUX_DISTRIBUTION "Generic")
          set(LINUX_VER "Unknown")
      endif(NOT LINUX_DISTRIBUTION)      
-     message(STATUS "Configuring GNSS-SDR to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
+     message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on ${LINUX_DISTRIBUTION} GNU/Linux Release ${LINUX_VER} ${ARCH_}")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Detect Mac OS X Version
@@ -159,23 +173,29 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
          set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION="com.apple.compilers.llvm.clang.1_0")
-         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.9 Mavericks")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.9 Mavericks")
      endif(${DARWIN_VERSION} MATCHES "13")
      if(${DARWIN_VERSION} MATCHES "12")
-         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.8 Mountain Lion")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.8 Mountain Lion")
      endif(${DARWIN_VERSION} MATCHES "12")
      if(${DARWIN_VERSION} MATCHES "11")
-         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.7 Lion")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.7 Lion")
      endif(${DARWIN_VERSION} MATCHES "11")
      if(${DARWIN_VERSION} MATCHES "10")
-         message(STATUS "Configuring GNSS-SDR to be built on Mac OS X 10.6 Snow Leopard")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.6 Snow Leopard")
      endif(${DARWIN_VERSION} MATCHES "10")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
+
 #select the release build type by default to get optimization flags
 if(NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE "Release")
-   message(STATUS "Build type not specified: defaulting to Release.")
+    if(ENABLE_GPERFTOOLS)
+        set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+        message(STATUS "Build type not specified: defaulting to RelWithDebInfo.")
+    else(ENABLE_GPERFTOOLS)
+        set(CMAKE_BUILD_TYPE "Release")
+        message(STATUS "Build type not specified: defaulting to Release.")
+    endif(ENABLE_GPERFTOOLS)   
 endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
@@ -198,6 +218,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
       endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
+
 ################################################################################
 # Googletest - http://code.google.com/p/googletest/
 ################################################################################
@@ -219,7 +240,6 @@ endif(GTEST_DIR)
 ################################################################################
 # Boost - http://www.boost.org
 ################################################################################
-
 if(UNIX AND EXISTS "/usr/lib64")
     list(APPEND BOOST_LIBRARYDIR "/usr/lib64") # Fedora 64-bit fix
 endif(UNIX AND EXISTS "/usr/lib64")
@@ -247,9 +267,7 @@ endif(NOT Boost_FOUND)
 ################################################################################
 # GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
 ################################################################################
-
 find_package(Gnuradio)
-
 if(NOT GNURADIO_RUNTIME_FOUND)
    message(STATUS "CMake cannot find GNU Radio >= 3.7")
    if(OS_IS_LINUX)
@@ -372,7 +390,6 @@ endif(NOT GFlags_FOUND OR LOCAL_GLOG)
 ################################################################################
 # glog - http://code.google.com/p/google-glog/
 ################################################################################
-
 find_package(GLOG)
 set(glog_RELEASE 0.3.3)
 if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
@@ -474,97 +491,14 @@ endif(NOT GLOG_FOUND OR LOCAL_GFLAGS)
 
 
 
-
-################################################################################
-# GPerftools - http://code.google.com/p/gperftools/
-################################################################################
-
-set(GCC_GPERFTOOLS_FLAGS "")
-find_package(Gperftools)
-if ( NOT GPERFTOOLS_FOUND )
-    message(STATUS "The optional library GPerftools has not been found.")
-else( NOT GPERFTOOLS_FOUND )
-    message (STATUS "GPerftools library found." )
-    link_libraries(${GPERFTOOLS_PROFILER} ${GPERFTOOLS_TCMALLOC})
-endif( NOT GPERFTOOLS_FOUND )
-list(APPEND CMAKE_CXX_FLAGS ${GCC_GPERFTOOLS_FLAGS})
-
-
-
-
-################################################################################
-# Doxygen - http://www.stack.nl/~dimitri/doxygen/index.html
-################################################################################
-
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-     message(STATUS "Doxygen found.")
-     message(STATUS "You can build the documentation with 'make doc'." )
-     message(STATUS "When done, point your browser to ${CMAKE_SOURCE_DIR}/html/index.html")
-     set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
-     file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
-     file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} top_builddir)
-     find_package(LATEX)
-     if (PDFLATEX_COMPILER)
-          set(GENERATE_PDF_DOCUMENTATION "YES")
-          set(GNSSSDR_USE_MATHJAX "NO")
-     else(PDFLATEX_COMPILER)
-          set(GENERATE_PDF_DOCUMENTATION "NO")
-          set(GNSSSDR_USE_MATHJAX "YES")
-     endif(PDFLATEX_COMPILER)
-     configure_file(${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile.in
-          ${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile
-          @ONLY
-     )
-     add_custom_target(doc
-          ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile
-          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-          COMMENT "Generating API documentation with Doxygen." VERBATIM
-     )
-     if(LATEX_COMPILER)
-          message(STATUS "'make pdfmanual' will generate a manual at ${CMAKE_SOURCE_DIR}/docs/GNSS-SDR_manual.pdf")         
-          add_custom_target(pdfmanual
-               COMMAND ${CMAKE_MAKE_PROGRAM}
-               COMMAND ${CMAKE_COMMAND} -E copy refman.pdf ${CMAKE_SOURCE_DIR}/docs/GNSS-SDR_manual.pdf
-               COMMAND ${CMAKE_MAKE_PROGRAM} clean
-               DEPENDS doc
-               WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/latex
-               COMMENT "Generating PDF manual with Doxygen." VERBATIM
-          )
-     endif(LATEX_COMPILER)
-     message(STATUS "'make doc-clean' will clean the documentation.")
-     add_custom_target(doc-clean
-          COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/docs/html
-          COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/docs/latex
-          COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/docs/GNSS-SDR_manual.pdf
-          COMMENT "Cleaning documentation." VERBATIM
-     )
-else(DOXYGEN_FOUND)
-     message(STATUS " Doxygen has not been found in your system.")
-     message(STATUS " You can get nice code documentation by using it!")
-     message(STATUS " Get it from http://www.stack.nl/~dimitri/doxygen/index.html")
-     if(OS_IS_LINUX)
-         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-             message(" or simply by doing 'sudo yum install doxygen-latex'.") 
-         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-             message(" or simply by doing 'sudo apt-get install doxygen-latex'.") 
-         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-     endif(OS_IS_LINUX)
-     if(OS_IS_MACOSX)
-         message(STATUS " or simply by doing 'sudo port install doxygen +latex'.")
-     endif(OS_IS_MACOSX)
-endif(DOXYGEN_FOUND)
-
-
-
 ################################################################################
 # Armadillo - http://arma.sourceforge.net/
 ################################################################################
-
 if(OS_IS_LINUX)
-    #############################################
+    #############################################################################
     # Check that LAPACK is found in the system 
-    #############################################
+    # LAPACK is required for matrix decompositions (eg. SVD) and matrix inverse.
+    #############################################################################
     find_library(LAPACK lapack)
     if(NOT LAPACK)
         message(" The LAPACK library has not been found.")
@@ -578,9 +512,11 @@ if(OS_IS_LINUX)
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
         message(FATAL_ERROR "LAPACK is required to build gnss-sdr")
     endif(NOT LAPACK)
-    #############################################
+    #############################################################################
     # Check that BLAS is found in the system
-    #############################################
+    # BLAS is used for matrix multiplication.
+    # Without BLAS, matrix multiplication will still work, but might be slower.
+    #############################################################################
     find_library(BLAS blas)
     if(NOT BLAS)
         message(" The BLAS library has not been found.")
@@ -657,31 +593,22 @@ if(NOT ARMADILLO_FOUND)
           endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
           message(FATAL_ERROR "The patch command is required to download and build armadillo")
      endif(NOT PATCH_EXECUTABLE)
-     set(armadillo_RELEASE 4.300.9)  
-     set(armadillo_MD5 "d51d1beb2a335f3002702d112c4814f3") 
+     set(armadillo_RELEASE 4.400.0)  
+     set(armadillo_MD5 "616744dbc96af1c5d6d32c6c69f6fe94") 
      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
          set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
          file(WRITE ${ARMADILLO_PATCH_FILE} "")
-         set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no2.patch)
-         file(WRITE ${ARMADILLO_PATCH_FILE2} "")
      else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-         set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_staticlib.patch)
-         set(ARMADILLO_PATCH_FILE2 ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
+         set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
          file(WRITE ${ARMADILLO_PATCH_FILE}
-"30c30
-< set(ARMA_USE_LAPACK    false)
----
-> set(ARMA_USE_LAPACK true)
-312c312
-< add_library( armadillo SHARED \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
----
-> add_library( armadillo STATIC \${PROJECT_SOURCE_DIR}/src/wrapper.cpp )
-")
-         file(WRITE ${ARMADILLO_PATCH_FILE2}
 "12c12
 < // #define ARMA_USE_LAPACK
 ---
->    #define ARMA_USE_LAPACK 
+>    #define ARMA_USE_LAPACK
+19c19
+< // #define ARMA_USE_BLAS
+---
+>    #define ARMA_USE_BLAS
 ") 
      endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
      ExternalProject_Add(
@@ -689,9 +616,9 @@ if(NOT ARMADILLO_FOUND)
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
          URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
-         URL_MD5 ${armadillo_MD5}    
-         PATCH_COMMAND patch -N <BINARY_DIR>/CMakeLists.txt ${ARMADILLO_PATCH_FILE} && patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE2}
-         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+         URL_MD5 ${armadillo_MD5}
+         PATCH_COMMAND patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE}
+         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF
          BUILD_IN_SOURCE 1
          BUILD_COMMAND make
          UPDATE_COMMAND "" 
@@ -702,7 +629,14 @@ if(NOT ARMADILLO_FOUND)
      ExternalProject_Get_Property(armadillo-${armadillo_RELEASE} binary_dir)
      set(ARMADILLO_INCLUDE_DIRS ${binary_dir}/include )     
      find_library(LAPACK NAMES lapack HINTS /usr/lib /usr/local/lib /usr/lib64)
-     set(ARMADILLO_LIBRARIES ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
+     if(OS_IS_MACOSX)
+         find_library(BLAS blas)
+     endif(OS_IS_MACOSX)
+     find_package(OpenBLAS)
+     if(OPENBLAS_FOUND)
+         set(BLAS ${OPENBLAS})
+     endif(OPENBLAS_FOUND)
+     set(ARMADILLO_LIBRARIES ${BLAS} ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
      # Save a copy at the thirdparty folder
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
@@ -713,27 +647,6 @@ else(NOT ARMADILLO_FOUND)
      add_library(armadillo-${armadillo_RELEASE} UNKNOWN IMPORTED)
      set_property(TARGET armadillo-${armadillo_RELEASE} PROPERTY IMPORTED_LOCATION "${ARMADILLO_LIBRARIES}")
 endif(NOT ARMADILLO_FOUND)
-
-
-
-###############################################################################
-# OpenCL
-###############################################################################
-find_package(OpenCL)
-if($ENV{DISABLE_OPENCL})
-     set(DISABLE_OPENCL TRUE)
-endif($ENV{DISABLE_OPENCL})
-if(DISABLE_OPENCL)
-    set(OPENCL_FOUND FALSE)
-else(DISABLE_OPENCL)
-    if(OPENCL_FOUND)
-         message(STATUS "OpenCL has been found and will be used by some processing blocks")
-         message(STATUS "You can disable OpenCL use by doing 'cmake -DDISABLE_OPENCL=1 ../' ")
-    endif(OPENCL_FOUND)
-endif(DISABLE_OPENCL)
-if(NOT OPENCL_FOUND)
-    message(STATUS "Processing blocks using OpenCL will not be built.")
-endif(NOT OPENCL_FOUND)
 
 
 
@@ -758,41 +671,169 @@ if(NOT OPENSSL_FOUND)
 endif(NOT OPENSSL_FOUND)
 
 
+
+################################################################################
+# Doxygen - http://www.stack.nl/~dimitri/doxygen/index.html (OPTIONAL)
+################################################################################
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+     message(STATUS "Doxygen found.")
+     message(STATUS "You can build the documentation with 'make doc'." )
+     message(STATUS "When done, point your browser to ${CMAKE_SOURCE_DIR}/html/index.html")
+     set(HAVE_DOT ${DOXYGEN_DOT_FOUND})
+     file(TO_NATIVE_PATH ${CMAKE_SOURCE_DIR} top_srcdir)
+     file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} top_builddir)
+     find_package(LATEX)
+     if (PDFLATEX_COMPILER)
+          set(GENERATE_PDF_DOCUMENTATION "YES")
+          set(GNSSSDR_USE_MATHJAX "NO")
+     else(PDFLATEX_COMPILER)
+          set(GENERATE_PDF_DOCUMENTATION "NO")
+          set(GNSSSDR_USE_MATHJAX "YES")
+     endif(PDFLATEX_COMPILER)
+     configure_file(${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile.in
+          ${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile
+          @ONLY
+     )
+     add_custom_target(doc
+          ${DOXYGEN_EXECUTABLE} ${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+          COMMENT "Generating API documentation with Doxygen." VERBATIM
+     )
+     if(LATEX_COMPILER)
+          message(STATUS "'make pdfmanual' will generate a manual at ${CMAKE_SOURCE_DIR}/docs/GNSS-SDR_manual.pdf")         
+          add_custom_target(pdfmanual
+               COMMAND ${CMAKE_MAKE_PROGRAM}
+               COMMAND ${CMAKE_COMMAND} -E copy refman.pdf ${CMAKE_SOURCE_DIR}/docs/GNSS-SDR_manual.pdf
+               COMMAND ${CMAKE_MAKE_PROGRAM} clean
+               DEPENDS doc
+               WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/latex
+               COMMENT "Generating PDF manual with Doxygen." VERBATIM
+          )
+     endif(LATEX_COMPILER)
+     message(STATUS "'make doc-clean' will clean the documentation.")
+     add_custom_target(doc-clean
+          COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/docs/html
+          COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/docs/latex
+          COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/docs/GNSS-SDR_manual.pdf
+          COMMENT "Cleaning documentation." VERBATIM
+     )
+else(DOXYGEN_FOUND)
+     message(STATUS " Doxygen has not been found in your system.")
+     message(STATUS " You can get nice code documentation by using it!")
+     message(STATUS " Get it from http://www.stack.nl/~dimitri/doxygen/index.html")
+     if(OS_IS_LINUX)
+         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+             message(" or simply by doing 'sudo yum install doxygen-latex'.") 
+         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+             message(" or simply by doing 'sudo apt-get install doxygen-latex'.") 
+         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+     endif(OS_IS_LINUX)
+     if(OS_IS_MACOSX)
+         message(STATUS " or simply by doing 'sudo port install doxygen +latex'.")
+     endif(OS_IS_MACOSX)
+endif(DOXYGEN_FOUND)
+
+
+
+###############################################################################
+# OpenCL (OPTIONAL)
+###############################################################################
+if(ENABLE_OPENCL)
+    find_package(OpenCL)
+    if($ENV{DISABLE_OPENCL})
+        set(DISABLE_OPENCL TRUE)
+    endif($ENV{DISABLE_OPENCL})
+    if(DISABLE_OPENCL)
+        set(OPENCL_FOUND FALSE)
+    else(DISABLE_OPENCL)
+        if(OPENCL_FOUND)
+            message(STATUS "OpenCL has been found and will be used by some processing blocks")
+            message(STATUS "You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ../' ")
+        endif(OPENCL_FOUND)
+    endif(DISABLE_OPENCL)
+    if(NOT OPENCL_FOUND)
+        message(STATUS "Processing blocks using OpenCL will not be built.")
+    endif(NOT OPENCL_FOUND)
+else(ENABLE_OPENCL)
+    set(OPENCL_FOUND FALSE)
+endif(ENABLE_OPENCL)
+
+
+
+
+################################################################################
+# GPerftools - http://code.google.com/p/gperftools/ (OPTIONAL)
+################################################################################
+
+if(ENABLE_GPERFTOOLS)
+    find_package(Gperftools)
+    if ( NOT GPERFTOOLS_FOUND )
+        message(STATUS "Although ENABLE_GPERFTOOLS has been set to ON, GPerftools has not been found.")
+        message(STATUS "Binaries will be compiled without 'tcmalloc' and 'profiler' libraries.")
+        message(STATUS "You can install GPerftools from http://code.google.com/p/gperftools/")
+    else( NOT GPERFTOOLS_FOUND )
+        message(STATUS "GPerftools libraries found." )
+        message(STATUS "Binaries will be compiled with 'tcmalloc' and 'profiler' libraries.")
+    endif( NOT GPERFTOOLS_FOUND )
+endif(ENABLE_GPERFTOOLS)
+
+
+
 ################################################################################
 # Setup of optional drivers
 ################################################################################
-if( $ENV{GN3S_DRIVER} )
-    message(STATUS "GN3S_DRIVER variable found." )
-    # copy firmware to install folder
-    # Build project gr-gn3s
-else( $ENV{GN3S_DRIVER} )
-    if( GN3S_DRIVER )
-       message(STATUS "GN3S driver will be compiled")
-    else( GNSS_DRIVER )
-       message(STATUS "GN3S_DRIVER is not defined." )
-       message(STATUS "Define it with 'export GN3S_DRIVER=1' to add support for the GN3S dongle." )
-    endif( GN3S_DRIVER )
-endif($ENV{GN3S_DRIVER} )
 
-if( $ENV{RAW_ARRAY_DRIVER} )
-    message(STATUS "RAW_ARRAY_DRIVER variable found." )
+if($ENV{GN3S_DRIVER})
+    message(STATUS "GN3S_DRIVER environment variable found." )
+    set(ENABLE_GN3S ON)
+endif($ENV{GN3S_DRIVER})
+if(GN3S_DRIVER)
+    set(ENABLE_GN3S ON)
+endif(GN3S_DRIVER)
+if(ENABLE_GN3S)
+     message(STATUS "The GN3S driver will be compiled.")
+     message(STATUS "You can disable it with 'cmake -DENABLE_GN3S=OFF ../'" )  
+else(ENABLE_GN3S)
+     message(STATUS "The (optional and experimental) GN3S driver is not enabled." )
+     message(STATUS "Enable it with 'cmake -DENABLE_GN3S=ON ../' to add support for the GN3S dongle." )  
+endif(ENABLE_GN3S)
+
+
+if($ENV{RAW_ARRAY_DRIVER})
+    message(STATUS "RAW_ARRAY_DRIVER environment variable found." )
+    set(ENABLE_ARRAY ON)
+endif($ENV{RAW_ARRAY_DRIVER})
+if(RAW_ARRAY_DRIVER)
+    set(ENABLE_ARRAY ON)
+endif(RAW_ARRAY_DRIVER)
+if(ENABLE_ARRAY)
+    message(STATUS "CTTC's Antenna Array front-end driver will be compiled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_ARRAY=OFF ../'" )  
     # copy firmware to install folder
     # Build project gr-dbfcttc
-else( $ENV{RAW_ARRAY_DRIVER} )
-    if( RAW_ARRAY_DRIVER )
-       message(STATUS "RAW_ARRAY_DRIVER driver will be compiled")
-    else( RAW_ARRAY_DRIVER )
-       message(STATUS "RAW_ARRAY_DRIVER is not defined." )
-       message(STATUS "Define it with 'export RAW_ARRAY_DRIVER=1' to add support for the CTTC experimental array front-end." )
-    endif( RAW_ARRAY_DRIVER )
-endif($ENV{RAW_ARRAY_DRIVER} )
+else(ENABLE_ARRAY)
+    message(STATUS "The (optional) CTTC's Antenna Array front-end driver is not enabled." )
+    message(STATUS "Enable it with 'cmake -DENABLE_ARRAY=ON ../' to add support for the CTTC experimental array front-end." )
+endif(ENABLE_ARRAY)
 
-if( $ENV{RTLSDR_DRIVER} )
-    message(STATUS "RTLSDR_DRIVER variable found." )
+
+if($ENV{RTLSDR_DRIVER})
+    message(STATUS "RTLSDR_DRIVER environment variable found." )
+    set(ENABLE_RTLSDR ON)
+endif($ENV{RTLSDR_DRIVER})
+if(RAW_ARRAY_DRIVER)
+    set(ENABLE_RTLSDR ON)
+endif(RAW_ARRAY_DRIVER)
+if(ENABLE_RTLSDR)
+    message(STATUS "The driver for RTL-based dongles will be compiled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_RTLSDR=OFF ../'" )  
     # find libosmosdr (done in src/algorithms/signal_sources/adapters)
     # find gr-osmosdr (done in src/algorithms/signal_sources/adapters)
-endif($ENV{RTLSDR_DRIVER} )
-
+else(ENABLE_RTLSDR)
+    message(STATUS "The (optional) driver for RTL-based dongles is not enabled." )
+    message(STATUS "Enable it with 'cmake -DENABLE_RTLSDR=ON ../' to add support for Realtek's RTL2832U-based USB dongles." )
+endif(ENABLE_RTLSDR)
 
 
 ########################################################################
@@ -827,13 +868,18 @@ if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     add_definitions(-fvisibility=hidden)
 endif()
 
-# Set GPerftools related flags if it is available
-# See http://gperftools.googlecode.com/svn/trunk/README
-if(GPERFTOOLS_FOUND)
-     if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-          set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")       
-     endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-endif(GPERFTOOLS_FOUND)
+if(ENABLE_GPERFTOOLS)
+    # Set GPerftools related flags if it is available
+    # See http://gperftools.googlecode.com/svn/trunk/README
+    if(GPERFTOOLS_FOUND)
+        if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")       
+        endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -fno-builtin") 
+        endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    endif(GPERFTOOLS_FOUND)
+endif(ENABLE_GPERFTOOLS)
 
 list(APPEND CMAKE_CXX_FLAGS ${MY_CXX_FLAGS})
 

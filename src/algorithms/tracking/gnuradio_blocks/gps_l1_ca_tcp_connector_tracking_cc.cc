@@ -457,19 +457,19 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             // sampling frequency (fixed)
             d_code_phase_step_chips = d_code_freq_hz / (float)d_fs_in; //[chips]
             // variable code PRN sample block size
-            float T_chip_seconds;
-            float T_prn_seconds;
-            float T_prn_samples;
-            float K_blk_samples;
-            T_chip_seconds = 1 / d_code_freq_hz;
+            double T_chip_seconds;
+            double T_prn_seconds;
+            double T_prn_samples;
+            double K_blk_samples;
+            T_chip_seconds = 1 / (double)d_code_freq_hz;
             T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * d_fs_in;
+            T_prn_samples = T_prn_seconds * (double)d_fs_in;
             d_rem_code_phase_samples = d_next_rem_code_phase_samples;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples;//-code_error*(float)d_fs_in;
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples;//-code_error*(double)d_fs_in;
 
             // Update the current PRN delay (code phase in samples)
-            float T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
-            float T_prn_true_samples = T_prn_true_seconds * (float)d_fs_in;
+            double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
+            double T_prn_true_samples = T_prn_true_seconds * (double)d_fs_in;
             d_code_phase_samples = d_code_phase_samples + T_prn_samples - T_prn_true_samples;
             if (d_code_phase_samples < 0)
                 {
@@ -509,11 +509,10 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            ControlMessageFactory* cmf = new ControlMessageFactory();
+                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                             if (d_queue != gr::msg_queue::sptr()) {
                                     d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                             }
-                            delete cmf;
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
 
@@ -558,23 +557,23 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
         }
     else
         {
-			// ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-			/*!
-			 *  \todo The stop timer has to be moved to the signal source!
-			 */
-			// stream to collect cout calls to improve thread safety
-			std::stringstream tmp_str_stream;
-			if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-			{
-				d_last_seg = floor(d_sample_counter / d_fs_in);
+            // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
+            /*!
+             *  \todo The stop timer has to be moved to the signal source!
+             */
+            // stream to collect cout calls to improve thread safety
+            std::stringstream tmp_str_stream;
+            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+                {
+                    d_last_seg = floor(d_sample_counter / d_fs_in);
 
-				if (d_channel == 0)
-				{
-					// debug: Second counter in channel 0
-					tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-					std::cout << tmp_str_stream.rdbuf() << std::flush;
-				}
-			}
+                    if (d_channel == 0)
+                        {
+                            // debug: Second counter in channel 0
+                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
+                            std::cout << tmp_str_stream.rdbuf() << std::flush;
+                        }
+                }
             *d_Early = gr_complex(0,0);
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);

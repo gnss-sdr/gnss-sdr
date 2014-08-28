@@ -65,37 +65,17 @@ include_directories(
 )
 
 
-#Enable GN3S module if the flag is present
-if( $ENV{GN3S_DRIVER} )
-    message(STATUS "Support for RF front-end GN3S v2 enabled" )
+if(ENABLE_GN3S)
     add_definitions(-DGN3S_DRIVER=1)
-endif( $ENV{GN3S_DRIVER} )
-if( GN3S_DRIVER )
-    message(STATUS "Support for RF front-end GN3S v2 enabled" )
-    add_definitions(-DGN3S_DRIVER=1)
-endif( GN3S_DRIVER )
+endif(ENABLE_GN3S)
 
-
-if( $ENV{RAW_ARRAY_DRIVER} )
-    message(STATUS "Support for CTTC RAW ARRAY enabled" )
+if(ENABLE_ARRAY)
     add_definitions(-DRAW_ARRAY_DRIVER=1)
-endif( $ENV{RAW_ARRAY_DRIVER} )
+endif(ENABLE_ARRAY)
 
-if( RAW_ARRAY_DRIVER )
-    message(STATUS "Support for CTTC RAW ARRAY enabled" )
-    add_definitions(-DRAW_ARRAY_DRIVER=1)
-endif( RAW_ARRAY_DRIVER )
-
-#Enable RTL-SDR module if the flag is present
-if( $ENV{RTLSDR_DRIVER} )
-    message(STATUS "Support for RF front-end based on RTL dongle enabled" )
+if(ENABLE_RTLSDR)
     add_definitions(-DRTLSDR_DRIVER=1)
-endif( $ENV{RTLSDR_DRIVER} )
-
-if( RTLSDR_DRIVER )
-    message(STATUS "Support for RF front-end based on RTL dongle enabled" )
-    add_definitions(-DRTLSDR_DRIVER=1)
-endif( RTLSDR_DRIVER )
+endif(ENABLE_RTLSDR)
 
 #Enable OpenCL if found in the system
 if(OPENCL_FOUND)

@@ -21,7 +21,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,6 +36,7 @@
 
 #include "gps_l1_ca_dll_pll_optim_tracking_cc.h"
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
@@ -396,9 +397,9 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
             // New code Doppler frequency estimation
             d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);
             //carrier phase accumulator for (K) doppler estimation
-            d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_TWO_PI*d_carrier_doppler_hz*GPS_L1_CA_CODE_PERIOD;
+            d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * GPS_L1_CA_CODE_PERIOD;
             //remnant carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI*d_carrier_doppler_hz*GPS_L1_CA_CODE_PERIOD;
+            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * GPS_L1_CA_CODE_PERIOD;
             d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
 
             // ################## DLL ##########################################################
@@ -408,20 +409,20 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
             code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
             //Code phase accumulator
             float code_error_filt_secs;
-            code_error_filt_secs = (GPS_L1_CA_CODE_PERIOD*code_error_filt_chips) / GPS_L1_CA_CODE_RATE_HZ; //[seconds]
+            code_error_filt_secs = (GPS_L1_CA_CODE_PERIOD * code_error_filt_chips) / GPS_L1_CA_CODE_RATE_HZ; //[seconds]
             d_acc_code_phase_secs = d_acc_code_phase_secs + code_error_filt_secs;
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
             // keep alignment parameters for the next input buffer
-            float T_chip_seconds;
-            float T_prn_seconds;
-            float T_prn_samples;
-            float K_blk_samples;
-            // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
-            T_chip_seconds = 1 / d_code_freq_chips;
+            double T_chip_seconds;
+            double T_prn_seconds;
+            double T_prn_samples;
+            double K_blk_samples;
+            // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
+            T_chip_seconds = 1 / (double)d_code_freq_chips;
             T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * (float)d_fs_in;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs*(float)d_fs_in;
+            T_prn_samples = T_prn_seconds * (double)d_fs_in;
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * (double)d_fs_in;
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
@@ -452,12 +453,11 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            ControlMessageFactory* cmf = new ControlMessageFactory();
+                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                             if (d_queue != gr::msg_queue::sptr())
                                 {
                                     d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                                 }
-                            delete cmf;
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }
@@ -499,24 +499,23 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
         }
     else
         {
+            // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
+            /*!
+             *  \todo The stop timer has to be moved to the signal source!
+             */
+            // stream to collect cout calls to improve thread safety
+            std::stringstream tmp_str_stream;
+            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+                {
+                    d_last_seg = floor(d_sample_counter / d_fs_in);
 
-			// ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-			/*!
-			 *  \todo The stop timer has to be moved to the signal source!
-			 */
-			// stream to collect cout calls to improve thread safety
-			std::stringstream tmp_str_stream;
-			if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-			{
-				d_last_seg = floor(d_sample_counter / d_fs_in);
-
-				if (d_channel == 0)
-				{
-					// debug: Second counter in channel 0
-					tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-					std::cout << tmp_str_stream.rdbuf() << std::flush;
-				}
-			}
+                    if (d_channel == 0)
+                        {
+                            // debug: Second counter in channel 0
+                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
+                            std::cout << tmp_str_stream.rdbuf() << std::flush;
+                        }
+                }
             *d_Early = gr_complex(0,0);
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);

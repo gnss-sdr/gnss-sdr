@@ -46,7 +46,7 @@ const double GALILEO_GM = 3.986004418e14;  //!< Geocentric gravitational constan
 const double GALILEO_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Mean angular velocity of the Earth [rad/s]
 const double GALILEO_C_m_s = 299792458.0;  //!< The speed of light, [m/s]
 const double GALILEO_C_m_ms = 299792.4580; //!< The speed of light, [m/ms]
-const double GALILEO_F = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
+const double GALILEO_F = -4.442807309e-10; //!< Constant, [s/(m)^(1/2)]
 
 // carrier and code frequencies
 const double Galileo_E1_FREQ_HZ = 1.57542e9;             //!< Galileo E1 carrier frequency [Hz]

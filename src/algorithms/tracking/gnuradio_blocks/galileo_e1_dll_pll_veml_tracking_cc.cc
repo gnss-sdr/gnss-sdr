@@ -7,11 +7,11 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -21,7 +21,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,6 +37,7 @@
 #include "galileo_e1_dll_pll_veml_tracking_cc.h"
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
@@ -148,7 +149,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     //--- Initializations ------------------------------
     // Initial code frequency basis of NCO
-    d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ;
+    d_code_freq_chips = (double)Galileo_E1_CODE_CHIP_RATE_HZ;
     // Residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
     // Residual carrier phase
@@ -369,7 +370,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             //carrier phase accumulator for (K) Doppler estimation
             d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
             //remnant carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI* d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
+            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
             d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
 
             // ################## DLL ##########################################################
@@ -385,15 +386,15 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
             // keep alignment parameters for the next input buffer
-            float T_chip_seconds;
-            float T_prn_seconds;
-            float T_prn_samples;
-            float K_blk_samples;
+            double T_chip_seconds;
+            double T_prn_seconds;
+            double T_prn_samples;
+            double K_blk_samples;
             // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
-            T_chip_seconds = 1 / d_code_freq_chips;
+            T_chip_seconds = 1 / (double)d_code_freq_chips;
             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * (float)d_fs_in;
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs*(float)d_fs_in;
+            T_prn_samples = T_prn_seconds * (double)d_fs_in;
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * (double)d_fs_in;
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
             //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
@@ -427,12 +428,11 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            ControlMessageFactory* cmf = new ControlMessageFactory();
+                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
                             if (d_queue != gr::msg_queue::sptr())
                                 {
                                     d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
                                 }
-                            delete cmf;
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }

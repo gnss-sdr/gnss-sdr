@@ -95,7 +95,7 @@ arma::vec galileo_e1_ls_pvt::rotateSatellite(double traveltime, arma::vec X_sat)
 
     //--- Find rotation angle --------------------------------------------------
     double omegatau;
-    omegatau = OMEGA_EARTH_DOT * traveltime;
+    omegatau = GALILEO_OMEGA_EARTH_DOT * traveltime;
 
     //--- Build a rotation matrix ----------------------------------------------
     arma::mat R3 = arma::zeros(3,3);
@@ -147,6 +147,9 @@ arma::vec galileo_e1_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arm
     double rho2;
     double traveltime;
     double trop;
+    double dlambda;
+    double dphi;
+    double h;
     arma::mat mat_tmp;
     arma::vec x;
 
@@ -179,6 +182,15 @@ arma::vec galileo_e1_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arm
                                      &d_visible_satellites_Distance[i],
                                      pos.subvec(0,2),
                                      Rot_X - pos.subvec(0, 2));
+                            if(traveltime < 0.1 && nmbOfSatellites > 3)
+                                {
+                                    //--- Find receiver's height
+                                    togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
+
+                                    //--- Find delay due to troposphere (in meters)
+                                    tropo(&trop, sin(d_visible_satellites_El[i] * GALILEO_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                    if(trop > 50.0 ) trop = 0.0;
+                                }
                         }
                     //--- Apply the corrections ----------------------------------------
                     omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0, 2), 2) - pos(3) - trop); // Armadillo
@@ -221,14 +233,12 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
     std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
     int valid_pseudoranges = gnss_pseudoranges_map.size();
 
-    arma::mat W = arma::eye(valid_pseudoranges, valid_pseudoranges); //channels weights matrix
+    arma::mat W = arma::eye(valid_pseudoranges, valid_pseudoranges); // channels weights matrix
     arma::vec obs = arma::zeros(valid_pseudoranges);                 // pseudoranges observation vector
-    arma::mat satpos = arma::zeros(3, valid_pseudoranges);           //satellite positions matrix
+    arma::mat satpos = arma::zeros(3, valid_pseudoranges);           // satellite positions matrix
 
     int Galileo_week_number = 0;
     double utc = 0;
-    double SV_clock_drift_s = 0;
-    double SV_relativistic_clock_corr_s = 0;
     double TX_time_corrected_s;
     double SV_clock_bias_s = 0;
 
@@ -265,16 +275,12 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                     //to compute satellite position we need GST = WN+TOW (everything expressed in seconds)
                     //double Rx_time = galileo_current_time + Galileo_week_number*sec_in_day*day_in_week;
 
-                    double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GALILEO_C_m_s;
+                    double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m / GALILEO_C_m_s;
 
-                    // 2- compute the clock drift using the clock model (broadcast) for this SV
-                    SV_clock_drift_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
+                    // 2- compute the clock drift using the clock model (broadcast) for this SV, including relativistic effect
+                    SV_clock_bias_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
 
-                    // 3- compute the relativistic clock drift using the clock model (broadcast) for this SV
-                    SV_relativistic_clock_corr_s = galileo_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
-
-                    // 4- compute the current ECEF position for this SV using corrected TX time
-                    SV_clock_bias_s = SV_clock_drift_s + SV_relativistic_clock_corr_s;
+                    // 3- compute the current ECEF position for this SV using corrected TX time
                     TX_time_corrected_s = Tx_time - SV_clock_bias_s;
                     galileo_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
 
@@ -282,8 +288,8 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                     satpos(1,obs_counter) = galileo_ephemeris_iter->second.d_satpos_Y;
                     satpos(2,obs_counter) = galileo_ephemeris_iter->second.d_satpos_Z;
 
-                    // 5- fill the observations vector with the corrected pseudoranges
-                    obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s*GALILEO_C_m_s;
+                    // 4- fill the observations vector with the corrected pseudoranges
+                    obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GALILEO_C_m_s;
                     d_visible_satellites_IDs[valid_obs] = galileo_ephemeris_iter->second.i_satellite_PRN;
                     d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
                     valid_obs++;
@@ -530,8 +536,8 @@ void galileo_e1_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_sele
                 }
         }
     while (abs(h - oldh) > 1.0e-12);
-    d_latitude_d = phi * 180.0 / GPS_PI;
-    d_longitude_d = lambda * 180 / GPS_PI;
+    d_latitude_d = phi * 180.0 / GALILEO_PI;
+    d_longitude_d = lambda * 180 / GALILEO_PI;
     d_height_m = h;
 }
 
@@ -672,7 +678,7 @@ void galileo_e1_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x,
     double lambda;
     double phi;
     double h;
-    double dtr = GPS_PI/180.0;
+    double dtr = GALILEO_PI/180.0;
     double a = 6378137.0;        // semi-major axis of the reference ellipsoid WGS-84
     double finv = 298.257223563; // inverse of flattening of the reference ellipsoid WGS-84
 
@@ -726,4 +732,104 @@ void galileo_e1_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x,
         }
 
     *D = sqrt(dx(0)*dx(0) + dx(1)*dx(1) + dx(2)*dx(2));
+}
+
+void galileo_e1_ls_pvt::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km)
+{
+    /*   Inputs:
+           sinel     - sin of elevation angle of satellite
+           hsta_km   - height of station in km
+           p_mb      - atmospheric pressure in mb at height hp_km
+           t_kel     - surface temperature in degrees Kelvin at height htkel_km
+           hum       - humidity in % at height hhum_km
+           hp_km     - height of pressure measurement in km
+           htkel_km  - height of temperature measurement in km
+           hhum_km   - height of humidity measurement in km
+
+       Outputs:
+           ddr_m     - range correction (meters)
+
+     Reference
+     Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
+     Refraction Correction Model. Paper presented at the
+     American Geophysical Union Annual Fall Meeting, San
+     Francisco, December 12-17
+
+     Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
+     */
+
+    const double a_e    = 6378.137;    // semi-major axis of earth ellipsoid
+    const double b0     = 7.839257e-5;
+    const double tlapse = -6.5;
+    const double em     = -978.77 / (2.8704e6 * tlapse * 1.0e-5);
+
+    double tkhum  = t_kel + tlapse * (hhum_km - htkel_km);
+    double atkel  = 7.5*(tkhum - 273.15) / (237.3 + tkhum - 273.15);
+    double e0     = 0.0611 * hum * pow(10, atkel);
+    double tksea  = t_kel - tlapse * htkel_km;
+    double tkelh  = tksea + tlapse * hhum_km;
+    double e0sea  = e0 * pow((tksea / tkelh), (4 * em));
+    double tkelp  = tksea + tlapse * hp_km;
+    double psea   = p_mb * pow((tksea / tkelp), em);
+
+    if(sinel < 0) { sinel = 0.0; }
+
+    double tropo_delay   = 0.0;
+    bool done      = false;
+    double refsea  = 77.624e-6 / tksea;
+    double htop    = 1.1385e-5 / refsea;
+    refsea         = refsea * psea;
+    double ref     = refsea * pow(((htop - hsta_km) / htop), 4);
+
+    double a;
+    double b;
+    double rtop;
+
+    while(1)
+        {
+            rtop = pow((a_e + htop), 2) - pow((a_e + hsta_km), 2) * (1 - pow(sinel, 2));
+
+            // check to see if geometry is crazy
+            if(rtop < 0) { rtop = 0; }
+
+            rtop = sqrt(rtop) - (a_e + hsta_km) * sinel;
+
+            a    = -sinel / (htop - hsta_km);
+            b    = -b0 * (1 - pow(sinel,2)) / (htop - hsta_km);
+
+            arma::vec rn = arma::vec(8);
+            rn.zeros();
+
+            for(int i = 0; i<8; i++)
+                {
+                    rn(i) = pow(rtop, (i+1+1));
+
+                }
+
+            arma::rowvec alpha = {2 * a, 2 * pow(a, 2) + 4 * b /3, a * (pow(a, 2) + 3 * b),
+                    pow(a, 4)/5 + 2.4 * pow(a, 2) * b + 1.2 * pow(b, 2), 2 * a * b * (pow(a, 2) + 3 * b)/3,
+                    pow(b, 2) * (6 * pow(a, 2) + 4 * b) * 1.428571e-1, 0, 0};
+
+            if(pow(b, 2) > 1.0e-35)
+                {
+                    alpha(6) = a * pow(b, 3) /2;
+                    alpha(7) = pow(b, 4) / 9;
+                }
+
+            double dr = rtop;
+            arma::mat aux_ = alpha * rn;
+            dr = dr + aux_(0, 0);
+            tropo_delay = tropo_delay + dr * ref * 1000;
+
+            if(done == true)
+                {
+                    *ddr_m = tropo_delay;
+                    break;
+                }
+
+            done    = true;
+            refsea  = (371900.0e-6 / tksea - 12.92e-6) / tksea;
+            htop    = 1.1385e-5 * (1255 / tksea + 0.05) / refsea;
+            ref     = refsea * e0sea * pow(((htop - hsta_km) / htop), 4);
+        }
 }

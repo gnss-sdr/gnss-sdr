@@ -24,6 +24,7 @@ if(OPENCL_FOUND)
             pcps_acquisition_fine_doppler_cc.cc
             pcps_tong_acquisition_cc.cc
             pcps_cccwsr_acquisition_cc.cc
+            pcps_quicksync_acquisition_cc.cc
             galileo_pcps_8ms_acquisition_cc.cc
             pcps_opencl_acquisition_cc.cc # Needs OpenCL
     )
@@ -35,6 +36,7 @@ else(OPENCL_FOUND)
             pcps_acquisition_fine_doppler_cc.cc
             pcps_tong_acquisition_cc.cc
             pcps_cccwsr_acquisition_cc.cc
+            pcps_quicksync_acquisition_cc.cc
             galileo_pcps_8ms_acquisition_cc.cc
     )
 endif(OPENCL_FOUND)

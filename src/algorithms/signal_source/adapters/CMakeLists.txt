@@ -18,7 +18,7 @@
 
 # Optional drivers
 
-if($ENV{GN3S_DRIVER})
+if(ENABLE_GN3S)
      ##############################################
      # GN3S (USB dongle)
      ##############################################
@@ -49,12 +49,10 @@ if($ENV{GN3S_DRIVER})
      file(COPY ${CMAKE_SOURCE_DIR}/firmware/GN3S_v2/bin/gn3s_firmware.ihx 
           DESTINATION ${CMAKE_SOURCE_DIR}/install/
      )     
-endif($ENV{GN3S_DRIVER})
+endif(ENABLE_GN3S)
 
-if($ENV{RAW_ARRAY_DRIVER})
-     set(RAW_ARRAY_DRIVER ON)
-endif($ENV{RAW_ARRAY_DRIVER})
-if(RAW_ARRAY_DRIVER)
+
+if(ENABLE_ARRAY)
      ##############################################
      # GRDBFCTTC GNSS EXPERIMENTAL ARRAY PROTOTYPE
      ##############################################
@@ -82,13 +80,10 @@ if(RAW_ARRAY_DRIVER)
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRDBFCTTC_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRDBFCTTC_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
-endif(RAW_ARRAY_DRIVER)
+endif(ENABLE_ARRAY)
 
 
-if($ENV{RTLSDR_DRIVER})
-    set(RTLSDR_DRIVER ON)
-endif($ENV{RTLSDR_DRIVER})
-if(RTLSDR_DRIVER)
+if(ENABLE_RTLSDR)
     ################################################################################
     # OsmoSDR - http://sdr.osmocom.org/trac/
     ################################################################################  
@@ -104,7 +99,7 @@ if(RTLSDR_DRIVER)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} rtlsdr_signal_source.cc)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
     set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${RTL_DRIVER_INCLUDE_DIRS}) 
-endif(RTLSDR_DRIVER)
+endif(ENABLE_RTLSDR)
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc 
                                   gen_signal_source.cc 

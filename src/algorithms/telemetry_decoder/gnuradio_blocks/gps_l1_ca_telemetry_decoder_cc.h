@@ -61,6 +61,12 @@ public:
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
 
+
+    /*!
+     * \brief Set decimation factor to average the GPS synchronization estimation output from the tracking module.
+     */
+    void set_decimation(int decimation);
+
     /*!
      * \brief Set the satellite data queue
      */
@@ -113,6 +119,10 @@ private:
     bool d_flag_parity;
     bool d_flag_preamble;
     int d_word_number;
+
+    // output averaging and decimation
+    int d_average_count;
+    int d_decimation_output_factor;
 
     long d_fs_in;
     //double d_preamble_duration_seconds;

@@ -436,7 +436,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             T_prn_samples = T_prn_seconds * (double)d_fs_in;
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * (double)d_fs_in;
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
-            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
+            //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
             if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
@@ -477,8 +477,18 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             // ########### Output the tracking data to navigation and PVT ##########
             current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
             current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
-            // Tracking_timestamp_secs is aligned with the PRN start sample
-            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples)/(double)d_fs_in;
+
+            // Tracking_timestamp_secs is aligned with the NEXT PRN start sample (Hybridization problem!)
+            //compute remnant code phase samples BEFORE the Tracking timestamp
+            //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
+            //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples)/(double)d_fs_in;
+
+            // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!, but some glitches??)
+            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_rem_code_phase_samples)/(double)d_fs_in;
+            //compute remnant code phase samples AFTER the Tracking timestamp
+            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
+
+            //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter)/(double)d_fs_in;
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = (double)d_acc_carrier_phase_rad;

@@ -87,6 +87,12 @@ public:
 
     int IOD_ephemeris;
 
+    bool flag_GGTO;
+    bool flag_GGTO_1;
+    bool flag_GGTO_2;
+    bool flag_GGTO_3;
+    bool flag_GGTO_4;
+
     /*Word type 1: Ephemeris (1/4)*/
     int IOD_nav_1;            //!< IOD_nav page 1
     double t0e_1;             //!< Ephemeris reference time [s]

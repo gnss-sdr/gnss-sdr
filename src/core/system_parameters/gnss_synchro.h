@@ -56,12 +56,10 @@ public:
     double CN0_dB_hz;               //!< Set by Tracking processing block
     double Carrier_Doppler_hz;      //!< Set by Tracking processing block
     double Carrier_phase_rads;      //!< Set by Tracking processing block
-    //old
     double Code_phase_secs;         //!< Set by Tracking processing block
     double Tracking_timestamp_secs; //!< Set by Tracking processing block
-    //new
-    unsigned long int PRN_start_sample; //!< Set by Tracking processing block
     bool Flag_valid_tracking;
+
     //Telemetry Decoder
     double Prn_timestamp_ms;             //!< Set by Telemetry Decoder processing block
     double Prn_timestamp_at_preamble_ms; //!< Set by Telemetry Decoder processing block
@@ -70,6 +68,8 @@ public:
     bool Flag_preamble;     //!< Set by Telemetry Decoder processing block
     double d_TOW;           //!< Set by Telemetry Decoder processing block
     double d_TOW_at_current_symbol;
+    double d_TOW_hybrid_at_current_symbol; //Galileo TOW is expressed in the GPS time scale (it will be the same for any other constellation)
+
     // Pseudorange
     double Pseudorange_m;
     bool Flag_valid_pseudorange;

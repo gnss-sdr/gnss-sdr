@@ -267,22 +267,17 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
     	Galileo_Almanac almanac=d_nav.get_almanac();
     	d_almanac_queue->push(almanac);
     	//debug
-    	std::cout<<"Almanac received!"<<std::endl;
-    	std::cout<<"GPS_to_Galileo time conversion:"<<std::endl;
-    	std::cout<<"A0G="<<almanac.A_0G_10<<std::endl;
-    	std::cout<<"A1G="<<almanac.A_1G_10<<std::endl;
-    	std::cout<<"T0G="<<almanac.t_0G_10<<std::endl;
-    	std::cout<<"WN_0G_10="<<almanac.WN_0G_10<<std::endl;
-
-    	std::cout<<"Actual parameters:"<<std::endl;
-    	std::cout<<"d_TOW_at_current_symbol="<<d_TOW_at_current_symbol<<std::endl;
-    	std::cout<<"d_nav.WN_0="<<d_nav.WN_0<<std::endl;
-
-
-    	delta_t=almanac.A_0G_10+almanac.A_1G_10*(d_TOW_at_current_symbol-almanac.t_0G_10+604800*(fmod((d_nav.WN_0-almanac.WN_0G_10),64)));
-
-    	std::cout<<"delta_t="<<delta_t<<"[s]"<<std::endl;
-
+    	std::cout << "Almanac received!" << std::endl;
+    	LOG(INFO) << "GPS_to_Galileo time conversion:";
+    	LOG(INFO) << "A0G=" << almanac.A_0G_10;
+    	LOG(INFO) << "A1G=" << almanac.A_1G_10;
+    	LOG(INFO) << "T0G=" << almanac.t_0G_10;
+    	LOG(INFO) << "WN_0G_10=" << almanac.WN_0G_10;
+    	LOG(INFO) << "Current parameters:";
+    	LOG(INFO) << "d_TOW_at_current_symbol="<< d_TOW_at_current_symbol;
+    	LOG(INFO) << "d_nav.WN_0=" << d_nav.WN_0;
+    	delta_t = almanac.A_0G_10 + almanac.A_1G_10 * (d_TOW_at_current_symbol - almanac.t_0G_10 + 604800 * (fmod((d_nav.WN_0 - almanac.WN_0G_10), 64)));
+    	LOG(INFO) << "delta_t=" << delta_t << "[s]";
     }
 }
 

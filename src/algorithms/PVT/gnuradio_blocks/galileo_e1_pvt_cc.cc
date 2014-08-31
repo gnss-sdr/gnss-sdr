@@ -177,35 +177,35 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                         {
                             d_kml_dump->print_position_galileo(d_ls_pvt, d_flag_averaging);
                             //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
-                            //                            d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
+                            //   d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
                             //
-                            //                           if (!b_rinex_header_writen) //  & we have utc data in nav message!
-                            //                               {
-                            //                                   std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
-                            //                                   galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
-                            //                                   if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
-                            //                                       {
-                            //                                           rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
-                            //                                           rp->rinex_nav_header(rp->navFile, d_ls_pvt->galielo_iono, d_ls_pvt->galileo_utc_model);
-                            //                                           b_rinex_header_writen = true; // do not write header anymore
-                            //                                       }
-                            //                               }
-                            //                            if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
-                            //                                {
-                            //                                    // Limit the RINEX navigation output rate to 1/6 seg
-                            //                                    // Notice that d_sample_counter period is 1ms (for GPS correlators)
-                            //                                    if ((d_sample_counter-d_last_sample_nav_output)>=6000)
-                            //                                        {
-                            //                                            rp->log_rinex_nav(rp->navFile, d_ls_pvt->gps_ephemeris_map);
-                            //                                            d_last_sample_nav_output=d_sample_counter;
-                            //                                        }
-                            //                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
-                            //                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
-                            //                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
-                            //                                        {
-                            //                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
-                            //                                        }
-                            //                                }
+                            if (!b_rinex_header_writen) //  & we have utc data in nav message!
+                                {
+                                    std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
+                                    galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                        {
+                                            //rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
+                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                            b_rinex_header_writen = true; // do not write header anymore
+                                        }
+                                }
+                            if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
+                                {
+                                    // Limit the RINEX navigation output rate to 1/6 seg
+                                    // Notice that d_sample_counter period is 4ms (for Galileo correlators)
+                                    if ((d_sample_counter - d_last_sample_nav_output) >= 6000)
+                                        {
+                                            rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
+                                            d_last_sample_nav_output = d_sample_counter;
+                                        }
+                                    //   std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
+                                    //   galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                    //  if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                    //     {
+                                    //         rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                    //     }
+                                }
                         }
                 }
 

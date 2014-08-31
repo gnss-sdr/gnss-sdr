@@ -57,9 +57,11 @@
 #include <sstream>  // for stringstream
 #include <iomanip>  // for setprecision
 #include <map>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "gps_navigation_message.h"
-#include "boost/date_time/posix_time/posix_time.hpp"
+#include "galileo_navigation_message.h"
 #include "GPS_L1_CA.h"
+#include "Galileo_E1.h"
 #include "gnss_synchro.h"
 
 class Sbas_Raw_Msg;
@@ -84,11 +86,14 @@ public:
     std::ofstream obsFile ; //<! Output file stream for RINEX observation file
     std::ofstream navFile ; //<! Output file stream for RINEX navigation data file
     std::ofstream sbsFile ; //<! Output file stream for RINEX SBAS raw data file
+    std::ofstream navGalFile ; //<! Output file stream for RINEX Galileo navigation data file
 
     /*!
      *  \brief Generates the Navigation Data header
      */
     void rinex_nav_header(std::ofstream& out, Gps_Iono iono, Gps_Utc_Model utc_model);
+
+    void rinex_nav_header(std::ofstream& out, Galileo_Iono iono, Galileo_Utc_Model utc_model);
 
     /*!
      *  \brief Generates the Observation data header
@@ -110,11 +115,13 @@ public:
      */
     boost::posix_time::ptime compute_GPS_time(Gps_Ephemeris eph, double obs_time);
 
-
+    boost::posix_time::ptime compute_Galileo_time(Galileo_Ephemeris eph, double obs_time);
     /*!
      *  \brief Writes data from the navigation message into the RINEX file
      */
-    void log_rinex_nav(std::ofstream& out,  std::map<int,Gps_Ephemeris> eph_map);
+    void log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris> eph_map);
+
+    void log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephemeris> eph_map);
 
     /*!
      *  \brief Writes observables into the RINEX file
@@ -165,6 +172,7 @@ private:
     std::string navfilename;
     std::string obsfilename;
     std::string sbsfilename;
+    std::string navGalfilename;
 
     /*
      * Generates the data for the PGM / RUN BY / DATE line

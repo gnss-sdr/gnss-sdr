@@ -130,6 +130,8 @@ public:
      */
     void log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
 
+    void log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
+
     /*!
      * \brief Represents GPS time in the date time format. Leap years are considered, but leap seconds are not.
      */

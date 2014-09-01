@@ -199,12 +199,12 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                                             rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
                                             d_last_sample_nav_output = d_sample_counter;
                                         }
-                                    //   std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
-                                    //   galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
-                                    //  if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
-                                    //     {
-                                    //         rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
-                                    //     }
+                                       std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
+                                       galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                       if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                          {
+                                              rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                          }
                                 }
                         }
                 }

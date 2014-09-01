@@ -522,13 +522,15 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
 
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_samples;
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete sample
-            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error
+            //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error
 
             // ########### Output the tracking data to navigation and PVT ##########
             current_synchro_data.Prompt_I = (double)(*d_Prompt).real();
             current_synchro_data.Prompt_Q = (double)(*d_Prompt).imag();
             // Tracking_timestamp_secs is aligned with the PRN start sample
-            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples) / (double)d_fs_in;
+            //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples) / (double)d_fs_in;
+            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_rem_code_phase_samples)/(double)d_fs_in;
+            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;

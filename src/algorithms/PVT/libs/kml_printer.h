@@ -51,8 +51,8 @@ private:
     std::ofstream kml_file;
 public:
     bool set_headers(std::string filename);
-    bool print_position(gps_l1_ca_ls_pvt* position, bool print_average_values);
-    bool print_position_galileo(galileo_e1_ls_pvt* position, bool print_average_values);
+    bool print_position(const std::shared_ptr<gps_l1_ca_ls_pvt>& position, bool print_average_values);
+    bool print_position_galileo(const std::shared_ptr<galileo_e1_ls_pvt>& position, bool print_average_values);
     bool print_position_hybrid(hybrid_ls_pvt* position, bool print_average_values);
     bool close_file();
     Kml_Printer();

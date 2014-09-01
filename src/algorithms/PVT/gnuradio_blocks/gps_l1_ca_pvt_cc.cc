@@ -87,17 +87,18 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;
     kml_dump_filename.append(".kml");
-    d_kml_dump.set_headers(kml_dump_filename);
+    d_kml_dump = std::make_shared<Kml_Printer>();
+    d_kml_dump->set_headers(kml_dump_filename);
 
     //initialize nmea_printer
-    d_nmea_printer = new Nmea_Printer(nmea_dump_filename, flag_nmea_tty_port, nmea_dump_devname);
+    d_nmea_printer = std::make_shared<Nmea_Printer>(nmea_dump_filename, flag_nmea_tty_port, nmea_dump_devname);
 
     d_dump_filename.append("_raw.dat");
     dump_ls_pvt_filename.append("_ls_pvt.dat");
     d_averaging_depth = averaging_depth;
     d_flag_averaging = flag_averaging;
 
-    d_ls_pvt = new gps_l1_ca_ls_pvt(nchannels,dump_ls_pvt_filename,d_dump);
+    d_ls_pvt = std::make_shared<gps_l1_ca_ls_pvt>((int)nchannels, dump_ls_pvt_filename, d_dump);
     d_ls_pvt->set_averaging_depth(d_averaging_depth);
 
     d_sample_counter = 0;
@@ -106,7 +107,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
 
     b_rinex_header_writen = false;
     b_rinex_sbs_header_writen = false;
-    rp = new Rinex_Printer();
+    rp = std::make_shared<Rinex_Printer>();
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -130,12 +131,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
 
 
 gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc()
-{
-    d_kml_dump.close_file();
-    delete d_ls_pvt;
-    delete rp;
-    delete d_nmea_printer;
-}
+{}
 
 
 
@@ -237,7 +233,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                     pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
                     if (pvt_result == true)
                         {
-                            d_kml_dump.print_position(d_ls_pvt, d_flag_averaging);
+                            d_kml_dump->print_position(d_ls_pvt, d_flag_averaging);
                             d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
 
                             if (!b_rinex_header_writen) //  & we have utc data in nav message!

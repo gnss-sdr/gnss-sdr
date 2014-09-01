@@ -185,7 +185,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                                     galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
                                     if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
                                         {
-                                            //rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
+                                            rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
                                             rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
                                             b_rinex_header_writen = true; // do not write header anymore
                                         }

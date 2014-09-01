@@ -100,7 +100,9 @@ public:
      */
     void rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, double d_TOW_first_observation);
 
+    void rinex_obs_header(std::ofstream& out, Galileo_Ephemeris eph, double d_TOW_first_observation);
     /*!
+
      *  \brief Generates the SBAS raw data header
      */
     void rinex_sbs_header(std::ofstream& out);

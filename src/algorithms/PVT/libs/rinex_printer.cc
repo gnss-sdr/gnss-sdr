@@ -170,7 +170,7 @@ Rinex_Printer::~Rinex_Printer()
     long posn, poso, poss, posng;
     posn = navFile.tellp();
     poso = obsFile.tellp();
-    poss = obsFile.tellp();
+    poss = sbsFile.tellp();
     posng = navGalFile.tellp();
     Rinex_Printer::navFile.close();
     Rinex_Printer::obsFile.close();
@@ -1314,14 +1314,24 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, doub
             line.clear();
             line += satelliteSystem["GPS"];
             line += std::string(2, ' ');
-            //int numberTypesObservations=2; // Count the number of available types of observable in the system
             std::stringstream strm;
+            numberTypesObservations = 4;
             strm << numberTypesObservations;
             line += Rinex_Printer::rightJustify(strm.str(), 3);
             // per type of observation
+            // GPS L1 PSEUDORANGE
             line += std::string(1, ' ');
             line += observationType["PSEUDORANGE"];
             line += observationCode["GPS_L1_CA"];
+            // GPS L1 PHASE
+            line += std::string(1, ' ');
+            line += observationType["CARRIER_PHASE"];
+            line += observationCode["GPS_L1_CA"];
+            // GPS DOPPLER L1
+            line += std::string(1, ' ');
+            line += observationType["DOPPLER"];
+            line += observationCode["GPS_L1_CA"];
+            // GPS L! CA SIGNAL STRENGTH
             line += std::string(1, ' ');
             line += observationType["SIGNAL_STRENGTH"];
             line += observationCode["GPS_L1_CA"];
@@ -1716,7 +1726,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
             line += std::string(1, ' ');
             double seconds=fmod(gps_t, 60);
             // Add extra 0 if seconds are < 10
-            if (seconds<10)
+            if (seconds < 10)
             {
             	line +=std::string(1, '0');
             }
@@ -1766,7 +1776,16 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
                         {
                             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
                         }
+
+                    // GPS L1 CA PHASE
+                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_phase_rads/GPS_TWO_PI, 3), 14);
+
+                    // GPS L1 CA DOPPLER
+                    lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_Doppler_hz, 3), 14);
+
+                    //GPS L1 SIGNAL STRENGTH
                     lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.CN0_dB_hz, 3), 14);
+
                     if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
                     out << lineObs << std::endl;
                 }

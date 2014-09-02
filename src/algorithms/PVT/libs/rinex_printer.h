@@ -35,7 +35,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -60,6 +60,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "gps_navigation_message.h"
 #include "galileo_navigation_message.h"
+#include "sbas_telemetry_data.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "gnss_synchro.h"
@@ -89,20 +90,26 @@ public:
     std::ofstream navGalFile ; //<! Output file stream for RINEX Galileo navigation data file
 
     /*!
-     *  \brief Generates the Navigation Data header
+     *  \brief Generates the GPS Navigation Data header
      */
     void rinex_nav_header(std::ofstream& out, Gps_Iono iono, Gps_Utc_Model utc_model);
 
+    /*!
+     *  \brief Generates the Galileo Navigation Data header
+     */
     void rinex_nav_header(std::ofstream& out, Galileo_Iono iono, Galileo_Utc_Model utc_model);
 
     /*!
-     *  \brief Generates the Observation data header
+     *  \brief Generates the GPS Observation data header
      */
     void rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, double d_TOW_first_observation);
 
-    void rinex_obs_header(std::ofstream& out, Galileo_Ephemeris eph, double d_TOW_first_observation);
     /*!
+     *  \brief Generates the Galileo Observation data header
+     */
+    void rinex_obs_header(std::ofstream& out, Galileo_Ephemeris eph, double d_TOW_first_observation);
 
+    /*!
      *  \brief Generates the SBAS raw data header
      */
     void rinex_sbs_header(std::ofstream& out);
@@ -117,19 +124,29 @@ public:
      */
     boost::posix_time::ptime compute_GPS_time(Gps_Ephemeris eph, double obs_time);
 
-    boost::posix_time::ptime compute_Galileo_time(Galileo_Ephemeris eph, double obs_time);
     /*!
-     *  \brief Writes data from the navigation message into the RINEX file
+     *  \brief Computes the Galileo time and returns a boost::posix_time::ptime object
+     */
+    boost::posix_time::ptime compute_Galileo_time(Galileo_Ephemeris eph, double obs_time);
+
+    /*!
+     *  \brief Writes data from the GPS navigation message into the RINEX file
      */
     void log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris> eph_map);
 
+    /*!
+     *  \brief Writes data from the Galileo navigation message into the RINEX file
+     */
     void log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephemeris> eph_map);
 
     /*!
-     *  \brief Writes observables into the RINEX file
+     *  \brief Writes GPS observables into the RINEX file
      */
     void log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
 
+    /*!
+     *  \brief Writes Galileo observables into the RINEX file
+     */
     void log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
 
     /*!

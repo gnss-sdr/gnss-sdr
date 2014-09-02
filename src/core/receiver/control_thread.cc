@@ -162,6 +162,7 @@ void ControlThread::run()
 
     galileo_ephemeris_data_collector_thread_ = boost::thread(&ControlThread::galileo_ephemeris_data_collector, this);
     galileo_iono_data_collector_thread_ = boost::thread(&ControlThread::galileo_iono_data_collector, this);
+    galileo_almanac_data_collector_thread_ = boost::thread(&ControlThread::galileo_almanac_data_collector, this);
     galileo_utc_model_data_collector_thread_ = boost::thread(&ControlThread::galileo_utc_model_data_collector, this);
     // Main loop to read and process the control messages
     while (flowgraph_->running() && !stop_)
@@ -728,6 +729,20 @@ void ControlThread::gps_iono_data_collector()
         }
 }
 
+
+void ControlThread::galileo_almanac_data_collector()
+{
+    // ############ 1.bis READ ALMANAC QUEUE ####################
+    Galileo_Almanac galileo_almanac;
+    while(stop_ == false)
+        {
+            global_galileo_almanac_queue.wait_and_pop(galileo_almanac);
+
+            LOG(INFO) << "New galileo_almanac record has arrived ";
+            // there is no timestamp for the galileo_almanac data, new entries must always be added
+            global_galileo_almanac_map.write(0, galileo_almanac);
+        }
+}
 
 void ControlThread::galileo_iono_data_collector()
 {

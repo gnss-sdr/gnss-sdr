@@ -77,6 +77,7 @@ public:
     std::map<int,Galileo_Ephemeris> galileo_ephemeris_map; //!< Map storing new Galileo_Ephemeris
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
+    Galileo_Almanac galileo_almanac;
 
     double d_galileo_current_time;
     boost::posix_time::ptime d_position_UTC_time;

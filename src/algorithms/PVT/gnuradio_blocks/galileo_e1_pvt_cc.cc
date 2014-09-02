@@ -48,6 +48,7 @@ using google::LogMessage;
 extern concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
 extern concurrent_map<Galileo_Iono> global_galileo_iono_map;
 extern concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
+extern concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
 
 galileo_e1_pvt_cc_sptr
 galileo_e1_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname)
@@ -163,6 +164,11 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
             global_galileo_iono_map.read(0, d_ls_pvt->galileo_iono);
         }
 
+    if (global_galileo_almanac_map.size() > 0)
+        {
+            // Almanac data is shared for all the Galileo satellites. Read always at ID=0
+            global_galileo_almanac_map.read(0, d_ls_pvt->galileo_almanac);
+        }
     // ############ 2 COMPUTE THE PVT ################################
     if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0)
         {

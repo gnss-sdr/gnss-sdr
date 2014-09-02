@@ -185,6 +185,7 @@ void ControlThread::run()
     //Join Galileo threads
     galileo_ephemeris_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
     galileo_iono_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
+    galileo_almanac_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
     galileo_utc_model_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
 
     //Join keyboard threads

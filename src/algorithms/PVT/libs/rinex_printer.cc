@@ -15,7 +15,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,8 +41,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include "sbas_telemetry_data.h"
-
 
 
 using google::LogMessage;
@@ -56,7 +54,6 @@ Rinex_Printer::Rinex_Printer()
     obsfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS");
     sbsfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_SBAS");
     navGalfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_GAL_NAV");
-
 
     Rinex_Printer::navFile.open(navfilename, std::ios::out | std::ios::app);
     Rinex_Printer::obsFile.open(obsfilename, std::ios::out | std::ios::app);
@@ -1093,7 +1090,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             // -------- BROADCAST ORBIT - 1
             line.clear();
             line += std::string(5, ' ');
-            line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.IOD_ephemeris, 18, 2);
+            line += Rinex_Printer::doub2for(static_cast<double>(galileo_ephemeris_iter->second.IOD_ephemeris), 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.C_rs_3, 18, 2);
             line += std::string(1, ' ');
@@ -1118,7 +1115,6 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             out << line << std::endl;
 
 
-
             // -------- BROADCAST ORBIT - 3
             line.clear();
             line += std::string(5, ' ');
@@ -1133,8 +1129,6 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             out << line << std::endl;
 
 
-
-
             // -------- BROADCAST ORBIT - 4
             line.clear();
             line += std::string(5, ' ');
@@ -1147,7 +1141,6 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.OMEGA_dot_3, 18, 2);
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
-
 
 
             // -------- BROADCAST ORBIT - 5
@@ -1859,7 +1852,6 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, dou
     std::string hour (timestring, 9, 2);
     std::string minutes (timestring, 11, 2);
 
-
     std::string year (timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
@@ -1895,7 +1887,6 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, dou
             numSatellitesObserved++;
         }
     line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(numSatellitesObserved), 3);
-
 
     // Receiver clock offset (optional)
     //line += rightJustify(asString(clockOffset, 12), 15);
@@ -1942,8 +1933,6 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, dou
 // -> Leap years are considered, but leap seconds not.
 void Rinex_Printer::to_date_time(int gps_week, int gps_tow, int &year, int &month, int &day, int &hour, int &minute, int &second)
 {
-    //std::cout << "to_date_time(): gps_week=" << gps_week << " gps_tow=" << gps_tow << std::endl;
-
     int days_per_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
     // seconds in a not leap year
@@ -2008,7 +1997,6 @@ void Rinex_Printer::to_date_time(int gps_week, int gps_tow, int &year, int &mont
     minute = remaining_secs/60;
     second = remaining_secs%60;
 }
-
 
 
 void Rinex_Printer::log_rinex_sbs(std::ofstream& out, Sbas_Raw_Msg sbs_message)
@@ -2094,8 +2082,6 @@ void Rinex_Printer::log_rinex_sbs(std::ofstream& out, Sbas_Raw_Msg sbs_message)
 }
 
 
-
-
 int Rinex_Printer::signalStrength(double snr)
 {
     int ss;
@@ -2114,6 +2100,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(Gps_Navigation_Message 
     return p_time;
 }
 
+
 boost::posix_time::ptime Rinex_Printer::compute_GPS_time(Gps_Ephemeris eph, double obs_time)
 {
     // The RINEX v2.11 v3.00 format uses GPS time for the observations epoch, not UTC time, thus, no leap seconds needed here.
@@ -2121,11 +2108,10 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(Gps_Ephemeris eph, doub
     // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800*(double)(eph.i_GPS_week%1024))*1000);
+    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800*(double)(eph.i_GPS_week % 1024))*1000);
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
-
 
 
 boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(Galileo_Ephemeris eph, double obs_time)
@@ -2135,10 +2121,11 @@ boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(Galileo_Ephemeris e
     // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     double galileo_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((galileo_t + 604800*(double)(eph.WN_5))*1000);
+    boost::posix_time::time_duration t = boost::posix_time::millisec((galileo_t + 604800*(double)(eph.WN_5))*1000); //
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
+
 
 /*
 

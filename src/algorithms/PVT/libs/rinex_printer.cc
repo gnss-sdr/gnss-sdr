@@ -1170,7 +1170,8 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             //double  minusone = -1.0; // Unknown
             //line += Rinex_Printer::doub2for(minusone, 18, 2);
             line += std::string(1, ' ');
-            std::string E1B_HS, E5B_HS;
+            std::string E1B_HS;
+            std::string E5B_HS;
             if (galileo_ephemeris_iter->second.E1B_HS_5 == 0) E1B_HS = "00";
             if (galileo_ephemeris_iter->second.E1B_HS_5 == 1) E1B_HS = "01";
             if (galileo_ephemeris_iter->second.E1B_HS_5 == 2) E1B_HS = "10";
@@ -1179,10 +1180,12 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             if (galileo_ephemeris_iter->second.E5b_HS_5 == 1) E5B_HS = "01";
             if (galileo_ephemeris_iter->second.E5b_HS_5 == 2) E5B_HS = "10";
             if (galileo_ephemeris_iter->second.E5b_HS_5 == 3) E5B_HS = "11";
-            std::string SVhealth_str = boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5) 
+           /* std::string SVhealth_str = boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5)
                                    + E1B_HS + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5)
                                    + "1" + "11" + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E5b_DVS_5)
-                                   + E5B_HS;
+                                   + E5B_HS;*/
+            std::string SVhealth_str = E5B_HS + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E5b_DVS_5) + "11" + "1" + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5) +  E1B_HS + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5);
+
             int SVhealth = Rinex_Printer::toInt(SVhealth_str, 9);
             line += Rinex_Printer::doub2for(static_cast<double>(SVhealth), 18, 2); //
             line += std::string(1, ' ');

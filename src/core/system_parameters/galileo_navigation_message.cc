@@ -545,6 +545,16 @@ Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
     /*GST*/
     ephemeris.WN_5 = WN_5;          // Week number
     ephemeris.TOW_5 = TOW_5;        // Time of Week
+
+    ephemeris.SISA_3 = SISA_3;
+    ephemeris.E5b_HS_5 = E5b_HS_5;           // E5b Signal Health Status
+    ephemeris.E1B_HS_5 = E1B_HS_5;           // E1B Signal Health Status
+    ephemeris.E5b_DVS_5 = E5b_DVS_5;         // E5b Data Validity Status
+    ephemeris.E1B_DVS_5 = E1B_DVS_5;         // E1B Data Validity Status
+    
+    ephemeris.BGD_E1E5a_5 = BGD_E1E5a_5;        // E1-E5a Broadcast Group Delay [s]
+    ephemeris.BGD_E1E5b_5 = BGD_E1E5b_5;        // E1-E5b Broadcast Group Delay [s]
+
     return ephemeris;
 }
 

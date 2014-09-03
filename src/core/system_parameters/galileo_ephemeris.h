@@ -83,6 +83,16 @@ public:
     double Galileo_satClkDrift;
     double Galileo_dtr; //!< relativistic clock correction term
 
+    // SV status
+    double SISA_3;
+    double E5b_HS_5;           //!< E5b Signal Health Status
+    double E1B_HS_5;           //!< E1B Signal Health Status
+    double E5b_DVS_5;          //!< E5b Data Validity Status
+    double E1B_DVS_5;          //!< E1B Data Validity Status
+    
+    double BGD_E1E5a_5;        //!< E1-E5a Broadcast Group Delay [s]
+    double BGD_E1E5b_5;        //!< E1-E5b Broadcast Group Delay [s]
+
     // satellite positions
     double d_satpos_X;  //!< Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
     double d_satpos_Y;  //!< Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.

@@ -438,8 +438,8 @@ void Rinex_Printer::rinex_nav_header(std::ofstream& out,  Galileo_Iono iono, Gal
     line += std::string("GPGA");
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_0G_10, 16, 2), 18);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_1G_10, 15, 2), 16);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.t0t_6), 7);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.WNot_6), 5);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.t_0G_10), 7);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(galileo_almanac.WN_0G_10), 5);
     line += std::string(10, ' ');
     line += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
     Rinex_Printer::lengthCheck(line);
@@ -1147,12 +1147,17 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             line += std::string(5, ' ');
             line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.iDot_2, 18, 2);
             line += std::string(1, ' ');
-            double zero = 0.0;
-            line += Rinex_Printer::doub2for(zero, 18, 2);
+            //double one = 1.0; // INAV E1-B
+            std::string iNAVE1B("1000000001");
+            int data_source_INAV = Rinex_Printer::toInt(iNAVE1B, 10);
+            line += Rinex_Printer::doub2for(static_cast<double>(data_source_INAV), 18, 2);
             line += std::string(1, ' ');
-            double Galileo_week_continuous_number = (double)(galileo_ephemeris_iter->second.WN_5);
+            double GST_week = (double)(galileo_ephemeris_iter->second.WN_5);
+            double num_GST_rollovers = floor((GST_week + 1024.0) / 4096.0 );
+            double Galileo_week_continuous_number = GST_week + 1024.0 + num_GST_rollovers * 4096.0;
             line += Rinex_Printer::doub2for(Galileo_week_continuous_number, 18, 2);
             line += std::string(1, ' ');
+            double zero = 0.0;
             line += Rinex_Printer::doub2for(zero, 18, 2);
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
@@ -1161,13 +1166,29 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             // -------- BROADCAST ORBIT - 6
             line.clear();
             line += std::string(5, ' ');
-            line += Rinex_Printer::doub2for(zero, 18, 2);
+            line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.SISA_3, 18, 2);  // Not read by eph!
+            //double  minusone = -1.0; // Unknown
+            //line += Rinex_Printer::doub2for(minusone, 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(zero, 18, 2); //
+            std::string E1B_HS, E5B_HS;
+            if (galileo_ephemeris_iter->second.E1B_HS_5 == 0) E1B_HS = "00";
+            if (galileo_ephemeris_iter->second.E1B_HS_5 == 1) E1B_HS = "01";
+            if (galileo_ephemeris_iter->second.E1B_HS_5 == 2) E1B_HS = "10";
+            if (galileo_ephemeris_iter->second.E1B_HS_5 == 3) E1B_HS = "11";
+            if (galileo_ephemeris_iter->second.E5b_HS_5 == 0) E5B_HS = "00";
+            if (galileo_ephemeris_iter->second.E5b_HS_5 == 1) E5B_HS = "01";
+            if (galileo_ephemeris_iter->second.E5b_HS_5 == 2) E5B_HS = "10";
+            if (galileo_ephemeris_iter->second.E5b_HS_5 == 3) E5B_HS = "11";
+            std::string SVhealth_str = boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5) 
+                                   + E1B_HS + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5)
+                                   + "1" + "11" + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E5b_DVS_5)
+                                   + E5B_HS;
+            int SVhealth = Rinex_Printer::toInt(SVhealth_str, 9);
+            line += Rinex_Printer::doub2for(static_cast<double>(SVhealth), 18, 2); //
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(zero, 18, 2); //
+            line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.BGD_E1E5a_5, 18, 2); //
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(zero, 18, 2); //
+            line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.BGD_E1E5b_5, 18, 2); //
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
 
@@ -1360,7 +1381,7 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, doub
             line += std::string(1, ' ');
             line += observationType["DOPPLER"];
             line += observationCode["GPS_L1_CA"];
-            // GPS L! CA SIGNAL STRENGTH
+            // GPS L1 CA SIGNAL STRENGTH
             line += std::string(1, ' ');
             line += observationType["SIGNAL_STRENGTH"];
             line += observationCode["GPS_L1_CA"];
@@ -2115,9 +2136,8 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(Gps_Ephemeris eph, doub
 
 boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(Galileo_Ephemeris eph, double obs_time)
 {
-    // The RINEX v2.11 v3.00 format uses GPS time for the observations epoch, not UTC time, thus, no leap seconds needed here.
-    // (see Section 3 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt)
-    // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
+    // The RINEX v2.11 v3.00 format uses Galileo time for the observations epoch, not UTC time, thus, no leap seconds needed here.
+    // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     double galileo_t = obs_time;
     boost::posix_time::time_duration t = boost::posix_time::millisec((galileo_t + 604800*(double)(eph.WN_5))*1000); //

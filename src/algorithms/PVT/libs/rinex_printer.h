@@ -333,6 +333,9 @@ private:
     inline double asDouble(const std::string& s)
     { return strtod(s.c_str(), 0); }
 
+
+    inline int toInt(std::string bitString, int sLength);
+
     /*
      * Convert a string to an integer.
      * @param s string containing a number.
@@ -340,7 +343,6 @@ private:
      */
     inline long asInt(const std::string& s)
     { return strtol(s.c_str(), 0, 10); }
-
 
 
     /*
@@ -578,6 +580,22 @@ inline std::string Rinex_Printer::asFixWidthString(const int x, const int width,
     ss << std::setfill(fill_digit) << std::setw(width) << x;
     //std::cout << "asFixWidthString(): x=" << x << " width=" << width << " fill_digit=" << fill_digit << " ss=" << ss.str() << std::endl;
     return ss.str().substr(ss.str().size() - width);
+}
+
+inline long asInt(const std::string& s)
+    { return strtol(s.c_str(), 0, 10); }
+
+
+inline int Rinex_Printer::toInt(std::string bitString, int sLength)
+{
+    int tempInt;
+    int num = 0;
+    for(int i=0; i < sLength; i++)
+    {
+        tempInt = bitString[i]-'0';
+        num |= (1 << (sLength-1-i)) * tempInt;
+    }
+    return num;
 }
 
 

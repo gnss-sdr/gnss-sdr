@@ -1166,32 +1166,39 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             // -------- BROADCAST ORBIT - 6
             line.clear();
             line += std::string(5, ' ');
-            line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.SISA_3, 18, 2);  // Not read by eph!
-            //double  minusone = -1.0; // Unknown
-            //line += Rinex_Printer::doub2for(minusone, 18, 2);
+            //line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.SISA_3, 18, 2);
+            line += Rinex_Printer::doub2for(zero, 18, 2);  // *************** CHANGE THIS WHEN GALILEO SIGNAL IS VALID
             line += std::string(1, ' ');
             std::string E1B_HS;
             std::string E5B_HS;
-            if (galileo_ephemeris_iter->second.E1B_HS_5 == 0) E1B_HS = "00";
-            if (galileo_ephemeris_iter->second.E1B_HS_5 == 1) E1B_HS = "01";
-            if (galileo_ephemeris_iter->second.E1B_HS_5 == 2) E1B_HS = "10";
-            if (galileo_ephemeris_iter->second.E1B_HS_5 == 3) E1B_HS = "11";
-            if (galileo_ephemeris_iter->second.E5b_HS_5 == 0) E5B_HS = "00";
-            if (galileo_ephemeris_iter->second.E5b_HS_5 == 1) E5B_HS = "01";
-            if (galileo_ephemeris_iter->second.E5b_HS_5 == 2) E5B_HS = "10";
-            if (galileo_ephemeris_iter->second.E5b_HS_5 == 3) E5B_HS = "11";
-           /* std::string SVhealth_str = boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5)
-                                   + E1B_HS + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5)
-                                   + "1" + "11" + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E5b_DVS_5)
-                                   + E5B_HS;*/
-            std::string SVhealth_str = E5B_HS + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E5b_DVS_5) + "11" + "1" + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5) +  E1B_HS + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5);
+            if(galileo_ephemeris_iter->second.E1B_HS_5 == 0) E1B_HS = "00";
+            if(galileo_ephemeris_iter->second.E1B_HS_5 == 1) E1B_HS = "01";
+            if(galileo_ephemeris_iter->second.E1B_HS_5 == 2) E1B_HS = "10";
+            if(galileo_ephemeris_iter->second.E1B_HS_5 == 3) E1B_HS = "11";
+            if(galileo_ephemeris_iter->second.E5b_HS_5 == 0) E5B_HS = "00";
+            if(galileo_ephemeris_iter->second.E5b_HS_5 == 1) E5B_HS = "01";
+            if(galileo_ephemeris_iter->second.E5b_HS_5 == 2) E5B_HS = "10";
+            if(galileo_ephemeris_iter->second.E5b_HS_5 == 3) E5B_HS = "11";
 
+            if(E1B_HS == "11") LOG(WARNING) << "Signal Component currently in Test";
+            if(E1B_HS == "10") LOG(WARNING) << "Signal will be out of service";
+            if(E1B_HS == "01") LOG(WARNING) << "Signal out of service";
+            E1B_HS = "00";  // *************** CHANGE THIS WHEN GALILEO SIGNAL IS VALID
+
+            std::string E1B_DVS = boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5);
+            if(E1B_DVS == "1") LOG(WARNING) << "Navigation data without guarantee";
+            E1B_DVS = "0"; // *************** CHANGE THIS WHEN GALILEO SIGNAL IS VALID
+
+            std::string SVhealth_str = E5B_HS + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E5b_DVS_5)
+                    + "11" + "1" + E1B_DVS +  E1B_HS
+                    + boost::lexical_cast<std::string>(galileo_ephemeris_iter->second.E1B_DVS_5);
+            SVhealth_str = "000000000"; // *************** CHANGE THIS WHEN GALILEO SIGNAL IS VALID
             int SVhealth = Rinex_Printer::toInt(SVhealth_str, 9);
-            line += Rinex_Printer::doub2for(static_cast<double>(SVhealth), 18, 2); //
+            line += Rinex_Printer::doub2for(static_cast<double>(SVhealth), 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.BGD_E1E5a_5, 18, 2); //
+            line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.BGD_E1E5a_5, 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.BGD_E1E5b_5, 18, 2); //
+            line += Rinex_Printer::doub2for(galileo_ephemeris_iter->second.BGD_E1E5b_5, 18, 2);
             Rinex_Printer::lengthCheck(line);
             out << line << std::endl;
 

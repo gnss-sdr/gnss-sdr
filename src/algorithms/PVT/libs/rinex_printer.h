@@ -97,7 +97,7 @@ public:
     /*!
      *  \brief Generates the Galileo Navigation Data header
      */
-    void rinex_nav_header(std::ofstream& out, Galileo_Iono iono, Galileo_Utc_Model utc_model);
+    void rinex_nav_header(std::ofstream& out, Galileo_Iono iono, Galileo_Utc_Model utc_model, Galileo_Almanac galileo_almanac);
 
     /*!
      *  \brief Generates the GPS Observation data header

@@ -166,7 +166,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
 
     if (global_galileo_almanac_map.size() > 0)
         {
-            // Almanac data is shared for all the Galileo satellites. Read always at ID=0
+            // Almanac data
             global_galileo_almanac_map.read(0, d_ls_pvt->galileo_almanac);
         }
     // ############ 2 COMPUTE THE PVT ################################
@@ -192,7 +192,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                                     if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
                                         {
                                             rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
-                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model);
+                                            rp->rinex_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
                                             b_rinex_header_writen = true; // do not write header anymore
                                         }
                                 }

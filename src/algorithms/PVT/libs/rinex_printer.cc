@@ -356,9 +356,8 @@ std::string Rinex_Printer::getLocalTime()
 }
 
 
-void Rinex_Printer::rinex_nav_header(std::ofstream& out, Galileo_Iono iono, Galileo_Utc_Model utc_model)
+void Rinex_Printer::rinex_nav_header(std::ofstream& out,  Galileo_Iono iono, Galileo_Utc_Model utc_model, Galileo_Almanac galileo_almanac)
 {
-
     std::string line;
     stringVersion = "3.01";
     version = 3;
@@ -435,25 +434,25 @@ void Rinex_Printer::rinex_nav_header(std::ofstream& out, Galileo_Iono iono, Gali
     out << line << std::endl;
 
     // -------- Line system time correction 2
-    /* line.clear();
+    line.clear();
     line += std::string("GPGA");
-    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.XXX, 16, 2), 18);
-    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.XXX, 15, 2), 16);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.XXX), 7);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.XXX), 5);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_0G_10, 16, 2), 18);
+    line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_almanac.A_1G_10, 15, 2), 16);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.t0t_6), 7);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.WNot_6), 5);
     line += std::string(10, ' ');
     line += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
     Rinex_Printer::lengthCheck(line);
-    out << line << std::endl;*/
+    out << line << std::endl;
 
 
     // -------- Line 6 leap seconds
     // For leap second information, see http://www.endruntechnologies.com/leap.htm
     line.clear();
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(static_cast<int>(utc_model.Delta_tLS_6)), 6);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(static_cast<int>(utc_model.Delta_tLSF_6)), 6);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(static_cast<int>(utc_model.WN_LSF_6)), 6);
-    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(static_cast<int>(utc_model.DN_6)), 6);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.Delta_tLS_6), 6);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.Delta_tLSF_6), 6);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.WN_LSF_6), 6);
+    line += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.DN_6), 6);
     line += std::string(36, ' ');
     line += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
     Rinex_Printer::lengthCheck(line);

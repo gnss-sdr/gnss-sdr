@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -19,7 +19,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,56 +35,6 @@
 #include "nco_lib.h"
 
 
-typedef ALIGN16_BEG union {
-    float f[4];
-    int i[4];
-    v4sf  v;
-} ALIGN16_END V4SF;
-
-void sse_nco(std::complex<float> *dest, int n_samples, float start_phase_rad, float phase_step_rad)
-{
-    //SSE NCO
-    int sse_loops_four_op;
-    int remnant_ops;
-    sse_loops_four_op = (int)n_samples/4;
-    remnant_ops = n_samples%4;
-    V4SF vx, sin4, cos4;
-    float phase_rad;
-    phase_rad = start_phase_rad;
-
-    int index = 0;
-    for(int i = 0;i<sse_loops_four_op;i++)
-        {
-            vx.f[0] = phase_rad;
-            phase_rad = phase_rad+phase_step_rad;
-            vx.f[1] = phase_rad;
-            phase_rad = phase_rad+phase_step_rad;
-            vx.f[2] = phase_rad;
-            phase_rad = phase_rad+phase_step_rad;
-            vx.f[3] = phase_rad;
-            phase_rad = phase_rad+phase_step_rad;
-            sincos_ps(vx.v, &sin4.v, &cos4.v);
-            dest[index] = std::complex<float>(cos4.f[0], -sin4.f[0]);
-            index++;
-            dest[index] = std::complex<float>(cos4.f[1], -sin4.f[1]);
-            index++;
-            dest[index] = std::complex<float>(cos4.f[2], -sin4.f[2]);
-            index++;
-            dest[index] = std::complex<float>(cos4.f[3], -sin4.f[3]);
-            index++;
-        }
-    for(int i = 0;i<remnant_ops;i++)
-        {
-            vx.f[i] = phase_rad;
-            phase_rad = phase_rad+phase_step_rad;
-        }
-    sincos_ps(vx.v, &sin4.v, &cos4.v);
-    for(int i = 0;i<remnant_ops;i++)
-        {
-            dest[index] = std::complex<float>(cos4.f[i], -sin4.f[i]);
-            index++;
-        }
-}
 
 void fxp_nco(std::complex<float> *dest, int n_samples, float start_phase_rad, float phase_step_rad)
 {

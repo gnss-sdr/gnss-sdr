@@ -312,7 +312,6 @@ void Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::update_local_carrier()
     float phase_step_rad;
     phase_step_rad = (float)GPS_TWO_PI*d_carrier_doppler_hz / (float)d_fs_in;
     fxp_nco(d_carr_sign, d_current_prn_length_samples, d_rem_carr_phase_rad, phase_step_rad);
-    //sse_nco(d_carr_sign, d_current_prn_length_samples,d_rem_carr_phase_rad, phase_step_rad);
 }
 
 

@@ -146,7 +146,7 @@ bool Kml_Printer::print_position_galileo(const std::shared_ptr<galileo_e1_ls_pvt
         }
 }
 
-bool Kml_Printer::print_position_hybrid(hybrid_ls_pvt* position,bool print_average_values)
+bool Kml_Printer::print_position_hybrid(const std::shared_ptr<hybrid_ls_pvt>& position, bool print_average_values)
 {
     double latitude;
     double longitude;

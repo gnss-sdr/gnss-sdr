@@ -35,6 +35,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <string>
 #include "gps_l1_ca_ls_pvt.h"
 #include "galileo_e1_ls_pvt.h"
@@ -53,7 +54,7 @@ public:
     bool set_headers(std::string filename);
     bool print_position(const std::shared_ptr<gps_l1_ca_ls_pvt>& position, bool print_average_values);
     bool print_position_galileo(const std::shared_ptr<galileo_e1_ls_pvt>& position, bool print_average_values);
-    bool print_position_hybrid(hybrid_ls_pvt* position, bool print_average_values);
+    bool print_position_hybrid(const std::shared_ptr<hybrid_ls_pvt>& position, bool print_average_values);
     bool close_file();
     Kml_Printer();
     ~Kml_Printer();

@@ -730,6 +730,7 @@ void ControlThread::gps_iono_data_collector()
 }
 
 
+<<<<<<< HEAD
 
 void ControlThread::galileo_almanac_data_collector()
 {
@@ -738,6 +739,15 @@ void ControlThread::galileo_almanac_data_collector()
     while(stop_ == false)
         {
     	global_galileo_almanac_queue.wait_and_pop(galileo_almanac);
+=======
+void ControlThread::galileo_almanac_data_collector()
+{
+    // ############ 1.bis READ ALMANAC QUEUE ####################
+    Galileo_Almanac galileo_almanac;
+    while(stop_ == false)
+        {
+            global_galileo_almanac_queue.wait_and_pop(galileo_almanac);
+>>>>>>> refs/remotes/origin/next
 
             LOG(INFO) << "New galileo_almanac record has arrived ";
             // there is no timestamp for the galileo_almanac data, new entries must always be added

@@ -120,100 +120,112 @@ arma::vec hybrid_ls_pvt::rotateSatellite(double traveltime, arma::vec X_sat)
 
 arma::vec hybrid_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w)
 {
-    /* Computes the Least Squares Solution.
-     *   Inputs:
-     *       satpos      - Satellites positions in ECEF system: [X; Y; Z;]
-     *       obs         - Observations - the pseudorange measurements to each satellite
-     *       w           - weigths vector
-     *
-     *   Returns:
-     *       pos         - receiver position and receiver clock error
-     *                   (in ECEF system: [X, Y, Z, dt])
-     */
+	   /* Computes the Least Squares Solution.
+	     *   Inputs:
+	     *       satpos      - Satellites positions in ECEF system: [X; Y; Z;]
+	     *       obs         - Observations - the pseudorange measurements to each satellite
+	     *       w           - weigths vector
+	     *
+	     *   Returns:
+	     *       pos         - receiver position and receiver clock error
+	     *                   (in ECEF system: [X, Y, Z, dt])
+	     */
 
-    //=== Initialization =======================================================
-    int nmbOfIterations = 10; // TODO: include in config
-    int nmbOfSatellites;
-    nmbOfSatellites = satpos.n_cols;	//Armadillo
-    arma::vec pos = "0.0 0.0 0.0 0.0";
-    arma::mat A;
-    arma::mat omc;
-    arma::mat az;
-    arma::mat el;
-    A = arma::zeros(nmbOfSatellites, 4);
-    omc = arma::zeros(nmbOfSatellites, 1);
-    az = arma::zeros(1, nmbOfSatellites);
-    el = arma::zeros(1, nmbOfSatellites);
-    arma::mat X = satpos;
-    arma::vec Rot_X;
-    double rho2;
-    double traveltime;
-    double trop;
-    arma::mat mat_tmp;
-    arma::vec x;
+	    //=== Initialization =======================================================
+	    int nmbOfIterations = 10; // TODO: include in config
+	    int nmbOfSatellites;
+	    nmbOfSatellites = satpos.n_cols;	//Armadillo
+	    arma::vec pos = "0.0 0.0 0.0 0.0";
+	    arma::mat A;
+	    arma::mat omc;
+	    arma::mat az;
+	    arma::mat el;
+	    A = arma::zeros(nmbOfSatellites, 4);
+	    omc = arma::zeros(nmbOfSatellites, 1);
+	    az = arma::zeros(1, nmbOfSatellites);
+	    el = arma::zeros(1, nmbOfSatellites);
+	    arma::mat X = satpos;
+	    arma::vec Rot_X;
+	    double rho2;
+	    double traveltime;
+	    double trop;
+	    double dlambda;
+	    double dphi;
+	    double h;
+	    arma::mat mat_tmp;
+	    arma::vec x;
 
-    //=== Iteratively find receiver position ===================================
-    for (int iter = 0; iter < nmbOfIterations; iter++)
-        {
-            for (int i = 0; i < nmbOfSatellites; i++)
-                {
-                    if (iter == 0)
-                        {
-                            //--- Initialize variables at the first iteration --------------
-                            Rot_X = X.col(i); //Armadillo
-                            trop = 0.0;
-                        }
-                    else
-                        {
-                            //--- Update equations -----------------------------------------
-                            rho2 = (X(0, i) - pos(0)) *
-                                   (X(0, i) - pos(0)) + (X(1, i) - pos(1)) *
-                                   (X(1, i) - pos(1)) + (X(2, i) - pos(2)) *
-                                   (X(2, i) - pos(2));
-                            traveltime = sqrt(rho2) / GALILEO_C_m_s;
+	    //=== Iteratively find receiver position ===================================
+	    for (int iter = 0; iter < nmbOfIterations; iter++)
+	        {
+	            for (int i = 0; i < nmbOfSatellites; i++)
+	                {
+	                    if (iter == 0)
+	                        {
+	                            //--- Initialize variables at the first iteration --------------
+	                            Rot_X = X.col(i); //Armadillo
+	                            trop = 0.0;
+	                        }
+	                    else
+	                        {
+	                            //--- Update equations -----------------------------------------
+	                            rho2 = (X(0, i) - pos(0)) *
+	                                   (X(0, i) - pos(0)) + (X(1, i) - pos(1)) *
+	                                   (X(1, i) - pos(1)) + (X(2, i) - pos(2)) *
+	                                   (X(2, i) - pos(2));
+	                            traveltime = sqrt(rho2) / GALILEO_C_m_s;
 
-                            //--- Correct satellite position (do to earth rotation) --------
-                            Rot_X = rotateSatellite(traveltime, X.col(i)); //armadillo
+	                            //--- Correct satellite position (do to earth rotation) --------
+	                            Rot_X = rotateSatellite(traveltime, X.col(i)); //armadillo
 
-                            //--- Find DOA and range of satellites
-                            topocent(&d_visible_satellites_Az[i],
-                                     &d_visible_satellites_El[i],
-                                     &d_visible_satellites_Distance[i],
-                                     pos.subvec(0,2),
-                                     Rot_X - pos.subvec(0, 2));
-                        }
-                    //--- Apply the corrections ----------------------------------------
-                    omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0, 2), 2) - pos(3) - trop); // Armadillo
+	                            //--- Find DOA and range of satellites
+	                            topocent(&d_visible_satellites_Az[i],
+	                                     &d_visible_satellites_El[i],
+	                                     &d_visible_satellites_Distance[i],
+	                                     pos.subvec(0,2),
+	                                     Rot_X - pos.subvec(0, 2));
+	                            if(traveltime < 0.1 && nmbOfSatellites > 3)
+	                                {
+	                                    //--- Find receiver's height
+	                                    togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
 
-                    //--- Construct the A matrix ---------------------------------------
-                    //Armadillo
-                    A(i,0) = (-(Rot_X(0) - pos(0))) / obs(i);
-                    A(i,1) = (-(Rot_X(1) - pos(1))) / obs(i);
-                    A(i,2) = (-(Rot_X(2) - pos(2))) / obs(i);
-                    A(i,3) = 1.0;
-                }
-                
-            //--- Find position update ---------------------------------------------
-            x = arma::solve(w*A, w*omc); // Armadillo
+	                                    //--- Find delay due to troposphere (in meters)
+	                                    tropo(&trop, sin(d_visible_satellites_El[i] * GALILEO_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+	                                    if(trop > 50.0 ) trop = 0.0;
+	                                }
+	                        }
+	                    //--- Apply the corrections ----------------------------------------
+	                    omc(i) = (obs(i) - norm(Rot_X - pos.subvec(0, 2), 2) - pos(3) - trop); // Armadillo
 
-            //--- Apply position update --------------------------------------------
-            pos = pos + x;
-            if (arma::norm(x,2) < 1e-4)
-            {
-            	break; // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
-            }
-        }
+	                    //--- Construct the A matrix ---------------------------------------
+	                    //Armadillo
+	                    A(i,0) = (-(Rot_X(0) - pos(0))) / obs(i);
+	                    A(i,1) = (-(Rot_X(1) - pos(1))) / obs(i);
+	                    A(i,2) = (-(Rot_X(2) - pos(2))) / obs(i);
+	                    A(i,3) = 1.0;
+	                }
 
-    try
-    {
-            //-- compute the Dilution Of Precision values
-            d_Q = arma::inv(arma::htrans(A)*A);
-    }
-    catch(std::exception& e)
-    {
-            d_Q = arma::zeros(4,4);
-    }
-    return pos;
+	            //--- Find position update ---------------------------------------------
+	            x = arma::solve(w*A, w*omc); // Armadillo
+
+	            //--- Apply position update --------------------------------------------
+	            pos = pos + x;
+	            if (arma::norm(x,2) < 1e-4)
+	            {
+	            	break; // exit the loop because we assume that the LS algorithm has converged (err < 0.1 cm)
+	            }
+	        }
+
+	    try
+	    {
+	            //-- compute the Dilution Of Precision values
+	            d_Q = arma::inv(arma::htrans(A)*A);
+	    }
+	    catch(std::exception& e)
+	    {
+	            d_Q = arma::zeros(4,4);
+	    }
+	    return pos;
 }
 
 
@@ -232,8 +244,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     int GPS_week;
     double utc = 0;
     double utc_tx_corrected = 0; //utc computed at tx_time_corrected, added for Galileo constellation (in GPS utc is directly computed at TX_time_corrected_s)
-    double SV_clock_drift_s = 0;
-    double SV_relativistic_clock_corr_s = 0;
+    //double SV_clock_drift_s = 0;
+   // double SV_relativistic_clock_corr_s = 0;
     double TX_time_corrected_s;
     double SV_clock_bias_s = 0;
 
@@ -279,13 +291,14 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     			                    double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GALILEO_C_m_s;
     			                    //std::cout<<"Gal_Tx_time = "<< Tx_time << std::endl;
     			                    // 2- compute the clock drift using the clock model (broadcast) for this SV
-    			                    SV_clock_drift_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
+    			                   // SV_clock_drift_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
+    			                    SV_clock_bias_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
 
     			                    // 3- compute the relativistic clock drift using the clock model (broadcast) for this SV
-    			                    SV_relativistic_clock_corr_s = galileo_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
+    			                    //SV_relativistic_clock_corr_s = galileo_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
 
     			                    // 4- compute the current ECEF position for this SV using corrected TX time
-    			                    SV_clock_bias_s = SV_clock_drift_s + SV_relativistic_clock_corr_s;
+    			                    //SV_clock_bias_s = SV_clock_drift_s + SV_relativistic_clock_corr_s;
 
     			                    TX_time_corrected_s = Tx_time - SV_clock_bias_s;
     			                    //std::cout<<"Gal_TX_time_corrected_s = "<< TX_time_corrected_s << std::endl;
@@ -358,13 +371,13 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 									double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GPS_C_m_s;
 									//std::cout<<"Gps_Tx_time = "<< Tx_time << std::endl;
 									// 2- compute the clock drift using the clock model (broadcast) for this SV
-									SV_clock_drift_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
+									SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
 
 									// 3- compute the relativistic clock drift using the clock model (broadcast) for this SV
-									SV_relativistic_clock_corr_s = gps_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
+									//SV_relativistic_clock_corr_s = gps_ephemeris_iter->second.sv_clock_relativistic_term(Tx_time);
 
 									// 4- compute the current ECEF position for this SV using corrected TX time
-									SV_clock_bias_s = SV_clock_drift_s + SV_relativistic_clock_corr_s - gps_ephemeris_iter->second.d_TGD;
+									//SV_clock_bias_s = SV_clock_drift_s + SV_relativistic_clock_corr_s - gps_ephemeris_iter->second.d_TGD;
 									TX_time_corrected_s = Tx_time - SV_clock_bias_s;
 									gps_ephemeris_iter->second.satellitePosition(TX_time_corrected_s);
 
@@ -852,4 +865,103 @@ void hybrid_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, arm
         }
 
     *D = sqrt(dx(0)*dx(0) + dx(1)*dx(1) + dx(2)*dx(2));
+}
+void hybrid_ls_pvt::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km)
+{
+    /*   Inputs:
+           sinel     - sin of elevation angle of satellite
+           hsta_km   - height of station in km
+           p_mb      - atmospheric pressure in mb at height hp_km
+           t_kel     - surface temperature in degrees Kelvin at height htkel_km
+           hum       - humidity in % at height hhum_km
+           hp_km     - height of pressure measurement in km
+           htkel_km  - height of temperature measurement in km
+           hhum_km   - height of humidity measurement in km
+
+       Outputs:
+           ddr_m     - range correction (meters)
+
+     Reference
+     Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
+     Refraction Correction Model. Paper presented at the
+     American Geophysical Union Annual Fall Meeting, San
+     Francisco, December 12-17
+
+     Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
+     */
+
+    const double a_e    = 6378.137;    // semi-major axis of earth ellipsoid
+    const double b0     = 7.839257e-5;
+    const double tlapse = -6.5;
+    const double em     = -978.77 / (2.8704e6 * tlapse * 1.0e-5);
+
+    double tkhum  = t_kel + tlapse * (hhum_km - htkel_km);
+    double atkel  = 7.5*(tkhum - 273.15) / (237.3 + tkhum - 273.15);
+    double e0     = 0.0611 * hum * pow(10, atkel);
+    double tksea  = t_kel - tlapse * htkel_km;
+    double tkelh  = tksea + tlapse * hhum_km;
+    double e0sea  = e0 * pow((tksea / tkelh), (4 * em));
+    double tkelp  = tksea + tlapse * hp_km;
+    double psea   = p_mb * pow((tksea / tkelp), em);
+
+    if(sinel < 0) { sinel = 0.0; }
+
+    double tropo_delay   = 0.0;
+    bool done      = false;
+    double refsea  = 77.624e-6 / tksea;
+    double htop    = 1.1385e-5 / refsea;
+    refsea         = refsea * psea;
+    double ref     = refsea * pow(((htop - hsta_km) / htop), 4);
+
+    double a;
+    double b;
+    double rtop;
+
+    while(1)
+        {
+            rtop = pow((a_e + htop), 2) - pow((a_e + hsta_km), 2) * (1 - pow(sinel, 2));
+
+            // check to see if geometry is crazy
+            if(rtop < 0) { rtop = 0; }
+
+            rtop = sqrt(rtop) - (a_e + hsta_km) * sinel;
+
+            a    = -sinel / (htop - hsta_km);
+            b    = -b0 * (1 - pow(sinel,2)) / (htop - hsta_km);
+
+            arma::vec rn = arma::vec(8);
+            rn.zeros();
+
+            for(int i = 0; i<8; i++)
+                {
+                    rn(i) = pow(rtop, (i+1+1));
+
+                }
+
+            arma::rowvec alpha = {2 * a, 2 * pow(a, 2) + 4 * b /3, a * (pow(a, 2) + 3 * b),
+                    pow(a, 4)/5 + 2.4 * pow(a, 2) * b + 1.2 * pow(b, 2), 2 * a * b * (pow(a, 2) + 3 * b)/3,
+                    pow(b, 2) * (6 * pow(a, 2) + 4 * b) * 1.428571e-1, 0, 0};
+
+            if(pow(b, 2) > 1.0e-35)
+                {
+                    alpha(6) = a * pow(b, 3) /2;
+                    alpha(7) = pow(b, 4) / 9;
+                }
+
+            double dr = rtop;
+            arma::mat aux_ = alpha * rn;
+            dr = dr + aux_(0, 0);
+            tropo_delay = tropo_delay + dr * ref * 1000;
+
+            if(done == true)
+                {
+                    *ddr_m = tropo_delay;
+                    break;
+                }
+
+            done    = true;
+            refsea  = (371900.0e-6 / tksea - 12.92e-6) / tksea;
+            htop    = 1.1385e-5 * (1255 / tksea + 0.05) / refsea;
+            ref     = refsea * e0sea * pow(((htop - hsta_km) / htop), 4);
+        }
 }

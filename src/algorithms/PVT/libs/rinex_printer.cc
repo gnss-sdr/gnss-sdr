@@ -29,7 +29,7 @@
  */
 
 #include "rinex_printer.h"
-#include <unistd.h>
+#include <unistd.h>  // for getlogin_r()
 #include <algorithm> // for min and max
 #include <cmath>     // for floor
 #include <cstdlib>   // for getenv()
@@ -916,7 +916,7 @@ void Rinex_Printer::rinex_sbs_header(std::ofstream& out)
 void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris> eph_map)
 {
     std::string line;
-	std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
 
     for(gps_ephemeris_iter = eph_map.begin();
     		gps_ephemeris_iter != eph_map.end();
@@ -1387,6 +1387,14 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
         }
 }
 
+
+void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Gps_Ephemeris> gps_eph_map, std::map<int, Galileo_Ephemeris> galileo_eph_map)
+{
+    version = 3;
+    stringVersion = "3.02";
+    Rinex_Printer::log_rinex_nav(out, gps_eph_map);
+    Rinex_Printer::log_rinex_nav(out, galileo_eph_map);
+}
 
 
 void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, double d_TOW_first_observation)

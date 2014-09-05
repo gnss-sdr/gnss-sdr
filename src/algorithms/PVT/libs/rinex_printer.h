@@ -146,6 +146,11 @@ public:
     void log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephemeris> eph_map);
 
     /*!
+     *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::ofstream& out, std::map<int, Gps_Ephemeris> gps_eph_map, std::map<int, Galileo_Ephemeris> galileo_eph_map);
+
+    /*!
      *  \brief Writes GPS observables into the RINEX file
      */
     void log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);

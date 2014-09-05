@@ -151,8 +151,6 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                     //d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
                     d_TOW_at_curr_symbol_constellation = in[i][0].d_TOW_at_current_symbol; // d_TOW_at_current_symbol not corrected by delta t (just for debug)
                     d_rx_time = in[i][0].d_TOW_hybrid_at_current_symbol; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges)
-                    //std::cout<<"CH PVT = "<< i  << ", d_TOW = " << d_TOW_at_curr_symbol_constellation<<", rx_time_hybrid_PVT = " << d_rx_time << " same RX timestamp (common RX time pseudoranges)"<< std::endl;
-
                 }
         }
 
@@ -237,22 +235,22 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                                                 }
                                         }
                                 }
-                            //if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
-                            //    {
-                            //        // Limit the RINEX navigation output rate to 1/6 seg
-                            //        // Notice that d_sample_counter period is 4ms (for Galileo correlators)
-                            //        if ((d_sample_counter - d_last_sample_nav_output) >= 6000)
-                            //            {
-                            //                rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
-                            //                d_last_sample_nav_output = d_sample_counter;
-                             //           }
-                             //       std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
-                             //       galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
-                             //       if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
-                             //           {
-                             //               rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
-                             //           }
-                             //   }
+                            if(b_rinex_header_writen) // Put here another condition to separate annotations (e.g 30 s)
+                                {
+                                    // Limit the RINEX navigation output rate to 1/6 seg
+                                    // Notice that d_sample_counter period is 4ms (for Galileo correlators)
+                                    if ((d_sample_counter - d_last_sample_nav_output) >= 6000)
+                                        {
+                                            rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->galileo_ephemeris_map);
+                                            d_last_sample_nav_output = d_sample_counter;
+                                        }
+                                    //       std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
+                                    //       galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                    //       if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                    //           {
+                                    //               rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                    //           }
+                                }
                         }
                 }
 

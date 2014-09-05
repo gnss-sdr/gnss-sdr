@@ -21,7 +21,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -43,7 +43,7 @@
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 #include "configuration_interface.h"
-#include "galileo_e5a_telemetry_decoder_cc.h"
+
 
 extern concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
 extern concurrent_queue<Galileo_Iono> global_galileo_iono_queue;

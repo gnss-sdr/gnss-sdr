@@ -544,12 +544,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
 
-    else if (implementation.compare("Galileo_E5a_Noncoherent_IQ_Acquisition_CAF") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new GalileoE5aNoncoherentIQAcquisitionCaf(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
+
 
 
     // TRACKING BLOCKS -------------------------------------------------------------

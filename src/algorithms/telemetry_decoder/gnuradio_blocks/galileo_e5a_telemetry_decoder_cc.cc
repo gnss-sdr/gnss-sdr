@@ -264,7 +264,6 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
 
 galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
 {
-    delete d_preamble_bits;
     d_dump_file.close();
 }
 

@@ -509,7 +509,7 @@ void GNSSFlowgraph::set_signals_list()
      * Loop to create the list of GNSS Signals
      * To add signals from other systems, add another loop 'for'
      */
-    if (default_system.compare(std::string("GPS")) == 0 )
+    if (default_system.find(std::string("GPS")) != std::string::npos )
         {
             /*
              * Loop to create GPS L1 C/A signals
@@ -528,7 +528,7 @@ void GNSSFlowgraph::set_signals_list()
         }
 
 
-    if (default_system.compare(std::string("SBAS")) == 0 )
+    if (default_system.find(std::string("SBAS")) != std::string::npos)
         {
             /*
              * Loop to create SBAS L1 C/A signals
@@ -545,7 +545,7 @@ void GNSSFlowgraph::set_signals_list()
         }
 
 
-    if (default_system.find(std::string("Galileo")) )
+    if (default_system.find(std::string("Galileo")) != std::string::npos)
         {
             /*
              * Loop to create the list of Galileo E1 B signals

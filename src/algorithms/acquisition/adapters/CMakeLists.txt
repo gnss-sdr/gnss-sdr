@@ -30,6 +30,7 @@ if(OPENCL_FOUND)
          galileo_e1_pcps_quicksync_ambiguous_acquisition.cc
          galileo_e1_pcps_tong_ambiguous_acquisition.cc
          galileo_e1_pcps_8ms_ambiguous_acquisition.cc
+         galileo_e5a_noncoherent_iq_acquisition_caf.cc
     )
 else(OPENCL_FOUND)
     set(ACQ_ADAPTER_SOURCES
@@ -44,6 +45,7 @@ else(OPENCL_FOUND)
          galileo_e1_pcps_quicksync_ambiguous_acquisition.cc
          galileo_e1_pcps_tong_ambiguous_acquisition.cc
          galileo_e1_pcps_8ms_ambiguous_acquisition.cc
+         galileo_e5a_noncoherent_iq_acquisition_caf.cc
     )
 endif(OPENCL_FOUND)
 

@@ -116,6 +116,9 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/gnuradio_blocks

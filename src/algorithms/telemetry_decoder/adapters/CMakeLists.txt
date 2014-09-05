@@ -20,6 +20,7 @@ set(TELEMETRY_DECODER_ADAPTER_SOURCES
 	gps_l1_ca_telemetry_decoder.cc 
 	galileo_e1b_telemetry_decoder.cc
 	sbas_l1_telemetry_decoder.cc
+	galileo_e5a_telemetry_decoder.cc
 )
 
 include_directories(
@@ -29,6 +30,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
+     ${Boost_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -37,4 +39,4 @@ include_directories(
 file(GLOB TELEMETRY_DECODER_ADAPTER_HEADERS "*.h")
 add_library(telemetry_decoder_adapters ${TELEMETRY_DECODER_ADAPTER_SOURCES} ${TELEMETRY_DECODER_ADAPTER_HEADERS})
 source_group(Headers FILES ${TELEMETRY_DECODER_ADAPTER_HEADERS})
-target_link_libraries(telemetry_decoder_adapters telemetry_decoder_gr_blocks)
+target_link_libraries(telemetry_decoder_adapters telemetry_decoder_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

@@ -1,9 +1,13 @@
 /*!
- * \file galileo_e1b_telemetry_decoder.h
- * \brief Interface of an adapter of a GALILEO E1B NAV data decoder block
+ * \file galileo_e5a_telemetry_decoder.h
+ * \brief Interface of an adapter of a GALILEO E5a FNAV data decoder block
  * to a TelemetryDecoderInterface
- * \author Javier Arribas 2013 jarribas(at)cttc.es,
- *  Mara Branzanti 2013. mara.branzanti(at)gmail.com
+ * \author Marc Sales, 2014. marcsales92(at)gmail.com
+ * \based on work from:
+ * 		<ul>
+ *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          </ul>
+ *
  *
  * -------------------------------------------------------------------------
  *
@@ -30,16 +34,13 @@
  * -------------------------------------------------------------------------
  */
 
-
-#ifndef GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_H_
-#define GNSS_SDR_GALILEO_E1B_TELEMETRY_DECODER_H_
+#ifndef GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
+#define GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
 
 #include <string>
 #include <gnuradio/msg_queue.h>
 #include "telemetry_decoder_interface.h"
-#include "galileo_e1b_telemetry_decoder_cc.h"
-#include "gnss_satellite.h"
-
+#include "galileo_e5a_telemetry_decoder_cc.h"
 
 
 class ConfigurationInterface;
@@ -47,27 +48,27 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a NAV data decoder for Galileo INAV frames in E1B radio link
  */
-class GalileoE1BTelemetryDecoder : public TelemetryDecoderInterface
+class GalileoE5aTelemetryDecoder: public TelemetryDecoderInterface
 {
 public:
-	GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
+	GalileoE5aTelemetryDecoder(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
             boost::shared_ptr<gr::msg_queue> queue);
 
-    virtual ~GalileoE1BTelemetryDecoder();
+    virtual ~GalileoE5aTelemetryDecoder();
     std::string role()
     {
         return role_;
     }
 
     /*!
-     * \brief Returns "Galileo_E1B_Telemetry_Decoder"
+     * \brief Returns "Galileo_E5a_Telemetry_Decoder"
      */
     std::string implementation()
     {
-        return "Galileo_E1B_Telemetry_Decoder";
+        return "Galileo_E5A_Telemetry_Decoder";
     }
     void connect(gr::top_block_sptr top_block);
     void disconnect(gr::top_block_sptr top_block);
@@ -85,7 +86,7 @@ public:
     }
 
 private:
-    galileo_e1b_telemetry_decoder_cc_sptr telemetry_decoder_;
+    galileo_e5a_telemetry_decoder_cc_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
     unsigned int vector_length_;
@@ -98,4 +99,4 @@ private:
     boost::shared_ptr<gr::msg_queue> queue_;
 };
 
-#endif
+#endif /* GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_ */

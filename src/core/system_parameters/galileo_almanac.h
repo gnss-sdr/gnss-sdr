@@ -59,6 +59,7 @@ public:
     double af1_8;
     double E5b_HS_8;
     double E1B_HS_8;
+    double E5a_HS_8;
     int SVID2_8;
     double DELTA_A_8;
     double e_8;
@@ -76,6 +77,7 @@ public:
     double af1_9;
     double E5b_HS_9;
     double E1B_HS_9;
+    double E5a_HS_9;
     int SVID3_9;
     double DELTA_A_9;
     double e_9;
@@ -91,6 +93,7 @@ public:
     double af1_10;
     double E5b_HS_10;
     double E1B_HS_10;
+    double E5a_HS_10;
 
     /*GPS to Galileo GST conversion parameters*/
     double A_0G_10 = 0;

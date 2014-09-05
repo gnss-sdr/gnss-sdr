@@ -74,7 +74,8 @@ void Tracking_2nd_PLL_filter::initialize()
 float Tracking_2nd_PLL_filter::get_carrier_nco(float PLL_discriminator)
 {
     float carr_nco;
-    carr_nco = d_old_carr_nco + (d_tau2_carr/d_tau1_carr)*(PLL_discriminator - d_old_carr_error) + PLL_discriminator * (d_pdi_carr/d_tau1_carr);
+    carr_nco = d_old_carr_nco + (d_tau2_carr/d_tau1_carr)*(PLL_discriminator - d_old_carr_error) + (PLL_discriminator + d_old_carr_error) * (d_pdi_carr/(2*d_tau1_carr));
+    //carr_nco = d_old_carr_nco + (d_tau2_carr/d_tau1_carr)*(PLL_discriminator - d_old_carr_error) + PLL_discriminator * (d_pdi_carr/d_tau1_carr);
     d_old_carr_nco   = carr_nco;
     d_old_carr_error = PLL_discriminator;
     return carr_nco;
@@ -84,7 +85,8 @@ Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter (float pdi_carr)
 {
     //--- PLL variables --------------------------------------------------------
     d_pdi_carr = pdi_carr;// Summation interval for carrier
-    d_plldampingratio = 0.65;
+    //d_plldampingratio = 0.65;
+    d_plldampingratio = 0.7;
 }
 
 
@@ -100,3 +102,8 @@ Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter ()
 
 Tracking_2nd_PLL_filter::~Tracking_2nd_PLL_filter ()
 {}
+
+void Tracking_2nd_PLL_filter::set_pdi(float pdi_carr)
+{
+    d_pdi_carr = pdi_carr; // Summation interval for code
+}

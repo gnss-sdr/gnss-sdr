@@ -71,7 +71,8 @@ void Tracking_2nd_DLL_filter::initialize()
 float Tracking_2nd_DLL_filter::get_code_nco(float DLL_discriminator)
 {
     float code_nco;
-    code_nco = d_old_code_nco + (d_tau2_code/d_tau1_code)*(DLL_discriminator - d_old_code_error) + DLL_discriminator * (d_pdi_code/d_tau1_code);
+    code_nco = d_old_code_nco + (d_tau2_code/d_tau1_code)*(DLL_discriminator - d_old_code_error) + (DLL_discriminator+d_old_code_error) * (d_pdi_code/(2*d_tau1_code));
+    //code_nco = d_old_code_nco + (d_tau2_code/d_tau1_code)*(DLL_discriminator - d_old_code_error) + DLL_discriminator * (d_pdi_code/d_tau1_code);
     d_old_code_nco   = code_nco;
     d_old_code_error = DLL_discriminator; //[chips]
     return code_nco;
@@ -92,3 +93,7 @@ Tracking_2nd_DLL_filter::Tracking_2nd_DLL_filter ()
 Tracking_2nd_DLL_filter::~Tracking_2nd_DLL_filter ()
 {}
 
+void Tracking_2nd_DLL_filter::set_pdi(float pdi_code)
+{
+    d_pdi_code = pdi_code; // Summation interval for code
+}

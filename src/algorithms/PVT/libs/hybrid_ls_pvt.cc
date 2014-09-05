@@ -425,9 +425,9 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                               << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
                               << " [deg], Height= " << d_height_m << " [m]";
 
-                    std::cout << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
-                              << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                              << " [deg], Height= " << d_height_m << " [m]" << std::endl;
+                    //std::cout << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
+                    //          << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
+                    //          << " [deg], Height= " << d_height_m << " [m]" << std::endl;
                     return false;
                 }
 

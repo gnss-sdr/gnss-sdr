@@ -88,6 +88,7 @@ public:
     std::ofstream navFile ; //<! Output file stream for RINEX navigation data file
     std::ofstream sbsFile ; //<! Output file stream for RINEX SBAS raw data file
     std::ofstream navGalFile ; //<! Output file stream for RINEX Galileo navigation data file
+    std::ofstream navMixFile ; //<! Output file stream for RINEX Mixed navigation data file
 
     /*!
      *  \brief Generates the GPS Navigation Data header
@@ -98,6 +99,11 @@ public:
      *  \brief Generates the Galileo Navigation Data header
      */
     void rinex_nav_header(std::ofstream& out, Galileo_Iono iono, Galileo_Utc_Model utc_model, Galileo_Almanac galileo_almanac);
+
+    /*!
+     *  \brief Generates the Mixed (GPS/Galileo) Navigation Data header
+     */
+    void rinex_nav_header(std::ofstream& out, Gps_Iono gps_iono, Gps_Utc_Model gps_utc_model, Galileo_Iono galileo_iono, Galileo_Utc_Model galileo_utc_model, Galileo_Almanac galileo_almanac);
 
     /*!
      *  \brief Generates the GPS Observation data header
@@ -194,6 +200,7 @@ private:
     std::string obsfilename;
     std::string sbsfilename;
     std::string navGalfilename;
+    std::string navMixfilename;
 
     /*
      * Generates the data for the PGM / RUN BY / DATE line

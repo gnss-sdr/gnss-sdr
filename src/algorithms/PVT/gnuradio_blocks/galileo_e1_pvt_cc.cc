@@ -167,8 +167,9 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
     if (global_galileo_almanac_map.size() > 0)
         {
             // Almanac data is shared for all the Galileo satellites. Read always at ID=0
-    		global_galileo_almanac_map.read(0, d_ls_pvt->galileo_almanac);
-    	}
+            global_galileo_almanac_map.read(0, d_ls_pvt->galileo_almanac);
+        }
+
     // ############ 2 COMPUTE THE PVT ################################
     if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0)
         {
@@ -177,7 +178,6 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                 {
                     bool pvt_result;
                     pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
-
 
                     if (pvt_result == true)
                         {

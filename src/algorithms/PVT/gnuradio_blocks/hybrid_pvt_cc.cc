@@ -229,7 +229,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                                         {
                                             if (arrived_galileo_almanac)
                                                 {
-                                                    //rp->rinex_obs_header(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
+                                                    rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time);
                                                     rp->rinex_nav_header(rp->navMixFile,  d_ls_pvt->gps_iono,  d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
                                                     b_rinex_header_writen = true; // do not write header anymore
                                                 }
@@ -244,12 +244,14 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                                             rp->log_rinex_nav(rp->navMixFile, d_ls_pvt->gps_ephemeris_map, d_ls_pvt->galileo_ephemeris_map);
                                             d_last_sample_nav_output = d_sample_counter;
                                         }
-                                    //       std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
-                                    //       galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
-                                    //       if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
-                                    //           {
-                                    //               rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
-                                    //           }
+                                    std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
+                                    galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                    std::map<int, Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                                    if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()) || (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())  )
+                                        {
+                                            rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                        }
                                 }
                         }
                 }

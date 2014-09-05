@@ -116,6 +116,11 @@ public:
     void rinex_obs_header(std::ofstream& out, Galileo_Ephemeris eph, double d_TOW_first_observation);
 
     /*!
+     *  \brief Generates the Mixed (GPS/Galileo) Observation data header
+     */
+    void rinex_obs_header(std::ofstream& out, Gps_Ephemeris gps_eph, Galileo_Ephemeris galileo_eph, double d_TOW_first_observation);
+
+    /*!
      *  \brief Generates the SBAS raw data header
      */
     void rinex_sbs_header(std::ofstream& out);
@@ -159,6 +164,11 @@ public:
      *  \brief Writes Galileo observables into the RINEX file
      */
     void log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
+
+    /*!
+     *  \brief Writes Galileo observables into the RINEX file
+     */
+    void log_rinex_obs(std::ofstream& out, Gps_Ephemeris gps_eph, Galileo_Ephemeris galileo_eph, double gps_obs_time, std::map<int,Gnss_Synchro> pseudoranges);
 
     /*!
      * \brief Represents GPS time in the date time format. Leap years are considered, but leap seconds are not.

@@ -27,6 +27,7 @@ if(OPENCL_FOUND)
          fft_execute.cc # Needs OpenCL
          fft_setup.cc # Needs OpenCL
          fft_kernelstring.cc # Needs OpenCL
+         galileo_e5_signal_processing.cc
     )
 else(OPENCL_FOUND)
     set(GNSS_SPLIBS_SOURCES
@@ -36,6 +37,7 @@ else(OPENCL_FOUND)
          gps_sdr_signal_processing.cc
          nco_lib.cc
          pass_through.cc
+         galileo_e5_signal_processing.cc
     )
 endif(OPENCL_FOUND)
 

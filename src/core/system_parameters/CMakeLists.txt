@@ -36,6 +36,7 @@ set(SYSTEM_PARAMETERS_SOURCES
 	 sbas_ionospheric_correction.cc
 	 sbas_satellite_correction.cc
 	 sbas_telemetry_data.cc
+	 galileo_fnav_message.cc
 )
 
 

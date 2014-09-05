@@ -551,8 +551,10 @@ void GNSSFlowgraph::set_signals_list()
                     available_gnss_prn_iter != available_galileo_prn.end();
                     available_gnss_prn_iter++)
                 {
+//                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
+//                            *available_gnss_prn_iter), std::string("1B")));
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-                            *available_gnss_prn_iter), std::string("1B")));
+                            *available_gnss_prn_iter), default_signal));
                 }
         }
 
@@ -589,16 +591,17 @@ void GNSSFlowgraph::set_signals_list()
                     available_GNSS_signals_.insert(gnss_it, signal_value);
                 }
         }
-    //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
-    //
-    //std::cout<<"default_system="<<default_system<<std::endl;
-    //std::cout<<"default_signal="<<default_signal<<std::endl;
-    //    std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-    //    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-    //    != available_GNSS_signals_.end(); available_gnss_list_iter++)
-    //    {
-    //      std::cout << *available_gnss_list_iter << std::endl;
-    //    }
+
+//    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
+
+//    std::cout<<"default_system="<<default_system<<std::endl;
+//    std::cout<<"default_signal="<<default_signal<<std::endl;
+//        std::list<Gnss_Signal>::iterator available_gnss_list_iter;
+//        for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
+//        != available_GNSS_signals_.end(); available_gnss_list_iter++)
+//        {
+//          std::cout << *available_gnss_list_iter << std::endl;
+//        }
 }
 
 

@@ -180,20 +180,14 @@ void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs
     //--- Find time constants --------------------------------------------------
     const float _t_in = 1/_fs_in;  // Incoming sampling  period in sec
     const float _t_out = 1/_fs_out;   // Out sampling period in sec
-    for (unsigned int i=0; i<_length_out; i++)
+    for (unsigned int i=0; i<_length_out-1; i++)
         {
             //=== Digitizing =======================================================
             //--- compute index array to read sampled values -------------------------
             _codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
-            if (i == _length_out - 1)
-                {
-                    //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = _from[_length_in - 1];
-                }
-            else
-                {
-                    //if repeat the chip -> upsample by nearest neighborhood interpolation
-                    _dest[i] = _from[_codeValueIndex];
-                }
+            //if repeat the chip -> upsample by nearest neighborhood interpolation
+            _dest[i] = _from[_codeValueIndex];
         }
+    //--- Correct the last index (due to number rounding issues) -----------
+    _dest[_length_out-1] = _from[_length_in - 1];
 }

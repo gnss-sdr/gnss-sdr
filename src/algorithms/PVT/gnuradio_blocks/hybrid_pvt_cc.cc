@@ -200,7 +200,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
 
 
     // ############ 2 COMPUTE THE PVT ################################
-    // ToDo: relax this condition because the receiver shuld work even with NO GALILEO SATELLITES
+    // ToDo: relax this condition because the receiver should work even with NO GALILEO SATELLITES
     //if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
     if (gnss_pseudoranges_map.size() > 0)
         {
@@ -208,8 +208,6 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
             // compute on the fly PVT solution
             if ((d_sample_counter % d_output_rate_ms) == 0)
                 {
-                    d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
-
                     bool pvt_result;
                     pvt_result = d_ls_pvt->get_PVT(gnss_pseudoranges_map, d_rx_time, d_flag_averaging);
 

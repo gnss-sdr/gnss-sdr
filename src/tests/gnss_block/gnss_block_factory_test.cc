@@ -299,14 +299,14 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder)
 TEST(GNSS_Block_Factory_Test, InstantiateChannels)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("Channels.count", "2");
+    configuration->set_property("Channels_GPS.count", "2");
+    configuration->set_property("Channels_Galileo.count", "0");
     configuration->set_property("Channels.in_acquisition", "2");
-    configuration->set_property("Tracking.implementation","GPS_L1_CA_DLL_FLL_PLL_Tracking");
-    configuration->set_property("TelemetryDecoder.implementation","GPS_L1_CA_Telemetry_Decoder");
+    configuration->set_property("Tracking_GPS.implementation","GPS_L1_CA_DLL_FLL_PLL_Tracking");
+    configuration->set_property("TelemetryDecoder_GPS.implementation","GPS_L1_CA_Telemetry_Decoder");
     configuration->set_property("Channel0.item_type", "gr_complex");
-    configuration->set_property("Acquisition0.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    configuration->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
     configuration->set_property("Channel1.item_type", "gr_complex");
-    configuration->set_property("Acquisition1.implementation", "GPS_L1_CA_PCPS_Acquisition");
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = std::move(factory->GetChannels(configuration, queue));

@@ -88,14 +88,14 @@ void GalileoE1DllPllVemlTrackingInternalTest::init()
     gnss_synchro.PRN = 11;
 
     config->set_property("GNSS-SDR.internal_fs_hz", "8000000");
-    config->set_property("Tracking.item_type", "gr_complex");
-    config->set_property("Tracking.dump", "true");
-    config->set_property("Tracking.dump_filename", "../data/veml_tracking_ch_");
-    config->set_property("Tracking.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
-    config->set_property("Tracking.early_late_space_chips", "0.15");
-    config->set_property("Tracking.very_early_late_space_chips", "0.6");
-    config->set_property("Tracking.pll_bw_hz", "30.0");
-    config->set_property("Tracking.dll_bw_hz", "2.0");
+    config->set_property("Tracking_Galileo.item_type", "gr_complex");
+    config->set_property("Tracking_Galileo.dump", "true");
+    config->set_property("Tracking_Galileo.dump_filename", "../data/veml_tracking_ch_");
+    config->set_property("Tracking_Galileo.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
+    config->set_property("Tracking_Galileo.early_late_space_chips", "0.15");
+    config->set_property("Tracking_Galileo.very_early_late_space_chips", "0.6");
+    config->set_property("Tracking_Galileo.pll_bw_hz", "30.0");
+    config->set_property("Tracking_Galileo.dll_bw_hz", "2.0");
 }
 
 

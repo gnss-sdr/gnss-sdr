@@ -1,7 +1,7 @@
 /*!
  * \file rinex_printer.cc
- * \brief Implementation of a RINEX 2.11 / 3.01 printer
- * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf
+ * \brief Implementation of a RINEX 2.11 / 3.02 printer
+ * See http://igscb.jpl.nasa.gov/igscb/data/format/rinex302.pdf
  * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
  * -------------------------------------------------------------------------
  *
@@ -46,7 +46,7 @@
 
 using google::LogMessage;
 
-DEFINE_string(RINEX_version, "2.11", "Specifies the RINEX version (2.11 or 3.01)");
+DEFINE_string(RINEX_version, "3.02", "Specifies the RINEX version (2.11 or 3.02)");
 
 
 Rinex_Printer::Rinex_Printer()
@@ -143,9 +143,14 @@ Rinex_Printer::Rinex_Printer()
     if ( FLAGS_RINEX_version.compare("3.01") == 0 )
         {
             version = 3;
-            stringVersion = "3.01";
+            stringVersion = "3.02";
         }
-    if ( FLAGS_RINEX_version.compare("3.02") == 0 )
+    else if ( FLAGS_RINEX_version.compare("3.02") == 0 )
+        {
+            version = 3;
+            stringVersion = "3.02";
+        }
+    else if ( FLAGS_RINEX_version.compare("3") == 0 )
         {
             version = 3;
             stringVersion = "3.02";
@@ -153,19 +158,24 @@ Rinex_Printer::Rinex_Printer()
     else if ( FLAGS_RINEX_version.compare("2.11") == 0 )
         {
             version = 2;
-            stringVersion = "2.10";
+            stringVersion = "2.11";
         }
     else if ( FLAGS_RINEX_version.compare("2.10") == 0 )
         {
             version = 2;
-            stringVersion = "2.10";
+            stringVersion = "2.11";
+        }
+    else if ( FLAGS_RINEX_version.compare("2") == 0 )
+        {
+            version = 2;
+            stringVersion = "2.11";
         }
     else
         {
-            LOG(ERROR) << "Unknown RINEX version " << FLAGS_RINEX_version << " (must be 2.11 or 3.01)" << std::endl;
+            LOG(ERROR) << "Unknown RINEX version " << FLAGS_RINEX_version << " (must be 2.11 or 3.02)" << std::endl;
         }
 
-    numberTypesObservations = 2; // Number of available types of observable in the system
+    numberTypesObservations = 4; // Number of available types of observable in the system
 }
 
 
@@ -384,7 +394,7 @@ std::string Rinex_Printer::getLocalTime()
 void Rinex_Printer::rinex_nav_header(std::ofstream& out,  Galileo_Iono iono, Galileo_Utc_Model utc_model, Galileo_Almanac galileo_almanac)
 {
     std::string line;
-    stringVersion = "3.01";
+    stringVersion = "3.02";
     version = 3;
 
     // -------- Line 1

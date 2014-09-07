@@ -138,18 +138,22 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
      * to performance degradation. Here we allocate memory
      * (gr_comlex array of size 2*d_vector_length) aligned to cache of 16 bytes
      */
-    // todo: do something if posix_memalign fails
-    // Get space for the resampled early / prompt / late local replicas
-    if (posix_memalign((void**)&d_early_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
-    if (posix_memalign((void**)&d_late_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
-    if (posix_memalign((void**)&d_prompt_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
-    if (posix_memalign((void**)&d_prompt_data_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
-    // space for carrier wipeoff and signal baseband vectors
-    if (posix_memalign((void**)&d_carr_sign, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
-    if (posix_memalign((void**)&d_Early, 16, sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_Prompt, 16, sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_Late, 16, sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_Prompt_data, 16, sizeof(gr_complex)) == 0){};
+
+    d_early_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_prompt_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+
+    d_prompt_data_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+
+    d_carr_sign=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+
+    // correlator outputs (scalar)
+
+    d_Early=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+    d_Prompt=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+    d_Late=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+    d_Prompt_data=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
     d_code_freq_chips = Galileo_E5a_CODE_CHIP_RATE_HZ;
@@ -195,10 +199,14 @@ Galileo_E5a_Dll_Pll_Tracking_cc::~Galileo_E5a_Dll_Pll_Tracking_cc ()
 {
     d_dump_file.close();
 
-    free(d_prompt_code);
-    free(d_late_code);
-    free(d_early_code);
-    free(d_carr_sign);
+
+    volk_free(d_prompt_code);
+    volk_free(d_late_code);
+    volk_free(d_early_code);
+    volk_free(d_carr_sign);
+
+    volk_free(d_prompt_data_code);
+    volk_free(d_Prompt_data);
 
     delete[] d_codeQ;
     delete[] d_codeI;
@@ -432,10 +440,10 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 				std::cout << tmp_str_stream.rdbuf() << std::flush;
 			    }
 		    }
-		d_Early = gr_complex(0,0);
-		d_Prompt = gr_complex(0,0);
-		d_Late = gr_complex(0,0);
-		d_Prompt_data = gr_complex(0,0);
+		*d_Early = gr_complex(0,0);
+		*d_Prompt = gr_complex(0,0);
+		*d_Late = gr_complex(0,0);
+		*d_Prompt_data = gr_complex(0,0);
 
 		*out[0] = *d_acquisition_gnss_synchro;
 
@@ -496,9 +504,9 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 			update_local_code();
 			update_local_carrier();
 			// Reset accumulated values
-			d_Early = gr_complex(0,0);
-			d_Prompt = gr_complex(0,0);
-			d_Late = gr_complex(0,0);
+			*d_Early = gr_complex(0,0);
+			*d_Prompt = gr_complex(0,0);
+			*d_Late = gr_complex(0,0);
 		    }
 		gr_complex single_early;
 		gr_complex single_prompt;
@@ -516,18 +524,18 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 		                                             &single_early,
 		                                             &single_prompt,
 		                                             &single_late,
-		                                             &d_Prompt_data,
+		                                             d_Prompt_data,
 		                                             is_unaligned());
 
 		// Accumulate results (coherent integration since there are no bit transitions in pilot signal)
-		d_Early += single_early * sec_sign_Q;
-		d_Prompt += single_prompt * sec_sign_Q;
-		d_Late += single_late * sec_sign_Q;
-		d_Prompt_data *= sec_sign_I;
+		*d_Early += single_early * sec_sign_Q;
+		*d_Prompt += single_prompt * sec_sign_Q;
+		*d_Late += single_late * sec_sign_Q;
+		*d_Prompt_data *= sec_sign_I;
 		d_integration_counter++;
 
 		// check for samples consistency (this should be done before in the receiver / here only if the source is a file)
-		if (std::isnan((d_Prompt).real()) == true or std::isnan((d_Prompt).imag()) == true ) // or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
+		if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true ) // or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
 		    {
 			const int samples_available = ninput_items[0];
 			d_sample_counter = d_sample_counter + samples_available;
@@ -553,11 +561,11 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 		    {
 			if (d_secondary_lock == true)
 			    {
-				carr_error_hz = pll_four_quadrant_atan(d_Prompt) / (float)GALILEO_PI*2;
+				carr_error_hz = pll_four_quadrant_atan(*d_Prompt) / (float)GALILEO_PI*2;
 			    }
 			else
 			    {
-				carr_error_hz = pll_cloop_two_quadrant_atan(d_Prompt) / (float)GALILEO_PI*2;
+				carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)GALILEO_PI*2;
 			    }
 
 			// Carrier discriminator filter
@@ -577,7 +585,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 		if (d_integration_counter == d_current_ti_ms)
 		    {
 			// DLL discriminator
-			code_error_chips = dll_nc_e_minus_l_normalized(d_Early, d_Late); //[chips/Ti]
+			code_error_chips = dll_nc_e_minus_l_normalized(*d_Early, *d_Late); //[chips/Ti]
 			// Code discriminator filter
 			code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
 			//Code phase accumulator
@@ -607,12 +615,12 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 		if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES-1)
 		    {
 			// fill buffer with prompt correlator output values
-			d_Prompt_buffer[d_cn0_estimation_counter] = d_Prompt;
+			d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
 			d_cn0_estimation_counter++;
 		    }
 		else
 		    {
-			d_Prompt_buffer[d_cn0_estimation_counter] = d_Prompt;
+			d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
 			// ATTEMPT SECONDARY CODE ACQUISITION
 			if (d_secondary_lock == false)
 			    {
@@ -688,8 +696,8 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 		// The first Prompt output not equal to 0 is synchronized with the transition of a navigation data bit.
 		if (d_secondary_lock && d_first_transition)
 		    {
-			current_synchro_data.Prompt_I = (double)(d_Prompt_data.real());
-			current_synchro_data.Prompt_Q = (double)(d_Prompt_data.imag());
+			current_synchro_data.Prompt_I = (double)((*d_Prompt_data).real());
+			current_synchro_data.Prompt_Q = (double)((*d_Prompt_data).imag());
 			// Tracking_timestamp_secs is aligned with the PRN start sample
 			current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples)/(double)d_fs_in;
 			// This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
@@ -721,13 +729,13 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
             float prompt_Q;
             float tmp_float;
             double tmp_double;
-            prompt_I = d_Prompt_data.real();
-            prompt_Q = d_Prompt_data.imag();
+            prompt_I = (*d_Prompt_data).real();
+            prompt_Q = (*d_Prompt_data).imag();
 	    if (d_integration_counter == d_current_ti_ms)
         	{
-        	    tmp_E = std::abs<float>(d_Early);
-        	    tmp_P = std::abs<float>(d_Prompt);
-        	    tmp_L = std::abs<float>(d_Late);
+        	    tmp_E = std::abs<float>(*d_Early);
+        	    tmp_P = std::abs<float>(*d_Prompt);
+        	    tmp_L = std::abs<float>(*d_Late);
         	}
             try
             {

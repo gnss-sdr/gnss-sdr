@@ -36,9 +36,14 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
+
+if(ENABLE_GENERIC_ARCH)
+    add_definitions( -DGENERIC_ARCH=1 )
+endif(ENABLE_GENERIC_ARCH)
 
 file(GLOB TRACKING_GR_BLOCKS_HEADERS "*.h")
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
-target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} )
+target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} )

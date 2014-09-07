@@ -36,6 +36,10 @@ include_directories(
      ${VOLK_INCLUDE_DIRS}
 )
 
+if(ENABLE_GENERIC_ARCH)
+    add_definitions( -DGENERIC_ARCH=1 )
+endif(ENABLE_GENERIC_ARCH)
+
 file(GLOB TRACKING_LIB_HEADERS "*.h")
 add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 source_group(Headers FILES ${TRACKING_LIB_HEADERS})

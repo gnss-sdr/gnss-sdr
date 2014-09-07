@@ -11,7 +11,7 @@ If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-develope
 # How to build GNSS-SDR
 
 
-This section describes how to set up the compilation environment in GNU/Linux or [Mac OS X](#macosx), and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
+This section describes how to set up the compilation environment in GNU/Linux or [Mac OS X](#macosx)t, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
 
 GNU/Linux 
 ----------
@@ -304,6 +304,16 @@ $ make && make install
 ~~~~~~ 
 
 
+###### Build a portable binary
+
+In order to build an executable that not depends on the specific SIMD instruction set that is present in the processor of the compiling machine, so other users can execute it in other machines without those particular sets, use:
+
+~~~~~~ 
+$ cmake -DENABLE_GENERIC_ARCH=ON ../
+$ make && make install
+~~~~~~ 
+
+Using this option, all SIMD instructions are accessed via VOLK, which automatically includes versions of each function for different SIMD instruction sets, then detects at runtime which to use, or if there are none, substitutes a generic, non-SIMD implementation.
 
 
 

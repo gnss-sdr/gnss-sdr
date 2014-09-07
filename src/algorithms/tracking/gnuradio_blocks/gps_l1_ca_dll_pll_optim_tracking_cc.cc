@@ -375,6 +375,7 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
             update_local_carrier();
 
             // perform Early, Prompt and Late correlation
+#ifndef GENERIC_ARCH
             d_correlator.Carrier_wipeoff_and_EPL_volk_custom(d_current_prn_length_samples,
                     in,
                     d_carr_sign,
@@ -385,7 +386,18 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
                     d_Prompt,
                     d_Late,
                     is_unaligned());
-
+#else
+            d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
+                    in,
+                    d_carr_sign,
+                    d_early_code,
+                    d_prompt_code,
+                    d_late_code,
+                    d_Early,
+                    d_Prompt,
+                    d_Late,
+                    is_unaligned());
+#endif
             // ################## PLL ##########################################################
             // PLL discriminator
             carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)GPS_TWO_PI;

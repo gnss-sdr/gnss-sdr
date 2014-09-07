@@ -39,6 +39,10 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
+if(ENABLE_GENERIC_ARCH)
+    add_definitions( -DGENERIC_ARCH=1 )
+endif(ENABLE_GENERIC_ARCH)
+
 file(GLOB TRACKING_GR_BLOCKS_HEADERS "*.h")
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})

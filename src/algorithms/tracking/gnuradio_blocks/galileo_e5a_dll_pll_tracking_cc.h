@@ -151,10 +151,10 @@ private:
     gr_complex* d_prompt_data_code;
     gr_complex* d_carr_sign;
 
-    gr_complex d_Early;
-    gr_complex d_Prompt;
-    gr_complex d_Late;
-    gr_complex d_Prompt_data;
+    gr_complex *d_Early;
+    gr_complex *d_Prompt;
+    gr_complex *d_Late;
+    gr_complex *d_Prompt_data;
 
     float tmp_E;
     float tmp_P;

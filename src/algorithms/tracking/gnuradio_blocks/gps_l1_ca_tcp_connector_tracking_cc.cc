@@ -134,17 +134,18 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
      * to performance degradation. Here we allocate memory
      * (gr_comlex array of size 2*d_vector_length) aligned to cache of 16 bytes
      */
-    // todo: do something if posix_memalign fails
     // Get space for the resampled early / prompt / late local replicas
-    if (posix_memalign((void**)&d_early_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
-    if (posix_memalign((void**)&d_late_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
-    if (posix_memalign((void**)&d_prompt_code, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
+    d_early_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_prompt_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+
     // space for carrier wipeoff and signal baseband vectors
-    if (posix_memalign((void**)&d_carr_sign, 16, d_vector_length * sizeof(gr_complex) * 2) == 0){};
+    d_carr_sign=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+
     // correlator outputs (scalar)
-    if (posix_memalign((void**)&d_Early, 16, sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_Prompt, 16, sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_Late, 16, sizeof(gr_complex)) == 0){};
+    d_Early=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+    d_Prompt=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+    d_Late=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -328,13 +329,13 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::~Gps_L1_Ca_Tcp_Connector_Tracking_cc()
 {
     d_dump_file.close();
 
-    free(d_prompt_code);
-    free(d_late_code);
-    free(d_early_code);
-    free(d_carr_sign);
-    free(d_Early);
-    free(d_Prompt);
-    free(d_Late);
+    volk_free(d_prompt_code);
+    volk_free(d_late_code);
+    volk_free(d_early_code);
+    volk_free(d_carr_sign);
+    volk_free(d_Early);
+    volk_free(d_Prompt);
+    volk_free(d_Late);
 
     delete[] d_ca_code;
     delete[] d_Prompt_buffer;

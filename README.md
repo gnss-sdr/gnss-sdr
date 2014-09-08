@@ -1,5 +1,6 @@
 ![](./docs/doxygen/images/gnss-sdr_logo.png)
 
+[![DOI 10.5281/zenodo.11628](https://zenodo.org/badge/doi/10.5281/zenodo.11628.png)](http://dx.doi.org/10.5281/zenodo.11628)
 
 **Welcome to GNSS-SDR!**
 

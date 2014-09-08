@@ -13,7 +13,7 @@ If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-develope
 # How to build GNSS-SDR
 
 
-This section describes how to set up the compilation environment in GNU/Linux or Mac OS X, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
+This section describes how to set up the compilation environment in GNU/Linux or [Mac OS X](#macosx)t, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
 
 GNU/Linux 
 ----------
@@ -74,9 +74,9 @@ $ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubu
 $ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-4.300.9.tar.gz
-$ tar xvfz armadillo-4.300.9.tar.gz
-$ cd armadillo-4.300.9
+$ wget http://sourceforge.net/projects/arma/files/armadillo-4.400.2.tar.gz
+$ tar xvfz armadillo-4.400.2.tar.gz
+$ cd armadillo-4.400.2
 $ cmake .
 $ make
 $ sudo make install
@@ -127,10 +127,10 @@ $ make
 Please **DO NOT install** gtest (do *not* type ```sudo make install```). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of ```#if``` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of gtest its own tests; it is only required that you tell the system where the gtest folder that you downloaded resides. Just add to your ```$HOME/.bashrc``` file the following line:
 
 ~~~~~~ 
-$ export GTEST_DIR=/home/username/gtest-1.7.0
+export GTEST_DIR=/home/username/gtest-1.7.0
 ~~~~~~ 
 
-changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. Again, it is recommended to add this line to your ```$HOME/.bashrc``` file.
+changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. 
 
    
 
@@ -170,12 +170,71 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
 ~~~~~~ 
 
 
-   
+### Build GNSS-SDR
+
+Go to GNSS-SDR's build directory:
+
+~~~~~~ 
+$ cd gnss-sdr/build
+~~~~~~ 
+
+Configure and build the application:
+
+~~~~~~ 
+$ cmake ../
+$ make
+$ make install
+~~~~~~ 
+
+By default, CMake will build the Release version, meaning that the compiler will generate a fast, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
+
+~~~~~~ 
+$ cmake -DCMAKE_BUILD_TYPE=Debug ../
+$ make
+$ make install
+~~~~~~ 
+
+If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. 
+
+You can create the documentation by doing:
+
+~~~~~~ 
+$ make doc
+~~~~~~ 
+
+from the gnss-sdr/build folder. This will generate HTML documentation that can be retrieved pointing your browser of preference to gnss-sdr/docs/html/index.html.
+If a LaTeX installation is detected in your system,
+
+~~~~~~ 
+$ make pdfmanual
+~~~~~~ 
+
+will create a PDF manual at gnss-sdr/docs/GNSS-SDR_manual.pdf. Finally,
+
+~~~~~~ 
+$ make doc-clean
+~~~~~~ 
+
+will remove the content of previously-generated documentation.
+
+
+If you are using Eclipse as your development environment, CMake can create the project for you. Type:
+
+~~~~~~ 
+$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../
+~~~~~~ 
+
+and then import the created project file into Eclipse:
+
+1. Import project using Menu File -> Import.
+2. Select General -> Existing projects into workspace.
+3. Browse where your build tree is and select the root build tree directory. Keep "Copy projects into workspace" unchecked.
+4. You get a fully functional Eclipse project.   
+
 
 ###### Build GN3S V2 Custom firmware and driver (OPTIONAL):
 
 Go to GR-GN3S root directory, compile and install the driver (read the drivers/gr-gn3s/README for more information):
-
 
 ~~~~~~   
 $ cd gnss-sdr/drivers/gr-gn3s
@@ -186,18 +245,17 @@ $ sudo make install
 $ sudo ldconfig
 ~~~~~~ 
 
-
-Set the environment variable ```GN3S_DRIVER=1``` in order to enable the GN3S_Signal_Source in GNSS-SDR:
-
+Then configure GNSS-SDR to build the GN3S_Signal_Source by:
 
 ~~~~~~ 
-$ export GN3S_DRIVER=1
+$ cmake -DENABLE_GN3S=ON ../
+$ make && make install
 ~~~~~~ 
 
 In order to gain access to USB ports, gnss-sdr should be used as root. In addition, the driver requires access to the GN3S firmware binary file. It should be available in the same path where the application is called.
 GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/firmware/GN3S_v2/bin/gn3s_firmware.ihx. Please copy this file to the application path. The GNSS-SDR default path is gnss-sdr/install
 
-(in order to disable the GN3S_Signal_Source compilation, you should remove the GN3S_DRIVER variable and build again GNSS-SDR).
+(in order to disable the GN3S_Signal_Source compilation, you can pass -DENABLE_GN3S=OFF to cmake and build GNSS-SDR again).
 
    
 
@@ -227,109 +285,41 @@ $ sudo ldconfig
 ~~~~~~ 
 
 
-Set the environment variable ```RTLSDR_DRIVER=1``` in order to enable the Rtlsdr_Signal_Source in GNSS-SDR:
-
-
-~~~~~~ 
-$ export RTLSDR_DRIVER=1
-~~~~~~ 
-
-
-In order to compile the RTLSDR adapter you should also provide the path to the gr-osmosdr source code using:
-
+Then configure GNSS-SDR to build the Rtlsdr_Signal_Source by:
 
 ~~~~~~ 
-$ export OSMOSDR_ROOT=/path/to/gr-osmosdr
+$ cmake -DENABLE_RTLSDR=ON ../
+$ make && make install
+~~~~~~ 
+
+(in order to disable the Rtlsdr_Signal_Source compilation, you can pass -DENABLE_RTLSDR=OFF to cmake and build GNSS-SDR again).
+
+
+
+###### Build OpenCL support (OPTIONAL):
+
+In order to enable the building of blocks that use OpenCL, type:
+
+~~~~~~ 
+$ cmake -DENABLE_OPENCL=ON ../
+$ make && make install
 ~~~~~~ 
 
 
-The default will be ```OSMOSDR_ROOT=/usr/local```
+###### Build a portable binary
 
-(in order to disable the Rtlsdr_Signal_Source compilation, you should remove the RTLSDR_DRIVER variable and build again GNSS-SDR).
-
-   
-
-### Build GNSS-SDR
-
-Go to GNSS-SDR's build directory:
+In order to build an executable that not depends on the specific SIMD instruction set that is present in the processor of the compiling machine, so other users can execute it in other machines without those particular sets, use:
 
 ~~~~~~ 
-$ cd gnss-sdr/build
+$ cmake -DENABLE_GENERIC_ARCH=ON ../
+$ make && make install
 ~~~~~~ 
 
-Configure and build the application:
+Using this option, all SIMD instructions are accessed via VOLK, which automatically includes versions of each function for different SIMD instruction sets, then detects at runtime which to use, or if there are none, substitutes a generic, non-SIMD implementation.
 
-~~~~~~ 
-$ cmake ../
-$ make
-~~~~~~ 
 
-By default, CMake is configured to build the release version. If you want to build the debug version, please use:
 
-~~~~~~ 
-$ cmake ../ -DCMAKE_BUILD_TYPE=Debug
-~~~~~~ 
-
-Move the executables to the install folder:
-
-~~~~~~ 
-$ make install
-~~~~~~ 
-
-If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. 
-
-You can create the documentation by doing:
-
-~~~~~~ 
-$ make doc
-~~~~~~ 
-
-from the gnss-sdr/build folder. This will generate HTML documentation that can be retrieved pointing your browser of preference to gnss-sdr/docs/html/index.html.
-If a LaTeX installation is detected in your system,
-
-~~~~~~ 
-$ make pdfmanual
-~~~~~~ 
-
-will create a PDF manual at gnss-sdr/docs/GNSS-SDR_manual.pdf. Please note that the PDF generation requires some fonts to be installed on the host system. In Ubuntu 12.10, those fonts do not come by default. You can install them by doing:
-
-~~~~~~ 
-$ sudo apt-get install texlive-fonts-recommended
-~~~~~~ 
-
-and then run ```cmake ../``` and make pdfmanual again. Finally,
-
-~~~~~~ 
-$ make doc-clean
-~~~~~~ 
-
-will remove the content of previously-generated documentation.
-
-By default, CMake will build the Release version, meaning that the compiler will generate a faster, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. If you are working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
-
-~~~~~~ 
-$ cd gnss-sdr/build
-$ cmake -DCMAKE_BUILD_TYPE=Debug ../
-$ make
-$ make install
-~~~~~~ 
-
-If you are using Eclipse as your development environment, CMake can create the project for you. Type:
-
-~~~~~~ 
-$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=3.7 -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j8 ../
-~~~~~~ 
-
-and then import the created project file into Eclipse:
-
-1. Import project using Menu File -> Import.
-2. Select General -> Existing projects into workspace.
-3. Browse where your build tree is and select the root build tree directory. Keep "Copy projects into workspace" unchecked.
-4. You get a fully functional Eclipse project.
-
-   
-
-Mac OS X 
+<a name="macosx">Mac OS X</a> 
 ---------
 
 Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks).
@@ -338,7 +328,17 @@ Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks).
 
 ### Mac OS X 10.9 Mavericks
 
-If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free).
+If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
+
+~~~~~~ 
+$ xcode-select --install
+~~~~~~ 
+
+Agree to Xcode license: 
+
+~~~~~~ 
+$ sudo xcodebuild -license
+~~~~~~ 
 
 Then, [install Macports](http://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
 
@@ -348,7 +348,7 @@ In a terminal, type:
 $ sudo port selfupdate
 $ sudo port upgrade outdated
 $ sudo port install doxygen +latex
-$ sudo port install uhd gnuradio
+$ sudo port install gnuradio
 $ sudo port install armadillo
 $ sudo port install google-glog +gflags
 ~~~~~~ 
@@ -358,7 +358,7 @@ Finally, you are ready to clone the GNSS-SDR repository and build the software:
 ~~~~~~ 
 $ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
 $ cd gnss-sdr/build
-$ cmake ../ -DCMAKE_CXX_COMPILER=/usr/bin/clang++
+$ cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ../
 $ make
 $ make install
 ~~~~~~ 
@@ -416,7 +416,7 @@ Then, you are ready to clone the GNSS-SDR repository and build the software:
 ~~~~~~ 
 $ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
 $ cd gnss-sdr/build
-$ cmake ../ -DCMAKE_CXX_COMPILER=g++
+$ cmake -DCMAKE_CXX_COMPILER=g++ ../ 
 $ make
 $ make install
 ~~~~~~ 

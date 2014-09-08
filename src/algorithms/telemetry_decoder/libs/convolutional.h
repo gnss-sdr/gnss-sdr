@@ -37,7 +37,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
+//#ifndef GNSS_SDR_CONVOLUTIONAL_H_
+//#define GNSS_SDR_CONVOLUTIONAL_H_
 /* define constants used throughout the library */
 #define MAXLOG 1e7  /* Define infinity */
 
@@ -49,9 +50,9 @@
  * \param[in] symbol  The integer-valued symbol
  * \param[in] length  The length of the binary vector
  *
- * This function is used by conv_encode()  
+ * This function is used by conv_encode()
  */
-void itob(int binvec_p[], int symbol, int length)
+static void itob(int binvec_p[], int symbol, int length)
 {
     int counter;
     /* Go through each bit in the vector */
@@ -73,9 +74,9 @@ void itob(int binvec_p[], int symbol, int length)
  * \param[in] symbol  The integer-valued symbol
  * \param[in] length  The highest bit position in the symbol
  *
- * This function is used by nsc_enc_bit(), rsc_enc_bit(), and rsc_tail()  
+ * This function is used by nsc_enc_bit(), rsc_enc_bit(), and rsc_tail()
  */
-int parity_counter(int symbol, int length)
+static int parity_counter(int symbol, int length)
 {
     int counter;
     int temp_parity = 0;
@@ -133,7 +134,7 @@ static int nsc_enc_bit(int state_out_p[],
 
 
 /*!
- * \brief  like nsc_enc_bit() but for a RSC code 
+ * \brief  like nsc_enc_bit() but for a RSC code
  */
 static int rsc_enc_bit(int state_out_p[],
                        int input,
@@ -380,7 +381,7 @@ static float Gamma(float  rec_array[],
             mask = mask << 1;
         }
     return(rm);
-} 
+}
 
 
 /*!
@@ -440,7 +441,7 @@ static void Viterbi(int output_u_int[],
     for (t = 0; t < LL + mm; t++)
         {
             for (i = 0; i < nn; i++)
-                rec_array[i] = (float)input_c[nn*t + i];
+        	    rec_array[i] = (float)input_c[nn*t + i];
 
             /* precompute all possible branch metrics */
             for (i = 0; i < number_symbols; i++)
@@ -657,3 +658,4 @@ static void ViterbiTb(int output_u_int[],
     free(rec_array);
     free(metric_c);
 }
+//#endif

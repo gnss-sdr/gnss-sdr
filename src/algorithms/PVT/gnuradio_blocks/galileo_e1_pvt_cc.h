@@ -96,7 +96,7 @@ private:
     boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool b_rinex_header_writen;
-    Rinex_Printer *rp;
+    std::shared_ptr<Rinex_Printer> rp;
     unsigned int d_nchannels;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
@@ -106,10 +106,10 @@ private:
     int d_display_rate_ms;
     long unsigned int d_sample_counter;
     long unsigned int d_last_sample_nav_output;
-    Kml_Printer d_kml_dump;
-    Nmea_Printer *d_nmea_printer;
+    std::shared_ptr<Kml_Printer> d_kml_dump;
+    std::shared_ptr<Nmea_Printer> d_nmea_printer;
     double d_rx_time;
-    galileo_e1_ls_pvt *d_ls_pvt;
+    std::shared_ptr<galileo_e1_ls_pvt> d_ls_pvt;
     bool pseudoranges_pairCompare_min(std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b);
 
 public:

@@ -1,11 +1,11 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,11 +17,7 @@
 #
 
 
-if($ENV{RTLSDR_DRIVER})
-    set(RTLSDR_DRIVER ON)
-endif($ENV{RTLSDR_DRIVER})
-
-if(RTLSDR_DRIVER)
+if(ENABLE_RTLSDR)
     set(FRONT_END_CAL_SOURCES front_end_cal.cc)
 
     include_directories(
@@ -76,4 +72,4 @@ if(RTLSDR_DRIVER)
             DESTINATION ${CMAKE_SOURCE_DIR}/install
             )
             
-endif(RTLSDR_DRIVER)
+endif(ENABLE_RTLSDR)

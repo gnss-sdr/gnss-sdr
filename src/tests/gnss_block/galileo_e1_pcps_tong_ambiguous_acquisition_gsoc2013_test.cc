@@ -135,7 +135,7 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::config_1()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
-    std::string signal = "1C";
+    std::string signal = "1B";
     signal.copy(gnss_synchro.Signal, 2, 0);
 
     integration_time_ms = 4;
@@ -189,24 +189,24 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::config_1()
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
 
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.coherent_integration_time_ms",
+    config->set_property("Acquisition_Galileo.item_type", "gr_complex");
+    config->set_property("Acquisition_Galileo.if", "0");
+    config->set_property("Acquisition_Galileo.coherent_integration_time_ms",
                          std::to_string(integration_time_ms));
-    config->set_property("Acquisition.tong_init_val", "1");
-    config->set_property("Acquisition.tong_max_val", "8");
-    config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition");
-    config->set_property("Acquisition.threshold", "0.3");
-    config->set_property("Acquisition.doppler_max", "10000");
-    config->set_property("Acquisition.doppler_step", "250");
-    config->set_property("Acquisition.dump", "false");
+    config->set_property("Acquisition_Galileo.tong_init_val", "1");
+    config->set_property("Acquisition_Galileo.tong_max_val", "8");
+    config->set_property("Acquisition_Galileo.implementation", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition");
+    config->set_property("Acquisition_Galileo.threshold", "0.3");
+    config->set_property("Acquisition_Galileo.doppler_max", "10000");
+    config->set_property("Acquisition_Galileo.doppler_step", "250");
+    config->set_property("Acquisition_Galileo.dump", "false");
 }
 
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::config_2()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
-    std::string signal = "1C";
+    std::string signal = "1B";
     signal.copy(gnss_synchro.Signal, 2, 0);
 
     integration_time_ms = 4;
@@ -278,17 +278,17 @@ void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::config_2()
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
 
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.coherent_integration_time_ms",
+    config->set_property("Acquisition_Galileo.item_type", "gr_complex");
+    config->set_property("Acquisition_Galileo.if", "0");
+    config->set_property("Acquisition_Galileo.coherent_integration_time_ms",
                          std::to_string(integration_time_ms));
-    config->set_property("Acquisition.tong_init_val", "1");
-    config->set_property("Acquisition.tong_max_val", "8");
-    config->set_property("Acquisition.implementation", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition");
-    config->set_property("Acquisition.threshold", "0.00028"); // Pfa,a = 0.1
-    config->set_property("Acquisition.doppler_max", "10000");
-    config->set_property("Acquisition.doppler_step", "250");
-    config->set_property("Acquisition.dump", "false");
+    config->set_property("Acquisition_Galileo.tong_init_val", "1");
+    config->set_property("Acquisition_Galileo.tong_max_val", "8");
+    config->set_property("Acquisition_Galileo.implementation", "Galileo_E1_PCPS_Tong_Ambiguous_Acquisition");
+    config->set_property("Acquisition_Galileo.threshold", "0.00028"); // Pfa,a = 0.1
+    config->set_property("Acquisition_Galileo.doppler_max", "10000");
+    config->set_property("Acquisition_Galileo.doppler_step", "250");
+    config->set_property("Acquisition_Galileo.dump", "false");
 }
 
 void GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test::start_queue()

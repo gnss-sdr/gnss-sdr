@@ -61,6 +61,14 @@ Galileo_Ephemeris::Galileo_Ephemeris()
     /*GST*/
     WN_5 = 0;
     TOW_5 = 0;
+    // SV status
+    SISA_3 = 0;
+    E5b_HS_5 = 0;
+    E1B_HS_5 = 0;
+    E5b_DVS_5 = 0;
+    E1B_DVS_5 = 0;
+    BGD_E1E5a_5 = 0;        //!< E1-E5a Broadcast Group Delay [s]
+    BGD_E1E5b_5 = 0;        //!< E1-E5b Broadcast Group Delay [s]
 }
 
 
@@ -106,7 +114,7 @@ double Galileo_Ephemeris::sv_clock_drift(double transmitTime)
     // Satellite Time Correction Algorithm, ICD 5.1.4
     double dt;
     dt = transmitTime - t0c_4;
-    Galileo_satClkDrift = af0_4 + af1_4*dt + (af2_4 * dt)*(af2_4 * dt) + Galileo_dtr;
+    Galileo_satClkDrift = af0_4 + af1_4 * dt + af2_4 * (dt * dt) + sv_clock_relativistic_term(transmitTime); //+Galileo_dtr;
     return Galileo_satClkDrift;
 }
 

@@ -1,11 +1,11 @@
-# Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -89,6 +89,16 @@ else(NOT GTEST_DIR_LOCAL)
 endif(NOT GTEST_DIR_LOCAL)
 
 
+set(GNSS_SDR_TEST_OPTIONAL_LIBS "")
+set(GNSS_SDR_TEST_OPTIONAL_HEADERS "")
+
+if(ENABLE_GPERFTOOLS)
+    if(GPERFTOOLS_FOUND)
+        set(GNSS_SDR_TEST_OPTIONAL_LIBS "${GNSS_SDR_TEST_OPTIONAL_LIBS};${GPERFTOOLS_LIBRARIES}")
+        set(GNSS_SDR_TEST_OPTIONAL_HEADERS "${GNSS_SDR_TEST_OPTIONAL_HEADERS};${GPERFTOOLS_INCLUDE_DIR}")
+    endif(GPERFTOOLS_FOUND)
+endif(ENABLE_GPERFTOOLS)
+
      
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}
@@ -106,6 +116,9 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/gnuradio_blocks
@@ -120,6 +133,7 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
+     ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
 )
 
 
@@ -158,6 +172,7 @@ target_link_libraries(run_tests ${MAC_LIBRARIES}
                                 signal_generator_adapters
                                 out_adapters
                                 pvt_gr_blocks
+                                ${GNSS_SDR_TEST_OPTIONAL_LIBS}
 )
 
 install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
@@ -193,11 +208,13 @@ add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc
 #     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc
      #${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc

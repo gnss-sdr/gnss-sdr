@@ -1,33 +1,33 @@
 /*!
- * \file test_main.cc
- * \brief  This file implements all system tests.
- * \author Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
- *
- *
- * -------------------------------------------------------------------------
- *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
- * This file is part of GNSS-SDR.
- *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
- *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
- */
+* \file test_main.cc
+* \brief This file implements all system tests.
+* \author Carles Fernandez-Prades, 2012. cfernandez(at)cttc.es
+*
+*
+* -------------------------------------------------------------------------
+*
+* Copyright (C) 2010-2012 (see AUTHORS file for a list of contributors)
+*
+* GNSS-SDR is a software defined Global Navigation
+* Satellite Systems receiver
+*
+* This file is part of GNSS-SDR.
+*
+* GNSS-SDR is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* at your option) any later version.
+*
+* GNSS-SDR is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+*
+* -------------------------------------------------------------------------
+*/
 
 
 
@@ -88,8 +88,9 @@ DECLARE_string(log_dir);
 #include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 //#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
 #if OPENCL_BLOCKS_TEST
-    #include "gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
+#include "gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
 #endif
+#include "gnss_block/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc"
 #include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
@@ -97,10 +98,17 @@ DECLARE_string(log_dir);
 #include "gnss_block/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
+#include "gnss_block/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc"
 #include "gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc"
 #include "gnuradio_block/gnss_sdr_valve_test.cc"
 #include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
 #include "string_converter/string_converter_test.cc"
+
+//#include "gnss_block/galileo_e5a_pcps_acquisition_test.cc"
+//#include "gnss_block/galileo_e5a_pcps_acquisition_test_2.cc"
+#include "gnss_block/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
+#include "gnss_block/galileo_e5a_tracking_test.cc"
+
 
 
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;

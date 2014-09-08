@@ -38,6 +38,7 @@
 #include <gnuradio/msg_queue.h>
 #include "telemetry_decoder_interface.h"
 #include "galileo_e1b_telemetry_decoder_cc.h"
+#include "gnss_satellite.h"
 
 
 

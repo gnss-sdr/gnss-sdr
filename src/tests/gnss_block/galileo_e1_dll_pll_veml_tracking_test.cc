@@ -55,7 +55,7 @@ protected:
     {
         queue = gr::msg_queue::make(0);
         top_block = gr::make_top_block("Tracking test");
-        std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
+        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         stop = false;
@@ -88,14 +88,14 @@ void GalileoE1DllPllVemlTrackingInternalTest::init()
     gnss_synchro.PRN = 11;
 
     config->set_property("GNSS-SDR.internal_fs_hz", "8000000");
-    config->set_property("Tracking.item_type", "gr_complex");
-    config->set_property("Tracking.dump", "true");
-    config->set_property("Tracking.dump_filename", "../data/veml_tracking_ch_");
-    config->set_property("Tracking.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
-    config->set_property("Tracking.early_late_space_chips", "0.15");
-    config->set_property("Tracking.very_early_late_space_chips", "0.6");
-    config->set_property("Tracking.pll_bw_hz", "30.0");
-    config->set_property("Tracking.dll_bw_hz", "2.0");
+    config->set_property("Tracking_Galileo.item_type", "gr_complex");
+    config->set_property("Tracking_Galileo.dump", "true");
+    config->set_property("Tracking_Galileo.dump_filename", "../data/veml_tracking_ch_");
+    config->set_property("Tracking_Galileo.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
+    config->set_property("Tracking_Galileo.early_late_space_chips", "0.15");
+    config->set_property("Tracking_Galileo.very_early_late_space_chips", "0.6");
+    config->set_property("Tracking_Galileo.pll_bw_hz", "30.0");
+    config->set_property("Tracking_Galileo.dll_bw_hz", "2.0");
 }
 
 
@@ -114,8 +114,8 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
     int fs_in = 8000000;
     int nsamples = 80000000;
     struct timeval tv;
-    long long int begin;
-    long long int end;
+    long long int begin = 0;
+    long long int end = 0;
     init();
 
     // Example using smart pointers and the block factory

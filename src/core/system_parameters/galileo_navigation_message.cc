@@ -66,6 +66,12 @@ void Galileo_Navigation_Message::reset()
     flag_TOW_5 = 0;
     flag_TOW_set = false;
 
+    flag_GGTO= false;
+    flag_GGTO_1= false;
+    flag_GGTO_2= false;
+    flag_GGTO_3= false;
+    flag_GGTO_4= false;
+
     IOD_ephemeris = 0;
     /*Word type 1: Ephemeris (1/4)*/
     IOD_nav_1 = 0;
@@ -539,6 +545,16 @@ Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
     /*GST*/
     ephemeris.WN_5 = WN_5;          // Week number
     ephemeris.TOW_5 = TOW_5;        // Time of Week
+
+    ephemeris.SISA_3 = SISA_3;
+    ephemeris.E5b_HS_5 = E5b_HS_5;           // E5b Signal Health Status
+    ephemeris.E1B_HS_5 = E1B_HS_5;           // E1B Signal Health Status
+    ephemeris.E5b_DVS_5 = E5b_DVS_5;         // E5b Data Validity Status
+    ephemeris.E1B_DVS_5 = E1B_DVS_5;         // E1B Data Validity Status
+    
+    ephemeris.BGD_E1E5a_5 = BGD_E1E5a_5;        // E1-E5a Broadcast Group Delay [s]
+    ephemeris.BGD_E1E5b_5 = BGD_E1E5b_5;        // E1-E5b Broadcast Group Delay [s]
+
     return ephemeris;
 }
 
@@ -642,6 +658,13 @@ Galileo_Almanac Galileo_Navigation_Message::get_almanac()
     almanac.af1_10 = af1_10;
     almanac.E5b_HS_10 = E5b_HS_10;
     almanac.E1B_HS_10 = E1B_HS_10;
+
+    /*GPS to Galileo GST conversion parameters*/
+    almanac.A_0G_10 = A_0G_10;
+    almanac.A_1G_10 = A_1G_10;
+    almanac.t_0G_10 = t_0G_10;
+    almanac.WN_0G_10 = WN_0G_10;
+
     return almanac;
 }
 
@@ -967,14 +990,18 @@ int Galileo_Navigation_Message::page_jk_decoder(const char *data_jk)
         DLOG(INFO) << "E1B_HS_10= " << E1B_HS_10;
         A_0G_10 = (double)read_navigation_signed(data_jk_bits, A_0G_10_bit);
         A_0G_10 = A_0G_10 * A_0G_10_LSB;
+        flag_GGTO_1=true;
         DLOG(INFO) << "A_0G_10= " << A_0G_10;
         A_1G_10 = (double)read_navigation_signed(data_jk_bits, A_1G_10_bit);
         A_1G_10 = A_1G_10 * A_1G_10_LSB;
+        flag_GGTO_2=true;
         DLOG(INFO) << "A_1G_10= " << A_1G_10;
         t_0G_10 = (double)read_navigation_unsigned(data_jk_bits, t_0G_10_bit);
         t_0G_10 = t_0G_10 * t_0G_10_LSB;
+        flag_GGTO_3=true;
         DLOG(INFO) << "t_0G_10= " << t_0G_10;
         WN_0G_10 = (double)read_navigation_unsigned(data_jk_bits, WN_0G_10_bit);
+        flag_GGTO_4=true;
         DLOG(INFO) << "WN_0G_10= " << WN_0G_10;
         flag_almanac_4 = true;
         DLOG(INFO) << "flag_tow_set" << flag_TOW_set;

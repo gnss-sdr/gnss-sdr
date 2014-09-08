@@ -74,7 +74,7 @@ public:
     std::string role(){ return role_; }
 
     //! Returns "Channel"
-    std::string implementation(){ return "Channel"; }
+    std::string implementation(){ return implementation_; }
     size_t item_size(){ return 0; }
     Gnss_Signal get_signal() const { return gnss_signal_; }
     AcquisitionInterface* acquisition(){ return acq_; }

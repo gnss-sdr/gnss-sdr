@@ -20,7 +20,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -194,6 +194,31 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsAcquisition)
 }
 
 
+TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaPcpsQuickSyncAcquisition)
+{
+    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    configuration->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_QuickSync_Acquisition");
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(configuration, "Acquisition", "GPS_L1_CA_PCPS_QuickSync_Acquisition", 1, 1, queue);
+    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    EXPECT_STREQ("Acquisition", acquisition->role().c_str());
+    EXPECT_STREQ("GPS_L1_CA_PCPS_QuickSync_Acquisition", acquisition->implementation().c_str());
+}
+
+TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsQuickSyncAmbiguousAcquisition)
+{
+    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    configuration->set_property("Acquisition.implementation", "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition");
+    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
+    std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
+    std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(configuration, "Acquisition", "Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition", 1, 1, queue);
+    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    EXPECT_STREQ("Acquisition", acquisition->role().c_str());
+    EXPECT_STREQ("Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition", acquisition->implementation().c_str());
+}
+
+
 TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1PcpsAmbiguousAcquisition)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
@@ -274,14 +299,14 @@ TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder)
 TEST(GNSS_Block_Factory_Test, InstantiateChannels)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("Channels.count", "2");
+    configuration->set_property("Channels_GPS.count", "2");
+    configuration->set_property("Channels_Galileo.count", "0");
     configuration->set_property("Channels.in_acquisition", "2");
-    configuration->set_property("Tracking.implementation","GPS_L1_CA_DLL_FLL_PLL_Tracking");
-    configuration->set_property("TelemetryDecoder.implementation","GPS_L1_CA_Telemetry_Decoder");
+    configuration->set_property("Tracking_GPS.implementation","GPS_L1_CA_DLL_FLL_PLL_Tracking");
+    configuration->set_property("TelemetryDecoder_GPS.implementation","GPS_L1_CA_Telemetry_Decoder");
     configuration->set_property("Channel0.item_type", "gr_complex");
-    configuration->set_property("Acquisition0.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    configuration->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
     configuration->set_property("Channel1.item_type", "gr_complex");
-    configuration->set_property("Acquisition1.implementation", "GPS_L1_CA_PCPS_Acquisition");
     gr::msg_queue::sptr queue = gr::msg_queue::make(0);
     std::unique_ptr<GNSSBlockFactory> factory;
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = std::move(factory->GetChannels(configuration, queue));

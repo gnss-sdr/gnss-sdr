@@ -35,7 +35,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -57,9 +57,12 @@
 #include <sstream>  // for stringstream
 #include <iomanip>  // for setprecision
 #include <map>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "gps_navigation_message.h"
-#include "boost/date_time/posix_time/posix_time.hpp"
+#include "galileo_navigation_message.h"
+#include "sbas_telemetry_data.h"
 #include "GPS_L1_CA.h"
+#include "Galileo_E1.h"
 #include "gnss_synchro.h"
 
 class Sbas_Raw_Msg;
@@ -84,16 +87,38 @@ public:
     std::ofstream obsFile ; //<! Output file stream for RINEX observation file
     std::ofstream navFile ; //<! Output file stream for RINEX navigation data file
     std::ofstream sbsFile ; //<! Output file stream for RINEX SBAS raw data file
+    std::ofstream navGalFile ; //<! Output file stream for RINEX Galileo navigation data file
+    std::ofstream navMixFile ; //<! Output file stream for RINEX Mixed navigation data file
 
     /*!
-     *  \brief Generates the Navigation Data header
+     *  \brief Generates the GPS Navigation Data header
      */
     void rinex_nav_header(std::ofstream& out, Gps_Iono iono, Gps_Utc_Model utc_model);
 
     /*!
-     *  \brief Generates the Observation data header
+     *  \brief Generates the Galileo Navigation Data header
+     */
+    void rinex_nav_header(std::ofstream& out, Galileo_Iono iono, Galileo_Utc_Model utc_model, Galileo_Almanac galileo_almanac);
+
+    /*!
+     *  \brief Generates the Mixed (GPS/Galileo) Navigation Data header
+     */
+    void rinex_nav_header(std::ofstream& out, Gps_Iono gps_iono, Gps_Utc_Model gps_utc_model, Galileo_Iono galileo_iono, Galileo_Utc_Model galileo_utc_model, Galileo_Almanac galileo_almanac);
+
+    /*!
+     *  \brief Generates the GPS Observation data header
      */
     void rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, double d_TOW_first_observation);
+
+    /*!
+     *  \brief Generates the Galileo Observation data header
+     */
+    void rinex_obs_header(std::ofstream& out, Galileo_Ephemeris eph, double d_TOW_first_observation);
+
+    /*!
+     *  \brief Generates the Mixed (GPS/Galileo) Observation data header
+     */
+    void rinex_obs_header(std::ofstream& out, Gps_Ephemeris gps_eph, Galileo_Ephemeris galileo_eph, double d_TOW_first_observation);
 
     /*!
      *  \brief Generates the SBAS raw data header
@@ -110,16 +135,40 @@ public:
      */
     boost::posix_time::ptime compute_GPS_time(Gps_Ephemeris eph, double obs_time);
 
-
     /*!
-     *  \brief Writes data from the navigation message into the RINEX file
+     *  \brief Computes the Galileo time and returns a boost::posix_time::ptime object
      */
-    void log_rinex_nav(std::ofstream& out,  std::map<int,Gps_Ephemeris> eph_map);
+    boost::posix_time::ptime compute_Galileo_time(Galileo_Ephemeris eph, double obs_time);
 
     /*!
-     *  \brief Writes observables into the RINEX file
+     *  \brief Writes data from the GPS navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris> eph_map);
+
+    /*!
+     *  \brief Writes data from the Galileo navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephemeris> eph_map);
+
+    /*!
+     *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::ofstream& out, std::map<int, Gps_Ephemeris> gps_eph_map, std::map<int, Galileo_Ephemeris> galileo_eph_map);
+
+    /*!
+     *  \brief Writes GPS observables into the RINEX file
      */
     void log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
+
+    /*!
+     *  \brief Writes Galileo observables into the RINEX file
+     */
+    void log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
+
+    /*!
+     *  \brief Writes Galileo observables into the RINEX file
+     */
+    void log_rinex_obs(std::ofstream& out, Gps_Ephemeris gps_eph, Galileo_Ephemeris galileo_eph, double gps_obs_time, std::map<int,Gnss_Synchro> pseudoranges);
 
     /*!
      * \brief Represents GPS time in the date time format. Leap years are considered, but leap seconds are not.
@@ -165,6 +214,8 @@ private:
     std::string navfilename;
     std::string obsfilename;
     std::string sbsfilename;
+    std::string navGalfilename;
+    std::string navMixfilename;
 
     /*
      * Generates the data for the PGM / RUN BY / DATE line
@@ -304,6 +355,9 @@ private:
     inline double asDouble(const std::string& s)
     { return strtod(s.c_str(), 0); }
 
+
+    inline int toInt(std::string bitString, int sLength);
+
     /*
      * Convert a string to an integer.
      * @param s string containing a number.
@@ -311,7 +365,6 @@ private:
      */
     inline long asInt(const std::string& s)
     { return strtol(s.c_str(), 0, 10); }
-
 
 
     /*
@@ -549,6 +602,22 @@ inline std::string Rinex_Printer::asFixWidthString(const int x, const int width,
     ss << std::setfill(fill_digit) << std::setw(width) << x;
     //std::cout << "asFixWidthString(): x=" << x << " width=" << width << " fill_digit=" << fill_digit << " ss=" << ss.str() << std::endl;
     return ss.str().substr(ss.str().size() - width);
+}
+
+inline long asInt(const std::string& s)
+    { return strtol(s.c_str(), 0, 10); }
+
+
+inline int Rinex_Printer::toInt(std::string bitString, int sLength)
+{
+    int tempInt;
+    int num = 0;
+    for(int i=0; i < sLength; i++)
+    {
+        tempInt = bitString[i]-'0';
+        num |= (1 << (sLength-1-i)) * tempInt;
+    }
+    return num;
 }
 
 

@@ -16,9 +16,12 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
+
 set(PVT_LIB_SOURCES 
      gps_l1_ca_ls_pvt.cc
      galileo_e1_ls_pvt.cc
+     hybrid_ls_pvt.cc
      kml_printer.cc
      rinex_printer.cc
      nmea_printer.cc  

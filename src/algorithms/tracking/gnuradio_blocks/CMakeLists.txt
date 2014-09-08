@@ -23,6 +23,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      gps_l1_ca_dll_pll_optim_tracking_cc.cc
      gps_l1_ca_dll_pll_tracking_cc.cc
      gps_l1_ca_tcp_connector_tracking_cc.cc
+     galileo_e5a_dll_pll_tracking_cc.cc
 )
       
 include_directories(
@@ -37,6 +38,10 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
+
+if(ENABLE_GENERIC_ARCH)
+    add_definitions( -DGENERIC_ARCH=1 )
+endif(ENABLE_GENERIC_ARCH)
 
 file(GLOB TRACKING_GR_BLOCKS_HEADERS "*.h")
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})

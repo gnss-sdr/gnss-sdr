@@ -21,7 +21,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -132,9 +132,9 @@ private:
     long d_if_freq;
     long d_fs_in;
 
-    float d_early_late_spc_chips;
+    double d_early_late_spc_chips;
 
-    float d_code_phase_step_chips;
+    double d_code_phase_step_chips;
 
     gr_complex* d_ca_code;
 
@@ -148,8 +148,8 @@ private:
     gr_complex *d_Late;
 
     // remaining code phase and carrier phase between tracking loops
-    float d_rem_code_phase_samples;
-    float d_next_rem_code_phase_samples;
+    double d_rem_code_phase_samples;
+    double d_next_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
@@ -163,10 +163,10 @@ private:
     Correlator d_correlator;
 
     // tracking vars
-    float d_code_freq_hz;
-    float d_carrier_doppler_hz;
-    float d_acc_carrier_phase_rad;
-    float d_code_phase_samples;
+    double d_code_freq_hz;
+    double d_carrier_doppler_hz;
+    double d_acc_carrier_phase_rad;
+    double d_code_phase_samples;
     size_t d_port_ch0;
     size_t d_port;
     int d_listen_connection;

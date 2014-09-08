@@ -129,5 +129,5 @@ TEST_F(Fir_Filter_Test, ConnectAndRun)
         gettimeofday(&tv, NULL);
         end = tv.tv_sec *1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
-    //std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 }

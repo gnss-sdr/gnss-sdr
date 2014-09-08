@@ -71,7 +71,11 @@ public:
     std::unique_ptr<GNSSBlockInterface> GetOutputFilter(std::shared_ptr<ConfigurationInterface> configuration,
             boost::shared_ptr<gr::msg_queue> queue);
 
-    std::unique_ptr<GNSSBlockInterface> GetChannel(std::shared_ptr<ConfigurationInterface> configuration,
+    std::unique_ptr<GNSSBlockInterface> GetChannel_GPS(std::shared_ptr<ConfigurationInterface> configuration,
+            std::string acq, std::string trk, std::string tlm, int channel,
+            boost::shared_ptr<gr::msg_queue> queue);
+
+    std::unique_ptr<GNSSBlockInterface> GetChannel_Galileo(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
             boost::shared_ptr<gr::msg_queue> queue);
 

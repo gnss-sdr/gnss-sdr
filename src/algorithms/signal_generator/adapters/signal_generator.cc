@@ -29,11 +29,13 @@
  * -------------------------------------------------------------------------
  */
 
+
 #include "signal_generator.h"
 #include <glog/logging.h>
 #include "configuration_interface.h"
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
+#include "Galileo_E5a.h"
 
 
 using google::LogMessage;
@@ -46,6 +48,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     std::string default_item_type = "gr_complex";
     std::string default_dump_file = "./data/gen_source.dat";
     std::string default_system = "G";
+    std::string default_signal = "1C";
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     dump_ = configuration->property(role + ".dump", false);
@@ -57,30 +60,42 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     float BW_BB = configuration->property("SignalSource.BW_BB", 1.0);
     unsigned int num_satellites = configuration->property("SignalSource.num_satellites", 1);
 
+    std::vector<std::string> signal1;
     std::vector<std::string> system;
     std::vector<unsigned int> PRN;
     std::vector<float> CN0_dB;
     std::vector<float> doppler_Hz;
     std::vector<unsigned int> delay_chips;
+    std::vector<unsigned int> delay_sec;
 
     for (unsigned int sat_idx = 0; sat_idx < num_satellites; sat_idx++)
         {
             std::string sat = std::to_string(sat_idx);
+            signal1.push_back(configuration->property("SignalSource.signal_" + sat, default_signal));
             system.push_back(configuration->property("SignalSource.system_" + sat, default_system));
             PRN.push_back(configuration->property("SignalSource.PRN_" + sat, 1));
             CN0_dB.push_back(configuration->property("SignalSource.CN0_dB_" + sat, 10));
             doppler_Hz.push_back(configuration->property("SignalSource.doppler_Hz_" + sat, 0));
             delay_chips.push_back(configuration->property("SignalSource.delay_chips_" + sat, 0));
+            delay_sec.push_back(configuration->property("SignalSource.delay_sec_" + sat, 0));
         }
 
-    // If Galileo signal is present                             -> vector duration = 100 ms (25 * 4 ms)
+    // If Galileo signal is present -> vector duration = 100 ms (25 * 4 ms)
     // If there is only GPS signal (Galileo signal not present) -> vector duration = 1 ms
     unsigned int vector_length = 0;
     if (std::find(system.begin(), system.end(), "E") != system.end())
     {
-        vector_length = round((float)fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ
-                                  / Galileo_E1_B_CODE_LENGTH_CHIPS))
-                                  * Galileo_E1_C_SECONDARY_CODE_LENGTH;
+	if (signal1[0].at(0)=='5')
+	    {
+		vector_length = round((float) fs_in / (Galileo_E5a_CODE_CHIP_RATE_HZ
+			/ Galileo_E5a_CODE_LENGTH_CHIPS));
+	    }
+	else
+	    {
+		vector_length = round((float)fs_in / (Galileo_E1_CODE_CHIP_RATE_HZ
+			/ Galileo_E1_B_CODE_LENGTH_CHIPS))
+                                	  * Galileo_E1_C_SECONDARY_CODE_LENGTH;
+	    }
     }
     else if (std::find(system.begin(), system.end(), "G") != system.end())
     {
@@ -92,7 +107,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             item_size_ = sizeof(gr_complex);
             DLOG(INFO) << "Item size " << item_size_;
-            gen_source_ = signal_make_generator_c(system, PRN, CN0_dB, doppler_Hz, delay_chips,
+            gen_source_ = signal_make_generator_c(signal1, system, PRN, CN0_dB, doppler_Hz, delay_chips, delay_sec,
                                              data_flag, noise_flag, fs_in, vector_length, BW_BB);
 
             vector_to_stream_ = gr::blocks::vector_to_stream::make(item_size_, vector_length);

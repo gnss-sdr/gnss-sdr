@@ -61,7 +61,6 @@ protected:
 {
         queue = gr::msg_queue::make(0);
         top_block = gr::make_top_block("Acquisition test");
-
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
@@ -83,7 +82,7 @@ protected:
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
     //std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
-    GalileoE5aNoncoherentIQAcquisitionCaf *acquisition;
+    std::shared_ptr<GalileoE5aNoncoherentIQAcquisitionCaf> acquisition;
 
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
@@ -456,8 +455,8 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::process_message()
 {
     if (message == 1)
         {
-            double delay_error_chips;
-            double doppler_error_hz;
+            double delay_error_chips = 0.0;
+            double doppler_error_hz = 0.0;
             switch (sat)
             {
             case 0:
@@ -612,8 +611,9 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     config_1();
 
     //int nsamples = floor(fs_in*integration_time_ms*1e-3);
-    acquisition = new GalileoE5aNoncoherentIQAcquisitionCaf(config.get(), "Acquisition", 1, 1, queue);
-    unsigned int skiphead_sps = 28000+32000; // 32 Msps
+    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition_Galileo", 1, 1, queue);
+
+    //unsigned int skiphead_sps = 28000+32000; // 32 Msps
     //    unsigned int skiphead_sps = 0;
     //    unsigned int skiphead_sps = 84000;
 
@@ -630,15 +630,15 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     }) << "Failure setting channel_internal_queue."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
+        acquisition->set_doppler_max(config->property("Acquisition_Galileo.doppler_max", 10000));
     }) << "Failure setting doppler_max."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
+        acquisition->set_doppler_step(config->property("Acquisition_Galileo.doppler_step", 500));
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(config->property("Acquisition_Galileo.threshold", 0.0));
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -649,28 +649,14 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     // USING SIGNAL GENERATOR
 
     ASSERT_NO_THROW( {
-        //std::string filename_ = "../data/Tiered_sink.dat";
-        //boost::shared_ptr<gr::blocks::file_sink> file_sink_;
-
         boost::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
 
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
         signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
-        //
-        //signal_generator->connect(top_block);
-        //
-        //file_sink_=gr::blocks::file_sink::make(sizeof(gr_complex), filename_.c_str());
-
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-        //top_block->connect(signal_source->get_right_block(), 0, file_sink_, 0);
-        //
-        //top_block->connect(signal_generator->get_right_block(), 0, acquisition->get_left_block(), 0);
-        //top_block->connect(signal_generator->get_right_block(), 0, file_sink_, 0);
-        //
-
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
+     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     // USING SIGNAL FROM FILE SOURCE
     /*
@@ -734,7 +720,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
             std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
@@ -754,9 +740,6 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             //                EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             //            }
         }
-
-    //    free(acquisition);
-    delete acquisition;
 }
 
 /*

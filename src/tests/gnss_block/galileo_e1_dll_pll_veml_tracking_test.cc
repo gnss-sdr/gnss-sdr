@@ -55,7 +55,7 @@ protected:
     {
         queue = gr::msg_queue::make(0);
         top_block = gr::make_top_block("Tracking test");
-        std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
+        factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         stop = false;
@@ -114,8 +114,8 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
     int fs_in = 8000000;
     int nsamples = 80000000;
     struct timeval tv;
-    long long int begin;
-    long long int end;
+    long long int begin = 0;
+    long long int end = 0;
     init();
 
     // Example using smart pointers and the block factory

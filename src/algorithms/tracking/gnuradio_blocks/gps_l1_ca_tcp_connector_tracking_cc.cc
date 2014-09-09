@@ -126,26 +126,21 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = new gr_complex[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 2];
-    d_carr_sign = new gr_complex[d_vector_length*2];
+    d_ca_code = (gr_complex*)volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS + 2) * sizeof(gr_complex), volk_get_alignment());
+    d_carr_sign = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
 
-    /* If an array is partitioned for more than one thread to operate on,
-     * having the sub-array boundaries unaligned to cache lines could lead
-     * to performance degradation. Here we allocate memory
-     * (gr_comlex array of size 2*d_vector_length) aligned to cache of 16 bytes
-     */
     // Get space for the resampled early / prompt / late local replicas
-    d_early_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_prompt_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_early_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_prompt_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_late_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
 
     // space for carrier wipeoff and signal baseband vectors
-    d_carr_sign=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_carr_sign = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
 
     // correlator outputs (scalar)
-    d_Early=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Prompt=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Late=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+    d_Early = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
+    d_Prompt = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
+    d_Late = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -336,8 +331,8 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::~Gps_L1_Ca_Tcp_Connector_Tracking_cc()
     volk_free(d_Early);
     volk_free(d_Prompt);
     volk_free(d_Late);
+    volk_free(d_ca_code);
 
-    delete[] d_ca_code;
     delete[] d_Prompt_buffer;
 
     d_tcp_com.close_tcp_connection(d_port);
@@ -405,8 +400,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
                     d_late_code,
                     d_Early,
                     d_Prompt,
-                    d_Late,
-                    is_unaligned());
+                    d_Late);
 
             // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
             if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true )// or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)

@@ -119,25 +119,20 @@ Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = new gr_complex[(int)GPS_L1_CA_CODE_LENGTH_CHIPS + 2];
+    d_ca_code = (gr_complex*)volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS + 2) * sizeof(gr_complex), volk_get_alignment());
 
-    /* If an array is partitioned for more than one thread to operate on,
-     * having the sub-array boundaries unaligned to cache lines could lead
-     * to performance degradation. Here we allocate memory
-     * (gr_complex array of size 2*d_vector_length) aligned to cache of N bytes (machine dependent!)
-     */
     // Get space for the resampled early / prompt / late local replicas
-    d_early_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_prompt_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_early_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_prompt_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_late_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
 
     // space for carrier wipeoff and signal baseband vectors
-    d_carr_sign=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_carr_sign = (gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment());
 
     // correlator outputs (scalar)
-    d_Early=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Prompt=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Late=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+    d_Early = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
+    d_Prompt = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
+    d_Late = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -385,8 +380,7 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
                     d_late_code,
                     d_Early,
                     d_Prompt,
-                    d_Late,
-                    is_unaligned());
+                    d_Late);
 #else
             d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
                     in,
@@ -396,8 +390,7 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
                     d_late_code,
                     d_Early,
                     d_Prompt,
-                    d_Late,
-                    is_unaligned());
+                    d_Late);
 #endif
             // ################## PLL ##########################################################
             // PLL discriminator

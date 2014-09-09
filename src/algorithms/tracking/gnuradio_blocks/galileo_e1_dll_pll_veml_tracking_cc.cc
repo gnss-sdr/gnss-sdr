@@ -124,29 +124,21 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_ca_code = new gr_complex[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS + 4)];
+    d_ca_code = (gr_complex*)volk_malloc((2 * Galileo_E1_B_CODE_LENGTH_CHIPS + 4) * sizeof(gr_complex), volk_get_alignment());
 
-    /* If an array is partitioned for more than one thread to operate on,
-     * having the sub-array boundaries unaligned to cache lines could lead
-     * to performance degradation. Here we allocate memory
-     * (gr_comlex array of size 2*d_vector_length) aligned to cache of 16 bytes
-     */
-
-    d_very_early_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_early_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_prompt_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_very_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-
-    d_carr_sign=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_very_early_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_early_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_prompt_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_late_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_very_late_code = (gr_complex*)volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_carr_sign = (gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment());
 
     // correlator outputs (scalar)
-
-    d_Very_Early=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Early=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Prompt=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Late=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Very_Late=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+    d_Very_Early = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
+    d_Early = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
+    d_Prompt = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
+    d_Late = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
+    d_Very_Late = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
 
     //--- Initializations ------------------------------
     // Initial code frequency basis of NCO
@@ -176,11 +168,11 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
     systemName["E"] = std::string("Galileo");
-    *d_Very_Early=gr_complex(0,0);
-    *d_Early=gr_complex(0,0);
-    *d_Prompt=gr_complex(0,0);
-    *d_Late=gr_complex(0,0);
-    *d_Very_Late=gr_complex(0,0);
+    *d_Very_Early = gr_complex(0,0);
+    *d_Early = gr_complex(0,0);
+    *d_Prompt = gr_complex(0,0);
+    *d_Late = gr_complex(0,0);
+    *d_Very_Late = gr_complex(0,0);
 }
 
 void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
@@ -296,8 +288,8 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
     volk_free(d_Prompt);
     volk_free(d_Late);
     volk_free(d_Very_Late);
+    volk_free(d_ca_code);
 
-    delete[] d_ca_code;
     delete[] d_Prompt_buffer;
 }
 
@@ -356,8 +348,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                     d_Early,
                     d_Prompt,
                     d_Late,
-                    d_Very_Late,
-                    is_unaligned());
+                    d_Very_Late);
 
             // ################## PLL ##########################################################
             // PLL discriminator

@@ -184,8 +184,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
     std::string default_implementation = "GPS_L1_CA_Observables";
     std::string implementation = configuration->property("Observables.implementation", default_implementation);
     LOG(INFO) << "Getting Observables with implementation " << implementation;
-    unsigned int Galileo_channels = configuration->property("Channels_Galileo.count", 12);
-    unsigned int GPS_channels = configuration->property("Channels_GPS.count", 12);
+    unsigned int Galileo_channels = configuration->property("Channels_Galileo.count", 0);
+    unsigned int GPS_channels = configuration->property("Channels_GPS.count", 0);
     return GetBlock(configuration, "Observables", implementation, Galileo_channels + GPS_channels, Galileo_channels + GPS_channels, queue);
 }
 
@@ -197,8 +197,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
     std::string default_implementation = "Pass_Through";
     std::string implementation = configuration->property("PVT.implementation", default_implementation);
     LOG(INFO) << "Getting PVT with implementation " << implementation;
-    unsigned int Galileo_channels = configuration->property("Channels_Galileo.count", 12);
-    unsigned int GPS_channels = configuration->property("Channels_GPS.count", 12);
+    unsigned int Galileo_channels = configuration->property("Channels_Galileo.count", 0);
+    unsigned int GPS_channels = configuration->property("Channels_GPS.count", 0);
     return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels, 1, queue);
 }
 
@@ -280,7 +280,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     unsigned int channel_absolute_id=0;
 
     //**************** GPS CHANNELS **********************
-    channel_count= configuration->property("Channels_GPS.count", 12);
+    channel_count= configuration->property("Channels_GPS.count", 0);
 
     LOG(INFO) << "Getting " << channel_count << " GPS channels";
 
@@ -304,7 +304,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
         }
 
     //**************** GALILEO CHANNELS **********************
-    channel_count= configuration->property("Channels_Galileo.count", 12);
+    channel_count= configuration->property("Channels_Galileo.count", 0);
 
     LOG(INFO) << "Getting " << channel_count << " Galileo channels";
 
@@ -325,9 +325,6 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                     acquisition_implementation, tracking, telemetry_decoder, channel_absolute_id, queue)));
             channel_absolute_id++;
         }
-
-
-
     return channels;
 }
 

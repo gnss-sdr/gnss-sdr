@@ -141,6 +141,7 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
     delete d_code;
     delete d_possible_delay;
     delete d_corr_output_f;
+
     if (d_dump)
         {
             d_dump_file.close();
@@ -149,31 +150,31 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
 }
 
 
-void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float> * code)
+void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float>* code)
 {
     /*save a local copy of the code without the folding process to perform corre-
     lation in time in the final steps of the acquisition stage*/
-    memcpy(d_code, code, sizeof(gr_complex)*d_samples_per_code);
+    memcpy(d_code, code, sizeof(gr_complex) * d_samples_per_code);
 
-    d_code_folded = new gr_complex[d_fft_size]();
-    memcpy(d_fft_if->get_inbuf(), d_code_folded, sizeof(gr_complex)*(d_fft_size));
+    gr_complex* d_code_folded = new gr_complex[d_fft_size]();
+    memcpy(d_fft_if->get_inbuf(), d_code_folded, sizeof(gr_complex) * (d_fft_size));
 
     /*perform folding of the code by the factorial factor parameter. Notice that
     folding of the code in the time stage would result in a downsampled spectrum
     in the frequency domain after applying the fftw operation*/
     for (unsigned int i = 0; i < d_folding_factor; i++)
         {
-            std::transform ((code + i*d_fft_size), (code + ((i+1)*d_fft_size)) ,
+            std::transform ((code + i * d_fft_size), (code + ((i + 1) * d_fft_size)) ,
                     d_fft_if->get_inbuf(), d_fft_if->get_inbuf(),
                     std::plus<gr_complex>());
         }
-
 
     d_fft_if->execute(); // We need the FFT of local code
 
     //Conjugate the local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
+
 
 void pcps_quicksync_acquisition_cc::init()
 {
@@ -205,6 +206,7 @@ void pcps_quicksync_acquisition_cc::init()
         }
     // DLOG(INFO) << "end init";
 }
+
 
 int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -375,18 +377,12 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                 {
                                     unsigned int detected_delay_samples_folded = 0;
                                     detected_delay_samples_folded = (indext % d_samples_per_code);
-                                    //float d_corr_output_f[d_folding_factor];
                                     gr_complex complex_acumulator[100];
                                     //gr_complex complex_acumulator[d_folding_factor];
-                                    //const int ff = d_folding_factor;
-                                    //gr_complex complex_acumulator[ff];
-                                    //gr_complex complex_acumulator[];
-                                    //complex_acumulator = new gr_complex[d_folding_factor]();
 
                                     for (int i = 0; i < (int)d_folding_factor; i++)
                                         {
-                                            d_possible_delay[i] = detected_delay_samples_folded +
-                                                    (i)*d_fft_size;
+                                            d_possible_delay[i] = detected_delay_samples_folded + (i)*d_fft_size;
                                         }
 
                                     for ( int i = 0; i < (int)d_folding_factor; i++)
@@ -472,9 +468,6 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         }
                 }
 
-
-
-            delete d_code_folded;
             volk_free(in_temp);
             volk_free(in_temp_folded);
             volk_free(in_1code);
@@ -524,7 +517,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             DLOG(INFO) << "test statistics threshold " << d_threshold;
             DLOG(INFO) << "folding factor "<<d_folding_factor;
             DLOG(INFO) << "possible delay	corr output";
-            for (int i = 0; i < (int)d_folding_factor; i++) DLOG(INFO) << d_possible_delay[i] <<"\t\t\t"<<d_corr_output_f[i];
+            for (int i = 0; i < (int)d_folding_factor; i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
             DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
             DLOG(INFO) << "magnitude folded " << d_mag;

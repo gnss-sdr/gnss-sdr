@@ -112,12 +112,12 @@ private:
 
     gr_complex* d_code;
     unsigned int d_folding_factor; // also referred in the paper as 'p'
-    float * d_corr_acumulator;
-    unsigned int *d_possible_delay;
-    float *d_corr_output_f;
-    float * d_magnitude_folded;
-    gr_complex *d_signal_folded;
-    gr_complex *d_code_folded;
+    float* d_corr_acumulator;
+    unsigned int* d_possible_delay;
+    float* d_corr_output_f;
+    float* d_magnitude_folded;
+    gr_complex* d_signal_folded;
+    gr_complex* d_code_folded;
     float d_noise_floor_power;
 
     long d_fs_in;

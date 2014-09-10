@@ -162,10 +162,6 @@ Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc(
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
     systemName["G"] = std::string("GPS");
-    systemName["R"] = std::string("GLONASS");
-    systemName["S"] = std::string("SBAS");
-    systemName["E"] = std::string("Galileo");
-    systemName["C"] = std::string("Compass");
 }
 
 

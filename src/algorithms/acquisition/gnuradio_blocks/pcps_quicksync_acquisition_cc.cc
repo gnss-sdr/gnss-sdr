@@ -257,16 +257,16 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             float magt = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
 
-            gr_complex *in_temp = (gr_complex*)volk_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_get_alignment());
-            gr_complex *in_temp_folded = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
+            gr_complex* in_temp = (gr_complex*)volk_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_get_alignment());
+            gr_complex* in_temp_folded = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
 
             /*Create a signal to store a signal of size 1ms, to perform correlation
             in time. No folding on this data is required*/
-            gr_complex *in_1code = (gr_complex*)volk_malloc(d_samples_per_code * sizeof(gr_complex), volk_get_alignment());
+            gr_complex* in_1code = (gr_complex*)volk_malloc(d_samples_per_code * sizeof(gr_complex), volk_get_alignment());
 
             /*Stores the values of the correlation output between the local code
             and the signal with doppler shift corrected */
-            gr_complex *corr_output = (gr_complex*)volk_malloc(d_samples_per_code * sizeof(gr_complex), volk_get_alignment());
+            gr_complex* corr_output = (gr_complex*)volk_malloc(d_samples_per_code * sizeof(gr_complex), volk_get_alignment());
 
             /*Stores a copy of the folded version of the signal.This is used for
             the FFT operations in future steps of excecution*/
@@ -472,12 +472,14 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         }
                 }
 
-            consume_each(1);
+
 
             delete d_code_folded;
             volk_free(in_temp);
+            volk_free(in_temp_folded);
             volk_free(in_1code);
             volk_free(corr_output);
+            consume_each(1);
 
             break;
         }

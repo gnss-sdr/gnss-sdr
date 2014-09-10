@@ -82,9 +82,8 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     d_input_power = 0.0;
     d_state = 0;
     d_disable_assist = false;
-    //todo: do something if posix_memalign fails
-    if (posix_memalign((void**)&d_carrier, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
+    d_fft_codes = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
+    d_carrier = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -120,8 +119,8 @@ void pcps_assisted_acquisition_cc::free_grid_memory()
 
 pcps_assisted_acquisition_cc::~pcps_assisted_acquisition_cc()
 {
-    free(d_carrier);
-    free(d_fft_codes);
+    volk_free(d_carrier);
+    volk_free(d_fft_codes);
     delete d_ifft;
     delete d_fft_if;
     if (d_dump)
@@ -150,7 +149,7 @@ void pcps_assisted_acquisition_cc::init()
     d_fft_if->execute(); // We need the FFT of local code
 
     //Conjugate the local code
-    volk_32fc_conjugate_32fc_a(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
+    volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 
 
@@ -214,7 +213,7 @@ void pcps_assisted_acquisition_cc::redefine_grid()
             d_doppler_min = d_config_doppler_min;
         }
     // Create the search grid array
-    d_num_doppler_points = floor(std::abs(d_doppler_max-d_doppler_min)/d_doppler_step);
+    d_num_doppler_points = floor(std::abs(d_doppler_max - d_doppler_min) / d_doppler_step);
 
     d_grid_data = new float*[d_num_doppler_points];
     for (int i = 0; i < d_num_doppler_points; i++)
@@ -293,14 +292,14 @@ float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_st
 {
     const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
     // 1- Compute the input signal power estimation
-    float* p_tmp_vector;
-    if (posix_memalign((void**)&p_tmp_vector, 16, d_fft_size * sizeof(float)) == 0){};
-    volk_32fc_magnitude_squared_32f_u(p_tmp_vector, in, d_fft_size);
+    float* p_tmp_vector = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
+
+    volk_32fc_magnitude_squared_32f(p_tmp_vector, in, d_fft_size);
 
     const float* p_const_tmp_vector = p_tmp_vector;
     float power;
-    volk_32f_accumulator_s32f_a(&power, p_const_tmp_vector, d_fft_size);
-    free(p_tmp_vector);
+    volk_32f_accumulator_s32f(&power, p_const_tmp_vector, d_fft_size);
+    volk_free(p_tmp_vector);
     return ( power / (float)d_fft_size);
 }
 
@@ -319,33 +318,35 @@ int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_vo
                << ", doppler_step: " << d_doppler_step;
 
     // 2- Doppler frequency search loop
-    float* p_tmp_vector;
-    if (posix_memalign((void**)&p_tmp_vector, 16, d_fft_size * sizeof(float)) == 0){};
+    float* p_tmp_vector = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
 
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
             // doppler search steps
             // Perform the carrier wipe-off
-            volk_32fc_x2_multiply_32fc_u(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
+            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in, d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
             // 3- Perform the FFT-based convolution  (parallel time search)
             // Compute the FFT of the carrier wiped--off incoming signal
             d_fft_if->execute();
 
             // Multiply carrier wiped--off, Fourier transformed incoming signal
             // with the local FFT'd code reference using SIMD operations with VOLK library
-            volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
+            volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(), d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
 
             // compute the inverse FFT
             d_ifft->execute();
 
             // save the grid matrix delay file
-            volk_32fc_magnitude_squared_32f_a(p_tmp_vector, d_ifft->get_outbuf(), d_fft_size);
-            const float*  old_vector = d_grid_data[doppler_index];
-            volk_32f_x2_add_32f_a(d_grid_data[doppler_index], old_vector, p_tmp_vector, d_fft_size);
+            volk_32fc_magnitude_squared_32f(p_tmp_vector, d_ifft->get_outbuf(), d_fft_size);
+            const float* old_vector = d_grid_data[doppler_index];
+            volk_32f_x2_add_32f(d_grid_data[doppler_index], old_vector, p_tmp_vector, d_fft_size);
         }
-    free(p_tmp_vector);
+    volk_free(p_tmp_vector);
     return d_fft_size;
 }
+
+
+
 int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)

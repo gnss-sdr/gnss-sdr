@@ -191,7 +191,6 @@ Galileo_E5a_Dll_Pll_Tracking_cc::~Galileo_E5a_Dll_Pll_Tracking_cc ()
     volk_free(d_Early);
     volk_free(d_Prompt);
     volk_free(d_Late);
-    volk_free(d_Prompt_data);
     volk_free(d_codeQ);
     volk_free(d_codeI);
 

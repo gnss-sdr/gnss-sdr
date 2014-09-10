@@ -70,9 +70,9 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
         bool bit_transition_flag,
         gr::msg_queue::sptr queue, bool dump,
         std::string dump_filename):
-                    gr::block("pcps_quicksync_acquisition_cc",
-                            gr::io_signature::make(1, 1, (sizeof(gr_complex)*sampled_ms * samples_per_ms )),
-                            gr::io_signature::make(0, 0, (sizeof(gr_complex)*sampled_ms * samples_per_ms )))
+           gr::block("pcps_quicksync_acquisition_cc",
+               gr::io_signature::make(1, 1, (sizeof(gr_complex)*sampled_ms * samples_per_ms )),
+               gr::io_signature::make(0, 0, (sizeof(gr_complex)*sampled_ms * samples_per_ms )))
 {
     //DLOG(INFO) << "START CONSTRUCTOR";
 
@@ -97,19 +97,16 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     //fft size is reduced.
     d_fft_size = (d_samples_per_code) / d_folding_factor;
 
-
-    //todo: do something if posix_memalign fails
-    if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitude, 16, d_samples_per_code * d_folding_factor  * sizeof(float)) == 0){};
-    if (posix_memalign((void**)&d_magnitude_folded, 16, d_fft_size * sizeof(float)) == 0){};
+    d_fft_codes = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
+    d_magnitude = (float*)volk_malloc(d_samples_per_code * d_folding_factor * sizeof(float), volk_get_alignment());
+    d_magnitude_folded = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
 
     d_possible_delay = new unsigned int[d_folding_factor];
-	d_corr_output_f = new float[d_folding_factor];
+    d_corr_output_f = new float[d_folding_factor];
 
     /*Create the d_code signal , which would store the values of the code in its
     original form to perform later correlation in time domain*/
     d_code = new gr_complex[d_samples_per_code]();
-
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -130,25 +127,20 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
         {
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
-                    free(d_grid_doppler_wipeoffs[i]);
+                    volk_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
-    free(d_fft_codes);
-    free(d_magnitude);
-    free(d_magnitude_folded);
+    volk_free(d_fft_codes);
+    volk_free(d_magnitude);
+    volk_free(d_magnitude_folded);
 
     delete d_ifft;
-    d_ifft = NULL;
     delete d_fft_if;
-    d_fft_if = NULL;
     delete d_code;
-    d_code = NULL;
     delete d_possible_delay;
-    d_possible_delay = NULL;
     delete d_corr_output_f;
-	d_corr_output_f = NULL;
     if (d_dump)
         {
             d_dump_file.close();
@@ -156,11 +148,9 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
     // DLOG(INFO) << "END DESTROYER";
 }
 
+
 void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float> * code)
 {
-    // DLOG(INFO) << "START LOCAL CODE";
-
-
     /*save a local copy of the code without the folding process to perform corre-
     lation in time in the final steps of the acquisition stage*/
     memcpy(d_code, code, sizeof(gr_complex)*d_samples_per_code);
@@ -182,16 +172,7 @@ void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float> * code)
     d_fft_if->execute(); // We need the FFT of local code
 
     //Conjugate the local code
-    if (is_unaligned())
-        {
-            volk_32fc_conjugate_32fc_u(d_fft_codes,d_fft_if->get_outbuf(), d_fft_size);
-        }
-    else
-        {
-            volk_32fc_conjugate_32fc_a(d_fft_codes,d_fft_if->get_outbuf(), d_fft_size);
-        }
-    // DLOG(INFO) << "END LOCAL CODE";
-
+    volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 
 void pcps_quicksync_acquisition_cc::init()
@@ -216,10 +197,8 @@ void pcps_quicksync_acquisition_cc::init()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
-                    d_samples_per_code * d_folding_factor * sizeof(gr_complex)) == 0){};
-
-            int doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
+            d_grid_doppler_wipeoffs[doppler_index] = (gr_complex*)volk_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_get_alignment());
+            int doppler = -(int)d_doppler_max + d_doppler_step * doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                     d_freq + doppler, d_fs_in,
                     d_samples_per_code * d_folding_factor);
@@ -278,22 +257,16 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             float magt = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
 
-            gr_complex *in_temp;
-            if (posix_memalign((void**)&(in_temp), 16,d_samples_per_code * d_folding_factor * sizeof(gr_complex)) == 0){};
-
-
-            gr_complex *in_temp_folded;
-            if (posix_memalign((void**)&(in_temp_folded), 16,d_fft_size * sizeof(gr_complex)) == 0){};
+            gr_complex *in_temp = (gr_complex*)volk_malloc(d_samples_per_code * d_folding_factor * sizeof(gr_complex), volk_get_alignment());
+            gr_complex *in_temp_folded = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
 
             /*Create a signal to store a signal of size 1ms, to perform correlation
             in time. No folding on this data is required*/
-            gr_complex *in_1code;
-            if (posix_memalign((void**)&(in_1code), 16,d_samples_per_code * sizeof(gr_complex)) == 0){};
+            gr_complex *in_1code = (gr_complex*)volk_malloc(d_samples_per_code * sizeof(gr_complex), volk_get_alignment());
 
             /*Stores the values of the correlation output between the local code
             and the signal with doppler shift corrected */
-            gr_complex *corr_output;
-            if (posix_memalign((void**)&(corr_output), 16,d_samples_per_code * sizeof(gr_complex)) == 0){};
+            gr_complex *corr_output = (gr_complex*)volk_malloc(d_samples_per_code * sizeof(gr_complex), volk_get_alignment());
 
             /*Stores a copy of the folded version of the signal.This is used for
             the FFT operations in future steps of excecution*/
@@ -322,30 +295,27 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
 
             /* 1- Compute the input signal power estimation. This operation is
                being performed in a signal of size nxp */
-            volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_samples_per_code * d_folding_factor);
-            volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_samples_per_code * d_folding_factor);
+            volk_32fc_magnitude_squared_32f(d_magnitude, in, d_samples_per_code * d_folding_factor);
+            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_samples_per_code * d_folding_factor);
             d_input_power /= (float)(d_samples_per_code * d_folding_factor);
 
-
-
-            for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
                     /*Ensure that the signal is going to start with all samples
                     at zero. This is done to avoid over acumulation when performing
                     the folding process to be stored in d_fft_if->get_inbuf()*/
                     d_signal_folded = new gr_complex[d_fft_size]();
-                    memcpy( d_fft_if->get_inbuf(),d_signal_folded,
-                            sizeof(gr_complex)*(d_fft_size));
+                    memcpy( d_fft_if->get_inbuf(), d_signal_folded, sizeof(gr_complex) * (d_fft_size));
 
                     /*Doppler search steps and then multiplication of the incoming
                     signal with the doppler wipeoffs to eliminate frequency offset
                      */
-                    doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+                    doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
 
                     /*Perform multiplication of the incoming signal with the
                    complex exponential vector. This removes the frequency doppler
                    shift offset*/
-                    volk_32fc_x2_multiply_32fc_a(in_temp, in,
+                    volk_32fc_x2_multiply_32fc(in_temp, in,
                             d_grid_doppler_wipeoffs[doppler_index],
                             d_samples_per_code * d_folding_factor);
 
@@ -354,8 +324,8 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                    incoming raw data signal is of d_folding_factor^2*/
                     for ( int i = 0; i < (int)(d_folding_factor*d_folding_factor); i++)
                         {
-                            std::transform ((in_temp+i*d_fft_size),
-                                    (in_temp+((i+1)*d_fft_size)) ,
+                            std::transform ((in_temp + i * d_fft_size),
+                                    (in_temp + ((i + 1) * d_fft_size)) ,
                                     d_fft_if->get_inbuf(),
                                     d_fft_if->get_inbuf(),
                                     std::plus<gr_complex>());
@@ -368,7 +338,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                     /*Multiply carrier wiped--off, Fourier transformed incoming
                     signal with the local FFT'd code reference using SIMD
                     operations with VOLK library*/
-                    volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
                             d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
 
                     /* compute the inverse FFT of the aliased signal*/
@@ -376,14 +346,14 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
 
                     /* Compute the magnitude and get the maximum value with its
                    index position*/
-                    volk_32fc_magnitude_squared_32f_a(d_magnitude_folded,
+                    volk_32fc_magnitude_squared_32f(d_magnitude_folded,
                             d_ifft->get_outbuf(), d_fft_size);
 
                     /* Normalize the maximum value to correct the scale factor
                    introduced by FFTW*/
                     //volk_32f_s32f_multiply_32f_a(d_magnitude_folded,d_magnitude_folded,
                     // (1 / (fft_normalization_factor * fft_normalization_factor)), d_fft_size);
-                    volk_32f_index_max_16u_a(&indext, d_magnitude_folded, d_fft_size);
+                    volk_32f_index_max_16u(&indext, d_magnitude_folded, d_fft_size);
 
                     magt = d_magnitude_folded[indext]/ (fft_normalization_factor * fft_normalization_factor);
 
@@ -415,7 +385,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
 
                                     for (int i = 0; i < (int)d_folding_factor; i++)
                                         {
-                                            d_possible_delay[i]= detected_delay_samples_folded+
+                                            d_possible_delay[i] = detected_delay_samples_folded +
                                                     (i)*d_fft_size;
                                         }
 
@@ -432,61 +402,42 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                                               effect corrected and accumulates its value. This
                                                               is indeed correlation in time for an specific value
                                                               of a shift*/
-                                            volk_32fc_x2_multiply_32fc_a(corr_output, in_1code,
+                                            volk_32fc_x2_multiply_32fc(corr_output, in_1code,
                                                     d_code, d_samples_per_code);
 
-                                            for(int j=0; j < (d_samples_per_code); j++)
+                                            for(int j = 0; j < d_samples_per_code; j++)
                                                 {
                                                     complex_acumulator[i] += (corr_output[j]);
                                                 }
 
                                         }
-                                    /*Obtain maximun value of correlation given the
-                               possible delay selected */
-                                    volk_32fc_magnitude_squared_32f_a(d_corr_output_f,
-                                            complex_acumulator, d_folding_factor);
-                                    volk_32f_index_max_16u_a(&indext, d_corr_output_f,
-                                            d_folding_factor);
+                                    /*Obtain maximun value of correlation given the possible delay selected */
+                                    volk_32fc_magnitude_squared_32f(d_corr_output_f, complex_acumulator, d_folding_factor);
+                                    volk_32f_index_max_16u(&indext, d_corr_output_f, d_folding_factor);
 
-                                    /*Now save the real code phase in the gnss_syncro
-                               block for use in other stages*/
-                                    d_gnss_synchro->Acq_delay_samples = (double)
-                                               (d_possible_delay[indext]);
+                                    /*Now save the real code phase in the gnss_syncro block for use in other stages*/
+                                    d_gnss_synchro->Acq_delay_samples = (double)(d_possible_delay[indext]);
                                     d_gnss_synchro->Acq_doppler_hz = (double)doppler;
                                     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 
-
-                                    /* 5- Compute the test statistics and compare to the threshold
-                               d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;*/
+                                    /* 5- Compute the test statistics and compare to the threshold d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;*/
                                     d_test_statistics = d_mag / d_input_power;
                                     //delete complex_acumulator;
-
                                 }
                         }
 
                     // Record results to file if required
                     if (d_dump)
                         {
-                            /*
-                           std::stringstream filename;
-                           std::streamsize n = 2 * sizeof(float) * (d_fft_size); // complex file write
-                           filename.str("");
-                           filename << "../data/test_statistics_" << d_gnss_synchro->System
-                                    <<"_" << d_gnss_synchro->Signal << "_sat_"
-                                    << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
-                           d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                           d_dump_file.write((char*)d_ifft->get_outbuf(), n); //write directly |abs(x)|^2 in this Doppler bin?
-                           d_dump_file.close();
-                             */
                             /*Since QuickSYnc performs a folded correlation in frequency by means
-                           of the FFT, it is esential to also keep the values obtained from the
-                           possible delay to show how it is maximize*/
+                            of the FFT, it is esential to also keep the values obtained from the
+                            possible delay to show how it is maximize*/
                             std::stringstream filename;
                             std::streamsize n =  sizeof(float) * (d_fft_size); // complex file write
                             filename.str("");
                             filename << "../data/test_statistics_" << d_gnss_synchro->System
-                                    <<"_" << d_gnss_synchro->Signal << "_sat_"
-                                    << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
+                                     <<"_" << d_gnss_synchro->Signal << "_sat_"
+                                     << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
                             d_dump_file.write((char*)d_magnitude_folded, n); //write directly |abs(x)|^2 in this Doppler bin?
                             d_dump_file.close();
@@ -524,11 +475,9 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             consume_each(1);
 
             delete d_code_folded;
-            d_code_folded = NULL;
-
-            free(in_temp);
-            free(in_1code);
-            free(corr_output);
+            volk_free(in_temp);
+            volk_free(in_1code);
+            volk_free(corr_output);
 
             break;
         }

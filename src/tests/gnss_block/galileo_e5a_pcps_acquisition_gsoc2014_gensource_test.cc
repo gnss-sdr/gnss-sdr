@@ -183,19 +183,11 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
 
     config = std::make_shared<InMemoryConfiguration>();
 
-
     config->set_property("Channel.signal",signal);
-
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(fs_in));
-    int a = config->property("GNSS-SDR.internal_fs_hz",10);
-    std::cout << "fs "<< a <<std::endl;
-
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
-
     config->set_property("SignalSource.item_type", "gr_complex");
-
     config->set_property("SignalSource.num_satellites", "1");
-
     config->set_property("SignalSource.system_0", "E");
     config->set_property("SignalSource.signal_0", "5X");
     config->set_property("SignalSource.PRN_0", "11");
@@ -325,12 +317,8 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     expected_delay_sec3 = 77;
     expected_doppler_hz3 = 5000;
 
-
-
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
-
-
     //max_doppler_error_hz = 1000;
     //max_delay_error_chips = 1;
 
@@ -497,9 +485,9 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::process_message()
 
     realization_counter++;
 
-    std::cout << correct_estimation_counter << "correct estimation counter" << std::endl;
+    //std::cout << correct_estimation_counter << "correct estimation counter" << std::endl;
     std::cout << "Progress: " << round((float)realization_counter/num_of_realizations*100) << "% \r" << std::flush;
-    std::cout << message << "message" <<std::endl;
+    //std::cout << message << "message" <<std::endl;
     if (realization_counter == num_of_realizations)
         {
             mse_delay /= num_of_realizations;
@@ -611,7 +599,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     config_1();
 
     //int nsamples = floor(fs_in*integration_time_ms*1e-3);
-    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition_Galileo", 1, 1, queue);
+    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1, queue);
 
     //unsigned int skiphead_sps = 28000+32000; // 32 Msps
     //    unsigned int skiphead_sps = 0;
@@ -722,9 +710,9 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block."<< std::endl;
 
-            std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
-            std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
-            std::cout << gnss_synchro.Acq_samplestamp_samples << "acq samples" <<std::endl;
+            //std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
+            //std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
+            //std::cout << gnss_synchro.Acq_samplestamp_samples << "acq samples" <<std::endl;
             //            if (i == 0)
             //            {
             //                EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";

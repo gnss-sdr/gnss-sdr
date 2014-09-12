@@ -222,8 +222,8 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
             north = true;
         }
 
-    int deg = (int)lat;
-    double mins = lat - (double)deg;
+    int deg = static_cast<int>(lat);
+    double mins = lat - static_cast<double>(deg);
     mins *= 60.0 ;
     std::ostringstream out_string;
     out_string.setf(std::ios::fixed, std::ios::floatfield);
@@ -271,7 +271,7 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
     out_string.precision(4);
     out_string << mins;
 
-    if (east==true)
+    if (east == true)
         {
             out_string << ",E";
         }
@@ -361,7 +361,7 @@ std::string Nmea_Printer::get_GPRMC()
             sentence_str << ",V";
         };
 
-    if (d_PVT_data->d_flag_averaging==true)
+    if (d_PVT_data->d_flag_averaging == true)
         {
             // Latitude ddmm.mmmm,(N or S)
             sentence_str << "," << latitude_to_hm(d_PVT_data->d_avg_latitude_d);

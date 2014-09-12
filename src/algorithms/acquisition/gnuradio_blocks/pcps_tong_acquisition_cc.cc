@@ -158,8 +158,8 @@ void pcps_tong_acquisition_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = (int)(-d_doppler_max);
-         doppler <= (int)d_doppler_max;
+    for (int doppler = static_cast<int>(-d_doppler_max);
+         doppler <= static_cast<int>(d_doppler_max);
          doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
@@ -172,7 +172,7 @@ void pcps_tong_acquisition_cc::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
 
-            int doppler = -(int)d_doppler_max + d_doppler_step * doppler_index;
+            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
@@ -232,7 +232,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
             unsigned int indext = 0;
             float magt = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
-            float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+            float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
             d_input_power = 0.0;
             d_mag = 0.0;
 
@@ -249,14 +249,14 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
             // 1- Compute the input signal power estimation
             volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
             volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
-            d_input_power /= (float)d_fft_size;
+            d_input_power /= static_cast<float>(d_fft_size);
 
             // 2- Doppler frequency search loop
             for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
                     // doppler search steps
 
-                    doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
+                    doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                                 d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
@@ -293,8 +293,8 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                     if (d_mag < magt)
                         {
                             d_mag = magt;
-                            d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
-                            d_gnss_synchro->Acq_doppler_hz = (double)doppler;
+                            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                             d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
                         }
 

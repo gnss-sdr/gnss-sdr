@@ -230,7 +230,7 @@ void pcps_assisted_acquisition_cc::redefine_grid()
             doppler_hz = d_doppler_min + d_doppler_step*doppler_index;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
-            phase_step_rad = (float)GPS_TWO_PI*doppler_hz / (float)d_fs_in;
+            phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
             d_grid_doppler_wipeoffs[doppler_index] = new gr_complex[d_fft_size];
             fxp_nco(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, 0, phase_step_rad);
         }
@@ -258,15 +258,15 @@ double pcps_assisted_acquisition_cc::search_maximum()
         }
 
     // Normalize the maximum value to correct the scale factor introduced by FFTW
-    fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+    fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
     magt = magt / (fft_normalization_factor * fft_normalization_factor);
 
     // 5- Compute the test statistics and compare to the threshold
-    d_test_statistics = 2 * d_fft_size * magt /(d_input_power*d_well_count);
+    d_test_statistics = 2 * d_fft_size * magt / (d_input_power * d_well_count);
 
     // 4- record the maximum peak and the associated synchronization parameters
-    d_gnss_synchro->Acq_delay_samples = (double)index_time;
-    d_gnss_synchro->Acq_doppler_hz = (double)(index_doppler*d_doppler_step + d_doppler_min);
+    d_gnss_synchro->Acq_delay_samples = static_cast<double>(index_time);
+    d_gnss_synchro->Acq_doppler_hz = static_cast<double>(index_doppler * d_doppler_step + d_doppler_min);
     d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 
     // Record results to file if required
@@ -300,7 +300,7 @@ float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_st
     float power;
     volk_32f_accumulator_s32f(&power, p_const_tmp_vector, d_fft_size);
     volk_free(p_tmp_vector);
-    return ( power / (float)d_fft_size);
+    return ( power / static_cast<float>(d_fft_size));
 }
 
 

@@ -64,7 +64,7 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
 
     if (sampled_ms_ % 4 != 0)
         {
-            sampled_ms_ = (int)(sampled_ms_/4) * 4;
+            sampled_ms_ = static_cast<int>(sampled_ms_ / 4) * 4;
             LOG(WARNING) << "coherent_integration_time should be multiple of "
                                   << "Galileo code length (4 ms). coherent_integration_time = "
                                   << sampled_ms_ << " ms will be used.";
@@ -82,7 +82,7 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
             / (Galileo_E1_CODE_CHIP_RATE_HZ
                     / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
-    vector_length_ = code_length_ * (int)(sampled_ms_/4);
+    vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
 
     int samples_per_ms = code_length_ / 4;
 

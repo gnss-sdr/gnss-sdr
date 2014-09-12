@@ -416,7 +416,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             d_position_UTC_time = p_time;
             LOG(INFO) << "HYBRID Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
-            cart2geo((double)mypos(0), (double)mypos(1), (double)mypos(2), 4);
+            cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
                 {
@@ -535,9 +535,9 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                                     d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
                                     d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
                                 }
-                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
-                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
-                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
+                            d_avg_latitude_d = d_avg_latitude_d / static_cast<double>(d_averaging_depth);
+                            d_avg_longitude_d = d_avg_longitude_d / static_cast<double>(d_averaging_depth);
+                            d_avg_height_m = d_avg_height_m / static_cast<double>(d_averaging_depth);
                             b_valid_position = true;
                             return true; //indicates that the returned position is valid
                         }

@@ -86,7 +86,7 @@ void signal_generator_c::init()
 {
     work_counter_ = 0;
 
-    complex_phase_ = (gr_complex*)volk_malloc(vector_length_ * sizeof(gr_complex), volk_get_alignment());
+    complex_phase_ = static_cast<gr_complex*>(volk_malloc(vector_length_ * sizeof(gr_complex), volk_get_alignment()));
 
     // True if Galileo satellites are present
     bool gallileo_signal = std::find(system_.begin(), system_.end(), "E") != system_.end();
@@ -143,7 +143,7 @@ void signal_generator_c::generate_codes()
         {
             //if (posix_memalign((void**)&(sampled_code_data_[sat]), 16,
             //                   vector_length_ * sizeof(gr_complex)) == 0){};
-            sampled_code_data_[sat] = (gr_complex*)std::malloc(vector_length_ * sizeof(gr_complex));
+            sampled_code_data_[sat] = static_cast<gr_complex*>(std::malloc(vector_length_ * sizeof(gr_complex)));
 
             gr_complex code[64000];//[samples_per_code_[sat]];
 
@@ -214,7 +214,7 @@ void signal_generator_c::generate_codes()
         			}
 
         		    // Generate E1C signal (25 code-periods, with secondary code)
-        		    sampled_code_pilot_[sat] = (gr_complex*)std::malloc(vector_length_ * sizeof(gr_complex));
+        		    sampled_code_pilot_[sat] = static_cast<gr_complex*>(std::malloc(vector_length_ * sizeof(gr_complex)));
 
         		    strcpy(signal, "1C");
 

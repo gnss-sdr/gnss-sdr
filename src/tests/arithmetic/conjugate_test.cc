@@ -116,8 +116,8 @@ TEST(Conjugate_Test, ArmadilloComplexImplementation)
 
 TEST(Conjugate_Test, VolkComplexImplementation)
 {
-    std::complex<float>* input = (std::complex<float>*)volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment());
-    std::complex<float>* output = (std::complex<float>*)volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment());
+    std::complex<float>* input = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment()));
+    std::complex<float>* output = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_conjugate_test);
 
     struct timeval tv;

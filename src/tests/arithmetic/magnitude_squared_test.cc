@@ -116,14 +116,14 @@ TEST(MagnitudeSquared_Test, ArmadilloComplexImplementation)
 
 TEST(MagnitudeSquared_Test, VolkComplexImplementation)
 {
-    std::complex<float>* input = (std::complex<float>*)volk_malloc(FLAGS_size_magnitude_test * sizeof(std::complex<float>), volk_get_alignment());
+    std::complex<float>* input = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_magnitude_test * sizeof(std::complex<float>), volk_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_magnitude_test);
-    float* output = (float*)volk_malloc(FLAGS_size_magnitude_test * sizeof(float), volk_get_alignment());
+    float* output = static_cast<float*>(volk_malloc(FLAGS_size_magnitude_test * sizeof(float), volk_get_alignment()));
     struct timeval tv;
     gettimeofday(&tv, NULL);
     long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
 
-    volk_32fc_magnitude_squared_32f(output, input, (unsigned int)FLAGS_size_magnitude_test);
+    volk_32fc_magnitude_squared_32f(output, input, static_cast<unsigned int>(FLAGS_size_magnitude_test));
 
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;

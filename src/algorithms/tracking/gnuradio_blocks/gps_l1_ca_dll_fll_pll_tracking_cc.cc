@@ -122,20 +122,20 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
 
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = (gr_complex*)volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS + 2) * sizeof(gr_complex), volk_get_alignment());
+    d_ca_code = static_cast<gr_complex*>(volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS + 2) * sizeof(gr_complex), volk_get_alignment()));
 
     // Get space for the resampled early / prompt / late local replicas
-    d_early_code = (gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment());
-    d_prompt_code = (gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment());
-    d_late_code = (gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_early_code = static_cast<gr_complex*>(volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    d_prompt_code = static_cast<gr_complex*>(volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    d_late_code = static_cast<gr_complex*>(volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment()));
 
     // space for carrier wipeoff and signal baseband vectors
-    d_carr_sign = (gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment());
+    d_carr_sign = static_cast<gr_complex*>(volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment()));
 
     // correlator outputs (scalar)
-    d_Early = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
-    d_Prompt = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
-    d_Late = (gr_complex*)volk_malloc(sizeof(gr_complex), volk_get_alignment());
+    d_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+    d_Prompt = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+    d_Late = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
 
     // sample synchronization
     d_sample_counter = 0;

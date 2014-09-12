@@ -81,7 +81,7 @@ void Correlator::Carrier_wipeoff_and_EPL_generic(int signal_length_samples, cons
 
 void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out)
 {
-    gr_complex* bb_signal = (gr_complex*)volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment());
+    gr_complex* bb_signal = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
 
     volk_32fc_x2_multiply_32fc(bb_signal, input, carrier, signal_length_samples);
     volk_32fc_x2_dot_prod_32fc(E_out, bb_signal, E_code, signal_length_samples);
@@ -93,7 +93,7 @@ void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples, const g
 
 //void Correlator::Carrier_wipeoff_and_EPL_volk_IQ(int prn_length_samples,int integration_time ,const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* P_data_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* P_data_out)
 //{
-//    gr_complex* bb_signal = (gr_complex*)volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment());
+//    gr_complex* bb_signal = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
 //    volk_32fc_x2_multiply_32fc(bb_signal, input, carrier, integration_time * prn_length_samples);
 //    volk_32fc_x2_dot_prod_32fc(E_out, bb_signal, E_code, integration_time * prn_length_samples);
 //    volk_32fc_x2_dot_prod_32fc(P_out, bb_signal, P_code, integration_time * prn_length_samples);
@@ -109,7 +109,7 @@ void Correlator::Carrier_wipeoff_and_EPL_volk(int signal_length_samples, const g
 
 void Correlator::Carrier_wipeoff_and_EPL_volk_IQ(int signal_length_samples ,const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* P_data_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* P_data_out)
 {
-    gr_complex* bb_signal = (gr_complex*)volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment());
+    gr_complex* bb_signal = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
 
     volk_32fc_x2_multiply_32fc(bb_signal, input, carrier, signal_length_samples);
     volk_32fc_x2_dot_prod_32fc(E_out, bb_signal, E_code, signal_length_samples);
@@ -123,7 +123,7 @@ void Correlator::Carrier_wipeoff_and_EPL_volk_IQ(int signal_length_samples ,cons
 
 void Correlator::Carrier_wipeoff_and_VEPL_volk(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* VE_code, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* VL_code, gr_complex* VE_out, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* VL_out)
 {
-    gr_complex* bb_signal = (gr_complex*)volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment());
+    gr_complex* bb_signal = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
 
     volk_32fc_x2_multiply_32fc(bb_signal, input, carrier, signal_length_samples);
     volk_32fc_x2_dot_prod_32fc(VE_out, bb_signal, VE_code, signal_length_samples);

@@ -181,8 +181,8 @@ TEST(Multiply_Test, ArmadilloComplexImplementation)
 
 TEST(Multiply_Test, VolkComplexImplementation)
 {
-    std::complex<float>* input = (std::complex<float>*)volk_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_get_alignment());
-    std::complex<float>* output = (std::complex<float>*)volk_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_get_alignment());
+    std::complex<float>* input = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_get_alignment()));
+    std::complex<float>* output = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_multiply_test);
 
     struct timeval tv;
@@ -198,7 +198,7 @@ TEST(Multiply_Test, VolkComplexImplementation)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
 
-    float* mag = (float*)volk_malloc(FLAGS_size_multiply_test * sizeof(float), volk_get_alignment());
+    float* mag = static_cast<float*>(volk_malloc(FLAGS_size_multiply_test * sizeof(float), volk_get_alignment()));
     volk_32fc_magnitude_32f(mag, output, FLAGS_size_multiply_test);
 
     float* result = new float(0);

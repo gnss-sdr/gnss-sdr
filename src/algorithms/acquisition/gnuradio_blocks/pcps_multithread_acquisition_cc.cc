@@ -92,10 +92,10 @@ pcps_multithread_acquisition_cc::pcps_multithread_acquisition_cc(
     //todo: do something if posix_memalign fails
     for (unsigned int i = 0; i < d_max_dwells; i++)
         {
-            d_in_buffer[i] = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
+            d_in_buffer[i] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
         }
-    d_fft_codes = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_magnitude = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
+    d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -158,9 +158,9 @@ void pcps_multithread_acquisition_cc::init()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
         {
-            d_grid_doppler_wipeoffs[doppler_index] = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
 
-            int doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
+            int doppler = -(int)d_doppler_max + d_doppler_step * doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
         }

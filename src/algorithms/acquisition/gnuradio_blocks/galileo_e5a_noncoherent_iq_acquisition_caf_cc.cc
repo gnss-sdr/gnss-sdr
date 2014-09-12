@@ -107,24 +107,24 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_both_signal_components = both_signal_components_;
     d_CAF_window_hz = CAF_window_hz_;
 
-    d_inbuffer = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_fft_code_I_A = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_magnitudeIA = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
+    d_inbuffer = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_fft_code_I_A = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_magnitudeIA = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
     if (d_both_signal_components == true)
 	{
-	    d_fft_code_Q_A = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-	    d_magnitudeQA = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
+	    d_fft_code_Q_A = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+	    d_magnitudeQA = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 	}
     // IF COHERENT INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
 	{
-	    d_fft_code_I_B = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-	    d_magnitudeIB = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
+	    d_fft_code_I_B = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+	    d_magnitudeIB = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 	    if (d_both_signal_components == true)
 		{
-		    d_fft_code_Q_B = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-		    d_magnitudeQB = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
+		    d_fft_code_Q_B = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+		    d_magnitudeQB = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 		}
 	}
 
@@ -260,7 +260,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            d_grid_doppler_wipeoffs[doppler_index] = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
             int doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
@@ -271,11 +271,11 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
 //    if (d_CAF_filter)
     if (d_CAF_window_hz > 0)
 	{
-	    d_CAF_vector = (float*)volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment());
-	    d_CAF_vector_I = (float*)volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment());
+	    d_CAF_vector = static_cast<float*>(volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment()));
+	    d_CAF_vector_I = static_cast<float*>(volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment()));
 	    if (d_both_signal_components == true)
 		{
-		    d_CAF_vector_Q = (float*)volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment());
+		    d_CAF_vector_Q = static_cast<float*>(volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment()));
 		}
 	}
 }
@@ -584,7 +584,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 		if (d_CAF_window_hz > 0)
 		    {
 		        int CAF_bins_half;
-		        float* accum = (float*)volk_malloc(sizeof(float), volk_get_alignment());
+		        float* accum = static_cast<float*>(volk_malloc(sizeof(float), volk_get_alignment()));
 		        CAF_bins_half = d_CAF_window_hz/(2*d_doppler_step);
 		        float weighting_factor;
 		        weighting_factor = 0.5/(float)CAF_bins_half;

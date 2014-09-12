@@ -86,13 +86,13 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
 
-    d_fft_code_data = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_fft_code_pilot = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_data_correlation = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_pilot_correlation = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_correlation_plus = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_correlation_minus = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_magnitude = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
+    d_fft_code_data = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_fft_code_pilot = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_data_correlation = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_pilot_correlation = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_correlation_plus = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_correlation_minus = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -174,9 +174,9 @@ void pcps_cccwsr_acquisition_cc::init()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            d_grid_doppler_wipeoffs[doppler_index] = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
 
-            int doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
+            int doppler = -(int)d_doppler_max + d_doppler_step * doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
         }

@@ -82,8 +82,8 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     d_input_power = 0.0;
     d_state = 0;
     d_disable_assist = false;
-    d_fft_codes = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
-    d_carrier = (gr_complex*)volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment());
+    d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_carrier = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -292,7 +292,7 @@ float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_st
 {
     const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
     // 1- Compute the input signal power estimation
-    float* p_tmp_vector = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
+    float* p_tmp_vector = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
     volk_32fc_magnitude_squared_32f(p_tmp_vector, in, d_fft_size);
 
@@ -318,7 +318,7 @@ int pcps_assisted_acquisition_cc::compute_and_accumulate_grid(gr_vector_const_vo
                << ", doppler_step: " << d_doppler_step;
 
     // 2- Doppler frequency search loop
-    float* p_tmp_vector = (float*)volk_malloc(d_fft_size * sizeof(float), volk_get_alignment());
+    float* p_tmp_vector = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {

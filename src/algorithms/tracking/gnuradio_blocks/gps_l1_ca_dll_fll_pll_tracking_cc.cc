@@ -351,7 +351,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     int samples_offset;
                     double acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
-                    acq_to_trk_delay_samples = d_sample_counter-d_acq_sample_stamp;
+                    acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
@@ -403,7 +403,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                     current_synchro_data.CN0_dB_hz = 0.0;
                     current_synchro_data.Flag_valid_tracking = false;
 
-                    *out[0] =current_synchro_data;
+                    *out[0] = current_synchro_data;
 
                     return 1;
                 }
@@ -490,7 +490,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
                 {
                     if (floor(d_sample_counter/d_fs_in) != d_last_seg)
                         {
-                            d_last_seg = floor(d_sample_counter/d_fs_in);
+                            d_last_seg = floor(d_sample_counter / d_fs_in);
                             std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
                             LOG(INFO) << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)  << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
                         }

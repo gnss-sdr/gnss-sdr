@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -40,7 +40,7 @@ StringConverter::StringConverter()
 StringConverter::~StringConverter()
 {}
 
-bool StringConverter::convert(std::string value, bool default_value)
+bool StringConverter::convert(const std::string& value, bool default_value)
 {
     if(value.compare("true") == 0)
         {
@@ -57,7 +57,7 @@ bool StringConverter::convert(std::string value, bool default_value)
 }
 
 
-long StringConverter::convert(std::string value, long default_value)
+long StringConverter::convert(const std::string& value, long default_value)
 {
     std::stringstream stream(value);
 
@@ -75,7 +75,7 @@ long StringConverter::convert(std::string value, long default_value)
 }
 
 
-int StringConverter::convert(std::string value, int default_value)
+int StringConverter::convert(const std::string& value, int default_value)
 {
 
     std::stringstream stream(value);
@@ -95,7 +95,7 @@ int StringConverter::convert(std::string value, int default_value)
 
 
 
-unsigned int StringConverter::convert(std::string value, unsigned int default_value)
+unsigned int StringConverter::convert(const std::string& value, unsigned int default_value)
 {
     std::stringstream stream(value);
 
@@ -115,7 +115,7 @@ unsigned int StringConverter::convert(std::string value, unsigned int default_va
 
 
 
-float StringConverter::convert(std::string value, float default_value)
+float StringConverter::convert(const std::string& value, float default_value)
 {
 
     std::stringstream stream(value);
@@ -136,7 +136,7 @@ float StringConverter::convert(std::string value, float default_value)
 
 
 
-double StringConverter::convert(std::string value, double default_value)
+double StringConverter::convert(const std::string& value, double default_value)
 {
 
     std::stringstream stream(value);

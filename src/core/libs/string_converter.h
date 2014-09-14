@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -45,12 +45,12 @@ public:
     StringConverter();
     virtual ~StringConverter();
 
-    bool convert(std::string value, bool default_value);
-    long convert(std::string value, long default_value);
-    int convert(std::string value, int default_value);
-    unsigned int convert(std::string value, unsigned int default_value);
-    float convert(std::string value, float default_value);
-    double convert(std::string value, double default_value);
+    bool convert(const std::string& value, bool default_value);
+    long convert(const std::string& value, long default_value);
+    int convert(const std::string& value, int default_value);
+    unsigned int convert(const std::string& value, unsigned int default_value);
+    float convert(const std::string& value, float default_value);
+    double convert(const std::string& value, double default_value);
 };
 
 #endif /*GNSS_SDR_STRING_CONVERTER_H_*/

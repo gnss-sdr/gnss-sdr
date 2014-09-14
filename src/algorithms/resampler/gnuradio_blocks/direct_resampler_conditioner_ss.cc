@@ -58,17 +58,15 @@ direct_resampler_conditioner_ss::direct_resampler_conditioner_ss(
             d_sample_freq_in(sample_freq_in), d_sample_freq_out(
                     sample_freq_out), d_phase(0), d_lphase(0), d_history(1)
 {
-
+    const double two_32 = 4294967296.0;
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
     if (d_sample_freq_in >= d_sample_freq_out)
     {
-        d_phase_step = (unsigned int)floor((double)4294967296.0
-                * sample_freq_out / sample_freq_in);
+        d_phase_step = static_cast<unsigned int>(floor(two_32 * sample_freq_out / sample_freq_in));
     }
     else
     {
-        d_phase_step = (unsigned int)floor((double)4294967296.0
-                * sample_freq_in / sample_freq_out);
+        d_phase_step = static_cast<unsigned int>(floor(two_32 * sample_freq_in / sample_freq_out));
     }
 
     set_relative_rate(1.0 * sample_freq_out / sample_freq_in);
@@ -84,7 +82,7 @@ void direct_resampler_conditioner_ss::forecast(int noutput_items,
         gr_vector_int &ninput_items_required)
 {
 
-    int nreqd = std::max((unsigned)1, (int)((double)(noutput_items + 1)
+    int nreqd = std::max(static_cast<unsigned>(1), (int)(static_cast<double>(noutput_items + 1)
             * sample_freq_in() / sample_freq_out()) + history() - 1);
     unsigned ninputs = ninput_items_required.size();
 

@@ -127,29 +127,22 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_ca_code = new gr_complex[(int)(2*Galileo_E1_B_CODE_LENGTH_CHIPS + 4)];
+    d_ca_code = static_cast<gr_complex*>(volk_malloc(((2 * Galileo_E1_B_CODE_LENGTH_CHIPS + 4)) * sizeof(gr_complex), volk_get_alignment()));
 
-    /* If an array is partitioned for more than one thread to operate on,
-     * having the sub-array boundaries unaligned to cache lines could lead
-     * to performance degradation. Here we allocate memory
-     * (gr_comlex array of size 2*d_vector_length) aligned to cache of 16 bytes
-     */
-
-    d_very_early_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_early_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_prompt_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-    d_very_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
-
-    d_carr_sign=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    d_very_early_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    d_early_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    d_prompt_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    d_late_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    d_very_late_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    d_carr_sign = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
 
     // correlator outputs (scalar)
 
-    d_Very_Early=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Early=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Prompt=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Late=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
-    d_Very_Late=(gr_complex*)volk_malloc(sizeof(gr_complex),volk_get_alignment());
+    d_Very_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+    d_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+    d_Prompt = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+    d_Late = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+    d_Very_Late = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -291,8 +284,8 @@ Galileo_E1_Tcp_Connector_Tracking_cc::~Galileo_E1_Tcp_Connector_Tracking_cc()
     volk_free(d_Prompt);
     volk_free(d_Late);
     volk_free(d_Very_Late);
+    volk_free(d_ca_code);
 
-    delete[] d_ca_code;
     delete[] d_Prompt_buffer;
 
     d_tcp_com.close_tcp_connection(d_port);
@@ -352,8 +345,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
                     d_Early,
                     d_Prompt,
                     d_Late,
-                    d_Very_Late,
-                    is_unaligned());
+                    d_Very_Late);
 
             // ################## TCP CONNECTOR ##########################################################
             //! Variable used for control

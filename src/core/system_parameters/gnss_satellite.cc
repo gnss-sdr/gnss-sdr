@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -15,7 +15,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,7 +41,7 @@ Gnss_Satellite::Gnss_Satellite()
 
 
 
-Gnss_Satellite::Gnss_Satellite(std::string system_, unsigned int PRN_)
+Gnss_Satellite::Gnss_Satellite(const std::string& system_, unsigned int PRN_)
 {
     Gnss_Satellite::reset();
     Gnss_Satellite::set_system(system_);
@@ -61,12 +61,12 @@ Gnss_Satellite::~Gnss_Satellite()
 
 void Gnss_Satellite::reset()
 {
-    system_set = {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"};
+    system_set = {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"};
     satelliteSystem["GPS"] = "G";
     satelliteSystem["GLONASS"] = "R";
     satelliteSystem["SBAS"] = "S";
     satelliteSystem["Galileo"] = "E";
-    satelliteSystem["Compass"] = "C";
+    satelliteSystem["Beidou"] = "C";
     PRN = 0;
     system = std::string("");
     block = std::string("");
@@ -115,7 +115,7 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite &rhs) {
 }*/
 
 
-void Gnss_Satellite::set_system(std::string system_)
+void Gnss_Satellite::set_system(const std::string& system_)
 {
     // Set the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
     std::set<std::string>::iterator it = system_set.find(system_);
@@ -126,7 +126,7 @@ void Gnss_Satellite::set_system(std::string system_)
         }
     else
         {
-            DLOG(INFO) << "System " << system_ << " is not defined {GPS, GLONASS, SBAS, Galileo, Compass}. Initialization?";
+            DLOG(INFO) << "System " << system_ << " is not defined {GPS, GLONASS, SBAS, Galileo, Beidou}. Initialization?";
             system =  std::string("");
         }
 }
@@ -217,7 +217,7 @@ unsigned int Gnss_Satellite::get_PRN() const
 
 std::string Gnss_Satellite::get_system() const
 {
-    // Get the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"}
+    // Get the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
     std::string system_;
     system_ = system;
     return system_;
@@ -246,7 +246,7 @@ std::string Gnss_Satellite::get_block() const
 
 
 
-void Gnss_Satellite::set_block(std::string system_, unsigned int PRN_ )
+void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
 {
     if (system_.compare("GPS") == 0)
         {

@@ -68,6 +68,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
+    std::string s = "InputFilter";
+    double IF = configuration->property(s + ".IF", 0.0);
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -147,9 +149,11 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
     signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
-#ifdef ARCH_64BITS
-    signal_duration_s /= 2;
-#endif
+
+    if ((item_type_.compare("gr_complex") != 0) && (IF < 1e6) )  // if IF < BW/2, signal is complex (interleaved)
+        {
+            signal_duration_s /= 2;
+        }
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 

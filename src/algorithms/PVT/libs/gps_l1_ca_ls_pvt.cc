@@ -332,7 +332,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             }
             // Compute UTC time and print PVT solution
             double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
-            boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek*(double)GPS_week);
+            boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek * static_cast<double>(GPS_week));
             // 22 August 1999 last GPS time roll over
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             d_position_UTC_time = p_time;
@@ -441,9 +441,9 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                                     d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
                                     d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
                                 }
-                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
-                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
-                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
+                            d_avg_latitude_d = d_avg_latitude_d / static_cast<double>(d_averaging_depth);
+                            d_avg_longitude_d = d_avg_longitude_d / static_cast<double>(d_averaging_depth);
+                            d_avg_height_m = d_avg_height_m / static_cast<double>(d_averaging_depth);
                             b_valid_position = true;
                             return true; //indicates that the returned position is valid
                         }

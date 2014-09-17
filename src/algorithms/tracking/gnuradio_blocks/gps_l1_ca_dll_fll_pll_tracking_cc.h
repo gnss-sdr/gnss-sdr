@@ -132,7 +132,7 @@ private:
     void CN0_estimation_and_lock_detectors();
 
     // class private vars
-    Gnss_Synchro *d_acquisition_gnss_synchro;
+    Gnss_Synchro* d_acquisition_gnss_synchro;
     boost::shared_ptr<gr::msg_queue> d_queue;
     concurrent_queue<int> *d_channel_internal_queue;
     unsigned int d_vector_length;

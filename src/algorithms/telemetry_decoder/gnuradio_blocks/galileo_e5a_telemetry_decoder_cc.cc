@@ -456,7 +456,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 					    {
 						d_CRC_error_counter = 0;
 						d_flag_preamble = true; //valid preamble indicator (initialized to false every work())
-						d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs - ((double)(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD); //record the PRN start sample index associated to the preamble start.
+						d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs - (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD); //record the PRN start sample index associated to the preamble start.
 						if (!d_flag_frame_sync)
 						    {
 							d_flag_frame_sync = true;
@@ -505,25 +505,25 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 	    if (d_nav.flag_TOW_1 == true)
 		{
 		    d_TOW_at_Preamble = d_nav.FNAV_TOW_1;
-		    d_TOW_at_current_symbol = d_TOW_at_Preamble + ((double)(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+		    d_TOW_at_current_symbol = d_TOW_at_Preamble + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
 		    d_nav.flag_TOW_1 = false;
 		}
 	    if (d_nav.flag_TOW_2 == true)
 		{
 		    d_TOW_at_Preamble = d_nav.FNAV_TOW_2;
-		    d_TOW_at_current_symbol = d_TOW_at_Preamble + ((double)(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+		    d_TOW_at_current_symbol = d_TOW_at_Preamble + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
 		    d_nav.flag_TOW_2 = false;
 		}
 	    if (d_nav.flag_TOW_3 == true)
 		{
 		    d_TOW_at_Preamble = d_nav.FNAV_TOW_3;
-		    d_TOW_at_current_symbol = d_TOW_at_Preamble + ((double)(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+		    d_TOW_at_current_symbol = d_TOW_at_Preamble + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
 		    d_nav.flag_TOW_3 = false;
 		}
 	    if (d_nav.flag_TOW_4 == true)
 		{
 		    d_TOW_at_Preamble = d_nav.FNAV_TOW_4;
-		    d_TOW_at_current_symbol = d_TOW_at_Preamble + ((double)(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
+		    d_TOW_at_current_symbol = d_TOW_at_Preamble + (static_cast<double>(GALILEO_FNAV_CODES_PER_PAGE+GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD);
 		    d_nav.flag_TOW_4 = false;
 		}
 	    else

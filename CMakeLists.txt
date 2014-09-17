@@ -44,11 +44,30 @@ option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and p
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
 
 
-# Set the version information here
+###############################
+# GNSS-SDR version information 
+###############################
+# Get the current working branch
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash of the working branch
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 set(VERSION_INFO_MAJOR_VERSION 0)
-set(VERSION_INFO_API_COMPAT 0)
-set(VERSION_INFO_MINOR_VERSION 4)
+set(VERSION_INFO_API_COMPAT    0)
+set(VERSION_INFO_MINOR_VERSION 4.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
+
 
 
 ########################################################################
@@ -73,7 +92,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      else(ARCH_64BITS)
          set(ARCH_ "(32 bits)")
      endif(ARCH_64BITS)
-
      if(EXISTS "/etc/lsb-release")
          execute_process(COMMAND cat /etc/lsb-release
                          COMMAND grep DISTRIB_ID

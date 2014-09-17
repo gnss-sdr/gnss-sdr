@@ -107,34 +107,26 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_both_signal_components = both_signal_components_;
     d_CAF_window_hz = CAF_window_hz_;
 
-    //todo: do something if posix_memalign fails
-    if (posix_memalign((void**)&d_inbuffer, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_fft_code_I_A, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitudeIA, 16, d_fft_size * sizeof(float)) == 0){};
+    d_inbuffer = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_fft_code_I_A = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_magnitudeIA = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
     if (d_both_signal_components == true)
 	{
-	    if (posix_memalign((void**)&d_fft_code_Q_A, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-	    if (posix_memalign((void**)&d_magnitudeQA, 16, d_fft_size * sizeof(float)) == 0){};
+	    d_fft_code_Q_A = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+	    d_magnitudeQA = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 	}
     // IF COHERENT INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
 	{
-	    if (posix_memalign((void**)&d_fft_code_I_B, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-	    if (posix_memalign((void**)&d_magnitudeIB, 16, d_fft_size * sizeof(float)) == 0){};
+	    d_fft_code_I_B = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+	    d_magnitudeIB = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 	    if (d_both_signal_components == true)
 		{
-		    if (posix_memalign((void**)&d_fft_code_Q_B, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-		    if (posix_memalign((void**)&d_magnitudeQB, 16, d_fft_size * sizeof(float)) == 0){};
+		    d_fft_code_Q_B = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+		    d_magnitudeQB = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 		}
 	}
-
-//    if (posix_memalign((void**)&d_fft_code_Q_A, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-//    if (posix_memalign((void**)&d_magnitudeQA, 16, d_fft_size * sizeof(float)) == 0){};
-//    if (posix_memalign((void**)&d_fft_code_I_B, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-//    if (posix_memalign((void**)&d_magnitudeIB, 16, d_fft_size * sizeof(float)) == 0){};
-//    if (posix_memalign((void**)&d_fft_code_Q_B, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-//    if (posix_memalign((void**)&d_magnitudeQB, 16, d_fft_size * sizeof(float)) == 0){};
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -153,33 +145,42 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::~galileo_e5a_noncoherentIQ_acquisi
         {
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
-                    free(d_grid_doppler_wipeoffs[i]);
+                    volk_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
-    free(d_fft_code_I_A);
-    free(d_magnitudeIA);
+    volk_free(d_inbuffer);
+    volk_free(d_fft_code_I_A);
+    volk_free(d_magnitudeIA);
     if (d_both_signal_components == true)
 	{
-	    free(d_fft_code_Q_A);
-	    free(d_magnitudeQA);
+	    volk_free(d_fft_code_Q_A);
+	    volk_free(d_magnitudeQA);
 	}
     // IF INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
 	{
-	    free(d_fft_code_I_B);
-	    free(d_magnitudeIB);
+	    volk_free(d_fft_code_I_B);
+	    volk_free(d_magnitudeIB);
 	    if (d_both_signal_components == true)
 		{
-		    free(d_fft_code_Q_B);
-		    free(d_magnitudeQB);
+		    volk_free(d_fft_code_Q_B);
+		    volk_free(d_magnitudeQB);
 		}
 	}
+    if (d_CAF_window_hz > 0)
+        {
+            volk_free(d_CAF_vector);
+            volk_free(d_CAF_vector_I);
+            if (d_both_signal_components == true)
+                {
+                    volk_free(d_CAF_vector_Q);
+                }
+        }
 
     delete d_fft_if;
     delete d_ifft;
-
 
     if (d_dump)
         {
@@ -197,70 +198,45 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
     d_fft_if->execute(); // We need the FFT of local code
 
     //Conjugate the local code
-    if (is_unaligned())
-        {
-            volk_32fc_conjugate_32fc_u(d_fft_code_I_A,d_fft_if->get_outbuf(),d_fft_size);
-        }
-    else
-        {
-            volk_32fc_conjugate_32fc_a(d_fft_code_I_A,d_fft_if->get_outbuf(),d_fft_size);
-        }
+    volk_32fc_conjugate_32fc(d_fft_code_I_A,d_fft_if->get_outbuf(),d_fft_size);
+
     // SAME FOR PILOT SIGNAL
     if (d_both_signal_components == true)
-	{
-	    // Three replicas of pilot primary code. CODE A: (1,1,1)
-	    memcpy(d_fft_if->get_inbuf(), codeQ, sizeof(gr_complex)*d_fft_size);
+        {
+            // Three replicas of pilot primary code. CODE A: (1,1,1)
+            memcpy(d_fft_if->get_inbuf(), codeQ, sizeof(gr_complex)*d_fft_size);
 
-	    d_fft_if->execute(); // We need the FFT of local code
+            d_fft_if->execute(); // We need the FFT of local code
 
-	    //Conjugate the local code
-	    if (is_unaligned())
-	        {
-	            volk_32fc_conjugate_32fc_u(d_fft_code_Q_A,d_fft_if->get_outbuf(),d_fft_size);
-	        }
-	    else
-	        {
-	            volk_32fc_conjugate_32fc_a(d_fft_code_Q_A,d_fft_if->get_outbuf(),d_fft_size);
-	        }
-	}
+            //Conjugate the local code
+            volk_32fc_conjugate_32fc(d_fft_code_Q_A,d_fft_if->get_outbuf(),d_fft_size);
+        }
     // IF INTEGRATION TIME > 1 code, we need to evaluate the other possible combination
     // Note: max integration time allowed = 3ms (dealt in adapter)
     if (d_sampled_ms > 1)
-	{
-	    // DATA CODE B: First replica is inverted (0,1,1)
-	    volk_32fc_s32fc_multiply_32fc_a(&(d_fft_if->get_inbuf())[0],
-	                                    &codeI[0], gr_complex(-1,0),
-	                                    d_samples_per_code);
-	    d_fft_if->execute(); // We need the FFT of local code
+        {
+            // DATA CODE B: First replica is inverted (0,1,1)
+            volk_32fc_s32fc_multiply_32fc(&(d_fft_if->get_inbuf())[0],
+                    &codeI[0], gr_complex(-1,0),
+                    d_samples_per_code);
 
-	    //Conjugate the local code
-	    if (is_unaligned())
-		{
-		    volk_32fc_conjugate_32fc_u(d_fft_code_I_B,d_fft_if->get_outbuf(),d_fft_size);
-		}
-	    else
-		{
-		    volk_32fc_conjugate_32fc_a(d_fft_code_I_B,d_fft_if->get_outbuf(),d_fft_size);
-		}
-	    if (d_both_signal_components == true)
-		{
-		    // PILOT CODE B: First replica is inverted (0,1,1)
-		    volk_32fc_s32fc_multiply_32fc_a(&(d_fft_if->get_inbuf())[0],
-		                                    &codeQ[0], gr_complex(-1,0),
-		                                    d_samples_per_code);
-		    d_fft_if->execute(); // We need the FFT of local code
+            d_fft_if->execute(); // We need the FFT of local code
 
-		    //Conjugate the local code
-		    if (is_unaligned())
-		        {
-		            volk_32fc_conjugate_32fc_u(d_fft_code_Q_B,d_fft_if->get_outbuf(),d_fft_size);
-		        }
-		    else
-		        {
-		            volk_32fc_conjugate_32fc_a(d_fft_code_Q_B,d_fft_if->get_outbuf(),d_fft_size);
-		        }
-		}
-	}
+            //Conjugate the local code
+            volk_32fc_conjugate_32fc(d_fft_code_I_B,d_fft_if->get_outbuf(),d_fft_size);
+
+            if (d_both_signal_components == true)
+                {
+                    // PILOT CODE B: First replica is inverted (0,1,1)
+                    volk_32fc_s32fc_multiply_32fc(&(d_fft_if->get_inbuf())[0],
+                            &codeQ[0], gr_complex(-1,0),
+                            d_samples_per_code);
+                    d_fft_if->execute(); // We need the FFT of local code
+
+                    //Conjugate the local code
+                    volk_32fc_conjugate_32fc(d_fft_code_Q_B,d_fft_if->get_outbuf(),d_fft_size);
+                }
+        }
 }
 
 void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
@@ -273,8 +249,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = (int)(-d_doppler_max);
-         doppler <= (int)d_doppler_max;
+    for (int doppler = static_cast<int>(-d_doppler_max);
+         doppler <= static_cast<int>(d_doppler_max);
          doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
@@ -284,10 +260,8 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
-                               d_fft_size * sizeof(gr_complex)) == 0){};
-
-            int doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
         }
@@ -297,11 +271,11 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
 //    if (d_CAF_filter)
     if (d_CAF_window_hz > 0)
 	{
-	    if (posix_memalign((void**)&d_CAF_vector, 16, d_num_doppler_bins * sizeof(float)) == 0){};
-	    if (posix_memalign((void**)&d_CAF_vector_I, 16, d_num_doppler_bins * sizeof(float)) == 0){};
+	    d_CAF_vector = static_cast<float*>(volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment()));
+	    d_CAF_vector_I = static_cast<float*>(volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment()));
 	    if (d_both_signal_components == true)
 		{
-		    if (posix_memalign((void**)&d_CAF_vector_Q, 16, d_num_doppler_bins * sizeof(float)) == 0){};
+		    d_CAF_vector_Q = static_cast<float*>(volk_malloc(d_num_doppler_bins * sizeof(float), volk_get_alignment()));
 		}
 	}
 }
@@ -355,17 +329,17 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 	    {
 		const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
 		unsigned int buff_increment;
-		if (ninput_items[0]+d_buffer_count <= d_fft_size)
+		if (ninput_items[0] + d_buffer_count <= d_fft_size)
 		    {
 			buff_increment = ninput_items[0];
 		    }
 		else
 		    {
-			buff_increment = (d_fft_size-d_buffer_count);
+			buff_increment = (d_fft_size - d_buffer_count);
 		    }
-		memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex)*buff_increment);
+		memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex) * buff_increment);
 		// If buffer will be full in next iteration
-		if (d_buffer_count >= d_fft_size-d_gr_stream_buffer)
+		if (d_buffer_count >= d_fft_size - d_gr_stream_buffer)
 		    {
 			d_state=2;
 		    }
@@ -396,7 +370,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 		float magt_IB = 0.0;
 		float magt_QA = 0.0;
 		float magt_QB = 0.0;
-		float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+		float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 		d_input_power = 0.0;
 		d_mag = 0.0;
 		d_well_count++;
@@ -408,18 +382,18 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 			<< ", doppler_step: " << d_doppler_step;
 
 		// 1- Compute the input signal power estimation
-		volk_32fc_magnitude_squared_32f_a(d_magnitudeIA, d_inbuffer, d_fft_size);
-		volk_32f_accumulator_s32f_a(&d_input_power, d_magnitudeIA, d_fft_size);
-		d_input_power /= (float)d_fft_size;
+		volk_32fc_magnitude_squared_32f(d_magnitudeIA, d_inbuffer, d_fft_size);
+		volk_32f_accumulator_s32f(&d_input_power, d_magnitudeIA, d_fft_size);
+		d_input_power /= static_cast<float>(d_fft_size);
 
 		// 2- Doppler frequency search loop
-		for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+		for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
 		    {
 			// doppler search steps
 
-			doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+			doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
-			volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), d_inbuffer,
+			volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), d_inbuffer,
 			                             d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
 
 			// 3- Perform the FFT-based convolution  (parallel time search)
@@ -429,46 +403,46 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 			// CODE IA
 			// Multiply carrier wiped--off, Fourier transformed incoming signal
 			// with the local FFT'd code reference using SIMD operations with VOLK library
-			volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+			volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
 			                             d_fft_if->get_outbuf(), d_fft_code_I_A, d_fft_size);
 
 			// compute the inverse FFT
 			d_ifft->execute();
 
 			// Search maximum
-			volk_32fc_magnitude_squared_32f_a(d_magnitudeIA, d_ifft->get_outbuf(), d_fft_size);
-			volk_32f_index_max_16u_a(&indext_IA, d_magnitudeIA, d_fft_size);
+			volk_32fc_magnitude_squared_32f(d_magnitudeIA, d_ifft->get_outbuf(), d_fft_size);
+			volk_32f_index_max_16u(&indext_IA, d_magnitudeIA, d_fft_size);
 			// Normalize the maximum value to correct the scale factor introduced by FFTW
 			magt_IA = d_magnitudeIA[indext_IA] / (fft_normalization_factor * fft_normalization_factor);
 
 			if (d_both_signal_components == true)
 			    {
 				// REPEAT FOR ALL CODES. CODE_QA
-				volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+				volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
 				                             d_fft_if->get_outbuf(), d_fft_code_Q_A, d_fft_size);
 				d_ifft->execute();
-				volk_32fc_magnitude_squared_32f_a(d_magnitudeQA, d_ifft->get_outbuf(), d_fft_size);
-				volk_32f_index_max_16u_a(&indext_QA, d_magnitudeQA, d_fft_size);
+				volk_32fc_magnitude_squared_32f(d_magnitudeQA, d_ifft->get_outbuf(), d_fft_size);
+				volk_32f_index_max_16u(&indext_QA, d_magnitudeQA, d_fft_size);
 				magt_QA = d_magnitudeQA[indext_QA] / (fft_normalization_factor * fft_normalization_factor);
 			    }
 			if (d_sampled_ms > 1) // If Integration time > 1 code
 			    {
 				// REPEAT FOR ALL CODES. CODE_IB
-				volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+				volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
 				                             d_fft_if->get_outbuf(), d_fft_code_I_B, d_fft_size);
 				d_ifft->execute();
-				volk_32fc_magnitude_squared_32f_a(d_magnitudeIB, d_ifft->get_outbuf(), d_fft_size);
-				volk_32f_index_max_16u_a(&indext_IB, d_magnitudeIB, d_fft_size);
+				volk_32fc_magnitude_squared_32f(d_magnitudeIB, d_ifft->get_outbuf(), d_fft_size);
+				volk_32f_index_max_16u(&indext_IB, d_magnitudeIB, d_fft_size);
 				magt_IB = d_magnitudeIB[indext_IB] / (fft_normalization_factor * fft_normalization_factor);
 
 				if (d_both_signal_components == true)
 				    {
 					// REPEAT FOR ALL CODES. CODE_QB
-					volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+					volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
 					                             d_fft_if->get_outbuf(), d_fft_code_Q_B, d_fft_size);
 					d_ifft->execute();
-					volk_32fc_magnitude_squared_32f_a(d_magnitudeQB, d_ifft->get_outbuf(), d_fft_size);
-					volk_32f_index_max_16u_a(&indext_QB, d_magnitudeQB, d_fft_size);
+					volk_32fc_magnitude_squared_32f(d_magnitudeQB, d_ifft->get_outbuf(), d_fft_size);
+					volk_32f_index_max_16u(&indext_QB, d_magnitudeQB, d_fft_size);
 					magt_QB = d_magnitudeIB[indext_QB] / (fft_normalization_factor * fft_normalization_factor);
 				    }
 			    }
@@ -505,7 +479,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 							    }
 						    }
 					    }
-					volk_32f_index_max_16u_a(&indext, d_magnitudeIA, d_fft_size);
+					volk_32f_index_max_16u(&indext, d_magnitudeIA, d_fft_size);
 					magt = d_magnitudeIA[indext] / (fft_normalization_factor * fft_normalization_factor);
 				    }
 				else
@@ -534,7 +508,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 							    }
 						    }
 					    }
-					volk_32f_index_max_16u_a(&indext, d_magnitudeIB, d_fft_size);
+					volk_32f_index_max_16u(&indext, d_magnitudeIB, d_fft_size);
 					magt = d_magnitudeIB[indext] / (fft_normalization_factor * fft_normalization_factor);
 				    }
 			    }
@@ -552,7 +526,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 						d_magnitudeIA[i] += d_magnitudeQA[i];
 					    }
 				    }
-				volk_32f_index_max_16u_a(&indext, d_magnitudeIA, d_fft_size);
+				volk_32f_index_max_16u(&indext, d_magnitudeIA, d_fft_size);
 				magt = d_magnitudeIA[indext] / (fft_normalization_factor * fft_normalization_factor);
 			    }
 
@@ -569,8 +543,8 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 				// restarted between consecutive dwells in multidwell operation.
 				if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
 				    {
-					d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
-					d_gnss_synchro->Acq_doppler_hz = (double)doppler;
+					d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+					d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
 					d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 
 					// 5- Compute the test statistics and compare to the threshold
@@ -609,104 +583,103 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 		// 6 OPTIONAL: CAF filter to avoid Doppler ambiguity in bit transition.
 		if (d_CAF_window_hz > 0)
 		    {
-			int CAF_bins_half;
-			float* accum;
-//			double* accum;
-			if (posix_memalign((void**)&accum, 16, sizeof(float)) == 0){};
-			CAF_bins_half = d_CAF_window_hz/(2*d_doppler_step);
-			float weighting_factor;
-			weighting_factor = 0.5/(float)CAF_bins_half;
-//			weighting_factor = 0;
-//			std::cout << "weighting_factor " << weighting_factor << std::endl;
-			// Initialize first iterations
-			for (int doppler_index=0;doppler_index<CAF_bins_half;doppler_index++)
-			    {
-				d_CAF_vector[doppler_index] = 0;
-//				volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], d_CAF_vector_I, CAF_bins_half+doppler_index+1);
-				for (int i = 0; i < CAF_bins_half+doppler_index+1; i++)
-				    {
-					d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-weighting_factor*(unsigned int)(abs(doppler_index - i)));
-				    }
-//				d_CAF_vector[doppler_index] /= CAF_bins_half+doppler_index+1;
-				d_CAF_vector[doppler_index] /= 1+CAF_bins_half+doppler_index - weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2 - weighting_factor*doppler_index*(doppler_index+1)/2; // triangles = [n*(n+1)/2]
-				if (d_both_signal_components)
-				    {
-					accum[0] = 0;
-//					volk_32f_accumulator_s32f_a(&accum[0], d_CAF_vector_Q, CAF_bins_half+doppler_index+1);
-					for (int i = 0; i < CAF_bins_half+doppler_index+1; i++)
-					    {
-						accum[0] += d_CAF_vector_Q[i] * (1-weighting_factor*(unsigned int)(abs(doppler_index - i)));
-					    }
-//					accum[0] /= CAF_bins_half+doppler_index+1;
-					accum[0] /= 1+CAF_bins_half+doppler_index - weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2 - weighting_factor*doppler_index*(doppler_index+1)/2; // triangles = [n*(n+1)/2]
-					d_CAF_vector[doppler_index] += accum[0];
-				    }
-			    }
-			// Body loop
-			for (unsigned int doppler_index=CAF_bins_half;doppler_index<d_num_doppler_bins-CAF_bins_half;doppler_index++)
-			    {
-				d_CAF_vector[doppler_index] = 0;
-//				volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], 2*CAF_bins_half+1);
-				for (int i = doppler_index-CAF_bins_half; i < doppler_index+CAF_bins_half+1; i++)
-				    {
-					d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-weighting_factor*(unsigned int)(abs(doppler_index - i)));
-				    }
-//				d_CAF_vector[doppler_index] /= 2*CAF_bins_half+1;
-				d_CAF_vector[doppler_index] /= 1+2*CAF_bins_half - 2*weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2;
-				if (d_both_signal_components)
-				    {
-					accum[0] = 0;
-//					volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], 2*CAF_bins_half);
-					for (int i = doppler_index-CAF_bins_half; i < doppler_index+CAF_bins_half+1; i++)
-					    {
-						accum[0] += d_CAF_vector_Q[i] * (1-weighting_factor*(unsigned int)(abs(doppler_index - i)));
-					    }
-//					accum[0] /= 2*CAF_bins_half+1;
-					accum[0] /= 1+2*CAF_bins_half - 2*weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2;
-					d_CAF_vector[doppler_index] += accum[0];
-				    }
-			    }
-			// Final iterations
-			for (unsigned int doppler_index=d_num_doppler_bins-CAF_bins_half;doppler_index<d_num_doppler_bins;doppler_index++)
-			    {
-				d_CAF_vector[doppler_index] = 0;
-//				volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
-				for (int i = doppler_index-CAF_bins_half; i < d_num_doppler_bins; i++)
-				    {
-					d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-weighting_factor*(abs(doppler_index - i)));
-				    }
-//				d_CAF_vector[doppler_index] /= CAF_bins_half+(d_num_doppler_bins-doppler_index);
-				d_CAF_vector[doppler_index] /= 1+CAF_bins_half+(d_num_doppler_bins-doppler_index-1) -weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2 -weighting_factor*(d_num_doppler_bins-doppler_index-1)*(d_num_doppler_bins-doppler_index)/2;
-				if (d_both_signal_components)
-				    {
-					accum[0] = 0;
-//					volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
-					for (int i = doppler_index-CAF_bins_half; i < d_num_doppler_bins; i++)
-					    {
-						accum[0] += d_CAF_vector_Q[i] * (1-weighting_factor*(abs(doppler_index - i)));
-					    }
-//					accum[0] /= CAF_bins_half+(d_num_doppler_bins-doppler_index);
-					accum[0] /= 1+CAF_bins_half+(d_num_doppler_bins-doppler_index-1) -weighting_factor*CAF_bins_half*(CAF_bins_half+1)/2 -weighting_factor*(d_num_doppler_bins-doppler_index-1)*(d_num_doppler_bins-doppler_index)/2;
-					d_CAF_vector[doppler_index] += accum[0];
-				    }
-			    }
+		        int CAF_bins_half;
+		        float* accum = static_cast<float*>(volk_malloc(sizeof(float), volk_get_alignment()));
+		        CAF_bins_half = d_CAF_window_hz / (2 * d_doppler_step);
+		        float weighting_factor;
+		        weighting_factor = 0.5 / static_cast<float>(CAF_bins_half);
+		        //			weighting_factor = 0;
+		        //			std::cout << "weighting_factor " << weighting_factor << std::endl;
+		        // Initialize first iterations
+		        for (int doppler_index=0; doppler_index < CAF_bins_half; doppler_index++)
+		            {
+		                d_CAF_vector[doppler_index] = 0;
+		                // volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], d_CAF_vector_I, CAF_bins_half+doppler_index+1);
+		                for (int i = 0; i < CAF_bins_half + doppler_index + 1; i++)
+		                    {
+		                        d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1 - weighting_factor * static_cast<unsigned int>(abs(doppler_index - i)));
+		                    }
+		                // d_CAF_vector[doppler_index] /= CAF_bins_half+doppler_index+1;
+		                d_CAF_vector[doppler_index] /= 1 + CAF_bins_half+doppler_index - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor*doppler_index*(doppler_index+1)/2; // triangles = [n*(n+1)/2]
+		                if (d_both_signal_components)
+		                    {
+		                        accum[0] = 0;
+		                        // volk_32f_accumulator_s32f_a(&accum[0], d_CAF_vector_Q, CAF_bins_half+doppler_index+1);
+		                        for (int i = 0; i < CAF_bins_half+doppler_index+1; i++)
+		                            {
+		                                accum[0] += d_CAF_vector_Q[i] * (1 - weighting_factor * static_cast<unsigned int>(abs(doppler_index - i)));
+		                            }
+		                        // accum[0] /= CAF_bins_half+doppler_index+1;
+		                        accum[0] /= 1+CAF_bins_half+doppler_index - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor * doppler_index * (doppler_index + 1) / 2; // triangles = [n*(n+1)/2]
+		                        d_CAF_vector[doppler_index] += accum[0];
+		                    }
+		            }
+		        // Body loop
+		        for (unsigned int doppler_index = CAF_bins_half;doppler_index<d_num_doppler_bins-CAF_bins_half;doppler_index++)
+		            {
+		                d_CAF_vector[doppler_index] = 0;
+		                //				volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], 2*CAF_bins_half+1);
+		                for (int i = doppler_index-CAF_bins_half; i < doppler_index+CAF_bins_half+1; i++)
+		                    {
+		                        d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-weighting_factor * static_cast<unsigned int>(abs(doppler_index - i)));
+		                    }
+		                //				d_CAF_vector[doppler_index] /= 2*CAF_bins_half+1;
+		                d_CAF_vector[doppler_index] /= 1 + 2 * CAF_bins_half - 2  *weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2;
+		                if (d_both_signal_components)
+		                    {
+		                        accum[0] = 0;
+		                        //					volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], 2*CAF_bins_half);
+		                        for (int i = doppler_index-CAF_bins_half; i < doppler_index+CAF_bins_half+1; i++)
+		                            {
+		                                accum[0] += d_CAF_vector_Q[i] * (1  -weighting_factor * static_cast<unsigned int>(abs(doppler_index - i)));
+		                            }
+		                        //					accum[0] /= 2*CAF_bins_half+1;
+		                        accum[0] /= 1+2*CAF_bins_half - 2*weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2;
+		                        d_CAF_vector[doppler_index] += accum[0];
+		                    }
+		            }
+		        // Final iterations
+		        for (unsigned int doppler_index = d_num_doppler_bins - CAF_bins_half;doppler_index<d_num_doppler_bins;doppler_index++)
+		            {
+		                d_CAF_vector[doppler_index] = 0;
+		                //				volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
+		                for (int i = doppler_index - CAF_bins_half; i < d_num_doppler_bins; i++)
+		                    {
+		                        d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1 - weighting_factor * (abs(doppler_index - i)));
+		                    }
+		                //				d_CAF_vector[doppler_index] /= CAF_bins_half+(d_num_doppler_bins-doppler_index);
+		                d_CAF_vector[doppler_index] /= 1+CAF_bins_half+(d_num_doppler_bins-doppler_index-1) - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor * (d_num_doppler_bins - doppler_index - 1) * (d_num_doppler_bins - doppler_index) / 2;
+		                if (d_both_signal_components)
+		                    {
+		                        accum[0] = 0;
+		                        //					volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
+		                        for (int i = doppler_index-CAF_bins_half; i < d_num_doppler_bins; i++)
+		                            {
+		                                accum[0] += d_CAF_vector_Q[i] * (1 - weighting_factor * (abs(doppler_index - i)));
+		                            }
+		                        //					accum[0] /= CAF_bins_half+(d_num_doppler_bins-doppler_index);
+		                        accum[0] /= 1 + CAF_bins_half + (d_num_doppler_bins - doppler_index - 1) - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor * (d_num_doppler_bins - doppler_index - 1) * (d_num_doppler_bins - doppler_index) / 2;
+		                        d_CAF_vector[doppler_index] += accum[0];
+		                    }
+		            }
 
-			// Recompute the maximum doppler peak
-			volk_32f_index_max_16u_a(&indext, d_CAF_vector, d_num_doppler_bins);
-			doppler=-(int)d_doppler_max+d_doppler_step*indext;
-			d_gnss_synchro->Acq_doppler_hz = (double)doppler;
-			// Dump if required, appended at the end of the file
-			if (d_dump)
-			    {
-				std::stringstream filename;
-				std::streamsize n = sizeof(float) * (d_num_doppler_bins); // noncomplex file write
-				filename.str("");
-				filename << "../data/test_statistics_E5a_sat_"
-					<< d_gnss_synchro->PRN << "_CAF.dat";
-				d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-				d_dump_file.write((char*)d_CAF_vector, n);
-				d_dump_file.close();
-			    }
+		        // Recompute the maximum doppler peak
+		        volk_32f_index_max_16u(&indext, d_CAF_vector, d_num_doppler_bins);
+		        doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * indext;
+		        d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+		        // Dump if required, appended at the end of the file
+		        if (d_dump)
+		            {
+		                std::stringstream filename;
+		                std::streamsize n = sizeof(float) * (d_num_doppler_bins); // noncomplex file write
+		                filename.str("");
+		                filename << "../data/test_statistics_E5a_sat_"
+		                        << d_gnss_synchro->PRN << "_CAF.dat";
+		                d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
+		                d_dump_file.write((char*)d_CAF_vector, n);
+		                d_dump_file.close();
+		            }
+		        volk_free(accum);
 		    }
 
 		if (d_well_count == d_max_dwells)
@@ -725,7 +698,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 			d_state = 1;
 		    }
 
-		consume_each(d_fft_size-d_buffer_count);
+		consume_each(d_fft_size - d_buffer_count);
 		d_buffer_count = 0;
 		break;
 	    }
@@ -744,7 +717,6 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 
 		d_active = false;
 		d_state = 0;
-
 
 		acquisition_message = 1;
 		d_channel_internal_queue->push(acquisition_message);

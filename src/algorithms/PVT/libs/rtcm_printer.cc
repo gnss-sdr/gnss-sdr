@@ -277,7 +277,7 @@ std::string Rtcm_Printer::print_M1005_test ()
 {
     std::bitset<152> m1005 = get_M1005_test();
     unsigned int msg_length_bits = m1005.to_string().length();
-    unsigned int msg_length_bytes = std::ceil((float)msg_length_bits / 8.0);
+    unsigned int msg_length_bytes = std::ceil(static_cast<float>(msg_length_bits) / 8.0);
     message_length = std::bitset<10>(msg_length_bytes);
     unsigned int zeros_to_fill = 8*msg_length_bytes -  msg_length_bits;
     std::string b(zeros_to_fill, '0');
@@ -313,11 +313,11 @@ void Rtcm_Printer::print_M1001 ()
 {
     std::bitset<122> m1001 = get_M1001();
     unsigned int msg_length_bits = m1001.to_string().length();
-    unsigned int msg_length_bytes = std::ceil((float)msg_length_bits/8.0);
+    unsigned int msg_length_bytes = std::ceil(static_cast<float>(msg_length_bits) / 8.0);
     message_length = std::bitset<10>(msg_length_bytes);
     unsigned int zeros_to_fill = 8*msg_length_bytes -  msg_length_bits;
     std::string b(zeros_to_fill, '0');
-    message_length = std::bitset<10>((int)msg_length_bytes);
+    message_length = std::bitset<10>(static_cast<int>(msg_length_bytes));
     std::string msg_content = m1001.to_string() + b;
     std::string msg_without_crc = preamble.to_string() +
             reserved_field.to_string() +

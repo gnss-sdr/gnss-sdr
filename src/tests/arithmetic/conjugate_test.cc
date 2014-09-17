@@ -116,8 +116,8 @@ TEST(Conjugate_Test, ArmadilloComplexImplementation)
 
 TEST(Conjugate_Test, VolkComplexImplementation)
 {
-    std::complex<float>* input = new std::complex<float>[FLAGS_size_conjugate_test];
-    std::complex<float>* output = new std::complex<float>[FLAGS_size_conjugate_test];
+    std::complex<float>* input = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment()));
+    std::complex<float>* output = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_conjugate_test);
 
     struct timeval tv;
@@ -132,6 +132,6 @@ TEST(Conjugate_Test, VolkComplexImplementation)
               << "-length complex float vector using VOLK finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    delete [] input;
-    delete [] output;
+    volk_free(input);
+    volk_free(output);
 }

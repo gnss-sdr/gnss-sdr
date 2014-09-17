@@ -93,32 +93,32 @@ public:
     /*!
      *  \brief Generates the GPS Navigation Data header
      */
-    void rinex_nav_header(std::ofstream& out, Gps_Iono iono, Gps_Utc_Model utc_model);
+    void rinex_nav_header(std::ofstream& out, const Gps_Iono& iono, const Gps_Utc_Model& utc_model);
 
     /*!
      *  \brief Generates the Galileo Navigation Data header
      */
-    void rinex_nav_header(std::ofstream& out, Galileo_Iono iono, Galileo_Utc_Model utc_model, Galileo_Almanac galileo_almanac);
+    void rinex_nav_header(std::ofstream& out, const Galileo_Iono& iono, const Galileo_Utc_Model& utc_model, const Galileo_Almanac& galileo_almanac);
 
     /*!
      *  \brief Generates the Mixed (GPS/Galileo) Navigation Data header
      */
-    void rinex_nav_header(std::ofstream& out, Gps_Iono gps_iono, Gps_Utc_Model gps_utc_model, Galileo_Iono galileo_iono, Galileo_Utc_Model galileo_utc_model, Galileo_Almanac galileo_almanac);
+    void rinex_nav_header(std::ofstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac);
 
     /*!
      *  \brief Generates the GPS Observation data header
      */
-    void rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, double d_TOW_first_observation);
+    void rinex_obs_header(std::ofstream& out, const Gps_Ephemeris& eph, const double d_TOW_first_observation);
 
     /*!
      *  \brief Generates the Galileo Observation data header
      */
-    void rinex_obs_header(std::ofstream& out, Galileo_Ephemeris eph, double d_TOW_first_observation);
+    void rinex_obs_header(std::ofstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation);
 
     /*!
      *  \brief Generates the Mixed (GPS/Galileo) Observation data header
      */
-    void rinex_obs_header(std::ofstream& out, Gps_Ephemeris gps_eph, Galileo_Ephemeris galileo_eph, double d_TOW_first_observation);
+    void rinex_obs_header(std::ofstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation);
 
     /*!
      *  \brief Generates the SBAS raw data header
@@ -128,47 +128,47 @@ public:
     /*!
      *  \brief Computes the UTC time and returns a boost::posix_time::ptime object
      */
-    boost::posix_time::ptime compute_UTC_time(Gps_Navigation_Message nav_msg);
+    boost::posix_time::ptime compute_UTC_time(const Gps_Navigation_Message& nav_msg);
 
     /*!
      *  \brief Computes the GPS time and returns a boost::posix_time::ptime object
      */
-    boost::posix_time::ptime compute_GPS_time(Gps_Ephemeris eph, double obs_time);
+    boost::posix_time::ptime compute_GPS_time(const Gps_Ephemeris& eph, const double obs_time);
 
     /*!
      *  \brief Computes the Galileo time and returns a boost::posix_time::ptime object
      */
-    boost::posix_time::ptime compute_Galileo_time(Galileo_Ephemeris eph, double obs_time);
+    boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris& eph, const double obs_time);
 
     /*!
      *  \brief Writes data from the GPS navigation message into the RINEX file
      */
-    void log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris> eph_map);
+    void log_rinex_nav(std::ofstream& out, const std::map<int, Gps_Ephemeris>& eph_map);
 
     /*!
      *  \brief Writes data from the Galileo navigation message into the RINEX file
      */
-    void log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephemeris> eph_map);
+    void log_rinex_nav(std::ofstream& out, const std::map<int, Galileo_Ephemeris>& eph_map);
 
     /*!
      *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
      */
-    void log_rinex_nav(std::ofstream& out, std::map<int, Gps_Ephemeris> gps_eph_map, std::map<int, Galileo_Ephemeris> galileo_eph_map);
+    void log_rinex_nav(std::ofstream& out, const std::map<int, Gps_Ephemeris>& gps_eph_map, const std::map<int, Galileo_Ephemeris>& galileo_eph_map);
 
     /*!
      *  \brief Writes GPS observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
+    void log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& pseudoranges);
 
     /*!
      *  \brief Writes Galileo observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges);
+    void log_rinex_obs(std::ofstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& pseudoranges);
 
     /*!
      *  \brief Writes Galileo observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, Gps_Ephemeris gps_eph, Galileo_Ephemeris galileo_eph, double gps_obs_time, std::map<int,Gnss_Synchro> pseudoranges);
+    void log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro>& pseudoranges);
 
     /*!
      * \brief Represents GPS time in the date time format. Leap years are considered, but leap seconds are not.
@@ -178,12 +178,12 @@ public:
     /*!
      *  \brief Writes raw SBAS messages into the RINEX file
      */
-    void log_rinex_sbs(std::ofstream& out, Sbas_Raw_Msg sbs_message);
+    void log_rinex_sbs(std::ofstream& out, const Sbas_Raw_Msg& sbs_message);
 
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     std::map<std::string,std::string> observationCode; //<! GNSS observation descriptors
-    std::string stringVersion; //<! RINEX version (2.10/2.11 or 3.01)
+    std::string stringVersion; //<! RINEX version (2.10/2.11 or 3.01/3.02)
 
 private:
     int version ;  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
@@ -191,7 +191,7 @@ private:
     /*
      * Generation of RINEX signal strength indicators
      */
-    int signalStrength(double snr);
+    int signalStrength(const double snr);
 
     /* Creates RINEX file names according to the naming convention
      *
@@ -225,7 +225,7 @@ private:
     /*
      *  Checks that the line is 80 characters length
      */
-    void lengthCheck(std::string line);
+    void lengthCheck(const std::string& line);
 
     /*
      * If the string is bigger than length, truncate it from the right.

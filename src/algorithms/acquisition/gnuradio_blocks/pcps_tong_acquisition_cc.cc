@@ -99,9 +99,8 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
 
-    //todo: do something if posix_memalign fails
-    if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
+    d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -120,15 +119,15 @@ pcps_tong_acquisition_cc::~pcps_tong_acquisition_cc()
         {
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
-                    free(d_grid_doppler_wipeoffs[i]);
-                    free(d_grid_data[i]);
+                    volk_free(d_grid_doppler_wipeoffs[i]);
+                    volk_free(d_grid_data[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
             delete[] d_grid_data;
         }
 
-    free(d_fft_codes);
-    free(d_magnitude);
+    volk_free(d_fft_codes);
+    volk_free(d_magnitude);
 
     delete d_ifft;
     delete d_fft_if;
@@ -146,14 +145,7 @@ void pcps_tong_acquisition_cc::set_local_code(std::complex<float> * code)
     d_fft_if->execute(); // We need the FFT of local code
 
     //Conjugate the local code
-    if (is_unaligned())
-        {
-            volk_32fc_conjugate_32fc_u(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
-        }
-    else
-        {
-            volk_32fc_conjugate_32fc_a(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
-        }
+    volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 
 void pcps_tong_acquisition_cc::init()
@@ -166,8 +158,8 @@ void pcps_tong_acquisition_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = (int)(-d_doppler_max);
-         doppler <= (int)d_doppler_max;
+    for (int doppler = static_cast<int>(-d_doppler_max);
+         doppler <= static_cast<int>(d_doppler_max);
          doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
@@ -178,16 +170,14 @@ void pcps_tong_acquisition_cc::init()
     d_grid_data = new float*[d_num_doppler_bins];
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
-                               d_fft_size * sizeof(gr_complex)) == 0){};
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
 
-            int doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
 
-            if (posix_memalign((void**)&(d_grid_data[doppler_index]), 16,
-                               d_fft_size * sizeof(float)) == 0){};
+            d_grid_data[doppler_index] = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
             for (unsigned int i = 0; i < d_fft_size; i++)
                 {
@@ -242,7 +232,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
             unsigned int indext = 0;
             float magt = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
-            float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+            float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
             d_input_power = 0.0;
             d_mag = 0.0;
 
@@ -257,18 +247,18 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                     << ", doppler_step: " << d_doppler_step;
 
             // 1- Compute the input signal power estimation
-            volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
-            volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
-            d_input_power /= (float)d_fft_size;
+            volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
+            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
+            d_input_power /= static_cast<float>(d_fft_size);
 
             // 2- Doppler frequency search loop
             for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
                     // doppler search steps
 
-                    doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
+                    doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
-                    volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in,
+                    volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                                 d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
 
                     // 3- Perform the FFT-based convolution  (parallel time search)
@@ -277,25 +267,25 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
 
                     // Multiply carrier wiped--off, Fourier transformed incoming signal
                     // with the local FFT'd code reference using SIMD operations with VOLK library
-                    volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
                                 d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
 
                     // compute the inverse FFT
                     d_ifft->execute();
 
                     // Compute magnitude
-                    volk_32fc_magnitude_squared_32f_a(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
+                    volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
 
                     // Compute vector of test statistics corresponding to current doppler index.
-                    volk_32f_s32f_multiply_32f_a(d_magnitude, d_magnitude,
+                    volk_32f_s32f_multiply_32f(d_magnitude, d_magnitude,
                                                 1/(fft_normalization_factor*fft_normalization_factor*d_input_power),
                                                 d_fft_size);
 
                     // Accumulate test statistics in d_grid_data.
-                    volk_32f_x2_add_32f_a(d_grid_data[doppler_index], d_magnitude, d_grid_data[doppler_index], d_fft_size);
+                    volk_32f_x2_add_32f(d_grid_data[doppler_index], d_magnitude, d_grid_data[doppler_index], d_fft_size);
 
                     // Search maximum
-                    volk_32f_index_max_16u_a(&indext, d_grid_data[doppler_index], d_fft_size);
+                    volk_32f_index_max_16u(&indext, d_grid_data[doppler_index], d_fft_size);
 
                     magt = d_grid_data[doppler_index][indext];
 
@@ -303,8 +293,8 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
                     if (d_mag < magt)
                         {
                             d_mag = magt;
-                            d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
-                            d_gnss_synchro->Acq_doppler_hz = (double)doppler;
+                            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                             d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
                         }
 

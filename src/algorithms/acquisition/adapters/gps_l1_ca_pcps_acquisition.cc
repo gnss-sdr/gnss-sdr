@@ -254,8 +254,8 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
             frequency_bins++;
         }
     DLOG(INFO) << "Channel " << channel_<< "  Pfa = " << pfa;
-    unsigned int ncells = vector_length_*frequency_bins;
-    double exponent = 1/(double)ncells;
+    unsigned int ncells = vector_length_ * frequency_bins;
+    double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);

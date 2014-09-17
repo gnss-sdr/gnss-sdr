@@ -64,7 +64,7 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L1_CA_PCPS_Assisted_Acquisition"
+     * \brief Returns "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler"
      */
     std::string implementation()
     {

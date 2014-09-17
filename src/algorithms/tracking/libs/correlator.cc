@@ -36,7 +36,7 @@
 
 #include "correlator.h"
 #include <iostream>
-#ifndef GENERIC_ARCH
+#if USING_VOLK_CW_EPL_CORR_CUSTOM
   #define LV_HAVE_SSE3
   #include "volk_cw_epl_corr.h"
 #endif
@@ -189,7 +189,7 @@ void Correlator::Carrier_wipeoff_and_EPL_volk_IQ(int signal_length_samples ,cons
 
 }
 
-#ifndef GENERIC_ARCH
+#if USING_VOLK_CW_EPL_CORR_CUSTOM
 void Correlator::Carrier_wipeoff_and_EPL_volk_custom(int signal_length_samples, const gr_complex* input, gr_complex* carrier,gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, bool input_vector_unaligned)
 {
     volk_cw_epl_corr_u(input, carrier, E_code, P_code, L_code, E_out, P_out, L_out, signal_length_samples);

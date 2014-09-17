@@ -27,6 +27,8 @@ cmake_minimum_required(VERSION 2.8)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+include(TestForARM)
+include(TestForSSE)
 
 
 ########################################################################
@@ -71,6 +73,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      else(ARCH_64BITS)
          set(ARCH_ "(32 bits)")
      endif(ARCH_64BITS)
+
      if(EXISTS "/etc/lsb-release")
          execute_process(COMMAND cat /etc/lsb-release
                          COMMAND grep DISTRIB_ID
@@ -526,6 +529,8 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/i686-linux-gnu/4.7
                        /usr/lib/gcc/x86_64-linux-gnu/4.8
                        /usr/lib/gcc/i686-linux-gnu/4.8
+                       /usr/lib/gcc/x86_64-linux-gnu/4.9
+                       /usr/lib/gcc/i686-linux-gnu/4.9
                        /usr/lib/gcc/x86_64-redhat-linux/4.7.2 # Fedora 18
                        /usr/lib/gcc/i686-redhat-linux/4.7.2
                        /usr/lib/gcc/x86_64-redhat-linux/4.8.1 # Fedora 19
@@ -541,6 +546,7 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/i486-linux-gnu/4.6
                        /usr/lib/gcc/i486-linux-gnu/4.7
                        /usr/lib/gcc/i486-linux-gnu/4.8
+                       /usr/lib/gcc/i486-linux-gnu/4.9
                 )
     if(NOT GFORTRAN)
         message(" The gfortran library has not been found.")
@@ -840,18 +846,34 @@ endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 # Processor-architecture related flags
 # See http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html#i386-and-x86_002d64-Options
-# Change to '-mtune=generic' when building for distribution
-if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-     if(OS_IS_MACOSX)
-         set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -march=corei7 -mfpmath=sse")
-     else(OS_IS_MACOSX)
-         if(ENABLE_GENERIC_ARCH)
-             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -mtune=generic")
-         else(ENABLE_GENERIC_ARCH)
-             set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -march=native -mfpmath=sse")
-         endif(ENABLE_GENERIC_ARCH)
-     endif(OS_IS_MACOSX)
-endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+# Change to '-mtune=generic' when building for distribution (except when compiling for arm)
+if (NOT ARCH_COMPILER_FLAGS)
+  if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+    if(OS_IS_MACOSX)
+      set(ARCH_COMPILER_FLAGS "-march=corei7 -mfpmath=sse")
+    else(OS_IS_MACOSX)
+      if(ENABLE_GENERIC_ARCH)
+	if (IS_ARM)
+	  set(ARCH_COMPILER_FLAGS "-mtune=generic-arm")
+	else (IS_ARM)
+          set(ARCH_COMPILER_FLAGS "-mtune=generic")
+	endif(IS_ARM)
+      else(ENABLE_GENERIC_ARCH)
+	if (IS_ARM)
+	  if (ARM_VERSION STREQUAL "arm")
+	    # Unknown arm version - try our best to detect
+	    set(ARCH_COMPILER_FLAGS "-mcpu=native")
+	  else (ARM_VERSION STREQUAL "arm")
+	    set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
+	  endif (ARM_VERSION STREQUAL "arm")
+	else (IS_ARM)
+          set(ARCH_COMPILER_FLAGS "-march=native -mfpmath=sse")
+	endif (IS_ARM)
+      endif(ENABLE_GENERIC_ARCH)
+    endif(OS_IS_MACOSX)
+  endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+endif (NOT ARCH_COMPILER_FLAGS)
+set(MY_CXX_FLAGS "${MY_CXX_FLAGS} ${ARCH_COMPILER_FLAGS}")
 
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     #http://gcc.gnu.org/wiki/Visibility

@@ -19,8 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_VOLK_CONFIG_FIXED_H
-#define INCLUDED_VOLK_CONFIG_FIXED_H
+#ifndef INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED_H
+#define INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED_H
 
 #for $i, $arch in enumerate($archs)
 #define LV_$(arch.name.upper()) $i

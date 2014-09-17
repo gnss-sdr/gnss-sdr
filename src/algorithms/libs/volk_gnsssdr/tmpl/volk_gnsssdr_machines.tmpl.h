@@ -19,8 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_LIBVOLK_MACHINES_H
-#define INCLUDED_LIBVOLK_MACHINES_H
+#ifndef INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H
+#define INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_typedefs.h>

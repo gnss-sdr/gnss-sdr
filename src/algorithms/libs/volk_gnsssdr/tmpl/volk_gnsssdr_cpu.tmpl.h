@@ -19,8 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_VOLK_CPU_H
-#define INCLUDED_VOLK_CPU_H
+#ifndef INCLUDED_VOLK_GNSSSDR_CPU_H
+#define INCLUDED_VOLK_GNSSSDR_CPU_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 

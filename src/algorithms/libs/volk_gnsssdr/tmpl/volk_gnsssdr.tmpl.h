@@ -19,8 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_VOLK_RUNTIME
-#define INCLUDED_VOLK_RUNTIME
+#ifndef INCLUDED_VOLK_GNSSSDR_RUNTIME
+#define INCLUDED_VOLK_GNSSSDR_RUNTIME
 
 #include <volk_gnsssdr/volk_gnsssdr_typedefs.h>
 #include <volk_gnsssdr/volk_gnsssdr_config_fixed.h>

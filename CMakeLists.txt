@@ -859,7 +859,7 @@ if (NOT ARCH_COMPILER_FLAGS)
           set(ARCH_COMPILER_FLAGS "-mtune=generic")
 	endif(IS_ARM)
       else(ENABLE_GENERIC_ARCH)
-	if (IS_ARM)
+	if (IS_ARM) # ARM-specific options (https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html)
 	  if (ARM_VERSION STREQUAL "arm")
 	    # Unknown arm version - try our best to detect
 	    set(ARCH_COMPILER_FLAGS "-mcpu=native")

@@ -24,8 +24,8 @@ The variables that the macro needs are specified when calling it in order to avo
 Workflow
 ####################################################################
 
-In order to use the macros easily, I usually test the code without macros inside a test proto-kernel, where you are able to test it, debug it and use breakpoints.
-When it works I place it inside a macro an test it again.
+In order to use the macros easily, I usually test the code without macros inside a testing proto-kernel, where you are able to test it, debug it and use breakpoints.
+When it works I place code inside a macro an I test it again.
 
 ####################################################################
 Why macros

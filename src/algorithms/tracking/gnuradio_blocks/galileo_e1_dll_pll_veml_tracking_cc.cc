@@ -376,6 +376,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                     d_Very_Late,
                     is_unaligned());
             
+            volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in, d_carr_sign, d_very_early_code, d_early_code, d_prompt_code, d_late_code, d_very_late_code, d_current_prn_length_samples);
+            
             volk_gnsssdr_32fc_convert_16ic(d_very_early_code16, d_very_early_code, d_current_prn_length_samples);
             volk_gnsssdr_32fc_convert_16ic(d_early_code16, d_early_code, d_current_prn_length_samples);
             volk_gnsssdr_32fc_convert_16ic(d_prompt_code16, d_prompt_code, d_current_prn_length_samples);
@@ -386,7 +388,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             
             volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in16, d_carr_sign16, d_very_early_code16, d_early_code16, d_prompt_code16, d_late_code16, d_very_late_code16, d_current_prn_length_samples);
             
-            volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in, d_carr_sign, d_very_early_code, d_early_code, d_prompt_code, d_late_code, d_very_late_code, d_current_prn_length_samples);
             
             // ################## PLL ##########################################################
             // PLL discriminator

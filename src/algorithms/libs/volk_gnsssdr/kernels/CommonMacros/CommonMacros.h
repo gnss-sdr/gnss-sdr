@@ -54,6 +54,16 @@
         output_ps = _mm_cvtepi32_ps(output_i32);
         #endif /* CM_16IC_CONVERT_AND_ACC_32FC_U_SSE4_1 */
 
+        #ifndef CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1
+        #define CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1(input, input_i_1, input_i_2, output_i32, output_ps)\
+        input_i_1 = _mm_cvtepi8_epi32(input);\
+        input = _mm_srli_si128 (input, 4);\
+        input_i_2 = _mm_cvtepi8_epi32(input);\
+        input = _mm_srli_si128 (input, 4);\
+        output_i32 = _mm_add_epi32 (input_i_1, input_i_2);\
+        output_ps = _mm_cvtepi32_ps(output_i32);
+        #endif /* CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1 */
+
     #endif /* LV_HAVE_SSE4_1 */
 
     #ifdef LV_HAVE_SSE2
@@ -70,6 +80,32 @@
         real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);\
         imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
         #endif /* CM_16IC_X4_SCALAR_PRODUCT_16IC_X2_U_SSE2 */
+
+        #ifndef CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2
+        #define CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(input, mult1, real, imag)\
+        imag = _mm_srli_si128 (input, 1);\
+        imag = _mm_and_si128 (imag, mult1);\
+        real = _mm_and_si128 (input, mult1);
+        #endif /* CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2 */
+
+        #ifndef CM_8IC_CONVERT_AND_ACC_32FC_U_SSE2
+        #define CM_8IC_CONVERT_AND_ACC_32FC_U_SSE2(input, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)\
+        input_i_1 = _mm_unpacklo_epi8(_mm_setzero_si128(), input);\
+        input_i_2 = _mm_unpacklo_epi16(_mm_setzero_si128(), input_i_1);\
+        input_i_1 = _mm_unpackhi_epi16(_mm_setzero_si128(), input_i_1);\
+        input_i_1 = _mm_srai_epi32(input_i_1, 24);\
+        input_i_2 = _mm_srai_epi32(input_i_2, 24);\
+        output_i32 = _mm_add_epi32(input_i_1, input_i_2);\
+        output_ps_1 = _mm_cvtepi32_ps(output_i32);\
+        \
+        input_i_1 = _mm_unpackhi_epi8(_mm_setzero_si128(), input);\
+        input_i_2 = _mm_unpacklo_epi16(_mm_setzero_si128(), input_i_1);\
+        input_i_1 = _mm_unpackhi_epi16(_mm_setzero_si128(), input_i_1);\
+        input_i_1 = _mm_srai_epi32(input_i_1, 24);\
+        input_i_2 = _mm_srai_epi32(input_i_2, 24);\
+        output_i32 = _mm_add_epi32(input_i_1, input_i_2);\
+        output_ps_2 = _mm_cvtepi32_ps(output_i32);
+        #endif /* CM_8IC_CONVERT_AND_ACC_32FC_U_SSE2 */
 
     #endif /* LV_HAVE_AVX */
 

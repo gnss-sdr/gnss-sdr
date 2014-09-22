@@ -55,6 +55,8 @@
 
 #ifdef LV_HAVE_SSE4_1
 #include "smmintrin.h"
+#include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
+#include "CommonMacros/CommonMacros.h"
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input
@@ -75,8 +77,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_u_sse4_1(lv_32fc_t* E
     __m128i mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, output, real_output, imag_output;
     
     __m128 E_code_acc, P_code_acc, L_code_acc;
-    __m128i output_i_1, output_i_2, output_i_3, output_i_4;
-    __m128 output_ps_1, output_ps_2, output_ps_3, output_ps_4;
+    __m128i input_i_1, input_i_2, output_i32;
+    __m128 output_ps_1, output_ps_2;
     
     const lv_8sc_t* input_ptr = input;
     const lv_8sc_t* carrier_ptr = carrier;
@@ -106,126 +108,34 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_u_sse4_1(lv_32fc_t* E
             x = _mm_lddqu_si128((__m128i*)input_ptr);
             y = _mm_lddqu_si128((__m128i*)carrier_ptr);
             
-            imagx = _mm_srli_si128 (x, 1);
-            imagx = _mm_and_si128 (imagx, mult1);
-            realx = _mm_and_si128 (x, mult1);
+            CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(x, mult1, realx, imagx)
+            CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(y, mult1, realy, imagy)
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (realx, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imagx, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (realx, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imagx, realy);
-            
-            real_bb_signal_sample = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_bb_signal_sample = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
+            CM_16IC_X4_SCALAR_PRODUCT_16IC_X2_U_SSE2(realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_bb_signal_sample, imag_bb_signal_sample)
             
             //Get early values
             y = _mm_lddqu_si128((__m128i*)E_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_blendv_epi8 (imag_output, real_output, mult1);
-            
-            output_i_1 = _mm_cvtepi8_epi32(output);
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output = _mm_srli_si128 (output, 4);
-            output_i_2 = _mm_cvtepi8_epi32(output);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output = _mm_srli_si128 (output, 4);
-            output_i_3 = _mm_cvtepi8_epi32(output);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output = _mm_srli_si128 (output, 4);
-            output_i_4 = _mm_cvtepi8_epi32(output);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             E_code_acc = _mm_add_ps (E_code_acc, output_ps_1);
             E_code_acc = _mm_add_ps (E_code_acc, output_ps_2);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_3);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_4);
             
             //Get prompt values
             y = _mm_lddqu_si128((__m128i*)P_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_blendv_epi8 (imag_output, real_output, mult1);
-            
-            output_i_1 = _mm_cvtepi8_epi32(output);
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output = _mm_srli_si128 (output, 4);
-            output_i_2 = _mm_cvtepi8_epi32(output);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output = _mm_srli_si128 (output, 4);
-            output_i_3 = _mm_cvtepi8_epi32(output);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output = _mm_srli_si128 (output, 4);
-            output_i_4 = _mm_cvtepi8_epi32(output);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             P_code_acc = _mm_add_ps (P_code_acc, output_ps_1);
             P_code_acc = _mm_add_ps (P_code_acc, output_ps_2);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_3);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_4);
             
             //Get late values
             y = _mm_lddqu_si128((__m128i*)L_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_blendv_epi8 (imag_output, real_output, mult1);
-            
-            output_i_1 = _mm_cvtepi8_epi32(output);
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output = _mm_srli_si128 (output, 4);
-            output_i_2 = _mm_cvtepi8_epi32(output);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output = _mm_srli_si128 (output, 4);
-            output_i_3 = _mm_cvtepi8_epi32(output);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output = _mm_srli_si128 (output, 4);
-            output_i_4 = _mm_cvtepi8_epi32(output);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             L_code_acc = _mm_add_ps (L_code_acc, output_ps_1);
             L_code_acc = _mm_add_ps (L_code_acc, output_ps_2);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_3);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_4);
             
             input_ptr += 8;
             carrier_ptr += 8;
@@ -265,6 +175,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_u_sse4_1(lv_32fc_t* E
 
 #ifdef LV_HAVE_SSE2
 #include "emmintrin.h"
+#include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
+#include "CommonMacros/CommonMacros.h"
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input
@@ -285,8 +197,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_u_sse2(lv_32fc_t* E_o
     __m128i mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, output, real_output, imag_output;
     
     __m128 E_code_acc, P_code_acc, L_code_acc;
-    __m128i output_i_aux_1, output_i_aux_2, output_i_1, output_i_2, output_i_3, output_i_4;
-    __m128 output_ps_1, output_ps_2, output_ps_3, output_ps_4;
+    __m128i input_i_1, input_i_2, output_i32;
+    __m128 output_ps_1, output_ps_2;
     
     const lv_8sc_t* input_ptr = input;
     const lv_8sc_t* carrier_ptr = carrier;
@@ -316,148 +228,34 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_u_sse2(lv_32fc_t* E_o
             x = _mm_lddqu_si128((__m128i*)input_ptr);
             y = _mm_lddqu_si128((__m128i*)carrier_ptr);
             
-            imagx = _mm_srli_si128 (x, 1);
-            imagx = _mm_and_si128 (imagx, mult1);
-            realx = _mm_and_si128 (x, mult1);
+            CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(x, mult1, realx, imagx)
+            CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(y, mult1, realy, imagy)
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (realx, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imagx, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (realx, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imagx, realy);
-            
-            real_bb_signal_sample = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_bb_signal_sample = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
+            CM_16IC_X4_SCALAR_PRODUCT_16IC_X2_U_SSE2(realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_bb_signal_sample, imag_bb_signal_sample)
             
             //Get early values
             y = _mm_lddqu_si128((__m128i*)E_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            real_output = _mm_and_si128 (real_output, mult1);
-            imag_output = _mm_and_si128 (imag_output, mult1);
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_or_si128 (real_output, imag_output);
-            
-            output_i_aux_1 = _mm_unpacklo_epi8(_mm_setzero_si128(), output);
-            output_i_aux_2 = _mm_unpackhi_epi8(_mm_setzero_si128(), output);
-            output_i_1 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_2 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_3 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_2);
-            output_i_4 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_2);
-            
-            //Shift, MAINTAINING THE SIGN!!!
-            output_i_1 = _mm_srai_epi32(output_i_1, 24);
-            output_i_2 = _mm_srai_epi32(output_i_2, 24);
-            output_i_3 = _mm_srai_epi32(output_i_3, 24);
-            output_i_4 = _mm_srai_epi32(output_i_4, 24);
-            
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             E_code_acc = _mm_add_ps (E_code_acc, output_ps_1);
             E_code_acc = _mm_add_ps (E_code_acc, output_ps_2);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_3);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_4);
             
             //Get prompt values
             y = _mm_lddqu_si128((__m128i*)P_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            real_output = _mm_and_si128 (real_output, mult1);
-            imag_output = _mm_and_si128 (imag_output, mult1);
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_or_si128 (real_output, imag_output);
-            
-            output_i_aux_1 = _mm_unpacklo_epi8(_mm_setzero_si128(), output);
-            output_i_aux_2 = _mm_unpackhi_epi8(_mm_setzero_si128(), output);
-            output_i_1 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_2 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_3 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_2);
-            output_i_4 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_2);
-            
-            output_i_1 = _mm_srai_epi32(output_i_1, 24);
-            output_i_2 = _mm_srai_epi32(output_i_2, 24);
-            output_i_3 = _mm_srai_epi32(output_i_3, 24);
-            output_i_4 = _mm_srai_epi32(output_i_4, 24);
-            
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             P_code_acc = _mm_add_ps (P_code_acc, output_ps_1);
             P_code_acc = _mm_add_ps (P_code_acc, output_ps_2);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_3);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_4);
             
             //Get late values
             y = _mm_lddqu_si128((__m128i*)L_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            real_output = _mm_and_si128 (real_output, mult1);
-            imag_output = _mm_and_si128 (imag_output, mult1);
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_or_si128 (real_output, imag_output);
-            
-            output_i_aux_1 = _mm_unpacklo_epi8(_mm_setzero_si128(), output);
-            output_i_aux_2 = _mm_unpackhi_epi8(_mm_setzero_si128(), output);
-            output_i_1 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_2 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_3 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_2);
-            output_i_4 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_2);
-            
-            output_i_1 = _mm_srai_epi32(output_i_1, 24);
-            output_i_2 = _mm_srai_epi32(output_i_2, 24);
-            output_i_3 = _mm_srai_epi32(output_i_3, 24);
-            output_i_4 = _mm_srai_epi32(output_i_4, 24);
-            
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             L_code_acc = _mm_add_ps (L_code_acc, output_ps_1);
             L_code_acc = _mm_add_ps (L_code_acc, output_ps_2);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_3);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_4);
 
             input_ptr += 8;
             carrier_ptr += 8;
@@ -545,6 +343,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_generic(lv_32fc_t* E_
 
 #ifdef LV_HAVE_SSE4_1
 #include "smmintrin.h"
+#include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
+#include "CommonMacros/CommonMacros.h"
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input
@@ -565,8 +365,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_a_sse4_1(lv_32fc_t* E
     __m128i mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, output, real_output, imag_output;
     
     __m128 E_code_acc, P_code_acc, L_code_acc;
-    __m128i output_i_1, output_i_2, output_i_3, output_i_4;
-    __m128 output_ps_1, output_ps_2, output_ps_3, output_ps_4;
+    __m128i input_i_1, input_i_2, output_i32;
+    __m128 output_ps_1, output_ps_2;
     
     const lv_8sc_t* input_ptr = input;
     const lv_8sc_t* carrier_ptr = carrier;
@@ -596,126 +396,34 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_a_sse4_1(lv_32fc_t* E
             x = _mm_load_si128((__m128i*)input_ptr);
             y = _mm_load_si128((__m128i*)carrier_ptr);
             
-            imagx = _mm_srli_si128 (x, 1);
-            imagx = _mm_and_si128 (imagx, mult1);
-            realx = _mm_and_si128 (x, mult1);
+            CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(x, mult1, realx, imagx)
+            CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(y, mult1, realy, imagy)
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (realx, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imagx, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (realx, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imagx, realy);
-            
-            real_bb_signal_sample = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_bb_signal_sample = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
+            CM_16IC_X4_SCALAR_PRODUCT_16IC_X2_U_SSE2(realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_bb_signal_sample, imag_bb_signal_sample)
             
             //Get early values
             y = _mm_load_si128((__m128i*)E_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_blendv_epi8 (imag_output, real_output, mult1);
-            
-            output_i_1 = _mm_cvtepi8_epi32(output);
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output = _mm_srli_si128 (output, 4);
-            output_i_2 = _mm_cvtepi8_epi32(output);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output = _mm_srli_si128 (output, 4);
-            output_i_3 = _mm_cvtepi8_epi32(output);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output = _mm_srli_si128 (output, 4);
-            output_i_4 = _mm_cvtepi8_epi32(output);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             E_code_acc = _mm_add_ps (E_code_acc, output_ps_1);
             E_code_acc = _mm_add_ps (E_code_acc, output_ps_2);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_3);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_4);
             
             //Get prompt values
             y = _mm_load_si128((__m128i*)P_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_blendv_epi8 (imag_output, real_output, mult1);
-            
-            output_i_1 = _mm_cvtepi8_epi32(output);
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output = _mm_srli_si128 (output, 4);
-            output_i_2 = _mm_cvtepi8_epi32(output);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output = _mm_srli_si128 (output, 4);
-            output_i_3 = _mm_cvtepi8_epi32(output);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output = _mm_srli_si128 (output, 4);
-            output_i_4 = _mm_cvtepi8_epi32(output);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             P_code_acc = _mm_add_ps (P_code_acc, output_ps_1);
             P_code_acc = _mm_add_ps (P_code_acc, output_ps_2);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_3);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_4);
             
             //Get late values
             y = _mm_load_si128((__m128i*)L_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_blendv_epi8 (imag_output, real_output, mult1);
-            
-            output_i_1 = _mm_cvtepi8_epi32(output);
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output = _mm_srli_si128 (output, 4);
-            output_i_2 = _mm_cvtepi8_epi32(output);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output = _mm_srli_si128 (output, 4);
-            output_i_3 = _mm_cvtepi8_epi32(output);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output = _mm_srli_si128 (output, 4);
-            output_i_4 = _mm_cvtepi8_epi32(output);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             L_code_acc = _mm_add_ps (L_code_acc, output_ps_1);
             L_code_acc = _mm_add_ps (L_code_acc, output_ps_2);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_3);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_4);
             
             input_ptr += 8;
             carrier_ptr += 8;
@@ -755,6 +463,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_a_sse4_1(lv_32fc_t* E
 
 #ifdef LV_HAVE_SSE2
 #include "emmintrin.h"
+#include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
+#include "CommonMacros/CommonMacros.h"
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input
@@ -775,8 +485,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_a_sse2(lv_32fc_t* E_o
     __m128i mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, output, real_output, imag_output;
     
     __m128 E_code_acc, P_code_acc, L_code_acc;
-    __m128i output_i_aux_1, output_i_aux_2, output_i_1, output_i_2, output_i_3, output_i_4;
-    __m128 output_ps_1, output_ps_2, output_ps_3, output_ps_4;
+    __m128i input_i_1, input_i_2, output_i32;
+    __m128 output_ps_1, output_ps_2;
     
     const lv_8sc_t* input_ptr = input;
     const lv_8sc_t* carrier_ptr = carrier;
@@ -806,153 +516,40 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_a_sse2(lv_32fc_t* E_o
             x = _mm_load_si128((__m128i*)input_ptr);
             y = _mm_load_si128((__m128i*)carrier_ptr);
             
-            imagx = _mm_srli_si128 (x, 1);
-            imagx = _mm_and_si128 (imagx, mult1);
-            realx = _mm_and_si128 (x, mult1);
+            CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(x, mult1, realx, imagx)
+            CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(y, mult1, realy, imagy)
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (realx, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imagx, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (realx, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imagx, realy);
-            
-            real_bb_signal_sample = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_bb_signal_sample = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
+            CM_16IC_X4_SCALAR_PRODUCT_16IC_X2_U_SSE2(realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_bb_signal_sample, imag_bb_signal_sample)
             
             //Get early values
             y = _mm_load_si128((__m128i*)E_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            real_output = _mm_and_si128 (real_output, mult1);
-            imag_output = _mm_and_si128 (imag_output, mult1);
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_or_si128 (real_output, imag_output);
-            
-            output_i_aux_1 = _mm_unpacklo_epi8(_mm_setzero_si128(), output);
-            output_i_aux_2 = _mm_unpackhi_epi8(_mm_setzero_si128(), output);
-            output_i_1 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_2 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_3 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_2);
-            output_i_4 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_2);
-            
-            output_i_1 = _mm_srai_epi32(output_i_1, 24);
-            output_i_2 = _mm_srai_epi32(output_i_2, 24);
-            output_i_3 = _mm_srai_epi32(output_i_3, 24);
-            output_i_4 = _mm_srai_epi32(output_i_4, 24);
-            
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             E_code_acc = _mm_add_ps (E_code_acc, output_ps_1);
             E_code_acc = _mm_add_ps (E_code_acc, output_ps_2);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_3);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_4);
             
             //Get prompt values
             y = _mm_load_si128((__m128i*)P_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            real_output = _mm_and_si128 (real_output, mult1);
-            imag_output = _mm_and_si128 (imag_output, mult1);
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_or_si128 (real_output, imag_output);
-            
-            output_i_aux_1 = _mm_unpacklo_epi8(_mm_setzero_si128(), output);
-            output_i_aux_2 = _mm_unpackhi_epi8(_mm_setzero_si128(), output);
-            output_i_1 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_2 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_3 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_2);
-            output_i_4 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_2);
-            
-            output_i_1 = _mm_srai_epi32(output_i_1, 24);
-            output_i_2 = _mm_srai_epi32(output_i_2, 24);
-            output_i_3 = _mm_srai_epi32(output_i_3, 24);
-            output_i_4 = _mm_srai_epi32(output_i_4, 24);
-            
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             P_code_acc = _mm_add_ps (P_code_acc, output_ps_1);
             P_code_acc = _mm_add_ps (P_code_acc, output_ps_2);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_3);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_4);
             
             //Get late values
             y = _mm_load_si128((__m128i*)L_code_ptr);
             
-            imagy = _mm_srli_si128 (y, 1);
-            imagy = _mm_and_si128 (imagy, mult1);
-            realy = _mm_and_si128 (y, mult1);
-            
-            realx_mult_realy = _mm_mullo_epi16 (real_bb_signal_sample, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imag_bb_signal_sample, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (real_bb_signal_sample, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imag_bb_signal_sample, realy);
-            
-            real_output = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            imag_output = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            
-            real_output = _mm_and_si128 (real_output, mult1);
-            imag_output = _mm_and_si128 (imag_output, mult1);
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            output = _mm_or_si128 (real_output, imag_output);
-            
-            output_i_aux_1 = _mm_unpacklo_epi8(_mm_setzero_si128(), output);
-            output_i_aux_2 = _mm_unpackhi_epi8(_mm_setzero_si128(), output);
-            output_i_1 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_2 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_1);
-            output_i_3 = _mm_unpacklo_epi16(_mm_setzero_si128(), output_i_aux_2);
-            output_i_4 = _mm_unpackhi_epi16(_mm_setzero_si128(), output_i_aux_2);
-            
-            output_i_1 = _mm_srai_epi32(output_i_1, 24);
-            output_i_2 = _mm_srai_epi32(output_i_2, 24);
-            output_i_3 = _mm_srai_epi32(output_i_3, 24);
-            output_i_4 = _mm_srai_epi32(output_i_4, 24);
-            
-            output_ps_1 = _mm_cvtepi32_ps(output_i_1);
-            output_ps_2 = _mm_cvtepi32_ps(output_i_2);
-            output_ps_3 = _mm_cvtepi32_ps(output_i_3);
-            output_ps_4 = _mm_cvtepi32_ps(output_i_4);
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
             L_code_acc = _mm_add_ps (L_code_acc, output_ps_1);
             L_code_acc = _mm_add_ps (L_code_acc, output_ps_2);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_3);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_4);
-
+            
             input_ptr += 8;
             carrier_ptr += 8;
             E_code_ptr += 8;
-            L_code_ptr += 8;
             P_code_ptr += 8;
+            L_code_ptr += 8;
         }
         
         __VOLK_ATTR_ALIGNED(16) lv_32fc_t E_dotProductVector[2];

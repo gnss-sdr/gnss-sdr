@@ -140,6 +140,14 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_very_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
 
     d_carr_sign=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    
+    d_very_early_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_early_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_prompt_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_late_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_very_late_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_carr_sign16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    in16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
 
     // correlator outputs (scalar)
 
@@ -297,6 +305,14 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
     volk_free(d_Prompt);
     volk_free(d_Late);
     volk_free(d_Very_Late);
+    
+    volk_free(d_very_early_code16);
+    volk_free(d_early_code16);
+    volk_free(d_prompt_code16);
+    volk_free(d_late_code16);
+    volk_free(d_very_late_code16);
+    volk_free(d_carr_sign16);
+    volk_free(in16);
 
     delete[] d_ca_code;
     delete[] d_Prompt_buffer;
@@ -345,23 +361,33 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             update_local_carrier();
 
             // perform carrier wipe-off and compute Very Early, Early, Prompt, Late and Very Late correlation
-//            d_correlator.Carrier_wipeoff_and_VEPL_volk(d_current_prn_length_samples,
-//                    in,
-//                    d_carr_sign,
-//                    d_very_early_code,
-//                    d_early_code,
-//                    d_prompt_code,
-//                    d_late_code,
-//                    d_very_late_code,
-//                    d_Very_Early,
-//                    d_Early,
-//                    d_Prompt,
-//                    d_Late,
-//                    d_Very_Late,
-//                    is_unaligned());
+            d_correlator.Carrier_wipeoff_and_VEPL_volk(d_current_prn_length_samples,
+                    in,
+                    d_carr_sign,
+                    d_very_early_code,
+                    d_early_code,
+                    d_prompt_code,
+                    d_late_code,
+                    d_very_late_code,
+                    d_Very_Early,
+                    d_Early,
+                    d_Prompt,
+                    d_Late,
+                    d_Very_Late,
+                    is_unaligned());
+            
+            volk_gnsssdr_32fc_convert_16ic(d_very_early_code16, d_very_early_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_16ic(d_early_code16, d_early_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_16ic(d_prompt_code16, d_prompt_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_16ic(d_late_code16, d_late_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_16ic(d_very_late_code16, d_very_late_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_16ic(in16, in, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_16ic(d_carr_sign16, d_carr_sign, d_current_prn_length_samples);
+            
+            volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in16, d_carr_sign16, d_very_early_code16, d_early_code16, d_prompt_code16, d_late_code16, d_very_late_code16, d_current_prn_length_samples);
             
             volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in, d_carr_sign, d_very_early_code, d_early_code, d_prompt_code, d_late_code, d_very_late_code, d_current_prn_length_samples);
-
+            
             // ################## PLL ##########################################################
             // PLL discriminator
             carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)GPS_TWO_PI;

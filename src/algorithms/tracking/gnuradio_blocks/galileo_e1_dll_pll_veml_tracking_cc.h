@@ -137,6 +137,14 @@ private:
     gr_complex* d_late_code;
     gr_complex* d_very_late_code;
     gr_complex* d_carr_sign;
+    
+    lv_16sc_t* d_very_early_code16;
+    lv_16sc_t* d_early_code16;
+    lv_16sc_t* d_prompt_code16;
+    lv_16sc_t* d_late_code16;
+    lv_16sc_t* d_very_late_code16;
+    lv_16sc_t* d_carr_sign16;
+    lv_16sc_t* in16;
 
     gr_complex *d_Very_Early;
     gr_complex *d_Early;

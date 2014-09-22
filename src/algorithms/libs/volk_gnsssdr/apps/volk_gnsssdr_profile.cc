@@ -105,12 +105,19 @@ int main(int argc, char *argv[]) {
     
     //GNSS-SDR PROTO-KERNELS
     //lv_32fc_t sfv = lv_cmake((float)1, (float)2);
-    //VOLK_PROFILE(volk_gnsssdr_8ic_s8ic_multiply_8ic, 1e-4, sfv, 204602, 1000, &results, benchmark_mode, kernel_regex);
-     VOLK_PROFILE(volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
+    //example: VOLK_PROFILE(volk_gnsssdr_8ic_s8ic_multiply_8ic, 1e-4, sfv, 204602, 1000, &results, benchmark_mode, kernel_regex);
+     VOLK_PROFILE(volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
+    
+     VOLK_PROFILE(volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
+    
      VOLK_PROFILE(volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
-     VOLK_PROFILE(volk_gnsssdr_16i_s32f_convert_32f, 1e-4, 32768.0, 204602, 10000, &results, benchmark_mode, kernel_regex);
+     VOLK_PROFILE(volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
+     VOLK_PROFILE(volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_32fc_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
+    
+     VOLK_PROFILE(volk_gnsssdr_32fc_convert_16ic, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
+    
      VOLK_PROFILE(volk_gnsssdr_32f_accumulator_s32f, 1e-4, 0, 204602, 10000, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_8i_accumulator_s8i, 1e-4, 0, 204602, 10000, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_32f_index_max_16u, 3, 0, 204602, 5000, &results, benchmark_mode, kernel_regex);
@@ -129,6 +136,9 @@ int main(int argc, char *argv[]) {
      VOLK_PROFILE(volk_gnsssdr_32fc_x2_multiply_32fc, 1e-4, 0, 204602, 1000, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_8ic_x2_multiply_8ic, 1e-4, 0, 204602, 1000, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_8u_x2_multiply_8u, 1e-4, 0, 204602, 1000, &results, benchmark_mode, kernel_regex);
+     VOLK_PROFILE(volk_gnsssdr_64f_accumulator_64f, 1e-4, 0, 16000, 1000, &results, benchmark_mode, kernel_regex);
+     VOLK_PROFILE(volk_gnsssdr_32f_s32f_convert_16i, 1e-4, 1, 204602, 250, &results, benchmark_mode, kernel_regex);
+     VOLK_PROFILE(volk_gnsssdr_16i_s32f_convert_32f, 1e-4, 1, 204602, 250, &results, benchmark_mode, kernel_regex);
     if(store_results) {
         char path[1024];
         volk_gnsssdr_get_config_path(path);

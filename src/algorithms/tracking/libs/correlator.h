@@ -63,7 +63,7 @@ public:
     void Carrier_wipeoff_and_EPL_volk_IQ(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* P_data_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* P_data_out);
     Correlator();
     ~Correlator();
-#ifndef USING_VOLK_CW_EPL_CORR
+#if USING_VOLK_CW_EPL_CORR_CUSTOM
     void Carrier_wipeoff_and_EPL_volk_custom(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, bool input_vector_unaligned);
 #endif
 

@@ -60,6 +60,14 @@ VOLK_RUN_TESTS(volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 20462, 1);
 
 VOLK_RUN_TESTS(volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 20462, 1);
 VOLK_RUN_TESTS(volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 20462, 1);
+VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_epl_corr_safe_32fc_x5, 1e-4, 0, 20462, 1);
+VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_epl_corr_unsafe_32fc_x5, 1e-4, 0, 20462, 1);
+VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5, 1e-4, 0, 20462, 1);
+VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_epl_corr_TEST_32fc_x5, 1e-4, 0, 20462, 1);
+
+
+
+
 
 
 

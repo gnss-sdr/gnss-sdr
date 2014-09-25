@@ -50,6 +50,21 @@
         CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1(output, input_i_1, input_i_2, output_i32, output_ps_2)
         #endif /* CM_16IC_X2_CW_CORR_32FC_X2_U_SSE4_1 */
 
+        #ifndef CM_8IC_X2_CW_CORR_SAFE_32FC_X2_U_SSE4_1
+        #define CM_8IC_X2_CW_CORR_SAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, minus128, minus128control, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)\
+        CM_8IC_CONTROLMINUS128_8IC_U_SSE2(y, minus128, minus128control)\
+        CM_8IC_X2_SCALAR_PRODUCT_16IC_X2_U_SSSE3(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output)\
+        CM_16IC_CONVERT_AND_ACC_32FC_U_SSE4_1(real_output, input_i_1, input_i_2, output_i32, real_output_ps)\
+        CM_16IC_CONVERT_AND_ACC_32FC_U_SSE4_1(imag_output, input_i_1, input_i_2, output_i32, imag_output_ps)
+        #endif /* CM_8IC_X2_CW_CORR_SAFE_32FC_X2_U_SSE4_1 */
+
+        #ifndef CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1
+        #define CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)\
+        CM_8IC_X2_SCALAR_PRODUCT_16IC_X2_U_SSSE3(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output)\
+        CM_16IC_CONVERT_AND_ACC_32FC_U_SSE4_1(real_output, input_i_1, input_i_2, output_i32, real_output_ps)\
+        CM_16IC_CONVERT_AND_ACC_32FC_U_SSE4_1(imag_output, input_i_1, input_i_2, output_i32, imag_output_ps)
+        #endif /* CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1 */
+
     #endif /* LV_HAVE_SSE4_1 */
 
     #ifdef LV_HAVE_SSE2

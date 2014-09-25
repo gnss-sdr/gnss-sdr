@@ -71,6 +71,24 @@
      \brief Macros for U_SSE2
      */
 
+    #ifdef LV_HAVE_SSSE3
+    /*!
+     \brief Macros for U_SSSE3
+     */
+
+        #ifndef CM_8IC_X2_SCALAR_PRODUCT_16IC_X2_U_SSSE3
+        #define CM_8IC_X2_SCALAR_PRODUCT_16IC_X2_U_SSSE3(y, x, check_sign_sequence, rearrange_sequence, y_aux, x_abs, real_output, imag_output)\
+        y_aux = _mm_sign_epi8 (y, x);\
+        y_aux = _mm_sign_epi8 (y_aux, check_sign_sequence);\
+        real_output = _mm_maddubs_epi16 (x_abs, y_aux);\
+        \
+        y_aux = _mm_shuffle_epi8 (y, rearrange_sequence);\
+        y_aux = _mm_sign_epi8 (y_aux, x);\
+        imag_output = _mm_maddubs_epi16 (x_abs, y_aux);
+        #endif /* CM_8IC_X2_SCALAR_PRODUCT_16IC_X2_U_SSSE3 */
+
+    #endif /* LV_HAVE_SSSE3 */
+
         #ifndef CM_16IC_X4_SCALAR_PRODUCT_16IC_X2_U_SSE2
         #define CM_16IC_X4_SCALAR_PRODUCT_16IC_X2_U_SSE2(realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output)\
         realx_mult_realy = _mm_mullo_epi16 (realx, realy);\
@@ -107,7 +125,13 @@
         output_ps_2 = _mm_cvtepi32_ps(output_i32);
         #endif /* CM_8IC_CONVERT_AND_ACC_32FC_U_SSE2 */
 
-    #endif /* LV_HAVE_AVX */
+        #ifndef CM_8IC_CONTROLMINUS128_8IC_U_SSE2
+        #define CM_8IC_CONTROLMINUS128_8IC_U_SSE2(y, minus128, minus128control)\
+        minus128control = _mm_cmpeq_epi8 (y, minus128);\
+        y = _mm_sub_epi8 (y, minus128control);
+        #endif /* CM_8IC_CONTROLMINUS128_8IC_U_SSE2 */
+
+    #endif /* LV_HAVE_SSE2 */
 
     #ifdef LV_HAVE_GENERIC
     /*!

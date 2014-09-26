@@ -55,12 +55,18 @@
         #endif /* CM_16IC_CONVERT_AND_ACC_32FC_U_SSE4_1 */
 
         #ifndef CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1
-        #define CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1(input, input_i_1, input_i_2, output_i32, output_ps)\
+        #define CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1(input, input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2, output_ps)\
         input_i_1 = _mm_cvtepi8_epi32(input);\
         input = _mm_srli_si128 (input, 4);\
         input_i_2 = _mm_cvtepi8_epi32(input);\
         input = _mm_srli_si128 (input, 4);\
-        output_i32 = _mm_add_epi32 (input_i_1, input_i_2);\
+        output_i32_1 = _mm_add_epi32 (input_i_1, input_i_2);\
+        input_i_1 = _mm_cvtepi8_epi32(input);\
+        input = _mm_srli_si128 (input, 4);\
+        input_i_2 = _mm_cvtepi8_epi32(input);\
+        input = _mm_srli_si128 (input, 4);\
+        output_i32_2 = _mm_add_epi32 (input_i_1, input_i_2);\
+        output_i32 = _mm_add_epi32 (output_i32_1, output_i32_2);\
         output_ps = _mm_cvtepi32_ps(output_i32);
         #endif /* CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1 */
 

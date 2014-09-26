@@ -77,8 +77,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_u_sse4_1(lv_32fc_t* E
     __m128i mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, output, real_output, imag_output;
     
     __m128 E_code_acc, P_code_acc, L_code_acc;
-    __m128i input_i_1, input_i_2, output_i32;
-    __m128 output_ps_1, output_ps_2;
+    __m128i input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2;
+    __m128 output_ps;
     
     const lv_8sc_t* input_ptr = input;
     const lv_8sc_t* carrier_ptr = carrier;
@@ -116,26 +116,23 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_u_sse4_1(lv_32fc_t* E
             //Get early values
             y = _mm_lddqu_si128((__m128i*)E_code_ptr);
             
-            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2, output_ps)
             
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_1);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_2);
+            E_code_acc = _mm_add_ps (E_code_acc, output_ps);
             
             //Get prompt values
             y = _mm_lddqu_si128((__m128i*)P_code_ptr);
             
-            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2, output_ps)
             
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_1);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_2);
+            P_code_acc = _mm_add_ps (P_code_acc, output_ps);
             
             //Get late values
             y = _mm_lddqu_si128((__m128i*)L_code_ptr);
             
-            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2, output_ps)
             
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_1);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_2);
+            L_code_acc = _mm_add_ps (L_code_acc, output_ps);
             
             input_ptr += 8;
             carrier_ptr += 8;
@@ -365,8 +362,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_a_sse4_1(lv_32fc_t* E
     __m128i mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, output, real_output, imag_output;
     
     __m128 E_code_acc, P_code_acc, L_code_acc;
-    __m128i input_i_1, input_i_2, output_i32;
-    __m128 output_ps_1, output_ps_2;
+    __m128i input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2;
+    __m128 output_ps;
     
     const lv_8sc_t* input_ptr = input;
     const lv_8sc_t* carrier_ptr = carrier;
@@ -404,26 +401,23 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3_a_sse4_1(lv_32fc_t* E
             //Get early values
             y = _mm_load_si128((__m128i*)E_code_ptr);
             
-            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2, output_ps)
             
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_1);
-            E_code_acc = _mm_add_ps (E_code_acc, output_ps_2);
+            E_code_acc = _mm_add_ps (E_code_acc, output_ps);
             
             //Get prompt values
             y = _mm_load_si128((__m128i*)P_code_ptr);
             
-            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2, output_ps)
             
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_1);
-            P_code_acc = _mm_add_ps (P_code_acc, output_ps_2);
+            P_code_acc = _mm_add_ps (P_code_acc, output_ps);
             
             //Get late values
             y = _mm_load_si128((__m128i*)L_code_ptr);
             
-            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
+            CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2, output_ps)
             
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_1);
-            L_code_acc = _mm_add_ps (L_code_acc, output_ps_2);
+            L_code_acc = _mm_add_ps (L_code_acc, output_ps);
             
             input_ptr += 8;
             carrier_ptr += 8;

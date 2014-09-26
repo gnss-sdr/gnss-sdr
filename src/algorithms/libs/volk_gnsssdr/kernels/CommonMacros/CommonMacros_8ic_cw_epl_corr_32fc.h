@@ -39,15 +39,14 @@
       */
 
         #ifndef CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1
-        #define CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)\
+        #define CM_8IC_X2_CW_CORR_32FC_X2_U_SSE4_1(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2, output_ps)\
         CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(y, mult1, realy, imagy)\
         CM_16IC_X4_SCALAR_PRODUCT_16IC_X2_U_SSE2(real_bb_signal_sample, imag_bb_signal_sample, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output)\
         \
         imag_output = _mm_slli_si128 (imag_output, 1);\
         output = _mm_blendv_epi8 (imag_output, real_output, mult1);\
         \
-        CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1(output, input_i_1, input_i_2, output_i32, output_ps_1)\
-        CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1(output, input_i_1, input_i_2, output_i32, output_ps_2)
+        CM_8IC_CONVERT_AND_ACC_32FC_U_SSE4_1(output, input_i_1, input_i_2, output_i32, output_i32_1, output_i32_2, output_ps)
         #endif /* CM_16IC_X2_CW_CORR_32FC_X2_U_SSE4_1 */
 
         #ifndef CM_8IC_X2_CW_CORR_SAFE_32FC_X2_U_SSE4_1

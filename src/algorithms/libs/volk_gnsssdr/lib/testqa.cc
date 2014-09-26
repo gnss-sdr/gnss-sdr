@@ -50,6 +50,7 @@ VOLK_RUN_TESTS(volk_gnsssdr_8i_max_s8i, 3, 0, 20462, 1);
 VOLK_RUN_TESTS(volk_gnsssdr_64f_accumulator_64f, 3, 0, 20462, 1);
 
 VOLK_RUN_TESTS(volk_gnsssdr_32fc_convert_16ic, 3, 0, 20462, 1);
+VOLK_RUN_TESTS(volk_gnsssdr_32fc_convert_8ic, 3, 0, 20462, 1);
 VOLK_RUN_TESTS(volk_gnsssdr_16i_s32f_convert_32f, 3, 0, 20462, 1);
 
 VOLK_RUN_TESTS(volk_gnsssdr_32fc_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 20462, 1);

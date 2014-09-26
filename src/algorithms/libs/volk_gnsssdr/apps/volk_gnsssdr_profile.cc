@@ -106,8 +106,10 @@ int main(int argc, char *argv[]) {
     //GNSS-SDR PROTO-KERNELS
     //lv_32fc_t sfv = lv_cmake((float)1, (float)2);
     //example: VOLK_PROFILE(volk_gnsssdr_8ic_s8ic_multiply_8ic, 1e-4, sfv, 204602, 1000, &results, benchmark_mode, kernel_regex);
+     VOLK_PROFILE(volk_gnsssdr_32fc_convert_8ic, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
+    
      VOLK_PROFILE(volk_gnsssdr_8ic_x7_cw_epl_corr_safe_32fc_x5, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
-     VOLK_PROFILE(volk_gnsssdr_8ic_x7_cw_epl_corr_unsafe_32fc_x5, 1e-4, 0, 30, 1, &results, benchmark_mode, kernel_regex);
+     VOLK_PROFILE(volk_gnsssdr_8ic_x7_cw_epl_corr_unsafe_32fc_x5, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_8ic_x7_cw_epl_corr_TEST_32fc_x5, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3, 1e-4, 0, 204602, 250, &results, benchmark_mode, kernel_regex);
     

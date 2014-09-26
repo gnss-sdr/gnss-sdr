@@ -5,8 +5,6 @@
  *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
- * Volk protokernel that implements an accumulator of char values
- *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)

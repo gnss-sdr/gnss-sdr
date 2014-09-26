@@ -145,6 +145,14 @@ private:
     lv_16sc_t* d_very_late_code16;
     lv_16sc_t* d_carr_sign16;
     lv_16sc_t* in16;
+    
+    lv_8sc_t* d_very_early_code8;
+    lv_8sc_t* d_early_code8;
+    lv_8sc_t* d_prompt_code8;
+    lv_8sc_t* d_late_code8;
+    lv_8sc_t* d_very_late_code8;
+    lv_8sc_t* d_carr_sign8;
+    lv_8sc_t* in8;
 
     gr_complex *d_Very_Early;
     gr_complex *d_Early;

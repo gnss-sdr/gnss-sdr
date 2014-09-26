@@ -1,5 +1,5 @@
 /*!
- * \file volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5.h
+ * \file volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5.h
  * \brief Volk protokernel: performs the carrier wipe-off mixing and the Very early, Early, Prompt, Late and very late correlation with 16 bits vectors, and accumulates the results into float32. In order to avoid overflow, If input, carrier and XX_code have the same number of bits, they must be values between —3 and 3 (2 bits).
  * \authors <ul>
  *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
@@ -63,8 +63,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_u_H
-#define INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_u_H
+#ifndef INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_H
+#define INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_H
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -92,7 +92,7 @@
  \param VL_out Very Late correlation output
  \param num_points The number of complex values in vectors
  */
-static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_u_sse4_1(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
+static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse4_1(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
     
@@ -245,7 +245,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_u_sse4_1(lv_32fc_t* V
  \param VL_out Very Late correlation output
  \param num_points The number of complex values in vectors
  */
-static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_u_sse2(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
+static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
     
@@ -400,7 +400,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_u_sse2(lv_32fc_t* VE_
  \param VL_out Very Late correlation output
  \param num_points The number of complex values in vectors
  */
-static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_generic(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
+static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_generic(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
 {
     lv_8sc_t bb_signal_sample;
     
@@ -427,11 +427,11 @@ static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_generic(lv_32fc_t* VE
 
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_u_H */
+#endif /* INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_H */
 
 
-#ifndef INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_a_H
-#define INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_a_H
+#ifndef INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_H
+#define INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_H
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -459,7 +459,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_generic(lv_32fc_t* VE
  \param VL_out Very Late correlation output
  \param num_points The number of complex values in vectors
  */
-static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_a_sse4_1(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
+static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_sse4_1(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
     
@@ -612,7 +612,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_a_sse4_1(lv_32fc_t* V
  \param VL_out Very Late correlation output
  \param num_points The number of complex values in vectors
  */
-static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_a_sse2(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
+static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_sse2(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
     
@@ -767,7 +767,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_a_sse2(lv_32fc_t* VE_
  \param VL_out Very Late correlation output
  \param num_points The number of complex values in vectors
  */
-static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_a_generic(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
+static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_generic(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
 {
     lv_8sc_t bb_signal_sample;
     
@@ -794,4 +794,4 @@ static inline void volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_a_generic(lv_32fc_t* 
 
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_epl_corr_32fc_x5_a_H */
+#endif /* INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_H */

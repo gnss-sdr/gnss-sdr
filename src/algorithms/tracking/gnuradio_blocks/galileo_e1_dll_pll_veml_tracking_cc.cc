@@ -148,6 +148,14 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_very_late_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
     d_carr_sign16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
     in16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    
+    d_very_early_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_early_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_prompt_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_late_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_very_late_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_carr_sign8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    in8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
 
     // correlator outputs (scalar)
 
@@ -313,6 +321,14 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
     volk_free(d_very_late_code16);
     volk_free(d_carr_sign16);
     volk_free(in16);
+    
+    volk_free(d_very_early_code8);
+    volk_free(d_early_code8);
+    volk_free(d_prompt_code8);
+    volk_free(d_late_code8);
+    volk_free(d_very_late_code8);
+    volk_free(d_carr_sign8);
+    volk_free(in16);
 
     delete[] d_ca_code;
     delete[] d_Prompt_buffer;
@@ -386,7 +402,17 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             volk_gnsssdr_32fc_convert_16ic(in16, in, d_current_prn_length_samples);
             volk_gnsssdr_32fc_convert_16ic(d_carr_sign16, d_carr_sign, d_current_prn_length_samples);
             
+            volk_gnsssdr_32fc_convert_8ic(d_very_early_code8, d_very_early_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_early_code8, d_early_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_prompt_code8, d_prompt_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_late_code8, d_late_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_very_late_code8, d_very_late_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(in8, in, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_carr_sign8, d_carr_sign, d_current_prn_length_samples);
+            
             volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in16, d_carr_sign16, d_very_early_code16, d_early_code16, d_prompt_code16, d_late_code16, d_very_late_code16, d_current_prn_length_samples);
+            
+            volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in8, d_carr_sign8, d_very_early_code8, d_early_code8, d_prompt_code8, d_late_code8, d_very_late_code8, d_current_prn_length_samples);
             
             
             // ################## PLL ##########################################################

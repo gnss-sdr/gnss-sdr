@@ -1,5 +1,5 @@
 /*!
- * \file volk_gnsssdr_32fc_convert_8ic.h
+ * \file volk_gnsssdr_32fc_s32f_convert_8ic.h
  * \brief Volk protokernel: converts float32 complex values to 8 integer complex values taking care of overflow
  * \authors <ul>
  *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
@@ -30,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_32fc_convert_8ic_u_H
-#define INCLUDED_volk_gnsssdr_32fc_convert_8ic_u_H
+#ifndef INCLUDED_volk_gnsssdr_32fc_s32f_convert_8ic_u_H
+#define INCLUDED_volk_gnsssdr_32fc_s32f_convert_8ic_u_H
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -45,11 +45,12 @@
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
+static inline void volk_gnsssdr_32fc_s32f_convert_8ic_u_sse2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, const float scalar, unsigned int num_points){
     const unsigned int sse_iters = num_points/8;
     
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
+    __m128 invScalar = _mm_set_ps1(1.0/scalar);
     
     float min_val = -128;
     float max_val = 127;
@@ -67,6 +68,10 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
         inputVal3 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
         inputVal4 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
         
+        inputVal1 = _mm_mul_ps(inputVal1, invScalar);
+        inputVal2 = _mm_mul_ps(inputVal2, invScalar);
+        inputVal3 = _mm_mul_ps(inputVal3, invScalar);
+        inputVal4 = _mm_mul_ps(inputVal4, invScalar);
         // Clip
         ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
         ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
@@ -86,12 +91,14 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
         outputVectorPtr += 16;
     }
     
+    float scaled = 0;
     for(unsigned int i = 0; i < (num_points%4)*4; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int8_t)rintf(inputVectorPtr[i]);
+        scaled = inputVectorPtr[i]/scalar;
+        if(scaled > max_val)
+            scaled = max_val;
+        else if(scaled < min_val)
+            scaled = min_val;
+        outputVectorPtr[i] = (int8_t)rintf(scaled);
     }
 }
 #endif /* LV_HAVE_SSE2 */
@@ -103,26 +110,28 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
+static inline void volk_gnsssdr_32fc_s32f_convert_8ic_generic(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, const float scalar, unsigned int num_points){
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
+    float scaled = 0;
     float min_val = -128;
     float max_val = 127;
     
     for(unsigned int i = 0; i < num_points*2; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int8_t)rintf(inputVectorPtr[i]);
+        scaled = (inputVectorPtr[i])/scalar;
+        if(scaled > max_val)
+            scaled = max_val;
+        else if(scaled < min_val)
+            scaled = min_val;
+        outputVectorPtr[i] = (int8_t)rintf(scaled);
     }
 }
 #endif /* LV_HAVE_GENERIC */
-#endif /* INCLUDED_volk_gnsssdr_32fc_convert_8ic_u_H */
+#endif /* INCLUDED_volk_gnsssdr_32fc_s32f_convert_8ic_u_H */
 
 
-#ifndef INCLUDED_volk_gnsssdr_32fc_convert_8ic_a_H
-#define INCLUDED_volk_gnsssdr_32fc_convert_8ic_a_H
+#ifndef INCLUDED_volk_gnsssdr_32fc_s32f_convert_8ic_a_H
+#define INCLUDED_volk_gnsssdr_32fc_s32f_convert_8ic_a_H
 
 #include <volk/volk_common.h>
 #include <inttypes.h>
@@ -137,11 +146,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector,
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
+static inline void volk_gnsssdr_32fc_s32f_convert_8ic_a_sse2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, const float scalar, unsigned int num_points){
     const unsigned int sse_iters = num_points/8;
     
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
+    __m128 invScalar = _mm_set_ps1(1.0/scalar);
     
     float min_val = -128;
     float max_val = 127;
@@ -159,6 +169,10 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
         inputVal3 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
         inputVal4 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
         
+        inputVal1 = _mm_mul_ps(inputVal1, invScalar);
+        inputVal2 = _mm_mul_ps(inputVal2, invScalar);
+        inputVal3 = _mm_mul_ps(inputVal3, invScalar);
+        inputVal4 = _mm_mul_ps(inputVal4, invScalar);
         // Clip
         ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
         ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
@@ -178,12 +192,14 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
         outputVectorPtr += 16;
     }
     
+    float scaled = 0;
     for(unsigned int i = 0; i < (num_points%4)*4; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int8_t)rintf(inputVectorPtr[i]);
+        scaled = inputVectorPtr[i]/scalar;
+        if(scaled > max_val)
+            scaled = max_val;
+        else if(scaled < min_val)
+            scaled = min_val;
+        outputVectorPtr[i] = (int8_t)rintf(scaled);
     }
 }
 #endif /* LV_HAVE_SSE2 */
@@ -195,19 +211,21 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_8ic_a_generic(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
+static inline void volk_gnsssdr_32fc_s32f_convert_8ic_a_generic(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, const float scalar, unsigned int num_points){
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
+    float scaled = 0;
     float min_val = -128;
     float max_val = 127;
     
     for(unsigned int i = 0; i < num_points*2; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int8_t)rintf(inputVectorPtr[i]);
+        scaled = inputVectorPtr[i]/scalar;
+        if(scaled > max_val)
+            scaled = max_val;
+        else if(scaled < min_val)
+            scaled = min_val;
+        outputVectorPtr[i] = (int8_t)rintf(scaled);
     }
 }
 #endif /* LV_HAVE_GENERIC */
-#endif /* INCLUDED_volk_gnsssdr_32fc_convert_8ic_a_H */
+#endif /* INCLUDED_volk_gnsssdr_32fc_s32f_convert_8ic_a_H */

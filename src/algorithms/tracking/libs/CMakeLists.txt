@@ -40,6 +40,10 @@ if(ENABLE_GENERIC_ARCH)
     add_definitions( -DGENERIC_ARCH=1 )
 endif(ENABLE_GENERIC_ARCH)
 
+if (SSE3_AVAILABLE)
+    add_definitions( -DHAVE_SSE3=1 )
+endif(SSE3_AVAILABLE)
+
 file(GLOB TRACKING_LIB_HEADERS "*.h")
 add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 source_group(Headers FILES ${TRACKING_LIB_HEADERS})

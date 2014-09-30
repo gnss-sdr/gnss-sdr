@@ -565,12 +565,12 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/i486-linux-gnu/4.7
                        /usr/lib/gcc/i486-linux-gnu/4.8
                        /usr/lib/gcc/i486-linux-gnu/4.9
-		       /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
-		       /usr/lib/gcc/arm-linux-gnueabihf/4.5
-		       /usr/lib/gcc/arm-linux-gnueabihf/4.6
-		       /usr/lib/gcc/arm-linux-gnueabihf/4.7
-		       /usr/lib/gcc/arm-linux-gnueabihf/4.8
-		       /usr/lib/gcc/arm-linux-gnueabihf/4.9
+		               /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
+		               /usr/lib/gcc/arm-linux-gnueabihf/4.5
+		               /usr/lib/gcc/arm-linux-gnueabihf/4.6
+		               /usr/lib/gcc/arm-linux-gnueabihf/4.7
+		               /usr/lib/gcc/arm-linux-gnueabihf/4.8
+		               /usr/lib/gcc/arm-linux-gnueabihf/4.9
                 )
     if(NOT GFORTRAN)
         message(" The gfortran library has not been found.")
@@ -605,8 +605,8 @@ if(NOT ARMADILLO_FOUND)
           endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
           message(FATAL_ERROR "The patch command is required to download and build armadillo")
      endif(NOT PATCH_EXECUTABLE)
-     set(armadillo_RELEASE 4.400.2)  
-     set(armadillo_MD5 "1f7e14d14e5636286f6e001a98a1735a") 
+     set(armadillo_RELEASE 4.450.0)  
+     set(armadillo_MD5 "2e13f5d0a666a67fb44e375722479629") 
      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
          set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
          file(WRITE ${ARMADILLO_PATCH_FILE} "")
@@ -877,22 +877,22 @@ if (NOT ARCH_COMPILER_FLAGS)
       set(ARCH_COMPILER_FLAGS "-march=corei7 -mfpmath=sse")
     else(OS_IS_MACOSX)
       if(ENABLE_GENERIC_ARCH)
-	if (IS_ARM)
-	  set(ARCH_COMPILER_FLAGS "-mtune=generic-arm")
-	else (IS_ARM)
-          set(ARCH_COMPILER_FLAGS "-mtune=generic")
-	endif(IS_ARM)
+         if(IS_ARM)
+	        set(ARCH_COMPILER_FLAGS "-mtune=generic-arm")
+	     else(IS_ARM)
+            set(ARCH_COMPILER_FLAGS "-mtune=generic")
+	     endif(IS_ARM)
       else(ENABLE_GENERIC_ARCH)
-	if (IS_ARM) # ARM-specific options (https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html)
-	  if (ARM_VERSION STREQUAL "arm")
-	    # Unknown arm version - try our best to detect
-	    set(ARCH_COMPILER_FLAGS "-mcpu=native")
-	  else (ARM_VERSION STREQUAL "arm")
-	    set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
-	  endif (ARM_VERSION STREQUAL "arm")
-	else (IS_ARM)
-          set(ARCH_COMPILER_FLAGS "-march=native -mfpmath=sse")
-	endif (IS_ARM)
+         if(IS_ARM) # ARM-specific options (https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html)
+            if(ARM_VERSION STREQUAL "arm")
+               # Unknown arm version - try our best to detect
+               set(ARCH_COMPILER_FLAGS "-mcpu=native")
+            else(ARM_VERSION STREQUAL "arm")
+               set(ARCH_COMPILER_FLAGS "-march=${ARM_VERSION}")
+	        endif(ARM_VERSION STREQUAL "arm")
+         else(IS_ARM)
+            set(ARCH_COMPILER_FLAGS "-march=native -mfpmath=sse")
+	     endif(IS_ARM)
       endif(ENABLE_GENERIC_ARCH)
     endif(OS_IS_MACOSX)
   endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)

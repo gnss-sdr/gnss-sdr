@@ -27,8 +27,7 @@ cmake_minimum_required(VERSION 2.8)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-include(TestForARM)
-include(TestForSSE)
+
 
 
 ########################################################################
@@ -220,6 +219,22 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
           message(FATAL_ERROR "Fatal error: GCC >= 4.7 required.")
       endif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7)
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+
+
+################################################################################
+# Check if the compiler defines the architecture as ARM
+################################################################################
+if(NOT OS_IS_MACOSX)
+     include(TestForARM)
+endif(NOT OS_IS_MACOSX)
+
+
+################################################################################
+# Check for availability of SSE
+################################################################################
+if(NOT ENABLE_GENERIC_ARCH)
+     include(TestForSSE)
+endif(NOT ENABLE_GENERIC_ARCH)
 
 
 ################################################################################

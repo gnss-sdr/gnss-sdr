@@ -565,6 +565,12 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/i486-linux-gnu/4.7
                        /usr/lib/gcc/i486-linux-gnu/4.8
                        /usr/lib/gcc/i486-linux-gnu/4.9
+		       /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
+		       /usr/lib/gcc/arm-linux-gnueabihf/4.5
+		       /usr/lib/gcc/arm-linux-gnueabihf/4.6
+		       /usr/lib/gcc/arm-linux-gnueabihf/4.7
+		       /usr/lib/gcc/arm-linux-gnueabihf/4.8
+		       /usr/lib/gcc/arm-linux-gnueabihf/4.9
                 )
     if(NOT GFORTRAN)
         message(" The gfortran library has not been found.")

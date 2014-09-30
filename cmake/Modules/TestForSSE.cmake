@@ -11,11 +11,12 @@ function (test_for_sse h_file result_var name)
                     COMMAND ${CMAKE_CXX_COMPILER} -c -x c++ -
 		    RESULT_VARIABLE COMPILE_RESULT
 		    OUTPUT_QUIET ERROR_QUIET)
-
+    set(detected 0)
     if (COMPILE_RESULT EQUAL 0)
       message(STATUS "Detected ${name}")
+      set(detected 1)
     endif(COMPILE_RESULT EQUAL 0)
-    set(${result_var} ${compile_result} CACHE INTERNAL "${name} Available")
+    set(${result_var} ${detected} CACHE INTERNAL "${name} Available")
   endif (NOT DEFINED ${result_var})
 endfunction(test_for_sse)
 
@@ -34,3 +35,4 @@ test_for_sse("mmintrin.h" MMX_AVAILABLE "MMX")
 test_for_sse("wmmintrin.h" AES_AVAILABLE "AES")
 test_for_sse("immintrin.h" AVX_AVAILABLE "AVX")
 
+file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/-.o")

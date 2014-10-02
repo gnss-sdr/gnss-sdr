@@ -68,6 +68,9 @@ VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 20462, 1);
 VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_TEST_32fc_x5, 1e-4, 0, 20462, 1);
 
 VOLK_RUN_TESTS(volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc, 1e-4, 0, 20462, 1);
+VOLK_RUN_TESTS(volk_gnsssdr_s32f_x2_update_local_carrier_32fc, 1e-4, 0, 20462, 1);
+
+
 
 
 

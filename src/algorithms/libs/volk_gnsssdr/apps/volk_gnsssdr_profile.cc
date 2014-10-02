@@ -107,6 +107,9 @@ int main(int argc, char *argv[]) {
     //lv_32fc_t sfv = lv_cmake((float)1, (float)2);
     //example: VOLK_PROFILE(volk_gnsssdr_8ic_s8ic_multiply_8ic, 1e-4, sfv, 204602, 1000, &results, benchmark_mode, kernel_regex);
     
+    
+     VOLK_PROFILE(volk_gnsssdr_s32f_x2_update_local_carrier_32fc, 1e-4, 0, 7, 1, &results, benchmark_mode, kernel_regex);
+
      VOLK_PROFILE(volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc, 1e-4, 0, 7, 1, &results, benchmark_mode, kernel_regex);
 
      VOLK_PROFILE(volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5, 1e-4, 0, 16000, 250, &results, benchmark_mode, kernel_regex);

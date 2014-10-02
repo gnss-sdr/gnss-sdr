@@ -272,7 +272,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
 
     epl_loop_length_samples = d_current_prn_length_samples + very_early_late_spc_samples*2;
 
-    volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_manual(d_very_early_code, (float) d_very_early_late_spc_chips, (float) code_length_half_chips, (float) code_phase_step_half_chips, (float) tcode_half_chips, d_ca_code, epl_loop_length_samples, "generic");
+    //volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_manual(d_very_early_code, (float) d_very_early_late_spc_chips, (float) code_length_half_chips, (float) code_phase_step_half_chips, (float) tcode_half_chips, d_ca_code, epl_loop_length_samples, "generic");
     
     volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_manual(d_very_early_code, (float) d_very_early_late_spc_chips, (float) code_length_half_chips, (float) code_phase_step_half_chips, (float) tcode_half_chips, d_ca_code, epl_loop_length_samples, "u_sse4_1");
     
@@ -297,11 +297,16 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_carrier()
     phase_step_rad = (float)GPS_TWO_PI*d_carrier_doppler_hz / (float)d_fs_in;
     // Initialize the carrier phase with the remanent carrier phase of the K-2 loop
     phase_rad = d_rem_carr_phase_rad;
-    for(int i = 0; i < d_current_prn_length_samples; i++)
-        {
-            d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
-            phase_rad += phase_step_rad;
-        }
+    
+    //volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "generic");
+    
+    volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "u_sse2");
+    
+//    for(int i = 0; i < d_current_prn_length_samples; i++)
+//        {
+//            d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
+//            phase_rad += phase_step_rad;
+//        }
 }
 
 galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()

@@ -1,13 +1,14 @@
 /*!
  * \file volk_gnsssdr_32fc_s32f_x2_update_local_carrier_32fc
- * \brief Volk protokernel: replaces the tracking function for update_local_carrier. Algorithm by Julien Pommier, modified by Andrés Cecilia.
+ * \brief Volk protokernel: replaces the tracking function for update_local_carrier. Algorithm by Julien Pommier and Giovanni Garberoglio, modified by Andrés Cecilia.
  * \authors <ul>
  *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
- * Volk protokernel that replaces the tracking function for update_local_carrier. Algorithm by Julien Pommier, modified by Andrés Cecilia.
+ * Volk protokernel that replaces the tracking function for update_local_carrier. Algorithm by Julien Pommier and Giovanni Garberoglio, modified by Andrés Cecilia.
  *
  * -------------------------------------------------------------------------
+ *
  * Copyright (C) 2007  Julien Pommier
  *
  * This software is provided 'as-is', without any express or implied
@@ -27,6 +28,15 @@
  * 3. This notice may not be removed or altered from any source distribution.
  *
  *(this is the zlib license)
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2012 Giovanni Garberoglio
+ * Interdisciplinary Laboratory for Computational Science (LISC)
+ * Fondazione Bruno Kessler and University of Trento
+ * via Sommarive, 18
+ * I-38123 Trento (Italy)
+ *
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
@@ -58,6 +68,216 @@
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <inttypes.h>
 #include <stdio.h>
+
+#ifdef LV_HAVE_AVX
+#include <tmmintrin.h>
+/*!
+ \brief Accumulates the values in the input buffer
+ \param result The accumulated result
+ \param inputBuffer The buffer of data to be accumulated
+ \param num_points The number of values in inputBuffer to be accumulated
+ */
+static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_u_avx(lv_32fc_t* d_carr_sign, const float phase_rad_init, const float phase_step_rad, unsigned int num_points){
+    
+//    float* pointer1 = (float*)&phase_rad_init;
+//    *pointer1 = 0;
+//    float* pointer2 = (float*)&phase_step_rad;
+//    *pointer2 = 0.5;
+    
+    const unsigned int sse_iters = num_points / 8;
+    
+    __m256 _ps256_minus_cephes_DP1 = _mm256_set1_ps(-0.78515625f);
+    __m256 _ps256_minus_cephes_DP2 = _mm256_set1_ps(-2.4187564849853515625e-4f);
+    __m256 _ps256_minus_cephes_DP3 = _mm256_set1_ps(-3.77489497744594108e-8f);
+    __m256 _ps256_sign_mask = _mm256_set1_ps(-0.f);
+    __m128i _pi32avx_1 = _mm_set1_epi32(1);
+    __m128i _pi32avx_inv1 = _mm_set1_epi32(~1);
+    __m128i _pi32avx_2 = _mm_set1_epi32(2);
+    __m128i _pi32avx_4 = _mm_set1_epi32(4);
+    __m256 _ps256_cephes_FOPI = _mm256_set1_ps(1.27323954473516f); // 4 / PI
+    __m256 _ps256_sincof_p0 = _mm256_set1_ps(-1.9515295891E-4f);
+    __m256 _ps256_sincof_p1 = _mm256_set1_ps( 8.3321608736E-3f);
+    __m256 _ps256_sincof_p2 = _mm256_set1_ps(-1.6666654611E-1f);
+    __m256 _ps256_coscof_p0 = _mm256_set1_ps( 2.443315711809948E-005f);
+    __m256 _ps256_coscof_p1 = _mm256_set1_ps(-1.388731625493765E-003f);
+    __m256 _ps256_coscof_p2 = _mm256_set1_ps( 4.166664568298827E-002f);
+    __m256 _ps256_1 = _mm256_set1_ps(1.f);
+    __m256 _ps256_0p5 = _mm256_set1_ps(0.5f);
+    
+    __m256 phase_step_rad_array = _mm256_set1_ps(8*phase_step_rad);
+    
+    __m256 phase_rad_array, x, s, c, swap_sign_bit_sin, sign_bit_cos, poly_mask, z, tmp, y, y2, ysin1, ysin2;
+    __m256 xmm1, xmm2, xmm3, sign_bit_sin;
+    __m256i imm0, imm2, imm4;
+    __m128i imm0_1, imm0_2, imm2_1, imm2_2, imm4_1, imm4_2;
+    __VOLK_ATTR_ALIGNED(32) float sin_value[8];
+    __VOLK_ATTR_ALIGNED(32) float cos_value[8];
+    
+    phase_rad_array = _mm256_set_ps (phase_rad_init+7*phase_step_rad, phase_rad_init+6*phase_step_rad, phase_rad_init+5*phase_step_rad, phase_rad_init+4*phase_step_rad, phase_rad_init+3*phase_step_rad, phase_rad_init+2*phase_step_rad, phase_rad_init+phase_step_rad, phase_rad_init);
+    
+    for(int i = 0; i < sse_iters; i++)
+    {
+        
+        x = phase_rad_array;
+        
+        /* extract the sign bit (upper one) */
+        sign_bit_sin = _mm256_and_ps(x, _ps256_sign_mask);
+        
+        /* take the absolute value */
+        x = _mm256_xor_ps(x, sign_bit_sin);
+        
+        /* scale by 4/Pi */
+        y = _mm256_mul_ps(x, _ps256_cephes_FOPI);
+        
+        /* we use SSE2 routines to perform the integer ops */
+        
+        //COPY_IMM_TO_XMM(_mm256_cvttps_epi32(y),imm2_1,imm2_2);
+        y = _mm256_cvttps_epi32(y);
+        imm2_1 = _mm256_extractf128_ps (y, 0);
+        imm2_2 = _mm256_extractf128_ps (y, 1);
+        
+        imm2_1 = _mm_add_epi32(imm2_1, _pi32avx_1);
+        imm2_2 = _mm_add_epi32(imm2_2, _pi32avx_1);
+        
+        imm2_1 = _mm_and_si128(imm2_1, _pi32avx_inv1);
+        imm2_2 = _mm_and_si128(imm2_2, _pi32avx_inv1);
+        
+        //COPY_XMM_TO_IMM(imm2_1,imm2_2,imm2);
+        //_mm256_set_m128i not defined in some versions of immintrin.h
+        //imm2 = _mm256_set_m128i (imm2_2, imm2_1);
+        imm2 = _mm256_insertf128_si256(_mm256_castsi128_si256(imm2_1),(imm2_2),1);
+        
+        y = _mm256_cvtepi32_ps(imm2);
+        
+        imm4_1 = imm2_1;
+        imm4_2 = imm2_2;
+        
+        imm0_1 = _mm_and_si128(imm2_1, _pi32avx_4);
+        imm0_2 = _mm_and_si128(imm2_2, _pi32avx_4);
+        
+        imm0_1 = _mm_slli_epi32(imm0_1, 29);
+        imm0_2 = _mm_slli_epi32(imm0_2, 29);
+        
+        //COPY_XMM_TO_IMM(imm0_1, imm0_2, imm0);
+        //_mm256_set_m128i not defined in some versions of immintrin.h
+        //imm0 = _mm256_set_m128i (imm0_2, imm0_1);
+        imm0 = _mm256_insertf128_si256(_mm256_castsi128_si256(imm0_1),(imm0_2),1);
+        
+        imm2_1 = _mm_and_si128(imm2_1, _pi32avx_2);
+        imm2_2 = _mm_and_si128(imm2_2, _pi32avx_2);
+        
+        imm2_1 = _mm_cmpeq_epi32(imm2_1, _mm_setzero_si128());
+        imm2_2 = _mm_cmpeq_epi32(imm2_2, _mm_setzero_si128());
+        
+        //COPY_XMM_TO_IMM(imm2_1, imm2_2, imm2);
+        //_mm256_set_m128i not defined in some versions of immintrin.h
+        //imm2 = _mm256_set_m128i (imm2_2, imm2_1);
+        imm2 = _mm256_insertf128_si256(_mm256_castsi128_si256(imm2_1),(imm2_2),1);
+
+        swap_sign_bit_sin = _mm256_castsi256_ps(imm0);
+        poly_mask = _mm256_castsi256_ps(imm2);
+        
+        /* The magic pass: "Extended precision modular arithmetic"
+         x = ((x - y * DP1) - y * DP2) - y * DP3; */
+        xmm1 = _ps256_minus_cephes_DP1;
+        xmm2 = _ps256_minus_cephes_DP2;
+        xmm3 = _ps256_minus_cephes_DP3;
+        xmm1 = _mm256_mul_ps(y, xmm1);
+        xmm2 = _mm256_mul_ps(y, xmm2);
+        xmm3 = _mm256_mul_ps(y, xmm3);
+        x = _mm256_add_ps(x, xmm1);
+        x = _mm256_add_ps(x, xmm2);
+        x = _mm256_add_ps(x, xmm3);
+        
+        imm4_1 = _mm_sub_epi32(imm4_1, _pi32avx_2);
+        imm4_2 = _mm_sub_epi32(imm4_2, _pi32avx_2);
+        
+        imm4_1 = _mm_andnot_si128(imm4_1, _pi32avx_4);
+        imm4_2 = _mm_andnot_si128(imm4_2, _pi32avx_4);
+        
+        imm4_1 = _mm_slli_epi32(imm4_1, 29);
+        imm4_2 = _mm_slli_epi32(imm4_2, 29);
+        
+        //COPY_XMM_TO_IMM(imm4_1, imm4_2, imm4);
+        //_mm256_set_m128i not defined in some versions of immintrin.h
+        //imm4 = _mm256_set_m128i (imm4_2, imm4_1);
+        imm4 = _mm256_insertf128_si256(_mm256_castsi128_si256(imm4_1),(imm4_2),1);
+        
+        sign_bit_cos = _mm256_castsi256_ps(imm4);
+        
+        sign_bit_sin = _mm256_xor_ps(sign_bit_sin, swap_sign_bit_sin);
+        
+        /* Evaluate the first polynom  (0 <= x <= Pi/4) */
+        z = _mm256_mul_ps(x,x);
+        y = _ps256_coscof_p0;
+        
+        y = _mm256_mul_ps(y, z);
+        y = _mm256_add_ps(y, _ps256_coscof_p1);
+        y = _mm256_mul_ps(y, z);
+        y = _mm256_add_ps(y, _ps256_coscof_p2);
+        y = _mm256_mul_ps(y, z);
+        y = _mm256_mul_ps(y, z);
+        tmp = _mm256_mul_ps(z, _ps256_0p5);
+        y = _mm256_sub_ps(y, tmp);
+        y = _mm256_add_ps(y, _ps256_1);
+        
+        /* Evaluate the second polynom  (Pi/4 <= x <= 0) */
+        
+        y2 = _ps256_sincof_p0;
+        y2 = _mm256_mul_ps(y2, z);
+        y2 = _mm256_add_ps(y2, _ps256_sincof_p1);
+        y2 = _mm256_mul_ps(y2, z);
+        y2 = _mm256_add_ps(y2, _ps256_sincof_p2);
+        y2 = _mm256_mul_ps(y2, z);
+        y2 = _mm256_mul_ps(y2, x);
+        y2 = _mm256_add_ps(y2, x);
+        
+        /* select the correct result from the two polynoms */  
+        xmm3 = poly_mask;
+        ysin2 = _mm256_and_ps(xmm3, y2);
+        ysin1 = _mm256_andnot_ps(xmm3, y);
+        y2 = _mm256_sub_ps(y2,ysin2);
+        y = _mm256_sub_ps(y, ysin1);
+        
+        xmm1 = _mm256_add_ps(ysin1,ysin2);
+        xmm2 = _mm256_add_ps(y,y2);
+        
+        /* update the sign */
+        s = _mm256_xor_ps(xmm1, sign_bit_sin);
+        c = _mm256_xor_ps(xmm2, sign_bit_cos);
+        
+        //GNSS-SDR needs to return -sin
+        s = _mm256_xor_ps(s, _ps256_sign_mask);
+        
+        _mm256_storeu_ps ((float*)sin_value, s);
+        _mm256_storeu_ps ((float*)cos_value, c);
+        
+        for(int i = 0; i < 8; i++)
+        {
+            d_carr_sign[i] = lv_cmake(cos_value[i], sin_value[i]);
+        }
+        d_carr_sign += 8;
+        
+        phase_rad_array = _mm256_add_ps (phase_rad_array, phase_step_rad_array);
+    }
+    
+    if (num_points%8!=0)
+    {
+        __VOLK_ATTR_ALIGNED(32) float phase_rad_store[8];
+        _mm256_storeu_si256 ((float*)phase_rad_store, phase_rad_array);
+        
+        float phase_rad = phase_rad_store[0];
+        
+        for(int i = 0; i < num_points%8; i++)
+        {
+            *d_carr_sign = lv_cmake(cos(phase_rad), -sin(phase_rad));
+            d_carr_sign++;
+            phase_rad += phase_step_rad;
+        }
+    }
+}
+#endif /* LV_HAVE_AVX */
+
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
@@ -250,6 +470,215 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_generic(lv_32f
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <inttypes.h>
 #include <stdio.h>
+
+#ifdef LV_HAVE_AVX
+#include <tmmintrin.h>
+/*!
+ \brief Accumulates the values in the input buffer
+ \param result The accumulated result
+ \param inputBuffer The buffer of data to be accumulated
+ \param num_points The number of values in inputBuffer to be accumulated
+ */
+static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_a_avx(lv_32fc_t* d_carr_sign, const float phase_rad_init, const float phase_step_rad, unsigned int num_points){
+    
+    //    float* pointer1 = (float*)&phase_rad_init;
+    //    *pointer1 = 0;
+    //    float* pointer2 = (float*)&phase_step_rad;
+    //    *pointer2 = 0.5;
+    
+    const unsigned int sse_iters = num_points / 8;
+    
+    __m256 _ps256_minus_cephes_DP1 = _mm256_set1_ps(-0.78515625f);
+    __m256 _ps256_minus_cephes_DP2 = _mm256_set1_ps(-2.4187564849853515625e-4f);
+    __m256 _ps256_minus_cephes_DP3 = _mm256_set1_ps(-3.77489497744594108e-8f);
+    __m256 _ps256_sign_mask = _mm256_set1_ps(-0.f);
+    __m128i _pi32avx_1 = _mm_set1_epi32(1);
+    __m128i _pi32avx_inv1 = _mm_set1_epi32(~1);
+    __m128i _pi32avx_2 = _mm_set1_epi32(2);
+    __m128i _pi32avx_4 = _mm_set1_epi32(4);
+    __m256 _ps256_cephes_FOPI = _mm256_set1_ps(1.27323954473516f); // 4 / PI
+    __m256 _ps256_sincof_p0 = _mm256_set1_ps(-1.9515295891E-4f);
+    __m256 _ps256_sincof_p1 = _mm256_set1_ps( 8.3321608736E-3f);
+    __m256 _ps256_sincof_p2 = _mm256_set1_ps(-1.6666654611E-1f);
+    __m256 _ps256_coscof_p0 = _mm256_set1_ps( 2.443315711809948E-005f);
+    __m256 _ps256_coscof_p1 = _mm256_set1_ps(-1.388731625493765E-003f);
+    __m256 _ps256_coscof_p2 = _mm256_set1_ps( 4.166664568298827E-002f);
+    __m256 _ps256_1 = _mm256_set1_ps(1.f);
+    __m256 _ps256_0p5 = _mm256_set1_ps(0.5f);
+    
+    __m256 phase_step_rad_array = _mm256_set1_ps(8*phase_step_rad);
+    
+    __m256 phase_rad_array, x, s, c, swap_sign_bit_sin, sign_bit_cos, poly_mask, z, tmp, y, y2, ysin1, ysin2;
+    __m256 xmm1, xmm2, xmm3, sign_bit_sin;
+    __m256i imm0, imm2, imm4;
+    __m128i imm0_1, imm0_2, imm2_1, imm2_2, imm4_1, imm4_2;
+    __VOLK_ATTR_ALIGNED(32) float sin_value[8];
+    __VOLK_ATTR_ALIGNED(32) float cos_value[8];
+    
+    phase_rad_array = _mm256_set_ps (phase_rad_init+7*phase_step_rad, phase_rad_init+6*phase_step_rad, phase_rad_init+5*phase_step_rad, phase_rad_init+4*phase_step_rad, phase_rad_init+3*phase_step_rad, phase_rad_init+2*phase_step_rad, phase_rad_init+phase_step_rad, phase_rad_init);
+    
+    for(int i = 0; i < sse_iters; i++)
+    {
+        
+        x = phase_rad_array;
+        
+        /* extract the sign bit (upper one) */
+        sign_bit_sin = _mm256_and_ps(x, _ps256_sign_mask);
+        
+        /* take the absolute value */
+        x = _mm256_xor_ps(x, sign_bit_sin);
+        
+        /* scale by 4/Pi */
+        y = _mm256_mul_ps(x, _ps256_cephes_FOPI);
+        
+        /* we use SSE2 routines to perform the integer ops */
+        
+        //COPY_IMM_TO_XMM(_mm256_cvttps_epi32(y),imm2_1,imm2_2);
+        y = _mm256_cvttps_epi32(y);
+        imm2_1 = _mm256_extractf128_ps (y, 0);
+        imm2_2 = _mm256_extractf128_ps (y, 1);
+        
+        imm2_1 = _mm_add_epi32(imm2_1, _pi32avx_1);
+        imm2_2 = _mm_add_epi32(imm2_2, _pi32avx_1);
+        
+        imm2_1 = _mm_and_si128(imm2_1, _pi32avx_inv1);
+        imm2_2 = _mm_and_si128(imm2_2, _pi32avx_inv1);
+        
+        //COPY_XMM_TO_IMM(imm2_1,imm2_2,imm2);
+        //_mm256_set_m128i not defined in some versions of immintrin.h
+        //imm2 = _mm256_set_m128i (imm2_2, imm2_1);
+        imm2 = _mm256_insertf128_si256(_mm256_castsi128_si256(imm2_1),(imm2_2),1);
+        
+        y = _mm256_cvtepi32_ps(imm2);
+        
+        imm4_1 = imm2_1;
+        imm4_2 = imm2_2;
+        
+        imm0_1 = _mm_and_si128(imm2_1, _pi32avx_4);
+        imm0_2 = _mm_and_si128(imm2_2, _pi32avx_4);
+        
+        imm0_1 = _mm_slli_epi32(imm0_1, 29);
+        imm0_2 = _mm_slli_epi32(imm0_2, 29);
+        
+        //COPY_XMM_TO_IMM(imm0_1, imm0_2, imm0);
+        //_mm256_set_m128i not defined in some versions of immintrin.h
+        //imm0 = _mm256_set_m128i (imm0_2, imm0_1);
+        imm0 = _mm256_insertf128_si256(_mm256_castsi128_si256(imm0_1),(imm0_2),1);
+        
+        imm2_1 = _mm_and_si128(imm2_1, _pi32avx_2);
+        imm2_2 = _mm_and_si128(imm2_2, _pi32avx_2);
+        
+        imm2_1 = _mm_cmpeq_epi32(imm2_1, _mm_setzero_si128());
+        imm2_2 = _mm_cmpeq_epi32(imm2_2, _mm_setzero_si128());
+        
+        //COPY_XMM_TO_IMM(imm2_1, imm2_2, imm2);
+        //_mm256_set_m128i not defined in some versions of immintrin.h
+        //imm2 = _mm256_set_m128i (imm2_2, imm2_1);
+        imm2 = _mm256_insertf128_si256(_mm256_castsi128_si256(imm2_1),(imm2_2),1);
+        
+        swap_sign_bit_sin = _mm256_castsi256_ps(imm0);
+        poly_mask = _mm256_castsi256_ps(imm2);
+        
+        /* The magic pass: "Extended precision modular arithmetic"
+         x = ((x - y * DP1) - y * DP2) - y * DP3; */
+        xmm1 = _ps256_minus_cephes_DP1;
+        xmm2 = _ps256_minus_cephes_DP2;
+        xmm3 = _ps256_minus_cephes_DP3;
+        xmm1 = _mm256_mul_ps(y, xmm1);
+        xmm2 = _mm256_mul_ps(y, xmm2);
+        xmm3 = _mm256_mul_ps(y, xmm3);
+        x = _mm256_add_ps(x, xmm1);
+        x = _mm256_add_ps(x, xmm2);
+        x = _mm256_add_ps(x, xmm3);
+        
+        imm4_1 = _mm_sub_epi32(imm4_1, _pi32avx_2);
+        imm4_2 = _mm_sub_epi32(imm4_2, _pi32avx_2);
+        
+        imm4_1 = _mm_andnot_si128(imm4_1, _pi32avx_4);
+        imm4_2 = _mm_andnot_si128(imm4_2, _pi32avx_4);
+        
+        imm4_1 = _mm_slli_epi32(imm4_1, 29);
+        imm4_2 = _mm_slli_epi32(imm4_2, 29);
+        
+        //COPY_XMM_TO_IMM(imm4_1, imm4_2, imm4);
+        //_mm256_set_m128i not defined in some versions of immintrin.h
+        //imm4 = _mm256_set_m128i (imm4_2, imm4_1);
+        imm4 = _mm256_insertf128_si256(_mm256_castsi128_si256(imm4_1),(imm4_2),1);
+        
+        sign_bit_cos = _mm256_castsi256_ps(imm4);
+        
+        sign_bit_sin = _mm256_xor_ps(sign_bit_sin, swap_sign_bit_sin);
+        
+        /* Evaluate the first polynom  (0 <= x <= Pi/4) */
+        z = _mm256_mul_ps(x,x);
+        y = _ps256_coscof_p0;
+        
+        y = _mm256_mul_ps(y, z);
+        y = _mm256_add_ps(y, _ps256_coscof_p1);
+        y = _mm256_mul_ps(y, z);
+        y = _mm256_add_ps(y, _ps256_coscof_p2);
+        y = _mm256_mul_ps(y, z);
+        y = _mm256_mul_ps(y, z);
+        tmp = _mm256_mul_ps(z, _ps256_0p5);
+        y = _mm256_sub_ps(y, tmp);
+        y = _mm256_add_ps(y, _ps256_1);
+        
+        /* Evaluate the second polynom  (Pi/4 <= x <= 0) */
+        
+        y2 = _ps256_sincof_p0;
+        y2 = _mm256_mul_ps(y2, z);
+        y2 = _mm256_add_ps(y2, _ps256_sincof_p1);
+        y2 = _mm256_mul_ps(y2, z);
+        y2 = _mm256_add_ps(y2, _ps256_sincof_p2);
+        y2 = _mm256_mul_ps(y2, z);
+        y2 = _mm256_mul_ps(y2, x);
+        y2 = _mm256_add_ps(y2, x);
+        
+        /* select the correct result from the two polynoms */
+        xmm3 = poly_mask;
+        ysin2 = _mm256_and_ps(xmm3, y2);
+        ysin1 = _mm256_andnot_ps(xmm3, y);
+        y2 = _mm256_sub_ps(y2,ysin2);
+        y = _mm256_sub_ps(y, ysin1);
+        
+        xmm1 = _mm256_add_ps(ysin1,ysin2);
+        xmm2 = _mm256_add_ps(y,y2);
+        
+        /* update the sign */
+        s = _mm256_xor_ps(xmm1, sign_bit_sin);
+        c = _mm256_xor_ps(xmm2, sign_bit_cos);
+        
+        //GNSS-SDR needs to return -sin
+        s = _mm256_xor_ps(s, _ps256_sign_mask);
+        
+        _mm256_store_ps ((float*)sin_value, s);
+        _mm256_store_ps ((float*)cos_value, c);
+        
+        for(int i = 0; i < 8; i++)
+        {
+            d_carr_sign[i] = lv_cmake(cos_value[i], sin_value[i]);
+        }
+        d_carr_sign += 8;
+        
+        phase_rad_array = _mm256_add_ps (phase_rad_array, phase_step_rad_array);
+    }
+    
+    if (num_points%8!=0)
+    {
+        __VOLK_ATTR_ALIGNED(32) float phase_rad_store[8];
+        _mm256_store_ps ((float*)phase_rad_store, phase_rad_array);
+        
+        float phase_rad = phase_rad_store[0];
+        
+        for(int i = 0; i < num_points%8; i++)
+        {
+            *d_carr_sign = lv_cmake(cos(phase_rad), -sin(phase_rad));
+            d_carr_sign++;
+            phase_rad += phase_step_rad;
+        }
+    }
+}
+#endif /* LV_HAVE_AVX */
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>

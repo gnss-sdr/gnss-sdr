@@ -298,9 +298,11 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_carrier()
     // Initialize the carrier phase with the remanent carrier phase of the K-2 loop
     phase_rad = d_rem_carr_phase_rad;
     
-    //volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "generic");
+    volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "generic");
     
     volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "u_sse2");
+    
+    volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "u_avx");
     
 //    for(int i = 0; i < d_current_prn_length_samples; i++)
 //        {

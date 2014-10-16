@@ -107,10 +107,9 @@ int main(int argc, char *argv[]) {
     //lv_32fc_t sfv = lv_cmake((float)1, (float)2);
     //example: VOLK_PROFILE(volk_gnsssdr_8ic_s8ic_multiply_8ic, 1e-4, sfv, 204602, 1000, &results, benchmark_mode, kernel_regex);
     
-    
-     VOLK_PROFILE(volk_gnsssdr_s32f_x2_update_local_carrier_32fc, 1e-4, 0, 7, 1, &results, benchmark_mode, kernel_regex);
-
-     VOLK_PROFILE(volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc, 1e-4, 0, 7, 1, &results, benchmark_mode, kernel_regex);
+    //CAN NOT BE TESTED YET BECAUSE VOLK MODULE DOES NOT SUPPORT IT:
+     //VOLK_PROFILE(volk_gnsssdr_s32f_x2_update_local_carrier_32fc, 1e-4, 0, 16007, 1, &results, benchmark_mode, kernel_regex);
+     //VOLK_PROFILE(volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc, 1e-4, 0, 7, 1, &results, benchmark_mode, kernel_regex);
 
      VOLK_PROFILE(volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5, 1e-4, 0, 16000, 250, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5, 1e-4, 0, 16000, 250, &results, benchmark_mode, kernel_regex);
@@ -151,6 +150,7 @@ int main(int argc, char *argv[]) {
      VOLK_PROFILE(volk_gnsssdr_64f_accumulator_64f, 1e-4, 0, 16000, 1000, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_32f_s32f_convert_16i, 1e-4, 1, 204602, 250, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_16i_s32f_convert_32f, 1e-4, 1, 204602, 250, &results, benchmark_mode, kernel_regex);*/
+    
     if(store_results) {
         char path[1024];
         volk_gnsssdr_get_config_path(path);

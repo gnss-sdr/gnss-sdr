@@ -26,4 +26,4 @@
 #define LV_$(arch.name.upper()) $i
 #end for
 
-#endif /*INCLUDED_VOLK_CONFIG_FIXED*/
+#endif /*INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED*/

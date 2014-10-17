@@ -91,4 +91,4 @@ extern VOLK_API volk_gnsssdr_func_desc_t $(kern.name)_get_func_desc(void);
 
 __VOLK_DECL_END
 
-#endif /*INCLUDED_VOLK_RUNTIME*/
+#endif /*INCLUDED_VOLK_GNSSSDR_RUNTIME*/

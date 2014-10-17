@@ -39,4 +39,4 @@ unsigned int volk_gnsssdr_get_lvarch ();
 
 __VOLK_DECL_END
 
-#endif /*INCLUDED_VOLK_CPU_H*/
+#endif /*INCLUDED_VOLK_GNSSSDR_CPU_H*/

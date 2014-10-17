@@ -29,4 +29,4 @@
 typedef void (*$(kern.pname))($kern.arglist_types);
 #end for
 
-#endif /*INCLUDED_VOLK_TYPEDEFS*/
+#endif /*INCLUDED_VOLK_GNSSSDR_TYPEDEFS*/

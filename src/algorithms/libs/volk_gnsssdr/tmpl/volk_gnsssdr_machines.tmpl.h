@@ -52,4 +52,4 @@ extern struct volk_gnsssdr_machine volk_gnsssdr_machine_$(machine.name);
 
 __VOLK_DECL_END
 
-#endif //INCLUDED_LIBVOLK_MACHINES_H
+#endif //INCLUDED_LIBVOLK_GNSSSDR_MACHINES_H

@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_dll_pll_veml_tracking.cc
+ * \file galileo_volk_e1_dll_pll_veml_tracking.cc
  * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
  *   to a TrackingInterface for Galileo E1 signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
@@ -34,7 +34,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "galileo_e1_dll_pll_veml_tracking.h"
+#include "galileo_volk_e1_dll_pll_veml_tracking.h"
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -43,7 +43,7 @@
 
 using google::LogMessage;
 
-GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
+GalileoVolkE1DllPllVemlTracking::GalileoVolkE1DllPllVemlTracking(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
@@ -82,7 +82,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = galileo_e1_dll_pll_veml_make_tracking_cc(
+            tracking_ = galileo_volk_e1_dll_pll_veml_make_tracking_cc(
                     f_if,
                     fs_in,
                     vector_length,
@@ -102,10 +102,10 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
-GalileoE1DllPllVemlTracking::~GalileoE1DllPllVemlTracking()
+GalileoVolkE1DllPllVemlTracking::~GalileoVolkE1DllPllVemlTracking()
 {}
 
-void GalileoE1DllPllVemlTracking::start_tracking()
+void GalileoVolkE1DllPllVemlTracking::start_tracking()
 {
     tracking_->start_tracking();
 }
@@ -113,7 +113,7 @@ void GalileoE1DllPllVemlTracking::start_tracking()
 /*
  * Set tracking channel unique ID
  */
-void GalileoE1DllPllVemlTracking::set_channel(unsigned int channel)
+void GalileoVolkE1DllPllVemlTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
     tracking_->set_channel(channel);
@@ -122,7 +122,7 @@ void GalileoE1DllPllVemlTracking::set_channel(unsigned int channel)
 /*
  * Set tracking channel internal queue
  */
-void GalileoE1DllPllVemlTracking::set_channel_queue(
+void GalileoVolkE1DllPllVemlTracking::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
@@ -131,27 +131,27 @@ void GalileoE1DllPllVemlTracking::set_channel_queue(
 
 }
 
-void GalileoE1DllPllVemlTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void GalileoVolkE1DllPllVemlTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
-void GalileoE1DllPllVemlTracking::connect(gr::top_block_sptr top_block)
+void GalileoVolkE1DllPllVemlTracking::connect(gr::top_block_sptr top_block)
 {
     //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
-void GalileoE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block)
+void GalileoVolkE1DllPllVemlTracking::disconnect(gr::top_block_sptr top_block)
 {
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
-gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_left_block()
+gr::basic_block_sptr GalileoVolkE1DllPllVemlTracking::get_left_block()
 {
     return tracking_;
 }
 
-gr::basic_block_sptr GalileoE1DllPllVemlTracking::get_right_block()
+gr::basic_block_sptr GalileoVolkE1DllPllVemlTracking::get_right_block()
 {
     return tracking_;
 }

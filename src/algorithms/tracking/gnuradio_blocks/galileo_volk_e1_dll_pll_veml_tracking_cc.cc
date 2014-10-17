@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_dll_pll_veml_tracking_cc.cc
+ * \file galileo_volk_e1_dll_pll_veml_tracking_cc.cc
  * \brief Implementation of a code DLL + carrier PLL VEML (Very Early
  *  Minus Late) tracking block for Galileo E1 signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
@@ -34,7 +34,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "galileo_e1_dll_pll_veml_tracking_cc.h"
+#include "galileo_volk_e1_dll_pll_veml_tracking_cc.h"
 #include <cmath>
 #include <iostream>
 #include <memory>
@@ -48,6 +48,7 @@
 #include "lock_detectors.h"
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
+#include "volk_gnsssdr/volk_gnsssdr.h"
 
 
 
@@ -62,8 +63,8 @@
 
 using google::LogMessage;
 
-galileo_e1_dll_pll_veml_tracking_cc_sptr
-galileo_e1_dll_pll_veml_make_tracking_cc(
+galileo_volk_e1_dll_pll_veml_tracking_cc_sptr
+galileo_volk_e1_dll_pll_veml_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
@@ -75,19 +76,19 @@ galileo_e1_dll_pll_veml_make_tracking_cc(
         float early_late_space_chips,
         float very_early_late_space_chips)
 {
-    return galileo_e1_dll_pll_veml_tracking_cc_sptr(new galileo_e1_dll_pll_veml_tracking_cc(if_freq,
+    return galileo_volk_e1_dll_pll_veml_tracking_cc_sptr(new galileo_volk_e1_dll_pll_veml_tracking_cc(if_freq,
             fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, very_early_late_space_chips));
 }
 
 
-void galileo_e1_dll_pll_veml_tracking_cc::forecast (int noutput_items,
+void galileo_volk_e1_dll_pll_veml_tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
     ninput_items_required[0] = (int)d_vector_length*2; //set the required available samples in each call
 }
 
 
-galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
+galileo_volk_e1_dll_pll_veml_tracking_cc::galileo_volk_e1_dll_pll_veml_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
@@ -98,7 +99,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
         float dll_bw_hz,
         float early_late_space_chips,
         float very_early_late_space_chips):
-        gr::block("galileo_e1_dll_pll_veml_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+        gr::block("galileo_volk_e1_dll_pll_veml_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     this->set_relative_rate(1.0/vector_length);
@@ -139,6 +140,22 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_very_late_code=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
 
     d_carr_sign=(gr_complex*)volk_malloc(2*d_vector_length * sizeof(gr_complex),volk_get_alignment());
+    
+    d_very_early_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_early_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_prompt_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_late_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_very_late_code16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    d_carr_sign16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    in16=(lv_16sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_16sc_t),volk_get_alignment());
+    
+    d_very_early_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_early_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_prompt_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_late_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_very_late_code8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    d_carr_sign8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
+    in8=(lv_8sc_t*)volk_malloc(2*d_vector_length * sizeof(lv_8sc_t),volk_get_alignment());
 
     // correlator outputs (scalar)
 
@@ -183,7 +200,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     *d_Very_Late=gr_complex(0,0);
 }
 
-void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
+void galileo_volk_e1_dll_pll_veml_tracking_cc::start_tracking()
 {
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
@@ -231,7 +248,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
 }
 
 
-void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
+void galileo_volk_e1_dll_pll_veml_tracking_cc::update_local_code()
 {
     double tcode_half_chips;
     float rem_code_phase_half_chips;
@@ -255,33 +272,46 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
 
     epl_loop_length_samples = d_current_prn_length_samples + very_early_late_spc_samples*2;
 
-    for (int i = 0; i < epl_loop_length_samples; i++)
-        {
-            associated_chip_index = 2 + round(fmod(tcode_half_chips - 2*d_very_early_late_spc_chips, code_length_half_chips));
-            d_very_early_code[i] = d_ca_code[associated_chip_index];
-            tcode_half_chips = tcode_half_chips + code_phase_step_half_chips;
-        }
+    //volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_manual(d_very_early_code, (float) d_very_early_late_spc_chips, (float) code_length_half_chips, (float) code_phase_step_half_chips, (float) tcode_half_chips, d_ca_code, epl_loop_length_samples, "generic");
+    
+    volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_manual(d_very_early_code, (float) d_very_early_late_spc_chips, (float) code_length_half_chips, (float) code_phase_step_half_chips, (float) tcode_half_chips, d_ca_code, epl_loop_length_samples, "u_sse4_1");
+    
+//    float d_very_early_late_spc_chips_multiplied_by_2 = 2*d_very_early_late_spc_chips;
+//    for (int i = 0; i < epl_loop_length_samples; i++)
+//        {
+//            associated_chip_index = 2 + round(fmod(tcode_half_chips - d_very_early_late_spc_chips_multiplied_by_2, code_length_half_chips));
+//            d_very_early_code[i] = d_ca_code[associated_chip_index];
+//            tcode_half_chips = tcode_half_chips + code_phase_step_half_chips;
+//        }
+    
     memcpy(d_early_code, &d_very_early_code[very_early_late_spc_samples - early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
     memcpy(d_prompt_code, &d_very_early_code[very_early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
     memcpy(d_late_code, &d_very_early_code[very_early_late_spc_samples + early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
     memcpy(d_very_late_code, &d_very_early_code[2*very_early_late_spc_samples], d_current_prn_length_samples* sizeof(gr_complex));
 }
 
-void galileo_e1_dll_pll_veml_tracking_cc::update_local_carrier()
+void galileo_volk_e1_dll_pll_veml_tracking_cc::update_local_carrier()
 {
     float phase_rad, phase_step_rad;
     // Compute the carrier phase step for the K-1 carrier doppler estimation
     phase_step_rad = (float)GPS_TWO_PI*d_carrier_doppler_hz / (float)d_fs_in;
     // Initialize the carrier phase with the remanent carrier phase of the K-2 loop
     phase_rad = d_rem_carr_phase_rad;
-    for(int i = 0; i < d_current_prn_length_samples; i++)
-        {
-            d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
-            phase_rad += phase_step_rad;
-        }
+    
+    volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "generic");
+    
+    volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "u_sse2");
+    
+    volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "u_avx");
+    
+//    for(int i = 0; i < d_current_prn_length_samples; i++)
+//        {
+//            d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
+//            phase_rad += phase_step_rad;
+//        }
 }
 
-galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
+galileo_volk_e1_dll_pll_veml_tracking_cc::~galileo_volk_e1_dll_pll_veml_tracking_cc()
 {
     d_dump_file.close();
 
@@ -296,6 +326,22 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
     volk_free(d_Prompt);
     volk_free(d_Late);
     volk_free(d_Very_Late);
+    
+    volk_free(d_very_early_code16);
+    volk_free(d_early_code16);
+    volk_free(d_prompt_code16);
+    volk_free(d_late_code16);
+    volk_free(d_very_late_code16);
+    volk_free(d_carr_sign16);
+    volk_free(in16);
+    
+    volk_free(d_very_early_code8);
+    volk_free(d_early_code8);
+    volk_free(d_prompt_code8);
+    volk_free(d_late_code8);
+    volk_free(d_very_late_code8);
+    volk_free(d_carr_sign8);
+    volk_free(in8);
 
     delete[] d_ca_code;
     delete[] d_Prompt_buffer;
@@ -303,7 +349,7 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 
 
 
-int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vector_int &ninput_items,
+int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     float carr_error_hz;
@@ -343,22 +389,49 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             update_local_code();
             update_local_carrier();
 
-            // perform carrier wipe-off and compute Very Early, Early, Prompt, Late and Very Late correlation
-            d_correlator.Carrier_wipeoff_and_VEPL_volk(d_current_prn_length_samples,
-                    in,
-                    d_carr_sign,
-                    d_very_early_code,
-                    d_early_code,
-                    d_prompt_code,
-                    d_late_code,
-                    d_very_late_code,
-                    d_Very_Early,
-                    d_Early,
-                    d_Prompt,
-                    d_Late,
-                    d_Very_Late,
-                    is_unaligned());
+            //perform carrier wipe-off and compute Very Early, Early, Prompt, Late and Very Late correlation
+//            d_correlator.Carrier_wipeoff_and_VEPL_volk(d_current_prn_length_samples,
+//                    in,
+//                    d_carr_sign,
+//                    d_very_early_code,
+//                    d_early_code,
+//                    d_prompt_code,
+//                    d_late_code,
+//                    d_very_late_code,
+//                    d_Very_Early,
+//                    d_Early,
+//                    d_Prompt,
+//                    d_Late,
+//                    d_Very_Late,
+//                    is_unaligned());
+//            
+//            volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in, d_carr_sign, d_very_early_code, d_early_code, d_prompt_code, d_late_code, d_very_late_code, d_current_prn_length_samples);
+//            
+//            volk_gnsssdr_32fc_convert_16ic(d_very_early_code16, d_very_early_code, d_current_prn_length_samples);
+//            volk_gnsssdr_32fc_convert_16ic(d_early_code16, d_early_code, d_current_prn_length_samples);
+//            volk_gnsssdr_32fc_convert_16ic(d_prompt_code16, d_prompt_code, d_current_prn_length_samples);
+//            volk_gnsssdr_32fc_convert_16ic(d_late_code16, d_late_code, d_current_prn_length_samples);
+//            volk_gnsssdr_32fc_convert_16ic(d_very_late_code16, d_very_late_code, d_current_prn_length_samples);
+//            volk_gnsssdr_32fc_convert_16ic(in16, in, d_current_prn_length_samples);
+//            volk_gnsssdr_32fc_convert_16ic(d_carr_sign16, d_carr_sign, d_current_prn_length_samples);
+//            
+//            volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in16, d_carr_sign16, d_very_early_code16, d_early_code16, d_prompt_code16, d_late_code16, d_very_late_code16, d_current_prn_length_samples);
+            
+            volk_gnsssdr_32fc_convert_8ic(d_very_early_code8, d_very_early_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_early_code8, d_early_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_prompt_code8, d_prompt_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_late_code8, d_late_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_very_late_code8, d_very_late_code, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_convert_8ic(d_carr_sign8, d_carr_sign, d_current_prn_length_samples);
+            volk_gnsssdr_32fc_s32f_convert_8ic(in8, in, 4, d_current_prn_length_samples);
+            
+            //volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in8, d_carr_sign8, d_very_early_code8, d_early_code8, d_prompt_code8, d_late_code8, d_very_late_code8, d_current_prn_length_samples);
 
+            //volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in8, d_carr_sign8, d_very_early_code8, d_early_code8, d_prompt_code8, d_late_code8, d_very_late_code8, d_current_prn_length_samples);
+           
+            volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in8, d_carr_sign8, d_very_early_code8, d_early_code8, d_prompt_code8, d_late_code8, d_very_late_code8, d_current_prn_length_samples);
+            
+            
             // ################## PLL ##########################################################
             // PLL discriminator
             carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / (float)GPS_TWO_PI;
@@ -574,7 +647,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
 
 
 
-void galileo_e1_dll_pll_veml_tracking_cc::set_channel(unsigned int channel)
+void galileo_volk_e1_dll_pll_veml_tracking_cc::set_channel(unsigned int channel)
 {
     d_channel = channel;
     LOG(INFO) << "Tracking Channel set to " << d_channel;
@@ -601,14 +674,14 @@ void galileo_e1_dll_pll_veml_tracking_cc::set_channel(unsigned int channel)
 
 
 
-void galileo_e1_dll_pll_veml_tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
+void galileo_volk_e1_dll_pll_veml_tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
 {
     d_channel_internal_queue = channel_internal_queue;
 }
 
 
 
-void galileo_e1_dll_pll_veml_tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void galileo_volk_e1_dll_pll_veml_tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
     //  Gnss_Satellite(satellite.get_system(), satellite.get_PRN());

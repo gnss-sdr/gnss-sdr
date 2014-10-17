@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_dll_pll_veml_tracking_cc.h
+ * \file galileo_volk_e1_dll_pll_veml_tracking_cc.h
  * \brief Implementation of a code DLL + carrier PLL VEML (Very Early
  *  Minus Late) tracking block for Galileo E1 signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -29,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_CC_H
-#define GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_CC_H
+#ifndef GNSS_SDR_GALILEO_VOLK_E1_DLL_PLL_VEML_TRACKING_CC_H
+#define GNSS_SDR_GALILEO_VOLK_E1_DLL_PLL_VEML_TRACKING_CC_H
 
 #include <fstream>
 #include <queue>
@@ -46,12 +46,12 @@
 #include "tracking_2nd_PLL_filter.h"
 #include "correlator.h"
 
-class galileo_e1_dll_pll_veml_tracking_cc;
+class galileo_volk_e1_dll_pll_veml_tracking_cc;
 
-typedef boost::shared_ptr<galileo_e1_dll_pll_veml_tracking_cc> galileo_e1_dll_pll_veml_tracking_cc_sptr;
+typedef boost::shared_ptr<galileo_volk_e1_dll_pll_veml_tracking_cc> galileo_volk_e1_dll_pll_veml_tracking_cc_sptr;
 
-galileo_e1_dll_pll_veml_tracking_cc_sptr
-galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
+galileo_volk_e1_dll_pll_veml_tracking_cc_sptr
+galileo_volk_e1_dll_pll_veml_make_tracking_cc(long if_freq,
                                    long fs_in, unsigned
                                    int vector_length,
                                    boost::shared_ptr<gr::msg_queue> queue,
@@ -66,10 +66,10 @@ galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
  * \brief This class implements a code DLL + carrier PLL VEML (Very Early
  *  Minus Late) tracking block for Galileo E1 signals
  */
-class galileo_e1_dll_pll_veml_tracking_cc: public gr::block
+class galileo_volk_e1_dll_pll_veml_tracking_cc: public gr::block
 {
 public:
-    ~galileo_e1_dll_pll_veml_tracking_cc();
+    ~galileo_volk_e1_dll_pll_veml_tracking_cc();
 
     void set_channel(unsigned int channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
@@ -87,8 +87,8 @@ public:
 
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 private:
-    friend galileo_e1_dll_pll_veml_tracking_cc_sptr
-    galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
+    friend galileo_volk_e1_dll_pll_veml_tracking_cc_sptr
+    galileo_volk_e1_dll_pll_veml_make_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
             boost::shared_ptr<gr::msg_queue> queue,
@@ -99,7 +99,7 @@ private:
             float early_late_space_chips,
             float very_early_late_space_chips);
 
-    galileo_e1_dll_pll_veml_tracking_cc(long if_freq,
+    galileo_volk_e1_dll_pll_veml_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
             boost::shared_ptr<gr::msg_queue> queue,
@@ -137,6 +137,22 @@ private:
     gr_complex* d_late_code;
     gr_complex* d_very_late_code;
     gr_complex* d_carr_sign;
+    
+    lv_16sc_t* d_very_early_code16;
+    lv_16sc_t* d_early_code16;
+    lv_16sc_t* d_prompt_code16;
+    lv_16sc_t* d_late_code16;
+    lv_16sc_t* d_very_late_code16;
+    lv_16sc_t* d_carr_sign16;
+    lv_16sc_t* in16;
+    
+    lv_8sc_t* d_very_early_code8;
+    lv_8sc_t* d_early_code8;
+    lv_8sc_t* d_prompt_code8;
+    lv_8sc_t* d_late_code8;
+    lv_8sc_t* d_very_late_code8;
+    lv_8sc_t* d_carr_sign8;
+    lv_8sc_t* in8;
 
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
@@ -145,7 +161,7 @@ private:
     gr_complex *d_Very_Late;
 
     // remaining code phase and carrier phase between tracking loops
-    double d_rem_code_phase_samples;
+    float d_rem_code_phase_samples;
     float d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
@@ -160,7 +176,7 @@ private:
     Correlator d_correlator;
 
     // tracking vars
-    double d_code_freq_chips;
+    float d_code_freq_chips;
     float d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
     double d_acc_code_phase_secs;
@@ -192,4 +208,4 @@ private:
     std::string sys;
 };
 
-#endif //GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_CC_H
+#endif //GNSS_SDR_GALILEO_VOLK_E1_DLL_PLL_VEML_TRACKING_CC_H

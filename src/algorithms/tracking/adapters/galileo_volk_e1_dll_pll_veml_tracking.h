@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e1_dll_pll_veml_tracking.h
+ * \file galileo_volk_e1_dll_pll_veml_tracking.h
  * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
  *   to a TrackingInterface for Galileo E1 signals
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
@@ -34,13 +34,13 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
-#define GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
+#ifndef GNSS_SDR_GALILEO_VOLK_E1_DLL_PLL_VEML_TRACKING_H_
+#define GNSS_SDR_GALILEO_VOLK_E1_DLL_PLL_VEML_TRACKING_H_
 
 #include <string>
 #include <gnuradio/msg_queue.h>
 #include "tracking_interface.h"
-#include "galileo_e1_dll_pll_veml_tracking_cc.h"
+#include "galileo_volk_e1_dll_pll_veml_tracking_cc.h"
 
 
 class ConfigurationInterface;
@@ -49,28 +49,28 @@ class ConfigurationInterface;
  * \brief This class Adapts a DLL+PLL VEML (Very Early Minus Late) tracking
  * loop block to a TrackingInterface for Galileo E1 signals
  */
-class GalileoE1DllPllVemlTracking : public TrackingInterface
+class GalileoVolkE1DllPllVemlTracking : public TrackingInterface
 {
 
 public:
 
-  GalileoE1DllPllVemlTracking(ConfigurationInterface* configuration,
+  GalileoVolkE1DllPllVemlTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
             boost::shared_ptr<gr::msg_queue> queue);
 
-    virtual ~GalileoE1DllPllVemlTracking();
+    virtual ~GalileoVolkE1DllPllVemlTracking();
 
     std::string role()
     {
         return role_;
     }
 
-    //! Returns "Galileo_E1_DLL_PLL_VEML_Tracking"
+    //! Returns "galileo_volk_e1_dll_pll_veml_tracking"
     std::string implementation()
     {
-        return "Galileo_E1_DLL_PLL_VEML_Tracking";
+        return "galileo_volk_e1_dll_pll_veml_tracking";
     }
     size_t item_size()
     {
@@ -104,7 +104,7 @@ public:
 
 private:
 
-    galileo_e1_dll_pll_veml_tracking_cc_sptr tracking_;
+    galileo_volk_e1_dll_pll_veml_tracking_cc_sptr tracking_;
     size_t item_size_;
 
     unsigned int channel_;
@@ -116,4 +116,4 @@ private:
     concurrent_queue<int> *channel_internal_queue_;
 };
 
-#endif // GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
+#endif // GNSS_SDR_GALILEO_VOLK_E1_DLL_PLL_VEML_TRACKING_H_

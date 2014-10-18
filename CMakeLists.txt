@@ -41,6 +41,7 @@ option(ENABLE_RTLSDR "Enable the use of RTL dongles as signal source (experiment
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
+option(ENABLE_VOLK_GNSSSDR "Enable building of volk_gnsssdr module: some volk protokernels coded by gnss-sdr" OFF)
 
 
 ###############################

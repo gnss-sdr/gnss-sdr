@@ -333,6 +333,40 @@ if(NOT GNURADIO_TRELLIS_FOUND)
 endif()
 
 
+###############################################################################
+# Volk_gnsssdr module
+#In order to use volk_gnsssr module it is necessary to add:
+# 1) include_directories(..${VOLK_GNSSSDR_INCLUDE_DIRS}..)
+# 2) target_link_libraries(..${VOLK_GNSSSDR_LIBRARIES}..)
+###############################################################################
+
+if(ENABLE_VOLK_GNSSSDR)
+     message(STATUS "The volk_gnsssdr module with custom protokernels coded by gnss-sdr will be compiled.")
+     message(STATUS "You can disable it with 'cmake -DENABLE_VOLK_GNSSSDR=OFF ../'" )  
+else(ENABLE_VOLK_GNSSSDR)
+     message(STATUS "The volk_gnsssdr module with custom protokernels coded by gnss-sdr is not enabled. Some configurations that use custom protokernels will not work." )
+     message(STATUS "Enable it with 'cmake -D ENABLE_VOLK_GNSSSDR=ON ../'." ) 
+endif(ENABLE_VOLK_GNSSSDR)
+
+if(ENABLE_VOLK_GNSSSDR)
+     set(VOLK_GNSSSDR_BASE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr)
+     add_subdirectory(${VOLK_GNSSSDR_BASE_PATH})
+
+     set(VOLK_GNSSSDR_INCLUDE_DIRS
+          ${VOLK_GNSSSDR_BASE_PATH}/include
+          ${CMAKE_CURRENT_BINARY_DIR}/src/algorithms/libs/volk_gnsssdr/include
+     )
+
+     set(VOLK_GNSSSDR_LIBRARIES
+          #Path to libs of volk_gnsssdr target: ${VOLK_GNSSSDR_BASE_PATH}/lib/Debug/libvolk_gnsssdr.dylib
+          volk_gnsssdr
+     )
+
+     message(" * INCLUDES: ${VOLK_GNSSSDR_INCLUDE_DIRS} ")
+     message(" * LIBS: ${VOLK_GNSSSDR_LIBRARIES} ")
+     message("-- END OF: Setup volk_gnsssdr as a subproject.")
+endif(ENABLE_VOLK_GNSSSDR)
+
 
 ################################################################################
 # gflags - http://code.google.com/p/gflags/

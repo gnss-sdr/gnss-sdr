@@ -568,25 +568,31 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/x86_64-redhat-linux/4.7.2 # Fedora 18
                        /usr/lib/gcc/i686-redhat-linux/4.7.2
                        /usr/lib/gcc/x86_64-redhat-linux/4.8.1 # Fedora 19
+                       /usr/lib/gcc/x86_64-redhat-linux/4.8.3 # Fedora 20
+                       /usr/lib/gcc/x86_64-redhat-linux/4.9.1 # Fedora 21
                        /usr/lib/gcc/i686-redhat-linux/4.8.1
+                       /usr/lib/gcc/i686-redhat-linux/4.8.3
+                       /usr/lib/gcc/i686-redhat-linux/4.9.1
                        /usr/lib/gcc/x86_64-redhat-linux/4.4.4 # CentOS 6
                        /usr/lib/gcc/i686-redhat-linux/4.4.4
                        /usr/lib/gcc/x86_64-redhat-linux/4.8.2
                        /usr/lib/gcc/i686-redhat-linux/4.8.2
                        /usr/lib/gcc/i586-suse-linux/4.8  # OpenSUSE 13.1
+                       /usr/lib/gcc/i586-suse-linux/4.9
                        /usr/lib/gcc/x86_64-suse-linux/4.8
+                       /usr/lib/gcc/x86_64-suse-linux/4.9
                        /usr/lib/gcc/i486-linux-gnu # Debian 7
                        /usr/lib/gcc/i486-linux-gnu/4.4
                        /usr/lib/gcc/i486-linux-gnu/4.6
                        /usr/lib/gcc/i486-linux-gnu/4.7
                        /usr/lib/gcc/i486-linux-gnu/4.8
                        /usr/lib/gcc/i486-linux-gnu/4.9
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.5
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.6
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.7
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.8
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.9
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.5
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.6
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.7
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.8
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.9
                 )
     if(NOT GFORTRAN)
         message(" The gfortran library has not been found.")

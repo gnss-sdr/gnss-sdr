@@ -33,7 +33,7 @@ endif(NOT GTEST_DIR_LOCAL)
 if(NOT GTEST_DIR_LOCAL)
      # if GTEST_DIR is not defined, we download and build it
      set(gtest_RELEASE 1.7.0)
-     if(MACOSX_MAVERICKS)
+     if(OS_IS_MACOSX)
          ExternalProject_Add(
               gtest-${gtest_RELEASE}
               URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
@@ -41,12 +41,12 @@ if(NOT GTEST_DIR_LOCAL)
               URL_MD5 "2d6ec8ccdf5c46b05ba54a9fd1d130d7"
               SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
               BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
-              CMAKE_ARGS -DCMAKE_CXX_COMPILER=/usr/bin/clang++
+              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
               UPDATE_COMMAND ""
               PATCH_COMMAND ""
               INSTALL_COMMAND ""
          )
-     else(MACOSX_MAVERICKS)
+     else(OS_IS_MACOSX)
          ExternalProject_Add(
               gtest-${gtest_RELEASE}
               URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
@@ -58,7 +58,7 @@ if(NOT GTEST_DIR_LOCAL)
               PATCH_COMMAND ""
               INSTALL_COMMAND ""
          )
-     endif(MACOSX_MAVERICKS)
+     endif(OS_IS_MACOSX)
      # Set up variables
      # Set recently downloaded and build Googletest root folder
      set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}")
@@ -68,11 +68,11 @@ if(NOT GTEST_DIR_LOCAL)
      set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
      # Library
      ExternalProject_Get_Property(gtest-${gtest_RELEASE} binary_dir)
-     if(MACOSX_MAVERICKS)
+     if(OS_IS_MACOSX)
          if(CMAKE_GENERATOR STREQUAL Xcode)
              set(binary_dir "${binary_dir}/Debug")
          endif(CMAKE_GENERATOR STREQUAL Xcode)
-     endif(MACOSX_MAVERICKS)
+     endif(OS_IS_MACOSX)
      set(GTEST_LIBRARY_PATH "${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a;${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a")
      set(GTEST_LIBRARY gtest-${gtest_RELEASE}) 
      set(GTEST_LIBRARIES 
@@ -137,14 +137,10 @@ include_directories(
 )
 
 
-if(OS_IS_MACOSX)
-     if(MACOSX_MAVERICKS)
-         set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11")
-     else(MACOSX_MAVERICKS)
-         # Tell the linker where the libraries installed by MacPorts are
-         link_directories( /opt/local/lib ) # not very elegant, to be fixed. Needed?
-     endif(MACOSX_MAVERICKS)
-endif(OS_IS_MACOSX)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CLANG_FLAGS "-stdlib=libc++ -std=c++11")
+endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
 
 if(OPENCL_FOUND)
     add_definitions(-DOPENCL_BLOCKS_TEST=1)
@@ -155,7 +151,7 @@ add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
 
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
-target_link_libraries(run_tests ${MAC_LIBRARIES} 
+target_link_libraries(run_tests ${CLANG_FLAGS} 
                                 ${Boost_LIBRARIES}  
                                 ${GFLAGS_LIBS} 
                                 ${GLOG_LIBRARIES} 

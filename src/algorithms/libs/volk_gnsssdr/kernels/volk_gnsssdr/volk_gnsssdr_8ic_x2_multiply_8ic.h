@@ -62,8 +62,8 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse2(lv_8sc_t* cVector, co
     
     for(int number = 0;number < sse_iters; number++){
         
-        x = _mm_load_si128((__m128i*)a);
-        y = _mm_load_si128((__m128i*)b);
+        x = _mm_loadu_si128((__m128i*)a);
+        y = _mm_loadu_si128((__m128i*)b);
         
         imagx = _mm_srli_si128 (x, 1);
         imagx = _mm_and_si128 (imagx, mult1);

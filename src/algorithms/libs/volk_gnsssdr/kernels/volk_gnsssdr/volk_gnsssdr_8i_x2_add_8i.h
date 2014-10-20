@@ -59,8 +59,8 @@ static inline void volk_gnsssdr_8i_x2_add_8i_u_sse2(char* cVector, const char* a
     
     for(int number = 0; number < sse_iters; number++){
         
-        aVal = _mm_load_si128((__m128i*)aPtr);
-        bVal = _mm_load_si128((__m128i*)bPtr);
+        aVal = _mm_loadu_si128((__m128i*)aPtr);
+        bVal = _mm_loadu_si128((__m128i*)bPtr);
         
         cVal = _mm_add_epi8(aVal, bVal);
         

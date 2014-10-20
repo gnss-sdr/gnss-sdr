@@ -70,7 +70,7 @@
 #include <string.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 #include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
 #include "CommonMacros/CommonMacros.h"
 /*!
@@ -315,8 +315,6 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5_u_sse4_1(lv_32f
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_GENERIC
-#include <stdio.h>
-#include <tmmintrin.h>
 
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
@@ -426,7 +424,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5_generic(lv_32fc
 #include <string.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 #include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
 #include "CommonMacros/CommonMacros.h"
 /*!
@@ -671,8 +669,6 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5_a_sse4_1(lv_32f
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_GENERIC
-#include <stdio.h>
-#include <tmmintrin.h>
 
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation

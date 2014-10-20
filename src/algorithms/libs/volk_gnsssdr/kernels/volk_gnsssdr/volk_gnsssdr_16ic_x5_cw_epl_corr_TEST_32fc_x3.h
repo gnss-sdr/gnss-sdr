@@ -53,7 +53,7 @@
 #include <string.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
   /*!
     \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
     \param input The input signal input
@@ -220,7 +220,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_first(
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input
@@ -459,7 +459,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_second
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input
@@ -681,7 +681,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_third(
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input
@@ -912,7 +912,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_fourth
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 #include "CommonMacros/CommonMacros.h"
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
@@ -1076,7 +1076,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_fifth(
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 #include "CommonMacros/CommonMacros_16ic_cw_epl_corr_32fc.h"
 #include "CommonMacros/CommonMacros.h"
 /*!
@@ -1284,7 +1284,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_generic(lv_32fc
 #include <string.h>
 //
 //#ifdef LV_HAVE_SSE4_1
-//#include "smmintrin.h"
+//#include <smmintrin.h>
 ///*!
 // \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
 // \param input The input signal input

@@ -70,7 +70,7 @@
 #include <stdio.h>
 
 #ifdef LV_HAVE_AVX
-#include <tmmintrin.h>
+#include <immintrin.h>
 /*!
  \brief Accumulates the values in the input buffer
  \param result The accumulated result
@@ -264,7 +264,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_u_avx(lv_32fc_
     if (num_points%8!=0)
     {
         __VOLK_ATTR_ALIGNED(32) float phase_rad_store[8];
-        _mm256_storeu_si256 ((float*)phase_rad_store, phase_rad_array);
+        _mm256_storeu_si256 ((__m256i*)phase_rad_store, phase_rad_array);
         
         float phase_rad = phase_rad_store[0];
         
@@ -472,7 +472,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_generic(lv_32f
 #include <stdio.h>
 
 #ifdef LV_HAVE_AVX
-#include <tmmintrin.h>
+#include <immintrin.h>
 /*!
  \brief Accumulates the values in the input buffer
  \param result The accumulated result

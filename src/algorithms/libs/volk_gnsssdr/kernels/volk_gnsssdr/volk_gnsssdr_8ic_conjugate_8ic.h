@@ -41,7 +41,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 #ifdef LV_HAVE_AVX
-#include "immintrin.h"
+#include <immintrin.h>
 /*!
  \brief Takes the conjugate of an unsigned char vector.
  \param cVector The vector where the results will be stored
@@ -83,7 +83,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_avx(lv_8sc_t* cVector, const
 #endif /* LV_HAVE_AVX */
 
 #ifdef LV_HAVE_SSSE3
-#include "tmmintrin.h"
+#include <tmmintrin.h>
 /*!
  \brief Takes the conjugate of an unsigned char vector.
  \param cVector The vector where the results will be stored
@@ -181,7 +181,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_generic(lv_8sc_t* cVector, con
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 #ifdef LV_HAVE_AVX
-#include "immintrin.h"
+#include <immintrin.h>
 /*!
  \brief Takes the conjugate of an unsigned char vector.
  \param cVector The vector where the results will be stored
@@ -223,7 +223,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_avx(lv_8sc_t* cVector, const
 #endif /* LV_HAVE_AVX */
 
 #ifdef LV_HAVE_SSSE3
-#include "tmmintrin.h"
+#include <tmmintrin.h>
 /*!
  \brief Takes the conjugate of an unsigned char vector.
  \param cVector The vector where the results will be stored

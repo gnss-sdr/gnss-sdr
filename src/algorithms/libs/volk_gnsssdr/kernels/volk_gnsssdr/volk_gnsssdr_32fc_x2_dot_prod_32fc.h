@@ -180,7 +180,6 @@ static inline void volk_gnsssdr_32fc_x2_dot_prod_32fc_u_sse_64(lv_32fc_t* result
 
 
 #ifdef LV_HAVE_SSE3
-
 #include <pmmintrin.h>
 
 static inline void volk_gnsssdr_32fc_x2_dot_prod_32fc_u_sse3(lv_32fc_t* result, const lv_32fc_t* input, const lv_32fc_t* taps, unsigned int num_points) {
@@ -237,7 +236,6 @@ static inline void volk_gnsssdr_32fc_x2_dot_prod_32fc_u_sse3(lv_32fc_t* result, 
 #endif /*LV_HAVE_SSE3*/
 
 #ifdef LV_HAVE_SSE4_1
-
 #include <smmintrin.h>
 
 static inline void volk_gnsssdr_32fc_x2_dot_prod_32fc_u_sse4_1(lv_32fc_t* result, const lv_32fc_t* input, const lv_32fc_t* taps, unsigned int num_points) {
@@ -622,7 +620,6 @@ static inline void volk_gnsssdr_32fc_x2_dot_prod_32fc_a_sse_32(lv_32fc_t* result
 #endif /*LV_HAVE_SSE*/
 
 #ifdef LV_HAVE_SSE3
-
 #include <pmmintrin.h>
 
 static inline void volk_gnsssdr_32fc_x2_dot_prod_32fc_a_sse3(lv_32fc_t* result, const lv_32fc_t* input, const lv_32fc_t* taps, unsigned int num_points) {
@@ -681,7 +678,6 @@ static inline void volk_gnsssdr_32fc_x2_dot_prod_32fc_a_sse3(lv_32fc_t* result, 
 #endif /*LV_HAVE_SSE3*/
 
 #ifdef LV_HAVE_SSE4_1
-
 #include <smmintrin.h>
 
 static inline void volk_gnsssdr_32fc_x2_dot_prod_32fc_a_sse4_1(lv_32fc_t* result, const lv_32fc_t* input, const lv_32fc_t* taps, unsigned int num_points) {

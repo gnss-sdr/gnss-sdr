@@ -40,7 +40,7 @@
 #include <stdio.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include<smmintrin.h>
+#include <smmintrin.h>
 /*!
  \brief Returns the max value in src0
  \param target The max value in src0
@@ -90,7 +90,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char target, const char* src
 #endif /*LV_HAVE_SSE4_1*/
 
 #ifdef LV_HAVE_SSE2
-#include<xmmintrin.h>
+#include<emmintrin.h>
 /*!
  \brief Returns the max value in src0
  \param target The max value in src0
@@ -186,7 +186,7 @@ static inline void volk_gnsssdr_8i_max_s8i_generic(char target, const char* src0
 #include <stdio.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 /*!
  \brief Returns the max value in src0
  \param target The max value in src0
@@ -236,7 +236,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char target, const char* src
 #endif /*LV_HAVE_SSE4_1*/
 
 #ifdef LV_HAVE_SSE2
-#include "emmintrin.h"
+#include <emmintrin.h>
 /*!
  \brief Returns the max value in src0
  \param target The max value in src0

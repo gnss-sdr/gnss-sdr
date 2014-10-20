@@ -53,7 +53,7 @@
 #include <string.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 #include "CommonMacros/CommonMacros_16ic_cw_epl_corr_32fc.h"
 #include "CommonMacros/CommonMacros.h"
   /*!
@@ -262,7 +262,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3_generic(lv_32fc_t* E
 #include <string.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 #include "CommonMacros/CommonMacros_16ic_cw_epl_corr_32fc.h"
 #include "CommonMacros/CommonMacros.h"
 /*!

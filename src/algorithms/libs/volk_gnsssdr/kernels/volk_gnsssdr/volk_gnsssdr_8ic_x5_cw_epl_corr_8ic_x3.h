@@ -53,7 +53,7 @@
 #include <string.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
   /*!
     \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
     \param input The input signal input
@@ -220,7 +220,7 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3_u_sse4_1(lv_8sc_t* E_o
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_SSE2
-#include "emmintrin.h"
+#include <emmintrin.h>
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input
@@ -268,8 +268,8 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3_u_sse2(lv_8sc_t* E_out
         for(int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
-            x = _mm_lddqu_si128((__m128i*)input_ptr);
-            y = _mm_lddqu_si128((__m128i*)carrier_ptr);
+            x = _mm_load_si128((__m128i*)input_ptr);
+            y = _mm_load_si128((__m128i*)carrier_ptr);
             
             imagx = _mm_srli_si128 (x, 1);
             imagx = _mm_and_si128 (imagx, mult1);
@@ -288,7 +288,7 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3_u_sse2(lv_8sc_t* E_out
             imag_bb_signal_sample = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
             
             //Get early values
-            y = _mm_lddqu_si128((__m128i*)E_code_ptr);
+            y = _mm_load_si128((__m128i*)E_code_ptr);
             
             imagy = _mm_srli_si128 (y, 1);
             imagy = _mm_and_si128 (imagy, mult1);
@@ -306,7 +306,7 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3_u_sse2(lv_8sc_t* E_out
             imag_E_code_acc = _mm_add_epi16 (imag_E_code_acc, imag_output);
             
             //Get late values
-            y = _mm_lddqu_si128((__m128i*)L_code_ptr);
+            y = _mm_load_si128((__m128i*)L_code_ptr);
             
             imagy = _mm_srli_si128 (y, 1);
             imagy = _mm_and_si128 (imagy, mult1);
@@ -324,7 +324,7 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3_u_sse2(lv_8sc_t* E_out
             imag_L_code_acc = _mm_add_epi16 (imag_L_code_acc, imag_output);
             
             //Get prompt values
-            y = _mm_lddqu_si128((__m128i*)P_code_ptr);
+            y = _mm_load_si128((__m128i*)P_code_ptr);
             
             imagy = _mm_srli_si128 (y, 1);
             imagy = _mm_and_si128 (imagy, mult1);
@@ -441,7 +441,7 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3_generic(lv_8sc_t* E_ou
 #include <string.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input
@@ -608,7 +608,7 @@ static inline void volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3_a_sse4_1(lv_8sc_t* E_o
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_SSE2
-#include "emmintrin.h"
+#include <emmintrin.h>
 /*!
  \brief Performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation
  \param input The input signal input

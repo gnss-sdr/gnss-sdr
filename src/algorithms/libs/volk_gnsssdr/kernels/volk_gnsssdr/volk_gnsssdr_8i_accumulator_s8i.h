@@ -40,7 +40,7 @@
 #include <stdio.h>
 
 #ifdef LV_HAVE_SSE3
-#include <xmmintrin.h>
+#include <pmmintrin.h>
 /*!
  \brief Accumulates the values in the input buffer
  \param result The accumulated result
@@ -105,7 +105,7 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_generic(char* result, const c
 #include <stdio.h>
 
 #ifdef LV_HAVE_SSE3
-#include <xmmintrin.h>
+#include <pmmintrin.h>
 /*!
  \brief Accumulates the values in the input buffer
  \param result The accumulated result

@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include<smmintrin.h>
+#include <smmintrin.h>
 
 static inline void volk_gnsssdr_32f_index_max_16u_a_sse4_1(unsigned int* target, const float* src0, unsigned int num_points) {
   if(num_points > 0){

@@ -91,7 +91,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_generic(lv_8sc_t* result, co
 #endif /*LV_HAVE_GENERIC*/
 
 #ifdef LV_HAVE_SSE2
-#include "emmintrin.h"
+#include <emmintrin.h>
 /*!
  \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
  \param cVector The vector where the accumulated result will be stored
@@ -119,8 +119,8 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
         
         for(int number = 0; number < sse_iters; number++){
             
-            x = _mm_lddqu_si128((__m128i*)a);
-            y = _mm_lddqu_si128((__m128i*)b);
+            x = _mm_load_si128((__m128i*)a);
+            y = _mm_load_si128((__m128i*)b);
             
             imagx = _mm_srli_si128 (x, 1);
             imagx = _mm_and_si128 (imagx, mult1);
@@ -172,7 +172,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
 #endif /*LV_HAVE_SSE2*/
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 /*!
  \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
  \param cVector The vector where the accumulated result will be stored
@@ -312,7 +312,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_generic(lv_8sc_t* result, 
 #endif /*LV_HAVE_GENERIC*/
 
 #ifdef LV_HAVE_SSE2
-#include "emmintrin.h"
+#include <emmintrin.h>
 /*!
  \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
  \param cVector The vector where the accumulated result will be stored
@@ -393,7 +393,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
 #endif /*LV_HAVE_SSE2*/
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 /*!
  \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
  \param cVector The vector where the accumulated result will be stored

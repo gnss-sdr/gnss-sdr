@@ -73,7 +73,7 @@
 #include <string.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 #include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
 #include "CommonMacros/CommonMacros.h"
 /*!
@@ -226,7 +226,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse4_1(lv_32fc_t* 
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_SSE2
-#include "emmintrin.h"
+#include <emmintrin.h>
 #include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
 #include "CommonMacros/CommonMacros.h"
 /*!
@@ -289,8 +289,8 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE
         for(int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
-            x = _mm_lddqu_si128((__m128i*)input_ptr);
-            y = _mm_lddqu_si128((__m128i*)carrier_ptr);
+            x = _mm_load_si128((__m128i*)input_ptr);
+            y = _mm_load_si128((__m128i*)carrier_ptr);
             
             CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(x, mult1, realx, imagx)
             CM_8IC_REARRANGE_VECTOR_INTO_REAL_IMAG_16IC_X2_U_SSE2(y, mult1, realy, imagy)
@@ -298,7 +298,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE
             CM_16IC_X4_SCALAR_PRODUCT_16IC_X2_U_SSE2(realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_bb_signal_sample, imag_bb_signal_sample)
             
             //Get very early values
-            y = _mm_lddqu_si128((__m128i*)VE_code_ptr);
+            y = _mm_load_si128((__m128i*)VE_code_ptr);
             
             CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
@@ -306,7 +306,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE
             VE_code_acc = _mm_add_ps (VE_code_acc, output_ps_2);
             
             //Get early values
-            y = _mm_lddqu_si128((__m128i*)E_code_ptr);
+            y = _mm_load_si128((__m128i*)E_code_ptr);
             
             CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
@@ -314,7 +314,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE
             E_code_acc = _mm_add_ps (E_code_acc, output_ps_2);
             
             //Get prompt values
-            y = _mm_lddqu_si128((__m128i*)P_code_ptr);
+            y = _mm_load_si128((__m128i*)P_code_ptr);
             
             CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
@@ -322,7 +322,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE
             P_code_acc = _mm_add_ps (P_code_acc, output_ps_2);
             
             //Get late values
-            y = _mm_lddqu_si128((__m128i*)L_code_ptr);
+            y = _mm_load_si128((__m128i*)L_code_ptr);
             
             CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
@@ -330,7 +330,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE
             L_code_acc = _mm_add_ps (L_code_acc, output_ps_2);
             
             //Get very late values
-            y = _mm_lddqu_si128((__m128i*)VL_code_ptr);
+            y = _mm_load_si128((__m128i*)VL_code_ptr);
             
             CM_8IC_X2_CW_CORR_32FC_X2_U_SSE2(y, mult1, realy, imagy, real_bb_signal_sample, imag_bb_signal_sample,realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, real_output, imag_output, input_i_1, input_i_2, output_i32, output_ps_1, output_ps_2)
             
@@ -440,7 +440,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_generic(lv_32fc_t* V
 #include <string.h>
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
+#include <smmintrin.h>
 #include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
 #include "CommonMacros/CommonMacros.h"
 /*!
@@ -593,7 +593,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_sse4_1(lv_32fc_t* 
 #endif /* LV_HAVE_SSE4_1 */
 
 #ifdef LV_HAVE_SSE2
-#include "emmintrin.h"
+#include <emmintrin.h>
 #include "CommonMacros/CommonMacros_8ic_cw_epl_corr_32fc.h"
 #include "CommonMacros/CommonMacros.h"
 /*!

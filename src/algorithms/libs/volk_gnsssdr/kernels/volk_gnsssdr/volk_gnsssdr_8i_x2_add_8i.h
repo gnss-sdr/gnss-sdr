@@ -39,7 +39,7 @@
 #include <stdio.h>
 
 #ifdef LV_HAVE_SSE2
-#include "pmmintrin.h"
+#include <emmintrin.h>
 /*!
  \brief Adds the two input vectors and store their results in the third vector
  \param cVector The vector where the results will be stored
@@ -59,8 +59,8 @@ static inline void volk_gnsssdr_8i_x2_add_8i_u_sse2(char* cVector, const char* a
     
     for(int number = 0; number < sse_iters; number++){
         
-        aVal = _mm_lddqu_si128((__m128i*)aPtr);
-        bVal = _mm_lddqu_si128((__m128i*)bPtr);
+        aVal = _mm_load_si128((__m128i*)aPtr);
+        bVal = _mm_load_si128((__m128i*)bPtr);
         
         cVal = _mm_add_epi8(aVal, bVal);
         
@@ -108,7 +108,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_generic(char* cVector, const char* 
 #include <stdio.h>
 
 #ifdef LV_HAVE_SSE2
-#include "pmmintrin.h"
+#include <emmintrin.h>
 /*!
  \brief Adds the two input vectors and store their results in the third vector
  \param cVector The vector where the results will be stored

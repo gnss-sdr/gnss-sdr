@@ -40,7 +40,6 @@
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-#include <emmintrin.h>
 /*!
  \brief Multiplies the two input unsigned char values and stores their results in the third unisgned char
  \param cChar The unsigned char where the results will be stored
@@ -122,7 +121,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_generic(unsigned char* cChar, 
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-#include <emmintrin.h>
+
 /*!
  \brief Multiplies the two input unsigned char values and stores their results in the third unisgned char
  \param cChar The unsigned char where the results will be stored

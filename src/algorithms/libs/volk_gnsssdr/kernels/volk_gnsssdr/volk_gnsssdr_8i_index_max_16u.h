@@ -40,7 +40,7 @@
 #include <stdio.h>
 
 #ifdef LV_HAVE_AVX
-#include "immintrin.h"
+#include <immintrin.h>
 /*!
  \brief Returns the index of the max value in src0
  \param target The index of the max value in src0
@@ -108,7 +108,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
 #endif /*LV_HAVE_AVX*/
 
 #ifdef LV_HAVE_SSE4_1
-#include<smmintrin.h>
+#include <smmintrin.h>
 /*!
  \brief Returns the index of the max value in src0
  \param target The index of the max value in src0
@@ -167,7 +167,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
 #endif /*LV_HAVE_SSE4_1*/
 
 #ifdef LV_HAVE_SSE2
-#include<xmmintrin.h>
+#include<emmintrin.h>
 /*!
  \brief Returns the index of the max value in src0
  \param target The index of the max value in src0
@@ -270,7 +270,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_generic(unsigned int* target, c
 #include <stdio.h>
 
 #ifdef LV_HAVE_AVX
-#include "immintrin.h"
+#include <immintrin.h>
 /*!
  \brief Returns the index of the max value in src0
  \param target The index of the max value in src0
@@ -338,8 +338,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
 #endif /*LV_HAVE_AVX*/
 
 #ifdef LV_HAVE_SSE4_1
-#include "smmintrin.h"
-#include "emmintrin.h"
+#include <smmintrin.h>
 /*!
  \brief Returns the index of the max value in src0
  \param target The index of the max value in src0
@@ -398,7 +397,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
 #endif /*LV_HAVE_SSE4_1*/
 
 #ifdef LV_HAVE_SSE2
-#include "emmintrin.h"
+#include <emmintrin.h>
 /*!
  \brief Returns the index of the max value in src0
  \param target The index of the max value in src0

@@ -41,9 +41,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#ifdef LV_HAVE_SSE3
-#include <pmmintrin.h>
-#include "tmmintrin.h"
+#ifdef LV_HAVE_SSSE3
+#include <tmmintrin.h>
 /*!
  \brief Calculates the magnitude squared of complexVector and stores the results in magnitudeVector
  \param complexVector The vector containing the complex input values
@@ -101,7 +100,7 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_sse3(char* magnitudeV
         *magnitudeVectorPtr++ = (valReal * valReal) + (valImag * valImag);
     }
 }
-#endif /* LV_HAVE_SSE3 */
+#endif /* LV_HAVE_SSSE3 */
 
 //#ifdef LV_HAVE_SSE
 //#include <xmmintrin.h>
@@ -178,8 +177,8 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_generic(char* magnitude
 #include <stdio.h>
 #include <math.h>
 
-#ifdef LV_HAVE_SSE3
-#include <pmmintrin.h>
+#ifdef LV_HAVE_SSSE3
+#include <tmmintrin.h>
 /*!
  \brief Calculates the magnitude squared of complexVector and stores the results in magnitudeVector
  \param complexVector The vector containing the complex input values
@@ -237,7 +236,7 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
         *magnitudeVectorPtr++ = (valReal * valReal) + (valImag * valImag);
     }
 }
-#endif /* LV_HAVE_SSE3 */
+#endif /* LV_HAVE_SSSE3 */
 
 //#ifdef LV_HAVE_SSE
 //#include <xmmintrin.h>

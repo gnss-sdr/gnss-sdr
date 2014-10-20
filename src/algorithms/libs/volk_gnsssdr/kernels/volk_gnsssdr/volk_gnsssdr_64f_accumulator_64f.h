@@ -79,7 +79,7 @@ static inline void volk_gnsssdr_64f_accumulator_64f_u_avx(double* result,const d
 #endif /* LV_HAVE_AVX */
 
 #ifdef LV_HAVE_SSE3
-#include <xmmintrin.h>
+#include <pmmintrin.h>
 /*!
  \brief Accumulates the values in the input buffer
  \param result The accumulated result
@@ -185,7 +185,7 @@ static inline void volk_gnsssdr_64f_accumulator_64f_a_avx(double* result,const d
 #endif /* LV_HAVE_AVX */
 
 #ifdef LV_HAVE_SSE3
-#include <xmmintrin.h>
+#include <pmmintrin.h>
 /*!
  \brief Accumulates the values in the input buffer
  \param result The accumulated result

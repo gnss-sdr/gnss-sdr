@@ -59,7 +59,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_avx(lv_8sc_t* cVector, const
     __m256 conjugator1 = _mm256_castsi256_ps(_mm256_setr_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255));
     __m128i conjugator2 = _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1);
     
-    for (int i = 0; i < sse_iters; ++i)
+    for (unsigned int i = 0; i < sse_iters; ++i)
     {
         tmp = _mm256_loadu_ps((float*)a);
         tmp = _mm256_xor_ps(tmp, conjugator1);
@@ -75,7 +75,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_avx(lv_8sc_t* cVector, const
         c += 16;
     }
     
-    for (int i = 0; i<(num_points % 16); ++i)
+    for (unsigned int i = 0; i<(num_points % 16); ++i)
     {
         *c++ = lv_conj(*a++);
     }
@@ -99,7 +99,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_ssse3(lv_8sc_t* cVector, con
     
     __m128i conjugator = _mm_setr_epi8(1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1);
     
-    for (int i = 0; i < sse_iters; ++i)
+    for (unsigned int i = 0; i < sse_iters; ++i)
     {
         tmp = _mm_lddqu_si128((__m128i*)a);
         tmp = _mm_sign_epi8(tmp, conjugator);
@@ -108,7 +108,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_ssse3(lv_8sc_t* cVector, con
         c += 8;
     }
     
-    for (int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = 0; i<(num_points % 8); ++i)
     {
         *c++ = lv_conj(*a++);
     }
@@ -134,7 +134,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_sse3(lv_8sc_t* cVector, cons
     __m128i conjugator1 = _mm_setr_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
     __m128i conjugator2 = _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1);
     
-    for (int i = 0; i < sse_iters; ++i)
+    for (unsigned int i = 0; i < sse_iters; ++i)
     {
         tmp = _mm_lddqu_si128((__m128i*)a);
         tmp = _mm_xor_si128(tmp, conjugator1);
@@ -144,7 +144,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_sse3(lv_8sc_t* cVector, cons
         c += 8;
     }
     
-    for (int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = 0; i<(num_points % 8); ++i)
     {
         *c++ = lv_conj(*a++);
     }
@@ -199,7 +199,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_avx(lv_8sc_t* cVector, const
     __m256 conjugator1 = _mm256_castsi256_ps(_mm256_setr_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255));
     __m128i conjugator2 = _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1);
     
-    for (int i = 0; i < sse_iters; ++i)
+    for (unsigned int i = 0; i < sse_iters; ++i)
     {
         tmp = _mm256_load_ps((float*)a);
         tmp = _mm256_xor_ps(tmp, conjugator1);
@@ -215,7 +215,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_avx(lv_8sc_t* cVector, const
         c += 16;
     }
     
-    for (int i = 0; i<(num_points % 16); ++i)
+    for (unsigned int i = 0; i<(num_points % 16); ++i)
     {
         *c++ = lv_conj(*a++);
     }
@@ -239,7 +239,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_ssse3(lv_8sc_t* cVector, con
     
     __m128i conjugator = _mm_setr_epi8(1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1);
     
-    for (int i = 0; i < sse_iters; ++i)
+    for (unsigned int i = 0; i < sse_iters; ++i)
     {
         tmp = _mm_load_si128((__m128i*)a);
         tmp = _mm_sign_epi8(tmp, conjugator);
@@ -248,7 +248,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_ssse3(lv_8sc_t* cVector, con
         c += 8;
     }
     
-    for (int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = 0; i<(num_points % 8); ++i)
     {
         *c++ = lv_conj(*a++);
     }
@@ -274,7 +274,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_sse3(lv_8sc_t* cVector, cons
     __m128i conjugator1 = _mm_setr_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
     __m128i conjugator2 = _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1);
     
-    for (int i = 0; i < sse_iters; ++i)
+    for (unsigned int i = 0; i < sse_iters; ++i)
     {
         tmp = _mm_load_si128((__m128i*)a);
         tmp = _mm_xor_si128(tmp, conjugator1);
@@ -284,7 +284,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_sse3(lv_8sc_t* cVector, cons
         c += 8;
     }
     
-    for (int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = 0; i<(num_points % 8); ++i)
     {
         *c++ = lv_conj(*a++);
     }

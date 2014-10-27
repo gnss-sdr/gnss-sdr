@@ -89,9 +89,13 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_first(
     const lv_16sc_t* _P_code = P_code;
     const lv_16sc_t* _L_code = L_code;
     
+    dotProduct_E = 0;
+    dotProduct_P = 0;
+    dotProduct_L = 0;
+    
     if (sse_iters>0)
     {
-        for(int number = 0;number < sse_iters; number++)
+        for(unsigned int number = 0;number < sse_iters; number++)
         {
             //Perform the carrier wipe-off
             x = _mm_lddqu_si128((__m128i*)_input); // Load the ar + ai, br + bi as ar,ai,br,bi
@@ -203,7 +207,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_first(
         dotProduct_L = ( dotProductVector_L[0] + dotProductVector_L[1] );
         }
     
-    for(int i=0; i < num_points%4; ++i)
+    for(unsigned int i=0; i < num_points%4; ++i)
     {
         dotProduct_E += (lv_32fc_t)((*_input) * (*_E_code++)*(*_carrier));
         dotProduct_P += (lv_32fc_t)((*_input) * (*_P_code++)*(*_carrier));
@@ -276,7 +280,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_second
     
     if (sse_iters>0)
     {
-        for(int number = 0;number < sse_iters; number++){
+        for(unsigned int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
             x1 = _mm_lddqu_si128((__m128i*)input_ptr);
@@ -446,7 +450,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_second
     }
     
     lv_16sc_t bb_signal_sample;
-    for(int i=0; i < num_points%8; ++i)
+    for(unsigned int i=0; i < num_points%8; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
@@ -735,7 +739,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_fourth
     
     if (sse_iters>0)
     {
-        for(int number = 0;number < sse_iters; number++){
+        for(unsigned int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
             x1 = _mm_lddqu_si128((__m128i*)input_ptr);
@@ -899,7 +903,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_fourth
     }
     
     lv_16sc_t bb_signal_sample;
-    for(int i=0; i < num_points%8; ++i)
+    for(unsigned int i=0; i < num_points%8; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
@@ -970,7 +974,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_fifth(
     
     if (sse_iters>0)
     {
-        for(int number = 0;number < sse_iters; number++){
+        for(unsigned int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
             x1 = _mm_lddqu_si128((__m128i*)input_ptr);
@@ -1063,7 +1067,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_fifth(
     }
     
     lv_16sc_t bb_signal_sample;
-    for(int i=0; i < num_points%8; ++i)
+    for(unsigned int i=0; i < num_points%8; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
@@ -1135,7 +1139,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_sixth(
     
     if (sse_iters>0)
     {
-        for(int number = 0;number < sse_iters; number++){
+        for(unsigned int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
             x1 = _mm_lddqu_si128((__m128i*)input_ptr);
@@ -1216,7 +1220,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_u_sse4_1_sixth(
     }
     
     lv_16sc_t bb_signal_sample;
-    for(int i=0; i < num_points%8; ++i)
+    for(unsigned int i=0; i < num_points%8; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
@@ -1255,7 +1259,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_generic(lv_32fc
     *L_out = 0;
     // perform Early, Prompt and Late correlation
     
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];
@@ -1549,7 +1553,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3_a_generic(lv_32
     *L_out = 0;
     // perform Early, Prompt and Late correlation
     
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];

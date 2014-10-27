@@ -324,7 +324,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_u_sse2(lv_32fc
     
     phase_rad_array = _mm_set_ps (phase_rad_init+3*phase_step_rad, phase_rad_init+2*phase_step_rad, phase_rad_init+phase_step_rad, phase_rad_init);
     
-    for(int i = 0; i < sse_iters; i++)
+    for(unsigned int i = 0; i < sse_iters; i++)
     {
         x = phase_rad_array;
         
@@ -412,9 +412,9 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_u_sse2(lv_32fc
         _mm_storeu_ps ((float*)sin_value, s);
         _mm_storeu_ps ((float*)cos_value, c);
         
-        for(int i = 0; i < 4; i++)
+        for(unsigned int e = 0; e < 4; e++)
         {
-            d_carr_sign[i] = lv_cmake(cos_value[i], sin_value[i]);
+            d_carr_sign[e] = lv_cmake(cos_value[e], sin_value[e]);
         }
         d_carr_sign += 4;
         
@@ -428,7 +428,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_u_sse2(lv_32fc
         
         float phase_rad = phase_rad_store[0];
         
-        for(int i = 0; i < num_points%4; i++)
+        for(unsigned int i = 0; i < num_points%4; i++)
         {
             *d_carr_sign = lv_cmake(cos(phase_rad), -sin(phase_rad));
             d_carr_sign++;
@@ -453,7 +453,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_generic(lv_32f
 //    *pointer2 = 0.5;
     
     float phase_rad = phase_rad_init;
-    for(int i = 0; i < num_points; i++)
+    for(unsigned int i = 0; i < num_points; i++)
     {
         *d_carr_sign = lv_cmake(cos(phase_rad), -sin(phase_rad));
         d_carr_sign++;
@@ -725,7 +725,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_a_sse2(lv_32fc
     
     phase_rad_array = _mm_set_ps (phase_rad_init+3*phase_step_rad, phase_rad_init+2*phase_step_rad, phase_rad_init+phase_step_rad, phase_rad_init);
     
-    for(int i = 0; i < sse_iters; i++)
+    for(unsigned int i = 0; i < sse_iters; i++)
     {
         x = phase_rad_array;
         
@@ -813,9 +813,9 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_a_sse2(lv_32fc
         _mm_store_ps ((float*)sin_value, s);
         _mm_store_ps ((float*)cos_value, c);
         
-        for(int i = 0; i < 4; i++)
+        for(unsigned int e = 0; e < 4; e++)
         {
-            d_carr_sign[i] = lv_cmake(cos_value[i], sin_value[i]);
+            d_carr_sign[e] = lv_cmake(cos_value[e], sin_value[e]);
         }
         d_carr_sign += 4;
         
@@ -829,7 +829,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_a_sse2(lv_32fc
         
         float phase_rad = phase_rad_store[0];
         
-        for(int i = 0; i < num_points%4; i++)
+        for(unsigned int i = 0; i < num_points%4; i++)
         {
             *d_carr_sign = lv_cmake(cos(phase_rad), -sin(phase_rad));
             d_carr_sign++;
@@ -854,7 +854,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_a_generic(lv_3
 //    *pointer2 = 0.5;
     
     float phase_rad = phase_rad_init;
-    for(int i = 0; i < num_points; i++)
+    for(unsigned int i = 0; i < num_points; i++)
     {
         *d_carr_sign = lv_cmake(cos(phase_rad), -sin(phase_rad));
         d_carr_sign++;

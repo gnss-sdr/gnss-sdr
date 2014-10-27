@@ -286,7 +286,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE
     
     if (sse_iters>0)
     {
-        for(int number = 0;number < sse_iters; number++){
+        for(unsigned int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
             x = _mm_loadu_si128((__m128i*)input_ptr);
@@ -358,7 +358,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE
         _mm_storeu_ps((float*)L_dotProductVector,L_code_acc); // Store the results back into the dot product vector
         _mm_storeu_ps((float*)VL_dotProductVector,VL_code_acc); // Store the results back into the dot product vector
         
-        for (int i = 0; i<2; ++i)
+        for (unsigned int i = 0; i<2; ++i)
         {
             *VE_out_ptr += VE_dotProductVector[i];
             *E_out_ptr += E_dotProductVector[i];
@@ -369,7 +369,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_u_sse2(lv_32fc_t* VE
     }
     
     lv_8sc_t bb_signal_sample;
-    for(int i=0; i < num_points%8; ++i)
+    for(unsigned int i=0; i < num_points%8; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
@@ -412,7 +412,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_generic(lv_32fc_t* V
     *L_out = 0;
     *VL_out = 0;
     // perform very early, Early, Prompt, Late and very late correlation
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];
@@ -653,7 +653,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_sse2(lv_32fc_t* VE
     
     if (sse_iters>0)
     {
-        for(int number = 0;number < sse_iters; number++){
+        for(unsigned int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
             x = _mm_load_si128((__m128i*)input_ptr);
@@ -725,7 +725,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_sse2(lv_32fc_t* VE
         _mm_store_ps((float*)L_dotProductVector,L_code_acc); // Store the results back into the dot product vector
         _mm_store_ps((float*)VL_dotProductVector,VL_code_acc); // Store the results back into the dot product vector
         
-        for (int i = 0; i<2; ++i)
+        for (unsigned int i = 0; i<2; ++i)
         {
             *VE_out_ptr += VE_dotProductVector[i];
             *E_out_ptr += E_dotProductVector[i];
@@ -736,7 +736,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_sse2(lv_32fc_t* VE
     }
     
     lv_8sc_t bb_signal_sample;
-    for(int i=0; i < num_points%8; ++i)
+    for(unsigned int i=0; i < num_points%8; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
@@ -779,7 +779,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5_a_generic(lv_32fc_t*
     *L_out = 0;
     *VL_out = 0;
     // perform very early, Early, Prompt, Late and very late correlation
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];

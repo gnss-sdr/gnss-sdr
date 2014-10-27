@@ -117,7 +117,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
         realcacc = _mm_setzero_si128();
         imagcacc = _mm_setzero_si128();
         
-        for(int number = 0; number < sse_iters; number++){
+        for(unsigned int number = 0; number < sse_iters; number++){
             
             x = _mm_loadu_si128((__m128i*)a);
             y = _mm_loadu_si128((__m128i*)b);
@@ -161,7 +161,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
         }
     }
     
-    for (int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = 0; i<(num_points % 8); ++i)
     {
         dotProduct += (*a++) * (*b++);
     }
@@ -198,7 +198,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
         realcacc = _mm_setzero_si128();
         imagcacc = _mm_setzero_si128();
         
-        for(int number = 0; number < sse_iters; number++){
+        for(unsigned int number = 0; number < sse_iters; number++){
             
             x = _mm_lddqu_si128((__m128i*)a);
             y = _mm_lddqu_si128((__m128i*)b);
@@ -234,13 +234,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
         
         _mm_storeu_si128((__m128i*)dotProductVector,totalc); // Store the results back into the dot product vector
         
-        for (int i = 0; i<8; ++i)
+        for (unsigned int i = 0; i<8; ++i)
         {
             dotProduct += dotProductVector[i];
         }
     }
     
-    for (int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = 0; i<(num_points % 8); ++i)
     {
         dotProduct += (*a++) * (*b++);
     }
@@ -338,7 +338,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
         realcacc = _mm_setzero_si128();
         imagcacc = _mm_setzero_si128();
         
-        for(int number = 0; number < sse_iters; number++){
+        for(unsigned int number = 0; number < sse_iters; number++){
             
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);
@@ -376,13 +376,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
         
         _mm_store_si128((__m128i*)dotProductVector,totalc); // Store the results back into the dot product vector
         
-        for (int i = 0; i<8; ++i)
+        for (unsigned int i = 0; i<8; ++i)
         {
             dotProduct += dotProductVector[i];
         }
     }
     
-    for (int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = 0; i<(num_points % 8); ++i)
     {
         dotProduct += (*a++) * (*b++);
     }
@@ -419,7 +419,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
         realcacc = _mm_setzero_si128();
         imagcacc = _mm_setzero_si128();
         
-        for(int number = 0; number < sse_iters; number++){
+        for(unsigned int number = 0; number < sse_iters; number++){
             
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);
@@ -455,13 +455,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
         
         _mm_store_si128((__m128i*)dotProductVector,totalc); // Store the results back into the dot product vector
         
-        for (int i = 0; i<8; ++i)
+        for (unsigned int i = 0; i<8; ++i)
         {
             dotProduct += dotProductVector[i];
         }
     }
     
-    for (int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = 0; i<(num_points % 8); ++i)
     {
         dotProduct += (*a++) * (*b++);
     }

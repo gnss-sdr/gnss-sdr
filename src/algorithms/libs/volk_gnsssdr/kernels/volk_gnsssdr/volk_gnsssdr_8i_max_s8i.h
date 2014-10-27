@@ -68,7 +68,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char target, const char* src
         
         _mm_storeu_si128((__m128i*)maxValuesBuffer, maxValues);
         
-        for(int i = 0; i<16; ++i)
+        for(unsigned int i = 0; i<16; ++i)
         {
             if(maxValuesBuffer[i] > max)
             {
@@ -76,7 +76,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char target, const char* src
             }
         }
         
-        for(int i = 0; i<(num_points % 16); ++i)
+        for(unsigned int i = 0; i<(num_points % 16); ++i)
         {
             if(src0[i] > max)
             {
@@ -137,7 +137,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char target, const char* src0,
             inputPtr += 16;
         }
         
-        for(int i = 0; i<(num_points % 16); ++i)
+        for(unsigned int i = 0; i<(num_points % 16); ++i)
         {
             if(src0[i] > max)
             {
@@ -214,7 +214,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char target, const char* src
         
         _mm_store_si128((__m128i*)maxValuesBuffer, maxValues);
         
-        for(int i = 0; i<16; ++i)
+        for(unsigned int i = 0; i<16; ++i)
         {
             if(maxValuesBuffer[i] > max)
             {
@@ -222,7 +222,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char target, const char* src
             }
         }
         
-        for(int i = 0; i<(num_points % 16); ++i)
+        for(unsigned int i = 0; i<(num_points % 16); ++i)
         {
             if(src0[i] > max)
             {
@@ -283,7 +283,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char target, const char* src0,
             inputPtr += 16;
         }
         
-        for(int i = 0; i<(num_points % 16); ++i)
+        for(unsigned int i = 0; i<(num_points % 16); ++i)
         {
             if(src0[i] > max)
             {

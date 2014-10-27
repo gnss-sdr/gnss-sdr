@@ -190,7 +190,7 @@ static inline void volk_gnsssdr_32fc_x5_cw_epl_corr_32fc_x3_generic(lv_32fc_t* E
     *P_out = 0;
     *L_out = 0;
     // perform Early, Prompt and Late correlation
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];
@@ -393,7 +393,7 @@ static inline void volk_gnsssdr_32fc_x5_cw_epl_corr_32fc_x3_a_generic(lv_32fc_t*
     *P_out = 0;
     *L_out = 0;
     // perform Early, Prompt and Late correlation
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];

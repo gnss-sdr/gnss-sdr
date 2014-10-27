@@ -289,7 +289,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_generic(lv_32
 
     lv_16sc_t bb_signal_sample;
     
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];
@@ -534,7 +534,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_a_generic(lv_
     
     lv_16sc_t bb_signal_sample;
     
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];

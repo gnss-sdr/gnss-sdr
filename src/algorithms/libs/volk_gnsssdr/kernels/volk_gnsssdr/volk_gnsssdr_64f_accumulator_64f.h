@@ -66,11 +66,11 @@ static inline void volk_gnsssdr_64f_accumulator_64f_u_avx(double* result,const d
     
     _mm256_storeu_pd((double*)tempBuffer,accumulator);
     
-    for(int i = 0; i<4; ++i){
+    for(unsigned int i = 0; i<4; ++i){
         returnValue += tempBuffer[i];
     }
     
-    for(int i = 0; i<(num_points % 4); ++i){
+    for(unsigned int i = 0; i<(num_points % 4); ++i){
         returnValue += (*aPtr++);
     }
     
@@ -105,11 +105,11 @@ static inline void volk_gnsssdr_64f_accumulator_64f_u_sse3(double* result,const 
     
     _mm_storeu_pd((double*)tempBuffer,accumulator);
     
-    for(int i = 0; i<2; ++i){
+    for(unsigned int i = 0; i<2; ++i){
         returnValue += tempBuffer[i];
     }
     
-    for(int i = 0; i<(num_points % 2); ++i){
+    for(unsigned int i = 0; i<(num_points % 2); ++i){
         returnValue += (*aPtr++);
     }
     
@@ -172,11 +172,11 @@ static inline void volk_gnsssdr_64f_accumulator_64f_a_avx(double* result,const d
     
     _mm256_store_pd((double*)tempBuffer,accumulator);
     
-    for(int i = 0; i<4; ++i){
+    for(unsigned int i = 0; i<4; ++i){
         returnValue += tempBuffer[i];
     }
     
-    for(int i = 0; i<(num_points % 4); ++i){
+    for(unsigned int i = 0; i<(num_points % 4); ++i){
         returnValue += (*aPtr++);
     }
     
@@ -211,11 +211,11 @@ static inline void volk_gnsssdr_64f_accumulator_64f_a_sse3(double* result,const 
     
     _mm_store_pd((double*)tempBuffer,accumulator);
     
-    for(int i = 0; i<2; ++i){
+    for(unsigned int i = 0; i<2; ++i){
         returnValue += tempBuffer[i];
     }
     
-    for(int i = 0; i<(num_points % 2); ++i){
+    for(unsigned int i = 0; i<(num_points % 2); ++i){
         returnValue += (*aPtr++);
     }
     

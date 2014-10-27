@@ -1272,7 +1272,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_TEST_32fc_x5_generic(lv_32fc
     lv_16sc_t VL_code_value;
     lv_16sc_t bb_signal_sample;
     
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         VE_code_value = VE_code[i];
         E_code_value = E_code[i];

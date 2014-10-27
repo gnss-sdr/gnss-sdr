@@ -57,7 +57,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_u_sse2(char* cVector, const char* a
     
     __m128i aVal, bVal, cVal;
     
-    for(int number = 0; number < sse_iters; number++){
+    for(unsigned int number = 0; number < sse_iters; number++){
         
         aVal = _mm_loadu_si128((__m128i*)aPtr);
         bVal = _mm_loadu_si128((__m128i*)bPtr);
@@ -71,7 +71,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_u_sse2(char* cVector, const char* a
         cPtr += 16;
     }
     
-    for(int i = 0; i<(num_points % 16); ++i)
+    for(unsigned int i = 0; i<(num_points % 16); ++i)
     {
         *cPtr++ = (*aPtr++) + (*bPtr++);
     }
@@ -126,7 +126,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_a_sse2(char* cVector, const char* a
     
     __m128i aVal, bVal, cVal;
     
-    for(int number = 0; number < sse_iters; number++){
+    for(unsigned int number = 0; number < sse_iters; number++){
         
         aVal = _mm_load_si128((__m128i*)aPtr);
         bVal = _mm_load_si128((__m128i*)bPtr);
@@ -140,7 +140,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_a_sse2(char* cVector, const char* a
         cPtr += 16;
     }
     
-    for(int i = 0; i<(num_points % 16); ++i)
+    for(unsigned int i = 0; i<(num_points % 16); ++i)
     {
         *cPtr++ = (*aPtr++) + (*bPtr++);
     }

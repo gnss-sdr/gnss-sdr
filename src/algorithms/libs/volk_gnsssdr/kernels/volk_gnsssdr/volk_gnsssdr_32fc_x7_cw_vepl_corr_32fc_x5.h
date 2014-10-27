@@ -212,7 +212,7 @@ static inline void volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5_u_avx(lv_32fc_t* VE
     dotProduct_L = ( dotProductVector_L[0] + dotProductVector_L[1] + dotProductVector_L[2] + dotProductVector_L[3] );
     dotProduct_VL = ( dotProductVector_VL[0] + dotProductVector_VL[1] + dotProductVector_VL[2] + dotProductVector_VL[3] );
     
-    for (int i = 0; i<(num_points % 4); ++i)
+    for (unsigned int i = 0; i<(num_points % 4); ++i)
     {
         dotProduct_VE += (*_input) * (*_VE_code++) * (*_carrier);
         dotProduct_E += (*_input) * (*_E_code++) * (*_carrier);
@@ -431,7 +431,7 @@ static inline void volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5_generic(lv_32fc_t* 
     *L_out = 0;
     *VL_out = 0;
     // perform Early, Prompt and Late correlation
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];
@@ -613,7 +613,7 @@ static inline void volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5_a_avx(lv_32fc_t* VE
     dotProduct_L = ( dotProductVector_L[0] + dotProductVector_L[1] + dotProductVector_L[2] + dotProductVector_L[3] );
     dotProduct_VL = ( dotProductVector_VL[0] + dotProductVector_VL[1] + dotProductVector_VL[2] + dotProductVector_VL[3] );
 
-    for (int i = 0; i<(num_points % 4); ++i)
+    for (unsigned int i = 0; i<(num_points % 4); ++i)
     {
         dotProduct_VE += (*_input) * (*_VE_code++) * (*_carrier);
         dotProduct_E += (*_input) * (*_E_code++) * (*_carrier);
@@ -832,7 +832,7 @@ static inline void volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5_a_generic(lv_32fc_t
     *L_out = 0;
     *VL_out = 0;
     // perform Early, Prompt and Late correlation
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];

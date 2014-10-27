@@ -79,7 +79,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
             {
                 _mm256_storeu_si256((__m256i*)&currentValuesBuffer, currentValues);
                 
-                for(int i = 0; i < 32; i++)
+                for(unsigned int i = 0; i < 32; i++)
                 {
                     if(currentValuesBuffer[i] > max)
                     {
@@ -93,7 +93,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
             inputPtr += 32;
         }
         
-        for(int i = 0; i<(num_points % 32); ++i)
+        for(unsigned int i = 0; i<(num_points % 32); ++i)
         {
             if(src0[i] > max)
             {
@@ -138,7 +138,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
             {
                 _mm_storeu_si128((__m128i*)&currentValuesBuffer, currentValues);
                 
-                for(int i = 0; i < 16; i++)
+                for(unsigned int i = 0; i < 16; i++)
                 {
                     if(currentValuesBuffer[i] > max)
                     {
@@ -152,7 +152,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
             inputPtr += 16;
         }
         
-        for(int i = 0; i<(num_points % 16); ++i)
+        for(unsigned int i = 0; i<(num_points % 16); ++i)
         {
             if(src0[i] > max)
             {
@@ -198,7 +198,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
             {
                 _mm_storeu_si128((__m128i*)&currentValuesBuffer, currentValues);
                 mask = ~mask;
-                int i = 0;
+                unsigned int i = 0;
                 while (mask > 0)
                 {
                     if ((mask & 1) == 1)
@@ -217,7 +217,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
             inputPtr += 16;
         }
         
-        for(int i = 0; i<(num_points % 16); ++i)
+        for(unsigned int i = 0; i<(num_points % 16); ++i)
         {
             if(src0[i] > max)
             {
@@ -309,7 +309,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
             {
                 _mm256_store_si256((__m256i*)&currentValuesBuffer, currentValues);
                 
-                for(int i = 0; i < 32; i++)
+                for(unsigned int i = 0; i < 32; i++)
                 {
                     if(currentValuesBuffer[i] > max)
                     {
@@ -323,7 +323,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
             inputPtr += 32;
         }
         
-        for(int i = 0; i<(num_points % 32); ++i)
+        for(unsigned int i = 0; i<(num_points % 32); ++i)
         {
             if(src0[i] > max)
             {
@@ -368,7 +368,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
             {
                 _mm_store_si128((__m128i*)&currentValuesBuffer, currentValues);
                 
-                for(int i = 0; i < 16; i++)
+                for(unsigned int i = 0; i < 16; i++)
                 {
                     if(currentValuesBuffer[i] > max)
                     {
@@ -382,7 +382,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
             inputPtr += 16;
         }
         
-        for(int i = 0; i<(num_points % 16); ++i)
+        for(unsigned int i = 0; i<(num_points % 16); ++i)
         {
             if(src0[i] > max)
             {
@@ -428,7 +428,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
             {
                 _mm_store_si128((__m128i*)&currentValuesBuffer, currentValues);
                 mask = ~mask;
-                int i = 0;
+                unsigned int i = 0;
                 while (mask > 0)
                 {
                     if ((mask & 1) == 1)
@@ -447,7 +447,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
             inputPtr += 16;
         }
         
-        for(int i = 0; i<(num_points % 16); ++i)
+        for(unsigned int i = 0; i<(num_points % 16); ++i)
         {
             if(src0[i] > max)
             {

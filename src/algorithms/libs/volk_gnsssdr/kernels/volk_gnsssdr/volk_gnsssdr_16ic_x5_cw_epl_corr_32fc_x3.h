@@ -111,7 +111,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3_u_sse4_1(lv_32fc_t* 
     
     if (sse_iters>0)
     {
-        for(int number = 0;number < sse_iters; number++){
+        for(unsigned int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
             x1 = _mm_lddqu_si128((__m128i*)input_ptr);
@@ -193,7 +193,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3_u_sse4_1(lv_32fc_t* 
     }
     
     lv_16sc_t bb_signal_sample;
-    for(int i=0; i < num_points%8; ++i)
+    for(unsigned int i=0; i < num_points%8; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
@@ -233,7 +233,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3_generic(lv_32fc_t* E
     *L_out = 0;
     // perform Early, Prompt and Late correlation
     
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];
@@ -320,7 +320,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3_a_sse4_1(lv_32fc_t* 
     
     if (sse_iters>0)
     {
-        for(int number = 0;number < sse_iters; number++){
+        for(unsigned int number = 0;number < sse_iters; number++){
             
             //Perform the carrier wipe-off
             x1 = _mm_load_si128((__m128i*)input_ptr);
@@ -402,7 +402,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3_a_sse4_1(lv_32fc_t* 
     }
     
     lv_16sc_t bb_signal_sample;
-    for(int i=0; i < num_points%8; ++i)
+    for(unsigned int i=0; i < num_points%8; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
@@ -442,7 +442,7 @@ static inline void volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3_a_generic(lv_32fc_t*
     *L_out = 0;
     // perform Early, Prompt and Late correlation
     
-    for(int i=0; i < num_points; ++i)
+    for(unsigned int i=0; i < num_points; ++i)
     {
         //Perform the carrier wipe-off
         bb_signal_sample = input[i] * carrier[i];

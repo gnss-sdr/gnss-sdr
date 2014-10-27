@@ -190,7 +190,6 @@ int main(int argc, char *argv[]) {
      VOLK_PROFILE(volk_gnsssdr_8ic_x2_multiply_8ic, 1e-4, 0, 204602, 1000, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_8u_x2_multiply_8u, 1e-4, 0, 204602, 1000, &results, benchmark_mode, kernel_regex);
      VOLK_PROFILE(volk_gnsssdr_64f_accumulator_64f, 1e-4, 0, 16000, 1000, &results, benchmark_mode, kernel_regex);
-     VOLK_PROFILE(volk_gnsssdr_32f_s32f_convert_16i, 1e-4, 1, 204602, 250, &results, benchmark_mode, kernel_regex);
     
     // Until we can update the config on a kernel by kernel basis
     // do not overwrite volk_config when using a regex.

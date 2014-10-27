@@ -108,7 +108,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_u_avx(lv_32fc_
     
     __m256 phase_rad_array, x, s, c, swap_sign_bit_sin, sign_bit_cos, poly_mask, z, tmp, y, y2, ysin1, ysin2;
     __m256 xmm1, xmm2, xmm3, sign_bit_sin;
-    __m256i imm0, imm2, imm4;
+    __m256i imm0, imm2, imm4, tmp256i;
     __m128i imm0_1, imm0_2, imm2_1, imm2_2, imm4_1, imm4_2;
     __VOLK_ATTR_ALIGNED(32) float sin_value[8];
     __VOLK_ATTR_ALIGNED(32) float cos_value[8];
@@ -132,9 +132,9 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_u_avx(lv_32fc_
         /* we use SSE2 routines to perform the integer ops */
         
         //COPY_IMM_TO_XMM(_mm256_cvttps_epi32(y),imm2_1,imm2_2);
-        y = _mm256_cvttps_epi32(y);
-        imm2_1 = _mm256_extractf128_ps (y, 0);
-        imm2_2 = _mm256_extractf128_ps (y, 1);
+        tmp256i = _mm256_cvttps_epi32(y);
+        imm2_1 = _mm256_extractf128_si256 (tmp256i, 0);
+        imm2_2 = _mm256_extractf128_si256 (tmp256i, 1);
         
         imm2_1 = _mm_add_epi32(imm2_1, _pi32avx_1);
         imm2_2 = _mm_add_epi32(imm2_2, _pi32avx_1);
@@ -264,7 +264,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_u_avx(lv_32fc_
     if (num_points%8!=0)
     {
         __VOLK_ATTR_ALIGNED(32) float phase_rad_store[8];
-        _mm256_storeu_si256 ((__m256i*)phase_rad_store, phase_rad_array);
+        _mm256_storeu_ps ((float*)phase_rad_store, phase_rad_array);
         
         float phase_rad = phase_rad_store[0];
         
@@ -424,7 +424,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_u_sse2(lv_32fc
     if (num_points%4!=0)
     {
         __VOLK_ATTR_ALIGNED(16) float phase_rad_store[4];
-        _mm_storeu_si128 ((__m128i*)phase_rad_store, phase_rad_array);
+        _mm_storeu_ps ((float*)phase_rad_store, phase_rad_array);
         
         float phase_rad = phase_rad_store[0];
         
@@ -510,7 +510,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_a_avx(lv_32fc_
     
     __m256 phase_rad_array, x, s, c, swap_sign_bit_sin, sign_bit_cos, poly_mask, z, tmp, y, y2, ysin1, ysin2;
     __m256 xmm1, xmm2, xmm3, sign_bit_sin;
-    __m256i imm0, imm2, imm4;
+    __m256i imm0, imm2, imm4, tmp256i;
     __m128i imm0_1, imm0_2, imm2_1, imm2_2, imm4_1, imm4_2;
     __VOLK_ATTR_ALIGNED(32) float sin_value[8];
     __VOLK_ATTR_ALIGNED(32) float cos_value[8];
@@ -534,9 +534,9 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_a_avx(lv_32fc_
         /* we use SSE2 routines to perform the integer ops */
         
         //COPY_IMM_TO_XMM(_mm256_cvttps_epi32(y),imm2_1,imm2_2);
-        y = _mm256_cvttps_epi32(y);
-        imm2_1 = _mm256_extractf128_ps (y, 0);
-        imm2_2 = _mm256_extractf128_ps (y, 1);
+        tmp256i = _mm256_cvttps_epi32(y);
+        imm2_1 = _mm256_extractf128_si256 (tmp256i, 0);
+        imm2_2 = _mm256_extractf128_si256 (tmp256i, 1);
         
         imm2_1 = _mm_add_epi32(imm2_1, _pi32avx_1);
         imm2_2 = _mm_add_epi32(imm2_2, _pi32avx_1);
@@ -825,7 +825,7 @@ static inline void volk_gnsssdr_s32f_x2_update_local_carrier_32fc_a_sse2(lv_32fc
     if (num_points%4!=0)
     {
         __VOLK_ATTR_ALIGNED(16) float phase_rad_store[4];
-        _mm_store_si128 ((__m128i*)phase_rad_store, phase_rad_array);
+        _mm_store_ps ((float*)phase_rad_store, phase_rad_array);
         
         float phase_rad = phase_rad_store[0];
         

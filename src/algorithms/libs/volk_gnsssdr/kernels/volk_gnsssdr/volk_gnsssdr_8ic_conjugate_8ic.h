@@ -68,7 +68,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_avx(lv_8sc_t* cVector, const
         tmp128hi = _mm256_extractf128_si256(_mm256_castps_si256(tmp),1);
         tmp128hi = _mm_add_epi8(tmp128hi, conjugator2);
         //tmp = _mm256_set_m128i(tmp128hi , tmp128lo); //not defined in some versions of immintrin.h
-        tmp = _mm256_insertf128_si256(_mm256_castsi128_si256(tmp128lo),(tmp128hi),1);
+        tmp = _mm256_castsi256_ps(_mm256_insertf128_si256(_mm256_castsi128_si256(tmp128lo),(tmp128hi),1));
         _mm256_storeu_ps((float*)c, tmp);
         
         a += 16;
@@ -208,7 +208,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_avx(lv_8sc_t* cVector, const
         tmp128hi = _mm256_extractf128_si256(_mm256_castps_si256(tmp),1);
         tmp128hi = _mm_add_epi8(tmp128hi, conjugator2);
         //tmp = _mm256_set_m128i(tmp128hi , tmp128lo); //not defined in some versions of immintrin.h
-        tmp = _mm256_insertf128_si256(_mm256_castsi128_si256(tmp128lo),(tmp128hi),1);
+        tmp = _mm256_castsi256_ps(_mm256_insertf128_si256(_mm256_castsi128_si256(tmp128lo),(tmp128hi),1));
         _mm256_store_ps((float*)c, tmp);
         
         a += 16;

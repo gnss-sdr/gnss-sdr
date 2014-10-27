@@ -99,7 +99,7 @@ static inline void volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_u_sse4_1(lv_
     if (num_points%4!=0)
     {
         __VOLK_ATTR_ALIGNED(16) float tcode_half_chips_stored[4];
-        _mm_storeu_si128 ((__m128i*)tcode_half_chips_stored, tcode_half_chips_array);
+        _mm_storeu_ps ((float*)tcode_half_chips_stored, tcode_half_chips_array);
         
         int associated_chip_index;
         float tcode_half_chips = tcode_half_chips_stored[0];
@@ -215,7 +215,7 @@ static inline void volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_a_sse4_1(lv_
     if (num_points%4!=0)
     {
         __VOLK_ATTR_ALIGNED(16) float tcode_half_chips_stored[4];
-        _mm_store_si128 ((__m128i*)tcode_half_chips_stored, tcode_half_chips_array);
+        _mm_storeu_ps ((float*)tcode_half_chips_stored, tcode_half_chips_array);
         
         int associated_chip_index;
         float tcode_half_chips = tcode_half_chips_stored[0];

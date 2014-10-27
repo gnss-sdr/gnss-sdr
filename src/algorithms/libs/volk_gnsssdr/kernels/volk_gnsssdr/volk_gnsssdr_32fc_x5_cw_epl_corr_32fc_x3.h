@@ -1,3 +1,49 @@
+/*!
+ * \file volk_gnsssdr_32fc_x5_cw_vepl_corr_32fc_x5
+ * \brief Volk protokernel: performs the carrier wipe-off mixing and the Early, Prompt and Late correlation with 64 bits vectors
+ * \authors <ul>
+ *          <li>Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *          </ul>
+ *
+ * Volk protokernel that performs the carrier wipe-off mixing and the
+ * Early, Prompt and Late correlation with 64 bits vectors (32 bits the
+ * real part and 32 bits the imaginary part):
+ * - The carrier wipe-off is done by multiplying the input signal by the
+ * carrier (multiplication of 64 bits vectors) It returns the input
+ * signal in base band (BB)
+ * - Early values are calculated by multiplying the input signal in BB by the
+ * early code (multiplication of 64 bits vectors), accumulating the results
+ * - Prompt values are calculated by multiplying the input signal in BB by the
+ * prompt code (multiplication of 64 bits vectors), accumulating the results
+ * - Late values are calculated by multiplying the input signal in BB by the
+ * late code (multiplication of 64 bits vectors), accumulating the results
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
+
 #ifndef INCLUDED_gnsssdr_volk_gnsssdr_32fc_x5_cw_epl_corr_32fc_x3_u_H
 #define INCLUDED_gnsssdr_volk_gnsssdr_32fc_x5_cw_epl_corr_32fc_x3_u_H
 

@@ -244,7 +244,6 @@ void galileo_volk_e1_dll_pll_veml_tracking_cc::update_local_code()
 {
     double tcode_half_chips;
     float rem_code_phase_half_chips;
-    int associated_chip_index;
     int code_length_half_chips = static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS) * 2;
     double code_phase_step_chips;
     double code_phase_step_half_chips;

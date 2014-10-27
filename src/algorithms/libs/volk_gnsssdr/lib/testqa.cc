@@ -24,17 +24,6 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <boost/test/unit_test.hpp>
 
-//VOLK PROTOKERNELS OBTAINED FROM THE GNURADIO BASE
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_x2_multiply_32fc, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_x2_dot_prod_32fc, 1e-4, 0, 204603, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_s32fc_multiply_32fc, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_conjugate_32fc, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32f_x2_add_32f, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32f_index_max_16u, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32f_accumulator_s32f, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_magnitude_squared_32f, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32f_s32f_convert_16i, 3, 0, 20462, 1);
-
 //GNSS-SDR PROTO-KERNELS
 VOLK_RUN_TESTS(volk_gnsssdr_8ic_x2_multiply_8ic, 1e-4, 0, 20462, 1);
 VOLK_RUN_TESTS(volk_gnsssdr_8u_x2_multiply_8u, 1e-4, 0, 20462, 1);
@@ -52,7 +41,6 @@ VOLK_RUN_TESTS(volk_gnsssdr_64f_accumulator_64f, 3, 0, 20462, 1);
 VOLK_RUN_TESTS(volk_gnsssdr_32fc_convert_16ic, 3, 0, 20462, 1);
 VOLK_RUN_TESTS(volk_gnsssdr_32fc_s32f_convert_8ic, 3, 0, 20462, 1);
 VOLK_RUN_TESTS(volk_gnsssdr_32fc_convert_8ic, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_16i_s32f_convert_32f, 3, 0, 20462, 1);
 
 VOLK_RUN_TESTS(volk_gnsssdr_32fc_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 20462, 1);
 VOLK_RUN_TESTS(volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3, 1e-4, 0, 20462, 1);

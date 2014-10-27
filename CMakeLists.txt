@@ -206,6 +206,14 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
 ################################################################################
+# Checkout cmake version
+################################################################################
+if(CMAKE_VERSION VERSION_LESS 2.8.8)
+      message(STATUS "Your CMake version is too old and does not support some features required by GNSS-SDR. CMake version must be at least 2.8.8. For more information check https://github.com/joakimkarlsson/bandit/issues/40")
+      message(FATAL_ERROR "Fatal error: CMake >= 2.8.8 required.")
+endif(CMAKE_VERSION VERSION_LESS 2.8.8)
+
+################################################################################
 # Checkout compiler version
 ################################################################################
 

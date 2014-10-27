@@ -52,6 +52,7 @@
 #include "signal_conditioner.h"
 #include "array_signal_conditioner.h"
 #include "ishort_to_complex.h"
+#include "ibyte_to_complex.h"
 #include "direct_resampler_conditioner.h"
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
@@ -426,7 +427,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
-
+    else if (implementation.compare("Ibyte_To_Complex") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface>block_(new IbyteToComplex(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
     // INPUT FILTER ----------------------------------------------------------------
     else if (implementation.compare("Fir_Filter") == 0)
         {

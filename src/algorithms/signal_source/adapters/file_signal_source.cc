@@ -83,6 +83,10 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         {
             item_size_ = sizeof(short int);
         }
+    else if (item_type_.compare("byte") == 0)
+        {
+    		item_size_ = sizeof(char);
+        }
     else
         {
             LOG(WARNING) << item_type_

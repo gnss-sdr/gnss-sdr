@@ -41,7 +41,6 @@ option(ENABLE_RTLSDR "Enable the use of RTL dongles as signal source (experiment
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
-option(ENABLE_VOLK_GNSSSDR "Enable building of volk_gnsssdr module: some volk protokernels coded by gnss-sdr" OFF)
 
 
 ###############################
@@ -143,6 +142,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
              )
              if(${LINUX_DISTRIBUTION} MATCHES "Debian")
                  set(LINUX_DISTRIBUTION "Debian")
+                 file(READ /etc/debian_version LINUX_VER)
              endif(${LINUX_DISTRIBUTION} MATCHES "Debian")
          endif(EXISTS "/etc/os-release")  
      endif(NOT LINUX_DISTRIBUTION)
@@ -171,6 +171,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      set(OS_IS_MACOSX TRUE)
      exec_program(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
      string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
+     if(${DARWIN_VERSION} MATCHES "14")
+         set(MACOSX_YOSEMITE TRUE)
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.10 Yosemite")
+     endif(${DARWIN_VERSION} MATCHES "14")
      if(${DARWIN_VERSION} MATCHES "13")
          set(MACOSX_MAVERICKS TRUE)
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
@@ -205,6 +211,7 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 # Append -O2 optimization flag for Debug builds
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 
+
 ################################################################################
 # Checkout cmake version
 ################################################################################
@@ -212,6 +219,7 @@ if(CMAKE_VERSION VERSION_LESS 2.8.8)
       message(STATUS "Your CMake version is too old and does not support some features required by GNSS-SDR. CMake version must be at least 2.8.8. For more information check https://github.com/joakimkarlsson/bandit/issues/40")
       message(FATAL_ERROR "Fatal error: CMake >= 2.8.8 required.")
 endif(CMAKE_VERSION VERSION_LESS 2.8.8)
+
 
 ################################################################################
 # Checkout compiler version
@@ -342,39 +350,10 @@ if(NOT GNURADIO_TRELLIS_FOUND)
 endif()
 
 
-###############################################################################
-# Volk_gnsssdr module
-#In order to use volk_gnsssr module it is necessary to add:
-# 1) include_directories(..${VOLK_GNSSSDR_INCLUDE_DIRS}..)
-# 2) target_link_libraries(..${VOLK_GNSSSDR_LIBRARIES}..)
-###############################################################################
-
-if(ENABLE_VOLK_GNSSSDR)
-     message(STATUS "The volk_gnsssdr module with custom protokernels coded by gnss-sdr will be compiled.")
-     message(STATUS "You can disable it with 'cmake -DENABLE_VOLK_GNSSSDR=OFF ../'" )  
-else(ENABLE_VOLK_GNSSSDR)
-     message(STATUS "The volk_gnsssdr module with custom protokernels coded by gnss-sdr is not enabled. Some configurations that use custom protokernels will not work." )
-     message(STATUS "Enable it with 'cmake -D ENABLE_VOLK_GNSSSDR=ON ../'." ) 
-endif(ENABLE_VOLK_GNSSSDR)
-
-if(ENABLE_VOLK_GNSSSDR)
-     set(VOLK_GNSSSDR_BASE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr)
-     add_subdirectory(${VOLK_GNSSSDR_BASE_PATH})
-
-     set(VOLK_GNSSSDR_INCLUDE_DIRS
-          ${VOLK_GNSSSDR_BASE_PATH}/include
-          ${CMAKE_CURRENT_BINARY_DIR}/src/algorithms/libs/volk_gnsssdr/include
-     )
-
-     set(VOLK_GNSSSDR_LIBRARIES
-          #Path to libs of volk_gnsssdr target: ${VOLK_GNSSSDR_BASE_PATH}/lib/Debug/libvolk_gnsssdr.dylib
-          volk_gnsssdr
-     )
-
-     message(" * INCLUDES: ${VOLK_GNSSSDR_INCLUDE_DIRS} ")
-     message(" * LIBS: ${VOLK_GNSSSDR_LIBRARIES} ")
-     message("-- END OF: Setup volk_gnsssdr as a subproject.")
-endif(ENABLE_VOLK_GNSSSDR)
+################################################################################
+# volk_gnsssdr module
+################################################################################
+add_subdirectory(src/algorithms/libs/volk_gnsssdr_module)
 
 
 ################################################################################
@@ -610,25 +589,31 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/x86_64-redhat-linux/4.7.2 # Fedora 18
                        /usr/lib/gcc/i686-redhat-linux/4.7.2
                        /usr/lib/gcc/x86_64-redhat-linux/4.8.1 # Fedora 19
+                       /usr/lib/gcc/x86_64-redhat-linux/4.8.3 # Fedora 20
+                       /usr/lib/gcc/x86_64-redhat-linux/4.9.1 # Fedora 21
                        /usr/lib/gcc/i686-redhat-linux/4.8.1
+                       /usr/lib/gcc/i686-redhat-linux/4.8.3
+                       /usr/lib/gcc/i686-redhat-linux/4.9.1
                        /usr/lib/gcc/x86_64-redhat-linux/4.4.4 # CentOS 6
                        /usr/lib/gcc/i686-redhat-linux/4.4.4
                        /usr/lib/gcc/x86_64-redhat-linux/4.8.2
                        /usr/lib/gcc/i686-redhat-linux/4.8.2
                        /usr/lib/gcc/i586-suse-linux/4.8  # OpenSUSE 13.1
+                       /usr/lib/gcc/i586-suse-linux/4.9
                        /usr/lib/gcc/x86_64-suse-linux/4.8
+                       /usr/lib/gcc/x86_64-suse-linux/4.9
                        /usr/lib/gcc/i486-linux-gnu # Debian 7
                        /usr/lib/gcc/i486-linux-gnu/4.4
                        /usr/lib/gcc/i486-linux-gnu/4.6
                        /usr/lib/gcc/i486-linux-gnu/4.7
                        /usr/lib/gcc/i486-linux-gnu/4.8
                        /usr/lib/gcc/i486-linux-gnu/4.9
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.5
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.6
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.7
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.8
-		               /usr/lib/gcc/arm-linux-gnueabihf/4.9
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.4 # Debian armhf
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.5
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.6
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.7
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.8
+                       /usr/lib/gcc/arm-linux-gnueabihf/4.9
                 )
     if(NOT GFORTRAN)
         message(" The gfortran library has not been found.")

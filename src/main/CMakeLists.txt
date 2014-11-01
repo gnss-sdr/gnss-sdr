@@ -46,12 +46,9 @@ include_directories(
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
 if(OS_IS_MACOSX)
-     if (MACOSX_MAVERICKS)
+     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
          set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11 -framework Accelerate")
-     else(MACOSX_MAVERICKS)
-         link_directories( /opt/local/lib )  # Not very elegant, to be fixed
-         set(MAC_LIBRARIES "-lstdc++")
-     endif(MACOSX_MAVERICKS)
+     endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif(OS_IS_MACOSX)
 
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)

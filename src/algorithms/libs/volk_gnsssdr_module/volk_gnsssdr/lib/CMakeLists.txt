@@ -523,7 +523,7 @@ file(GLOB orc ${CMAKE_SOURCE_DIR}/orc/*.orc)
 file(GLOB CommonMacros ${CMAKE_SOURCE_DIR}/kernels/CommonMacros/*.h ${CMAKE_SOURCE_DIR}/kernels/CommonMacros/README.txt)
 
 #add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources})
-add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources} ${h_files} ${CommonMacros} ${orc})
+add_library(volk_gnsssdr STATIC ${volk_gnsssdr_sources} ${h_files} ${CommonMacros} ${orc})
 
 source_group("Kernels" FILES ${h_files})
 source_group("Common Macros" FILES ${CommonMacros})

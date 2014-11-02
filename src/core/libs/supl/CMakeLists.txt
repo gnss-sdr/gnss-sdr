@@ -1,11 +1,11 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,7 +35,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
         set(MY_C_FLAGS "${MY_C_FLAGS} -Wno-parentheses-equality")         
     endif(CMAKE_BUILD_TYPE MATCHES "Release")
 endif(CMAKE_C_COMPILER_ID MATCHES "Clang")	
-list(APPEND CMAKE_C_FLAGS ${MY_C_FLAGS})	
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MY_C_FLAGS}")
 
 add_library (supl_library STATIC ${ASN_RRLP_SOURCES} ${ASN_SUPL_SOURCES} ${SUPL_SOURCES})
 target_link_libraries (supl_library ssl gnss_system_parameters) 

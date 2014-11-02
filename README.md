@@ -11,12 +11,12 @@ If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-develope
 # How to build GNSS-SDR
 
 
-This section describes how to set up the compilation environment in GNU/Linux or [Mac OS X](#macosx)t, and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
+This section describes how to set up the compilation environment in GNU/Linux or [Mac OS X](#macosx), and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
 
 GNU/Linux 
 ----------
 
-Tested distributions: Ubuntu 12.04, 12.10, 13.04, 13.10 and 14.04 (32 and 64 bits), Debian 6.0.6 and 7.2, Fedora 18, 19 and 20 and openSUSE 13.1 (newer versions should work, too). You will need GCC 4.7 or newer.
+Tested distributions: Ubuntu 14.04 and 14.10 (32 and 64 bits), Debian 7.7, Fedora 19 and 20, and openSUSE 13.1 (older versions should work as well, but you will need GCC 4.7 or newer).
 
 ### Install GNU Radio:
 
@@ -72,9 +72,9 @@ $ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubu
 $ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-4.400.2.tar.gz
-$ tar xvfz armadillo-4.400.2.tar.gz
-$ cd armadillo-4.400.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-4.450.0.tar.gz
+$ tar xvfz armadillo-4.450.0.tar.gz
+$ cd armadillo-4.450.0
 $ cmake .
 $ make
 $ sudo make install
@@ -320,11 +320,8 @@ Using this option, all SIMD instructions are accessed via VOLK, which automatica
 <a name="macosx">Mac OS X</a> 
 ---------
 
-Tested versions: 10.8 (Mountain Lion) and 10.9 (Mavericks).
 
-
-
-### Mac OS X 10.9 Mavericks
+### Mac OS X 10.9 (Mavericks) and 10.10 (Yosemite)
 
 If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 
@@ -357,64 +354,6 @@ Finally, you are ready to clone the GNSS-SDR repository and build the software:
 $ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
 $ cd gnss-sdr/build
 $ cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ../
-$ make
-$ make install
-~~~~~~ 
-
-This will create two executables at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. The documentation can be built by:
-
-~~~~~~ 
-$ make doc
-~~~~~~ 
-
-and can be viewed doing:
-
-~~~~~~ 
-$ open ../docs/html/index.html
-~~~~~~ 
-
-   
-
-### Mac OS X 10.8 Mountain Lion 
-
-
-If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free). Once installed, download and install the command line tools:
-
-Xcode -> Preferences -> Downloads -> Components -> Command Line Tools
-
-Then, install Macports via [Mac OS X Package (.pkg) installer](http://www.macports.org/install.php).
-
-Once MacPorts is properly installed on your system, open a terminal and type:
-
-~~~~~~ 
-$ sudo port selfupdate
-$ sudo port install gcc48
-$ sudo port select --set gcc mp-gcc48
-~~~~~~ 
-
-Install [X11 via XQuartz-2.7.4.dmg](http://xquartz.macosforge.org/landing/) (needed by gnuradio-companion but not by GNSS-SDR).
-
-Install GNU Radio:
-
-~~~~~~ 
-$ sudo port install gnuradio
-~~~~~~ 
-
-Install other dependencies:
-
-~~~~~~ 
-$ sudo port install armadillo
-~~~~~~ 
-
-The libraries [Gflags](http://code.google.com/p/gflags/ "Gflags' Homepage") and [Glog](http://code.google.com/p/google-glog/ "Glog's Homepage") should be installed manually, and in that particular order (same steps as above). If they are not already installed
-when building GNSS-SDR, [CMake](http://www.cmake.org/ "CMake's Homepage") will download, build and link them statically for you when doing ```make```, but they will not remain installed in the system.
-
-Then, you are ready to clone the GNSS-SDR repository and build the software:
-
-~~~~~~ 
-$ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
-$ cd gnss-sdr/build
-$ cmake -DCMAKE_CXX_COMPILER=g++ ../ 
 $ make
 $ make install
 ~~~~~~ 

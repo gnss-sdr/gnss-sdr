@@ -117,7 +117,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             std::string text_;
             if (filename_.compare(default_filename) == 0)
                 {
-                    default_conf_file = hmpath + "/.gnss-sdr/" + GNSS_SDR_VERSION + "/conf/gnss-sdr.conf";
+                    default_conf_file = hmpath + "/.gnss-sdr/conf/gnss-sdr.conf";
                     text_ = "Please modify the configuration example at " + default_conf_file;
 
                 }

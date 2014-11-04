@@ -51,7 +51,12 @@ if(OS_IS_MACOSX)
      endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif(OS_IS_MACOSX)
 
+
 add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+
+add_custom_command(TARGET gnss-sdr POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
+                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>)
 
 target_link_libraries(gnss-sdr ${MAC_LIBRARIES} 
                                ${Boost_LIBRARIES}
@@ -70,8 +75,12 @@ target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
 
 
 install(TARGETS gnss-sdr
-        DESTINATION ${CMAKE_SOURCE_DIR}/install
+        RUNTIME DESTINATION bin
+        COMPONENT "gnss-sdr"
         )
         
-       
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/conf DESTINATION $ENV{HOME}/.gnss-sdr
+        FILES_MATCHING PATTERN "*.conf"
+        )
         
+install(DIRECTORY DESTINATION $ENV{HOME}/.gnss-sdr/data/)

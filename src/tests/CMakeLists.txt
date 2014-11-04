@@ -151,6 +151,10 @@ add_definitions(-DTEST_PATH="${CMAKE_SOURCE_DIR}/src/tests/")
 
 add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
 
+add_custom_command(TARGET run_tests POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:run_tests>
+                       ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:run_tests>)
+
 target_link_libraries(run_tests ${CLANG_FLAGS} 
                                 ${Boost_LIBRARIES}  
                                 ${GFLAGS_LIBS} 
@@ -171,12 +175,11 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
 )
 
-install(TARGETS run_tests DESTINATION ${CMAKE_SOURCE_DIR}/install)
 
 #########################################################
 #  Adding Tests to Ctest
 #########################################################
-
+# ToDo
 
 #set(CMAKE_CTEST_COMMAND ctest -V)
 #add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
@@ -185,6 +188,7 @@ add_executable(control_thread_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_message_factory_test.cc
 )
+
 target_link_libraries(control_thread_test ${Boost_LIBRARIES} 
                                           ${GFLAGS_LIBS} 
                                           ${GLOG_LIBRARIES} 

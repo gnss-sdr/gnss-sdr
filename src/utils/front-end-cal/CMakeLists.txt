@@ -56,6 +56,11 @@ if(ENABLE_RTLSDR)
     add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
     add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+
+    add_custom_command(TARGET front-end-cal POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>
+                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
+    
     
     target_link_libraries(front-end-cal  ${GNURADIO_RUNTIME_LIBRARIES} 
                                          ${GNURADIO_BLOCKS_LIBRARIES}  
@@ -69,7 +74,8 @@ if(ENABLE_RTLSDR)
     )
 
     install(TARGETS front-end-cal 
-            DESTINATION ${CMAKE_SOURCE_DIR}/install
+            RUNTIME DESTINATION bin
+            COMPONENT "front-end-cal"
             )
             
 endif(ENABLE_RTLSDR)

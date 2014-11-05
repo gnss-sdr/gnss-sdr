@@ -31,9 +31,6 @@
  */
 
 #include "nsr_file_signal_source.h"
-#include <unistd.h>
-#include <sys/types.h>
-#include <pwd.h>
 #include <cstdlib>
 #include <exception>
 #include <fstream>
@@ -56,15 +53,6 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
         boost::shared_ptr<gr::msg_queue> queue) :
 		                role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
-
-    char* userHomePath;
-    userHomePath = getenv ("HOME");
-    if (userHomePath == NULL)
-        {
-            struct passwd *pw = getpwuid(getuid());
-            userHomePath = pw->pw_dir;
-        }
-    std::string hmpath(userHomePath);
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
     std::string default_dump_filename = "../data/my_capture_dump.dat";
@@ -99,24 +87,22 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
     }
     catch (const std::exception &e)
     {
-            std::string default_conf_file;
-            std::string text_;
-            default_conf_file = hmpath + "/.gnss-sdr/conf/gnss-sdr_GPS_L1_nsr.conf";
-            text_ = "Please modify the configuration taking the example at " + default_conf_file;
-
             std::cerr
             << "The receiver was configured to work with a file signal source "
             << std::endl
             << "but the specified file is unreachable by GNSS-SDR."
             << std::endl
-            << text_
+            <<  "Please modify your configuration file"
             << std::endl
-            << "and point SignalSource.filename to a valid file,"
-            << std::endl
-            << "and specify your own receiver and source with the flag"
+            <<  "and point SignalSource.filename to a valid raw data file. Then:"
             << std::endl
             << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
+            << std::endl
+            << "Examples of configuration files available at:"
+            << std::endl
+            << GNSSSDR_INSTALL_DIR "/gnss-sdr/conf/"
             << std::endl;
+
             LOG(WARNING) << "file_signal_source: Unable to open the samples file "
                          << filename_.c_str() << ", exiting the program.";
             throw(e);

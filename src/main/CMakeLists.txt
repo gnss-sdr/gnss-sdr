@@ -79,8 +79,11 @@ install(TARGETS gnss-sdr
         COMPONENT "gnss-sdr"
         )
         
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/conf DESTINATION $ENV{HOME}/.gnss-sdr
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/conf DESTINATION etc/gnss-sdr
         FILES_MATCHING PATTERN "*.conf"
         )
         
-install(DIRECTORY DESTINATION $ENV{HOME}/.gnss-sdr/data/)
+install(DIRECTORY DESTINATION etc/gnss-sdr/data/)
+install(FILES ${CMAKE_SOURCE_DIR}/conf/gnss-sdr.conf DESTINATION etc/gnss-sdr/conf
+        RENAME default.conf)
+

@@ -124,14 +124,14 @@ static inline void volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_u_sse4_1(lv_
   */
 static inline void volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_generic(lv_32fc_t* d_very_early_code, const float d_very_early_late_spc_chips, const float code_length_half_chips, const float code_phase_step_half_chips, const float tcode_half_chips_input, const lv_32fc_t* d_ca_code, unsigned int num_points){
     
-    float* pointer1 = (float*)&d_very_early_late_spc_chips;
-    *pointer1 = 1;
-    float* pointer2 = (float*)&code_length_half_chips;
-    *pointer2 = 6;
-    float* pointer3 = (float*)&code_phase_step_half_chips;
-    *pointer3 = 7;
-    float* pointer4 = (float*)&tcode_half_chips_input;
-    *pointer4 = 8;
+//    float* pointer1 = (float*)&d_very_early_late_spc_chips;
+//    *pointer1 = 1;
+//    float* pointer2 = (float*)&code_length_half_chips;
+//    *pointer2 = 6;
+//    float* pointer3 = (float*)&code_phase_step_half_chips;
+//    *pointer3 = 7;
+//    float* pointer4 = (float*)&tcode_half_chips_input;
+//    *pointer4 = 8;
     
     int associated_chip_index;
     float tcode_half_chips = tcode_half_chips_input;

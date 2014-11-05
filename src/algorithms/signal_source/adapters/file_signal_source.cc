@@ -118,14 +118,12 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             if (filename_.compare(default_filename) == 0)
                 {
                     default_conf_file = hmpath + "/.gnss-sdr/conf/gnss-sdr.conf";
-                    text_ = "Please modify the configuration example at " + default_conf_file;
+                    text_ = "Please modify the configuration taking the example at " + default_conf_file;
 
                 }
             else
                 {
-                    default_conf_file = "conf/gnss-sdr.conf";
-                    text_ = "Please modify the configuration at " +
-                             default_conf_file +" (the default configuration file)";
+                    text_ = "Please modify your configuration file"; //+
                 }
 
             std::cerr
@@ -137,12 +135,12 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
             << std::endl
             << "and point SignalSource.filename to a valid file,"
             << std::endl
-            << "or specify your own receiver and source with the flag"
+            << "and specify your own receiver with the flag"
             << std::endl
-            <<"gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
+            << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
             << std::endl;
             LOG(INFO) << "file_signal_source: Unable to open the samples file "
-                               << filename_.c_str() << ", exiting the program.";
+                      << filename_.c_str() << ", exiting the program.";
             throw(e);
     }
 

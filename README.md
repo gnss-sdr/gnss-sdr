@@ -144,7 +144,7 @@ $ sudo yum install openssl-devel     # For Fedora/CentOS/RHEL
 ### Clone GNSS-SDR's Git repository:
 
 ~~~~~~ 
-$ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
+$ git clone git://github.com/gnss-sdr/gnss-sdr
 ~~~~~~ 
 
 Cloning the GNSS-SDR repository as in the line above will create a folder named gnss-sdr with the following structure:
@@ -168,7 +168,7 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
 ~~~~~~ 
 
 
-### Build GNSS-SDR
+### Build and install GNSS-SDR
 
 Go to GNSS-SDR's build directory:
 
@@ -181,7 +181,6 @@ Configure and build the application:
 ~~~~~~ 
 $ cmake ../
 $ make
-$ make install
 ~~~~~~ 
 
 By default, CMake will build the Release version, meaning that the compiler will generate a fast, optimized executable. This is the recommended build type when using a RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
@@ -189,12 +188,17 @@ By default, CMake will build the Release version, meaning that the compiler will
 ~~~~~~ 
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
-$ make install
 ~~~~~~ 
 
-If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. 
+If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. You can run them from that folder, but if you prefer to install ```gnss-sdr``` on your system and have it available anywhere else, do:
 
-You can create the documentation by doing:
+~~~~~~ 
+$ sudo make install
+~~~~~~ 
+
+This will make a copy of the conf/ folder into /usr/local/etc/gnss-sdr/conf for your reference. We suggest to create a working directory at your preferred location and store your own configuration and data files there.
+
+You could be interested in creating the documentation by doing:
 
 ~~~~~~ 
 $ make doc
@@ -247,7 +251,8 @@ Then configure GNSS-SDR to build the GN3S_Signal_Source by:
 
 ~~~~~~ 
 $ cmake -DENABLE_GN3S=ON ../
-$ make && make install
+$ make
+$ sudo make install
 ~~~~~~ 
 
 In order to gain access to USB ports, gnss-sdr should be used as root. In addition, the driver requires access to the GN3S firmware binary file. It should be available in the same path where the application is called.
@@ -287,7 +292,8 @@ Then configure GNSS-SDR to build the Rtlsdr_Signal_Source by:
 
 ~~~~~~ 
 $ cmake -DENABLE_RTLSDR=ON ../
-$ make && make install
+$ make
+$ sudo make install
 ~~~~~~ 
 
 (in order to disable the Rtlsdr_Signal_Source compilation, you can pass -DENABLE_RTLSDR=OFF to cmake and build GNSS-SDR again).
@@ -300,7 +306,8 @@ In order to enable the building of blocks that use OpenCL, type:
 
 ~~~~~~ 
 $ cmake -DENABLE_OPENCL=ON ../
-$ make && make install
+$ make
+$ sudo make install
 ~~~~~~ 
 
 
@@ -310,7 +317,8 @@ In order to build an executable that not depends on the specific SIMD instructio
 
 ~~~~~~ 
 $ cmake -DENABLE_GENERIC_ARCH=ON ../
-$ make && make install
+$ make 
+$ sudo make install
 ~~~~~~ 
 
 Using this option, all SIMD instructions are accessed via VOLK, which automatically includes versions of each function for different SIMD instruction sets, then detects at runtime which to use, or if there are none, substitutes a generic, non-SIMD implementation.
@@ -351,14 +359,22 @@ $ sudo port install google-glog +gflags
 Finally, you are ready to clone the GNSS-SDR repository and build the software:
 
 ~~~~~~ 
-$ git clone git://git.code.sf.net/p/gnss-sdr/cttc gnss-sdr
+$ git clone git://github.com/gnss-sdr/gnss-sdr
 $ cd gnss-sdr/build
 $ cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ../
 $ make
 $ make install
 ~~~~~~ 
 
-This will create two executables at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. The documentation can be built by:
+This will create two executables at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. You can install the software receiver on your system by doing:
+
+~~~~~~ 
+$ sudo make install
+~~~~~~ 
+
+
+
+The documentation can be built by:
 
 ~~~~~~ 
 $ make doc
@@ -407,7 +423,7 @@ Getting started
 ===============
 
 
-1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install.
+1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install. You can make it available everywhere else by ```sudo make install```.
 2. In post-processing mode, you have to provide a captured GNSS signal file.
     1. The signal file can be easily recorded using the GNU Radio file sink in ```gr_complex<float>``` mode.
     2. You will need a GPS active antenna, a [USRP](http://www.ettus.com/product) and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).
@@ -416,7 +432,7 @@ We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, 
     4. Capture at least 80 seconds of signal in open sky conditions. During the process, be aware of USRP driver buffer underuns messages. If your hard disk is not fast enough to write data at this speed you can capture to a virtual RAM drive. 80 seconds of signal at 5 MSPS occupies less than 3 Gbytes using ```gr_complex<float>```.
     5. If you have no access to a RF front-end, you can download a sample raw data file (that contains GPS and Galileo signals) from [here](http://sourceforge.net/projects/gnss-sdr/files/data/).
 3. You are ready to configure the receiver to use your captured file among other parameters:
-    1. The default configuration file resides at [./conf/gnss-sdr.conf](./conf/gnss-sdr.conf).
+    1. The default configuration file resides at [/usr/local/etc/gnss-sdr/conf/default.conf](./conf/gnss-sdr.conf).
     2. You need to review/modify at least the following settings:
         * ```SignalSource.filename=``` (absolute or relative route to your GNSS signal captured file)
         * ```GNSS-SDR.internal_fs_hz=``` (captured file sampling rate in Hz)
@@ -424,8 +440,10 @@ We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, 
         * ```SignalConditioner.sample_freq_in=``` (captured file sampling rate in Hz)
         * ```SignalConditioner.sample_freq_out=``` (captured file sampling rate in Hz)
         * ```TelemetryDecoder.fs_in=``` (captured file sampling rate in Hz)
-    3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters.
-4. Run the receiver from the install directory. The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get PVT fixes. The program will write a .kml file and RINEX (yet experimental) files in the install directory. In addition to the console output, GNSS-SDR also writes log files at /tmp/ (configurable with the commandline flag ```./gnss-sdr --log_dir=/path/to/log```).
+    3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters. Store your .conf file in some working directory of your choice.
+4. Run the receiver invoking the configuration by
+```$ gnss-sdr --config_file=/path/to/my_receiver.conf```
+The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track an decode at least 4 satellites, you will get PVT fixes. The program will write a .kml file and RINEX (yet experimental) files in the install directory. In addition to the console output, GNSS-SDR also writes log files at /tmp/ (configurable with the commandline flag ```./gnss-sdr --log_dir=/path/to/log```).
 
    
 
@@ -433,16 +451,10 @@ We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, 
 Using GNSS-SDR
 ==============
 
-With GNSS-SDR, you can define you own receiver, work with captured raw data or from a RF front-end, dump into files intermediate signals, or tune every single algorithm used in the signal processing. All the configuration is done in a single file. Those configuration files reside at the [gnss-sdr/conf/](./conf/) folder. By default, the executable ```gnss-sdr``` will read the configuration available at ```gnss-sdr/conf/gnss-sdr.conf```. You can edit that file to fit your needs, or even better, define a new ```my_receiver.conf``` file with your own configuration. This new receiver can be done by going to the ```gnss-sdr/install``` folder:
+With GNSS-SDR, you can define you own receiver, work with captured raw data or from a RF front-end, dump into files intermediate signals, or tune every single algorithm used in the signal processing. All the configuration is done in a single file. Those configuration files reside at the [gnss-sdr/conf/](./conf/) folder (or at /usr/local/etc/gnss-sdr/conf if you installed the program). By default, the executable ```gnss-sdr``` will read the configuration available at ```gnss-sdr/conf/gnss-sdr.conf``` (or at (usr/local/etc/gnss-sdr/conf/default.conf if you installed the program). You can edit that file to fit your needs, or even better, define a new ```my_receiver.conf``` file with your own configuration. This new receiver can be generated by invoking gnss-sdr with the ```--config_file``` flag pointing to your configuration file:
 
 ~~~~~~ 
-$ cd gnss-sdr/install
-~~~~~~ 
-
-and invoking gnss-sdr with the ```--config_file``` flag pointing to your configuration file:
-
-~~~~~~ 
-$ ./gnss-sdr --config_file=../conf/my_receiver.conf
+$ gnss-sdr --config_file=/path/to/my_receiver.conf
 ~~~~~~ 
 
 You can see a guide of available implementations at ```gnss-sdr/conf/master.conf```. That folder contains other working examples as well. If you have a working configuration and want to share it will others, please tell us and we will be happy to upload it to the server.
@@ -450,7 +462,7 @@ You can see a guide of available implementations at ```gnss-sdr/conf/master.conf
 You can use a single configuration file for processing different data files, specifying the file to be processed with the ```--signal_source``` flag:
 
 ~~~~~~ 
-$ ./gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
+$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
 ~~~~~~ 
 
 
@@ -676,28 +688,12 @@ The abstract class [ChannelInterface](./src/core/interfaces/channel_interface.h)
 
 ~~~~~~ 
 ;######### CHANNELS GLOBAL CONFIG ############
-Channels.count=8 ; Number of available satellite channels.
+Channels_GPS.count=8 ; Number of available GPS satellite channels.
+Channels_Galileo.count=0
 Channels.in_acquisition=1 ; Number of channels simultaneously acquiring
 Channel.system=GPS ; options: GPS, Galileo, SBAS
 Channel.signal=1C ; options: "1C" for GPS L1 C/A or SBAS L1 C/A; "1B" for GALILEO E1 B (I/NAV OS/CS/SoL)
 ~~~~~~ 
-
-You can optionally set specific parameters for different channels, overriding global parameters:
-
-~~~~~~ 
-;######### CHANNEL 0 CONFIG ############
-Channel0.system=GPS
-Channel0.signal=1C
-Channel0.satellite=5
-Channel0.repeat_satellite=false
-
-;######### CHANNEL 1 CONFIG ############
-Channel1.system=GPS
-Channel1.signal=1C
-Channel1.satellite=18
-Channel1.repeat_satellite=false
-~~~~~~ 
- 
    
      
 #### Acquisition
@@ -719,40 +715,18 @@ The user can select a given implementation for the algorithm to be used in each 
 
 ~~~~~~ 
 ;######### ACQUISITION GLOBAL CONFIG ############
-Acquisition.dump=false ; Enables internal data file logging [true] or [false] 
-Acquisition.dump_filename=./acq_dump.dat ; Log path and filename
-Acquisition.item_type=gr_complex
-Acquisition.if=0 ; Signal intermediate frequency in [Hz] 
-Acquisition.sampled_ms=1 ; Signal block duration for the acquisition signal detection [ms]
-Acquisition.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
-Acquisition.threshold=0.005 ; Acquisition threshold
-Acquisition.pfa=0.0001 ; Acquisition false alarm probability. This option overrides the threshold option. 
+Acquisition_GPS.dump=false ; Enables internal data file logging [true] or [false] 
+Acquisition_GPS.dump_filename=./acq_dump.dat ; Log path and filename
+Acquisition_GPS.item_type=gr_complex
+Acquisition_GPS.if=0 ; Signal intermediate frequency in [Hz] 
+Acquisition_GPS.sampled_ms=1 ; Signal block duration for the acquisition signal detection [ms]
+Acquisition_GPS.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
+Acquisition_GPS.threshold=0.005 ; Acquisition threshold
+Acquisition_GPS.pfa=0.0001 ; Acquisition false alarm probability. This option overrides the threshold option. 
 ;                        Only use with implementations: [GPS_L1_CA_PCPS_Acquisition] or [Galileo_E1_PCPS_Ambiguous_Acquisition] 
-Acquisition.doppler_max=10000 ; Maximum expected Doppler shift [Hz]
-Acquisition.doppler_step=500 ; Doppler step in the grid search [Hz]
+Acquisition_GPS.doppler_max=10000 ; Maximum expected Doppler shift [Hz]
+Acquisition_GPS.doppler_step=500 ; Doppler step in the grid search [Hz]
 ~~~~~~ 
-
-You can optionally set specific parameters for different channels, overriding global parameters:
-
-~~~~~~ 
-;######### ACQUISITION CH 0 CONFIG ############
-Acquisition0.implementation=GPS_L1_CA_PCPS_Acquisition
-Acquisition0.threshold=0.005
-Acquisition0.pfa=0.001
-Acquisition0.doppler_max=10000
-Acquisition0.doppler_step=250
-Acquisition0.repeat_satellite = false
-
-;######### ACQUISITION CH 1 CONFIG ############
-Acquisition1.implementation=GPS_L1_CA_PCPS_Acquisition
-Acquisition1.threshold=0.005
-Acquisition1.pfa=0.002
-Acquisition1.doppler_max=10000
-Acquisition1.doppler_step=250
-Acquisition1.repeat_satellite = false
-~~~~~~ 
-
-   
 
 
 #### Tracking
@@ -777,16 +751,16 @@ The user can select a given implementation for the algorithm to be used in all t
 
 ~~~~~~ 
 ;######### TRACKING GLOBAL CONFIG ############
-Tracking.implementation=GPS_L1_CA_DLL_PLL_Tracking
-Tracking.item_type=gr_complex
-Tracking.if=0 ; Signal Intermediate Frequency in [Hz] 
-Tracking.dump=false ; Enable internal binary data file logging [true] or [false] 
-Tracking.dump_filename=./tracking_ch_ ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
-Tracking.pll_bw_hz=50.0 ; PLL loop filter bandwidth [Hz]
-Tracking.dll_bw_hz=2.0 ; DLL loop filter bandwidth [Hz]
-Tracking.fll_bw_hz=10.0 ; FLL loop filter bandwidth [Hz]
-Tracking.order=3 ; PLL/DLL loop filter order [2] or [3]
-Tracking.early_late_space_chips=0.5 ; correlator early-late space [chips]. 
+Tracking_GPS.implementation=GPS_L1_CA_DLL_PLL_Tracking
+Tracking_GPS.item_type=gr_complex
+Tracking_GPS.if=0 ; Signal Intermediate Frequency in [Hz] 
+Tracking_GPS.dump=false ; Enable internal binary data file logging [true] or [false] 
+Tracking_GPS.dump_filename=./tracking_ch_ ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
+Tracking_GPS.pll_bw_hz=50.0 ; PLL loop filter bandwidth [Hz]
+Tracking_GPS.dll_bw_hz=2.0 ; DLL loop filter bandwidth [Hz]
+Tracking_GPS.fll_bw_hz=10.0 ; FLL loop filter bandwidth [Hz]
+Tracking_GPS.order=3 ; PLL/DLL loop filter order [2] or [3]
+Tracking_GPS.early_late_space_chips=0.5 ; correlator early-late space [chips]. 
 ~~~~~~ 
 
    
@@ -799,8 +773,8 @@ The common interface is [TelemetryDecoderInterface](./src/core/interfaces/teleme
 
 ~~~~~~ 
 ;######### TELEMETRY DECODER CONFIG ############
-TelemetryDecoder.implementation=GPS_L1_CA_Telemetry_Decoder
-TelemetryDecoder.dump=false
+TelemetryDecoder_GPS.implementation=GPS_L1_CA_Telemetry_Decoder
+TelemetryDecoder_GPS.dump=false
 ~~~~~~ 
 
 
@@ -884,12 +858,47 @@ Publications and Credits
 
 If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate if you reference any of these articles to credit the GNSS-SDR project:
 
+  * J. Arribas, M. Branzanti, C. Fern&aacute;ndez-Prades, P. Closas, [Fastening GPS and Galileo Tight with a Software Receiver](http://www.cttc.es/publication/fastening-gps-and-galileo-tight-with-a-software-receiver/), in Proc. of the ION GNSS+ 2014 Conference, Tampa, Florida, Sept. 2014.
+  * J. Arribas, P. Closas, C. Fern&aacute;ndez-Prades, [Interference Mitigation in GNSS Receivers by Array Signal Processing: A Software Radio Approach](http://www.cttc.es/publication/interference-mitigation-in-gnss-receivers-by-array-signal-processing-a-software-radio-approach/), in Proc. of the 8th IEEE Sensor Array and Multichannel Signal Processing Workshop, A Coru&ntilde;a, Spain, June 2014.
+  * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, [Turning a Television into a GNSS Receiver](http://www.cttc.es/publication/turning-a-television-into-a-gnss-receiver/), in Proc. of the ION GNSS+ 2013 Conference, Nashville, Tennessee, Sept. 2013.
   * C. Fern&aacute;ndez-Prades, J. Arribas, L. Esteve, D. Pubill, P. Closas, [An Open Source Galileo E1 Software Receiver](http://www.cttc.es/publication/an-open-source-galileo-e1-software-receiver/), in Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC 2012), ESTEC, Noordwijk, The Netherlands, Dec. 2012.
   * J. Arribas, [GNSS Array-based Acquisition: Theory and Implementation](http://theses.eurasip.org/theses/449/gnss-array-based-acquisition-theory-and/), PhD Thesis, Universitat Polit&egrave;cnica de Catalunya, Barcelona, Spain, June 2012.
   * C. Fern&aacute;ndez-Prades, J. Arribas,  P. Closas, C. Avil&eacute;s, and L. Esteve, [GNSS-SDR: an open source tool for researchers and developers](http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/), in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011. 
   * C. Fern&aacute;ndez-Prades, C. Avil&eacute;s, L. Esteve, J. Arribas, and P. Closas, [Design patterns for GNSS software receivers](http://www.cttc.es/publication/design-patterns-for-gnss-software-receivers/), in Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010), ESTEC, Noordwijk, The Netherlands, Dec. 2010. DOI:10.1109/NAVITEC.2010.5707981 
 
 For LaTeX users, these are the BibTeX cites for your convenience:
+~~~~~~ 
+@INPROCEEDINGS{GNSS-SDR14b, 
+ AUTHOR = {J.~Arribas and M.~Branzanti and C.~{Fern\'{a}ndez--Prades} and P.~Closas}, 
+ TITLE = {Fastening {GPS} and {G}alileo Tight with a Software Receiver}, 
+ BOOKTITLE = {Proc. of the ION GNSS+ 2014 Conference}, 
+ YEAR = {2014}, 
+ address = {Tampa, Florida}, 
+ month = {Sept.} 
+} 
+~~~~~~ 
+
+~~~~~~ 
+@INPROCEEDINGS{GNSS-SDR14a, 
+ AUTHOR = {J.~Arribas  and P.~Closas and C.~{Fern\'{a}ndez--Prades}}, 
+ TITLE = {Interference Mitigation in {GNSS} Receivers by Array Signal Processing: {A} Software Radio Approach}, 
+ BOOKTITLE = {Proc. of the 8th IEEE Sensor Array and Multichannel Signal Processing Workshop}, 
+ YEAR = {2014}, 
+ address = {A Coru\~{n}a, Spain}, 
+ month = {June} 
+} 
+~~~~~~ 
+
+~~~~~~ 
+@INPROCEEDINGS{GNSS-SDR13, 
+ AUTHOR = {C.~{Fern\'{a}ndez--Prades} and J.~Arribas and P.~Closas}, 
+ TITLE = {Turning a Television into a {GNSS} Receiver}, 
+ BOOKTITLE = {Proc. of the ION GNSS+ 2013 Conference}, 
+ YEAR = {2013}, 
+ address = {Nashville, Tennessee}, 
+ month = {Sept.} 
+} 
+~~~~~~ 
 
 ~~~~~~ 
 @INPROCEEDINGS{GNSS-SDR12

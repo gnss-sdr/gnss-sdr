@@ -353,7 +353,6 @@ endif()
 ################################################################################
 # volk_gnsssdr module - GNSS-SDR's own VOLK library
 ################################################################################
-#add_subdirectory(src/algorithms/libs/volk_gnsssdr_module)
 ExternalProject_Add(volk_gnsssdr_module
      PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
      SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr

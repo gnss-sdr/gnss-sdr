@@ -529,7 +529,7 @@ file(GLOB CommonMacros ${CMAKE_SOURCE_DIR}/kernels/CommonMacros/*.h ${CMAKE_SOUR
 if(ENABLE_STATIC_LIBS)
     add_library(volk_gnsssdr STATIC ${volk_gnsssdr_sources} ${h_files} ${CommonMacros} ${orc})
 else(ENABLE_STATIC_LIBS)
-    add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources})
+    add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources} ${h_files} ${CommonMacros} ${orc})
 endif(ENABLE_STATIC_LIBS)
 
 source_group("Kernels" FILES ${h_files})

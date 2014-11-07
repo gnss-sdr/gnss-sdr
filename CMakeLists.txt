@@ -353,6 +353,11 @@ endif()
 ################################################################################
 # volk_gnsssdr module - GNSS-SDR's own VOLK library
 ################################################################################
+find_package(VolkGnssSdr)
+
+
+if(NOT VOLK_GNSSSDR_FOUND)
+message("+++++++HEllloooo")
 ExternalProject_Add(volk_gnsssdr_module
      PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
      SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
@@ -377,7 +382,7 @@ set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr)
 add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr_profile
                                    ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile)
-
+endif(NOT VOLK_GNSSSDR_FOUND)
 
 
 ################################################################################

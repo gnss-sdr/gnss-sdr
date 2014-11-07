@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
 #

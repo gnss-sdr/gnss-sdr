@@ -1,7 +1,7 @@
 /*!
  * \file galileo_volk_e1_dll_pll_veml_tracking.h
  * \brief  Adapts a DLL+PLL VEML (Very Early Minus Late) tracking loop block
- *   to a TrackingInterface for Galileo E1 signals
+ *   to a TrackingInterface for Galileo E1 signals using volk_gnsssdr
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -67,10 +67,10 @@ public:
         return role_;
     }
 
-    //! Returns "galileo_volk_e1_dll_pll_veml_tracking"
+    //! Returns "Galileo_volk_E1_DLL_PLL_VEML_Tracking"
     std::string implementation()
     {
-        return "galileo_volk_e1_dll_pll_veml_tracking";
+        return "Galileo_volk_E1_DLL_PLL_VEML_Tracking";
     }
     size_t item_size()
     {

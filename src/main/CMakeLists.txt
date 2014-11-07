@@ -91,4 +91,6 @@ install(DIRECTORY DESTINATION etc/gnss-sdr/data/)
 install(FILES ${CMAKE_SOURCE_DIR}/conf/gnss-sdr.conf DESTINATION etc/gnss-sdr/conf
         RENAME default.conf)
 
-install(PROGRAMS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr_profile DESTINATION bin)
+if(NOT VOLK_GNSSSDR_FOUND)
+    install(PROGRAMS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr_profile DESTINATION bin)
+endif(NOT VOLK_GNSSSDR_FOUND)

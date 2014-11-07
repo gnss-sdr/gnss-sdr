@@ -17,10 +17,11 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "volk_gnsssdr/volk_gnsssdr_malloc.h"
 #include <pthread.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include "volk_gnsssdr/volk_gnsssdr_malloc.h"
+
+
 
 /*
  * For #defines used to determine support for allocation functions,

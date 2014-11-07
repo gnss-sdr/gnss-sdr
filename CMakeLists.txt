@@ -351,9 +351,34 @@ endif()
 
 
 ################################################################################
-# volk_gnsssdr module
+# volk_gnsssdr module - GNSS-SDR's own VOLK library
 ################################################################################
-add_subdirectory(src/algorithms/libs/volk_gnsssdr_module)
+#add_subdirectory(src/algorithms/libs/volk_gnsssdr_module)
+ExternalProject_Add(volk_gnsssdr_module
+     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
+     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build   
+     CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build  -DENABLE_STATIC_LIBS=ON
+     DOWNLOAD_COMMAND ""
+     UPDATE_COMMAND ""
+     PATCH_COMMAND ""
+     BUILD_COMMAND make
+     )
+find_package(ORC)
+if(NOT ORC_FOUND)
+     set(ORC_LIBRARIES "")
+     set(ORC_INCLUDE_DIRS "")
+endif(NOT ORC_FOUND)
+        
+add_library(volk_gnsssdr UNKNOWN IMPORTED)
+set_property(TARGET volk_gnsssdr PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/lib/libvolk_gnsssdr.a)
+set(VOLK_GNSSSDR_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/include/;${ORC_INCLUDE_DIRS}")
+set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr)
+
+add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr_profile
+                                   ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile)
+
 
 
 ################################################################################

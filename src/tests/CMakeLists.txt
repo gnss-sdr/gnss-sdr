@@ -133,6 +133,7 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${ARMADILLO_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
      ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
 )
 
@@ -172,6 +173,7 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
                                 signal_generator_adapters
                                 out_adapters
                                 pvt_gr_blocks
+                                ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
 )
 

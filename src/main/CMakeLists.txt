@@ -41,6 +41,7 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${GNSS_SDR_OPTIONAL_HEADERS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
@@ -56,7 +57,8 @@ add_executable(gnss-sdr ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
 add_custom_command(TARGET gnss-sdr POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gnss-sdr>
-                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>)
+                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
+                  )
 
 target_link_libraries(gnss-sdr ${MAC_LIBRARIES} 
                                ${Boost_LIBRARIES}
@@ -70,6 +72,7 @@ target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${UHD_LIBRARIES}
                                gnss_sp_libs 
                                gnss_rx
+                               ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                ${GNSS_SDR_OPTIONAL_LIBS}
                                )
 
@@ -84,6 +87,8 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/conf DESTINATION etc/gnss-sdr
         )
         
 install(DIRECTORY DESTINATION etc/gnss-sdr/data/)
+
 install(FILES ${CMAKE_SOURCE_DIR}/conf/gnss-sdr.conf DESTINATION etc/gnss-sdr/conf
         RENAME default.conf)
 
+install(PROGRAMS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr_profile DESTINATION bin)

@@ -49,6 +49,7 @@
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
 #include "volk_gnsssdr/volk_gnsssdr.h"
+#include "volk_gnsssdr/volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc.h"
 
 
 
@@ -265,9 +266,8 @@ void galileo_volk_e1_dll_pll_veml_tracking_cc::update_local_code()
     
     //HERE YOU CAN CHOOSE THE DESIRED VOLK IMPLEMENTATION
     //volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_manual(d_very_early_code, (float) d_very_early_late_spc_chips, (float) code_length_half_chips, (float) code_phase_step_half_chips, (float) tcode_half_chips, d_ca_code, epl_loop_length_samples, "generic");
-    
-    volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_manual(d_very_early_code, (float) d_very_early_late_spc_chips, (float) code_length_half_chips, (float) code_phase_step_half_chips, (float) tcode_half_chips, d_ca_code, epl_loop_length_samples, "u_sse4_1");
-    
+    volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc(d_very_early_code, (float) d_very_early_late_spc_chips, (float) code_length_half_chips, (float) code_phase_step_half_chips, (float) tcode_half_chips, d_ca_code, epl_loop_length_samples);
+
     memcpy(d_early_code, &d_very_early_code[very_early_late_spc_samples - early_late_spc_samples], d_current_prn_length_samples * sizeof(gr_complex));
     memcpy(d_prompt_code, &d_very_early_code[very_early_late_spc_samples], d_current_prn_length_samples * sizeof(gr_complex));
     memcpy(d_late_code, &d_very_early_code[very_early_late_spc_samples + early_late_spc_samples], d_current_prn_length_samples * sizeof(gr_complex));
@@ -287,7 +287,7 @@ void galileo_volk_e1_dll_pll_veml_tracking_cc::update_local_carrier()
     
     //volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "u_sse2");
     
-    volk_gnsssdr_s32f_x2_update_local_carrier_32fc_manual(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples, "u_avx");
+    volk_gnsssdr_s32f_x2_update_local_carrier_32fc(d_carr_sign, phase_rad, phase_step_rad, d_current_prn_length_samples);
 }
 
 galileo_volk_e1_dll_pll_veml_tracking_cc::~galileo_volk_e1_dll_pll_veml_tracking_cc()
@@ -374,9 +374,9 @@ int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr
         
         //Float implementation:
         
-        //volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5_manual(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in, d_carr_sign, d_very_early_code, d_early_code, d_prompt_code, d_late_code, d_very_late_code, d_current_prn_length_samples, "generic");
+        //volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in, d_carr_sign, d_very_early_code, d_early_code, d_prompt_code, d_late_code, d_very_late_code, d_current_prn_length_samples, "generic");
         
-        //volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5_manual(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in, d_carr_sign, d_very_early_code, d_early_code, d_prompt_code, d_late_code, d_very_late_code, d_current_prn_length_samples, "u_avx");
+        //volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in, d_carr_sign, d_very_early_code, d_early_code, d_prompt_code, d_late_code, d_very_late_code, d_current_prn_length_samples, "u_avx");
         
         //Integer 16 bits implementation
         /*volk_gnsssdr_32fc_convert_16ic(d_very_early_code16, d_very_early_code, d_current_prn_length_samples);
@@ -390,20 +390,16 @@ int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr
          volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in16, d_carr_sign16, d_very_early_code16, d_early_code16, d_prompt_code16, d_late_code16, d_very_late_code16, d_current_prn_length_samples);*/
         
         //Integer 8 bits implementation
-        volk_gnsssdr_32fc_convert_8ic_manual(d_very_early_code8, d_very_early_code, d_current_prn_length_samples,"u_sse2");
-        volk_gnsssdr_32fc_convert_8ic_manual(d_early_code8, d_early_code, d_current_prn_length_samples,"u_sse2");
-        volk_gnsssdr_32fc_convert_8ic_manual(d_prompt_code8, d_prompt_code, d_current_prn_length_samples,"u_sse2");
-        volk_gnsssdr_32fc_convert_8ic_manual(d_late_code8, d_late_code, d_current_prn_length_samples,"u_sse2");
-        volk_gnsssdr_32fc_convert_8ic_manual(d_very_late_code8, d_very_late_code, d_current_prn_length_samples,"u_sse2");
-        volk_gnsssdr_32fc_convert_8ic_manual(d_carr_sign8, d_carr_sign, d_current_prn_length_samples,"u_sse2");
-        volk_gnsssdr_32fc_s32f_convert_8ic_manual(in8, in, 4, d_current_prn_length_samples,"u_sse2");
+        volk_gnsssdr_32fc_convert_8ic(d_very_early_code8, d_very_early_code, d_current_prn_length_samples);
+        volk_gnsssdr_32fc_convert_8ic(d_early_code8, d_early_code, d_current_prn_length_samples);
+        volk_gnsssdr_32fc_convert_8ic(d_prompt_code8, d_prompt_code, d_current_prn_length_samples);
+        volk_gnsssdr_32fc_convert_8ic(d_late_code8, d_late_code, d_current_prn_length_samples);
+        volk_gnsssdr_32fc_convert_8ic(d_very_late_code8, d_very_late_code, d_current_prn_length_samples);
+        volk_gnsssdr_32fc_convert_8ic(d_carr_sign8, d_carr_sign, d_current_prn_length_samples);
+        volk_gnsssdr_32fc_s32f_convert_8ic(in8, in, 4, d_current_prn_length_samples);
         
-        volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5_manual(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in8, d_carr_sign8, d_very_early_code8, d_early_code8, d_prompt_code8, d_late_code8, d_very_late_code8, d_current_prn_length_samples, "u_sse4_1");
-        
-        //volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in8, d_carr_sign8, d_very_early_code8, d_early_code8, d_prompt_code8, d_late_code8, d_very_late_code8, d_current_prn_length_samples);
-        
-        //volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in8, d_carr_sign8, d_very_early_code8, d_early_code8, d_prompt_code8, d_late_code8, d_very_late_code8, d_current_prn_length_samples);
-        
+        volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5(d_Very_Early, d_Early, d_Prompt, d_Late, d_Very_Late, in8, d_carr_sign8, d_very_early_code8, d_early_code8, d_prompt_code8, d_late_code8, d_very_late_code8, d_current_prn_length_samples);
+
         // ################## PLL ##########################################################
         // PLL discriminator
         carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / static_cast<float>(GPS_TWO_PI);

@@ -71,7 +71,7 @@ endif(PYTHON_EXECUTABLE)
 # - have the result variable to set
 ########################################################################
 macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
-    message(STATUS "")
+    #message(STATUS "")
     message(STATUS "Python checking for ${desc}")
     execute_process(
         COMMAND ${PYTHON_EXECUTABLE} -c "

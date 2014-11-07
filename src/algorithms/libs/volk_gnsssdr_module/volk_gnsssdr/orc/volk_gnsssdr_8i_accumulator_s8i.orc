@@ -2,7 +2,7 @@
 # * \file volk_gnsssdr_8i_accumulator_s8i.orc
 # * \brief ORC implementation: 8 bits (char) scalar accumulator
 # * \authors <ul>
-# *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
+# *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
 # *          </ul>
 # *
 # * ORC code that implements an accumulator of char values

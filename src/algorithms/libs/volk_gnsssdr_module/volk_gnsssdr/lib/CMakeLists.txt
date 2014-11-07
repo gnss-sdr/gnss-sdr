@@ -1,18 +1,20 @@
 #
-# Copyright 2011-2012,2014 Free Software Foundation, Inc.
+# Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
 #
-# This program is free software: you can redistribute it and/or modify
+# This file is part of GNSS-SDR.
+#
+# GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful,
+# GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
 ########################################################################
@@ -238,6 +240,7 @@ endif(NOT CPU_IS_x86)
 # implement overruling in the ORC case,
 # since ORC always passes flag detection
 ########################################################################
+find_package(ORC)
 if(NOT ORC_FOUND)
     OVERRULE_ARCH(orc "ORC support not found")
 endif()
@@ -523,7 +526,11 @@ file(GLOB orc ${CMAKE_SOURCE_DIR}/orc/*.orc)
 file(GLOB CommonMacros ${CMAKE_SOURCE_DIR}/kernels/CommonMacros/*.h ${CMAKE_SOURCE_DIR}/kernels/CommonMacros/README.txt)
 
 #add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources})
-add_library(volk_gnsssdr STATIC ${volk_gnsssdr_sources} ${h_files} ${CommonMacros} ${orc})
+if(ENABLE_STATIC_LIBS)
+    add_library(volk_gnsssdr STATIC ${volk_gnsssdr_sources} ${h_files} ${CommonMacros} ${orc})
+else(ENABLE_STATIC_LIBS)
+    add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources})
+endif(ENABLE_STATIC_LIBS)
 
 source_group("Kernels" FILES ${h_files})
 source_group("Common Macros" FILES ${CommonMacros})

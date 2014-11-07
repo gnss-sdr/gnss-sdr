@@ -1,12 +1,12 @@
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
+prefix=@prefix_@
+exec_prefix=@exec_prefix_@
+libdir=@libdir_@
+includedir=@includedir_@
 LV_CXXFLAGS=@LV_CXXFLAGS@
 
 
 Name: volk_gnsssdr
-Description: VOLK: Vector Optimized Library of Kernels
+Description: VOLK: Vector Optimized Library of Kernels specific for GNSS-SDR
 Requires:
 Version: @VERSION@
 Libs: -L${libdir} -lvolk_gnsssdr

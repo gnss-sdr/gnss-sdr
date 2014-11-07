@@ -23,10 +23,10 @@
 # 2) target_link_libraries(..${VOLK_GNSSSDR_LIBRARIES}..)
 ###############################################################################
 
-message(STATUS " START OF: Setup volk_gnsssdr as a subproject.")
+#message(STATUS " START OF: Setup volk_gnsssdr as a subproject.")
 
-list(APPEND CMAKE_C_FLAGS "-std=c11")
-set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr/install" CACHE PATH "Install prefix for volk_gnsssdr" FORCE )
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
+#set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr/install" CACHE PATH "Install prefix for volk_gnsssdr" FORCE )
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr)
 
@@ -41,6 +41,6 @@ set(VOLK_GNSSSDR_LIBRARIES
      CACHE INTERNAL ""
 )
 
-message(STATUS " * INCLUDES: ${VOLK_GNSSSDR_INCLUDE_DIRS} ")
-message(STATUS " * LIBS: ${VOLK_GNSSSDR_LIBRARIES} ")
-message(STATUS " END OF: Setup volk_gnsssdr as a subproject.")
+#message(STATUS " * INCLUDES: ${VOLK_GNSSSDR_INCLUDE_DIRS} ")
+#message(STATUS " * LIBS: ${VOLK_GNSSSDR_LIBRARIES} ")
+#message(STATUS " END OF: Setup volk_gnsssdr as a subproject.")

@@ -2,7 +2,7 @@
  * \file CommonMacros_16ic_cw_corr_32fc.h
  * \brief Common macros used inside the 16ic_cw_corr_32fc volk protokernels.
  * \authors <ul>
- *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of

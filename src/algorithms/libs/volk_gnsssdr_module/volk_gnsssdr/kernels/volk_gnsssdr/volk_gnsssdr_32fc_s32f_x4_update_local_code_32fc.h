@@ -35,10 +35,11 @@
 #ifndef INCLUDED_volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_u_H
 #define INCLUDED_volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc_u_H
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <float.h>
+#include <inttypes.h>
+#include <math.h>
+#include <stdio.h>
+#include "volk_gnsssdr/volk_gnsssdr_complex.h"
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>

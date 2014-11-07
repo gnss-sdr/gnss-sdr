@@ -851,6 +851,13 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
+    else if (implementation.compare("Galileo_volk_E1_DLL_PLL_VEML_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+
     else
         {
             // Log fatal. This causes execution to stop.

@@ -190,7 +190,7 @@ $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
 ~~~~~~ 
 
-If everything goes well, two new executables will be created at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. You can run them from that folder, but if you prefer to install ```gnss-sdr``` on your system and have it available anywhere else, do:
+This will create three executables at gnss-sdr/install, namely ```gnss-sdr```, ```run_tests``` and ```volk_gnsssdr_profile```.. You can run them from that folder, but if you prefer to install ```gnss-sdr``` on your system and have it available anywhere else, do:
 
 ~~~~~~ 
 $ sudo make install
@@ -218,6 +218,9 @@ $ make doc-clean
 ~~~~~~ 
 
 will remove the content of previously-generated documentation.
+
+GNSS-SDR comes with a library with some specific Vector-Optimized Library of Kernels (VOLK) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ``volk_gnsssdr_profile`` that is installed into $PREFIX/bin. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to $HOME/.volk_gnsssdr/volk_gnsssdr_config the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's VOLK library, so if you still have not run ```volk_profile```, this is a good moment to do so.  
+
 
 
 If you are using Eclipse as your development environment, CMake can create the project for you. Type:
@@ -366,7 +369,7 @@ $ make
 $ make install
 ~~~~~~ 
 
-This will create two executables at gnss-sdr/install, namely ```gnss-sdr``` and ```run_tests```. You can install the software receiver on your system by doing:
+This will create three executables at gnss-sdr/install, namely ```gnss-sdr```, ```run_tests``` and ```volk_gnsssdr_profile```. You can install the software receiver on your system by doing:
 
 ~~~~~~ 
 $ sudo make install
@@ -386,7 +389,7 @@ and can be viewed doing:
 $ open ../docs/html/index.html
 ~~~~~~ 
 
-   
+GNSS-SDR comes with a library with some specific Vector-Optimized Library of Kernels (VOLK) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ``volk_gnsssdr_profile`` that is installed into $PREFIX/bin. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to $HOME/.volk_gnsssdr/volk_gnsssdr_config the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's VOLK library, so if you still have not run ```volk_profile```, this is a good moment to do so.
 
 
 Updating GNSS-SDR

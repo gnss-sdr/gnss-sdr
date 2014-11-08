@@ -190,7 +190,7 @@ $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
 ~~~~~~ 
 
-This will create three executables at gnss-sdr/install, namely ```gnss-sdr```, ```run_tests``` and ```volk_gnsssdr_profile```.. You can run them from that folder, but if you prefer to install ```gnss-sdr``` on your system and have it available anywhere else, do:
+This will create three executables at gnss-sdr/install, namely ```gnss-sdr```, ```run_tests``` and ```volk_gnsssdr_profile```. You can run them from that folder, but if you prefer to install ```gnss-sdr``` on your system and have it available anywhere else, do:
 
 ~~~~~~ 
 $ sudo make install
@@ -366,7 +366,6 @@ $ git clone git://github.com/gnss-sdr/gnss-sdr
 $ cd gnss-sdr/build
 $ cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ../
 $ make
-$ make install
 ~~~~~~ 
 
 This will create three executables at gnss-sdr/install, namely ```gnss-sdr```, ```run_tests``` and ```volk_gnsssdr_profile```. You can install the software receiver on your system by doing:
@@ -426,7 +425,7 @@ Getting started
 ===============
 
 
-1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install. You can make it available everywhere else by ```sudo make install```.
+1. After building the code, you will find the ```gnss-sdr``` executable file at gnss-sdr/install. You can make it available everywhere else by ```sudo make install```. Run the profilers ```volk_profile``` and ```volk_gnsssdr_profile``` for testing all available VOLK kernerls for each architecture supported by your processor. This only has to be done the first time.
 2. In post-processing mode, you have to provide a captured GNSS signal file.
     1. The signal file can be easily recorded using the GNU Radio file sink in ```gr_complex<float>``` mode.
     2. You will need a GPS active antenna, a [USRP](http://www.ettus.com/product) and a suitable USRP daughter board to receive GPS L1 C/A signals. GNSS-SDR require to have at least 2 MHz of bandwidth in 1.57542 GHz. (remember to enable the DC bias with the daughter board jumper).

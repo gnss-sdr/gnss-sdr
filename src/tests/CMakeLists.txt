@@ -139,7 +139,7 @@ include_directories(
 
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(CLANG_FLAGS "-stdlib=libc++ -std=c++11")
+    set(CLANG_FLAGS "-stdlib=libc++ -std=c++11 -lc++")
 endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 

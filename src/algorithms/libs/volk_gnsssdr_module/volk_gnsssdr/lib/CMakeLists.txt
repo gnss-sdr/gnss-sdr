@@ -250,20 +250,17 @@ endif()
 # this makes things work when both -m32 and -m64 pass
 ########################################################################
 if(NOT CROSSCOMPILE_MULTILIB AND CPU_IS_x86)
-    include(CheckTypeSize)
-    check_type_size("void*[8]" SIZEOF_CPU BUILTIN_TYPES_ONLY)
-    if (${SIZEOF_CPU} EQUAL 64)
+    if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
         OVERRULE_ARCH(32 "CPU width is 64 bits")
     endif()
-    if (${SIZEOF_CPU} EQUAL 32)
+    if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
         OVERRULE_ARCH(64 "CPU width is 32 bits")
     endif()
 
     #MSVC 64 bit does not have MMX, overrule it
-    if (${SIZEOF_CPU} EQUAL 64 AND MSVC)
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8 AND MSVC)
         OVERRULE_ARCH(mmx "No MMX for Win64")
     endif()
-
 endif()
 
 ########################################################################
@@ -566,7 +563,6 @@ endif(ENABLE_STATIC_LIBS)
 
 
 if(Boost_FOUND)
-
     set_source_files_properties(
         ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc PROPERTIES
         COMPILE_DEFINITIONS "BOOST_TEST_DYN_LINK;BOOST_TEST_MAIN"
@@ -579,7 +575,12 @@ if(Boost_FOUND)
         ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
     )
-    target_link_libraries(test_all volk_gnsssdr ${Boost_LIBRARIES})
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+       set(Clang_required_link "c++")
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+       set(Clang_required_link "")
+    endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    target_link_libraries(test_all volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link})
     add_test(qa_volk_gnsssdr_test_all test_all)
 
 endif(Boost_FOUND)

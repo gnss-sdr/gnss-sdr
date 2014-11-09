@@ -36,13 +36,20 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
 )
 
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+   set(Clang_required_link "c++")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+   set(Clang_required_link "")
+endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+
 # MAKE volk_gnsssdr_profile
 add_executable(volk_gnsssdr_profile
     ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_profile.cc
     ${CMAKE_SOURCE_DIR}/lib/qa_utils.cc
 )
 
-target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES})
+target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link})
 
 install(
     TARGETS volk_gnsssdr_profile
@@ -52,7 +59,7 @@ install(
 
 # MAKE volk_gnsssdr-config-info
 add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc)
-target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES})
+target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link})
 
 install(
     TARGETS volk_gnsssdr-config-info

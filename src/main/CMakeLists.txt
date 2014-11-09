@@ -48,7 +48,7 @@ add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
 if(OS_IS_MACOSX)
      if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-         set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11 -framework Accelerate")
+         set(MAC_LIBRARIES "-stdlib=libc++ -std=c++11 -framework Accelerate -lc++")
      endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif(OS_IS_MACOSX)
 

@@ -36,6 +36,8 @@ if (UNIX)
      /usr/lib/arm-linux-gnueabihf
      /usr/lib/arm-linux-gnueabi
      /usr/lib/aarch64-linux-gnu
+     /usr/lib64
+     /usr/lib
      )
 endif (UNIX)
 
@@ -53,6 +55,7 @@ IF(GFlags_ROOT_DIR)
           HINTS
           /opt/local/include
           /usr/local/include
+          /usr/include
           ${GFlags_ROOT_DIR}/src
           )
      endif (WIN32)

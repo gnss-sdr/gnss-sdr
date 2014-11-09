@@ -388,13 +388,13 @@ endif(NOT VOLK_GNSSSDR_FOUND)
 ################################################################################
 set(LOCAL_GFLAGS false CACHE STRING "GFlags installed on the system")
 set(GFlags_ROOT_DIR false)
+set(gflags_RELEASE 2.0 CACHE STRING "Local gflags release")
 find_package(GFlags)
 
-if (NOT GFlags_FOUND OR LOCAL_GLOG)
+if (NOT GFlags_FOUND)
      message (STATUS " gflags library has not been found.")
      message (STATUS " gflags will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-     set(gflags_RELEASE 2.0 CACHE STRING "Local gflags release")
      set(gflags_MD5 "5fd4554d2ba84bf222a2fec0870d28df")
      if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_osx
@@ -450,8 +450,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}/configure
      set(GFlags_lib ${GFlags_LIBS} CACHE FILEPATH "Local Gflags library")
      set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
      set(LOCAL_GFLAGS true CACHE STRING "GFlags downloaded and built automatically" FORCE)
-endif(NOT GFlags_FOUND OR LOCAL_GLOG)
-
+endif(NOT GFlags_FOUND)
 
 
 ################################################################################
@@ -466,9 +465,14 @@ if (NOT GLOG_FOUND OR LOCAL_GFLAGS)
      endif(NOT GFlags_FOUND)
      message (STATUS " glog will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
+     if(NOT ${LOCAL_GFLAGS})
+         add_library(gflags-${gflags_RELEASE} UNKNOWN IMPORTED)
+         set_property(TARGET gflags-${gflags_RELEASE} PROPERTY IMPORTED_LOCATION "${GFlags_LIBS}")
+     endif(NOT ${LOCAL_GFLAGS})
      set(glog_RELEASE 0.3.3)
      set(glog_MD5 "a6fd2c22f8996846e34c763422717c18")
-     if(LOCAL_GFLAGS)
+     
+     if(${LOCAL_GFLAGS})
          if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
              file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
@@ -483,8 +487,36 @@ export CXX=clang++
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
                                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-         else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+          else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
              file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+"#!/bin/sh
+export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
+export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
+export LIBS=${GFlags_SHARED_LIBS}
+../../thirdparty/glog/glog-${glog_RELEASE}/configure")
+             file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+               DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+               FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                                GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+         endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")                           
+   
+     else(${LOCAL_GFLAGS})
+           if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+              file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+"#!/bin/sh
+export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
+export LDFLAGS=-L${GFlags_LIBRARY_DIRS}
+export LIBS=\"${GFlags_LIBS} -lc++\"
+export CXXFLAGS=\"-stdlib=libc++\" 
+export CC=clang 
+export CXX=clang++
+../../thirdparty/glog/glog-${glog_RELEASE}/configure")
+              file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
+                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                                GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+            else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+               file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
 export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
@@ -506,7 +538,7 @@ export LIBS=${GFlags_SHARED_LIBS}
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
                                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-     endif(LOCAL_GFLAGS)
+     endif(${LOCAL_GFLAGS})
 
      set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)   
      if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

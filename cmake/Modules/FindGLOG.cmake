@@ -67,7 +67,9 @@ else(MSVC)
      endif(APPLE)
 endif(MSVC)
 
-message(STATUS "glog library found at ${GLOG_LIBRARIES}")
+if(GLOG_FOUND)
+    message(STATUS "glog library found at ${GLOG_LIBRARIES}")
+endif()
 
 # handle the QUIETLY and REQUIRED arguments and set GLOG_FOUND to TRUE if
 # all listed variables are TRUE

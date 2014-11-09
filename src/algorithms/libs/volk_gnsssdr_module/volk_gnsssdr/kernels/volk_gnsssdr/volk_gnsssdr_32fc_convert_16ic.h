@@ -2,7 +2,7 @@
  * \file volk_gnsssdr_32fc_convert_16ic.h
  * \brief Volk protokernel: converts float32 complex values to 16 integer complex values taking care of overflow
  * \authors <ul>
- *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
  * -------------------------------------------------------------------------
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -47,43 +47,44 @@
  */
 static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
     const unsigned int sse_iters = num_points/4;
-    
+
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
-    
+
     float min_val = -32768;
     float max_val = 32767;
-    
+
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
     __m128 ret1, ret2;
     __m128 vmin_val = _mm_set_ps1(min_val);
     __m128 vmax_val = _mm_set_ps1(max_val);
-    
+
     for(unsigned int i = 0;i < sse_iters; i++){
-        inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-        inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-        
-        // Clip
-        ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
-        ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
-        
-        intInputVal1 = _mm_cvtps_epi32(ret1);
-        intInputVal2 = _mm_cvtps_epi32(ret2);
-        
-        intInputVal1 = _mm_packs_epi32(intInputVal1, intInputVal2);
-        
-        _mm_storeu_si128((__m128i*)outputVectorPtr, intInputVal1);
-        outputVectorPtr += 8;
+            inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+
+            // Clip
+            ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
+            ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
+
+            intInputVal1 = _mm_cvtps_epi32(ret1);
+            intInputVal2 = _mm_cvtps_epi32(ret2);
+
+            intInputVal1 = _mm_packs_epi32(intInputVal1, intInputVal2);
+
+            _mm_storeu_si128((__m128i*)outputVectorPtr, intInputVal1);
+            outputVectorPtr += 8;
     }
-    
-    for(unsigned int i = 0; i < (num_points%4)*2; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
-    }
+
+    for(unsigned int i = 0; i < (num_points%4)*2; i++)
+        {
+            if(inputVectorPtr[i] > max_val)
+                inputVectorPtr[i] = max_val;
+            else if(inputVectorPtr[i] < min_val)
+                inputVectorPtr[i] = min_val;
+            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+        }
 }
 #endif /* LV_HAVE_SSE2 */
 
@@ -97,43 +98,44 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector
  */
 static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
     const unsigned int sse_iters = num_points/4;
-    
+
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
-    
+
     float min_val = -32768;
     float max_val = 32767;
-    
+
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
     __m128 ret1, ret2;
     __m128 vmin_val = _mm_set_ps1(min_val);
     __m128 vmax_val = _mm_set_ps1(max_val);
-    
+
     for(unsigned int i = 0;i < sse_iters; i++){
-        inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-        inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-        
-        // Clip
-        ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
-        ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
-        
-        intInputVal1 = _mm_cvtps_epi32(ret1);
-        intInputVal2 = _mm_cvtps_epi32(ret2);
-        
-        intInputVal1 = _mm_packs_epi32(intInputVal1, intInputVal2);
-        
-        _mm_storeu_si128((__m128i*)outputVectorPtr, intInputVal1);
-        outputVectorPtr += 8;
+            inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+
+            // Clip
+            ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
+            ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
+
+            intInputVal1 = _mm_cvtps_epi32(ret1);
+            intInputVal2 = _mm_cvtps_epi32(ret2);
+
+            intInputVal1 = _mm_packs_epi32(intInputVal1, intInputVal2);
+
+            _mm_storeu_si128((__m128i*)outputVectorPtr, intInputVal1);
+            outputVectorPtr += 8;
     }
-    
-    for(unsigned int i = 0; i < (num_points%4)*2; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
-    }
+
+    for(unsigned int i = 0; i < (num_points%4)*2; i++)
+        {
+            if(inputVectorPtr[i] > max_val)
+                inputVectorPtr[i] = max_val;
+            else if(inputVectorPtr[i] < min_val)
+                inputVectorPtr[i] = min_val;
+            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+        }
 }
 #endif /* LV_HAVE_SSE */
 
@@ -149,14 +151,15 @@ static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVecto
     int16_t* outputVectorPtr = (int16_t*)outputVector;
     float min_val = -32768;
     float max_val = 32767;
-    
-    for(unsigned int i = 0; i < num_points*2; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
-    }
+
+    for(unsigned int i = 0; i < num_points*2; i++)
+        {
+            if(inputVectorPtr[i] > max_val)
+                inputVectorPtr[i] = max_val;
+            else if(inputVectorPtr[i] < min_val)
+                inputVectorPtr[i] = min_val;
+            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+        }
 }
 #endif /* LV_HAVE_GENERIC */
 #endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_u_H */
@@ -180,43 +183,45 @@ static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVecto
  */
 static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
     const unsigned int sse_iters = num_points/4;
-    
+
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
-    
+
     float min_val = -32768;
     float max_val = 32767;
-    
+
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
     __m128 ret1, ret2;
     __m128 vmin_val = _mm_set_ps1(min_val);
     __m128 vmax_val = _mm_set_ps1(max_val);
-    
-    for(unsigned int i = 0;i < sse_iters; i++){
-        inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-        inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-        
-        // Clip
-        ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
-        ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
-        
-        intInputVal1 = _mm_cvtps_epi32(ret1);
-        intInputVal2 = _mm_cvtps_epi32(ret2);
-        
-        intInputVal1 = _mm_packs_epi32(intInputVal1, intInputVal2);
-        
-        _mm_store_si128((__m128i*)outputVectorPtr, intInputVal1);
-        outputVectorPtr += 8;
-    }
-    
-    for(unsigned int i = 0; i < (num_points%4)*2; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
-    }
+
+    for(unsigned int i = 0;i < sse_iters; i++)
+        {
+            inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+
+            // Clip
+            ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
+            ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
+
+            intInputVal1 = _mm_cvtps_epi32(ret1);
+            intInputVal2 = _mm_cvtps_epi32(ret2);
+
+            intInputVal1 = _mm_packs_epi32(intInputVal1, intInputVal2);
+
+            _mm_store_si128((__m128i*)outputVectorPtr, intInputVal1);
+            outputVectorPtr += 8;
+        }
+
+    for(unsigned int i = 0; i < (num_points%4)*2; i++)
+        {
+            if(inputVectorPtr[i] > max_val)
+                inputVectorPtr[i] = max_val;
+            else if(inputVectorPtr[i] < min_val)
+                inputVectorPtr[i] = min_val;
+            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+        }
 }
 #endif /* LV_HAVE_SSE2 */
 
@@ -228,45 +233,48 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
+static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
     const unsigned int sse_iters = num_points/4;
-    
+
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
-    
+
     float min_val = -32768;
     float max_val = 32767;
-    
+
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
     __m128 ret1, ret2;
     __m128 vmin_val = _mm_set_ps1(min_val);
     __m128 vmax_val = _mm_set_ps1(max_val);
-    
-    for(unsigned int i = 0;i < sse_iters; i++){
-        inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-        inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
-        
-        // Clip
-        ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
-        ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
-        
-        intInputVal1 = _mm_cvtps_epi32(ret1);
-        intInputVal2 = _mm_cvtps_epi32(ret2);
-        
-        intInputVal1 = _mm_packs_epi32(intInputVal1, intInputVal2);
-        
-        _mm_store_si128((__m128i*)outputVectorPtr, intInputVal1);
-        outputVectorPtr += 8;
-    }
-    
-    for(unsigned int i = 0; i < (num_points%4)*2; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
-    }
+
+    for(unsigned int i = 0;i < sse_iters; i++)
+        {
+            inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+
+            // Clip
+            ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
+            ret2 = _mm_max_ps(_mm_min_ps(inputVal2, vmax_val), vmin_val);
+
+            intInputVal1 = _mm_cvtps_epi32(ret1);
+            intInputVal2 = _mm_cvtps_epi32(ret2);
+
+            intInputVal1 = _mm_packs_epi32(intInputVal1, intInputVal2);
+
+            _mm_store_si128((__m128i*)outputVectorPtr, intInputVal1);
+            outputVectorPtr += 8;
+        }
+
+    for(unsigned int i = 0; i < (num_points%4)*2; i++)
+        {
+            if(inputVectorPtr[i] > max_val)
+                inputVectorPtr[i] = max_val;
+            else if(inputVectorPtr[i] < min_val)
+                inputVectorPtr[i] = min_val;
+            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+        }
 }
 #endif /* LV_HAVE_SSE */
 
@@ -277,19 +285,21 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector,
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_16ic_a_generic(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
+static inline void volk_gnsssdr_32fc_convert_16ic_a_generic(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
     float min_val = -32768;
     float max_val = 32767;
-    
-    for(unsigned int i = 0; i < num_points*2; i++){
-        if(inputVectorPtr[i] > max_val)
-            inputVectorPtr[i] = max_val;
-        else if(inputVectorPtr[i] < min_val)
-            inputVectorPtr[i] = min_val;
-        outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
-    }
+
+    for(unsigned int i = 0; i < num_points*2; i++)
+        {
+            if(inputVectorPtr[i] > max_val)
+                inputVectorPtr[i] = max_val;
+            else if(inputVectorPtr[i] < min_val)
+                inputVectorPtr[i] = min_val;
+            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+        }
 }
 #endif /* LV_HAVE_GENERIC */
 #endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_a_H */

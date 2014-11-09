@@ -2,7 +2,7 @@
  * \file volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5.h
  * \brief Volk protokernel: performs the carrier wipe-off mixing and the Very early, Early, Prompt, Late and very late correlation with 32 bits vectors and returns float32 values.
  * \authors <ul>
- *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
  * Volk protokernel that performs the carrier wipe-off mixing and the 
@@ -34,7 +34,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of

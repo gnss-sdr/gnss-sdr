@@ -2,7 +2,7 @@
  * \file volk_gnsssdr_8ic_magnitude_squared_8i.h
  * \brief Volk protokernel: calculates the magnitude squared of a 16 bits vector
  * \authors <ul>
- *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
  * Volk protokernel that calculates the magnitude squared of a
@@ -21,7 +21,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -49,56 +49,54 @@
  \param magnitudeVector The vector containing the real output values
  \param num_points The number of complex values in complexVector to be calculated and stored into cVector
  */
-static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_sse3(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points){
-    
+static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_sse3(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points)
+{
     const unsigned int sse_iters = num_points / 16;
-    
+
     const char* complexVectorPtr = (char*)complexVector;
     char* magnitudeVectorPtr = magnitudeVector;
-    
+
     __m128i zero, result8;
     __m128i avector, avectorhi, avectorlo, avectorlomult, avectorhimult, aadded, maska;
     __m128i bvector, bvectorhi, bvectorlo, bvectorlomult, bvectorhimult, badded, maskb;
-    
+
     zero = _mm_setzero_si128();
     maska = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 14, 12, 10, 8, 6, 4, 2, 0);
     maskb = _mm_set_epi8(14, 12, 10, 8, 6, 4, 2, 0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
-    
+
     for(unsigned int number = 0;number < sse_iters; number++)
-    {
-        avector = _mm_lddqu_si128((__m128i*)complexVectorPtr);
-        avectorlo = _mm_unpacklo_epi8 (avector, zero);
-        avectorhi = _mm_unpackhi_epi8 (avector, zero);
-        avectorlomult = _mm_mullo_epi16 (avectorlo, avectorlo);
-        avectorhimult = _mm_mullo_epi16 (avectorhi, avectorhi);
-        aadded = _mm_hadd_epi16 (avectorlomult, avectorhimult);
-        
-        complexVectorPtr += 16;
-        
-        bvector = _mm_lddqu_si128((__m128i*)complexVectorPtr);
-        bvectorlo = _mm_unpacklo_epi8 (bvector, zero);
-        bvectorhi = _mm_unpackhi_epi8 (bvector, zero);
-        bvectorlomult = _mm_mullo_epi16 (bvectorlo, bvectorlo);
-        bvectorhimult = _mm_mullo_epi16 (bvectorhi, bvectorhi);
-        badded = _mm_hadd_epi16 (bvectorlomult, bvectorhimult);
-        
-        complexVectorPtr += 16;
-        
-        result8 = _mm_or_si128(_mm_shuffle_epi8(aadded, maska), _mm_shuffle_epi8(badded, maskb));
-        
-        _mm_storeu_si128((__m128i*)magnitudeVectorPtr, result8);
-        
-        magnitudeVectorPtr += 16;
-        
-        
-    }
-    
+        {
+            avector = _mm_lddqu_si128((__m128i*)complexVectorPtr);
+            avectorlo = _mm_unpacklo_epi8 (avector, zero);
+            avectorhi = _mm_unpackhi_epi8 (avector, zero);
+            avectorlomult = _mm_mullo_epi16 (avectorlo, avectorlo);
+            avectorhimult = _mm_mullo_epi16 (avectorhi, avectorhi);
+            aadded = _mm_hadd_epi16 (avectorlomult, avectorhimult);
+
+            complexVectorPtr += 16;
+
+            bvector = _mm_lddqu_si128((__m128i*)complexVectorPtr);
+            bvectorlo = _mm_unpacklo_epi8 (bvector, zero);
+            bvectorhi = _mm_unpackhi_epi8 (bvector, zero);
+            bvectorlomult = _mm_mullo_epi16 (bvectorlo, bvectorlo);
+            bvectorhimult = _mm_mullo_epi16 (bvectorhi, bvectorhi);
+            badded = _mm_hadd_epi16 (bvectorlomult, bvectorhimult);
+
+            complexVectorPtr += 16;
+
+            result8 = _mm_or_si128(_mm_shuffle_epi8(aadded, maska), _mm_shuffle_epi8(badded, maskb));
+
+            _mm_storeu_si128((__m128i*)magnitudeVectorPtr, result8);
+
+            magnitudeVectorPtr += 16;
+        }
+
     for (unsigned int i = 0; i<(num_points % 16); ++i)
-    {
-        const char valReal = *complexVectorPtr++;
-        const char valImag = *complexVectorPtr++;
-        *magnitudeVectorPtr++ = (valReal * valReal) + (valImag * valImag);
-    }
+        {
+            const char valReal = *complexVectorPtr++;
+            const char valImag = *complexVectorPtr++;
+            *magnitudeVectorPtr++ = (valReal * valReal) + (valImag * valImag);
+        }
 }
 #endif /* LV_HAVE_SSSE3 */
 
@@ -155,15 +153,17 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_sse3(char* magnitudeV
  \param magnitudeVector The vector containing the real output values
  \param num_points The number of complex values in complexVector to be calculated and stored into cVector
  */
-static inline void volk_gnsssdr_8ic_magnitude_squared_8i_generic(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points){
+static inline void volk_gnsssdr_8ic_magnitude_squared_8i_generic(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points)
+{
     const char* complexVectorPtr = (char*)complexVector;
     char* magnitudeVectorPtr = magnitudeVector;
-    
-    for(unsigned int number = 0; number < num_points; number++){
-        const char real = *complexVectorPtr++;
-        const char imag = *complexVectorPtr++;
-        *magnitudeVectorPtr++ = (real*real) + (imag*imag);
-    }
+
+    for(unsigned int number = 0; number < num_points; number++)
+        {
+            const char real = *complexVectorPtr++;
+            const char imag = *complexVectorPtr++;
+            *magnitudeVectorPtr++ = (real*real) + (imag*imag);
+        }
 }
 #endif /* LV_HAVE_GENERIC */
 
@@ -185,56 +185,54 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_generic(char* magnitude
  \param magnitudeVector The vector containing the real output values
  \param num_points The number of complex values in complexVector to be calculated and stored into cVector
  */
-static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points){
-    
+static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points)
+{
     const unsigned int sse_iters = num_points / 16;
-    
+
     const char* complexVectorPtr = (char*)complexVector;
     char* magnitudeVectorPtr = magnitudeVector;
-    
+
     __m128i zero, result8;
     __m128i avector, avectorhi, avectorlo, avectorlomult, avectorhimult, aadded, maska;
     __m128i bvector, bvectorhi, bvectorlo, bvectorlomult, bvectorhimult, badded, maskb;
-    
+
     zero = _mm_setzero_si128();
     maska = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 14, 12, 10, 8, 6, 4, 2, 0);
     maskb = _mm_set_epi8(14, 12, 10, 8, 6, 4, 2, 0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
-    
+
     for(unsigned int number = 0;number < sse_iters; number++)
-    {
-        avector = _mm_load_si128((__m128i*)complexVectorPtr);
-        avectorlo = _mm_unpacklo_epi8 (avector, zero);
-        avectorhi = _mm_unpackhi_epi8 (avector, zero);
-        avectorlomult = _mm_mullo_epi16 (avectorlo, avectorlo);
-        avectorhimult = _mm_mullo_epi16 (avectorhi, avectorhi);
-        aadded = _mm_hadd_epi16 (avectorlomult, avectorhimult);
-        
-        complexVectorPtr += 16;
-        
-        bvector = _mm_load_si128((__m128i*)complexVectorPtr);
-        bvectorlo = _mm_unpacklo_epi8 (bvector, zero);
-        bvectorhi = _mm_unpackhi_epi8 (bvector, zero);
-        bvectorlomult = _mm_mullo_epi16 (bvectorlo, bvectorlo);
-        bvectorhimult = _mm_mullo_epi16 (bvectorhi, bvectorhi);
-        badded = _mm_hadd_epi16 (bvectorlomult, bvectorhimult);
-        
-        complexVectorPtr += 16;
-        
-        result8 = _mm_or_si128(_mm_shuffle_epi8(aadded, maska), _mm_shuffle_epi8(badded, maskb));
-        
-        _mm_store_si128((__m128i*)magnitudeVectorPtr, result8);
-        
-        magnitudeVectorPtr += 16;
-        
-        
-    }
-    
+        {
+            avector = _mm_load_si128((__m128i*)complexVectorPtr);
+            avectorlo = _mm_unpacklo_epi8 (avector, zero);
+            avectorhi = _mm_unpackhi_epi8 (avector, zero);
+            avectorlomult = _mm_mullo_epi16 (avectorlo, avectorlo);
+            avectorhimult = _mm_mullo_epi16 (avectorhi, avectorhi);
+            aadded = _mm_hadd_epi16 (avectorlomult, avectorhimult);
+
+            complexVectorPtr += 16;
+
+            bvector = _mm_load_si128((__m128i*)complexVectorPtr);
+            bvectorlo = _mm_unpacklo_epi8 (bvector, zero);
+            bvectorhi = _mm_unpackhi_epi8 (bvector, zero);
+            bvectorlomult = _mm_mullo_epi16 (bvectorlo, bvectorlo);
+            bvectorhimult = _mm_mullo_epi16 (bvectorhi, bvectorhi);
+            badded = _mm_hadd_epi16 (bvectorlomult, bvectorhimult);
+
+            complexVectorPtr += 16;
+
+            result8 = _mm_or_si128(_mm_shuffle_epi8(aadded, maska), _mm_shuffle_epi8(badded, maskb));
+
+            _mm_store_si128((__m128i*)magnitudeVectorPtr, result8);
+
+            magnitudeVectorPtr += 16;
+        }
+
     for (unsigned int i = 0; i<(num_points % 16); ++i)
-    {
-        const char valReal = *complexVectorPtr++;
-        const char valImag = *complexVectorPtr++;
-        *magnitudeVectorPtr++ = (valReal * valReal) + (valImag * valImag);
-    }
+        {
+            const char valReal = *complexVectorPtr++;
+            const char valImag = *complexVectorPtr++;
+            *magnitudeVectorPtr++ = (valReal * valReal) + (valImag * valImag);
+        }
 }
 #endif /* LV_HAVE_SSSE3 */
 
@@ -291,15 +289,17 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
  \param magnitudeVector The vector containing the real output values
  \param num_points The number of complex values in complexVector to be calculated and stored into cVector
  */
-static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_generic(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points){
+static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_generic(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points)
+{
     const char* complexVectorPtr = (char*)complexVector;
     char* magnitudeVectorPtr = magnitudeVector;
-    
-    for(unsigned int number = 0; number < num_points; number++){
-        const char real = *complexVectorPtr++;
-        const char imag = *complexVectorPtr++;
-        *magnitudeVectorPtr++ = (real*real) + (imag*imag);
-    }
+
+    for(unsigned int number = 0; number < num_points; number++)
+        {
+            const char real = *complexVectorPtr++;
+            const char imag = *complexVectorPtr++;
+            *magnitudeVectorPtr++ = (real*real) + (imag*imag);
+        }
 }
 #endif /* LV_HAVE_GENERIC */
 
@@ -311,7 +311,8 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_generic(char* magnitu
  \param num_points The number of complex values in complexVector to be calculated and stored into cVector
  */
 extern void volk_gnsssdr_8ic_magnitude_squared_8i_a_orc_impl(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points);
-static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_orc(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points){
+static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_orc(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points)
+{
     volk_gnsssdr_8ic_magnitude_squared_8i_a_orc_impl(magnitudeVector, complexVector, num_points);
 }
 #endif /* LV_HAVE_ORC */

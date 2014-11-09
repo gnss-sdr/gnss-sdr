@@ -2,7 +2,7 @@
  * \file volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5.h
  * \brief Volk protokernel: performs the carrier wipe-off mixing and the Very early, Early, Prompt, Late and very late correlation with 16 bits vectors, and accumulates the results into float32. This protokernel is called "unsafe" because it does NOT check when the inputs have a -128 value. If you introduce a -128 value the protokernel will NOT operate properly (generic implementation will have different results than volk implementation). In order to avoid overflow, "input" and "carrier" must be values between —7 and 7 and "XX_code inputs" must be values between —127 and 127.
  * \authors <ul>
- *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
  * Volk protokernel that performs the carrier wipe-off mixing and the
@@ -47,7 +47,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -92,7 +92,7 @@
 static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_u_sse4_1(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
-    
+
     __m128i x, x_abs, y, y_aux, bb_signal_sample_aux, bb_signal_sample_aux_abs;;
     __m128i real_output, imag_output;
     __m128 real_VE_code_acc, imag_VE_code_acc, real_E_code_acc, imag_E_code_acc, real_P_code_acc, imag_P_code_acc, real_L_code_acc, imag_L_code_acc, real_VL_code_acc, imag_VL_code_acc;
@@ -102,10 +102,10 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_u_sse4_1(lv_3
     __m128i check_sign_sequence = _mm_set_epi8 (255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1);
     __m128i rearrange_sequence = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
     __m128i mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
-    
+
     const lv_8sc_t* input_ptr = input;
     const lv_8sc_t* carrier_ptr = carrier;
-    
+
     const lv_8sc_t* VE_code_ptr = VE_code;
     lv_32fc_t* VE_out_ptr = VE_out;
     const lv_8sc_t* E_code_ptr = E_code;
@@ -116,7 +116,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_u_sse4_1(lv_3
     lv_32fc_t* L_out_ptr = L_out;
     const lv_8sc_t* VL_code_ptr = VL_code;
     lv_32fc_t* VL_out_ptr = VL_out;
-    
+
     float VE_out_real = 0;
     float VE_out_imag = 0;
     float E_out_real = 0;
@@ -127,7 +127,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_u_sse4_1(lv_3
     float L_out_imag = 0;
     float VL_out_real = 0;
     float VL_out_imag = 0;
-    
+
     real_VE_code_acc = _mm_setzero_ps();
     imag_VE_code_acc = _mm_setzero_ps();
     real_E_code_acc = _mm_setzero_ps();
@@ -138,126 +138,126 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_u_sse4_1(lv_3
     imag_L_code_acc = _mm_setzero_ps();
     real_VL_code_acc = _mm_setzero_ps();
     imag_VL_code_acc = _mm_setzero_ps();
-    
-    if (sse_iters>0)
-    {
-        for(int number = 0;number < sse_iters; number++){
-            
-            //Perform the carrier wipe-off
-            x = _mm_lddqu_si128((__m128i*)input_ptr);
-            y = _mm_lddqu_si128((__m128i*)carrier_ptr);
-            
-            x_abs = _mm_abs_epi8 (x);
-            
-            CM_8IC_X2_SCALAR_PRODUCT_16IC_X2_U_SSSE3(y, x, check_sign_sequence, rearrange_sequence, y_aux, x_abs, real_output, imag_output)
-            
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            bb_signal_sample_aux = _mm_blendv_epi8 (imag_output, real_output, mult1);
-            bb_signal_sample_aux_abs = _mm_abs_epi8 (bb_signal_sample_aux);
-            
-            //Get very early values
-            y = _mm_lddqu_si128((__m128i*)VE_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
-            
-            real_VE_code_acc = _mm_add_ps (real_VE_code_acc, real_output_ps);
-            imag_VE_code_acc = _mm_add_ps (imag_VE_code_acc, imag_output_ps);
-            
-            //Get early values
-            y = _mm_lddqu_si128((__m128i*)E_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
-            
-            real_E_code_acc = _mm_add_ps (real_E_code_acc, real_output_ps);
-            imag_E_code_acc = _mm_add_ps (imag_E_code_acc, imag_output_ps);
-            
-            //Get prompt values
-            y = _mm_lddqu_si128((__m128i*)P_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
-            
-            real_P_code_acc = _mm_add_ps (real_P_code_acc, real_output_ps);
-            imag_P_code_acc = _mm_add_ps (imag_P_code_acc, imag_output_ps);
-            
-            //Get late values
-            y = _mm_lddqu_si128((__m128i*)L_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
-            
-            real_L_code_acc = _mm_add_ps (real_L_code_acc, real_output_ps);
-            imag_L_code_acc = _mm_add_ps (imag_L_code_acc, imag_output_ps);
-            
-            //Get very late values
-            y = _mm_lddqu_si128((__m128i*)VL_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
 
-            real_VL_code_acc = _mm_add_ps (real_VL_code_acc, real_output_ps);
-            imag_VL_code_acc = _mm_add_ps (imag_VL_code_acc, imag_output_ps);
-            
-            input_ptr += 8;
-            carrier_ptr += 8;
-            VE_code_ptr += 8;
-            E_code_ptr += 8;
-            P_code_ptr += 8;
-            L_code_ptr += 8;
-            VL_code_ptr += 8;
-        }
-        
-        __VOLK_ATTR_ALIGNED(16) float real_VE_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_VE_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float real_E_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_E_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float real_P_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_P_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float real_L_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_L_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float real_VL_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_VL_dotProductVector[4];
-        
-        _mm_storeu_ps((float*)real_VE_dotProductVector,real_VE_code_acc); // Store the results back into the dot product vector
-        _mm_storeu_ps((float*)imag_VE_dotProductVector,imag_VE_code_acc); // Store the results back into the dot product vector
-        _mm_storeu_ps((float*)real_E_dotProductVector,real_E_code_acc); // Store the results back into the dot product vector
-        _mm_storeu_ps((float*)imag_E_dotProductVector,imag_E_code_acc); // Store the results back into the dot product vector
-        _mm_storeu_ps((float*)real_P_dotProductVector,real_P_code_acc); // Store the results back into the dot product vector
-        _mm_storeu_ps((float*)imag_P_dotProductVector,imag_P_code_acc); // Store the results back into the dot product vector
-        _mm_storeu_ps((float*)real_L_dotProductVector,real_L_code_acc); // Store the results back into the dot product vector
-        _mm_storeu_ps((float*)imag_L_dotProductVector,imag_L_code_acc); // Store the results back into the dot product vector
-        _mm_storeu_ps((float*)real_VL_dotProductVector,real_VL_code_acc); // Store the results back into the dot product vector
-        _mm_storeu_ps((float*)imag_VL_dotProductVector,imag_VL_code_acc); // Store the results back into the dot product vector
-        
-        for (int i = 0; i<4; ++i)
+    if (sse_iters>0)
         {
-            VE_out_real += real_VE_dotProductVector[i];
-            VE_out_imag += imag_VE_dotProductVector[i];
-            E_out_real += real_E_dotProductVector[i];
-            E_out_imag += imag_E_dotProductVector[i];
-            P_out_real += real_P_dotProductVector[i];
-            P_out_imag += imag_P_dotProductVector[i];
-            L_out_real += real_L_dotProductVector[i];
-            L_out_imag += imag_L_dotProductVector[i];
-            VL_out_real += real_VL_dotProductVector[i];
-            VL_out_imag += imag_VL_dotProductVector[i];
+            for(int number = 0;number < sse_iters; number++)
+                {
+                    //Perform the carrier wipe-off
+                    x = _mm_lddqu_si128((__m128i*)input_ptr);
+                    y = _mm_lddqu_si128((__m128i*)carrier_ptr);
+
+                    x_abs = _mm_abs_epi8 (x);
+
+                    CM_8IC_X2_SCALAR_PRODUCT_16IC_X2_U_SSSE3(y, x, check_sign_sequence, rearrange_sequence, y_aux, x_abs, real_output, imag_output)
+
+                    imag_output = _mm_slli_si128 (imag_output, 1);
+                    bb_signal_sample_aux = _mm_blendv_epi8 (imag_output, real_output, mult1);
+                    bb_signal_sample_aux_abs = _mm_abs_epi8 (bb_signal_sample_aux);
+
+                    //Get very early values
+                    y = _mm_lddqu_si128((__m128i*)VE_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_VE_code_acc = _mm_add_ps (real_VE_code_acc, real_output_ps);
+                    imag_VE_code_acc = _mm_add_ps (imag_VE_code_acc, imag_output_ps);
+
+                    //Get early values
+                    y = _mm_lddqu_si128((__m128i*)E_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_E_code_acc = _mm_add_ps (real_E_code_acc, real_output_ps);
+                    imag_E_code_acc = _mm_add_ps (imag_E_code_acc, imag_output_ps);
+
+                    //Get prompt values
+                    y = _mm_lddqu_si128((__m128i*)P_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_P_code_acc = _mm_add_ps (real_P_code_acc, real_output_ps);
+                    imag_P_code_acc = _mm_add_ps (imag_P_code_acc, imag_output_ps);
+
+                    //Get late values
+                    y = _mm_lddqu_si128((__m128i*)L_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_L_code_acc = _mm_add_ps (real_L_code_acc, real_output_ps);
+                    imag_L_code_acc = _mm_add_ps (imag_L_code_acc, imag_output_ps);
+
+                    //Get very late values
+                    y = _mm_lddqu_si128((__m128i*)VL_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_VL_code_acc = _mm_add_ps (real_VL_code_acc, real_output_ps);
+                    imag_VL_code_acc = _mm_add_ps (imag_VL_code_acc, imag_output_ps);
+
+                    input_ptr += 8;
+                    carrier_ptr += 8;
+                    VE_code_ptr += 8;
+                    E_code_ptr += 8;
+                    P_code_ptr += 8;
+                    L_code_ptr += 8;
+                    VL_code_ptr += 8;
+                }
+
+            __VOLK_ATTR_ALIGNED(16) float real_VE_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_VE_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float real_E_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_E_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float real_P_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_P_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float real_L_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_L_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float real_VL_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_VL_dotProductVector[4];
+
+            _mm_storeu_ps((float*)real_VE_dotProductVector,real_VE_code_acc); // Store the results back into the dot product vector
+            _mm_storeu_ps((float*)imag_VE_dotProductVector,imag_VE_code_acc); // Store the results back into the dot product vector
+            _mm_storeu_ps((float*)real_E_dotProductVector,real_E_code_acc); // Store the results back into the dot product vector
+            _mm_storeu_ps((float*)imag_E_dotProductVector,imag_E_code_acc); // Store the results back into the dot product vector
+            _mm_storeu_ps((float*)real_P_dotProductVector,real_P_code_acc); // Store the results back into the dot product vector
+            _mm_storeu_ps((float*)imag_P_dotProductVector,imag_P_code_acc); // Store the results back into the dot product vector
+            _mm_storeu_ps((float*)real_L_dotProductVector,real_L_code_acc); // Store the results back into the dot product vector
+            _mm_storeu_ps((float*)imag_L_dotProductVector,imag_L_code_acc); // Store the results back into the dot product vector
+            _mm_storeu_ps((float*)real_VL_dotProductVector,real_VL_code_acc); // Store the results back into the dot product vector
+            _mm_storeu_ps((float*)imag_VL_dotProductVector,imag_VL_code_acc); // Store the results back into the dot product vector
+
+            for (int i = 0; i<4; ++i)
+                {
+                    VE_out_real += real_VE_dotProductVector[i];
+                    VE_out_imag += imag_VE_dotProductVector[i];
+                    E_out_real += real_E_dotProductVector[i];
+                    E_out_imag += imag_E_dotProductVector[i];
+                    P_out_real += real_P_dotProductVector[i];
+                    P_out_imag += imag_P_dotProductVector[i];
+                    L_out_real += real_L_dotProductVector[i];
+                    L_out_imag += imag_L_dotProductVector[i];
+                    VL_out_real += real_VL_dotProductVector[i];
+                    VL_out_imag += imag_VL_dotProductVector[i];
+                }
+            *VE_out_ptr = lv_cmake(VE_out_real, VE_out_imag);
+            *E_out_ptr = lv_cmake(E_out_real, E_out_imag);
+            *P_out_ptr = lv_cmake(P_out_real, P_out_imag);
+            *L_out_ptr = lv_cmake(L_out_real, L_out_imag);
+            *VL_out_ptr = lv_cmake(VL_out_real, VL_out_imag);
         }
-        *VE_out_ptr = lv_cmake(VE_out_real, VE_out_imag);
-        *E_out_ptr = lv_cmake(E_out_real, E_out_imag);
-        *P_out_ptr = lv_cmake(P_out_real, P_out_imag);
-        *L_out_ptr = lv_cmake(L_out_real, L_out_imag);
-        *VL_out_ptr = lv_cmake(VL_out_real, VL_out_imag);
-    }
-    
+
     lv_16sc_t bb_signal_sample;
     for(int i=0; i < num_points%8; ++i)
-    {
-        //Perform the carrier wipe-off
-        bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
-        // Now get very early, early, prompt, late and very late values for each
-        *VE_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*VE_code_ptr++));
-        *E_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*E_code_ptr++));
-        *P_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*P_code_ptr++));
-        *L_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*L_code_ptr++));
-        *VL_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*VL_code_ptr++));
-    }
+        {
+            //Perform the carrier wipe-off
+            bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
+            // Now get very early, early, prompt, late and very late values for each
+            *VE_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*VE_code_ptr++));
+            *E_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*E_code_ptr++));
+            *P_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*P_code_ptr++));
+            *L_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*L_code_ptr++));
+            *VL_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*VL_code_ptr++));
+        }
 }
 #endif /* LV_HAVE_SSE4_1 */
 
@@ -288,18 +288,18 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_generic(lv_32
     *VL_out = 0;
 
     lv_16sc_t bb_signal_sample;
-    
+
     for(unsigned int i=0; i < num_points; ++i)
-    {
-        //Perform the carrier wipe-off
-        bb_signal_sample = input[i] * carrier[i];
-        // Now get very early, early, prompt, late and very late values for each
-        *VE_out += (lv_32fc_t) (bb_signal_sample * VE_code[i]);
-        *E_out += (lv_32fc_t) (bb_signal_sample * E_code[i]);
-        *P_out += (lv_32fc_t) (bb_signal_sample * P_code[i]);
-        *L_out += (lv_32fc_t) (bb_signal_sample * L_code[i]);
-        *VL_out += (lv_32fc_t) (bb_signal_sample * VL_code[i]);
-    }
+        {
+            //Perform the carrier wipe-off
+            bb_signal_sample = input[i] * carrier[i];
+            // Now get very early, early, prompt, late and very late values for each
+            *VE_out += (lv_32fc_t) (bb_signal_sample * VE_code[i]);
+            *E_out += (lv_32fc_t) (bb_signal_sample * E_code[i]);
+            *P_out += (lv_32fc_t) (bb_signal_sample * P_code[i]);
+            *L_out += (lv_32fc_t) (bb_signal_sample * L_code[i]);
+            *VL_out += (lv_32fc_t) (bb_signal_sample * VL_code[i]);
+        }
 }
 #endif /* LV_HAVE_GENERIC */
 #endif /* INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_u_H */
@@ -337,20 +337,20 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_generic(lv_32
 static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_a_sse4_1(lv_32fc_t* VE_out, lv_32fc_t* E_out, lv_32fc_t* P_out, lv_32fc_t* L_out, lv_32fc_t* VL_out, const lv_8sc_t* input, const lv_8sc_t* carrier, const lv_8sc_t* VE_code, const lv_8sc_t* E_code, const lv_8sc_t* P_code, const lv_8sc_t* L_code, const lv_8sc_t* VL_code, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
-    
+
     __m128i x, x_abs, y, y_aux, bb_signal_sample_aux, bb_signal_sample_aux_abs;;
     __m128i real_output, imag_output;
     __m128 real_VE_code_acc, imag_VE_code_acc, real_E_code_acc, imag_E_code_acc, real_P_code_acc, imag_P_code_acc, real_L_code_acc, imag_L_code_acc, real_VL_code_acc, imag_VL_code_acc;
     __m128i input_i_1, input_i_2, output_i32;
     __m128 real_output_ps, imag_output_ps;
-    
+
     __m128i check_sign_sequence = _mm_set_epi8 (255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1);
     __m128i rearrange_sequence = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
     __m128i mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
-    
+
     const lv_8sc_t* input_ptr = input;
     const lv_8sc_t* carrier_ptr = carrier;
-    
+
     const lv_8sc_t* VE_code_ptr = VE_code;
     lv_32fc_t* VE_out_ptr = VE_out;
     const lv_8sc_t* E_code_ptr = E_code;
@@ -361,7 +361,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_a_sse4_1(lv_3
     lv_32fc_t* L_out_ptr = L_out;
     const lv_8sc_t* VL_code_ptr = VL_code;
     lv_32fc_t* VL_out_ptr = VL_out;
-    
+
     float VE_out_real = 0;
     float VE_out_imag = 0;
     float E_out_real = 0;
@@ -372,7 +372,7 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_a_sse4_1(lv_3
     float L_out_imag = 0;
     float VL_out_real = 0;
     float VL_out_imag = 0;
-    
+
     real_VE_code_acc = _mm_setzero_ps();
     imag_VE_code_acc = _mm_setzero_ps();
     real_E_code_acc = _mm_setzero_ps();
@@ -383,126 +383,126 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_a_sse4_1(lv_3
     imag_L_code_acc = _mm_setzero_ps();
     real_VL_code_acc = _mm_setzero_ps();
     imag_VL_code_acc = _mm_setzero_ps();
-    
+
     if (sse_iters>0)
-    {
-        for(int number = 0;number < sse_iters; number++){
-            
-            //Perform the carrier wipe-off
-            x = _mm_load_si128((__m128i*)input_ptr);
-            y = _mm_load_si128((__m128i*)carrier_ptr);
-            
-            x_abs = _mm_abs_epi8 (x);
-            
-            CM_8IC_X2_SCALAR_PRODUCT_16IC_X2_U_SSSE3(y, x, check_sign_sequence, rearrange_sequence, y_aux, x_abs, real_output, imag_output)
-            
-            imag_output = _mm_slli_si128 (imag_output, 1);
-            bb_signal_sample_aux = _mm_blendv_epi8 (imag_output, real_output, mult1);
-            bb_signal_sample_aux_abs = _mm_abs_epi8 (bb_signal_sample_aux);
-            
-            //Get very early values
-            y = _mm_load_si128((__m128i*)VE_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
-            
-            real_VE_code_acc = _mm_add_ps (real_VE_code_acc, real_output_ps);
-            imag_VE_code_acc = _mm_add_ps (imag_VE_code_acc, imag_output_ps);
-            
-            //Get early values
-            y = _mm_load_si128((__m128i*)E_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
-            
-            real_E_code_acc = _mm_add_ps (real_E_code_acc, real_output_ps);
-            imag_E_code_acc = _mm_add_ps (imag_E_code_acc, imag_output_ps);
-            
-            //Get prompt values
-            y = _mm_load_si128((__m128i*)P_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
-            
-            real_P_code_acc = _mm_add_ps (real_P_code_acc, real_output_ps);
-            imag_P_code_acc = _mm_add_ps (imag_P_code_acc, imag_output_ps);
-            
-            //Get late values
-            y = _mm_load_si128((__m128i*)L_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
-            
-            real_L_code_acc = _mm_add_ps (real_L_code_acc, real_output_ps);
-            imag_L_code_acc = _mm_add_ps (imag_L_code_acc, imag_output_ps);
-            
-            //Get very late values
-            y = _mm_load_si128((__m128i*)VL_code_ptr);
-            
-            CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
-            
-            real_VL_code_acc = _mm_add_ps (real_VL_code_acc, real_output_ps);
-            imag_VL_code_acc = _mm_add_ps (imag_VL_code_acc, imag_output_ps);
-            
-            input_ptr += 8;
-            carrier_ptr += 8;
-            VE_code_ptr += 8;
-            E_code_ptr += 8;
-            P_code_ptr += 8;
-            L_code_ptr += 8;
-            VL_code_ptr += 8;
-        }
-        
-        __VOLK_ATTR_ALIGNED(16) float real_VE_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_VE_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float real_E_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_E_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float real_P_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_P_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float real_L_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_L_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float real_VL_dotProductVector[4];
-        __VOLK_ATTR_ALIGNED(16) float imag_VL_dotProductVector[4];
-        
-        _mm_store_ps((float*)real_VE_dotProductVector,real_VE_code_acc); // Store the results back into the dot product vector
-        _mm_store_ps((float*)imag_VE_dotProductVector,imag_VE_code_acc); // Store the results back into the dot product vector
-        _mm_store_ps((float*)real_E_dotProductVector,real_E_code_acc); // Store the results back into the dot product vector
-        _mm_store_ps((float*)imag_E_dotProductVector,imag_E_code_acc); // Store the results back into the dot product vector
-        _mm_store_ps((float*)real_P_dotProductVector,real_P_code_acc); // Store the results back into the dot product vector
-        _mm_store_ps((float*)imag_P_dotProductVector,imag_P_code_acc); // Store the results back into the dot product vector
-        _mm_store_ps((float*)real_L_dotProductVector,real_L_code_acc); // Store the results back into the dot product vector
-        _mm_store_ps((float*)imag_L_dotProductVector,imag_L_code_acc); // Store the results back into the dot product vector
-        _mm_store_ps((float*)real_VL_dotProductVector,real_VL_code_acc); // Store the results back into the dot product vector
-        _mm_store_ps((float*)imag_VL_dotProductVector,imag_VL_code_acc); // Store the results back into the dot product vector
-        
-        for (int i = 0; i<4; ++i)
         {
-            VE_out_real += real_VE_dotProductVector[i];
-            VE_out_imag += imag_VE_dotProductVector[i];
-            E_out_real += real_E_dotProductVector[i];
-            E_out_imag += imag_E_dotProductVector[i];
-            P_out_real += real_P_dotProductVector[i];
-            P_out_imag += imag_P_dotProductVector[i];
-            L_out_real += real_L_dotProductVector[i];
-            L_out_imag += imag_L_dotProductVector[i];
-            VL_out_real += real_VL_dotProductVector[i];
-            VL_out_imag += imag_VL_dotProductVector[i];
+            for(int number = 0;number < sse_iters; number++)
+                {
+                    //Perform the carrier wipe-off
+                    x = _mm_load_si128((__m128i*)input_ptr);
+                    y = _mm_load_si128((__m128i*)carrier_ptr);
+
+                    x_abs = _mm_abs_epi8 (x);
+
+                    CM_8IC_X2_SCALAR_PRODUCT_16IC_X2_U_SSSE3(y, x, check_sign_sequence, rearrange_sequence, y_aux, x_abs, real_output, imag_output)
+
+                    imag_output = _mm_slli_si128 (imag_output, 1);
+                    bb_signal_sample_aux = _mm_blendv_epi8 (imag_output, real_output, mult1);
+                    bb_signal_sample_aux_abs = _mm_abs_epi8 (bb_signal_sample_aux);
+
+                    //Get very early values
+                    y = _mm_load_si128((__m128i*)VE_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_VE_code_acc = _mm_add_ps (real_VE_code_acc, real_output_ps);
+                    imag_VE_code_acc = _mm_add_ps (imag_VE_code_acc, imag_output_ps);
+
+                    //Get early values
+                    y = _mm_load_si128((__m128i*)E_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_E_code_acc = _mm_add_ps (real_E_code_acc, real_output_ps);
+                    imag_E_code_acc = _mm_add_ps (imag_E_code_acc, imag_output_ps);
+
+                    //Get prompt values
+                    y = _mm_load_si128((__m128i*)P_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_P_code_acc = _mm_add_ps (real_P_code_acc, real_output_ps);
+                    imag_P_code_acc = _mm_add_ps (imag_P_code_acc, imag_output_ps);
+
+                    //Get late values
+                    y = _mm_load_si128((__m128i*)L_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_L_code_acc = _mm_add_ps (real_L_code_acc, real_output_ps);
+                    imag_L_code_acc = _mm_add_ps (imag_L_code_acc, imag_output_ps);
+
+                    //Get very late values
+                    y = _mm_load_si128((__m128i*)VL_code_ptr);
+
+                    CM_8IC_X2_CW_CORR_UNSAFE_32FC_X2_U_SSE4_1(y, bb_signal_sample_aux, check_sign_sequence, rearrange_sequence, y_aux, bb_signal_sample_aux_abs, real_output, imag_output, input_i_1, input_i_2, output_i32, real_output_ps, imag_output_ps)
+
+                    real_VL_code_acc = _mm_add_ps (real_VL_code_acc, real_output_ps);
+                    imag_VL_code_acc = _mm_add_ps (imag_VL_code_acc, imag_output_ps);
+
+                    input_ptr += 8;
+                    carrier_ptr += 8;
+                    VE_code_ptr += 8;
+                    E_code_ptr += 8;
+                    P_code_ptr += 8;
+                    L_code_ptr += 8;
+                    VL_code_ptr += 8;
+                }
+
+            __VOLK_ATTR_ALIGNED(16) float real_VE_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_VE_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float real_E_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_E_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float real_P_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_P_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float real_L_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_L_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float real_VL_dotProductVector[4];
+            __VOLK_ATTR_ALIGNED(16) float imag_VL_dotProductVector[4];
+
+            _mm_store_ps((float*)real_VE_dotProductVector,real_VE_code_acc); // Store the results back into the dot product vector
+            _mm_store_ps((float*)imag_VE_dotProductVector,imag_VE_code_acc); // Store the results back into the dot product vector
+            _mm_store_ps((float*)real_E_dotProductVector,real_E_code_acc); // Store the results back into the dot product vector
+            _mm_store_ps((float*)imag_E_dotProductVector,imag_E_code_acc); // Store the results back into the dot product vector
+            _mm_store_ps((float*)real_P_dotProductVector,real_P_code_acc); // Store the results back into the dot product vector
+            _mm_store_ps((float*)imag_P_dotProductVector,imag_P_code_acc); // Store the results back into the dot product vector
+            _mm_store_ps((float*)real_L_dotProductVector,real_L_code_acc); // Store the results back into the dot product vector
+            _mm_store_ps((float*)imag_L_dotProductVector,imag_L_code_acc); // Store the results back into the dot product vector
+            _mm_store_ps((float*)real_VL_dotProductVector,real_VL_code_acc); // Store the results back into the dot product vector
+            _mm_store_ps((float*)imag_VL_dotProductVector,imag_VL_code_acc); // Store the results back into the dot product vector
+
+            for (int i = 0; i<4; ++i)
+                {
+                    VE_out_real += real_VE_dotProductVector[i];
+                    VE_out_imag += imag_VE_dotProductVector[i];
+                    E_out_real += real_E_dotProductVector[i];
+                    E_out_imag += imag_E_dotProductVector[i];
+                    P_out_real += real_P_dotProductVector[i];
+                    P_out_imag += imag_P_dotProductVector[i];
+                    L_out_real += real_L_dotProductVector[i];
+                    L_out_imag += imag_L_dotProductVector[i];
+                    VL_out_real += real_VL_dotProductVector[i];
+                    VL_out_imag += imag_VL_dotProductVector[i];
+                }
+            *VE_out_ptr = lv_cmake(VE_out_real, VE_out_imag);
+            *E_out_ptr = lv_cmake(E_out_real, E_out_imag);
+            *P_out_ptr = lv_cmake(P_out_real, P_out_imag);
+            *L_out_ptr = lv_cmake(L_out_real, L_out_imag);
+            *VL_out_ptr = lv_cmake(VL_out_real, VL_out_imag);
         }
-        *VE_out_ptr = lv_cmake(VE_out_real, VE_out_imag);
-        *E_out_ptr = lv_cmake(E_out_real, E_out_imag);
-        *P_out_ptr = lv_cmake(P_out_real, P_out_imag);
-        *L_out_ptr = lv_cmake(L_out_real, L_out_imag);
-        *VL_out_ptr = lv_cmake(VL_out_real, VL_out_imag);
-    }
-    
+
     lv_16sc_t bb_signal_sample;
     for(int i=0; i < num_points%8; ++i)
-    {
-        //Perform the carrier wipe-off
-        bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
-        // Now get very early, early, prompt, late and very late values for each
-        *VE_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*VE_code_ptr++));
-        *E_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*E_code_ptr++));
-        *P_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*P_code_ptr++));
-        *L_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*L_code_ptr++));
-        *VL_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*VL_code_ptr++));
-    }
+        {
+            //Perform the carrier wipe-off
+            bb_signal_sample = (*input_ptr++) * (*carrier_ptr++);
+            // Now get very early, early, prompt, late and very late values for each
+            *VE_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*VE_code_ptr++));
+            *E_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*E_code_ptr++));
+            *P_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*P_code_ptr++));
+            *L_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*L_code_ptr++));
+            *VL_out_ptr += (lv_32fc_t) (bb_signal_sample * ((lv_16sc_t)*VL_code_ptr++));
+        }
 }
 #endif /* LV_HAVE_SSE4_1 */
 
@@ -531,20 +531,20 @@ static inline void volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_a_generic(lv_
     *P_out = 0;
     *L_out = 0;
     *VL_out = 0;
-    
+
     lv_16sc_t bb_signal_sample;
-    
+
     for(unsigned int i=0; i < num_points; ++i)
-    {
-        //Perform the carrier wipe-off
-        bb_signal_sample = input[i] * carrier[i];
-        // Now get very early, early, prompt, late and very late values for each
-        *VE_out += (lv_32fc_t) (bb_signal_sample * VE_code[i]);
-        *E_out += (lv_32fc_t) (bb_signal_sample * E_code[i]);
-        *P_out += (lv_32fc_t) (bb_signal_sample * P_code[i]);
-        *L_out += (lv_32fc_t) (bb_signal_sample * L_code[i]);
-        *VL_out += (lv_32fc_t) (bb_signal_sample * VL_code[i]);
-    }
+        {
+            //Perform the carrier wipe-off
+            bb_signal_sample = input[i] * carrier[i];
+            // Now get very early, early, prompt, late and very late values for each
+            *VE_out += (lv_32fc_t) (bb_signal_sample * VE_code[i]);
+            *E_out += (lv_32fc_t) (bb_signal_sample * E_code[i]);
+            *P_out += (lv_32fc_t) (bb_signal_sample * P_code[i]);
+            *L_out += (lv_32fc_t) (bb_signal_sample * L_code[i]);
+            *VL_out += (lv_32fc_t) (bb_signal_sample * VL_code[i]);
+        }
 }
 #endif /* LV_HAVE_GENERIC */
 #endif /* INCLUDED_gnsssdr_volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5_a_H */

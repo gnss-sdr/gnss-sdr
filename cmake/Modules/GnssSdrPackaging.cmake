@@ -46,16 +46,15 @@ endif()
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "GNSS-SDR - An Open Source GNSS Software Defined Receiver")
 set(CPACK_PACKAGE_VENDOR              "Centre Tecnologic de Telecomunicacions de Catalunya (CTTC)")
 set(CPACK_PACKAGE_CONTACT             "Carles Fernandez-Prades <carles.fernandez@cttc.cat>")
-set(CPACK_PACKAGE_ICON                ${CMAKE_SOURCE_DIR}/docs/doxygen/images/gnss-sdr_logo_round.png)
-set(CPACK_PACKAGE_VERSION_MAJOR       ${VERSION_INFO_MAJOR_VERSION}
-set(CPACK_PACKAGE_VERSION_MINOR       ${VERSION_INFO_API_COMPAT}
-set(CPACK_PACKAGE_VERSION_PATCH       ${VERSION_INFO_MINOR_VERSION}
-set(CPACK_RESOURCE_FILE_LICENSE       ${CMAKE_SOURCE_DIR}/COPYING)
-set(CPACK_RESOURCE_FILE_README        ${CMAKE_SOURCE_DIR}/README.md)
-set(CPACK_RESOURCE_FILE_WELCOME       ${CMAKE_SOURCE_DIR}/README.md)
+set(CPACK_PACKAGE_ICON                "${CMAKE_SOURCE_DIR}/docs/doxygen/images/gnss-sdr_logo_round.png")
+set(CPACK_PACKAGE_VERSION_MAJOR       "${VERSION_INFO_MAJOR_VERSION}")
+set(CPACK_PACKAGE_VERSION_MINOR       "${VERSION_INFO_API_COMPAT}")
+set(CPACK_PACKAGE_VERSION_PATCH       "${VERSION_INFO_MINOR_VERSION}")
+set(CPACK_RESOURCE_FILE_LICENSE       "${CMAKE_SOURCE_DIR}/COPYING")
+set(CPACK_RESOURCE_FILE_README        "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_WELCOME       "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_SOURCE_GENERATOR            "TGZ;TZ")
 set(CPACK_DEBIAN_PACKAGE_SECTION      "Science")
-#set(DEBIAN_PACKAGE_BUILDS_DEPENDS     "cmake (>= 2.8.8), libstdc++6 (>= 4.7)" 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libboost-dev (>= 1.45),
                                        libstdc++6 (>= 4.7),
                                        libc6 (>= 2.18),
@@ -65,7 +64,7 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libboost-dev (>= 1.45),
                                        libopenblas-dev  (>= 0.2),
                                        gfortran (>= 1:4.7),
                                        libssl-dev (>= 1.0),
-                                       libgflags-dev (>= 2.0)")
+                                       libgflags-dev (>= 2.0) ")
 
 #find_program(LSB_RELEASE_EXECUTABLE lsb_release)
 

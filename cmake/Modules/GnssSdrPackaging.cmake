@@ -229,10 +229,12 @@ list(LENGTH CMAKE_TARGET_ARCHITECTURES cmake_target_arch_len)
     endif()
 endif(APPLE)
 
+set(CPACK_STRIP_FILES "bin/gnss-sdr;bin/volk_gnsssdr_profile")
+
 # source package settings
 #set (CPACK_SOURCE_TOPLEVEL_TAG "source")
 set (CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
-set (CPACK_SOURCE_IGNORE_FILES "/\\\\.git/;\\\\.swp$;\\\\.#;/#;\\\\.*~;cscope\\\\.*;/[Bb]uild[.+-_a-zA-Z0-9]*/")
+set (CPACK_SOURCE_IGNORE_FILES "/\\\\.git/;/\\\\data/;/\\\\install/;/\\\\thirdparty/;/\\\\docs/html/;/\\\\docs/latex;\\\\.gitignore;\\\\.project$;\\\\.DS_Store;\\\\.swp$;\\\\.#;/#;\\\\.*~;cscope\\\\.*;/[Bb]uild[.+-_a-zA-Z0-9]*/")
 
 # default binary package settings
 set (CPACK_INCLUDE_TOPLEVEL_DIRECTORY TRUE)

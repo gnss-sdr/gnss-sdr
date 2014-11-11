@@ -8,8 +8,17 @@
 # GFlags_INCLUDE_DIRS
 # GFlags_LIBS
 # GFlags_LIBRARY_DIRS
+
+# - Try to find GFlags
+#
+#
+# The following are set after configuration is done:
+# GFlags_FOUND
+# GFlags_INCLUDE_DIRS
+# GFlags_LIBS
+# GFlags_LIBRARY_DIRS
 cmake_minimum_required(VERSION 2.6)
-cmake_policy(SET CMP0011 OLD)
+#cmake_policy(SET CMP0011 OLD)
 
 set(GFlags_ROOT_DIR)
 if (WIN32)
@@ -17,14 +26,15 @@ if (WIN32)
      src/gflags.cc
      HINTS
      $ENV{GFLAGS_ROOT})
-else (WIN32)
+endif (WIN32)
+if (APPLE)
      FIND_PATH(GFlags_ROOT_DIR
      libgflags.dylib
      HINTS
      /opt/local/lib
      /usr/local/lib
 )
-endif (WIN32)
+endif (APPLE)
 
 if (UNIX)
      FIND_PATH(GFlags_ROOT_DIR
@@ -91,6 +101,7 @@ IF(GFlags_ROOT_DIR)
 ELSE(GFlags_ROOT_DIR)
      FIND_PATH(GFlags_ROOT_DIR src)
      MARK_AS_ADVANCED(GFlags_ROOT_DIR)
-     MESSAGE(STATUS "Cannot find Root directory of gflags")
+     MESSAGE(STATUS "Cannot find gflags")
      SET(GFlags_FOUND false)
 ENDIF(GFlags_ROOT_DIR)
+

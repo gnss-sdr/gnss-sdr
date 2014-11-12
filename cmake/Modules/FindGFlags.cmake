@@ -18,25 +18,15 @@
 # GFlags_LIBS
 # GFlags_LIBRARY_DIRS
 cmake_minimum_required(VERSION 2.6)
-#cmake_policy(SET CMP0011 OLD)
 
-set(GFlags_ROOT_DIR)
-if (WIN32)
-     FIND_PATH(GFlags_ROOT_DIR
-     src/gflags.cc
-     HINTS
-     $ENV{GFLAGS_ROOT})
-endif (WIN32)
-if (APPLE)
+if(APPLE)
      FIND_PATH(GFlags_ROOT_DIR
      libgflags.dylib
-     HINTS
+     PATHS
      /opt/local/lib
      /usr/local/lib
-)
-endif (APPLE)
-
-if (UNIX)
+     )
+else(APPLE)
      FIND_PATH(GFlags_ROOT_DIR
      libgflags.so
      HINTS
@@ -49,17 +39,10 @@ if (UNIX)
      /usr/lib64
      /usr/lib
      )
-endif (UNIX)
+endif(APPLE)
 
 IF(GFlags_ROOT_DIR)
      # We are testing only a couple of files in the include directories
-     if (WIN32)
-          FIND_PATH(GFlags_INCLUDE_DIRS
-          gflags/gflags.h
-          HINTS
-          ${GFlags_ROOT_DIR}/src/windows
-          )
-     else (WIN32)
           FIND_PATH(GFlags_INCLUDE_DIRS
           gflags/gflags.h
           HINTS
@@ -68,28 +51,11 @@ IF(GFlags_ROOT_DIR)
           /usr/include
           ${GFlags_ROOT_DIR}/src
           )
-     endif (WIN32)
 
      # Find the libraries
      SET(GFlags_LIBRARY_DIRS ${GFlags_ROOT_DIR})
 
-     # TODO: This can use some per-component linking
-     if(MSVC)
-          SET(_gflags_libpath_suffixes /Release /Debug)
-          FIND_LIBRARY(GFlags_lib_release
-          NAMES libgflags
-          HINTS
-          ${GFlags_LIBRARY_DIRS}
-          PATH_SUFFIXES ${_gflags_libpath_suffixes})
-          FIND_LIBRARY(GFlags_lib_debug
-          NAMES libgflags-debug
-          HINTS
-          ${GFlags_LIBRARY_DIRS}
-          PATH_SUFFIXES ${_gflags_libpath_suffixes})
-          SET(GFlags_lib optimized ${GFlags_lib_release} debug ${GFlags_lib_debug})
-     else()
-          FIND_LIBRARY(GFlags_lib gflags ${GFlags_LIBRARY_DIRS})
-     endif()
+     FIND_LIBRARY(GFlags_lib gflags ${GFlags_LIBRARY_DIRS})
 
      # set up include and link directory
      include_directories(${GFlags_INCLUDE_DIRS})
@@ -99,8 +65,6 @@ IF(GFlags_ROOT_DIR)
      SET(GFlags_FOUND true)
      MARK_AS_ADVANCED(GFlags_INCLUDE_DIRS)
 ELSE(GFlags_ROOT_DIR)
-     FIND_PATH(GFlags_ROOT_DIR src)
-     MARK_AS_ADVANCED(GFlags_ROOT_DIR)
      MESSAGE(STATUS "Cannot find gflags")
      SET(GFlags_FOUND false)
 ENDIF(GFlags_ROOT_DIR)

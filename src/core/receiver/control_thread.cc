@@ -90,7 +90,7 @@ extern concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
 
 using google::LogMessage;
 
-DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/etc/gnss-sdr/conf/default.conf"),
+DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"),
 		"File containing the configuration parameters");
 
 ControlThread::ControlThread()

@@ -128,7 +128,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
                     << std::endl
                     << "Examples of configuration files available at:"
                     << std::endl
-                    << GNSSSDR_INSTALL_DIR "/gnss-sdr/conf/"
+                    << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
                     << std::endl;
 
                 }

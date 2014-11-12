@@ -82,13 +82,13 @@ install(TARGETS gnss-sdr
         COMPONENT "gnss-sdr"
         )
         
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/conf DESTINATION etc/gnss-sdr
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/conf DESTINATION share/gnss-sdr
         FILES_MATCHING PATTERN "*.conf"
         )
         
-install(DIRECTORY DESTINATION etc/gnss-sdr/data/)
+install(DIRECTORY DESTINATION share/gnss-sdr/data/)
 
-install(FILES ${CMAKE_SOURCE_DIR}/conf/gnss-sdr.conf DESTINATION etc/gnss-sdr/conf
+install(FILES ${CMAKE_SOURCE_DIR}/conf/gnss-sdr.conf DESTINATION share/gnss-sdr/conf
         RENAME default.conf)
 
 if(NOT VOLK_GNSSSDR_FOUND)

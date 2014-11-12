@@ -153,7 +153,7 @@ You can run them from that folder, but if you prefer to install gnss-sdr on your
 $ sudo make install
 \endverbatim
 
-This will make a copy of the conf/ folder into /usr/local/etc/gnss-sdr/conf for your reference. 
+This will make a copy of the conf/ folder into /usr/local/share/gnss-sdr/conf for your reference. 
 We suggest to create a working directory at your preferred location and store your own configuration and data files there. 
 
 

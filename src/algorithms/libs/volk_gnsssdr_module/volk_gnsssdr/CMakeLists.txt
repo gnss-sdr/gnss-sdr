@@ -58,11 +58,11 @@ VOLK_PYTHON_CHECK_MODULE("python >= 2.5" sys "sys.version.split()[0] >= '2.5'" P
 VOLK_PYTHON_CHECK_MODULE("Cheetah >= 2.0.0" Cheetah "Cheetah.Version >= '2.0.0'" CHEETAH_FOUND)
 
 if(NOT PYTHON_MIN_VER_FOUND)
-    message(FATAL_ERROR "Python 2.5 or greater required to build VOLK")
+    message(FATAL_ERROR "Python 2.5 or greater required to build VOLK_GNSSSDR")
 endif()
 
 if(NOT CHEETAH_FOUND)
-    message(FATAL_ERROR "Cheetah templates required to build VOLK")
+    message(FATAL_ERROR "Cheetah templates required to build VOLK_GNSSSDR")
 endif()
 
 if(MSVC)
@@ -79,7 +79,7 @@ endif(MSVC)
 include(VolkBoost)
 
 if(NOT Boost_FOUND)
-    message(FATAL_ERROR "VOLK Requires boost to build")
+    message(FATAL_ERROR "VOLK_GNSSSDR Requires boost to build")
 endif()
 
 option(ENABLE_ORC "Enable Orc" True)
@@ -155,12 +155,12 @@ install(
 if(APPLE)
     if(NOT CMAKE_INSTALL_NAME_DIR)
         set(CMAKE_INSTALL_NAME_DIR
-            ${CMAKE_INSTALL_PREFIX}/${GR_LIBRARY_DIR} CACHE
+            ${CMAKE_INSTALL_PREFIX}/lib CACHE
             PATH "Library Install Name Destination Directory" FORCE)
     endif(NOT CMAKE_INSTALL_NAME_DIR)
     if(NOT CMAKE_INSTALL_RPATH)
         set(CMAKE_INSTALL_RPATH
-            ${CMAKE_INSTALL_PREFIX}/${GR_LIBRARY_DIR} CACHE
+            ${CMAKE_INSTALL_PREFIX}/lib CACHE
             PATH "Library Install RPath" FORCE)
     endif(NOT CMAKE_INSTALL_RPATH)
     if(NOT CMAKE_BUILD_WITH_INSTALL_RPATH)

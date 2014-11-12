@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+chmod +x @TARGET_INSTALL_DESTINATION@/bin/@PROJECT_NAME@
+chmod +x @TARGET_INSTALL_DESTINATION@/bin/volk_gnsssdr_profile

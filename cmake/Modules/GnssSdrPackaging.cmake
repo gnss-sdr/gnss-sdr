@@ -17,17 +17,17 @@
 #
 
 
-if(DEFINED __INCLUDED_GNSS_SDR_PACKAGE_CMAKE)
-    return()
-endif()
-set( __INCLUDED_GNSS_SDR_PACKAGE_CMAKE TRUE)
+#if(DEFINED __INCLUDED_GNSS_SDR_PACKAGE_CMAKE)
+#    return()
+#endif()
+#set( __INCLUDED_GNSS_SDR_PACKAGE_CMAKE TRUE)
 
 
 #set the cpack generator based on the platform type
 if(CPACK_GENERATOR)
     #already set by user
 elseif(APPLE)
-    set(PACKAGE_GENERATOR "TGZ")
+    set(PACKAGE_GENERATOR "DragNDrop")
     set(PACKAGE_SOURCE_GENERATOR "TGZ;ZIP")
 elseif(UNIX)
     if(${LINUX_DISTRIBUTION} MATCHES "Debian" OR ${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
@@ -48,6 +48,18 @@ set (CPACK_GENERATOR "${PACKAGE_GENERATOR}" CACHE STRING "List of binary package
 set (CPACK_SOURCE_GENERATOR "${PACKAGE_SOURCE_GENERATOR}" CACHE STRING "List of source package generators (CPack).")
 
 
+
+
+CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/Packaging/postinst.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/scripts/postinst" @ONLY IMMEDIATE)
+FILE(COPY ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/scripts/postinst DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}
+FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/Packaging/prerm.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/scripts/prerm" @ONLY IMMEDIATE)
+FILE(COPY ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/scripts/prerm DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}
+FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+
+
+
 ########################################################################
 # Setup CPack
 ########################################################################
@@ -64,12 +76,16 @@ set(CPACK_PACKAGE_VERSION_PATCH       "${VERSION_INFO_MINOR_VERSION}")
 set(CPACK_RESOURCE_FILE_LICENSE       "${CMAKE_SOURCE_DIR}/COPYING")
 set(CPACK_RESOURCE_FILE_README        "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_WELCOME       "${CMAKE_SOURCE_DIR}/README.md")
-set(CPACK_SET_DESTDIR                 "ON")
+set(CPACK_SET_DESTDIR                 "OFF")
+set(CPACK_STRIP_FILES                 "${CMAKE_INSTALL_PREFIX}/bin/gnss-sdr;${CMAKE_INSTALL_PREFIX}/bin/volk_gnsssdr_profile")
 
 # Debian-specific settings
 set(CPACK_DEBIAN_PACKAGE_SECTION      "science")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY     "optional")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.18), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.400.2), liblapack-dev (>= 3.5), libopenblas-dev  (>= 0.2), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/postinst;${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/prerm")
+
+
 
 
 # system/architecture
@@ -223,8 +239,6 @@ list(LENGTH CMAKE_TARGET_ARCHITECTURES cmake_target_arch_len)
     endif()
 endif(APPLE)
 
-set(CPACK_STRIP_FILES "${CMAKE_INSTALL_PREFIX}/bin/gnss-sdr;${CMAKE_INSTALL_PREFIX}/bin/volk_gnsssdr_profile")
-
 # source package settings
 #set (CPACK_SOURCE_TOPLEVEL_TAG "source")
 set (CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
@@ -236,6 +250,16 @@ set (CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}")
 if (CPACK_PACKAGE_ARCHITECTURE)
     set (CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}_${CPACK_PACKAGE_ARCHITECTURE}")
 endif ()
+
+if(CPACK_GENERATOR STREQUAL "DEB")
+     CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/Packaging/fixup_deb_permissions.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/fixup_deb_permissions.sh" @ONLY IMMEDIATE)
+endif(CPACK_GENERATOR STREQUAL "DEB")
+
+if(CPACK_GENERATOR STREQUAL "DEB")
+     CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/Packaging/fixup_deb_permissions.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/scripts/fixup_deb_permissions.sh" @ONLY IMMEDIATE)
+     FILE(COPY ${CMAKE_CURRENT_BINARY_DIR}/scripts/fixup_deb_permissions.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/
+FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+endif(CPACK_GENERATOR STREQUAL "DEB")
 
 
 include(CPack)

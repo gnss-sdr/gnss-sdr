@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+if test -e @CMAKE_INSTALL_PREFIX@/@PROJECT_NAME@ ; then
+rm @CMAKE_INSTALL_PREFIX@/@PROJECT_NAME@
+rm @CMAKE_INSTALL_PREFIX@/volk_gnsssdr_profile
+fi
+if test -e @CMAKE_INSTALL_PREFIX@/etc/@PROJECT_NAME@ ; then
+rm @CMAKE_INSTALL_PREFIX@/etc/@PROJECT_NAME@
+fi
+

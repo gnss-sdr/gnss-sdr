@@ -51,7 +51,8 @@ set (CPACK_SOURCE_GENERATOR "${PACKAGE_SOURCE_GENERATOR}" CACHE STRING "List of 
 ########################################################################
 # Setup CPack
 ########################################################################
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "An Open Source GNSS Software Defined Receiver")
+set(CPACK_PACKAGE_DESCRIPTION         "An Open Source GNSS Software Defined Receiver")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "GNSS-SDR is an open source GNSS Software Defined Receiver written in C++. More info at http://gnss-sdr.org" )
 set(CPACK_PACKAGE_VENDOR              "Centre Tecnologic de Telecomunicacions de Catalunya (CTTC)")
 set(CPACK_PACKAGE_NAME                "gnss-sdr")
 set(CPACK_PACKAGE_VERSION             "${VERSION}")
@@ -63,9 +64,11 @@ set(CPACK_PACKAGE_VERSION_PATCH       "${VERSION_INFO_MINOR_VERSION}")
 set(CPACK_RESOURCE_FILE_LICENSE       "${CMAKE_SOURCE_DIR}/COPYING")
 set(CPACK_RESOURCE_FILE_README        "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_WELCOME       "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_SET_DESTDIR                 "ON")
 
 # Debian-specific settings
 set(CPACK_DEBIAN_PACKAGE_SECTION      "science")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY     "optional")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.18), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.400.2), liblapack-dev (>= 3.5), libopenblas-dev  (>= 0.2), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
 
 

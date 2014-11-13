@@ -81,7 +81,7 @@ set(CPACK_STRIP_FILES                 "${CMAKE_INSTALL_PREFIX}/bin/gnss-sdr;${CM
 # Debian-specific settings
 set(CPACK_DEBIAN_PACKAGE_SECTION      "science")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY     "optional")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.18), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.400.2), liblapack-dev (>= 3.5), libopenblas-dev  (>= 0.2), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.18), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.5), libopenblas-dev  (>= 0.2), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/postinst;${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/prerm")
 
 

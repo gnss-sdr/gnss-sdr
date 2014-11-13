@@ -258,12 +258,25 @@ if(CPACK_GENERATOR STREQUAL "DEB")
      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/scripts/fixup_deb_permissions.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/
           FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
-     file(COPY ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_SOURCE_DIR}/docs/debian
-          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-          
-     file(RENAME ${CMAKE_SOURCE_DIR}/docs/debian/COPYING ${CMAKE_SOURCE_DIR}/docs/debian/copyright)
-          
-     install(FILES "${CMAKE_SOURCE_DIR}/docs/debian/copyright"        
+     # Write license 
+     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/copyright"     
+"Copyright (C) 2010-2014 ${CPACK_PACKAGE_CONTACT}
+This software may be licensed under the terms of the
+GNU General Public License Version 3 (the ``GPL''),
+or (at your option) any later version.
+Software distributed under the License is distributed
+on an ``AS IS'' basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the LGPL for the specific language
+governing rights and limitations.
+You should have received a copy of the GPL along with this
+program. If not, go to http://www.gnu.org/licenses/gpl.html
+or write to the Free Software Foundation, Inc., 
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+On Debian systems, the complete text of the GNU General 
+Public License can be found in 
+`/usr/share/common-licenses/GPL-3'.")
+
+     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/copyright"        
              DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")
 endif(CPACK_GENERATOR STREQUAL "DEB")
 

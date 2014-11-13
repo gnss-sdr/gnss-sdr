@@ -37,6 +37,7 @@ if(ENABLE_RTLSDR)
          ${GNURADIO_BLOCKS_INCLUDE_DIRS}
          ${ARMADILLO_INCLUDE_DIRS}  
          ${Boost_INCLUDE_DIRS}
+         ${VOLK_GNSSSDR_INCLUDE_DIRS}
     )
 
     file(GLOB FRONT_END_CAL_HEADERS "*.h")
@@ -49,6 +50,7 @@ if(ENABLE_RTLSDR)
                                             ${GFlags_LIBS} 
                                             ${GLOG_LIBRARIES} 
                                             ${ARMADILLO_LIBRARIES} 
+                                            ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                             gnss_rx 
                                             gnss_sp_libs
     )

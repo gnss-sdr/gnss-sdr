@@ -8,3 +8,4 @@ thirdparty/
 .project
 .cproject
 /install
+/.DS_Store

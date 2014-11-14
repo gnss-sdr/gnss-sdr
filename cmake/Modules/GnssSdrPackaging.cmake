@@ -76,7 +76,7 @@ set(CPACK_RESOURCE_FILE_LICENSE        "${CMAKE_SOURCE_DIR}/COPYING")
 set(CPACK_RESOURCE_FILE_README         "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_WELCOME        "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_SET_DESTDIR                  "OFF")
-set(CPACK_STRIP_FILES                  "${CMAKE_INSTALL_PREFIX}/bin/gnss-sdr;${CMAKE_INSTALL_PREFIX}/bin/volk_gnsssdr_profile")
+set(CPACK_STRIP_FILES                  "ON")
 
 # Debian-specific settings
 set(CPACK_DEBIAN_PACKAGE_SECTION       "science")

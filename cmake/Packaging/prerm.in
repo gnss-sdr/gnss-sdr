@@ -1,10 +1,14 @@
 #!/bin/sh
 set -e
 if test -e @CMAKE_INSTALL_PREFIX@/@PROJECT_NAME@ ; then
-rm @CMAKE_INSTALL_PREFIX@/@PROJECT_NAME@
-rm @CMAKE_INSTALL_PREFIX@/volk_gnsssdr_profile
+rm @CMAKE_INSTALL_PREFIX@/bin/@PROJECT_NAME@
+rm @CMAKE_INSTALL_PREFIX@/bin/volk_gnsssdr_profile
 fi
 if test -e @CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@ ; then
 rm -rf @CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@
+fi
+if test -e @CMAKE_INSTALL_PREFIX@/share/man/man1/@PROJECT_NAME@ ; then
+rm @CMAKE_INSTALL_PREFIX@/share/man/man1/@PROJECT_NAME@.1.gz
+rm @CMAKE_INSTALL_PREFIX@/share/man/man1/volk_gnsssdr_profile.1.gz
 fi
 

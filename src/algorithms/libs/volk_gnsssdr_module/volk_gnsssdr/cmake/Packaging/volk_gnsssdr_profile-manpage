@@ -17,7 +17,7 @@ Processors providing SIMD instruction sets compute with multiple processing elem
 .TP
 \fB-h\fR [ \fB--help\fR Print help message.
 .TP
-\fB-b\fR [ \fB--benchmark\fR ] [ \fB=arg(=1)\fR ] (\fB=0\fR) Run all kernels (benchmark mode)
+\fB-b\fR [ \fB--benchmark\fR ] [ \fB=arg(=1)\fR ] (\fB=0\fR)   Run all kernels (benchmark mode)
 .TP
 \fB-R\fR [ \fB--tests-regex\fR ] <arg>   Run tests matching regular expression.
 .TP
@@ -28,4 +28,4 @@ check http://gnss-sdr.org for more information.
 .SH BUGS
 No known bugs.
 .SH AUTHOR
-Carles Fernandez-Prades (carles.fernandez@cttc.es)
+Andres Cecilia Luque (a.cecilia.luque@gmail.com) and Carles Fernandez-Prades (carles.fernandez@cttc.es)

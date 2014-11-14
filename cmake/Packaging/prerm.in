@@ -5,6 +5,6 @@ rm @CMAKE_INSTALL_PREFIX@/@PROJECT_NAME@
 rm @CMAKE_INSTALL_PREFIX@/volk_gnsssdr_profile
 fi
 if test -e @CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@ ; then
-rm @CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@
+rm -rf @CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@
 fi
 

@@ -1,4 +1,4 @@
 #!/bin/sh
 set -e
-chmod +x @TARGET_INSTALL_DESTINATION@/bin/@PROJECT_NAME@
-chmod +x @TARGET_INSTALL_DESTINATION@/bin/volk_gnsssdr_profile
+chmod +x @CMAKE_INSTALL_PREFIX@/bin/@PROJECT_NAME@
+chmod +x @CMAKE_INSTALL_PREFIX@/bin/volk_gnsssdr_profile

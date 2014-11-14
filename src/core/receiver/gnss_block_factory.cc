@@ -48,7 +48,7 @@
 #include "null_sink_output_filter.h"
 #include "file_output_filter.h"
 #include "channel.h"
-#include "uhd_signal_source.h"
+
 #include "signal_conditioner.h"
 #include "array_signal_conditioner.h"
 #include "ishort_to_complex.h"
@@ -103,6 +103,11 @@
 #if RTLSDR_DRIVER
         #include "rtlsdr_signal_source.h"
 #endif
+
+#if UHD_DRIVER
+        #include "uhd_signal_source.h"
+#endif
+
 
 using google::LogMessage;
 
@@ -386,12 +391,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     exit(1);
             }
         }
+#if UHD_DRIVER
     else if (implementation.compare("UHD_Signal_Source") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new UhdSignalSource(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }
+#endif
 #if GN3S_DRIVER
     else if (implementation.compare("GN3S_Signal_Source") == 0)
         {

@@ -27,6 +27,11 @@ if(ENABLE_GPERFTOOLS)
     endif(GPERFTOOLS_FOUND)
 endif(ENABLE_GPERFTOOLS)
 
+if(ENABLE_UHD)
+    set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
+    set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${UHD_INCLUDE_DIRS}) 
+endif(ENABLE_UHD)
+
 include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
@@ -69,11 +74,10 @@ target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${GFlags_LIBS} 
                                ${GLOG_LIBRARIES} 
                                ${ARMADILLO_LIBRARIES} 
-                               ${UHD_LIBRARIES}
-                               gnss_sp_libs 
-                               gnss_rx
                                ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                ${GNSS_SDR_OPTIONAL_LIBS}
+                               gnss_sp_libs 
+                               gnss_rx
                                )
 
 
@@ -105,7 +109,7 @@ find_program(GZIP
     /sbin
 )
 if(NOT GZIP_NOTFOUND)
-    execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/cmake/Packaging/gnss-sdr-manpage
+    execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/manpage/gnss-sdr-manpage
                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/gnss-sdr.1.gz")
 
      install(FILES ${CMAKE_BINARY_DIR}/gnss-sdr.1.gz DESTINATION share/man/man1)

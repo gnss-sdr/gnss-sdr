@@ -325,26 +325,14 @@ if(NOT GNURADIO_RUNTIME_FOUND)
    endif(OS_IS_MACOSX)
 endif(NOT GNURADIO_RUNTIME_FOUND)
 
-find_package(Volk)
-find_package(UHD)
-
 if(NOT GNURADIO_BLOCKS_FOUND)
     message(FATAL_ERROR "*** gnuradio-blocks 3.7 or later is required to build gnss-sdr")
-endif()
-if(NOT UHD_FOUND)
-    message(FATAL_ERROR "*** UHD is required to build gnss-sdr. Please check http://code.ettus.com/redmine/ettus/projects/uhd/wiki")
-endif()
-if(NOT GNURADIO_UHD_FOUND)
-    message(FATAL_ERROR "*** gnuradio-uhd 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FILTER_FOUND)
     message(FATAL_ERROR "*** gnuradio-filter 3.7 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FFT_FOUND)
     message(FATAL_ERROR "*** gnuradio-fft 3.7 or later is required to build gnss-sdr")
-endif()
-if(NOT VOLK_FOUND)
-    message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_ANALOG_FOUND)
     message(FATAL_ERROR "*** gnuradio-analog 3.7 or later is required to build gnss-sdr")
@@ -355,6 +343,12 @@ endif()
 if(NOT GNURADIO_TRELLIS_FOUND)
     message(FATAL_ERROR "*** gnuradio-trellis 3.7 or later is required to build gnss-sdr")
 endif()
+
+find_package(Volk)
+if(NOT VOLK_FOUND)
+    message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
+endif()
+
 
 
 ################################################################################
@@ -786,9 +780,25 @@ if(NOT OPENSSL_FOUND)
 endif(NOT OPENSSL_FOUND)
 
 
+################################################################################
+# Universal Hardware Driver (UHD) (OPTIONAL, used if found)
+################################################################################
+find_package(UHD)
+if(NOT UHD_FOUND)
+    set(ENABLE_UHD OFF)
+    message(STATUS "The Universal Hardware Driver (UHD) based signal source will not be built,")
+    message(STATUS "so all USRP-based front-ends will not be usable.")
+    message(STATUS "Please check http://code.ettus.com/redmine/ettus/projects/uhd/wiki")
+else(NOT UHD_FOUND)
+    if(NOT GNURADIO_UHD_FOUND)
+        message(FATAL_ERROR "*** gnuradio-uhd 3.7 or later is required to build gnss-sdr")
+    endif(NOT GNURADIO_UHD_FOUND)
+    set(ENABLE_UHD ON)
+endif(NOT UHD_FOUND)
+
 
 ################################################################################
-# Doxygen - http://www.stack.nl/~dimitri/doxygen/index.html (OPTIONAL)
+# Doxygen - http://www.stack.nl/~dimitri/doxygen/index.html (OPTIONAL, used if found)
 ################################################################################
 find_package(Doxygen)
 if(DOXYGEN_FOUND)

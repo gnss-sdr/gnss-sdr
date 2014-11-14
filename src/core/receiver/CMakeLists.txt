@@ -77,6 +77,10 @@ if(ENABLE_RTLSDR)
     add_definitions(-DRTLSDR_DRIVER=1)
 endif(ENABLE_RTLSDR)
 
+if(ENABLE_UHD)
+    add_definitions(-DUHD_DRIVER=1)
+endif(ENABLE_UHD)
+
 #Enable OpenCL if found in the system
 if(OPENCL_FOUND)
     message(STATUS "Adding processing blocks implemented using OpenCL" )

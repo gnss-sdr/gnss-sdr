@@ -94,3 +94,25 @@ install(FILES ${CMAKE_SOURCE_DIR}/conf/gnss-sdr.conf DESTINATION share/gnss-sdr/
 if(NOT VOLK_GNSSSDR_FOUND)
     install(PROGRAMS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr_profile DESTINATION bin)
 endif(NOT VOLK_GNSSSDR_FOUND)
+
+
+find_program(GZIP
+    gzip
+    /bin
+    /usr/bin
+    /usr/local/bin
+    /opt/local/bin
+    /sbin
+)
+if(NOT GZIP_NOTFOUND)
+    execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/cmake/Packaging/gnss-sdr-manpage
+                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/gnss-sdr.1.gz")
+
+     install(FILES ${CMAKE_BINARY_DIR}/gnss-sdr.1.gz DESTINATION share/man/man1)
+     if(NOT VOLK_GNSSSDR_FOUND)
+         execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Packaging/volk_gnsssdr_profile-manpage
+                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/volk_gnsssdr_profile.1.gz")
+
+         install(FILES ${CMAKE_BINARY_DIR}/volk_gnsssdr_profile.1.gz DESTINATION share/man/man1)
+     endif(NOT VOLK_GNSSSDR_FOUND)
+endif(NOT GZIP_NOTFOUND)

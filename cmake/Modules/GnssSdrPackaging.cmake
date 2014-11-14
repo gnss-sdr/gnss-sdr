@@ -62,8 +62,8 @@ FILE(COPY ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/scripts/prerm DESTINATION 
 ########################################################################
 # Setup CPack
 ########################################################################
-set(CPACK_PACKAGE_DESCRIPTION          "An Open Source GNSS Software Defined Receiver")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY  "This is a GNSS Software Defined Receiver written in C++." )
+set(CPACK_PACKAGE_DESCRIPTION          "GNSS Software Defined Receiver")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY  "Global Navigation Satellite System Software Defined Receiver written in C++." )
 set(CPACK_PACKAGE_VENDOR               "Centre Tecnologic de Telecomunicacions de Catalunya (CTTC)")
 set(CPACK_PACKAGE_NAME                 "gnss-sdr")
 set(CPACK_PACKAGE_VERSION              "${VERSION}")
@@ -82,9 +82,8 @@ set(CPACK_STRIP_FILES                  "${CMAKE_INSTALL_PREFIX}/bin/gnss-sdr;${C
 set(CPACK_DEBIAN_PACKAGE_SECTION       "science")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY      "optional")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS       "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.13), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.4), libopenblas-dev  (>= 0.1.1), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION   "GNSS Software Defined Receiver written in C++. It processes raw samples up to the computation of the PVT solution, including code and phase observables. More info at http://gnss-sdr.org")
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/postinst;${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/prerm")
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION   "An Open Source GNSS Software Defined Receiver written in C++. It processes raw samples up to the computation of the PVT solution, including code and phase observables. More info at http://gnss-sdr.org")
-
 
 
 

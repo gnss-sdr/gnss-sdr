@@ -257,7 +257,7 @@ if(CPACK_GENERATOR STREQUAL "DEB")
 
      configure_file("${CMAKE_SOURCE_DIR}/cmake/Packaging/fixup_deb_permissions.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/scripts/fixup_deb_permissions.sh" @ONLY IMMEDIATE)
      
-     file(COPY ${CMAKE_CURRENT_BINARY_DIR}/scripts/fixup_deb_permissions.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/
+     file(COPY ${CMAKE_CURRENT_BINARY_DIR}/scripts/fixup_deb_permissions.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
           FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
      # Write license 

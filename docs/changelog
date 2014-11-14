@@ -5,4 +5,3 @@ gnss-sdr (0.0.5) unstable; urgency=low
   * Fixed some linking problems.
   
  -- Carles Fernandez-Prades <carles.fernandez@cttc.es>  Fri, 14 Nov 2014 02:03:00 +0100
- 

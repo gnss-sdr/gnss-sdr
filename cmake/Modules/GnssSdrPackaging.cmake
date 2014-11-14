@@ -293,10 +293,10 @@ License: GPL-3+
      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/copyright"        
              DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")
              
-     execute_process(COMMAND gzip -9 -c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Packaging/changelog
+     execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/changelog
                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/changelog.gz")
                      
-     execute_process(COMMAND gzip -9 -c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Packaging/changelog.Debian
+     execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/changelog.Debian
                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/changelog.Debian.gz")
                              
      install(FILES "${CMAKE_BINARY_DIR}/changelog.gz" "${CMAKE_BINARY_DIR}/changelog.Debian.gz" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")

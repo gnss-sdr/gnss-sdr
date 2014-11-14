@@ -1,0 +1,31 @@
+.\" Manpage for volk_gnsssdr_profile
+.\" Contact carles.fernandez@cttc.es to correct errors or typos.
+.TH volk_gnsssdr_profile 1 "14 Nov 2014" "0.0.5" "volk_gnsssdr_profile man page"
+.SH NAME
+\fBvolk_gnsssdr_profile\fR \- Profiler application for libvolk_gnsssdr functions
+.SH SYNOPSIS
+\fBvolk_gnsssdr_profile\fR
+.SH DESCRIPTION
+.PP
+The Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR) is a software library that provides developers with an interface to use Single Input - Multiple Data (SIMD) instructions, which are of special interest for operations that are in the receiver's critical path of the processing load.
+.TP
+Processors providing SIMD instruction sets compute with multiple processing elements that perform the same operation on multiple data points simultaneously, thus exploiting data-level parallelism, an can be found in most modern desktop and laptop personal computers. In a nutshell, VOLK_GNSSSDR implements in assembly language optimized versions of computationally-intensive operations for different processor architectures that are commonly found in modern computers. In order to use the most optimized version for the specific processor(s) of the host machine running the software receiver (that is, the implementation than runs the fastest).
+.TP
+\fBvolk_gnsssdr_profile\fR is a program that tests all known VOLK_GNSSSDR kernels (that is, basic processing components like adders, multipliers, correlators, and much more) for each architecture supported by the host machine, measuring their performance. When finished, the profiler writes to $HOME/.volk_gnsssdr/volk_gnsssdr_config the best architecture for each VOLK_GSSSDR function. This file is read when using a function to know the best version to execute. 
+.SH OPTIONS
+\fBvolk_gnsssdr_profile\fR takes the following options:
+.TP
+\fB-h\fR [ \fB--help\fR Print help message.
+.TP
+\fB-b\fR [ \fB--benchmark\fR ] [ \fB=arg(=1)\fR ] (\fB=0\fR) Run all kernels (benchmark mode)
+.TP
+\fB-R\fR [ \fB--tests-regex\fR ] <arg>   Run tests matching regular expression.
+.TP
+\fB-j\fR [ \fB--json\fR ] <arg>   JSON output file
+.SH SEE ALSO
+.BR gnss-sdr (1),
+check http://gnss-sdr.org for more information.
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Carles Fernandez-Prades (carles.fernandez@cttc.es)

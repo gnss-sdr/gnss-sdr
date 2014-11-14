@@ -62,27 +62,30 @@ FILE(COPY ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/scripts/prerm DESTINATION 
 ########################################################################
 # Setup CPack
 ########################################################################
-set(CPACK_PACKAGE_DESCRIPTION         "An Open Source GNSS Software Defined Receiver")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "This is a GNSS Software Defined Receiver written in C++. More info at http://gnss-sdr.org" )
-set(CPACK_PACKAGE_VENDOR              "Centre Tecnologic de Telecomunicacions de Catalunya (CTTC)")
-set(CPACK_PACKAGE_NAME                "gnss-sdr")
-set(CPACK_PACKAGE_VERSION             "${VERSION}")
-set(CPACK_PACKAGE_CONTACT             "Carles Fernandez-Prades <carles.fernandez@cttc.cat>")
-set(CPACK_PACKAGE_ICON                "${CMAKE_SOURCE_DIR}/docs/doxygen/images/gnss-sdr_logo_round.png")
-set(CPACK_PACKAGE_VERSION_MAJOR       "${VERSION_INFO_MAJOR_VERSION}")
-set(CPACK_PACKAGE_VERSION_MINOR       "${VERSION_INFO_API_COMPAT}")
-set(CPACK_PACKAGE_VERSION_PATCH       "${VERSION_INFO_MINOR_VERSION}")
-set(CPACK_RESOURCE_FILE_LICENSE       "${CMAKE_SOURCE_DIR}/COPYING")
-set(CPACK_RESOURCE_FILE_README        "${CMAKE_SOURCE_DIR}/README.md")
-set(CPACK_RESOURCE_FILE_WELCOME       "${CMAKE_SOURCE_DIR}/README.md")
-set(CPACK_SET_DESTDIR                 "OFF")
-set(CPACK_STRIP_FILES                 "${CMAKE_INSTALL_PREFIX}/bin/gnss-sdr;${CMAKE_INSTALL_PREFIX}/bin/volk_gnsssdr_profile")
+set(CPACK_PACKAGE_DESCRIPTION          "An Open Source GNSS Software Defined Receiver")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY  "This is a GNSS Software Defined Receiver written in C++." )
+set(CPACK_PACKAGE_VENDOR               "Centre Tecnologic de Telecomunicacions de Catalunya (CTTC)")
+set(CPACK_PACKAGE_NAME                 "gnss-sdr")
+set(CPACK_PACKAGE_VERSION              "${VERSION}")
+set(CPACK_PACKAGE_CONTACT              "Carles Fernandez-Prades <carles.fernandez@cttc.cat>")
+set(CPACK_PACKAGE_ICON                 "${CMAKE_SOURCE_DIR}/docs/doxygen/images/gnss-sdr_logo_round.png")
+set(CPACK_PACKAGE_VERSION_MAJOR        "${VERSION_INFO_MAJOR_VERSION}")
+set(CPACK_PACKAGE_VERSION_MINOR        "${VERSION_INFO_API_COMPAT}")
+set(CPACK_PACKAGE_VERSION_PATCH        "${VERSION_INFO_MINOR_VERSION}")
+set(CPACK_RESOURCE_FILE_LICENSE        "${CMAKE_SOURCE_DIR}/COPYING")
+set(CPACK_RESOURCE_FILE_README         "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_WELCOME        "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_SET_DESTDIR                  "OFF")
+set(CPACK_STRIP_FILES                  "${CMAKE_INSTALL_PREFIX}/bin/gnss-sdr;${CMAKE_INSTALL_PREFIX}/bin/volk_gnsssdr_profile")
 
 # Debian-specific settings
-set(CPACK_DEBIAN_PACKAGE_SECTION      "science")
-set(CPACK_DEBIAN_PACKAGE_PRIORITY     "optional")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.13), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.4), libopenblas-dev  (>= 0.1.1), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
+set(CPACK_DEBIAN_PACKAGE_SECTION       "science")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY      "optional")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS       "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.13), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.4), libopenblas-dev  (>= 0.1.1), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/postinst;${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/prerm")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION   "An Open Source GNSS Software Defined Receiver written in C++.
+It processes raw samples up to the computation of the PVT solution,
+including code and phase observables. More info at http://gnss-sdr.org")
 
 
 
@@ -293,8 +296,11 @@ License: GPL-3+
              
      execute_process(COMMAND gzip -9 -c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Packaging/changelog
                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/changelog.gz")
+                     
+     execute_process(COMMAND gzip -9 -c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Packaging/changelog.Debian
+                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/changelog.Debian.gz")
                              
-     install(FILES "${CMAKE_BINARY_DIR}/changelog.gz" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")
+     install(FILES "${CMAKE_BINARY_DIR}/changelog.gz" "${CMAKE_BINARY_DIR}/changelog.Debian.gz" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")
 endif(CPACK_GENERATOR STREQUAL "DEB")
 
 include(CPack)

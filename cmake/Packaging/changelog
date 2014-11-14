@@ -1,5 +1,8 @@
 gnss-sdr (0.0.5) unstable; urgency=low
 
   * First release that installs on the system and can generate packages.
+    Now 'make package' builds a .deb package in Ubuntu and Linux.
+  * Fixed some linking problems.
+  
+ -- Carles Fernandez-Prades <carles.fernandez@cttc.es>  Fri, 14 Nov 2014 02:03:00 +0100
  
- -- Carles Fernandez-Prades <carles.fernandez@cttc.es> Fri, 14 Nov 2014 02:03:00 +0100

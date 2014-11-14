@@ -290,6 +290,11 @@ License: GPL-3+
 
      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/copyright"        
              DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")
+             
+     execute_process(COMMAND gzip -9 -c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Packaging/changelog
+                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/changelog.gz")
+                             
+     install(FILES "${CMAKE_BINARY_DIR}/changelog.gz" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")
 endif(CPACK_GENERATOR STREQUAL "DEB")
 
 include(CPack)

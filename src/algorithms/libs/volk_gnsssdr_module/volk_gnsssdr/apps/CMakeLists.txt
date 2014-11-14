@@ -51,6 +51,13 @@ add_executable(volk_gnsssdr_profile
 
 target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link})
 
+if(ENABLE_STRIP)
+    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        set_target_properties(volk_gnsssdr_profile
+                              PROPERTIES LINK_FLAGS "-s")
+    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+endif(ENABLE_STRIP)
+
 install(
     TARGETS volk_gnsssdr_profile
     DESTINATION bin

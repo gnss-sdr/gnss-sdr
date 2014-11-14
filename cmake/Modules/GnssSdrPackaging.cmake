@@ -81,7 +81,7 @@ set(CPACK_STRIP_FILES                 "${CMAKE_INSTALL_PREFIX}/bin/gnss-sdr;${CM
 # Debian-specific settings
 set(CPACK_DEBIAN_PACKAGE_SECTION      "science")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY     "optional")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.18), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.5), libopenblas-dev  (>= 0.2), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.13), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.4), libopenblas-dev  (>= 0.1.1), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/postinst;${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/prerm")
 
 
@@ -232,23 +232,23 @@ list(LENGTH CMAKE_TARGET_ARCHITECTURES cmake_target_arch_len)
     if(NOT "${cmake_target_arch_len}" STREQUAL "1")
         set(CMAKE_TARGET_ARCHITECTURE_UNIVERSAL TRUE)
         set(CMAKE_TARGET_ARCHITECTURE_CODE "universal")
-    else()
+    else(NOT "${cmake_target_arch_len}" STREQUAL "1")
         set(CMAKE_TARGET_ARCHITECTURE_UNIVERSAL FALSE)
         set(CMAKE_TARGET_ARCHITECTURE_CODE "${CMAKE_TARGET_ARCHITECTURES}")
-    endif()
+    endif(NOT "${cmake_target_arch_len}" STREQUAL "1")
 endif(APPLE)
 
 # source package settings
 #set (CPACK_SOURCE_TOPLEVEL_TAG "source")
-set (CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
-set (CPACK_SOURCE_IGNORE_FILES "/\\\\.git/;/\\\\data/;/\\\\install/;/\\\\thirdparty/;/\\\\docs/html/;/\\\\docs/latex;\\\\.pdf;\\\\.gitignore;\\\\.project$;\\\\.DS_Store;\\\\.swp$;\\\\.#;/#;\\\\.*~;cscope\\\\.*;/[Bb]uild[.+-_a-zA-Z0-9]*/")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+set(CPACK_SOURCE_IGNORE_FILES "/\\\\.git/;\\\\.gitignore;/\\\\data/*;/\\\\install/*;/\\\\thirdparty/;/\\\\docs/html/;/\\\\docs/latex;\\\\.pdf;\\\\.project$;\\\\.DS_Store;\\\\.swp$;\\\\.#;/#;\\\\.*~;cscope\\\\.*;/[Bb]uild[.+-_a-zA-Z0-9]*/")
 
 # default binary package settings
-set (CPACK_INCLUDE_TOPLEVEL_DIRECTORY TRUE)
-set (CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}")
-if (CPACK_PACKAGE_ARCHITECTURE)
-    set (CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}_${CPACK_PACKAGE_ARCHITECTURE}")
-endif ()
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY TRUE)
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}")
+if(CPACK_PACKAGE_ARCHITECTURE)
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}_${CPACK_PACKAGE_ARCHITECTURE}")
+endif(CPACK_PACKAGE_ARCHITECTURE)
 
 if(CPACK_GENERATOR STREQUAL "DEB")
      configure_file("${CMAKE_SOURCE_DIR}/cmake/Packaging/fixup_deb_permissions.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/fixup_deb_permissions.sh" @ONLY IMMEDIATE)
@@ -260,21 +260,33 @@ if(CPACK_GENERATOR STREQUAL "DEB")
 
      # Write license 
      file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/copyright"     
-"Copyright (C) 2010-2014 ${CPACK_PACKAGE_CONTACT}
-This software may be licensed under the terms of the
-GNU General Public License Version 3 (the ``GPL''),
-or (at your option) any later version.
-Software distributed under the License is distributed
-on an ``AS IS'' basis, WITHOUT WARRANTY OF ANY KIND, either
-express or implied. See the LGPL for the specific language
-governing rights and limitations.
-You should have received a copy of the GPL along with this
-program. If not, go to http://www.gnu.org/licenses/gpl.html
-or write to the Free Software Foundation, Inc., 
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-On Debian systems, the complete text of the GNU General 
-Public License can be found in 
-`/usr/share/common-licenses/GPL-3'.")
+"Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: gnss-sdr
+Source: git://github.com/gnss-sdr/gnss-sdr
+
+Files: *
+Copyright: Copyright 2014 ${CPACK_PACKAGE_CONTACT}
+License: GPL-3+
+ This program is free software; you can redistribute it
+ and/or modify it under the terms of the GNU General Public
+ License as published by the Free Software Foundation; either
+ version 3 of the License, or (at your option) any later
+ version.
+ .
+ This program is distributed in the hope that it will be
+ useful, but WITHOUT ANY WARRANTY; without even the implied
+ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.  See the GNU General Public License for more
+ details.
+ .
+ You should have received a copy of the GNU General Public
+ License along with this package; if not, write to the Free
+ Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+ Boston, MA  02110-1301 USA
+ .
+ On Debian systems, the full text of the GNU General Public
+ License version 3 can be found in the file
+ `/usr/share/common-licenses/GPL-3'.")
 
      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/copyright"        
              DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")

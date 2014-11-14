@@ -42,10 +42,12 @@ option(ENABLE_OPENCL "Enable building of processing blocks implemented with Open
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
 option(ENABLE_PACKAGING "Enable software packaging" OFF)
+option(ENABLE_OWN_GLOG "Download glog and link it to gflags" OFF)
 
-if(${ENABLE_PACKAGING})
+if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
-endif(${ENABLE_PACKAGING})
+    set(ENABLE_OWN_GLOG ON)
+endif(ENABLE_PACKAGING)
 
 
 ###############################
@@ -359,13 +361,17 @@ endif()
 # volk_gnsssdr module - GNSS-SDR's own VOLK library
 ################################################################################
 find_package(VolkGnssSdr)
-
+if(ENABLE_PACKAGING)
+    if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+        set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON")
+    endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
+endif(ENABLE_PACKAGING)
 if(NOT VOLK_GNSSSDR_FOUND)
     ExternalProject_Add(volk_gnsssdr_module
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build   
-         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build  -DENABLE_STATIC_LIBS=ON
+         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build -DENABLE_STATIC_LIBS=ON ${STRIP_VOLK_GNSSSDR_PROFILE}
          DOWNLOAD_COMMAND ""
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
@@ -458,7 +464,9 @@ endif(NOT GFlags_FOUND)
 ################################################################################
 # glog - http://code.google.com/p/google-glog/
 ################################################################################
-find_package(GLOG)
+if(NOT ${ENABLE_OWN_GLOG})
+     find_package(GLOG)
+endif(NOT ${ENABLE_OWN_GLOG})
 set(glog_RELEASE 0.3.3)
 if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
      message (STATUS " glog library has not been found")
@@ -1037,8 +1045,8 @@ add_custom_target(uninstall
 ########################################################################
 add_subdirectory(src)
 
-if(${ENABLE_PACKAGING})
+if(ENABLE_PACKAGING)
     include(GnssSdrPackaging)
-endif(${ENABLE_PACKAGING})
+endif(ENABLE_PACKAGING)
 
 

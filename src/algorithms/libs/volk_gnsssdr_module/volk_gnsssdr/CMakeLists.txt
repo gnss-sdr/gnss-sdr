@@ -32,6 +32,8 @@ enable_testing()
 set(VERSION 0.1)
 set(LIBVER 0.0.0)
 
+option(ENABLE_STRIP "Create a stripped volk_gnsssdr_profile binary (without shared libraries)" OFF)
+
 set(CMAKE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) #allows this to be a sub-project
 set(CMAKE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}) #allows this to be a sub-project
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake) #location for custom "Modules"

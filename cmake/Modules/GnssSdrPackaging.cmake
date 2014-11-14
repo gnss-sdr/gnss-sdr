@@ -300,16 +300,6 @@ License: GPL-3+
                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/changelog.Debian.gz")
                              
      install(FILES "${CMAKE_BINARY_DIR}/changelog.gz" "${CMAKE_BINARY_DIR}/changelog.Debian.gz" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")
-
-     execute_process(COMMAND gzip -9 -c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Packaging/gnss-sdr-manpage
-                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/gnss-sdr.1.gz")
-
-     install(FILES ${CMAKE_BINARY_DIR}/gnss-sdr.1.gz DESTINATION share/man/man1)
-     
-     execute_process(COMMAND gzip -9 -c ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cmake/Packaging/volk_gnsssdr_profile
-                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/volk_gnsssdr_profile.1.gz")
-
-     install(FILES ${CMAKE_BINARY_DIR}/volk_gnsssdr_profile.1.gz DESTINATION share/man/man1)
 endif(CPACK_GENERATOR STREQUAL "DEB")
 
 include(CPack)

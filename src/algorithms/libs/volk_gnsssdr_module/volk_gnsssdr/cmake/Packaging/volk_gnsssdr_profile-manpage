@@ -2,9 +2,9 @@
 .\" Contact carles.fernandez@cttc.es to correct errors or typos.
 .TH volk_gnsssdr_profile 1 "14 Nov 2014" "0.0.5" "volk_gnsssdr_profile man page"
 .SH NAME
-\fBvolk_gnsssdr_profile\fR \- Profiler application for libvolk_gnsssdr functions
+\fBvolk_gnsssdr_profile\fR \- Profiler application for libvolk_gnsssdr functions.
 .SH SYNOPSIS
-\fBvolk_gnsssdr_profile\fR
+\fBvolk_gnsssdr_profile\fR [OPTION]
 .SH DESCRIPTION
 .PP
 The Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR) is a software library that provides developers with an interface to use Single Input - Multiple Data (SIMD) instructions, which are of special interest for operations that are in the receiver's critical path of the processing load.
@@ -15,17 +15,22 @@ Processors providing SIMD instruction sets compute with multiple processing elem
 .SH OPTIONS
 \fBvolk_gnsssdr_profile\fR takes the following options:
 .TP
-\fB-h\fR [ \fB--help\fR Print help message.
+\fB-h\fR [ \fB--help\fR ] Print help message.
 .TP
-\fB-b\fR [ \fB--benchmark\fR ] [ \fB=arg(=1)\fR ] (\fB=0\fR)   Run all kernels (benchmark mode)
+\fB-b\fR [ \fB--benchmark\fR ] [ \fB=arg(=1)\fR ] (\fB=0\fR) Run all kernels (benchmark mode).
 .TP
-\fB-R\fR [ \fB--tests-regex\fR ] <arg>   Run tests matching regular expression.
+\fB-R\fR [ \fB--tests-regex\fR ] <arg> Run tests matching regular expression.
 .TP
-\fB-j\fR [ \fB--json\fR ] <arg>   JSON output file
+\fB-j\fR [ \fB--json\fR ] \fI<arg>\fR JSON output file.
 .SH SEE ALSO
-.BR gnss-sdr (1),
-check http://gnss-sdr.org for more information.
+.BR gnss-sdr (1)
+\.TP
+Check http://gnss-sdr.org for more information.
+.SH HISTORY
+This library was originally developed by Andres Cecilia Luque in the framework of the Summer of Code in Space program (SOCIS 2014) by the European Space Agency (ESA), and then integrated into \fBgnss-sdr\fR.
 .SH BUGS
 No known bugs.
 .SH AUTHOR
-Andres Cecilia Luque (a.cecilia.luque@gmail.com) and Carles Fernandez-Prades (carles.fernandez@cttc.es)
+Andres Cecilia Luque (a.cecilia.luque@gmail.com)
+\.TP
+Carles Fernandez-Prades (carles.fernandez@cttc.es)

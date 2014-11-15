@@ -92,9 +92,6 @@ set(CPACK_DEBIAN_PACKAGE_DESCRIPTION   "GNSS Software Defined Receiver written i
  (Centre Tecnologic de Telecomunicacions de Catalunya, http://www.cttc.es) 
  with contributions from around the world. 
  More info at http://gnss-sdr.org")
- 
- 
- o the computation of the Position-Velocity-Time solution, including the generation of code and phase observables. It is able to work with raw data files or, if there is computational power enough, in real time with suitable radiofrequency front-ends.
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_BINARY_DIR}/postinst;${CMAKE_CURRENT_BINARY_DIR}/prerm")
 
 

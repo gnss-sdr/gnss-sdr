@@ -344,6 +344,10 @@ if(NOT GNURADIO_TRELLIS_FOUND)
     message(FATAL_ERROR "*** gnuradio-trellis 3.7 or later is required to build gnss-sdr")
 endif()
 
+
+################################################################################
+# VOLK - Vector-Optimized Library of Kernels
+################################################################################
 find_package(Volk)
 if(NOT VOLK_FOUND)
     message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
@@ -360,16 +364,24 @@ if(ENABLE_PACKAGING)
         set(STRIP_VOLK_GNSSSDR_PROFILE "-DENABLE_STRIP=ON")
     endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 endif(ENABLE_PACKAGING)
+set(VOLK_GNSSSDR_BUILD_COMMAND "make")
+if(OS_IS_MACOSX)
+    set(USE_MACPORTS_PYTHON "-DPYTHON_EXECUTABLE=/opt/local/bin/python")
+    if(CMAKE_GENERATOR STREQUAL Xcode)
+        set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "Debug" "-target")    
+    endif(CMAKE_GENERATOR STREQUAL Xcode)
+endif(OS_IS_MACOSX)
 if(NOT VOLK_GNSSSDR_FOUND)
     ExternalProject_Add(volk_gnsssdr_module
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build   
-         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build -DENABLE_STATIC_LIBS=ON ${STRIP_VOLK_GNSSSDR_PROFILE}
+         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install -DENABLE_STATIC_LIBS=ON ${STRIP_VOLK_GNSSSDR_PROFILE} ${USE_MACPORTS_PYTHON}
          DOWNLOAD_COMMAND ""
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
-         BUILD_COMMAND make
+         BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
          )
     find_package(ORC)
     if(NOT ORC_FOUND)
@@ -378,12 +390,12 @@ if(NOT VOLK_GNSSSDR_FOUND)
     endif(NOT ORC_FOUND)
         
     add_library(volk_gnsssdr UNKNOWN IMPORTED)
-    set_property(TARGET volk_gnsssdr PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/lib/libvolk_gnsssdr.a)
-    set(VOLK_GNSSSDR_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/include/;${ORC_INCLUDE_DIRS}")
+    set_property(TARGET volk_gnsssdr PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/lib/libvolk_gnsssdr.a)
+    set(VOLK_GNSSSDR_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/include/;${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include;${ORC_INCLUDE_DIRS}")
     set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr)
 
     add_custom_command(TARGET volk_gnsssdr_module POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build/apps/volk_gnsssdr_profile
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
                                    ${CMAKE_SOURCE_DIR}/install/volk_gnsssdr_profile)
 endif(NOT VOLK_GNSSSDR_FOUND)
 

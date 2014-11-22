@@ -93,7 +93,7 @@ TEST_F(Fir_Filter_Test, Instantiate)
 {
     init();
     std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1, queue));
-    unsigned int res = 0;
+    int res = 0;
     if (filter) res = 1;
     ASSERT_EQ(1, res);
 }

@@ -2,7 +2,10 @@ language: cpp
 compiler:
   - gcc
   - clang
-# Change this to your needs
+  
+cache: apt
+  
+  
 script: 
   - builddir="${TRAVIS_BUILD_DIR}/src/_build" 
   - mkdir -p ${builddir} 
@@ -10,6 +13,16 @@ script:
   - cmake .. 
   - make  
 
+
 before_install:
+  - cat /proc/cpuinfo
+  - sudo add-apt-repository "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner"
+  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
+  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse"
+  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) restricted"
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -qq
-  - sudo apt-get install -y libstdc++-4.8-dev libboost-dev gnuradio libarmadillo-dev liblapack-dev libopenblas-dev gfortran libssl-dev libgflags-dev
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
+  - sudo apt-get install -y cmake git-core g++ libstdc++-4.8-dev libboost-dev gnuradio libarmadillo-dev liblapack-dev libopenblas-dev gfortran libssl-dev

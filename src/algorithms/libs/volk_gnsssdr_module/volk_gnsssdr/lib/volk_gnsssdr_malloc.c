@@ -1,5 +1,5 @@
-/* -*- c -*- */
-/* Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
+/*
+ * Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -26,7 +26,7 @@
 /*
  * For #defines used to determine support for allocation functions,
  * see: http://linux.die.net/man/3/aligned_alloc
-*/
+ */
 
 // Disabling use of aligned_alloc. This function requires that size be
 // a multiple of alignment, which is too restrictive for many uses of
@@ -57,20 +57,22 @@
 
 void *volk_gnsssdr_malloc(size_t size, size_t alignment)
 {
-  void *ptr;
-  int err = posix_memalign(&ptr, alignment, size);
-  if(err == 0) {
-    return ptr;
-  }
-  else {
-    fprintf(stderr, "VOLK: Error allocating memory (posix_memalign: %d)\n", err);
-    return NULL;
-  }
+    void *ptr;
+    int err = posix_memalign(&ptr, alignment, size);
+    if(err == 0)
+        {
+            return ptr;
+        }
+    else
+        {
+            fprintf(stderr, "VOLK: Error allocating memory (posix_memalign: %d)\n", err);
+            return NULL;
+        }
 }
 
 void volk_gnsssdr_free(void *ptr)
 {
-  free(ptr);
+    free(ptr);
 }
 
 // _aligned_malloc has no restriction on size,
@@ -79,16 +81,17 @@ void volk_gnsssdr_free(void *ptr)
 
 void *volk_gnsssdr_malloc(size_t size, size_t alignment)
 {
-  void *ptr = _aligned_malloc(size, alignment);
-  if(ptr == NULL) {
-    fprintf(stderr, "VOLK: Error allocating memory (_aligned_malloc)\n");
-  }
-  return ptr;
+    void *ptr = _aligned_malloc(size, alignment);
+    if(ptr == NULL)
+        {
+            fprintf(stderr, "VOLK: Error allocating memory (_aligned_malloc)\n");
+        }
+    return ptr;
 }
 
 void volk_gnsssdr_free(void *ptr)
 {
-  _aligned_free(ptr);
+    _aligned_free(ptr);
 }
 
 // No standard handlers; we'll do it ourselves.
@@ -96,43 +99,43 @@ void volk_gnsssdr_free(void *ptr)
 
 struct block_info
 {
-  void *real;
+    void *real;
 };
 
 void *
 volk_gnsssdr_malloc(size_t size, size_t alignment)
 {
-  void *real, *user;
-  struct block_info *info;
+    void *real, *user;
+    struct block_info *info;
 
-  /* At least align to sizeof our struct */
-  if (alignment < sizeof(struct block_info))
-    alignment = sizeof(struct block_info);
+    /* At least align to sizeof our struct */
+    if (alignment < sizeof(struct block_info))
+        alignment = sizeof(struct block_info);
 
-  /* Alloc */
-  real = malloc(size + (2 * alignment - 1));
+    /* Alloc */
+    real = malloc(size + (2 * alignment - 1));
 
-  /* Get pointer to the various zones */
-  user = (void *)((((uintptr_t) real) + sizeof(struct block_info) + alignment - 1) & ~(alignment - 1));
-  info = (struct block_info *)(((uintptr_t)user) - sizeof(struct block_info));
+    /* Get pointer to the various zones */
+    user = (void *)((((uintptr_t) real) + sizeof(struct block_info) + alignment - 1) & ~(alignment - 1));
+    info = (struct block_info *)(((uintptr_t)user) - sizeof(struct block_info));
 
-  /* Store the info for the free */
-  info->real = real;
+    /* Store the info for the free */
+    info->real = real;
 
-  /* Return pointer to user */
-  return user;
+    /* Return pointer to user */
+    return user;
 }
 
 void
 volk_gnsssdr_free(void *ptr)
 {
-  struct block_info *info;
+    struct block_info *info;
 
-  /* Get the real pointer */
-  info = (struct block_info *)(((uintptr_t)ptr) - sizeof(struct block_info));
+    /* Get the real pointer */
+    info = (struct block_info *)(((uintptr_t)ptr) - sizeof(struct block_info));
 
-  /* Release real pointer */
-  free(info->real);
+    /* Release real pointer */
+    free(info->real);
 }
 
 #endif // _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600 || HAVE_POSIX_MEMALIGN

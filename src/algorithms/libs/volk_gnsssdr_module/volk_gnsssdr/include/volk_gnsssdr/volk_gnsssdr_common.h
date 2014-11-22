@@ -1,4 +1,9 @@
-/* Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
+/*!
+ * \file volk_gnsssdr_common.h
+ * \brief Cross-platform attribute macros
+ * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *
+ * Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -111,4 +116,4 @@ union bit128{
 
 #define bit128_p(x) ((union bit128 *)(x))
 
-#endif /*INCLUDED_LIBVOLK_COMMON_H*/
+#endif /* INCLUDED_LIBVOLK_COMMON_H */

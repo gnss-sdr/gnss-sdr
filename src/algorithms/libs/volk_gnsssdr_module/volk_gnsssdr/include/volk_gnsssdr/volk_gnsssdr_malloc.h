@@ -1,5 +1,10 @@
-/* -*- c -*- */
-/* Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
+/*!
+ * \file volk_gnsssdr_malloc.h
+ * \brief The volk_gnsssdr_malloc function behaves like malloc in that it
+ * returns a pointer to the allocated memory.
+ * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *
+ * Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -34,7 +39,7 @@ __VOLK_DECL_BEGIN
  * memory that are guaranteed to be on an alignment, VOLK handles this
  * itself. The volk_gnsssdr_malloc function behaves like malloc in that it
  * returns a pointer to the allocated memory. However, it also takes
- * in an alignment specfication, which is usually something like 16 or
+ * in an alignment specification, which is usually something like 16 or
  * 32 to ensure that the aligned memory is located on a particular
  * byte boundary for use with SIMD.
  *
@@ -55,7 +60,7 @@ VOLK_API void *volk_gnsssdr_malloc(size_t size, size_t alignment);
 
 /*!
  * \brief Free's memory allocated by volk_gnsssdr_malloc.
- * \param aptr The aligned pointer allocaed by volk_gnsssdr_malloc.
+ * \param aptr The aligned pointer allocated by volk_gnsssdr_malloc.
  */
 VOLK_API void volk_gnsssdr_free(void *aptr);
 

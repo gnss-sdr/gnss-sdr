@@ -20,12 +20,12 @@ before_install:
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse"
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) restricted"
-  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty universe"
-  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty multiverse"
-  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty"
+  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu utopic universe"
+  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu utopic multiverse"
+  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu utopic"
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -qq
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - if [ "$CXX" = "g++" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
-  - sudo apt-get install -y cmake git-core g++ libstdc++-4.8-dev libboost-dev gnuradio libarmadillo-dev liblapack-dev libopenblas-dev libssl-dev
+  - sudo apt-get install -y cmake git-core g++ libstdc++-4.8-dev libboost-all-dev python-wxgtk2.8 gnuradio libarmadillo-dev liblapack-dev libopenblas-dev libssl-dev

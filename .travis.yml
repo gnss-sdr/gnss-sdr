@@ -21,7 +21,6 @@ before_install:
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse"
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) restricted"
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty universe"
-  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty partner"
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty multiverse"
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty"
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y

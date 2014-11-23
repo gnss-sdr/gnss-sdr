@@ -37,7 +37,8 @@ before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - if [ "$CXX" = "g++" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
   - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5125D2724EAF93B6
-  - sudo sh -c "echo net.core.rmem_max = 262144 \ >> /etc/sysctl.conf"
+ # - sudo sh -c "echo net.core.rmem_max = 262144 \ >> /etc/sysctl.conf"
+  - sudo sh -c "echo 83886080 > /proc/sys/net/core/wmem_max"
   - sudo sh -c "echo net.core.wmem_max = 262144 \ >> /etc/sysctl.conf"
   - sudo /sbin/sysctl -p
   - sudo apt-get install -y cmake git-core g++ libstdc++-4.8-dev libboost-all-dev python-wxgtk2.8 uhd-host gnuradio libarmadillo-dev liblapack-dev libopenblas-dev libssl-dev

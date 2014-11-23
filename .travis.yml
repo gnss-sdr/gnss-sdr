@@ -31,16 +31,17 @@ before_install:
   - sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe"
   - sudo add-apt-repository "deb http://ppa.launchpad.net/gqrx/snapshots/ubuntu $(lsb_release -sc) main"
   - sudo sh -c "echo deb-src http://ppa.launchpad.net/gqrx/snapshots/ubuntu $(lsb_release -sc) main \ >> /etc/apt/sources.list"
-  #- sudo add-apt-repository "deb http://ppa.launchpad.net/skellat/flow1/ubuntu $(lsb_release -sc) main"
-  #- sudo sh -c "echo deb-src http://ppa.launchpad.net/skellat/flow1/ubuntu $(lsb_release -sc) main \ >> /etc/apt/sources.list"
+  - sudo add-apt-repository "deb http://ppa.launchpad.net/gqrx/releases/ubuntu $(lsb_release -sc) main"
+  - sudo sh -c "echo deb-src http://ppa.launchpad.net/gqrx/releases/ubuntu $(lsb_release -sc) main \ >> /etc/apt/sources.list"
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -qq
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - if [ "$CXX" = "g++" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
-  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5125D2724EAF93B6
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 86F6E1DD
   # - sudo sh -c "echo net.core.rmem_max = 262144 \ >> /etc/sysctl.conf"
   #- sudo sh -c "echo 83886080 > /proc/sys/net/core/wmem_max"
   #- sudo sh -c "echo net.core.wmem_max = 262144 \ >> /etc/sysctl.conf"
   - sudo /sbin/sysctl -p
-  - sudo apt-get install -y cmake git-core g++ libstdc++-4.8-dev libboost-all-dev python-wxgtk2.8 libgnuradio-pmt libgnuradio-runtime libgnuradio-blocks libgnuradio-filter libgnuradio-fft libgnuradio-fec libgnuradio-analog libgnuradio-trellis libarmadillo-dev liblapack-dev libopenblas-dev libssl-dev
+  - sudo apt-get install -y cmake git-core g++ libstdc++-4.8-dev libboost-all-dev python-wxgtk2.8 gnuradio libarmadillo-dev liblapack-dev libopenblas-dev libssl-dev
+  # libgnuradio-pmt libgnuradio-runtime libgnuradio-blocks libgnuradio-filter libgnuradio-fft libgnuradio-fec libgnuradio-analog libgnuradio-trellis

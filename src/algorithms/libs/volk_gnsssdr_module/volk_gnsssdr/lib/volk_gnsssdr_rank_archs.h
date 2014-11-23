@@ -16,8 +16,8 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_VOLK_RANK_ARCHS_H
-#define INCLUDED_VOLK_RANK_ARCHS_H
+#ifndef GNSS_SDR_VOLK_GNSSSDR_RANK_ARCHS_H
+#define GNSS_SDR_VOLK_GNSSSDR_RANK_ARCHS_H
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -44,4 +44,4 @@ int volk_gnsssdr_rank_archs(
 #ifdef __cplusplus
 }
 #endif
-#endif /*INCLUDED_VOLK_RANK_ARCHS_H*/
+#endif /* GNSS_SDR_VOLK_GNSSSDR_RANK_ARCHS_H */

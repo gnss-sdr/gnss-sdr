@@ -148,7 +148,7 @@ arma::vec gps_l1_ca_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma
     arma::vec Rot_X;
     double rho2;
     double traveltime;
-    double trop;
+    double trop = 0.0;
     double dlambda;
     double dphi;
     double h;

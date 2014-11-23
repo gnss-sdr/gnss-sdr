@@ -1,5 +1,9 @@
-/* -*- c++ -*- */
-/* Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
+/*!
+ * \file constants.h
+ * \brief volk_gnsssdr constants
+ * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *
+ * Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -17,8 +21,8 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_VOLK_CONSTANTS_H
-#define INCLUDED_VOLK_CONSTANTS_H
+#ifndef GNSS_SDR_VOLK_GNSSSDR_CONSTANTS_H
+#define GNSS_SDR_VOLK_GNSSSDR_CONSTANTS_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 
@@ -33,4 +37,4 @@ VOLK_API char* volk_gnsssdr_available_machines();
 
 __VOLK_DECL_END
 
-#endif /* INCLUDED_VOLK_CONSTANTS_H */
+#endif /* GNSS_SDR_VOLK_GNSSSDR_CONSTANTS_H */

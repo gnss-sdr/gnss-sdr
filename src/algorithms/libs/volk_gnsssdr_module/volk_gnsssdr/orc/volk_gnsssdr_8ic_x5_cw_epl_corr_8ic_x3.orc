@@ -1,47 +1,46 @@
-#/*!
-# * \file volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3.orc
-# * \brief ORC implementation: performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation with 16 bits vectors
-# * \authors <ul>
-# *          <li> Andrés Cecilia, 2014. a.cecilia.luque(at)gmail.com
-# *          </ul>
-# *
-# * ORC code that performs the carrier wipe-off mixing and the
-# * Early, Prompt, and Late correlation with 16 bits vectors (8 bits the
-# * real part and 8 bits the imaginary part):
-# * - The carrier wipe-off is done by multiplying the input signal by the
-# * carrier (multiplication of 16 bits vectors) It returns the input
-# * signal in base band (BB)
-# * - Early values are calculated by multiplying the input signal in BB by the
-# * early code (multiplication of 16 bits vectors), accumulating the results
-# * - Prompt values are calculated by multiplying the input signal in BB by the
-# * prompt code (multiplication of 16 bits vectors), accumulating the results
-# * - Late values are calculated by multiplying the input signal in BB by the
-# * late code (multiplication of 16 bits vectors), accumulating the results
-# *
-# * -------------------------------------------------------------------------
-# *
-# * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
-# *
-# * GNSS-SDR is a software defined Global Navigation
-# *          Satellite Systems receiver
-# *
-# * This file is part of GNSS-SDR.
-# *
-# * GNSS-SDR is free software: you can redistribute it and/or modify
-# * it under the terms of the GNU General Public License as published by
-# * the Free Software Foundation, either version 3 of the License, or
-# * at your option) any later version.
-# *
-# * GNSS-SDR is distributed in the hope that it will be useful,
-# * but WITHOUT ANY WARRANTY; without even the implied warranty of
-# * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# * GNU General Public License for more details.
-# *
-# * You should have received a copy of the GNU General Public License
-# * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
-# *
-# * -------------------------------------------------------------------------
-# */
+#
+# ORC implementation: performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation with 16 bits vectors
+# Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
+# 
+# 
+# ORC code that performs the carrier wipe-off mixing and the
+# Early, Prompt, and Late correlation with 16 bits vectors (8 bits the
+# real part and 8 bits the imaginary part):
+# - The carrier wipe-off is done by multiplying the input signal by the
+#   carrier (multiplication of 16 bits vectors) It returns the input
+#   signal in base band (BB)
+# - Early values are calculated by multiplying the input signal in BB by the
+#   early code (multiplication of 16 bits vectors), accumulating the results
+# - Prompt values are calculated by multiplying the input signal in BB by the
+#   prompt code (multiplication of 16 bits vectors), accumulating the results
+# - Late values are calculated by multiplying the input signal in BB by the
+#   late code (multiplication of 16 bits vectors), accumulating the results
+# 
+# 
+# -------------------------------------------------------------------------
+# 
+# Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+# 
+# GNSS-SDR is a software defined Global Navigation
+#          Satellite Systems receiver
+#
+# This file is part of GNSS-SDR.
+#
+# GNSS-SDR is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GNSS-SDR is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+#
+# -------------------------------------------------------------------------
+# 
 
 .function volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3_first_a_orc_impl
 .source 2 input

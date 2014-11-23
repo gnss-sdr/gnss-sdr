@@ -16,8 +16,8 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VOLK_QA_UTILS_H
-#define VOLK_QA_UTILS_H
+#ifndef GNSS_SDR_VOLK_QA_UTILS_H
+#define GNSS_SDR_VOLK_QA_UTILS_H
 
 #include <cstdlib>
 #include <string>
@@ -42,22 +42,24 @@ volk_gnsssdr_type_t volk_gnsssdr_type_from_string(std::string);
 float uniform(void);
 void random_floats(float *buf, unsigned n);
 
-class volk_gnsssdr_test_time_t {
-    public:
-        std::string name;
-        double time;
-        std::string units;
+class volk_gnsssdr_test_time_t
+{
+public:
+    std::string name;
+    double time;
+    std::string units;
 };
 
-class volk_gnsssdr_test_results_t {
-    public: 
-        std::string name;
-        std::string config_name;
-        int vlen;
-        int iter;
-        std::map<std::string, volk_gnsssdr_test_time_t> results;
-        std::string best_arch_a;
-        std::string best_arch_u;
+class volk_gnsssdr_test_results_t
+{
+public:
+    std::string name;
+    std::string config_name;
+    int vlen;
+    int iter;
+    std::map<std::string, volk_gnsssdr_test_time_t> results;
+    std::string best_arch_a;
+    std::string best_arch_u;
 };
 
 bool run_volk_gnsssdr_tests(
@@ -117,4 +119,4 @@ typedef void (*volk_gnsssdr_fn_12arg_s8ic)(void *, void *, void *, void *, void 
 //ADDED BY GNSS-SDR. END
 
 
-#endif //VOLK_QA_UTILS_H
+#endif // GNSS_SDR_VOLK_QA_UTILS_H

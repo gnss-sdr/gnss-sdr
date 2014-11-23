@@ -1,4 +1,10 @@
-/* Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
+/*!
+ * \file volk_gnsssdr_prefs.h
+ * \brief  Gets path to volk_gnsssdr_config profiling info and loads
+ * prefs into global prefs struct
+ * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ *
+ * Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
  *
@@ -31,16 +37,16 @@ typedef struct volk_gnsssdr_arch_pref
     char impl_u[128]; //best unaligned impl
 } volk_gnsssdr_arch_pref_t;
 
-////////////////////////////////////////////////////////////////////////
-// get path to volk_gnsssdr_config profiling info
-////////////////////////////////////////////////////////////////////////
+/*!
+ * \brief get path to volk_gnsssdr_config profiling info
+ */
 VOLK_API void volk_gnsssdr_get_config_path(char *);
 
-////////////////////////////////////////////////////////////////////////
-// load prefs into global prefs struct
-////////////////////////////////////////////////////////////////////////
+/*!
+ * \brief load prefs into global prefs struct
+ */
 VOLK_API size_t volk_gnsssdr_load_preferences(volk_gnsssdr_arch_pref_t **);
 
 __VOLK_DECL_END
 
-#endif //INCLUDED_VOLK_PREFS_H
+#endif /* INCLUDED_VOLK_PREFS_H */

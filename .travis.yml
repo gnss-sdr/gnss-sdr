@@ -21,6 +21,7 @@ before_install:
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty"
   - sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu trusty-security universe"
   - sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu trusty-security main"
+  - sudo apt-get update -qq
   - sudo apt-get dist-upgrade -qq --force-yes
   - sudo add-apt-repository "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner"
   - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"

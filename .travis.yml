@@ -22,16 +22,15 @@ before_install:
   - sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu trusty-security universe"
   - sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu trusty-security main"
   - sudo apt-get update -qq
-  - sudo apt-get dist-upgrade -qq --force-yes
-  - sudo add-apt-repository "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner"
-  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
-  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse"
-  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) restricted"
-  - sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted"
-  - sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe"
-  - sudo add-apt-repository "deb http://ppa.launchpad.net/gqrx/snapshots/ubuntu $(lsb_release -sc) main"
-  - sudo sh -c "echo deb-src http://ppa.launchpad.net/gqrx/snapshots/ubuntu $(lsb_release -sc) main \ >> /etc/apt/sources.list"
- # - sudo sh -c "echo deb-src http://ppa.launchpad.net/gqrx/releases/ubuntu $(lsb_release -sc) main \ >> /etc/apt/sources.list"
+  #- sudo apt-get dist-upgrade -qq --force-yes
+  #- sudo add-apt-repository "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner"
+  #- sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
+  #- sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse"
+  #- sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) restricted"
+  #- sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted"
+  #- sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe"
+  #- sudo add-apt-repository "deb http://ppa.launchpad.net/gqrx/snapshots/ubuntu $(lsb_release -sc) main"
+  #- sudo sh -c "echo deb-src http://ppa.launchpad.net/gqrx/snapshots/ubuntu $(lsb_release -sc) main \ >> /etc/apt/sources.list"
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -qq
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi

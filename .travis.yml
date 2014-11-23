@@ -24,9 +24,9 @@ before_install:
   #- sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu utopic multiverse"
   #- sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu utopic"
   - sudo add-apt-repository "deb http://ppa.launchpad.net/gqrx/snapshots/ubuntu $(lsb_release -sc) main"
-  - sudo add-apt-repository "deb http://ppa.launchpad.net/gqrx/releases/ubuntu $(lsb_release -sc) main"
+  - sudo add-apt-repository "deb http://ppa.launchpad.net/gqrx/releases/ubuntu $(lsb_release -sc)"
   - sudo sh -c "echo deb-src http://ppa.launchpad.net/gqrx/snapshots/ubuntu $(lsb_release -sc) main \ >> /etc/apt/sources.list"
-  - sudo sh -c "echo deb-src http://ppa.launchpad.net/gqrx/releases/ubuntu $(lsb_release -sc) main \ >> /etc/apt/sources.list"
+  - sudo sh -c "echo deb-src http://ppa.launchpad.net/gqrx/releases/ubuntu $(lsb_release -sc) \ >> /etc/apt/sources.list"
   #- sudo add-apt-repository  -y ppa:gqrx/releases
   #- sudo add-apt-repository  -y ppa:gqrx/snapshots
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -34,5 +34,5 @@ before_install:
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - if [ "$CXX" = "g++" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
-  - sudo -s -H && echo 83886080 > /proc/sys/net/core/wmem_max
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5125D2724EAF93B6
   - sudo apt-get install -y cmake git-core g++ libstdc++-4.8-dev libboost-all-dev python-wxgtk2.8 gnuradio libarmadillo-dev liblapack-dev libopenblas-dev libssl-dev

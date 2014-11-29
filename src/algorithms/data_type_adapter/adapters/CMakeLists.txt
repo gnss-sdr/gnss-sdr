@@ -19,7 +19,8 @@
 
 set(DATATYPE_ADAPTER_SOURCES 
 	ishort_to_complex.cc 
-	ibyte_to_complex.cc )
+	ibyte_to_complex.cc
+	byte_to_short.cc )
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)

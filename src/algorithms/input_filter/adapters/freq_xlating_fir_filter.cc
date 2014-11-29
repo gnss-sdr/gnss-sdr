@@ -65,6 +65,14 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             freq_xlating_fir_filter_fcf_ = gr::filter::freq_xlating_fir_filter_fcf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_fcf_->unique_id() << ")";
         }
+    else if((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0)
+            && (output_item_type_.compare("gr_complex") == 0))
+        {
+            item_size = sizeof(gr_complex);
+            input_size_ = sizeof(short); //input
+            freq_xlating_fir_filter_scf_ = gr::filter::freq_xlating_fir_filter_scf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
+            DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_scf_->unique_id() << ")";
+        }
     else
         {
             LOG(ERROR) << taps_item_type_ << " unknown input filter item type";
@@ -94,6 +102,10 @@ void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
                 {
                     top_block->connect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
                 }
+            else if (input_size_ == sizeof(short))
+                {
+                    top_block->connect(freq_xlating_fir_filter_scf_, 0, file_sink_, 0);
+                }
             else
                 {
                     top_block->connect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
@@ -115,6 +127,10 @@ void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
                 {
                     top_block->disconnect(freq_xlating_fir_filter_fcf_, 0, file_sink_, 0);
                 }
+            else if (input_size_ == sizeof(short))
+                {
+                    top_block->disconnect(freq_xlating_fir_filter_scf_, 0, file_sink_, 0);
+                }
             else
                 {
                     top_block->disconnect(freq_xlating_fir_filter_ccf_, 0, file_sink_, 0);
@@ -130,6 +146,10 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
         {
             return freq_xlating_fir_filter_fcf_;
         }
+    else if (input_size_ == sizeof(short))
+        {
+            return freq_xlating_fir_filter_scf_;
+        }
     else
         {
             return freq_xlating_fir_filter_ccf_;
@@ -143,6 +163,10 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
     if (input_size_ == sizeof(float))
         {
             return freq_xlating_fir_filter_fcf_;
+        }
+    else if (input_size_ == sizeof(short))
+        {
+            return freq_xlating_fir_filter_scf_;
         }
     else
         {

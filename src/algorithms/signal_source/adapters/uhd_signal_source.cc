@@ -61,11 +61,9 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     // To narrow down the discovery process to a particular device,
     // specify a transport key/value pair specific to your device.
     if (empty.compare(device_address_) != 0) // if not empty
-    //if (empty.compare(empty) != 0) ??
         {
-            dev_addr["addr0"] = device_address_;
+            dev_addr["addr"] = device_address_;
         }
-
     subdevice_ = configuration->property(role + ".subdevice", empty);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     gain_ = configuration->property(role + ".gain", (double)50.0);

@@ -495,13 +495,16 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
                 block = std::string("IOV"); //  PFM, the ProtoFlight Model (GSAT0101), launched from French Guiana at 10:30 GMT on October 21, 2011
                 break;
             case 12 :
-                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, launched the same day
+                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011
                 break;
             case 19 :
-                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3)
+                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3), launched on October 12, 2012
                 break;
             case 20 :
-                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4)
+                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4), launched on October 12, 2012
+                break;
+            case 18 :
+                block = std::string("FOC"); // Galileo Full Operational Capability (FOC) satellite FM1, also known as GSAT020l launched on August 22, 2014.
                 break;
             default:
                 block = std::string("Unknown(Simulated)");

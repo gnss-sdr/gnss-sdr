@@ -36,3 +36,4 @@ add_library(datatype_adapters ${DATATYPE_ADAPTER_SOURCES} ${DATATYPE_ADAPTER_HEA
 source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
 add_dependencies(datatype_adapters glog-${glog_RELEASE})
 target_link_libraries(datatype_adapters ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+

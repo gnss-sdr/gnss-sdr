@@ -107,3 +107,4 @@ gr::basic_block_sptr ByteToShort::get_right_block()
 {
     return gr_char_to_short_;
 }
+

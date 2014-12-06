@@ -6,7 +6,6 @@
 .SH SYNOPSIS
 \fBvolk_gnsssdr_profile\fR [OPTION]
 .SH DESCRIPTION
-.PP
 The Vector-Optimized Library of Kernels of GNSS-SDR (VOLK_GNSSSDR) is a software library that provides developers with an interface to use Single Input - Multiple Data (SIMD) instructions, which are of special interest for operations that are in the receiver's critical path of the processing load.
 .TP
 Processors providing SIMD instruction sets compute with multiple processing elements that perform the same operation on multiple data points simultaneously, thus exploiting data-level parallelism, an can be found in most modern desktop and laptop personal computers. In a nutshell, VOLK_GNSSSDR implements in assembly language optimized versions of computationally-intensive operations for different processor architectures that are commonly found in modern computers. In order to use the most optimized version for the specific processor(s) of the host machine running the software receiver (that is, the implementation than runs the fastest).

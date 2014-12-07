@@ -45,14 +45,14 @@ endif()
 endmacro()
 
 if(MSVC)
-     find_path(GLOG_INCLUDE_DIRS NAMES raw_logging.h
+     find_path(GLOG_INCLUDE_DIR NAMES raw_logging.h
           PATHS
           ${GLOG_ROOT}/src/windows
           ${GLOG_ROOT}/src/windows/glog
      )
 else(MSVC)
      # Linux/OS X builds
-     find_path(GLOG_INCLUDE_DIRS NAMES raw_logging.h
+     find_path(GLOG_INCLUDE_DIR NAMES raw_logging.h
      PATHS
      ${GLOG_ROOT}/include/glog
      /opt/local/include/glog   # default location in Macports

@@ -28,7 +28,11 @@ if(NOT GTEST_DIR_LOCAL)
 else()
 	set(GTEST_DIR_LOCAL true CACHE STRING "Gtest already downloaded")
 endif(NOT GTEST_DIR_LOCAL)
-
+find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h
+          PATHS /usr/include)
+if(GTEST_INCLUDE_DIRS)
+    set(GTEST_DIR_LOCAL true CACHE STRING "Gtest already downloaded")
+endif(GTEST_INCLUDE_DIRS)
 
 if(NOT GTEST_DIR_LOCAL)
      # if GTEST_DIR is not defined, we download and build it
@@ -81,11 +85,19 @@ if(NOT GTEST_DIR_LOCAL)
      ) 
 	 set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}")
 else(NOT GTEST_DIR_LOCAL)
-     # If the variable GTEST_DIR is defined, we use the existing Googletest
-     set(GTEST_DIR $ENV{GTEST_DIR})
-     set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
-     add_library(gtest ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest_main.cc)
-     set(GTEST_LIBRARIES gtest)
+     if(GTEST_INCLUDE_DIRS)
+          find_path(GTEST_SOURCE_DIR NAMES gtest-all.cc
+                    PATHS /usr/src/gtest/src)
+          set(GTEST_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS} {GTEST_SOURCE_DIR})
+          add_library(gtest ${GTEST_SOURCE_DIR}/gtest-all.cc ${GTEST_SOURCE_DIR}/gtest_main.cc)
+          set(GTEST_LIBRARIES gtest)
+     else(GTEST_INCLUDE_DIRS)
+          # If the variable GTEST_DIR is defined, we use the existing Googletest
+          set(GTEST_DIR $ENV{GTEST_DIR})
+          set(GTEST_INCLUDE_DIRECTORIES ${GTEST_DIR}/include ${GTEST_DIR} ${GTEST_DIR}/src)
+          add_library(gtest ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest_main.cc)
+          set(GTEST_LIBRARIES gtest)
+     endif(GTEST_INCLUDE_DIRS)
 endif(NOT GTEST_DIR_LOCAL)
 
 

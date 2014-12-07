@@ -25,11 +25,11 @@ macro(_FIND_GLOG_LIBRARIES _var)
      find_library(${_var}
           NAMES  ${ARGN}
           PATHS ${LIB_PATHS} /opt/local/lib
-		                     /usr/lib/x86_64-linux-gnu
-							 /usr/lib/i386-linux-gnu
-							 /usr/lib/arm-linux-gnueabihf
-							 /usr/lib/arm-linux-gnueabi
-							 /usr/lib/aarch64-linux-gnu
+                             /usr/lib/x86_64-linux-gnu
+                             /usr/lib/i386-linux-gnu
+                             /usr/lib/arm-linux-gnueabihf
+                             /usr/lib/arm-linux-gnueabi
+                             /usr/lib/aarch64-linux-gnu
           PATH_SUFFIXES lib
       )
      mark_as_advanced(${_var})

@@ -46,7 +46,6 @@ option(ENABLE_OWN_GLOG "Download glog and link it to gflags" OFF)
 
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
-    set(ENABLE_OWN_GLOG ON)
 endif(ENABLE_PACKAGING)
 
 

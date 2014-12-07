@@ -55,6 +55,7 @@ else(MSVC)
      find_path(GLOG_INCLUDE_DIR NAMES raw_logging.h
      PATHS
      ${GLOG_ROOT}/include/glog
+     /usr/include/glog
      /opt/local/include/glog   # default location in Macports
      )
 endif(MSVC)

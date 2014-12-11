@@ -33,9 +33,8 @@ elseif(UNIX)
     if(${LINUX_DISTRIBUTION} MATCHES "Debian" OR ${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
         set (PACKAGE_GENERATOR "DEB")
     endif(${LINUX_DISTRIBUTION} MATCHES "Debian" OR ${LINUX_DISTRIBUTION} MATCHES "Ubuntu")
-    if(${LINUX_DISTRIBUTION} MATCHES "Red Hat" OR
-${LINUX_DISTRIBUTION} MATCHES "Fedora")
-        set (PACKAGE_GENERATOR "DEB")
+    if(${LINUX_DISTRIBUTION} MATCHES "Red Hat" OR ${LINUX_DISTRIBUTION} MATCHES "Fedora")
+        set (PACKAGE_GENERATOR "RPM")
     endif(${LINUX_DISTRIBUTION} MATCHES "Red Hat" OR ${LINUX_DISTRIBUTION} MATCHES "Fedora")
     set (PACKAGE_SOURCE_GENERATOR "TGZ;ZIP")
 else()
@@ -81,14 +80,14 @@ set(CPACK_STRIP_FILES                  "ON")
 # Debian-specific settings
 set(CPACK_DEBIAN_PACKAGE_SECTION       "science")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY      "optional")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS       "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.13), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.4), libopenblas-dev  (>= 0.1.1), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS       "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.13), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.4), libblas-dev  (>= 1.2), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION   "GNSS Software Defined Receiver written in C++.
  Global Navigation Satellite Systems receiver defined by software.
  It performs all the signal processing from raw signal samples up to the
  computation of the Position-Velocity-Time solution, including
  code and phase observables. It is able to work with raw data files or, 
  if there is computational power enough, in real time with suitable 
- radiofrequency front-ends. This software is mainly developed at CTTC 
+ radio frequency front-ends. This software is mainly developed at CTTC 
  (Centre Tecnologic de Telecomunicacions de Catalunya, http://www.cttc.es) 
  with contributions from around the world. 
  More info at http://gnss-sdr.org")
@@ -295,7 +294,19 @@ License: GPL-3+
  .
  On Debian systems, the full text of the GNU General Public
  License version 3 can be found in the file
- `/usr/share/common-licenses/GPL-3'.")
+ `/usr/share/common-licenses/GPL-3'.
+ 
+Files: src/core/libs/supl/*
+Copyright: 2007 Tatu Mannisto
+License: BSD
+ 
+Files: src/core/libs/INIReader.*
+Copyright: 2009 Brush Technologies
+License: BSD-3-clause
+ 
+Files: src/core/libs/ini.*
+Copyright: 2009 Brush Technologies
+License: BSD-3-clause")
 
      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/copyright"        
              DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")

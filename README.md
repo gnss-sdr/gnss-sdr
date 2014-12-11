@@ -16,9 +16,29 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux 
 ----------
 
-Tested distributions: Ubuntu 14.04 and 14.10 (32 and 64 bits), Debian 7.7, Fedora 19 and 20, and openSUSE 13.1 (older versions should work as well, but you will need GCC 4.7 or newer).
+ * Tested distributions: Ubuntu 14.04 LTS and 14.10, Debian 8 Jessie 
+ * Known to work but not continually tested: Fedora 19 and 20, and openSUSE 13.1 
+ * Supported microprocessor architectures: 
+   * i386: Intel x86 instruction set (32-bit microprocessors). 
+   * amd64: also known as x86-64, the 64-bit version of the x86 instruction set, originally created by AMD and implemented by AMD, Intel, VIA and others. 
+   * armhf: ARM hard float, ARMv7 + VFP3-D16 floating-point hardware extension + Thumb-2 instruction set and above (for Debian only). 
+   * arm64: ARM 64 bits or ARMv8 (for Debian only).
 
-### Install GNU Radio:
+Older distribution releases might work as well, but you will need GCC 4.7 or newer.
+
+Before building GNSS-SDR, you need to install all the required dependencies. If you are using Debian or Ubuntu, this can be done by copying and pasting the following line in a terminal:
+
+~~~~~~ 
+$ sudo apt-get install build-essential cmake git-core libboost-dev libboost-date-time-dev \
+       libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
+       libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
+       liblog4cpp5-dev libuhd-dev gnuradio-dev libopenblas-dev liblapack-dev gfortran \
+       libarmadillo-dev libgflags-dev libgoogle-glog-dev libssl-dev libgtest-dev
+~~~~~~
+
+Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). Alternatively, if you need to manually install those libraries, please keep reading. 
+
+### Manual installation of GNU Radio
 
 Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki) (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
 
@@ -57,13 +77,12 @@ Then, you are ready to download and install [UHD](http://files.ettus.com/uhd_doc
 $ sudo ./pybombs install uhd gnuradio
 ~~~~~~
 
-This can take some time (up to two hours to complete, depending on your system), and installs the latest versions of the Universal Hardware Driver (UHD) and GNU Radio in your system, including all their dependencies. 
-In case you do not want to use PyBOMBS and prefer to build and install GNU Radio manually from source, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide).
+This can take some time (up to two hours to complete, depending on your system), and downloads, builds and installs the latest versions of the Universal Hardware Driver (UHD) and GNU Radio in your system, including all their dependencies. 
+In case you do not want to use PyBOMBS and prefer to build and install GNU Radio step by step, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide).
 
-   
-
-
-### Install other libraries used by GNSS-SDR:
+    
+    
+### Manual installation of other required dependencies
 
 #### Install the [Armadillo](http://arma.sourceforge.net/ "Armadillo's Homepage") C++ linear algebra library:
 
@@ -141,7 +160,7 @@ $ sudo yum install openssl-devel     # For Fedora/CentOS/RHEL
 
    
 
-### Clone GNSS-SDR's Git repository:
+### <a name="download-and-build-linux">Clone GNSS-SDR's Git repository</a>:
 
 ~~~~~~ 
 $ git clone git://github.com/gnss-sdr/gnss-sdr

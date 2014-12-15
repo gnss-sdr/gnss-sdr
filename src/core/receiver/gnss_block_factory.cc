@@ -100,8 +100,8 @@
         #include "raw_array_signal_source.h"
 #endif
 
-#if RTLSDR_DRIVER
-        #include "rtlsdr_signal_source.h"
+#if OSMOSDR_DRIVER
+        #include "osmosdr_signal_source.h"
 #endif
 
 #if UHD_DRIVER
@@ -417,10 +417,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
 #endif
 
-#if RTLSDR_DRIVER
-    else if (implementation.compare("Rtlsdr_Signal_Source") == 0)
+#if OSMOSDR_DRIVER
+    else if (implementation.compare("Osmosdr_Signal_Source") == 0)
         {
-            std::unique_ptr<GNSSBlockInterface> block_(new RtlsdrSignalSource(configuration.get(), role, in_streams,
+            std::unique_ptr<GNSSBlockInterface> block_(new OsmosdrSignalSource(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

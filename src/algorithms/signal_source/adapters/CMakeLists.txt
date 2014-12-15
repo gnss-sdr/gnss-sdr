@@ -83,23 +83,24 @@ if(ENABLE_ARRAY)
 endif(ENABLE_ARRAY)
 
 
-if(ENABLE_RTLSDR)
+if(ENABLE_OSMOSDR)
     ################################################################################
     # OsmoSDR - http://sdr.osmocom.org/trac/
     ################################################################################  
     find_package(GrOsmoSDR REQUIRED)
-        if(NOT GROSMOSDR_FOUND)
-             message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional RTLSDR driver")
-        endif(NOT GROSMOSDR_FOUND)  
-    # set RTL include dirs
-    set(RTL_DRIVER_INCLUDE_DIRS 
+    if(NOT GROSMOSDR_FOUND)
+        message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional OSMOSDR driver")
+    endif(NOT GROSMOSDR_FOUND)  
+    
+    # set OSMO include dirs
+    set(OSMO_DRIVER_INCLUDE_DIRS 
         ${OPT_DRIVER_INCLUDE_DIRS} 
         ${GROSMOSDR_INCLUDE_DIR}/osmosdr
     )
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} rtlsdr_signal_source.cc)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${RTL_DRIVER_INCLUDE_DIRS}) 
-endif(ENABLE_RTLSDR)
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS}) 
+endif(ENABLE_OSMOSDR)
 
 if(ENABLE_UHD)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)

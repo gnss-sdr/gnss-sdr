@@ -1,5 +1,5 @@
 /*!
- * \file rtlsdr_signal_source.cc
+ * \file osmosdr_signal_source.cc
  * \brief Signal source for the Realtek RTL2832U USB dongle DVB-T receiver
  * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr for more information)
  * \author Javier Arribas, 2012. jarribas(at)cttc.es
@@ -29,7 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "rtlsdr_signal_source.h"
+#include "osmosdr_signal_source.h"
 #include <iostream>
 #include <boost/format.hpp>
 #include <glog/logging.h>
@@ -42,7 +42,7 @@
 using google::LogMessage;
 
 
-RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
+OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_stream, unsigned int out_stream,
         boost::shared_ptr<gr::msg_queue> queue) :
                 role_(role), in_stream_(in_stream), out_stream_(out_stream),
@@ -57,7 +57,7 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
     dump_filename_ = configuration->property(role + ".dump_filename",
             default_dump_file);
 
-    // RTLSDR Driver parameters
+    // OSMOSDR Driver parameters
     AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
     freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
     gain_ = configuration->property(role + ".gain", (double)40.0);
@@ -76,7 +76,7 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
             // 1. Make the driver instance
             try
             {
-                    rtlsdr_source_ = osmosdr::source::make();
+                    osmosdr_source_ = osmosdr::source::make();
             }
             catch( boost::exception & e )
             {
@@ -84,34 +84,34 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
             }
 
             // 2 set sampling rate
-            rtlsdr_source_->set_sample_rate(sample_rate_);
-            std::cout << boost::format("Actual RX Rate: %f [SPS]...") % (rtlsdr_source_->get_sample_rate()) << std::endl ;
-            LOG(INFO) << boost::format("Actual RX Rate: %f [SPS]...") % (rtlsdr_source_->get_sample_rate());
+            osmosdr_source_->set_sample_rate(sample_rate_);
+            std::cout << boost::format("Actual RX Rate: %f [SPS]...") % (osmosdr_source_->get_sample_rate()) << std::endl ;
+            LOG(INFO) << boost::format("Actual RX Rate: %f [SPS]...") % (osmosdr_source_->get_sample_rate());
 
             // 3. set rx frequency
-            rtlsdr_source_->set_center_freq(freq_);
-            std::cout << boost::format("Actual RX Freq: %f [Hz]...") % (rtlsdr_source_->get_center_freq()) << std::endl ;
-            LOG(INFO) << boost::format("Actual RX Freq: %f [Hz]...") % (rtlsdr_source_->get_center_freq());
+            osmosdr_source_->set_center_freq(freq_);
+            std::cout << boost::format("Actual RX Freq: %f [Hz]...") % (osmosdr_source_->get_center_freq()) << std::endl ;
+            LOG(INFO) << boost::format("Actual RX Freq: %f [Hz]...") % (osmosdr_source_->get_center_freq());
 
             // TODO: Assign the remnant IF from the PLL tune error
-            std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (rtlsdr_source_->get_center_freq() - freq_) ;
-            LOG(INFO) <<  boost::format("PLL Frequency tune error %f [Hz]...") % (rtlsdr_source_->get_center_freq() - freq_) ;
+            std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (osmosdr_source_->get_center_freq() - freq_) ;
+            LOG(INFO) <<  boost::format("PLL Frequency tune error %f [Hz]...") % (osmosdr_source_->get_center_freq() - freq_) ;
 
             // 4. set rx gain
             if (this->AGC_enabled_ == true)
                 {
-                    rtlsdr_source_->set_gain_mode(true);
+                    osmosdr_source_->set_gain_mode(true);
                     std::cout << "AGC enabled" << std::endl;
                     LOG(INFO) << "AGC enabled";
                 }
             else
                 {
-                    rtlsdr_source_->set_gain_mode(false);
-                    rtlsdr_source_->set_gain(gain_, 0);
-                    rtlsdr_source_->set_if_gain(rf_gain_, 0);
-                    rtlsdr_source_->set_bb_gain(if_gain_, 0);
-                    std::cout << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain() << std::endl;
-                    LOG(INFO) << boost::format("Actual RX Gain: %f dB...") % rtlsdr_source_->get_gain();
+                    osmosdr_source_->set_gain_mode(false);
+                    osmosdr_source_->set_gain(gain_, 0);
+                    osmosdr_source_->set_if_gain(rf_gain_, 0);
+                    osmosdr_source_->set_bb_gain(if_gain_, 0);
+                    std::cout << boost::format("Actual RX Gain: %f dB...") % osmosdr_source_->get_gain() << std::endl;
+                    LOG(INFO) << boost::format("Actual RX Gain: %f dB...") % osmosdr_source_->get_gain();
                 }
         }
     else
@@ -137,17 +137,17 @@ RtlsdrSignalSource::RtlsdrSignalSource(ConfigurationInterface* configuration,
 
 
 
-RtlsdrSignalSource::~RtlsdrSignalSource()
+OsmosdrSignalSource::~OsmosdrSignalSource()
 {}
 
 
 
-void RtlsdrSignalSource::connect(gr::top_block_sptr top_block)
+void OsmosdrSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)
         {
-            top_block->connect(rtlsdr_source_, 0, valve_, 0);
-            DLOG(INFO) << "connected rtlsdr source to valve";
+            top_block->connect(osmosdr_source_, 0, valve_, 0);
+            DLOG(INFO) << "connected osmosdr source to valve";
             if (dump_)
                 {
                     top_block->connect(valve_, 0, file_sink_, 0);
@@ -158,19 +158,19 @@ void RtlsdrSignalSource::connect(gr::top_block_sptr top_block)
         {
             if (dump_)
                 {
-                    top_block->connect(rtlsdr_source_, 0, file_sink_, 0);
-                    DLOG(INFO) << "connected rtlsdr source to file sink";
+                    top_block->connect(osmosdr_source_, 0, file_sink_, 0);
+                    DLOG(INFO) << "connected osmosdr source to file sink";
                 }
         }
 }
 
 
 
-void RtlsdrSignalSource::disconnect(gr::top_block_sptr top_block)
+void OsmosdrSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (samples_ != 0)
         {
-            top_block->disconnect(rtlsdr_source_, 0, valve_, 0);
+            top_block->disconnect(osmosdr_source_, 0, valve_, 0);
             if (dump_)
                 {
                     top_block->disconnect(valve_, 0, file_sink_, 0);
@@ -180,14 +180,14 @@ void RtlsdrSignalSource::disconnect(gr::top_block_sptr top_block)
         {
             if (dump_)
                 {
-                    top_block->disconnect(rtlsdr_source_, 0, file_sink_, 0);
+                    top_block->disconnect(osmosdr_source_, 0, file_sink_, 0);
                 }
         }
 }
 
 
 
-gr::basic_block_sptr RtlsdrSignalSource::get_left_block()
+gr::basic_block_sptr OsmosdrSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
     return gr::basic_block_sptr();
@@ -195,7 +195,7 @@ gr::basic_block_sptr RtlsdrSignalSource::get_left_block()
 
 
 
-gr::basic_block_sptr RtlsdrSignalSource::get_right_block()
+gr::basic_block_sptr OsmosdrSignalSource::get_right_block()
 {
     if (samples_ != 0)
         {
@@ -203,6 +203,6 @@ gr::basic_block_sptr RtlsdrSignalSource::get_right_block()
         }
     else
         {
-            return rtlsdr_source_;
+            return osmosdr_source_;
         }
 }

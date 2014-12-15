@@ -33,7 +33,7 @@ Before building GNSS-SDR, you need to install all the required dependencies. If 
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
        libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
-       liblog4cpp5-dev libuhd-dev gnuradio-dev libblas-dev liblapack-dev gfortran \
+       liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev gfortran \
        libarmadillo-dev libgflags-dev libgoogle-glog-dev libssl-dev libgtest-dev
 ~~~~~~
 
@@ -287,7 +287,7 @@ GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/fi
 
    
 
-###### Build RTL-SDR support (OPTIONAL):
+###### Build OSMOSDR support (OPTIONAL):
 
 Install the [OsmoSDR](http://sdr.osmocom.org/trac/ "OsmoSDR's Homepage") library and GNU Radio's source block: 
 
@@ -313,15 +313,15 @@ $ sudo ldconfig
 ~~~~~~ 
 
 
-Then configure GNSS-SDR to build the Rtlsdr_Signal_Source by:
+Then, configure GNSS-SDR to build the Osmosdr_Signal_Source by:
 
 ~~~~~~ 
-$ cmake -DENABLE_RTLSDR=ON ../
+$ cmake -DENABLE_OSMOSDR=ON ../
 $ make
 $ sudo make install
 ~~~~~~ 
 
-(in order to disable the Rtlsdr_Signal_Source compilation, you can pass -DENABLE_RTLSDR=OFF to cmake and build GNSS-SDR again).
+(in order to disable the Osmosdr_Signal_Source compilation, you can pass -DENABLE_OSMOSDR=OFF to cmake and build GNSS-SDR again).
 
 
 
@@ -346,7 +346,7 @@ $ make
 $ sudo make install
 ~~~~~~ 
 
-Using this option, all SIMD instructions are accessed via VOLK, which automatically includes versions of each function for different SIMD instruction sets, then detects at runtime which to use, or if there are none, substitutes a generic, non-SIMD implementation.
+Using this option, all SIMD instructions are exclusively accessed via VOLK, which automatically includes versions of each function for different SIMD instruction sets, then detects at runtime which to use, or if there are none, substitutes a generic, non-SIMD implementation.
 
 
 

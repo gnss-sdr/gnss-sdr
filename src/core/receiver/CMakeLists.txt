@@ -73,9 +73,9 @@ if(ENABLE_ARRAY)
     add_definitions(-DRAW_ARRAY_DRIVER=1)
 endif(ENABLE_ARRAY)
 
-if(ENABLE_RTLSDR)
-    add_definitions(-DRTLSDR_DRIVER=1)
-endif(ENABLE_RTLSDR)
+if(ENABLE_OSMOSDR)
+    add_definitions(-DOSMOSDR_DRIVER=1)
+endif(ENABLE_OSMOSDR)
 
 if(ENABLE_UHD)
     add_definitions(-DUHD_DRIVER=1)

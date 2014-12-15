@@ -1,6 +1,7 @@
 /*!
- * \file rtlsdr_signal_source.h
- * \brief Signal source for the Realtek RTL2832U USB dongle DVB-T receiver
+ * \file osmosdr_signal_source.h
+ * \brief Signal source wrapper for OsmoSDR-compatible front-ends, such as
+ * HackRF or Realtek's RTL2832U-based USB dongle DVB-T receivers
  * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr for more information)
  * \author Javier Arribas, 2012. jarribas(at)cttc.es
  *
@@ -29,8 +30,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTLSDR_SIGNAL_SOURCE_H_
-#define GNSS_SDR_RTLSDR_SIGNAL_SOURCE_H_
+#ifndef GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
+#define GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_
 
 #include <string>
 #include <boost/shared_ptr.hpp>
@@ -42,16 +43,18 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class reads samples from Realtek RTL2832U USB dongle DVB-T receiver (see http://sdr.osmocom.org/trac/wiki/rtl-sdr)
+ * \brief This class reads samples OsmoSDR-compatible front-ends, such as
+ * HackRF or Realtek's RTL2832U-based USB dongle DVB-T receivers
+ * (see http://sdr.osmocom.org/trac/wiki/rtl-sdr)
  */
-class RtlsdrSignalSource: public GNSSBlockInterface
+class OsmosdrSignalSource: public GNSSBlockInterface
 {
 public:
-	RtlsdrSignalSource(ConfigurationInterface* configuration,
+	OsmosdrSignalSource(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
             unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 
-    virtual ~RtlsdrSignalSource();
+    virtual ~OsmosdrSignalSource();
 
     std::string role()
     {
@@ -59,11 +62,11 @@ public:
     }
 
     /*!
-     * \brief Returns "Rtlsdr_Signal_Source"
+     * \brief Returns "Osmosdr_Signal_Source"
      */
     std::string implementation()
     {
-        return "Rtlsdr_Signal_Source";
+        return "Osmosdr_Signal_Source";
     }
     size_t item_size()
     {
@@ -96,11 +99,11 @@ private:
     bool dump_;
     std::string dump_filename_;
 
-    osmosdr::source::sptr rtlsdr_source_;
+    osmosdr::source::sptr osmosdr_source_;
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
     boost::shared_ptr<gr::msg_queue> queue_;
 };
 
-#endif /*GNSS_SDR_RTLSDR_SIGNAL_SOURCE_H_*/
+#endif /*GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H_*/

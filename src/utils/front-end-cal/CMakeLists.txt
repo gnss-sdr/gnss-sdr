@@ -17,7 +17,7 @@
 #
 
 
-if(ENABLE_RTLSDR)
+if(ENABLE_OSMOSDR)
     set(FRONT_END_CAL_SOURCES front_end_cal.cc)
 
     include_directories(
@@ -56,6 +56,7 @@ if(ENABLE_RTLSDR)
     )
 
     add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
+    add_definitions( -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}" )
 
     add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
 
@@ -80,4 +81,19 @@ if(ENABLE_RTLSDR)
             COMPONENT "front-end-cal"
             )
             
-endif(ENABLE_RTLSDR)
+    find_program(GZIP gzip
+                 /bin
+                 /usr/bin
+                 /usr/local/bin
+                 /opt/local/bin
+                 /sbin
+                 )
+
+    if(NOT GZIP_NOTFOUND)
+        execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/manpage/front-end-cal-manpage
+                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/front-end-cal.1.gz")
+
+        install(FILES ${CMAKE_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)   
+    endif(NOT GZIP_NOTFOUND)
+            
+endif(ENABLE_OSMOSDR)

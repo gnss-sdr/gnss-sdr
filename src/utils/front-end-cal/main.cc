@@ -79,7 +79,11 @@ using google::LogMessage;
 
 DECLARE_string(log_dir);
 
-DEFINE_string(config_file, "../conf/front-end-cal.conf",
+std::string s1_(GNSSSDR_INSTALL_DIR);
+std::string s2_("/share/gnss-sdr/conf/front-end-cal.conf");
+std::string s3_ = s1_ + s2_;
+
+DEFINE_string(config_file, s3_,
         "Path to the file containing the configuration parameters");
 
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;

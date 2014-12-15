@@ -15,6 +15,8 @@
 \fB-config_file=\fR\fI<path-to-configuration-file>\fR Set the configuration file.
 .TP 
 \fB-signal_source=\fR\fI<path-to-raw-signal-file>\fR If defined, path to the file containing the signal samples (overrides the data file specified in the configuration file).
+.TP 
+\fB-log_dir=\fR\fI<path-to-directory>\fR If defined, overrides the default directory where logs are saved.
 .TP
 \fB-RINEX_version=\fI<version>\fR Specifies the RINEX version (2.11 or 3.02). Default: "3.02".
 .TP

@@ -37,7 +37,7 @@ file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRE
 
 option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
-option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and compatible front-ends (RTL-based dongles, HackRF, etc.) as signal source (experimental)" OFF)
+option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source (experimental)" OFF)
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
@@ -977,11 +977,11 @@ if(RAW_ARRAY_DRIVER)
     set(ENABLE_OSMOSDR ON)
 endif(RAW_ARRAY_DRIVER)
 if(ENABLE_OSMOSDR)
-    message(STATUS "The driver for OsmoSDR and other font-ends (HackRF, Realtek's RTL2832U-based dongles) will be compiled." )
+    message(STATUS "The driver for OsmoSDR and other font-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled." )
     message(STATUS "You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ../'" )  
 else(ENABLE_OSMOSDR)
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled." )
-    message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other font-ends (HackRF, Realtek's RTL2832U-based USB dongles, etc.)" )
+    message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other font-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)" )
 endif(ENABLE_OSMOSDR)
 
 

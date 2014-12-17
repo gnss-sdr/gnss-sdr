@@ -27,7 +27,7 @@ GNU/Linux
 
 Older distribution releases might work as well, but you will need GCC 4.7 or newer.
 
-Before building GNSS-SDR, you need to install all the required dependencies. If you are using Debian or Ubuntu, this can be done by copying and pasting the following line in a terminal:
+Before building GNSS-SDR, you need to install all the required dependencies. If you are using Debian 8 or Ubuntu 14.10, this can be done by copying and pasting the following line in a terminal:
 
 ~~~~~~ 
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
@@ -39,7 +39,7 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
 
 Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). Alternatively, if you need to manually install those libraries, please keep reading. 
 
-Note for Ubuntu 14.04 LTS "trusty" users: you will need to update your package lists from the repositories (that is, ```sudo apt-get update```) before installing those packages, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and 14.04 originally came with 3.7.2.
+Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2.
 
 ### Manual installation of GNU Radio
 
@@ -65,6 +65,7 @@ prefix = /usr/local
 satisfy_order = deb,src  # For Debian/Ubuntu/LinuxMint
 satisfy_order = rpm,src  # For Fedora/CentOS/RHEL/openSUSE
 forcepkgs =
+forcebuild = gnuradio,uhd,gr-osmosdr,rtl-sdr
 timeout = 30
 cmakebuildtype = RelWithDebInfo
 builddocs = OFF

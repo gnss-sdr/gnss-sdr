@@ -32,6 +32,7 @@
 
 
 #include <string>
+#include <gtest/gtest.h>
 #include "control_message_factory.h"
 
 

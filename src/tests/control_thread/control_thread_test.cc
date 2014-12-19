@@ -62,14 +62,14 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("SignalSource.repeat", "true");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
-    config->set_property("Channels.count", "2");
-    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.threshold", "0.8");
-    config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-    config->set_property("Tracking.item_type", "gr_complex");
-    config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder.item_type", "gr_complex");
+    config->set_property("Channels_GPS.count", "2");
+    config->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_GPS.item_type", "gr_complex");
+    config->set_property("Acquisition_GPS.threshold", "0.8");
+    config->set_property("Tracking_GPS.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
+    config->set_property("Tracking_GPS.item_type", "gr_complex");
+    config->set_property("TelemetryDecoder_GPS.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("TelemetryDecoder_GPS.item_type", "gr_complex");
     config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
     config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
@@ -81,8 +81,18 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
 
     gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
     //ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
-    std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
-
+    //try
+    //{
+            std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
+    //}
+    //catch( boost::exception & e )
+    //{
+    //        std::cout << "Boost exception: " << boost::diagnostic_information(e);
+    //}
+    //catch(std::exception const&  ex)
+    //{
+    //        std::cout  << "STD exception: " << ex.what();
+    //}
     control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
     control_queue->handle(control_msg_factory->GetQueueMessage(1,0));
     control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
@@ -124,13 +134,13 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("SignalSource.repeat", "true");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
-    config->set_property("Channels.count", "1");
-    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
-    config->set_property("Tracking.item_type", "gr_complex");
-    config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder.item_type", "gr_complex");
+    config->set_property("Channels_GPS.count", "1");
+    config->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_GPS.item_type", "gr_complex");
+    config->set_property("Tracking_GPS.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
+    config->set_property("Tracking_GPS.item_type", "gr_complex");
+    config->set_property("TelemetryDecoder_GPS.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("TelemetryDecoder_GPS.item_type", "gr_complex");
     config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
     config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
@@ -145,9 +155,9 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     std::unique_ptr<ControlMessageFactory> control_msg_factory2(new ControlMessageFactory());
 
     control_queue2->handle(control_msg_factory2->GetQueueMessage(0,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,2));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,1));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,3));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(2,0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(1,0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(3,0));
     control_queue2->handle(control_msg_factory2->GetQueueMessage(200,0));
 
     control_thread2->set_control_queue(control_queue2);
@@ -165,8 +175,8 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
             std::cout  << "STD exception: " << ex.what();
     }
 
-    unsigned int expected5 = 5;
+    unsigned int expected0 = 0;
     unsigned int expected1 = 1;
-    EXPECT_EQ(expected5, control_thread2->processed_control_messages());
-    EXPECT_EQ(expected1, control_thread2->applied_actions());
+    EXPECT_EQ(expected1, control_thread2->processed_control_messages());
+    EXPECT_EQ(expected0, control_thread2->applied_actions());
 }

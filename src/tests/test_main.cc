@@ -116,12 +116,16 @@ concurrent_queue<Gps_Iono> global_gps_iono_queue;
 concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
 concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+concurrent_queue<Gps_Ref_Location> global_gps_ref_location_queue;
+concurrent_queue<Gps_Ref_Time> global_gps_ref_time_queue;
 
 concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 concurrent_map<Gps_Iono> global_gps_iono_map;
 concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 concurrent_map<Gps_Almanac> global_gps_almanac_map;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+concurrent_map<Gps_Ref_Location> global_gps_ref_location_map;
+concurrent_map<Gps_Ref_Time> global_gps_ref_time_map;
 
 // For GALILEO NAVIGATION
 concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;

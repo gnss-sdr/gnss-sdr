@@ -42,11 +42,14 @@
 #include <gnuradio/analog/sig_source_c.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
+#include <gtest/gtest.h>
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
+#include "signal_generator.h"
+#include "signal_generator_c.h"
 #include "gps_l1_ca_pcps_quicksync_acquisition.h"
 
 DEFINE_double(value_threshold, 0.3, "Value of the threshold for the acquisition");

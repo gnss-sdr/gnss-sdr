@@ -41,18 +41,32 @@
 #include "concurrent_queue.h"
 #include "concurrent_map.h"
 #include "gps_navigation_message.h"
+#include "gps_ephemeris.h"
+#include "gps_acq_assist.h"
+#include "gps_ref_location.h"
+#include "gps_ref_time.h"
+#include "galileo_navigation_message.h"
+#include "sbas_ionospheric_correction.h"
+#include "sbas_telemetry_data.h"
+#include "sbas_ephemeris.h"
+#include "sbas_satellite_correction.h"
 
 
-concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue2;
+// concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue2;
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
 concurrent_queue<Gps_Iono> global_gps_iono_queue;
 concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
 concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
+concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
+concurrent_queue<Gps_Ref_Location> global_gps_ref_location_queue;
+concurrent_queue<Gps_Ref_Time> global_gps_ref_time_queue;
 
 concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
 concurrent_map<Gps_Iono> global_gps_iono_map;
 concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-
+concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+concurrent_map<Gps_Ref_Location> global_gps_ref_location_map;
+concurrent_map<Gps_Ref_Time> global_gps_ref_time_map;
 
 concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
 concurrent_queue<Galileo_Iono> global_galileo_iono_queue;

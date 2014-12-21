@@ -111,6 +111,9 @@ if(ENABLE_GPERFTOOLS)
     endif(GPERFTOOLS_FOUND)
 endif(ENABLE_GPERFTOOLS)
 
+if(Boost_VERSION LESS 105000)
+     add_definitions(-DOLD_BOOST=1)
+endif(Boost_VERSION LESS 105000)
      
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}
@@ -193,7 +196,6 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
 #########################################################
 #  Adding Tests to Ctest
 #########################################################
-# ToDo
 
 set(CMAKE_CTEST_COMMAND ctest -V)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
@@ -201,7 +203,7 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 add_executable(control_thread_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_message_factory_test.cc
-#     ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_thread_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_thread_test.cc
 )
 
 target_link_libraries(control_thread_test ${Boost_LIBRARIES} 
@@ -214,15 +216,30 @@ target_link_libraries(control_thread_test ${Boost_LIBRARIES}
                                           )
                                           
 add_test(control_thread_test control_thread_test)
+set_property(TEST control_thread_test PROPERTY TIMEOUT 5)
 
+add_executable(flowgraph_test EXCLUDE_FROM_ALL
+     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
+     ${CMAKE_CURRENT_SOURCE_DIR}/flowgraph/gnss_flowgraph_test.cc
+)
+
+target_link_libraries(flowgraph_test ${Boost_LIBRARIES} 
+                                     ${GFLAGS_LIBS} 
+                                     ${GLOG_LIBRARIES} 
+                                     ${GTEST_LIBRARIES} 
+                                     gnss_sp_libs 
+                                     gnss_rx
+                                     ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                     )
+
+add_test(flowgraph_test flowgraph_test)
+set_property(TEST flowgraph_test PROPERTY TIMEOUT 5)
 
 add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_signal_source_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/fir_filter_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_acquisition_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/flowgraph/pass_through_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gnss_block_factory_test.cc   
 )
@@ -237,11 +254,57 @@ target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
                                       gnss_sp_libs 
                                       gnss_rx
                                       gnss_system_parameters
-                                      signal_generator_blocks
+                                      # signal_generator_blocks
                                       out_adapters
                                       ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                       )
                                       
 add_test(gnss_block_test gnss_block_test)
-add_dependencies(check control_thread_test gnss_block_test)
+
+# add_executable(acq_test EXCLUDE_FROM_ALL
+#      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
+#      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_acquisition_test.cc
+#      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc
+# )
+# target_link_libraries(acq_test ${Boost_LIBRARIES}
+#                                ${GFLAGS_LIBS} 
+#                                ${GLOG_LIBRARIES} 
+#                                ${GTEST_LIBRARIES}
+#                                ${GNURADIO_RUNTIME_LIBRARIES} 
+#                                ${GNURADIO_BLOCKS_LIBRARIES} 
+#                                ${GNURADIO_FILTER_LIBRARIES} 
+#                                ${GNURADIO_ANALOG_LIBRARIES} 
+#                                gnss_sp_libs 
+#                                gnss_rx
+#                                gnss_system_parameters
+#                                signal_generator_blocks
+#                                out_adapters
+#                                ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+#                                )                                     
+# add_test(acq_test acq_test)
+
+add_executable(trk_test EXCLUDE_FROM_ALL
+     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc
+)
+target_link_libraries(trk_test ${Boost_LIBRARIES}
+                               ${GFLAGS_LIBS} 
+                               ${GLOG_LIBRARIES} 
+                               ${GTEST_LIBRARIES}
+                               ${GNURADIO_RUNTIME_LIBRARIES} 
+                               ${GNURADIO_BLOCKS_LIBRARIES} 
+                               ${GNURADIO_FILTER_LIBRARIES} 
+                               ${GNURADIO_ANALOG_LIBRARIES} 
+                               gnss_sp_libs 
+                               gnss_rx
+                               gnss_system_parameters
+                               signal_generator_blocks
+                               out_adapters
+                               ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                               )
+                                      
+add_test(trk_test trk_test)
+
+
+add_dependencies(check control_thread_test flowgraph_test gnss_block_test trk_test)
  

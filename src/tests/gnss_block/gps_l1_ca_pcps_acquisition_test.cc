@@ -33,7 +33,9 @@
 
 
 #include <ctime>
+#include <cstdlib>
 #include <iostream>
+#include <boost/chrono.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -99,8 +101,8 @@ void GpsL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.000");
-    config->set_property("Acquisition.doppler_max", "7200");
-    config->set_property("Acquisition.doppler_step", "600");
+    config->set_property("Acquisition.doppler_max", "5000");
+    config->set_property("Acquisition.doppler_step", "500");
     config->set_property("Acquisition.repeat_satellite", "false");
 }
 
@@ -170,8 +172,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    double expected_delay_samples = 127;
-    double expected_doppler_hz = -2400;
+    double expected_delay_samples = 945;
+    double expected_doppler_hz = 4500;
     init();
     std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
@@ -188,15 +190,15 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0001));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 0));
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
+        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 5000));
     }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
+        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 50));
     }) << "Failure setting doppler_step." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -224,20 +226,25 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
         end = tv.tv_sec*1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
 
+#ifdef OLD_BOOST
     ch_thread.timed_join(boost::posix_time::seconds(1));
+#endif
+#ifndef OLD_BOOST
+    ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+#endif
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
     ASSERT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
-    //std::cout <<  "----Aq_delay: " <<  gnss_synchro.Acq_delay_samples << std::endl;
-    //std::cout <<  "----Doppler: " <<  gnss_synchro.Acq_doppler_hz << std::endl;
+    std::cout <<  "----Aq_delay: " <<  gnss_synchro.Acq_delay_samples << std::endl;
+    std::cout <<  "----Doppler: " <<  gnss_synchro.Acq_doppler_hz << std::endl;
 
-    double delay_error_samples = abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
+    double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
     float delay_error_chips = (float)(delay_error_samples*1023/4000);
-    double doppler_error_hz = abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
+    double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
-    EXPECT_LE(doppler_error_hz, 333) << "Doppler error exceeds the expected value: 333 Hz = 2/(3*integration period)";
+    EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 }

@@ -34,6 +34,8 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/chrono.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>
@@ -234,9 +236,15 @@ void Channel::stop()
      * the boost::thread object must be used. join() will block the calling
      * thread until the thread represented by the boost::thread object
      * has completed.
-     *
+     * NOTE: timed_join() is deprecated and only present up to Boost 1.56
+     *       try_join_until() was introduced in Boost 1.50
      */
-    ch_thread_.join();
+#ifdef OLD_BOOST
+    ch_thread_.timed_join(boost::posix_time::seconds(1));
+#endif
+#ifndef OLD_BOOST
+    ch_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+#endif
 }
 
 

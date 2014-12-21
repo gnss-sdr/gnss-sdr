@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -62,10 +62,14 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("SignalSource.repeat", "true");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
-    config->set_property("Channels_GPS.count", "2");
+    config->set_property("Channels_GPS.count", "1");
+    config->set_property("Channels.in_acquisition", "1");
+    config->set_property("Channel.system", "GPS");
+    config->set_property("Channel.signal", "1C");
     config->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition_GPS.item_type", "gr_complex");
-    config->set_property("Acquisition_GPS.threshold", "0.8");
+    config->set_property("Acquisition_GPS.threshold", "1");
+    config->set_property("Acquisition_GPS.doppler_max", "5000");
+    config->set_property("Acquisition_GPS.doppler_min", "-5000");
     config->set_property("Tracking_GPS.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
     config->set_property("Tracking_GPS.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_GPS.implementation", "GPS_L1_CA_Telemetry_Decoder");
@@ -77,22 +81,12 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
     config->set_property("OutputFilter.item_type", "gr_complex");
 
-    std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+    std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
 
     gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
-    //ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
-    //try
-    //{
-            std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
-    //}
-    //catch( boost::exception & e )
-    //{
-    //        std::cout << "Boost exception: " << boost::diagnostic_information(e);
-    //}
-    //catch(std::exception const&  ex)
-    //{
-    //        std::cout  << "STD exception: " << ex.what();
-    //}
+
+    std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
+
     control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
     control_queue->handle(control_msg_factory->GetQueueMessage(1,0));
     control_queue->handle(control_msg_factory->GetQueueMessage(200,0));
@@ -111,10 +105,10 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
             std::cout  << "STD exception: " << ex.what();
     }
 
-    unsigned int expected3 = 3;
+    unsigned int expected0 = 0;
     unsigned int expected1 = 1;
-    EXPECT_EQ(expected3, control_thread->processed_control_messages());
-    EXPECT_EQ(expected1, control_thread->applied_actions());
+    EXPECT_EQ(expected1, control_thread->processed_control_messages());
+    EXPECT_EQ(expected0, control_thread->applied_actions());
 }
 
 
@@ -135,8 +129,13 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
     config->set_property("Channels_GPS.count", "1");
+    config->set_property("Channels.in_acquisition", "4");
+    config->set_property("Channel.system", "GPS");
+    config->set_property("Channel.signal", "1C");
     config->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition_GPS.item_type", "gr_complex");
+    config->set_property("Acquisition_GPS.threshold", "1");
+    config->set_property("Acquisition_GPS.doppler_max", "5000");
+    config->set_property("Acquisition_GPS.doppler_min", "-5000");
     config->set_property("Tracking_GPS.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
     config->set_property("Tracking_GPS.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_GPS.implementation", "GPS_L1_CA_Telemetry_Decoder");
@@ -151,7 +150,7 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
 
     gr::msg_queue::sptr control_queue2 = gr::msg_queue::make(0);
-    //ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
+
     std::unique_ptr<ControlMessageFactory> control_msg_factory2(new ControlMessageFactory());
 
     control_queue2->handle(control_msg_factory2->GetQueueMessage(0,0));

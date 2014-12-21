@@ -64,6 +64,9 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
+if(Boost_VERSION LESS 105000)
+     add_definitions(-DOLD_BOOST=1)
+endif(Boost_VERSION LESS 105000)
 
 if(ENABLE_GN3S)
     add_definitions(-DGN3S_DRIVER=1)

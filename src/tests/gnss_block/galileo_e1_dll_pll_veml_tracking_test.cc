@@ -113,7 +113,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, Instantiate)
 TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
 {
     int fs_in = 8000000;
-    int nsamples = 80000000;
+    int nsamples = 40000000;
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;

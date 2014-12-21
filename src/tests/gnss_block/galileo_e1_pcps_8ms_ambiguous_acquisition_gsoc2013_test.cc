@@ -32,6 +32,8 @@
 
 #include <ctime>
 #include <iostream>
+#include <boost/chrono.hpp>
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -46,7 +48,6 @@
 #include "signal_generator_c.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
-#include "boost/shared_ptr.hpp"
 #include "gnss_sdr_valve.h"
 
 
@@ -502,9 +503,16 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
 
+#ifdef OLD_BOOST
             ASSERT_NO_THROW( {
                 ch_thread.timed_join(boost::posix_time::seconds(1));
             }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
 }
 
@@ -590,9 +598,15 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
                     std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
                 }
+#ifdef OLD_BOOST
             ASSERT_NO_THROW( {
                 ch_thread.timed_join(boost::posix_time::seconds(1));
             }) << "Failure while waiting the queue to stop" << std::endl;
-
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
 }

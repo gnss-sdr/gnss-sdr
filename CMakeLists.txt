@@ -312,7 +312,7 @@ endif(NOT Boost_FOUND)
 ################################################################################
 # GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
 ################################################################################
-set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS DIGITAL FFT FILTER PMT FEC TRELLIS)
+set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS DIGITAL FFT FILTER PMT FEC TRELLIS UHD)
 find_package(Gnuradio)
 if(PC_GNURADIO_RUNTIME_VERSION)
    if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS 3.7.3)
@@ -984,11 +984,11 @@ if(RAW_ARRAY_DRIVER)
     set(ENABLE_OSMOSDR ON)
 endif(RAW_ARRAY_DRIVER)
 if(ENABLE_OSMOSDR)
-    message(STATUS "The driver for OsmoSDR and other font-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled." )
+    message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled." )
     message(STATUS "You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ../'" )  
 else(ENABLE_OSMOSDR)
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled." )
-    message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other font-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)" )
+    message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)" )
 endif(ENABLE_OSMOSDR)
 
 

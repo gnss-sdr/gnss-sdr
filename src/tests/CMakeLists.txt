@@ -200,11 +200,14 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
 set(CMAKE_CTEST_COMMAND ctest -V)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
-add_executable(control_thread_test EXCLUDE_FROM_ALL
+add_executable(control_thread_test
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_message_factory_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/control_thread/control_thread_test.cc
 )
+if(NOT ${ENABLE_PACKAGING})
+     set_property(TARGET control_thread_test PROPERTY EXCLUDE_FROM_ALL TRUE)
+endif(NOT ${ENABLE_PACKAGING})
 
 target_link_libraries(control_thread_test ${Boost_LIBRARIES} 
                                           ${GFLAGS_LIBS} 
@@ -216,12 +219,20 @@ target_link_libraries(control_thread_test ${Boost_LIBRARIES}
                                           )
                                           
 add_test(control_thread_test control_thread_test)
+if(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(control_thread_test gtest-${gtest_RELEASE})
+else(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(control_thread_test gtest)
+endif(NOT ${GTEST_DIR_LOCAL}) 
 set_property(TEST control_thread_test PROPERTY TIMEOUT 5)
 
-add_executable(flowgraph_test EXCLUDE_FROM_ALL
+add_executable(flowgraph_test 
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/flowgraph/gnss_flowgraph_test.cc
 )
+if(NOT ${ENABLE_PACKAGING})
+     set_property(TARGET flowgraph_test PROPERTY EXCLUDE_FROM_ALL TRUE)
+endif(NOT ${ENABLE_PACKAGING})
 
 target_link_libraries(flowgraph_test ${Boost_LIBRARIES} 
                                      ${GFLAGS_LIBS} 
@@ -233,9 +244,14 @@ target_link_libraries(flowgraph_test ${Boost_LIBRARIES}
                                      )
 
 add_test(flowgraph_test flowgraph_test)
+if(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(flowgraph_test gtest-${gtest_RELEASE})
+else(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(flowgraph_test gtest)
+endif(NOT ${GTEST_DIR_LOCAL}) 
 set_property(TEST flowgraph_test PROPERTY TIMEOUT 5)
 
-add_executable(gnss_block_test EXCLUDE_FROM_ALL
+add_executable(gnss_block_test
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_signal_source_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/fir_filter_test.cc
@@ -243,6 +259,10 @@ add_executable(gnss_block_test EXCLUDE_FROM_ALL
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gnss_block_factory_test.cc   
 )
+if(NOT ${ENABLE_PACKAGING})
+     set_property(TARGET gnss_block_test PROPERTY EXCLUDE_FROM_ALL TRUE)
+endif(NOT ${ENABLE_PACKAGING})
+
 target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
                                       ${GFLAGS_LIBS} 
                                       ${GLOG_LIBRARIES} 
@@ -260,8 +280,13 @@ target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
                                       )
                                       
 add_test(gnss_block_test gnss_block_test)
+if(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(gnss_block_test gtest-${gtest_RELEASE})
+else(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(gnss_block_test gtest)
+endif(NOT ${GTEST_DIR_LOCAL}) 
 
-# add_executable(acq_test EXCLUDE_FROM_ALL
+# add_executable(acq_test ${EXCLUDE}
 #      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
 #      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gps_l1_ca_pcps_acquisition_test.cc
 #      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc
@@ -283,10 +308,14 @@ add_test(gnss_block_test gnss_block_test)
 #                                )                                     
 # add_test(acq_test acq_test)
 
-add_executable(trk_test EXCLUDE_FROM_ALL
+add_executable(trk_test
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc
 )
+if(NOT ${ENABLE_PACKAGING})
+     set_property(TARGET trk_test PROPERTY EXCLUDE_FROM_ALL TRUE)
+endif(NOT ${ENABLE_PACKAGING})
+
 target_link_libraries(trk_test ${Boost_LIBRARIES}
                                ${GFLAGS_LIBS} 
                                ${GLOG_LIBRARIES} 
@@ -304,7 +333,11 @@ target_link_libraries(trk_test ${Boost_LIBRARIES}
                                )
                                       
 add_test(trk_test trk_test)
-
+if(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(trk_test gtest-${gtest_RELEASE})
+else(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(trk_test gtest)
+endif(NOT ${GTEST_DIR_LOCAL}) 
 
 add_dependencies(check control_thread_test flowgraph_test gnss_block_test trk_test)
- 
+

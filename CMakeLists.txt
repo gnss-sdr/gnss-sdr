@@ -999,7 +999,7 @@ endif(ENABLE_OSMOSDR)
 # Enable C++11 support in GCC
 # For "-std=c++0x"  GCC's support for C++11 see http://gcc.gnu.org/projects/cxx0x.html
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
-     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++0x -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -Wall -Wextra")  #Add warning flags: For "-Wall" see http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wno-c++11-narrowing") 

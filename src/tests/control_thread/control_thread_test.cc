@@ -62,7 +62,8 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("SignalSource.repeat", "true");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
-    config->set_property("Channels_GPS.count", "1");
+    config->set_property("Channels_GPS.count", "2");
+    config->set_property("Channels_Galileo.count", "0");
     config->set_property("Channels.in_acquisition", "1");
     config->set_property("Channel.system", "GPS");
     config->set_property("Channel.signal", "1C");
@@ -105,10 +106,10 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
             std::cout  << "STD exception: " << ex.what();
     }
 
-    unsigned int expected0 = 0;
+    unsigned int expected3 = 3;
     unsigned int expected1 = 1;
-    EXPECT_EQ(expected1, control_thread->processed_control_messages());
-    EXPECT_EQ(expected0, control_thread->applied_actions());
+    EXPECT_EQ(expected3, control_thread->processed_control_messages());
+    EXPECT_EQ(expected1, control_thread->applied_actions());
 }
 
 
@@ -128,8 +129,9 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("SignalSource.repeat", "true");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
-    config->set_property("Channels_GPS.count", "1");
-    config->set_property("Channels.in_acquisition", "4");
+    config->set_property("Channels_GPS.count", "4");
+    config->set_property("Channels_Galileo.count", "0");
+    config->set_property("Channels.in_acquisition", "1");
     config->set_property("Channel.system", "GPS");
     config->set_property("Channel.signal", "1C");
     config->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
@@ -174,8 +176,8 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
             std::cout  << "STD exception: " << ex.what();
     }
 
-    unsigned int expected0 = 0;
+    unsigned int expected5 = 5;
     unsigned int expected1 = 1;
-    EXPECT_EQ(expected1, control_thread2->processed_control_messages());
-    EXPECT_EQ(expected0, control_thread2->applied_actions());
+    EXPECT_EQ(expected5, control_thread2->processed_control_messages());
+    EXPECT_EQ(expected1, control_thread2->applied_actions());
 }

@@ -95,11 +95,7 @@ void GNSSFlowgraph::stop()
 {
     for (unsigned int i = 0; i < channels_count_; i++)
         {
-            // if(channels_state_[i]==2) channel(i)->
             channels_.at(i)->stop();
-        }
-    for (unsigned int i = 0; i < channels_count_; i++)
-        {
             LOG(INFO) << "Channel " << i << " in state " << channels_state_[i] << std::endl;
         }
     LOG(INFO) << "Threads finished. Return to main program.";

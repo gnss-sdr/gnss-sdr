@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -15,7 +15,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -73,6 +73,9 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             freq_xlating_fir_filter_scf_ = gr::filter::freq_xlating_fir_filter_scf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_scf_->unique_id() << ")";
         }
+
+    //  gr_char_to_short_ = gr::blocks::char_to_short::make();
+    // gr_short_to_float _ = gr::blocks::short_to_float::make();
     else
         {
             LOG(ERROR) << taps_item_type_ << " unknown input filter item type";

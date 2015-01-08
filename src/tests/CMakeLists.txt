@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -224,7 +224,7 @@ if(NOT ${GTEST_DIR_LOCAL})
 else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(control_thread_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL}) 
-set_property(TEST control_thread_test PROPERTY TIMEOUT 5)
+set_property(TEST control_thread_test PROPERTY TIMEOUT 30)
 
 add_executable(flowgraph_test 
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
@@ -249,7 +249,7 @@ if(NOT ${GTEST_DIR_LOCAL})
 else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(flowgraph_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL}) 
-set_property(TEST flowgraph_test PROPERTY TIMEOUT 5)
+set_property(TEST flowgraph_test PROPERTY TIMEOUT 30)
 
 add_executable(gnss_block_test
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 

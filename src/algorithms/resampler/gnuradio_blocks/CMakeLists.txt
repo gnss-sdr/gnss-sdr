@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -19,7 +19,7 @@
 
 set(RESAMPLER_GR_BLOCKS_SOURCES 
      direct_resampler_conditioner_cc.cc
-#    direct_resampler_conditioner_ss.cc
+     direct_resampler_conditioner_ss.cc
 )
 
 include_directories(
@@ -29,8 +29,7 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
-#file(GLOB RESAMPLER_GR_BLOCKS_HEADERS "*.h")
-file(GLOB RESAMPLER_GR_BLOCKS_HEADERS "*_cc.h")
+file(GLOB RESAMPLER_GR_BLOCKS_HEADERS "*.h")
 add_library(resampler_gr_blocks ${RESAMPLER_GR_BLOCKS_SOURCES} ${RESAMPLER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${RESAMPLER_GR_BLOCKS_HEADERS})
 add_dependencies(resampler_gr_blocks glog-${glog_RELEASE})

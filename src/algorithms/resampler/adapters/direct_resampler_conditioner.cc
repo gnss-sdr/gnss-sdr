@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,7 +33,7 @@
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include "direct_resampler_conditioner_cc.h"
-//#include "direct_resampler_conditioner_ss.h"
+#include "direct_resampler_conditioner_ss.h"
 #include "configuration_interface.h"
 
 
@@ -57,19 +57,19 @@ DirectResamplerConditioner::DirectResamplerConditioner(
         {
             item_size_ = sizeof(gr_complex);
             resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_,
-                                                              sample_freq_out_);
+                    sample_freq_out_);
             DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
             DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
 
         }
-    //    else if (item_type_.compare("short") == 0)
-    //        {
-    //            item_size_ = sizeof(short);
-    //            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_,
-    //                    sample_freq_out_);
-    //        }
+    else if (item_type_.compare("short") == 0)
+        {
+            item_size_ = sizeof(short);
+            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_,
+                    sample_freq_out_);
+        }
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for resampler";

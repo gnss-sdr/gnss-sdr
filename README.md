@@ -95,9 +95,9 @@ $ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubu
 $ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
 
-$ wget http://sourceforge.net/projects/arma/files/armadillo-4.450.0.tar.gz
-$ tar xvfz armadillo-4.450.0.tar.gz
-$ cd armadillo-4.450.0
+$ wget http://sourceforge.net/projects/arma/files/armadillo-4.600.2.tar.gz
+$ tar xvfz armadillo-4.600.2.tar.gz
+$ cd armadillo-4.600.2
 $ cmake .
 $ make
 $ sudo make install
@@ -972,9 +972,9 @@ For LaTeX users, these are the BibTeX cites for your convenience:
 Ok, now what?
 =============
 
-In order to start using GNSS-SDR, you may want to populate ```gnss-sdr/data``` folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output of a Radio Frequency front-end's Analog-to-Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intemediate frequency (on the order of MHz). Prepare your configuration file, and then you are ready for going to the ```gnss-sdr/install``` folder, running ```./gnss-sdr```, and seeing how the file is processed.
+In order to start using GNSS-SDR, you may want to populate ```gnss-sdr/data``` folder (or anywhere else on your system) with raw data files. By "raw data" we mean the output of a Radio Frequency front-end's Analog-to-Digital converter. GNSS-SDR needs signal samples already in baseband or in passband, at a suitable intemediate frequency (on the order of MHz). Prepare your configuration file, and then you are ready for running ```gnss-sdr --config_file=your_configuration.conf```, and seeing how the file is processed.
 
-Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware such as the [USRP family](http://www.ettus.com/product), for the GN3S v2 USB dongle and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
+Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware such as the [USRP family](http://www.ettus.com/product), for OsmoSDR and other front-ends (HackRF, bladeRF), for the GN3S v2 USB dongle and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
 
 You can find more information at the [GNSS-SDR Documentation page](http://gnss-sdr.org/documents) or directly asking to the [GNSS-SDR Developers mailing list](http://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers). 
  

@@ -717,45 +717,16 @@ if(NOT ARMADILLO_FOUND)
      message (STATUS " Armadillo has not been found.")
      message (STATUS " Armadillo will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-     # Check if the patch command is available (does not come by default on Fedora or openSUSE)
-     find_program(PATCH_EXECUTABLE NAME patch PATHS ENV PATH)     
-     if(NOT PATCH_EXECUTABLE)
-          message(" The patch command has not been found.")
-          message(" You can try to install it by typing:")    
-          if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-              message(" sudo yum install patch") 
-          elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-              message(" sudo zypper install patch")
-          else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-              message(" sudo apt-get install patch") 
-          endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-          message(FATAL_ERROR "The patch command is required to download and build armadillo")
-     endif(NOT PATCH_EXECUTABLE)
-     set(armadillo_RELEASE 4.450.0)  
-     set(armadillo_MD5 "2e13f5d0a666a67fb44e375722479629") 
-     if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-         set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_no.patch)
-         file(WRITE ${ARMADILLO_PATCH_FILE} "")
-     else(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
-         set(ARMADILLO_PATCH_FILE ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}/armadillo_enable_lapack.patch)
-         file(WRITE ${ARMADILLO_PATCH_FILE}
-"12c12
-< // #define ARMA_USE_LAPACK
----
->    #define ARMA_USE_LAPACK
-19c19
-< // #define ARMA_USE_BLAS
----
->    #define ARMA_USE_BLAS
-") 
-     endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}/armadillo-${armadillo_RELEASE}.tar.gz)
+  
+     set(armadillo_RELEASE 4.600.2)  
+     set(armadillo_MD5 "cfa4962bfa48bf3953d012b2f8fcfa35") 
+     
      ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
          URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
          URL_MD5 ${armadillo_MD5}
-         PATCH_COMMAND patch -N <BINARY_DIR>/include/armadillo_bits/config.hpp ${ARMADILLO_PATCH_FILE}
          CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF
          BUILD_IN_SOURCE 1
          BUILD_COMMAND make

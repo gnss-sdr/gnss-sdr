@@ -476,6 +476,16 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
             {
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
 }
 
@@ -560,5 +570,15 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
                 std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                 std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
 }

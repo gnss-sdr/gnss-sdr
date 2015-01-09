@@ -31,6 +31,7 @@
 
 #include <ctime>
 #include <iostream>
+#include <boost/chrono.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -48,7 +49,6 @@
 #include "fir_filter.h"
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
-#include "boost/shared_ptr.hpp"
 #include "pass_through.h"
 #include "file_output_filter.h"
 
@@ -709,7 +709,16 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block."<< std::endl;
-
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
             //std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
             //std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
             //std::cout << gnss_synchro.Acq_samplestamp_samples << "acq samples" <<std::endl;

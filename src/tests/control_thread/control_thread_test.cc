@@ -35,7 +35,7 @@
 #include <exception>
 #include <memory>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
+#include <boost/thread.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
 #include <gtest/gtest.h>

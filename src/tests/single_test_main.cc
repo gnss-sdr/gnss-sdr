@@ -31,8 +31,7 @@
 
 #include <iostream>
 #include <queue>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
+#include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>

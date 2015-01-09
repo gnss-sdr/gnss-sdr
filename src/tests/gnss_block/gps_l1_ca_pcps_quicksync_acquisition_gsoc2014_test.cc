@@ -597,6 +597,16 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
                     EXPECT_EQ(2, message)
                         << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "----Acquired: " << nsamples << " samples"<< std::endl;
@@ -687,6 +697,16 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
                     EXPECT_EQ(2, message)
                         << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "----Acquired: " << nsamples << " samples"<< std::endl;
@@ -769,19 +789,19 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                     std::cout << "Estimated probability of false alarm (satellite present) = " << Pfa_p << std::endl;
                     std::cout << "Estimated probability of miss detection (satellite present) = " << Pmd << std::endl;
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
-					
-					if(dump_test_results)
-					{
-		                std::stringstream filenamepd;
-		                filenamepd.str("");
-		                filenamepd << "../data/test_statistics_" << gnss_synchro.System
-		                           << "_" << gnss_synchro.Signal << "_sat_"
-		                           << gnss_synchro.PRN  << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";
 
-		                pdpfafile.open(filenamepd.str().c_str(), std::ios::app | std::ios::out);
-		                pdpfafile << FLAGS_value_threshold << "," << Pd << "," << Pfa_p << "," << Pmd << std::endl;
-		                pdpfafile.close();
-                    }
+                    if(dump_test_results)
+                        {
+                            std::stringstream filenamepd;
+                            filenamepd.str("");
+                            filenamepd << "../data/test_statistics_" << gnss_synchro.System
+                                       << "_" << gnss_synchro.Signal << "_sat_"
+                                       << gnss_synchro.PRN  << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";
+
+                            pdpfafile.open(filenamepd.str().c_str(), std::ios::app | std::ios::out);
+                            pdpfafile << FLAGS_value_threshold << "," << Pd << "," << Pfa_p << "," << Pmd << std::endl;
+                            pdpfafile.close();
+                        }
 
 
                 }
@@ -789,19 +809,29 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                 {
                     std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
-					
-					if(dump_test_results)
-					{
-		                std::stringstream filenamepf;
-		                filenamepf.str("");
-		                filenamepf << "../data/test_statistics_" << gnss_synchro.System
-		                           << "_" << gnss_synchro.Signal << "_sat_"
-		                           << gnss_synchro.PRN  << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";
 
-		                pdpfafile.open(filenamepf.str().c_str(), std::ios::app | std::ios::out);
-		                pdpfafile << FLAGS_value_threshold << "," << Pfa_a << std::endl;
-		                pdpfafile.close();
-                    }
+                    if(dump_test_results)
+                        {
+                            std::stringstream filenamepf;
+                            filenamepf.str("");
+                            filenamepf << "../data/test_statistics_" << gnss_synchro.System
+                                       << "_" << gnss_synchro.Signal << "_sat_"
+                                       << gnss_synchro.PRN  << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";
+
+                            pdpfafile.open(filenamepf.str().c_str(), std::ios::app | std::ios::out);
+                            pdpfafile << FLAGS_value_threshold << "," << Pfa_a << std::endl;
+                            pdpfafile.close();
+                        }
                 }
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
 }

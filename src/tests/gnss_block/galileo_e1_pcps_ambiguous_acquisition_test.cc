@@ -230,9 +230,16 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
         end = tv.tv_sec *1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
 
-    //ASSERT_NO_THROW( {
-    //    ch_thread.timed_join(boost::posix_time::seconds(1));
-    //}) << "Failure while waiting the queue to stop" << std::endl;
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;

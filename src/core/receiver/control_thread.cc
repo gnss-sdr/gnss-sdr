@@ -36,11 +36,9 @@
 #include <unistd.h>
 #include <iostream>
 #include <map>
-#include <memory>
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
-#include <boost/thread.hpp>
 #include <gnuradio/message.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>

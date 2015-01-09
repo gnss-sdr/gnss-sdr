@@ -31,7 +31,7 @@
 * -------------------------------------------------------------------------
 */
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.2"
+#define GNSS_SDR_VERSION "0.0.4"
 #endif
 
 #include <ctime>
@@ -40,8 +40,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
+#include <boost/thread.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>

@@ -246,18 +246,20 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     }) << "Failure running the top_block." << std::endl;
 
 #ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
+    ASSERT_NO_THROW( {
+        ch_thread.timed_join(boost::posix_time::seconds(1));
+    }) << "Failure while waiting the queue to stop" << std::endl;
 #endif
 #ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
+    ASSERT_NO_THROW( {
+        ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    }) << "Failure while waiting the queue to stop" << std::endl;
 #endif
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
     EXPECT_EQ(0, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
+
+
 }

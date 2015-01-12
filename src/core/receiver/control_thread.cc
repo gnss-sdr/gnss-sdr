@@ -560,7 +560,7 @@ void ControlThread::read_control_messages()
         }
     else
         {
-            control_messages_ = 0;
+            control_messages_->clear();
         }
 }
 

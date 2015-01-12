@@ -67,8 +67,8 @@ public:
      */
     ControlThread(std::shared_ptr<ConfigurationInterface> configuration);
 
-    //! \brief Virtual destructor. Derived classes must implement the destructor
-    virtual ~ControlThread();
+    //! \brief Destructor
+    ~ControlThread();
 
     /*! \brief Runs the control thread
      *

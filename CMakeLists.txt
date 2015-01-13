@@ -52,27 +52,34 @@ endif(ENABLE_PACKAGING)
 ###############################
 # GNSS-SDR version information 
 ###############################
-# Get the current working branch
-execute_process(
-    COMMAND git rev-parse --abbrev-ref HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_BRANCH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set(THIS_IS_A_RELEASE ON)   # only related to version name, no further implications. 
+if(NOT ${THIS_IS_A_RELEASE})
+    # Get the current working branch
+    execute_process(
+        COMMAND git rev-parse --abbrev-ref HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_BRANCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 
-# Get the latest abbreviated commit hash of the working branch
-execute_process(
-    COMMAND git log -1 --format=%h
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+    # Get the latest abbreviated commit hash of the working branch
+    execute_process(
+        COMMAND git log -1 --format=%h
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+endif(NOT ${THIS_IS_A_RELEASE})
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT    0)
-set(VERSION_INFO_MINOR_VERSION 4.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
-set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
+if(${THIS_IS_A_RELEASE})
+    set(VERSION_INFO_MINOR_VERSION 5)
+else(${THIS_IS_A_RELEASE})
+    set(VERSION_INFO_MINOR_VERSION 4.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+endif(${THIS_IS_A_RELEASE})
 
+set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
 
 
 ########################################################################

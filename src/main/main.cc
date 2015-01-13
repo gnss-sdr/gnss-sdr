@@ -31,7 +31,7 @@
 * -------------------------------------------------------------------------
 */
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.4"
+#define GNSS_SDR_VERSION "0.0.5"
 #endif
 
 #include <ctime>

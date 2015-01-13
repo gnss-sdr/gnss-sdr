@@ -80,7 +80,7 @@ set(CPACK_STRIP_FILES                  "ON")
 # Debian-specific settings
 set(CPACK_DEBIAN_PACKAGE_SECTION       "science")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY      "optional")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS       "libboost-dev (>= 1.45), libstdc++6 (>= 4.7), libc6 (>= 2.13), gnuradio (>= 3.7), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.4), libblas-dev  (>= 1.2), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS       "cmake (>= 2.8), libstdc++6 (>= 4.7), libc6 (>= 2.13), libboost-dev (>= 1.45), libboost-date-time-dev (>= 1.45), libboost-system-dev (>= 1.45), libboost-filesystem-dev (>= 1.45), libboost-thread-dev (>= 1.45), libboost-serialization-dev (>= 1.45), libboost-program-options-dev (>= 1.45), libboost-test-dev (>= 1.45), libuhd-dev (>= 3.7), gnuradio-dev (>= 3.7.3), gr-osmosdr (>= 0.1.1), liblog4cpp5-dev (>= 1.0), libarmadillo-dev (>= 1:4.200.0), liblapack-dev (>= 3.4), libblas-dev (>= 1.2), gfortran (>= 1:4.7), libssl-dev (>= 1.0), libgflags-dev (>= 2.0), libgoogle-glog-dev (>= 0.3.3), libgtest-dev (>= 1.7)")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION   "GNSS Software Defined Receiver written in C++.
  Global Navigation Satellite Systems receiver defined by software.
  It performs all the signal processing from raw signal samples up to the

@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
@@ -17,6 +16,17 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(adapters)
-add_subdirectory(gnuradio_blocks)
 
+set(DATA_TYPE_GR_BLOCKS_SOURCES 
+     interleaved_byte_to_complex_byte.cc
+)
+
+include_directories(
+     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+)
+
+file(GLOB DATA_TYPE_GR_BLOCKS_HEADERS "*.h")
+add_library(data_type_gr_blocks ${DATA_TYPE_GR_BLOCKS_SOURCES} ${DATA_TYPE_GR_BLOCKS_HEADERS})
+source_group(Headers FILES ${DATA_TYPE_GR_BLOCKS_HEADERS})
+target_link_libraries(data_type_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

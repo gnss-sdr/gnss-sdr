@@ -20,12 +20,14 @@
 set(DATATYPE_ADAPTER_SOURCES 
 	ishort_to_complex.cc 
 	ibyte_to_complex.cc
-	byte_to_short.cc )
+	byte_to_short.cc
+	ibyte_to_cbyte.cc )
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
+     ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/gnuradio_blocks
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -35,5 +37,5 @@ file(GLOB DATATYPE_ADAPTER_HEADERS "*.h")
 add_library(datatype_adapters ${DATATYPE_ADAPTER_SOURCES} ${DATATYPE_ADAPTER_HEADERS})
 source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
 add_dependencies(datatype_adapters glog-${glog_RELEASE})
-target_link_libraries(datatype_adapters ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+target_link_libraries(datatype_adapters data_type_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
 

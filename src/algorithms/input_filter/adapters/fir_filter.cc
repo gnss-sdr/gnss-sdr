@@ -32,6 +32,7 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/filter/pm_remez.h>
 #include <glog/logging.h>
+#include <volk/volk.h>
 #include "configuration_interface.h"
 
 using google::LogMessage;
@@ -56,9 +57,50 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
     }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+           && (output_item_type_.compare("gr_complex") == 0))
+       {
+           item_size = sizeof(gr_complex);
+           cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
+
+           fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
+           fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
+           DLOG(INFO) << "I input_filter(" << fir_filter_fff_1_->unique_id() << ")";
+           DLOG(INFO) << "Q input_filter(" << fir_filter_fff_2_->unique_id() << ")";
+
+           float_to_complex_ = gr::blocks::float_to_complex::make();
+
+           if (dump_)
+           {
+               DLOG(INFO) << "Dumping output into file " << dump_filename_;
+               file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+           }
+       }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+           && (output_item_type_.compare("cbyte") == 0))
+       {
+           item_size = sizeof(lv_8sc_t);
+           cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
+
+           fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
+           fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
+           DLOG(INFO) << "I input_filter(" << fir_filter_fff_1_->unique_id() << ")";
+           DLOG(INFO) << "Q input_filter(" << fir_filter_fff_2_->unique_id() << ")";
+
+           float_to_char_1_ = gr::blocks::float_to_char::make();
+           float_to_char_2_ = gr::blocks::float_to_char::make();
+
+           char_x2_cbyte_ = make_byte_x2_to_complex_byte();
+
+           if (dump_)
+           {
+               DLOG(INFO) << "Dumping output into file " << dump_filename_;
+               file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+           }
+       }
     else
     {
-        LOG(ERROR) << taps_item_type_ << " unknown input filter item type";
+        LOG(ERROR) << " Unknown item type conversion";
     }
 }
 
@@ -71,13 +113,48 @@ FirFilter::~FirFilter()
 
 void FirFilter::connect(gr::top_block_sptr top_block)
 {
-    if (dump_)
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
+            && (output_item_type_.compare("gr_complex") == 0))
         {
-            top_block->connect(fir_filter_ccf_, 0, file_sink_, 0);
+            if (dump_)
+                {
+                    top_block->connect(fir_filter_ccf_, 0, file_sink_, 0);
+                }
+            else
+                {
+                    DLOG(INFO) << "Nothing to connect internally";
+                }
+        }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+           && (output_item_type_.compare("gr_complex") == 0))
+        {
+            top_block->connect(cbyte_to_float_x2_, 0, fir_filter_fff_1_, 0);
+            top_block->connect(cbyte_to_float_x2_, 1, fir_filter_fff_2_, 0);
+            top_block->connect(fir_filter_fff_1_, 0, float_to_complex_, 0);
+            top_block->connect(fir_filter_fff_2_, 0, float_to_complex_, 1);
+            if (dump_)
+                {
+                    top_block->connect(float_to_complex_, 0, file_sink_, 0);
+                }
+
+        }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+            && (output_item_type_.compare("cbyte") == 0))
+        {
+            top_block->connect(cbyte_to_float_x2_, 0, fir_filter_fff_1_, 0);
+            top_block->connect(cbyte_to_float_x2_, 1, fir_filter_fff_2_, 0);
+            top_block->connect(fir_filter_fff_1_, 0, float_to_char_1_, 0);
+            top_block->connect(fir_filter_fff_2_, 0, float_to_char_2_, 0);
+            top_block->connect(float_to_char_1_, 0, char_x2_cbyte_, 0);
+            top_block->connect(float_to_char_2_, 0, char_x2_cbyte_, 1);
+            if (dump_)
+                {
+                    top_block->connect(char_x2_cbyte_, 0, file_sink_, 0);
+                }
         }
     else
         {
-            DLOG(INFO) << "Nothing to connect internally";
+            LOG(ERROR) << " Unknown item type conversion";
         }
 }
 
@@ -85,9 +162,39 @@ void FirFilter::connect(gr::top_block_sptr top_block)
 
 void FirFilter::disconnect(gr::top_block_sptr top_block)
 {
-    if (dump_)
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
+            && (output_item_type_.compare("gr_complex") == 0))
         {
-            top_block->connect(fir_filter_ccf_, 0, file_sink_, 0);
+            if (dump_)
+                {
+                    top_block->disconnect(fir_filter_ccf_, 0, file_sink_, 0);
+                }
+        }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+           && (output_item_type_.compare("gr_complex") == 0))
+        {
+            top_block->disconnect(fir_filter_fff_2_, 0, float_to_complex_, 1);
+            top_block->disconnect(fir_filter_fff_1_, 0, float_to_complex_, 0);
+            top_block->disconnect(cbyte_to_float_x2_, 1, fir_filter_fff_2_, 0);
+            top_block->disconnect(cbyte_to_float_x2_, 0, fir_filter_fff_1_, 0);
+        }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+            && (output_item_type_.compare("cbyte") == 0))
+        {
+            top_block->disconnect(float_to_char_2_, 0, char_x2_cbyte_, 1);
+            top_block->disconnect(float_to_char_1_, 0, char_x2_cbyte_, 0);
+            top_block->disconnect(fir_filter_fff_2_, 0, float_to_char_2_, 0);
+            top_block->disconnect(fir_filter_fff_1_, 0, float_to_char_1_, 0);
+            top_block->disconnect(cbyte_to_float_x2_, 0, fir_filter_fff_1_, 0);
+            top_block->disconnect(cbyte_to_float_x2_, 1, fir_filter_fff_2_, 0);
+            if (dump_)
+                {
+                    top_block->disconnect(char_x2_cbyte_, 0, file_sink_, 0);
+                }
+        }
+    else
+        {
+            LOG(ERROR) << " unknown input filter item type";
         }
 }
 
@@ -95,14 +202,52 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr FirFilter::get_left_block()
 {
-    return fir_filter_ccf_;
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
+            && (output_item_type_.compare("gr_complex") == 0))
+        {
+            return fir_filter_ccf_;
+        }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+           && (output_item_type_.compare("gr_complex") == 0))
+        {
+            return cbyte_to_float_x2_;
+        }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+            && (output_item_type_.compare("cbyte") == 0))
+        {
+            return cbyte_to_float_x2_;
+        }
+    else
+        {
+            return nullptr;
+            LOG(ERROR) << " unknown input filter item type";
+        }
 }
 
 
 
 gr::basic_block_sptr FirFilter::get_right_block()
 {
-    return fir_filter_ccf_;
+    if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
+            && (output_item_type_.compare("gr_complex") == 0))
+        {
+            return fir_filter_ccf_;
+        }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+           && (output_item_type_.compare("gr_complex") == 0))
+        {
+            return float_to_complex_;
+        }
+    else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
+            && (output_item_type_.compare("cbyte") == 0))
+        {
+            return char_x2_cbyte_;
+        }
+    else
+        {
+            return nullptr;
+            LOG(ERROR) << " unknown input filter item type";
+        }
 }
 
 

@@ -1,6 +1,6 @@
 /*!
- * \file interleaved_byte_to_complex_byte.cc
- * \brief Adapts an 8-bits interleaved sample stream into a 16-bits complex stream
+ * \file byte_x2_to_complex_byte.cc
+ * \brief  * \brief Adapts two signed char streams into a std::complex<signed char> stream
  * \author Carles Fernandez Prades, cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -29,42 +29,42 @@
  */
 
 
-#include "interleaved_byte_to_complex_byte.h"
+#include "byte_x2_to_complex_byte.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 
 
-interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte()
+byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte()
 {
-    return interleaved_byte_to_complex_byte_sptr(new interleaved_byte_to_complex_byte());
+    return byte_x2_to_complex_byte_sptr(new byte_x2_to_complex_byte());
 }
 
 
 
-interleaved_byte_to_complex_byte::interleaved_byte_to_complex_byte() : sync_decimator("interleaved_byte_to_complex_byte",
-                        gr::io_signature::make (1, 1, sizeof(char)),
-                        gr::io_signature::make (1, 1, sizeof(lv_8sc_t)), // lv_8sc_t is a Volk's typedef for std::complex<signed char>
-                        2)
+byte_x2_to_complex_byte::byte_x2_to_complex_byte() : sync_block("byte_x2_to_complex_byte",
+                        gr::io_signature::make (2, 2, sizeof(char)),
+                        gr::io_signature::make (1, 1, sizeof(lv_8sc_t))) // lv_8sc_t is a Volk's typedef for std::complex<signed char>
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(lv_8sc_t);
     set_alignment(std::max(1, alignment_multiple));
 }
 
 
-int interleaved_byte_to_complex_byte::work(int noutput_items,
+int byte_x2_to_complex_byte::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const signed char *in = (const signed char *) input_items[0];
+    const char *in0 = (const char *) input_items[0];
+    const char *in1 = (const char *) input_items[1];
     lv_8sc_t *out = (lv_8sc_t *) output_items[0];
-    // This could be put into a Volk kernel
+    // This could be put into a volk kernel
     signed char real_part;
     signed char imag_part;
     for(unsigned int number = 0; number < 2 * noutput_items; number++)
         {
             // lv_cmake(r, i) defined at volk/volk_complex.h
-            real_part = *in++;
-            imag_part = *in++;
+            real_part = *in0++;
+            imag_part = *in1++;
             *out++ = lv_cmake(real_part, imag_part);
         }
 

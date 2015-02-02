@@ -38,11 +38,15 @@
 #include <vector>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/float_to_char.h>
+#include <gnuradio/blocks/float_to_complex.h>
 #include <gnuradio/filter/fir_filter_ccf.h>
+#include <gnuradio/filter/fir_filter_fff.h>
 #include <gnuradio/msg_queue.h>
 #include "gnss_synchro.h"
 #include "gnss_block_interface.h"
-
+#include "complex_byte_to_float_x2.h"
+#include "byte_x2_to_complex_byte.h"
 
 class ConfigurationInterface;
 
@@ -100,6 +104,13 @@ private:
     boost::shared_ptr<gr::msg_queue> queue_;
     gr::blocks::file_sink::sptr file_sink_;
     void init();
+    complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
+    gr::filter::fir_filter_fff::sptr fir_filter_fff_1_;
+    gr::filter::fir_filter_fff::sptr fir_filter_fff_2_;
+    gr::blocks::float_to_char::sptr float_to_char_1_;
+    gr::blocks::float_to_char::sptr float_to_char_2_;
+    byte_x2_to_complex_byte_sptr char_x2_cbyte_;
+    gr::blocks::float_to_complex::sptr float_to_complex_;
 };
 
 #endif

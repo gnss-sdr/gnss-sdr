@@ -19,6 +19,8 @@
 
 set(INPUT_FILTER_GR_BLOCKS_SOURCES 
      beamformer.cc
+     complex_byte_to_float_x2.cc
+     byte_x2_to_complex_byte.cc
 )
 
 include_directories(
@@ -26,9 +28,10 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${VOLK_INCLUDE_DIRS}
 )
 
 file(GLOB INPUT_FILTER_GR_BLOCKS_HEADERS "*.h")
 add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES} ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
-target_link_libraries(input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})
+target_link_libraries(input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${VOLK_LIBRARIES})

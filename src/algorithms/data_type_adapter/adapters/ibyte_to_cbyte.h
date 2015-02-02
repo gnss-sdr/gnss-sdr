@@ -29,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_IBYTE_TO_COMPLEX_H_
-#define GNSS_SDR_IBYTE_TO_COMPLEX_H_
+#ifndef GNSS_SDR_IBYTE_TO_CBYTE_H_
+#define GNSS_SDR_IBYTE_TO_CBYTE_H_
 
 #include <string>
 #include <gnuradio/blocks/file_sink.h>

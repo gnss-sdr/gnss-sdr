@@ -41,6 +41,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/conditioner/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks

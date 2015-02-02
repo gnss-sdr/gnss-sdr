@@ -1,6 +1,6 @@
 /*!
- * \file interleaved_byte_to_complex_byte.cc
- * \brief Adapts an 8-bits interleaved sample stream into a 16-bits complex stream
+ * \file complex_byte_to_float_x2.cc
+ * \brief Adapts a std::complex<signed char> stream into two 16-bits (short) streams
  * \author Carles Fernandez Prades, cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -29,44 +29,35 @@
  */
 
 
-#include "interleaved_byte_to_complex_byte.h"
+#include "complex_byte_to_float_x2.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 
 
-interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte()
+complex_byte_to_float_x2_sptr make_complex_byte_to_float_x2()
 {
-    return interleaved_byte_to_complex_byte_sptr(new interleaved_byte_to_complex_byte());
+    return complex_byte_to_float_x2_sptr(new complex_byte_to_float_x2());
 }
 
 
 
-interleaved_byte_to_complex_byte::interleaved_byte_to_complex_byte() : sync_decimator("interleaved_byte_to_complex_byte",
-                        gr::io_signature::make (1, 1, sizeof(char)),
+complex_byte_to_float_x2::complex_byte_to_float_x2() : sync_block("complex_byte_to_float_x2",
                         gr::io_signature::make (1, 1, sizeof(lv_8sc_t)), // lv_8sc_t is a Volk's typedef for std::complex<signed char>
-                        2)
+                        gr::io_signature::make (2, 2, sizeof(float)))
 {
     const int alignment_multiple = volk_get_alignment() / sizeof(lv_8sc_t);
     set_alignment(std::max(1, alignment_multiple));
 }
 
 
-int interleaved_byte_to_complex_byte::work(int noutput_items,
+int complex_byte_to_float_x2::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const signed char *in = (const signed char *) input_items[0];
-    lv_8sc_t *out = (lv_8sc_t *) output_items[0];
-    // This could be put into a Volk kernel
-    signed char real_part;
-    signed char imag_part;
-    for(unsigned int number = 0; number < 2 * noutput_items; number++)
-        {
-            // lv_cmake(r, i) defined at volk/volk_complex.h
-            real_part = *in++;
-            imag_part = *in++;
-            *out++ = lv_cmake(real_part, imag_part);
-        }
-
+    const lv_8sc_t *in = (const lv_8sc_t *) input_items[0];
+    float *out0 = (float*) output_items[0];
+    float *out1 = (float*) output_items[1];
+    const float scalar = 1;
+    volk_8ic_s32f_deinterleave_32f_x2(out0, out1, in, scalar, noutput_items);
     return noutput_items;
 }

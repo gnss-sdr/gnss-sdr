@@ -21,6 +21,8 @@ set(INPUT_FILTER_GR_BLOCKS_SOURCES
      beamformer.cc
      complex_byte_to_float_x2.cc
      byte_x2_to_complex_byte.cc
+     cshort_to_float_x2.cc
+     short_x2_to_cshort.cc
 )
 
 include_directories(

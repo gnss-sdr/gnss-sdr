@@ -1,6 +1,6 @@
 /*!
- * \file byte_x2_to_complex_byte.cc
- * \brief Adapts two signed char streams into a std::complex<signed char> stream
+ * \file short_x2_to_cshort.cc
+ * \brief  Adapts two short streams into a std::complex<short> stream
  * \author Carles Fernandez Prades, cfernandez(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -29,37 +29,37 @@
  */
 
 
-#include "byte_x2_to_complex_byte.h"
+#include "short_x2_to_cshort.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 
 
-byte_x2_to_complex_byte_sptr make_byte_x2_to_complex_byte()
+short_x2_to_cshort_sptr make_short_x2_to_cshort()
 {
-    return byte_x2_to_complex_byte_sptr(new byte_x2_to_complex_byte());
+    return short_x2_to_cshort_sptr(new short_x2_to_cshort());
 }
 
 
 
-byte_x2_to_complex_byte::byte_x2_to_complex_byte() : sync_block("byte_x2_to_complex_byte",
-                        gr::io_signature::make (2, 2, sizeof(char)),
-                        gr::io_signature::make (1, 1, sizeof(lv_8sc_t))) // lv_8sc_t is a Volk's typedef for std::complex<signed char>
+short_x2_to_cshort::short_x2_to_cshort() : sync_block("short_x2_to_cshort",
+                        gr::io_signature::make (2, 2, sizeof(short)),
+                        gr::io_signature::make (1, 1, sizeof(lv_16sc_t))) // lv_8sc_t is a Volk's typedef for std::complex<signed char>
 {
-    const int alignment_multiple = volk_get_alignment() / sizeof(lv_8sc_t);
+    const int alignment_multiple = volk_get_alignment() / sizeof(lv_16sc_t);
     set_alignment(std::max(1, alignment_multiple));
 }
 
 
-int byte_x2_to_complex_byte::work(int noutput_items,
+int short_x2_to_cshort::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
-    const char *in0 = (const char *) input_items[0];
-    const char *in1 = (const char *) input_items[1];
-    lv_8sc_t *out = (lv_8sc_t *) output_items[0];
+    const short *in0 = (const short *) input_items[0];
+    const short *in1 = (const short *) input_items[1];
+    lv_16sc_t *out = (lv_16sc_t *) output_items[0];
     // This could be put into a volk kernel
-    signed char real_part;
-    signed char imag_part;
+    short real_part;
+    short imag_part;
     for(int number = 0; number < noutput_items; number++)
         {
             // lv_cmake(r, i) defined at volk/volk_complex.h

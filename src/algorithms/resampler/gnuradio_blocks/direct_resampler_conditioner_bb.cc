@@ -1,7 +1,7 @@
 /*!
- * \file direct_resampler_conditioner_ss.cc
- * \brief Nearest neighborhood resampler with
- *        complex short input and complex short output
+ * \file direct_resampler_conditioner_bb.cc
+ * \brief Nearest neighborhood resampler with std::complex<signed char>
+ * input and std::complex<signed char> output
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
  * Detailed description of the file here if needed.
@@ -32,7 +32,7 @@
  */
 
 
-#include "direct_resampler_conditioner_ss.h"
+#include "direct_resampler_conditioner_bb.h"
 #include <algorithm>
 #include <iostream>
 #include <gnuradio/io_signature.h>
@@ -41,19 +41,19 @@
 
 using google::LogMessage;
 
-direct_resampler_conditioner_ss_sptr direct_resampler_make_conditioner_ss(
+direct_resampler_conditioner_bb_sptr direct_resampler_make_conditioner_bb(
         double sample_freq_in, double sample_freq_out)
 {
 
-    return direct_resampler_conditioner_ss_sptr(
-            new direct_resampler_conditioner_ss(sample_freq_in,
+    return direct_resampler_conditioner_bb_sptr(
+            new direct_resampler_conditioner_bb(sample_freq_in,
                     sample_freq_out));
 }
 
-direct_resampler_conditioner_ss::direct_resampler_conditioner_ss(
+direct_resampler_conditioner_bb::direct_resampler_conditioner_bb(
         double sample_freq_in, double sample_freq_out) :
-    gr::block("direct_resampler_make_conditioner_ss", gr::io_signature::make(1,
-            1, sizeof(lv_16sc_t)), gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
+    gr::block("direct_resampler_make_conditioner_bb", gr::io_signature::make(1,
+            1, sizeof(lv_8sc_t)), gr::io_signature::make(1, 1, sizeof(lv_8sc_t))),
             d_sample_freq_in(sample_freq_in), d_sample_freq_out(
                     sample_freq_out), d_phase(0), d_lphase(0), d_history(1)
 {
@@ -72,12 +72,12 @@ direct_resampler_conditioner_ss::direct_resampler_conditioner_ss(
     set_output_multiple(1);
 }
 
-direct_resampler_conditioner_ss::~direct_resampler_conditioner_ss()
+direct_resampler_conditioner_bb::~direct_resampler_conditioner_bb()
 {
 
 }
 
-void direct_resampler_conditioner_ss::forecast(int noutput_items,
+void direct_resampler_conditioner_bb::forecast(int noutput_items,
         gr_vector_int &ninput_items_required)
 {
 
@@ -91,13 +91,13 @@ void direct_resampler_conditioner_ss::forecast(int noutput_items,
     }
 }
 
-int direct_resampler_conditioner_ss::general_work(int noutput_items,
+int direct_resampler_conditioner_bb::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
 
-    const lv_16sc_t *in = (const lv_16sc_t *)input_items[0];
-    lv_16sc_t *out = (lv_16sc_t *)output_items[0];
+    const lv_8sc_t *in = (const lv_8sc_t *)input_items[0];
+    lv_8sc_t *out = (lv_8sc_t *)output_items[0];
 
     int lcv = 0;
     int count = 0;

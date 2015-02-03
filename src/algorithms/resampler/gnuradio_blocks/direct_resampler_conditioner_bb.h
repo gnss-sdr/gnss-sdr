@@ -1,7 +1,7 @@
 /*!
- * \file direct_resampler_conditioner_ss.h
+ * \file direct_resampler_conditioner_bb.h
  * \brief Nearest neighborhood resampler with
- *        std::complex<short> input and std::complex<short> output
+ *        std::complex<signed char> input and std::complex<signed char> output
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
  * -------------------------------------------------------------------------
@@ -29,30 +29,30 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_SS_H
-#define	GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_SS_H
+#ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_BB_H
+#define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_BB_H
 
 #include <gnuradio/block.h>
 
-class direct_resampler_conditioner_ss;
-typedef boost::shared_ptr<direct_resampler_conditioner_ss>
-        direct_resampler_conditioner_ss_sptr;
+class direct_resampler_conditioner_bb;
+typedef boost::shared_ptr<direct_resampler_conditioner_bb>
+        direct_resampler_conditioner_bb_sptr;
 
-direct_resampler_conditioner_ss_sptr
-direct_resampler_make_conditioner_ss(double sample_freq_in,
+direct_resampler_conditioner_bb_sptr
+direct_resampler_make_conditioner_bb(double sample_freq_in,
         double sample_freq_out);
 /*!
- * \brief This class implements a direct resampler conditioner for std::complex<short>
+ * \brief This class implements a direct resampler conditioner for std::complex<signed char>
  *
  * Direct resampling without interpolation
  */
-class direct_resampler_conditioner_ss: public gr::block
+class direct_resampler_conditioner_bb: public gr::block
 {
 
 private:
 
-    friend direct_resampler_conditioner_ss_sptr
-    direct_resampler_make_conditioner_ss(double sample_freq_in,
+    friend direct_resampler_conditioner_bb_sptr
+    direct_resampler_make_conditioner_bb(double sample_freq_in,
             double sample_freq_out);
 
     double d_sample_freq_in;
@@ -62,12 +62,12 @@ private:
     unsigned int d_phase_step;
     unsigned int d_history;
 
-    direct_resampler_conditioner_ss(double sample_freq_in,
+    direct_resampler_conditioner_bb(double sample_freq_in,
             double sample_freq_out);
 
 public:
 
-    ~direct_resampler_conditioner_ss();
+    ~direct_resampler_conditioner_bb();
 
     unsigned int sample_freq_in() const
     {

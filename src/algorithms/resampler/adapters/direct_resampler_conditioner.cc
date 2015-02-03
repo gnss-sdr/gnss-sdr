@@ -32,8 +32,10 @@
 #include "direct_resampler_conditioner.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
+#include <volk/volk.h>
 #include "direct_resampler_conditioner_cc.h"
 #include "direct_resampler_conditioner_ss.h"
+#include "direct_resampler_conditioner_bb.h"
 #include "configuration_interface.h"
 
 
@@ -56,19 +58,29 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_,
-                    sample_freq_out_);
+            resampler_ = direct_resampler_make_conditioner_cc(sample_freq_in_, sample_freq_out_);
             DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
             DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
-
         }
-    else if (item_type_.compare("short") == 0)
+    else if (item_type_.compare("cshort") == 0)
         {
-            item_size_ = sizeof(short);
-            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_,
-                    sample_freq_out_);
+            item_size_ = sizeof(lv_16sc_t);
+            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_, sample_freq_out_);
+            DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
+            DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
+            DLOG(INFO) << "Item size " << item_size_;
+            DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
+        }
+    else if (item_type_.compare("cbyte") == 0)
+        {
+            item_size_ = sizeof(lv_8sc_t);
+            resampler_ = direct_resampler_make_conditioner_bb(sample_freq_in_, sample_freq_out_);
+            DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
+            DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
+            DLOG(INFO) << "Item size " << item_size_;
+            DLOG(INFO) << "resampler(" << resampler_->unique_id() << ")";
         }
     else
         {

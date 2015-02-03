@@ -40,6 +40,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_char.h>
 #include <gnuradio/blocks/float_to_complex.h>
+#include <gnuradio/blocks/float_to_short.h>
 #include <gnuradio/filter/fir_filter_ccf.h>
 #include <gnuradio/filter/fir_filter_fff.h>
 #include <gnuradio/msg_queue.h>
@@ -47,6 +48,8 @@
 #include "gnss_block_interface.h"
 #include "complex_byte_to_float_x2.h"
 #include "byte_x2_to_complex_byte.h"
+#include "short_x2_to_cshort.h"
+#include "cshort_to_float_x2.h"
 
 class ConfigurationInterface;
 
@@ -111,6 +114,11 @@ private:
     gr::blocks::float_to_char::sptr float_to_char_2_;
     byte_x2_to_complex_byte_sptr char_x2_cbyte_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
+    cshort_to_float_x2_sptr cshort_to_float_x2_;
+    gr::blocks::float_to_short::sptr float_to_short_1_;
+    gr::blocks::float_to_short::sptr float_to_short_2_;
+    short_x2_to_cshort_sptr short_x2_to_cshort_;
+
 };
 
 #endif

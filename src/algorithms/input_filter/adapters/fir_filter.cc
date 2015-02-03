@@ -47,80 +47,80 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
     size_t item_size;
     (*this).init();
     if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("gr_complex") == 0)
-        && (output_item_type_.compare("gr_complex") == 0))
-    {
-        item_size = sizeof(gr_complex);
-        fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps_);
-        DLOG(INFO) << "input_filter(" << fir_filter_ccf_->unique_id() << ")";
-        if (dump_)
+            && (output_item_type_.compare("gr_complex") == 0))
         {
-            DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+            item_size = sizeof(gr_complex);
+            fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(1, taps_);
+            DLOG(INFO) << "input_filter(" << fir_filter_ccf_->unique_id() << ")";
+            if (dump_)
+                {
+                    DLOG(INFO) << "Dumping output into file " << dump_filename_;
+                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                }
         }
-    }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-        && (output_item_type_.compare("cshort") == 0))
-    {
-         item_size = sizeof(lv_16sc_t);
-         cshort_to_float_x2_ = make_cshort_to_float_x2();
-         fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
-         fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
-         DLOG(INFO) << "I input_filter(" << fir_filter_fff_1_->unique_id() << ")";
-         DLOG(INFO) << "Q input_filter(" << fir_filter_fff_2_->unique_id() << ")";
-         float_to_short_1_ = gr::blocks::float_to_short::make();
-         float_to_short_2_ = gr::blocks::float_to_short::make();
-         short_x2_to_cshort_ = make_short_x2_to_cshort();
-        if (dump_)
+            && (output_item_type_.compare("cshort") == 0))
         {
-            DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+            item_size = sizeof(lv_16sc_t);
+            cshort_to_float_x2_ = make_cshort_to_float_x2();
+            fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
+            fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
+            DLOG(INFO) << "I input_filter(" << fir_filter_fff_1_->unique_id() << ")";
+            DLOG(INFO) << "Q input_filter(" << fir_filter_fff_2_->unique_id() << ")";
+            float_to_short_1_ = gr::blocks::float_to_short::make();
+            float_to_short_2_ = gr::blocks::float_to_short::make();
+            short_x2_to_cshort_ = make_short_x2_to_cshort();
+            if (dump_)
+                {
+                    DLOG(INFO) << "Dumping output into file " << dump_filename_;
+                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                }
         }
-    }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-           && (output_item_type_.compare("gr_complex") == 0))
-       {
-           item_size = sizeof(gr_complex);
-           cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
+            && (output_item_type_.compare("gr_complex") == 0))
+        {
+            item_size = sizeof(gr_complex);
+            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
 
-           fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
-           fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
-           DLOG(INFO) << "I input_filter(" << fir_filter_fff_1_->unique_id() << ")";
-           DLOG(INFO) << "Q input_filter(" << fir_filter_fff_2_->unique_id() << ")";
+            fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
+            fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
+            DLOG(INFO) << "I input_filter(" << fir_filter_fff_1_->unique_id() << ")";
+            DLOG(INFO) << "Q input_filter(" << fir_filter_fff_2_->unique_id() << ")";
 
-           float_to_complex_ = gr::blocks::float_to_complex::make();
+            float_to_complex_ = gr::blocks::float_to_complex::make();
 
-           if (dump_)
-           {
-               DLOG(INFO) << "Dumping output into file " << dump_filename_;
-               file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
-           }
-       }
+            if (dump_)
+                {
+                    DLOG(INFO) << "Dumping output into file " << dump_filename_;
+                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                }
+        }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-           && (output_item_type_.compare("cbyte") == 0))
-       {
-           item_size = sizeof(lv_8sc_t);
-           cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
+            && (output_item_type_.compare("cbyte") == 0))
+        {
+            item_size = sizeof(lv_8sc_t);
+            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
 
-           fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
-           fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
-           DLOG(INFO) << "I input_filter(" << fir_filter_fff_1_->unique_id() << ")";
-           DLOG(INFO) << "Q input_filter(" << fir_filter_fff_2_->unique_id() << ")";
+            fir_filter_fff_1_ = gr::filter::fir_filter_fff::make(1, taps_);
+            fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
+            DLOG(INFO) << "I input_filter(" << fir_filter_fff_1_->unique_id() << ")";
+            DLOG(INFO) << "Q input_filter(" << fir_filter_fff_2_->unique_id() << ")";
 
-           float_to_char_1_ = gr::blocks::float_to_char::make();
-           float_to_char_2_ = gr::blocks::float_to_char::make();
+            float_to_char_1_ = gr::blocks::float_to_char::make();
+            float_to_char_2_ = gr::blocks::float_to_char::make();
 
-           char_x2_cbyte_ = make_byte_x2_to_complex_byte();
+            char_x2_cbyte_ = make_byte_x2_to_complex_byte();
 
-           if (dump_)
-           {
-               DLOG(INFO) << "Dumping output into file " << dump_filename_;
-               file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
-           }
-       }
+            if (dump_)
+                {
+                    DLOG(INFO) << "Dumping output into file " << dump_filename_;
+                    file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
+                }
+        }
     else
-    {
-        LOG(ERROR) << " Unknown item type conversion";
-    }
+        {
+            LOG(ERROR) << " Unknown item type conversion";
+        }
 }
 
 
@@ -145,8 +145,8 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                 }
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-        && (output_item_type_.compare("cshort") == 0))
-    {
+            && (output_item_type_.compare("cshort") == 0))
+        {
             top_block->connect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
             top_block->connect(fir_filter_fff_1_, 0, float_to_short_1_, 0);
@@ -157,9 +157,9 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                 {
                     top_block->connect(short_x2_to_cshort_, 0, file_sink_, 0);
                 }
-    }
+        }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-           && (output_item_type_.compare("gr_complex") == 0))
+            && (output_item_type_.compare("gr_complex") == 0))
         {
             top_block->connect(cbyte_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->connect(cbyte_to_float_x2_, 1, fir_filter_fff_2_, 0);
@@ -204,7 +204,7 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                 }
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-           && (output_item_type_.compare("gr_complex") == 0))
+            && (output_item_type_.compare("gr_complex") == 0))
         {
             top_block->disconnect(fir_filter_fff_2_, 0, float_to_complex_, 1);
             top_block->disconnect(fir_filter_fff_1_, 0, float_to_complex_, 0);
@@ -216,8 +216,8 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                 }
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-        && (output_item_type_.compare("cshort") == 0))
-    {
+            && (output_item_type_.compare("cshort") == 0))
+        {
             top_block->disconnect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
             top_block->disconnect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
             top_block->disconnect(fir_filter_fff_1_, 0, float_to_short_1_, 0);
@@ -229,7 +229,7 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                     top_block->disconnect(short_x2_to_cshort_, 0, file_sink_, 0);
                 }
 
-    }
+        }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
             && (output_item_type_.compare("cbyte") == 0))
         {
@@ -265,7 +265,7 @@ gr::basic_block_sptr FirFilter::get_left_block()
             return cshort_to_float_x2_;
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-           && (output_item_type_.compare("gr_complex") == 0))
+            && (output_item_type_.compare("gr_complex") == 0))
         {
             return cbyte_to_float_x2_;
         }
@@ -291,12 +291,12 @@ gr::basic_block_sptr FirFilter::get_right_block()
             return fir_filter_ccf_;
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-        && (output_item_type_.compare("cshort") == 0))
+            && (output_item_type_.compare("cshort") == 0))
         {
             return short_x2_to_cshort_;
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cbyte") == 0)
-           && (output_item_type_.compare("gr_complex") == 0))
+            && (output_item_type_.compare("gr_complex") == 0))
         {
             return float_to_complex_;
         }

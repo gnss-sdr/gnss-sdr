@@ -23,6 +23,7 @@ set(INPUT_FILTER_GR_BLOCKS_SOURCES
      byte_x2_to_complex_byte.cc
      cshort_to_float_x2.cc
      short_x2_to_cshort.cc
+     complex_float_to_complex_byte.cc
 )
 
 include_directories(
@@ -30,10 +31,15 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${GNURADIO_BLOCKS_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
 file(GLOB INPUT_FILTER_GR_BLOCKS_HEADERS "*.h")
 add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES} ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
-target_link_libraries(input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${VOLK_LIBRARIES})
+target_link_libraries(input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+if(NOT VOLK_GNSSSDR_FOUND)
+    add_dependencies(input_filter_gr_blocks volk_gnsssdr_module)
+endif(NOT VOLK_GNSSSDR_FOUND)

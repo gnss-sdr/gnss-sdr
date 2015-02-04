@@ -60,7 +60,7 @@ int interleaved_short_to_complex_short::work(int noutput_items,
     // This could be put into a Volk kernel
     int16_t real_part;
     int16_t imag_part;
-    for(unsigned int number = 0; number < 2 * noutput_items; number++)
+    for(int number = 0; number < 2 * noutput_items; number++)
         {
             // lv_cmake(r, i) defined at volk/volk_complex.h
             real_part = *in++;

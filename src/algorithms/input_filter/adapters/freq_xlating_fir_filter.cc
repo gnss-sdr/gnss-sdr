@@ -33,6 +33,7 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/filter/pm_remez.h>
 #include <glog/logging.h>
+#include <volk/volk.h>
 #include "configuration_interface.h"
 
 using google::LogMessage;
@@ -69,12 +70,21 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
             && (output_item_type_.compare("gr_complex") == 0))
         {
             item_size = sizeof(gr_complex);
-            input_size_ = sizeof(short); //input
+            input_size_ = sizeof(int16_t); //input
             freq_xlating_fir_filter_scf_ = gr::filter::freq_xlating_fir_filter_scf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
             DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_scf_->unique_id() << ")";
         }
-
+    else if((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0)
+            && (output_item_type_.compare("gr_complex") == 0))
+        {
+            item_size = sizeof(gr_complex);
+            input_size_ = sizeof(int8_t); //input
     //  gr_char_to_short_ = gr::blocks::char_to_short::make();
+            freq_xlating_fir_filter_scf_ = gr::filter::freq_xlating_fir_filter_scf::make(decimation_factor, taps_, intermediate_freq_, sampling_freq_);
+// short_x2_complex_byte
+            DLOG(INFO) << "input_filter(" << freq_xlating_fir_filter_scf_->unique_id() << ")";
+        }
+
     // gr_short_to_float _ = gr::blocks::short_to_float::make();
     else
         {

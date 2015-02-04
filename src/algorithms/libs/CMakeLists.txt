@@ -50,6 +50,7 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${VOLK_INCLUDE_DIRS}
 )
 
 if(OPENCL_FOUND)

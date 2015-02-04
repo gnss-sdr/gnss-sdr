@@ -34,6 +34,7 @@
 #include <iostream>
 #include <complex>
 #include <glog/logging.h>
+#include <volk/volk.h>
 #include "configuration_interface.h"
 
 using google::LogMessage;
@@ -58,15 +59,19 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
         }
     else if(item_type_.compare("short") == 0)
         {
-            item_size_ = sizeof(short);
+            item_size_ = sizeof(int16_t);
+        }
+    else if(item_type_.compare("cshort") == 0)
+        {
+            item_size_ = sizeof(lv_16sc_t);
         }
     else if(item_type_.compare("byte") == 0)
         {
-            item_size_ = sizeof(char);
+            item_size_ = sizeof(int8_t);
         }
     else if(item_type_.compare("cbyte") == 0)
         {
-            item_size_ = sizeof(std::complex<unsigned char>);
+            item_size_ = sizeof(lv_8sc_t);
         }
     else
         {

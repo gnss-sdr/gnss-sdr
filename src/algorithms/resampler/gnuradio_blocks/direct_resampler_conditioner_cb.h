@@ -1,5 +1,5 @@
 /*!
- * \file direct_resampler_conditioner_bb.h
+ * \file direct_resampler_conditioner_cb.h
  * \brief Nearest neighborhood resampler with
  *        std::complex<signed char> input and std::complex<signed char> output
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
@@ -29,30 +29,30 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_BB_H
-#define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_BB_H
+#ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CB_H
+#define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CB_H
 
 #include <gnuradio/block.h>
 
-class direct_resampler_conditioner_bb;
-typedef boost::shared_ptr<direct_resampler_conditioner_bb>
-        direct_resampler_conditioner_bb_sptr;
+class direct_resampler_conditioner_cb;
+typedef boost::shared_ptr<direct_resampler_conditioner_cb>
+        direct_resampler_conditioner_cb_sptr;
 
-direct_resampler_conditioner_bb_sptr
-direct_resampler_make_conditioner_bb(double sample_freq_in,
+direct_resampler_conditioner_cb_sptr
+direct_resampler_make_conditioner_cb(double sample_freq_in,
         double sample_freq_out);
 /*!
  * \brief This class implements a direct resampler conditioner for std::complex<signed char>
  *
  * Direct resampling without interpolation
  */
-class direct_resampler_conditioner_bb: public gr::block
+class direct_resampler_conditioner_cb: public gr::block
 {
 
 private:
 
-    friend direct_resampler_conditioner_bb_sptr
-    direct_resampler_make_conditioner_bb(double sample_freq_in,
+    friend direct_resampler_conditioner_cb_sptr
+    direct_resampler_make_conditioner_cb(double sample_freq_in,
             double sample_freq_out);
 
     double d_sample_freq_in;
@@ -62,12 +62,12 @@ private:
     unsigned int d_phase_step;
     unsigned int d_history;
 
-    direct_resampler_conditioner_bb(double sample_freq_in,
+    direct_resampler_conditioner_cb(double sample_freq_in,
             double sample_freq_out);
 
 public:
 
-    ~direct_resampler_conditioner_bb();
+    ~direct_resampler_conditioner_cb();
 
     unsigned int sample_freq_in() const
     {
@@ -83,4 +83,4 @@ public:
             gr_vector_void_star &output_items);
 };
 
-#endif /* GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_SS_H */
+#endif /* GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H */

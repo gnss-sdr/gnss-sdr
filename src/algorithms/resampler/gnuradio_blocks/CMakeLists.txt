@@ -19,8 +19,8 @@
 
 set(RESAMPLER_GR_BLOCKS_SOURCES 
      direct_resampler_conditioner_cc.cc
-     direct_resampler_conditioner_ss.cc
-     direct_resampler_conditioner_bb.cc
+     direct_resampler_conditioner_cs.cc
+     direct_resampler_conditioner_cb.cc
 )
 
 include_directories(

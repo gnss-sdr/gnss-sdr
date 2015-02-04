@@ -34,8 +34,8 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <volk/volk.h>
 #include "direct_resampler_conditioner_cc.h"
-#include "direct_resampler_conditioner_ss.h"
-#include "direct_resampler_conditioner_bb.h"
+#include "direct_resampler_conditioner_cs.h"
+#include "direct_resampler_conditioner_cb.h"
 #include "configuration_interface.h"
 
 
@@ -67,7 +67,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     else if (item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
-            resampler_ = direct_resampler_make_conditioner_ss(sample_freq_in_, sample_freq_out_);
+            resampler_ = direct_resampler_make_conditioner_cs(sample_freq_in_, sample_freq_out_);
             DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
             DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
             DLOG(INFO) << "Item size " << item_size_;
@@ -76,7 +76,7 @@ DirectResamplerConditioner::DirectResamplerConditioner(
     else if (item_type_.compare("cbyte") == 0)
         {
             item_size_ = sizeof(lv_8sc_t);
-            resampler_ = direct_resampler_make_conditioner_bb(sample_freq_in_, sample_freq_out_);
+            resampler_ = direct_resampler_make_conditioner_cb(sample_freq_in_, sample_freq_out_);
             DLOG(INFO) << "sample_freq_in " << sample_freq_in_;
             DLOG(INFO) << "sample_freq_out" << sample_freq_out_;
             DLOG(INFO) << "Item size " << item_size_;

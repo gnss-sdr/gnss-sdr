@@ -1,5 +1,5 @@
 /*!
- * \file direct_resampler_conditioner_ss.cc
+ * \file direct_resampler_conditioner_cs.cc
  * \brief Nearest neighborhood resampler with
  *        complex short input and complex short output
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
@@ -32,7 +32,7 @@
  */
 
 
-#include "direct_resampler_conditioner_ss.h"
+#include "direct_resampler_conditioner_cs.h"
 #include <algorithm>
 #include <iostream>
 #include <gnuradio/io_signature.h>
@@ -41,18 +41,18 @@
 
 using google::LogMessage;
 
-direct_resampler_conditioner_ss_sptr direct_resampler_make_conditioner_ss(
+direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
         double sample_freq_in, double sample_freq_out)
 {
 
-    return direct_resampler_conditioner_ss_sptr(
-            new direct_resampler_conditioner_ss(sample_freq_in,
+    return direct_resampler_conditioner_cs_sptr(
+            new direct_resampler_conditioner_cs(sample_freq_in,
                     sample_freq_out));
 }
 
-direct_resampler_conditioner_ss::direct_resampler_conditioner_ss(
+direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
         double sample_freq_in, double sample_freq_out) :
-    gr::block("direct_resampler_make_conditioner_ss", gr::io_signature::make(1,
+    gr::block("direct_resampler_make_conditioner_cs", gr::io_signature::make(1,
             1, sizeof(lv_16sc_t)), gr::io_signature::make(1, 1, sizeof(lv_16sc_t))),
             d_sample_freq_in(sample_freq_in), d_sample_freq_out(
                     sample_freq_out), d_phase(0), d_lphase(0), d_history(1)
@@ -72,12 +72,12 @@ direct_resampler_conditioner_ss::direct_resampler_conditioner_ss(
     set_output_multiple(1);
 }
 
-direct_resampler_conditioner_ss::~direct_resampler_conditioner_ss()
+direct_resampler_conditioner_cs::~direct_resampler_conditioner_cs()
 {
 
 }
 
-void direct_resampler_conditioner_ss::forecast(int noutput_items,
+void direct_resampler_conditioner_cs::forecast(int noutput_items,
         gr_vector_int &ninput_items_required)
 {
 
@@ -91,7 +91,7 @@ void direct_resampler_conditioner_ss::forecast(int noutput_items,
     }
 }
 
-int direct_resampler_conditioner_ss::general_work(int noutput_items,
+int direct_resampler_conditioner_cs::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {

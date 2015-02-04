@@ -38,6 +38,7 @@
 #include <exception>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <volk/volk.h>
 #include "gnss_sdr_valve.h"
 #include "configuration_interface.h"
 
@@ -82,11 +83,11 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         }
     else if (item_type_.compare("short") == 0)
         {
-            item_size_ = sizeof(short int);
+            item_size_ = sizeof(int16_t);
         }
     else if (item_type_.compare("byte") == 0)
         {
-    		item_size_ = sizeof(char);
+    		item_size_ = sizeof(int8_t);
         }
     else
         {

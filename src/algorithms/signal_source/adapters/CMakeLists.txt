@@ -128,6 +128,7 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}     
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${VOLK_INCLUDE_DIRS}
 )
 
 if(ARCH_64BITS)

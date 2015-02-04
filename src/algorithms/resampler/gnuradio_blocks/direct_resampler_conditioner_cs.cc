@@ -37,7 +37,6 @@
 #include <iostream>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include <volk/volk.h>
 
 using google::LogMessage;
 
@@ -61,11 +60,11 @@ direct_resampler_conditioner_cs::direct_resampler_conditioner_cs(
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
     if (d_sample_freq_in >= d_sample_freq_out)
     {
-        d_phase_step = static_cast<unsigned int>(floor(two_32 * sample_freq_out / sample_freq_in));
+        d_phase_step = static_cast<uint32_t>(floor(two_32 * sample_freq_out / sample_freq_in));
     }
     else
     {
-        d_phase_step = static_cast<unsigned int>(floor(two_32 * sample_freq_in / sample_freq_out));
+        d_phase_step = static_cast<uint32_t>(floor(two_32 * sample_freq_in / sample_freq_out));
     }
 
     set_relative_rate(1.0 * sample_freq_out / sample_freq_in);

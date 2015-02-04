@@ -33,6 +33,7 @@
 #define	GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H
 
 #include <gnuradio/block.h>
+#include <volk/volk.h>
 
 class direct_resampler_conditioner_cs;
 typedef boost::shared_ptr<direct_resampler_conditioner_cs>
@@ -57,9 +58,9 @@ private:
 
     double d_sample_freq_in;
     double d_sample_freq_out;
-    unsigned int d_phase;
-    unsigned int d_lphase;
-    unsigned int d_phase_step;
+    uint32_t d_phase;
+    uint32_t d_lphase;
+    uint32_t d_phase_step;
     unsigned int d_history;
 
     direct_resampler_conditioner_cs(double sample_freq_in,

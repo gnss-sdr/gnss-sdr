@@ -63,11 +63,11 @@ direct_resampler_conditioner_cc::direct_resampler_conditioner_cc(
     const double two_32 = 4294967296.0;
     if (d_sample_freq_in >= d_sample_freq_out)
         {
-            d_phase_step = static_cast<unsigned int>(floor(two_32 * sample_freq_out / sample_freq_in));
+            d_phase_step = static_cast<uint32_t>(floor(two_32 * sample_freq_out / sample_freq_in));
         }
     else
         {
-            d_phase_step =  static_cast<unsigned int>(floor(two_32 * sample_freq_in / sample_freq_out));
+            d_phase_step =  static_cast<uint32_t>(floor(two_32 * sample_freq_in / sample_freq_out));
         }
     set_relative_rate(1.0 * sample_freq_out / sample_freq_in);
     set_output_multiple(1);

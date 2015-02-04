@@ -71,7 +71,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
     std::string s = "InputFilter";
-    double IF = configuration->property(s + ".IF", 0.0);
+    //double IF = configuration->property(s + ".IF", 0.0);
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -85,7 +85,15 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         {
             item_size_ = sizeof(int16_t);
         }
+    else if (item_type_.compare("ishort") == 0)
+        {
+            item_size_ = sizeof(int16_t);
+        }
     else if (item_type_.compare("byte") == 0)
+        {
+    		item_size_ = sizeof(int8_t);
+        }
+    else if (item_type_.compare("ibyte") == 0)
         {
     		item_size_ = sizeof(int8_t);
         }
@@ -174,7 +182,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     double signal_duration_s;
     signal_duration_s = static_cast<double>(samples_) * ( 1 / static_cast<double>(sampling_frequency_));
 
-    if ((item_type_.compare("gr_complex") != 0) && (IF < 1e6) )  // if IF < BW/2, signal is complex (interleaved)
+    if ((item_type_.compare("gr_complex") != 0) || (item_type_.compare("ishort") != 0) || (item_type_.compare("ibyte") != 0) )  // signal is complex (interleaved)
         {
             signal_duration_s /= 2;
         }

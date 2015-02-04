@@ -317,7 +317,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
     else if((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("short") == 0)
             && (output_item_type_.compare("cshort") == 0))
         {
-           return short_x2_to_cshort_;
+            return short_x2_to_cshort_;
         }
     else if((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("byte") == 0)
             && (output_item_type_.compare("gr_complex") == 0))
@@ -398,7 +398,7 @@ void FreqXlatingFirFilter::init()
     int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
 
     std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl,
-              error_w, filter_type, grid_density);
+            error_w, filter_type, grid_density);
 
     taps_.reserve(taps_d.size());
     for (std::vector<double>::iterator it = taps_d.begin(); it != taps_d.end(); it++)

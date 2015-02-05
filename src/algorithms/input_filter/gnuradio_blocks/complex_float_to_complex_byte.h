@@ -31,8 +31,6 @@
 #ifndef GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H_
 #define GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H_
 
-
-#include <string>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
 
@@ -45,7 +43,7 @@ complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();
 /*!
  * \brief This class adapts a gr_complex stream into a std::complex<signed char> stream
  */
-class complex_float_to_complex_byte :  public gr::sync_block
+class complex_float_to_complex_byte : public gr::sync_block
 {
 private:
     friend complex_float_to_complex_byte_sptr make_complex_float_to_complex_byte();

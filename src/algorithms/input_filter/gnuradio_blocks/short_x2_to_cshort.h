@@ -32,7 +32,6 @@
 #define GNSS_SDR_SHORT_X2_TO_CSHORT_H_
 
 
-#include <string>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
 

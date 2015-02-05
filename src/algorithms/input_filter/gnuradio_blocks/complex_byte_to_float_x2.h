@@ -32,7 +32,6 @@
 #define GNSS_SDR_COMPLEX_BYTE_TO_FLOAT_X2_H_
 
 
-#include <string>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_block.h>
 
@@ -46,7 +45,7 @@ complex_byte_to_float_x2_sptr make_complex_byte_to_float_x2();
  * \brief This class adapts a std::complex<signed char> stream
  * into two 16-bits (short) streams
  */
-class complex_byte_to_float_x2 :  public gr::sync_block
+class complex_byte_to_float_x2 : public gr::sync_block
 {
 private:
     friend complex_byte_to_float_x2_sptr make_complex_byte_to_float_x2();

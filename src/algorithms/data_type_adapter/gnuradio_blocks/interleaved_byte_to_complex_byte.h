@@ -32,7 +32,6 @@
 #define GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H_
 
 
-#include <string>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/sync_decimator.h>
 

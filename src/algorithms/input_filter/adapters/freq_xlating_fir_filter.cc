@@ -107,7 +107,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(ConfigurationInterface* configuration
         }
     else
         {
-            LOG(ERROR) << taps_item_type_ << " unknown input filter item type";
+            LOG(ERROR) << " Unknown input filter input/output item type conversion";
             item_size = sizeof(gr_complex); //avoids uninitialization
         }
 
@@ -186,7 +186,7 @@ void FreqXlatingFirFilter::connect(gr::top_block_sptr top_block)
         }
     else
         {
-            LOG(ERROR) << " unknown input filter item type";
+            LOG(ERROR) << " Unknown input filter input/output item type conversion";
         }
 }
 
@@ -252,7 +252,7 @@ void FreqXlatingFirFilter::disconnect(gr::top_block_sptr top_block)
         }
     else
         {
-            LOG(ERROR) << " unknown input filter item type";
+            LOG(ERROR) << " Unknown input filter input/output item type conversion";
         }
 }
 
@@ -292,7 +292,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_left_block()
     else
         {
             return nullptr;
-            LOG(ERROR) << " unknown input filter item type";
+            LOG(ERROR) << " Unknown input filter input/output item type conversion";
         }
 }
 
@@ -332,7 +332,7 @@ gr::basic_block_sptr FreqXlatingFirFilter::get_right_block()
     else
         {
             return nullptr;
-            LOG(ERROR) << " unknown input filter item type";
+            LOG(ERROR) << " Unknown input filter input/output item type conversion";
         }
 }
 

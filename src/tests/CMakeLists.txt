@@ -125,6 +125,8 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/data_type_adapter/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/resampler/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs

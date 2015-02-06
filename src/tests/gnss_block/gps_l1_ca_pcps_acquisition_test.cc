@@ -56,8 +56,7 @@ class GpsL1CaPcpsAcquisitionTest: public ::testing::Test
 protected:
     GpsL1CaPcpsAcquisitionTest()
     {
-        queue = gr::msg_queue::make(0);
-        top_block = gr::make_top_block("Acquisition test");
+        //queue = gr::msg_queue::make(0);
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
@@ -144,6 +143,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
+    top_block = gr::make_top_block("Acquisition test");
+    queue = gr::msg_queue::make(0);
 
     init();
     std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -172,6 +173,9 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
+    top_block = gr::make_top_block("Acquisition test");
+    queue = gr::msg_queue::make(0);
+
     double expected_delay_samples = 945;
     double expected_doppler_hz = 4500;
     init();
@@ -194,7 +198,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 5000));
+        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 7000));
     }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {

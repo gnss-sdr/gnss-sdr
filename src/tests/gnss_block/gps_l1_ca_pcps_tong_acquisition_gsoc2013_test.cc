@@ -61,7 +61,6 @@ protected:
     GpsL1CaPcpsTongAcquisitionGSoC2013Test()
     {
         queue = gr::msg_queue::make(0);
-        top_block = gr::make_top_block("Acquisition test");
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
@@ -372,6 +371,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
+    top_block = gr::make_top_block("Acquisition test");
 
     config_1();
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -398,6 +398,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
+    top_block = gr::make_top_block("Acquisition test");
 
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
@@ -492,7 +493,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {
     config_2();
-
+    top_block = gr::make_top_block("Acquisition test");
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {

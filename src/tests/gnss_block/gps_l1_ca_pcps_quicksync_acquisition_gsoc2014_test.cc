@@ -52,8 +52,8 @@
 #include "signal_generator_c.h"
 #include "gps_l1_ca_pcps_quicksync_acquisition.h"
 
-DEFINE_double(value_threshold, 0.3, "Value of the threshold for the acquisition");
-DEFINE_int32(value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
+DEFINE_double(value_threshold, 0.001, "Value of the threshold for the acquisition");
+DEFINE_int32(value_CN0_dB_0, 50, "Value for the CN0_dB_0 in channel 0");
 
 using google::LogMessage;
 
@@ -63,7 +63,6 @@ protected:
     GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test()
 {
         queue = gr::msg_queue::make(0);
-        top_block = gr::make_top_block("Acquisition test");
         factory = std::make_shared<GNSSBlockFactory>();
         item_size = sizeof(gr_complex);
         stop = false;
@@ -483,10 +482,11 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, Instantiate)
 
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ConnectAndRun)
 {
-    int nsamples = floor(fs_in*integration_time_ms*1e-3);
+    int nsamples = floor(fs_in * integration_time_ms * 1e-3);
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
+    top_block = gr::make_top_block("Acquisition test");
 
     config_1();
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -501,10 +501,10 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ConnectAndRun)
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1e6 + tv.tv_usec;
+        begin = tv.tv_sec * 1e6 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1e6 + tv.tv_usec;
+        end = tv.tv_sec * 1e6 + tv.tv_usec;
     }) << "Failure running the top_block."<< std::endl;
 
     std::cout <<  "Processed " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
@@ -516,7 +516,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ConnectAndRun)
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
 {
     config_1();
-
+    top_block = gr::make_top_block("Acquisition test");
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
@@ -616,7 +616,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise)
 {
     config_3();
-
+    top_block = gr::make_top_block("Acquisition test");
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
@@ -716,7 +716,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabilities)
 {
     config_2();
-
+    top_block = gr::make_top_block("Acquisition test");
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {

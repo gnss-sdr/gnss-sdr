@@ -57,8 +57,6 @@ class GalileoE1PcpsCccwsrAmbiguousAcquisitionTest: public ::testing::Test
 protected:
     GalileoE1PcpsCccwsrAmbiguousAcquisitionTest()
     {
-        queue = gr::msg_queue::make(0);
-        top_block = gr::make_top_block("Acquisition test");
         factory = std::make_shared<GNSSBlockFactory>();
         item_size = sizeof(gr_complex);
         stop = false;
@@ -377,6 +375,8 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
     long long int end = 0;
 
     config_1();
+    top_block = gr::make_top_block("Acquisition test");
+    queue = gr::msg_queue::make(0);
 
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
     acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
@@ -403,7 +403,8 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
 {
     config_1();
-
+    top_block = gr::make_top_block("Acquisition test");
+    queue = gr::msg_queue::make(0);
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
     acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 
@@ -497,7 +498,8 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabilities)
 {
     config_2();
-
+    top_block = gr::make_top_block("Acquisition test");
+    queue = gr::msg_queue::make(0);
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
     acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
 

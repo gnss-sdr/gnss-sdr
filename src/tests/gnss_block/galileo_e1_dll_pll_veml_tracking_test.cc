@@ -54,8 +54,6 @@ class GalileoE1DllPllVemlTrackingInternalTest: public ::testing::Test
 protected:
     GalileoE1DllPllVemlTrackingInternalTest()
     {
-        queue = gr::msg_queue::make(0);
-        top_block = gr::make_top_block("Tracking test");
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
@@ -118,6 +116,8 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
     long long int begin = 0;
     long long int end = 0;
     init();
+    queue = gr::msg_queue::make(0);
+    top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", "Galileo_E1_DLL_PLL_VEML_Tracking", 1, 1, queue);
@@ -172,6 +172,8 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
     int num_samples = 80000000; // 8 Msps
     unsigned int skiphead_sps = 8000000; // 8 Msps
     init();
+    queue = gr::msg_queue::make(0);
+    top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", "Galileo_E1_DLL_PLL_VEML_Tracking", 1, 1, queue);

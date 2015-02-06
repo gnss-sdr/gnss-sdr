@@ -36,7 +36,6 @@
 #include <gnuradio/top_block.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/analog/sig_source_i.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gtest/gtest.h>
@@ -49,7 +48,7 @@
 #include "fir_filter.h"
 
 
-DEFINE_string(filter_test_output_filename, std::string(TEST_PATH) + "data/fir_filter_test_output.dat", "Dump filename");
+DEFINE_int32(filter_test_nsamples, 1000000 , "Number of samples to filter in the tests (max: 2147483647)");
 
 class Fir_Filter_Test: public ::testing::Test
 {
@@ -71,7 +70,7 @@ protected:
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
     size_t item_size;
-    int nsamples = 10000000;
+    int nsamples = FLAGS_filter_test_nsamples;
 };
 
 void Fir_Filter_Test::init()
@@ -188,14 +187,57 @@ TEST_F(Fir_Filter_Test, ConnectAndRun)
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
+        end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
     std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 }
 
+
+TEST_F(Fir_Filter_Test, ConnectAndRunGrcomplex)
+{
+    struct timeval tv;
+    long long int begin = 0;
+    long long int end = 0;
+    top_block = gr::make_top_block("Fir filter test");
+
+    init();
+    configure_gr_complex_gr_complex();
+    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
+    std::shared_ptr<InMemoryConfiguration> config2 = std::make_shared<InMemoryConfiguration>();
+
+    config2->set_property("Test_Source.samples", std::to_string(nsamples));
+    config2->set_property("Test_Source.sampling_frequency", "4000000");
+    std::string path = std::string(TEST_PATH);
+    std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
+    config2->set_property("Test_Source.filename", filename);
+    config2->set_property("Test_Source.item_type", "gr_complex");
+    config2->set_property("Test_Source.repeat", "true");
+
+    item_size = sizeof(gr_complex);
+    ASSERT_NO_THROW( {
+        filter->connect(top_block);
+
+        boost::shared_ptr<FileSignalSource> source(new FileSignalSource(config2.get(), "Test_Source", 1, 1, queue));
+        source->connect(top_block);
+
+        boost::shared_ptr<gr::block> null_sink = gr::blocks::null_sink::make(item_size);
+
+        top_block->connect(source->get_right_block(), 0, filter->get_left_block(), 0);
+        top_block->connect(filter->get_right_block(), 0, null_sink, 0);
+    }) << "Failure connecting the top_block."<< std::endl;
+
+    EXPECT_NO_THROW( {
+        gettimeofday(&tv, NULL);
+        begin = tv.tv_sec * 1000000 + tv.tv_usec;
+        top_block->run(); // Start threads and wait
+        gettimeofday(&tv, NULL);
+        end = tv.tv_sec * 1000000 + tv.tv_usec;
+    }) << "Failure running the top_block." << std::endl;
+    std::cout <<  "Filtered " << nsamples << " gr_complex samples in " << (end-begin) << " microseconds" << std::endl;
+}
 
 TEST_F(Fir_Filter_Test, ConnectAndRunCshorts)
 {
@@ -209,7 +251,7 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCshorts)
     std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
     std::shared_ptr<InMemoryConfiguration> config2 = std::make_shared<InMemoryConfiguration>();
 
-    config2->set_property("Test_Source.samples", "1000000");
+    config2->set_property("Test_Source.samples", std::to_string(nsamples));
     config2->set_property("Test_Source.sampling_frequency", "4000000");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
@@ -234,12 +276,12 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCshorts)
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
+        end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Filtered " << nsamples << " std::complex<int16_t> samples in " << (end-begin) << " microseconds" << std::endl;
 }
 
 
@@ -256,7 +298,7 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbytes)
     std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
     std::shared_ptr<InMemoryConfiguration> config2 = std::make_shared<InMemoryConfiguration>();
 
-    config2->set_property("Test_Source.samples", "1000000");
+    config2->set_property("Test_Source.samples", std::to_string(nsamples));
     config2->set_property("Test_Source.sampling_frequency", "4000000");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
@@ -281,12 +323,12 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbytes)
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
+        end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
-    std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
+    std::cout <<  "Filtered " << nsamples << " std::complex<int8_t> samples in " << (end-begin) << " microseconds" << std::endl;
 }
 
 
@@ -302,7 +344,7 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbyteGrcomplex)
     std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
     std::shared_ptr<InMemoryConfiguration> config2 = std::make_shared<InMemoryConfiguration>();
 
-    config2->set_property("Test_Source.samples", "1000000");
+    config2->set_property("Test_Source.samples", std::to_string(nsamples));
     config2->set_property("Test_Source.sampling_frequency", "4000000");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
@@ -327,10 +369,10 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbyteGrcomplex)
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec *1000000 + tv.tv_usec;
+        begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec *1000000 + tv.tv_usec;
+        end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
     std::cout <<  "Filtered " << nsamples << " samples in " << (end-begin) << " microseconds" << std::endl;
 }

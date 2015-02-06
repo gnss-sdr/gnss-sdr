@@ -60,7 +60,6 @@ class GpsL1CaPcpsTongAcquisitionGSoC2013Test: public ::testing::Test
 protected:
     GpsL1CaPcpsTongAcquisitionGSoC2013Test()
     {
-        queue = gr::msg_queue::make(0);
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
@@ -372,6 +371,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ConnectAndRun)
     long long int begin = 0;
     long long int end = 0;
     top_block = gr::make_top_block("Acquisition test");
+    queue = gr::msg_queue::make(0);
 
     config_1();
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -399,6 +399,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
     top_block = gr::make_top_block("Acquisition test");
+    queue = gr::msg_queue::make(0);
 
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
@@ -494,6 +495,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
 {
     config_2();
     top_block = gr::make_top_block("Acquisition test");
+    queue = gr::msg_queue::make(0);
     acquisition = std::make_shared<GpsL1CaPcpsTongAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {

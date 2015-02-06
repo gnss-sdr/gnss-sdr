@@ -59,8 +59,6 @@ class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest: public ::testing::Test
 protected:
     GalileoE5aPcpsAcquisitionGSoC2014GensourceTest()
 {
-        queue = gr::msg_queue::make(0);
-        top_block = gr::make_top_block("Acquisition test");
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
@@ -597,7 +595,8 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, SOURCEValidationTOFILE)
 TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
 {
     config_1();
-
+    queue = gr::msg_queue::make(0);
+    top_block = gr::make_top_block("Acquisition test");
     //int nsamples = floor(fs_in*integration_time_ms*1e-3);
     acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1, queue);
 
@@ -606,7 +605,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     //    unsigned int skiphead_sps = 84000;
 
     ASSERT_NO_THROW( {
-        acquisition->set_channel(1);
+        acquisition->set_channel(0);
     }) << "Failure setting channel."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -641,6 +640,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
 
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
+        filter->connect(top_block);
         signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);

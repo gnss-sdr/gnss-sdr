@@ -65,8 +65,6 @@ class GalileoE1PcpsAmbiguousAcquisitionGSoCTest: public ::testing::Test
 protected:
     GalileoE1PcpsAmbiguousAcquisitionGSoCTest()
     {
-        queue = gr::msg_queue::make(0);
-        top_block = gr::make_top_block("Acquisition test");
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
@@ -160,6 +158,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
+    queue = gr::msg_queue::make(0);
+    top_block = gr::make_top_block("Acquisition test");
 
     init();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
@@ -189,6 +189,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
+    queue = gr::msg_queue::make(0);
+    top_block = gr::make_top_block("Acquisition test");
 
     init();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
@@ -261,6 +263,4 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
     EXPECT_EQ(0, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
-
-
 }

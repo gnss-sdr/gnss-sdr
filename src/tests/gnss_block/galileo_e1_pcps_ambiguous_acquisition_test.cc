@@ -193,7 +193,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 1e-6));
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {

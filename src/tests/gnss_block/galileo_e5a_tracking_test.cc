@@ -53,8 +53,6 @@ class GalileoE5aTrackingTest: public ::testing::Test
 protected:
     GalileoE5aTrackingTest()
     {
-        queue = gr::msg_queue::make(0);
-        top_block = gr::make_top_block("Tracking test");
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
@@ -109,6 +107,8 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     int fs_in = 32000000;
     int nsamples = 32000000*1.5;
     init();
+    queue = gr::msg_queue::make(0);
+    top_block = gr::make_top_block("Tracking test");
 
     // Example using smart pointers and the block factory
     std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(config, "Tracking", "Galileo_E5a_DLL_PLL_Tracking", 1, 1, queue);

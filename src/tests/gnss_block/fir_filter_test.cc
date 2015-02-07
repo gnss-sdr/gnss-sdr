@@ -46,6 +46,7 @@
 #include "interleaved_byte_to_complex_byte.h"
 #include "interleaved_short_to_complex_short.h"
 #include "fir_filter.h"
+#include "file_signal_source.h"
 
 
 DEFINE_int32(filter_test_nsamples, 1000000 , "Number of samples to filter in the tests (max: 2147483647)");

@@ -23,6 +23,7 @@ if(OPENCL_FOUND)
          gnss_signal_processing.cc
          gps_sdr_signal_processing.cc
          nco_lib.cc
+         fix_fft.cc
          pass_through.cc
          fft_execute.cc # Needs OpenCL
          fft_setup.cc # Needs OpenCL
@@ -36,6 +37,7 @@ else(OPENCL_FOUND)
          gnss_signal_processing.cc
          gps_sdr_signal_processing.cc
          nco_lib.cc
+         fix_fft.cc
          pass_through.cc
          galileo_e5_signal_processing.cc
     )

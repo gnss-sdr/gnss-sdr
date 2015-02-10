@@ -193,7 +193,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 1e-6));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 1e-9));
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -221,7 +221,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure while starting the queue" << std::endl;
 
     acquisition->init();
-    //acquisition->reset();
+    acquisition->reset();
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);

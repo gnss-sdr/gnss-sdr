@@ -299,6 +299,33 @@ void pcps_multithread_acquisition_cc::acquisition_core()
     d_core_working = false;
 }
 
+
+
+void pcps_multithread_acquisition_cc::set_state(int state)
+{
+    d_state = state;
+    if (d_state == 1)
+        {
+            d_gnss_synchro->Acq_delay_samples = 0.0;
+            d_gnss_synchro->Acq_doppler_hz = 0.0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_well_count = 0;
+            d_mag = 0.0;
+            d_input_power = 0.0;
+            d_test_statistics = 0.0;
+            d_in_dwell_count = 0;
+            d_sample_counter_buffer.clear();
+        }
+    else if (d_state == 0)
+        {}
+    else
+        {
+            LOG(ERROR) << "State can only be set to 0 or 1";
+        }
+}
+
+
+
 int pcps_multithread_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)

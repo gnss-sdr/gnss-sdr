@@ -60,6 +60,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
     item_type_ = configuration_->property(role + ".item_type",
             default_item_type);
+    //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration_->property(role + ".ifreq", 0);
@@ -129,27 +130,27 @@ void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
 
 void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 {
-	float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-	if(pfa == 0.0)
+    if(pfa == 0.0)
         {
-                 pfa = configuration_->property(role_+".pfa", 0.0);
+            pfa = configuration_->property(role_+".pfa", 0.0);
         }
-	if(pfa == 0.0)
-		{
-			threshold_ = threshold;
-		}
-	else
-		{
-			threshold_ = calculate_threshold(pfa);
-		}
+    if(pfa == 0.0)
+        {
+            threshold_ = threshold;
+        }
+    else
+        {
+            threshold_ = calculate_threshold(pfa);
+        }
 
-	DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
+    DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
 
     if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_threshold(threshold_);
-    }
+        {
+            acquisition_cc_->set_threshold(threshold_);
+        }
 }
 
 
@@ -243,6 +244,15 @@ void GpsL1CaPcpsAcquisition::reset()
         acquisition_cc_->set_active(true);
     }
 }
+
+void GpsL1CaPcpsAcquisition::set_state(int state)
+{
+    if (item_type_.compare("gr_complex") == 0)
+    {
+        acquisition_cc_->set_state(state);
+    }
+}
+
 
 
 float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)

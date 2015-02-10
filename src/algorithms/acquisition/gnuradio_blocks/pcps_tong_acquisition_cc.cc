@@ -186,6 +186,37 @@ void pcps_tong_acquisition_cc::init()
         }
 }
 
+void pcps_tong_acquisition_cc::set_state(int state)
+{
+    d_state = state;
+    if (d_state == 1)
+        {
+            d_gnss_synchro->Acq_delay_samples = 0.0;
+            d_gnss_synchro->Acq_doppler_hz = 0.0;
+            d_gnss_synchro->Acq_samplestamp_samples = 0;
+            d_well_count = 0;
+            d_well_count = 0;
+            d_tong_count = d_tong_init_val;
+            d_mag = 0.0;
+            d_input_power = 0.0;
+            d_test_statistics = 0.0;
+
+            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                {
+                    for (unsigned int i = 0; i < d_fft_size; i++)
+                        {
+                            d_grid_data[doppler_index][i] = 0;
+                        }
+                }
+        }
+    else if (d_state == 0)
+        {}
+    else
+        {
+            LOG(ERROR) << "State can only be set to 0 or 1";
+        }
+}
+
 int pcps_tong_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)

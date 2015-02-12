@@ -115,6 +115,8 @@ private:
                                // using the configuration parameters (number of channels and max channels in acquisition)
     bool connected_;
     bool running_;
+    int sources_count_;
+
     unsigned int channels_count_;
     unsigned int acq_channels_count_;
     unsigned int max_acq_channels_;
@@ -122,12 +124,15 @@ private:
     std::string config_file_;
     std::shared_ptr<ConfigurationInterface> configuration_;
     std::shared_ptr<GNSSBlockFactory> block_factory_;
-    std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_ = std::make_shared<std::vector<std::shared_ptr<GNSSBlockInterface>>>();
-    std::shared_ptr<GNSSBlockInterface> sig_source_;
-    std::shared_ptr<GNSSBlockInterface> sig_conditioner_;
+    //std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_ = std::make_shared<std::vector<std::shared_ptr<GNSSBlockInterface>>>();
+
+    std::vector<std::shared_ptr<GNSSBlockInterface>> sig_source_;
+    std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;
+
     std::shared_ptr<GNSSBlockInterface> observables_;
     std::shared_ptr<GNSSBlockInterface> pvt_;
     std::shared_ptr<GNSSBlockInterface> output_filter_;
+
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     gr::top_block_sptr top_block_;
     boost::shared_ptr<gr::msg_queue> queue_;

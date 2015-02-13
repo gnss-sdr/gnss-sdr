@@ -572,6 +572,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     acquisition->init();
+    acquisition->reset();
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
@@ -597,9 +598,10 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                 {
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
-            acquisition->set_gnss_synchro(&gnss_synchro);
+            //acquisition->set_gnss_synchro(&gnss_synchro);
+            acquisition->set_local_code();
             acquisition->set_state(1);
-            acquisition->init();
+            //acquisition->init();
             //acquisition->reset();
             start_queue();
 
@@ -669,7 +671,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 10));
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -677,7 +679,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     acquisition->init();
-    //acquisition->reset();
+    acquisition->reset();
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
@@ -704,8 +706,8 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                 }
 
             acquisition->set_local_code();
+            acquisition->set_state(1);
             start_queue();
-            acquisition->reset();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
@@ -717,13 +719,13 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                     if (message == 1)
                         {
                             //EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                            EXPECT_EQ(0, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                            //EXPECT_EQ(0, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                         }
                 }
             else if (i == 1)
                 {
-                    //EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
-                    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                    //EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
 #ifdef OLD_BOOST
             ASSERT_NO_THROW( {

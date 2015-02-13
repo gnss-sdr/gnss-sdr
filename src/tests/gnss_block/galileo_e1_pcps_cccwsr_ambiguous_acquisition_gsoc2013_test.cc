@@ -437,7 +437,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure connecting acquisition to the top_block."<< std::endl;
 
     acquisition->init();
-
+    acquisition->reset();
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
@@ -463,8 +463,8 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
             acquisition->set_gnss_synchro(&gnss_synchro);
-            acquisition->set_local_code();
-            acquisition->reset();
+            acquisition->init();
+                acquisition->reset();
 
             start_queue();
 
@@ -563,8 +563,11 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
 
-            acquisition->set_local_code();
-
+            acquisition->set_gnss_synchro(&gnss_synchro);
+            acquisition->init();
+            acquisition->reset();
+            //acquisition->set_local_code();
+            //acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW( {

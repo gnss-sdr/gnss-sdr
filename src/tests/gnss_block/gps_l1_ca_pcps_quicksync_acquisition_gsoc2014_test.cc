@@ -202,7 +202,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_1()
             std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_QuickSync_Acquisition");
-    config->set_property("Acquisition.threshold", "100");
+    config->set_property("Acquisition.threshold", "250");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
@@ -616,7 +616,8 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
 
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise)
 {
-    config_3();
+    //config_3();
+    config_1();
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -650,7 +651,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
     }) << "Failure connecting acquisition to the top_block."<< std::endl;
 
     acquisition->init();
-    //acquisition->set_state(1);
+    acquisition->reset();
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
@@ -752,6 +753,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
     }) << "Failure connecting acquisition to the top_block."<< std::endl;
 
     acquisition->init();
+    acquisition->reset();
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;

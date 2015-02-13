@@ -54,7 +54,7 @@
 #include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
 
 DEFINE_double(e1_value_threshold, 0.3, "Value of the threshold for the acquisition");
-DEFINE_int32(e1_value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
+DEFINE_int32(e1_value_CN0_dB_0, 50, "Value for the CN0_dB_0 in channel 0");
 
 using google::LogMessage;
 
@@ -211,7 +211,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_1()
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.folding_factor", "2");
-    config->set_property("Acquisition.dump", "true");
+    config->set_property("Acquisition.dump", "false");
 }
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_2()
@@ -316,7 +316,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_3()
     std::string signal = "1C";
     signal.copy(gnss_synchro.Signal, 2, 0);
 
-    integration_time_ms = 16;
+    integration_time_ms = 8;
     fs_in = 4e6;
 
     expected_delay_chips = 600;
@@ -396,7 +396,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_3()
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "125");
     config->set_property("Acquisition.folding_factor", "4");
-    config->set_property("Acquisition.dump", "true");
+    config->set_property("Acquisition.dump", "false");
 }
 
 void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::start_queue()
@@ -564,7 +564,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(1);
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -598,17 +598,17 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                 {
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
-            //acquisition->set_gnss_synchro(&gnss_synchro);
+            acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
+            acquisition->reset();
             acquisition->set_state(1);
-            //acquisition->init();
-            //acquisition->reset();
             start_queue();
-
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block."<< std::endl;
+
+            stop_queue();
 
             if (i == 0)
                 {
@@ -625,18 +625,10 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                     //EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+
+            ch_thread.join();
         }
-    LOG(INFO) << "End validation of results test";
+    DLOG(INFO) << "End validation of results test";
 }
 
 
@@ -667,11 +659,11 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting doppler_max."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 125));
+        acquisition->set_doppler_step(50);
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 10));
+        acquisition->set_threshold(0.25);
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -705,14 +697,17 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
 
+            acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
+            acquisition->reset();
             acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running the top_block."<< std::endl;
+            }) << "Failure running the top_block." << std::endl;
 
+            stop_queue();
             if (i == 0)
                 {
                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
@@ -727,18 +722,9 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                     //EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+            ch_thread.join();
         }
-    LOG(INFO) << "End validation of results with noise+interference test";
+    DLOG(INFO) << "End validation of results with noise+interference test";
 }
 
 TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResultsProbabilities)
@@ -813,6 +799,8 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block." << std::endl;
 
+            stop_queue();
+
             if (i == 0)
                 {
                     std::cout << "Estimated probability of detection = " << Pd << std::endl;
@@ -853,15 +841,6 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                             pdpfafile.close();
                         }
                 }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+            ch_thread.join();
         }
 }

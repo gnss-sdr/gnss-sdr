@@ -16,37 +16,25 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+set(ACQ_ADAPTER_SOURCES
+    gps_l1_ca_pcps_acquisition.cc
+    gps_l1_ca_pcps_multithread_acquisition.cc
+    gps_l1_ca_pcps_assisted_acquisition.cc
+    gps_l1_ca_pcps_acquisition_fine_doppler.cc
+    gps_l1_ca_pcps_tong_acquisition.cc
+    gps_l1_ca_pcps_quicksync_acquisition.cc
+    galileo_e1_pcps_ambiguous_acquisition.cc
+    galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc
+    galileo_e1_pcps_quicksync_ambiguous_acquisition.cc
+    galileo_e1_pcps_tong_ambiguous_acquisition.cc
+    galileo_e1_pcps_8ms_ambiguous_acquisition.cc
+    galileo_e5a_noncoherent_iq_acquisition_caf.cc
+)
+
+
 if(OPENCL_FOUND)
-    set(ACQ_ADAPTER_SOURCES
-         gps_l1_ca_pcps_acquisition.cc
-         gps_l1_ca_pcps_multithread_acquisition.cc
-         gps_l1_ca_pcps_assisted_acquisition.cc
-         gps_l1_ca_pcps_acquisition_fine_doppler.cc
-         gps_l1_ca_pcps_tong_acquisition.cc
-         gps_l1_ca_pcps_quicksync_acquisition.cc
-         gps_l1_ca_pcps_opencl_acquisition.cc
-         galileo_e1_pcps_ambiguous_acquisition.cc
-         galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc
-         galileo_e1_pcps_quicksync_ambiguous_acquisition.cc
-         galileo_e1_pcps_tong_ambiguous_acquisition.cc
-         galileo_e1_pcps_8ms_ambiguous_acquisition.cc
-         galileo_e5a_noncoherent_iq_acquisition_caf.cc
-    )
-else(OPENCL_FOUND)
-    set(ACQ_ADAPTER_SOURCES
-         gps_l1_ca_pcps_acquisition.cc
-         gps_l1_ca_pcps_multithread_acquisition.cc
-         gps_l1_ca_pcps_assisted_acquisition.cc
-         gps_l1_ca_pcps_acquisition_fine_doppler.cc
-         gps_l1_ca_pcps_tong_acquisition.cc
-         gps_l1_ca_pcps_quicksync_acquisition.cc
-         galileo_e1_pcps_ambiguous_acquisition.cc
-         galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc
-         galileo_e1_pcps_quicksync_ambiguous_acquisition.cc
-         galileo_e1_pcps_tong_ambiguous_acquisition.cc
-         galileo_e1_pcps_8ms_ambiguous_acquisition.cc
-         galileo_e5a_noncoherent_iq_acquisition_caf.cc
-    )
+    set(ACQ_ADAPTER_SOURCES ${ACQ_ADAPTER_SOURCES} gps_l1_ca_pcps_opencl_acquisition.cc)
 endif(OPENCL_FOUND)
 
 include_directories(
@@ -60,9 +48,11 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${GNURADIO_BLOCKS_INCLUDE_DIRS}
 )
 
 file(GLOB ACQ_ADAPTER_HEADERS "*.h")
 add_library(acq_adapters ${ACQ_ADAPTER_SOURCES} ${ACQ_ADAPTER_HEADERS})
 source_group(Headers FILES ${ACQ_ADAPTER_HEADERS}) 
 target_link_libraries(acq_adapters gnss_sp_libs acq_gr_blocks ${Boost_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+

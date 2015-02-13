@@ -39,9 +39,12 @@
 #include <string>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
+#include <gnuradio/blocks/float_to_complex.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_acquisition_cc.h"
+#include "cshort_to_float_x2.h"
+#include "complex_byte_to_float_x2.h"
 
 
 
@@ -140,6 +143,9 @@ private:
     ConfigurationInterface* configuration_;
     pcps_acquisition_cc_sptr acquisition_cc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
+    gr::blocks::float_to_complex::sptr float_to_complex_;
+    cshort_to_float_x2_sptr cshort_to_float_x2_;
+    complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
     std::string item_type_;
     unsigned int vector_length_;

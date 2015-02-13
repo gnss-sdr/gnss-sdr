@@ -16,30 +16,28 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+set(GNSS_SPLIBS_SOURCES
+    galileo_e1_signal_processing.cc
+    gnss_sdr_valve.cc
+    gnss_signal_processing.cc
+    gps_sdr_signal_processing.cc
+    nco_lib.cc
+    pass_through.cc
+    galileo_e5_signal_processing.cc
+    complex_byte_to_float_x2.cc
+    byte_x2_to_complex_byte.cc
+    cshort_to_float_x2.cc
+    short_x2_to_cshort.cc
+    complex_float_to_complex_byte.cc
+)
+    
+    
 if(OPENCL_FOUND)
-    set(GNSS_SPLIBS_SOURCES
-         galileo_e1_signal_processing.cc
-         gnss_sdr_valve.cc
-         gnss_signal_processing.cc
-         gps_sdr_signal_processing.cc
-         nco_lib.cc
-         fix_fft.cc
-         pass_through.cc
+    set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
          fft_execute.cc # Needs OpenCL
          fft_setup.cc # Needs OpenCL
          fft_kernelstring.cc # Needs OpenCL
-         galileo_e5_signal_processing.cc
-    )
-else(OPENCL_FOUND)
-    set(GNSS_SPLIBS_SOURCES
-         galileo_e1_signal_processing.cc
-         gnss_sdr_valve.cc
-         gnss_signal_processing.cc
-         gps_sdr_signal_processing.cc
-         nco_lib.cc
-         fix_fft.cc
-         pass_through.cc
-         galileo_e5_signal_processing.cc
     )
 endif(OPENCL_FOUND)
 
@@ -52,7 +50,9 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${GNURADIO_BLOCKS_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
 if(OPENCL_FOUND)
@@ -68,10 +68,16 @@ file(GLOB GNSS_SPLIBS_HEADERS "*.h")
 add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
 
-target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES} 
+target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES}
+                                   ${VOLK_LIBRARIES} 
+                                   ${VOLK_GNSSSDR_LIBRARIES} 
                                    ${GNURADIO_BLOCKS_LIBRARIES} 
                                    ${GNURADIO_FFT_LIBRARIES} 
                                    ${GNURADIO_FILTER_LIBRARIES} 
                                    ${OPT_LIBRARIES} 
                                    gnss_rx
 )
+
+if(NOT VOLK_GNSSSDR_FOUND)
+    add_dependencies(gnss_sp_libs volk_gnsssdr_module)
+endif(NOT VOLK_GNSSSDR_FOUND)

@@ -16,31 +16,21 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+set(ACQ_GR_BLOCKS_SOURCES
+    pcps_acquisition_cc.cc
+    pcps_multithread_acquisition_cc.cc
+    pcps_assisted_acquisition_cc.cc
+    pcps_acquisition_fine_doppler_cc.cc
+    pcps_tong_acquisition_cc.cc
+    pcps_cccwsr_acquisition_cc.cc
+    pcps_quicksync_acquisition_cc.cc
+    galileo_pcps_8ms_acquisition_cc.cc
+    galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc
+) 
+    
 if(OPENCL_FOUND)
-    set(ACQ_GR_BLOCKS_SOURCES
-            pcps_acquisition_cc.cc
-            pcps_multithread_acquisition_cc.cc
-            pcps_assisted_acquisition_cc.cc
-            pcps_acquisition_fine_doppler_cc.cc
-            pcps_tong_acquisition_cc.cc
-            pcps_cccwsr_acquisition_cc.cc
-            pcps_quicksync_acquisition_cc.cc
-            galileo_pcps_8ms_acquisition_cc.cc
-            galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc
-            pcps_opencl_acquisition_cc.cc # Needs OpenCL
-    )
-else(OPENCL_FOUND)
-    set(ACQ_GR_BLOCKS_SOURCES
-            pcps_acquisition_cc.cc
-            pcps_multithread_acquisition_cc.cc
-            pcps_assisted_acquisition_cc.cc
-            pcps_acquisition_fine_doppler_cc.cc
-            pcps_tong_acquisition_cc.cc
-            pcps_cccwsr_acquisition_cc.cc
-            pcps_quicksync_acquisition_cc.cc
-            galileo_pcps_8ms_acquisition_cc.cc
-            galileo_e5a_noncoherent_iq_acquisition_caf_cc.cc
-    )
+    set(ACQ_GR_BLOCKS_SOURCES ${ACQ_GR_BLOCKS_SOURCES} pcps_opencl_acquisition_cc.cc)
 endif(OPENCL_FOUND)
 
 include_directories(

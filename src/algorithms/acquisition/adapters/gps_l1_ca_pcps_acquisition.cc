@@ -90,25 +90,36 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
     code_= new gr_complex[vector_length_];
 
-    if (item_type_.compare("gr_complex") == 0)
-    {
-        item_size_ = sizeof(gr_complex);
-        acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
-                shift_resolution_, if_, fs_in_, code_length_, code_length_,
-                bit_transition_flag_, queue_, dump_, dump_filename_);
+   // if (item_type_.compare("gr_complex") == 0 || (item_type_.compare("cshort") == 0))
+   //         {
+            item_size_ = sizeof(gr_complex);
+            acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+                    shift_resolution_, if_, fs_in_, code_length_, code_length_,
+                    bit_transition_flag_, queue_, dump_, dump_filename_);
 
-        stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
 
-        DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id()
-                << ")";
-        DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id()
-                << ")";
-    }
-    else
-    {
-        LOG(WARNING) << item_type_
-                << " unknown acquisition item type";
-    }
+            DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
+    //        }
+
+    if (item_type_.compare("cshort") == 0)
+        {
+            cshort_to_float_x2_ = make_cshort_to_float_x2();
+            float_to_complex_ = gr::blocks::float_to_complex::make();
+        }
+
+    if (item_type_.compare("cbyte") == 0)
+        {
+            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
+            float_to_complex_ = gr::blocks::float_to_complex::make();
+        }
+    //}
+    //else
+    // {
+    //     LOG(WARNING) << item_type_
+    //             << " unknown acquisition item type";
+    // }
 }
 
 
@@ -147,30 +158,30 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 
     DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
 
-    if (item_type_.compare("gr_complex") == 0)
-        {
+   // if (item_type_.compare("gr_complex") == 0)
+    //    {
             acquisition_cc_->set_threshold(threshold_);
-        }
+    //    }
 }
 
 
 void GpsL1CaPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
-    if (item_type_.compare("gr_complex") == 0)
-    {
+    //   if (item_type_.compare("gr_complex") == 0)
+    //  {
         acquisition_cc_->set_doppler_max(doppler_max_);
-    }
+        // }
 }
 
 
 void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-    if (item_type_.compare("gr_complex") == 0)
-        {
+    //   if (item_type_.compare("gr_complex") == 0)
+    //      {
             acquisition_cc_->set_doppler_step(doppler_step_);
-        }
+            //     }
 
 }
 
@@ -179,33 +190,33 @@ void GpsL1CaPcpsAcquisition::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
-    if (item_type_.compare("gr_complex") == 0)
-        {
+    //  if (item_type_.compare("gr_complex") == 0)
+    //      {
             acquisition_cc_->set_channel_queue(channel_internal_queue_);
-        }
+            //     }
 }
 
 
 void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-    if (item_type_.compare("gr_complex") == 0)
-        {
+    //   if (item_type_.compare("gr_complex") == 0)
+    //     {
             acquisition_cc_->set_gnss_synchro(gnss_synchro_);
-        }
+            //     }
 }
 
 
 signed int GpsL1CaPcpsAcquisition::mag()
 {
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            return acquisition_cc_->mag();
-        }
-    else
-        {
-            return 0;
-        }
+    // //    if (item_type_.compare("gr_complex") == 0)
+    //        {
+    return acquisition_cc_->mag();
+    //       }
+    //   else
+    //       {
+    //           return 0;
+    //      }
 }
 
 
@@ -218,8 +229,8 @@ void GpsL1CaPcpsAcquisition::init()
 
 void GpsL1CaPcpsAcquisition::set_local_code()
 {
-    if (item_type_.compare("gr_complex") == 0)
-    {
+   // if (item_type_.compare("gr_complex") == 0)
+ //   {
         std::complex<float>* code = new std::complex<float>[code_length_];
 
         gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
@@ -233,24 +244,24 @@ void GpsL1CaPcpsAcquisition::set_local_code()
         acquisition_cc_->set_local_code(code_);
 
         delete[] code;
-    }
+  //  }
 }
 
 
 void GpsL1CaPcpsAcquisition::reset()
 {
-    if (item_type_.compare("gr_complex") == 0)
-    {
+    //  if (item_type_.compare("gr_complex") == 0)
+    //  {
         acquisition_cc_->set_active(true);
-    }
+        //  }
 }
 
 void GpsL1CaPcpsAcquisition::set_state(int state)
 {
-    if (item_type_.compare("gr_complex") == 0)
-    {
+    //  if (item_type_.compare("gr_complex") == 0)
+    //  {
         acquisition_cc_->set_state(state);
-    }
+        //  }
 }
 
 
@@ -281,6 +292,24 @@ void GpsL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
         {
             top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
+    else if (item_type_.compare("cshort") == 0)
+        {
+            top_block->connect(cshort_to_float_x2_, 0, float_to_complex_, 0);
+            top_block->connect(cshort_to_float_x2_, 1, float_to_complex_, 1);
+            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
+            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
+        }
+    else if (item_type_.compare("cbyte") == 0)
+        {
+            top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
+            top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
+            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
+            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
+        }
+    else
+        {
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+        }
 
 }
 
@@ -288,15 +317,49 @@ void GpsL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
 void GpsL1CaPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
-    {
-        top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
-    }
+        {
+            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
+        }
+    else if (item_type_.compare("cshort") == 0)
+        {
+            top_block->disconnect(cshort_to_float_x2_, 0, float_to_complex_, 0);
+            top_block->disconnect(cshort_to_float_x2_, 1, float_to_complex_, 1);
+            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
+            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
+        }
+    else if (item_type_.compare("cbyte") == 0)
+        {
+            top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
+            top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
+            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
+            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
+        }
+    else
+        {
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+        }
 }
 
 
 gr::basic_block_sptr GpsL1CaPcpsAcquisition::get_left_block()
 {
-    return stream_to_vector_;
+    if (item_type_.compare("gr_complex") == 0)
+        {
+            return stream_to_vector_;
+        }
+    else if (item_type_.compare("cshort") == 0)
+        {
+            return cshort_to_float_x2_;
+        }
+    else if (item_type_.compare("cbyte") == 0)
+        {
+            return cbyte_to_float_x2_;
+        }
+    else
+        {
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+            return nullptr;
+        }
 }
 
 

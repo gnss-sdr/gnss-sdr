@@ -259,6 +259,12 @@ GalileoE1PcpsTongAmbiguousAcquisition::reset()
         }
 }
 
+void
+GalileoE1PcpsTongAmbiguousAcquisition::set_state(int state)
+{
+        acquisition_cc_->set_state(state);
+}
+
 
 float GalileoE1PcpsTongAmbiguousAcquisition::calculate_threshold(float pfa)
 {

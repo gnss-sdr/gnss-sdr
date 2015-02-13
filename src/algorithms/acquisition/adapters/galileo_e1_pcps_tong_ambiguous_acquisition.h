@@ -129,6 +129,8 @@ public:
      */
     void reset();
 
+    void set_state(int state);
+
 private:
     ConfigurationInterface* configuration_;
     pcps_tong_acquisition_cc_sptr acquisition_cc_;

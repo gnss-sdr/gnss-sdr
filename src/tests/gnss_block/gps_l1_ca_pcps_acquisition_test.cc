@@ -234,6 +234,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
         end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
 
+    stop_queue();
+
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
@@ -246,11 +248,5 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 
-#ifdef OLD_BOOST
-    ch_thread.timed_join(boost::posix_time::seconds(1));
-#endif
-#ifndef OLD_BOOST
-    ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-#endif
-
+    ch_thread.join();
 }

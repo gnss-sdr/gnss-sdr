@@ -709,16 +709,10 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block."<< std::endl;
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+
+            stop_queue();
+
+            ch_thread.join();
             //std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
             //std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
             //std::cout << gnss_synchro.Acq_samplestamp_samples << "acq samples" <<std::endl;

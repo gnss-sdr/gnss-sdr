@@ -77,7 +77,7 @@ protected:
 
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
-    std::shared_ptr<AcquisitionInterface> acquisition;
+    std::shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisition> acquisition;
     std::shared_ptr<GNSSBlockFactory> factory;
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
@@ -364,7 +364,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, Instantiate)
 {
     config_1();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
-    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsCccwsrAmbiguousAcquisition>(acq_);
 }
 
 TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
@@ -379,7 +379,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ConnectAndRun)
     queue = gr::msg_queue::make(0);
 
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
-    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsCccwsrAmbiguousAcquisition>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -406,7 +406,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
-    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsCccwsrAmbiguousAcquisition>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -463,14 +463,16 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResults)
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
             acquisition->set_gnss_synchro(&gnss_synchro);
-            acquisition->init();
-                acquisition->reset();
-
+            acquisition->set_local_code();
+            acquisition->reset();
+            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block." << std::endl;
+
+            stop_queue();
 
             if (i == 0)
             {
@@ -504,7 +506,7 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition", 1, 1, queue);
-    acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    acquisition = std::dynamic_pointer_cast<GalileoE1PcpsCccwsrAmbiguousAcquisition>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -566,13 +568,15 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
             acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->init();
             acquisition->reset();
-            //acquisition->set_local_code();
-            //acquisition->set_state(1);
+            acquisition->set_local_code();
+            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block."<< std::endl;
+
+            stop_queue();
 
             if (i == 0)
             {
@@ -585,16 +589,6 @@ TEST_F(GalileoE1PcpsCccwsrAmbiguousAcquisitionTest, ValidationOfResultsProbabili
                 std::cout << "Probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                 std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+            ch_thread.join();
         }
-
 }

@@ -175,13 +175,12 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ConnectAndRun)
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec*1000000 + tv.tv_usec;
+        begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec*1000000 + tv.tv_usec;
+        end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
-
 }
 
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
@@ -194,7 +193,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
 
     init();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
-    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
 
 
     ASSERT_NO_THROW( {
@@ -238,29 +237,23 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
         start_queue();
         acquisition->init();
         acquisition->reset();
+        acquisition->set_state(1);
     }) << "Failure starting acquisition" << std::endl;
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
-        begin = tv.tv_sec*1000000 + tv.tv_usec;
+        begin = tv.tv_sec * 1000000 + tv.tv_usec;
         top_block->run(); // Start threads and wait
         gettimeofday(&tv, NULL);
-        end = tv.tv_sec*1000000 + tv.tv_usec;
+        end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
 
-#ifdef OLD_BOOST
-    ASSERT_NO_THROW( {
-        ch_thread.timed_join(boost::posix_time::seconds(1));
-    }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-    ASSERT_NO_THROW( {
-        ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-    }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+    stop_queue();
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
-    EXPECT_EQ(0, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
+    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
+
+    ch_thread.join();
 }

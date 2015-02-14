@@ -426,15 +426,15 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
+        acquisition->set_doppler_max(5000);
     }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
+        acquisition->set_doppler_step(100);
     }) << "Failure setting doppler_step." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.000001));
+        acquisition->set_threshold(0.01);
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -468,6 +468,7 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
             acquisition->reset();
+            acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
             acquisition->set_state(1);
             start_queue();
@@ -481,20 +482,15 @@ TEST_F(GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
             if (i == 0)
             {
                 EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                if (message == 1)
-                    {
-                        //EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                        //EXPECT_EQ(0, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                    }
+                EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
             }
             else if (i == 1)
             {
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
-                 //EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
 
-            std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << std::endl;
-            std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
+            //std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << std::endl;
+            //std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
             ch_thread.join();
         }
 }

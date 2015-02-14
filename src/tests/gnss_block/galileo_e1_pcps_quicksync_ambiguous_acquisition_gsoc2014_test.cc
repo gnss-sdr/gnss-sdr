@@ -362,8 +362,8 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_3()
     config->set_property("SignalSource.doppler_Hz_3", "3000");
     config->set_property("SignalSource.delay_chips_3", "300");
 
-    config->set_property("SignalSource.noise_flag", "true");
-    config->set_property("SignalSource.data_flag", "true");
+    config->set_property("SignalSource.noise_flag", "false");//
+    config->set_property("SignalSource.data_flag", "false");//
     config->set_property("SignalSource.BW_BB", "0.97");
 
     config->set_property("InputFilter.implementation", "Fir_Filter");
@@ -613,17 +613,11 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
             if (i == 0)
                 {
                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                    //EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                    if (message == 1)
-                        {
-                            EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                            //EXPECT_EQ(0, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                        }
+                    EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                 }
             else if (i == 1)
                 {
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
-                    //EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
 
             ch_thread.join();
@@ -663,7 +657,7 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.25);
+        acquisition->set_threshold(5);
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -711,16 +705,11 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
             if (i == 0)
                 {
                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                    if (message == 1)
-                        {
-                            //EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                            //EXPECT_EQ(0, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                        }
+                    EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                 }
             else if (i == 1)
                 {
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
-                    //EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
             ch_thread.join();
         }

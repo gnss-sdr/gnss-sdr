@@ -127,10 +127,12 @@ public:
 
     /*!
      * \brief Restart acquisition algorithm
-     *///    std::cout << "role " << role_ << std::endl;
-
+     */
     void reset();
 
+    /*!
+     * \brief If state = 1, it forces the block to start acquiring from the first sample
+     */
     void set_state(int state);
 
 private:

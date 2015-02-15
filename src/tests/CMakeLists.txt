@@ -28,8 +28,7 @@ if(NOT GTEST_DIR_LOCAL)
 else()
 	set(GTEST_DIR_LOCAL true)
 endif(NOT GTEST_DIR_LOCAL)
-find_path(GTEST_INCLUDE_DIRS NAMES gtest/gtest.h
-          PATHS /usr/include)
+
 if(GTEST_INCLUDE_DIRS)
     set(GTEST_DIR_LOCAL true)
 endif(GTEST_INCLUDE_DIRS)
@@ -86,10 +85,12 @@ if(NOT ${GTEST_DIR_LOCAL})
 	 set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}")
 else(NOT ${GTEST_DIR_LOCAL})
      if(GTEST_INCLUDE_DIRS)
-          find_path(GTEST_SOURCE_DIR NAMES gtest-all.cc PATHS /usr/src/gtest/src)
-          find_path(GTEST_SOURCE_INCLUDE NAMES src/gtest-all.cc PATHS /usr/src/gtest)
-          set(GTEST_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS} ${GTEST_SOURCE_INCLUDE} ${GTEST_SOURCE_DIR})
-          add_library(gtest ${GTEST_SOURCE_DIR}/gtest-all.cc ${GTEST_SOURCE_DIR}/gtest_main.cc)
+          #find_path(GTEST_SOURCE_DIR NAMES gtest-all.cc PATHS /usr/src/gtest/src)
+          #find_path(GTEST_SOURCE_INCLUDE NAMES src/gtest-all.cc PATHS /usr/src/gtest)
+          #set(GTEST_SOURCE_INCLUDE ${GTEST_INCLUDE_DIRS})
+          set(GTEST_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS} ${LIBGTEST_DEV_DIR})
+          message("++++ ${LIBGTEST_DEV_DIR}")
+          add_library(gtest ${LIBGTEST_DEV_DIR}/src/gtest-all.cc ${LIBGTEST_DEV_DIR}/src/gtest_main.cc)
           set(GTEST_LIBRARIES gtest)
      else(GTEST_INCLUDE_DIRS)
           # If the variable GTEST_DIR is defined, we use the existing Googletest
@@ -152,6 +153,7 @@ include_directories(
      ${ARMADILLO_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
+     ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
      ${GNSS_SDR_TEST_OPTIONAL_HEADERS}
 )
 

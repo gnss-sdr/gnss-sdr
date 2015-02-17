@@ -59,10 +59,10 @@ public:
     {
         return role_;
     }
-    //! Returns "IbyteToCbyte"
+    //! Returns "Ibyte_To_Cbyte"
     std::string implementation()
     {
-        return "IbyteToCbyte";
+        return "Ibyte_To_Cbyte";
     }
     size_t item_size()
     {

@@ -58,10 +58,10 @@ public:
     {
         return role_;
     }
-    //! Returns "ByteToShort"
+    //! Returns "Byte_To_Short"
     std::string implementation()
     {
-        return "ByteToShort";
+        return "Byte_To_Short";
     }
     size_t item_size()
     {

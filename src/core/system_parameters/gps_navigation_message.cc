@@ -43,7 +43,6 @@ void Gps_Navigation_Message::reset()
     d_TOW_SF3 = 0;
     d_TOW_SF4 = 0;
     d_TOW_SF5 = 0;
-
     d_IODE_SF2 = 0;
     d_IODE_SF3 = 0;
     d_Crs = 0;
@@ -762,6 +761,8 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris()
     ephemeris.i_SV_health = i_SV_health;
     ephemeris.d_TGD = d_TGD;
     ephemeris.d_IODC = d_IODC;
+    ephemeris.d_IODE_SF2 = d_IODE_SF2;
+    ephemeris.d_IODE_SF3 = d_IODE_SF3;
     ephemeris.i_AODO = i_AODO;
     ephemeris.b_fit_interval_flag = b_fit_interval_flag;
     ephemeris.d_spare1 = d_spare1;

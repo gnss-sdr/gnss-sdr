@@ -2147,7 +2147,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& eph, 
                 {
                     line += std::string(1, ' ');
                 }
-            line += Rinex_Printer::asString(fmod(gps_t, 60), 7);
+            line += Rinex_Printer::asString(second_, 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
             line += std::string(1, '0');

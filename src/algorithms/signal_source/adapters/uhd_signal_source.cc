@@ -50,28 +50,51 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     std::string empty = "";
     std::string default_dump_file = "./data/signal_source.dat";
     std::string default_item_type = "cshort";
-    samples_ = configuration->property(role + ".samples", 0);
-    dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    // UHD PARAMETERS
-    uhd::device_addr_t dev_addr;
-    device_address_= configuration->property(role + ".device_address", empty);
-    // When left empty, the device discovery routines will search all
-    // available transports on the system (ethernet, usb...).
-    // To narrow down the discovery process to a particular device,
-    // specify a transport key/value pair specific to your device.
-    if (empty.compare(device_address_) != 0) // if not empty
-        {
-            dev_addr["addr"] = device_address_;
-        }
-    subdevice_ = configuration->property(role + ".subdevice", empty);
-    freq_ = configuration->property(role + ".freq", GPS_L1_FREQ_HZ);
-    gain_ = configuration->property(role + ".gain", (double)50.0);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", (double)4.0e6);
-    IF_bandwidth_hz_ = configuration->property(role + ".IF_bandwidth_hz", sample_rate_/2);
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
+	// UHD COMMON PARAMETERS
+	uhd::device_addr_t dev_addr;
+	device_address_= configuration->property(role + ".device_address", empty);
+	// When left empty, the device discovery routines will search all
+	// available transports on the system (ethernet, usb...).
+	// To narrow down the discovery process to a particular device,
+	// specify a transport key/value pair specific to your device.
+	if (empty.compare(device_address_) != 0) // if not empty
+		{
+			dev_addr["addr"] = device_address_;
+		}
 
+	subdevice_=configuration->property(role + ".subdevice", empty);
+    RF_channels_=configuration->property(role + ".RF_channels", 1);
+	sample_rate_ = configuration->property(role + ".sampling_frequency", (double)4.0e6);
+	item_type_ = configuration->property(role + ".item_type", default_item_type);
+
+    if (RF_channels_==1)
+    {
+    	// Single RF channel UHD operation (backward compatible config file format)
+		samples_.push_back(configuration->property(role + ".samples", 0));
+		dump_.push_back(configuration->property(role + ".dump", false));
+		dump_filename_.push_back(configuration->property(role + ".dump_filename", default_dump_file));
+
+		freq_.push_back(configuration->property(role + ".freq", GPS_L1_FREQ_HZ));
+		gain_.push_back(configuration->property(role + ".gain", (double)50.0));
+
+		IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz", sample_rate_/2));
+
+    }else{
+    	// multiple RF channels selected
+    	for (int i=0;i<RF_channels_;i++)
+    	{
+        	// Single RF channel UHD operation (backward compatible config file format)
+    		samples_.push_back(configuration->property(role + ".samples" + boost::lexical_cast<std::string>(i), 0));
+    		dump_.push_back(configuration->property(role + ".dump" + boost::lexical_cast<std::string>(i), false));
+    		dump_filename_.push_back(configuration->property(role + ".dump_filename" + boost::lexical_cast<std::string>(i), default_dump_file));
+
+    		freq_.push_back(configuration->property(role + ".freq" + boost::lexical_cast<std::string>(i), GPS_L1_FREQ_HZ));
+    		gain_.push_back(configuration->property(role + ".gain" + boost::lexical_cast<std::string>(i), (double)50.0));
+
+    		IF_bandwidth_hz_.push_back(configuration->property(role + ".IF_bandwidth_hz" + boost::lexical_cast<std::string>(i), sample_rate_/2));
+    	}
+    }
     // 1. Make the uhd driver instance
     //uhd_source_= uhd::usrp::multi_usrp::make(dev_addr);
 
@@ -85,24 +108,44 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     if (item_type_.compare("cbyte") == 0)
         {
             item_size_ = sizeof(lv_8sc_t);
-            uhd_source_ = gr::uhd::usrp_source::make(dev_addr, uhd::stream_args_t("sc8"));
+            uhd_stream_args_=uhd::stream_args_t("sc8");
         }
     else if (item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
-            uhd_source_ = gr::uhd::usrp_source::make(dev_addr, uhd::stream_args_t("sc16"));
+            uhd_stream_args_=uhd::stream_args_t("sc16");
         }
     else if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            uhd_source_ = gr::uhd::usrp_source::make(dev_addr, uhd::stream_args_t("fc32"));
+            uhd_stream_args_=uhd::stream_args_t("fc32");
         }
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using cshort.";
             item_size_ = sizeof(lv_16sc_t);
-            uhd_source_ = gr::uhd::usrp_source::make(dev_addr, uhd::stream_args_t("sc16"));
+            uhd_stream_args_=uhd::stream_args_t("sc16");
         }
+
+    // select the number of channels and the subdevice specifications
+	for (int i=0;i<RF_channels_;i++)
+	{
+		uhd_stream_args_.channels.push_back(i);
+	}
+
+    // 1.2 Make the UHD source object
+    uhd_source_ = gr::uhd::usrp_source::make(dev_addr, uhd_stream_args_);
+
+	// Set subdevice specification string for USRP family devices. It is composed of:
+	// <motherboard slot name>:<daughterboard frontend name>
+	// For motherboards: All USRP family motherboards have a first slot named A:.
+	//       The USRP1 has two daughterboard subdevice slots, known as A: and B:.
+	// For daughterboards, see http://files.ettus.com/uhd_docs/manual/html/dboards.html
+	// "0" is valid for DBSRX, DBSRX2, WBX Series
+    // Dual channel example: "A:0 B:0"
+    // TODO: Add support for multiple motherboards (i.e. four channels "A:0 B:0 A:1 B1")
+
+	uhd_source_->set_subdev_spec(subdevice_, 0);
 
     // 2.1 set sampling clock reference
     // Set the clock source for the usrp device.
@@ -116,69 +159,70 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     std::cout << boost::format("Sampling Rate for the USRP device: %f [sps]...") % (uhd_source_->get_samp_rate()) << std::endl;
     LOG(INFO) << boost::format("Sampling Rate for the USRP device: %f [sps]...") % (uhd_source_->get_samp_rate());
 
-    // 3. Tune the usrp device to the desired center frequency
-    uhd_source_->set_center_freq(freq_);
-    std::cout << boost::format("Actual USRP center freq.: %f [Hz]...") % (uhd_source_->get_center_freq()) << std::endl << std::endl;
-    LOG(INFO) << boost::format("Actual USRP center freq. set to: %f [Hz]...") % (uhd_source_->get_center_freq());
+	std::vector<std::string> sensor_names;
 
-    // TODO: Assign the remnant IF from the PLL tune error
-    std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq() - freq_) << std::endl;
-    LOG(INFO) << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq() - freq_);
+	for (int i=0;i<RF_channels_;i++)
+	{
+		// 3. Tune the usrp device to the desired center frequency
+		uhd_source_->set_center_freq(freq_.at(i),i);
+		std::cout << boost::format("Actual USRP center freq.: %f [Hz]...") % (uhd_source_->get_center_freq(i)) << std::endl << std::endl;
+		LOG(INFO) << boost::format("Actual USRP center freq. set to: %f [Hz]...") % (uhd_source_->get_center_freq(i));
 
-    // 4. set the gain for the daughterboard
-    uhd_source_->set_gain(gain_);
-    std::cout << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain() << std::endl;
-    LOG(INFO) << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain();
+		// TODO: Assign the remnant IF from the PLL tune error
+		std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq(i) - freq_.at(i)) << std::endl;
+		LOG(INFO) << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq(i) - freq_.at(i));
 
-    //5.  Set the bandpass filter on the RF frontend
-    std::cout << boost::format("Setting RF bandpass filter bandwidth to: %f [Hz]...") % IF_bandwidth_hz_ << std::endl;
-    uhd_source_->set_bandwidth(IF_bandwidth_hz_);
+		// 4. set the gain for the daughterboard
+		uhd_source_->set_gain(gain_.at(i),i);
+		std::cout << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i) << std::endl;
+		LOG(INFO) << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i);
 
-    //set the antenna (optional)
-    //uhd_source_->set_antenna(ant);
+		//5.  Set the bandpass filter on the RF frontend
+		std::cout << boost::format("Setting RF bandpass filter bandwidth to: %f [Hz]...") % IF_bandwidth_hz_.at(i) << std::endl;
+		uhd_source_->set_bandwidth(IF_bandwidth_hz_.at(i),i);
 
-    // We should wait? #include <boost/thread.hpp>
-    // boost::this_thread::sleep(boost::posix_time::seconds(1));
+		//set the antenna (optional)
+		//uhd_source_->set_antenna(ant);
 
-    // Check out the status of the lo_locked sensor (boolean for LO lock state)
-    std::vector<std::string> sensor_names;
-    sensor_names = uhd_source_->get_sensor_names(0);
-    if (std::find(sensor_names.begin(), sensor_names.end(), "lo_locked") != sensor_names.end())
-        {
-            uhd::sensor_value_t lo_locked = uhd_source_->get_sensor("lo_locked", 0);
-            std::cout << boost::format("Check for front-end %s ...") % lo_locked.to_pp_string() << " is ";
-            if (lo_locked.to_bool() == true)
-                {
-                    std::cout << "Locked" << std::endl;
-                }
-            else
-                {
-                    std::cout << "UNLOCKED!" <<std::endl;
-                }
-            //UHD_ASSERT_THROW(lo_locked.to_bool());
-        }
+		// We should wait? #include <boost/thread.hpp>
+		// boost::this_thread::sleep(boost::posix_time::seconds(1));
 
-    // Set subdevice specification string for USRP family devices. It is composed of:
-    // <motherboard slot name>:<daughterboard frontend name>
-    // For motherboards: All USRP family motherboards have a first slot named A:.
-    //       The USRP1 has two daughterboard subdevice slots, known as A: and B:.
-    // For daughterboards, see http://files.ettus.com/uhd_docs/manual/html/dboards.html
-    // "0" is valid for DBSRX, DBSRX2, WBX Series
-    uhd_source_->set_subdev_spec(subdevice_, 0);
+		// Check out the status of the lo_locked sensor (boolean for LO lock state)
+		sensor_names = uhd_source_->get_sensor_names(i);
+		if (std::find(sensor_names.begin(), sensor_names.end(), "lo_locked") != sensor_names.end())
+			{
+				uhd::sensor_value_t lo_locked = uhd_source_->get_sensor("lo_locked", i);
+				std::cout << boost::format("Check for front-end %s ...") % lo_locked.to_pp_string() << " is ";
+				if (lo_locked.to_bool() == true)
+					{
+						std::cout << "Locked" << std::endl;
+					}
+				else
+					{
+						std::cout << "UNLOCKED!" <<std::endl;
+					}
+				//UHD_ASSERT_THROW(lo_locked.to_bool());
+			}
+	}
 
-    if (samples_ != 0)
-        {
-            LOG(INFO) << "Send STOP signal after " << samples_ << " samples";
-            valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
-            DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
-        }
 
-    if (dump_)
-        {
-            LOG(INFO) << "Dumping output into file " << dump_filename_;
-            file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
-            DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
-        }
+	for (int i=0;i<RF_channels_;i++)
+	{
+	    if (samples_.at(i) != 0)
+	        {
+	            LOG(INFO) << "RF_channel "<<i<<" Send STOP signal after " << samples_.at(i) << " samples";
+	            valve_.push_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
+	            DLOG(INFO) << "valve(" << valve_.at(i)->unique_id() << ")";
+	        }
+
+	    if (dump_.at(i))
+	        {
+	            LOG(INFO) << "RF_channel "<<i<< "Dumping output into file " << dump_filename_.at(i);
+	            file_sink_.push_back(gr::blocks::file_sink::make(item_size_, dump_filename_.at(i).c_str()));
+	            DLOG(INFO) << "file_sink(" << file_sink_.at(i)->unique_id() << ")";
+	        }
+	}
+
 }
 
 
@@ -186,50 +230,56 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 UhdSignalSource::~UhdSignalSource()
 {}
 
-
-
 void UhdSignalSource::connect(gr::top_block_sptr top_block)
 {
-    if (samples_ != 0)
-        {
-            top_block->connect(uhd_source_, 0, valve_, 0);
-            DLOG(INFO) << "connected usrp source to valve";
-            if (dump_)
-                {
-                    top_block->connect(valve_, 0, file_sink_, 0);
-                    DLOG(INFO) << "connected valve to file sink";
-                }
-        }
-    else
-        {
-            if (dump_)
-                {
-                    top_block->connect(uhd_source_, 0, file_sink_, 0);
-                    DLOG(INFO) << "connected usrp source to file sink";
-                }
-        }
+
+	for (int i=0;i<RF_channels_;i++)
+	{
+
+		if (samples_.at(i) != 0)
+			{
+				top_block->connect(uhd_source_, i, valve_.at(i), 0);
+				DLOG(INFO) << "connected usrp source to valve RF Channel "<< i;
+				if (dump_.at(i))
+					{
+						top_block->connect(valve_.at(i), 0, file_sink_.at(i), 0);
+						DLOG(INFO) << "connected valve to file sink RF Channel "<< i;
+					}
+			}
+		else
+			{
+				if (dump_.at(i))
+					{
+						top_block->connect(uhd_source_, i, file_sink_.at(i), 0);
+						DLOG(INFO) << "connected usrp source to file sink RF Channel "<< i;
+					}
+			}
+	}
 }
 
 
 
 void UhdSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    if (samples_ != 0)
-        {
-            top_block->disconnect(uhd_source_, 0, valve_, 0);
-            LOG(INFO) << "UHD source disconnected";
-            if (dump_)
-                {
-                    top_block->disconnect(valve_, 0, file_sink_, 0);
-                }
-        }
-    else
-        {
-            if (dump_)
-                {
-                    top_block->disconnect(uhd_source_, 0, file_sink_, 0);
-                }
-        }
+	for (int i=0;i<RF_channels_;i++)
+	{
+		if (samples_.at(i) != 0)
+			{
+				top_block->disconnect(uhd_source_, i, valve_.at(i), 0);
+				LOG(INFO) << "UHD source disconnected";
+				if (dump_.at(i))
+					{
+						top_block->disconnect(valve_.at(i), 0, file_sink_.at(i), 0);
+					}
+			}
+		else
+			{
+				if (dump_.at(i))
+					{
+						top_block->disconnect(uhd_source_, i, file_sink_.at(i), 0);
+					}
+			}
+	}
 }
 
 
@@ -243,11 +293,11 @@ gr::basic_block_sptr UhdSignalSource::get_left_block()
 
 
 
-gr::basic_block_sptr UhdSignalSource::get_right_block()
+gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
 {
-    if (samples_ != 0)
+    if (samples_.at(RF_channel) != 0)
         {
-            return valve_;
+            return valve_.at(RF_channel);
         }
     else
         {

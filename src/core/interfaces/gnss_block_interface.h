@@ -58,8 +58,25 @@ public:
     virtual size_t item_size() = 0;
     virtual void connect(gr::top_block_sptr top_block) = 0;
     virtual void disconnect(gr::top_block_sptr top_block) = 0;
-    virtual gr::basic_block_sptr get_left_block() = 0;
-    virtual gr::basic_block_sptr get_right_block() = 0;
+
+    virtual gr::basic_block_sptr get_left_block(int RF_channel=0)
+    {
+    	if (RF_channel==0) // avoid unused param warning
+    	{
+    		return NULL; // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
+    	}else{
+    		return NULL; // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
+    	}
+    }
+    virtual gr::basic_block_sptr get_right_block(int RF_channel=0)
+    {
+    	if (RF_channel==0) // avoid unused param warning
+    	{
+    		return NULL; // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
+    	}else{
+    		return NULL; // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
+    	}
+    }
 };
 
 #endif /*GNSS_SDR_GNSS_BLOCK_INTERFACE_H_*/

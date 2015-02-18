@@ -1010,18 +1010,15 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, const std::map<int,Gps_Eph
                 {
                     line += std::string(5, ' ');
                 }
-            // IODE is not present in ephemeris data
             // If there is a discontinued reception the ephemeris is not validated
-            //if (gps_ephemeris_iter->second.d_IODE_SF2 == gps_ephemeris_iter->second.d_IODE_SF3)
-            //    {
-            //        line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_IODE_SF2, 18, 2);
-            //    }
-            //else
-            //    {
-            //        LOG(ERROR) << "Discontinued reception of Frame 2 and 3 " << std::endl;
-            //    }
-            double d_IODE_SF2 = 0;
-            line += Rinex_Printer::doub2for(d_IODE_SF2, 18, 2);
+            if (gps_ephemeris_iter->second.d_IODE_SF2 == gps_ephemeris_iter->second.d_IODE_SF3)
+                {
+                    line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_IODE_SF2, 18, 2);
+                }
+            else
+                {
+                    LOG(WARNING) << "Discontinued reception of Frame 2 and 3";
+                }
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_Crs, 18, 2);
             line += std::string(1, ' ');
@@ -2145,6 +2142,11 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& eph, 
             line += std::string(1, ' ');
             line += minutes;
             line += std::string(1, ' ');
+            double second_ = fmod(gps_t, 60);
+            if (second_ < 10)
+                {
+                    line += std::string(1, ' ');
+                }
             line += Rinex_Printer::asString(fmod(gps_t, 60), 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event

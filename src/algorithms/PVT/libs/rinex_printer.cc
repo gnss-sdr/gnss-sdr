@@ -932,7 +932,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, const std::map<int,Gps_Eph
     		gps_ephemeris_iter++)
     {
             // -------- SV / EPOCH / SV CLK
-            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second,gps_ephemeris_iter->second.d_TOW);
+            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, gps_ephemeris_iter->second.d_Toe);
             std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
             std::string month (timestring, 4, 2);
             std::string day (timestring, 6, 2);

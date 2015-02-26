@@ -946,15 +946,55 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, const std::map<int,Gps_Eph
                     std::string year (timestring, 2, 2);
                     line += year;
                     line += std::string(1, ' ');
-                    line += month;
+                    if(boost::lexical_cast<int>(month) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(month, 1, 1);
+                        }
+                    else
+                        {
+                            line += month;
+                        }
                     line += std::string(1, ' ');
-                    line += day;
+                    if(boost::lexical_cast<int>(day) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(day, 1, 1);
+                        }
+                    else
+                        {
+                            line += day;
+                        }
                     line += std::string(1, ' ');
-                    line += hour;
+                    if(boost::lexical_cast<int>(hour) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(hour, 1, 1);
+                        }
+                    else
+                        {
+                            line += hour;
+                        }
                     line += std::string(1, ' ');
-                    line += minutes;
+                    if(boost::lexical_cast<int>(minutes) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(minutes, 1, 1);
+                        }
+                    else
+                        {
+                            line += minutes;
+                        }
                     line += std::string(1, ' ');
-                    line += seconds;
+                    if(boost::lexical_cast<int>(seconds) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(seconds, 1, 1);
+                        }
+                    else
+                        {
+                            line += seconds;
+                        }
                     line += std::string(1, '.');
                     std::string decimal = std::string("0");
                     if (timestring.size() > 16)

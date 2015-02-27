@@ -135,6 +135,7 @@ public:
     void serialize(Archive& archive, const unsigned int version)
     {
         using boost::serialization::make_nvp;
+        if(version){};
 
         archive & make_nvp("i_satellite_PRN", i_satellite_PRN); // SV PRN NUMBER
         archive & make_nvp("d_TOW", d_TOW);          //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]

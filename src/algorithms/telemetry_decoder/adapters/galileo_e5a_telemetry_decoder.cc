@@ -99,14 +99,16 @@ void GalileoE5aTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
 
 void GalileoE5aTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
-    // Nothing to connect internally
+	if(top_block) { /* top_block is not null */};
+	// Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 void GalileoE5aTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
-    // Nothing to disconnect
+	if(top_block) { /* top_block is not null */};
+	// Nothing to disconnect
 }
 
 

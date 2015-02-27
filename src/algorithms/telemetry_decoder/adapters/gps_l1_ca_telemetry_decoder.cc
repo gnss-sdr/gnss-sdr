@@ -97,14 +97,16 @@ void GpsL1CaTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
 
 void GpsL1CaTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
-    // Nothing to connect internally
+	if(top_block) { /* top_block is not null */};
+	// Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 void GpsL1CaTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
-    // Nothing to disconnect
+	if(top_block) { /* top_block is not null */};
+	// Nothing to disconnect
 }
 
 

@@ -57,10 +57,10 @@ public:
     GNSSBlockFactory();
     virtual ~GNSSBlockFactory();
     std::unique_ptr<GNSSBlockInterface> GetSignalSource(std::shared_ptr<ConfigurationInterface> configuration,
-            boost::shared_ptr<gr::msg_queue> queue);
+            boost::shared_ptr<gr::msg_queue> queue, int ID=-1);
 
     std::unique_ptr<GNSSBlockInterface> GetSignalConditioner(std::shared_ptr<ConfigurationInterface> configuration,
-            boost::shared_ptr<gr::msg_queue> queue);
+            boost::shared_ptr<gr::msg_queue> queue, int ID=-1);
 
     std::unique_ptr<GNSSBlockInterface> GetPVT(std::shared_ptr<ConfigurationInterface> configuration,
             boost::shared_ptr<gr::msg_queue> queue);

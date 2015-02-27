@@ -269,7 +269,8 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::set_state(int state)
 
 float GalileoE1PcpsCccwsrAmbiguousAcquisition::calculate_threshold(float pfa)
 {
-    return 0.0;
+    if(pfa){ /* Not implemented*/};
+	return 0.0;
 }
 
 

@@ -61,7 +61,7 @@ public:
     void serialize(Archive& archive, const unsigned int version)
         {
             using boost::serialization::make_nvp;
-
+            if(version){};
             archive & make_nvp("valid", valid);
             archive & make_nvp("lat", lat);
             archive & make_nvp("lon", lon);

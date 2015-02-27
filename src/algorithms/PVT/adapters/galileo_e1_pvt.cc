@@ -86,14 +86,16 @@ GalileoE1Pvt::~GalileoE1Pvt()
 
 void GalileoE1Pvt::connect(gr::top_block_sptr top_block)
 {
-    // Nothing to connect internally
+	if(top_block) { /* top_block is not null */};
+	// Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 void GalileoE1Pvt::disconnect(gr::top_block_sptr top_block)
 {
-    // Nothing to disconnect
+	if(top_block) { /* top_block is not null */};
+	// Nothing to disconnect
 }
 
 gr::basic_block_sptr GalileoE1Pvt::get_left_block()

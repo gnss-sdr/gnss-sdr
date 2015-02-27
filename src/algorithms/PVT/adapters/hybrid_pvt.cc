@@ -86,14 +86,16 @@ HybridPvt::~HybridPvt()
 
 void HybridPvt::connect(gr::top_block_sptr top_block)
 {
-    // Nothing to connect internally
+	if(top_block) { /* top_block is not null */};
+	// Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 void HybridPvt::disconnect(gr::top_block_sptr top_block)
 {
-    // Nothing to disconnect
+	if(top_block) { /* top_block is not null */};
+	// Nothing to disconnect
 }
 
 gr::basic_block_sptr HybridPvt::get_left_block()

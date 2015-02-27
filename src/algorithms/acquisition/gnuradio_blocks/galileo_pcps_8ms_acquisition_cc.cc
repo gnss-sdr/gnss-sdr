@@ -172,13 +172,13 @@ void galileo_pcps_8ms_acquisition_cc::set_state(int state)
     d_state = state;
     if (d_state == 1)
         {
-            d_gnss_synchro->Acq_delay_samples = 0.0;
-            d_gnss_synchro->Acq_doppler_hz = 0.0;
-            d_gnss_synchro->Acq_samplestamp_samples = 0;
-            d_well_count = 0;
-            d_mag = 0.0;
-            d_input_power = 0.0;
-            d_test_statistics = 0.0;
+			d_gnss_synchro->Acq_delay_samples = 0.0;
+			d_gnss_synchro->Acq_doppler_hz = 0.0;
+			d_gnss_synchro->Acq_samplestamp_samples = 0;
+			d_well_count = 0;
+			d_mag = 0.0;
+			d_input_power = 0.0;
+			d_test_statistics = 0.0;
         }
     else if (d_state == 0)
         {}

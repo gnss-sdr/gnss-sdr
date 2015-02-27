@@ -304,6 +304,11 @@ float GalileoE5aNoncoherentIQAcquisitionCaf::calculate_threshold(float pfa)
     return threshold;
 }
 
+void GalileoE5aNoncoherentIQAcquisitionCaf::set_state(int state)
+{
+        acquisition_cc_->set_state(state);
+}
+
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::connect(gr::top_block_sptr top_block)
 {

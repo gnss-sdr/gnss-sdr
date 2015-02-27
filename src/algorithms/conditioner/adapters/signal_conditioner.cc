@@ -63,7 +63,6 @@ SignalConditioner::~SignalConditioner()
 }
 
 
-
 void SignalConditioner::connect(gr::top_block_sptr top_block)
 {
     if (connected_)
@@ -77,17 +76,12 @@ void SignalConditioner::connect(gr::top_block_sptr top_block)
 
     top_block->connect(data_type_adapt_->get_right_block(), 0,
                        in_filt_->get_left_block(), 0);
-
     DLOG(INFO) << "data_type_adapter -> input_filter";
-
     top_block->connect(in_filt_->get_right_block(), 0,
                        res_->get_left_block(), 0);
-
     DLOG(INFO) << "input_filter -> resampler";
-
     connected_ = true;
 }
-
 
 
 void SignalConditioner::disconnect(gr::top_block_sptr top_block)
@@ -115,8 +109,6 @@ gr::basic_block_sptr SignalConditioner::get_left_block()
 {
     return data_type_adapt_->get_left_block();
 }
-
-
 
 gr::basic_block_sptr SignalConditioner::get_right_block()
 {

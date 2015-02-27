@@ -125,22 +125,42 @@ GNSSBlockFactory::~GNSSBlockFactory()
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
-        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue)
+        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue, int ID)
 {
     std::string default_implementation = "File_Signal_Source";
-    std::string implementation = configuration->property("SignalSource.implementation", default_implementation);
+    std::string role="SignalSource";//backwards compatibility for old conf files
+    if (ID!=-1)
+    {
+    	role="SignalSource"+ boost::lexical_cast<std::string>(ID);
+    }
+    std::string implementation = configuration->property(role + ".implementation", default_implementation);
     LOG(INFO) << "Getting SignalSource with implementation " << implementation;
-    return GetBlock(configuration, "SignalSource", implementation, 0, 1, queue);
+    return GetBlock(configuration, role, implementation, 0, 1, queue);
 }
 
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
-        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue)
+        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue, int ID)
 {
     std::string default_implementation = "Pass_Through";
+    //backwards compatibility for old conf files
+	std::string role_conditioner="SignalConditioner" ;
+	std::string role_datatypeadapter="DataTypeAdapter";
+	std::string role_inputfilter="InputFilter";
+	std::string role_resampler="Resampler";
+
+    if (ID!=-1)
+    {
+		role_conditioner="SignalConditioner" + boost::lexical_cast<std::string>(ID);
+		role_datatypeadapter="DataTypeAdapter" + boost::lexical_cast<std::string>(ID);
+		role_inputfilter="InputFilter" + boost::lexical_cast<std::string>(ID);
+		role_resampler="Resampler" + boost::lexical_cast<std::string>(ID);
+    }
+
     std::string signal_conditioner = configuration->property(
-            "SignalConditioner.implementation", default_implementation);
+    		role_conditioner+".implementation", default_implementation);
+
     std::string data_type_adapter;
     std::string input_filter;
     std::string resampler;
@@ -153,11 +173,11 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
     else
         {
             data_type_adapter = configuration->property(
-                    "DataTypeAdapter.implementation", default_implementation);
+            		role_datatypeadapter + ".implementation", default_implementation);
             input_filter = configuration->property(
-                    "InputFilter.implementation", default_implementation);
+            		role_inputfilter + ".implementation", default_implementation);
             resampler = configuration->property(
-                    "Resampler.implementation", default_implementation);
+            		role_resampler + ".implementation", default_implementation);
         }
 
     LOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
@@ -169,20 +189,20 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             //instantiate the array version
             std::unique_ptr<GNSSBlockInterface> conditioner_(new ArraySignalConditioner(configuration.get(), GetBlock(configuration,
-                    "DataTypeAdapter", data_type_adapter, 1, 1, queue).release(), GetBlock(
-                            configuration,"InputFilter", input_filter, 1, 1, queue).release(),
-                            GetBlock(configuration,"Resampler", resampler, 1, 1, queue).release(),
-                            "SignalConditioner", "Signal_Conditioner", queue));
+            		role_datatypeadapter, data_type_adapter, 1, 1, queue).release(), GetBlock(
+                            configuration,role_inputfilter, input_filter, 1, 1, queue).release(),
+                            GetBlock(configuration,role_resampler, resampler, 1, 1, queue).release(),
+                            role_conditioner, "Signal_Conditioner", queue));
             return conditioner_;
         }
     else
         {
             //single-antenna version
             std::unique_ptr<GNSSBlockInterface> conditioner_(new SignalConditioner(configuration.get(), GetBlock(configuration,
-                    "DataTypeAdapter", data_type_adapter, 1, 1, queue).release(), GetBlock(
-                            configuration,"InputFilter", input_filter, 1, 1, queue).release(),
-                            GetBlock(configuration,"Resampler", resampler, 1, 1, queue).release(),
-                            "SignalConditioner", "Signal_Conditioner", queue));
+            		role_datatypeadapter, data_type_adapter, 1, 1, queue).release(), GetBlock(
+                            configuration,role_inputfilter, input_filter, 1, 1, queue).release(),
+                            GetBlock(configuration,role_resampler, resampler, 1, 1, queue).release(),
+                            role_conditioner, "Signal_Conditioner", queue));
             return conditioner_;
         }
 }

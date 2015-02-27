@@ -144,12 +144,14 @@ void GalileoE5aDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GalileoE5aDllPllTracking::connect(gr::top_block_sptr top_block)
 {
-    //nothing to connect, now the tracking uses gr_sync_decimator
+	if(top_block) { /* top_block is not null */};
+	//nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GalileoE5aDllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+	if(top_block) { /* top_block is not null */};
+	//nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 gr::basic_block_sptr GalileoE5aDllPllTracking::get_left_block()

@@ -307,13 +307,15 @@ float GalileoE5aNoncoherentIQAcquisitionCaf::calculate_threshold(float pfa)
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::connect(gr::top_block_sptr top_block)
 {
-    // Nothing to connect internally
+	if(top_block) { /* top_block is not null */};
+	// Nothing to connect internally
 }
 
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::disconnect(gr::top_block_sptr top_block)
 {
-    // Nothing to disconnect internally
+	if(top_block) { /* top_block is not null */};
+	// Nothing to disconnect internally
 }
 
 gr::basic_block_sptr GalileoE5aNoncoherentIQAcquisitionCaf::get_left_block()

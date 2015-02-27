@@ -134,12 +134,14 @@ void GpsL1CaDllPllOptimTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GpsL1CaDllPllOptimTracking::connect(gr::top_block_sptr top_block)
 {
-    //nothing to connect, now the tracking uses gr_sync_decimator
+	if(top_block) { /* top_block is not null */};
+	//nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GpsL1CaDllPllOptimTracking::disconnect(gr::top_block_sptr top_block)
 {
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+	if(top_block) { /* top_block is not null */};
+	//nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 gr::basic_block_sptr GpsL1CaDllPllOptimTracking::get_left_block()

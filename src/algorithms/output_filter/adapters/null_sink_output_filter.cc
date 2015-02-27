@@ -76,14 +76,16 @@ NullSinkOutputFilter::~NullSinkOutputFilter()
 
 void NullSinkOutputFilter::connect(gr::top_block_sptr top_block)
 {
-    DLOG(INFO) << "nothing to connect internally";
+	if(top_block) { /* top_block is not null */};
+	DLOG(INFO) << "nothing to connect internally";
 }
 
 
 
 void NullSinkOutputFilter::disconnect(gr::top_block_sptr top_block)
 {
-    // Nothing to connect
+	if(top_block) { /* top_block is not null */};
+	// Nothing to connect
 }
 
 

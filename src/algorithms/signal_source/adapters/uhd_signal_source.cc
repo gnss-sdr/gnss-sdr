@@ -292,6 +292,10 @@ gr::basic_block_sptr UhdSignalSource::get_left_block()
 }
 
 
+gr::basic_block_sptr UhdSignalSource::get_right_block()
+{
+	return get_right_block(0);
+}
 
 gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
 {

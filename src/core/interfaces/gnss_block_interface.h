@@ -59,7 +59,10 @@ public:
     virtual void connect(gr::top_block_sptr top_block) = 0;
     virtual void disconnect(gr::top_block_sptr top_block) = 0;
 
-    virtual gr::basic_block_sptr get_left_block(int RF_channel=0)
+    virtual gr::basic_block_sptr get_left_block() = 0;
+    virtual gr::basic_block_sptr get_right_block() = 0;
+
+    virtual gr::basic_block_sptr get_left_block(int RF_channel)
     {
     	if (RF_channel==0) // avoid unused param warning
     	{
@@ -68,7 +71,7 @@ public:
     		return NULL; // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
     	}
     }
-    virtual gr::basic_block_sptr get_right_block(int RF_channel=0)
+    virtual gr::basic_block_sptr get_right_block(int RF_channel)
     {
     	if (RF_channel==0) // avoid unused param warning
     	{

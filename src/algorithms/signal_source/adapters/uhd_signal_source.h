@@ -75,6 +75,7 @@ public:
     void connect(gr::top_block_sptr top_block);
     void disconnect(gr::top_block_sptr top_block);
     gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
     gr::basic_block_sptr get_right_block(int RF_channel);
 
 private:

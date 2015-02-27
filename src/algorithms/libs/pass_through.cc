@@ -47,8 +47,18 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
         out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    std::string input_type = configuration->property(role + ".input_item_type", default_item_type);
+    std::string output_type = configuration->property(role + ".output_item_type", default_item_type);
+    if(input_type.compare(output_type) != 0)
+        {
+            LOG(WARNING) << "input_item_type and output_item_type are different in a Pass_Through implementation! Taking "
+                         << input_type
+                         << ", but item_size will supersede it.";
+        }
+
+    item_type_ = configuration->property(role + ".item_type", input_type);
     vector_size_ = configuration->property(role + ".vector_size", 1);
+
     if(item_type_.compare("float") == 0)
         {
             item_size_ = sizeof(float);
@@ -61,11 +71,19 @@ Pass_Through::Pass_Through(ConfigurationInterface* configuration, std::string ro
         {
             item_size_ = sizeof(int16_t);
         }
+    else if(item_type_.compare("ishort") == 0)
+        {
+            item_size_ = sizeof(int16_t);
+        }
     else if(item_type_.compare("cshort") == 0)
         {
             item_size_ = sizeof(lv_16sc_t);
         }
     else if(item_type_.compare("byte") == 0)
+        {
+            item_size_ = sizeof(int8_t);
+        }
+    else if(item_type_.compare("ibyte") == 0)
         {
             item_size_ = sizeof(int8_t);
         }

@@ -85,9 +85,6 @@ FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
             fir_filter_fff_2_ = gr::filter::fir_filter_fff::make(1, taps_);
             DLOG(INFO) << "I input_filter(" << fir_filter_fff_1_->unique_id() << ")";
             DLOG(INFO) << "Q input_filter(" << fir_filter_fff_2_->unique_id() << ")";
-            //float_to_short_1_ = gr::blocks::float_to_short::make();
-            //float_to_short_2_ = gr::blocks::float_to_short::make();
-            //short_x2_to_cshort_ = make_short_x2_to_cshort();
             float_to_complex_ = gr::blocks::float_to_complex::make();
             if (dump_)
                 {

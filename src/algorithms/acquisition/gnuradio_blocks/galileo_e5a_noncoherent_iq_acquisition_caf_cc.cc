@@ -773,6 +773,6 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 	    }
     }
 
-    return 0;
+    return noutput_items;
 }
 

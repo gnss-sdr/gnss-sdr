@@ -427,5 +427,5 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
         }
     }
 
-    return 0;
+    return noutput_items;
 }

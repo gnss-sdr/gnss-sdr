@@ -429,7 +429,7 @@ void Gps_Navigation_Message::satellitePosition(double transmitTime)
 int Gps_Navigation_Message::subframe_decoder(char *subframe)
 {
     int subframe_ID = 0;
-    int SV_data_ID = 0;
+    int SV_data_ID;
     int SV_page = 0;
     //double tmp_TOW;
 

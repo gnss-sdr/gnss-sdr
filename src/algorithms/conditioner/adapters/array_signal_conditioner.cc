@@ -51,6 +51,7 @@ ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configura
                 queue_(queue)
 {
     connected_ = false;
+    if(configuration){ };
 }
 
 

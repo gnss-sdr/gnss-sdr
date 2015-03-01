@@ -634,7 +634,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         if (SV_page_5 < 25)
             {
                 //! \TODO read almanac
-                if(SV_data_ID){}
+                if(SV_data_ID_5){}
             }
         if (SV_page_5 == 51) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {

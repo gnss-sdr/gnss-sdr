@@ -234,9 +234,7 @@ void GNSSFlowgraph::connect()
 							for (int j=0; j<RF_Channels; j++)
 							{
 								//Connect the multichannel signal source to multiple signal conditioners
-								std::cout<<"Output signature max cstreams ="<<sig_source_.at(i)->get_right_block()->output_signature()->max_streams()<<std::endl;
 								top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-								std::cout << "Connect signal source "<<i<<", CH "<<j<<" to sign_conditioner "<<signal_conditioner_ID<<std::endl;
 								signal_conditioner_ID++;
 							}
 
@@ -265,7 +263,6 @@ void GNSSFlowgraph::connect()
 			{
 			top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
 					channels_.at(i)->get_left_block(), 0);
-			std::cout << "Connect sig_conditioner_ "<<selected_signal_conditioner_ID<<" to channel "<<i<<std::endl;
 
             }
             catch (std::exception& e)
@@ -483,13 +480,13 @@ void GNSSFlowgraph::init()
     {
 		for (int i = 0; i < sources_count_; i++)
 			{
-			std::cout<<"creating source "<<i<<std::endl;
+			std::cout<<"Creating source "<<i<<std::endl;
 			sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_,i));
 			//TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
 			//Include GetRFChannels in the interface to avoid read config parameters here
 		    //read the number of RF channels for each front-end
 			RF_Channels=configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
-			std::cout<<"RF_Channels="<<RF_Channels<<std::endl;
+			std::cout<<"RF Channels "<<RF_Channels<<std::endl;
 			for (int j=0; j<RF_Channels; j++)
 			{
 
@@ -505,7 +502,6 @@ void GNSSFlowgraph::init()
 		//Include GetRFChannels in the interface to avoid read config parameters here
 	    //read the number of RF channels for each front-end
 		RF_Channels=configuration_->property(sig_source_.at(0)->role() + ".RF_channels", 0);
-		std::cout<<"RF_Channels="<<RF_Channels<<std::endl;
 		if (RF_Channels!=0)
 		{
 			for (int j=0; j<RF_Channels; j++)

@@ -303,12 +303,10 @@ gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
 	//TODO: There is a incoherence here: Multichannel UHD is a single block with multiple outputs, but if the sample imit is enable, the output is a multiple block!
     if (samples_.at(RF_channel) != 0)
         {
-    		std::cout<<"return valve!"<<std::endl;
             return valve_.at(RF_channel);
         }
     else
         {
-    	std::cout<<"return uhd!"<<std::endl;
             return uhd_source_;
         }
 }

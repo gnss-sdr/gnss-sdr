@@ -130,7 +130,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         }
 
     // select the number of channels and the subdevice specifications
-    for (int i = 0; i< RF_channels_; i++)
+    for (int i = 0; i < RF_channels_; i++)
         {
             uhd_stream_args_.channels.push_back(i);
         }
@@ -165,9 +165,10 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 
     for (int i = 0; i < RF_channels_; i++)
         {
+            std::cout << "UHD RF CHANNEL #" << i << " SETTINGS" << std::endl;
             // 3. Tune the usrp device to the desired center frequency
-            uhd_source_->set_center_freq(freq_.at(i),i);
-            std::cout << boost::format("Actual USRP center freq.: %f [Hz]...") % (uhd_source_->get_center_freq(i)) << std::endl << std::endl;
+            uhd_source_->set_center_freq(freq_.at(i), i);
+            std::cout << boost::format("Actual USRP center freq.: %f [Hz]...") % (uhd_source_->get_center_freq(i)) << std::endl;
             LOG(INFO) << boost::format("Actual USRP center freq. set to: %f [Hz]...") % (uhd_source_->get_center_freq(i));
 
             // TODO: Assign the remnant IF from the PLL tune error
@@ -175,13 +176,13 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
             LOG(INFO) << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq(i) - freq_.at(i));
 
             // 4. set the gain for the daughterboard
-            uhd_source_->set_gain(gain_.at(i),i);
+            uhd_source_->set_gain(gain_.at(i), i);
             std::cout << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i) << std::endl;
             LOG(INFO) << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i);
 
             //5.  Set the bandpass filter on the RF frontend
             std::cout << boost::format("Setting RF bandpass filter bandwidth to: %f [Hz]...") % IF_bandwidth_hz_.at(i) << std::endl;
-            uhd_source_->set_bandwidth(IF_bandwidth_hz_.at(i),i);
+            uhd_source_->set_bandwidth(IF_bandwidth_hz_.at(i), i);
 
             //set the antenna (optional)
             //uhd_source_->set_antenna(ant);
@@ -201,7 +202,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
                         }
                     else
                         {
-                            std::cout << "UNLOCKED!" <<std::endl;
+                            std::cout << "UNLOCKED!" << std::endl;
                         }
                     //UHD_ASSERT_THROW(lo_locked.to_bool());
                 }
@@ -212,14 +213,14 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         {
             if (samples_.at(i) != 0)
                 {
-                    LOG(INFO) << "RF_channel "<<i<<" Send STOP signal after " << samples_.at(i) << " samples";
+                    LOG(INFO) << "RF_channel "<< i << " Send STOP signal after " << samples_.at(i) << " samples";
                     valve_.push_back(gnss_sdr_make_valve(item_size_, samples_.at(i), queue_));
                     DLOG(INFO) << "valve(" << valve_.at(i)->unique_id() << ")";
                 }
 
             if (dump_.at(i))
                 {
-                    LOG(INFO) << "RF_channel "<<i<< "Dumping output into file " << dump_filename_.at(i);
+                    LOG(INFO) << "RF_channel "<< i << "Dumping output into file " << dump_filename_.at(i);
                     file_sink_.push_back(gr::blocks::file_sink::make(item_size_, dump_filename_.at(i).c_str()));
                     DLOG(INFO) << "file_sink(" << file_sink_.at(i)->unique_id() << ")";
                 }
@@ -239,11 +240,11 @@ void UhdSignalSource::connect(gr::top_block_sptr top_block)
             if (samples_.at(i) != 0)
                 {
                     top_block->connect(uhd_source_, i, valve_.at(i), 0);
-                    DLOG(INFO) << "connected usrp source to valve RF Channel "<< i;
+                    DLOG(INFO) << "connected usrp source to valve RF Channel " << i;
                     if (dump_.at(i))
                         {
                             top_block->connect(valve_.at(i), 0, file_sink_.at(i), 0);
-                            DLOG(INFO) << "connected valve to file sink RF Channel "<< i;
+                            DLOG(INFO) << "connected valve to file sink RF Channel " << i;
                         }
                 }
             else
@@ -251,7 +252,7 @@ void UhdSignalSource::connect(gr::top_block_sptr top_block)
                     if (dump_.at(i))
                         {
                             top_block->connect(uhd_source_, i, file_sink_.at(i), 0);
-                            DLOG(INFO) << "connected usrp source to file sink RF Channel "<< i;
+                            DLOG(INFO) << "connected usrp source to file sink RF Channel " << i;
                         }
                 }
         }
@@ -300,6 +301,7 @@ gr::basic_block_sptr UhdSignalSource::get_right_block()
 
 gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
 {
+    //TODO: There is a incoherence here: Multichannel UHD is a single block with multiple outputs, but if the sample limit is enabled, the output is a multiple block!
     if (samples_.at(RF_channel) != 0)
         {
             return valve_.at(RF_channel);

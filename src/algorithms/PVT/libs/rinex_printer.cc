@@ -932,7 +932,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, const std::map<int,Gps_Eph
     		gps_ephemeris_iter++)
     {
             // -------- SV / EPOCH / SV CLK
-            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second,gps_ephemeris_iter->second.d_TOW);
+            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, gps_ephemeris_iter->second.d_Toe);
             std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
             std::string month (timestring, 4, 2);
             std::string day (timestring, 6, 2);
@@ -946,15 +946,55 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, const std::map<int,Gps_Eph
                     std::string year (timestring, 2, 2);
                     line += year;
                     line += std::string(1, ' ');
-                    line += month;
+                    if(boost::lexical_cast<int>(month) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(month, 1, 1);
+                        }
+                    else
+                        {
+                            line += month;
+                        }
                     line += std::string(1, ' ');
-                    line += day;
+                    if(boost::lexical_cast<int>(day) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(day, 1, 1);
+                        }
+                    else
+                        {
+                            line += day;
+                        }
                     line += std::string(1, ' ');
-                    line += hour;
+                    if(boost::lexical_cast<int>(hour) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(hour, 1, 1);
+                        }
+                    else
+                        {
+                            line += hour;
+                        }
                     line += std::string(1, ' ');
-                    line += minutes;
+                    if(boost::lexical_cast<int>(minutes) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(minutes, 1, 1);
+                        }
+                    else
+                        {
+                            line += minutes;
+                        }
                     line += std::string(1, ' ');
-                    line += seconds;
+                    if(boost::lexical_cast<int>(seconds) < 10)
+                        {
+                            line += std::string(1, ' ');
+                            line += std::string(seconds, 1, 1);
+                        }
+                    else
+                        {
+                            line += seconds;
+                        }
                     line += std::string(1, '.');
                     std::string decimal = std::string("0");
                     if (timestring.size() > 16)
@@ -1010,18 +1050,15 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, const std::map<int,Gps_Eph
                 {
                     line += std::string(5, ' ');
                 }
-            // IODE is not present in ephemeris data
             // If there is a discontinued reception the ephemeris is not validated
-            //if (gps_ephemeris_iter->second.d_IODE_SF2 == gps_ephemeris_iter->second.d_IODE_SF3)
-            //    {
-            //        line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_IODE_SF2, 18, 2);
-            //    }
-            //else
-            //    {
-            //        LOG(ERROR) << "Discontinued reception of Frame 2 and 3 " << std::endl;
-            //    }
-            double d_IODE_SF2 = 0;
-            line += Rinex_Printer::doub2for(d_IODE_SF2, 18, 2);
+            if (gps_ephemeris_iter->second.d_IODE_SF2 == gps_ephemeris_iter->second.d_IODE_SF3)
+                {
+                    line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_IODE_SF2, 18, 2);
+                }
+            else
+                {
+                    LOG(WARNING) << "Discontinued reception of Frame 2 and 3";
+                }
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_Crs, 18, 2);
             line += std::string(1, ' ');
@@ -2145,7 +2182,12 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& eph, 
             line += std::string(1, ' ');
             line += minutes;
             line += std::string(1, ' ');
-            line += Rinex_Printer::asString(fmod(gps_t, 60), 7);
+            double second_ = fmod(gps_t, 60);
+            if (second_ < 10)
+                {
+                    line += std::string(1, ' ');
+                }
+            line += Rinex_Printer::asString(second_, 7);
             line += std::string(2, ' ');
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
             line += std::string(1, '0');
@@ -2195,12 +2237,33 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& eph, 
                         {
                             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
                         }
+
+                    // Signal Strength Indicator (SSI)
+                    int ssi = Rinex_Printer::signalStrength(pseudoranges_iter->second.CN0_dB_hz);
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
                     // GPS L1 CA PHASE
                     lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_phase_rads/GPS_TWO_PI, 3), 14);
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
                     // GPS L1 CA DOPPLER
                     lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_Doppler_hz, 3), 14);
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
                     //GPS L1 SIGNAL STRENGTH
-                    //int ssi=signalStrength(54.0); // The original RINEX 2.11 file stores the RSS in a tabulated format 1-9. However, it is also valid to store the CN0 using dB-Hz units
                     lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.CN0_dB_hz, 3), 14);
                     if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
                     out << lineObs << std::endl;
@@ -2223,7 +2286,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& eph, 
             line += minutes;
 
             line += std::string(1, ' ');
-            double seconds=fmod(gps_t, 60);
+            double seconds = fmod(gps_t, 60);
             // Add extra 0 if seconds are < 10
             if (seconds < 10)
             {
@@ -2276,11 +2339,34 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& eph, 
                             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
                         }
 
+                    // Signal Strength Indicator (SSI)
+                    int ssi = Rinex_Printer::signalStrength(pseudoranges_iter->second.CN0_dB_hz);
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
                     // GPS L1 CA PHASE
                     lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_phase_rads/GPS_TWO_PI, 3), 14);
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
 
                     // GPS L1 CA DOPPLER
                     lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_Doppler_hz, 3), 14);
+                    if (lli == 0)
+                        {
+                            lineObs += std::string(1, ' ');
+                        }
+                    else
+                        {
+                            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                        }
+
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
 
                     //GPS L1 SIGNAL STRENGTH
                     lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.CN0_dB_hz, 3), 14);
@@ -2376,10 +2462,35 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Galileo_Ephemeris& e
                 {
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
                 }
+
+            // Signal Strength Indicator (SSI)
+            int ssi = Rinex_Printer::signalStrength(pseudoranges_iter->second.CN0_dB_hz);
+            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
             // Galileo E1B PHASE
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_phase_rads / (2 * GALILEO_PI), 3), 14);
+            if (lli == 0)
+                {
+                    lineObs += std::string(1, ' ');
+                }
+            else
+                {
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                }
+            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
             // Galileo E1B DOPPLER
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_Doppler_hz, 3), 14);
+            if (lli == 0)
+                {
+                    lineObs += std::string(1, ' ');
+                }
+            else
+                {
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                }
+            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
             // Galileo E1B SIGNAL STRENGTH
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.CN0_dB_hz, 3), 14);
             if (lineObs.size() < 80) lineObs += std::string(80 - lineObs.size(), ' ');
@@ -2472,11 +2583,33 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& gps_e
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
                 }
 
+            // Signal Strength Indicator (SSI)
+            int ssi = Rinex_Printer::signalStrength(pseudoranges_iter->second.CN0_dB_hz);
+            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
+
             // PHASE
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_phase_rads/GPS_TWO_PI, 3), 14);
+            if (lli == 0)
+                {
+                    lineObs += std::string(1, ' ');
+                }
+            else
+                {
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                }
+            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
 
             // DOPPLER
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_Doppler_hz, 3), 14);
+            if (lli == 0)
+                {
+                    lineObs += std::string(1, ' ');
+                }
+            else
+                {
+                    lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<short>(lli), 1);
+                }
+            lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
 
             // SIGNAL STRENGTH
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.CN0_dB_hz, 3), 14);

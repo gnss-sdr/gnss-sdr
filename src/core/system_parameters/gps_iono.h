@@ -66,7 +66,7 @@ public:
     void serialize(Archive& archive, const unsigned int version)
     {
         using boost::serialization::make_nvp;
-
+        if(version){};
         archive & make_nvp("d_alpha0",d_alpha0);
         archive & make_nvp("d_alpha1",d_alpha1);
         archive & make_nvp("d_alpha2",d_alpha2);

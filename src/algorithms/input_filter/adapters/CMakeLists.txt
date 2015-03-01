@@ -27,6 +27,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
+     ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -36,5 +37,5 @@ include_directories(
 file(GLOB INPUT_FILTER_ADAPTER_HEADERS "*.h")
 add_library(input_filter_adapters ${INPUT_FILTER_ADAPTER_SOURCES} ${INPUT_FILTER_ADAPTER_HEADERS})
 source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
-add_dependencies(input_filter_adapters glog-${glog_RELEASE})
-target_link_libraries(input_filter_adapters input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES})
+add_dependencies(input_filter_adapters glog-${glog_RELEASE} gnss_sp_libs)
+target_link_libraries(input_filter_adapters input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES} gnss_sp_libs)

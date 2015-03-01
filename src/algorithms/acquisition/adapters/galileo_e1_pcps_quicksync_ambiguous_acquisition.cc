@@ -294,6 +294,16 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::reset()
         }
 }
 
+void GalileoE1PcpsQuickSyncAmbiguousAcquisition::set_state(int state)
+{
+    if (item_type_.compare("gr_complex") == 0)
+    {
+        acquisition_cc_->set_state(state);
+    }
+}
+
+
+
 float GalileoE1PcpsQuickSyncAmbiguousAcquisition::calculate_threshold(float pfa)
 {
     unsigned int frequency_bins = 0;

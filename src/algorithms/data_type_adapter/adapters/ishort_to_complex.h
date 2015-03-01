@@ -58,10 +58,10 @@ public:
     {
         return role_;
     }
-    //! Returns "IshortToComplex"
+    //! Returns "Ishort_To_Complex"
     std::string implementation()
     {
-        return "IshortToComplex";
+        return "Ishort_To_Complex";
     }
     size_t item_size()
     {

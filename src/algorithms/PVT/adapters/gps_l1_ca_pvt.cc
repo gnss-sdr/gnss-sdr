@@ -85,14 +85,16 @@ GpsL1CaPvt::~GpsL1CaPvt()
 
 void GpsL1CaPvt::connect(gr::top_block_sptr top_block)
 {
-    // Nothing to connect internally
+	if(top_block) { /* top_block is not null */};
+	// Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 void GpsL1CaPvt::disconnect(gr::top_block_sptr top_block)
 {
-    // Nothing to disconnect
+	if(top_block) { /* top_block is not null */};
+	// Nothing to disconnect
 }
 
 gr::basic_block_sptr GpsL1CaPvt::get_left_block()

@@ -276,6 +276,14 @@ void GpsL1CaPcpsQuickSyncAcquisition::reset()
         }
 }
 
+void GpsL1CaPcpsQuickSyncAcquisition::set_state(int state)
+{
+    if (item_type_.compare("gr_complex") == 0)
+        {
+            acquisition_cc_->set_state(state);
+        }
+}
+
 
 float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
 {

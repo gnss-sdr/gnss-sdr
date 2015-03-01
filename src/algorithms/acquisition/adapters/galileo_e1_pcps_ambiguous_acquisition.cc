@@ -267,6 +267,12 @@ GalileoE1PcpsAmbiguousAcquisition::reset()
         }
 }
 
+void
+GalileoE1PcpsAmbiguousAcquisition::set_state(int state)
+{
+        acquisition_cc_->set_state(state);
+}
+
 float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
 {
 	unsigned int frequency_bins = 0;

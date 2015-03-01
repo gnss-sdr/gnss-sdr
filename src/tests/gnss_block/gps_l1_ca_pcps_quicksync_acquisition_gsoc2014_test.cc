@@ -52,8 +52,8 @@
 #include "signal_generator_c.h"
 #include "gps_l1_ca_pcps_quicksync_acquisition.h"
 
-DEFINE_double(value_threshold, 0.001, "Value of the threshold for the acquisition");
-DEFINE_int32(value_CN0_dB_0, 50, "Value for the CN0_dB_0 in channel 0");
+DEFINE_double(value_threshold, 1, "Value of the threshold for the acquisition");
+DEFINE_int32(value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
 
 using google::LogMessage;
 
@@ -202,11 +202,11 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_1()
             std::to_string(integration_time_ms));
     config->set_property("Acquisition.max_dwells", "1");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_QuickSync_Acquisition");
-    config->set_property("Acquisition.threshold", "100");
+    config->set_property("Acquisition.threshold", "250");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
-    config->set_property("Acquisition.dump", "true");
+    config->set_property("Acquisition.dump", "false");
 }
 
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
@@ -226,7 +226,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
 	
     /*Unset this flag to eliminates data logging for the Validation of results
 	probabilities test*/
-    dump_test_results = true;
+    dump_test_results = false;
     
     num_of_realizations = 100;
 
@@ -264,8 +264,8 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
     config->set_property("SignalSource.doppler_Hz_3", "3000");
     config->set_property("SignalSource.delay_chips_3", "300");
 
-    config->set_property("SignalSource.noise_flag", "true");
-    config->set_property("SignalSource.data_flag", "true");
+    config->set_property("SignalSource.noise_flag", "false");
+    config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
 
     config->set_property("InputFilter.implementation", "Fir_Filter");
@@ -295,7 +295,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_QuickSync_Acquisition");
     config->set_property("Acquisition.threshold", std::to_string(FLAGS_value_threshold));
     config->set_property("Acquisition.doppler_max", "10000");
-    config->set_property("Acquisition.doppler_step", "250");
+    config->set_property("Acquisition.doppler_step", "100");
     config->set_property("Acquisition.bit_transition_flag", "false");
     config->set_property("Acquisition.dump", "false");
 }
@@ -355,8 +355,8 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
     config->set_property("SignalSource.doppler_Hz_3", "3000");
     config->set_property("SignalSource.delay_chips_3", "300");
 
-    config->set_property("SignalSource.noise_flag", "true");
-    config->set_property("SignalSource.data_flag", "true");
+    config->set_property("SignalSource.noise_flag", "false");
+    config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
 
     config->set_property("InputFilter.implementation", "Fir_Filter");
@@ -382,13 +382,13 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.coherent_integration_time_ms",
             std::to_string(integration_time_ms));
-    config->set_property("Acquisition.max_dwells", "1");
+    config->set_property("Acquisition.max_dwells", "2");
     config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_QuickSync_Acquisition");
-    config->set_property("Acquisition.threshold", "1.2");
+    config->set_property("Acquisition.threshold", "0.01");
     config->set_property("Acquisition.doppler_max", "10000");
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.bit_transition_flag", "false");
-    config->set_property("Acquisition.dump", "true");
+    config->set_property("Acquisition.dump", "false");
 }
 
 void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::start_queue()
@@ -447,7 +447,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::process_message()
 
     realization_counter++;
 
-    std::cout << "Progress: " << round((float)realization_counter/num_of_realizations*100) << "% \r" << std::flush;
+    std::cout << "Progress: " << round((float)realization_counter / num_of_realizations * 100) << "% \r" << std::flush;
 
     if (realization_counter == num_of_realizations)
         {
@@ -533,15 +533,15 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
     }) << "Failure setting channel_internal_queue."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
+        acquisition->set_doppler_max(10000);
     }) << "Failure setting doppler_max."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 250));
+        acquisition->set_doppler_step(250);
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(100);
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -549,6 +549,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
     }) << "Failure connecting acquisition to the top_block."<< std::endl;
 
     acquisition->init();
+    acquisition->reset();
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
@@ -575,12 +576,17 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
 
+            acquisition->reset();
+            acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
+            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block." << std::endl;
+
+            stop_queue();
 
             if (i == 0)
                 {
@@ -598,25 +604,16 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResults)
                     EXPECT_EQ(2, message)
                         << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+
+            ch_thread.join();
         }
-    unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "----Acquired: " << nsamples << " samples"<< std::endl;
 }
 
 
 TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise)
 {
-    config_3();
+    //config_3();
+    config_1();
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     acquisition = std::make_shared<GpsL1CaPcpsQuickSyncAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -627,29 +624,30 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
 
     ASSERT_NO_THROW( {
         acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
+    }) << "Failure setting gnss_synchro." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->set_channel_queue(&channel_internal_queue);
-    }) << "Failure setting channel_internal_queue."<< std::endl;
+    }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
+        acquisition->set_doppler_max(10000);
     }) << "Failure setting doppler_max."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 250));
+        acquisition->set_doppler_step(250);
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."<< std::endl;
+        acquisition->set_threshold(100);
+    }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
+    }) << "Failure connecting acquisition to the top_block." << std::endl;
 
     acquisition->init();
+    acquisition->reset();
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
@@ -675,43 +673,35 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsWithNoise
                 {
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
-
+            //acquisition->set_local_code();
+            acquisition->reset();
+            acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
+            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block." << std::endl;
 
+            stop_queue();
+
             if (i == 0)
                 {
                     EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
                     if (message == 1)
                         {
-
-                            EXPECT_EQ((unsigned int)1, correct_estimation_counter)
-                                << "Acquisition failure. Incorrect parameters estimation.";
+                             EXPECT_EQ((unsigned int)1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
                         }
 
                 }
             else if (i == 1)
                 {
-                    EXPECT_EQ(2, message)
-                        << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+
+            ch_thread.join();
         }
-    unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
-    std::cout <<  "----Acquired: " << nsamples << " samples"<< std::endl;
 }
 
 
@@ -734,7 +724,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
         acquisition->set_channel_queue(&channel_internal_queue);
     }) << "Failure setting channel_internal_queue."<< std::endl;
 
-    ASSERT_NO_THROW( {
+  /*  ASSERT_NO_THROW( {
         acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
     }) << "Failure setting doppler_max."<< std::endl;
 
@@ -744,13 +734,14 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
 
     ASSERT_NO_THROW( {
         acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."<< std::endl;
+    }) << "Failure setting threshold."<< std::endl; */
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
     }) << "Failure connecting acquisition to the top_block."<< std::endl;
 
     acquisition->init();
+    acquisition->reset();
 
     ASSERT_NO_THROW( {
         boost::shared_ptr<GenSignalSource> signal_source;
@@ -778,13 +769,17 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                     gnss_synchro.PRN = 20; // This satellite is not visible
                 }
 
+            acquisition->reset();
+            acquisition->set_gnss_synchro(&gnss_synchro);
             acquisition->set_local_code();
+            acquisition->set_state(1);
             start_queue();
-
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block." << std::endl;
+
+            stop_queue();
 
             if (i == 0)
                 {
@@ -805,8 +800,6 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                             pdpfafile << FLAGS_value_threshold << "," << Pd << "," << Pfa_p << "," << Pmd << std::endl;
                             pdpfafile.close();
                         }
-
-
                 }
             else if (i == 1)
                 {
@@ -826,15 +819,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                             pdpfafile.close();
                         }
                 }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+
+            ch_thread.join();
         }
 }

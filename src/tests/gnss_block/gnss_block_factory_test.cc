@@ -62,7 +62,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateFileSignalSource)
     EXPECT_STREQ("File_Signal_Source", signal_source->implementation().c_str());
 }
 
-
+/*
 TEST(GNSS_Block_Factory_Test, InstantiateUHDSignalSource)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
@@ -78,7 +78,7 @@ TEST(GNSS_Block_Factory_Test, InstantiateUHDSignalSource)
     EXPECT_STREQ("SignalSource", signal_source->role().c_str());
     EXPECT_STREQ("UHD_Signal_Source", signal_source->implementation().c_str());
 }
-
+*/
 
 TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalSource)
 {

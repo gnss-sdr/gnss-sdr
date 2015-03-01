@@ -229,6 +229,14 @@ void GpsL1CaPcpsTongAcquisition::reset()
         }
 }
 
+void GpsL1CaPcpsTongAcquisition::set_state(int state)
+{
+    if (item_type_.compare("gr_complex") == 0)
+    {
+        acquisition_cc_->set_state(state);
+    }
+}
+
 float GpsL1CaPcpsTongAcquisition::calculate_threshold(float pfa)
 {
 	//Calculate the threshold

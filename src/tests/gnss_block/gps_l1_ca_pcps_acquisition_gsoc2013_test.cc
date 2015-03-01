@@ -416,15 +416,15 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
     }) << "Failure setting channel_internal_queue."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
+        acquisition->set_doppler_max(10000);
     }) << "Failure setting doppler_max."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
+        acquisition->set_doppler_step(500);
     }) << "Failure setting doppler_step."<< std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
+        acquisition->set_threshold(0.5);
     }) << "Failure setting threshold."<< std::endl;
 
     ASSERT_NO_THROW( {
@@ -458,12 +458,12 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
                 }
 
             acquisition->set_local_code();
-
+            acquisition->set_state(1); // Ensure that acquisition starts at the first sample
             start_queue();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
+            }) << "Failure running the top_block."<< std::endl;
 
             if (i == 0)
             {

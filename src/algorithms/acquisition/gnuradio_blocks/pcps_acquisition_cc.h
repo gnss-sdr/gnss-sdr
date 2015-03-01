@@ -183,6 +183,13 @@ public:
      }
 
      /*!
+      * \brief If set to 1, ensures that acquisition starts at the
+      * first available sample.
+      * \param state - int=1 forces start of acquisition
+      */
+     void set_state(int state);
+
+     /*!
       * \brief Set acquisition channel unique ID
       * \param channel - receiver channel.
       */

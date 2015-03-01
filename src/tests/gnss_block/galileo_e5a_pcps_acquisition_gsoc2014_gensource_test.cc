@@ -646,6 +646,8 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
      }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
+    acquisition->reset();
+    acquisition->init();
     // USING SIGNAL FROM FILE SOURCE
     /*
     ASSERT_NO_THROW( {
@@ -676,7 +678,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
                 {
                     gnss_synchro.PRN = 19; //real
                     //gnss_synchro.PRN = 11; //sim
-                    break;
+                    //break;
                 }
                 //        	case 1:
                 //        	    {
@@ -702,23 +704,21 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             //                {
             //                    gnss_synchro.PRN = 19; // This satellite is not visible
             //                }
-            acquisition->set_local_code();
-
             start_queue();
+
+            acquisition->reset();
+            acquisition->init();
+            acquisition->set_gnss_synchro(&gnss_synchro);
+            acquisition->set_local_code();
+            acquisition->set_state(1);
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block."<< std::endl;
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+
+            stop_queue();
+
+            ch_thread.join();
             //std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
             //std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
             //std::cout << gnss_synchro.Acq_samplestamp_samples << "acq samples" <<std::endl;

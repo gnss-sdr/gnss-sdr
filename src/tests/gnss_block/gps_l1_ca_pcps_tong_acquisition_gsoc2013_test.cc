@@ -458,12 +458,15 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
                 }
 
             acquisition->set_local_code();
+            acquisition->set_state(1);
 
             start_queue();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block." << std::endl;
+
+            stop_queue();
 
             if (i == 0)
             {
@@ -478,16 +481,8 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
             {
                 EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
             }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+
+            ch_thread.join();
         }
 }
 
@@ -555,12 +550,14 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
                 }
 
             acquisition->set_local_code();
-
+            acquisition->set_state(1);
             start_queue();
 
             EXPECT_NO_THROW( {
                 top_block->run(); // Start threads and wait
             }) << "Failure running the top_block." << std::endl;
+
+            stop_queue();
 
             if (i == 0)
             {
@@ -573,15 +570,6 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
                 std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                 std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
             }
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+            ch_thread.join();
         }
 }

@@ -141,12 +141,14 @@ void GalileoE1TcpConnectorTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchr
 
 void GalileoE1TcpConnectorTracking::connect(gr::top_block_sptr top_block)
 {
-    //nothing to connect, now the tracking uses gr_sync_decimator
+	if(top_block) { /* top_block is not null */};
+	//nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GalileoE1TcpConnectorTracking::disconnect(gr::top_block_sptr top_block)
 {
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+	if(top_block) { /* top_block is not null */};
+	//nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 gr::basic_block_sptr GalileoE1TcpConnectorTracking::get_left_block()

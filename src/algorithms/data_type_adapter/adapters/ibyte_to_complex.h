@@ -59,10 +59,10 @@ public:
     {
         return role_;
     }
-    //! Returns "IbyteToComplex"
+    //! Returns "Ibyte_To_Complex"
     std::string implementation()
     {
-        return "IbyteToComplex";
+        return "Ibyte_To_Complex";
     }
     size_t item_size()
     {

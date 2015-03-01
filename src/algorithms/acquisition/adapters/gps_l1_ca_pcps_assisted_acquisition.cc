@@ -163,15 +163,15 @@ void GpsL1CaPcpsAssistedAcquisition::reset()
 
 void GpsL1CaPcpsAssistedAcquisition::connect(gr::top_block_sptr top_block)
 {
-
+	if(top_block) { /* top_block is not null */};
     //nothing to disconnect, now the tracking uses gr_sync_decimator
-
 }
 
 
 void GpsL1CaPcpsAssistedAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-    //nothing to disconnect, now the tracking uses gr_sync_decimator
+	if(top_block) { /* top_block is not null */};
+	//nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

@@ -124,7 +124,6 @@ private:
     std::string config_file_;
     std::shared_ptr<ConfigurationInterface> configuration_;
     std::shared_ptr<GNSSBlockFactory> block_factory_;
-    //std::shared_ptr<std::vector<std::shared_ptr<GNSSBlockInterface>>> blocks_ = std::make_shared<std::vector<std::shared_ptr<GNSSBlockInterface>>>();
 
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_source_;
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;

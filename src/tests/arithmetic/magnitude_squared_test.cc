@@ -50,7 +50,7 @@ TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
 
     for(number = 0; number < (unsigned int)FLAGS_size_magnitude_test; number++)
         {
-            output[number] = (input[number].real()*input[number].real()) + (input[number].imag()*input[number].imag());
+            output[number] = (input[number].real() * input[number].real()) + (input[number].imag() * input[number].imag());
         }
 
     gettimeofday(&tv, NULL);
@@ -66,7 +66,7 @@ TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
 TEST(MagnitudeSquared_Test, C11ComplexImplementation)
 {
     const std::vector<std::complex<float>> input(FLAGS_size_magnitude_test);
-    std::vector<std::complex<float>> output(FLAGS_size_magnitude_test);
+    std::vector<float> output(FLAGS_size_magnitude_test);
     struct timeval tv;
     int pos = 0;
     gettimeofday(&tv, NULL);

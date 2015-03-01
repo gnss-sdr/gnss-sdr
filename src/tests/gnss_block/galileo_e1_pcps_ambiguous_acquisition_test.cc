@@ -178,7 +178,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
-    std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
+    std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(gnss_synchro.Channel_ID);
@@ -193,7 +193,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 1e-6));
+        acquisition->set_threshold(config->property("Acquisition.threshold", 1e-9));
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -221,7 +221,8 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     }) << "Failure while starting the queue" << std::endl;
 
     acquisition->init();
-    //acquisition->reset();
+    acquisition->reset();
+    acquisition->set_state(1);
 
     EXPECT_NO_THROW( {
         gettimeofday(&tv, NULL);
@@ -230,21 +231,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
         gettimeofday(&tv, NULL);
         end = tv.tv_sec * 1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
-
-#ifdef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.timed_join(boost::posix_time::seconds(1));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
-#ifndef OLD_BOOST
-            ASSERT_NO_THROW( {
-                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-            }) << "Failure while waiting the queue to stop" << std::endl;
-#endif
+    stop_queue();
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
-    //EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << std::endl;
     std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;
@@ -255,5 +246,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
 
     EXPECT_LE(doppler_error_hz, 166) << "Doppler error exceeds the expected value: 166 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.175) << "Delay error exceeds the expected value: 0.175 chips";
+
+    ch_thread.join();
 }
 

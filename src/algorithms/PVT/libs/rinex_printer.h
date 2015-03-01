@@ -59,6 +59,8 @@
 #include <map>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "gps_navigation_message.h"
+#include "gps_utc_model.h"
+#include "gps_iono.h"
 #include "galileo_navigation_message.h"
 #include "sbas_telemetry_data.h"
 #include "GPS_L1_CA.h"
@@ -179,6 +181,8 @@ public:
      *  \brief Writes raw SBAS messages into the RINEX file
      */
     void log_rinex_sbs(std::ofstream& out, const Sbas_Raw_Msg& sbs_message);
+
+    void update_nav_header(std::ofstream& out, const Gps_Utc_Model& gps_utc, const Gps_Iono& gps_iono);
 
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH

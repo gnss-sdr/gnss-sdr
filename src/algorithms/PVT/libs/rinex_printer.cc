@@ -501,6 +501,20 @@ void Rinex_Printer::rinex_nav_header(std::ofstream& out, const Galileo_Iono& ion
     out << line << std::endl;
 }
 
+
+void Rinex_Printer::update_nav_header(std::ofstream& out, const Gps_Utc_Model& gps_utc, const Gps_Iono& gps_iono)
+{
+    if (version == 2)
+        {
+
+        }
+    if (version == 3)
+        {
+
+        }
+}
+
+
 void Rinex_Printer::rinex_nav_header(std::ofstream& out, const Gps_Iono& iono, const Gps_Utc_Model& utc_model)
 {
 

@@ -102,8 +102,8 @@ void Gps_Navigation_Message::reset()
     b_antispoofing_flag = false;
 
     // Ionosphere and UTC
-    flag_iono_valid = false;
-    flag_utc_model_valid = false;
+    flag_iono_valid = true;
+    flag_utc_model_valid = true;
     d_alpha0 = 0;
     d_alpha1 = 0;
     d_alpha2 = 0;
@@ -558,6 +558,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         if (SV_page > 24 && SV_page < 33) // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
                 //! \TODO read almanac
+                if(SV_data_ID){}
             }
 
         if (SV_page == 52) // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
@@ -633,6 +634,7 @@ int Gps_Navigation_Message::subframe_decoder(char *subframe)
         if (SV_page_5 < 25)
             {
                 //! \TODO read almanac
+                if(SV_data_ID){}
             }
         if (SV_page_5 == 51) // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200H, page 110)
             {
@@ -788,6 +790,7 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris()
     return ephemeris;
 }
 
+
 Gps_Iono Gps_Navigation_Message::get_iono()
 {
     Gps_Iono iono;
@@ -801,14 +804,14 @@ Gps_Iono Gps_Navigation_Message::get_iono()
     iono.d_beta3 = d_beta3;
     iono.valid = flag_iono_valid;
     //WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
-    flag_iono_valid = false;
+    // flag_iono_valid = false;
     return iono;
 }
+
 
 Gps_Utc_Model Gps_Navigation_Message::get_utc_model()
 {
     Gps_Utc_Model utc_model;
-
     utc_model.valid = flag_utc_model_valid;
     // UTC parameters
     utc_model.d_A1 = d_A1;
@@ -820,9 +823,10 @@ Gps_Utc_Model Gps_Navigation_Message::get_utc_model()
     utc_model.i_DN = i_DN;
     utc_model.d_DeltaT_LSF = d_DeltaT_LSF;
     // warning: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
-    flag_utc_model_valid = false;
+    // flag_utc_model_valid = false;
     return utc_model;
 }
+
 
 bool Gps_Navigation_Message::satellite_validation()
 {

@@ -102,8 +102,8 @@ void Gps_Navigation_Message::reset()
     b_antispoofing_flag = false;
 
     // Ionosphere and UTC
-    flag_iono_valid = true;
-    flag_utc_model_valid = true;
+    flag_iono_valid = false;
+    flag_utc_model_valid = false;
     d_alpha0 = 0;
     d_alpha1 = 0;
     d_alpha2 = 0;
@@ -804,7 +804,7 @@ Gps_Iono Gps_Navigation_Message::get_iono()
     iono.d_beta3 = d_beta3;
     iono.valid = flag_iono_valid;
     //WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
-    // flag_iono_valid = false;
+    flag_iono_valid = false;
     return iono;
 }
 
@@ -823,7 +823,7 @@ Gps_Utc_Model Gps_Navigation_Message::get_utc_model()
     utc_model.i_DN = i_DN;
     utc_model.d_DeltaT_LSF = d_DeltaT_LSF;
     // warning: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
-    // flag_utc_model_valid = false;
+    flag_utc_model_valid = false;
     return utc_model;
 }
 

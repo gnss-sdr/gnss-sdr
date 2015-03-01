@@ -163,6 +163,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
 
 	for (int i=0;i<RF_channels_;i++)
 	{
+		std::cout<< "UHD RF CHANNEL #"<<i<< " SETTINGS"<<std::endl;
 		// 3. Tune the usrp device to the desired center frequency
 		uhd_source_->set_center_freq(freq_.at(i),i);
 		std::cout << boost::format("Actual USRP center freq.: %f [Hz]...") % (uhd_source_->get_center_freq(i)) << std::endl << std::endl;
@@ -299,12 +300,15 @@ gr::basic_block_sptr UhdSignalSource::get_right_block()
 
 gr::basic_block_sptr UhdSignalSource::get_right_block(int RF_channel)
 {
+	//TODO: There is a incoherence here: Multichannel UHD is a single block with multiple outputs, but if the sample imit is enable, the output is a multiple block!
     if (samples_.at(RF_channel) != 0)
         {
+    		std::cout<<"return valve!"<<std::endl;
             return valve_.at(RF_channel);
         }
     else
         {
+    	std::cout<<"return uhd!"<<std::endl;
             return uhd_source_;
         }
 }

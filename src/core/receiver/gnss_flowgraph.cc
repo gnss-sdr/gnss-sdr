@@ -130,7 +130,7 @@ void GNSSFlowgraph::connect()
 
     // Signal Source > Signal conditioner >
 
-		for (int i = 0; i < sources_count_; i++)
+		for (unsigned int i = 0; i < sig_conditioner_.size(); i++)
 		{
 			try
 			{
@@ -165,7 +165,6 @@ void GNSSFlowgraph::connect()
 
     try
     {
-            //observables_ = std::move(blocks_->at(2));
             observables_->connect(top_block_);
     }
     catch (std::exception& e)
@@ -179,7 +178,6 @@ void GNSSFlowgraph::connect()
     // Signal Source > Signal conditioner >> Channels >> Observables > PVT
     try
     {
-            //pvt_ = std::move(blocks_->at(3));
             pvt_->connect(top_block_);
     }
     catch (std::exception& e)
@@ -193,7 +191,6 @@ void GNSSFlowgraph::connect()
     // Signal Source > Signal conditioner >> Channels >> Observables > PVT > Output Filter
     try
     {
-            //output_filter_ = std::move(blocks_->at(4));
             output_filter_->connect(top_block_);
     }
     catch (std::exception& e)
@@ -208,6 +205,8 @@ void GNSSFlowgraph::connect()
 
     // Signal Source (i) >  Signal conditioner (i) >
 
+    int RF_Channels=0;
+    int signal_conditioner_ID=0;
 	for (int i = 0; i < sources_count_; i++)
 	{
 
@@ -227,8 +226,21 @@ void GNSSFlowgraph::connect()
 						}
 					else
 						{
-							//single channel
-							top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(i)->get_left_block(), 0);
+							//TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+							//Include GetRFChannels in the interface to avoid read config parameters here
+							//read the number of RF channels for each front-end
+							RF_Channels=configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
+
+							for (int j=0; j<RF_Channels; j++)
+							{
+								//Connect the multichannel signal source to multiple signal conditioners
+								std::cout<<"Output signature max cstreams ="<<sig_source_.at(i)->get_right_block()->output_signature()->max_streams()<<std::endl;
+								top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+								std::cout << "Connect signal source "<<i<<", CH "<<j<<" to sign_conditioner "<<signal_conditioner_ID<<std::endl;
+								signal_conditioner_ID++;
+							}
+
+
 						}
 
 			}
@@ -243,25 +255,28 @@ void GNSSFlowgraph::connect()
     DLOG(INFO) << "Signal source connected to signal conditioner";
 
     // Signal conditioner (selected_signal_source) >> channels (i) (dependent of their associated SignalSource_ID)
-    int selected_signal_source;
+    int selected_signal_conditioner_ID;
     for (unsigned int i = 0; i < channels_count_; i++)
         {
 
-            selected_signal_source = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) +".SignalSource_ID", 0);
-			try
+            selected_signal_conditioner_ID = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) +".RF_channel_ID", 0);
+
+            try
 			{
-			top_block_->connect(sig_conditioner_.at(selected_signal_source)->get_right_block(), 0,
+			top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
 					channels_.at(i)->get_left_block(), 0);
+			std::cout << "Connect sig_conditioner_ "<<selected_signal_conditioner_ID<<" to channel "<<i<<std::endl;
+
             }
             catch (std::exception& e)
             {
-                    LOG(WARNING) << "Can't connect signal conditioner "<<selected_signal_source<<" to channel " << i;
+                    LOG(WARNING) << "Can't connect signal conditioner "<<selected_signal_conditioner_ID<<"  to channel " << i;
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
             }
 
-            DLOG(INFO) << "signal conditioner "<<selected_signal_source<<" connected to channel " << i;
+            DLOG(INFO) << "signal conditioner "<<selected_signal_conditioner_ID<<" connected to channel " << i;
 
             // Signal Source > Signal conditioner >> Channels >> Observables
             try
@@ -461,19 +476,52 @@ void GNSSFlowgraph::init()
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
     sources_count_ = configuration_->property("Receiver.sources_count", 1);
 
+    int RF_Channels=0;
+    int signal_conditioner_ID=0;
+
     if (sources_count_>1)
     {
 		for (int i = 0; i < sources_count_; i++)
 			{
 			std::cout<<"creating source "<<i<<std::endl;
-				sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_,i));
-				sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, queue_, i));
+			sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_,i));
+			//TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+			//Include GetRFChannels in the interface to avoid read config parameters here
+		    //read the number of RF channels for each front-end
+			RF_Channels=configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
+			std::cout<<"RF_Channels="<<RF_Channels<<std::endl;
+			for (int j=0; j<RF_Channels; j++)
+			{
+
+				sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, queue_, signal_conditioner_ID));
+				signal_conditioner_ID++;
+			}
+
 			}
     }else{
     	//backwards compatibility for old config files
 		sig_source_.push_back(block_factory_->GetSignalSource(configuration_, queue_,-1));
-		sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, queue_, -1));
+		//TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+		//Include GetRFChannels in the interface to avoid read config parameters here
+	    //read the number of RF channels for each front-end
+		RF_Channels=configuration_->property(sig_source_.at(0)->role() + ".RF_channels", 0);
+		std::cout<<"RF_Channels="<<RF_Channels<<std::endl;
+		if (RF_Channels!=0)
+		{
+			for (int j=0; j<RF_Channels; j++)
+			{
+
+				sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, queue_, signal_conditioner_ID));
+				signal_conditioner_ID++;
+			}
+		}else{
+			//old config file, single signal source and single channel, not specified
+			sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, queue_, -1));
+		}
 	}
+
+
+
 
     observables_ = block_factory_->GetObservables(configuration_, queue_);
     pvt_ = block_factory_->GetPVT(configuration_, queue_);

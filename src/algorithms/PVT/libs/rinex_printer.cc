@@ -1822,6 +1822,88 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int, Gps_Eph
     Rinex_Printer::log_rinex_nav(out, galileo_eph_map);
 }
 
+void Rinex_Printer::update_obs_header(std::fstream& out, const Gps_Utc_Model& utc_model)
+{
+    std::vector<std::string> data;
+    std::string line_aux;
+
+    long pos = out.tellp();
+    out.seekp(0);
+    data.clear();
+
+    bool no_more_finds = false;
+    std::string line_str;
+
+    while(!out.eof())
+        {
+            std::getline(out, line_str);
+
+            if(!no_more_finds)
+                {
+                    line_aux.clear();
+
+                    if (version == 2)
+                        {
+                            if (line_str.find("TIME OF FIRST OBS", 59) != std::string::npos) // TIME OF FIRST OBS last header annotation might change in the future
+                                {
+                                    data.push_back(line_str);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
+                                    line_aux += std::string(54, ' ');
+                                    line_aux += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
+                                    data.push_back(line_aux);
+                                }
+                            else if (line_str.find("END OF HEADER", 59) != std::string::npos)
+                                {
+                                    data.push_back(line_str);
+                                    no_more_finds = true;
+                                }
+                            else
+                                {
+                                    data.push_back(line_str);
+                                }
+                        }
+
+                    if (version == 3)
+                        {
+                            if (line_str.find("TIME OF FIRST OBS", 59) != std::string::npos)
+                                {
+                                    data.push_back(line_str);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_LSF), 6);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_DN), 6);
+                                    line_aux += std::string(36, ' ');
+                                    line_aux += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
+                                    data.push_back(line_aux);
+                                }
+                            else if (line_str.find("END OF HEADER", 59) != std::string::npos)
+                                {
+                                    data.push_back(line_str);
+                                    no_more_finds = true;
+                                }
+                            else
+                                {
+                                    data.push_back(line_str);
+                                }
+                        }
+                }
+            else
+                {
+                    data.push_back(line_str);
+                }
+        }
+
+    out.close();
+    out.open(navfilename, std::ios::out | std::ios::trunc);
+    out.seekp(0);
+    for (int i = 0; i < (int) data.size() - 1; i++)
+        {
+            out << data[i] << std::endl;
+        }
+    out.close();
+    out.open(navfilename, std::ios::out | std::ios::app);
+    out.seekp(pos);
+}
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const double d_TOW_first_observation)
 {
@@ -2084,7 +2166,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     out << line << std::endl;
 }
 
-
+//void Rinex_Printer::update_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation)
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation)
 {

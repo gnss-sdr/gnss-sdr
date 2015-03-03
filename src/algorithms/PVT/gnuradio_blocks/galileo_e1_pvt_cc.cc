@@ -92,6 +92,7 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
     d_rx_time = 0.0;
 
     b_rinex_header_writen = false;
+    b_rinex_header_updated = false;
     rp = std::make_shared<Rinex_Printer>();
 
     // ############# ENABLE DATA FILE LOG #################
@@ -211,6 +212,11 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                                           {
                                               rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
                                           }
+                                       if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                           {
+                                               rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                               b_rinex_header_updated = true;
+                                           }
                                 }
                         }
                 }

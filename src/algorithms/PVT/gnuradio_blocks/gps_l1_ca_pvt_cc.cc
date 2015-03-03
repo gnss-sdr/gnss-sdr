@@ -153,8 +153,6 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
     //Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; //Get the output pointer
 
-    //out = in;
-
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
             if (in[i][0].Flag_valid_pseudorange == true)

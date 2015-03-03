@@ -106,6 +106,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     d_rx_time = 0.0;
 
     b_rinex_header_writen = false;
+    b_rinex_header_updated = false;
     b_rinex_sbs_header_writen = false;
     rp = std::make_shared<Rinex_Printer>();
 
@@ -150,6 +151,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
 
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
+    //Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; //Get the output pointer
 
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
@@ -166,14 +168,40 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 
     if (global_gps_utc_model_map.size() > 0)
         {
-            // UTC MODEL data is shared for all the GPS satellites. Read always at ID=0
-            global_gps_utc_model_map.read(0, d_ls_pvt->gps_utc_model);
+            // UTC MODEL data is shared for all the GPS satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                            global_gps_utc_model_map.read(i, d_ls_pvt->gps_utc_model);
+                            break;
+                        }
+                    i++;
+                    if (i == d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
 
     if (global_gps_iono_map.size() > 0)
         {
-            // IONO data is shared for all the GPS satellites. Read always at ID=0
-            global_gps_iono_map.read(0, d_ls_pvt->gps_iono);
+            // IONO data is shared for all the GPS satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                            global_gps_iono_map.read(i, d_ls_pvt->gps_iono);
+                            break;
+                        }
+                    i++;
+                    if (i == d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
 
     // update SBAS data collections
@@ -223,7 +251,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
         }
 
     // ############ 2 COMPUTE THE PVT ################################
-    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() >0)
+    if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
         {
             // compute on the fly PVT solution
             //mod 8/4/2012 Set the PVT computation rate in this block
@@ -242,7 +270,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                                     gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
                                     if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                         {
-                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second,d_rx_time);
+                                            rp->rinex_obs_header(rp->obsFile, gps_ephemeris_iter->second, d_rx_time);
                                             rp->rinex_nav_header(rp->navFile, d_ls_pvt->gps_iono, d_ls_pvt->gps_utc_model);
                                             b_rinex_header_writen = true; // do not write header anymore
                                         }
@@ -261,6 +289,12 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                                     if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                         {
                                             rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                        }
+                                    if (!b_rinex_header_updated && (d_ls_pvt->gps_utc_model.d_A0 != 0))
+                                        {
+                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
+                                            rp->update_nav_header(rp->navFile, d_ls_pvt->gps_utc_model, d_ls_pvt->gps_iono);
+                                            b_rinex_header_updated = true;
                                         }
                                 }
                         }
@@ -304,7 +338,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
         }
 
     consume_each(1); //one by one
-    return 0;
+    return noutput_items;
 }
 
 

@@ -253,6 +253,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                                         }
                                     if (!b_rinex_header_updated && (d_ls_pvt->gps_utc_model.d_A0 != 0))
                                         {
+                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->gps_utc_model);
                                             rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono,  d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
                                             b_rinex_header_updated = true;
                                         }

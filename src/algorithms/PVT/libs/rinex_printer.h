@@ -190,6 +190,8 @@ public:
 
     void update_obs_header(std::fstream& out, const Gps_Utc_Model& utc_model);
 
+    void update_obs_header(std::fstream& out, const Galileo_Utc_Model& galileo_utc_model);
+
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     std::map<std::string,std::string> observationCode; //<! GNSS observation descriptors

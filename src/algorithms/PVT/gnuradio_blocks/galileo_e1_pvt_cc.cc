@@ -215,6 +215,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                                        if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
                                            {
                                                rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                               rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
                                                b_rinex_header_updated = true;
                                            }
                                 }

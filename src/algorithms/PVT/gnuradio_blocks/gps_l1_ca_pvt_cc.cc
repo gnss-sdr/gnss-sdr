@@ -170,7 +170,6 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
         {
             // UTC MODEL data is shared for all the GPS satellites. Read always at ID=0
             global_gps_utc_model_map.read(0, d_ls_pvt->gps_utc_model);
-            std::cout << d_ls_pvt->gps_utc_model.d_A0 << std::endl;
         }
 
     if (global_gps_iono_map.size() > 0)

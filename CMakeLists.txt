@@ -37,6 +37,7 @@ file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRE
 
 option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
+option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNURadio driver" OFF)
 option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source (experimental)" OFF)
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
@@ -948,9 +949,11 @@ if($ENV{RAW_ARRAY_DRIVER})
     message(STATUS "RAW_ARRAY_DRIVER environment variable found." )
     set(ENABLE_ARRAY ON)
 endif($ENV{RAW_ARRAY_DRIVER})
+
 if(RAW_ARRAY_DRIVER)
     set(ENABLE_ARRAY ON)
 endif(RAW_ARRAY_DRIVER)
+
 if(ENABLE_ARRAY)
     message(STATUS "CTTC's Antenna Array front-end driver will be compiled." )
     message(STATUS "You can disable it with 'cmake -DENABLE_ARRAY=OFF ../'" )  
@@ -961,14 +964,11 @@ else(ENABLE_ARRAY)
     message(STATUS "Enable it with 'cmake -DENABLE_ARRAY=ON ../' to add support for the CTTC experimental array front-end." )
 endif(ENABLE_ARRAY)
 
-
 if($ENV{RTLSDR_DRIVER})
     message(STATUS "RTLSDR_DRIVER environment variable found." )
     set(ENABLE_OSMOSDR ON)
 endif($ENV{RTLSDR_DRIVER})
-if(RAW_ARRAY_DRIVER)
-    set(ENABLE_OSMOSDR ON)
-endif(RAW_ARRAY_DRIVER)
+
 if(ENABLE_OSMOSDR)
     message(STATUS "The driver for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.) will be compiled." )
     message(STATUS "You can disable it with 'cmake -DENABLE_OSMOSDR=OFF ../'" )  
@@ -977,6 +977,22 @@ else(ENABLE_OSMOSDR)
     message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)" )
 endif(ENABLE_OSMOSDR)
 
+if($ENV{FLEXIBAND_DRIVER})
+    message(STATUS "FLEXIBAND_DRIVER environment variable found." )
+    set(ENABLE_FLEXIBAND ON)
+endif($ENV{FLEXIBAND_DRIVER})
+
+if(FLEXIBAND_DRIVER)
+    set(ENABLE_FLEXIBAND ON)
+endif(FLEXIBAND_DRIVER)
+
+if(ENABLE_FLEXIBAND)
+    message(STATUS "CTTC's Antenna Array front-end driver will be compiled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_FLEXIBAND=OFF ../'" )  
+else(ENABLE_FLEXIBAND)
+    message(STATUS "The (optional) Teleorbit Flexiband front-end driver adapter is not enabled." )
+    message(STATUS "Enable it with 'cmake -DENABLE_FLEXIBAND=ON ../' to add support for the Teleorbit Flexiband front-end." )
+endif(ENABLE_FLEXIBAND)
 
 ########################################################################
 # Set compiler flags

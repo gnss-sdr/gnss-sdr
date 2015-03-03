@@ -51,6 +51,28 @@ if(ENABLE_GN3S)
      )     
 endif(ENABLE_GN3S)
 
+if(ENABLE_FLEXIBAND)
+     ##############################################
+     # TELEORBIT FLEXIBAND FRONTEND ADAPTER
+     ##############################################
+     if(OS_IS_MACOSX)
+          set(MACOSX_ARGS "-DCMAKE_CXX_COMPILER=/usr/bin/clang++")
+     endif(OS_IS_MACOSX)
+    find_package(teleorbit REQUIRED)
+    if(NOT TELEORBIT_FOUND)
+        message(FATAL_ERROR "Teleorbit Flexiband GNURadio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
+    endif(NOT TELEORBIT_FOUND) 
+     
+     # Set up variables
+    set(FLEXIBAND_DRIVER_INCLUDE_DIRS 
+        ${OPT_DRIVER_INCLUDE_DIRS} 
+        ${TELEORBIT_INCLUDE_DIR}/teleorbit
+    )
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${TELEORBIT_LIBRARIES})
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${FLEXIBAND_DRIVER_INCLUDE_DIRS}) 
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
+endif(ENABLE_FLEXIBAND)
+
 
 if(ENABLE_ARRAY)
      ##############################################

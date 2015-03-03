@@ -112,6 +112,10 @@
         #include "uhd_signal_source.h"
 #endif
 
+#if FLEXIBAND_DRIVER
+        #include "flexiband_signal_source.h"
+#endif
+
 
 using google::LogMessage;
 
@@ -460,6 +464,15 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Osmosdr_Signal_Source") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new OsmosdrSignalSource(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+#endif
+
+#if FLEXIBAND_DRIVER
+    else if (implementation.compare("Flexiband_Signal_Source") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new FlexibandSignalSource(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

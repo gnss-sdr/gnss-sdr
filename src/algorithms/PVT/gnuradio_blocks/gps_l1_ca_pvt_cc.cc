@@ -169,7 +169,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     if (global_gps_utc_model_map.size() > 0)
         {
             // UTC MODEL data is shared for all the GPS satellites. Read always at a locked channel
-            int i = 0;
+            signed int i = 0;
             while(true)
                 {
                     if (in[i][0].Flag_valid_pseudorange == true)
@@ -188,7 +188,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     if (global_gps_iono_map.size() > 0)
         {
             // IONO data is shared for all the GPS satellites. Read always at a locked channel
-            int i = 0;
+            signed int i = 0;
             while(true)
                 {
                     if (in[i][0].Flag_valid_pseudorange == true)

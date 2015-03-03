@@ -583,7 +583,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
             out.close();
             out.open(navfilename, std::ios::out | std::ios::trunc);
             out.seekp(0);
-            for (int i = 0; i < (int) data.size(); i++)
+            for (int i = 0; i < (int) data.size() - 1; i++)
                 {
                     out << data[i] << std::endl;
                 }
@@ -604,8 +604,6 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
 
         }
 
-    //myFile.close();
-    //remove(tmpfilename.c_str());
     out.seekp(pos);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info." << std::endl;
 }

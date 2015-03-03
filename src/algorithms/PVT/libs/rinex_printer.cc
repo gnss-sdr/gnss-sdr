@@ -512,18 +512,19 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
     out.seekp(0);
     data.clear();
 
-    if (version == 2)
-        {
-            bool no_more_finds = false;
-            std::string line_str;
+    bool no_more_finds = false;
+    std::string line_str;
 
-            while(!out.eof())
+    while(!out.eof())
+        {
+            std::getline(out, line_str);
+
+            if(!no_more_finds)
                 {
-                    std::getline(out, line_str);
-                    std::cout << line_str << std::endl;
-                    if(!no_more_finds)
+                    line_aux.clear();
+
+                    if (version == 2)
                         {
-                            line_aux.clear();
                             if (line_str.find("ION ALPHA", 59) != std::string::npos)
                                 {
                                     line_aux += std::string(2, ' ');
@@ -574,36 +575,80 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
                                     data.push_back(line_str);
                                 }
                         }
-                    else
+
+                    if (version == 3)
                         {
-                            data.push_back(line_str);
+                            if (line_str.find("GPSA", 0) != std::string::npos)
+                                {
+                                    line_aux += std::string("GPSA");
+                                    line_aux += std::string(1, ' ');
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha0, 10, 2), 12);
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha1, 10, 2), 12);
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha2, 10, 2), 12);
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha3, 10, 2), 12);
+                                    line_aux += std::string(7, ' ');
+                                    line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
+                                    data.push_back(line_aux);
+                                }
+                            else if (line_str.find("GPSB", 0) != std::string::npos)
+                                {
+                                    line_aux += std::string("GPSB");
+                                    line_aux += std::string(1, ' ');
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta0, 10, 2), 12);
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta1, 10, 2), 12);
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta2, 10, 2), 12);
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta3, 10, 2), 12);
+                                    line_aux += std::string(7, ' ');
+                                    line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
+                                    data.push_back(line_aux);
+                                }
+                            else if (line_str.find("GPUT", 0) != std::string::npos)
+                                {
+                                    line_aux += std::string("GPUT");
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
+                                    line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_t_OT), 7);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_T + 1024), 5);  // valid until 2019
+                                    line_aux += std::string(10, ' ');
+                                    line_aux += Rinex_Printer::leftJustify("TIME SYSTEM CORR", 20);
+                                    data.push_back(line_aux);
+                                }
+                            else if (line_str.find("LEAP SECONDS", 59) != std::string::npos)
+                                {
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LS), 6);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.d_DeltaT_LSF), 6);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_WN_LSF), 6);
+                                    line_aux += Rinex_Printer::rightJustify(boost::lexical_cast<std::string>(utc_model.i_DN), 6);
+                                    line_aux += std::string(36, ' ');
+                                    line_aux += Rinex_Printer::leftJustify("LEAP SECONDS", 20);
+                                    data.push_back(line_aux);
+                                }
+                            else if (line_str.find("END OF HEADER", 59) != std::string::npos)
+                                {
+                                    data.push_back(line_str);
+                                    no_more_finds = true;
+                                }
+                            else
+                                {
+                                    data.push_back(line_str);
+                                }
                         }
-                }
-
-            out.close();
-            out.open(navfilename, std::ios::out | std::ios::trunc);
-            out.seekp(0);
-            for (int i = 0; i < (int) data.size() - 1; i++)
-                {
-                    out << data[i] << std::endl;
-                }
-            out.close();
-            out.open(navfilename, std::ios::out | std::ios::app);
-        }
-
-    if (version == 3)
-        {
-            if (false)
-                {
-                    // todo
                 }
             else
                 {
-                    // todo
+                    data.push_back(line_str);
                 }
-
         }
 
+    out.close();
+    out.open(navfilename, std::ios::out | std::ios::trunc);
+    out.seekp(0);
+    for (int i = 0; i < (int) data.size() - 1; i++)
+        {
+            out << data[i] << std::endl;
+        }
+    out.close();
+    out.open(navfilename, std::ios::out | std::ios::app);
     out.seekp(pos);
     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info." << std::endl;
 }

@@ -1895,16 +1895,17 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Gps_Utc_Model& ut
         }
 
     out.close();
-    out.open(navfilename, std::ios::out | std::ios::trunc);
+    out.open(obsfilename, std::ios::out | std::ios::trunc);
     out.seekp(0);
     for (int i = 0; i < (int) data.size() - 1; i++)
         {
             out << data[i] << std::endl;
         }
     out.close();
-    out.open(navfilename, std::ios::out | std::ios::app);
+    out.open(obsfilename, std::ios::out | std::ios::app);
     out.seekp(pos);
 }
+
 
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const double d_TOW_first_observation)
 {
@@ -2166,6 +2167,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     out << line << std::endl;
 }
 
+
 void Rinex_Printer::update_obs_header(std::fstream& out, const Galileo_Utc_Model& galileo_utc_model)
 {
     std::vector<std::string> data;
@@ -2215,14 +2217,14 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Galileo_Utc_Model
         }
 
     out.close();
-    out.open(navfilename, std::ios::out | std::ios::trunc);
+    out.open(obsfilename, std::ios::out | std::ios::trunc);
     out.seekp(0);
     for (int i = 0; i < (int) data.size() - 1; i++)
         {
             out << data[i] << std::endl;
         }
     out.close();
-    out.open(navfilename, std::ios::out | std::ios::app);
+    out.open(obsfilename, std::ios::out | std::ios::app);
     out.seekp(pos);
 }
 

@@ -59,10 +59,10 @@ Rinex_Printer::Rinex_Printer()
     navMixfilename = Rinex_Printer::createFilename("RINEX_FILE_TYPE_MIXED_NAV");
 
     Rinex_Printer::navFile.open(navfilename, std::ios::out | std::ios::in | std::ios::app);
-    Rinex_Printer::obsFile.open(obsfilename, std::ios::out | std::ios::app);
+    Rinex_Printer::obsFile.open(obsfilename, std::ios::out | std::ios::in | std::ios::app);
     Rinex_Printer::sbsFile.open(sbsfilename, std::ios::out | std::ios::app);
-    Rinex_Printer::navGalFile.open(navGalfilename, std::ios::out | std::ios::app);
-    Rinex_Printer::navMixFile.open(navMixfilename, std::ios::out | std::ios::app);
+    Rinex_Printer::navGalFile.open(navGalfilename, std::ios::out | std::ios::in | std::ios::app);
+    Rinex_Printer::navMixFile.open(navMixfilename, std::ios::out | std::ios::in | std::ios::app);
 
     // RINEX v3.02 codes
     satelliteSystem["GPS"] = "G";
@@ -1507,7 +1507,6 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Gps_Ephe
 
 
 
-
             // -------- BROADCAST ORBIT - 4
             line.clear();
             if (version == 2)
@@ -1828,7 +1827,6 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Gps_Utc_Model& ut
     std::vector<std::string> data;
     std::string line_aux;
 
-    long pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -1902,8 +1900,8 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Gps_Utc_Model& ut
             out << data[i] << std::endl;
         }
     out.close();
-    out.open(obsfilename, std::ios::out | std::ios::app);
-    out.seekp(pos);
+    out.open(obsfilename, std::ios::out | std::ios::in | std::ios::app);
+    out.seekp(0, std::ios_base::end);
 }
 
 
@@ -2173,7 +2171,6 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Galileo_Utc_Model
     std::vector<std::string> data;
     std::string line_aux;
 
-    long pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -2224,8 +2221,8 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Galileo_Utc_Model
             out << data[i] << std::endl;
         }
     out.close();
-    out.open(obsfilename, std::ios::out | std::ios::app);
-    out.seekp(pos);
+    out.open(obsfilename, std::ios::out | std::ios::in |std::ios::app);
+    out.seekp(0, std::ios_base::end);
 }
 
 

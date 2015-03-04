@@ -418,8 +418,9 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
                     current_synchro_data.Code_phase_secs = 0.0;
                     current_synchro_data.CN0_dB_hz = 0.0;
                     current_synchro_data.Flag_valid_tracking = false;
+                    current_synchro_data.Flag_valid_pseudorange = false;
 
-                    *out[0] =current_synchro_data;
+                    *out[0] = current_synchro_data;
 
                     return 1;
                 }
@@ -530,6 +531,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.Code_phase_secs = (double)d_code_phase_samples * (1/(float)d_fs_in);
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
+            current_synchro_data.Flag_valid_pseudorange = false;
             *out[0] = current_synchro_data;
 
             // ########## DEBUG OUTPUT
@@ -581,6 +583,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             *d_Late = gr_complex(0,0);
             Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
             // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+            d_acquisition_gnss_synchro->Flag_valid_pseudorange = false;
             *out[0] = *d_acquisition_gnss_synchro;
 
             //! When tracking is disabled an array of 1's is sent to maintain the TCP connection

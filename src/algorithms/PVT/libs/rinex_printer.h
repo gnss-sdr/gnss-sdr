@@ -59,6 +59,8 @@
 #include <map>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "gps_navigation_message.h"
+#include "gps_utc_model.h"
+#include "gps_iono.h"
 #include "galileo_navigation_message.h"
 #include "sbas_telemetry_data.h"
 #include "GPS_L1_CA.h"
@@ -84,46 +86,46 @@ public:
      */
     ~Rinex_Printer();
 
-    std::ofstream obsFile ; //<! Output file stream for RINEX observation file
-    std::ofstream navFile ; //<! Output file stream for RINEX navigation data file
-    std::ofstream sbsFile ; //<! Output file stream for RINEX SBAS raw data file
-    std::ofstream navGalFile ; //<! Output file stream for RINEX Galileo navigation data file
-    std::ofstream navMixFile ; //<! Output file stream for RINEX Mixed navigation data file
+    std::fstream obsFile ; //<! Output file stream for RINEX observation file
+    std::fstream navFile ; //<! Output file stream for RINEX navigation data file
+    std::fstream sbsFile ; //<! Output file stream for RINEX SBAS raw data file
+    std::fstream navGalFile ; //<! Output file stream for RINEX Galileo navigation data file
+    std::fstream navMixFile ; //<! Output file stream for RINEX Mixed navigation data file
 
     /*!
      *  \brief Generates the GPS Navigation Data header
      */
-    void rinex_nav_header(std::ofstream& out, const Gps_Iono& iono, const Gps_Utc_Model& utc_model);
+    void rinex_nav_header(std::fstream& out, const Gps_Iono& iono, const Gps_Utc_Model& utc_model);
 
     /*!
      *  \brief Generates the Galileo Navigation Data header
      */
-    void rinex_nav_header(std::ofstream& out, const Galileo_Iono& iono, const Galileo_Utc_Model& utc_model, const Galileo_Almanac& galileo_almanac);
+    void rinex_nav_header(std::fstream& out, const Galileo_Iono& iono, const Galileo_Utc_Model& utc_model, const Galileo_Almanac& galileo_almanac);
 
     /*!
      *  \brief Generates the Mixed (GPS/Galileo) Navigation Data header
      */
-    void rinex_nav_header(std::ofstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac);
+    void rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac);
 
     /*!
      *  \brief Generates the GPS Observation data header
      */
-    void rinex_obs_header(std::ofstream& out, const Gps_Ephemeris& eph, const double d_TOW_first_observation);
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const double d_TOW_first_observation);
 
     /*!
      *  \brief Generates the Galileo Observation data header
      */
-    void rinex_obs_header(std::ofstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation);
+    void rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation);
 
     /*!
      *  \brief Generates the Mixed (GPS/Galileo) Observation data header
      */
-    void rinex_obs_header(std::ofstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation);
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation);
 
     /*!
      *  \brief Generates the SBAS raw data header
      */
-    void rinex_sbs_header(std::ofstream& out);
+    void rinex_sbs_header(std::fstream& out);
 
     /*!
      *  \brief Computes the UTC time and returns a boost::posix_time::ptime object
@@ -143,32 +145,32 @@ public:
     /*!
      *  \brief Writes data from the GPS navigation message into the RINEX file
      */
-    void log_rinex_nav(std::ofstream& out, const std::map<int, Gps_Ephemeris>& eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int, Gps_Ephemeris>& eph_map);
 
     /*!
      *  \brief Writes data from the Galileo navigation message into the RINEX file
      */
-    void log_rinex_nav(std::ofstream& out, const std::map<int, Galileo_Ephemeris>& eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int, Galileo_Ephemeris>& eph_map);
 
     /*!
      *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
      */
-    void log_rinex_nav(std::ofstream& out, const std::map<int, Gps_Ephemeris>& gps_eph_map, const std::map<int, Galileo_Ephemeris>& galileo_eph_map);
+    void log_rinex_nav(std::fstream& out, const std::map<int, Gps_Ephemeris>& gps_eph_map, const std::map<int, Galileo_Ephemeris>& galileo_eph_map);
 
     /*!
      *  \brief Writes GPS observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& pseudoranges);
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& pseudoranges);
 
     /*!
      *  \brief Writes Galileo observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& pseudoranges);
+    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int, Gnss_Synchro>& pseudoranges);
 
     /*!
      *  \brief Writes Galileo observables into the RINEX file
      */
-    void log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro>& pseudoranges);
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double gps_obs_time, const std::map<int, Gnss_Synchro>& pseudoranges);
 
     /*!
      * \brief Represents GPS time in the date time format. Leap years are considered, but leap seconds are not.
@@ -178,7 +180,17 @@ public:
     /*!
      *  \brief Writes raw SBAS messages into the RINEX file
      */
-    void log_rinex_sbs(std::ofstream& out, const Sbas_Raw_Msg& sbs_message);
+    void log_rinex_sbs(std::fstream& out, const Sbas_Raw_Msg& sbs_message);
+
+    void update_nav_header(std::fstream& out, const Gps_Utc_Model& gps_utc, const Gps_Iono& gps_iono);
+
+    void update_nav_header(std::fstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac);
+
+    void update_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& utc_model, const Galileo_Almanac& galileo_almanac);
+
+    void update_obs_header(std::fstream& out, const Gps_Utc_Model& utc_model);
+
+    void update_obs_header(std::fstream& out, const Galileo_Utc_Model& galileo_utc_model);
 
     std::map<std::string,std::string> satelliteSystem; //<! GPS, GLONASS, SBAS payload, Galileo or Compass
     std::map<std::string,std::string> observationType; //<! PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH

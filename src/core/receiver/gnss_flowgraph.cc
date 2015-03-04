@@ -227,7 +227,28 @@ void GNSSFlowgraph::connect()
                             for (int j = 0; j < RF_Channels; j++)
                                 {
                                     //Connect the multichannel signal source to multiple signal conditioners
-                                    top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                    // check number of signal source output ports todo!
+                                    if (sig_source_.at(i)->get_right_block()->input_signature()->max_streams() > 1)
+                                        {
+                                            top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                            //std::cout<<"connect sig_source_ "<<i<<" stream "<<j<<" to conditioner "<<j<<std::endl;
+                                        }
+                                    else
+                                        {
+                                            if (j == 0)
+                                                {
+                                                    // RF_channel 0 backward compatibility with single channel sources
+                                                    top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                    //std::cout<<"connect sig_source_ "<<i<<" stream "<<0<<" to conditioner "<<j<<std::endl;
+                                                }
+                                            else
+                                                {
+                                                    // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
+                                                    top_block_->connect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                    //std::cout<<"connect sig_source_ "<<i<<" stream "<<j<<" to conditioner "<<j<<std::endl;
+                                                }
+                                        }
+
                                     signal_conditioner_ID++;
                                 }
                         }

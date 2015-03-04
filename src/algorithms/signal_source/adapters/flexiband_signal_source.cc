@@ -52,37 +52,37 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
     gain2_ = configuration->property(role + ".gain2", 0); // check gain DAC values for Flexiband frontend!
     gain3_ = configuration->property(role + ".gain3", 0); // check gain DAC values for Flexiband frontend!
 
-    AGC_ = configuration->property(role + ".AGC", true); // enabed AGC by default
+    AGC_ = configuration->property(role + ".AGC", true); // enabled AGC by default
 
-    usb_packet_buffer_size_ =configuration->property(role + ".usb_packet_buffer", 128);
+    usb_packet_buffer_size_ = configuration->property(role + ".usb_packet_buffer", 128);
 
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
 
     if (item_type_.compare("gr_complex") == 0)
-    {
+        {
             item_size_ = sizeof(gr_complex);
-            flexiband_source_ = gr::teleorbit::frontend::make(firmware_filename_.c_str(),gain1_,gain2_,gain3_, AGC_, usb_packet_buffer_size_);
+            flexiband_source_ = gr::teleorbit::frontend::make(firmware_filename_.c_str(), gain1_, gain2_, gain3_, AGC_, usb_packet_buffer_size_);
 
             //create I, Q -> gr_complex type conversion blocks
-            for (int n=0;n<(RF_channels_*2);n++)
-            {
-                char_to_float.push_back(gr::blocks::char_to_float::make());
-            }
+            for (int n = 0; n < (RF_channels_ * 2); n++)
+                {
+                    char_to_float.push_back(gr::blocks::char_to_float::make());
+                }
 
-            for (int n=0;n<(RF_channels_);n++)
-            {
-                float_to_complex_.push_back(gr::blocks::float_to_complex::make());
-            }
+            for (int n = 0; n < RF_channels_; n++)
+                {
+                    float_to_complex_.push_back(gr::blocks::float_to_complex::make());
+                }
 
             DLOG(INFO) << "Item size " << item_size_;
-            DLOG(INFO) << "Firmware file "<<firmware_filename_;
+            DLOG(INFO) << "Firmware file " << firmware_filename_;
             DLOG(INFO) << "flexiband_source_(" << flexiband_source_->unique_id() << ")";
-
-    }else
-    {
+        }
+    else
+        {
             LOG(WARNING) << item_type_ << " unrecognized item type for flexiband_source_";
             item_size_ = sizeof(gr_complex);
-    }
+        }
 }
 
 
@@ -94,35 +94,34 @@ FlexibandSignalSource::~FlexibandSignalSource()
 
 void FlexibandSignalSource::connect(gr::top_block_sptr top_block)
 {
-    for (int n=0;n<(RF_channels_*2);n++)
-    {
-    	  top_block->connect(flexiband_source_, n, char_to_float.at(n), 0);
-    	  DLOG(INFO) << "connected flexiband_source_ to char_to_float CH"<<n;
-    }
-    for (int n=0;n<RF_channels_;n++)
-    {
-    	  top_block->connect(char_to_float.at(n*2), 0, float_to_complex_.at(n), 0);
-    	  top_block->connect(char_to_float.at(n*2+1), 0, float_to_complex_.at(n), 1);
-    	  DLOG(INFO) << "connected char_to_float to float_to_complex_ CH"<<n;
-    }
-
+    for (int n = 0; n < (RF_channels_ * 2); n++)
+        {
+            top_block->connect(flexiband_source_, n, char_to_float.at(n), 0);
+            DLOG(INFO) << "connected flexiband_source_ to char_to_float CH" << n;
+        }
+    for (int n = 0; n < RF_channels_; n++)
+        {
+            top_block->connect(char_to_float.at(n * 2), 0, float_to_complex_.at(n), 0);
+            top_block->connect(char_to_float.at(n * 2 + 1), 0, float_to_complex_.at(n), 1);
+            DLOG(INFO) << "connected char_to_float to float_to_complex_ CH" << n;
+        }
 }
 
 
 
 void FlexibandSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    for (int n=0;n<(RF_channels_*2);n++)
-    {
-    	  top_block->disconnect(flexiband_source_, n, char_to_float.at(n), 0);
-    	  DLOG(INFO) << "disconnect flexiband_source_ to char_to_float CH"<<n;
-    }
-    for (int n=0;n<RF_channels_;n++)
-    {
-    	top_block->disconnect(char_to_float.at(n*2), 0, float_to_complex_.at(n), 0);
-    	top_block->disconnect(char_to_float.at(n*2+1), 0, float_to_complex_.at(n), 1);
-    	  DLOG(INFO) << "disconnect char_to_float to float_to_complex_ CH"<<n;
-    }
+    for (int n = 0; n < (RF_channels_ * 2); n++)
+        {
+            top_block->disconnect(flexiband_source_, n, char_to_float.at(n), 0);
+            DLOG(INFO) << "disconnect flexiband_source_ to char_to_float CH" << n;
+        }
+    for (int n = 0; n < RF_channels_; n++)
+        {
+            top_block->disconnect(char_to_float.at(n * 2), 0, float_to_complex_.at(n), 0);
+            top_block->disconnect(char_to_float.at(n * 2 + 1), 0, float_to_complex_.at(n), 1);
+            DLOG(INFO) << "disconnect char_to_float to float_to_complex_ CH" << n;
+        }
 }
 
 
@@ -135,7 +134,7 @@ gr::basic_block_sptr FlexibandSignalSource::get_left_block()
 
 gr::basic_block_sptr FlexibandSignalSource::get_right_block()
 {
-	return get_right_block(0);
+    return get_right_block(0);
 }
 
 gr::basic_block_sptr FlexibandSignalSource::get_right_block(int RF_channel)

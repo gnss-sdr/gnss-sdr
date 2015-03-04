@@ -47,12 +47,12 @@ class ConfigurationInterface;
 
 /*!
  * \brief This class configures and reads samples from Teleorbit Flexiband front-end.
- * This software requires a Flexiband GNURadio driver installed (not included with GNSS-SDR).
+ * This software requires a Flexiband GNU Radio driver installed (not included with GNSS-SDR).
  */
 class FlexibandSignalSource: public GNSSBlockInterface
 {
 public:
-	FlexibandSignalSource(ConfigurationInterface* configuration,
+    FlexibandSignalSource(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
             unsigned int out_stream, gr::msg_queue::sptr queue);
 
@@ -63,7 +63,7 @@ public:
     }
 
     /*!
-     * \brief Returns "FlexibandSignalSource".
+     * \brief Returns "Flexiband_Signal_Source".
      */
     std::string implementation()
     {

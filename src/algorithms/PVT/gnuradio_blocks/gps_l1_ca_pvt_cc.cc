@@ -178,7 +178,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                             break;
                         }
                     i++;
-                    if (i == d_nchannels - 1)
+                    if (i == (signed int)d_nchannels - 1)
                         {
                             break;
                         }
@@ -197,7 +197,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                             break;
                         }
                     i++;
-                    if (i == d_nchannels - 1)
+                    if (i == (signed int)d_nchannels - 1)
                         {
                             break;
                         }

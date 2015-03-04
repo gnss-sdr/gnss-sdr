@@ -164,20 +164,59 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
 
     if (global_galileo_utc_model_map.size() > 0)
         {
-            // UTC MODEL data is shared for all the Galileo satellites. Read always at ID=0
-            global_galileo_utc_model_map.read(0, d_ls_pvt->galileo_utc_model);
+            // UTC MODEL data is shared for all the Galileo satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                            global_galileo_utc_model_map.read(0, d_ls_pvt->galileo_utc_model);
+                            break;
+                        }
+                    i++;
+                    if (i == (signed int)d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
 
     if (global_galileo_iono_map.size() > 0)
         {
-            // IONO data is shared for all the Galileo satellites. Read always at ID=0
-            global_galileo_iono_map.read(0, d_ls_pvt->galileo_iono);
+            // IONO data is shared for all Galileo satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                            global_galileo_iono_map.read(i, d_ls_pvt->galileo_iono);
+                            break;
+                        }
+                    i++;
+                    if (i == (signed int)d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
 
     if (global_galileo_almanac_map.size() > 0)
         {
-            // Almanac data is shared for all the Galileo satellites. Read always at ID=0
-            arrived_galileo_almanac = global_galileo_almanac_map.read(0, d_ls_pvt->galileo_almanac);
+            // ALMANAC data is shared for all Galileo satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                	        arrived_galileo_almanac = global_galileo_almanac_map.read(i, d_ls_pvt->galileo_almanac);
+                            break;
+                        }
+                    i++;
+                    if (i == (signed int)d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
 
     // ############ 1. READ GPS EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
@@ -189,14 +228,40 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
 
     if (global_gps_utc_model_map.size() > 0)
         {
-            // UTC MODEL data is shared for all the Galileo satellites. Read always at ID=0
-            global_gps_utc_model_map.read(0, d_ls_pvt->gps_utc_model);
+            // UTC MODEL data is shared for all the GPS satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                            global_gps_utc_model_map.read(i, d_ls_pvt->gps_utc_model);
+                            break;
+                        }
+                    i++;
+                    if (i == (signed int)d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
 
     if (global_gps_iono_map.size() > 0)
         {
-            // IONO data is shared for all the Galileo satellites. Read always at ID=0
-            global_gps_iono_map.read(0, d_ls_pvt->gps_iono);
+            // IONO data is shared for all the GPS satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                            global_gps_iono_map.read(i, d_ls_pvt->gps_iono);
+                            break;
+                        }
+                    i++;
+                    if (i == (signed int)d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
 
 

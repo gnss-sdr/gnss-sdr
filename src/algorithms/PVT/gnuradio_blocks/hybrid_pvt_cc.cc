@@ -170,7 +170,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                 {
                     if (in[i][0].Flag_valid_pseudorange == true)
                         {
-                            global_galileo_utc_model_map.read(0, d_ls_pvt->galileo_utc_model);
+                            global_galileo_utc_model_map.read(i, d_ls_pvt->galileo_utc_model);
                             break;
                         }
                     i++;
@@ -202,7 +202,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
 
     if (global_galileo_almanac_map.size() > 0)
         {
-            // ALMANAC data is shared for all Galileo satellites. Read always at a locked channel
+            //  data is shared for all Galileo satellites. Read always at a locked channel
             signed int i = 0;
             while(true)
                 {

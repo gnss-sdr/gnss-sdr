@@ -67,7 +67,6 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
             for (int n=0;n<(RF_channels_*2);n++)
             {
                 char_to_float.push_back(gr::blocks::char_to_float::make());
-                float_to_complex_.push_back(gr::blocks::float_to_complex::make());
             }
 
             for (int n=0;n<(RF_channels_);n++)
@@ -102,8 +101,8 @@ void FlexibandSignalSource::connect(gr::top_block_sptr top_block)
     }
     for (int n=0;n<RF_channels_;n++)
     {
-    	  top_block->connect(char_to_float.at(n*2), 0, float_to_complex_.at(n*2), 0);
-    	  top_block->connect(char_to_float.at(n*2+1), 0, float_to_complex_.at(n*2+1), 0);
+    	  top_block->connect(char_to_float.at(n*2), 0, float_to_complex_.at(n), 0);
+    	  top_block->connect(char_to_float.at(n*2+1), 0, float_to_complex_.at(n), 1);
     	  DLOG(INFO) << "connected char_to_float to float_to_complex_ CH"<<n;
     }
 
@@ -120,8 +119,8 @@ void FlexibandSignalSource::disconnect(gr::top_block_sptr top_block)
     }
     for (int n=0;n<RF_channels_;n++)
     {
-    	  top_block->disconnect(char_to_float.at(n*2), 0, float_to_complex_.at(n*2), 0);
-    	  top_block->disconnect(char_to_float.at(n*2+1), 0, float_to_complex_.at(n*2+1), 0);
+    	top_block->disconnect(char_to_float.at(n*2), 0, float_to_complex_.at(n), 0);
+    	top_block->disconnect(char_to_float.at(n*2+1), 0, float_to_complex_.at(n), 1);
     	  DLOG(INFO) << "disconnect char_to_float to float_to_complex_ CH"<<n;
     }
 }

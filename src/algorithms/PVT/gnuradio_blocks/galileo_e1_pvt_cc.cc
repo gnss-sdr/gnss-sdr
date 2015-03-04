@@ -199,7 +199,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                 {
                     if (in[i][0].Flag_valid_pseudorange == true)
                         {
-                	        global_galileo_almanac_map.read(i, d_ls_pvt->galileo_almanac);
+                            global_galileo_almanac_map.read(i, d_ls_pvt->galileo_almanac);
                             break;
                         }
                     i++;
@@ -226,7 +226,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                             //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
                             //   d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
                             //
-                            if (!b_rinex_header_writen) //  & we have utc data in nav message!
+                            if (!b_rinex_header_writen)
                                 {
                                     std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
                                     galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
@@ -246,18 +246,18 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                                             rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
                                             d_last_sample_nav_output = d_sample_counter;
                                         }
-                                       std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
-                                       galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
-                                       if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
-                                          {
-                                              rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
-                                          }
-                                       if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
-                                           {
-                                               rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
-                                               rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
-                                               b_rinex_header_updated = true;
-                                           }
+                                    std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
+                                    galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                        {
+                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                        }
+                                    if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                        {
+                                            rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                            b_rinex_header_updated = true;
+                                        }
                                 }
                         }
                 }

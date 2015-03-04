@@ -264,7 +264,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                             d_kml_dump->print_position(d_ls_pvt, d_flag_averaging);
                             d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
 
-                            if (!b_rinex_header_writen) //  & we have utc data in nav message!
+                            if (!b_rinex_header_writen)
                                 {
                                     std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
                                     gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();

@@ -208,7 +208,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                 {
                     if (in[i][0].Flag_valid_pseudorange == true)
                         {
-                	        arrived_galileo_almanac = global_galileo_almanac_map.read(i, d_ls_pvt->galileo_almanac);
+                            arrived_galileo_almanac = global_galileo_almanac_map.read(i, d_ls_pvt->galileo_almanac);
                             break;
                         }
                     i++;
@@ -366,7 +366,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         }
 
     consume_each(1); //one by one
-    return 0;
+    return noutput_items;
 }
 
 

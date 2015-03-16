@@ -137,17 +137,17 @@ int hybrid_observables_cc::general_work (int noutput_items, gr_vector_int &ninpu
                 {
                     //record the word structure in a map for pseudorange computation
                     current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
-                    if (current_gnss_synchro[i].System=='G')
-                    {
-                    	current_gnss_synchro_map_gps_only.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
-                    }
+                    if (current_gnss_synchro[i].System == 'G')
+                        {
+                            current_gnss_synchro_map_gps_only.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
+                        }
                 }
         }
 
     /*
      * 2. Compute RAW pseudoranges using COMMON RECEPTION TIME algorithm. Use only the valid channels (channels that are tracking a satellite)
      */
-    DLOG(INFO)<<"gnss_synchro set size="<<current_gnss_synchro_map.size()<<std::endl;
+    DLOG(INFO) << "gnss_synchro set size=" << current_gnss_synchro_map.size();
 
     if(current_gnss_synchro_map.size() > 0)// and current_gnss_synchro_map_gps_only.size()>0)
         {
@@ -157,12 +157,12 @@ int hybrid_observables_cc::general_work (int noutput_items, gr_vector_int &ninpu
              */
             // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
             gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), Hybrid_pairCompare_gnss_synchro_d_TOW_hybrid_at_current_symbol);
-    		//gnss_synchro_iter = max_element(current_gnss_synchro_map_gps_only.begin(), current_gnss_synchro_map_gps_only.end(), Hybrid_pairCompare_gnss_synchro_d_TOW_hybrid_at_current_symbol);
-    		double d_TOW_reference = gnss_synchro_iter->second.d_TOW_hybrid_at_current_symbol;
-            char ref_sat_system=gnss_synchro_iter->second.System;
-            DLOG(INFO)<<"d_TOW_hybrid_reference [ms] = "<< d_TOW_reference*1000 <<std::endl;
+            //gnss_synchro_iter = max_element(current_gnss_synchro_map_gps_only.begin(), current_gnss_synchro_map_gps_only.end(), Hybrid_pairCompare_gnss_synchro_d_TOW_hybrid_at_current_symbol);
+            double d_TOW_reference = gnss_synchro_iter->second.d_TOW_hybrid_at_current_symbol;
+            char ref_sat_system = gnss_synchro_iter->second.System;
+            DLOG(INFO) << "d_TOW_hybrid_reference [ms] = " << d_TOW_reference * 1000;
             double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
-            DLOG(INFO)<<"ref_PRN_rx_time_ms [ms] = "<< d_ref_PRN_rx_time_ms <<std::endl;
+            DLOG(INFO) << "ref_PRN_rx_time_ms [ms] = " << d_ref_PRN_rx_time_ms;
             //int reference_channel= gnss_synchro_iter->second.Channel_ID;
 
             // Now compute RX time differences due to the PRN alignment in the correlators
@@ -170,31 +170,31 @@ int hybrid_observables_cc::general_work (int noutput_items, gr_vector_int &ninpu
             double pseudorange_m;
             double delta_rx_time_ms;
             double delta_TOW_ms;
-            //std::cout<<"d_sample_counter="<<d_sample_counter<<std::endl;
-    	for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
+            for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
                 {
                     // check and correct synchronization in cross-system pseudoranges!
-                   delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms-d_ref_PRN_rx_time_ms;
-                   delta_TOW_ms = (d_TOW_reference - gnss_synchro_iter->second.d_TOW_hybrid_at_current_symbol)*1000.0;
-                    //std::cout<<"delta_rx_time_ms["<<gnss_synchro_iter->second.Channel_ID<<","<<gnss_synchro_iter->second.System<<"]="<<delta_rx_time_ms<<std::endl;
-                    //std::cout<<"delta_TOW_ms["<<gnss_synchro_iter->second.Channel_ID<<","<<gnss_synchro_iter->second.System<<"]="<<delta_TOW_ms<<std::endl;
+                    delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms - d_ref_PRN_rx_time_ms;
+                    delta_TOW_ms = (d_TOW_reference - gnss_synchro_iter->second.d_TOW_hybrid_at_current_symbol) * 1000.0;
+
                     //compute the pseudorange
                     traveltime_ms =  delta_TOW_ms + delta_rx_time_ms + GALILEO_STARTOFFSET_ms;
                     pseudorange_m = traveltime_ms * GALILEO_C_m_ms; // [m]
-               		DLOG(INFO)<<"CH "<<gnss_synchro_iter->second.Channel_ID<<" tracking GNSS System "<<gnss_synchro_iter->second.System<<" has PRN start at= "<<gnss_synchro_iter->second.Prn_timestamp_ms<<" [ms], d_TOW_at_current_symbol = "<<(gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000<<" [ms], d_TOW_hybrid_at_current_symbol = "<<(gnss_synchro_iter->second.d_TOW_hybrid_at_current_symbol)*1000<<"[ms], delta_rx_time_ms = "<< delta_rx_time_ms << "[ms], travel_time = " << traveltime_ms << ", pseudorange[m] = "<< pseudorange_m << std::endl;
+                    DLOG(INFO) << "CH " << gnss_synchro_iter->second.Channel_ID << " tracking GNSS System "
+                               << gnss_synchro_iter->second.System << " has PRN start at= " << gnss_synchro_iter->second.Prn_timestamp_ms
+                               << " [ms], d_TOW_at_current_symbol = " << (gnss_synchro_iter->second.d_TOW_at_current_symbol) * 1000
+                               << " [ms], d_TOW_hybrid_at_current_symbol = "<< (gnss_synchro_iter->second.d_TOW_hybrid_at_current_symbol) * 1000
+                               << "[ms], delta_rx_time_ms = " << delta_rx_time_ms << "[ms], travel_time = " << traveltime_ms
+                               << ", pseudorange[m] = "<< pseudorange_m;
 
                     // update the pseudorange object
                     //current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_hybrid_at_current_symbol = round(d_TOW_reference*1000)/1000 + GALILEO_STARTOFFSET_ms/1000.0;
-
+                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_hybrid_at_current_symbol = round(d_TOW_reference * 1000) / 1000 + GALILEO_STARTOFFSET_ms / 1000.0;
                 }
-            //std::cout<<std::endl;
         }
 
-
-      if(d_dump == true)
+    if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
             try

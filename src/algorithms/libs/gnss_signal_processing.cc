@@ -178,9 +178,9 @@ void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs
 {
     unsigned int _codeValueIndex;
     //--- Find time constants --------------------------------------------------
-    const float _t_in = 1/_fs_in;  // Incoming sampling  period in sec
-    const float _t_out = 1/_fs_out;   // Out sampling period in sec
-    for (unsigned int i=0; i<_length_out-1; i++)
+    const float _t_in = 1 / _fs_in;  // Incoming sampling  period in sec
+    const float _t_out = 1 / _fs_out;   // Out sampling period in sec
+    for (unsigned int i = 0; i < _length_out - 1; i++)
         {
             //=== Digitizing =======================================================
             //--- compute index array to read sampled values -------------------------
@@ -189,5 +189,5 @@ void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs
             _dest[i] = _from[_codeValueIndex];
         }
     //--- Correct the last index (due to number rounding issues) -----------
-    _dest[_length_out-1] = _from[_length_in - 1];
+    _dest[_length_out - 1] = _from[_length_in - 1];
 }

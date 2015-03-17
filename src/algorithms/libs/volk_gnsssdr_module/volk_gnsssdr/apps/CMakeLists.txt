@@ -50,6 +50,7 @@ add_executable(volk_gnsssdr_profile
 )
 
 target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link})
+add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
 
 if(ENABLE_STRIP)
     if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
@@ -67,6 +68,7 @@ install(
 # MAKE volk_gnsssdr-config-info
 add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc)
 target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link})
+add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
 
 install(
     TARGETS volk_gnsssdr-config-info

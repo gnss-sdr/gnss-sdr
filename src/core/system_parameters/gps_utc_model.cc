@@ -103,7 +103,7 @@ double Gps_Utc_Model::utc_time(double gpstime_corrected, int i_GPS_week)
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
         }
 
-    double secondsOfWeekBeforeToday = 43200 * floor(gpstime_corrected / 43200);
+    double secondsOfWeekBeforeToday = 86400 * floor(gpstime_corrected / 86400);
     t_utc = secondsOfWeekBeforeToday + t_utc_daytime;
     return t_utc;
 }

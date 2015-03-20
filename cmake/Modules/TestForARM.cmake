@@ -26,7 +26,7 @@ set (ARM_VERSION "")
 
 if (CMAKE_COMPILER_IS_GNUCXX)
   execute_process(COMMAND echo "int main(){}"
-                  COMMAND ${CMAKE_CXX_COMPILER} -dM -E -
+                  COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -dM -E -
 		  OUTPUT_VARIABLE TEST_FOR_ARM_RESULTS)
 
   string(REGEX MATCH "__arm" ARM_FOUND "${TEST_FOR_ARM_RESULTS}")

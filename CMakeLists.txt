@@ -21,7 +21,7 @@
 # Project setup
 ########################################################################
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(FATAL_ERROR "Prevented in-tree build. This is bad practice. Try 'cd build && cmake ../' ")
+    message(WARNING "In-tree build is bad practice. Try 'cd build && cmake ../' ")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 cmake_minimum_required(VERSION 2.8)
 project(gnss-sdr CXX C)
@@ -398,11 +398,15 @@ if(OS_IS_MACOSX)
     endif(CMAKE_GENERATOR STREQUAL Xcode)
 endif(OS_IS_MACOSX)
 if(NOT VOLK_GNSSSDR_FOUND)
+    set(VOLK_GNSSSDR_CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install -DENABLE_STATIC_LIBS=ON ${STRIP_VOLK_GNSSSDR_PROFILE} ${USE_MACPORTS_PYTHON})
+    if(CMAKE_TOOLCHAIN_FILE)
+      set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_TOOLCHAIN_FILE ${CMAKE_TOOLCHAIN_FILE})
+    endif(CMAKE_TOOLCHAIN_FILE)
     ExternalProject_Add(volk_gnsssdr_module
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/build   
-         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install -DENABLE_STATIC_LIBS=ON ${STRIP_VOLK_GNSSSDR_PROFILE} ${USE_MACPORTS_PYTHON}
+         CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
          DOWNLOAD_COMMAND ""
          UPDATE_COMMAND ""
          PATCH_COMMAND ""
@@ -724,7 +728,7 @@ if(OS_IS_LINUX)
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(" sudo apt-get install gfortran") 
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        message(FATAL_ERROR "gfortran is required to build gnss-sdr")
+        #message(FATAL_ERROR "gfortran is required to build gnss-sdr")
     endif(NOT GFORTRAN)
 endif(OS_IS_LINUX)
 
@@ -1080,5 +1084,3 @@ add_subdirectory(src)
 if(ENABLE_PACKAGING)
     include(GnssSdrPackaging)
 endif(ENABLE_PACKAGING)
-
-

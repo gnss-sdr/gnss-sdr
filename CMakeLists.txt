@@ -738,8 +738,8 @@ if(NOT ARMADILLO_FOUND)
      message (STATUS " Armadillo will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
 
-     set(armadillo_RELEASE 4.600.2)
-     set(armadillo_MD5 "cfa4962bfa48bf3953d012b2f8fcfa35")
+     set(armadillo_RELEASE 4.650.4)
+     set(armadillo_MD5 "e575dc01cf60e290a467c7c6d3171ef3")
 
      ExternalProject_Add(
          armadillo-${armadillo_RELEASE}

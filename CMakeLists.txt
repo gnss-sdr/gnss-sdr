@@ -668,7 +668,7 @@ if(OS_IS_LINUX)
         message(FATAL_ERROR "BLAS is required to build gnss-sdr")
     endif(NOT BLAS)
     #############################################
-    # Check that GFORTRAN is found in the system
+    # Check if GFORTRAN is found in the system
     #############################################
     find_library(GFORTRAN NAMES gfortran
                  PATHS /usr/lib
@@ -719,24 +719,23 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/arm-linux-gnueabi/4.9
                 )
     if(NOT GFORTRAN)
-        message(" The gfortran library has not been found.")
-        message(" You can try to install it by typing:")
+        message(STATUS "The gfortran library has not been found.")
+        message(STATUS " You can try to install it by typing:")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install gcc-fortran")
+            message(STATUS" sudo yum install gcc-fortran")
         elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            message(" sudo zypper install gcc-fortran")
+            message(STATUS" sudo zypper install gcc-fortran")
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install gfortran")
+            message(STATUS" sudo apt-get install gfortran")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-        #message(FATAL_ERROR "gfortran is required to build gnss-sdr")
     endif(NOT GFORTRAN)
 endif(OS_IS_LINUX)
 
 find_package(Armadillo)
 if(NOT ARMADILLO_FOUND)
-     message (STATUS " Armadillo has not been found.")
-     message (STATUS " Armadillo will be downloaded and built automatically ")
-     message (STATUS " when doing 'make'. ")
+     message(STATUS " Armadillo has not been found.")
+     message(STATUS " Armadillo will be downloaded and built automatically ")
+     message(STATUS " when doing 'make'. ")
 
      set(armadillo_RELEASE 4.650.4)
      set(armadillo_MD5 "e575dc01cf60e290a467c7c6d3171ef3")
@@ -765,6 +764,9 @@ if(NOT ARMADILLO_FOUND)
      if(OPENBLAS_FOUND)
          set(BLAS ${OPENBLAS})
      endif(OPENBLAS_FOUND)
+     if(NOT GFORTRAN)
+         set(GFORTRAN "")
+     endif(NOT GFORTRAN)
      set(ARMADILLO_LIBRARIES ${BLAS} ${LAPACK} ${GFORTRAN} ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo.a)
      set(LOCAL_ARMADILLO true CACHE STRING "Armadillo downloaded and built automatically" FORCE)
      # Save a copy at the thirdparty folder

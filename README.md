@@ -33,7 +33,7 @@ Before building GNSS-SDR, you need to install all the required dependencies. If 
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
-       liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev gfortran \
+       liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
        libarmadillo-dev libgflags-dev libgoogle-glog-dev libssl-dev libgtest-dev
 ~~~~~~
 

@@ -475,7 +475,7 @@ endif(NOT GFlags_FOUND)
 
 
 ################################################################################
-# glog - http://code.google.com/p/google-glog/
+# glog - https://github.com/google/glog
 ################################################################################
 if(NOT ${ENABLE_OWN_GLOG})
      find_package(GLOG)
@@ -483,7 +483,7 @@ if(NOT ${ENABLE_OWN_GLOG})
         set(GLOG_FOUND ON)
      endif(GLOG_INCLUDE_DIRS)
 endif(NOT ${ENABLE_OWN_GLOG})
-set(glog_RELEASE 0.3.3)
+set(glog_RELEASE 0.3.4)
 if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
      message (STATUS " glog library has not been found")
      if(NOT GFlags_FOUND)
@@ -495,8 +495,6 @@ if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
          add_library(gflags-${gflags_RELEASE} UNKNOWN IMPORTED)
          set_property(TARGET gflags-${gflags_RELEASE} PROPERTY IMPORTED_LOCATION "${GFlags_LIBS}")
      endif(NOT ${LOCAL_GFLAGS})
-     set(glog_RELEASE 0.3.3)
-     set(glog_MD5 "a6fd2c22f8996846e34c763422717c18")
 
      if(${LOCAL_GFLAGS})
          set(TARGET_GFLAGS ${gflags})
@@ -558,39 +556,23 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
      endif(${LOCAL_GFLAGS})
 
      set(GLOG_CONFIGURE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/configure_with_gflags)
-     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-          ExternalProject_Add(
-              glog-${glog_RELEASE}
-              DEPENDS ${TARGET_GFLAGS}
-              PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-              SVN_REPOSITORY http://google-glog.googlecode.com/svn/trunk
-              SVN_REVISION -r "142"
-              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
-              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
-              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-              CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
-              BUILD_COMMAND make
-              UPDATE_COMMAND ""
-              PATCH_COMMAND ""
-              INSTALL_COMMAND ""
-          )
-     else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-          ExternalProject_Add(
-              glog-${glog_RELEASE}
-              DEPENDS ${TARGET_GFLAGS}
-              PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-              URL http://google-glog.googlecode.com/files/glog-${glog_RELEASE}.tar.gz
-              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
-              URL_MD5 ${glog_MD5}
-              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
-              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
-              CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
-              BUILD_COMMAND make
-              UPDATE_COMMAND ""
-              PATCH_COMMAND ""
-              INSTALL_COMMAND ""
-          )
-     endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+
+     ExternalProject_Add(
+         glog-${glog_RELEASE}
+         DEPENDS ${TARGET_GFLAGS}
+         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+         GIT_REPOSITORY https://github.com/google/glog/
+         GIT_TAG v${glog_RELEASE}
+         DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
+         CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
+         BUILD_COMMAND make
+         UPDATE_COMMAND ""
+         PATCH_COMMAND ""
+         INSTALL_COMMAND ""
+     )
+
      # Set up variables
      set(GLOG_INCLUDE_DIRS
           ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/src/

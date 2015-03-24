@@ -106,7 +106,7 @@ The full stop separated from ```cmake``` by a space is important. [CMake](http:/
 
    
 
-#### Install [Gflags](https://gflags.github.io/gflags/ "Gflags' Homepage"), a commandline flags processing module for C++:
+#### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++:
 
 ~~~~~~ 
 $ wget https://github.com/gflags/gflags/archive/v2.1.2.tar.gz
@@ -120,12 +120,12 @@ $ sudo ldconfig
 
    
 
-#### Install [Glog](http://code.google.com/p/google-glog/ "Glog's Homepage"), a library that implements application-level logging:
+#### Install [Glog](https://github.com/google/glog "Glog's Homepage"), a library that implements application-level logging:
 
 ~~~~~~ 
-$ wget http://google-glog.googlecode.com/files/glog-0.3.3.tar.gz 
-$ tar xvfz glog-0.3.3.tar.gz 
-$ cd glog-0.3.3
+$ wget https://github.com/google/glog/archive/v0.3.4.tar.gz 
+$ tar xvfz v0.3.4.tar.gz 
+$ cd glog-0.3.4
 $ ./configure
 $ make
 $ sudo make install

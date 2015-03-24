@@ -431,48 +431,25 @@ endif(NOT VOLK_GNSSSDR_FOUND)
 
 
 ################################################################################
-# gflags - http://code.google.com/p/gflags/
+# gflags - https://github.com/gflags/gflags
 ################################################################################
 set(LOCAL_GFLAGS false)
-set(gflags_RELEASE 2.0)
+set(gflags_RELEASE 2.1.2)
 find_package(GFlags)
 if (NOT GFlags_FOUND)
      message (STATUS " gflags library has not been found.")
      message (STATUS " gflags will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-     set(gflags_MD5 "5fd4554d2ba84bf222a2fec0870d28df")
-     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-         file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_osx
-"#!/bin/sh
-export CXXFLAGS=\"-stdlib=libc++\"
-export CC=clang
-export CXX=clang++
-${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}/configure")
-         file(COPY ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_osx
-                 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
-                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-          set(CONF_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/configure_osx)
-     else("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_linux
-"#!/bin/sh
-${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}/configure")
-          file(COPY ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/tmp/configure_linux
-                 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
-                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-                 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-          set(CONF_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/configure_linux)
-     endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-
+     
      ExternalProject_Add(
           gflags-${gflags_RELEASE}
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
-          URL http://gflags.googlecode.com/files/gflags-${gflags_RELEASE}.zip
+          GIT_REPOSITORY git://github.com/gflags/gflags.git
+          GIT_TAG v${gflags_RELEASE}
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/gflags-${gflags_RELEASE}
-          URL_MD5 ${gflags_MD5}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
-          CONFIGURE_COMMAND ${CONF_SCRIPT} --prefix=${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
+          CMAKE_ARGS -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=ON -DBUILD_gflags_nothreads_LIB=OFF -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           BUILD_COMMAND make
           UPDATE_COMMAND ""
           PATCH_COMMAND ""
@@ -480,16 +457,16 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}/configure
      )
 
      set(GFlags_INCLUDE_DIRS
-          ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/src CACHE PATH "Local Gflags headers"
+          ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/include CACHE PATH "Local Gflags headers"
      )
 
      add_library(gflags UNKNOWN IMPORTED)
-     set_property(TARGET gflags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.a)
+     set_property(TARGET gflags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags.a)
      add_dependencies(gflags gflags-${gflags_RELEASE})
      set(GFlags_LIBS gflags)
-     file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
+     file(GLOB GFlags_SHARED_LIBS "${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_SHARED_LIBRARY_SUFFIX}*")
      set(GFlags_LIBRARY gflags-${gflags_RELEASE})
-     set(GFlags_LIBRARY_PATH ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs )
+     set(GFlags_LIBRARY_PATH ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib )
      link_directories(${GFlags_LIBRARY_PATH})
      set(GFlags_lib ${GFlags_LIBS} CACHE FILEPATH "Local Gflags library")
      set(GFlags_LIBRARY_PATH ${GFlags_LIBS})
@@ -527,7 +504,7 @@ if (NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
              file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
-export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
+export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib
 export LIBS=${GFlags_SHARED_LIBS}
 export CXXFLAGS=\"-stdlib=libc++\"
 export CC=clang
@@ -541,7 +518,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
              file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
-export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
+export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib
 export LIBS=${GFlags_SHARED_LIBS}
 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
              file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
@@ -570,7 +547,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
               file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags
 "#!/bin/sh
 export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
-export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/.libs
+export LDFLAGS=-L${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}/lib
 export LIBS=${GFlags_SHARED_LIBS}
 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
               file(COPY ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}/tmp/configure_with_gflags

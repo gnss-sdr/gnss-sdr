@@ -94,7 +94,6 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 $ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
-
 $ wget http://sourceforge.net/projects/arma/files/armadillo-4.650.4.tar.gz
 $ tar xvfz armadillo-4.650.4.tar.gz
 $ cd armadillo-4.650.4
@@ -107,13 +106,13 @@ The full stop separated from ```cmake``` by a space is important. [CMake](http:/
 
    
 
-#### Install [Gflags](http://code.google.com/p/gflags/ "Gflags' Homepage"), a commandline flags processing module for C++:
+#### Install [Gflags](https://gflags.github.io/gflags/ "Gflags' Homepage"), a commandline flags processing module for C++:
 
 ~~~~~~ 
-$ wget http://gflags.googlecode.com/files/gflags-2.0.zip
-$ unzip gflags-2.0.zip
-$ cd gflags-2.0
-$ ./configure
+$ wget https://github.com/gflags/gflags/archive/v2.1.2.tar.gz
+$ tar xvfz v2.1.2.tar.gz
+$ cd gflags-2.1.2
+$ cmake -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_gflags_nothreads_LIB=OFF .
 $ make
 $ sudo make install
 $ sudo ldconfig

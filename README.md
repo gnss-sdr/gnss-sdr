@@ -381,6 +381,18 @@ $ sudo port install armadillo
 $ sudo port install google-glog +gflags
 ~~~~~~ 
 
+You also might need to activate a Python installation. The list of installed versions can be retrieved with:
+
+~~~~~~ 
+$ port select list python
+~~~~~~ 
+
+and you can activate a certain version by typing:
+
+~~~~~~ 
+$ sudo port select --set python python27
+~~~~~~ 
+
 Finally, you are ready to clone the GNSS-SDR repository and build the software:
 
 ~~~~~~ 

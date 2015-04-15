@@ -92,6 +92,8 @@ private:
     int gain3_;
     int usb_packet_buffer_size_;
     bool AGC_;
+    std::string signal_file;
+    bool flag_read_file;
 
     int RF_channels_;
 

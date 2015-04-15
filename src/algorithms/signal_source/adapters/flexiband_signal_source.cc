@@ -53,6 +53,9 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
     gain3_ = configuration->property(role + ".gain3", 0); // check gain DAC values for Flexiband frontend!
 
     AGC_ = configuration->property(role + ".AGC", true); // enabled AGC by default
+    flag_read_file = configuration->property(role + ".flag_read_file", false); //disable read samples from file by default
+    std::string default_signal_file = "flexiband_frame_samples.bin";
+    signal_file = configuration->property(role + ".signal_file", default_signal_file);
 
     usb_packet_buffer_size_ = configuration->property(role + ".usb_packet_buffer", 128);
 
@@ -61,7 +64,7 @@ FlexibandSignalSource::FlexibandSignalSource(ConfigurationInterface* configurati
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            flexiband_source_ = gr::teleorbit::frontend::make(firmware_filename_.c_str(), gain1_, gain2_, gain3_, AGC_, usb_packet_buffer_size_);
+            flexiband_source_ = gr::teleorbit::frontend::make(firmware_filename_.c_str(), gain1_, gain2_, gain3_, AGC_, usb_packet_buffer_size_, signal_file.c_str(), flag_read_file);
 
             //create I, Q -> gr_complex type conversion blocks
             for (int n = 0; n < (RF_channels_ * 2); n++)

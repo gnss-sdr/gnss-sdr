@@ -687,7 +687,7 @@ int Sbas_Telemetry_Data::decode_sbstype7(const sbsmsg_t *msg, sbssat_t *sbssat)
 /* decode type 9: geo navigation message -------------------------------------*/
 int Sbas_Telemetry_Data::decode_sbstype9(const sbsmsg_t *msg, nav_t *nav)
 {
-    seph_t seph = {0};
+    seph_t seph;
     int i;
     int sat;
 

@@ -326,17 +326,18 @@ private:
      */
 
     typedef struct {        /* SBAS ephemeris type */
-        int sat;            /* satellite number */
+        int sat = 0;            /* satellite number */
         //gtime_t t0;         /* reference epoch time (GPST) */
-        int t0;
+        int t0 = 0;
         //gtime_t tof;        /* time of message frame (GPST) */
-        double tof;
-        int sva;            /* SV accuracy (URA index) */
-        int svh;            /* SV health (0:ok) */
-        double pos[3];      /* satellite position (m) (ecef) */
-        double vel[3];      /* satellite velocity (m/s) (ecef) */
-        double acc[3];      /* satellite acceleration (m/s^2) (ecef) */
-        double af0,af1;     /* satellite clock-offset/drift (s,s/s) */
+        double tof = 0;
+        int sva = 0;            /* SV accuracy (URA index) */
+        int svh = 0;            /* SV health (0:ok) */
+        double pos[3] = {0, 0, 0};      /* satellite position (m) (ecef) */
+        double vel[3] = {0, 0, 0};      /* satellite velocity (m/s) (ecef) */
+        double acc[3] = {0, 0, 0};      /* satellite acceleration (m/s^2) (ecef) */
+        double af0 = 0;
+        double af1 = 0;     /* satellite clock-offset/drift (s,s/s) */
     } seph_t;
 
     typedef struct {        /* navigation data type */

@@ -33,7 +33,7 @@ Before building GNSS-SDR, you need to install all the required dependencies. If 
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
-       liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev gfortran \
+       liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
        libarmadillo-dev libgflags-dev libgoogle-glog-dev libssl-dev libgtest-dev
 ~~~~~~
 
@@ -94,10 +94,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 $ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
-
-$ wget http://sourceforge.net/projects/arma/files/armadillo-4.600.2.tar.gz
-$ tar xvfz armadillo-4.600.2.tar.gz
-$ cd armadillo-4.600.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-4.650.4.tar.gz
+$ tar xvfz armadillo-4.650.4.tar.gz
+$ cd armadillo-4.650.4
 $ cmake .
 $ make
 $ sudo make install
@@ -107,13 +106,13 @@ The full stop separated from ```cmake``` by a space is important. [CMake](http:/
 
    
 
-#### Install [Gflags](http://code.google.com/p/gflags/ "Gflags' Homepage"), a commandline flags processing module for C++:
+#### Install [Gflags](https://github.com/gflags/gflags "Gflags' Homepage"), a commandline flags processing module for C++:
 
 ~~~~~~ 
-$ wget http://gflags.googlecode.com/files/gflags-2.0.zip
-$ unzip gflags-2.0.zip
-$ cd gflags-2.0
-$ ./configure
+$ wget https://github.com/gflags/gflags/archive/v2.1.2.tar.gz
+$ tar xvfz v2.1.2.tar.gz
+$ cd gflags-2.1.2
+$ cmake -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_gflags_nothreads_LIB=OFF .
 $ make
 $ sudo make install
 $ sudo ldconfig
@@ -121,12 +120,12 @@ $ sudo ldconfig
 
    
 
-#### Install [Glog](http://code.google.com/p/google-glog/ "Glog's Homepage"), a library that implements application-level logging:
+#### Install [Glog](https://github.com/google/glog "Glog's Homepage"), a library that implements application-level logging:
 
 ~~~~~~ 
-$ wget http://google-glog.googlecode.com/files/glog-0.3.3.tar.gz 
-$ tar xvfz glog-0.3.3.tar.gz 
-$ cd glog-0.3.3
+$ wget https://github.com/google/glog/archive/v0.3.4.tar.gz 
+$ tar xvfz v0.3.4.tar.gz 
+$ cd glog-0.3.4
 $ ./configure
 $ make
 $ sudo make install
@@ -380,6 +379,18 @@ $ sudo port install doxygen +latex
 $ sudo port install gnuradio
 $ sudo port install armadillo
 $ sudo port install google-glog +gflags
+~~~~~~ 
+
+You also might need to activate a Python installation. The list of installed versions can be retrieved with:
+
+~~~~~~ 
+$ port select list python
+~~~~~~ 
+
+and you can activate a certain version by typing:
+
+~~~~~~ 
+$ sudo port select --set python python27
 ~~~~~~ 
 
 Finally, you are ready to clone the GNSS-SDR repository and build the software:

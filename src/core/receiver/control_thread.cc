@@ -645,10 +645,9 @@ void ControlThread::gps_ephemeris_data_collector()
             global_gps_ephemeris_queue.wait_and_pop(gps_eph);
 
             // DEBUG MESSAGE
-            std::cout << "Ephemeris record has arrived from SAT ID "
+            LOG(INFO) << "Ephemeris record has arrived from SAT ID "
                       << gps_eph.i_satellite_PRN << " (Block "
-                      <<  gps_eph.satelliteBlock[gps_eph.i_satellite_PRN]
-                      << ")" << std::endl;
+                      <<  gps_eph.satelliteBlock[gps_eph.i_satellite_PRN] << ")";
             // insert new ephemeris record to the global ephemeris map
             if (global_gps_ephemeris_map.read(gps_eph.i_satellite_PRN, gps_eph_old))
                 {

@@ -821,5 +821,5 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
 
     consume_each(ninput_items[0]);
 
-    return 0;
+    return noutput_items;
 }

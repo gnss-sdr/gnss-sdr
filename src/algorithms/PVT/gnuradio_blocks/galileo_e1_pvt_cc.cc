@@ -92,6 +92,7 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
     d_rx_time = 0.0;
 
     b_rinex_header_writen = false;
+    b_rinex_header_updated = false;
     rp = std::make_shared<Rinex_Printer>();
 
     // ############# ENABLE DATA FILE LOG #################
@@ -154,21 +155,61 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
 
     if (global_galileo_utc_model_map.size() > 0)
         {
-            // UTC MODEL data is shared for all the Galileo satellites. Read always at ID=0
-            global_galileo_utc_model_map.read(0, d_ls_pvt->galileo_utc_model);
+            // UTC MODEL data is shared for all the Galileo satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                            global_galileo_utc_model_map.read(i, d_ls_pvt->galileo_utc_model);
+                            break;
+                        }
+                    i++;
+                    if (i == (signed int)d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
 
     if (global_galileo_iono_map.size() > 0)
         {
-            // IONO data is shared for all the Galileo satellites. Read always at ID=0
-            global_galileo_iono_map.read(0, d_ls_pvt->galileo_iono);
+            // IONO data is shared for all Galileo satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                            global_galileo_iono_map.read(i, d_ls_pvt->galileo_iono);
+                            break;
+                        }
+                    i++;
+                    if (i == (signed int)d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
 
     if (global_galileo_almanac_map.size() > 0)
         {
-            // Almanac data is shared for all the Galileo satellites. Read always at ID=0
-            global_galileo_almanac_map.read(0, d_ls_pvt->galileo_almanac);
+            // ALMANAC data is shared for all Galileo satellites. Read always at a locked channel
+            signed int i = 0;
+            while(true)
+                {
+                    if (in[i][0].Flag_valid_pseudorange == true)
+                        {
+                            global_galileo_almanac_map.read(i, d_ls_pvt->galileo_almanac);
+                            break;
+                        }
+                    i++;
+                    if (i == (signed int)d_nchannels - 1)
+                        {
+                            break;
+                        }
+                }
         }
+
 
     // ############ 2 COMPUTE THE PVT ################################
     if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->galileo_ephemeris_map.size() > 0)
@@ -185,7 +226,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                             //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
                             //   d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
                             //
-                            if (!b_rinex_header_writen) //  & we have utc data in nav message!
+                            if (!b_rinex_header_writen)
                                 {
                                     std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
                                     galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
@@ -205,12 +246,18 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                                             rp->log_rinex_nav(rp->navGalFile, d_ls_pvt->galileo_ephemeris_map);
                                             d_last_sample_nav_output = d_sample_counter;
                                         }
-                                       std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
-                                       galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
-                                       if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
-                                          {
-                                              rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
-                                          }
+                                    std::map<int, Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
+                                    galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                    if (galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                        {
+                                            rp->log_rinex_obs(rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                        }
+                                    if (!b_rinex_header_updated && (d_ls_pvt->galileo_utc_model.A0_6 != 0))
+                                        {
+                                            rp->update_nav_header(rp->navGalFile, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
+                                            rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
+                                            b_rinex_header_updated = true;
+                                        }
                                 }
                         }
                 }
@@ -219,11 +266,11 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
             if (((d_sample_counter % d_display_rate_ms) == 0) and d_ls_pvt->b_valid_position == true)
                 {
                     std::cout << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                              << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                              << " UTC is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
                               << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]" << std::endl;
 
                     LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
-                              << " is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
+                              << " UTC is Lat = " << d_ls_pvt->d_latitude_d << " [deg], Long = " << d_ls_pvt->d_longitude_d
                               << " [deg], Height= " << d_ls_pvt->d_height_m << " [m]";
 
                     LOG(INFO) << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)

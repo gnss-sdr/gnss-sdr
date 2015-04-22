@@ -77,7 +77,7 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
     telemetry_decoder_->set_utc_model_queue(&global_gps_utc_model_queue);
 
     //decimation factor
-    int decimation_factor=configuration->property(role + ".decimation_factor", 1);
+    int decimation_factor = configuration->property(role + ".decimation_factor", 1);
     telemetry_decoder_->set_decimation(decimation_factor);
     DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";
 }
@@ -97,16 +97,16 @@ void GpsL1CaTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
 
 void GpsL1CaTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	// Nothing to connect internally
+    if(top_block) { /* top_block is not null */};
+    // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 void GpsL1CaTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	// Nothing to disconnect
+    if(top_block) { /* top_block is not null */};
+    // Nothing to disconnect
 }
 
 

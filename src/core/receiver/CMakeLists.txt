@@ -77,6 +77,10 @@ if(ENABLE_ARRAY)
     add_definitions(-DRAW_ARRAY_DRIVER=1)
 endif(ENABLE_ARRAY)
 
+if(ENABLE_FLEXIBAND)
+    add_definitions(-DFLEXIBAND_DRIVER=1)
+endif(ENABLE_FLEXIBAND)
+
 if(ENABLE_OSMOSDR)
     add_definitions(-DOSMOSDR_DRIVER=1)
 endif(ENABLE_OSMOSDR)

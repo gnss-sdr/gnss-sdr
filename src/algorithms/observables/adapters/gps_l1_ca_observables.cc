@@ -73,7 +73,7 @@ GpsL1CaObservables::~GpsL1CaObservables()
 void GpsL1CaObservables::connect(gr::top_block_sptr top_block)
 {
     if(top_block) { /* top_block is not null */};
-	// Nothing to connect internally
+    // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
@@ -81,8 +81,8 @@ void GpsL1CaObservables::connect(gr::top_block_sptr top_block)
 
 void GpsL1CaObservables::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	// Nothing to disconnect
+    if(top_block) { /* top_block is not null */};
+    // Nothing to disconnect
 }
 
 

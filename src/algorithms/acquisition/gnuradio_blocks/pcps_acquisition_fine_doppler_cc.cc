@@ -504,5 +504,5 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     //DLOG(INFO)<<"d_sample_counter="<<d_sample_counter<<std::endl;
     d_sample_counter += d_fft_size; // sample counter
     consume_each(d_fft_size);
-    return 0;
+    return noutput_items;
 }

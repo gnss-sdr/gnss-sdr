@@ -8,7 +8,7 @@
 function (test_for_sse h_file result_var name)
   if (NOT DEFINED ${result_var})
     execute_process(COMMAND echo "#include <${h_file}>"
-                    COMMAND ${CMAKE_CXX_COMPILER} -c -x c++ -
+                    COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -c -x c++ -
 		    RESULT_VARIABLE COMPILE_RESULT
 		    OUTPUT_QUIET ERROR_QUIET)
     set(detected 0)

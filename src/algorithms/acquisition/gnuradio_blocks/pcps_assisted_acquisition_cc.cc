@@ -466,5 +466,5 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         break;
     }
 
-    return 0;
+    return noutput_items;
 }

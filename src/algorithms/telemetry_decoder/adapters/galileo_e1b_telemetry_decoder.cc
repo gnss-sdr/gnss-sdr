@@ -93,16 +93,16 @@ void GalileoE1BTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
 
 void GalileoE1BTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	// Nothing to connect internally
+    if(top_block) { /* top_block is not null */};
+    // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 void GalileoE1BTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	// Nothing to disconnect
+    if(top_block) { /* top_block is not null */};
+    // Nothing to disconnect
 }
 
 

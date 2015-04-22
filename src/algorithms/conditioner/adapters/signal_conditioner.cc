@@ -51,6 +51,7 @@ SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
                 queue_(queue)
 {
     connected_ = false;
+    if(configuration){ };
 }
 
 

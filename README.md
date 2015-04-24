@@ -16,7 +16,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux 
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS and 14.10, Debian 8.0 "jessie". 
+ * Tested distributions: Ubuntu 14.04 LTS, 14.10 and 15.04, Debian 8.0 "jessie", Linaro 15.03 
  * Known to work but not continually tested: Fedora 19 and 20, and openSUSE 13.1 
  * Supported microprocessor architectures: 
    * i386: Intel x86 instruction set (32-bit microprocessors). 
@@ -27,7 +27,7 @@ GNU/Linux
 
 Older distribution releases might work as well, but you will need GCC 4.7 or newer.
 
-Before building GNSS-SDR, you need to install all the required dependencies. If you are using Debian 8 or Ubuntu 14.10, this can be done by copying and pasting the following line in a terminal:
+Before building GNSS-SDR, you need to install all the required dependencies. If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
 
 ~~~~~~ 
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \

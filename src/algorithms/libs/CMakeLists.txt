@@ -18,6 +18,7 @@
 
 
 set(GNSS_SPLIBS_SOURCES
+	gps_l2c_signal.cc
     galileo_e1_signal_processing.cc
     gnss_sdr_valve.cc
     gnss_signal_processing.cc

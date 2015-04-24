@@ -24,6 +24,7 @@ set(ACQ_ADAPTER_SOURCES
     gps_l1_ca_pcps_acquisition_fine_doppler.cc
     gps_l1_ca_pcps_tong_acquisition.cc
     gps_l1_ca_pcps_quicksync_acquisition.cc
+    gps_l2_m_pcps_acquisition.cc
     galileo_e1_pcps_ambiguous_acquisition.cc
     galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc
     galileo_e1_pcps_quicksync_ambiguous_acquisition.cc

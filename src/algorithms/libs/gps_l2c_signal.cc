@@ -36,16 +36,15 @@
 #include <cmath>
 
 
-int8_t gps_l2c_m_shift(int x)
+int32_t gps_l2c_m_shift(int32_t x)
 {
-	int8_t a;
-	return (int8_t)((x>>1)^(x&1)*0445112474);
+	return (int32_t)((x>>1)^((x&1)*0445112474));
 }
 
-void gps_l2c_m_code(int8_t * _dest, int _prn)
+void gps_l2c_m_code(int32_t * _dest, unsigned int _prn)
 {
-	int x;
-	x= GPS_L2C_M_INIT_REG[_prn];
+	int32_t x;
+	x= GPS_L2C_M_INIT_REG[_prn-1];
 	for (int n=0; n<GPS_L2_M_CODE_LENGTH_CHIPS; n++)
 	{
 		x= gps_l2c_m_shift(x);
@@ -54,12 +53,16 @@ void gps_l2c_m_code(int8_t * _dest, int _prn)
 }
 
 /*
- *  Generates complex GPS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
+ *  Generates complex GPS L2C M code for the desired SV ID and sampled to specific sampling frequency
  */
-void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs)
+void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs)
 {
-	int8_t _code[GPS_L2_M_CODE_LENGTH_CHIPS];
+	int32_t _code[GPS_L2_M_CODE_LENGTH_CHIPS];
 
+	if (_prn<51)
+	{
+		gps_l2c_m_code(_code, _prn);
+	}
 
     signed int _samplesPerCode, _codeValueIndex;
     float _ts;
@@ -92,12 +95,12 @@ void gps_l1_ca_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
             if (i == _samplesPerCode - 1)
                 {
                     //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex(1.0-2.0*_code[_codeLength - 1],0);
+                    _dest[i] = std::complex<float>(1.0-2.0*_code[_codeLength - 1],0);
 
                 }
             else
                 {
-                    _dest[i] = std::complex(1.0-2.0*_code[_codeValueIndex],0);; //repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0-2.0*_code[_codeValueIndex],0);; //repeat the chip -> upsample
                 }
         }
 }

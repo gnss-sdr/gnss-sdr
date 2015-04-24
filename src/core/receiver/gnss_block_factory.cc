@@ -62,6 +62,7 @@
 #include "freq_xlating_fir_filter.h"
 #include "beamformer_filter.h"
 #include "gps_l1_ca_pcps_acquisition.h"
+#include "gps_l2_m_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_multithread_acquisition.h"
 #include "gps_l1_ca_pcps_tong_acquisition.h"
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
@@ -823,6 +824,12 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else if (implementation.compare("GPS_L1_CA_PCPS_QuickSync_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_( new GpsL1CaPcpsQuickSyncAcquisition(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("GPS_L2_M_PCPS_Acquisition") == 0)
+        {
+            std::unique_ptr<AcquisitionInterface> block_(new GpsL2MPcpsAcquisition(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

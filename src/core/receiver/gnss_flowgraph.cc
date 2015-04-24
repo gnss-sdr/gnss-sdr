@@ -227,25 +227,30 @@ void GNSSFlowgraph::connect()
                             for (int j = 0; j < RF_Channels; j++)
                                 {
                                     //Connect the multichannel signal source to multiple signal conditioners
-                                    // check number of signal source output ports todo!
-                                    if (sig_source_.at(i)->get_right_block()->input_signature()->max_streams() > 1)
+                            		// GNURADIO max_streams=-1 means infinite ports!
+                        			LOG(WARNING)<<"sig_source_.at(i)->get_right_block()->output_signature()->max_streams()="<<sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
+                        			LOG(WARNING)<<"sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()="<<sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
+
+                                    if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
                                         {
+
+                                    	    LOG(WARNING)<<"connecting sig_source_ "<<i<<" stream "<<j<<" to conditioner "<<j;
                                             top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                            //std::cout<<"connect sig_source_ "<<i<<" stream "<<j<<" to conditioner "<<j<<std::endl;
+
                                         }
                                     else
                                         {
                                             if (j == 0)
                                                 {
                                                     // RF_channel 0 backward compatibility with single channel sources
+                                            		LOG(WARNING)<<"connecting sig_source_ "<<i<<" stream "<<0<<" to conditioner "<<j<<std::endl;
                                                     top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                    //std::cout<<"connect sig_source_ "<<i<<" stream "<<0<<" to conditioner "<<j<<std::endl;
                                                 }
                                             else
                                                 {
                                                     // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
+                                            		LOG(WARNING)<<"connecting sig_source_ "<<i<<" stream "<<j<<" to conditioner "<<j<<std::endl;
                                                     top_block_->connect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                    //std::cout<<"connect sig_source_ "<<i<<" stream "<<j<<" to conditioner "<<j<<std::endl;
                                                 }
                                         }
 
@@ -299,8 +304,17 @@ void GNSSFlowgraph::connect()
             }
 
             //discriminate between systems
+            std::string default_system = configuration_->property("Channel.system", std::string("GPS"));
+            std::string default_signal = configuration_->property("Channel.signal", std::string("1C"));
+            std::string gnss_system = (configuration_->property("Channel"
+                    + boost::lexical_cast<std::string>(i) + ".system",
+                    default_system));
+            std::string gnss_signal = (configuration_->property("Channel"
+                    + boost::lexical_cast<std::string>(i) + ".signal",
+                    default_signal));
             //TODO: add a specific string member to the channel template, and not re-use the implementation field!
-            while (channels_.at(i)->implementation() != available_GNSS_signals_.front().get_satellite().get_system())
+            while (channels_.at(i)->implementation() != available_GNSS_signals_.front().get_satellite().get_system()
+            		or gnss_signal != available_GNSS_signals_.front().get_signal() )
                 {
                     available_GNSS_signals_.push_back(available_GNSS_signals_.front());
                     available_GNSS_signals_.pop_front();
@@ -388,10 +402,12 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     switch (what)
     {
     case 0:
-        LOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite();
+        LOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite()<<", Signal " << channels_.at(who)->get_signal().get_signal();
         available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
 
-        while (channels_.at(who)->get_signal().get_satellite().get_system() != available_GNSS_signals_.front().get_satellite().get_system())
+        //TODO: Optimize the channel and signal matching!
+        while (channels_.at(who)->get_signal().get_satellite().get_system() != available_GNSS_signals_.front().get_satellite().get_system()
+        		or channels_.at(who)->get_signal().get_signal() != available_GNSS_signals_.front().get_signal() )
             {
                 available_GNSS_signals_.push_back(available_GNSS_signals_.front());
                 available_GNSS_signals_.pop_front();
@@ -424,7 +440,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         for (unsigned int i = 0; i < channels_count_; i++)
             {
                 LOG(INFO) << "Channel " << i << " in state " << channels_state_[i] << std::endl;
-            }
+            }channels_.at(who)->set_signal(available_GNSS_signals_.front());
         break;
 
     case 2:
@@ -590,6 +606,24 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
+    if (default_system.find(std::string("GPS L2C M")) != std::string::npos )
+        {
+            /*
+             * Loop to create GPS L2C M signals
+             */
+            std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
+                    29, 30, 31, 32 };
+
+            for (available_gnss_prn_iter = available_gps_prn.begin();
+                    available_gnss_prn_iter != available_gps_prn.end();
+                    available_gnss_prn_iter++)
+                {
+                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("GPS"),
+                            *available_gnss_prn_iter), std::string("2S")));
+                }
+        }
+
 
     if (default_system.find(std::string("SBAS")) != std::string::npos)
         {
@@ -660,19 +694,20 @@ void GNSSFlowgraph::set_signals_list()
                     available_GNSS_signals_.remove(signal_value);
                     available_GNSS_signals_.insert(gnss_it, signal_value);
                 }
+
         }
 
 
     //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
 
-    //    std::cout<<"default_system="<<default_system<<std::endl;
-    //    std::cout<<"default_signal="<<default_signal<<std::endl;
-    //        std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-    //        for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-    //        != available_GNSS_signals_.end(); available_gnss_list_iter++)
-    //        {
-    //          std::cout << *available_gnss_list_iter << std::endl;
-    //        }
+        std::cout<<"default_system="<<default_system<<std::endl;
+        std::cout<<"default_signal="<<default_signal<<std::endl;
+            std::list<Gnss_Signal>::iterator available_gnss_list_iter;
+            for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
+            != available_GNSS_signals_.end(); available_gnss_list_iter++)
+            {
+              std::cout << *available_gnss_list_iter << std::endl;
+            }
 }
 
 

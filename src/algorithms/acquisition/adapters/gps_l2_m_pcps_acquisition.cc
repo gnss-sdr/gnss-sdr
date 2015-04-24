@@ -37,8 +37,8 @@
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
-#include "gps_sdr_signal_processing.h"
-#include "GPS_L1_CA.h"
+#include "gps_l2c_signal.h"
+#include "GPS_L2C.h"
 #include "configuration_interface.h"
 
 
@@ -55,7 +55,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     std::string default_dump_filename = "./data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
-
+    std::cout<<"GpsL2MPcpsAcquisition role = "<<role<<std::endl;
     item_type_ = configuration_->property(role + ".item_type",
             default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
@@ -81,8 +81,8 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = round(fs_in_
-            / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    code_length_ = round((double)fs_in_
+            / (GPS_L2_M_CODE_RATE_HZ / (double)GPS_L2_M_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -221,7 +221,7 @@ signed int GpsL2MPcpsAcquisition::mag()
 void GpsL2MPcpsAcquisition::init()
 {
     acquisition_cc_->init();
-    set_local_code();
+    //set_local_code();
 }
 
 
@@ -230,8 +230,7 @@ void GpsL2MPcpsAcquisition::set_local_code()
     // if (item_type_.compare("gr_complex") == 0)
     //   {
     std::complex<float>* code = new std::complex<float>[code_length_];
-
-    gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+    gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
 
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {

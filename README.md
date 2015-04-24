@@ -21,9 +21,9 @@ GNU/Linux
  * Supported microprocessor architectures: 
    * i386: Intel x86 instruction set (32-bit microprocessors). 
    * amd64: also known as x86-64, the 64-bit version of the x86 instruction set, originally created by AMD and implemented by AMD, Intel, VIA and others.
-   * armel: ARM embedded ABI, supported on ARM v4t and higher (for Debian only).
-   * armhf: ARM hard float, ARMv7 + VFP3-D16 floating-point hardware extension + Thumb-2 instruction set and above (for Debian only). 
-   * arm64: ARM 64 bits or ARMv8 (for Debian only).
+   * armel: ARM embedded ABI, supported on ARM v4t and higher.
+   * armhf: ARM hard float, ARMv7 + VFP3-D16 floating-point hardware extension + Thumb-2 instruction set and above. 
+   * arm64: ARM 64 bits or ARMv8.
 
 Older distribution releases might work as well, but you will need GCC 4.7 or newer.
 

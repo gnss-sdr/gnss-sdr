@@ -84,6 +84,7 @@ DECLARE_string(log_dir);
 #include "gnss_block/file_signal_source_test.cc"
 #include "gnss_block/fir_filter_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
+#include "gnss_block/gps_l2_m_pcps_acquisition_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 //#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
 #if OPENCL_BLOCKS_TEST

@@ -157,7 +157,6 @@ private:
     unsigned int doppler_max_;
     unsigned int doppler_step_;
     unsigned int shift_resolution_;
-    unsigned int sampled_ms_;
     unsigned int max_dwells_;
     long fs_in_;
     long if_;

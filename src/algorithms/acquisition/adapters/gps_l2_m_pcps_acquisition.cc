@@ -33,6 +33,7 @@
 
 #include "gps_l2_m_pcps_acquisition.h"
 #include <iostream>
+#include <fstream>
 #include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
@@ -55,7 +56,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     std::string default_dump_filename = "./data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
-    std::cout<<"GpsL2MPcpsAcquisition role = "<<role<<std::endl;
+
     item_type_ = configuration_->property(role + ".item_type",
             default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
@@ -64,7 +65,6 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     if_ = configuration_->property(role + ".ifreq", 0);
     dump_ = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
@@ -84,14 +84,14 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     code_length_ = round((double)fs_in_
             / (GPS_L2_M_CODE_RATE_HZ / (double)GPS_L2_M_CODE_LENGTH_CHIPS));
 
-    vector_length_ = code_length_ * sampled_ms_;
+    vector_length_ = code_length_;
 
     code_= new gr_complex[vector_length_];
 
     // if (item_type_.compare("gr_complex") == 0 )
     //         {
     item_size_ = sizeof(gr_complex);
-    acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+    acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
             shift_resolution_, if_, fs_in_, code_length_, code_length_,
             bit_transition_flag_, queue_, dump_, dump_filename_);
 
@@ -221,7 +221,7 @@ signed int GpsL2MPcpsAcquisition::mag()
 void GpsL2MPcpsAcquisition::init()
 {
     acquisition_cc_->init();
-    //set_local_code();
+    set_local_code();
 }
 
 
@@ -229,18 +229,19 @@ void GpsL2MPcpsAcquisition::set_local_code()
 {
     // if (item_type_.compare("gr_complex") == 0)
     //   {
-    std::complex<float>* code = new std::complex<float>[code_length_];
-    gps_l2c_m_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_);
-
-    for (unsigned int i = 0; i < sampled_ms_; i++)
-        {
-            memcpy(&(code_[i*code_length_]), code,
-                    sizeof(gr_complex)*code_length_);
-        }
-
+    gps_l2c_m_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_);
     acquisition_cc_->set_local_code(code_);
 
-    delete[] code;
+//    //debug
+//    std::ofstream d_dump_file;
+//    std::stringstream filename;
+//    std::streamsize n = 2 * sizeof(float) * (code_length_); // complex file write
+//    filename.str("");
+//    filename << "../data/local_prn_sampled.dat";
+//    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
+//    d_dump_file.write((char*)code_, n);
+//    d_dump_file.close();
+
     //  }
 }
 

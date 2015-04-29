@@ -47,8 +47,8 @@ void gps_l2c_m_code(int32_t * _dest, unsigned int _prn)
 	x= GPS_L2C_M_INIT_REG[_prn-1];
 	for (int n=0; n<GPS_L2_M_CODE_LENGTH_CHIPS; n++)
 	{
-		x= gps_l2c_m_shift(x);
 		_dest[n]=(int8_t)(x&1);
+		x= gps_l2c_m_shift(x);
 	}
 }
 
@@ -59,7 +59,7 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
 {
 	int32_t _code[GPS_L2_M_CODE_LENGTH_CHIPS];
 
-	if (_prn<51)
+	if (_prn>0 and _prn<51)
 	{
 		gps_l2c_m_code(_code, _prn);
 	}
@@ -86,6 +86,7 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
             // The length of the index array depends on the sampling frequency -
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
+    	//TODO: Check this formula! Seems to start with an extra sample
 
             _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
 

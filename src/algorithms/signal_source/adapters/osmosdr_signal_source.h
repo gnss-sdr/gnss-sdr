@@ -100,6 +100,7 @@ private:
     std::string dump_filename_;
 
     osmosdr::source::sptr osmosdr_source_;
+    std::string osmosdr_args_;
 
     boost::shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;

@@ -162,6 +162,11 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
 
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
+
+
+    set_relative_rate(1.0/((double)d_vector_length*2));
+
+    //set_min_output_buffer((long int)300);
 }
 
 
@@ -324,6 +329,14 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
     float code_error_chips;
     float code_error_filt_chips;
 
+    // Block input data and block output stream pointers
+    const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
+    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+
+    // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+    Gnss_Synchro current_synchro_data;
+
+
     if (d_enable_tracking == true)
         {
             // Receiver signal alignment
@@ -340,18 +353,15 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
                     //std::cout<<" samples_offset="<<samples_offset<<"\r\n";
+                    // Fill the acquisition data
+                    current_synchro_data = *d_acquisition_gnss_synchro;
+                    *out[0] = current_synchro_data;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     return 1;
                 }
 
-            // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            Gnss_Synchro current_synchro_data;
             // Fill the acquisition data
             current_synchro_data = *d_acquisition_gnss_synchro;
-
-            // Block input data and block output stream pointers
-            const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
-            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
             // Generate local code and carrier replicas (using \hat{f}_d(k-1))
             update_local_code();
@@ -387,7 +397,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     current_synchro_data.Flag_valid_pseudorange = false;
 
                     *out[0] = current_synchro_data;
-
                     return 1;
                 }
 
@@ -538,10 +547,9 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             *d_Early = gr_complex(0,0);
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);
-            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
-            // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            d_acquisition_gnss_synchro->Flag_valid_pseudorange = false;
-            *out[0] = *d_acquisition_gnss_synchro;
+
+            current_synchro_data.Flag_valid_pseudorange = false;
+            *out[0] = current_synchro_data;
         }
 
     if(d_dump)

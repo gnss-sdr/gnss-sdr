@@ -37,7 +37,12 @@
 #include <iostream>
 #include "GPS_L2C.h"
 
-//! Generates complex GPS L2C M code for the desired SV ID and code shift
+
+//!Generates complex GPS L2C M code for the desired SV ID
+void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn);
+
+
+//! Generates complex GPS L2C M code for the desired SV ID, and sampled to specific sampling frequency
 void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs);
 
 #endif /* GNSS_GPS_L2C_SIGNAL_H_ */

@@ -55,7 +55,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
 
-    DLOG(INFO) << "role " << role;
+    LOG(INFO) << "role " << role;
 
     item_type_ = configuration_->property(role + ".item_type",
             default_item_type);

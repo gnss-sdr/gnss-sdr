@@ -52,6 +52,24 @@ void gps_l2c_m_code(int32_t * _dest, unsigned int _prn)
 	}
 }
 
+
+
+void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
+{
+	int32_t _code[GPS_L2_M_CODE_LENGTH_CHIPS];
+
+	if (_prn>0 and _prn<51)
+	{
+		gps_l2c_m_code(_code, _prn);
+	}
+
+    for (signed int i=0; i<GPS_L2_M_CODE_LENGTH_CHIPS; i++)
+        {
+        	_dest[i] = std::complex<float>(1.0-2.0*_code[i],0);
+        }
+}
+
+
 /*
  *  Generates complex GPS L2C M code for the desired SV ID and sampled to specific sampling frequency
  */
@@ -76,7 +94,6 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
     //--- Find time constants --------------------------------------------------
     _ts = 1/(float)_fs;   // Sampling period in sec
     _tc = 1/(float)_codeFreqBasis;  // C/A chip period in sec
-    //gps_l1_ca_code_gen_complex(_code,_prn); //generate C/A code 1 sample per chip
 
     for (signed int i=0; i<_samplesPerCode; i++)
         {

@@ -444,7 +444,7 @@ if (NOT GFlags_FOUND)
      ExternalProject_Add(
           gflags-${gflags_RELEASE}
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
-          GIT_REPOSITORY https://github.com/gflags/gflags
+          GIT_REPOSITORY git://github.com/gflags/gflags.git
           GIT_TAG v${gflags_RELEASE}
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/gflags-${gflags_RELEASE}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}

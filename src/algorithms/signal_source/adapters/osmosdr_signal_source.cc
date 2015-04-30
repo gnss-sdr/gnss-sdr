@@ -77,6 +77,11 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
             // 1. Make the driver instance
             try
             {
+                    if (!osmosdr_args_.empty())
+                        {
+                        std::cout << "OsmoSdr arguments: " << osmosdr_args_ << std::endl;
+                        LOG(INFO) << "OsmoSdr arguments: " << osmosdr_args_;
+                        }
                     osmosdr_source_ = osmosdr::source::make(osmosdr_args_);
             }
             catch( boost::exception & e )

@@ -394,7 +394,7 @@ set(VOLK_GNSSSDR_BUILD_COMMAND "make")
 if(OS_IS_MACOSX)
     set(USE_MACPORTS_PYTHON "-DPYTHON_EXECUTABLE=/opt/local/bin/python")
     if(CMAKE_GENERATOR STREQUAL Xcode)
-        set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "Debug" "-target")    
+        set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "Debug" "-target")
     endif(CMAKE_GENERATOR STREQUAL Xcode)
 endif(OS_IS_MACOSX)
 if(NOT VOLK_GNSSSDR_FOUND)
@@ -440,11 +440,11 @@ if (NOT GFlags_FOUND)
      message (STATUS " gflags library has not been found.")
      message (STATUS " gflags will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-     
+
      ExternalProject_Add(
           gflags-${gflags_RELEASE}
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
-          GIT_REPOSITORY git://github.com/gflags/gflags.git
+          GIT_REPOSITORY https://github.com/gflags/gflags
           GIT_TAG v${gflags_RELEASE}
           DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/gflags-${gflags_RELEASE}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}

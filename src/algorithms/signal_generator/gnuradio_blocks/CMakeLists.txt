@@ -32,10 +32,8 @@ include_directories(
 file(GLOB SIGNAL_GENERATOR_BLOCK_HEADERS "*.h")
 add_library(signal_generator_blocks ${SIGNAL_GENERATOR_BLOCK_SOURCES} ${SIGNAL_GENERATOR_BLOCK_HEADERS})
 source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
-target_link_libraries(signal_generator_blocks gnss_system_parameters 
-                                              ${GNURADIO_RUNTIME_LIBRARIES} 
-                                              ${GNURADIO_FFT_LIBRARIES} 
-                                              ${VOLK_LIBRARIES}
+target_link_libraries(signal_generator_blocks gnss_system_parameters
+                                              ${GNURADIO_RUNTIME_LIBRARIES}
+                                              ${GNURADIO_FFT_LIBRARIES}
+                                              ${VOLK_LIBRARIES} ${ORC_LIBRARIES}
 )
-
-

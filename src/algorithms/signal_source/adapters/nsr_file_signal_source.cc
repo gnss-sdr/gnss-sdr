@@ -114,7 +114,7 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
         {
             /*!
              * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
-             * A possible solution is to compute the file length in samples using file size, excluding the last 100 milliseconds, and enable always the
+             * A possible solution is to compute the file length in samples using file size, excluding the last 2 milliseconds, and enable always the
              * valve block
              */
             std::ifstream file (filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);

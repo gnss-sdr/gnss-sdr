@@ -65,6 +65,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
     if_gain_ = configuration->property(role + ".if_gain", (double)40.0);
     sample_rate_ = configuration->property(role + ".sampling_frequency", (double)2.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
+    osmosdr_args_ = configuration->property(role + ".osmosdr_args", std::string( ));
 
     if (item_type_.compare("short") == 0)
         {
@@ -76,7 +77,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(ConfigurationInterface* configuration,
             // 1. Make the driver instance
             try
             {
-                    osmosdr_source_ = osmosdr::source::make();
+                    osmosdr_source_ = osmosdr::source::make(osmosdr_args_);
             }
             catch( boost::exception & e )
             {

@@ -356,14 +356,14 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
         }
 
     // 5. Update the Doppler estimation in Hz
-    if (abs(fftFreqBins[tmp_index_freq] - d_gnss_synchro->Acq_doppler_hz) < 1000)
+    if (std::abs(fftFreqBins[tmp_index_freq] - d_gnss_synchro->Acq_doppler_hz) < 1000)
         {
             d_gnss_synchro->Acq_doppler_hz = static_cast<double>(fftFreqBins[tmp_index_freq]);
             //std::cout<<"FFT maximum present at "<<fftFreqBins[tmp_index_freq]<<" [Hz]"<<std::endl;
         }
     else
         {
-            DLOG(INFO) << "Abs(Grid Doppler - FFT Doppler)=" << abs(fftFreqBins[tmp_index_freq] - d_gnss_synchro->Acq_doppler_hz);
+            DLOG(INFO) << "Abs(Grid Doppler - FFT Doppler)=" << std::abs(fftFreqBins[tmp_index_freq] - d_gnss_synchro->Acq_doppler_hz);
             DLOG(INFO) <<  "Error estimating fine frequency Doppler";
             //debug log
             //

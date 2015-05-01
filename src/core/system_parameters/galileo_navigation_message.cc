@@ -1,6 +1,6 @@
 /*!
- * \file Galileo_Navigation_Message.cc
-  * \brief  Implementation of a Galileo I/NAV Data message
+ * \file galileo_navigation_message.cc
+ * \brief  Implementation of a Galileo I/NAV Data message
  *         as described in Galileo OS SIS ICD Issue 1.1 (Sept. 2010)
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas, 2013. jarribas(at)cttc.es

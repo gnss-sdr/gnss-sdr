@@ -29,6 +29,7 @@
  */
 
 #include "galileo_utc_model.h"
+#include <cmath>
 
 Galileo_Utc_Model::Galileo_Utc_Model()
 {
@@ -57,7 +58,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
         {
             //Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
             int secondOfLeapSecondEvent = DN_6 * 24 * 60 * 60;
-            if  (abs(t_e - secondOfLeapSecondEvent) > 21600)
+            if  (std::abs(t_e - secondOfLeapSecondEvent) > 21600)
                 {
                     /* 5.1.7a GST->UTC case a
                      * Whenever the leap second adjusted time indicated by the WN_LSF and the DN values

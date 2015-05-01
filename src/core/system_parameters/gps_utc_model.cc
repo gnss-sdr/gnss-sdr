@@ -29,6 +29,7 @@
  */
 
 #include "gps_utc_model.h"
+#include <cmath>
 
 Gps_Utc_Model::Gps_Utc_Model()
 {
@@ -62,7 +63,7 @@ double Gps_Utc_Model::utc_time(double gpstime_corrected, int i_GPS_week)
                 }
             else //we are in the same week than the leap second event
                 {
-                    if  (abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
+                    if  (std::abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
                             /* 20.3.3.5.2.4a
                              * Whenever the effectivity time indicated by the WN_LSF and the DN values

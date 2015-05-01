@@ -326,7 +326,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
             if (abs(corr_value) >= d_symbols_per_preamble)
                 {
                     //check preamble separation
-                    preamble_diff = abs(d_sample_counter - d_preamble_index);
+                    preamble_diff = d_sample_counter - d_preamble_index;
                     if (abs(preamble_diff - GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS) == 0)
                         {
                             //try to decode frame

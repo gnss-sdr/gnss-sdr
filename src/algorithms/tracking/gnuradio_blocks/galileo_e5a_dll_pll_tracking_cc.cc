@@ -40,6 +40,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
+#include <gnuradio/fxpt.h>  // fixed point sine and cosine
 #include <glog/logging.h>
 #include "gnss_synchro.h"
 #include "galileo_e5_signal_processing.h"
@@ -364,18 +365,22 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::update_local_code()
 
 }
 
+
 void Galileo_E5a_Dll_Pll_Tracking_cc::update_local_carrier()
 {
-    float phase_rad, phase_step_rad;
+    float sin_f, cos_f;
+    float phase_step_rad = static_cast<float>(2 * GALILEO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
+    int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
+    int phase_rad_i = gr::fxpt::float_to_fixed(d_rem_carr_phase_rad);
 
-    phase_step_rad = 2 * static_cast<float>(GALILEO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
-    phase_rad = d_rem_carr_phase_rad;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
-            d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
-            phase_rad += phase_step_rad;
+            gr::fxpt::sincos(phase_rad_i, &sin_f, &cos_f);
+            d_carr_sign[i] = std::complex<float>(cos_f, -sin_f);
+            phase_rad_i += phase_step_rad_i;
         }
 }
+
 
 int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)

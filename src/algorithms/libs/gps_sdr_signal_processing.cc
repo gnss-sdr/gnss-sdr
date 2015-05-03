@@ -37,10 +37,11 @@
 
 void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
 {
-    unsigned int G1[1023];
-    unsigned int G2[1023];
-    unsigned int G1_register[10], G2_register[10];
-    unsigned int feedback1, feedback2;
+    bool G1[1023];
+    bool G2[1023];
+    bool G1_register[10], G2_register[10];
+    bool feedback1, feedback2;
+    bool aux;
     unsigned int lcv, lcv2;
     unsigned int delay;
     signed int prn_idx;
@@ -58,7 +59,7 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, uns
     }
     else
     {
-    	prn_idx = _prn-1;
+    	prn_idx = _prn - 1;
     }
 
     /* A simple error check */
@@ -94,18 +95,24 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, uns
     delay = 1023 - delays[prn_idx];
     delay += _chip_shift;
     delay %= 1023;
+
     /* Generate PRN from G1 and G2 Registers */
     for(lcv = 0; lcv < 1023; lcv++)
         {
-            _dest[lcv] = std::complex<float>(G1[(lcv +  _chip_shift)%1023]^G2[delay], 0);
-            if(_dest[lcv].real() == 0.0) //javi
+            aux = G1[(lcv +  _chip_shift) % 1023]^G2[delay];
+            if(aux == true)
                 {
-                    _dest[lcv].real(-1.0);
+                    _dest[lcv] = std::complex<float>(1, 0);
+                }
+            else
+                {
+                    _dest[lcv] = std::complex<float>(-1, 0);
                 }
             delay++;
             delay %= 1023;
         }
 }
+
 
 
 /*

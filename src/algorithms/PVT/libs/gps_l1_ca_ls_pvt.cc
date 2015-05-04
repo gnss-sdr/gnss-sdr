@@ -289,7 +289,7 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                     valid_obs++;
 
                     // SV ECEF DEBUG OUTPUT
-                    LOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
+                    DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
                             << " X=" << gps_ephemeris_iter->second.d_satpos_X
                             << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
                             << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
@@ -318,11 +318,11 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
     if (valid_obs >= 4)
         {
             arma::vec mypos;
-            LOG(INFO) << "satpos=" << satpos;
-            LOG(INFO) << "obs=" << obs;
-            LOG(INFO) << "W=" << W;
+            DLOG(INFO) << "satpos=" << satpos;
+            DLOG(INFO) << "obs=" << obs;
+            DLOG(INFO) << "W=" << W;
             mypos = leastSquarePos(satpos, obs, W);
-            LOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos;
+            DLOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos;
             gps_l1_ca_ls_pvt::cart2geo(mypos(0), mypos(1), mypos(2), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)

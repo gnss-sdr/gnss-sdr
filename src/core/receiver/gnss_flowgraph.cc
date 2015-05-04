@@ -383,7 +383,7 @@ void GNSSFlowgraph::wait()
  */
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
-    LOG(INFO) << "received " << what << " from " << who;
+    DLOG(INFO) << "received " << what << " from " << who;
 
     switch (what)
     {
@@ -418,13 +418,10 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                                 channels_.at(i)->start_acquisition();
                                 break;
                             }
+                        DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
                     }
             }
 
-        for (unsigned int i = 0; i < channels_count_; i++)
-            {
-                LOG(INFO) << "Channel " << i << " in state " << channels_state_[i] << std::endl;
-            }
         break;
 
     case 2:
@@ -441,16 +438,16 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 channels_.at(who)->standby();
             }
 
-        for (unsigned int i = 0; i < channels_count_; i++)
-            {
-                LOG(INFO) << "Channel " << i << " in state " << channels_state_[i] << std::endl;
-            }
+        // for (unsigned int i = 0; i < channels_count_; i++)
+        //    {
+        //        LOG(INFO) << "Channel " << i << " in state " << channels_state_[i] << std::endl;
+        //    }
         break;
 
     default:
         break;
     }
-    LOG(INFO) << "Number of available satellites: " << available_GNSS_signals_.size();
+    DLOG(INFO) << "Number of available satellites: " << available_GNSS_signals_.size();
 }
 
 
@@ -694,11 +691,8 @@ void GNSSFlowgraph::set_channels_state()
                 }
             else
                 channels_state_.push_back(0);
+            DLOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
         }
     acq_channels_count_ = max_acq_channels_;
     DLOG(INFO) << acq_channels_count_ << " channels in acquisition state";
-    for (unsigned int i = 0; i < channels_count_; i++)
-        {
-            LOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
-        }
 }

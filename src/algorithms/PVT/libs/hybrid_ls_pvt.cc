@@ -318,7 +318,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             //end debug
 
                             // SV ECEF DEBUG OUTPUT
-                            LOG(INFO) << "ECEF satellite SV ID=" << galileo_ephemeris_iter->second.i_satellite_PRN
+                            DLOG(INFO) << "ECEF satellite SV ID=" << galileo_ephemeris_iter->second.i_satellite_PRN
                                       << " X=" << galileo_ephemeris_iter->second.d_satpos_X
                                       << " [m] Y=" << galileo_ephemeris_iter->second.d_satpos_Y
                                       << " [m] Z=" << galileo_ephemeris_iter->second.d_satpos_Z
@@ -369,7 +369,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             valid_obs++;
                             valid_obs_GPS_counter++;
                             // SV ECEF DEBUG OUTPUT
-                            LOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
+                            DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
                                     << " X=" << gps_ephemeris_iter->second.d_satpos_X
                                     << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
                                     << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
@@ -414,7 +414,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             d_position_UTC_time = p_time;
-            LOG(INFO) << "HYBRID Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
+            DLOG(INFO) << "HYBRID Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
             cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)

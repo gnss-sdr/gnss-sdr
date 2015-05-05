@@ -38,7 +38,7 @@
 void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
     gr::fxpt_nco d_nco;
-    d_nco.set_freq(-(GPS_TWO_PI * _f) / _fs);
+    d_nco.set_freq((GPS_TWO_PI * _f) / _fs);
     d_nco.sincos(_dest, _samps, 1); 
 }
 

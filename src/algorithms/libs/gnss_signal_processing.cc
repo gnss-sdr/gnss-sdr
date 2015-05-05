@@ -32,42 +32,23 @@
  */
 
 #include "gnss_signal_processing.h"
-#include <gnuradio/fxpt.h>  // fixed point sine and cosine
+#include <gnuradio/fxpt_nco.h>
 
 
 void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
-    int phase_i = 0;
-    int phase_step_i;
-    float phase_step_f = (float)((GPS_TWO_PI * _f) / _fs);
-    phase_step_i = gr::fxpt::float_to_fixed(phase_step_f);
-    float sin_f, cos_f;
-
-    for(unsigned int i = 0; i < _samps; i++)
-        {
-            gr::fxpt::sincos(phase_i, &sin_f, &cos_f);
-            _dest[i] = std::complex<float>(cos_f, sin_f);
-            phase_i += phase_step_i;
-        }
+    gr::fxpt_nco d_nco;
+    d_nco.set_freq(-(GPS_TWO_PI * _f) / _fs);
+    d_nco.sincos(_dest, _samps, 1); 
 }
 
 
 void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
-    int phase_i = 0;
-    int phase_step_i;
-    float phase_step_f = (float)((GPS_TWO_PI * _f) / _fs);
-    phase_step_i = gr::fxpt::float_to_fixed(phase_step_f);
-    float sin_f, cos_f;
-
-    for(unsigned int i = 0; i < _samps; i++)
-        {
-            gr::fxpt::sincos(phase_i, &sin_f, &cos_f);
-            _dest[i] = std::complex<float>(cos_f, -sin_f);
-            phase_i += phase_step_i;
-        }
+    gr::fxpt_nco d_nco;
+    d_nco.set_freq(-(GPS_TWO_PI * _f) / _fs);
+    d_nco.sincos(_dest, _samps, 1); 
 }
-
 
 void hex_to_binary_converter(int * _dest, char _from)
 {

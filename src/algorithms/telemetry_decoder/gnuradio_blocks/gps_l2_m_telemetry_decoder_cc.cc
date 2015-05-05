@@ -1,8 +1,8 @@
 /*!
- * \file gps_l1_ca_telemetry_decoder_cc.cc
+ * \file gps_l2_m_telemetry_decoder_cc.cc
  * \brief Implementation of a NAV message demodulator block based on
  * Kay Borre book MATLAB-based GPS receiver
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -34,7 +34,7 @@
  */
 
 
-#include "gps_l1_ca_telemetry_decoder_cc.h"
+#include "gps_l2_m_telemetry_decoder_cc.h"
 #include <iostream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
@@ -51,17 +51,17 @@ using google::LogMessage;
 /*!
  * \todo name and move the magic numbers to GPS_L1_CA.h
  */
-gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
+gps_l2_m_telemetry_decoder_cc_sptr
+gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
         int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump)
 {
-    return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, if_freq,
+    return gps_l2_m_telemetry_decoder_cc_sptr(new gps_l2_m_telemetry_decoder_cc(satellite, if_freq,
             fs_in, vector_length, queue, dump));
 }
 
 
 
-void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
+void gps_l2_m_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
 {
     for (unsigned i = 0; i < 3; i++)
         {
@@ -71,7 +71,7 @@ void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int 
 
 
 
-gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
+gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
         Gnss_Satellite satellite,
         long if_freq,
         long fs_in,
@@ -134,7 +134,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
 }
 
 
-gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
+gps_l2_m_telemetry_decoder_cc::~gps_l2_m_telemetry_decoder_cc()
 {
     delete d_preambles_symbols;
     d_dump_file.close();
@@ -142,7 +142,7 @@ gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
 
 
 
-bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
+bool gps_l2_m_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
 {
     unsigned int d1, d2, d3, d4, d5, d6, d7, t, parity;
     /* XOR as many bits in parallel as possible.  The magic constants pick
@@ -165,7 +165,7 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
 }
 
 
-int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
     int corr_value = 0;
@@ -274,7 +274,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                         {
                             d_GPS_frame_4bytes ^= 0x3FFFFFC0; // invert the data bits (using XOR)
                         }
-                    if (gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(d_GPS_frame_4bytes))
+                    if (gps_l2_m_telemetry_decoder_cc::gps_word_parityCheck(d_GPS_frame_4bytes))
                         {
                             memcpy(&d_GPS_FSM.d_GPS_frame_4bytes, &d_GPS_frame_4bytes, sizeof(char)*4);
                             d_GPS_FSM.d_preamble_time_ms = d_preamble_time_seconds*1000.0;
@@ -356,7 +356,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
             d_average_count = 0;
             //3. Make the output (copy the object contents to the GNURadio reserved memory)
             *out[0] = current_synchro_data;
-            //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
+            //std::cout<<"GPS L2 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
             return 1;
         }
     else
@@ -366,12 +366,12 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 }
 
 
-void gps_l1_ca_telemetry_decoder_cc::set_decimation(int decimation)
+void gps_l2_m_telemetry_decoder_cc::set_decimation(int decimation)
 {
     d_decimation_output_factor = decimation;
 }
 
-void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
+void gps_l2_m_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
@@ -380,7 +380,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 }
 
 
-void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
+void gps_l2_m_telemetry_decoder_cc::set_channel(int channel)
 {
     d_channel = channel;
     d_GPS_FSM.i_channel_ID = channel;

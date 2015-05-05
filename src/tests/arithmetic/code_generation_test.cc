@@ -78,3 +78,53 @@ TEST(CodeGenGPSL1_Test, CodeGeneration)
         }
     delete _dest2; */
 }
+
+
+
+
+TEST(CodeGenGPSL1Sampled_Test, CodeGeneration)
+{
+    signed int _prn = 1;
+    unsigned int _chip_shift = 4;
+    int _fs = 8000000;
+    const signed int _codeFreqBasis = 1023000; //Hz
+    const signed int _codeLength = 1023;
+    int _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
+    std::complex<float>* _dest = new std::complex<float>[_samplesPerCode];
+
+    int iterations = 10000;
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
+
+    for(int i = 0; i < iterations; i++)
+        {
+            gps_l1_ca_code_gen_complex_sampled( _dest,  _prn, _fs, _chip_shift);
+        }
+
+    gettimeofday(&tv, NULL);
+    long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    ASSERT_LE(0, end - begin);
+    std::cout << "Generation completed in " << (end - begin) << " microseconds" << std::endl;
+    delete[] _dest;
+
+    /* std::complex<float>* _dest2 = new std::complex<float>[_samplesPerCode];
+    gettimeofday(&tv, NULL);
+    long long int begin2 = tv.tv_sec * 1000000 + tv.tv_usec;
+
+    for(int i = 0; i < iterations; i++)
+        {
+            gps_l1_ca_code_gen_complex_sampled2( _dest2,  _prn, _fs, _chip_shift);
+        }
+
+    gettimeofday(&tv, NULL);
+    long long int end2 = tv.tv_sec * 1000000 + tv.tv_usec;
+    std::cout << "Generation completed in " << (end2 - begin2) << " microseconds  (New)" << std::endl;
+
+    for (int j=0; j<_samplesPerCode;j++)
+        {
+            if(_dest[j] != _dest2[j]) std::cout << "Error!" << std::endl;
+        }
+    delete[] _dest2; */
+}

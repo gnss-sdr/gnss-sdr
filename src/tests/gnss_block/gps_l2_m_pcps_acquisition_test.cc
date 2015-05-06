@@ -99,9 +99,9 @@ void GpsL2MPcpsAcquisitionTest::init()
     gnss_synchro.System = 'G';
     std::string signal = "2S";
     strcpy(gnss_synchro.Signal,signal.c_str());
-    gnss_synchro.PRN = 15;
+    gnss_synchro.PRN = 7;
 
-    sampling_freqeuncy_hz  = 4000000;
+    sampling_freqeuncy_hz  = 5000000;
     nsamples=round((double)sampling_freqeuncy_hz*GPS_L2_M_PERIOD)*2;
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_freqeuncy_hz));
     config->set_property("Acquisition.item_type", "gr_complex");
@@ -186,8 +186,8 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     queue = gr::msg_queue::make(0);
 
 
-    double expected_delay_samples = 2004;
-    double expected_doppler_hz = 3000;
+    double expected_delay_samples = 1;//2004;
+    double expected_doppler_hz = 1200;//3000;
     init();
     start_queue();
     std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -224,8 +224,8 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
         //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-        //std::string file = "/home/gnss/git/gnss-sdr/src/tests/data/gps_l2c_m_prn7_5msps.dat";
-        std::string file = "/datalogger/signals/Fraunhofer/L125_III1b_210s_L2_resampled.bin";
+        std::string file = path + "/data/gps_l2c_m_prn7_5msps.dat";
+        //std::string file = "/datalogger/signals/Fraunhofer/L125_III1b_210s_L2_resampled.bin";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         //gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();

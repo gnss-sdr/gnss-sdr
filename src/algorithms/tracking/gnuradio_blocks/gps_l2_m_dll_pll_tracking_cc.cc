@@ -521,7 +521,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
                     if (floor(d_sample_counter / d_fs_in) != d_last_seg)
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout << "GPS L2C M Tracking CH " << d_channel <<  ": Satellite "
+                            std::cout  << "GPS L2C M Tracking CH " << d_channel <<  ": Satellite "
                             << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
                             << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]"<<std::endl;
                             //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;

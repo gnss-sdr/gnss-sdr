@@ -85,9 +85,9 @@ void GpsL2MDllPllTrackingTest::init()
     gnss_synchro.System = 'G';
     std::string signal = "2S";
     signal.copy(gnss_synchro.Signal, 2, 0);
-    gnss_synchro.PRN = 15;
+    gnss_synchro.PRN = 7;
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "4000000");
+    config->set_property("GNSS-SDR.internal_fs_hz", "5000000");
     config->set_property("Tracking_GPS.item_type", "gr_complex");
     config->set_property("Tracking_GPS.dump", "true");
     config->set_property("Tracking_GPS.dump_filename", "../data/L2m_tracking_ch_");
@@ -103,8 +103,8 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    int fs_in = 4000000;
-    int nsamples = fs_in*30;
+    int fs_in = 5000000;
+    int nsamples = fs_in*9;
     init();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");
@@ -112,8 +112,8 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL2MDllPllTracking>(config.get(), "Tracking_GPS", 1, 1, queue);
 
     //REAL
-    gnss_synchro.Acq_delay_samples = 2004;
-    gnss_synchro.Acq_doppler_hz = 2980;//1200;
+    gnss_synchro.Acq_delay_samples = 1;
+    gnss_synchro.Acq_doppler_hz = 1200;//1200;
     gnss_synchro.Acq_samplestamp_samples = 0;
 
     ASSERT_NO_THROW( {
@@ -138,8 +138,8 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
 
         std::string path = std::string(TEST_PATH);
         //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-        std::string file = "/datalogger/signals/Fraunhofer/L125_III1b_210s_L2_resampled.bin";
-        //std::string file = "/home/gnss/git/gnss-sdr/src/tests/data/gps_l2c_m_prn7_5msps.dat";
+        //std::string file = "/datalogger/signals/Fraunhofer/L125_III1b_210s_L2_resampled.bin";
+        std::string file =  path + "/data/gps_l2c_m_prn7_5msps.dat";
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
 

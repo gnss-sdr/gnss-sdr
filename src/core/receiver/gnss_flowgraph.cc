@@ -440,7 +440,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         for (unsigned int i = 0; i < channels_count_; i++)
             {
                 LOG(INFO) << "Channel " << i << " in state " << channels_state_[i] << std::endl;
-            }channels_.at(who)->set_signal(available_GNSS_signals_.front());
+            }
         break;
 
     case 2:

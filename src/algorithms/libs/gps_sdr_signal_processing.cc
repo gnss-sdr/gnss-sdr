@@ -60,6 +60,7 @@ void gps_l1_ca_code_gen_complex(std::complex<float>* _dest, signed int _prn, uns
     if(120 <= _prn && _prn <= 138)
     {
     	prn_idx = _prn - 88;	// SBAS PRNs are at array indices 31 to 50 (offset: -120+33-1 =-88)
+    	//prn_idx = _prn - 87;	// SBAS PRNs are at array indices 31 to 50 (offset: -120+33 =-87)
     }
     else
     {

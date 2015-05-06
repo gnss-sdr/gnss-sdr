@@ -105,7 +105,7 @@ TEST_F(GalileoE5aTrackingTest, ValidationOfResults)
     long long int begin = 0;
     long long int end = 0;
     int fs_in = 32000000;
-    int nsamples = 32000000*1.5;
+    int nsamples = 32000000*5;
     init();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");

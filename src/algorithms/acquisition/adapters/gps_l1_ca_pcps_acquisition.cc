@@ -90,6 +90,11 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
     code_= new gr_complex[vector_length_];
 
+    std::complex<float>* code = new std::complex<float>[code_length_];
+
+    gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+
+
     // if (item_type_.compare("gr_complex") == 0 )
     //         {
     item_size_ = sizeof(gr_complex);
@@ -145,10 +150,7 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 
     if(pfa == 0.0)
         {
-            pfa = configuration_->property(role_+".pfa", 0.0);
-        }
-    if(pfa == 0.0)
-        {
+            pfa = configuration_->property(role_ + ".pfa", 0.0);
             threshold_ = threshold;
         }
     else
@@ -156,7 +158,7 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
             threshold_ = calculate_threshold(pfa);
         }
 
-    DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
+    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
    // if (item_type_.compare("gr_complex") == 0)
     //    {

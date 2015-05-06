@@ -138,14 +138,15 @@ void pcps_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
+    d_num_doppler_bins=ceil((static_cast<int>(d_doppler_max)-static_cast<int>(-d_doppler_max))/d_doppler_step);
     // Count the number of bins
-    d_num_doppler_bins = 0;
-    for (int doppler = static_cast<int>(-d_doppler_max);
-         doppler <= static_cast<int>(d_doppler_max);
-         doppler += d_doppler_step)
-    {
-        d_num_doppler_bins++;
-    }
+//    d_num_doppler_bins = 0;
+//    for (int doppler = static_cast<int>(-d_doppler_max);
+//         doppler <= static_cast<int>(d_doppler_max);
+//         doppler += d_doppler_step)
+//    {
+//        d_num_doppler_bins++;
+//    }
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
@@ -154,7 +155,7 @@ void pcps_acquisition_cc::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index], d_freq + doppler, d_fs_in, d_fft_size);
+            complex_exp_gen(d_grid_doppler_wipeoffs[doppler_index], d_freq - doppler, d_fs_in, d_fft_size);
         }
 }
 
@@ -247,7 +248,6 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
             volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
             d_input_power /= static_cast<float>(d_fft_size);
-
             // 2- Doppler frequency search loop
             for (unsigned int doppler_index=0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {

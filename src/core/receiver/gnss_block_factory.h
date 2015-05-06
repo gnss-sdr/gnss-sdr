@@ -93,6 +93,10 @@ public:
             std::string acq, std::string trk, std::string tlm, int channel,
             boost::shared_ptr<gr::msg_queue> queue);
 
+    std::unique_ptr<GNSSBlockInterface> GetChannel_5I(std::shared_ptr<ConfigurationInterface> configuration,
+            std::string acq, std::string trk, std::string tlm, int channel,
+            boost::shared_ptr<gr::msg_queue> queue);
+
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GetChannels(std::shared_ptr<ConfigurationInterface> configuration,
             boost::shared_ptr<gr::msg_queue> queue);

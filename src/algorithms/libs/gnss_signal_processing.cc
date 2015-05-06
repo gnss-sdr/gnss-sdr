@@ -35,6 +35,8 @@
 #include <gnuradio/fxpt_nco.h>
 
 
+auto auxCeil2 = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); };
+
 void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
     gr::fxpt_nco d_nco;
@@ -158,6 +160,7 @@ void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs
         float _fs_out, unsigned int _length_in, unsigned int _length_out)
 {
     unsigned int _codeValueIndex;
+    float aux;
     //--- Find time constants --------------------------------------------------
     const float _t_in = 1 / _fs_in;  // Incoming sampling  period in sec
     const float _t_out = 1 / _fs_out;   // Out sampling period in sec
@@ -165,7 +168,10 @@ void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs
         {
             //=== Digitizing =======================================================
             //--- compute index array to read sampled values -------------------------
-            _codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
+            //_codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
+            aux = (_t_out * (i + 1)) / _t_in;
+            _codeValueIndex = auxCeil2(aux) - 1;
+
             //if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];
         }

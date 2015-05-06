@@ -275,6 +275,35 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_GPS(
 }
 
 
+
+//********* GPS CHANNEL *****************
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
+        std::shared_ptr<ConfigurationInterface> configuration,
+        std::string acq, std::string trk, std::string tlm, int channel,
+        boost::shared_ptr<gr::msg_queue> queue)
+{
+    std::stringstream stream;
+    stream << channel;
+    std::string id = stream.str();
+    LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
+              << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+
+    std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1C", acq, 1, 1, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1C", trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1C", tlm, 1, 1, queue);
+
+    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
+            acq_.release(),
+            trk_.release(),
+            tlm_.release(),
+            "Channel", "GPS", queue));
+
+    return channel_;
+}
+
+
+
 //********* GALILEO CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_Galileo(
         std::shared_ptr<ConfigurationInterface> configuration,
@@ -288,9 +317,36 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_Galileo(
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_Galileo", acq, 1, 1, queue);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_Galileo", trk, 1, 1, queue);
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_Galileo", tlm, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1B", acq, 1, 1, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1B", trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1B", tlm, 1, 1, queue);
+
+    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
+            acq_.release(),
+            trk_.release(),
+            tlm_.release(),
+            "Channel", "Galileo", queue));
+
+    return channel_;
+}
+
+
+//********* GALILEO E1 B (I/NAV OS) CHANNEL *****************
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
+        std::shared_ptr<ConfigurationInterface> configuration,
+        std::string acq, std::string trk, std::string tlm, int channel,
+        boost::shared_ptr<gr::msg_queue> queue)
+{
+    std::stringstream stream;
+    stream << channel;
+    std::string id = stream.str();
+    LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
+              << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+
+    std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1B", acq, 1, 1, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1B", trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1B", tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
@@ -312,16 +368,34 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
 
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>());
 
-    unsigned int channel_absolute_id=0;
+    unsigned int channel_absolute_id = 0;
 
-    //**************** GPS CHANNELS **********************
-    channel_count= configuration->property("Channels_GPS.count", 0);
+    //**************** GPS L1 C/A CHANNELS **********************
+    channel_count = configuration->property("Channels_GPS.count", 0);
+    if (channel_count == 0)
+        {
+            channel_count = configuration->property("Channels_1C.count", 0);
+        }
 
-    LOG(INFO) << "Getting " << channel_count << " GPS channels";
+    LOG(INFO) << "Getting " << channel_count << " GPS L1 C/A channels";
 
     tracking = configuration->property("Tracking_GPS.implementation", default_implementation);
+    if (default_implementation.compare(tracking) == 0)
+        {
+            tracking = configuration->property("Tracking_1C.implementation", default_implementation);
+        }
+
     telemetry_decoder = configuration->property("TelemetryDecoder_GPS.implementation", default_implementation);
+    if(default_implementation.compare(telemetry_decoder) == 0)
+        {
+            telemetry_decoder = configuration->property("TelemetryDecoder_1C.implementation", default_implementation);
+        }
+
     acquisition_implementation = configuration->property("Acquisition_GPS.implementation", default_implementation);
+    if (default_implementation.compare(acquisition_implementation) == 0)
+        {
+            acquisition_implementation = configuration->property("Acquisition_1C.implementation", default_implementation);
+        }
 
     for (unsigned int i = 0; i < channel_count; i++)
         {
@@ -333,19 +407,45 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                 acquisition_implementation = acquisition_implementation_specific;
             }
 
-            channels->push_back(std::move(GetChannel_GPS(configuration,
+            acquisition_implementation_specific = configuration->property(
+                        "Acquisition_1C" + boost::lexical_cast<std::string>(i) + ".implementation",
+                        default_implementation);
+            if(acquisition_implementation_specific.compare(default_implementation) != 0)
+            {
+                acquisition_implementation = acquisition_implementation_specific;
+            }
+
+            channels->push_back(std::move(GetChannel_1C(configuration,
                     acquisition_implementation, tracking, telemetry_decoder, channel_absolute_id, queue)));
             channel_absolute_id++;
         }
 
-    //**************** GALILEO CHANNELS **********************
-    channel_count= configuration->property("Channels_Galileo.count", 0);
+    //**************** GALILEO E1 B CHANNELS **********************
+    channel_count =  configuration->property("Channels_Galileo.count", 0);
+    if (channel_count == 0)
+        {
+            channel_count = configuration->property("Channels_1B.count", 0);
+        }
 
-    LOG(INFO) << "Getting " << channel_count << " Galileo channels";
+    LOG(INFO) << "Getting " << channel_count << " Galileo E1B channels";
 
     tracking = configuration->property("Tracking_Galileo.implementation", default_implementation);
+    if (default_implementation.compare(tracking) == 0)
+        {
+            tracking = configuration->property("Tracking_1B.implementation", default_implementation);
+        }
+
     telemetry_decoder = configuration->property("TelemetryDecoder_Galileo.implementation", default_implementation);
+    if (default_implementation.compare(telemetry_decoder) == 0)
+        {
+            telemetry_decoder = configuration->property("TelemetryDecoder_1B.implementation", default_implementation);
+        }
+
     acquisition_implementation = configuration->property("Acquisition_Galileo.implementation", default_implementation);
+    if (default_implementation.compare(acquisition_implementation) == 0)
+        {
+            acquisition_implementation = configuration->property("Acquisition_1B.implementation", default_implementation);
+        }
 
     for (unsigned int i = 0; i < channel_count; i++)
         {
@@ -356,7 +456,15 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             {
                 acquisition_implementation = acquisition_implementation_specific;
             }
-            channels->push_back(std::move(GetChannel_Galileo(configuration,
+
+            acquisition_implementation_specific = configuration->property(
+                        "Acquisition_1B" + boost::lexical_cast<std::string>(i) + ".implementation",
+                        default_implementation);
+            if(acquisition_implementation_specific.compare(default_implementation) != 0)
+            {
+                acquisition_implementation = acquisition_implementation_specific;
+            }
+            channels->push_back(std::move(GetChannel_1B(configuration,
                     acquisition_implementation, tracking, telemetry_decoder, channel_absolute_id, queue)));
             channel_absolute_id++;
         }

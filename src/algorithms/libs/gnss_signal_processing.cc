@@ -32,42 +32,25 @@
  */
 
 #include "gnss_signal_processing.h"
-#include <gnuradio/fxpt.h>  // fixed point sine and cosine
+#include <gnuradio/fxpt_nco.h>
 
+
+auto auxCeil2 = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); };
 
 void complex_exp_gen(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
-    int phase_i = 0;
-    int phase_step_i;
-    float phase_step_f = (float)((GPS_TWO_PI * _f) / _fs);
-    phase_step_i = gr::fxpt::float_to_fixed(phase_step_f);
-    float sin_f, cos_f;
-
-    for(unsigned int i = 0; i < _samps; i++)
-        {
-            gr::fxpt::sincos(phase_i, &sin_f, &cos_f);
-            _dest[i] = std::complex<float>(cos_f, sin_f);
-            phase_i += phase_step_i;
-        }
+    gr::fxpt_nco d_nco;
+    d_nco.set_freq((GPS_TWO_PI * _f) / _fs);
+    d_nco.sincos(_dest, _samps, 1); 
 }
 
 
 void complex_exp_gen_conj(std::complex<float>* _dest, double _f, double _fs, unsigned int _samps)
 {
-    int phase_i = 0;
-    int phase_step_i;
-    float phase_step_f = (float)((GPS_TWO_PI * _f) / _fs);
-    phase_step_i = gr::fxpt::float_to_fixed(phase_step_f);
-    float sin_f, cos_f;
-
-    for(unsigned int i = 0; i < _samps; i++)
-        {
-            gr::fxpt::sincos(phase_i, &sin_f, &cos_f);
-            _dest[i] = std::complex<float>(cos_f, -sin_f);
-            phase_i += phase_step_i;
-        }
+    gr::fxpt_nco d_nco;
+    d_nco.set_freq(-(GPS_TWO_PI * _f) / _fs);
+    d_nco.sincos(_dest, _samps, 1); 
 }
-
 
 void hex_to_binary_converter(int * _dest, char _from)
 {
@@ -177,6 +160,7 @@ void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs
         float _fs_out, unsigned int _length_in, unsigned int _length_out)
 {
     unsigned int _codeValueIndex;
+    float aux;
     //--- Find time constants --------------------------------------------------
     const float _t_in = 1 / _fs_in;  // Incoming sampling  period in sec
     const float _t_out = 1 / _fs_out;   // Out sampling period in sec
@@ -184,7 +168,10 @@ void resampler(std::complex<float>* _from, std::complex<float>* _dest, float _fs
         {
             //=== Digitizing =======================================================
             //--- compute index array to read sampled values -------------------------
-            _codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
+            //_codeValueIndex = ceil((_t_out * ((float)i + 1)) / _t_in) - 1;
+            aux = (_t_out * (i + 1)) / _t_in;
+            _codeValueIndex = auxCeil2(aux) - 1;
+
             //if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];
         }

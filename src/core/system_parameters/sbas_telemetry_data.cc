@@ -28,10 +28,11 @@
  * -------------------------------------------------------------------------
  */
 
-#include <stdarg.h>
-#include <stdio.h>
+#include <cmath>
 #include <cstring>
 #include <iostream>
+#include <stdarg.h>
+#include <stdio.h>
 #include <glog/logging.h>
 #include "sbas_telemetry_data.h"
 #include "sbas_ionospheric_correction.h"
@@ -722,7 +723,7 @@ int Sbas_Telemetry_Data::decode_sbstype9(const sbsmsg_t *msg, nav_t *nav)
     seph.af1 = getbits(msg->msg, 218, 8)*P2_39/2.0;
 
     i = msg->prn-MINPRNSBS;
-    if (!nav->seph || fabs(nav->seph[i].t0 - seph.t0) < 1E-3)
+    if (!nav->seph || std::abs(nav->seph[i].t0 - seph.t0) < 1E-3)
         { /* not change */
             VLOG(FLOW) << "<<T>> no change in ephemeris -> won't parse";
             return 0;

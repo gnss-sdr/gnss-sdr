@@ -32,8 +32,8 @@ set(GNSS_SPLIBS_SOURCES
     short_x2_to_cshort.cc
     complex_float_to_complex_byte.cc
 )
-    
-    
+
+
 if(OPENCL_FOUND)
     set(GNSS_SPLIBS_SOURCES ${GNSS_SPLIBS_SOURCES}
          fft_execute.cc # Needs OpenCL
@@ -70,12 +70,12 @@ add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
 
 target_link_libraries(gnss_sp_libs ${GNURADIO_RUNTIME_LIBRARIES}
-                                   ${VOLK_LIBRARIES} 
-                                   ${VOLK_GNSSSDR_LIBRARIES} 
-                                   ${GNURADIO_BLOCKS_LIBRARIES} 
-                                   ${GNURADIO_FFT_LIBRARIES} 
-                                   ${GNURADIO_FILTER_LIBRARIES} 
-                                   ${OPT_LIBRARIES} 
+                                   ${VOLK_LIBRARIES} ${ORC_LIBRARIES}
+                                   ${VOLK_GNSSSDR_LIBRARIES}  ${ORC_LIBRARIES}
+                                   ${GNURADIO_BLOCKS_LIBRARIES}
+                                   ${GNURADIO_FFT_LIBRARIES}
+                                   ${GNURADIO_FILTER_LIBRARIES}
+                                   ${OPT_LIBRARIES}
                                    gnss_rx
 )
 

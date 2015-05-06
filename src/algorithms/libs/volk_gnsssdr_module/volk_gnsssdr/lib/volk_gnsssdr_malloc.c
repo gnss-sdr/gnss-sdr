@@ -18,7 +18,7 @@
  */
 
 #include "volk_gnsssdr/volk_gnsssdr_malloc.h"
-#include <pthread.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -26,29 +26,6 @@
  * For #defines used to determine support for allocation functions,
  * see: http://linux.die.net/man/3/aligned_alloc
  */
-
-// Disabling use of aligned_alloc. This function requires that size be
-// a multiple of alignment, which is too restrictive for many uses of
-// VOLK.
-
-//// If we are using C11 standard, use the aligned_alloc
-//#ifdef _ISOC11_SOURCE
-//
-//void *volk_gnsssdr_malloc(size_t size, size_t alignment)
-//{
-//  void *ptr = aligned_alloc(alignment, size);
-//  if(ptr == NULL) {
-//    fprintf(stderr, "VOLK: Error allocating memory (aligned_alloc)\n");
-//  }
-//  return ptr;
-//}
-//
-//void volk_gnsssdr_free(void *ptr)
-//{
-//  free(ptr);
-//}
-//
-//#else // _ISOC11_SOURCE
 
 // Otherwise, test if we are a POSIX or X/Open system
 // This only has a restriction that alignment be a power of 2and a
@@ -59,11 +36,11 @@ void *volk_gnsssdr_malloc(size_t size, size_t alignment)
 {
     void *ptr;
 
-  // quoting posix_memalign() man page:
-  // "alignment must be a power of two and a multiple of sizeof(void *)"
-  // volk_get_alignment() could return 1 for some machines (e.g. generic_orc)
-  if (alignment == 1)
-    return malloc(size);
+    // quoting posix_memalign() man page:
+    // "alignment must be a power of two and a multiple of sizeof(void *)"
+    // volk_get_alignment() could return 1 for some machines (e.g. generic_orc)
+    if (alignment == 1)
+        return malloc(size);
 
     int err = posix_memalign(&ptr, alignment, size);
     if(err == 0)

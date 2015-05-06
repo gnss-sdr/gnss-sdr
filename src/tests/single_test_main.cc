@@ -29,6 +29,7 @@
  * -------------------------------------------------------------------------
  */
 
+#include <cmath>
 #include <iostream>
 #include <queue>
 #include <boost/thread.hpp>

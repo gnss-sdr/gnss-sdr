@@ -340,7 +340,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                     std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_ls_pvt->d_position_UTC_time)
                     << " UTC using "<< d_ls_pvt->d_valid_observations<<" observations is HDOP = " << d_ls_pvt->d_HDOP << " VDOP = "
                     << d_ls_pvt->d_VDOP <<" TDOP = " << d_ls_pvt->d_TDOP
-                    << " GDOP = " << d_ls_pvt->d_GDOP;
+                    << " GDOP = " << d_ls_pvt->d_GDOP << std::endl;
                 }
 
             // MULTIPLEXED FILE RECORDING - Record results to file

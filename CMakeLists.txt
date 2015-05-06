@@ -35,16 +35,23 @@ file(RELATIVE_PATH RELATIVE_CMAKE_CALL ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRE
 # Enable them here or at the command line by doing 'cmake -DENABLE_XXX=ON ../'
 ########################################################################
 
-option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
-option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
-option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNURadio driver" OFF)
+# Support of optional RF front-ends
 option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source (experimental)" OFF)
-option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
+option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNURadio driver" OFF)
+option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
+option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
+
+# Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
+option(ENABLE_GPROF "Enable the use of the GNU profiler tool 'gprof'" OFF)
+
+# Acceleration
+option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
+
+# Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
 option(ENABLE_PACKAGING "Enable software packaging" OFF)
 option(ENABLE_OWN_GLOG "Download glog and link it to gflags" OFF)
-
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
 endif(ENABLE_PACKAGING)
@@ -212,13 +219,15 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 #select the release build type by default to get optimization flags
 if(NOT CMAKE_BUILD_TYPE)
-    if(ENABLE_GPERFTOOLS)
-        set(CMAKE_BUILD_TYPE "RelWithDebInfo")
-        message(STATUS "Build type not specified: defaulting to RelWithDebInfo.")
-    else(ENABLE_GPERFTOOLS)
-        set(CMAKE_BUILD_TYPE "Release")
-        message(STATUS "Build type not specified: defaulting to Release.")
-    endif(ENABLE_GPERFTOOLS)
+     if(ENABLE_GPERFTOOLS OR ENABLE_GPROF)
+         set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+         message(STATUS "Build type not specified: defaulting to RelWithDebInfo.")
+     else(ENABLE_GPERFTOOLS OR ENABLE_GPROF)
+         set(CMAKE_BUILD_TYPE "Release")
+         message(STATUS "Build type not specified: defaulting to Release.")
+     endif(ENABLE_GPERFTOOLS OR ENABLE_GPROF)
+else(NOT CMAKE_BUILD_TYPE)
+     message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
@@ -394,7 +403,7 @@ set(VOLK_GNSSSDR_BUILD_COMMAND "make")
 if(OS_IS_MACOSX)
     set(USE_MACPORTS_PYTHON "-DPYTHON_EXECUTABLE=/opt/local/bin/python")
     if(CMAKE_GENERATOR STREQUAL Xcode)
-        set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "Debug" "-target")    
+        set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "Debug" "-target")
     endif(CMAKE_GENERATOR STREQUAL Xcode)
 endif(OS_IS_MACOSX)
 if(NOT VOLK_GNSSSDR_FOUND)
@@ -440,7 +449,7 @@ if (NOT GFlags_FOUND)
      message (STATUS " gflags library has not been found.")
      message (STATUS " gflags will be downloaded and built automatically ")
      message (STATUS " when doing 'make'. ")
-     
+
      ExternalProject_Add(
           gflags-${gflags_RELEASE}
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
@@ -696,8 +705,8 @@ if(NOT ARMADILLO_FOUND)
      message(STATUS " Armadillo will be downloaded and built automatically ")
      message(STATUS " when doing 'make'. ")
 
-     set(armadillo_RELEASE 4.650.4)
-     set(armadillo_MD5 "e575dc01cf60e290a467c7c6d3171ef3")
+     set(armadillo_RELEASE 5.100.1)
+     set(armadillo_MD5 "6926fbf81bde99d777e3d09d034b308a")
 
      ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
@@ -1016,6 +1025,15 @@ if(ENABLE_GPERFTOOLS)
         endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     endif(GPERFTOOLS_FOUND)
 endif(ENABLE_GPERFTOOLS)
+
+if(ENABLE_GPROF)
+    if(CMAKE_COMPILER_IS_GNUCXX)
+        set(MY_CXX_FLAGS "${MY_CXX_FLAGS} -pg")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+    endif(CMAKE_COMPILER_IS_GNUCXX)
+endif(ENABLE_GPROF)
+
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
 

@@ -208,7 +208,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 }
             else if (d_stat == 1) //check 6 seconds of preamble separation
                 {
-                    preamble_diff = abs(d_sample_counter - d_preamble_index);
+                    preamble_diff = d_sample_counter - d_preamble_index;
                     if (abs(preamble_diff - 6000) < 1)
                         {
                             d_GPS_FSM.Event_gps_word_preamble();

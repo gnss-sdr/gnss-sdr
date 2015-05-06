@@ -31,6 +31,7 @@
  */
 
 #include "gps_navigation_message.h"
+#include <cmath>
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 
@@ -697,7 +698,7 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
                 }
             else //we are in the same week than the leap second event
                 {
-                    if  (abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
+                    if  (std::abs(gpstime_corrected - secondOfLeapSecondEvent) > 21600)
                         {
                             /* 20.3.3.5.2.4a
                              * Whenever the effectivity time indicated by the WN_LSF and the DN values

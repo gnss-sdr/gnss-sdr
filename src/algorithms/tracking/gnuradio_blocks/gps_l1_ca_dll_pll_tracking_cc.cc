@@ -41,6 +41,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
+#include <gnuradio/fxpt.h>  // fixed point sine and cosine
 #include <glog/logging.h>
 #include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"
@@ -182,7 +183,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     long int acq_trk_diff_samples;
     float acq_trk_diff_seconds;
     acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);//-d_vector_length;
-    LOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
+    DLOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
     acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
     //doppler effect
     // Fd=(C/(C+Vr))*F
@@ -286,14 +287,16 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_code()
 
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_carrier()
 {
-    float phase_rad, phase_step_rad;
+    float sin_f, cos_f;
+    float phase_step_rad = static_cast<float>(GPS_TWO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
+    int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
+    int phase_rad_i = gr::fxpt::float_to_fixed(d_rem_carr_phase_rad);
 
-    phase_step_rad = static_cast<float>(GPS_TWO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
-    phase_rad = d_rem_carr_phase_rad;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
-            d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
-            phase_rad += phase_step_rad;
+            gr::fxpt::sincos(phase_rad_i, &sin_f, &cos_f);
+            d_carr_sign[i] = std::complex<float>(cos_f, -sin_f);
+            phase_rad_i += phase_step_rad_i;
         }
     //d_rem_carr_phase_rad = fmod(phase_rad, GPS_TWO_PI);
     //d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + d_rem_carr_phase_rad;
@@ -519,9 +522,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     if (floor(d_sample_counter / d_fs_in) != d_last_seg)
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
-                            DLOG(INFO) << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                                    << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]"<< std::endl;
-                            //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
+                            DLOG(INFO) << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+                                       << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
                         }
                 }
         }

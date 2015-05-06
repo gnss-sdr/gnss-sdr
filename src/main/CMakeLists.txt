@@ -29,7 +29,7 @@ endif(ENABLE_GPERFTOOLS)
 
 if(ENABLE_UHD)
     set(GNSS_SDR_OPTIONAL_LIBS ${GNSS_SDR_OPTIONAL_LIBS} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
-    set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${UHD_INCLUDE_DIRS}) 
+    set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${UHD_INCLUDE_DIRS})
 endif(ENABLE_UHD)
 
 include_directories(
@@ -42,7 +42,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
-     ${ARMADILLO_INCLUDE_DIRS}  
+     ${ARMADILLO_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${GNSS_SDR_OPTIONAL_HEADERS}
@@ -65,18 +65,18 @@ add_custom_command(TARGET gnss-sdr POST_BUILD
                                    ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:gnss-sdr>
                   )
 
-target_link_libraries(gnss-sdr ${MAC_LIBRARIES} 
+target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${Boost_LIBRARIES}
-                               ${GNURADIO_RUNTIME_LIBRARIES} 
-                               ${GNURADIO_BLOCKS_LIBRARIES} 
-                               ${GNURADIO_FFT_LIBRARIES} 
-                               ${GNURADIO_FILTER_LIBRARIES} 
-                               ${GFlags_LIBS} 
-                               ${GLOG_LIBRARIES} 
-                               ${ARMADILLO_LIBRARIES} 
+                               ${GNURADIO_RUNTIME_LIBRARIES}
+                               ${GNURADIO_BLOCKS_LIBRARIES}
+                               ${GNURADIO_FFT_LIBRARIES}
+                               ${GNURADIO_FILTER_LIBRARIES}
+                               ${GFlags_LIBS}
+                               ${GLOG_LIBRARIES}
+                               ${ARMADILLO_LIBRARIES}
                                ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                ${GNSS_SDR_OPTIONAL_LIBS}
-                               gnss_sp_libs 
+                               gnss_sp_libs
                                gnss_rx
                                )
 
@@ -85,7 +85,7 @@ install(TARGETS gnss-sdr
         RUNTIME DESTINATION bin
         COMPONENT "gnss-sdr"
         )
-        
+
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/conf DESTINATION share/gnss-sdr
         FILES_MATCHING PATTERN "*.conf"
         )

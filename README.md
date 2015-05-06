@@ -16,18 +16,18 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux 
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS and 14.10, Debian 8.0 "jessie". 
+ * Tested distributions: Ubuntu 14.04 LTS, 14.10 and 15.04, Debian 8.0 "jessie", Linaro 15.03 
  * Known to work but not continually tested: Fedora 19 and 20, and openSUSE 13.1 
  * Supported microprocessor architectures: 
    * i386: Intel x86 instruction set (32-bit microprocessors). 
    * amd64: also known as x86-64, the 64-bit version of the x86 instruction set, originally created by AMD and implemented by AMD, Intel, VIA and others.
-   * armel: ARM embedded ABI, supported on ARM v4t and higher (for Debian only).
-   * armhf: ARM hard float, ARMv7 + VFP3-D16 floating-point hardware extension + Thumb-2 instruction set and above (for Debian only). 
-   * arm64: ARM 64 bits or ARMv8 (for Debian only).
+   * armel: ARM embedded ABI, supported on ARM v4t and higher.
+   * armhf: ARM hard float, ARMv7 + VFP3-D16 floating-point hardware extension + Thumb-2 instruction set and above. 
+   * arm64: ARM 64 bits or ARMv8.
 
 Older distribution releases might work as well, but you will need GCC 4.7 or newer.
 
-Before building GNSS-SDR, you need to install all the required dependencies. If you are using Debian 8 or Ubuntu 14.10, this can be done by copying and pasting the following line in a terminal:
+Before building GNSS-SDR, you need to install all the required dependencies. If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
 
 ~~~~~~ 
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
@@ -39,7 +39,7 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
 
 Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). Alternatively, if you need to manually install those libraries, please keep reading. 
 
-Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2.
+Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT ```libuhd-dev```, ```gnuradio-dev``` and ```gr-osmosdr``` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. 
 
 ### Manual installation of GNU Radio
 
@@ -94,9 +94,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 $ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-4.650.4.tar.gz
-$ tar xvfz armadillo-4.650.4.tar.gz
-$ cd armadillo-4.650.4
+$ wget http://sourceforge.net/projects/arma/files/armadillo-5.100.1.tar.gz
+$ tar xvfz armadillo-5.100.1.tar.gz
+$ cd armadillo-5.100.1
 $ cmake .
 $ make
 $ sudo make install

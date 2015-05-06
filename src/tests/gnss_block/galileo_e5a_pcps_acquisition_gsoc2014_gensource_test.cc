@@ -446,20 +446,20 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::process_message()
             switch (sat)
             {
             case 0:
-                delay_error_chips = abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
-                doppler_error_hz = abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
+                delay_error_chips = std::abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
+                doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
                 break;
             case 1:
-                delay_error_chips = abs((double)expected_delay_chips1 - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
-                doppler_error_hz = abs(expected_doppler_hz1 - gnss_synchro.Acq_doppler_hz);
+                delay_error_chips = std::abs((double)expected_delay_chips1 - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
+                doppler_error_hz = std::abs(expected_doppler_hz1 - gnss_synchro.Acq_doppler_hz);
                 break;
             case 2:
-                delay_error_chips = abs((double)expected_delay_chips2 - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
-                doppler_error_hz = abs(expected_doppler_hz2 - gnss_synchro.Acq_doppler_hz);
+                delay_error_chips = std::abs((double)expected_delay_chips2 - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
+                doppler_error_hz = std::abs(expected_doppler_hz2 - gnss_synchro.Acq_doppler_hz);
                 break;
             case 3:
-                delay_error_chips = abs((double)expected_delay_chips3 - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
-                doppler_error_hz = abs(expected_doppler_hz3 - gnss_synchro.Acq_doppler_hz);
+                delay_error_chips = std::abs((double)expected_delay_chips3 - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
+                doppler_error_hz = std::abs(expected_doppler_hz3 - gnss_synchro.Acq_doppler_hz);
                 break;
             default: // case 3
                 std::cout << "Error: message from unexpected acquisition channel" << std::endl;

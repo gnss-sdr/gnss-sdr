@@ -283,9 +283,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_GPS(
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
     std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_GPS", acq, 1, 1, queue);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_GPS" + boost::lexical_cast<std::string>(channel), trk, 1, 1, queue);
-
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_GPS" + boost::lexical_cast<std::string>(channel), tlm, 1, 1, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_GPS", trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_GPS", tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
@@ -309,14 +308,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
     std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1C", acq, 1, 1, queue);
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1C", trk, 1, 1, queue);
-
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1C", tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "1C", queue));
+            "Channel", "GPS", queue));
 
     return channel_;
 }
@@ -513,9 +511,14 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                             "TelemetryDecoder_1C" + boost::lexical_cast<std::string>(i) + ".implementation",
                             default_implementation);
                 }
+            if(telemetry_decoder_implementation_specific.compare(default_implementation) != 0)
+                {
+                    telemetry_decoder_implementation = telemetry_decoder_implementation_specific;
+                }
 
             channels->push_back(std::move(GetChannel_GPS(configuration,
                     acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
+
             channel_absolute_id++;
         }
 
@@ -1119,7 +1122,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
         std::shared_ptr<ConfigurationInterface> configuration,
         std::string role,
         std::string implementation, unsigned int in_streams,
-        unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue)
+        unsigned int out_streams, gr::msg_queue::sptr queue)
 {
     std::unique_ptr<AcquisitionInterface> block;
     // ACQUISITION BLOCKS ---------------------------------------------------------
@@ -1307,7 +1310,6 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
 {
     std::unique_ptr<TelemetryDecoderInterface> block;
 
-    std::cout<<"implementation tlm="<<implementation<<std::endl;
     // TELEMETRY DECODERS ----------------------------------------------------------
     if (implementation.compare("GPS_L1_CA_Telemetry_Decoder") == 0)
         {

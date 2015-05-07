@@ -243,13 +243,13 @@ void GNSSFlowgraph::connect()
                                             if (j == 0)
                                                 {
                                                     // RF_channel 0 backward compatibility with single channel sources
-                                            		LOG(WARNING)<<"connecting sig_source_ "<<i<<" stream "<<0<<" to conditioner "<<j<<std::endl;
+                                            		LOG(WARNING) << "connecting sig_source_ " << i <<" stream "<<0<<" to conditioner "<<j<<std::endl;
                                                     top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
                                                 }
                                             else
                                                 {
                                                     // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-                                            		LOG(WARNING)<<"connecting sig_source_ "<<i<<" stream "<<j<<" to conditioner "<<j<<std::endl;
+                                            		LOG(WARNING)<<"connecting sig_source_ "<<i<<" stream "<<j<<" to conditioner " << j    <<    std::endl;
                                                     top_block_->connect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
                                                 }
                                         }
@@ -260,7 +260,7 @@ void GNSSFlowgraph::connect()
             }
             catch (std::exception& e)
             {
-                    LOG(WARNING) << "Can't connect signal source " << i << " to signal conditioner " << i;
+                    LOG(WARNING)  <<  "Can't connect signal source "  <<  i << " to signal conditioner " << i;
                     LOG(ERROR) << e.what();
                     top_block_->disconnect_all();
                     return;
@@ -304,11 +304,11 @@ void GNSSFlowgraph::connect()
             }
 
             //discriminate between systems
-            std::string default_system = configuration_->property("Channel.system", std::string("GPS"));
+            //std::string default_system = configuration_->property("Channel.system", std::string("GPS"));
             std::string default_signal = configuration_->property("Channel.signal", std::string("1C"));
-            std::string gnss_system = (configuration_->property("Channel"
-                    + boost::lexical_cast<std::string>(i) + ".system",
-                    default_system));
+            //std::string gnss_system = (configuration_->property("Channel"
+            //        + boost::lexical_cast<std::string>(i) + ".system",
+           //         default_system));
             std::string gnss_signal = (configuration_->property("Channel"
                     + boost::lexical_cast<std::string>(i) + ".signal",
                     default_signal));
@@ -578,22 +578,23 @@ void GNSSFlowgraph::set_signals_list()
     /*
      * Read GNSS-SDR default GNSS system and signal
      */
-    std::string default_system = configuration_->property("Channel.system", std::string("GPS"));
-    std::string default_signal = configuration_->property("Channel.signal", std::string("1C"));
+    std::string default_system = configuration_->property("Channel.system", std::string("")); // DEPRECATED
+    std::string default_signal = configuration_->property("Channel.signal", std::string(""));
 
     /*
      * Loop to create the list of GNSS Signals
      * To add signals from other systems, add another loop 'for'
      */
-    if (default_system.find(std::string("GPS")) != std::string::npos )
+
+    std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+                    29, 30, 31, 32 };
+
+    if ((configuration_->property("Channels_1C.count", 0) > 0) or (default_system.find(std::string("GPS")) != std::string::npos) or (default_signal.compare("1C") == 0) )
         {
             /*
              * Loop to create GPS L1 C/A signals
              */
-            std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-                    29, 30, 31, 32 };
-
             for (available_gnss_prn_iter = available_gps_prn.begin();
                     available_gnss_prn_iter != available_gps_prn.end();
                     available_gnss_prn_iter++)
@@ -603,15 +604,11 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
-    if (default_system.find(std::string("GPS L2C M")) != std::string::npos )
+    if ((configuration_->property("Channels_2S.count", 0) > 0) or (default_system.find(std::string("GPS L2C M")) != std::string::npos) )
         {
             /*
              * Loop to create GPS L2C M signals
              */
-            std::set<unsigned int> available_gps_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
-                    29, 30, 31, 32 };
-
             for (available_gnss_prn_iter = available_gps_prn.begin();
                     available_gnss_prn_iter != available_gps_prn.end();
                     available_gnss_prn_iter++)
@@ -622,7 +619,7 @@ void GNSSFlowgraph::set_signals_list()
         }
 
 
-    if (default_system.find(std::string("SBAS")) != std::string::npos)
+    if ((configuration_->property("Channels_SBAS.count", 0) > 0) or default_system.find(std::string("SBAS")) != std::string::npos)
         {
             /*
              * Loop to create SBAS L1 C/A signals
@@ -638,16 +635,15 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
+    std::set<unsigned int> available_galileo_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
+                    29, 30, 31, 32, 33, 34, 35, 36};
 
-    if (default_system.find(std::string("Galileo")) != std::string::npos)
+    if ((configuration_->property("Channels_1B.count", 0) > 0) or (default_system.find(std::string("Galileo")) != std::string::npos) or (default_signal.compare("1B") == 0))
         {
             /*
              * Loop to create the list of Galileo E1 B signals
              */
-            std::set<unsigned int> available_galileo_prn = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
-                    29, 30, 31, 32, 33, 34, 35, 36};
-
             for (available_gnss_prn_iter = available_galileo_prn.begin();
                     available_gnss_prn_iter != available_galileo_prn.end();
                     available_gnss_prn_iter++)
@@ -655,7 +651,23 @@ void GNSSFlowgraph::set_signals_list()
                     //  available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
                     //      *available_gnss_prn_iter), std::string("1B")));
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-                            *available_gnss_prn_iter), default_signal));
+                            *available_gnss_prn_iter), std::string("1B")));
+                }
+        }
+
+if ((configuration_->property("Channels_5I.count", 0) > 0) )
+        {
+            /*
+             * Loop to create the list of Galileo E1 B signals
+             */
+            for (available_gnss_prn_iter = available_galileo_prn.begin();
+                    available_gnss_prn_iter != available_galileo_prn.end();
+                    available_gnss_prn_iter++)
+                {
+                    //  available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
+                    //      *available_gnss_prn_iter), std::string("1B")));
+                    available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
+                            *available_gnss_prn_iter), std::string("5I")));
                 }
         }
 
@@ -670,7 +682,7 @@ void GNSSFlowgraph::set_signals_list()
             std::string gnss_system = (configuration_->property("Channel"
                     + boost::lexical_cast<std::string>(i) + ".system",
                     default_system));
-            LOG(INFO) << "Channel " << i << " system " << gnss_system;
+           // LOG(INFO) << "Channel " << i << " system " << gnss_system;
 
             std::string gnss_signal = (configuration_->property("Channel"
                     + boost::lexical_cast<std::string>(i) + ".signal",
@@ -686,6 +698,8 @@ void GNSSFlowgraph::set_signals_list()
                 }
             else
                 {
+                    if((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) ) gnss_system = "GPS";
+                    if((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5I") == 0) ) gnss_system = "Galileo"; 
                     Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
                     DLOG(INFO) << "Channel " << i << " " << signal_value;
                     available_GNSS_signals_.remove(signal_value);

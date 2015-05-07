@@ -57,6 +57,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     std::string default_dump_filename = "./data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
+std::cout << "THIS IS THE ROLE " << role;
 
     item_type_ = configuration_->property(role + ".item_type",
             default_item_type);
@@ -89,11 +90,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     vector_length_ = code_length_ * sampled_ms_;
 
     code_= new gr_complex[vector_length_];
-
-    std::complex<float>* code = new std::complex<float>[code_length_];
-
-    gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
-
 
     // if (item_type_.compare("gr_complex") == 0 )
     //         {

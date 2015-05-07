@@ -228,13 +228,13 @@ void GNSSFlowgraph::connect()
                                 {
                                     //Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
-                                    LOG(WARNING) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
-                                    LOG(WARNING) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
+                                    LOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
+                                    LOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
 
                                     if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
                                         {
 
-                                            LOG(WARNING) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
+                                            LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
                                             top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
 
                                         }
@@ -243,13 +243,13 @@ void GNSSFlowgraph::connect()
                                             if (j == 0)
                                                 {
                                                     // RF_channel 0 backward compatibility with single channel sources
-                                                    LOG(WARNING)  <<  "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << j;
+                                                    LOG(INFO)  <<  "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << j;
                                                     top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
                                                 }
                                             else
                                                 {
                                                     // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-                                                    LOG(WARNING) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
+                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
                                                     top_block_->connect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
                                                 }
                                         }

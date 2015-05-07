@@ -1,6 +1,6 @@
 /*!
  * \file GPS_L2C.h
- * \brief  Defines system parameters for GPS L1 C/A signal and NAV data
+ * \brief  Defines system parameters for GPS L2C signal
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -32,23 +32,19 @@
 #ifndef GNSS_SDR_GPS_L2C_H_
 #define GNSS_SDR_GPS_L2C_H_
 
-#include <complex>
-#include <vector>
-#include <utility> // std::pair
-#include <gnss_satellite.h>
-#include "MATH_CONSTANTS.h"
+#include <stdint.h>
 
 
 // carrier and code frequencies
-const double GPS_L2_FREQ_HZ              = 1.2276e9; //!< L2 [Hz]
+const double GPS_L2_FREQ_HZ = 1.2276e9;          //!< L2 [Hz]
 
-const double GPS_L2_M_CODE_RATE_HZ      = 0.5115e6;   //!< GPS L2 M code rate [chips/s]
+const double GPS_L2_M_CODE_RATE_HZ = 0.5115e6;   //!< GPS L2 M code rate [chips/s]
 const int GPS_L2_M_CODE_LENGTH_CHIPS = 10230;    //!< GPS L2 M code length [chips]
-const double GPS_L2_M_PERIOD       = 0.02;     //!< GPS L2 M code period [seconds]
+const double GPS_L2_M_PERIOD = 0.02;             //!< GPS L2 M code period [seconds]
 
-const double GPS_L2_L_CODE_RATE_HZ      = 0.5115e6;   //!< GPS L2 L code rate [chips/s]
-const int GPS_L2_L_CODE_LENGTH_CHIPS = 767250;    //!< GPS L2 L code length [chips]
-const double GPS_L2_L_PERIOD       = 1.5;     //!< GPS L2 L code period [seconds]
+const double GPS_L2_L_CODE_RATE_HZ = 0.5115e6;   //!< GPS L2 L code rate [chips/s]
+const int GPS_L2_L_CODE_LENGTH_CHIPS = 767250;   //!< GPS L2 L code length [chips]
+const double GPS_L2_L_PERIOD = 1.5;              //!< GPS L2 L code period [seconds]
 
 
 const int32_t GPS_L2C_M_INIT_REG[115] =

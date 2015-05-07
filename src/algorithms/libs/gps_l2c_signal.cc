@@ -30,7 +30,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "GPS_L2C.h"
+#include <gps_l2c_signal.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <cmath>
@@ -44,11 +44,11 @@ int32_t gps_l2c_m_shift(int32_t x)
 void gps_l2c_m_code(int32_t * _dest, unsigned int _prn)
 {
 	int32_t x;
-	x= GPS_L2C_M_INIT_REG[_prn-1];
-	for (int n=0; n<GPS_L2_M_CODE_LENGTH_CHIPS; n++)
+	x = GPS_L2C_M_INIT_REG[ _prn - 1];
+	for (int n = 0; n < GPS_L2_M_CODE_LENGTH_CHIPS; n++)
 	{
-		_dest[n]=(int8_t)(x&1);
-		x= gps_l2c_m_shift(x);
+		_dest[n] = (int8_t)(x&1);
+		x = gps_l2c_m_shift(x);
 	}
 }
 
@@ -63,9 +63,9 @@ void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
 		gps_l2c_m_code(_code, _prn);
 	}
 
-    for (signed int i=0; i<GPS_L2_M_CODE_LENGTH_CHIPS; i++)
+    for (signed int i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
         {
-        	_dest[i] = std::complex<float>(1.0-2.0*_code[i],0);
+        	_dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0);
         }
 }
 
@@ -77,7 +77,7 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
 {
 	int32_t _code[GPS_L2_M_CODE_LENGTH_CHIPS];
 
-	if (_prn>0 and _prn<51)
+	if (_prn > 0 and _prn < 51)
 	{
 		gps_l2c_m_code(_code, _prn);
 	}
@@ -95,7 +95,9 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
     _ts = 1/(float)_fs;   // Sampling period in sec
     _tc = 1/(float)_codeFreqBasis;  // C/A chip period in sec
 
-    for (signed int i=0; i<_samplesPerCode; i++)
+    float aux;
+
+    for (signed int i = 0; i < _samplesPerCode; i++)
         {
             //=== Digitizing =======================================================
 
@@ -105,7 +107,9 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
             // millisecond).
     	//TODO: Check this formula! Seems to start with an extra sample
 
-            _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
+            // _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
+            aux = (_ts * (i + 1)) / _tc;
+            _codeValueIndex = static_cast<int>(static_cast<long>(aux)) - 1;
 
             //--- Make the digitized version of the C/A code -----------------------
             // The "upsampled" code is made by selecting values form the CA code
@@ -113,12 +117,12 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
             if (i == _samplesPerCode - 1)
                 {
                     //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0-2.0*_code[_codeLength - 1],0);
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0);
 
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0-2.0*_code[_codeValueIndex],0);; //repeat the chip -> upsample
+                    _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);; //repeat the chip -> upsample
                 }
         }
 }

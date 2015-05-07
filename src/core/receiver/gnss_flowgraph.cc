@@ -645,7 +645,7 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
-if ((configuration_->property("Channels_5I.count", 0) > 0) )
+if ((configuration_->property("Channels_5X.count", 0) > 0) )
         {
             /*
              * Loop to create the list of Galileo E1 B signals
@@ -657,7 +657,7 @@ if ((configuration_->property("Channels_5I.count", 0) > 0) )
                     //  available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
                     //      *available_gnss_prn_iter), std::string("1B")));
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-                            *available_gnss_prn_iter), std::string("5I")));
+                            *available_gnss_prn_iter), std::string("5X")));
                 }
         }
 
@@ -691,7 +691,7 @@ if ((configuration_->property("Channels_5I.count", 0) > 0) )
             else
                 {
                     if((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) ) gnss_system = "GPS";
-                    if((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5I") == 0) ) gnss_system = "Galileo"; 
+                    if((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0) ) gnss_system = "Galileo";
                     Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
                     DLOG(INFO) << "Channel " << i << " " << signal_value;
                     available_GNSS_signals_.remove(signal_value);

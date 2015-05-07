@@ -667,6 +667,8 @@ if ((configuration_->property("Channels_5I.count", 0) > 0) )
 
     std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
 
+    // Preassignation if not defined at ChannelX.signal=1C ...? In what order?
+
     for (unsigned int i = 0; i < channels_count_; i++)
         {
             std::string gnss_system = (configuration_->property("Channel"
@@ -688,7 +690,7 @@ if ((configuration_->property("Channels_5I.count", 0) > 0) )
                 }
             else
                 {
-                    if((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) ) gnss_system = "GPS"
+                    if((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) ) gnss_system = "GPS";
                     if((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5I") == 0) ) gnss_system = "Galileo"; 
                     Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
                     DLOG(INFO) << "Channel " << i << " " << signal_value;

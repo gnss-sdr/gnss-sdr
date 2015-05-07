@@ -711,14 +711,14 @@ if ((configuration_->property("Channels_5I.count", 0) > 0) )
 
     //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
 
-//        std::cout<<"default_system="<<default_system<<std::endl;
-//        std::cout<<"default_signal="<<default_signal<<std::endl;
-//            std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-//            for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-//            != available_GNSS_signals_.end(); available_gnss_list_iter++)
-//            {
-//              std::cout << *available_gnss_list_iter << std::endl;
-//            }
+        std::cout << "default_system=" << default_system << std::endl;
+        std::cout << "default_signal=" << default_signal << std::endl;
+            std::list<Gnss_Signal>::iterator available_gnss_list_iter;
+            for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
+            != available_GNSS_signals_.end(); available_gnss_list_iter++)
+            {
+              std::cout << *available_gnss_list_iter << std::endl;
+            }
 }
 
 

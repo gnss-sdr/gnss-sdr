@@ -57,7 +57,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     std::string default_dump_filename = "./data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
-std::cout << "THIS IS THE ROLE " << role;
 
     item_type_ = configuration_->property(role + ".item_type",
             default_item_type);

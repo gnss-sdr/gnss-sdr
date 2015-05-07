@@ -255,7 +255,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
 
     stop_queue();
 
-    unsigned long int Acq_samplestamp_samples = gnss_synchro.Acq_samplestamp_samples;
+    //unsigned long int Acq_samplestamp_samples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquisition process runtime duration: " << (end - begin) << " microseconds" << std::endl;
 
     std::cout <<  "gnss_synchro.Acq_doppler_hz = " << gnss_synchro.Acq_doppler_hz << " Hz" << std::endl;

@@ -227,14 +227,14 @@ void GNSSFlowgraph::connect()
                             for (int j = 0; j < RF_Channels; j++)
                                 {
                                     //Connect the multichannel signal source to multiple signal conditioners
-                            		// GNURADIO max_streams=-1 means infinite ports!
-                        			LOG(WARNING)<<"sig_source_.at(i)->get_right_block()->output_signature()->max_streams()="<<sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
-                        			LOG(WARNING)<<"sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()="<<sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
+                                    // GNURADIO max_streams=-1 means infinite ports!
+                                    LOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
+                                    LOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
 
                                     if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1)
                                         {
 
-                                    	    LOG(WARNING)<<"connecting sig_source_ "<<i<<" stream "<<j<<" to conditioner "<<j;
+                                            LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
                                             top_block_->connect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
 
                                         }
@@ -243,13 +243,13 @@ void GNSSFlowgraph::connect()
                                             if (j == 0)
                                                 {
                                                     // RF_channel 0 backward compatibility with single channel sources
-                                            		LOG(WARNING) << "connecting sig_source_ " << i <<" stream "<<0<<" to conditioner "<<j<<std::endl;
+                                                    LOG(INFO)  <<  "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << j;
                                                     top_block_->connect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
                                                 }
                                             else
                                                 {
                                                     // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-                                            		LOG(WARNING)<<"connecting sig_source_ "<<i<<" stream "<<j<<" to conditioner " << j    <<    std::endl;
+                                                    LOG(INFO) << "connecting sig_source_ " << i << " stream " << j << " to conditioner " << j;
                                                     top_block_->connect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
                                                 }
                                         }
@@ -303,18 +303,10 @@ void GNSSFlowgraph::connect()
                     return;
             }
 
-            //discriminate between systems
-            //std::string default_system = configuration_->property("Channel.system", std::string("GPS"));
             std::string default_signal = configuration_->property("Channel.signal", std::string("1C"));
-            //std::string gnss_system = (configuration_->property("Channel"
-            //        + boost::lexical_cast<std::string>(i) + ".system",
-           //         default_system));
-            std::string gnss_signal = (configuration_->property("Channel"
-                    + boost::lexical_cast<std::string>(i) + ".signal",
-                    default_signal));
-            //TODO: add a specific string member to the channel template, and not re-use the implementation field!
-            while (channels_.at(i)->implementation() != available_GNSS_signals_.front().get_satellite().get_system()
-            		or gnss_signal != available_GNSS_signals_.front().get_signal() )
+            std::string gnss_signal = (configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", default_signal));
+
+            while (gnss_signal != available_GNSS_signals_.front().get_signal() )
                 {
                     available_GNSS_signals_.push_back(available_GNSS_signals_.front());
                     available_GNSS_signals_.pop_front();
@@ -327,13 +319,11 @@ void GNSSFlowgraph::connect()
             if (channels_state_[i] == 1)
                 {
                     channels_.at(i)->start_acquisition();
-                    LOG(INFO) << "Channel " << i
-                            << " connected to observables and ready for acquisition";
+                    LOG(INFO) << "Channel " << i << " connected to observables and ready for acquisition";
                 }
             else
                 {
-                    LOG(INFO) << "Channel " << i
-                            << " connected to observables in standby mode";
+                    LOG(INFO) << "Channel " << i << " connected to observables in standby mode";
                 }
         }
 
@@ -655,7 +645,7 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
-if ((configuration_->property("Channels_5I.count", 0) > 0) )
+if ((configuration_->property("Channels_5X.count", 0) > 0) )
         {
             /*
              * Loop to create the list of Galileo E1 B signals
@@ -667,7 +657,7 @@ if ((configuration_->property("Channels_5I.count", 0) > 0) )
                     //  available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
                     //      *available_gnss_prn_iter), std::string("1B")));
                     available_GNSS_signals_.push_back(Gnss_Signal(Gnss_Satellite(std::string("Galileo"),
-                            *available_gnss_prn_iter), std::string("5I")));
+                            *available_gnss_prn_iter), std::string("5X")));
                 }
         }
 
@@ -676,6 +666,8 @@ if ((configuration_->property("Channels_5I.count", 0) > 0) )
      */
 
     std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
+
+    // Preassignation if not defined at ChannelX.signal=1C ...? In what order?
 
     for (unsigned int i = 0; i < channels_count_; i++)
         {
@@ -699,7 +691,7 @@ if ((configuration_->property("Channels_5I.count", 0) > 0) )
             else
                 {
                     if((gnss_signal.compare("1C") == 0) or (gnss_signal.compare("2S") == 0) ) gnss_system = "GPS";
-                    if((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5I") == 0) ) gnss_system = "Galileo"; 
+                    if((gnss_signal.compare("1B") == 0) or (gnss_signal.compare("5X") == 0) ) gnss_system = "Galileo";
                     Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, sat), gnss_signal);
                     DLOG(INFO) << "Channel " << i << " " << signal_value;
                     available_GNSS_signals_.remove(signal_value);

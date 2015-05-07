@@ -57,10 +57,8 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     std::string default_dump_filename = "./data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
-std::cout << "THIS IS THE ROLE " << role;
 
-    item_type_ = configuration_->property(role + ".item_type",
-            default_item_type);
+    item_type_ = configuration_->property(role + ".item_type", default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -80,12 +78,10 @@ std::cout << "THIS IS THE ROLE " << role;
             max_dwells_ = 2;
         }
 
-    dump_filename_ = configuration_->property(role + ".dump_filename",
-            default_dump_filename);
+    dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = round(fs_in_
-            / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+    code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * sampled_ms_;
 

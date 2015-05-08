@@ -17,9 +17,10 @@
 #
 
 
-set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES 
+set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
      unpack_byte_2bit_samples.cc
      unpack_intspir_1bit_samples.cc
+     rtl_tcp_signal_source_cc.cc
 )
 
 include_directories(
@@ -27,9 +28,10 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${Boost_INCLUDE_DIRS}
 )
 
 file(GLOB SIGNAL_SOURCE_GR_BLOCKS_HEADERS "*.h")
 add_library(signal_source_gr_blocks ${SIGNAL_SOURCE_GR_BLOCKS_SOURCES} ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
-target_link_libraries(signal_source_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})
+target_link_libraries(signal_source_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${Boost_LIBRARIES})

@@ -282,7 +282,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_GPS(
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_GPS", acq, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_GPS", acq, 1, 0, queue);
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_GPS", trk, 1, 1, queue);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_GPS", tlm, 1, 1, queue);
 
@@ -306,7 +306,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1C", acq, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1C", acq, 1, 0, queue);
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1C", trk, 1, 1, queue);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1C", tlm, 1, 1, queue);
 
@@ -314,7 +314,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "GPS", queue));
+            "Channel", "1C", queue));
 
     return channel_;
 }
@@ -515,9 +515,17 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                 {
                     telemetry_decoder_implementation = telemetry_decoder_implementation_specific;
                 }
-
-            channels->push_back(std::move(GetChannel_GPS(configuration,
-                    acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
+            
+            if(configuration->property("Channels_GPS.count", 0) > 0)
+               {
+                     channels->push_back(std::move(GetChannel_GPS(configuration, 
+                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
+               }
+            if(configuration->property("Channels_1C.count", 0) > 0)
+               {
+                     channels->push_back(std::move(GetChannel_1C(configuration, 
+                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
+               }
 
             channel_absolute_id++;
         }
@@ -701,7 +709,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                     telemetry_decoder_implementation = telemetry_decoder_implementation_specific;
                 }
 
-            channels->push_back(std::move(GetChannel_GPS(configuration,
+            channels->push_back(std::move(GetChannel_5X(configuration,
                     acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
             channel_absolute_id++;
         }
@@ -1122,7 +1130,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
         std::shared_ptr<ConfigurationInterface> configuration,
         std::string role,
         std::string implementation, unsigned int in_streams,
-        unsigned int out_streams, gr::msg_queue::sptr queue)
+        unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue)
 {
     std::unique_ptr<AcquisitionInterface> block;
     // ACQUISITION BLOCKS ---------------------------------------------------------

@@ -396,14 +396,18 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
 
         //TODO: Optimize the channel and signal matching!
-        while (channels_.at(who)->get_signal().get_satellite().get_system() != available_GNSS_signals_.front().get_satellite().get_system()
-        		or channels_.at(who)->get_signal().get_signal() != available_GNSS_signals_.front().get_signal() )
+        while (//channels_.at(who)->get_signal().get_satellite().get_system() != available_GNSS_signals_.front().get_satellite().get_system()
+        		 channels_.at(who)->get_signal().get_signal() != available_GNSS_signals_.front().get_signal() )
             {
                 available_GNSS_signals_.push_back(available_GNSS_signals_.front());
                 available_GNSS_signals_.pop_front();
             }
         channels_.at(who)->set_signal(available_GNSS_signals_.front());
         available_GNSS_signals_.pop_front();
+
+
+
+
         channels_.at(who)->start_acquisition();
 
         break;
@@ -701,16 +705,16 @@ if ((configuration_->property("Channels_5X.count", 0) > 0) )
         }
 
 
-    //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
+        //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
 
-        std::cout << "default_system=" << default_system << std::endl;
-        std::cout << "default_signal=" << default_signal << std::endl;
-            std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-            for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-            != available_GNSS_signals_.end(); available_gnss_list_iter++)
-            {
-              std::cout << *available_gnss_list_iter << std::endl;
-            }
+        // std::cout << "default_system=" << default_system << std::endl;
+        // std::cout << "default_signal=" << default_signal << std::endl;
+        //    std::list<Gnss_Signal>::iterator available_gnss_list_iter;
+        //    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
+        //    != available_GNSS_signals_.end(); available_gnss_list_iter++)
+        //    {
+        //      std::cout << *available_gnss_list_iter << std::endl;
+        //    }
 }
 
 

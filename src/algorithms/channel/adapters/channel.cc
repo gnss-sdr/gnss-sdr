@@ -68,28 +68,27 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     acq_->set_gnss_synchro(&gnss_synchro_);
     trk_->set_gnss_synchro(&gnss_synchro_);
 
-// IMPORTANT: Do not change the order between set_doppler_max, set_doppler_step and set_threshold
-
-    unsigned int doppler_max = configuration->property("Acquisition_"+implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_max", 0);
-    if(doppler_max == 0) doppler_max = configuration->property("Acquisition_"+implementation_+".doppler_max", 0);
+    // IMPORTANT: Do not change the order between set_doppler_max, set_doppler_step and set_threshold
+    unsigned int doppler_max = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_max", 0);
+    if(doppler_max == 0) doppler_max = configuration->property("Acquisition_" + implementation_+ ".doppler_max", 0);
     DLOG(INFO) << "Channel "<< channel_ << " Doppler_max = " << doppler_max;
 
     acq_->set_doppler_max(doppler_max);
 
-    unsigned int doppler_step = configuration->property("Acquisition_"+implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_step" ,0);
-    if(doppler_step == 0) doppler_step = configuration->property("Acquisition_"+implementation_+".doppler_step", 500);
+    unsigned int doppler_step = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_step" ,0);
+    if(doppler_step == 0) doppler_step = configuration->property("Acquisition_" + implementation_+".doppler_step", 500);
     DLOG(INFO) << "Channel "<< channel_ << " Doppler_step = " << doppler_step;
 
     acq_->set_doppler_step(doppler_step);
 
-    float threshold = configuration->property("Acquisition_"+implementation_+ boost::lexical_cast<std::string>(channel_) + ".threshold", 0.0);
-    if(threshold == 0.0) threshold = configuration->property("Acquisition_"+implementation_+".threshold", 0.0);
+    float threshold = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".threshold", 0.0);
+    if(threshold == 0.0) threshold = configuration->property("Acquisition_" + implementation_ + ".threshold", 0.0);
 
     acq_->set_threshold(threshold);
 
     acq_->init();
 
-    repeat_ = configuration->property("Acquisition_"+implementation_+  boost::lexical_cast<std::string>(channel_) + ".repeat_satellite", false);
+    repeat_ = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".repeat_satellite", false);
     DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_;
 
     acq_->set_channel_queue(&channel_internal_queue_);

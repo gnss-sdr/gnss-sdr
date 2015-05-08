@@ -432,6 +432,14 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     std::string telemetry_decoder_implementation;
     std::string acquisition_implementation;
 
+    unsigned int total_channels = configuration->property("Channels_GPS.count", 0) +
+            configuration->property("Channels_1C.count", 0) +
+            configuration->property("Channels_2S.count", 0) +
+            configuration->property("Channels_Galileo.count", 0) +
+            configuration->property("Channels_1B.count", 0) +
+            configuration->property("Channels_5X.count", 0);
+
+
     std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>());
 
     unsigned int channel_absolute_id = 0;
@@ -463,13 +471,29 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             acquisition_implementation = configuration->property("Acquisition_1C.implementation", default_implementation);
         }
 
-    for (unsigned int i = 0; i < channel_count; i++)
+    bool apply_;
+    std::string s;
+
+    for (unsigned int i = 0; i < total_channels; i++)
         {
+            apply_ = false;
+            if( total_channels == channel_count )
+                {
+                    apply_ = true;
+                }
+
             // Search for specific implementation of that particular channel in config file
             //(i.e. Acquisition_GPS0.implementation=xxxx) DEPRECATED
+            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
+            if( s.compare("1C") == 0 )
+                {
+                    apply_ = true;
+                }
+
             std::string acquisition_implementation_specific = configuration->property(
                     "Acquisition_GPS" + boost::lexical_cast<std::string>(i) + ".implementation",
                     default_implementation);
+
             //(i.e. Acquisition_1C0.implementation=xxxx)
             if(acquisition_implementation_specific.compare(default_implementation) == 0)
                 {
@@ -481,6 +505,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(acquisition_implementation_specific.compare(default_implementation) != 0)
                 {
                     acquisition_implementation = acquisition_implementation_specific;
+                    apply_ = true;
                 }
 
             //(i.e. Tracking_GPS0.implementation=xxxx) DEPRECATED
@@ -498,6 +523,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(tracking_implementation_specific.compare(default_implementation) != 0)
                 {
                     tracking_implementation = tracking_implementation_specific;
+                    apply_ = true;
                 }
 
             //(i.e. TelemetryDecoder_GPS0.implementation=xxxx) DEPRECATED
@@ -514,20 +540,22 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(telemetry_decoder_implementation_specific.compare(default_implementation) != 0)
                 {
                     telemetry_decoder_implementation = telemetry_decoder_implementation_specific;
+                    apply_ = true;
                 }
-            
-            if(configuration->property("Channels_GPS.count", 0) > 0)
+
+            // Push back the channel to the vector of channels, if apply.
+            if((configuration->property("Channels_GPS.count", 0) > 0) and apply_)
                {
                      channels->push_back(std::move(GetChannel_GPS(configuration, 
-                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
+                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                     channel_absolute_id++;
                }
-            if(configuration->property("Channels_1C.count", 0) > 0)
+            if((configuration->property("Channels_1C.count", 0) > 0) and apply_)
                {
                      channels->push_back(std::move(GetChannel_1C(configuration, 
-                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
+                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                     channel_absolute_id++;
                }
-
-            channel_absolute_id++;
         }
 
     //**************** GPS L2C (M)  CHANNELS **********************
@@ -539,10 +567,21 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     telemetry_decoder_implementation = configuration->property("TelemetryDecoder_2S.implementation", default_implementation);
     acquisition_implementation = configuration->property("Acquisition_2S.implementation", default_implementation);
 
-    for (unsigned int i = 0; i < channel_count; i++)
+    for (unsigned int i = 0; i < total_channels; i++)
         {
+            apply_ = false;
+            if( total_channels == channel_count )
+                {
+                    apply_ = true;
+                }
+
             // Search for specific implementation of that particular channel in config file
             //(i.e. Acquisition_2S0.implementation=xxxx)
+            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
+            if( s.compare("2S") == 0 )
+                {
+                    apply_ = true;
+                }
             std::string acquisition_implementation_specific = configuration->property(
                     "Acquisition_2S" + boost::lexical_cast<std::string>(i) + ".implementation",
                     default_implementation);
@@ -550,6 +589,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(acquisition_implementation_specific.compare(default_implementation) != 0)
                 {
                     acquisition_implementation = acquisition_implementation_specific;
+                    apply_ = true;
                 }
 
             //(i.e. Tracking_2S0.implementation=xxxx)
@@ -560,8 +600,8 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(tracking_implementation_specific.compare(default_implementation) != 0)
                 {
                     tracking_implementation = tracking_implementation_specific;
+                    apply_ = true;
                 }
-
 
             //(i.e. TelemetryDecoder_1C0.implementation=xxxx)
             std::string  telemetry_decoder_implementation_specific = configuration->property(
@@ -571,11 +611,17 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(telemetry_decoder_implementation_specific.compare(default_implementation) != 0)
                 {
                     telemetry_decoder_implementation = telemetry_decoder_implementation_specific;
+                    apply_ = true;
                 }
 
-            channels->push_back(std::move(GetChannel_GPS(configuration,
-                    acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
-            channel_absolute_id++;
+
+            // Push back the channel to the vector of channels, if apply.
+            if((channel_count > 0) and apply_)
+                {
+                    channels->push_back(std::move(GetChannel_GPS(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                    channel_absolute_id++;
+                }
         }
 
 
@@ -606,13 +652,28 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             acquisition_implementation = configuration->property("Acquisition_1B.count", 0);
         }
 
-    for (unsigned int i = 0; i < channel_count; i++)
+    for (unsigned int i = 0; i < total_channels; i++)
         {
+            apply_ = false;
+            if( total_channels == channel_count )
+                {
+                    apply_ = true;
+                }
             // Search for specific implementation of that particular channel in config file
             //(i.e. Acquisition_Galileo0.implementation=xxxx) DEPRECATED
+            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
+            if( s.compare("IB") == 0 )
+                {
+                    apply_ = true;
+                }
             std::string acquisition_implementation_specific = configuration->property(
                     "Acquisition_Galileo" + boost::lexical_cast<std::string>(i) + ".implementation",
                     default_implementation);
+            std::string s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
+            if( s.compare("1B") == 0 )
+                {
+                    apply_ = true;
+                }
             //(i.e. Acquisition_1B0.implementation=xxxx)
             if(acquisition_implementation_specific.compare(default_implementation) == 0)
                 {
@@ -624,6 +685,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(acquisition_implementation_specific.compare(default_implementation) != 0)
                 {
                     acquisition_implementation = acquisition_implementation_specific;
+                    apply_ = true;
                 }
 
             //(i.e. Tracking_Galileo0.implementation=xxxx) DEPRECATED
@@ -641,6 +703,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(tracking_implementation_specific.compare(default_implementation) != 0)
                 {
                     tracking_implementation = tracking_implementation_specific;
+                    apply_ = true;
                 }
 
             //(i.e. TelemetryDecoder_Galileo0.implementation=xxxx) DEPRECATED
@@ -658,11 +721,23 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(telemetry_decoder_implementation_specific.compare(default_implementation) != 0)
                 {
                     telemetry_decoder_implementation = telemetry_decoder_implementation_specific;
+                    apply_ = true;
                 }
 
-            channels->push_back(std::move(GetChannel_Galileo(configuration,
-                    acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
-            channel_absolute_id++;
+
+            // Push back the channel to the vector of channels, if apply.
+            if((configuration->property("Channels_Galileo.count", 0) > 0) and apply_)
+                {
+                    channels->push_back(std::move(GetChannel_Galileo(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                    channel_absolute_id++;
+                }
+            if((configuration->property("Channels_1B.count", 0) > 0) and apply_)
+                {
+                    channels->push_back(std::move(GetChannel_1B(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                    channel_absolute_id++;
+                }
         }
 
 
@@ -675,10 +750,20 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     telemetry_decoder_implementation = configuration->property("TelemetryDecoder_5X.implementation", default_implementation);
     acquisition_implementation = configuration->property("Acquisition_5X.implementation", default_implementation);
 
-    for (unsigned int i = 0; i < channel_count; i++)
+    for (unsigned int i = 0; i < total_channels; i++)
         {
+            apply_ = false;
+            if( total_channels == channel_count )
+                {
+                    apply_ = true;
+                }
             // Search for specific implementation of that particular channel in config file
             //(i.e. Acquisition_5X0.implementation=xxxx)
+            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
+            if( s.compare("5X") == 0 )
+                {
+                    apply_ = true;
+                }
             std::string acquisition_implementation_specific = configuration->property(
                     "Acquisition_5X" + boost::lexical_cast<std::string>(i) + ".implementation",
                     default_implementation);
@@ -686,6 +771,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(acquisition_implementation_specific.compare(default_implementation) != 0)
                 {
                     acquisition_implementation = acquisition_implementation_specific;
+                    apply_ = true;
                 }
 
             //(i.e. Tracking_5X0.implementation=xxxx)
@@ -696,8 +782,8 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(tracking_implementation_specific.compare(default_implementation) != 0)
                 {
                     tracking_implementation = tracking_implementation_specific;
+                    apply_ = true;
                 }
-
 
             //(i.e. TelemetryDecoder_5X0.implementation=xxxx)
             std::string  telemetry_decoder_implementation_specific = configuration->property(
@@ -707,11 +793,17 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             if(telemetry_decoder_implementation_specific.compare(default_implementation) != 0)
                 {
                     telemetry_decoder_implementation = telemetry_decoder_implementation_specific;
+                    apply_ = true;
                 }
 
-            channels->push_back(std::move(GetChannel_5X(configuration,
-                    acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, channel_absolute_id, queue)));
-            channel_absolute_id++;
+
+            // Push back the channel to the vector of channels, if apply.
+            if((channel_count > 0) and apply_)
+                {
+                    channels->push_back(std::move(GetChannel_5X(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                    channel_absolute_id++;
+                }
         }
 
     return channels;
@@ -1226,7 +1318,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else
         {
             // Log fatal. This causes execution to stop.
-            LOG(ERROR) << role<<"."<<implementation << ": Undefined implementation for block";
+            LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
     return std::move(block);
 }

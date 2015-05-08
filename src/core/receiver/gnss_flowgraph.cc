@@ -584,7 +584,7 @@ void GNSSFlowgraph::set_signals_list()
                     11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
                     29, 30, 31, 32 };
 
-    if ((configuration_->property("Channels_1C.count", 0) > 0) or (default_system.find(std::string("GPS")) != std::string::npos) or (default_signal.compare("1C") == 0) )
+    if ((configuration_->property("Channels_1C.count", 0) > 0) or (default_system.find(std::string("GPS")) != std::string::npos) or (default_signal.compare("1C") == 0) or (configuration_->property("Channels_GPS.count", 0) > 0) )
         {
             /*
              * Loop to create GPS L1 C/A signals
@@ -633,7 +633,7 @@ void GNSSFlowgraph::set_signals_list()
                     11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28,
                     29, 30, 31, 32, 33, 34, 35, 36};
 
-    if ((configuration_->property("Channels_1B.count", 0) > 0) or (default_system.find(std::string("Galileo")) != std::string::npos) or (default_signal.compare("1B") == 0))
+    if ((configuration_->property("Channels_1B.count", 0) > 0) or (default_system.find(std::string("Galileo")) != std::string::npos) or (default_signal.compare("1B") == 0) or (configuration_->property("Channels_Galileo.count", 0) > 0))
         {
             /*
              * Loop to create the list of Galileo E1 B signals

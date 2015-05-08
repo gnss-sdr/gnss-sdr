@@ -186,7 +186,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     queue = gr::msg_queue::make(0);
 
 
-    double expected_delay_samples = 1;//2004;
+    double expected_delay_samples = 99991;//2004;
     double expected_doppler_hz = 1200;//3000;
     init();
     start_queue();

@@ -70,7 +70,8 @@ public:
 
     void set_frequency (int frequency);
     void set_sample_rate (int sample_rate);
-
+    void set_agc_mode (bool agc);
+    
 private:
     typedef boost::circular_buffer_space_optimized<float> buffer_type;
     

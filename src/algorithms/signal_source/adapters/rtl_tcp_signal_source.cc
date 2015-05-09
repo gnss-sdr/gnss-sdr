@@ -94,19 +94,20 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             // 3. set rx frequency
             signal_source_->set_frequency(freq_);
 
-	    // 4. set rx gain
+	    // TODO set rx gain
+            signal_source_->set_agc_mode(true);
+            
             /*if (this->AGC_enabled_ == true)
 	    {
-                    osmosdr_source_->set_gain_mode(true);
+                    signal_source_->set_agc_mode(true);
                     std::cout << "AGC enabled" << std::endl;
                     LOG(INFO) << "AGC enabled";
 	    }
             else
 	    {
-                    osmosdr_source_->set_gain_mode(false);
-                    osmosdr_source_->set_gain(gain_, 0);
-                    osmosdr_source_->set_if_gain(if_gain_, 0);
-                    osmosdr_source_->set_bb_gain(rf_gain_, 0);
+                    signal_source_->set_agc_mode(false);
+                    signal_source_->set_gain(gain_, 0);
+                    signal_source_->set_if_gain(if_gain_, 0);
 	    }*/
         }
     else

@@ -46,7 +46,11 @@ enum {
 // command ids
 enum {
    CMD_ID_SET_FREQUENCY = 1,
-   CMD_ID_SET_SAMPLE_RATE = 2
+   CMD_ID_SET_SAMPLE_RATE = 2,
+   CMD_ID_SET_GAIN_MODE = 3,
+   CMD_ID_SET_GAIN = 4,
+   CMD_ID_SET_IF_GAIN = 6,
+   CMD_ID_SET_AGC_MODE = 8
 };
 
 // rtl_tcp command
@@ -87,6 +91,24 @@ struct set_sample_rate_command : command {
    }
 };
 
+// set gain mode command
+struct set_gain_mode_command : command {
+  set_gain_mode_command (bool manual)
+    : command (CMD_ID_SET_GAIN_MODE, static_cast<unsigned int>( manual ))
+  {
+  }
+};
+
+  
+// set agc mode command
+struct set_agc_mode_command : command {
+  set_agc_mode_command (bool manual)
+    : command (CMD_ID_SET_AGC_MODE, static_cast<unsigned int>( manual ))
+  {
+  }
+};
+  
+  
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
 			      short port)
@@ -179,6 +201,22 @@ void rtl_tcp_signal_source_c::set_sample_rate (int sample_rate) {
       std::cout << "Failed to set sample rate" << std::endl;
       LOG (WARNING) << "Failed to set sample rate";
    }
+}
+
+
+void rtl_tcp_signal_source_c::set_agc_mode (bool agc) {
+  boost::system::error_code ec =
+    set_gain_mode_command (!agc).send (socket_);
+  if (ec) {
+      std::cout << "Failed to set gain mode" << std::endl;
+      LOG (WARNING) << "Failed to set gain mode";
+  }
+  ec =
+    set_agc_mode_command (agc).send (socket_);
+  if (ec) {
+      std::cout << "Failed to set gain mode" << std::endl;
+      LOG (WARNING) << "Failed to set gain mode";
+  }
 }
 
 void

@@ -1,5 +1,5 @@
 /*!
- * \file rtl_tcp_signal_source_cc.cc
+ * \file rtl_tcp_signal_source_c.cc
  * \brief An rtl_tcp signal source reader.
  * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
  *
@@ -28,14 +28,20 @@
  * -------------------------------------------------------------------------
  */
 
-#include "rtl_tcp_signal_source_cc.h"
+#include "rtl_tcp_signal_source_c.h"
 #include <glog/logging.h>
-#include <boost/thread.hpp>
+#include <boost/thread/thread.hpp>
 
 using google::LogMessage;
 
 namespace ip = boost::asio::ip;
 using boost::asio::ip::tcp;
+
+// Buffer constants
+enum {
+  RTL_TCP_BUFFER_SIZE = 1024 * 16, // 16 KB
+  RTL_TCP_PAYLOAD_SIZE = 1024 * 4  //  4 KB
+};
 
 // command ids
 enum {
@@ -81,21 +87,22 @@ struct set_sample_rate_command : command {
    }
 };
 
-rtl_tcp_signal_source_cc_sptr
-rtl_tcp_make_signal_source_cc(const std::string &address,
+rtl_tcp_signal_source_c_sptr
+rtl_tcp_make_signal_source_c(const std::string &address,
 			      short port)
 {
-   return gnuradio::get_initial_sptr (new rtl_tcp_signal_source_cc (address, port));
+   return gnuradio::get_initial_sptr (new rtl_tcp_signal_source_c (address, port));
 }
 
 
-rtl_tcp_signal_source_cc::rtl_tcp_signal_source_cc(const std::string &address,
+rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
 						   short port)
-   : gr::sync_block ("rtl_tcp_signal_source_cc",
+   : gr::sync_block ("rtl_tcp_signal_source_c",
                    gr::io_signature::make(0, 0, 0),
-                   gr::io_signature::make(1, 1, sizeof(float))),
+                   gr::io_signature::make(1, 1, sizeof(gr_complex))),
      socket_ (io_service_),
-     buffer_ (1048576),
+     data_ (RTL_TCP_PAYLOAD_SIZE),
+     buffer_ (RTL_TCP_BUFFER_SIZE),
      unread_ (0)
 {
    boost::system::error_code ec;
@@ -123,39 +130,40 @@ rtl_tcp_signal_source_cc::rtl_tcp_signal_source_cc(const std::string &address,
    LOG (WARNING)  << "Connected to " << addr << ":" << port;
 
    boost::asio::async_read (socket_, boost::asio::buffer (data_),
-			    boost::bind (&rtl_tcp_signal_source_cc::handle_read,
+			    boost::bind (&rtl_tcp_signal_source_c::handle_read,
 					 this, _1, _2));
    boost::thread (boost::bind (&boost::asio::io_service::run, &io_service_));
-   //io_service_.poll ();
 }
 
-rtl_tcp_signal_source_cc::~rtl_tcp_signal_source_cc()
+rtl_tcp_signal_source_c::~rtl_tcp_signal_source_c()
 {
    io_service_.stop ();
 }
 
-int rtl_tcp_signal_source_cc::work (int noutput_items,
-				    gr_vector_const_void_star &input_items,
+int rtl_tcp_signal_source_c::work (int noutput_items,
+                                   gr_vector_const_void_star &/*input_items*/,
 				    gr_vector_void_star &output_items)
 {
-   float *out = reinterpret_cast <float *>( output_items[0] );
-   int i = 0;
+  gr_complex *out = reinterpret_cast <gr_complex *>( output_items[0] );
+  int i = 0;
 
-   {
-      boost::mutex::scoped_lock lock (mutex_);
-      not_empty_.wait (lock, boost::bind (&rtl_tcp_signal_source_cc::not_empty,
-					  this));
+  {
+    boost::mutex::scoped_lock lock (mutex_);
+    not_empty_.wait (lock, boost::bind (&rtl_tcp_signal_source_c::not_empty,
+                                        this));
 
-      for ( ; i < noutput_items && unread_ > 0; i++ ) {
-	 out[i] = buffer_[--unread_];
-      }
-   }
-   not_full_.notify_one ();
-   return i == 0 ? -1 : i;
+    for ( ; i < noutput_items && unread_ > 1; i++ ) {
+      float re = buffer_[--unread_];
+      float im = buffer_[--unread_];
+      out[i] = gr_complex (re, im);
+    }
+  }
+  not_full_.notify_one ();
+  return i == 0 ? -1 : i;
 }
 
 
-void rtl_tcp_signal_source_cc::set_frequency (int frequency) {
+void rtl_tcp_signal_source_c::set_frequency (int frequency) {
    boost::system::error_code ec =
       set_frequency_command (frequency).send(socket_);
    if (ec) {
@@ -164,7 +172,7 @@ void rtl_tcp_signal_source_cc::set_frequency (int frequency) {
    }
 }
 
-void rtl_tcp_signal_source_cc::set_sample_rate (int sample_rate) {
+void rtl_tcp_signal_source_c::set_sample_rate (int sample_rate) {
    boost::system::error_code ec =
       set_sample_rate_command (sample_rate).send(socket_);
    if (ec) {
@@ -173,35 +181,45 @@ void rtl_tcp_signal_source_cc::set_sample_rate (int sample_rate) {
    }
 }
 
-void rtl_tcp_signal_source_cc::handle_read  (const boost::system::error_code &ec,
-					     size_t bytes_transferred)
+void
+rtl_tcp_signal_source_c::handle_read (const boost::system::error_code &ec,
+                                       size_t bytes_transferred)
 {
    if (ec) {
       std::cout << "Error during read: " << ec << std::endl;
       LOG (WARNING) << "Error during read: " << ec;
+      boost::mutex::scoped_lock lock (mutex_);
+      buffer_.clear ();
       not_empty_.notify_one ();
    }
    else {
-      {
-	 boost::mutex::scoped_lock lock (mutex_);
-	 not_full_.wait (lock, boost::bind (&rtl_tcp_signal_source_cc::not_full,
-					    this));
+     {
+        // Unpack read data
+        boost::mutex::scoped_lock lock (mutex_);
+        not_full_.wait (lock,
+                        boost::bind (&rtl_tcp_signal_source_c::not_full,
+                                     this));
 
-	 for (size_t i = 0; i < bytes_transferred; i++) {
-	    while (!not_full( )) {
-	       not_empty_.notify_one ();
-	       not_full_.wait (lock, boost::bind (&rtl_tcp_signal_source_cc::not_full,
-						  this));
-	    }
+        for (size_t i = 0; i < bytes_transferred; i++) {
+          while (!not_full( )) {
+            // uh-oh, buffer overflow
+            // wait until there's space for more
+            not_empty_.notify_one ();
+            not_full_.wait (lock,
+                            boost::bind (&rtl_tcp_signal_source_c::not_full,
+                                         this));
+          }
 
-	    buffer_.push_front (lookup_ [data_[i]]);
-	    unread_++;
-	 }
+          buffer_.push_front (lookup_[data_[i]]);
+          unread_++;
+        }
       }
+      // let woker know that more data is available 
       not_empty_.notify_one ();
-
-      boost::asio::async_read (socket_, boost::asio::buffer (data_),
-			       boost::bind (&rtl_tcp_signal_source_cc::handle_read,
+      // Read some more
+      boost::asio::async_read (socket_,
+                               boost::asio::buffer (data_),
+			       boost::bind (&rtl_tcp_signal_source_c::handle_read,
 					    this, _1, _2));
    }
 }

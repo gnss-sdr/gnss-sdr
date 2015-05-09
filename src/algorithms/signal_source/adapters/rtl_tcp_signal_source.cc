@@ -81,7 +81,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             {
 	       std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
 	       LOG (INFO) << "Connecting to " << address_ << ":" << port_;
-	       signal_source_ = rtl_tcp_make_signal_source_cc (address_, port_);
+	       signal_source_ = rtl_tcp_make_signal_source_c (address_, port_);
             }
             catch( boost::exception & e )
             {
@@ -128,9 +128,6 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
-
-    deinterleave_ = gr::blocks::deinterleave::make (sizeof (float));
-    ftoc_ = gr::blocks::float_to_complex::make ( 1 );
 }
 
 
@@ -139,13 +136,8 @@ RtlTcpSignalSource::~RtlTcpSignalSource()
 
 
 void RtlTcpSignalSource::connect(gr::top_block_sptr top_block) {
-   // deinterleave and convert to complex
-   top_block->connect (signal_source_, 0, deinterleave_, 0);
-   top_block->connect (deinterleave_, 0, ftoc_, 0);
-   top_block->connect (deinterleave_, 1, ftoc_, 1);
-
    if ( samples_ ) {
-      top_block->connect (ftoc_, 0, valve_, 0);
+      top_block->connect (signal_source_, 0, valve_, 0);
       DLOG(INFO) << "connected rtl tcp source to valve";
       if ( dump_ ) {
 	 top_block->connect(valve_, 0, file_sink_, 0);
@@ -153,23 +145,20 @@ void RtlTcpSignalSource::connect(gr::top_block_sptr top_block) {
       }
    }
    else if ( dump_ ) {
-	 top_block->connect(ftoc_, 0, file_sink_, 0);
+	 top_block->connect(signal_source_, 0, file_sink_, 0);
 	 DLOG(INFO) << "connected rtl tcp source to file sink";
    }
 }
 
 void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block) {
-   top_block->disconnect (signal_source_, 0, deinterleave_, 0);
-   top_block->disconnect (deinterleave_, 0, ftoc_, 0);
-   top_block->disconnect (deinterleave_, 1, ftoc_, 1);
    if ( samples_ ) {
-      top_block->disconnect (ftoc_, 0, valve_, 0);
+      top_block->disconnect (signal_source_, 0, valve_, 0);
       if ( dump_ ) {
 	 top_block->disconnect(valve_, 0, file_sink_, 0);
       }
    }
    else if ( dump_ ) {
-	 top_block->disconnect(ftoc_, 0, file_sink_, 0);
+	 top_block->disconnect(signal_source_, 0, file_sink_, 0);
    }
 }
 
@@ -183,6 +172,6 @@ gr::basic_block_sptr RtlTcpSignalSource::get_right_block() {
       return valve_;
    }
    else {
-      return ftoc_;
+     return signal_source_;
    }
 }

@@ -1,7 +1,14 @@
 /*!
- * \file rtl_tcp_signal_source_cc.h
+ * \file rtl_tcp_signal_source_c.h
  * \brief Interface of an rtl_tcp signal source reader.
  * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
+ *
+ * The implementation of this block is a combination of various helpful
+ * sources. The data format and command structure is taken from the
+ * original Osmocom rtl_tcp_source_f (http://git.osmocom.org/gr-osmosdr).
+ * The aynchronous reading code comes from the examples provides
+ * by Boost.Asio and the bounded buffer producer-consumer solution is
+ * taken from the Boost.CircularBuffer examples (http://boost.org/).
  *
  * -------------------------------------------------------------------------
  *
@@ -28,8 +35,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_CC_H
-#define	GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_CC_H
+#ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
+#define	GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
 
 #include <boost/asio.hpp>
 #include <gnuradio/sync_block.h>
@@ -39,23 +46,23 @@
 #include <boost/array.hpp>
 #include <boost/circular_buffer.hpp>
 
-class rtl_tcp_signal_source_cc;
+class rtl_tcp_signal_source_c;
 
-typedef boost::shared_ptr<rtl_tcp_signal_source_cc>
-        rtl_tcp_signal_source_cc_sptr;
+typedef boost::shared_ptr<rtl_tcp_signal_source_c>
+        rtl_tcp_signal_source_c_sptr;
 
-rtl_tcp_signal_source_cc_sptr
-rtl_tcp_make_signal_source_cc(const std::string &address,
+rtl_tcp_signal_source_c_sptr
+rtl_tcp_make_signal_source_c(const std::string &address,
 			      short port);
 
 /*!
  * \brief This class reads interleaved I/Q samples
- * from an rtl_tcp server.
+ * from an rtl_tcp server and outputs complex types.
  */
-class rtl_tcp_signal_source_cc : public gr::sync_block
+class rtl_tcp_signal_source_c : public gr::sync_block
 {
 public:
-    ~rtl_tcp_signal_source_cc();
+    ~rtl_tcp_signal_source_c();
 
     int work (int noutput_items,
 	      gr_vector_const_void_star &input_items,
@@ -65,28 +72,34 @@ public:
     void set_sample_rate (int sample_rate);
 
 private:
-    friend rtl_tcp_signal_source_cc_sptr
-       rtl_tcp_make_signal_source_cc(const std::string &address,
+    typedef boost::circular_buffer_space_optimized<float> buffer_type;
+    
+    friend rtl_tcp_signal_source_c_sptr
+       rtl_tcp_make_signal_source_c(const std::string &address,
 				     short port);
 
-    rtl_tcp_signal_source_cc(const std::string &address,
+    rtl_tcp_signal_source_c(const std::string &address,
 			     short port);
 
+    // IO members
     boost::asio::io_service io_service_;
     boost::asio::ip::tcp::socket socket_;
-
+    std::vector<unsigned char> data_;
+    
+    // producer-consumer helpers
     boost::mutex mutex_;
     boost::condition not_full_;
     boost::condition not_empty_;
-    boost::circular_buffer<float> buffer_;
+    buffer_type buffer_;
     size_t unread_;
 
+    // lookup for scaling bytes
     boost::array<float, 256> lookup_;
-    boost::array<unsigned char, 256> data_;
 
+    // async read callback
     void handle_read (const boost::system::error_code &ec,
 		      size_t bytes_transferred);
-
+    
     inline bool not_full ( ) const {
        return unread_ < buffer_.capacity( );
     }
@@ -97,4 +110,4 @@ private:
 
 };
 
-#endif //GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_CC_H
+#endif //GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H

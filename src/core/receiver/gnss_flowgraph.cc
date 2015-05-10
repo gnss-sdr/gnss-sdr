@@ -306,7 +306,7 @@ void GNSSFlowgraph::connect()
             std::string default_signal = configuration_->property("Channel.signal", std::string("1C"));
             std::string gnss_signal = (configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", default_signal));
 
-            while (gnss_signal.compare(available_GNSS_signals_.front().get_signal()) != 0 )
+            while (gnss_signal.compare(available_GNSS_signals_.front().get_signal_str()) != 0 )
                 {
                     available_GNSS_signals_.push_back(available_GNSS_signals_.front());
                     available_GNSS_signals_.pop_front();
@@ -392,11 +392,11 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     switch (what)
     {
     case 0:
-        LOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal();
+        LOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
         available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
 
         //TODO: Optimize the channel and signal matching!
-        while ( channels_.at(who)->get_signal().get_signal().compare(available_GNSS_signals_.front().get_signal()) != 0 )
+        while ( channels_.at(who)->get_signal().get_signal_str().compare(available_GNSS_signals_.front().get_signal_str()) != 0 )
             {
                 available_GNSS_signals_.push_back(available_GNSS_signals_.front());
                 available_GNSS_signals_.pop_front();
@@ -685,7 +685,7 @@ void GNSSFlowgraph::set_signals_list()
 
             unsigned int sat = configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".satellite", 0);
 
-            if (((sat == 0) || (sat == gnss_it->get_satellite().get_PRN()))  and  ( gnss_it->get_signal().compare(gnss_signal) == 0 )  ) // 0 = not PRN in configuration file
+            if (((sat == 0) || (sat == gnss_it->get_satellite().get_PRN()))  and  ( gnss_it->get_signal_str().compare(gnss_signal) == 0 )  ) // 0 = not PRN in configuration file
                 {
                     gnss_it++;
                 }

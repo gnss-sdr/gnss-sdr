@@ -43,7 +43,7 @@ TEST(CodeGenGPSL1_Test, CodeGeneration)
     signed int _prn = 1;
     unsigned int _chip_shift = 4;
 
-    int iterations = 100000;
+    int iterations = 1000;
 
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -93,7 +93,7 @@ TEST(CodeGenGPSL1Sampled_Test, CodeGeneration)
     int _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
     std::complex<float>* _dest = new std::complex<float>[_samplesPerCode];
 
-    int iterations = 10000;
+    int iterations = 1000;
 
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -133,8 +133,6 @@ TEST(CodeGenGPSL1Sampled_Test, CodeGeneration)
 
 TEST(ComplexCarrier_Test, CodeGeneration)
 {
-    //signed int _prn = 1;
-    //unsigned int _chip_shift = 4;
     double _fs = 8000000;
     double _f = 4000;
     const signed int _codeFreqBasis = 1023000; //Hz
@@ -142,7 +140,7 @@ TEST(ComplexCarrier_Test, CodeGeneration)
     int _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
     std::complex<float>* _dest = new std::complex<float>[_samplesPerCode];
 
-    int iterations = 100000;
+    int iterations = 1000;
 
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -150,7 +148,6 @@ TEST(ComplexCarrier_Test, CodeGeneration)
 
     for(int i = 0; i < iterations; i++)
         {
-            //gps_l1_ca_code_gen_complex_sampled( _dest,  _prn, _fs, _chip_shift);
             complex_exp_gen_conj( _dest, _f,  _fs,  _samplesPerCode);
         }
 

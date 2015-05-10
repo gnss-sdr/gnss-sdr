@@ -79,26 +79,33 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
    }
 
    // 2. Set socket options
-   socket_.set_option (boost::asio::socket_base::reuse_address (true), ec);
-   if (ec) {
-       std::cout << "Failed to set reuse address option." << std::endl;
-       LOG (WARNING)  << "Failed to set reuse address option";
-   }
-   socket_.set_option (boost::asio::socket_base::linger (true, 0), ec);
-   if (ec) {
-       std::cout << "Failed to set linger option." << std::endl;
-       LOG (WARNING)  << "Failed to set linger option";
-   }
-
-   // 3. Connect socket
    ip::address addr = ip::address::from_string (address, ec);
    if (ec) {
       std::cout << address << " is not an IP address" << std::endl;
       LOG (ERROR) << address << " is not an IP address";
       return;
    }
+   ip::tcp::endpoint ep (addr, port);
+   socket_.open (ep.protocol( ), ec);
+   if (ec) {
+       std::cout << "Failed to open socket." << std::endl;
+       LOG (ERROR)  << "Failed to open socket.";
+   }
 
-   socket_.connect(tcp::endpoint (addr, port), ec);
+   socket_.set_option (boost::asio::socket_base::reuse_address (true), ec);
+   if (ec) {
+       std::cout << "Failed to set reuse address option: " << ec << std::endl;
+       LOG (WARNING)  << "Failed to set reuse address option";
+   }
+   socket_.set_option (boost::asio::socket_base::linger (true, 0), ec);
+   if (ec) {
+       std::cout << "Failed to set linger option: " << ec << std::endl;
+       LOG (WARNING)  << "Failed to set linger option";
+   }
+
+   // 3. Connect socket
+
+   socket_.connect(ep, ec);
    if (ec) {
        std::cout << "Failed to connect to " << addr << ":" << port
                  << "(" << ec << ")" << std::endl;

@@ -631,8 +631,8 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
         {
             channel_count = configuration->property("Channels_1B.count", 0);
         }
-
-    LOG(INFO) << "Getting " << channel_count << " Galileo E1 B (I/NAV OS) channels";
+ 
+   LOG(INFO) << "Getting " << channel_count << " Galileo E1 B (I/NAV OS) channels";
 
     tracking_implementation = configuration->property("Tracking_Galileo.implementation", default_implementation); // DEPRECATED
     if (tracking_implementation.compare(default_implementation) == 0)
@@ -662,7 +662,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             // Search for specific implementation of that particular channel in config file
             //(i.e. Acquisition_Galileo0.implementation=xxxx) DEPRECATED
             s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
-            if( s.compare("IB") == 0 )
+            if( s.compare("1B") == 0 )
                 {
                     apply_ = true;
                 }

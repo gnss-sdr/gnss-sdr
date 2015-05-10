@@ -68,6 +68,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     address_ = configuration->property(role + ".address", default_address);
     port_ = configuration->property(role + ".port", default_port);
+    flip_iq_ = configuration->property(role + ".flip_iq", false);
 
     if (item_type_.compare("short") == 0)
         {
@@ -81,7 +82,7 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             {
 	       std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
 	       LOG (INFO) << "Connecting to " << address_ << ":" << port_;
-	       signal_source_ = rtl_tcp_make_signal_source_c (address_, port_);
+	       signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
             }
             catch( boost::exception & e )
             {
@@ -94,21 +95,29 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             // 3. set rx frequency
             signal_source_->set_frequency(freq_);
 
-	    // TODO set rx gain
+            // 4. set rx gain
             signal_source_->set_agc_mode(true);
-            
-            /*if (this->AGC_enabled_ == true)
-	    {
-                    signal_source_->set_agc_mode(true);
-                    std::cout << "AGC enabled" << std::endl;
-                    LOG(INFO) << "AGC enabled";
-	    }
+
+            if (this->AGC_enabled_ == true)
+            {
+                std::cout << "AGC enabled" << std::endl;
+                LOG(INFO) << "AGC enabled";
+                signal_source_->set_agc_mode(true);
+            }
             else
-	    {
-                    signal_source_->set_agc_mode(false);
-                    signal_source_->set_gain(gain_, 0);
-                    signal_source_->set_if_gain(if_gain_, 0);
-	    }*/
+            {
+                std::cout << "AGC disabled" << std::endl;
+                LOG(INFO) << "AGC disabled";
+                signal_source_->set_agc_mode(false);
+
+                std::cout << "Setting gain to " << gain_ << std::endl;
+                LOG(INFO) << "Setting gain to " << gain_;
+                signal_source_->set_gain(gain_);
+
+                std::cout << "Setting IF gain to " << if_gain_ << std::endl;
+                LOG(INFO) << "Setting IF gain to " << if_gain_;
+                signal_source_->set_if_gain(if_gain_);
+            }
         }
     else
         {

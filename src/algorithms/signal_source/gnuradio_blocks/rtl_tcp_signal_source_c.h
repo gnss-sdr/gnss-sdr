@@ -53,7 +53,8 @@ typedef boost::shared_ptr<rtl_tcp_signal_source_c>
 
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
-			      short port);
+                             short port,
+                             bool flip_iq = false);
 
 /*!
  * \brief This class reads interleaved I/Q samples
@@ -71,22 +72,27 @@ public:
     void set_frequency (int frequency);
     void set_sample_rate (int sample_rate);
     void set_agc_mode (bool agc);
-    
+    void set_gain (int gain);
+    void set_if_gain (int gain);
+
 private:
     typedef boost::circular_buffer_space_optimized<float> buffer_type;
-    
+
     friend rtl_tcp_signal_source_c_sptr
        rtl_tcp_make_signal_source_c(const std::string &address,
-				     short port);
+                                    short port,
+                                    bool flip_iq);
 
     rtl_tcp_signal_source_c(const std::string &address,
-			     short port);
+                            short port,
+                            bool flip_iq);
 
     // IO members
     boost::asio::io_service io_service_;
     boost::asio::ip::tcp::socket socket_;
     std::vector<unsigned char> data_;
-    
+    bool flip_iq_;
+
     // producer-consumer helpers
     boost::mutex mutex_;
     boost::condition not_full_;
@@ -94,13 +100,13 @@ private:
     buffer_type buffer_;
     size_t unread_;
 
-    // lookup for scaling bytes
-    boost::array<float, 256> lookup_;
+    // lookup for scaling data
+    boost::array<float, 0xff> lookup_;
 
     // async read callback
     void handle_read (const boost::system::error_code &ec,
 		      size_t bytes_transferred);
-    
+
     inline bool not_full ( ) const {
        return unread_ < buffer_.capacity( );
     }

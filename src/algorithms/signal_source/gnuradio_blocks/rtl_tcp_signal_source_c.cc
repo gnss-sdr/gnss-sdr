@@ -3,6 +3,8 @@
  * \brief An rtl_tcp signal source reader.
  * \author Anthony Arnold, 2015. anthony.arnold(at)uqconnect.edu.au
  *
+ * This module contains logic taken from gr-omsosdr
+ * <http://git.osmocom.org/gr-osmosdr>
  * -------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
@@ -29,8 +31,11 @@
  */
 
 #include "rtl_tcp_signal_source_c.h"
+#include "rtl_tcp_commands.h"
+#include "rtl_tcp_dongle_info.h"
 #include <glog/logging.h>
 #include <boost/thread/thread.hpp>
+#include <map>
 
 using google::LogMessage;
 
@@ -38,119 +43,93 @@ namespace ip = boost::asio::ip;
 using boost::asio::ip::tcp;
 
 // Buffer constants
+// TODO: Make these configurable
 enum {
   RTL_TCP_BUFFER_SIZE = 1024 * 16, // 16 KB
   RTL_TCP_PAYLOAD_SIZE = 1024 * 4  //  4 KB
 };
 
-// command ids
-enum {
-   CMD_ID_SET_FREQUENCY = 1,
-   CMD_ID_SET_SAMPLE_RATE = 2,
-   CMD_ID_SET_GAIN_MODE = 3,
-   CMD_ID_SET_GAIN = 4,
-   CMD_ID_SET_IF_GAIN = 6,
-   CMD_ID_SET_AGC_MODE = 8
-};
-
-// rtl_tcp command
-struct command {
-   enum {
-      data_size = 1 + sizeof (unsigned int)
-   };
-   boost::array<unsigned char, data_size> data_;
-
-   command (unsigned char cmd, unsigned int param)
-   {
-      data_[0] = cmd;
-      unsigned int nparam =
-	 boost::asio::detail::socket_ops::host_to_network_long (param);
-      memcpy (&data_[1], &nparam, sizeof (nparam));
-   }
-
-   boost::system::error_code send (tcp::socket &socket_) {
-      boost::system::error_code ec;
-      socket_.send (boost::asio::buffer (data_), 0, ec);
-      return ec;
-   }
-};
-
-// set frequency command
-struct set_frequency_command : command {
-   set_frequency_command (unsigned int freq)
-      : command (CMD_ID_SET_FREQUENCY, freq)
-   {
-   }
-};
-
-// set sample rate  command
-struct set_sample_rate_command : command {
-   set_sample_rate_command (unsigned int sample_rate)
-      : command (CMD_ID_SET_SAMPLE_RATE, sample_rate)
-   {
-   }
-};
-
-// set gain mode command
-struct set_gain_mode_command : command {
-  set_gain_mode_command (bool manual)
-    : command (CMD_ID_SET_GAIN_MODE, static_cast<unsigned int>( manual ))
-  {
-  }
-};
-
-  
-// set agc mode command
-struct set_agc_mode_command : command {
-  set_agc_mode_command (bool manual)
-    : command (CMD_ID_SET_AGC_MODE, static_cast<unsigned int>( manual ))
-  {
-  }
-};
-  
-  
 rtl_tcp_signal_source_c_sptr
 rtl_tcp_make_signal_source_c(const std::string &address,
-			      short port)
+                             short port,
+                             bool flip_iq)
 {
-   return gnuradio::get_initial_sptr (new rtl_tcp_signal_source_c (address, port));
+    return gnuradio::get_initial_sptr (new rtl_tcp_signal_source_c (address,
+                                                                    port,
+                                                                    flip_iq));
 }
 
 
 rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
-						   short port)
+                                                 short port,
+                                                 bool flip_iq)
    : gr::sync_block ("rtl_tcp_signal_source_c",
                    gr::io_signature::make(0, 0, 0),
                    gr::io_signature::make(1, 1, sizeof(gr_complex))),
      socket_ (io_service_),
      data_ (RTL_TCP_PAYLOAD_SIZE),
+     flip_iq_(flip_iq),
      buffer_ (RTL_TCP_BUFFER_SIZE),
      unread_ (0)
 {
    boost::system::error_code ec;
 
-   for (int i = 0; i < 256; i++) {
-      lookup_[i] = (((float)(i & 0xff)) - 127.4f) * (1.0f / 128.0f);
+   // 1. Setup lookup table
+   for (unsigned i = 0; i < 0xff; i++) {
+       lookup_[i] = ((float)(i & 0xff) - 127.4f) * (1.0f / 128.0f);
    }
 
+   // 2. Set socket options
+   socket_.set_option (boost::asio::socket_base::reuse_address (true), ec);
+   if (ec) {
+       std::cout << "Failed to set reuse address option." << std::endl;
+       LOG (WARNING)  << "Failed to set reuse address option";
+   }
+   socket_.set_option (boost::asio::socket_base::linger (true, 0), ec);
+   if (ec) {
+       std::cout << "Failed to set linger option." << std::endl;
+       LOG (WARNING)  << "Failed to set linger option";
+   }
+
+   // 3. Connect socket
    ip::address addr = ip::address::from_string (address, ec);
    if (ec) {
       std::cout << address << " is not an IP address" << std::endl;
-      LOG (WARNING) << address << " is not an IP address";
+      LOG (ERROR) << address << " is not an IP address";
       return;
    }
 
    socket_.connect(tcp::endpoint (addr, port), ec);
    if (ec) {
-      std::cout << "Failed to connect to " << addr << ":" << port
-		<< "(" << ec << ")" << std::endl;
-      LOG (WARNING)  << "Failed to connect to " << addr << ":" << port
-		   << "(" << ec << ")";
-      return;
+       std::cout << "Failed to connect to " << addr << ":" << port
+                 << "(" << ec << ")" << std::endl;
+       LOG (ERROR)  << "Failed to connect to " << addr << ":" << port
+                      << "(" << ec << ")";
+       return;
    }
    std::cout << "Connected to " << addr << ":" << port << std::endl;
    LOG (WARNING)  << "Connected to " << addr << ":" << port;
 
+   // 4. Set nodelay
+   socket_.set_option (tcp::no_delay (true), ec);
+   if (ec) {
+       std::cout << "Failed to set no delay option." << std::endl;
+       LOG (WARNING)  << "Failed to set no delay option";
+   }
+
+   // 5. Receive dongle info
+   rtl_tcp_dongle_info info;
+   ec = info.read (socket_);
+   if (ec) {
+       std::cout << "Failed to read dongle info." << std::endl;
+       LOG (WARNING)  << "Failed to read dongle info";
+   }
+   else if (info.is_valid ()) {
+       std::cout << "Found " << info.get_type_name() << " tuner."  << std::endl;
+       LOG (INFO)  << "Found " << info.get_type_name() << " tuner.";
+   }
+
+   // 6. Start reading
    boost::asio::async_read (socket_, boost::asio::buffer (data_),
 			    boost::bind (&rtl_tcp_signal_source_c::handle_read,
 					 this, _1, _2));
@@ -175,9 +154,14 @@ int rtl_tcp_signal_source_c::work (int noutput_items,
                                         this));
 
     for ( ; i < noutput_items && unread_ > 1; i++ ) {
-      float re = buffer_[--unread_];
       float im = buffer_[--unread_];
-      out[i] = gr_complex (re, im);
+      float re = buffer_[--unread_];
+      if (flip_iq_) {
+          out[i] = gr_complex (im, re);
+      }
+      else {
+          out[i] = gr_complex (re, im);
+      }
     }
   }
   not_full_.notify_one ();
@@ -187,7 +171,7 @@ int rtl_tcp_signal_source_c::work (int noutput_items,
 
 void rtl_tcp_signal_source_c::set_frequency (int frequency) {
    boost::system::error_code ec =
-      set_frequency_command (frequency).send(socket_);
+      rtl_tcp_command (RTL_TCP_SET_FREQUENCY, frequency, socket_);
    if (ec) {
       std::cout << "Failed to set frequency" << std::endl;
       LOG (WARNING) << "Failed to set frequency";
@@ -196,7 +180,7 @@ void rtl_tcp_signal_source_c::set_frequency (int frequency) {
 
 void rtl_tcp_signal_source_c::set_sample_rate (int sample_rate) {
    boost::system::error_code ec =
-      set_sample_rate_command (sample_rate).send(socket_);
+      rtl_tcp_command (RTL_TCP_SET_SAMPLE_RATE, sample_rate, socket_);
    if (ec) {
       std::cout << "Failed to set sample rate" << std::endl;
       LOG (WARNING) << "Failed to set sample rate";
@@ -205,18 +189,79 @@ void rtl_tcp_signal_source_c::set_sample_rate (int sample_rate) {
 
 
 void rtl_tcp_signal_source_c::set_agc_mode (bool agc) {
-  boost::system::error_code ec =
-    set_gain_mode_command (!agc).send (socket_);
-  if (ec) {
-      std::cout << "Failed to set gain mode" << std::endl;
-      LOG (WARNING) << "Failed to set gain mode";
-  }
-  ec =
-    set_agc_mode_command (agc).send (socket_);
-  if (ec) {
-      std::cout << "Failed to set gain mode" << std::endl;
-      LOG (WARNING) << "Failed to set gain mode";
-  }
+    boost::system::error_code ec =
+       rtl_tcp_command (RTL_TCP_SET_GAIN_MODE, !agc, socket_);
+    if (ec) {
+        std::cout << "Failed to set gain mode" << std::endl;
+        LOG (WARNING) << "Failed to set gain mode";
+    }
+    ec =
+       rtl_tcp_command (RTL_TCP_SET_AGC_MODE, agc, socket_);
+    if (ec) {
+        std::cout << "Failed to set gain mode" << std::endl;
+        LOG (WARNING) << "Failed to set gain mode";
+    }
+}
+
+void rtl_tcp_signal_source_c::set_gain (int gain) {
+    boost::system::error_code ec =
+       rtl_tcp_command (RTL_TCP_SET_GAIN, gain, socket_);
+    if (ec) {
+        std::cout << "Failed to set gain" << std::endl;
+        LOG (WARNING) << "Failed to set gain";
+    }
+}
+
+void rtl_tcp_signal_source_c::set_if_gain (int gain) {
+    // from gr-osmosdr
+    struct range {
+       double start, stop, step;
+    };
+    std::vector<range> ranges = {
+        { -3, 6, 9 },
+        { 0, 9, 3 },
+        { 0, 9, 3 },
+        { 0, 2, 1 },
+        { 3, 15, 3},
+        { 3, 15, 3}
+    };
+
+    std::map <int, double> gains;
+    for (int i = 0; i < static_cast<int>(ranges.size ()); i++) {
+        gains[i+1] = ranges[i].start;
+    }
+
+    for (int i = ranges.size() - 1; i >= 0; i--) {
+        const range &r = ranges[i];
+        double error = gain;
+
+        for (double g = r.start; g < r.stop; g += r.step) {
+            double sum = 0;
+            for (int j = 0; j < static_cast<int> ( gains.size() ); j++) {
+                if (i == j) {
+                    sum += g;
+                }
+                else {
+                    sum += gains[j + 1];
+                }
+            }
+            double err = std::abs (gain - sum);
+            if (err < error) {
+                error = err;
+                gains[i+1] = g;
+            }
+        }
+    }
+    for (unsigned stage = 1; stage <= gains.size(); stage++) {
+        int stage_gain = static_cast<int>( gains[stage] * 10 );
+        unsigned param = (stage << 16) | (stage_gain & 0xffff);
+        boost::system::error_code ec =
+           rtl_tcp_command (RTL_TCP_SET_IF_GAIN, param, socket_);
+        if (ec) {
+            std::cout << "Failed to set if gain" << std::endl;
+            LOG (WARNING) << "Failed to set if gain";
+        }
+    }
 }
 
 void
@@ -252,7 +297,7 @@ rtl_tcp_signal_source_c::handle_read (const boost::system::error_code &ec,
           unread_++;
         }
       }
-      // let woker know that more data is available 
+      // let woker know that more data is available
       not_empty_.notify_one ();
       // Read some more
       boost::asio::async_read (socket_,

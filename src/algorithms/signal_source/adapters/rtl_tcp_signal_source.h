@@ -87,6 +87,7 @@ private:
     short port_;
     bool AGC_enabled_;
     double sample_rate_;
+    bool flip_iq_;
 
     unsigned int in_stream_;
     unsigned int out_stream_;

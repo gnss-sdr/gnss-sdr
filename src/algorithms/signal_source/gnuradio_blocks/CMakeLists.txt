@@ -25,6 +25,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
+     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
@@ -34,4 +35,4 @@ include_directories(
 file(GLOB SIGNAL_SOURCE_GR_BLOCKS_HEADERS "*.h")
 add_library(signal_source_gr_blocks ${SIGNAL_SOURCE_GR_BLOCKS_SOURCES} ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_GR_BLOCKS_HEADERS})
-target_link_libraries(signal_source_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(signal_source_gr_blocks signal_source_lib ${GNURADIO_RUNTIME_LIBRARIES} ${Boost_LIBRARIES})

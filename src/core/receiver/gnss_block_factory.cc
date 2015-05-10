@@ -618,7 +618,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             // Push back the channel to the vector of channels, if apply.
             if((channel_count > 0) and apply_)
                 {
-                    channels->push_back(std::move(GetChannel_GPS(configuration,
+                    channels->push_back(std::move(GetChannel_2S(configuration,
                             acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
                     channel_absolute_id++;
                 }

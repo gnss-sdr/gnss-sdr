@@ -71,6 +71,18 @@ public:
     std::unique_ptr<GNSSBlockInterface> GetOutputFilter(std::shared_ptr<ConfigurationInterface> configuration,
             boost::shared_ptr<gr::msg_queue> queue);
 
+    std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GetChannels(std::shared_ptr<ConfigurationInterface> configuration,
+            boost::shared_ptr<gr::msg_queue> queue);
+
+    /*
+     * \brief Returns the block with the required configuration and implementation
+     */
+    std::unique_ptr<GNSSBlockInterface> GetBlock(std::shared_ptr<ConfigurationInterface> configuration,
+            std::string role, std::string implementation,
+            unsigned int in_streams, unsigned int out_streams,
+            boost::shared_ptr<gr::msg_queue> queue);
+
+private:
     // DEPRECATED
     std::unique_ptr<GNSSBlockInterface> GetChannel_GPS(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
@@ -97,19 +109,6 @@ public:
             std::string acq, std::string trk, std::string tlm, int channel,
             boost::shared_ptr<gr::msg_queue> queue);
 
-
-    std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GetChannels(std::shared_ptr<ConfigurationInterface> configuration,
-            boost::shared_ptr<gr::msg_queue> queue);
-
-    /*
-     * \brief Returns the block with the required configuration and implementation
-     */
-    std::unique_ptr<GNSSBlockInterface> GetBlock(std::shared_ptr<ConfigurationInterface> configuration,
-            std::string role, std::string implementation,
-            unsigned int in_streams, unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
-
-private:
     std::unique_ptr<AcquisitionInterface> GetAcqBlock(
             std::shared_ptr<ConfigurationInterface> configuration,
             std::string role,

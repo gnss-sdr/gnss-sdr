@@ -330,7 +330,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_2S", acq, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_2S", acq, 1, 0, queue);
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_2S", trk, 1, 1, queue);
 
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_2S", tlm, 1, 1, queue);
@@ -357,7 +357,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_Galileo(
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_Galileo", acq, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_Galileo", acq, 1, 0, queue);
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_Galileo", trk, 1, 1, queue);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_Galileo", tlm, 1, 1, queue);
 
@@ -383,7 +383,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1B", acq, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1B", acq, 1, 0, queue);
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1B", trk, 1, 1, queue);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1B", tlm, 1, 1, queue);
 
@@ -409,7 +409,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_5X", acq, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_5X", acq, 1, 0, queue);
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_5X", trk, 1, 1, queue);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_5X", tlm, 1, 1, queue);
 
@@ -440,7 +440,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             configuration->property("Channels_5X.count", 0);
 
 
-    std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>());
+    std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels(new std::vector<std::unique_ptr<GNSSBlockInterface>>(total_channels));
 
     unsigned int channel_absolute_id = 0;
 
@@ -546,14 +546,14 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             // Push back the channel to the vector of channels, if apply.
             if((configuration->property("Channels_GPS.count", 0) > 0) and apply_)
                {
-                     channels->push_back(std::move(GetChannel_GPS(configuration, 
-                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                     channels->at(i) = std::move(GetChannel_GPS(configuration,
+                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
                      channel_absolute_id++;
                }
             if((configuration->property("Channels_1C.count", 0) > 0) and apply_)
                {
-                     channels->push_back(std::move(GetChannel_1C(configuration, 
-                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                     channels->at(i) = std::move(GetChannel_1C(configuration,
+                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
                      channel_absolute_id++;
                }
         }
@@ -618,8 +618,8 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             // Push back the channel to the vector of channels, if apply.
             if((channel_count > 0) and apply_)
                 {
-                    channels->push_back(std::move(GetChannel_2S(configuration,
-                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                    channels->at(i) = std::move(GetChannel_2S(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
                     channel_absolute_id++;
                 }
         }
@@ -724,14 +724,14 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             // Push back the channel to the vector of channels, if apply.
             if((configuration->property("Channels_Galileo.count", 0) > 0) and apply_)
                 {
-                    channels->push_back(std::move(GetChannel_Galileo(configuration,
-                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                    channels->at(i) = std::move(GetChannel_Galileo(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
                     channel_absolute_id++;
                 }
             if((configuration->property("Channels_1B.count", 0) > 0) and apply_)
                 {
-                    channels->push_back(std::move(GetChannel_1B(configuration,
-                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                    channels->at(i) = std::move(GetChannel_1B(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
                     channel_absolute_id++;
                 }
         }
@@ -796,8 +796,8 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
             // Push back the channel to the vector of channels, if apply.
             if((channel_count > 0) and apply_)
                 {
-                    channels->push_back(std::move(GetChannel_5X(configuration,
-                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue)));
+                    channels->at(i) = std::move(GetChannel_5X(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
                     channel_absolute_id++;
                 }
         }

@@ -453,7 +453,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     default:
         break;
     }
-    DLOG(INFO) << "Number of available satellites: " << available_GNSS_signals_.size();
+    DLOG(INFO) << "Number of available signals: " << available_GNSS_signals_.size();
 }
 
 

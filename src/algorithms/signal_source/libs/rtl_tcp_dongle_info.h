@@ -65,6 +65,8 @@ class rtl_tcp_dongle_info {
 
     const char *get_type_name () const;
 
+    double clip_gain (int gain) const;
+
     inline uint32_t get_tuner_type () const {
         return tuner_type_;
     }

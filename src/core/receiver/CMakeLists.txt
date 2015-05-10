@@ -16,10 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(GNSS_RECEIVER_SOURCES 
-     control_thread.cc 
-     control_message_factory.cc 
-     file_configuration.cc 
+set(GNSS_RECEIVER_SOURCES
+     control_thread.cc
+     control_message_factory.cc
+     file_configuration.cc
      gnss_block_factory.cc
      gnss_flowgraph.cc
      in_memory_configuration.cc
@@ -34,6 +34,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
      ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
@@ -104,27 +105,27 @@ file(GLOB GNSS_RECEIVER_INTERFACE_HEADERS "../interfaces/*.h")
 add_library(gnss_rx ${GNSS_RECEIVER_SOURCES} ${GNSS_RECEIVER_HEADERS} ${GNSS_RECEIVER_INTERFACE_HEADERS})
 source_group(Headers FILES ${GNSS_RECEIVER_HEADERS} ${GNSS_RECEIVER_INTERFACE_HEADERS})
 
-target_link_libraries(gnss_rx ${Boost_LIBRARIES} 
-                              ${ARMADILLO_LIBRARIES} 
-                              ${GNURADIO_RUNTIME_LIBRARIES} 
-                              ${GNURADIO_BLOCKS_LIBRARIES} 
-                              ${GNURADIO_FFT_LIBRARIES} 
-                              ${GNURADIO_FILTER_LIBRARIES} 
-                              gnss_system_parameters 
-                              gnss_sp_libs 
-                              signal_source_adapters 
-                              datatype_adapters 
-                              input_filter_adapters 
-                              conditioner_adapters 
-                              resampler_adapters 
-                              acq_adapters 
-                              tracking_lib 
-                              tracking_adapters 
-                              channel_adapters 
-                              telemetry_decoder_adapters 
-                              obs_adapters 
-                              pvt_adapters 
-                              pvt_lib 
-                              out_adapters 
+target_link_libraries(gnss_rx ${Boost_LIBRARIES}
+                              ${ARMADILLO_LIBRARIES}
+                              ${GNURADIO_RUNTIME_LIBRARIES}
+                              ${GNURADIO_BLOCKS_LIBRARIES}
+                              ${GNURADIO_FFT_LIBRARIES}
+                              ${GNURADIO_FILTER_LIBRARIES}
+                              gnss_system_parameters
+                              gnss_sp_libs
+                              signal_source_adapters
+                              datatype_adapters
+                              input_filter_adapters
+                              conditioner_adapters
+                              resampler_adapters
+                              acq_adapters
+                              tracking_lib
+                              tracking_adapters
+                              channel_adapters
+                              telemetry_decoder_adapters
+                              obs_adapters
+                              pvt_adapters
+                              pvt_lib
+                              out_adapters
                               rx_core_lib
 )

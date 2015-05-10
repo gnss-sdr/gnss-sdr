@@ -38,6 +38,7 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
 #define	GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
 
+#include "rtl_tcp_dongle_info.h"
 #include <boost/asio.hpp>
 #include <gnuradio/sync_block.h>
 #include <string>
@@ -86,6 +87,8 @@ private:
     rtl_tcp_signal_source_c(const std::string &address,
                             short port,
                             bool flip_iq);
+
+    rtl_tcp_dongle_info info_;
 
     // IO members
     boost::asio::io_service io_service_;

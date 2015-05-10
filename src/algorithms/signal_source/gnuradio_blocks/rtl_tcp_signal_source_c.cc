@@ -32,7 +32,6 @@
 
 #include "rtl_tcp_signal_source_c.h"
 #include "rtl_tcp_commands.h"
-#include "rtl_tcp_dongle_info.h"
 #include <glog/logging.h>
 #include <boost/thread/thread.hpp>
 #include <map>
@@ -118,15 +117,14 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
    }
 
    // 5. Receive dongle info
-   rtl_tcp_dongle_info info;
-   ec = info.read (socket_);
+   ec = info_.read (socket_);
    if (ec) {
        std::cout << "Failed to read dongle info." << std::endl;
        LOG (WARNING)  << "Failed to read dongle info";
    }
-   else if (info.is_valid ()) {
-       std::cout << "Found " << info.get_type_name() << " tuner."  << std::endl;
-       LOG (INFO)  << "Found " << info.get_type_name() << " tuner.";
+   else if (info_.is_valid ()) {
+       std::cout << "Found " << info_.get_type_name() << " tuner."  << std::endl;
+       LOG (INFO)  << "Found " << info_.get_type_name() << " tuner.";
    }
 
    // 6. Start reading
@@ -204,8 +202,9 @@ void rtl_tcp_signal_source_c::set_agc_mode (bool agc) {
 }
 
 void rtl_tcp_signal_source_c::set_gain (int gain) {
+    unsigned clipped = static_cast<unsigned> (info_.clip_gain (gain) * 10.0);
     boost::system::error_code ec =
-       rtl_tcp_command (RTL_TCP_SET_GAIN, gain, socket_);
+       rtl_tcp_command (RTL_TCP_SET_GAIN, clipped, socket_);
     if (ec) {
         std::cout << "Failed to set gain" << std::endl;
         LOG (WARNING) << "Failed to set gain";
@@ -217,6 +216,10 @@ void rtl_tcp_signal_source_c::set_if_gain (int gain) {
     struct range {
        double start, stop, step;
     };
+    if (info_.get_tuner_type () != rtl_tcp_dongle_info::TUNER_E4000) {
+        return;
+    }
+
     std::vector<range> ranges = {
         { -3, 6, 9 },
         { 0, 9, 3 },

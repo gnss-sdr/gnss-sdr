@@ -666,14 +666,10 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                 {
                     apply_ = true;
                 }
+
             std::string acquisition_implementation_specific = configuration->property(
                     "Acquisition_Galileo" + boost::lexical_cast<std::string>(i) + ".implementation",
                     default_implementation);
-            std::string s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
-            if( s.compare("1B") == 0 )
-                {
-                    apply_ = true;
-                }
             //(i.e. Acquisition_1B0.implementation=xxxx)
             if(acquisition_implementation_specific.compare(default_implementation) == 0)
                 {

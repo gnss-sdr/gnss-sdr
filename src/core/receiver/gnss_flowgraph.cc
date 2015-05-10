@@ -306,7 +306,7 @@ void GNSSFlowgraph::connect()
             std::string default_signal = configuration_->property("Channel.signal", std::string("1C"));
             std::string gnss_signal = (configuration_->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", default_signal));
 
-            while (gnss_signal != available_GNSS_signals_.front().get_signal() )
+            while (gnss_signal.compare(available_GNSS_signals_.front().get_signal()) != 0 )
                 {
                     available_GNSS_signals_.push_back(available_GNSS_signals_.front());
                     available_GNSS_signals_.pop_front();

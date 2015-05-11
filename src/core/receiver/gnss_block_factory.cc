@@ -280,17 +280,47 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_GPS(
 
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+    std::string aux = configuration->property("Acquisition_GPS" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix1;
+    if(aux.compare("W") != 0)
+        {
+            appendix1 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix1 = ""; 
+        }
+    aux = configuration->property("Tracking_GPS" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix2;
+    if(aux.compare("W") != 0)
+        {
+            appendix2 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix2 = ""; 
+        }
+    aux = configuration->property("TelemetryDecoder_GPS" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix3;
+    if(aux.compare("W") != 0)
+        {
+            appendix3 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix3 = ""; 
+        }
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_GPS", acq, 1, 0, queue);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_GPS", trk, 1, 1, queue);
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_GPS", tlm, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_GPS" + appendix1, acq, 1, 0, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_GPS" + appendix2, trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_GPS" + appendix3, tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "GPS", queue));
+            "Channel", "GPS" + appendix1, queue));
 
     return channel_;
 }
@@ -305,16 +335,47 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
+  std::string aux = configuration->property("Acquisition_1C" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix1;
+    if(aux.compare("W") != 0)
+        {
+            appendix1 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix1 = ""; 
+        }
+    aux = configuration->property("Tracking_1C" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix2;
+    if(aux.compare("W") != 0)
+        {
+            appendix2 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix2 = ""; 
+        }
+    aux = configuration->property("TelemetryDecoder_1C" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix3;
+    if(aux.compare("W") != 0)
+        {
+            appendix3 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix3 = ""; 
+        }
+
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1C", acq, 1, 0, queue);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1C", trk, 1, 1, queue);
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1C", tlm, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1C" + appendix1, acq, 1, 0, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1C"+ appendix2, trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1C"+ appendix3, tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "1C", queue));
+            "Channel", "1C" + appendix1, queue));
 
     return channel_;
 }
@@ -328,18 +389,48 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
 
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+  std::string aux = configuration->property("Acquisition_2S" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix1;
+    if(aux.compare("W") != 0)
+        {
+            appendix1 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix1 = ""; 
+        }
+    aux = configuration->property("Tracking_2S" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix2;
+    if(aux.compare("W") != 0)
+        {
+            appendix2 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix2 = ""; 
+        }
+    aux = configuration->property("TelemetryDecoder_2S" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix3;
+    if(aux.compare("W") != 0)
+        {
+            appendix3 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix3 = ""; 
+        }
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_2S", acq, 1, 0, queue);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_2S", trk, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_2S" + appendix1 , acq, 1, 0, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_2S" + appendix2, trk, 1, 1, queue);
 
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_2S", tlm, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_2S" + appendix3, tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "2S", queue));
+            "Channel", "2S" + appendix1, queue));
 
     return channel_;
 }
@@ -355,11 +446,41 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_Galileo(
     std::string id = stream.str();
     LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+  std::string aux = configuration->property("Acquisition_Galileo" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix1;
+    if(aux.compare("W") != 0)
+        {
+            appendix1 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix1 = ""; 
+        }
+    aux = configuration->property("Tracking_Galileo" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix2;
+    if(aux.compare("W") != 0)
+        {
+            appendix2 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix2 = ""; 
+        }
+    aux = configuration->property("TelemetryDecoder_Galileo" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix3;
+    if(aux.compare("W") != 0)
+        {
+            appendix3 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix3 = ""; 
+        }
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_Galileo", acq, 1, 0, queue);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_Galileo", trk, 1, 1, queue);
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_Galileo", tlm, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_Galileo" + appendix1, acq, 1, 0, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_Galileo" + appendix2, trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_Galileo" + appendix3, tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
@@ -381,17 +502,47 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
     std::string id = stream.str();
     LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+    std::string aux = configuration->property("Acquisition_1B" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix1;
+    if(aux.compare("W") != 0)
+        {
+            appendix1 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix1 = ""; 
+        }
+    aux = configuration->property("Tracking_1B" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix2;
+    if(aux.compare("W") != 0)
+        {
+            appendix2 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix2 = ""; 
+        }
+    aux = configuration->property("TelemetryDecoder_1B" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix3;
+    if(aux.compare("W") != 0)
+        {
+            appendix3 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix3 = ""; 
+        }
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1B", acq, 1, 0, queue);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1B", trk, 1, 1, queue);
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1B", tlm, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1B" + appendix1, acq, 1, 0, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1B" + appendix2, trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1B" + appendix3, tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "1B", queue));
+            "Channel", "1B" + appendix1, queue));
 
     return channel_;
 }
@@ -407,17 +558,47 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
     std::string id = stream.str();
     LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
+    std::string aux = configuration->property("Acquisition_5X" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix1;
+    if(aux.compare("W") != 0)
+        {
+            appendix1 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix1 = ""; 
+        }
+    aux = configuration->property("Tracking_5X" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix2;
+    if(aux.compare("W") != 0)
+        {
+            appendix2 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix2 = ""; 
+        }
+    aux = configuration->property("TelemetryDecoder_5X" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string appendix3;
+    if(aux.compare("W") != 0)
+        {
+            appendix3 = boost::lexical_cast<std::string>(channel);
+        }
+    else
+        {
+            appendix3 = ""; 
+        }
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
-    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_5X", acq, 1, 0, queue);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_5X", trk, 1, 1, queue);
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_5X", tlm, 1, 1, queue);
+    std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_5X" + appendix1, acq, 1, 0, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_5X" + appendix2, trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_5X" + appendix3, tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "5X", queue));
+            "Channel", "5X" + appendix1, queue));
 
     return channel_;
 }

@@ -368,8 +368,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
 
     std::unique_ptr<GNSSBlockInterface> pass_through_ = GetBlock(configuration, "Channel", "Pass_Through", 1, 1, queue);
     std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_1C" + appendix1, acq, 1, 0, queue);
-    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1C"+ appendix2, trk, 1, 1, queue);
-    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1C"+ appendix3, tlm, 1, 1, queue);
+    std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1C "+ appendix2, trk, 1, 1, queue);
+    std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1C" + appendix3, tlm, 1, 1, queue);
 
     std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
             acq_.release(),
@@ -818,19 +818,20 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     tracking_implementation = configuration->property("Tracking_Galileo.implementation", default_implementation); // DEPRECATED
     if (tracking_implementation.compare(default_implementation) == 0)
         {
-            tracking_implementation = configuration->property("Tracking_1B.count", 0);
+            tracking_implementation = configuration->property("Tracking_1B.implementation", std::string("W"));
+            std::cout << "HHELLO " << tracking_implementation << std::endl;
         }
 
     telemetry_decoder_implementation = configuration->property("TelemetryDecoder_Galileo.implementation", default_implementation); // DEPRECATED
     if (telemetry_decoder_implementation.compare(default_implementation) == 0)
         {
-            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_1B.count", 0);
+            telemetry_decoder_implementation = configuration->property("TelemetryDecoder_1B.implementation", std::string("W"));
         }
 
     acquisition_implementation = configuration->property("Acquisition_Galileo.implementation", default_implementation); // DEPRECATED
     if (acquisition_implementation.compare(default_implementation) == 0)
         {
-            acquisition_implementation = configuration->property("Acquisition_1B.count", 0);
+            acquisition_implementation = configuration->property("Acquisition_1B.implementation", std::string("W"));
         }
 
     for (unsigned int i = 0; i < total_channels; i++)

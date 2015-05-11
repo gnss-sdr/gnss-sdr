@@ -129,7 +129,7 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_queue = queue;
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    LOG(INFO) << "GALILEO E1B TELEMETRY PROCESSING: satellite " << d_satellite;
+    LOG(INFO) << "Initializing GALILEO E1B TELEMETRY PROCESSING";
     d_vector_length = vector_length;
     d_samples_per_symbol = ( Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS ) / Galileo_E1_B_SYMBOL_RATE_BPS;
     d_fs_in = fs_in;

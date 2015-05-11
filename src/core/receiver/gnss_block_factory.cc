@@ -96,27 +96,27 @@
 #include "hybrid_pvt.h"
 
 #if OPENCL_BLOCKS
-    #include "gps_l1_ca_pcps_opencl_acquisition.h"
+#include "gps_l1_ca_pcps_opencl_acquisition.h"
 #endif
 
 #if GN3S_DRIVER
-        #include "gn3s_signal_source.h"
+#include "gn3s_signal_source.h"
 #endif
 
 #if RAW_ARRAY_DRIVER
-        #include "raw_array_signal_source.h"
+#include "raw_array_signal_source.h"
 #endif
 
 #if OSMOSDR_DRIVER
-        #include "osmosdr_signal_source.h"
+#include "osmosdr_signal_source.h"
 #endif
 
 #if UHD_DRIVER
-        #include "uhd_signal_source.h"
+#include "uhd_signal_source.h"
 #endif
 
 #if FLEXIBAND_DRIVER
-        #include "flexiband_signal_source.h"
+#include "flexiband_signal_source.h"
 #endif
 
 
@@ -335,7 +335,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
 
-  std::string aux = configuration->property("Acquisition_1C" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_1C" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if(aux.compare("W") != 0)
         {
@@ -389,7 +389,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
 
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
-  std::string aux = configuration->property("Acquisition_2S" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_2S" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if(aux.compare("W") != 0)
         {
@@ -446,7 +446,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_Galileo(
     std::string id = stream.str();
     LOG(INFO) << "Instantiating Channel " << id << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
-  std::string aux = configuration->property("Acquisition_Galileo" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
+    std::string aux = configuration->property("Acquisition_Galileo" + boost::lexical_cast<std::string>(channel) + ".implementation", std::string("W"));
     std::string appendix1;
     if(aux.compare("W") != 0)
         {
@@ -726,17 +726,17 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
 
             // Push back the channel to the vector of channels, if apply.
             if((configuration->property("Channels_GPS.count", 0) > 0) and apply_)
-               {
-                     channels->at(i) = std::move(GetChannel_GPS(configuration,
-                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
-                     channel_absolute_id++;
-               }
+                {
+                    channels->at(i) = std::move(GetChannel_GPS(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
+                    channel_absolute_id++;
+                }
             if((configuration->property("Channels_1C.count", 0) > 0) and apply_)
-               {
-                     channels->at(i) = std::move(GetChannel_1C(configuration,
-                         acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
-                     channel_absolute_id++;
-               }
+                {
+                    channels->at(i) = std::move(GetChannel_1C(configuration,
+                            acquisition_implementation, tracking_implementation, telemetry_decoder_implementation, i, queue));
+                    channel_absolute_id++;
+                }
         }
 
     //**************** GPS L2C (M)  CHANNELS **********************
@@ -812,8 +812,8 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
         {
             channel_count = configuration->property("Channels_1B.count", 0);
         }
- 
-   LOG(INFO) << "Getting " << channel_count << " Galileo E1 B (I/NAV OS) channels";
+
+    LOG(INFO) << "Getting " << channel_count << " Galileo E1 B (I/NAV OS) channels";
 
     tracking_implementation = configuration->property("Tracking_Galileo.implementation", default_implementation); // DEPRECATED
     if (tracking_implementation.compare(default_implementation) == 0)
@@ -1283,11 +1283,11 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             block = std::move(block_);
         }
     else if (implementation.compare("Galileo_volk_E1_DLL_PLL_VEML_Tracking") == 0)
-    {
-        std::unique_ptr<GNSSBlockInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
-                                                                                   out_streams, queue));
-        block = std::move(block_);
-    }
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
@@ -1542,11 +1542,11 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
             block = std::move(block_);
         }
     else if (implementation.compare("Galileo_Volk_E1_DLL_PLL_VEML_Tracking") == 0)
-    {
-        std::unique_ptr<TrackingInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
-                                                                                  out_streams, queue));
-        block = std::move(block_);
-    }
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,

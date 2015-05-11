@@ -819,7 +819,6 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     if (tracking_implementation.compare(default_implementation) == 0)
         {
             tracking_implementation = configuration->property("Tracking_1B.implementation", std::string("W"));
-            std::cout << "HHELLO " << tracking_implementation << std::endl;
         }
 
     telemetry_decoder_implementation = configuration->property("TelemetryDecoder_Galileo.implementation", default_implementation); // DEPRECATED

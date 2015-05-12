@@ -68,15 +68,17 @@ public:
     std::map<int,Data> get_map_copy()
     {
         boost::mutex::scoped_lock lock(the_mutex);
-        return the_map;
+        std::map<int,Data> map_aux = the_map;
         lock.unlock();
+        return map_aux;
     }
 
-    int size()
+    size_t size()
     {
         boost::mutex::scoped_lock lock(the_mutex);
-        return the_map.size();
+        size_t size_ = the_map.size();
         lock.unlock();
+        return size_;
     }
 
     bool read(int key, Data& p_data)

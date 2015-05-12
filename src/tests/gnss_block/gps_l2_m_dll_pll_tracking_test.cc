@@ -88,14 +88,14 @@ void GpsL2MDllPllTrackingTest::init()
     gnss_synchro.PRN = 7;
 
     config->set_property("GNSS-SDR.internal_fs_hz", "5000000");
-    config->set_property("Tracking_GPS.item_type", "gr_complex");
-    config->set_property("Tracking_GPS.dump", "true");
-    config->set_property("Tracking_GPS.dump_filename", "../data/L2m_tracking_ch_");
-    config->set_property("Tracking_GPS.implementation", "GPS_L2_M_DLL_PLL_Tracking");
-    config->set_property("Tracking_GPS.early_late_space_chips", "0.5");
-    config->set_property("Tracking_GPS.order", "2");
-    config->set_property("Tracking_GPS.pll_bw_hz", "2");
-    config->set_property("Tracking_GPS.dll_bw_hz", "0.5");
+    config->set_property("Tracking_2S.item_type", "gr_complex");
+    config->set_property("Tracking_2S.dump", "true");
+    config->set_property("Tracking_2S.dump_filename", "../data/L2m_tracking_ch_");
+    config->set_property("Tracking_2S.implementation", "GPS_L2_M_DLL_PLL_Tracking");
+    config->set_property("Tracking_2S.early_late_space_chips", "0.5");
+    config->set_property("Tracking_2S.order", "2");
+    config->set_property("Tracking_2S.pll_bw_hz", "2");
+    config->set_property("Tracking_2S.dll_bw_hz", "0.5");
 }
 
 TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
@@ -109,7 +109,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");
 
-    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL2MDllPllTracking>(config.get(), "Tracking_GPS", 1, 1, queue);
+    std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL2MDllPllTracking>(config.get(), "Tracking_2S", 1, 1, queue);
 
     //REAL
     gnss_synchro.Acq_delay_samples = 1;

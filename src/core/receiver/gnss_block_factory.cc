@@ -665,7 +665,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
 
             // Search for specific implementation of that particular channel in config file
             //(i.e. Acquisition_GPS0.implementation=xxxx) DEPRECATED
-            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
+            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", configuration->property("Channel.signal", std::string("W")));
             if( s.compare("1C") == 0 )
                 {
                     apply_ = true;
@@ -758,7 +758,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
 
             // Search for specific implementation of that particular channel in config file
             //(i.e. Acquisition_2S0.implementation=xxxx)
-            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
+            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", configuration->property("Channel.signal", std::string("W")));
             if( s.compare("2S") == 0 )
                 {
                     apply_ = true;
@@ -842,7 +842,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                 }
             // Search for specific implementation of that particular channel in config file
             //(i.e. Acquisition_Galileo0.implementation=xxxx) DEPRECATED
-            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
+            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", configuration->property("Channel.signal", std::string("W")));
             if( s.compare("1B") == 0 )
                 {
                     apply_ = true;
@@ -936,7 +936,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                 }
             // Search for specific implementation of that particular channel in config file
             //(i.e. Acquisition_5X0.implementation=xxxx)
-            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", std::string("W"));
+            s = configuration->property("Channel" + boost::lexical_cast<std::string>(i) + ".signal", configuration->property("Channel.signal", std::string("W")));
             if( s.compare("5X") == 0 )
                 {
                     apply_ = true;

@@ -510,13 +510,13 @@ void galileo_e1_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_sele
                  4. World Geodetic System 1984
      */
 
-    const double a[5] = {6378388, 6378160, 6378135, 6378137, 6378137};
-    const double f[5] = {1/297, 1/298.247, 1/298.26, 1/298.257222101, 1/298.257223563};
+    const double a[5] = {6378388.0, 6378160.0, 6378135.0, 6378137.0, 6378137.0};
+    const double f[5] = {1.0 / 297.0, 1.0 / 298.247, 1.0 / 298.26, 1.0 / 298.257222101, 1.0 / 298.257223563};
 
     double lambda  = atan2(Y, X);
-    double ex2 = (2 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1 - f[elipsoid_selection]) * (1 - f[elipsoid_selection]));
-    double c = a[elipsoid_selection] * sqrt(1+ex2);
-    double phi = atan(Z / ((sqrt(X * X + Y * Y) * (1 - (2 - f[elipsoid_selection])) * f[elipsoid_selection])));
+    double ex2 = (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1.0 - f[elipsoid_selection]) * (1.0 - f[elipsoid_selection]));
+    double c = a[elipsoid_selection] * sqrt(1.0 + ex2);
+    double phi = atan(Z / ((sqrt(X * X + Y * Y) * (1.0 - (2.0 - f[elipsoid_selection])) * f[elipsoid_selection])));
 
     double h = 0.1;
     double oldh = 0;
@@ -537,7 +537,7 @@ void galileo_e1_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_sele
         }
     while (std::abs(h - oldh) > 1.0e-12);
     d_latitude_d = phi * 180.0 / GALILEO_PI;
-    d_longitude_d = lambda * 180 / GALILEO_PI;
+    d_longitude_d = lambda * 180.0 / GALILEO_PI;
     d_height_m = h;
 }
 

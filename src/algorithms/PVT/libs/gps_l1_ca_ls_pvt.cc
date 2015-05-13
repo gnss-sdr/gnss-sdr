@@ -38,7 +38,7 @@ using google::LogMessage;
 
 DEFINE_bool(tropo, true, "Apply tropospheric correction");
 
-gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool flag_dump_to_file)
+gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels, std::string dump_filename, bool flag_dump_to_file)
 {
     // init empty ephemeris for all the available GNSS channels
     d_nchannels = nchannels;
@@ -48,6 +48,24 @@ gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels,std::string dump_filename, bool
     d_averaging_depth = 0;
     d_GPS_current_time = 0;
     b_valid_position = false;
+
+    d_valid_observations = 0;
+    d_latitude_d = 0.0;
+    d_longitude_d = 0.0;
+    d_height_m = 0.0;
+    d_avg_latitude_d = 0.0;
+    d_avg_longitude_d = 0.0;
+    d_avg_height_m = 0.0;
+    d_x_m = 0.0;
+    d_y_m = 0.0;
+    d_z_m = 0.0;
+    d_GDOP = 0.0;
+    d_PDOP = 0.0;
+    d_HDOP = 0.0;
+    d_VDOP = 0.0;
+    d_TDOP = 0.0;
+    d_flag_averaging = false;
+
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {

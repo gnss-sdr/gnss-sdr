@@ -76,6 +76,7 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* c
     telemetry_decoder_->set_iono_queue(&global_galileo_iono_queue);
     telemetry_decoder_->set_almanac_queue(&global_galileo_almanac_queue);
     telemetry_decoder_->set_utc_model_queue(&global_galileo_utc_model_queue);
+    channel_ = 0;
 }
 
 

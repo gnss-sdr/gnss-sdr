@@ -85,7 +85,6 @@ public:
 private:
     AcquisitionInterface *acq_;
     TrackingInterface *trk_;
-    TelemetryDecoderInterface *nav_;
     boost::shared_ptr<gr::msg_queue> queue_;
     unsigned int channel_;
 };

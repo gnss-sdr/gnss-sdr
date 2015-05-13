@@ -124,7 +124,19 @@ float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float 
 
 
 Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter ()
-{}
+{
+    d_order = 0;
+    d_pll_w = 0;
+    d_pll_w0p3 = 0;
+    d_pll_w0f2 = 0;
+    d_pll_x = 0;
+    d_pll_a2 = 0;
+    d_pll_w0f = 0;
+    d_pll_a3 = 0;
+    d_pll_w0p2 = 0;
+    d_pll_b3 = 0;
+    d_pll_w0p = 0;
+}
 
 Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter ()
 {}

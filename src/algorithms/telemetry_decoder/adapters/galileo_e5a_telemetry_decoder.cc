@@ -82,6 +82,7 @@ GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* c
     telemetry_decoder_->set_utc_model_queue(&global_galileo_utc_model_queue);
 
     DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";
+    channel_ = 0;
 }
 
 

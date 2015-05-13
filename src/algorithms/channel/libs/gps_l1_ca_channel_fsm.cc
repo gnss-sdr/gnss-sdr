@@ -115,6 +115,9 @@ public:
 
 GpsL1CaChannelFsm::GpsL1CaChannelFsm()
 {
+    acq_ = nullptr;
+    trk_ = nullptr;
+    channel_ = 0;
     initiate(); //start the FSM
 }
 
@@ -123,6 +126,8 @@ GpsL1CaChannelFsm::GpsL1CaChannelFsm()
 GpsL1CaChannelFsm::GpsL1CaChannelFsm(AcquisitionInterface *acquisition) :
 	        acq_(acquisition)
 {
+    trk_ = nullptr;
+    channel_ = 0;
     initiate(); //start the FSM
 }
 

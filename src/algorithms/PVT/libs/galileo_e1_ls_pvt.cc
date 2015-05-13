@@ -107,7 +107,7 @@ arma::vec galileo_e1_ls_pvt::rotateSatellite(double traveltime, arma::vec X_sat)
     R3(1, 2) = 0.0;
     R3(2, 0) = 0.0;
     R3(2, 1) = 0.0;
-    R3(2, 2) = 1;
+    R3(2, 2) = 1.0;
 
     //--- Do the rotation ------------------------------------------------------
     arma::vec X_sat_rot;
@@ -188,7 +188,7 @@ arma::vec galileo_e1_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arm
                                     togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
 
                                     //--- Find delay due to troposphere (in meters)
-                                    tropo(&trop, sin(d_visible_satellites_El[i] * GALILEO_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                    tropo(&trop, sin(d_visible_satellites_El[i] * GALILEO_PI / 180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
                                     if(trop > 50.0 ) trop = 0.0;
                                 }
                         }
@@ -238,9 +238,9 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
     arma::mat satpos = arma::zeros(3, valid_pseudoranges);           // satellite positions matrix
 
     int Galileo_week_number = 0;
-    double utc = 0;
-    double TX_time_corrected_s;
-    double SV_clock_bias_s = 0;
+    double utc = 0.0;
+    double TX_time_corrected_s = 0.0;
+    double SV_clock_bias_s = 0.0;
 
     d_flag_averaging = flag_averaging;
 
@@ -260,7 +260,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                     /*!
                      * \todo Place here the satellite CN0 (power level, or weight factor)
                      */
-                    W(obs_counter, obs_counter) = 1;
+                    W(obs_counter, obs_counter) = 1.0;
 
                     // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
                     // first estimate of transmit time
@@ -519,14 +519,14 @@ void galileo_e1_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_sele
     double phi = atan(Z / ((sqrt(X * X + Y * Y) * (1.0 - (2.0 - f[elipsoid_selection])) * f[elipsoid_selection])));
 
     double h = 0.1;
-    double oldh = 0;
+    double oldh = 0.0;
     double N;
     int iterations = 0;
     do
         {
             oldh = h;
             N = c / sqrt(1 + ex2 * (cos(phi) * cos(phi)));
-            phi = atan(Z / ((sqrt(X * X + Y * Y) * (1 - (2 - f[elipsoid_selection]) * f[elipsoid_selection] * N / (N + h) ))));
+            phi = atan(Z / ((sqrt(X * X + Y * Y) * (1.0 - (2.0 - f[elipsoid_selection]) * f[elipsoid_selection] * N / (N + h) ))));
             h = sqrt(X * X + Y * Y) / cos(phi) - N;
             iterations = iterations + 1;
             if (iterations > 100)
@@ -568,17 +568,17 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
     *h = 0;
     double tolsq = 1.e-10;  // tolerance to accept convergence
     int maxit = 10;         // max number of iterations
-    double rtd = 180/GPS_PI;
+    double rtd = 180.0 / GPS_PI;
 
     // compute square of eccentricity
     double esq;
     if (finv < 1.0E-20)
         {
-            esq = 0;
+            esq = 0.0;
         }
     else
         {
-            esq = (2 - 1/finv) / finv;
+            esq = (2.0 - 1.0 / finv) / finv;
         }
 
     // first guess
@@ -591,7 +591,7 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
         }
     else
         {
-            *dlambda = 0;
+            *dlambda = 0.0;
         }
 
     // correct longitude bound
@@ -609,7 +609,7 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
         }
     else
         {
-            sinphi = 0;
+            sinphi = 0.0;
         }
     *dphi = asin(sinphi);
 
@@ -628,7 +628,7 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
     double N_phi;
     double dP;
     double dZ;
-    double oneesq = 1 - esq;
+    double oneesq = 1.0 - esq;
 
     for (int i = 0; i < maxit; i++)
         {
@@ -700,7 +700,7 @@ void galileo_e1_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x,
     F(1,1) = -sb * sl;
     F(1,2) = cb * sl;
 
-    F(2,0) = 0;
+    F(2,0) = 0.0;
     F(2,1) = cb;
     F(2,2) = sb;
 
@@ -717,8 +717,8 @@ void galileo_e1_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x,
 
     if (hor_dis < 1.0E-20)
         {
-            *Az = 0;
-            *El = 90;
+            *Az = 0.0;
+            *El = 90.0;
         }
     else
         {

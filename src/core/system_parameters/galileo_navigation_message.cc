@@ -206,6 +206,21 @@ void Galileo_Navigation_Message::reset()
     Time_0 = 0;
     WN_0 = 0;
     TOW_0 = 0;
+
+    flag_TOW_6 = false;
+
+    Galileo_satClkDrift = 0.0;
+    Galileo_dtr = 0.0;
+
+    // satellite positions
+    galileo_satpos_X = 0.0;
+    galileo_satpos_Y = 0.0;
+    galileo_satpos_Z = 0.0;
+    // Satellite velocity
+    galileo_satvel_X = 0.0;
+    galileo_satvel_Y = 0.0;
+    galileo_satvel_Z = 0.0;
+
 }
 
 
@@ -554,6 +569,8 @@ Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
     
     ephemeris.BGD_E1E5a_5 = BGD_E1E5a_5;        // E1-E5a Broadcast Group Delay [s]
     ephemeris.BGD_E1E5b_5 = BGD_E1E5b_5;        // E1-E5b Broadcast Group Delay [s]
+
+    ephemeris.Galileo_satClkDrift = Galileo_satClkDrift;
 
     return ephemeris;
 }

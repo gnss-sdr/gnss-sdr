@@ -95,6 +95,7 @@ DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf
 ControlThread::ControlThread()
 {
     configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
+    delete_configuration_ = false;
     init();
 }
 
@@ -102,6 +103,7 @@ ControlThread::ControlThread()
 ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configuration)
 {
     configuration_ = configuration;
+    delete_configuration_ = false;
     init();
 }
 
@@ -936,7 +938,7 @@ void ControlThread::keyboard_listener()
     char c;
     while(read_keys)
         {
-            c = std::cin.get();
+            std::cin.get(c);
             if (c =='q')
                 {
                     std::cout << "Quit keystroke order received, stopping GNSS-SDR !!" << std::endl;

@@ -67,8 +67,22 @@ Galileo_Ephemeris::Galileo_Ephemeris()
     E1B_HS_5 = 0;
     E5b_DVS_5 = 0;
     E1B_DVS_5 = 0;
-    BGD_E1E5a_5 = 0;        //!< E1-E5a Broadcast Group Delay [s]
-    BGD_E1E5b_5 = 0;        //!< E1-E5b Broadcast Group Delay [s]
+    BGD_E1E5a_5 = 0;        // E1-E5a Broadcast Group Delay [s]
+    BGD_E1E5b_5 = 0;        // E1-E5b Broadcast Group Delay [s]
+
+    Galileo_satClkDrift = 0.0;
+    Galileo_dtr = 0.0;
+
+    // satellite positions
+    d_satpos_X = 0.0;
+    d_satpos_Y = 0.0;
+    d_satpos_Z = 0.0;
+    // Satellite velocity
+    d_satvel_X = 0.0;
+    d_satvel_Y = 0.0;
+    d_satvel_Z = 0.0;
+
+    i_satellite_PRN = 0;
 }
 
 

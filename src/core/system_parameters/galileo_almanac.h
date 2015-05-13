@@ -96,10 +96,10 @@ public:
     double E5a_HS_10;
 
     /*GPS to Galileo GST conversion parameters*/
-    double A_0G_10 = 0;
-    double A_1G_10 = 0;
-    double t_0G_10 = 0;
-    double WN_0G_10 = 0;
+    double A_0G_10;
+    double A_1G_10;
+    double t_0G_10;
+    double WN_0G_10;
 
     Galileo_Almanac();  //!< Default constructor
 };

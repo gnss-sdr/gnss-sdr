@@ -32,5 +32,18 @@
 
 #include "gps_acq_assist.h"
 
-Gps_Acq_Assist::Gps_Acq_Assist() {}
+Gps_Acq_Assist::Gps_Acq_Assist()
+{
+    i_satellite_PRN = 0;
+    d_TOW = 0.0;
+    d_Doppler0 = 0.0;
+    d_Doppler1 = 0.0;
+    dopplerUncertainty = 0.0;
+    Code_Phase = 0.0;
+    Code_Phase_int = 0.0;
+    GPS_Bit_Number = 0.0;
+    Code_Phase_window = 0.0;
+    Azimuth = 0.0;
+    Elevation = 0.0;
+}
 

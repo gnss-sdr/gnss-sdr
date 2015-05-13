@@ -58,9 +58,9 @@ TEST(MagnitudeSquared_Test, StandardCComplexImplementation)
     std::cout << "The squared magnitude of a " << FLAGS_size_magnitude_test
               << "-length vector in standard C computed in " << (end - begin)
               << " microseconds" << std::endl;
+    delete[] input;
+    delete[] output;
     ASSERT_LE(0, end - begin);
-    delete [] input;
-    delete [] output;
 }
 
 TEST(MagnitudeSquared_Test, C11ComplexImplementation)
@@ -130,9 +130,9 @@ TEST(MagnitudeSquared_Test, VolkComplexImplementation)
     std::cout <<  "The squared magnitude of a " << FLAGS_size_magnitude_test
               << "-length vector using VOLK computed in " << (end - begin)
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
     volk_free(input);
     volk_free(output);
+    ASSERT_LE(0, end - begin);
 }
 
 //            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);

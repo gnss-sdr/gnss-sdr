@@ -35,6 +35,13 @@
 Gps_Iono::Gps_Iono()
 {
     valid = false;
-
+    d_alpha0 = 0.0;
+    d_alpha1 = 0.0;
+    d_alpha2 = 0.0;
+    d_alpha3 = 0.0;
+    d_beta0 = 0.0;
+    d_beta1 = 0.0;
+    d_beta2 = 0.0;
+    d_beta3 = 0.0;
 }
 

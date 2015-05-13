@@ -550,6 +550,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);
 
+            current_synchro_data.System = {'G'};
             current_synchro_data.Flag_valid_pseudorange = false;
             *out[0] = current_synchro_data;
         }

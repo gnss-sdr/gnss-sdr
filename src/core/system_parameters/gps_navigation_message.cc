@@ -84,6 +84,7 @@ void Gps_Navigation_Message::reset()
     //d_master_clock=0;
     d_dtr = 0;
     d_satClkCorr = 0;
+    d_satClkDrift = 0;
 
     // satellite positions
     d_satpos_X = 0;
@@ -787,6 +788,14 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris()
     ephemeris.b_integrity_status_flag = b_integrity_status_flag;
     ephemeris.b_alert_flag = b_alert_flag;
     ephemeris.b_antispoofing_flag = b_antispoofing_flag;
+    ephemeris.d_satClkDrift = d_satClkDrift;
+    ephemeris.d_dtr = d_dtr;
+    ephemeris.d_satpos_X = d_satpos_X;
+    ephemeris.d_satpos_Y = d_satpos_Y;
+    ephemeris.d_satpos_Z = d_satpos_Z;
+    ephemeris.d_satvel_X = d_satvel_X;
+    ephemeris.d_satvel_Y = d_satvel_Y;
+    ephemeris.d_satvel_Z = d_satvel_Z;
 
     return ephemeris;
 }

@@ -64,15 +64,20 @@ TEST(ComplexCarrier_Test, StandardComplexImplementation)
     std::cout << "A " << FLAGS_size_carrier_test
               << "-length complex carrier in standard C++ (dynamic allocation) generated in " << (end - begin)
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+
     std::complex<float> expected(1,0);
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
     for(int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             mag[i] = output[i] * std::conj(output[i]);
+        }
+    delete[] output;
+    for(int i = 0; i < FLAGS_size_carrier_test; i++)
+        {
             ASSERT_FLOAT_EQ(std::norm(expected), std::norm(mag[i]));
         }
-    delete [] output;
+
+    ASSERT_LE(0, end - begin);
 }
 
 
@@ -127,13 +132,17 @@ TEST(ComplexCarrier_Test, OwnComplexImplementation)
     std::cout << "A " << FLAGS_size_carrier_test
               << "-length complex carrier using fixed point generated in " << (end - begin)
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+
     std::complex<float> expected(1,0);
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
     for(int i = 0; i < FLAGS_size_carrier_test; i++)
         {
             mag[i] = output[i] * std::conj(output[i]);
+        }
+    delete[] output;
+    for(int i = 0; i < FLAGS_size_carrier_test; i++)
+        {
             ASSERT_NEAR(std::norm(expected), std::norm(mag[i]), 0.0001);
         }
-    delete [] output;
+    ASSERT_LE(0, end - begin);
 }

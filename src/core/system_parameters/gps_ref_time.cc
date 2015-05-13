@@ -34,5 +34,9 @@
 Gps_Ref_Time::Gps_Ref_Time()
 {
     valid = false;
+    d_TOW = 0.0;
+    d_Week = 0.0;
+    d_tv_sec = 0.0;
+    d_tv_usec = 0.0;
 }
 

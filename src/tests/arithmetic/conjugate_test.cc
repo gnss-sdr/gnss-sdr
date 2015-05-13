@@ -59,9 +59,11 @@ TEST(Conjugate_Test, StandardCComplexImplementation)
     std::cout << "Conjugate of a " << FLAGS_size_conjugate_test
               << "-length complex float vector in standard C finished in " << (end - begin)
               << " microseconds" << std::endl;
+
+    delete[] input;
+    delete[] output;
     ASSERT_LE(0, end - begin);
-    delete [] input;
-    delete [] output;
+
 }
 
 

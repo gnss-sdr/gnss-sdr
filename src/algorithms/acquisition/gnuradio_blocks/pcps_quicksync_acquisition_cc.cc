@@ -381,7 +381,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
 
                     magt = d_magnitude_folded[indext] / (fft_normalization_factor * fft_normalization_factor);
 
-                    delete d_signal_folded;
+                    delete[] d_signal_folded;
 
                     // 4- record the maximum peak and the associated synchronization parameters
                     if (d_mag < magt)

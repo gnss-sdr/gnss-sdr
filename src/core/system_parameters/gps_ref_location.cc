@@ -34,5 +34,8 @@
 Gps_Ref_Location::Gps_Ref_Location()
 {
     valid = false;
+    lat = 0.0;
+    lon = 0.0;
+    uncertainty = 0.0;
 }
 

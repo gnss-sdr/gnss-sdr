@@ -59,16 +59,17 @@ TEST(Multiply_Test, StandardCDoubleImplementation)
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
               << " doubles in standard C finished in " << (end - begin)
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+
     double acc = 0;
     double expected = 0;
     for(int i = 0; i < FLAGS_size_multiply_test; i++)
         {
             acc += output[i];
         }
+    delete[] input;
+    delete[] output;
+    ASSERT_LE(0, end - begin);
     ASSERT_EQ(expected, acc);
-    delete [] input;
-    delete [] output;
 }
 
 
@@ -113,17 +114,17 @@ TEST(Multiply_Test, StandardCComplexImplementation)
     std::cout << "Element-wise multiplication of " << FLAGS_size_multiply_test
               << " complex<float> in standard C finished in " << (end - begin)
               << " microseconds" << std::endl;
-    ASSERT_LE(0, end - begin);
+
     std::complex<float> expected(0,0);
     std::complex<float> result(0,0);
     for(int i = 0; i < FLAGS_size_multiply_test; i++)
          {
              result += output[i];
          }
-
+    delete[] input;
+    delete[] output;
+    ASSERT_LE(0, end - begin);
     ASSERT_EQ(expected, result);
-    delete [] input;
-    delete [] output;
 }
 
 

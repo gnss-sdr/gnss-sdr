@@ -53,12 +53,12 @@ TEST(CodeGenGPSL1_Test, CodeGeneration)
         {
             gps_l1_ca_code_gen_complex( _dest,  _prn,  _chip_shift);
         }
-
+    delete[] _dest;
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     ASSERT_LE(0, end - begin);
     std::cout << "Generation completed in " << (end - begin) << " microseconds" << std::endl;
-    delete[] _dest;
+    
 
 
     /* std::complex<float>* _dest2 = new std::complex<float>[1023];gettimeofday(&tv, NULL);
@@ -87,10 +87,10 @@ TEST(CodeGenGPSL1Sampled_Test, CodeGeneration)
 {
     signed int _prn = 1;
     unsigned int _chip_shift = 4;
-    int _fs = 8000000;
+    double _fs = 8000000;
     const signed int _codeFreqBasis = 1023000; //Hz
     const signed int _codeLength = 1023;
-    int _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
+    int _samplesPerCode = round(_fs / (double)(_codeFreqBasis / _codeLength));
     std::complex<float>* _dest = new std::complex<float>[_samplesPerCode];
 
     int iterations = 1000;
@@ -106,9 +106,10 @@ TEST(CodeGenGPSL1Sampled_Test, CodeGeneration)
 
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    delete[] _dest;
     ASSERT_LE(0, end - begin);
     std::cout << "Generation completed in " << (end - begin) << " microseconds" << std::endl;
-    delete[] _dest;
+
 
     /* std::complex<float>* _dest2 = new std::complex<float>[_samplesPerCode];
     gettimeofday(&tv, NULL);
@@ -137,7 +138,7 @@ TEST(ComplexCarrier_Test, CodeGeneration)
     double _f = 4000;
     const signed int _codeFreqBasis = 1023000; //Hz
     const signed int _codeLength = 1023;
-    int _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
+    int _samplesPerCode = round(_fs / (double)(_codeFreqBasis / _codeLength));
     std::complex<float>* _dest = new std::complex<float>[_samplesPerCode];
 
     int iterations = 1000;
@@ -153,6 +154,7 @@ TEST(ComplexCarrier_Test, CodeGeneration)
 
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
+    delete[] _dest; 
     ASSERT_LE(0, end - begin);
     std::cout << "Carrier generation completed in " << (end - begin) << " microseconds" << std::endl;
     
@@ -176,5 +178,5 @@ TEST(ComplexCarrier_Test, CodeGeneration)
 
     std::cout << _dest[10] << "and " << _dest2[10] << std::endl;
     delete[] _dest2;*/
-    delete[] _dest; 
+
 }

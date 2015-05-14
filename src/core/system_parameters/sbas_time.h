@@ -100,6 +100,9 @@ public:
     Sbas_Time()
     {
         e_state = UNDEFINED;
+        i_gps_week = 0;
+        d_gps_sec = 0;
+        d_time_stamp_sec = 0;
     }
 
     Sbas_Time(double time_stamp_sec)

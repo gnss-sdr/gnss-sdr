@@ -34,7 +34,7 @@ void volk_gnsssdr_get_config_path(char *path)
             path[0] = 0;
             return;
         }
-    strcpy(path, home);
+    strncpy(path, home, 512);
     strcat(path, suffix);
 }
 

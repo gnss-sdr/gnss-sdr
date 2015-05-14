@@ -90,13 +90,13 @@ gps_l1_ca_observables_cc::~gps_l1_ca_observables_cc()
 }
 
 
-bool pairCompare_gnss_synchro_Prn_delay_ms( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
+bool pairCompare_gnss_synchro_Prn_delay_ms(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.Prn_timestamp_ms) < (b.second.Prn_timestamp_ms);
 }
 
 
-bool pairCompare_gnss_synchro_d_TOW_at_current_symbol( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
+bool pairCompare_gnss_synchro_d_TOW_at_current_symbol(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.d_TOW_at_current_symbol) < (b.second.d_TOW_at_current_symbol);
 }

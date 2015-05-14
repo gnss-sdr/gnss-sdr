@@ -109,7 +109,7 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
 
     galileo_e5_a_code_gen_complex_primary(_code , _prn , _Signal);
 
-    _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
+    _samplesPerCode = static_cast<unsigned int>(static_cast<double>(_fs) / ( static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
     delay = ((_codeLength - _chip_shift) % _codeLength) * _samplesPerCode / _codeLength;
 

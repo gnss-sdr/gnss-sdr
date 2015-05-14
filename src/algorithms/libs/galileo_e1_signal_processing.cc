@@ -153,7 +153,7 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
     const int _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ; //Hz
     unsigned int _codeLength = Galileo_E1_B_CODE_LENGTH_CHIPS;
     int primary_code_E1_chips[(int)Galileo_E1_B_CODE_LENGTH_CHIPS];
-    _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
+    _samplesPerCode = static_cast<unsigned int>( static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis )/ static_cast<double>(_codeLength)));
     const int _samplesPerChip = (_cboc == true) ? 12 : 2;
 
     const unsigned int delay = (((int)Galileo_E1_B_CODE_LENGTH_CHIPS - _chip_shift)

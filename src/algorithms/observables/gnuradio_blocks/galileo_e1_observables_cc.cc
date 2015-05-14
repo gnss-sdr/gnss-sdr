@@ -93,14 +93,14 @@ galileo_e1_observables_cc::~galileo_e1_observables_cc()
 
 
 
-bool Galileo_pairCompare_gnss_synchro_Prn_delay_ms( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
+bool Galileo_pairCompare_gnss_synchro_Prn_delay_ms(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.Prn_timestamp_ms) < (b.second.Prn_timestamp_ms);
 }
 
 
 
-bool Galileo_pairCompare_gnss_synchro_d_TOW_at_current_symbol( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
+bool Galileo_pairCompare_gnss_synchro_d_TOW_at_current_symbol(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.d_TOW_at_current_symbol) < (b.second.d_TOW_at_current_symbol);
 }

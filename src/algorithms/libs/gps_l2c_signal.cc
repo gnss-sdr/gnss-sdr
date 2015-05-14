@@ -38,7 +38,7 @@
 
 int32_t gps_l2c_m_shift(int32_t x)
 {
-	return (int32_t)((x>>1)^((x&1)*0445112474));
+	return static_cast<int32_t>((x >> 1)^((x & 1) * 0445112474));
 }
 
 void gps_l2c_m_code(int32_t * _dest, unsigned int _prn)
@@ -56,17 +56,19 @@ void gps_l2c_m_code(int32_t * _dest, unsigned int _prn)
 
 void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
 {
-	int32_t _code[GPS_L2_M_CODE_LENGTH_CHIPS];
+    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
 
-	if (_prn>0 and _prn<51)
-	{
-		gps_l2c_m_code(_code, _prn);
-	}
+    if (_prn > 0 and _prn < 51)
+        {
+            gps_l2c_m_code(_code, _prn);
+        }
 
     for (signed int i = 0; i < GPS_L2_M_CODE_LENGTH_CHIPS; i++)
         {
-        	_dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0);
+            _dest[i] = std::complex<float>(1.0 - 2.0 * _code[i], 0.0);
         }
+
+    delete[] _code;
 }
 
 
@@ -75,12 +77,11 @@ void gps_l2c_m_code_gen_complex(std::complex<float>* _dest, unsigned int _prn)
  */
 void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs)
 {
-	int32_t _code[GPS_L2_M_CODE_LENGTH_CHIPS];
-
-	if (_prn > 0 and _prn < 51)
-	{
-		gps_l2c_m_code(_code, _prn);
-	}
+    int32_t* _code = new int32_t[GPS_L2_M_CODE_LENGTH_CHIPS];
+    if (_prn > 0 and _prn < 51)
+        {
+            gps_l2c_m_code(_code, _prn);
+        }
 
     signed int _samplesPerCode, _codeValueIndex;
     float _ts;
@@ -89,11 +90,11 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
     const signed int _codeLength = GPS_L2_M_CODE_LENGTH_CHIPS;
 
     //--- Find number of samples per spreading code ----------------------------
-    _samplesPerCode = round(_fs / (_codeFreqBasis / _codeLength));
+    _samplesPerCode = static_cast<int>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
 
     //--- Find time constants --------------------------------------------------
-    _ts = 1/(float)_fs;   // Sampling period in sec
-    _tc = 1/(float)_codeFreqBasis;  // C/A chip period in sec
+    _ts = 1.0 / static_cast<float>(_fs);   // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // C/A chip period in sec
 
     float aux;
 
@@ -105,7 +106,7 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
             // The length of the index array depends on the sampling frequency -
             // number of samples per millisecond (because one C/A code period is one
             // millisecond).
-    	//TODO: Check this formula! Seems to start with an extra sample
+    	    //TODO: Check this formula! Seems to start with an extra sample
 
             // _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
             aux = (_ts * (i + 1)) / _tc;
@@ -125,6 +126,7 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
                     _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeValueIndex], 0);; //repeat the chip -> upsample
                 }
         }
+    delete[] _code;
 }
 
 

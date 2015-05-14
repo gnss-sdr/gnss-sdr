@@ -31,16 +31,18 @@
 #ifndef GNSS_SDR_GPS_L2_M_TELEMETRY_DECODER_CC_H
 #define	GNSS_SDR_GPS_L2_M_TELEMETRY_DECODER_CC_H
 
+#include <algorithm> // for copy
+#include <deque>
 #include <fstream>
 #include <string>
+#include <utility> // for pair
+#include <vector>
+#include <boost/crc.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-#include "GPS_L1_CA.h"
-#include "gps_l1_ca_subframe_fsm.h"
-#include "concurrent_queue.h"
 #include "gnss_satellite.h"
-
-
+#include "viterbi_decoder.h"
+//#include "sbas_telemetry_data.h"
 
 class gps_l2_m_telemetry_decoder_cc;
 
@@ -51,7 +53,7 @@ gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long 
     int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
 /*!
- * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
+ * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
  *
  */
 class gps_l2_m_telemetry_decoder_cc : public gr::block
@@ -61,20 +63,12 @@ public:
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
 
-
-    /*!
-     * \brief Set decimation factor to average the GPS synchronization estimation output from the tracking module.
-     */
+    // queues to communicate broadcasted SBAS data to other blocks of GNSS-SDR
+    //void set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue);                 //!< Set raw msg queue
+    //void set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue);         //!< Set iono queue
+    //void set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue);  //!< Set sat correction queue
+    //void set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue);           //!< Set SBAS ephemeis queue
     void set_decimation(int decimation);
-
-    /*!
-     * \brief Set the satellite data queue
-     */
-    void set_ephemeris_queue(concurrent_queue<Gps_Ephemeris> *ephemeris_queue){d_GPS_FSM.d_ephemeris_queue = ephemeris_queue;} //!< Set the ephemeris data queue
-    void set_iono_queue(concurrent_queue<Gps_Iono> *iono_queue){d_GPS_FSM.d_iono_queue = iono_queue;}                          //!< Set the iono data queue
-    void set_almanac_queue(concurrent_queue<Gps_Almanac> *almanac_queue){d_GPS_FSM.d_almanac_queue = almanac_queue;}           //!< Set the almanac data queue
-    void set_utc_model_queue(concurrent_queue<Gps_Utc_Model> *utc_model_queue){d_GPS_FSM.d_utc_model_queue = utc_model_queue;} //!< Set the UTC model data queue
-
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -91,62 +85,78 @@ private:
     friend gps_l2_m_telemetry_decoder_cc_sptr
     gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
             int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
-
     gps_l2_m_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
             int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
-    bool gps_word_parityCheck(unsigned int gpsword);
+    void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
+    void align_samples();
 
-    // constants
-    unsigned short int d_preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS];
-    // class private vars
-
-    signed int *d_preambles_symbols;
-    unsigned int d_samples_per_bit;
-    long unsigned int d_sample_counter;
-    long unsigned int d_preamble_index;
-    unsigned int d_stat;
-    bool d_flag_frame_sync;
-
-    // symbols
-    double d_symbol_accumulator;
-    short int d_symbol_accumulator_counter;
-
-    //bits and frame
-    unsigned short int d_frame_bit_index;
-    unsigned int d_GPS_frame_4bytes;
-    unsigned int d_prev_GPS_frame_4bytes;
-    bool d_flag_parity;
-    bool d_flag_preamble;
-    int d_word_number;
-
-    // output averaging and decimation
-    int d_average_count;
-    int d_decimation_output_factor;
+    static const int d_samples_per_symbol = 1;
+    static const int d_symbols_per_bit = 2;
+    static const int d_block_size_in_bits = 300;
 
     long d_fs_in;
-    //double d_preamble_duration_seconds;
-    // navigation message vars
-    Gps_Navigation_Message d_nav;
-    GpsL1CaSubframeFsm d_GPS_FSM;
 
-    boost::shared_ptr<gr::msg_queue> d_queue;
-    unsigned int d_vector_length;
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    //std::deque<double> d_prn_start_sample_history;
-
-    double d_preamble_time_seconds;
-
-    double d_TOW_at_Preamble;
-    double d_TOW_at_current_symbol;
-    double Prn_timestamp_at_preamble_ms;
-    bool flag_TOW_set;
-
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+
+    bool d_flag_invert_input_symbols;
+    bool d_flag_invert_buffer_symbols;
+    int d_decimation_output_factor;
+    int d_average_count;
+    size_t d_block_size; //!< number of samples which are processed during one invocation of the algorithms
+    std::vector<double> d_sample_buf; //!< input buffer holding the samples to be processed in one block
+
+    typedef std::pair<int,std::vector<int>> msg_candiate_int_t;
+    typedef std::pair<int,std::vector<unsigned char>> msg_candiate_char_t;
+
+    // helper class for symbol alignment and Viterbi decoding
+    class symbol_aligner_and_decoder
+    {
+    public:
+        symbol_aligner_and_decoder();
+        ~symbol_aligner_and_decoder();
+        void reset();
+        bool get_bits(const std::vector<double> symbols, std::vector<int> &bits);
+    private:
+        int d_KK;
+        Viterbi_Decoder * d_vd1;
+        Viterbi_Decoder * d_vd2;
+        double d_past_symbol;
+    } d_symbol_aligner_and_decoder;
+
+
+    // helper class for detecting the preamble and collect the corresponding message candidates
+    class frame_detector
+    {
+    public:
+        void reset();
+        void get_frame_candidates(const std::vector<int> bits, std::vector<std::pair<int, std::vector<int>>> &msg_candidates);
+    private:
+        std::deque<int> d_buffer;
+    } d_frame_detector;
+
+
+    // helper class for checking the CRC of the message candidates
+    class crc_verifier
+    {
+    public:
+        void reset();
+        void get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
+    private:
+        typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
+        crc_24_q_type d_checksum_agent;
+        void zerropad_front_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
+        void zerropad_back_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
+    } d_crc_verifier;
+
+
+    //Sbas_Telemetry_Data sbas_telemetry_data;
 };
+
 
 #endif

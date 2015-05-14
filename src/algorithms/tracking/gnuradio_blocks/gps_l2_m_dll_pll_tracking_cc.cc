@@ -212,7 +212,6 @@ void gps_l2_m_dll_pll_tracking_cc::start_tracking()
             corrected_acq_phase_samples = T_prn_mod_samples + corrected_acq_phase_samples;
         }
     delay_correction_samples = d_acq_code_phase_samples - corrected_acq_phase_samples;
-
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
@@ -605,7 +604,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
                     tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
-            catch (std::ifstream::failure e)
+            catch (std::ifstream::failure& e)
             {
                     LOG(WARNING) << "Exception writing trk dump file " << e.what();
             }
@@ -635,7 +634,7 @@ void gps_l2_m_dll_pll_tracking_cc::set_channel(unsigned int channel)
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
                     }
-                    catch (std::ifstream::failure e)
+                    catch (std::ifstream::failure& e)
                     {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
                     }

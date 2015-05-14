@@ -30,6 +30,7 @@
  */
 
 #include "channel.h"
+#include <cstring>
 #include <iostream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>

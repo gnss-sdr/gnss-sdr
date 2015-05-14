@@ -78,7 +78,8 @@ GpsL2MTelemetryDecoder::GpsL2MTelemetryDecoder(ConfigurationInterface* configura
     //decimation factor
     int decimation_factor = configuration->property(role + ".decimation_factor", 1);
     telemetry_decoder_->set_decimation(decimation_factor);
-    LOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")"<<"role "<<role;
+    LOG(INFO) << "global navigation message queue assigned to telemetry_decoder (" << telemetry_decoder_->unique_id() << ")" << "role " << role;
+    channel_ = 0;
 }
 
 

@@ -113,6 +113,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     doppler_step_ = 250;
     channel_internal_queue_ = 0;
     channel_ = 0;
+    bit_transition_flag_ = false;
 }
 
 

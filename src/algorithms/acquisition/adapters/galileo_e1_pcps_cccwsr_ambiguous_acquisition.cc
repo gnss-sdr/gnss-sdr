@@ -111,6 +111,7 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
     doppler_max_ = 5000;
     doppler_step_ = 250;
     channel_internal_queue_ = 0;
+    channel_ = 0;
 }
 
 

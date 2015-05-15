@@ -152,6 +152,9 @@ int rtl_tcp_signal_source_c::work (int noutput_items,
 {
   gr_complex *out = reinterpret_cast <gr_complex *>( output_items[0] );
   int i = 0;
+  if (io_service_.stopped ()) {
+      return -1;
+  }
 
   {
     boost::mutex::scoped_lock lock (mutex_);
@@ -282,7 +285,7 @@ rtl_tcp_signal_source_c::handle_read (const boost::system::error_code &ec,
       std::cout << "Error during read: " << ec << std::endl;
       LOG (WARNING) << "Error during read: " << ec;
       boost::mutex::scoped_lock lock (mutex_);
-      buffer_.clear ();
+      io_service_.stop ();
       not_empty_.notify_one ();
    }
    else {

@@ -115,7 +115,7 @@ private:
     }
 
     inline bool not_empty ( ) const {
-       return unread_ > 0;
+        return unread_ > 0 && !io_service_.stopped ();
     }
 
 };

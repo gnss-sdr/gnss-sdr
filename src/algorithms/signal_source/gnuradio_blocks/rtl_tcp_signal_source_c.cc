@@ -114,7 +114,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
        return;
    }
    std::cout << "Connected to " << addr << ":" << port << std::endl;
-   LOG (WARNING)  << "Connected to " << addr << ":" << port;
+   LOG (INFO)  << "Connected to " << addr << ":" << port;
 
    // 4. Set nodelay
    socket_.set_option (tcp::no_delay (true), ec);

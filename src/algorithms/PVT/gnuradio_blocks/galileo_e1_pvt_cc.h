@@ -111,7 +111,7 @@ private:
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
     double d_rx_time;
     std::shared_ptr<galileo_e1_ls_pvt> d_ls_pvt;
-    bool pseudoranges_pairCompare_min(std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b);
+    bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b);
 
 public:
     ~galileo_e1_pvt_cc (); //!< Default destructor

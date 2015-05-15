@@ -136,7 +136,7 @@ gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc()
 
 
 
-bool pseudoranges_pairCompare_min( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
+bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
 }

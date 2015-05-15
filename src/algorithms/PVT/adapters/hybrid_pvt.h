@@ -86,7 +86,6 @@ public:
 private:
     hybrid_pvt_cc_sptr pvt_;
     bool dump_;
-    unsigned int fs_in_;
     std::string dump_filename_;
     std::string role_;
     unsigned int in_streams_;

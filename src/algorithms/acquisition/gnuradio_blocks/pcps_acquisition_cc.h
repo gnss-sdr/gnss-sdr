@@ -105,7 +105,7 @@ private:
     long d_freq;
     int d_samples_per_ms;
     int d_samples_per_code;
-    unsigned int d_doppler_resolution;
+    //unsigned int d_doppler_resolution;
     float d_threshold;
     std::string d_satellite_str;
     unsigned int d_doppler_max;

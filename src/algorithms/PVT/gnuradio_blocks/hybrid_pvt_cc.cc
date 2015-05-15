@@ -93,7 +93,6 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_q
     d_ls_pvt->set_averaging_depth(d_averaging_depth);
 
     d_sample_counter = 0;
-    valid_solution_counter = 0;
     d_last_sample_nav_output = 0;
     d_rx_time = 0.0;
     d_TOW_at_curr_symbol_constellation = 0.0;
@@ -127,7 +126,7 @@ hybrid_pvt_cc::~hybrid_pvt_cc()
 
 
 
-bool hybrid_pvt_cc::pseudoranges_pairCompare_min( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
+bool hybrid_pvt_cc::pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
 }

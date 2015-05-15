@@ -121,7 +121,7 @@ galileo_e1_pvt_cc::~galileo_e1_pvt_cc()
 
 
 
-bool galileo_e1_pvt_cc::pseudoranges_pairCompare_min( std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b)
+bool galileo_e1_pvt_cc::pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
 }

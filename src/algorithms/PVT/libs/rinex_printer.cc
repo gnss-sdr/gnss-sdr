@@ -173,7 +173,9 @@ Rinex_Printer::Rinex_Printer()
         }
     else
         {
-            LOG(ERROR) << "Unknown RINEX version " << FLAGS_RINEX_version << " (must be 2.11 or 3.02)" << std::endl;
+            LOG(WARNING) << "Unknown RINEX version " << FLAGS_RINEX_version << " (must be 2.11 or 3.02). Using 3.02";
+            version = 3;
+            stringVersion = "3.02";
         }
 
     numberTypesObservations = 4; // Number of available types of observable in the system
@@ -197,23 +199,23 @@ Rinex_Printer::~Rinex_Printer()
     // If nothing written, erase the files.
     if (posn == 0)
         {
-            remove(navfilename.c_str());
+            if(remove(navfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
         }
     if (poso == 0)
         {
-            remove(obsfilename.c_str());
+            if(remove(obsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
         }
     if (poss == 0)
         {
-            remove(sbsfilename.c_str());
+            if(remove(sbsfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
         }
     if (posng == 0)
         {
-            remove(navGalfilename.c_str());
+            if(remove(navGalfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
         }
     if (posmn == 0)
         {
-            remove(navMixfilename.c_str());
+            if(remove(navMixfilename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
         }
 }
 

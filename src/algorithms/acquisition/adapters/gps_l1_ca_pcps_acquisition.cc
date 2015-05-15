@@ -117,6 +117,10 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     //     LOG(WARNING) << item_type_
     //             << " unknown acquisition item type";
     // }
+    channel_ = 0;
+    threshold_ = 0.0;
+    doppler_max_ = 0;
+    doppler_step_ = 0;
 }
 
 

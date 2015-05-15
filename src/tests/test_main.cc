@@ -153,8 +153,17 @@ concurrent_map<Sbas_Ephemeris> global_sbas_ephemeris_map;
 int main(int argc, char **argv)
 {
     std::cout << "Running GNSS-SDR Tests..." << std::endl;
-    testing::InitGoogleTest(&argc, argv);
-    google::ParseCommandLineFlags(&argc, &argv, true);
-    google::InitGoogleLogging(argv[0]);
-    return RUN_ALL_TESTS();
+    try
+    {
+            testing::InitGoogleTest(&argc, argv);
+            google::ParseCommandLineFlags(&argc, &argv, true);
+            google::InitGoogleLogging(argv[0]);
+            return RUN_ALL_TESTS();
+    }
+    catch(const testing::internal::GoogleTestFailureException& e)
+    {
+            std::cout << e.what() << std::endl;
+    }
+    catch(...)
+    {}
 }

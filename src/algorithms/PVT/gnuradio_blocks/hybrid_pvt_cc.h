@@ -110,15 +110,13 @@ private:
     int d_output_rate_ms;
     int d_display_rate_ms;
     long unsigned int d_sample_counter;
-    long unsigned int valid_solution_counter;
-    long unsigned int valid_solution_16_sat_counter;
     long unsigned int d_last_sample_nav_output;
     std::shared_ptr<Kml_Printer> d_kml_dump;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
     double d_rx_time;
     double d_TOW_at_curr_symbol_constellation;
     std::shared_ptr<hybrid_ls_pvt> d_ls_pvt;
-    bool pseudoranges_pairCompare_min(std::pair<int,Gnss_Synchro> a, std::pair<int,Gnss_Synchro> b);
+    bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b);
 
 public:
     ~hybrid_pvt_cc (); //!< Default destructor

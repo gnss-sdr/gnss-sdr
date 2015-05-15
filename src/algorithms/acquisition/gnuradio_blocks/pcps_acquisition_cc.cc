@@ -85,6 +85,12 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
     d_bit_transition_flag = bit_transition_flag;
+    d_threshold = 0.0;
+    d_doppler_step = 250;
+    d_code_phase = 0;
+    d_test_statistics = 0.0;
+    d_channel = 0;
+    d_doppler_freq = 0.0;
 
     d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
     d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
@@ -138,15 +144,7 @@ void pcps_acquisition_cc::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    d_num_doppler_bins=ceil((static_cast<int>(d_doppler_max)-static_cast<int>(-d_doppler_max))/d_doppler_step);
-    // Count the number of bins
-//    d_num_doppler_bins = 0;
-//    for (int doppler = static_cast<int>(-d_doppler_max);
-//         doppler <= static_cast<int>(d_doppler_max);
-//         doppler += d_doppler_step)
-//    {
-//        d_num_doppler_bins++;
-//    }
+    d_num_doppler_bins = ceil( static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step));
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];

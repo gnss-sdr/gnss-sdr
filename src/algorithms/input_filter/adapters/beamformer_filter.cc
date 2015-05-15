@@ -69,6 +69,7 @@ BeamformerFilter::BeamformerFilter(
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
+    samples_ = 0;
 }
 
 

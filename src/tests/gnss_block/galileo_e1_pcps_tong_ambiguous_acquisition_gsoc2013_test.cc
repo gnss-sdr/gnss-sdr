@@ -68,6 +68,7 @@ protected:
         stop = false;
         message = 0;
         gnss_synchro = {0};
+        init();
     }
 
     ~GalileoE1PcpsTongAmbiguousAcquisitionGSoC2013Test()
@@ -94,15 +95,15 @@ protected:
     int message;
     boost::thread ch_thread;
 
-    unsigned int integration_time_ms;
-    unsigned int fs_in;
+    unsigned int integration_time_ms = 0;
+    unsigned int fs_in = 0;
 
-    double expected_delay_chips;
-    double expected_doppler_hz;
-    float max_doppler_error_hz;
-    float max_delay_error_chips;
+    double expected_delay_chips = 0.0;
+    double expected_doppler_hz = 0.0;
+    float max_doppler_error_hz = 0;
+    float max_delay_error_chips = 0;
 
-    unsigned int num_of_realizations;
+    unsigned int num_of_realizations = 0;
     unsigned int realization_counter;
     unsigned int detection_counter;
     unsigned int correct_estimation_counter;

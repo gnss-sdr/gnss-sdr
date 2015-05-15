@@ -63,6 +63,7 @@ protected:
         stop = false;
         message = 0;
         gnss_synchro = {0};
+        init();
 }
 
     ~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest()
@@ -91,27 +92,27 @@ protected:
     int message;
     boost::thread ch_thread;
 
-    unsigned int integration_time_ms;
-    unsigned int fs_in;
+    unsigned int integration_time_ms = 0;
+    unsigned int fs_in = 0;
 
-    double expected_delay_chips;
-    double expected_delay_sec;
-    double expected_doppler_hz;
-    double expected_delay_chips1;
-    double expected_delay_sec1;
-    double expected_doppler_hz1;
-    double expected_delay_chips2;
-    double expected_delay_sec2;
-    double expected_doppler_hz2;
-    double expected_delay_chips3;
-    double expected_delay_sec3;
-    double expected_doppler_hz3;
-    float max_doppler_error_hz;
-    float max_delay_error_chips;
-    int CAF_window_hz;
-    int Zero_padding;
+    double expected_delay_chips = 0.0;
+    double expected_delay_sec = 0.0;
+    double expected_doppler_hz = 0.0;
+    double expected_delay_chips1 = 0.0;
+    double expected_delay_sec1 = 0.0;
+    double expected_doppler_hz1 = 0.0;
+    double expected_delay_chips2 = 0.0;
+    double expected_delay_sec2 = 0.0;
+    double expected_doppler_hz2 = 0.0;
+    double expected_delay_chips3 = 0.0;
+    double expected_delay_sec3 = 0.0;
+    double expected_doppler_hz3 = 0.0;
+    float max_doppler_error_hz = 0.0;
+    float max_delay_error_chips = 0.0;
+    int CAF_window_hz = 0;
+    int Zero_padding = 0;
 
-    unsigned int num_of_realizations;
+    unsigned int num_of_realizations = 0;
     unsigned int realization_counter;
     unsigned int detection_counter;
     unsigned int correct_estimation_counter;
@@ -125,7 +126,7 @@ protected:
     double Pfa_p;
     double Pfa_a;
 
-    int sat;
+    int sat = 0;
 };
 
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::init()

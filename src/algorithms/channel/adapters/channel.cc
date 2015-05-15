@@ -173,7 +173,7 @@ gr::basic_block_sptr Channel::get_right_block()
 
 
 
-void Channel::set_signal(Gnss_Signal gnss_signal)
+void Channel::set_signal(const Gnss_Signal& gnss_signal)
 {
     gnss_signal_ = gnss_signal;
     std::string str_aux = gnss_signal_.get_signal_str();

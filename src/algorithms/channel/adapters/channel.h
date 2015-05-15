@@ -81,7 +81,7 @@ public:
     TrackingInterface* tracking(){ return trk_; }
     TelemetryDecoderInterface* telemetry(){ return nav_; }
     void start_acquisition();                   //!< Start the State Machine
-    void set_signal(Gnss_Signal gnss_signal_);  //!< Sets the channel GNSS signal
+    void set_signal(const Gnss_Signal& gnss_signal_);  //!< Sets the channel GNSS signal
     void start();                               //!< Start the thread
     void standby();
     /*!

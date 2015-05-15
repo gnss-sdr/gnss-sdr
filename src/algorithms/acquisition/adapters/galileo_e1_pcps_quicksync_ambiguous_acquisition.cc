@@ -76,10 +76,10 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     lues different that the expressed in the paper. In adition, it is important to point
     out that by making the folding factor smaller we were able to get QuickSync work with 
     Galileo. Future work should be directed to test this asumption statistically.*/
-    
+
     //folding_factor_ = (unsigned int)ceil(sqrt(log2(code_length_)));
     folding_factor_ = configuration_->property(role + ".folding_factor", 2);
-    
+
     if (sampled_ms_ % (folding_factor_*4) != 0)
         {
             LOG(WARNING) << "QuickSync Algorithm requires a coherent_integration_time"
@@ -99,8 +99,8 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
                     << sampled_ms_ << " ms will be used.";
 
         }
-   // vector_length_ = (sampled_ms_/folding_factor_) * code_length_;
-	vector_length_ = sampled_ms_ * samples_per_ms;
+    // vector_length_ = (sampled_ms_/folding_factor_) * code_length_;
+    vector_length_ = sampled_ms_ * samples_per_ms;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     if (!bit_transition_flag_)
@@ -116,11 +116,11 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
             default_dump_filename);
 
     code_ = new gr_complex[code_length_];
-    LOG(INFO) <<"Vector Length: "<<vector_length_
-            <<", Samples per ms: "<<samples_per_ms
-            <<", Folding factor: "<<folding_factor_
-            <<", Sampled  ms: "<<sampled_ms_
-            <<", Code Length: "<<code_length_;
+    LOG(INFO) << "Vector Length: " << vector_length_
+            << ", Samples per ms: " << samples_per_ms
+            << ", Folding factor: " << folding_factor_
+            << ", Sampled  ms: " << sampled_ms_
+            << ", Code Length: " << code_length_;
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
@@ -133,14 +133,19 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
             DLOG(INFO) << "stream_to_vector_quicksync("
                     << stream_to_vector_->unique_id() << ")";
             DLOG(INFO) << "acquisition_quicksync(" << acquisition_cc_->unique_id()
-                           << ")";
+                                   << ")";
         }
     else
         {
-            LOG(WARNING) << item_type_
-                    << " unknown acquisition item type";
+            item_size_ = sizeof(gr_complex);
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-    gnss_synchro_ = new Gnss_Synchro();
+    gnss_synchro_ = 0;
+    threshold_ = 0.0;
+    doppler_max_ = 5000;
+    doppler_step_ = 250;
+    channel_internal_queue_ = 0;
+    channel_ = 0;
 }
 
 
@@ -313,14 +318,14 @@ float GalileoE1PcpsQuickSyncAmbiguousAcquisition::calculate_threshold(float pfa)
             frequency_bins++;
         }
 
-    DLOG(INFO) <<"Channel "<<channel_<<"  Pfa = "<< pfa;
+    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
 
-    unsigned int ncells = code_length_/folding_factor_ * frequency_bins;
-    double exponent = 1 / static_cast<double>(ncells);
+    unsigned int ncells = code_length_ / folding_factor_ * frequency_bins;
+    double exponent = 1.0 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double(code_length_/folding_factor_);
+    double lambda = static_cast<double>(code_length_) / static_cast<double>(folding_factor_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

@@ -75,18 +75,23 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     code_= new gr_complex[vector_length_];
 
     if (item_type_.compare("gr_complex") == 0)
-    {
-        item_size_ = sizeof(gr_complex);
-        acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(max_dwells_,sampled_ms_,
-        		doppler_max_, doppler_min_, if_, fs_in_, vector_length_, queue_,
-                dump_, dump_filename_);
+        {
+            item_size_ = sizeof(gr_complex);
+            acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(max_dwells_,sampled_ms_,
+                    doppler_max_, doppler_min_, if_, fs_in_, vector_length_, queue_,
+                    dump_, dump_filename_);
 
-    }
+        }
     else
-    {
-        LOG(WARNING) << item_type_ << " unknown acquisition item type";
-    }
-    gnss_synchro_ = new Gnss_Synchro();
+        {
+            item_size_ = sizeof(gr_complex);
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+        }
+    channel_ = 0;
+    threshold_ = 0.0;
+    doppler_step_ = 0;
+    gnss_synchro_ = 0;
+    channel_internal_queue_ = 0;
 }
 
 

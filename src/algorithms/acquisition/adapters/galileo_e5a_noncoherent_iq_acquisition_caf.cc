@@ -111,10 +111,16 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         }
         else
         {
-            LOG(WARNING) << item_type_
-                    << " unknown acquisition item type";
+                item_size_ = sizeof(gr_complex);
+                LOG(WARNING) << item_type_  << " unknown acquisition item type";
         }
-    gnss_synchro_ = new Gnss_Synchro();
+    gnss_synchro_ = 0;
+    threshold_ = 0.0;
+    doppler_max_ = 5000;
+    doppler_step_ = 250;
+    channel_internal_queue_ = 0;
+    channel_ = 0;
+    bit_transition_flag_ = false;
 }
 
 

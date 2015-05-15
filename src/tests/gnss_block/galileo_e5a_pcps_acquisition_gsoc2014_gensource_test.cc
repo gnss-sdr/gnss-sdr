@@ -58,17 +58,16 @@ class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest: public ::testing::Test
 {
 protected:
     GalileoE5aPcpsAcquisitionGSoC2014GensourceTest()
-{
+    {
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
         gnss_synchro = Gnss_Synchro();
         init();
-}
+    }
 
     ~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest()
-    {
-    }
+    {}
 
     void init();
     void config_1();

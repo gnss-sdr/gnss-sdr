@@ -132,10 +132,16 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
         }
     else
         {
+            item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    gnss_synchro_ = new Gnss_Synchro();
+    gnss_synchro_ = 0;
+    threshold_ = 0.0;
+    doppler_max_ = 5000;
+    doppler_step_ = 250;
+    channel_internal_queue_ = 0;
+    channel_ = 0;
 }
 
 
@@ -295,11 +301,11 @@ float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
         }
     DLOG(INFO) << "Channel " << channel_<< "  Pfa = " << pfa;
     unsigned int ncells = (code_length_ / folding_factor_) * frequency_bins;
-    double exponent = 1 / static_cast<double>(ncells);
+    double exponent = 1.0 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
-    double lambda = double((code_length_ / folding_factor_));
+    double lambda = static_cast<double>(code_length_) / static_cast<double>folding_factor_);
     boost::math::exponential_distribution<double> mydist (lambda);
-    float threshold = (float)quantile(mydist,val);
+    float threshold = static_cast<float>(quantile(mydist,val));
 
     return threshold;
 }

@@ -114,14 +114,16 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
             LOG(WARNING) << item_type_
                     << " unknown acquisition item type";
         }
-    gnss_synchro_ = {0};
+    gnss_synchro_ = new Gnss_Synchro();
 }
+
 
 GalileoE5aNoncoherentIQAcquisitionCaf::~GalileoE5aNoncoherentIQAcquisitionCaf()
 {
-	delete[] codeI_;
-	delete[] codeQ_;
+    delete[] codeI_;
+    delete[] codeQ_;
 }
+
 
 void GalileoE5aNoncoherentIQAcquisitionCaf::set_channel(unsigned int channel)
 {

@@ -95,13 +95,13 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
         {
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-    gnss_synchro_ = {0};
+    gnss_synchro_ = new Gnss_Synchro();
 }
 
 
 GpsL1CaPcpsTongAcquisition::~GpsL1CaPcpsTongAcquisition()
 {
-	delete[] code_;
+    delete[] code_;
 }
 
 

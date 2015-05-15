@@ -118,13 +118,13 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     //     LOG(WARNING) << item_type_
     //             << " unknown acquisition item type";
     // }
-    gnss_synchro_ = {0};
+    gnss_synchro_ = new Gnss_Synchro();
 }
 
 
 GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition()
 {
-	delete[] code_;
+    delete[] code_;
 }
 
 
@@ -144,7 +144,7 @@ void GpsL2MPcpsAcquisition::set_threshold(float threshold)
 
     if(pfa == 0.0)
         {
-            pfa = configuration_->property(role_+".pfa", 0.0);
+            pfa = configuration_->property(role_ + ".pfa", 0.0);
         }
     if(pfa == 0.0)
         {

@@ -121,13 +121,13 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     threshold_ = 0.0;
     doppler_max_ = 0;
     doppler_step_ = 0;
-    gnss_synchro_ = {0};
+    gnss_synchro_ = new Gnss_Synchro();
 }
 
 
 GpsL1CaPcpsAcquisition::~GpsL1CaPcpsAcquisition()
 {
-	delete[] code_;
+    delete[] code_;
 }
 
 

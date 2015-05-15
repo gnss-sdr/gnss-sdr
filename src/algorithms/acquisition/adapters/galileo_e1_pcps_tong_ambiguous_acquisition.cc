@@ -107,7 +107,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
             LOG(WARNING) << item_type_
                     << " unknown acquisition item type";
         }
-    gnss_synchro_ = {0};
+    gnss_synchro_ = new Gnss_Synchro();
 }
 
 

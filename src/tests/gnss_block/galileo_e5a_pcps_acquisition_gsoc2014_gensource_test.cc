@@ -62,7 +62,7 @@ protected:
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
-        gnss_synchro = {0};
+        gnss_synchro = Gnss_Synchro();
         init();
 }
 

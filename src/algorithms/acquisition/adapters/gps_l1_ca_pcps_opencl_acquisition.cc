@@ -93,22 +93,20 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
 
         stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
 
-        DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id()
-                << ")";
-        DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id()
-                << ")";
+        DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
+        DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
     }
     else
     {
         LOG(WARNING) << item_type_ << " unknown acquisition item type";
     }
-    gnss_synchro_ = {0};
+    gnss_synchro_ = new Gnss_Synchro();
 }
 
 
 GpsL1CaPcpsOpenClAcquisition::~GpsL1CaPcpsOpenClAcquisition()
 {
-	delete[] code_;
+    delete[] code_;
 }
 
 

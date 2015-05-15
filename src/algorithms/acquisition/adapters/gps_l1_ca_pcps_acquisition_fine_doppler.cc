@@ -86,13 +86,13 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     {
         LOG(WARNING) << item_type_ << " unknown acquisition item type";
     }
-    gnss_synchro_ = {0};
+    gnss_synchro_ = new Gnss_Synchro();
 }
 
 
 GpsL1CaPcpsAcquisitionFineDoppler::~GpsL1CaPcpsAcquisitionFineDoppler()
 {
-	delete[] code_;
+    delete[] code_;
 }
 
 

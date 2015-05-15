@@ -61,7 +61,7 @@ protected:
         stop = false;
         message = 0;
         factory = std::make_shared<GNSSBlockFactory>();
-        gnss_synchro = {0};
+        gnss_synchro = Gnss_Synchro();
         init();
     }
 

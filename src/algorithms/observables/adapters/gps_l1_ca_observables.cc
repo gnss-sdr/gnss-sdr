@@ -55,9 +55,9 @@ GpsL1CaObservables::GpsL1CaObservables(ConfigurationInterface* configuration,
     flag_averaging = configuration->property(role + ".flag_averaging", false);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-    fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    //fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     observables_ = gps_l1_ca_make_observables_cc(in_streams_, queue_, dump_, dump_filename_, output_rate_ms, flag_averaging);
-    observables_->set_fs_in(fs_in_);
+    //observables_->set_fs_in(fs_in_);
     DLOG(INFO) << "pseudorange(" << observables_->unique_id() << ")";
 }
 

@@ -135,7 +135,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-
+    gnss_synchro_ = {0};
 }
 
 

@@ -102,6 +102,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     {
         LOG(WARNING) << item_type_ << " unknown acquisition item type";
     }
+    gnss_synchro_ = {0};
 }
 
 

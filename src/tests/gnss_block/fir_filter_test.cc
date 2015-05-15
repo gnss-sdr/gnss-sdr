@@ -57,6 +57,7 @@ protected:
     Fir_Filter_Test()
     {
         queue = gr::msg_queue::make(0);
+        item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
     }
     ~Fir_Filter_Test()

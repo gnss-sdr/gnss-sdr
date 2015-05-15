@@ -66,6 +66,7 @@ protected:
         item_size = sizeof(gr_complex);
         stop = false;
         message = 0;
+        gnss_synchro = {0};
 }
 
     ~GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test()
@@ -92,33 +93,33 @@ protected:
     int message;
     boost::thread ch_thread;
 
-    unsigned int integration_time_ms;
-    unsigned int fs_in;
-    unsigned int folding_factor;
+    unsigned int integration_time_ms = 0;
+    unsigned int fs_in = 0;
+    unsigned int folding_factor = 0;
 
-    double expected_delay_chips;
-    double expected_doppler_hz;
-    float max_doppler_error_hz;
-    float max_delay_error_chips;
+    double expected_delay_chips = 0.0;
+    double expected_doppler_hz = 0.0;
+    float max_doppler_error_hz = 0.0;
+    float max_delay_error_chips = 0.0;
 
-    unsigned int num_of_realizations;
-    unsigned int realization_counter;
-    unsigned int detection_counter;
-    unsigned int correct_estimation_counter;
-    unsigned int acquired_samples;
-    unsigned int mean_acq_time_us;
+    unsigned int num_of_realizations = 0;
+    unsigned int realization_counter = 0;
+    unsigned int detection_counter = 0;
+    unsigned int correct_estimation_counter = 0;
+    unsigned int acquired_samples = 0;
+    unsigned int mean_acq_time_us = 0;
 
-    double mse_doppler;
-    double mse_delay;
+    double mse_doppler = 0.0;
+    double mse_delay = 0.0;
 
-    double Pd;
-    double Pfa_p;
-    double Pfa_a;
-    double Pmd;
+    double Pd = 0.0;
+    double Pfa_p = 0.0;
+    double Pfa_a = 0.0;
+    double Pmd = 0.0;
 
     std::ofstream pdpfafile;
-    unsigned int miss_detection_counter;
-    bool dump_test_results;
+    unsigned int miss_detection_counter = 0;
+    bool dump_test_results = false;
 };
 
 

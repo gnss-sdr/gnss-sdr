@@ -120,7 +120,7 @@ int hybrid_observables_cc::general_work (int noutput_items, gr_vector_int &ninpu
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
     std::map<int,Gnss_Synchro> current_gnss_synchro_map_gps_only;
     std::map<int,Gnss_Synchro>::iterator gnss_synchro_iter;
-    d_sample_counter++; //count for the processed samples
+
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels
      */

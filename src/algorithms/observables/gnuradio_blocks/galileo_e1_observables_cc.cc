@@ -116,7 +116,7 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
     Gnss_Synchro current_gnss_synchro[d_nchannels];
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
     std::map<int,Gnss_Synchro>::iterator gnss_synchro_iter;
-    d_sample_counter++; //count for the processed samples
+
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels
      */

@@ -114,7 +114,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
             LOG(WARNING) << item_type_
                     << " unknown acquisition item type";
         }
-
+    gnss_synchro_ = {0};
 }
 
 GalileoE5aNoncoherentIQAcquisitionCaf::~GalileoE5aNoncoherentIQAcquisitionCaf()

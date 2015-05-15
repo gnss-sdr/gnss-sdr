@@ -67,7 +67,8 @@ protected:
         stop = false;
         message = 0;
         sampling_freqeuncy_hz = 0;
-        nsamples=0;
+        nsamples = 0;
+        gnss_synchro = {0};
     }
 
     ~GpsL2MPcpsAcquisitionTest()

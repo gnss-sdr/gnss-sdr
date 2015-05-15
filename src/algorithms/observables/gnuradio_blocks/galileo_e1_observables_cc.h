@@ -61,7 +61,7 @@ class galileo_e1_observables_cc : public gr::block
 {
 public:
     ~galileo_e1_observables_cc ();
-    void set_fs_in(unsigned long int fs_in) {d_fs_in = fs_in;};
+    //void set_fs_in(unsigned long int fs_in) {d_fs_in = fs_in;};
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
@@ -74,9 +74,7 @@ private:
     boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool d_flag_averaging;
-    long int d_sample_counter;
     unsigned int d_nchannels;
-    unsigned long int d_fs_in;
     int d_output_rate_ms;
     std::string d_dump_filename;
     std::ofstream d_dump_file;

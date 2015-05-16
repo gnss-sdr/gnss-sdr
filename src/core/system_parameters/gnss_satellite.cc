@@ -243,9 +243,6 @@ std::string Gnss_Satellite::get_block() const
 
 
 
-
-
-
 void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
 {
     if (system_.compare("GPS") == 0)
@@ -261,25 +258,25 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
                 block = std::string("IIR");   //Plane D
                 break;
             case 3 :
-                block = std::string("IIA");   //Plane D
+                block = std::string("IIF");   //Plane E
                 break;
             case 4 :
                 block = std::string("IIA");   //Plane D
                 break;
             case 5 :
-                block = std::string("IIR-M"); //Plane F
+                block = std::string("IIR-M"); //Plane E
                 break;
             case 6 :
-                block = std::string("IIA");   //Plane C
+                block = std::string("IIF");   //Plane D
                 break;
             case 7 :
                 block = std::string("IIR-M"); //Plane A
                 break;
             case 8 :
-                block = std::string("IIA");   //Plane A
+                block = std::string("UNKNOWN");   // Decommissioned
                 break;
             case 9 :
-                block = std::string("IIA");   //Plane A
+                block = std::string("IIF");   //Plane F
                 break;
             case 10 :
                 block = std::string("IIA");   //Plane E
@@ -312,7 +309,7 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
                 block = std::string("IIR");   //Plane D
                 break;
             case 20 :
-                block = std::string("IIR");   //Plane E
+                block = std::string("IIR");   //Plane B
                 break;
             case 21 :
                 block = std::string("IIR");   //Plane D
@@ -324,25 +321,25 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
                 block = std::string("IIR");   //Plane F
                 break;
             case 24 :
-                block = std::string("IIA");   //Plane D Decommissioned from active service on 04 Nov 2011
+                block = std::string("IIF");   //Plane A
                 break;
             case 25 :
                 block = std::string("IIF");   //Plane B
                 break;
             case 26 :
-                block = std::string("IIA");   //Plane F
+                block = std::string("IIF");   //Plane B
                 break;
             case 27 :
-                block = std::string("IIA");   //Plane A
+                block = std::string("IIF");   //Plane C
                 break;
             case 28 :
                 block = std::string("IIR");   //Plane B
                 break;
             case 29 :
-                block = std::string("IIR-M"); //Plane D
+                block = std::string("IIR-M"); //Plane C
                 break;
             case 30 :
-                block = std::string("IIA");   //Plane B
+                block = std::string("IIF");   //Plane A
                 break;
             case 31 :
                 block = std::string("IIR-M"); //Plane A
@@ -488,23 +485,32 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
             }
     if (system_.compare("Galileo") == 0)
         {
-            // Check http://igs.org/mgex/Status_GAL.htm
+            // Check http://en.wikipedia.org/wiki/List_of_Galileo_satellites
             switch ( PRN_ )
             {
             case 11 :
-                block = std::string("IOV"); //  PFM, the ProtoFlight Model (GSAT0101), launched from French Guiana at 10:30 GMT on October 21, 2011
+                block = std::string("IOV-PFM"); //  PFM, the ProtoFlight Model (GSAT0101), launched from French Guiana at 10:30 GMT on October 21, 2011
                 break;
             case 12 :
-                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011
+                block = std::string("IOV-FM2"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011
                 break;
             case 19 :
-                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3), launched on October 12, 2012
+                block = std::string("IOV-FM3"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3), launched on October 12, 2012
                 break;
             case 20 :
-                block = std::string("IOV"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4), launched on October 12, 2012
+                block = std::string("IOV-FM4"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4), launched on October 12, 2012. Unavailable.
                 break;
             case 18 :
-                block = std::string("FOC"); // Galileo Full Operational Capability (FOC) satellite FM1, also known as GSAT020l launched on August 22, 2014.
+                block = std::string("FOC-FM1"); // Galileo Full Operational Capability (FOC) satellite FM1, launched into incorrect orbit on August 22, 2014.
+                break;
+            case 14 :
+                block = std::string("FOC-FM2"); // Galileo Full Operational Capability (FOC) satellite FM2, launched into incorrect orbit on August 22, 2014.
+                break;
+            case 26 :
+                block = std::string("FOC-FM3"); // Galileo Full Operational Capability (FOC) satellite FM3, launched on March 27, 2015.
+                break;
+            case 22 :
+                block = std::string("FOC-FM4"); // Galileo Full Operational Capability (FOC) satellite FM4, launched on March 27, 2015.
                 break;
             default:
                 block = std::string("Unknown(Simulated)");

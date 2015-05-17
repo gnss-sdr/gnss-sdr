@@ -162,8 +162,8 @@ int rtl_tcp_signal_source_c::work (int noutput_items,
                                         this));
 
     for ( ; i < noutput_items && unread_ > 1; i++ ) {
-      float im = buffer_[--unread_];
       float re = buffer_[--unread_];
+      float im = buffer_[--unread_];
       if (flip_iq_) {
           out[i] = gr_complex (im, re);
       }

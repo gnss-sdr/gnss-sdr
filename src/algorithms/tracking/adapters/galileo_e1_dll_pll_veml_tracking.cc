@@ -64,7 +64,7 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
     float early_late_space_chips;
     float very_early_late_space_chips;
 
-    item_type = configuration->property(role + ".item_type",default_item_type);
+    item_type = configuration->property(role + ".item_type", default_item_type);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
@@ -96,8 +96,12 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         }
     else
         {
+            item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type << " unknown tracking item type.";
         }
+
+    channel_ = 0;
+    channel_internal_queue_ = 0;
 
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }

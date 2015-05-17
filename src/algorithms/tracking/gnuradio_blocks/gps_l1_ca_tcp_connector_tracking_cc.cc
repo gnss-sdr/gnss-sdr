@@ -174,6 +174,17 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     systemName["S"] = std::string("SBAS");
     systemName["E"] = std::string("Galileo");
     systemName["C"] = std::string("Compass");
+
+    d_channel_internal_queue = 0;
+    d_acquisition_gnss_synchro = 0;
+    d_channel = 0;
+    d_next_rem_code_phase_samples = 0;
+    d_acq_code_phase_samples = 0.0;
+    d_acq_carrier_doppler_hz = 0.0;
+    d_carrier_doppler_hz = 0.0;
+    d_acc_carrier_phase_rad = 0.0;
+    d_code_phase_samples = 0;
+    d_next_prn_length_samples = 0;
 }
 
 void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()

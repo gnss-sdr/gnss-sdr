@@ -102,8 +102,11 @@ GpsL1CaDllFllPllTracking::GpsL1CaDllFllPllTracking(
         }
     else
         {
+            item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type << " unknown tracking item type.";
         }
+    channel_ = 0;
+    channel_internal_queue_ = 0;
 
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }

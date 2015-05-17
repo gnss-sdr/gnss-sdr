@@ -162,6 +162,16 @@ Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc(
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
     systemName["G"] = std::string("GPS");
+
+    d_channel_internal_queue = 0;
+    d_acquisition_gnss_synchro = 0;
+    d_channel = 0;
+    d_acq_code_phase_samples = 0.0;
+    d_acq_carrier_doppler_hz = 0.0;
+    d_carrier_doppler_hz = 0.0;
+    d_acc_carrier_phase_rad = 0.0;
+    d_code_phase_samples = 0.0;
+    d_acc_code_phase_secs = 0.0;
 }
 
 

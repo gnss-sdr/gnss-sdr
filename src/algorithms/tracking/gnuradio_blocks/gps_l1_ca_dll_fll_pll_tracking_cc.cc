@@ -158,6 +158,21 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
     systemName["S"] = std::string("SBAS");
     systemName["E"] = std::string("Galileo");
     systemName["C"] = std::string("Compass");
+
+    d_channel_internal_queue = 0;
+    //d_acquisition_gnss_synchro = 0;
+    d_channel = 0;
+    d_acq_carrier_doppler_hz = 0.0;
+    d_code_freq_hz = 0.0;
+    d_rem_carr_phase = 0.0;
+    d_rem_code_phase_samples = 0.0;
+    d_acq_code_phase_samples = 0;
+    d_acq_carrier_doppler_hz = 0.0;
+    d_acc_carrier_phase_rad = 0.0;
+    d_acc_code_phase_samples = 0;
+    d_FLL_discriminator_hz = 0.0;
+    d_pull_in = false;
+    d_FLL_wait = 1;
 }
 
 

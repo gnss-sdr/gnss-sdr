@@ -169,7 +169,17 @@ gps_l2_m_dll_pll_tracking_cc::gps_l2_m_dll_pll_tracking_cc(
     set_relative_rate(1.0/((double)d_vector_length*2));
     //set_min_output_buffer((long int)300);
 
-    LOG(INFO)<<"d_vector_length"<<d_vector_length<<std::endl;
+    d_channel_internal_queue = 0;
+    d_acquisition_gnss_synchro = 0;
+    d_channel = 0;
+    d_acq_code_phase_samples = 0.0;
+    d_acq_carrier_doppler_hz = 0.0;
+    d_carrier_doppler_hz = 0.0;
+    d_acc_carrier_phase_rad = 0.0;
+    d_code_phase_samples = 0.0;
+    d_acc_code_phase_secs = 0.0;
+
+    LOG(INFO) << "d_vector_length" << d_vector_length;
 }
 
 
@@ -333,7 +343,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
     float code_error_filt_chips;
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-    Gnss_Synchro current_synchro_data;
+    Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment

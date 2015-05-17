@@ -191,6 +191,15 @@ gr::block("galileo_volk_e1_dll_pll_veml_tracking_cc", gr::io_signature::make(1, 
     *d_Prompt = gr_complex(0,0);
     *d_Late = gr_complex(0,0);
     *d_Very_Late = gr_complex(0,0);
+
+    d_channel_internal_queue = 0;
+    d_acquisition_gnss_synchro = 0;
+    d_channel = 0;
+    d_acq_code_phase_samples = 0.0;
+    d_acq_carrier_doppler_hz = 0.0;
+    d_carrier_doppler_hz = 0.0;
+    d_acc_carrier_phase_rad = 0.0;
+    d_acc_code_phase_secs = 0.0;
 }
 
 void galileo_volk_e1_dll_pll_veml_tracking_cc::start_tracking()
@@ -356,7 +365,7 @@ int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr
         }
         
         // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-        Gnss_Synchro current_synchro_data;
+        Gnss_Synchro current_synchro_data = Gnss_Synchro();
         // Fill the acquisition data
         current_synchro_data = *d_acquisition_gnss_synchro;
         

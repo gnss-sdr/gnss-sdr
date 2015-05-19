@@ -54,6 +54,8 @@
                                             gnss_rx
                                             gnss_sp_libs
     )
+    
+    add_dependencies(front_end_cal_lib glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})
 
     add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
     add_definitions( -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}" )

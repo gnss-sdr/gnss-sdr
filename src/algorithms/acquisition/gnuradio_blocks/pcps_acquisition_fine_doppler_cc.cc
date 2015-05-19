@@ -94,6 +94,20 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
+
+    d_doppler_resolution = 0;
+    d_threshold = 0;
+    d_num_doppler_points = 0;
+    d_doppler_step = 0;
+    d_grid_data = 0;
+    d_grid_doppler_wipeoffs = 0;
+    d_gnss_synchro = 0;
+    d_code_phase = 0;
+    d_doppler_freq = 0;
+    d_test_statistics = 0;
+    d_channel_internal_queue = 0;
+    d_well_count = 0;
+    d_channel = 0;
 }
 
 void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_step)
@@ -342,6 +356,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
     int counter = 0;
 
     float fftFreqBins[fft_size_extended];
+    memset(fftFreqBins, 0, fft_size_extended * sizeof(float));
 
     for (int k=0; k < (fft_size_extended / 2); k++)
         {

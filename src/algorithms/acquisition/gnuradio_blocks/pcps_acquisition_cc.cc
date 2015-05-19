@@ -104,6 +104,10 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
+
+    d_gnss_synchro = 0;
+    d_channel_internal_queue = 0;
+    d_grid_doppler_wipeoffs = 0;
 }
 
 pcps_acquisition_cc::~pcps_acquisition_cc()

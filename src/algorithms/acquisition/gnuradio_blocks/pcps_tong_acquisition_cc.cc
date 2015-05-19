@@ -111,6 +111,18 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
+
+    d_doppler_resolution = 0;
+    d_threshold = 0;
+    d_doppler_step = 0;
+    d_grid_data = 0;
+    d_grid_doppler_wipeoffs = 0;
+    d_gnss_synchro = 0;
+    d_code_phase = 0;
+    d_doppler_freq = 0;
+    d_test_statistics = 0;
+    d_channel_internal_queue = 0;
+    d_channel = 0;
 }
 
 pcps_tong_acquisition_cc::~pcps_tong_acquisition_cc()

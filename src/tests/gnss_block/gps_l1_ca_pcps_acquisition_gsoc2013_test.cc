@@ -63,6 +63,7 @@ protected:
         stop = false;
         message = 0;
         gnss_synchro = Gnss_Synchro();
+        acquisition = 0;
         init();
     }
 

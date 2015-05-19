@@ -171,6 +171,15 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_TOW_at_current_symbol = 0;
     delta_t = 0;
     d_CRC_error_counter = 0;
+    flag_even_word_arrived = 0;
+    d_flag_preamble = false;
+    d_ephemeris_queue = 0;
+    d_utc_model_queue = 0;
+    d_almanac_queue = 0;
+    d_iono_queue = 0;
+    d_channel = 0;
+    Prn_timestamp_at_preamble_ms = 0.0;
+    flag_TOW_set = false;
 }
 
 
@@ -178,8 +187,8 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
 
 galileo_e1b_telemetry_decoder_cc::~galileo_e1b_telemetry_decoder_cc()
 {
-	delete d_preambles_symbols;
-	d_dump_file.close();
+    delete d_preambles_symbols;
+    d_dump_file.close();
 }
 
 

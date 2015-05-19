@@ -130,6 +130,11 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_TOW_at_current_symbol = 0;
     flag_TOW_set = false;
     d_average_count = 0;
+    d_flag_preamble = false;
+    d_word_number = 0;
+    d_decimation_output_factor = 1;
+    d_channel = 0;
+    Prn_timestamp_at_preamble_ms = 0.0;
     //set_history(d_samples_per_bit*8); // At least a history of 8 bits are needed to correlate with the preamble
 }
 

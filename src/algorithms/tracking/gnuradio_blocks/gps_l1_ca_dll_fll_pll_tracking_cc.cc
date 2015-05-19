@@ -163,6 +163,7 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
     //d_acquisition_gnss_synchro = 0;
     d_channel = 0;
     d_acq_carrier_doppler_hz = 0.0;
+    d_carrier_doppler_hz = 0;
     d_code_freq_hz = 0.0;
     d_rem_carr_phase = 0.0;
     d_rem_code_phase_samples = 0.0;

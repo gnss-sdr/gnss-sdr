@@ -132,6 +132,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_test_statistics = 0;
     d_channel_internal_queue = 0;
     d_channel = 0;
+    d_code_folded = 0;
 
     // DLOG(INFO) << "END CONSTRUCTOR";
 }
@@ -157,6 +158,7 @@ pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
     delete d_code;
     delete d_possible_delay;
     delete d_corr_output_f;
+    delete[] d_code_folded;
 
     if (d_dump)
         {
@@ -172,7 +174,7 @@ void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float>* code)
     lation in time in the final steps of the acquisition stage*/
     memcpy(d_code, code, sizeof(gr_complex) * d_samples_per_code);
 
-    gr_complex* d_code_folded = new gr_complex[d_fft_size]();
+    d_code_folded = new gr_complex[d_fft_size]();
     memcpy(d_fft_if->get_inbuf(), d_code_folded, sizeof(gr_complex) * (d_fft_size));
 
     /*perform folding of the code by the factorial factor parameter. Notice that
@@ -189,6 +191,7 @@ void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float>* code)
 
     //Conjugate the local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
+
 }
 
 

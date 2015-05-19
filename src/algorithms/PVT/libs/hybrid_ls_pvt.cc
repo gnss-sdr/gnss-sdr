@@ -81,7 +81,7 @@ hybrid_ls_pvt::~hybrid_ls_pvt()
 }
 
 
-arma::vec hybrid_ls_pvt::rotateSatellite(double traveltime, arma::vec X_sat)
+arma::vec hybrid_ls_pvt::rotateSatellite(double traveltime, const arma::vec & X_sat)
 {
     /*
      *  Returns rotated satellite ECEF coordinates due to Earth
@@ -118,7 +118,7 @@ arma::vec hybrid_ls_pvt::rotateSatellite(double traveltime, arma::vec X_sat)
 }
 
 
-arma::vec hybrid_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w)
+arma::vec hybrid_ls_pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs, const arma::mat & w)
 {
     /* Computes the Least Squares Solution.
      *   Inputs:
@@ -190,7 +190,7 @@ arma::vec hybrid_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma::m
                                     togeod(&dphi, &dlambda, &h, 6378137.0, 298.257223563, pos(0), pos(1), pos(2));
 
                                     //--- Find delay due to troposphere (in meters)
-                                    tropo(&trop, sin(d_visible_satellites_El[i] * GALILEO_PI/180.0), h/1000, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
+                                    tropo(&trop, sin(d_visible_satellites_El[i] * GALILEO_PI/180.0), h / 1000.0, 1013.0, 293.0, 50.0, 0.0, 0.0, 0.0);
                                     if(trop > 50.0 ) trop = 0.0;
                                 }
                         }
@@ -642,17 +642,17 @@ void hybrid_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a, d
     *h = 0;
     double tolsq = 1.e-10;  // tolerance to accept convergence
     int maxit = 10;         // max number of iterations
-    double rtd = 180/GPS_PI;
+    double rtd = 180.0 / GPS_PI;
 
     // compute square of eccentricity
     double esq;
     if (finv < 1.0E-20)
         {
-            esq = 0;
+            esq = 0.0;
         }
     else
         {
-            esq = (2 - 1/finv) / finv;
+            esq = (2.0 - 1.0 / finv) / finv;
         }
 
     // first guess
@@ -695,14 +695,14 @@ void hybrid_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a, d
             return;
         }
 
-    *h = r - a*(1 - sinphi*sinphi/finv);
+    *h = r - a*(1.0 - sinphi*sinphi/finv);
 
     // iterate
     double cosphi;
     double N_phi;
     double dP;
     double dZ;
-    double oneesq = 1 - esq;
+    double oneesq = 1.0 - esq;
 
     for (int i = 0; i < maxit; i++)
         {
@@ -734,7 +734,7 @@ void hybrid_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double a, d
 }
 
 
-void hybrid_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, arma::vec dx)
+void hybrid_ls_pvt::topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx)
 {
     /*  Transformation of vector dx into topocentric coordinate
 	system with origin at x

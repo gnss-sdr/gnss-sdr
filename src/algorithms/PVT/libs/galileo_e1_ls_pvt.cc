@@ -79,7 +79,7 @@ galileo_e1_ls_pvt::~galileo_e1_ls_pvt()
 }
 
 
-arma::vec galileo_e1_ls_pvt::rotateSatellite(double traveltime, arma::vec X_sat)
+arma::vec galileo_e1_ls_pvt::rotateSatellite(double traveltime, const arma::vec & X_sat)
 {
     /*
      *  Returns rotated satellite ECEF coordinates due to Earth
@@ -116,7 +116,7 @@ arma::vec galileo_e1_ls_pvt::rotateSatellite(double traveltime, arma::vec X_sat)
 }
 
 
-arma::vec galileo_e1_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w)
+arma::vec galileo_e1_ls_pvt::leastSquarePos(const arma::mat & satpos, const arma::vec & obs, const arma::mat & w)
 {
     /* Computes the Least Squares Solution.
      *   Inputs:
@@ -660,7 +660,7 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
 }
 
 
-void galileo_e1_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x, arma::vec dx)
+void galileo_e1_ls_pvt::topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx)
 {
     /*  Transformation of vector dx into topocentric coordinate
 	system with origin at x

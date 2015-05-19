@@ -62,9 +62,9 @@
 class hybrid_ls_pvt
 {
 private:
-    arma::vec leastSquarePos(arma::mat satpos, arma::vec obs, arma::mat w);
-    arma::vec rotateSatellite(double traveltime, arma::vec X_sat);
-    void topocent(double *Az, double *El, double *D, arma::vec x, arma::vec dx);
+    arma::vec leastSquarePos(const arma::mat & satpos, const arma::vec & obs, const arma::mat & w);
+    arma::vec rotateSatellite(double traveltime, const arma::vec & X_sat);
+    void topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx);
     void togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
     void tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
 public:

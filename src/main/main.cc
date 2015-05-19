@@ -35,6 +35,7 @@
 #endif
 
 #include <ctime>
+#include <cstdlib>
 #include <memory>
 #include <queue>
 #include <boost/exception/diagnostic_information.hpp>
@@ -145,13 +146,19 @@ int main(int argc, char** argv)
             if (!boost::filesystem::exists(p))
                 {
                     std::cout << "The path "
-                        << FLAGS_log_dir
-                        << " does not exist, attempting to create it"
-                        << std::endl;
-                    boost::filesystem::create_directory(p);
+                              << FLAGS_log_dir
+                              << " does not exist, attempting to create it."
+                              << std::endl;
+                    boost::system::error_code ec;
+                    boost::filesystem::create_directory(p, ec);
+                    if(ec != 0)
+                        {
+                            std::cout << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended." << std::endl;
+                            google::ShutDownCommandLineFlags();
+                            std::exit(0);
+                        }
                 }
-            std::cout << "Logging with be done at "
-                      << FLAGS_log_dir << std::endl;
+            std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
         }
 
     std::unique_ptr<ControlThread> control_thread(new ControlThread());
@@ -168,6 +175,10 @@ int main(int argc, char** argv)
     catch( boost::exception & e )
     {
             LOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+    }
+    catch( boost::lock_error & le )
+    {
+            LOG(FATAL) << "Lock error exception: " << boost::diagnostic_information(le);
     }
     catch(std::exception const&  ex)
     {

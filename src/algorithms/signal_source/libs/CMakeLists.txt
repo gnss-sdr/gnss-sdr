@@ -16,6 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(libs)
-add_subdirectory(adapters)
-add_subdirectory(gnuradio_blocks)
+set (SIGNAL_SOURCE_LIB_SOURCES
+  rtl_tcp_commands.cc
+  rtl_tcp_dongle_info.cc)
+
+file(GLOB SIGNAL_SOURCE_LIB_HEADERS "*.h")
+add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
+source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})

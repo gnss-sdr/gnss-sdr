@@ -17,7 +17,7 @@
 #
 
 
-if(ENABLE_OSMOSDR)
+#if(ENABLE_OSMOSDR)
     set(FRONT_END_CAL_SOURCES front_end_cal.cc)
 
     include_directories(
@@ -97,4 +97,4 @@ if(ENABLE_OSMOSDR)
         install(FILES ${CMAKE_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)
     endif(NOT GZIP_NOTFOUND)
 
-endif(ENABLE_OSMOSDR)
+#endif(ENABLE_OSMOSDR)

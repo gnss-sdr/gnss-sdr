@@ -25,7 +25,7 @@ if(ENABLE_GN3S)
 
      # find_package(GrGN3S)
      # if not found, build it with ExternalPackage_Add
-     include(ExternalProject)     
+     include(ExternalProject)
      ExternalProject_Add(
           gr-gn3s
           SOURCE_DIR ${CMAKE_SOURCE_DIR}/drivers/gr-gn3s
@@ -34,21 +34,21 @@ if(ENABLE_GN3S)
           PATCH_COMMAND ""
           INSTALL_COMMAND ""
      )
-     
+
      # Set up variables
      set(GRGN3S_INCLUDE_DIRS ${GRGN3S_DIR}/include ${GRGN3S_DIR} ${GRGN3S_DIR}/src)
-     set(GRGN3S_LIBRARIES 
+     set(GRGN3S_LIBRARIES
          "${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-gn3s/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gr-gn3s${CMAKE_SHARED_LIBRARY_SUFFIX}"
-     ) 
+     )
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRGN3S_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRGN3S_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
-     
+
      #  Copy GN3S firmware binary file to install folder
-     message(STATUS "Copying the GN3S firmware binary file to install folder")    
-     file(COPY ${CMAKE_SOURCE_DIR}/firmware/GN3S_v2/bin/gn3s_firmware.ihx 
+     message(STATUS "Copying the GN3S firmware binary file to install folder")
+     file(COPY ${CMAKE_SOURCE_DIR}/firmware/GN3S_v2/bin/gn3s_firmware.ihx
           DESTINATION ${CMAKE_SOURCE_DIR}/install/
-     )     
+     )
 endif(ENABLE_GN3S)
 
 if(ENABLE_FLEXIBAND)
@@ -61,15 +61,15 @@ if(ENABLE_FLEXIBAND)
     find_package(teleorbit REQUIRED)
     if(NOT TELEORBIT_FOUND)
         message(FATAL_ERROR "Teleorbit Flexiband GNURadio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
-    endif(NOT TELEORBIT_FOUND) 
-     
+    endif(NOT TELEORBIT_FOUND)
+
      # Set up variables
-    set(FLEXIBAND_DRIVER_INCLUDE_DIRS 
-        ${OPT_DRIVER_INCLUDE_DIRS} 
+    set(FLEXIBAND_DRIVER_INCLUDE_DIRS
+        ${OPT_DRIVER_INCLUDE_DIRS}
         ${TELEORBIT_INCLUDE_DIR}/teleorbit
     )
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${TELEORBIT_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${FLEXIBAND_DRIVER_INCLUDE_DIRS}) 
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${FLEXIBAND_DRIVER_INCLUDE_DIRS})
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
 endif(ENABLE_FLEXIBAND)
 
@@ -83,7 +83,7 @@ if(ENABLE_ARRAY)
      endif(OS_IS_MACOSX)
      # find_package(GrDbfcttc)
      # if not found, build it with ExternalPackage_Add
-     include(ExternalProject)     
+     include(ExternalProject)
      ExternalProject_Add(
           gr-dbfcttc
           SOURCE_DIR ${CMAKE_SOURCE_DIR}/drivers/gr-dbfcttc
@@ -93,12 +93,12 @@ if(ENABLE_ARRAY)
           CMAKE_ARGS ${MACOSX_ARGS}
           INSTALL_COMMAND ""
      )
-     
+
      # Set up variables
      set(GRDBFCTTC_INCLUDE_DIRS ${GRDBFCTTC_DIR}/include ${GRDBFCTTC_DIR} ${GRDBFCTTC_DIR}/src)
-     set(GRDBFCTTC_LIBRARIES 
+     set(GRDBFCTTC_LIBRARIES
          "${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-dbfcttc/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnuradio-dbfcttc${CMAKE_SHARED_LIBRARY_SUFFIX}"
-     ) 
+     )
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRDBFCTTC_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRDBFCTTC_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
@@ -108,33 +108,34 @@ endif(ENABLE_ARRAY)
 if(ENABLE_OSMOSDR)
     ################################################################################
     # OsmoSDR - http://sdr.osmocom.org/trac/
-    ################################################################################  
+    ################################################################################
     find_package(GrOsmoSDR REQUIRED)
     if(NOT GROSMOSDR_FOUND)
         message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional OSMOSDR driver")
-    endif(NOT GROSMOSDR_FOUND)  
-    
+    endif(NOT GROSMOSDR_FOUND)
+
     # set OSMO include dirs
-    set(OSMO_DRIVER_INCLUDE_DIRS 
-        ${OPT_DRIVER_INCLUDE_DIRS} 
+    set(OSMO_DRIVER_INCLUDE_DIRS
+        ${OPT_DRIVER_INCLUDE_DIRS}
         ${GROSMOSDR_INCLUDE_DIR}/osmosdr
     )
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS}) 
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS})
 endif(ENABLE_OSMOSDR)
 
 if(ENABLE_UHD)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS}) 
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS})
 endif(ENABLE_UHD)
 
 
-set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc 
-                                  gen_signal_source.cc                           
-                                  nsr_file_signal_source.cc 
+set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc
+                                  gen_signal_source.cc
+                                  nsr_file_signal_source.cc
                                   spir_file_signal_source.cc
+				  rtl_tcp_signal_source.cc
                                   ${OPT_DRIVER_SOURCES}
 )
 
@@ -145,9 +146,10 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
      ${GLOG_INCLUDE_DIRS}
-     ${GFlags_INCLUDE_DIRS}     
+     ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_INCLUDE_DIRS}
@@ -162,10 +164,10 @@ add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 file(GLOB SIGNAL_SOURCE_ADAPTER_HEADERS "*.h")
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
-target_link_libraries(signal_source_adapters signal_source_gr_blocks 
-                                             ${Boost_LIBRARIES} 
-                                             ${GNURADIO_PMT_LIBRARIES} 
-                                             ${GNURADIO_BLOCKS_LIBRARIES}                                         
-                                             ${OPT_LIBRARIES} 
+target_link_libraries(signal_source_adapters signal_source_gr_blocks
+                                             ${Boost_LIBRARIES}
+                                             ${GNURADIO_PMT_LIBRARIES}
+                                             ${GNURADIO_BLOCKS_LIBRARIES}
+                                             ${OPT_LIBRARIES}
                                              gnss_sp_libs
 )

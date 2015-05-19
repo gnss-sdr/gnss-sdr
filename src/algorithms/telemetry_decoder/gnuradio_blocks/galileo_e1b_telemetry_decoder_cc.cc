@@ -225,13 +225,13 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
             d_nav.split_page(page_String, flag_even_word_arrived);
             if(d_nav.flag_CRC_test == true)
                 {
-                    LOG(INFO) << "Galileo CRC correct on channel " << d_channel;
-                    std::cout << "Galileo CRC correct on channel " << d_channel << std::endl;
+                    LOG(INFO) << "Galileo CRC correct on channel " << d_channel << " from satellite " << d_satellite;
+                    std::cout << "Galileo CRC correct on channel " << d_channel << " from satellite " << d_satellite << std::endl;
                 }
             else
                 {
-                    std::cout << "Galileo CRC error on channel " << d_channel << std::endl;
-                    LOG(INFO) << "Galileo CRC error on channel " << d_channel;
+                    std::cout << "Galileo CRC error on channel " << d_channel <<  " from satellite " << d_satellite << std::endl;
+                    LOG(INFO) << "Galileo CRC error on channel " << d_channel <<  " from satellite " << d_satellite;
                 }
             flag_even_word_arrived = 0;
         }

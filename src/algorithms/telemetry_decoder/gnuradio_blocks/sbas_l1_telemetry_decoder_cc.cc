@@ -327,7 +327,7 @@ bool sbas_l1_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const st
     // fill two vectors with the two possible symbol alignments
     std::vector<double> symbols_vd1(symbols); // aligned symbol vector -> copy input symbol vector
     std::vector<double> symbols_vd2;  // shifted symbol vector -> add past sample in front of input vector
-    symbols_vd1.push_back(d_past_symbol);
+    symbols_vd2.push_back(d_past_symbol);
     for (std::vector<double>::const_iterator symbol_it = symbols.begin(); symbol_it != symbols.end() - 1; ++symbol_it)
         {
             symbols_vd2.push_back(*symbol_it);

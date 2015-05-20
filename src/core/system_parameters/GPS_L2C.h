@@ -33,6 +33,20 @@
 #define GNSS_SDR_GPS_L2C_H_
 
 #include <stdint.h>
+#include <complex>
+#include <vector>
+#include <utility> // std::pair
+#include <gnss_satellite.h>
+#include "MATH_CONSTANTS.h"
+
+// Physical constants
+const double GPS_L2_C_m_s       = 299792458.0;      //!< The speed of light, [m/s]
+const double GPS_L2_C_m_ms      = 299792.4580;      //!< The speed of light, [m/ms]
+const double GPS_L2_PI          = 3.1415926535898;  //!< Pi as defined in IS-GPS-200E
+const double GPS_L2_TWO_PI      = 6.283185307179586;//!< 2Pi as defined in IS-GPS-200E
+const double GPS_L2_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Earth rotation rate, [rad/s]
+const double GPS_L2_GM              = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
+const double GPS_L2_F               = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 
 
 // carrier and code frequencies
@@ -77,5 +91,121 @@ const int32_t GPS_L2C_M_INIT_REG[115] =
 0607275514,  0045413633,  0212645405,  0613700455,
 0706202440,  0705056276,  0020373522,  0746013617,
 0132720621,  0434015513,  0566721727,  0140633660};
+
+// CNAV GPS NAVIGATION MESSAGE STRUCTURE
+// NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200E Appendix III)
+
+#define GPS_CNAV_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
+
+// common to all messages
+const std::vector<std::pair<int,int> > CNAV_PRN( { {9,6} } );
+const std::vector<std::pair<int,int> > CNAV_MSG_TYPE( { {15,6} } );
+const std::vector<std::pair<int,int> > CNAV_TOW( { {21,17} } );
+const std::vector<std::pair<int,int> > CNAV_ALERT_FLAG( { {38,1} } );
+
+// MESSAGE TYPE 10 (Ephemeris 1)
+
+const std::vector<std::pair<int,int> > CNAV_WN({{39,13}});
+const std::vector<std::pair<int,int> > CNAV_HEALTH({{52,3}});
+const std::vector<std::pair<int,int> > CNAV_TOP1({{55,11}});
+const double CNAV_TOP1_LSB = 300;
+const std::vector<std::pair<int,int> > CNAV_URA({{66,5}});
+
+const std::vector<std::pair<int,int> > CNAV_TOE1({{71,11}});
+const double CNAV_TOE1_LSB = 300;
+
+const std::vector<std::pair<int,int> > CNAV_DELTA_A({{82,26}}); //Relative to AREF = 26,559,710 meters
+const double CNAV_DELTA_A_LSB = TWO_N9;
+
+const std::vector<std::pair<int,int> > CNAV_A_DOT({{108,25}});
+const double CNAV_A_DOT_LSB = TWO_N21;
+
+const std::vector<std::pair<int,int> > CNAV_DELTA_N0({{133,17}});
+const double CNAV_DELTA_N0_LSB = TWO_N44;
+const std::vector<std::pair<int,int> > CNAV_DELTA_N0_DOT({{150,23}});
+const double CNAV_DELTA_N0_DOT_LSB = TWO_N57;
+const std::vector<std::pair<int,int> > CNAV_M0({{173,33}});
+const double CNAV_M0_LSB = TWO_N32;
+const std::vector<std::pair<int,int> > CNAV_E_ECCENTRICITY({{206,33}});
+const double CNAV_E_ECCENTRICITY_LSB = TWO_N34;
+const std::vector<std::pair<int,int> > CNAV_OMEGA({{239,33}});
+const double CNAV_OMEGA_LSB = TWO_N32;
+const std::vector<std::pair<int,int> > CNAV_INTEGRITY_FLAG({{272,1}});
+const std::vector<std::pair<int,int> > CNAV_L2_PHASING_FLAG({{273,1}});
+
+// MESSAGE TYPE 11 (Ephemeris 2)
+
+const std::vector<std::pair<int,int> > CNAV_TOE2({{39,11}});
+const double CNAV_TOE2_LSB = 300;
+const std::vector<std::pair<int,int> > CNAV_OMEGA0({{50,33}});
+const double CNAV_OMEGA0_LSB = TWO_N32;
+const std::vector<std::pair<int,int> > CNAV_I0({{83,33}});
+const double CNAV_I0_LSB = TWO_N32;
+const std::vector<std::pair<int,int> > CNAV_DELTA_OMEGA_DOT({{116,17}}); //Relative to REF = -2.6 x 10-9 semi-circles/second.
+const double CNAV_DELTA_OMEGA_DOT_LSB = TWO_N44;
+const std::vector<std::pair<int,int> > CNAV_I0_DOT({{133,15}});
+const double CNAV_I0_DOT_LSB = TWO_N44;
+const std::vector<std::pair<int,int> > CNAV_CIS({{148,16}});
+const double CNAV_CIS_LSB = TWO_N30;
+const std::vector<std::pair<int,int> > CNAV_CIC({{164,16}});
+const double CNAV_CIC_LSB = TWO_N30;
+const std::vector<std::pair<int,int> > CNAV_CRS({{180,24}});
+const double CNAV_CRS_LSB = TWO_N8;
+const std::vector<std::pair<int,int> > CNAV_CRC({{204,24}});
+const double CNAV_CRC_LSB = TWO_N8;
+const std::vector<std::pair<int,int> > CNAV_CUS({{228,21}});
+const double CNAV_CUS_LSB = TWO_N30;
+const std::vector<std::pair<int,int> > CNAV_CUC({{249,21}});
+const double CNAV_CUC_LSB = TWO_N30;
+
+
+// MESSAGE TYPE 30 (CLOCK, IONO, GRUP DELAY)
+
+const std::vector<std::pair<int,int> > CNAV_TOP2({{39,11}});
+const double CNAV_TOP2_LSB = 300;
+
+const std::vector<std::pair<int,int> > CNAV_URA_NED0({{50,5}});
+const std::vector<std::pair<int,int> > CNAV_URA_NED1({{55,3}});
+const std::vector<std::pair<int,int> > CNAV_URA_NED2({{58,3}});
+const std::vector<std::pair<int,int> > CNAV_TOC({{61,11}});
+const double CNAV_TOC_LSB = 300;
+const std::vector<std::pair<int,int> > CNAV_AF0({{72,26}});
+const double CNAV_AF0_LSB = TWO_N60;
+const std::vector<std::pair<int,int> > CNAV_AF1({{98,20}});
+const double CNAV_AF1_LSB = TWO_N48;
+const std::vector<std::pair<int,int> > CNAV_AF2({{118,10}});
+const double CNAV_AF2_LSB = TWO_N35;
+const std::vector<std::pair<int,int> > CNAV_TGD({{128,13}});
+const double CNAV_TGD_LSB = TWO_N35;
+const std::vector<std::pair<int,int> > CNAV_ISCL1({{141,13}});
+const double CNAV_ISCL1_LSB = TWO_N35;
+const std::vector<std::pair<int,int> > CNAV_ISCL2({{154,13}});
+const double CNAV_ISCL2_LSB = TWO_N35;
+const std::vector<std::pair<int,int> > CNAV_ISCL5I({{167,13}});
+const double CNAV_ISCL5I_LSB = TWO_N35;
+const std::vector<std::pair<int,int> > CNAV_ISCL5Q({{180,13}});
+const double CNAV_ISCL5Q_LSB = TWO_N35;
+const std::vector<std::pair<int,int> > CNAV_ALPHA0({{193,8}});
+const double CNAV_ALPHA0_LSB = TWO_N30;
+const std::vector<std::pair<int,int> > CNAV_ALPHA1({{201,8}});
+const double CNAV_ALPHA1_LSB = TWO_N27;
+const std::vector<std::pair<int,int> > CNAV_ALPHA2({{209,8}});
+const double CNAV_ALPHA2_LSB = TWO_N24;
+const std::vector<std::pair<int,int> > CNAV_ALPHA3({{217,8}});
+const double CNAV_ALPHA3_LSB = TWO_N24;
+const std::vector<std::pair<int,int> > CNAV_BETA0({{225,8}});
+const double CNAV_BETA0_LSB = TWO_P11;
+const std::vector<std::pair<int,int> > CNAV_BETA1({{233,8}});
+const double CNAV_BETA1_LSB = TWO_P14;
+const std::vector<std::pair<int,int> > CNAV_BETA2({{241,8}});
+const double CNAV_BETA2_LSB = TWO_P16;
+const std::vector<std::pair<int,int> > CNAV_BETA3({{249,8}});
+const double CNAV_BETA3_LSB = TWO_P16;
+const std::vector<std::pair<int,int> > CNAV_WNOP({{257,8}});
+
+
+// TODO: Add more frames (Almanac, etc...)
+
+
 
 #endif /* GNSS_SDR_GPS_L2C_H_ */

@@ -76,12 +76,17 @@ const double TWO_N35 = (2.91038304567337e-011);	  //!< 2^-35
 
 const double TWO_N38 = (3.637978807091713e-012);  //!< 2^-38
 const double TWO_N43 = (1.136868377216160e-013);  //!< 2^-43
+const double TWO_N44 = (5.684341886080802e-14);  //!< 2^-44
 const double TWO_N46 = (1.4210854715202e-014);    //!< 2^-46
+const double TWO_N48 = (3.552713678800501e-15);    //!< 2^-46
 
 const double TWO_N50 = (8.881784197001252e-016);  //!< 2^-50
 const double TWO_N51 = (4.44089209850063e-016);   //!< 2^-51
 const double TWO_N55 = (2.775557561562891e-017);  //!< 2^-55
+const double TWO_N57 = (6.938893903907228e-18);  //!< 2^-57
 const double TWO_N59 = (1.73472347597681e-018);   //!< 2^-59
+const double TWO_N60 = (8.673617379884036e-19);   //!< 2^-60
+
 
 const double PI_TWO_N19 = (5.992112452678286e-006);  //!< Pi*2^-19
 const double PI_TWO_N43 = (3.571577341960839e-013);  //!< Pi*2^-43

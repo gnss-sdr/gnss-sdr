@@ -63,6 +63,22 @@ galileo_e1_ls_pvt::galileo_e1_ls_pvt(int nchannels, std::string dump_filename, b
                     }
                 }
         }
+    d_valid_observations = 0;
+    d_latitude_d = 0.0;
+    d_longitude_d = 0.0;
+    d_height_m = 0.0;
+    d_avg_latitude_d = 0.0;
+    d_avg_longitude_d = 0.0;
+    d_avg_height_m = 0.0;
+    d_x_m = 0.0;
+    d_y_m = 0.0;
+    d_z_m = 0.0;
+    d_GDOP = 0.0;
+    d_PDOP = 0.0;
+    d_HDOP = 0.0;
+    d_VDOP = 0.0;
+    d_TDOP = 0.0;
+    d_flag_averaging = false;
 }
 
 

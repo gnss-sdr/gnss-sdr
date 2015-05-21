@@ -47,6 +47,25 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
     d_averaging_depth = 0;
     d_galileo_current_time = 0;
     b_valid_position = false;
+    d_latitude_d = 0.0;
+    d_longitude_d = 0.0;
+    d_height_m = 0.0;
+    d_avg_latitude_d = 0.0;
+    d_avg_longitude_d = 0.0;
+    d_avg_height_m = 0.0;
+    d_x_m = 0.0;
+    d_y_m = 0.0;
+    d_z_m = 0.0;
+    d_GDOP = 0.0;
+    d_PDOP = 0.0;
+    d_HDOP = 0.0;
+    d_VDOP = 0.0;
+    d_TDOP = 0.0;
+    d_flag_averaging = false;
+    d_valid_observations = 0;
+    d_valid_GPS_obs = 0;
+    d_valid_GAL_obs = 0;
+    count_valid_position = 0;
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {

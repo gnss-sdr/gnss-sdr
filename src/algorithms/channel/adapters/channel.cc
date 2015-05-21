@@ -190,7 +190,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
 
 void Channel::start_acquisition()
 {
-    channel_fsm_.Event_gps_start_acquisition();
+    channel_fsm_.Event_start_acquisition();
 }
 
 
@@ -215,7 +215,7 @@ void Channel::run()
 
 void Channel::standby()
 {
-    channel_fsm_.Event_gps_failed_tracking_standby();
+    channel_fsm_.Event_failed_tracking_standby();
 }
 
 
@@ -260,18 +260,18 @@ void Channel::process_channel_messages()
     case 1:
         DLOG(INFO) << "Channel " << channel_ << " ACQ SUCCESS satellite " <<
             gnss_synchro_.System << " " << gnss_synchro_.PRN;
-        channel_fsm_.Event_gps_valid_acquisition();
+        channel_fsm_.Event_valid_acquisition();
         break;
     case 2:
         DLOG(INFO) << "Channel " << channel_
             << " ACQ FAILED satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
         if (repeat_ == true)
             {
-                channel_fsm_.Event_gps_failed_acquisition_repeat();
+                channel_fsm_.Event_failed_acquisition_repeat();
             }
         else
             {
-                channel_fsm_.Event_gps_failed_acquisition_no_repeat();
+                channel_fsm_.Event_failed_acquisition_no_repeat();
             }
         break;
     default:

@@ -38,7 +38,7 @@
 #include <string>
 #include <gnuradio/msg_queue.h>
 #include "channel_interface.h"
-#include "gps_l1_ca_channel_fsm.h"
+#include "channel_fsm.h"
 #include "control_message_factory.h"
 #include "concurrent_queue.h"
 #include "gnss_signal.h"
@@ -104,7 +104,7 @@ private:
     bool stop_;
     int message_;
     bool repeat_;
-    GpsL1CaChannelFsm channel_fsm_;
+    ChannelFsm channel_fsm_;
     boost::shared_ptr<gr::msg_queue> queue_;
     concurrent_queue<int> channel_internal_queue_;
     boost::thread ch_thread_;

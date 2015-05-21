@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_channel_fsm.h
+ * \file channel_fsm.h
  * \brief Interface of the State Machine for channel using boost::statechart
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
@@ -29,8 +29,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_CHANNEL_FSM_H
-#define GNSS_SDR_GPS_L1_CA_CHANNEL_FSM_H
+#ifndef GNSS_SDR_CHANNEL_FSM_H
+#define GNSS_SDR_CHANNEL_FSM_H
 
 #include <cstring>
 #include <iostream>
@@ -52,19 +52,19 @@
 namespace sc = boost::statechart;
 namespace mpl = boost::mpl;
 
-struct gps_channel_idle_fsm_S0;
-struct gps_channel_acquiring_fsm_S1;
-struct gps_channel_tracking_fsm_S2;
-struct gps_channel_waiting_fsm_S3;
+struct channel_idle_fsm_S0;
+struct channel_acquiring_fsm_S1;
+struct channel_tracking_fsm_S2;
+struct channel_waiting_fsm_S3;
 
 /*!
  * \brief This class implements a State Machine for channel using boost::statechart
  */
-class GpsL1CaChannelFsm: public sc::state_machine<GpsL1CaChannelFsm, gps_channel_idle_fsm_S0>
+class ChannelFsm: public sc::state_machine<ChannelFsm, channel_idle_fsm_S0>
 {
 public:
-    GpsL1CaChannelFsm();
-    GpsL1CaChannelFsm(AcquisitionInterface *acquisition);
+    ChannelFsm();
+    ChannelFsm(AcquisitionInterface *acquisition);
 
     void set_acquisition(AcquisitionInterface *acquisition);
     void set_tracking(TrackingInterface *tracking);
@@ -75,12 +75,12 @@ public:
     void request_satellite();
 
     //FSM EVENTS
-    void Event_gps_start_acquisition();
-    void Event_gps_valid_acquisition();
-    void Event_gps_failed_acquisition_repeat();
-    void Event_gps_failed_acquisition_no_repeat();
+    void Event_start_acquisition();
+    void Event_valid_acquisition();
+    void Event_failed_acquisition_repeat();
+    void Event_failed_acquisition_no_repeat();
     //void Event_gps_failed_tracking_reacq();
-    void Event_gps_failed_tracking_standby();
+    void Event_failed_tracking_standby();
 
 private:
     AcquisitionInterface *acq_;
@@ -89,4 +89,4 @@ private:
     unsigned int channel_;
 };
 
-#endif /*GNSS_SDR_GPS_L1_CA_CHANNEL_FSM_H*/
+#endif /*GNSS_SDR_CHANNEL_FSM_H*/

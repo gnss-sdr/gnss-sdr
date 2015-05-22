@@ -162,7 +162,7 @@ int main(int argc, char **argv)
     }
     catch(...)
     {
-            LOW(WARNING) << "Unexpected catch";
+            LOG(WARNING) << "Unexpected catch";
     }
     google::ShutDownCommandLineFlags();
 }

@@ -160,10 +160,9 @@ int main(int argc, char **argv)
             google::InitGoogleLogging(argv[0]);
             return RUN_ALL_TESTS();
     }
-    catch(const testing::internal::GoogleTestFailureException& e)
-    {
-            std::cout << e.what() << std::endl;
-    }
     catch(...)
-    {}
+    {
+            LOW(WARNING) << "Unexpected catch";
+    }
+    google::ShutDownCommandLineFlags();
 }

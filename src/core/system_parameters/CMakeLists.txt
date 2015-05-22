@@ -37,6 +37,7 @@ set(SYSTEM_PARAMETERS_SOURCES
 	 sbas_satellite_correction.cc
 	 sbas_telemetry_data.cc
 	 galileo_fnav_message.cc
+	 gps_cnav_ephemeris.cc
 )
 
 

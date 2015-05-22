@@ -300,14 +300,14 @@ void gps_l2_m_dll_pll_tracking_cc::update_local_carrier()
 {
     float phase_rad, phase_step_rad;
 
-    phase_step_rad = static_cast<float>(GPS_TWO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
+    phase_step_rad = static_cast<float>(GPS_L2_TWO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
     phase_rad = d_rem_carr_phase_rad;
     for(int i = 0; i < d_current_prn_length_samples; i++)
         {
             d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
             phase_rad += phase_step_rad;
         }
-    //d_rem_carr_phase_rad = fmod(phase_rad, GPS_TWO_PI);
+    //d_rem_carr_phase_rad = fmod(phase_rad, GPS_L2_TWO_PI);
     //d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + d_rem_carr_phase_rad;
 }
 
@@ -413,7 +413,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
 
             // ################## PLL ##########################################################
             // PLL discriminator
-            carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / static_cast<float>(GPS_TWO_PI);
+            carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / static_cast<float>(GPS_L2_TWO_PI);
             // Carrier discriminator filter
             carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
             // New carrier Doppler frequency estimation
@@ -421,10 +421,10 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
             // New code Doppler frequency estimation
             d_code_freq_chips = GPS_L2_M_CODE_RATE_HZ + ((d_carrier_doppler_hz * GPS_L2_M_CODE_RATE_HZ) / GPS_L2_FREQ_HZ);
             //carrier phase accumulator for (K) doppler estimation
-            d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * GPS_L2_M_PERIOD;
+            d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_L2_TWO_PI * d_carrier_doppler_hz * GPS_L2_M_PERIOD;
             //remanent carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * GPS_L2_M_PERIOD;
-            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
+            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_L2_TWO_PI * d_carrier_doppler_hz * GPS_L2_M_PERIOD;
+            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_L2_TWO_PI);
 
             // ################## DLL ##########################################################
             // DLL discriminator

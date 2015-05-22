@@ -185,6 +185,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_acc_carrier_phase_rad = 0.0;
     d_code_phase_samples = 0;
     d_next_prn_length_samples = 0;
+    d_code_phase_step_chips = 0.0;
 }
 
 void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()

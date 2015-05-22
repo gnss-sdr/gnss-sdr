@@ -108,7 +108,7 @@ public:
         //std::cout << "Enter Channel_waiting_S3 " << std::endl;
         context<ChannelFsm> ().request_satellite();
     }
-    ~channel_waiting_fsm_S3(){}
+   // ~channel_waiting_fsm_S3(){}
 };
 
 

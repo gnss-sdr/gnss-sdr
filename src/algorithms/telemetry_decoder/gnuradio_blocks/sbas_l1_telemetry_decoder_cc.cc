@@ -75,6 +75,7 @@ sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
     LOG(INFO) << "SBAS L1 TELEMETRY PROCESSING: satellite " << d_satellite;
     d_fs_in = fs_in;
     d_block_size = d_samples_per_symbol * d_symbols_per_bit * d_block_size_in_bits;
+    d_channel = 0;
     set_output_multiple (1);
 }
 

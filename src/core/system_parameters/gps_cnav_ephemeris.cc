@@ -1,5 +1,5 @@
 /*!
- * \file Gps_CNAV_Ephemeris.cc
+ * \file gps_cnav_ephemeris.cc
  * \brief  Interface of a GPS CNAV EPHEMERIS storage and orbital model functions
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
@@ -64,45 +64,6 @@ Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
     b_integrity_status_flag = false;
     b_alert_flag = false;         // If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
     b_antispoofing_flag = false;  //  If true, the AntiSpoofing mode is ON in that SV
-
-    //Plane A (info from http://www.navcen.uscg.gov/?Do=constellationStatus)
-    satelliteBlock[9] = "IIA";
-    satelliteBlock[31] = "IIR-M";
-    satelliteBlock[8] = "IIA";
-    satelliteBlock[7] = "IIR-M";
-    satelliteBlock[27] = "IIA";
-    //Plane B
-    satelliteBlock[16] = "IIR";
-    satelliteBlock[25] = "IIF";
-    satelliteBlock[28] = "IIR";
-    satelliteBlock[12] = "IIR-M";
-    satelliteBlock[30] = "IIA";
-    //Plane C
-    satelliteBlock[29] = "IIR-M";
-    satelliteBlock[3] = "IIA";
-    satelliteBlock[19] = "IIR";
-    satelliteBlock[17] = "IIR-M";
-    satelliteBlock[6] = "IIA";
-    //Plane D
-    satelliteBlock[2] = "IIR";
-    satelliteBlock[1] = "IIF";
-    satelliteBlock[21] = "IIR";
-    satelliteBlock[4] = "IIA";
-    satelliteBlock[11] = "IIR";
-    satelliteBlock[24] = "IIA"; // Decommissioned from active service on 04 Nov 2011
-    //Plane E
-    satelliteBlock[20] = "IIR";
-    satelliteBlock[22] = "IIR";
-    satelliteBlock[5] = "IIR-M";
-    satelliteBlock[18] = "IIR";
-    satelliteBlock[32] = "IIA";
-    satelliteBlock[10] = "IIA";
-    //Plane F
-    satelliteBlock[14] = "IIR";
-    satelliteBlock[15] = "IIR-M";
-    satelliteBlock[13] = "IIR";
-    satelliteBlock[23] = "IIR";
-    satelliteBlock[26] = "IIA";
 
     d_satClkDrift = 0.0;
     d_dtr = 0.0;

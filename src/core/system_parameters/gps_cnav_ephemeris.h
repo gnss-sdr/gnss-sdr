@@ -1,7 +1,7 @@
 /*!
- * \file Gps_CNAV_Ephemeris.h
- * \brief  Interface of a GPS EPHEMERIS storage
- * \author Javier Arribas, 2013. jarribas(at)cttc.es
+ * \file gps_cnav_ephemeris.h
+ * \brief  Interface of a GPS CNAV EPHEMERIS storage
+ * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -29,8 +29,8 @@
  */
 
 
-#ifndef GNSS_SDR_Gps_CNAV_Ephemeris_H_
-#define GNSS_SDR_Gps_CNAV_Ephemeris_H_
+#ifndef GNSS_SDR_GPS_CNAV_EPHEMERIS_H_
+#define GNSS_SDR_GPS_CNAV_EPHEMERIS_H_
 
 #include <iostream>
 #include <map>
@@ -54,17 +54,17 @@ public:
 
     //Message Types 10 and 11 Parameters (1 of 2)
     int i_GPS_week;          //!< GPS week number, aka WN [week]
-    int i_URA;	//!< ED Accuracy Index
-    int i_signal_health; //!< Signal health (L1/L2/L5)
-    double d_Top; //!< Data predict time of week
-    double d_DELTA_A; //!< Semi-major axis difference at reference time
-    double d_A_DOT; //!< Change rate in semi-major axis
+    int i_URA;	             //!< ED Accuracy Index
+    int i_signal_health;     //!< Signal health (L1/L2/L5)
+    double d_Top;            //!< Data predict time of week
+    double d_DELTA_A;        //!< Semi-major axis difference at reference time
+    double d_A_DOT;          //!< Change rate in semi-major axis
     double d_Delta_n;        //!< Mean Motion Difference From Computed Value [semi-circles/s]
-    double d_DELTA_DOT_N; // Rate of mean motion difference from computed value
+    double d_DELTA_DOT_N;    //!< Rate of mean motion difference from computed value
     double d_M_0;            //!< Mean Anomaly at Reference Time [semi-circles]
-    double d_e_eccentricity; //< Eccentricity
+    double d_e_eccentricity; //!< Eccentricity
     double d_OMEGA;          //!< Argument of Perigee [semi-cicles]
-    double d_OMEGA0;          //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-cicles]
+    double d_OMEGA0;         //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-cicles]
     double d_Toe;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
     double d_DELTA_OMEGA_DOT;      //!< Rate of Right Ascension  difference [semi-circles/s]
     double d_i_0;            //!< Inclination Angle at Reference Time [semi-circles]
@@ -78,13 +78,13 @@ public:
 
     //Clock Correction and Accuracy Parameters
     double d_Toc;            //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
-    double d_A_f0;          //!< Coefficient 0 of code phase offset model [s]
-    double d_A_f1;          //!< Coefficient 1 of code phase offset model [s/s]
-    double d_A_f2;          //!< Coefficient 2 of code phase offset model [s/s^2]
+    double d_A_f0;           //!< Coefficient 0 of code phase offset model [s]
+    double d_A_f1;           //!< Coefficient 1 of code phase offset model [s/s]
+    double d_A_f2;           //!< Coefficient 2 of code phase offset model [s/s^2]
 
-    double d_URA0;			//!<NED Accuracy Index
-    double d_URA1;			//!<NED Accuracy Change Index
-    double d_URA2;			//!< NED Accuracy Change Rate Index
+    double d_URA0;           //!<NED Accuracy Index
+    double d_URA1;           //!<NED Accuracy Change Index
+    double d_URA2;           //!< NED Accuracy Change Rate Index
 
 
     //Group Delay Differential Parameters
@@ -95,9 +95,6 @@ public:
     double d_ISCL5Q;
 
     double d_TOW;            //!< Time of GPS Week of the ephemeris set (taken from subframes TOW) [s]
-
-
-
 
     // Flags
 
@@ -128,8 +125,6 @@ public:
     double d_satvel_X;    //!< Earth-fixed velocity coordinate x of the satellite [m]
     double d_satvel_Y;    //!< Earth-fixed velocity coordinate y of the satellite [m]
     double d_satvel_Z;    //!< Earth-fixed velocity coordinate z of the satellite [m]
-
-    std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
     template<class Archive>
 

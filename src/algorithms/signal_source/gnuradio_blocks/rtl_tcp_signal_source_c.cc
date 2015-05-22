@@ -300,7 +300,7 @@ rtl_tcp_signal_source_c::handle_read (const boost::system::error_code &ec,
           while (!not_full( )) {
             // uh-oh, buffer overflow
             // wait until there's space for more
-            not_empty_.notify_one ();
+            not_empty_.notify_one (); // needed?
             not_full_.wait (lock,
                             boost::bind (&rtl_tcp_signal_source_c::not_full,
                                          this));

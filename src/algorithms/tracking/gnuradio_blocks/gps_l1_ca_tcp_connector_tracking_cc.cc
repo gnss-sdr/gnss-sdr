@@ -185,6 +185,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_acc_carrier_phase_rad = 0.0;
     d_code_phase_samples = 0;
     d_next_prn_length_samples = 0;
+    d_code_phase_step_chips = 0.0;
 }
 
 void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
@@ -472,7 +473,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * (double)d_fs_in;
             d_rem_code_phase_samples = d_next_rem_code_phase_samples;
-            //K_blk_samples = T_prn_samples + d_rem_code_phase_samples;//-code_error*(double)d_fs_in;
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples;//-code_error*(double)d_fs_in;
 
             // Update the current PRN delay (code phase in samples)
             double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;

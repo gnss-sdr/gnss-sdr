@@ -181,6 +181,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_acc_code_phase_secs = 0.0;
     d_code_phase_samples = 0;
     d_next_prn_length_samples = 0;
+    d_carrier_doppler_hz = 0.0;
 }
 
 

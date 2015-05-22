@@ -73,4 +73,20 @@ Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
     d_satvel_X = 0.0;
     d_satvel_Y = 0.0;
     d_satvel_Z = 0.0;
+
+    i_URA = 0;
+    i_signal_health = 0;
+    d_Top = 0.0;
+    d_DELTA_A = 0.0;
+    d_A_DOT = 0.0;
+    d_Delta_n = 0.0;
+    d_DELTA_DOT_N = 0.0;
+    d_DELTA_OMEGA_DOT = 0.0;
+    d_URA0 = 0.0;
+    d_URA1 = 0.0;
+    d_URA2 = 0.0;
+    d_ISCL1 = 0.0;
+    d_ISCL2 = 0.0;
+    d_ISCL5I = 0.0;
+    d_ISCL5Q = 0.0;
 }

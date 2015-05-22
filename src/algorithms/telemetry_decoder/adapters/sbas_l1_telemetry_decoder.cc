@@ -69,6 +69,7 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configura
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     // make telemetry decoder object
     telemetry_decoder_ = sbas_l1_make_telemetry_decoder_cc(satellite_, 0, (long)fs_in, vector_length_, queue_, dump_); // TODO fix me
+    channel_ = 0;
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     // set the queues;
     telemetry_decoder_->set_raw_msg_queue(&global_sbas_raw_msg_queue);

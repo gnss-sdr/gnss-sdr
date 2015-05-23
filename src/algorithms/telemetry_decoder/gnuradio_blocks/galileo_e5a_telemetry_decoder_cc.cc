@@ -247,7 +247,7 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
 //
     d_sample_counter = 0;
     d_state = 0;
-    d_preamble_lock=false;
+    d_preamble_lock = false;
     d_preamble_index = 0;
     d_preamble_time_seconds = 0;
     d_flag_frame_sync = false;
@@ -260,6 +260,15 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
 
     d_CRC_error_counter = 0;
     d_sign_init = 0;
+
+    d_flag_preamble = false;
+    d_ephemeris_queue = 0;
+    d_iono_queue = 0;
+    d_utc_model_queue = 0;
+    d_almanac_queue = 0;
+    d_channel = 0;
+    Prn_timestamp_at_preamble_ms = 0;
+    flag_TOW_set = false;
 }
 
 galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()

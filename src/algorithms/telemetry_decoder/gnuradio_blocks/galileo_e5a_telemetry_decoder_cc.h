@@ -104,7 +104,7 @@ private:
     signed int d_preamble_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
 //    signed int d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
     double d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-    signed int *d_preamble_symbols;
+   // signed int *d_preamble_symbols;
     double d_current_symbol;
     long unsigned int d_symbol_counter;
     int d_prompt_counter;

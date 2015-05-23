@@ -34,6 +34,10 @@
 #define GNSS_SDR_VERSION "0.0.5"
 #endif
 
+#ifndef GOOGLE_STRIP_LOG
+#define GOOGLE_STRIP_LOG 0
+#endif
+
 #include <ctime>
 #include <cstdlib>
 #include <memory>
@@ -131,34 +135,37 @@ int main(int argc, char** argv)
     google::ParseCommandLineFlags(&argc, &argv, true);
     std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait." << std::endl;
 
-    google::InitGoogleLogging(argv[0]);
-    if (FLAGS_log_dir.empty())
+    if(GOOGLE_STRIP_LOG == 0)
         {
-            std::cout << "Logging will be done at "
-                << boost::filesystem::temp_directory_path()
-                << std::endl
-                << "Use gnss-sdr --log_dir=/path/to/log to change that."
-                << std::endl;
-        }
-    else
-        {
-            const boost::filesystem::path p (FLAGS_log_dir);
-            if (!boost::filesystem::exists(p))
+            google::InitGoogleLogging(argv[0]);
+            if (FLAGS_log_dir.empty())
                 {
-                    std::cout << "The path "
-                              << FLAGS_log_dir
-                              << " does not exist, attempting to create it."
+                    std::cout << "Logging will be done at "
+                              << boost::filesystem::temp_directory_path()
+                              << std::endl
+                              << "Use gnss-sdr --log_dir=/path/to/log to change that."
                               << std::endl;
-                    boost::system::error_code ec;
-                    boost::filesystem::create_directory(p, ec);
-                    if(ec != 0)
-                        {
-                            std::cout << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended." << std::endl;
-                            google::ShutDownCommandLineFlags();
-                            std::exit(0);
-                        }
                 }
-            std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
+            else
+                {
+                    const boost::filesystem::path p (FLAGS_log_dir);
+                    if (!boost::filesystem::exists(p))
+                        {
+                            std::cout << "The path "
+                                      << FLAGS_log_dir
+                                      << " does not exist, attempting to create it."
+                                      << std::endl;
+                            boost::system::error_code ec;
+                            boost::filesystem::create_directory(p, ec);
+                            if(ec != 0)
+                                {
+                                    std::cout << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended." << std::endl;
+                                    google::ShutDownCommandLineFlags();
+                                    std::exit(0);
+                                }
+                        }
+                    std::cout << "Logging with be done at " << FLAGS_log_dir << std::endl;
+                }
         }
 
     std::unique_ptr<ControlThread> control_thread(new ControlThread());

@@ -338,7 +338,11 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
             state = it->get_anchestor_state_of_current_state(state);
             t_out--;
         }
-    indicator_metric /= n_im;
+    if(n_im > 0)
+        {
+            indicator_metric /= n_im;
+        }
+
     VLOG(BLOCK) << "indicator metric: " << indicator_metric;
     // remove old states
     if (d_trellis_paths.begin() + traceback_length + overstep_length <= d_trellis_paths.end())

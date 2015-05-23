@@ -101,7 +101,7 @@ int Nmea_Printer::init_serial (std::string serial_device)
     fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1) return fd; //failed to open TTY port
 
-    fcntl(fd, F_SETFL, 0);    // clear all flags on descriptor, enable direct I/O
+    if(fcntl(fd, F_SETFL, 0) == -1) LOG(INFO) << "Error enabling direct I/O";   // clear all flags on descriptor, enable direct I/O
     tcgetattr(fd, &options);   // read serial port options
 
     BAUD  = B9600;

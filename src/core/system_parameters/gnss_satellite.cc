@@ -273,7 +273,7 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
                 block = std::string("IIR-M"); //Plane A
                 break;
             case 8 :
-                block = std::string("UNKNOWN");   // Decommissioned
+                block = std::string("IIA*");   // Decommissed
                 break;
             case 9 :
                 block = std::string("IIF");   //Plane F

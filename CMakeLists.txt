@@ -52,6 +52,7 @@ option(ENABLE_OPENCL "Enable building of processing blocks implemented with Open
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
 option(ENABLE_PACKAGING "Enable software packaging" OFF)
 option(ENABLE_OWN_GLOG "Download glog and link it to gflags" OFF)
+option(ENABLE_LOG "Enable logging" ON)
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
 endif(ENABLE_PACKAGING)
@@ -595,6 +596,11 @@ else(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
      add_library(glog-${glog_RELEASE} UNKNOWN IMPORTED)
      set_property(TARGET glog-${glog_RELEASE} PROPERTY IMPORTED_LOCATION "${GLOG_LIBRARIES}")
 endif(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
+
+if(NOT ENABLE_LOG)
+     message(STATUS "Logging is not enabled")
+     add_definitions(-DGOOGLE_STRIP_LOG=1)
+endif(NOT ENABLE_LOG)
 
 
 

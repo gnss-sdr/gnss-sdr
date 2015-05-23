@@ -126,5 +126,5 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
             _dest[(i + delay) % _samplesPerCode] = _code[i];
         }
 
-    free(_code);
+    delete[] _code;
 }

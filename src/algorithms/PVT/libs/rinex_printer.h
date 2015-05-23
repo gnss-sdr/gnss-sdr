@@ -513,7 +513,7 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
     long iexp;
     //If checkSwitch is false, always redo the exponential. Otherwise,
     //set it to false.
-    bool redoexp=!checkSwitch;
+    bool redoexp =! checkSwitch;
 
     // Check for decimal place within specified boundaries
     if ((idx == 0) || (idx >= (startPos + length - expLen - 1)))
@@ -526,12 +526,12 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
     // account for the possibility of non-scientific
     // notation (more than one digit to the left of the
     // decimal)
-    if (idx > startPos)
+    if ((idx > startPos) && (idx >= 1))
         {
             redoexp = true;
             // Swap digit and decimal.
-            aStr[idx] = aStr[idx-1];
-            aStr[idx-1] = '.';
+            aStr[idx] = aStr[idx - 1];
+            aStr[idx - 1] = '.';
             // Only add one to the exponent if the number is non-zero
             if (asDouble(aStr.substr(startPos, length)) != 0.0)
                 expAdd = 1;

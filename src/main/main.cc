@@ -176,13 +176,13 @@ int main(int argc, char** argv)
     {
             LOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
     }
-    catch( boost::lock_error & le )
-    {
-            LOG(FATAL) << "Lock error exception: " << boost::diagnostic_information(le);
-    }
     catch(std::exception const&  ex)
     {
             LOG(FATAL) << "STD exception: " << ex.what();
+    }
+    catch(...)
+    {
+            LOG(INFO) << "Unexpected catch";
     }
     // report the elapsed time
     gettimeofday(&tv, NULL);

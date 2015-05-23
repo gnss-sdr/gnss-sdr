@@ -103,7 +103,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
     d_bit_transition_flag = bit_transition_flag;
-    d_buffer_count=0;
+    d_buffer_count = 0;
     d_both_signal_components = both_signal_components_;
     d_CAF_window_hz = CAF_window_hz_;
 
@@ -137,6 +137,20 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
+
+    d_doppler_resolution = 0;
+    d_threshold = 0;
+    d_doppler_step = 250;
+    d_grid_doppler_wipeoffs = 0;
+    d_gnss_synchro = 0;
+    d_code_phase = 0;
+    d_doppler_freq = 0;
+    d_test_statistics = 0;
+    d_channel_internal_queue = 0;
+    d_CAF_vector_I = 0;
+    d_CAF_vector_Q = 0;
+    d_channel = 0;
+    d_gr_stream_buffer = 0;
 }
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc::~galileo_e5a_noncoherentIQ_acquisition_caf_cc()
@@ -365,7 +379,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
             // If buffer will be full in next iteration
             if (d_buffer_count >= d_fft_size - d_gr_stream_buffer)
                 {
-                    d_state=2;
+                    d_state = 2;
                 }
             d_buffer_count += buff_increment;
             d_sample_counter += buff_increment; // sample counter

@@ -175,6 +175,20 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
+    d_channel_internal_queue = 0;
+    d_acquisition_gnss_synchro = 0;
+    d_channel = 0;
+    tmp_E = 0;
+    tmp_P = 0;
+    tmp_L = 0;
+    d_acq_code_phase_samples = 0;
+    d_acq_carrier_doppler_hz = 0;
+    d_carrier_doppler_hz = 0;
+    d_acc_carrier_phase_rad = 0;
+    d_code_phase_samples = 0;
+    d_acc_code_phase_secs = 0;
+    d_state = 0;
+
     systemName["E"] = std::string("Galileo");
 }
 

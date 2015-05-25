@@ -54,6 +54,7 @@ public:
     std::string get_system() const;            //!< Gets the satellite system {"GPS", "GLONASS", "SBAS", "Galileo", "Beidou"}
     std::string get_system_short() const;      //!< Gets the satellite system {"G", "R", "SBAS", "E", "C"}
     std::string get_block() const;             //!< Gets the satellite block. If GPS, returns {"IIA", "IIR", "IIR-M", "IIF"}
+    std::string what_block(const std::string& system_, unsigned int PRN_); //!< Gets the block of a given satellite
     friend bool operator== (const Gnss_Satellite &, const Gnss_Satellite &);  //!< operator== for comparison
     friend std::ostream& operator<<(std::ostream &, const Gnss_Satellite &);  //!< operator<< for pretty printing
     //Gnss_Satellite& operator=(const Gnss_Satellite &);
@@ -68,6 +69,5 @@ private:
     void set_block(const std::string& system_, unsigned int PRN_ );
     std::set<std::string> system_set;     // = {"GPS", "GLONASS", "SBAS", "Galileo", "Compass"};
     void reset();
-
 };
 #endif

@@ -242,9 +242,9 @@ std::string Gnss_Satellite::get_block() const
 
 
 
-
-void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
+std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int PRN_)
 {
+    std::string block_ = "Unknown";
     if (system_.compare("GPS") == 0)
         {
             switch ( PRN_ )
@@ -252,103 +252,103 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
             // info from http://www.navcen.uscg.gov/?Do=constellationStatus
 
             case 1 :
-                block = std::string("IIF");   //Plane D
+                block_ = std::string("IIF");   //Plane D
                 break;
             case 2 :
-                block = std::string("IIR");   //Plane D
+                block_ = std::string("IIR");   //Plane D
                 break;
             case 3 :
-                block = std::string("IIF");   //Plane E
+                block_ = std::string("IIF");   //Plane E
                 break;
             case 4 :
-                block = std::string("IIA");   //Plane D
+                block_ = std::string("IIA");   //Plane D
                 break;
             case 5 :
-                block = std::string("IIR-M"); //Plane E
+                block_ = std::string("IIR-M"); //Plane E
                 break;
             case 6 :
-                block = std::string("IIF");   //Plane D
+                block_ = std::string("IIF");   //Plane D
                 break;
             case 7 :
-                block = std::string("IIR-M"); //Plane A
+                block_ = std::string("IIR-M"); //Plane A
                 break;
             case 8 :
-                block = std::string("IIA*");   // Decommissed
+                block_ = std::string("IIA*");   // Decommissed
                 break;
             case 9 :
-                block = std::string("IIF");   //Plane F
+                block_ = std::string("IIF");   //Plane F
                 break;
             case 10 :
-                block = std::string("IIA");   //Plane E
+                block_ = std::string("IIA");   //Plane E
                 break;
             case 11 :
-                block = std::string("IIR");   //Plane D
+                block_ = std::string("IIR");   //Plane D
                 break;
             case 12 :
-                block = std::string("IIR-M"); //Plane B
+                block_ = std::string("IIR-M"); //Plane B
                 break;
             case 13 :
-                block = std::string("IIR");   //Plane F
+                block_ = std::string("IIR");   //Plane F
                 break;
             case 14 :
-                block = std::string("IIR");   //Plane F
+                block_ = std::string("IIR");   //Plane F
                 break;
             case 15 :
-                block = std::string("IIR-M"); //Plane F
+                block_ = std::string("IIR-M"); //Plane F
                 break;
             case 16 :
-                block = std::string("IIR");   //Plane B
+                block_ = std::string("IIR");   //Plane B
                 break;
             case 17 :
-                block = std::string("IIR-M"); //Plane C
+                block_ = std::string("IIR-M"); //Plane C
                 break;
             case 18 :
-                block = std::string("IIR");   //Plane E
+                block_ = std::string("IIR");   //Plane E
                 break;
             case 19 :
-                block = std::string("IIR");   //Plane D
+                block_ = std::string("IIR");   //Plane D
                 break;
             case 20 :
-                block = std::string("IIR");   //Plane B
+                block_ = std::string("IIR");   //Plane B
                 break;
             case 21 :
-                block = std::string("IIR");   //Plane D
+                block_ = std::string("IIR");   //Plane D
                 break;
             case 22 :
-                block = std::string("IIR");   //Plane E
+                block_ = std::string("IIR");   //Plane E
                 break;
             case 23 :
-                block = std::string("IIR");   //Plane F
+                block_ = std::string("IIR");   //Plane F
                 break;
             case 24 :
-                block = std::string("IIF");   //Plane A
+                block_ = std::string("IIF");   //Plane A
                 break;
             case 25 :
-                block = std::string("IIF");   //Plane B
+                block_ = std::string("IIF");   //Plane B
                 break;
             case 26 :
-                block = std::string("IIF");   //Plane B
+                block_ = std::string("IIF");   //Plane B
                 break;
             case 27 :
-                block = std::string("IIF");   //Plane C
+                block_ = std::string("IIF");   //Plane C
                 break;
             case 28 :
-                block = std::string("IIR");   //Plane B
+                block_ = std::string("IIR");   //Plane B
                 break;
             case 29 :
-                block = std::string("IIR-M"); //Plane C
+                block_ = std::string("IIR-M"); //Plane C
                 break;
             case 30 :
-                block = std::string("IIF");   //Plane A
+                block_ = std::string("IIF");   //Plane A
                 break;
             case 31 :
-                block = std::string("IIR-M"); //Plane A
+                block_ = std::string("IIR-M"); //Plane A
                 break;
             case 32 :
-                block = std::string("IIA");   //Plane E
+                block_ = std::string("IIA");   //Plane E
                 break;
             default :
-                block = std::string("Unknown");
+                block_ = std::string("Unknown");
             }
         }
 
@@ -361,161 +361,168 @@ void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_ )
             // See also http://www.glonass-center.ru/en/GLONASS/
 
             case 1 :
-                block = std::string("1");   //Plane 1
+                block_ = std::string("1");   //Plane 1
                 rf_link = 1;
                 break;
             case 2 :
-                block = std::string("-4");  //Plane 1
+                block_ = std::string("-4");  //Plane 1
                 rf_link = -4;
                 break;
             case 3 :
-                block = std::string("5");   //Plane 1
+                block_ = std::string("5");   //Plane 1
                 rf_link = 5;
                 break;
             case 4 :
-                block = std::string("6");   //Plane 1
+                block_ = std::string("6");   //Plane 1
                 rf_link = 6;
                 break;
             case 5 :
-                block = std::string("1");   //Plane 1
+                block_ = std::string("1");   //Plane 1
                 rf_link = 1;
                 break;
             case 6 :
-                block = std::string("-4");  //Plane 1
+                block_ = std::string("-4");  //Plane 1
                 rf_link = -4;
                 break;
             case 7 :
-                block = std::string("5");   //Plane 1
+                block_ = std::string("5");   //Plane 1
                 rf_link = 5;
                 break;
             case 8 :
-                block = std::string("6");   //Plane 1
+                block_ = std::string("6");   //Plane 1
                 rf_link = 6;
                 break;
             case 9 :
-                block = std::string("-2");  //Plane 2
+                block_ = std::string("-2");  //Plane 2
                 rf_link = -2;
                 break;
             case 10 :
-                block = std::string("-7");  //Plane 2
+                block_ = std::string("-7");  //Plane 2
                 rf_link = -7;
                 break;
             case 11 :
-                block = std::string("0");   //Plane 2
+                block_ = std::string("0");   //Plane 2
                 rf_link = 0;
                 break;
             case 12 :
-                block = std::string("-1");  //Plane 2
+                block_ = std::string("-1");  //Plane 2
                 rf_link = -1;
                 break;
             case 13 :
-                block = std::string("-2");  //Plane 2
+                block_ = std::string("-2");  //Plane 2
                 rf_link = -2;
                 break;
             case 14 :
-                block = std::string("-7");  //Plane 2
+                block_ = std::string("-7");  //Plane 2
                 rf_link = -7;
                 break;
             case 15 :
-                block = std::string("0");   //Plane 2
+                block_ = std::string("0");   //Plane 2
                 rf_link = 0;
                 break;
             case 16 :
-                block = std::string("-1");  //Plane 2
+                block_ = std::string("-1");  //Plane 2
                 rf_link = -1;
                 break;
             case 17 :
-                block = std::string("4");   //Plane 3
+                block_ = std::string("4");   //Plane 3
                 rf_link = 4;
                 break;
             case 18 :
-                block = std::string("-3");  //Plane 3
+                block_ = std::string("-3");  //Plane 3
                 rf_link = -3;
                 break;
             case 19 :
-                block = std::string("3");   //Plane 3
+                block_ = std::string("3");   //Plane 3
                 rf_link = 3;
                 break;
             case 20 :
-                block = std::string("2");   //Plane 3
+                block_ = std::string("2");   //Plane 3
                 rf_link = 2;
                 break;
             case 21 :
-                block = std::string("4");   //Plane 3
+                block_ = std::string("4");   //Plane 3
                 rf_link = 4;
                 break;
             case 22 :
-                block = std::string("-3");  //Plane 3
+                block_ = std::string("-3");  //Plane 3
                 rf_link = -3;
                 break;
             case 23 :
-                block = std::string("3");   //Plane 3
+                block_ = std::string("3");   //Plane 3
                 rf_link = 3;
                 break;
             case 24 :
-                block = std::string("2");   //Plane 3
+                block_ = std::string("2");   //Plane 3
                 rf_link = 2;
                 break;
             default :
-                block = std::string("Unknown");
+                block_ = std::string("Unknown");
             }
         }
     if (system_.compare("SBAS") == 0)
+        {
+            switch ( PRN_ )
             {
-                switch ( PRN_ )
-                {
-                case 122 :
-                    block = std::string("WAAS");  // WAAS Inmarsat 3F4 (AOR-W)
-                    break;
-                case 134 :
-                    block = std::string("WAAS");  // WAAS Inmarsat 3F3 (POR)
-                    break;
-                case 120 :
-                    block = std::string("EGNOS"); // EGNOS AOR-E Broadcast satellite http://www.egnos-pro.esa.int/index.html
-                    break;
-                case 124 :
-                    block = std::string("EGNOS"); // EGNOS ESA ARTEMIS used for EGNOS Operations
-                    break;
-                case 126 :
-                    block = std::string("EGNOS"); // EGNOS IOR-W  currently used by Industry to perform various tests on the system.
-                    break;
-                default:
-                    block = std::string("Unknown");
-                }
+            case 122 :
+                block_ = std::string("WAAS");  // WAAS Inmarsat 3F4 (AOR-W)
+                break;
+            case 134 :
+                block_ = std::string("WAAS");  // WAAS Inmarsat 3F3 (POR)
+                break;
+            case 120 :
+                block_ = std::string("EGNOS"); // EGNOS AOR-E Broadcast satellite http://www.egnos-pro.esa.int/index.html
+                break;
+            case 124 :
+                block_ = std::string("EGNOS"); // EGNOS ESA ARTEMIS used for EGNOS Operations
+                break;
+            case 126 :
+                block_ = std::string("EGNOS"); // EGNOS IOR-W  currently used by Industry to perform various tests on the system.
+                break;
+            default:
+                block_ = std::string("Unknown");
             }
+        }
     if (system_.compare("Galileo") == 0)
         {
             // Check http://en.wikipedia.org/wiki/List_of_Galileo_satellites
             switch ( PRN_ )
             {
             case 11 :
-                block = std::string("IOV-PFM"); //  PFM, the ProtoFlight Model (GSAT0101), launched from French Guiana at 10:30 GMT on October 21, 2011
+                block_ = std::string("IOV-PFM"); //  PFM, the ProtoFlight Model (GSAT0101), launched from French Guiana at 10:30 GMT on October 21, 2011
                 break;
             case 12 :
-                block = std::string("IOV-FM2"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011
+                block_ = std::string("IOV-FM2"); // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011
                 break;
             case 19 :
-                block = std::string("IOV-FM3"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3), launched on October 12, 2012
+                block_ = std::string("IOV-FM3"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3), launched on October 12, 2012
                 break;
             case 20 :
-                block = std::string("IOV-FM4"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4), launched on October 12, 2012. Unavailable.
+                block_ = std::string("IOV-FM4"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4), launched on October 12, 2012. Unavailable.
                 break;
             case 18 :
-                block = std::string("FOC-FM1"); // Galileo Full Operational Capability (FOC) satellite FM1, launched into incorrect orbit on August 22, 2014.
+                block_ = std::string("FOC-FM1"); // Galileo Full Operational Capability (FOC) satellite FM1, launched into incorrect orbit on August 22, 2014.
                 break;
             case 14 :
-                block = std::string("FOC-FM2"); // Galileo Full Operational Capability (FOC) satellite FM2, launched into incorrect orbit on August 22, 2014.
+                block_ = std::string("FOC-FM2"); // Galileo Full Operational Capability (FOC) satellite FM2, launched into incorrect orbit on August 22, 2014.
                 break;
             case 26 :
-                block = std::string("FOC-FM3"); // Galileo Full Operational Capability (FOC) satellite FM3, launched on March 27, 2015.
+                block_ = std::string("FOC-FM3"); // Galileo Full Operational Capability (FOC) satellite FM3, launched on March 27, 2015.
                 break;
             case 22 :
-                block = std::string("FOC-FM4"); // Galileo Full Operational Capability (FOC) satellite FM4, launched on March 27, 2015.
+                block_ = std::string("FOC-FM4"); // Galileo Full Operational Capability (FOC) satellite FM4, launched on March 27, 2015.
                 break;
             default:
-                block = std::string("Unknown(Simulated)");
+                block_ = std::string("Unknown(Simulated)");
             }
         }
+    return block_;
+}
+
+
+void Gnss_Satellite::set_block(const std::string& system_, unsigned int PRN_)
+{
+    block = what_block(system_, PRN_);
 }
 
 

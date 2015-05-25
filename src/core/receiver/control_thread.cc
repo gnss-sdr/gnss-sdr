@@ -935,11 +935,11 @@ void ControlThread::galileo_utc_model_data_collector()
 void ControlThread::keyboard_listener()
 {
     bool read_keys = true;
-    char c;
+    char c = '0';
     while(read_keys)
         {
             std::cin.get(c);
-            if (c =='q')
+            if (c == 'q')
                 {
                     std::cout << "Quit keystroke order received, stopping GNSS-SDR !!" << std::endl;
                     std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());

@@ -119,7 +119,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
 
     d_corr_acumulator = 0;
     d_signal_folded = 0;
-    d_code_folded = 0;
+    d_code_folded = new gr_complex[d_fft_size]();
     d_noise_floor_power = 0;
     d_doppler_resolution = 0;
     d_threshold = 0;
@@ -132,7 +132,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_test_statistics = 0;
     d_channel_internal_queue = 0;
     d_channel = 0;
-    d_code_folded = 0;
+    //d_code_folded = 0;
 
     // DLOG(INFO) << "END CONSTRUCTOR";
 }
@@ -174,7 +174,7 @@ void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float>* code)
     lation in time in the final steps of the acquisition stage*/
     memcpy(d_code, code, sizeof(gr_complex) * d_samples_per_code);
 
-    d_code_folded = new gr_complex[d_fft_size]();
+    //d_code_folded = new gr_complex[d_fft_size]();
     memcpy(d_fft_if->get_inbuf(), d_code_folded, sizeof(gr_complex) * (d_fft_size));
 
     /*perform folding of the code by the factorial factor parameter. Notice that
@@ -203,6 +203,8 @@ void pcps_quicksync_acquisition_cc::init()
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_mag = 0.0;
     d_input_power = 0.0;
+    
+    if(d_doppler_step == 0) d_doppler_step = 250;
 
     // Count the number of bins
     d_num_doppler_bins = 0;
@@ -472,7 +474,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                             std::streamsize n =  sizeof(float) * (d_fft_size); // complex file write
                             filename.str("");
                             filename << "../data/test_statistics_" << d_gnss_synchro->System
-                                     <<"_" << d_gnss_synchro->Signal << "_sat_"
+                                     << "_" << d_gnss_synchro->Signal << "_sat_"
                                      << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
                             d_dump_file.write((char*)d_magnitude_folded, n); //write directly |abs(x)|^2 in this Doppler bin?

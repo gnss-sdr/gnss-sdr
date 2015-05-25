@@ -38,6 +38,9 @@ set(SYSTEM_PARAMETERS_SOURCES
 	 sbas_telemetry_data.cc
 	 galileo_fnav_message.cc
 	 gps_cnav_ephemeris.cc
+	 gps_cnav_navigation_message.cc
+	 gps_cnav_iono.cc
+	 gps_cnav_utc_model.cc
 )
 
 

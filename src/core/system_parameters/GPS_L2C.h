@@ -60,7 +60,6 @@ const double GPS_L2_L_CODE_RATE_HZ = 0.5115e6;   //!< GPS L2 L code rate [chips/
 const int GPS_L2_L_CODE_LENGTH_CHIPS = 767250;   //!< GPS L2 L code length [chips]
 const double GPS_L2_L_PERIOD = 1.5;              //!< GPS L2 L code period [seconds]
 
-
 const int32_t GPS_L2C_M_INIT_REG[115] =
 {0742417664, 0756014035,0002747144,0066265724, // 1:4
 0601403471, 0703232733, 0124510070,0617316361, // 5:8
@@ -96,6 +95,8 @@ const int32_t GPS_L2C_M_INIT_REG[115] =
 // NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200E Appendix III)
 
 #define GPS_CNAV_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
+
+const int GPS_L2_CNAV_DATA_PAGE_BITS = 300; //!< GPS L2 CNAV page length, including preamble and CRC [bits]
 
 // common to all messages
 const std::vector<std::pair<int,int> > CNAV_PRN( { {9,6} } );
@@ -185,6 +186,7 @@ const std::vector<std::pair<int,int> > CNAV_ISCL5I({{167,13}});
 const double CNAV_ISCL5I_LSB = TWO_N35;
 const std::vector<std::pair<int,int> > CNAV_ISCL5Q({{180,13}});
 const double CNAV_ISCL5Q_LSB = TWO_N35;
+//Ionospheric parameters
 const std::vector<std::pair<int,int> > CNAV_ALPHA0({{193,8}});
 const double CNAV_ALPHA0_LSB = TWO_N30;
 const std::vector<std::pair<int,int> > CNAV_ALPHA1({{201,8}});

@@ -65,7 +65,8 @@ public:
     double d_e_eccentricity; //!< Eccentricity
     double d_OMEGA;          //!< Argument of Perigee [semi-cicles]
     double d_OMEGA0;         //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-cicles]
-    double d_Toe;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    double d_Toe1;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+    double d_Toe2;            //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
     double d_DELTA_OMEGA_DOT;      //!< Rate of Right Ascension  difference [semi-circles/s]
     double d_i_0;            //!< Inclination Angle at Reference Time [semi-circles]
     double d_IDOT;           //!< Rate of Inclination Angle [semi-circles/s]
@@ -109,6 +110,7 @@ public:
      *  accompanying alert, is less than 1E-8 per hour.
      */
     bool b_integrity_status_flag;
+    bool b_l2c_phasing_flag;
     bool b_alert_flag;         //!< If true, indicates  that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
     bool b_antispoofing_flag;  //!<  If true, the AntiSpoofing mode is ON in that SV
 
@@ -143,8 +145,9 @@ public:
         archive & make_nvp("d_Cuc", d_Cuc);          //!< Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude [rad]
         archive & make_nvp("d_e_eccentricity", d_e_eccentricity); //!< Eccentricity [dimensionless]
         archive & make_nvp("d_Cus", d_Cus);          //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
-        archive & make_nvp("d_Toe", d_Toe);          //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
-        archive & make_nvp("d_Toc", d_Toe);          //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
+        archive & make_nvp("d_Toe1", d_Toe1);          //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+        archive & make_nvp("d_Toe2", d_Toe2);          //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200E) [s]
+        archive & make_nvp("d_Toc", d_Toc);          //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200E) [s]
         archive & make_nvp("d_Cic", d_Cic);          //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
         archive & make_nvp("d_OMEGA0", d_OMEGA0);    //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
         archive & make_nvp("d_Cis", d_Cis);          //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]

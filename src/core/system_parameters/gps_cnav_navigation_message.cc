@@ -1,9 +1,9 @@
 /*!
- * \file Gps_CNAV_Navigation_Message.cc
- * \brief  Implementation of a GPS NAV Data message decoder as described in IS-GPS-200E
+ * \file gps_cnav_navigation_message.cc
+ * \brief Implementation of a GPS CNAV Data message decoder as described in IS-GPS-200H
  *
- * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * See http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Appendix III
+ * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *
@@ -32,7 +32,8 @@
 
 #include "gps_cnav_navigation_message.h"
 #include <cmath>
-#include "boost/date_time/posix_time/posix_time.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include "gnss_satellite.h"
 
 
 void Gps_CNAV_Navigation_Message::reset()
@@ -52,50 +53,16 @@ void Gps_CNAV_Navigation_Message::reset()
     d_satvel_X = 0;
     d_satvel_Y = 0;
     d_satvel_Z = 0;
-
-    //Plane A (info from http://www.navcen.uscg.gov/?Do=constellationStatus)
-    satelliteBlock[9] = "IIA";
-    satelliteBlock[31] = "IIR-M";
-    satelliteBlock[8] = "IIA";
-    satelliteBlock[7] = "IIR-M";
-    satelliteBlock[27] = "IIA";
-    //Plane B
-    satelliteBlock[16] = "IIR";
-    satelliteBlock[25] = "IIF";
-    satelliteBlock[28] = "IIR";
-    satelliteBlock[12] = "IIR-M";
-    satelliteBlock[30] = "IIA";
-    //Plane C
-    satelliteBlock[29] = "IIR-M";
-    satelliteBlock[3] = "IIA";
-    satelliteBlock[19] = "IIR";
-    satelliteBlock[17] = "IIR-M";
-    satelliteBlock[6] = "IIA";
-    //Plane D
-    satelliteBlock[2] = "IIR";
-    satelliteBlock[1] = "IIF";
-    satelliteBlock[21] = "IIR";
-    satelliteBlock[4] = "IIA";
-    satelliteBlock[11] = "IIR";
-    satelliteBlock[24] = "IIA"; // Decommissioned from active service on 04 Nov 2011
-    //Plane E
-    satelliteBlock[20] = "IIR";
-    satelliteBlock[22] = "IIR";
-    satelliteBlock[5] = "IIR-M";
-    satelliteBlock[18] = "IIR";
-    satelliteBlock[32] = "IIA";
-    satelliteBlock[10] = "IIA";
-    //Plane F
-    satelliteBlock[14] = "IIR";
-    satelliteBlock[15] = "IIR-M";
-    satelliteBlock[13] = "IIR";
-    satelliteBlock[23] = "IIR";
-    satelliteBlock[26] = "IIA";
 }
 
 Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
 {
     reset();
+    Gnss_Satellite gnss_satellite_ = Gnss_Satellite();
+    for(unsigned int prn_ = 1; prn_ < 33; prn_++)
+        {
+            satelliteBlock[prn_] = gnss_satellite_.what_block("GPS", prn_);
+        }
 }
 
 void Gps_CNAV_Navigation_Message::print_gps_word_bytes(unsigned int GPS_word)

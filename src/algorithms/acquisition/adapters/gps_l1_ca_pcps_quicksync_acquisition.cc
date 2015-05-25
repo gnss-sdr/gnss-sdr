@@ -107,14 +107,14 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     int samples_per_ms = round(code_length_);
-    code_= new gr_complex[code_length_];
+    code_ = new gr_complex[code_length_]();
     /*Object relevant information for debugging*/
-    LOG(INFO) <<"Implementation: "<<this->implementation()
-                         <<", Vector Length: "<<vector_length_
-                         <<", Samples per ms: "<<samples_per_ms
-                         <<", Folding factor: "<<folding_factor_
-                         <<", Sampled  ms: "<<sampled_ms_
-                         <<", Code Length: "<<code_length_;
+    LOG(INFO) << "Implementation: " << this->implementation()
+                         << ", Vector Length: " << vector_length_
+                         << ", Samples per ms: " << samples_per_ms
+                         << ", Folding factor: " << folding_factor_
+                         << ", Sampled  ms: " << sampled_ms_
+                         << ", Code Length: " << code_length_;
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -168,7 +168,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_threshold(float threshold)
 
     if(pfa == 0.0)
         {
-            pfa = configuration_->property(role_+".pfa", 0.0);
+            pfa = configuration_->property(role_ + ".pfa", 0.0);
         }
     if(pfa == 0.0)
         {
@@ -255,7 +255,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
-            std::complex<float>* code = new std::complex<float>[code_length_];
+            std::complex<float>* code = new std::complex<float>[code_length_]();
 
             gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 

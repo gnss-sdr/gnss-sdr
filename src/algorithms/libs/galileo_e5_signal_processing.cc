@@ -98,11 +98,10 @@ void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed in
 void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
 		unsigned int _prn, signed int _fs, unsigned int _chip_shift)
 {
-    // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
     unsigned int _samplesPerCode;
     unsigned int delay;
-    unsigned int _codeLength = Galileo_E5a_CODE_LENGTH_CHIPS;
-    const int _codeFreqBasis = Galileo_E5a_CODE_CHIP_RATE_HZ; //Hz
+    const unsigned int _codeLength = Galileo_E5a_CODE_LENGTH_CHIPS;
+    const int _codeFreqBasis = Galileo_E5a_CODE_CHIP_RATE_HZ;
 
     std::complex<float>* _code = new std::complex<float>[_codeLength]();
 
@@ -114,17 +113,23 @@ void galileo_e5_a_code_gen_complex_sampled(std::complex<float>* _dest, char _Sig
 
     if (_fs != _codeFreqBasis)
         {
-        	std::complex<float>* _resampled_signal;
-        	if (posix_memalign((void**)&_resampled_signal, 16, _samplesPerCode * sizeof(gr_complex)) == 0){};
-        	resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode); //resamples code to fs
-        	delete[] _code;
-        	_code = _resampled_signal;
+            std::complex<float>* _resampled_signal;
+            if (posix_memalign((void**)&_resampled_signal, 16, _samplesPerCode * sizeof(gr_complex)) == 0){};
+            resampler(_code, _resampled_signal, _codeFreqBasis, _fs, _codeLength, _samplesPerCode); //resamples code to fs
+            delete[] _code;
+            _code = _resampled_signal;
         }
 
     for (unsigned int i = 0; i < _samplesPerCode; i++)
         {
             _dest[(i + delay) % _samplesPerCode] = _code[i];
         }
-
-    delete[] _code;
+    if (_fs != _codeFreqBasis)
+        {
+            free(_code);
+        }
+    else
+        {
+            delete[] _code;
+        }
 }

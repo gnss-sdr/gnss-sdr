@@ -43,7 +43,8 @@ Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
     d_e_eccentricity = 0;
     d_Cus = 0;
 
-    d_Toe = 0;
+    d_Toe1 = 0;
+    d_Toe2 = 0;
     d_Toc = 0;
     d_Cic = 0;
     d_OMEGA0 = 0;

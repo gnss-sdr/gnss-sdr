@@ -116,6 +116,11 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
             d_fft_code_Q_A = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
             d_magnitudeQA = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
         }
+    else
+        {
+            d_fft_code_Q_A = 0;
+            d_magnitudeQA = 0;
+        }
     // IF COHERENT INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
         {
@@ -125,6 +130,11 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
                 {
                     d_fft_code_Q_B = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
                     d_magnitudeQB = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+                }
+            else
+                {
+                    d_fft_code_Q_B = 0;
+                    d_magnitudeQB = 0;
                 }
         }
 
@@ -147,6 +157,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_doppler_freq = 0;
     d_test_statistics = 0;
     d_channel_internal_queue = 0;
+    d_CAF_vector = 0;
     d_CAF_vector_I = 0;
     d_CAF_vector_Q = 0;
     d_channel = 0;

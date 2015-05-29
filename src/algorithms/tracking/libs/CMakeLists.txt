@@ -16,8 +16,7 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(TRACKING_LIB_SOURCES 
-     cordic.cc    
+set(TRACKING_LIB_SOURCES   
      correlator.cc
      lock_detectors.cc
      tcp_communication.cc

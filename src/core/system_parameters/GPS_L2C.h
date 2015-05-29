@@ -97,11 +97,13 @@ const int32_t GPS_L2C_M_INIT_REG[115] =
 #define GPS_CNAV_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
 
 const int GPS_L2_CNAV_DATA_PAGE_BITS = 300; //!< GPS L2 CNAV page length, including preamble and CRC [bits]
+const int GPS_L2_CNAV_DATA_PAGE_BITS_EXTENDED_BYTES = 304; //!< GPS L2 CNAV page length, including preamble and CRC [bits]
 
 // common to all messages
 const std::vector<std::pair<int,int> > CNAV_PRN( { {9,6} } );
 const std::vector<std::pair<int,int> > CNAV_MSG_TYPE( { {15,6} } );
-const std::vector<std::pair<int,int> > CNAV_TOW( { {21,17} } );
+const std::vector<std::pair<int,int> > CNAV_TOW( { {21,17} } ); //GPS Time Of Week in seconds
+const double CNAV_TOW_LSB = 6.0;
 const std::vector<std::pair<int,int> > CNAV_ALERT_FLAG( { {38,1} } );
 
 // MESSAGE TYPE 10 (Ephemeris 1)
@@ -109,11 +111,11 @@ const std::vector<std::pair<int,int> > CNAV_ALERT_FLAG( { {38,1} } );
 const std::vector<std::pair<int,int> > CNAV_WN({{39,13}});
 const std::vector<std::pair<int,int> > CNAV_HEALTH({{52,3}});
 const std::vector<std::pair<int,int> > CNAV_TOP1({{55,11}});
-const double CNAV_TOP1_LSB = 300;
+const double CNAV_TOP1_LSB = 300.0;
 const std::vector<std::pair<int,int> > CNAV_URA({{66,5}});
 
 const std::vector<std::pair<int,int> > CNAV_TOE1({{71,11}});
-const double CNAV_TOE1_LSB = 300;
+const double CNAV_TOE1_LSB = 300.0;
 
 const std::vector<std::pair<int,int> > CNAV_DELTA_A({{82,26}}); //Relative to AREF = 26,559,710 meters
 const double CNAV_DELTA_A_LSB = TWO_N9;
@@ -137,7 +139,7 @@ const std::vector<std::pair<int,int> > CNAV_L2_PHASING_FLAG({{273,1}});
 // MESSAGE TYPE 11 (Ephemeris 2)
 
 const std::vector<std::pair<int,int> > CNAV_TOE2({{39,11}});
-const double CNAV_TOE2_LSB = 300;
+const double CNAV_TOE2_LSB = 300.0;
 const std::vector<std::pair<int,int> > CNAV_OMEGA0({{50,33}});
 const double CNAV_OMEGA0_LSB = TWO_N32;
 const std::vector<std::pair<int,int> > CNAV_I0({{83,33}});
@@ -163,13 +165,13 @@ const double CNAV_CUC_LSB = TWO_N30;
 // MESSAGE TYPE 30 (CLOCK, IONO, GRUP DELAY)
 
 const std::vector<std::pair<int,int> > CNAV_TOP2({{39,11}});
-const double CNAV_TOP2_LSB = 300;
+const double CNAV_TOP2_LSB = 300.0;
 
 const std::vector<std::pair<int,int> > CNAV_URA_NED0({{50,5}});
 const std::vector<std::pair<int,int> > CNAV_URA_NED1({{55,3}});
 const std::vector<std::pair<int,int> > CNAV_URA_NED2({{58,3}});
 const std::vector<std::pair<int,int> > CNAV_TOC({{61,11}});
-const double CNAV_TOC_LSB = 300;
+const double CNAV_TOC_LSB = 300.0;
 const std::vector<std::pair<int,int> > CNAV_AF0({{72,26}});
 const double CNAV_AF0_LSB = TWO_N60;
 const std::vector<std::pair<int,int> > CNAV_AF1({{98,20}});

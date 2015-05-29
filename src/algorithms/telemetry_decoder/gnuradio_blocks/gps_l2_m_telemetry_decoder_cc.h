@@ -42,7 +42,7 @@
 #include <gnuradio/msg_queue.h>
 #include "gnss_satellite.h"
 #include "viterbi_decoder.h"
-//#include "sbas_telemetry_data.h"
+#include "gps_cnav_navigation_message.h"
 
 class gps_l2_m_telemetry_decoder_cc;
 
@@ -146,7 +146,7 @@ private:
     {
     public:
         void reset();
-        void get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs);
+        void get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates,  std::vector<msg_candiate_int_t> &valid_msgs);
     private:
         typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
         crc_24_q_type d_checksum_agent;
@@ -155,7 +155,7 @@ private:
     } d_crc_verifier;
 
 
-    //Sbas_Telemetry_Data sbas_telemetry_data;
+    Gps_CNAV_Navigation_Message d_CNAV_Message;
 };
 
 

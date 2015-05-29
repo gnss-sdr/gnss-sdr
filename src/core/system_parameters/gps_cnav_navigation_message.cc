@@ -167,9 +167,33 @@ signed long int Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<
 }
 
 
-void Gps_CNAV_Navigation_Message::decode_page(std::string data)
+void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
 {
-    std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> data_bits(data);
+	std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> data_bits;
+
+	try {
+
+//		std::cout<<"data length="<<data.size()<<std::endl;
+//		std::cout<<"data=";
+//		for (int p=0;p<data.size();p++)
+//		{
+//			std::cout<<data.at(p)<<",";
+//		}
+//		std::cout<<std::endl;
+
+		for(int i=0;i<GPS_L2_CNAV_DATA_PAGE_BITS;i++)
+		{
+			//std::cout<<"byte["<<i<<"]="<<(int)data[i]<<std::endl;
+			data_bits[i]=(uint8_t)data[GPS_L2_CNAV_DATA_PAGE_BITS-i-1];
+
+		}
+		//std::cout<<"bitset="<<data_bits<<std::endl;
+	//   try {
+	//	   data_bits=std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS>(data);
+	} catch(std::exception &e) {
+		std::cout << "Exception converting to bitset " << e.what() << std::endl;
+	return;
+	}
 
     int PRN;
     int page_type;
@@ -179,9 +203,11 @@ void Gps_CNAV_Navigation_Message::decode_page(std::string data)
     // common to all messages
     PRN = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_PRN));
     TOW = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_TOW));
+    TOW=TOW*CNAV_TOW_LSB;
     alert_flag= static_cast<bool>(read_navigation_bool(data_bits, CNAV_ALERT_FLAG));
     page_type = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
 
+    std::cout<<"PRN= "<<PRN<<" TOW="<<TOW<<" alert_flag= "<<alert_flag<<" page_type= "<<page_type<<std::endl;
     switch(page_type)
     {
 	case 10: // Ephemeris 1/2

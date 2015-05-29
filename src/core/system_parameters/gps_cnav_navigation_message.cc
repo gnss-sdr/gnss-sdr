@@ -63,6 +63,7 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
         {
             satelliteBlock[prn_] = gnss_satellite_.what_block("GPS", prn_);
         }
+    flag_iono_valid = false;
 }
 
 void Gps_CNAV_Navigation_Message::print_gps_word_bytes(unsigned int GPS_word)

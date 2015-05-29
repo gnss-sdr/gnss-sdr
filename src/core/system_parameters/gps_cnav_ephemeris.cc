@@ -90,4 +90,5 @@ Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
     d_ISCL2 = 0.0;
     d_ISCL5I = 0.0;
     d_ISCL5Q = 0.0;
+    b_l2c_phasing_flag = false;
 }

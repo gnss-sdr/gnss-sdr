@@ -530,8 +530,8 @@ inline std::string& Rinex_Printer::sci2for(std::string& aStr,
         {
             redoexp = true;
             // Swap digit and decimal.
-            aStr[idx] = aStr[idx - 1];
-            aStr[idx - 1] = '.';
+            aStr[static_cast<unsigned int>(idx)] = aStr[static_cast<unsigned int>(idx - 1)];
+            aStr[static_cast<unsigned int>(idx - 1)] = '.';
             // Only add one to the exponent if the number is non-zero
             if (asDouble(aStr.substr(startPos, length)) != 0.0)
                 expAdd = 1;

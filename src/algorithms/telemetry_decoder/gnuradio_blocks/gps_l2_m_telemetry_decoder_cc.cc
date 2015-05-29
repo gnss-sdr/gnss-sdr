@@ -180,7 +180,7 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_in
 
 				// verify checksum
 				// and return the valid messages
-				std::vector<msg_candiate_char_t> valid_msgs;
+				std::vector<msg_candiate_int_t> valid_msgs;
 				d_crc_verifier.get_valid_frames(msg_candidates, valid_msgs);
 				if (valid_msgs.size()==0)
 				{
@@ -193,7 +193,14 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_in
 					}
 				}else{ //at least one frame has good CRC, keep the invert sign for the next frames
 					d_flag_invert_input_symbols=d_flag_invert_buffer_symbols;
+					std::vector<int> tmp_msg;
+					std::string msg;
 					LOG(INFO)<<valid_msgs.size()<<" GOOD L2C CNAV FRAME DETECTED!";
+					for (int i=0;i<valid_msgs.size();i++)
+					{
+	                    tmp_msg =valid_msgs.at(i).second;
+						d_CNAV_Message.decode_page(tmp_msg);
+					}
 					break;
 				}
     		}
@@ -411,9 +418,9 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::reset()
 
 }
 
-void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_char_t> &valid_msgs)
+void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_int_t> &valid_msgs)
 {
-    std::stringstream ss;
+    std::vector <unsigned char> tmp_msg;
     LOG(INFO) << "get_valid_frames(): " << "msg_candidates.size()=" << msg_candidates.size();
     // for each candidate
     for (std::vector<msg_candiate_int_t>::const_iterator candidate_it = msg_candidates.begin(); candidate_it < msg_candidates.end(); ++candidate_it)
@@ -430,19 +437,9 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::ve
             //  the final remainder must be zero for a valid message, because the CRC is done over the received CRC value
             if (crc == 0)
                 {
-                    valid_msgs.push_back(msg_candiate_char_t(candidate_it->first, candidate_bytes));
-                    ss << "Valid message found!";
+                    valid_msgs.push_back(msg_candiate_int_t(candidate_it->first, candidate_it->second));
+                    std::cout << "Valid CNAV message found!"<<std::endl;
                 }
-            else
-                {
-                    ss << "Not a valid message.";
-                }
-            //ss << " Relbitoffset=" << candidate_it->first << " content=";
-            for (std::vector<unsigned char>::iterator byte_it = candidate_bytes.begin(); byte_it < candidate_bytes.end(); ++byte_it)
-                {
-                    ss << std::setw(2) << std::setfill('0') << std::hex << (unsigned int)(*byte_it);
-                }
-            LOG(INFO) << ss.str() << std::setfill(' ') << std::resetiosflags(std::ios::hex) << std::endl;
         }
 }
 
@@ -470,9 +467,9 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_b
                 }
         }
     bytes.push_back(byte); // implies: insert 6 zeros at the end to fit the 250bits into a multiple of bytes
-    LOG(INFO) << " -> byte=" << std::setw(2)
-                << std::setfill('0') << std::hex << (unsigned int)byte
-                << std::setfill(' ') << std::resetiosflags(std::ios::hex);
+    //LOG(INFO) << " -> byte=" << std::setw(2)
+    //            << std::setfill('0') << std::hex << (unsigned int)byte
+    //            << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
 
 

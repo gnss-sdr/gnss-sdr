@@ -34,6 +34,7 @@
 
 #include <algorithm>
 #include <bitset>
+#include "stdint.h"
 #include <cmath>
 #include <iostream>
 #include <map>
@@ -91,7 +92,7 @@ public:
     // public functions
     void reset();
 
-    void decode_page(std::string data);
+    void decode_page(std::vector<int> data);
     /*!
      * \brief Obtain a GPS SV Ephemeris class filled with current SV data
      */

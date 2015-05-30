@@ -40,6 +40,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
+#include <boost/exception/detail/exception_ptr.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
@@ -159,10 +160,26 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     top_block = gr::make_top_block("Acquisition test");
 
     std::shared_ptr<GNSSBlockInterface> source;
-    source = block_factory.GetSignalSource(configuration, queue);
+    try
+    {
+            source = block_factory.GetSignalSource(configuration, queue);
+    }
+    catch(const boost::exception_ptr & e)
+    {
+            std::cout << "Exception catched in creating source " << e << std::endl;
+            return 0;
+    }
 
-    std::shared_ptr<GNSSBlockInterface> conditioner = block_factory.GetSignalConditioner(configuration,queue);
-
+    std::shared_ptr<GNSSBlockInterface> conditioner;
+    try
+    {
+            conditioner = block_factory.GetSignalConditioner(configuration,queue);
+    }
+    catch(const boost::exception_ptr & e)
+    {
+            std::cout << "Exception catched in creating signal conditioner " << e << std::endl;
+            return 0;
+    }
     gr::block_sptr sink;
     sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
 
@@ -188,7 +205,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
             top_block->connect(head, 0, sink, 0);
             top_block->run();
     }
-    catch(std::exception& e)
+    catch(const std::exception & e)
     {
             std::cout << "Failure connecting the GNU Radio blocks " << e.what() << std::endl;
             return false;
@@ -280,7 +297,6 @@ int main(int argc, char** argv)
         }
 
     // 3. Capture some front-end samples to hard disk
-
     if (front_end_capture(configuration))
         {
             std::cout << "Front-end RAW samples captured" << std::endl;
@@ -291,7 +307,6 @@ int main(int argc, char** argv)
         }
 
     // 4. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
-
     gr::top_block_sptr top_block;
     boost::shared_ptr<gr::msg_queue> queue;
     queue = gr::msg_queue::make(0);
@@ -381,7 +396,14 @@ int main(int argc, char** argv)
                     std::cout << " . ";
                 }
             channel_internal_queue.push(3);
-            ch_thread.join();
+            try
+            {
+                    ch_thread.join();
+            }
+            catch(const boost::exception_ptr & e)
+            {
+                    std::cout << "Exception caught while joining threads " << e << std::endl;
+            }
             gnss_sync_vector.clear();
             boost::dynamic_pointer_cast<gr::blocks::file_source>(source)->seek(0, 0);
             std::cout.flush();
@@ -469,6 +491,10 @@ int main(int argc, char** argv)
                     f_if_estimation_Hz_map.insert(std::pair<int,double>(it->first,estimated_f_if_Hz));
                     f_fs_estimation_Hz_map.insert(std::pair<int,double>(it->first,estimated_fs_Hz));
                     f_ppm_estimation_Hz_map.insert(std::pair<int,double>(it->first,f_osc_err_ppm));
+            }
+            catch(const std::logic_error & e)
+            {
+                    std::cout << "  " << it->first << "   " << it->second << "  (Eph not found)" << std::endl;
             }
             catch(int ex)
             {

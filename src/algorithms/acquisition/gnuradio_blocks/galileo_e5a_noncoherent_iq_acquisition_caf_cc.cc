@@ -137,6 +137,13 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
                     d_magnitudeQB = 0;
                 }
         }
+    else
+        {
+            d_fft_code_I_B = 0;
+            d_magnitudeIB = 0;
+            d_fft_code_Q_B = 0;
+            d_magnitudeQB = 0;
+        }
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);

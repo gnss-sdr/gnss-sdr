@@ -65,7 +65,7 @@ void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
             if(type.is_signed) int_max /= 2.0;
             for(unsigned int i=0; i<n; i++)
                 {
-                    float scaled_rand = (((float) (rand() - (RAND_MAX/2))) / static_cast<float>((RAND_MAX/2))) * int_max;
+                    float scaled_rand = (((float) (rand() - (RAND_MAX / 2.0))) / static_cast<float>((RAND_MAX / 2.0))) * int_max;
                     //man i really don't know how to do this in a more clever way, you have to cast down at some point
                     switch(type.size)
                     {

@@ -297,14 +297,25 @@ int main(int argc, char** argv)
         }
 
     // 3. Capture some front-end samples to hard disk
-    if (front_end_capture(configuration))
-        {
-            std::cout << "Front-end RAW samples captured" << std::endl;
-        }
-    else
-        {
-            std::cout << "Failure capturing front-end samples" << std::endl;
-        }
+    try
+    {
+            if (front_end_capture(configuration))
+                {
+                    std::cout << "Front-end RAW samples captured" << std::endl;
+                }
+            else
+                {
+                    std::cout << "Failure capturing front-end samples" << std::endl;
+                }
+    }
+    catch(const boost::bad_lexical_cast & e)
+    {
+            std::cout << "Exception catched while capturing samples (bad lexical cast)" << std::endl;
+    }
+    catch(const boost::io::too_few_args & e)
+    {
+            std::cout << "Exception catched while capturing samples (too few args)" << std::endl;
+    }
 
     // 4. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
     gr::top_block_sptr top_block;
@@ -345,9 +356,9 @@ int main(int argc, char** argv)
             acquisition->connect(top_block);
             top_block->connect(source, 0, acquisition->get_left_block(), 0);
     }
-    catch(std::exception& e)
+    catch(const std::exception & e)
     {
-            std::cout << "Failure connecting the GNU Radio blocks " << std::endl;
+            std::cout << "Failure connecting the GNU Radio blocks: " << e.what() << std::endl;
     }
 
     // 5. Run the flowgraph
@@ -400,9 +411,9 @@ int main(int argc, char** argv)
             {
                     ch_thread.join();
             }
-            catch(const boost::exception_ptr & e)
+            catch(const boost::thread_resource_error & e)
             {
-                    std::cout << "Exception caught while joining threads " << e << std::endl;
+                    LOG(INFO) << "Exception caught while joining threads.";
             }
             gnss_sync_vector.clear();
             boost::dynamic_pointer_cast<gr::blocks::file_source>(source)->seek(0, 0);
@@ -494,7 +505,11 @@ int main(int argc, char** argv)
             }
             catch(const std::logic_error & e)
             {
-                    std::cout << "  " << it->first << "   " << it->second << "  (Eph not found)" << std::endl;
+                    std::cout << "Logic error catched: " << e.what() << std::endl;
+            }
+            catch(const boost::lock_error & e)
+            {
+                    std::cout << "Exception catched while reading ephemeris" << std::endl;
             }
             catch(int ex)
             {

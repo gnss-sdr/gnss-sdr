@@ -282,7 +282,7 @@ int main(int argc, char** argv)
     // 1. Load configuration parameters from config file
 
     std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<FileConfiguration>(FLAGS_config_file);
-    //configuration = new FileConfiguration(FLAGS_config_file);
+
     front_end_cal.set_configuration(configuration);
 
 
@@ -369,6 +369,7 @@ int main(int argc, char** argv)
     std::map<int,double> cn0_measurements_map;
 
     boost::thread ch_thread;
+
     // record startup time
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -383,7 +384,14 @@ int main(int argc, char** argv)
             acquisition->init();
             acquisition->reset();
             stop = false;
-            ch_thread = boost::thread(wait_message);
+            try
+            {
+                    ch_thread = boost::thread(wait_message);
+            }
+            catch(const boost::thread_resource_error & e)
+            {
+                    LOG(INFO) << "Exception catched (thread resource error)";
+            }
             top_block->run();
             if (start_msg == true)
                 {
@@ -448,7 +456,6 @@ int main(int argc, char** argv)
     else
         {
             std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!" << std::endl;
-            //delete configuration;
             delete acquisition;
             delete gnss_synchro;
             google::ShutDownCommandLineFlags();
@@ -470,7 +477,6 @@ int main(int argc, char** argv)
     if (doppler_measurements_map.size() == 0)
         {
             std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup..." << std::endl;
-            //delete configuration;
             delete acquisition;
             delete gnss_synchro;
             google::ShutDownCommandLineFlags();
@@ -552,6 +558,14 @@ int main(int argc, char** argv)
                     doppler_estimated_hz = front_end_cal.estimate_doppler_from_eph(it->first, current_TOW, lat_deg, lon_deg, altitude_m);
                     std::cout  <<  "  " << it->first << "   " << it->second - mean_f_if_Hz  <<  "   " << doppler_estimated_hz << std::endl;
             }
+            catch(const std::logic_error & e)
+            {
+                    std::cout << "Logic error catched: " << e.what() << std::endl;
+            }
+            catch(const boost::lock_error & e)
+            {
+                    std::cout << "Exception catched while reading ephemeris" << std::endl;
+            }
             catch(int ex)
             {
                     std::cout << "  " << it->first << "   " << it->second - mean_f_if_Hz << "  (Eph not found)" << std::endl;
@@ -560,7 +574,7 @@ int main(int argc, char** argv)
 
     // 8. Generate GNSS-SDR config file.
 
-    //delete configuration;
+
     delete acquisition;
     delete gnss_synchro;
 

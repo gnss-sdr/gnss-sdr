@@ -1,6 +1,6 @@
 /*!
- * \file Gps_CNAV_Navigation_Message.h
- * \brief  Interface of a GPS NAV Data message decoder
+ * \file gps_cnav_navigation_message.h
+ * \brief  Interface of a GPS CNAV Data message decoder
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -32,16 +32,16 @@
 #ifndef GNSS_SDR_Gps_CNAV_Navigation_Message_H_
 #define GNSS_SDR_Gps_CNAV_Navigation_Message_H_
 
+#include "stdint.h"
 #include <algorithm>
 #include <bitset>
-#include "stdint.h"
 #include <cmath>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 #include <utility>
-#include "boost/assign.hpp"
+#include <boost/assign.hpp>
 #include "GPS_L2C.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
@@ -69,10 +69,9 @@ private:
     Gps_CNAV_Utc_Model utc_model_record;
 
 public:
-
     double d_TOW;
-	bool b_flag_ephemeris_1;
-	bool b_flag_ephemeris_2;
+    bool b_flag_ephemeris_1;
+    bool b_flag_ephemeris_2;
     bool b_flag_iono_valid; //!< If set, it indicates that the ionospheric parameters are filled (page 18 has arrived and decoded)
 
     std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus

@@ -36,8 +36,8 @@ Gps_CNAV_Ephemeris::Gps_CNAV_Ephemeris()
 {
     i_satellite_PRN = 0;
 
-    d_Toe1=-1;
-    d_Toe2=-1;
+    d_Toe1 = -1;
+    d_Toe2 = -1;
 
     d_TOW = 0;
     d_Crs = 0;

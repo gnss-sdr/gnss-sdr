@@ -124,13 +124,14 @@ int mixed_observables_cc::general_work (int noutput_items, gr_vector_int &ninput
              */
             current_gnss_synchro[i].Flag_valid_pseudorange = false;
             current_gnss_synchro[i].Pseudorange_m = 0.0;
-            if(current_gnss_synchro[i].Signal[0]=='2'){
-				if (current_gnss_synchro[i].Flag_valid_word) //if this channel have valid word
-					{
-						//record the word structure in a map for pseudorange computation
-						current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
-					}
-            }
+            if(current_gnss_synchro[i].Signal[0] == '2')
+                {
+                    if (current_gnss_synchro[i].Flag_valid_word) //if this channel have valid word
+                        {
+                            //record the word structure in a map for pseudorange computation
+                            current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
+                        }
+                }
         }
 
     /*

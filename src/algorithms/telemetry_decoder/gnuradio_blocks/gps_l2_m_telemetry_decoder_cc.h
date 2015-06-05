@@ -68,9 +68,11 @@ public:
     void set_channel(int channel);                 //!< Set receiver's channel
 
     // queues to communicate broadcasted CNAV data to other blocks of GNSS-SDR
-    void set_iono_queue(concurrent_queue<Gps_CNAV_Iono> *iono_queue);         //!< Set iono queue
-    void set_ephemeris_queue(concurrent_queue<Gps_CNAV_Ephemeris> *ephemeris_queue);           //!< Set ephemeris queue
+    void set_iono_queue(concurrent_queue<Gps_CNAV_Iono> *iono_queue);                //!< Set iono queue
+    void set_ephemeris_queue(concurrent_queue<Gps_CNAV_Ephemeris> *ephemeris_queue); //!< Set ephemeris queue
+
     void set_decimation(int decimation);
+
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -157,7 +159,6 @@ private:
         void zerropad_front_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
         void zerropad_back_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes);
     } d_crc_verifier;
-
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
 };

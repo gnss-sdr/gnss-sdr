@@ -38,7 +38,9 @@
 
 void Gps_CNAV_Navigation_Message::reset()
 {
-    b_valid_ephemeris_set_flag = false;
+	b_flag_ephemeris_1=false;
+    b_flag_ephemeris_2=false;
+    b_flag_iono_valid=false;
 
     // satellite positions
     d_satpos_X = 0;
@@ -63,7 +65,7 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
         {
             satelliteBlock[prn_] = gnss_satellite_.what_block("GPS", prn_);
         }
-    flag_iono_valid = false;
+    b_flag_iono_valid = false;
 }
 
 void Gps_CNAV_Navigation_Message::print_gps_word_bytes(unsigned int GPS_word)
@@ -198,17 +200,23 @@ void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
 
     int PRN;
     int page_type;
-    double TOW;
+
     bool alert_flag;
 
     // common to all messages
     PRN = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_PRN));
-    TOW = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_TOW));
-    TOW=TOW*CNAV_TOW_LSB;
+    ephemeris_record.i_satellite_PRN=PRN;
+
+    d_TOW = static_cast<double>(read_navigation_unsigned(data_bits, CNAV_TOW));
+    d_TOW=d_TOW*CNAV_TOW_LSB;
+    ephemeris_record.d_TOW=d_TOW;
+
     alert_flag= static_cast<bool>(read_navigation_bool(data_bits, CNAV_ALERT_FLAG));
+    ephemeris_record.b_alert_flag=alert_flag;
+
     page_type = static_cast<int>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
 
-    std::cout<<"PRN= "<<PRN<<" TOW="<<TOW<<" alert_flag= "<<alert_flag<<" page_type= "<<page_type<<std::endl;
+    std::cout<<"PRN= "<<PRN<<" TOW="<<d_TOW<<" alert_flag= "<<alert_flag<<" page_type= "<<page_type<<std::endl;
     switch(page_type)
     {
 	case 10: // Ephemeris 1/2
@@ -236,6 +244,8 @@ void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
 
 		ephemeris_record.b_integrity_status_flag=static_cast<bool>(read_navigation_bool(data_bits, CNAV_INTEGRITY_FLAG));
 		ephemeris_record.b_l2c_phasing_flag=static_cast<bool>(read_navigation_bool(data_bits, CNAV_L2_PHASING_FLAG));
+
+		b_flag_ephemeris_1=true;
 		break;
 	case 11: // Ephemeris 2/2
 		ephemeris_record.d_Toe2=static_cast<double>(read_navigation_unsigned(data_bits, CNAV_TOE2));
@@ -260,6 +270,7 @@ void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
 		ephemeris_record.d_Cus=ephemeris_record.d_Cus*CNAV_CUS_LSB;
 		ephemeris_record.d_Cuc=static_cast<double>(read_navigation_signed(data_bits, CNAV_CUC));
 		ephemeris_record.d_Cuc=ephemeris_record.d_Cuc*CNAV_CUS_LSB;
+		b_flag_ephemeris_2=true;
 	    break;
 	case 30: // (CLOCK, IONO, GRUP DELAY)
 		//clock
@@ -302,6 +313,7 @@ void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
 		iono_record.d_beta2=iono_record.d_beta2*CNAV_BETA2_LSB;
 		iono_record.d_beta3=static_cast<double>(read_navigation_signed(data_bits, CNAV_BETA3));
 		iono_record.d_beta3=iono_record.d_beta3*CNAV_BETA3_LSB;
+		b_flag_iono_valid=true;
 		break;
 	default:
 		break;
@@ -309,30 +321,23 @@ void Gps_CNAV_Navigation_Message::decode_page(std::vector<int> data)
 }
 bool Gps_CNAV_Navigation_Message::have_new_ephemeris() //Check if we have a new ephemeris stored in the galileo navigation class
 {
-//    if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_iono_and_GST == true))
-//        {
-//            //if all ephemeris pages have the same IOD, then they belong to the same block
-//            if ((FNAV_IODnav_1 == FNAV_IODnav_2) and (FNAV_IODnav_3 == FNAV_IODnav_4) and (FNAV_IODnav_1 == FNAV_IODnav_3))
-//                {
-//                    std::cout << "Ephemeris (1, 2, 3) have been received and belong to the same batch" << std::endl;
-//                    flag_ephemeris_1 = false;// clear the flag
-//                    flag_ephemeris_2 = false;// clear the flag
-//                    flag_ephemeris_3 = false;// clear the flag
-//                    flag_all_ephemeris = true;
-//                    IOD_ephemeris = FNAV_IODnav_1;
-//                    std::cout << "Batch number: "<< IOD_ephemeris << std::endl;
-//                    return true;
-//                }
-//            else
-//                {
-//                    return false;
-//                }
-//        }
-//    else
-        return false;
+	if (b_flag_ephemeris_1==true and b_flag_ephemeris_2==true)
+	{
+		if (ephemeris_record.d_Toe1 == ephemeris_record.d_Toe2)
+        {
+            //if all ephemeris pages have the same TOE, then they belong to the same block
+			//          std::cout << "Ephemeris (1, 2) have been received and belong to the same batch" << std::endl;
+			b_flag_ephemeris_1 = false;// clear the flag
+			b_flag_ephemeris_2 = false;// clear the flag
+			return true;
+	     }else{
+            return false;
+         }
+    }else
+    {
+    	return false;
+    }
 }
-
-
 
 
 Gps_CNAV_Ephemeris Gps_CNAV_Navigation_Message::get_ephemeris()
@@ -341,11 +346,20 @@ Gps_CNAV_Ephemeris Gps_CNAV_Navigation_Message::get_ephemeris()
 }
 
 
+bool Gps_CNAV_Navigation_Message::have_new_iono() //Check if we have a new iono data stored in the galileo navigation class
+{
+	if (b_flag_iono_valid==true)
+	{
+		b_flag_iono_valid = false;// clear the flag
+		return true;
+    }else
+    {
+    	return false;
+    }
+}
+
 Gps_CNAV_Iono Gps_CNAV_Navigation_Message::get_iono()
 {
-
-    //WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
-    flag_iono_valid = false;
     return iono_record;
 }
 
@@ -353,24 +367,4 @@ Gps_CNAV_Iono Gps_CNAV_Navigation_Message::get_iono()
 Gps_CNAV_Utc_Model Gps_CNAV_Navigation_Message::get_utc_model()
 {
     return utc_model_record;
-}
-
-
-bool Gps_CNAV_Navigation_Message::satellite_validation()
-{
-    bool flag_data_valid = false;
-    b_valid_ephemeris_set_flag = false;
-
-    // First Step:
-    // check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
-    // and check if the data have been filled (!=0)
-//    if (d_TOW_SF1 != 0 and d_TOW_SF2 != 0 and d_TOW_SF3 != 0)
-//        {
-//            if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC!= -1)
-//                {
-//                    flag_data_valid = true;
-//                    b_valid_ephemeris_set_flag = true;
-//                }
-//        }
-    return flag_data_valid;
 }

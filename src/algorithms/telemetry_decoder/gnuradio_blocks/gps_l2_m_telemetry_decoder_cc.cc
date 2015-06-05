@@ -34,7 +34,6 @@
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <boost/lexical_cast.hpp>
-#include "control_message_factory.h"
 #include "gnss_synchro.h"
 #include "gps_l2_m_telemetry_decoder_cc.h"
 
@@ -75,13 +74,18 @@ gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "GPS L2C M TELEMETRY PROCESSING: satellite " << d_satellite;
     d_fs_in = fs_in;
-    d_block_size = d_samples_per_symbol * d_symbols_per_bit * d_block_size_in_bits*2; // two CNAV frames
+    d_block_size = GPS_L2_SAMPLES_PER_SYMBOL * GPS_L2_SYMBOLS_PER_BIT * GPS_L2_CNAV_DATA_PAGE_BITS*2; // two CNAV frames
     d_decimation_output_factor=0;
     //set_output_multiple (1);
     d_average_count=0;
     d_flag_invert_buffer_symbols=false;
     d_flag_invert_input_symbols=false;
     d_channel=0;
+    d_iono_queue=0;
+    d_ephemeris_queue=0;
+    d_flag_valid_word=false;
+    d_TOW_at_current_symbol=0;
+    d_TOW_at_Preamble=0;
     //set_history(d_samples_per_bit*8); // At least a history of 8 bits are needed to correlate with the preamble
 }
 
@@ -118,6 +122,8 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_in
     // store the time stamp of the first sample in the processed sample block
     double sample_stamp = in[0].Tracking_timestamp_secs;
 
+    bool flag_new_cnav_frame=false;
+    int last_frame_preamble_start=0;
     // copy correlation samples into samples vector
     //for (int i = 0; i < noutput_items; i++)
     ///    {
@@ -132,118 +138,148 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_in
     // decode only if enough samples in buffer
     if(d_sample_buf.size() >= d_block_size)
         {
-			d_flag_invert_buffer_symbols=false;
-    		while (true)
+    		if (in[0].Flag_valid_tracking==false) // check if the tracking is locked
     		{
-
-				if (d_flag_invert_buffer_symbols==true)
+    			//LOG(INFO)<< "Discarting channel "<<d_channel<<" tracking not ready!"<<std::endl;
+    			d_flag_valid_word=false;
+    		}else{
+				d_flag_invert_buffer_symbols=d_flag_invert_input_symbols;
+				while (true)
 				{
-					for (std::vector<double>::iterator symbol_it = d_sample_buf.begin(); symbol_it != d_sample_buf.end(); symbol_it++)
-					{
-						*symbol_it = -(*symbol_it);
-					}
-					LOG(INFO)<<"Inverting buffer symbols";
-				}
 
-				//debug
-				std::stringstream ss2;
-				for (std::vector<double>::const_iterator symbol_it = d_sample_buf.begin(); symbol_it < d_sample_buf.end(); ++symbol_it)
+					if (d_flag_invert_buffer_symbols==true)
 					{
-						if(*symbol_it>=0)
+//						for (int m=0;m<d_sample_buf.size();m++)
+//						{
+//							d_sample_buf.at(m)=-d_sample_buf.at(m);
+//						}
+						for (std::vector<double>::iterator symbol_it = d_sample_buf.begin(); symbol_it != d_sample_buf.end(); symbol_it++)
 						{
-							ss2<<'1';
-						}else{
-							ss2<<'0';
+							*symbol_it = -(*symbol_it);
 						}
-					}
-				LOG(INFO)<<"get_symbols="<<ss2.str();
-
-
-				// align symbols in pairs
-				// and obtain the bits by decoding the symbols (viterbi decoder)
-				// they can be already aligned or shifted by one position
-				std::vector<int> bits;
-				bool symbol_alignment = d_symbol_aligner_and_decoder.get_bits(d_sample_buf, bits);
-
-				std::stringstream ss;
-
-				for (std::vector<int>::const_iterator bit_it = bits.begin(); bit_it < bits.end(); ++bit_it)
-					{
-						ss << *bit_it;
+						//LOG(INFO)<<"Inverting buffer symbols";
 					}
 
-				LOG(INFO)<<"get_bits="<<ss.str()<<std::endl;
-				// search for preambles
-				// and extract the corresponding message candidates
-				std::vector<msg_candiate_int_t> msg_candidates;
-				d_frame_detector.get_frame_candidates(bits, msg_candidates);
+					//debug
+//					std::stringstream ss2;
+//					for (std::vector<double>::const_iterator symbol_it = d_sample_buf.begin(); symbol_it < d_sample_buf.end(); ++symbol_it)
+//						{
+//
+//							ss2<<*symbol_it<<",";
+//							if(*symbol_it>=0)
+//							{
+//								ss2<<'1';
+//							}else{
+//								ss2<<'0';
+//							}
+//						}
+					//LOG(INFO)<<"get_symbols="<<ss2.str();
 
-				// verify checksum
-				// and return the valid messages
-				std::vector<msg_candiate_int_t> valid_msgs;
-				d_crc_verifier.get_valid_frames(msg_candidates, valid_msgs);
-				if (valid_msgs.size()==0)
-				{
-					if (d_flag_invert_buffer_symbols==false)
+
+					// align symbols in pairs
+					// and obtain the bits by decoding the symbols (viterbi decoder)
+					// they can be already aligned or shifted by one position
+					std::vector<int> bits;
+					bool symbol_alignment = d_symbol_aligner_and_decoder.get_bits(d_sample_buf, bits);
+
+					std::stringstream ss;
+
+					for (std::vector<int>::const_iterator bit_it = bits.begin(); bit_it < bits.end(); ++bit_it)
+						{
+							ss << *bit_it;
+						}
+
+//					LOG(INFO)<<"get_bits="<<ss.str()<<std::endl;
+					// search for preambles
+					// and extract the corresponding message candidates
+					std::vector<msg_candiate_int_t> msg_candidates;
+					d_frame_detector.get_frame_candidates(bits, msg_candidates);
+
+					// verify checksum
+					// and return the valid messages
+					std::vector<msg_candiate_int_t> valid_msgs;
+					d_crc_verifier.get_valid_frames(msg_candidates, valid_msgs);
+					if (valid_msgs.size()==0)
 					{
-						d_flag_invert_buffer_symbols=true;
-					}else{//already tested the symbol inversion but CRC still fail
-						LOG(INFO)<<"Discarting this buffer, no CNAV frames detected";
+						if (d_flag_invert_buffer_symbols==d_flag_invert_input_symbols)
+						{
+							d_flag_invert_buffer_symbols=not d_flag_invert_buffer_symbols;
+						}else{//already tested the symbol inversion but CRC still fail
+							LOG(INFO)<<"Discarting this buffer, no CNAV frames detected CH "<<this->d_channel;
+							break;
+						}
+					}else{ //at least one frame has good CRC, keep the invert sign for the next frames
+						d_flag_invert_input_symbols=d_flag_invert_buffer_symbols;
+						std::vector<int> tmp_msg;
+						std::string msg;
+						LOG(INFO)<<valid_msgs.size()<<" GOOD L2C CNAV FRAME DETECTED! CH "<<this->d_channel;
+						for (unsigned int i=0;i<valid_msgs.size();i++)
+						{
+							tmp_msg =valid_msgs.at(i).second;
+							d_CNAV_Message.decode_page(tmp_msg);
+							std::cout<<"Valid CNAV frame with relative preamble start at "<<valid_msgs.at(i).first<<std::endl;
+							flag_new_cnav_frame=true;
+							d_flag_valid_word=true;
+							last_frame_preamble_start=valid_msgs.at(i).first;
+							// 4. Push the new navigation data to the queues
+							if (d_CNAV_Message.have_new_ephemeris() == true)
+								{
+									// get ephemeris object for this SV
+									Gps_CNAV_Ephemeris ephemeris = d_CNAV_Message.get_ephemeris();//notice that the read operation will clear the valid flag
+									std::cout<<"New GPS CNAV Ephemeris received for SV "<<ephemeris.i_satellite_PRN<<std::endl;
+									d_ephemeris_queue->push(ephemeris);
+								}
+							if (d_CNAV_Message.have_new_iono() == true)
+								{
+									Gps_CNAV_Iono iono= d_CNAV_Message.get_iono(); //notice that the read operation will clear the valid flag
+									std::cout<<"New GPS CNAV IONO model received for SV "<<d_satellite.get_PRN()<<std::endl;
+									d_iono_queue->push(iono);
+								}
+						}
 						break;
 					}
-				}else{ //at least one frame has good CRC, keep the invert sign for the next frames
-					d_flag_invert_input_symbols=d_flag_invert_buffer_symbols;
-					std::vector<int> tmp_msg;
-					std::string msg;
-					LOG(INFO)<<valid_msgs.size()<<" GOOD L2C CNAV FRAME DETECTED!";
-					for (int i=0;i<valid_msgs.size();i++)
-					{
-	                    tmp_msg =valid_msgs.at(i).second;
-						d_CNAV_Message.decode_page(tmp_msg);
-					}
-					break;
 				}
     		}
-//            // compute message sample stamp
-//            // and fill messages in SBAS raw message objects
-//            std::vector<Sbas_Raw_Msg> sbas_raw_msgs;
-//            for(std::vector<msg_candiate_char_t>::const_iterator it = valid_msgs.begin();
-//                    it != valid_msgs.end(); ++it)
-//                {
-//                    int message_sample_offset =
-//                            (sample_alignment ? 0 : -1)
-//                            + d_samples_per_symbol*(symbol_alignment ? -1 : 0)
-//                            + d_samples_per_symbol * d_symbols_per_bit * it->first;
-//                    double message_sample_stamp = sample_stamp + ((double)message_sample_offset)/1000;
-//                    VLOG(EVENT) << "message_sample_stamp=" << message_sample_stamp
-//                            << " (sample_stamp=" << sample_stamp
-//                            << " sample_alignment=" << sample_alignment
-//                            << " symbol_alignment=" << symbol_alignment
-//                            << " relative_preamble_start=" << it->first
-//                            << " message_sample_offset=" << message_sample_offset
-//                            << ")";
-//                    Sbas_Raw_Msg sbas_raw_msg(message_sample_stamp, this->d_satellite.get_PRN(), it->second);
-//                    sbas_raw_msgs.push_back(sbas_raw_msg);
-//                }
-//
-//            // parse messages
-//            // and send them to the SBAS raw message queue
-//            for(std::vector<Sbas_Raw_Msg>::iterator it = sbas_raw_msgs.begin(); it != sbas_raw_msgs.end(); it++)
-//                {
-//                    std::cout << "SBAS message type " << it->get_msg_type() << " from PRN" << it->get_prn() << " received" << std::endl;
-//                    sbas_telemetry_data.update(*it);
-//                }
-
             // clear all processed samples in the input buffer
             d_sample_buf.clear();
         }
 
     // UPDATE GNSS SYNCHRO DATA
     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
-            //1. Copy the current tracking output
-            current_synchro_data = in[0];
-            //2. Add the telemetry decoder information
-            current_synchro_data.Flag_valid_word = false; // indicate to observable block that this synchro object isn't valid for pseudorange computation
+
+    //1. Copy the current tracking output
+    current_synchro_data = in[0];
+
+
+    if (d_flag_valid_word==true)
+    {
+		double Prn_timestamp_at_preamble_ms=0;
+		//2. Add the telemetry decoder information
+		if (flag_new_cnav_frame==true)
+		{
+			//update TOW at the preamble instant
+			Prn_timestamp_at_preamble_ms = (in[0].Tracking_timestamp_secs * 1000.0)-(d_block_size-last_frame_preamble_start)*GPS_L2_M_PERIOD;
+			d_TOW_at_Preamble = d_CNAV_Message.d_TOW - GPS_L2_CNAV_DATA_PAGE_DURATION_S;
+			d_TOW_at_current_symbol = d_TOW_at_Preamble + (d_block_size-last_frame_preamble_start)*GPS_L2_M_PERIOD;
+			current_synchro_data.d_TOW = d_TOW_at_Preamble;
+			current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
+			current_synchro_data.d_TOW_hybrid_at_current_symbol = current_synchro_data.d_TOW_at_current_symbol;
+			current_synchro_data.Flag_preamble = false;
+			current_synchro_data.Prn_timestamp_ms = in[0].Tracking_timestamp_secs * 1000.0;
+			current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
+		}else{
+			d_TOW_at_current_symbol = d_TOW_at_Preamble + (d_block_size-last_frame_preamble_start)*GPS_L2_M_PERIOD;
+			current_synchro_data.d_TOW = d_TOW_at_Preamble;
+			current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
+			current_synchro_data.d_TOW_hybrid_at_current_symbol = current_synchro_data.d_TOW_at_current_symbol;
+			current_synchro_data.Flag_preamble = false;
+			current_synchro_data.Prn_timestamp_ms = in[0].Tracking_timestamp_secs * 1000.0;
+			current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
+		}
+		current_synchro_data.Flag_valid_word = true;
+    }else{
+    	current_synchro_data.Flag_valid_word = false;
+    }
 
     d_average_count++;
     if (d_average_count == d_decimation_output_factor)
@@ -311,7 +347,7 @@ void gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::reset()
 bool gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const std::vector<double> symbols, std::vector<int> &bits)
 {
     const int traceback_depth = 5*d_KK;
-    int nbits_requested = symbols.size()/d_symbols_per_bit;
+    int nbits_requested = symbols.size()/GPS_L2_SYMBOLS_PER_BIT;
     int nbits_decoded;
     // fill two vectors with the two possible symbol alignments
     std::vector<double> symbols_vd1(symbols); // aligned symbol vector -> copy input symbol vector
@@ -327,7 +363,7 @@ bool gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const s
     // decode
     float metric_vd1 = d_vd1->decode_continuous(symbols_vd1.data(), traceback_depth, bits_vd1, nbits_requested, nbits_decoded);
     float metric_vd2 = d_vd2->decode_continuous(symbols_vd2.data(), traceback_depth, bits_vd2, nbits_requested, nbits_decoded);
-    LOG(INFO)<<"metric_vd1="<<metric_vd1<<" metric_vd2="<<metric_vd2;
+    //LOG(INFO)<<"metric_vd1="<<metric_vd1<<" metric_vd2="<<metric_vd2;
     // choose the bits with the better metric
     for (int i = 0; i < nbits_decoded; i++)
         {
@@ -356,22 +392,22 @@ void gps_l2_m_telemetry_decoder_cc::frame_detector::reset()
 
 void gps_l2_m_telemetry_decoder_cc::frame_detector::get_frame_candidates(const std::vector<int> bits, std::vector<std::pair<int,std::vector<int>>> &msg_candidates)
 {
-    std::stringstream ss;
-    unsigned int sbas_msg_length = 300;
+    //std::stringstream ss;
+    unsigned int cnav_msg_length = 300;
     std::vector<std::vector<int>> preambles = {{1, 0, 0, 0, 1, 0, 1 ,1}};
     //LOG(INFO) << "get_frame_candidates(): " << "d_buffer.size()=" << d_buffer.size() << "\tbits.size()=" << bits.size();
-    ss << "copy bits ";
+    //ss << "copy bits ";
     int count = 0;
     // copy new bits into the working buffer
     for (std::vector<int>::const_iterator bit_it = bits.begin(); bit_it < bits.end(); ++bit_it)
         {
             d_buffer.push_back(*bit_it);
-            ss << *bit_it;
+            //ss << *bit_it;
             count++;
         }
     //LOG(INFO) << ss.str() << " into working buffer (" << count << " bits)";
     int relative_preamble_start = 0;
-    while(d_buffer.size() >= sbas_msg_length)
+    while(d_buffer.size() >= cnav_msg_length)
         {
             // compare with all preambles
             for (std::vector<std::vector<int>>::iterator preample_it = preambles.begin(); preample_it < preambles.end(); ++preample_it)
@@ -388,7 +424,7 @@ void gps_l2_m_telemetry_decoder_cc::frame_detector::get_frame_candidates(const s
                         {
                             // copy candidate
                             std::vector<int> candidate;
-                            std::copy(d_buffer.begin(), d_buffer.begin() + sbas_msg_length, std::back_inserter(candidate));
+                            std::copy(d_buffer.begin(), d_buffer.begin() + cnav_msg_length, std::back_inserter(candidate));
                             if(inv_preamble_detected)
                                 {
                                     // invert bits
@@ -396,10 +432,10 @@ void gps_l2_m_telemetry_decoder_cc::frame_detector::get_frame_candidates(const s
                                         *candidate_bit_it = *candidate_bit_it == 0 ? 1 : 0;
                                 }
                             msg_candidates.push_back(std::pair<int,std::vector<int>>(relative_preamble_start, candidate));
-                            ss.str("");
-                            ss << "preamble " << preample_it - preambles.begin() << (inv_preamble_detected?" inverted":" normal") << " detected! candidate=";
-                            for (std::vector<int>::iterator bit_it = candidate.begin(); bit_it < candidate.end(); ++bit_it)
-                                ss << *bit_it;
+                            //ss.str("");
+                            //ss << "preamble " << preample_it - preambles.begin() << (inv_preamble_detected?" inverted":" normal") << " detected! candidate=";
+                            //for (std::vector<int>::iterator bit_it = candidate.begin(); bit_it < candidate.end(); ++bit_it)
+                            //    ss << *bit_it;
                             //LOG(INFO) << ss.str();
                         }
                 }
@@ -432,8 +468,8 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::ve
             d_checksum_agent.reset(0);
             d_checksum_agent.process_bytes(candidate_bytes.data(), candidate_bytes.size());
             unsigned int crc = d_checksum_agent.checksum();
-            LOG(INFO) << "candidate " << ": final crc remainder= " << std::hex << crc
-                            << std::setfill(' ') << std::resetiosflags(std::ios::hex);
+            //LOG(INFO) << "candidate " << ": final crc remainder= " << std::hex << crc
+            //                << std::setfill(' ') << std::resetiosflags(std::ios::hex);
             //  the final remainder must be zero for a valid message, because the CRC is done over the received CRC value
             if (crc == 0)
                 {
@@ -480,7 +516,7 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_
     const size_t bits_per_byte = 8;
     unsigned char byte = 0;
     int idx_bit = 6; // insert 6 zeros at the front to fit the 250bits into a multiple of bytes
-    LOG(INFO) << "zerropad_front_and_convert_to_bytes():" << byte;
+    //LOG(INFO) << "zerropad_front_and_convert_to_bytes():" << byte;
     for (std::vector<int>::const_iterator candidate_bit_it = msg_candidate.begin(); candidate_bit_it < msg_candidate.end(); ++candidate_bit_it)
         {
             int bit_pos_in_current_byte = (bits_per_byte - 1) - (idx_bit % bits_per_byte);
@@ -489,37 +525,23 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_
             if (idx_bit % bits_per_byte == bits_per_byte - 1)
                 {
                     bytes.push_back(byte);
-                    LOG(INFO) << ss.str() << " -> byte=" << std::setw(2)
-                                << std::setfill('0') << std::hex << (unsigned int)byte; ss.str("");
+                    //LOG(INFO) << ss.str() << " -> byte=" << std::setw(2)
+                    //            << std::setfill('0') << std::hex << (unsigned int)byte; ss.str("");
                     byte = 0;
                 }
             idx_bit++;
         }
-    LOG(INFO) << " -> byte=" << std::setw(2)
-                << std::setfill('0') << std::hex << (unsigned int)byte
-                << std::setfill(' ') << std::resetiosflags(std::ios::hex);
+    //LOG(INFO) << " -> byte=" << std::setw(2)
+    //            << std::setfill('0') << std::hex << (unsigned int)byte
+    //            << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
 
-//
-//void gps_l2_m_telemetry_decoder_cc::set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue)
-//{
-//    sbas_telemetry_data.set_raw_msg_queue(raw_msg_queue);
-//}
-//
-//
-//void gps_l2_m_telemetry_decoder_cc::set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue)
-//{
-//    sbas_telemetry_data.set_iono_queue(iono_queue);
-//}
-//
-//
-//void gps_l2_m_telemetry_decoder_cc::set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue)
-//{
-//    sbas_telemetry_data.set_sat_corr_queue(sat_corr_queue);
-//}
-//
-//
-//void gps_l2_m_telemetry_decoder_cc::set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue)
-//{
-//    sbas_telemetry_data.set_ephemeris_queue(ephemeris_queue);
-//}
+void gps_l2_m_telemetry_decoder_cc::set_iono_queue(concurrent_queue<Gps_CNAV_Iono> *iono_queue)
+{
+	d_iono_queue=iono_queue;
+}
+
+void gps_l2_m_telemetry_decoder_cc::set_ephemeris_queue(concurrent_queue<Gps_CNAV_Ephemeris> *ephemeris_queue)
+{
+	d_ephemeris_queue=ephemeris_queue;
+}

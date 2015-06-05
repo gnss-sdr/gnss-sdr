@@ -97,6 +97,9 @@ const int32_t GPS_L2C_M_INIT_REG[115] =
 #define GPS_CNAV_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
 
 const int GPS_L2_CNAV_DATA_PAGE_BITS = 300; //!< GPS L2 CNAV page length, including preamble and CRC [bits]
+const int GPS_L2_SYMBOLS_PER_BIT = 2;
+const int GPS_L2_SAMPLES_PER_SYMBOL = 1;
+const int GPS_L2_CNAV_DATA_PAGE_DURATION_S=12;
 const int GPS_L2_CNAV_DATA_PAGE_BITS_EXTENDED_BYTES = 304; //!< GPS L2 CNAV page length, including preamble and CRC [bits]
 
 // common to all messages

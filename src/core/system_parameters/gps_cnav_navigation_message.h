@@ -70,8 +70,10 @@ private:
 
 public:
 
-    bool flag_iono_valid; //!< If set, it indicates that the ionospheric parameters are filled (page 18 has arrived and decoded)
-    bool b_valid_ephemeris_set_flag; // flag indicating that this ephemeris set have passed the validation check
+    double d_TOW;
+	bool b_flag_ephemeris_1;
+	bool b_flag_ephemeris_2;
+    bool b_flag_iono_valid; //!< If set, it indicates that the ionospheric parameters are filled (page 18 has arrived and decoded)
 
     std::map<int,std::string> satelliteBlock; //!< Map that stores to which block the PRN belongs http://www.navcen.uscg.gov/?Do=constellationStatus
 
@@ -97,7 +99,10 @@ public:
      * \brief Obtain a GPS SV Ephemeris class filled with current SV data
      */
     Gps_CNAV_Ephemeris get_ephemeris();
-
+    /*!
+     * \brief Check if we have a new iono record stored in the galileo navigation class
+     */
+    bool have_new_iono();
     /*!
      * \brief Obtain a GPS ionospheric correction parameters class filled with current SV data
      */
@@ -108,10 +113,10 @@ public:
      */
     Gps_CNAV_Utc_Model get_utc_model();
 
-
-    bool satellite_validation();
-
-    bool have_new_ephemeris(); //Check if we have a new ephemeris stored in the galileo navigation class
+    /*!
+     * \brief Check if we have a new ephemeris stored in the galileo navigation class
+     */
+    bool have_new_ephemeris();
 
     /*!
      * Default constructor

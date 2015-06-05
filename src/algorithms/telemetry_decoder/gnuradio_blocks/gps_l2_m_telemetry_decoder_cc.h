@@ -43,6 +43,10 @@
 #include "gnss_satellite.h"
 #include "viterbi_decoder.h"
 #include "gps_cnav_navigation_message.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
+#include "concurrent_queue.h"
+#include "GPS_L2C.h"
 
 class gps_l2_m_telemetry_decoder_cc;
 
@@ -63,11 +67,9 @@ public:
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
 
-    // queues to communicate broadcasted SBAS data to other blocks of GNSS-SDR
-    //void set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue);                 //!< Set raw msg queue
-    //void set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue);         //!< Set iono queue
-    //void set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue);  //!< Set sat correction queue
-    //void set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue);           //!< Set SBAS ephemeis queue
+    // queues to communicate broadcasted CNAV data to other blocks of GNSS-SDR
+    void set_iono_queue(concurrent_queue<Gps_CNAV_Iono> *iono_queue);         //!< Set iono queue
+    void set_ephemeris_queue(concurrent_queue<Gps_CNAV_Ephemeris> *ephemeris_queue);           //!< Set ephemeris queue
     void set_decimation(int decimation);
     /*!
      * \brief This is where all signal processing takes place
@@ -91,10 +93,8 @@ private:
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
     void align_samples();
 
-    static const int d_samples_per_symbol = 1;
-    static const int d_symbols_per_bit = 2;
-    static const int d_block_size_in_bits = 300;
-
+    concurrent_queue<Gps_CNAV_Iono> *d_iono_queue;
+    concurrent_queue<Gps_CNAV_Ephemeris> *d_ephemeris_queue;
     long d_fs_in;
 
     bool d_dump;
@@ -103,6 +103,10 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+
+    double d_TOW_at_current_symbol;
+    double d_TOW_at_Preamble;
+    bool d_flag_valid_word;
 
     bool d_flag_invert_input_symbols;
     bool d_flag_invert_buffer_symbols;

@@ -58,8 +58,10 @@
 #include "gnss_block_factory.h"
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
+#include "gps_cnav_ephemeris.h"
 #include "gps_almanac.h"
 #include "gps_iono.h"
+#include "gps_cnav_iono.h"
 #include "gps_utc_model.h"
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
@@ -97,6 +99,12 @@ concurrent_map<Gps_Iono> global_gps_iono_map;
 concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 concurrent_map<Gps_Almanac> global_gps_almanac_map;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
+
+// For GPS NAVIGATION (L2)
+concurrent_queue<Gps_CNAV_Ephemeris> global_gps_cnav_ephemeris_queue;
+concurrent_map<Gps_CNAV_Ephemeris> global_gps_cnav_ephemeris_map;
+concurrent_queue<Gps_CNAV_Ephemeris> global_gps_cnav_iono_queue;
+concurrent_map<Gps_CNAV_Ephemeris> global_gps_cnav_iono_map;
 
 // For GALILEO NAVIGATION
 concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;

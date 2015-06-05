@@ -42,8 +42,10 @@
 #include <boost/lexical_cast.hpp>
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
+#include "gps_cnav_ephemeris.h"
 #include "gps_almanac.h"
 #include "gps_iono.h"
+#include "gps_cnav_iono.h"
 #include "gps_utc_model.h"
 #include "gnss_sdr_supl_client.h"
 

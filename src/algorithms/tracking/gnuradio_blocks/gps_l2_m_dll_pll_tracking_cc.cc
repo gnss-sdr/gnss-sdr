@@ -366,6 +366,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
                     //std::cout<<" samples_offset="<<samples_offset<<"\r\n";
                     // Fill the acquisition data
                     current_synchro_data = *d_acquisition_gnss_synchro;
+                    current_synchro_data.Flag_valid_tracking = false;
                     *out[0] = current_synchro_data;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     return 1;
@@ -506,7 +507,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
             current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
             current_synchro_data.Carrier_Doppler_hz = static_cast<double>(d_carrier_doppler_hz);
             current_synchro_data.CN0_dB_hz = static_cast<double>(d_CN0_SNV_dB_Hz);
-            current_synchro_data.Flag_valid_pseudorange = false;
+            current_synchro_data.Flag_valid_tracking = true;
             *out[0] = current_synchro_data;
 
             // ########## DEBUG OUTPUT

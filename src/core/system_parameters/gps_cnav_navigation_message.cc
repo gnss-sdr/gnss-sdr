@@ -55,6 +55,8 @@ void Gps_CNAV_Navigation_Message::reset()
     d_satvel_X = 0;
     d_satvel_Y = 0;
     d_satvel_Z = 0;
+
+    d_TOW = 0.0;
 }
 
 

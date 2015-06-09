@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -15,7 +15,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -67,7 +67,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
                      * the GST/Utc relationship is given by
                      */
                     //std::cout<<"GST->UTC case a"<<std::endl;
-                    Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * (double)((WN % 256) - WNot_6));
+                    Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * static_cast<double>((WN % 256) - WNot_6));
                     t_Utc_daytime = fmod(t_e - Delta_t_Utc, 86400);
                 }
             else
@@ -78,7 +78,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
                      * the effective time is computed according to the following equations:
                      */
                     //std::cout<<"GST->UTC case b"<<std::endl;
-                    Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * (double)((WN % 256) - WNot_6));
+                    Delta_t_Utc =  Delta_tLS_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * static_cast<double>((WN % 256) - WNot_6));
                     double W = fmod(t_e - Delta_t_Utc - 43200, 86400) + 43200;
                     t_Utc_daytime = fmod(W, 86400 + Delta_tLSF_6 - Delta_tLS_6);
                     //implement something to handle a leap second event!
@@ -94,7 +94,7 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int WN)
              * the following equation:
              */
             //std::cout<<"GST->UTC case c"<<std::endl;
-            Delta_t_Utc = Delta_tLSF_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * (double)((WN % 256) - WNot_6));
+            Delta_t_Utc = Delta_tLSF_6 + A0_6 + A1_6 * (t_e - t0t_6 + 604800 * static_cast<double>((WN % 256) - WNot_6));
             t_Utc_daytime = fmod(t_e - Delta_t_Utc, 86400);
         }
 

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -148,7 +148,7 @@ arma::vec hybrid_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arma::m
     arma::vec Rot_X;
     double rho2;
     double traveltime;
-    double trop;
+    double trop = 0.0;
     double dlambda;
     double dphi;
     double h;
@@ -416,7 +416,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             d_position_UTC_time = p_time;
             LOG(INFO) << "HYBRID Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
-            cart2geo((double)mypos(0), (double)mypos(1), (double)mypos(2), 4);
+            cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
                 {
@@ -535,9 +535,9 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                                     d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
                                     d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
                                 }
-                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
-                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
-                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
+                            d_avg_latitude_d = d_avg_latitude_d / static_cast<double>(d_averaging_depth);
+                            d_avg_longitude_d = d_avg_longitude_d / static_cast<double>(d_averaging_depth);
+                            d_avg_height_m = d_avg_height_m / static_cast<double>(d_averaging_depth);
                             b_valid_position = true;
                             return true; //indicates that the returned position is valid
                         }
@@ -609,7 +609,7 @@ void hybrid_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_selectio
                     break;
                 }
         }
-    while (abs(h - oldh) > 1.0e-12);
+    while (std::abs(h - oldh) > 1.0e-12);
     d_latitude_d = phi * 180.0 / GPS_PI;
     d_longitude_d = lambda * 180 / GPS_PI;
     d_height_m = h;

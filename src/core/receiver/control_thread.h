@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -37,7 +37,7 @@
 
 #include <memory>
 #include <vector>
-#include <boost/thread/thread.hpp>
+#include <boost/thread.hpp>
 #include <gnuradio/msg_queue.h>
 #include "control_message_factory.h"
 #include "gnss_sdr_supl_client.h"
@@ -67,8 +67,8 @@ public:
      */
     ControlThread(std::shared_ptr<ConfigurationInterface> configuration);
 
-    //! \brief Virtual destructor. Derived classes must implement the destructor
-    virtual ~ControlThread();
+    //! \brief Destructor
+    ~ControlThread();
 
     /*! \brief Runs the control thread
      *

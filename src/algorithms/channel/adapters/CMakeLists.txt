@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -18,6 +18,10 @@
 
 set(CHANNEL_ADAPTER_SOURCES channel.cc)
 
+if(Boost_VERSION LESS 105000)
+     add_definitions(-DOLD_BOOST=1)
+endif(Boost_VERSION LESS 105000)
+
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
@@ -26,6 +30,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
+     ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 

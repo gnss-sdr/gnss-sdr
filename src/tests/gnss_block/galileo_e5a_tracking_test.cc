@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -85,6 +85,7 @@ void GalileoE5aTrackingTest::init()
     gnss_synchro.System = 'E';
     std::string signal = "5Q";
     signal.copy(gnss_synchro.Signal, 2, 0);
+    gnss_synchro.PRN = 11;
 
     config->set_property("GNSS-SDR.internal_fs_hz", "32000000");
     config->set_property("Tracking_Galileo.item_type", "gr_complex");
@@ -92,12 +93,12 @@ void GalileoE5aTrackingTest::init()
     config->set_property("Tracking_Galileo.dump_filename", "../data/e5a_tracking_ch_");
     config->set_property("Tracking_Galileo.implementation", "Galileo_E5a_DLL_PLL_Tracking");
     config->set_property("Tracking_Galileo.early_late_space_chips", "0.5");
-
+    config->set_property("Tracking_Galileo.order", "2");
     config->set_property("Tracking_Galileo.pll_bw_hz_init","20.0");
-    config->set_property("Tracking_Galileo.ti_ms", "1");
-    config->set_property("Tracking_Galileo.dll_bw_hz_init","2.0");
     config->set_property("Tracking_Galileo.pll_bw_hz", "5");
+    config->set_property("Tracking_Galileo.dll_bw_hz_init","2.0");
     config->set_property("Tracking_Galileo.dll_bw_hz", "2");
+    config->set_property("Tracking_Galileo.ti_ms", "1");
 }
 
 TEST_F(GalileoE5aTrackingTest, ValidationOfResults)

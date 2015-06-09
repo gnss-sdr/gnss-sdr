@@ -5,7 +5,7 @@
  * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -143,7 +143,7 @@ Rinex_Printer::Rinex_Printer()
     if ( FLAGS_RINEX_version.compare("3.01") == 0 )
         {
             version = 3;
-            stringVersion = "3.02";
+            stringVersion = "3.01";
         }
     else if ( FLAGS_RINEX_version.compare("3.02") == 0 )
         {
@@ -163,7 +163,7 @@ Rinex_Printer::Rinex_Printer()
     else if ( FLAGS_RINEX_version.compare("2.10") == 0 )
         {
             version = 2;
-            stringVersion = "2.11";
+            stringVersion = "2.10";
         }
     else if ( FLAGS_RINEX_version.compare("2") == 0 )
         {
@@ -219,7 +219,7 @@ Rinex_Printer::~Rinex_Printer()
 
 
 
-void Rinex_Printer::lengthCheck(std::string line)
+void Rinex_Printer::lengthCheck(const std::string& line)
 {
     if (line.length() != 80)
         {
@@ -391,7 +391,7 @@ std::string Rinex_Printer::getLocalTime()
 }
 
 
-void Rinex_Printer::rinex_nav_header(std::ofstream& out,  Galileo_Iono iono, Galileo_Utc_Model utc_model, Galileo_Almanac galileo_almanac)
+void Rinex_Printer::rinex_nav_header(std::ofstream& out, const Galileo_Iono& iono, const Galileo_Utc_Model& utc_model, const Galileo_Almanac& galileo_almanac)
 {
     std::string line;
     stringVersion = "3.02";
@@ -501,7 +501,7 @@ void Rinex_Printer::rinex_nav_header(std::ofstream& out,  Galileo_Iono iono, Gal
     out << line << std::endl;
 }
 
-void Rinex_Printer::rinex_nav_header(std::ofstream& out, Gps_Iono iono, Gps_Utc_Model utc_model)
+void Rinex_Printer::rinex_nav_header(std::ofstream& out, const Gps_Iono& iono, const Gps_Utc_Model& utc_model)
 {
 
     std::string line;
@@ -680,7 +680,7 @@ void Rinex_Printer::rinex_nav_header(std::ofstream& out, Gps_Iono iono, Gps_Utc_
     out << line << std::endl;
 }
 
-void Rinex_Printer::rinex_nav_header(std::ofstream& out, Gps_Iono gps_iono, Gps_Utc_Model gps_utc_model, Galileo_Iono galileo_iono, Galileo_Utc_Model galileo_utc_model, Galileo_Almanac galileo_almanac)
+void Rinex_Printer::rinex_nav_header(std::ofstream& out, const Gps_Iono& gps_iono, const Gps_Utc_Model& gps_utc_model, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Galileo_Almanac& galileo_almanac)
 {
     std::string line;
         stringVersion = "3.02";
@@ -922,12 +922,10 @@ void Rinex_Printer::rinex_sbs_header(std::ofstream& out)
 }
 
 
-
-
-void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris> eph_map)
+void Rinex_Printer::log_rinex_nav(std::ofstream& out, const std::map<int,Gps_Ephemeris>& eph_map)
 {
     std::string line;
-    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+    std::map<int,Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
 
     for(gps_ephemeris_iter = eph_map.begin();
     		gps_ephemeris_iter != eph_map.end();
@@ -1129,12 +1127,12 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris
                 }
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_IDOT, 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for((double)(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
+            line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
             line += std::string(1, ' ');
-            double GPS_week_continuous_number = (double)(gps_ephemeris_iter->second.i_GPS_week + 1024); // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
+            double GPS_week_continuous_number = static_cast<double>(gps_ephemeris_iter->second.i_GPS_week + 1024); // valid until April 7, 2019 (check http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm)
             line += Rinex_Printer::doub2for(GPS_week_continuous_number, 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for((double)(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
+            line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
             if (version == 2)
                 {
                     line += std::string(1, ' ');
@@ -1153,9 +1151,9 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris
                 {
                     line += std::string(5, ' ');
                 }
-            line += Rinex_Printer::doub2for((double)(gps_ephemeris_iter->second.i_SV_accuracy), 18, 2);
+            line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_SV_accuracy), 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for((double)(gps_ephemeris_iter->second.i_SV_health), 18, 2);
+            line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_SV_health), 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_TGD, 18, 2);
             line += std::string(1, ' ');
@@ -1182,7 +1180,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris
             line += std::string(1, ' ');
             double curve_fit_interval = 4;
 
-            if (gps_ephemeris_iter->second.satelliteBlock[gps_ephemeris_iter->second.i_satellite_PRN].compare("IIA"))
+            if (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.i_satellite_PRN).compare("IIA"))
                 {
                     // Block II/IIA (Table 20-XI IS-GPS-200E )
                     if ( (gps_ephemeris_iter->second.d_IODC > 239) && (gps_ephemeris_iter->second.d_IODC < 248) )  curve_fit_interval = 8;
@@ -1193,10 +1191,10 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris
                     if ( gps_ephemeris_iter->second.d_IODC == 757 ) curve_fit_interval = 98;
                 }
 
-            if ((gps_ephemeris_iter->second.satelliteBlock[gps_ephemeris_iter->second.i_satellite_PRN].compare("IIR") == 0) ||
-                    (gps_ephemeris_iter->second.satelliteBlock[gps_ephemeris_iter->second.i_satellite_PRN].compare("IIR-M") == 0) ||
-                    (gps_ephemeris_iter->second.satelliteBlock[gps_ephemeris_iter->second.i_satellite_PRN].compare("IIF") == 0) ||
-                    (gps_ephemeris_iter->second.satelliteBlock[gps_ephemeris_iter->second.i_satellite_PRN].compare("IIIA") == 0) )
+            if ((gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.i_satellite_PRN).compare("IIR") == 0) ||
+                    (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.i_satellite_PRN).compare("IIR-M") == 0) ||
+                    (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.i_satellite_PRN).compare("IIF") == 0) ||
+                    (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.i_satellite_PRN).compare("IIIA") == 0) )
                 {
                     // Block IIR/IIR-M/IIF/IIIA (Table 20-XII IS-GPS-200E )
                     if ( (gps_ephemeris_iter->second.d_IODC > 239) && (gps_ephemeris_iter->second.d_IODC < 248))  curve_fit_interval = 8;
@@ -1219,11 +1217,10 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int,Gps_Ephemeris
 }
 
 
-
-void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephemeris> eph_map)
+void Rinex_Printer::log_rinex_nav(std::ofstream& out, const std::map<int, Galileo_Ephemeris>& eph_map)
 {
     std::string line;
-    std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;
+    std::map<int,Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
     line.clear();
     for(galileo_ephemeris_iter = eph_map.begin();
             galileo_ephemeris_iter != eph_map.end();
@@ -1331,7 +1328,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
             int data_source_INAV = Rinex_Printer::toInt(iNAVE1B, 10);
             line += Rinex_Printer::doub2for(static_cast<double>(data_source_INAV), 18, 2);
             line += std::string(1, ' ');
-            double GST_week = (double)(galileo_ephemeris_iter->second.WN_5);
+            double GST_week = static_cast<double>(galileo_ephemeris_iter->second.WN_5);
             double num_GST_rollovers = floor((GST_week + 1024.0) / 4096.0 );
             double Galileo_week_continuous_number = GST_week + 1024.0 + num_GST_rollovers * 4096.0;
             line += Rinex_Printer::doub2for(Galileo_week_continuous_number, 18, 2);
@@ -1399,7 +1396,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Galileo_Ephe
 }
 
 
-void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Gps_Ephemeris> gps_eph_map, std::map<int, Galileo_Ephemeris> galileo_eph_map)
+void Rinex_Printer::log_rinex_nav(std::ofstream& out, const std::map<int, Gps_Ephemeris>& gps_eph_map, const std::map<int, Galileo_Ephemeris>& galileo_eph_map)
 {
     version = 3;
     stringVersion = "3.02";
@@ -1408,7 +1405,7 @@ void Rinex_Printer::log_rinex_nav(std::ofstream& out, std::map<int, Gps_Ephemeri
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, double d_TOW_first_observation)
+void Rinex_Printer::rinex_obs_header(std::ofstream& out, const Gps_Ephemeris& eph, const double d_TOW_first_observation)
 {
 
     std::string line;
@@ -1639,7 +1636,7 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, doub
     // -------- TIME OF FIRST OBS
     line.clear();
     boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph,d_TOW_first_observation);
-    std::string timestring=boost::posix_time::to_iso_string(p_gps_time);
+    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     std::string year (timestring, 0, 4);
     std::string month (timestring, 4, 2);
     std::string day (timestring, 6, 2);
@@ -1671,7 +1668,7 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris eph, doub
 
 
 
-void Rinex_Printer::rinex_obs_header(std::ofstream& out, Galileo_Ephemeris eph, double d_TOW_first_observation)
+void Rinex_Printer::rinex_obs_header(std::ofstream& out, const Galileo_Ephemeris& eph, const double d_TOW_first_observation)
 {
     std::string line;
     version = 3;
@@ -1873,7 +1870,7 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Galileo_Ephemeris eph, 
 }
 
 
-void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris gps_eph, Galileo_Ephemeris galileo_eph, double d_TOW_first_observation)
+void Rinex_Printer::rinex_obs_header(std::ofstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, const double d_TOW_first_observation)
 {
     std::string line;
     version = 3;
@@ -2101,7 +2098,7 @@ void Rinex_Printer::rinex_obs_header(std::ofstream& out, Gps_Ephemeris gps_eph, 
     out << line << std::endl;
 }
 
-void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges)
+void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& eph, const double obs_time, const std::map<int,Gnss_Synchro>& pseudoranges)
 {
     // RINEX observations timestamps are GPS timestamps.
     std::string line;
@@ -2154,7 +2151,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
             line += std::string(1, '0');
             //Number of satellites observed in current epoch
             int numSatellitesObserved = 0;
-            std::map<int,Gnss_Synchro>::iterator pseudoranges_iter;
+            std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
             for(pseudoranges_iter = pseudoranges.begin();
                     pseudoranges_iter != pseudoranges.end();
                     pseudoranges_iter++)
@@ -2167,8 +2164,8 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
                     pseudoranges_iter++)
                 {
                     line += satelliteSystem["GPS"];
-                    if ((int)pseudoranges_iter->first < 10) line += std::string(1, '0');
-                    line += boost::lexical_cast<std::string>((int)pseudoranges_iter->first);
+                    if (static_cast<int>(pseudoranges_iter->first) < 10) line += std::string(1, '0');
+                    line += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->first));
                 }
             // Receiver clock offset (optional)
             //line += rightJustify(asString(clockOffset, 12), 15);
@@ -2239,7 +2236,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
 
             //Number of satellites observed in current epoch
             int numSatellitesObserved = 0;
-            std::map<int,Gnss_Synchro>::iterator pseudoranges_iter;
+            std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
             for(pseudoranges_iter = pseudoranges.begin();
                     pseudoranges_iter != pseudoranges.end();
                     pseudoranges_iter++)
@@ -2263,8 +2260,8 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
                     std::string lineObs;
                     lineObs.clear();
                     lineObs += satelliteSystem["GPS"];
-                    if ((int)pseudoranges_iter->first < 10) lineObs += std::string(1, '0');
-                    lineObs += boost::lexical_cast<std::string>((int)pseudoranges_iter->first);
+                    if (static_cast<int>(pseudoranges_iter->first) < 10) lineObs += std::string(1, '0');
+                    lineObs += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->first));
                     //lineObs += std::string(2, ' ');
                     lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Pseudorange_m, 3), 14);
 
@@ -2296,7 +2293,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris eph, double 
 
 
 
-void Rinex_Printer::log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, double obs_time, std::map<int,Gnss_Synchro> pseudoranges)
+void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int,Gnss_Synchro>& pseudoranges)
 {
     // RINEX observations timestamps are Galileo timestamps.
     // See http://gage14.upc.es/gLAB/HTML/Observation_Rinex_v3.01.html
@@ -2341,7 +2338,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, dou
 
     //Number of satellites observed in current epoch
     int numSatellitesObserved = 0;
-    std::map<int,Gnss_Synchro>::iterator pseudoranges_iter;
+    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
     for(pseudoranges_iter = pseudoranges.begin();
             pseudoranges_iter != pseudoranges.end();
             pseudoranges_iter++)
@@ -2364,8 +2361,8 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, dou
             std::string lineObs;
             lineObs.clear();
             lineObs += satelliteSystem["Galileo"];
-            if ((int)pseudoranges_iter->first < 10) lineObs += std::string(1, '0');
-            lineObs += boost::lexical_cast<std::string>((int)pseudoranges_iter->first);
+            if (static_cast<int>(pseudoranges_iter->first) < 10) lineObs += std::string(1, '0');
+            lineObs += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->first));
             //lineObs += std::string(2, ' ');
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Pseudorange_m, 3), 14);
 
@@ -2391,7 +2388,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Galileo_Ephemeris eph, dou
 }
 
 
-void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris gps_eph, Galileo_Ephemeris galileo_eph,  double gps_obs_time, std::map<int,Gnss_Synchro> pseudoranges)
+void Rinex_Printer::log_rinex_obs(std::ofstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph,  double gps_obs_time, const std::map<int,Gnss_Synchro>& pseudoranges)
 {
     std::string line;
 
@@ -2433,7 +2430,7 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris gps_eph, Gal
 
     //Number of satellites observed in current epoch
     int numSatellitesObserved = 0;
-    std::map<int,Gnss_Synchro>::iterator pseudoranges_iter;
+    std::map<int,Gnss_Synchro>::const_iterator pseudoranges_iter;
     for(pseudoranges_iter = pseudoranges.begin();
             pseudoranges_iter != pseudoranges.end();
             pseudoranges_iter++)
@@ -2460,8 +2457,8 @@ void Rinex_Printer::log_rinex_obs(std::ofstream& out, Gps_Ephemeris gps_eph, Gal
             s.assign(1, pseudoranges_iter->second.System);
             if(s.compare("G") == 0) lineObs += satelliteSystem["GPS"];
             if(s.compare("E") == 0) lineObs += satelliteSystem["Galileo"];
-            if ((int)pseudoranges_iter->first < 10) lineObs += std::string(1, '0');
-            lineObs += boost::lexical_cast<std::string>((int)pseudoranges_iter->first);
+            if (static_cast<int>(pseudoranges_iter->first) < 10) lineObs += std::string(1, '0');
+            lineObs += boost::lexical_cast<std::string>(static_cast<int>(pseudoranges_iter->first));
             lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Pseudorange_m, 3), 14);
 
             //Loss of lock indicator (LLI)
@@ -2562,7 +2559,7 @@ void Rinex_Printer::to_date_time(int gps_week, int gps_tow, int &year, int &mont
 
 
 
-void Rinex_Printer::log_rinex_sbs(std::ofstream& out, Sbas_Raw_Msg sbs_message)
+void Rinex_Printer::log_rinex_sbs(std::ofstream& out, const Sbas_Raw_Msg& sbs_message)
 {
     // line 1: PRN / EPOCH / RCVR
     std::stringstream line1;
@@ -2645,7 +2642,7 @@ void Rinex_Printer::log_rinex_sbs(std::ofstream& out, Sbas_Raw_Msg sbs_message)
 }
 
 
-int Rinex_Printer::signalStrength(double snr)
+int Rinex_Printer::signalStrength(const double snr)
 {
     int ss;
     ss = int ( std::min( std::max( int (floor(snr/6)) , 1), 9) );
@@ -2653,37 +2650,37 @@ int Rinex_Printer::signalStrength(double snr)
 }
 
 
-boost::posix_time::ptime Rinex_Printer::compute_UTC_time(Gps_Navigation_Message nav_msg)
+boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Message& nav_msg)
 {
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     //: idea resolve the ambiguity with the leap second  http://www.colorado.edu/geography/gcraft/notes/gps/gpseow.htm
-    double utc_t = nav_msg.utc_time(nav_msg.d_TOW);
-    boost::posix_time::time_duration t = boost::posix_time::millisec((utc_t + 604800*(double)(nav_msg.i_GPS_week))*1000);
+    const double utc_t = nav_msg.utc_time(nav_msg.d_TOW);
+    boost::posix_time::time_duration t = boost::posix_time::millisec((utc_t + 604800 * static_cast<double>(nav_msg.i_GPS_week)) * 1000);
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
 
 
-boost::posix_time::ptime Rinex_Printer::compute_GPS_time(Gps_Ephemeris eph, double obs_time)
+boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& eph, const double obs_time)
 {
     // The RINEX v2.11 v3.00 format uses GPS time for the observations epoch, not UTC time, thus, no leap seconds needed here.
     // (see Section 3 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt)
     // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
-    double gps_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800*(double)(eph.i_GPS_week % 1024))*1000);
+    const double gps_t = obs_time;
+    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000);
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
 
 
-boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(Galileo_Ephemeris eph, double obs_time)
+boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(const Galileo_Ephemeris& eph, const double obs_time)
 {
     // The RINEX v2.11 v3.00 format uses Galileo time for the observations epoch, not UTC time, thus, no leap seconds needed here.
     // (see Pag. 17 in http://igscb.jpl.nasa.gov/igscb/data/format/rinex301.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     double galileo_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::millisec((galileo_t + 604800*(double)(eph.WN_5))*1000); //
+    boost::posix_time::time_duration t = boost::posix_time::millisec((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000); //
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }

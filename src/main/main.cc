@@ -8,7 +8,7 @@
 *
 * -------------------------------------------------------------------------
 *
-* Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)
+* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
 *
 * GNSS-SDR is a software defined Global Navigation
 * Satellite Systems receiver
@@ -31,7 +31,7 @@
 * -------------------------------------------------------------------------
 */
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.2"
+#define GNSS_SDR_VERSION "0.0.5"
 #endif
 
 #include <ctime>
@@ -40,8 +40,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
+#include <boost/thread.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
@@ -119,7 +118,7 @@ int main(int argc, char** argv)
     const std::string intro_help(
             std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n")
     +
-    "Copyright (C) 2010-2014 (see AUTHORS file for a list of contributors)\n"
+    "Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)\n"
     +
     "This program comes with ABSOLUTELY NO WARRANTY;\n"
     +
@@ -178,7 +177,7 @@ int main(int argc, char** argv)
     gettimeofday(&tv, NULL);
     long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
     std::cout << "Total GNSS-SDR run time "
-              << ((double)(end - begin))/1000000.0
+              << (static_cast<double>(end - begin)) / 1000000.0
               << " [seconds]" << std::endl;
 
     google::ShutDownCommandLineFlags();

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -32,6 +32,8 @@
 
 #include <ctime>
 #include <iostream>
+#include <boost/chrono.hpp>
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -46,7 +48,6 @@
 #include "signal_generator_c.h"
 #include "fir_filter.h"
 #include "gen_signal_source.h"
-#include "boost/shared_ptr.hpp"
 #include "gnss_sdr_valve.h"
 
 
@@ -502,9 +503,16 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
 
+#ifdef OLD_BOOST
             ASSERT_NO_THROW( {
                 ch_thread.timed_join(boost::posix_time::seconds(1));
             }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
 }
 
@@ -590,9 +598,15 @@ TEST_F(GalileoE1Pcps8msAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProb
                     std::cout << "Estimated probability of false alarm (satellite absent) = " << Pfa_a << std::endl;
                     std::cout << "Mean acq time = " << mean_acq_time_us << " microseconds." << std::endl;
                 }
+#ifdef OLD_BOOST
             ASSERT_NO_THROW( {
                 ch_thread.timed_join(boost::posix_time::seconds(1));
             }) << "Failure while waiting the queue to stop" << std::endl;
-
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
 }

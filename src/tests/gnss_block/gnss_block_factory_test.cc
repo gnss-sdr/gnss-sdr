@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,6 +35,7 @@
 
 #include <vector>
 #include <gnuradio/msg_queue.h>
+#include <gtest/gtest.h>
 #include "in_memory_configuration.h"
 #include "gnss_block_interface.h"
 #include "acquisition_interface.h"
@@ -57,7 +58,6 @@ TEST(GNSS_Block_Factory_Test, InstantiateFileSignalSource)
     std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
     // Example of a block as a shared_ptr
     std::shared_ptr<GNSSBlockInterface> signal_source = factory->GetSignalSource(configuration, queue);
-    LOG(INFO) << "signal source created";
     EXPECT_STREQ("SignalSource", signal_source->role().c_str());
     EXPECT_STREQ("File_Signal_Source", signal_source->implementation().c_str());
 }

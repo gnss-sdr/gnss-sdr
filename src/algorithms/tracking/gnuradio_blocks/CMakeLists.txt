@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -18,6 +18,7 @@
 
 set(TRACKING_GR_BLOCKS_SOURCES 
      galileo_e1_dll_pll_veml_tracking_cc.cc
+     galileo_volk_e1_dll_pll_veml_tracking_cc.cc
      galileo_e1_tcp_connector_tracking_cc.cc
      gps_l1_ca_dll_fll_pll_tracking_cc.cc
      gps_l1_ca_dll_pll_optim_tracking_cc.cc
@@ -37,6 +38,7 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
 if(ENABLE_GENERIC_ARCH)
@@ -46,4 +48,7 @@ endif(ENABLE_GENERIC_ARCH)
 file(GLOB TRACKING_GR_BLOCKS_HEADERS "*.h")
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
-target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} )
+target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} )
+if(NOT VOLK_GNSSSDR_FOUND)
+    add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
+endif(NOT VOLK_GNSSSDR_FOUND)

@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -19,7 +19,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,10 +36,9 @@
 #include <unistd.h>
 #include <iostream>
 #include <map>
-#include <memory>
 #include <string>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
+#include <boost/chrono.hpp>
 #include <gnuradio/message.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -90,8 +89,8 @@ extern concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
 
 using google::LogMessage;
 
-DEFINE_string(config_file, "../conf/gnss-sdr.conf",
-		"Path to the file containing the configuration parameters");
+DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"),
+		"File containing the configuration parameters");
 
 ControlThread::ControlThread()
 {
@@ -174,6 +173,7 @@ void ControlThread::run()
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();
 
+#ifdef OLD_BOOST
     // Join GPS threads
     gps_ephemeris_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
     gps_iono_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
@@ -190,6 +190,25 @@ void ControlThread::run()
 
     //Join keyboard threads
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
+#endif
+#ifndef OLD_BOOST
+    // Join GPS threads
+    gps_ephemeris_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    gps_iono_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    gps_utc_model_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    gps_acq_assist_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    gps_ref_location_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    gps_ref_time_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+
+    //Join Galileo threads
+    galileo_ephemeris_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    galileo_iono_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    galileo_almanac_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    galileo_utc_model_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+
+    //Join keyboard threads
+    keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+#endif
 
     LOG(INFO) << "Flowgraph stopped";
 }
@@ -541,7 +560,7 @@ void ControlThread::read_control_messages()
         }
     else
         {
-            control_messages_ = 0;
+            control_messages_->clear();
         }
 }
 
@@ -886,27 +905,26 @@ void ControlThread::galileo_utc_model_data_collector()
                     // Check the UTC timestamp. If it is newer, then update the ephemeris
                     if (galileo_utc.WNot_6 > galileo_utc_old.WNot_6) //further check because it is not clear when IOD is reset
                         {
-                            //std::cout << "UTC record updated --new GALILEO UTC Week Number ="<<galileo_utc.WNot_6<<std::endl;
+                            DLOG(INFO) << "UTC record updated --new GALILEO UTC Week Number =" << galileo_utc.WNot_6;
                             global_galileo_utc_model_map.write(0, galileo_utc);
                         }
                     else
                         {
                             if (galileo_utc.t0t_6 > galileo_utc_old.t0t_6)
                                 {
-                                    //std::cout << "UTC record updated --new GALILEO UTC time of Week ="<<galileo_utc.t0t_6<<std::endl;
+                                    DLOG(INFO) << "UTC record updated --new GALILEO UTC time of Week =" << galileo_utc.t0t_6;
                                     global_galileo_utc_model_map.write(0, galileo_utc);
-                                    //std::cout << "GALILEO UTC time of Week old: " << galileo_utc_old.t0t_6<<std::endl;
                                 }
                             else
                                 {
-                                    LOG(INFO) << "Not updating the existing UTC in global map, timestamp is not changing" << std::endl;
+                                    LOG(INFO) << "Not updating the existing UTC in global map, timestamp is not changing";
                                 }
                         }
                 }
             else
                 {
                     // insert new ephemeris record
-                    LOG(INFO) << "New UTC record inserted in global map" << std::endl;
+                    LOG(INFO) << "New UTC record inserted in global map";
                     global_galileo_utc_model_map.write(0, galileo_utc);
                 }
         }

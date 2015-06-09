@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,8 +39,7 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
+#include <boost/thread.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
@@ -79,7 +78,11 @@ using google::LogMessage;
 
 DECLARE_string(log_dir);
 
-DEFINE_string(config_file, "../conf/front-end-cal.conf",
+std::string s1_(GNSSSDR_INSTALL_DIR);
+std::string s2_("/share/gnss-sdr/conf/front-end-cal.conf");
+std::string s3_ = s1_ + s2_;
+
+DEFINE_string(config_file, s3_,
         "Path to the file containing the configuration parameters");
 
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
@@ -218,7 +221,7 @@ int main(int argc, char** argv)
     const std::string intro_help(
             std::string("\n RTL-SDR E4000 RF front-end center frequency and sampling rate calibration tool that uses GPS signals\n")
     +
-    "Copyright (C) 2010-2013 (see AUTHORS file for a list of contributors)\n"
+    "Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)\n"
     +
     "This program comes with ABSOLUTELY NO WARRANTY;\n"
     +

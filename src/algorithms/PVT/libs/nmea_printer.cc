@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -20,7 +20,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -222,8 +222,8 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
             north = true;
         }
 
-    int deg = (int)lat;
-    double mins = lat - (double)deg;
+    int deg = static_cast<int>(lat);
+    double mins = lat - static_cast<double>(deg);
     mins *= 60.0 ;
     std::ostringstream out_string;
     out_string.setf(std::ios::fixed, std::ios::floatfield);
@@ -259,8 +259,8 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
         {
             east = true;
         }
-    int deg = (int)longitude;
-    double mins = longitude - (double)deg;
+    int deg = static_cast<int>(longitude);
+    double mins = longitude - static_cast<double>(deg);
     mins *= 60.0 ;
     std::ostringstream out_string;
     out_string.setf(std::ios::fixed, std::ios::floatfield);
@@ -271,7 +271,7 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
     out_string.precision(4);
     out_string << mins;
 
-    if (east==true)
+    if (east == true)
         {
             out_string << ",E";
         }
@@ -361,7 +361,7 @@ std::string Nmea_Printer::get_GPRMC()
             sentence_str << ",V";
         };
 
-    if (d_PVT_data->d_flag_averaging==true)
+    if (d_PVT_data->d_flag_averaging == true)
         {
             // Latitude ddmm.mmmm,(N or S)
             sentence_str << "," << latitude_to_hm(d_PVT_data->d_avg_latitude_d);
@@ -422,7 +422,7 @@ std::string Nmea_Printer::get_GPRMC()
     sentence_str << "*";
     sentence_str.width(2);
     sentence_str.fill('0');
-    sentence_str << std::hex << (int)checksum;
+    sentence_str << std::hex << static_cast<int>(checksum);
 
     // end NMEA sentence
     sentence_str << "\r\n";
@@ -507,7 +507,7 @@ std::string Nmea_Printer::get_GPGSA()
     sentence_str << "*";
     sentence_str.width(2);
     sentence_str.fill('0');
-    sentence_str << std::hex << (int)checksum;
+    sentence_str << std::hex << static_cast<int>(checksum);
 
     // end NMEA sentence
     sentence_str << "\r\n";
@@ -532,7 +532,7 @@ std::string Nmea_Printer::get_GPGSV()
     // 1st step: How many GPGSV frames we need? (up to 3)
     // Each frame contains up to 4 satellites
     int n_frames;
-    n_frames = std::ceil(((double)n_sats_used) / 4.0);
+    n_frames = std::ceil((static_cast<double>(n_sats_used)) / 4.0);
 
     // generate the frames
     int current_satellite = 0;
@@ -566,17 +566,17 @@ std::string Nmea_Printer::get_GPGSV()
                     frame_str << ",";
                     frame_str.width(2);
                     frame_str.fill('0');
-                    frame_str << std::dec << (int)d_PVT_data->d_visible_satellites_El[current_satellite];
+                    frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_El[current_satellite]);
 
                     frame_str << ",";
                     frame_str.width(3);
                     frame_str.fill('0');
-                    frame_str << std::dec << (int)d_PVT_data->d_visible_satellites_Az[current_satellite];
+                    frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_Az[current_satellite]);
 
                     frame_str << ",";
                     frame_str.width(2);
                     frame_str.fill('0');
-                    frame_str << std::dec << (int)d_PVT_data->d_visible_satellites_CN0_dB[current_satellite];
+                    frame_str << std::dec << static_cast<int>(d_PVT_data->d_visible_satellites_CN0_dB[current_satellite]);
 
                     current_satellite++;
 
@@ -592,7 +592,7 @@ std::string Nmea_Printer::get_GPGSV()
             frame_str << "*";
             frame_str.width(2);
             frame_str.fill('0');
-            frame_str << std::hex << (int)checksum;
+            frame_str << std::hex << static_cast<int>(checksum);
 
             // end NMEA sentence
             frame_str << "\r\n";
@@ -712,7 +712,7 @@ std::string Nmea_Printer::get_GPGGA()
     sentence_str << "*";
     sentence_str.width(2);
     sentence_str.fill('0');
-    sentence_str << std::hex <<(int)checksum;
+    sentence_str << std::hex << static_cast<int>(checksum);
 
     // end NMEA sentence
     sentence_str << "\r\n";

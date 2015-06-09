@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -40,6 +40,7 @@
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/blocks/skiphead.h>
+#include <gtest/gtest.h>
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
@@ -112,7 +113,7 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, Instantiate)
 TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
 {
     int fs_in = 8000000;
-    int nsamples = 80000000;
+    int nsamples = 40000000;
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;

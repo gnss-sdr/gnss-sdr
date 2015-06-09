@@ -11,7 +11,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -21,7 +21,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -86,14 +86,13 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
 
-    //todo: do something if posix_memalign fails
-    if (posix_memalign((void**)&d_fft_code_data, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_fft_code_pilot, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_data_correlation, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_pilot_correlation, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_correlation_plus, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_correlation_minus, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
+    d_fft_code_data = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_fft_code_pilot = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_data_correlation = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_pilot_correlation = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_correlation_plus = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_correlation_minus = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -112,18 +111,18 @@ pcps_cccwsr_acquisition_cc::~pcps_cccwsr_acquisition_cc()
         {
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
-                    free(d_grid_doppler_wipeoffs[i]);
+                    volk_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
-    free(d_fft_code_data);
-    free(d_fft_code_pilot);
-    free(d_data_correlation);
-    free(d_pilot_correlation);
-    free(d_correlation_plus);
-    free(d_correlation_minus);
-    free(d_magnitude);
+    volk_free(d_fft_code_data);
+    volk_free(d_fft_code_pilot);
+    volk_free(d_data_correlation);
+    volk_free(d_pilot_correlation);
+    volk_free(d_correlation_plus);
+    volk_free(d_correlation_minus);
+    volk_free(d_magnitude);
 
     delete d_ifft;
     delete d_fft_if;
@@ -134,38 +133,24 @@ pcps_cccwsr_acquisition_cc::~pcps_cccwsr_acquisition_cc()
         }
 }
 
-void pcps_cccwsr_acquisition_cc::set_local_code(std::complex<float> * code_data,
-                                           std::complex<float> * code_pilot)
+void pcps_cccwsr_acquisition_cc::set_local_code(std::complex<float>* code_data,
+        std::complex<float>* code_pilot)
 {
     // Data code (E1B)
-    memcpy(d_fft_if->get_inbuf(), code_data, sizeof(gr_complex)*d_fft_size);
+    memcpy(d_fft_if->get_inbuf(), code_data, sizeof(gr_complex) * d_fft_size);
 
     d_fft_if->execute(); // We need the FFT of local code
 
     //Conjugate the local code
-    if (is_unaligned())
-        {
-            volk_32fc_conjugate_32fc_u(d_fft_code_data,d_fft_if->get_outbuf(),d_fft_size);
-        }
-    else
-        {
-            volk_32fc_conjugate_32fc_a(d_fft_code_data,d_fft_if->get_outbuf(),d_fft_size);
-        }
+    volk_32fc_conjugate_32fc(d_fft_code_data,d_fft_if->get_outbuf(),d_fft_size);
 
     // Pilot code (E1C)
-    memcpy(d_fft_if->get_inbuf(), code_pilot, sizeof(gr_complex)*d_fft_size);
+    memcpy(d_fft_if->get_inbuf(), code_pilot, sizeof(gr_complex) * d_fft_size);
 
     d_fft_if->execute(); // We need the FFT of local code
 
     //Conjugate the local code,
-    if (is_unaligned())
-        {
-            volk_32fc_conjugate_32fc_u(d_fft_code_pilot,d_fft_if->get_outbuf(),d_fft_size);
-        }
-    else
-        {
-            volk_32fc_conjugate_32fc_a(d_fft_code_pilot,d_fft_if->get_outbuf(),d_fft_size);
-        }
+    volk_32fc_conjugate_32fc(d_fft_code_pilot, d_fft_if->get_outbuf(), d_fft_size);
 }
 
 void pcps_cccwsr_acquisition_cc::init()
@@ -178,8 +163,8 @@ void pcps_cccwsr_acquisition_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = (int)(-d_doppler_max);
-         doppler <= (int)d_doppler_max;
+    for (int doppler = static_cast<int>(-d_doppler_max);
+         doppler <= static_cast<int>(d_doppler_max);
          doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
@@ -187,12 +172,11 @@ void pcps_cccwsr_acquisition_cc::init()
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
-    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
-                               d_fft_size * sizeof(gr_complex)) == 0){};
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
 
-            int doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
         }
@@ -239,7 +223,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
             float magt_plus = 0.0;
             float magt_minus = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
-            float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+            float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
             d_sample_counter += d_fft_size; // sample counter
 
@@ -252,18 +236,18 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                     << ", doppler_step: " << d_doppler_step;
 
             // 1- Compute the input signal power estimation
-            volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
-            volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
-            d_input_power /= (float)d_fft_size;
+            volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
+            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
+            d_input_power /= static_cast<float>(d_fft_size);
 
             // 2- Doppler frequency search loop
-            for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+            for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
                     // doppler search steps
 
-                    doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+                    doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
-                    volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in,
+                    volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                                 d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
 
                     // 3- Perform the FFT-based convolution  (parallel time search)
@@ -273,7 +257,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                     // Multiply carrier wiped--off, Fourier transformed incoming signal
                     // with the local FFT'd data code reference (E1B) using SIMD operations
                     // with VOLK library
-                    volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
                                 d_fft_if->get_outbuf(), d_fft_code_data, d_fft_size);
 
                     // compute the inverse FFT
@@ -286,7 +270,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                     // Multiply carrier wiped--off, Fourier transformed incoming signal
                     // with the local FFT'd pilot code reference (E1C) using SIMD operations
                     // with VOLK library
-                    volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+                    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
                                 d_fft_if->get_outbuf(), d_fft_code_pilot, d_fft_size);
 
                     // Compute the inverse FFT
@@ -307,12 +291,12 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                                                      d_data_correlation[i].imag() - d_pilot_correlation[i].real());
                         }
 
-                    volk_32fc_magnitude_squared_32f_a(d_magnitude, d_correlation_plus, d_fft_size);
-                    volk_32f_index_max_16u_a(&indext_plus, d_magnitude, d_fft_size);
+                    volk_32fc_magnitude_squared_32f(d_magnitude, d_correlation_plus, d_fft_size);
+                    volk_32f_index_max_16u(&indext_plus, d_magnitude, d_fft_size);
                     magt_plus = d_magnitude[indext_plus] / (fft_normalization_factor * fft_normalization_factor);
 
-                    volk_32fc_magnitude_squared_32f_a(d_magnitude, d_correlation_minus, d_fft_size);
-                    volk_32f_index_max_16u_a(&indext_minus, d_magnitude, d_fft_size);
+                    volk_32fc_magnitude_squared_32f(d_magnitude, d_correlation_minus, d_fft_size);
+                    volk_32f_index_max_16u(&indext_minus, d_magnitude, d_fft_size);
                     magt_minus = d_magnitude[indext_minus] / (fft_normalization_factor * fft_normalization_factor);
 
                     if (magt_plus >= magt_minus)
@@ -330,8 +314,8 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                     if (d_mag < magt)
                         {
                             d_mag = magt;
-                            d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
-                            d_gnss_synchro->Acq_doppler_hz = (double)doppler;
+                            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                             d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
                         }
 

@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -31,6 +31,7 @@
  */
 
 #include "file_signal_source.h"
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -52,9 +53,9 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         boost::shared_ptr<gr::msg_queue> queue) :
 		                role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
-    std::string default_filename = "../data/my_capture.dat";
+    std::string default_filename = "./example_capture.dat";
     std::string default_item_type = "short";
-    std::string default_dump_filename = "../data/my_capture_dump.dat";
+    std::string default_dump_filename = "./my_capture.dat";
 
     samples_ = configuration->property(role + ".samples", 0);
     sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
@@ -68,6 +69,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
+    std::string s = "InputFilter";
+    double IF = configuration->property(s + ".IF", 0.0);
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -80,6 +83,10 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     else if (item_type_.compare("short") == 0)
         {
             item_size_ = sizeof(short int);
+        }
+    else if (item_type_.compare("byte") == 0)
+        {
+    		item_size_ = sizeof(char);
         }
     else
         {
@@ -94,22 +101,40 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     }
     catch (const std::exception &e)
     {
-            std::cerr
-            << "The receiver was configured to work with a file signal source "
-            << std::endl
-            << "but the specified file is unreachable by GNSS-SDR."
-            << std::endl
-            << "Please modify the configuration at "
-            << "conf/gnss-sdr.conf (the default configuration file)"
-            << std::endl
-            << "and point SignalSource.filename to a valid file,"
-            << std::endl
-            << "or specify your own receiver and source with the flag"
-            << std::endl
-            <<"gnss-sdr --config_file=my_GNSS_SDR_configuration.conf"
-            << std::endl;
+            if (filename_.compare(default_filename) == 0)
+                {
+                    std::cerr
+                    << "The configuration file has not been found."
+                    << std::endl
+                    << "Please create a configuration file based on the examples at the 'conf/' folder "
+                    << std::endl
+                    << "and then generate your own GNSS Software Defined Receiver by doing:"
+                    << std::endl
+                    << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
+                    << std::endl;
+                }
+            else
+                {
+                    std::cerr
+                    << "The receiver was configured to work with a file signal source "
+                    << std::endl
+                    << "but the specified file is unreachable by GNSS-SDR."
+                    << std::endl
+                    <<  "Please modify your configuration file"
+                    << std::endl
+                    <<  "and point SignalSource.filename to a valid raw data file. Then:"
+                    << std::endl
+                    << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
+                    << std::endl
+                    << "Examples of configuration files available at:"
+                    << std::endl
+                    << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
+                    << std::endl;
+
+                }
+
             LOG(INFO) << "file_signal_source: Unable to open the samples file "
-                               << filename_.c_str() << ", exiting the program.";
+                      << filename_.c_str() << ", exiting the program.";
             throw(e);
     }
 
@@ -147,9 +172,11 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
     signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
-#ifdef ARCH_64BITS
-    signal_duration_s /= 2;
-#endif
+
+    if ((item_type_.compare("gr_complex") != 0) && (IF < 1e6) )  // if IF < BW/2, signal is complex (interleaved)
+        {
+            signal_duration_s /= 2;
+        }
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 

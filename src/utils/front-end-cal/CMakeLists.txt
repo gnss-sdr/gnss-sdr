@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -17,7 +17,7 @@
 #
 
 
-if(ENABLE_RTLSDR)
+if(ENABLE_OSMOSDR)
     set(FRONT_END_CAL_SOURCES front_end_cal.cc)
 
     include_directories(
@@ -37,6 +37,7 @@ if(ENABLE_RTLSDR)
          ${GNURADIO_BLOCKS_INCLUDE_DIRS}
          ${ARMADILLO_INCLUDE_DIRS}  
          ${Boost_INCLUDE_DIRS}
+         ${VOLK_GNSSSDR_INCLUDE_DIRS}
     )
 
     file(GLOB FRONT_END_CAL_HEADERS "*.h")
@@ -49,13 +50,20 @@ if(ENABLE_RTLSDR)
                                             ${GFlags_LIBS} 
                                             ${GLOG_LIBRARIES} 
                                             ${ARMADILLO_LIBRARIES} 
+                                            ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                             gnss_rx 
                                             gnss_sp_libs
     )
 
     add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
+    add_definitions( -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}" )
 
     add_executable(front-end-cal ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
+
+    add_custom_command(TARGET front-end-cal POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:front-end-cal>
+                                   ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
+    
     
     target_link_libraries(front-end-cal  ${GNURADIO_RUNTIME_LIBRARIES} 
                                          ${GNURADIO_BLOCKS_LIBRARIES}  
@@ -69,7 +77,23 @@ if(ENABLE_RTLSDR)
     )
 
     install(TARGETS front-end-cal 
-            DESTINATION ${CMAKE_SOURCE_DIR}/install
+            RUNTIME DESTINATION bin
+            COMPONENT "front-end-cal"
             )
             
-endif(ENABLE_RTLSDR)
+    find_program(GZIP gzip
+                 /bin
+                 /usr/bin
+                 /usr/local/bin
+                 /opt/local/bin
+                 /sbin
+                 )
+
+    if(NOT GZIP_NOTFOUND)
+        execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/manpage/front-end-cal-manpage
+                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/front-end-cal.1.gz")
+
+        install(FILES ${CMAKE_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)   
+    endif(NOT GZIP_NOTFOUND)
+            
+endif(ENABLE_OSMOSDR)

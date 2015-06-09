@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -64,6 +64,9 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
 )
 
+if(Boost_VERSION LESS 105000)
+     add_definitions(-DOLD_BOOST=1)
+endif(Boost_VERSION LESS 105000)
 
 if(ENABLE_GN3S)
     add_definitions(-DGN3S_DRIVER=1)
@@ -73,9 +76,13 @@ if(ENABLE_ARRAY)
     add_definitions(-DRAW_ARRAY_DRIVER=1)
 endif(ENABLE_ARRAY)
 
-if(ENABLE_RTLSDR)
-    add_definitions(-DRTLSDR_DRIVER=1)
-endif(ENABLE_RTLSDR)
+if(ENABLE_OSMOSDR)
+    add_definitions(-DOSMOSDR_DRIVER=1)
+endif(ENABLE_OSMOSDR)
+
+if(ENABLE_UHD)
+    add_definitions(-DUHD_DRIVER=1)
+endif(ENABLE_UHD)
 
 #Enable OpenCL if found in the system
 if(OPENCL_FOUND)
@@ -84,6 +91,8 @@ if(OPENCL_FOUND)
 else(OPENCL_FOUND)
     add_definitions(-DOPENCL_BLOCKS=0)
 endif(OPENCL_FOUND)
+
+add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
 file(GLOB GNSS_RECEIVER_HEADERS "*.h")
 file(GLOB GNSS_RECEIVER_INTERFACE_HEADERS "../interfaces/*.h")

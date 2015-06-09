@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -31,6 +31,7 @@
  */
 
 #include "nsr_file_signal_source.h"
+#include <cstdlib>
 #include <exception>
 #include <fstream>
 #include <iomanip>
@@ -91,15 +92,17 @@ NsrFileSignalSource::NsrFileSignalSource(ConfigurationInterface* configuration,
             << std::endl
             << "but the specified file is unreachable by GNSS-SDR."
             << std::endl
-            << "Please modify the configuration at "
-            << "conf/gnss-sdr.conf (the default configuration file)"
+            <<  "Please modify your configuration file"
             << std::endl
-            << "and point SignalSource.filename to a valid file,"
+            <<  "and point SignalSource.filename to a valid raw data file. Then:"
             << std::endl
-            << "or specify your own receiver and source with the flag"
+            << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf"
             << std::endl
-            <<"gnss-sdr --config_file=my_GNSS_SDR_configuration.conf"
+            << "Examples of configuration files available at:"
+            << std::endl
+            << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/"
             << std::endl;
+
             LOG(WARNING) << "file_signal_source: Unable to open the samples file "
                          << filename_.c_str() << ", exiting the program.";
             throw(e);

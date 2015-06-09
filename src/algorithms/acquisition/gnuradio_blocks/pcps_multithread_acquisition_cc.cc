@@ -9,7 +9,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -19,7 +19,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -92,12 +92,10 @@ pcps_multithread_acquisition_cc::pcps_multithread_acquisition_cc(
     //todo: do something if posix_memalign fails
     for (unsigned int i = 0; i < d_max_dwells; i++)
         {
-            if (posix_memalign((void**)&d_in_buffer[i], 16,
-                        d_fft_size * sizeof(gr_complex)) == 0){};
-
+            d_in_buffer[i] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
         }
-    if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
+    d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
+    d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
     // Direct FFT
     d_fft_if = new gr::fft::fft_complex(d_fft_size, true);
@@ -116,19 +114,19 @@ pcps_multithread_acquisition_cc::~pcps_multithread_acquisition_cc()
         {
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
-                    free(d_grid_doppler_wipeoffs[i]);
+                    volk_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
     for (unsigned int i = 0; i < d_max_dwells; i++)
         {
-            free(d_in_buffer[i]);
+            volk_free(d_in_buffer[i]);
         }
     delete[] d_in_buffer;
 
-    free(d_fft_codes);
-    free(d_magnitude);
+    volk_free(d_fft_codes);
+    volk_free(d_magnitude);
 
     delete d_ifft;
     delete d_fft_if;
@@ -160,10 +158,9 @@ void pcps_multithread_acquisition_cc::init()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
     for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
         {
-            if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
-                               d_fft_size * sizeof(gr_complex)) == 0){};
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
 
-            int doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            int doppler = -(int)d_doppler_max + d_doppler_step * doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
         }
@@ -176,14 +173,7 @@ void pcps_multithread_acquisition_cc::set_local_code(std::complex<float> * code)
     d_fft_if->execute(); // We need the FFT of local code
 
     //Conjugate the local code
-    if (is_unaligned())
-        {
-            volk_32fc_conjugate_32fc_u(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
-        }
-    else
-        {
-            volk_32fc_conjugate_32fc_a(d_fft_codes,d_fft_if->get_outbuf(),d_fft_size);
-        }
+    volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 
 void pcps_multithread_acquisition_cc::acquisition_core()
@@ -208,18 +198,18 @@ void pcps_multithread_acquisition_cc::acquisition_core()
             << ", doppler_step: " << d_doppler_step;
 
     // 1- Compute the input signal power estimation
-    volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
-    volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
+    volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
+    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
     d_input_power /= (float)d_fft_size;
 
     // 2- Doppler frequency search loop
-    for (unsigned int doppler_index=0;doppler_index<d_num_doppler_bins;doppler_index++)
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
 
-            doppler=-(int)d_doppler_max+d_doppler_step*doppler_index;
+            doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
 
-            volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in,
+            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                         d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
 
             // 3- Perform the FFT-based convolution  (parallel time search)
@@ -228,15 +218,15 @@ void pcps_multithread_acquisition_cc::acquisition_core()
 
             // Multiply carrier wiped--off, Fourier transformed incoming signal
             // with the local FFT'd code reference using SIMD operations with VOLK library
-            volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+            volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
                         d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
 
             // compute the inverse FFT
             d_ifft->execute();
 
             // Search maximum
-            volk_32fc_magnitude_squared_32f_a(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-            volk_32f_index_max_16u_a(&indext, d_magnitude, d_fft_size);
+            volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
+            volk_32f_index_max_16u(&indext, d_magnitude, d_fft_size);
 
             // Normalize the maximum value to correct the scale factor introduced by FFTW
             magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);

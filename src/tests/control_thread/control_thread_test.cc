@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,7 +35,7 @@
 #include <exception>
 #include <memory>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
+#include <boost/thread.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
 #include <gtest/gtest.h>
@@ -62,14 +62,19 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("SignalSource.repeat", "true");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
-    config->set_property("Channels.count", "2");
-    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.threshold", "0.8");
-    config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-    config->set_property("Tracking.item_type", "gr_complex");
-    config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder.item_type", "gr_complex");
+    config->set_property("Channels_GPS.count", "2");
+    config->set_property("Channels_Galileo.count", "0");
+    config->set_property("Channels.in_acquisition", "1");
+    config->set_property("Channel.system", "GPS");
+    config->set_property("Channel.signal", "1C");
+    config->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_GPS.threshold", "1");
+    config->set_property("Acquisition_GPS.doppler_max", "5000");
+    config->set_property("Acquisition_GPS.doppler_min", "-5000");
+    config->set_property("Tracking_GPS.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
+    config->set_property("Tracking_GPS.item_type", "gr_complex");
+    config->set_property("TelemetryDecoder_GPS.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("TelemetryDecoder_GPS.item_type", "gr_complex");
     config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
     config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
@@ -77,10 +82,10 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
     config->set_property("OutputFilter.item_type", "gr_complex");
 
-    std::unique_ptr<ControlThread> control_thread(new ControlThread(config));
+    std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
 
     gr::msg_queue::sptr control_queue = gr::msg_queue::make(0);
-    //ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
+
     std::unique_ptr<ControlMessageFactory> control_msg_factory(new ControlMessageFactory());
 
     control_queue->handle(control_msg_factory->GetQueueMessage(0,0));
@@ -124,13 +129,19 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("SignalSource.repeat", "true");
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("SignalConditioner.item_type", "gr_complex");
-    config->set_property("Channels.count", "1");
-    config->set_property("Acquisition.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Tracking.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
-    config->set_property("Tracking.item_type", "gr_complex");
-    config->set_property("TelemetryDecoder.implementation", "GPS_L1_CA_Telemetry_Decoder");
-    config->set_property("TelemetryDecoder.item_type", "gr_complex");
+    config->set_property("Channels_GPS.count", "4");
+    config->set_property("Channels_Galileo.count", "0");
+    config->set_property("Channels.in_acquisition", "1");
+    config->set_property("Channel.system", "GPS");
+    config->set_property("Channel.signal", "1C");
+    config->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_GPS.threshold", "1");
+    config->set_property("Acquisition_GPS.doppler_max", "5000");
+    config->set_property("Acquisition_GPS.doppler_min", "-5000");
+    config->set_property("Tracking_GPS.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
+    config->set_property("Tracking_GPS.item_type", "gr_complex");
+    config->set_property("TelemetryDecoder_GPS.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("TelemetryDecoder_GPS.item_type", "gr_complex");
     config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
     config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
@@ -141,13 +152,13 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
 
     gr::msg_queue::sptr control_queue2 = gr::msg_queue::make(0);
-    //ControlMessageFactory *control_msg_factory = new ControlMessageFactory();
+
     std::unique_ptr<ControlMessageFactory> control_msg_factory2(new ControlMessageFactory());
 
     control_queue2->handle(control_msg_factory2->GetQueueMessage(0,0));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,2));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,1));
-    control_queue2->handle(control_msg_factory2->GetQueueMessage(0,3));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(2,0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(1,0));
+    control_queue2->handle(control_msg_factory2->GetQueueMessage(3,0));
     control_queue2->handle(control_msg_factory2->GetQueueMessage(200,0));
 
     control_thread2->set_control_queue(control_queue2);

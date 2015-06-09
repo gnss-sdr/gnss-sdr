@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -17,7 +17,10 @@
 #
 
 
-set(DATATYPE_ADAPTER_SOURCES ishort_to_complex.cc )
+set(DATATYPE_ADAPTER_SOURCES 
+	ishort_to_complex.cc 
+	ibyte_to_complex.cc
+	byte_to_short.cc )
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
@@ -33,3 +36,4 @@ add_library(datatype_adapters ${DATATYPE_ADAPTER_SOURCES} ${DATATYPE_ADAPTER_HEA
 source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
 add_dependencies(datatype_adapters glog-${glog_RELEASE})
 target_link_libraries(datatype_adapters ${GNURADIO_FILTER_LIBRARIES} ${GNURADIO_BLOCKS_LIBRARIES})
+

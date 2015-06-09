@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -18,7 +18,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,8 +37,6 @@
 #include <iostream>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include "gps_sdr_signal_processing.h"
-
 
 using google::LogMessage;
 
@@ -58,17 +56,15 @@ direct_resampler_conditioner_ss::direct_resampler_conditioner_ss(
             d_sample_freq_in(sample_freq_in), d_sample_freq_out(
                     sample_freq_out), d_phase(0), d_lphase(0), d_history(1)
 {
-
+    const double two_32 = 4294967296.0;
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
     if (d_sample_freq_in >= d_sample_freq_out)
     {
-        d_phase_step = (unsigned int)floor((double)4294967296.0
-                * sample_freq_out / sample_freq_in);
+        d_phase_step = static_cast<unsigned int>(floor(two_32 * sample_freq_out / sample_freq_in));
     }
     else
     {
-        d_phase_step = (unsigned int)floor((double)4294967296.0
-                * sample_freq_in / sample_freq_out);
+        d_phase_step = static_cast<unsigned int>(floor(two_32 * sample_freq_in / sample_freq_out));
     }
 
     set_relative_rate(1.0 * sample_freq_out / sample_freq_in);
@@ -84,7 +80,7 @@ void direct_resampler_conditioner_ss::forecast(int noutput_items,
         gr_vector_int &ninput_items_required)
 {
 
-    int nreqd = std::max((unsigned)1, (int)((double)(noutput_items + 1)
+    int nreqd = std::max(static_cast<unsigned>(1), static_cast<int>(static_cast<double>(noutput_items + 1)
             * sample_freq_in() / sample_freq_out()) + history() - 1);
     unsigned ninputs = ninput_items_required.size();
 
@@ -99,8 +95,8 @@ int direct_resampler_conditioner_ss::general_work(int noutput_items,
         gr_vector_void_star &output_items)
 {
 
-    const CPX *in = (const CPX *)input_items[0];
-    CPX *out = (CPX *)output_items[0];
+    const signed short *in = (const signed short *)input_items[0];
+    signed short *out = (signed short *)output_items[0];
 
     int lcv = 0;
     int count = 0;

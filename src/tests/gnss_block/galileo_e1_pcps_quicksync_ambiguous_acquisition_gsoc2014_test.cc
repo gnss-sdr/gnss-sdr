@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -614,6 +614,16 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                 {
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
     LOG(INFO) << "End validation of results test";
 }
@@ -700,6 +710,16 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
                 {
                     EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
                 }
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
     LOG(INFO) << "End validation of results with noise+interference test";
 }
@@ -814,5 +834,15 @@ TEST_F(GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test, ValidationOfResul
 		                pdpfafile.close();
                     }
                 }
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
         }
 }

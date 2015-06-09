@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -181,8 +181,8 @@ TEST(Multiply_Test, ArmadilloComplexImplementation)
 
 TEST(Multiply_Test, VolkComplexImplementation)
 {
-    std::complex<float>* input = new std::complex<float>[FLAGS_size_multiply_test];
-    std::complex<float>* output = new std::complex<float>[FLAGS_size_multiply_test];
+    std::complex<float>* input = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_get_alignment()));
+    std::complex<float>* output = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_multiply_test * sizeof(std::complex<float>), volk_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_multiply_test);
 
     struct timeval tv;
@@ -198,8 +198,9 @@ TEST(Multiply_Test, VolkComplexImplementation)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
 
-    float* mag = new float [FLAGS_size_multiply_test];
+    float* mag = static_cast<float*>(volk_malloc(FLAGS_size_multiply_test * sizeof(float), volk_get_alignment()));
     volk_32fc_magnitude_32f(mag, output, FLAGS_size_multiply_test);
+
     float* result = new float(0);
     volk_32f_accumulator_s32f(result, mag, FLAGS_size_multiply_test);
     // Comparing floating-point numbers is tricky.
@@ -207,8 +208,8 @@ TEST(Multiply_Test, VolkComplexImplementation)
     // See http://code.google.com/p/googletest/wiki/AdvancedGuide#Floating-Point_Comparison
     float expected = 0;
     ASSERT_FLOAT_EQ(expected, result[0]);
-    delete [] input;
-    delete [] output;
-    delete [] mag;
+    volk_free(input);
+    volk_free(output);
+    volk_free(mag);
 }
 

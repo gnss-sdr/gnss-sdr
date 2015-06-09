@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -116,8 +116,8 @@ TEST(Conjugate_Test, ArmadilloComplexImplementation)
 
 TEST(Conjugate_Test, VolkComplexImplementation)
 {
-    std::complex<float>* input = new std::complex<float>[FLAGS_size_conjugate_test];
-    std::complex<float>* output = new std::complex<float>[FLAGS_size_conjugate_test];
+    std::complex<float>* input = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment()));
+    std::complex<float>* output = static_cast<std::complex<float>*>(volk_malloc(FLAGS_size_conjugate_test * sizeof(std::complex<float>), volk_get_alignment()));
     memset(input, 0, sizeof(std::complex<float>) * FLAGS_size_conjugate_test);
 
     struct timeval tv;
@@ -132,6 +132,6 @@ TEST(Conjugate_Test, VolkComplexImplementation)
               << "-length complex float vector using VOLK finished in " << (end - begin)
               << " microseconds" << std::endl;
     ASSERT_LE(0, end - begin);
-    delete [] input;
-    delete [] output;
+    volk_free(input);
+    volk_free(output);
 }

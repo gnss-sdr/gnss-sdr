@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -15,7 +15,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,7 +41,7 @@ IshortToComplex::IshortToComplex(ConfigurationInterface* configuration, std::str
                 out_streams_(out_streams), queue_(queue)
 {
 
-    std::string default_input_item_type = "gr_complex";
+    std::string default_input_item_type = "short";
     std::string default_output_item_type = "gr_complex";
     std::string default_dump_filename = "../data/input_filter.dat";
 
@@ -90,7 +90,7 @@ void IshortToComplex::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-            top_block->connect(gr_interleaved_short_to_complex_, 0, file_sink_, 0);
+            top_block->disconnect(gr_interleaved_short_to_complex_, 0, file_sink_, 0);
         }
 }
 
@@ -107,4 +107,5 @@ gr::basic_block_sptr IshortToComplex::get_right_block()
 {
     return gr_interleaved_short_to_complex_;
 }
+
 

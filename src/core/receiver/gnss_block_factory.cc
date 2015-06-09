@@ -10,7 +10,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -20,7 +20,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -48,10 +48,11 @@
 #include "null_sink_output_filter.h"
 #include "file_output_filter.h"
 #include "channel.h"
-#include "uhd_signal_source.h"
+
 #include "signal_conditioner.h"
 #include "array_signal_conditioner.h"
 #include "ishort_to_complex.h"
+#include "ibyte_to_complex.h"
 #include "direct_resampler_conditioner.h"
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
@@ -73,6 +74,7 @@
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "galileo_e1_dll_pll_veml_tracking.h"
+#include "galileo_volk_e1_dll_pll_veml_tracking.h"
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_e5a_dll_pll_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
@@ -98,9 +100,14 @@
         #include "raw_array_signal_source.h"
 #endif
 
-#if RTLSDR_DRIVER
-        #include "rtlsdr_signal_source.h"
+#if OSMOSDR_DRIVER
+        #include "osmosdr_signal_source.h"
 #endif
+
+#if UHD_DRIVER
+        #include "uhd_signal_source.h"
+#endif
+
 
 using google::LogMessage;
 
@@ -184,8 +191,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
     std::string default_implementation = "GPS_L1_CA_Observables";
     std::string implementation = configuration->property("Observables.implementation", default_implementation);
     LOG(INFO) << "Getting Observables with implementation " << implementation;
-    unsigned int Galileo_channels = configuration->property("Channels_Galileo.count", 12);
-    unsigned int GPS_channels = configuration->property("Channels_GPS.count", 12);
+    unsigned int Galileo_channels = configuration->property("Channels_Galileo.count", 0);
+    unsigned int GPS_channels = configuration->property("Channels_GPS.count", 0);
     return GetBlock(configuration, "Observables", implementation, Galileo_channels + GPS_channels, Galileo_channels + GPS_channels, queue);
 }
 
@@ -197,8 +204,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
     std::string default_implementation = "Pass_Through";
     std::string implementation = configuration->property("PVT.implementation", default_implementation);
     LOG(INFO) << "Getting PVT with implementation " << implementation;
-    unsigned int Galileo_channels = configuration->property("Channels_Galileo.count", 12);
-    unsigned int GPS_channels = configuration->property("Channels_GPS.count", 12);
+    unsigned int Galileo_channels = configuration->property("Channels_Galileo.count", 0);
+    unsigned int GPS_channels = configuration->property("Channels_GPS.count", 0);
     return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels, 1, queue);
 }
 
@@ -280,7 +287,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     unsigned int channel_absolute_id=0;
 
     //**************** GPS CHANNELS **********************
-    channel_count= configuration->property("Channels_GPS.count", 12);
+    channel_count= configuration->property("Channels_GPS.count", 0);
 
     LOG(INFO) << "Getting " << channel_count << " GPS channels";
 
@@ -304,7 +311,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
         }
 
     //**************** GALILEO CHANNELS **********************
-    channel_count= configuration->property("Channels_Galileo.count", 12);
+    channel_count= configuration->property("Channels_Galileo.count", 0);
 
     LOG(INFO) << "Getting " << channel_count << " Galileo channels";
 
@@ -325,9 +332,6 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
                     acquisition_implementation, tracking, telemetry_decoder, channel_absolute_id, queue)));
             channel_absolute_id++;
         }
-
-
-
     return channels;
 }
 
@@ -369,7 +373,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             catch (const std::exception &e)
             {
                     std::cout << "GNSS-SDR program ended." << std::endl;
-                    LOG(ERROR) << implementation << ": Source file not found";
                     exit(1);
             }
         }
@@ -385,16 +388,17 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             catch (const std::exception &e)
             {
                     std::cout << "GNSS-SDR program ended." << std::endl;
-                    LOG(ERROR) << implementation << ": Source file not found";
                     exit(1);
             }
         }
+#if UHD_DRIVER
     else if (implementation.compare("UHD_Signal_Source") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new UhdSignalSource(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }
+#endif
 #if GN3S_DRIVER
     else if (implementation.compare("GN3S_Signal_Source") == 0)
         {
@@ -413,10 +417,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         }
 #endif
 
-#if RTLSDR_DRIVER
-    else if (implementation.compare("Rtlsdr_Signal_Source") == 0)
+#if OSMOSDR_DRIVER
+    else if (implementation.compare("Osmosdr_Signal_Source") == 0)
         {
-            std::unique_ptr<GNSSBlockInterface> block_(new RtlsdrSignalSource(configuration.get(), role, in_streams,
+            std::unique_ptr<GNSSBlockInterface> block_(new OsmosdrSignalSource(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }
@@ -429,7 +433,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
-
+    else if (implementation.compare("Ibyte_To_Complex") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface>block_(new IbyteToComplex(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
     // INPUT FILTER ----------------------------------------------------------------
     else if (implementation.compare("Fir_Filter") == 0)
         {
@@ -578,6 +587,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
+    else if (implementation.compare("Galileo_volk_E1_DLL_PLL_VEML_Tracking") == 0)
+    {
+        std::unique_ptr<GNSSBlockInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
+                                                                                   out_streams, queue));
+        block = std::move(block_);
+    }
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
@@ -825,6 +840,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
+    else if (implementation.compare("Galileo_Volk_E1_DLL_PLL_VEML_Tracking") == 0)
+    {
+        std::unique_ptr<TrackingInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
+                                                                                  out_streams, queue));
+        block = std::move(block_);
+    }
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
@@ -837,6 +858,13 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
+    else if (implementation.compare("Galileo_volk_E1_DLL_PLL_VEML_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+
     else
         {
             // Log fatal. This causes execution to stop.

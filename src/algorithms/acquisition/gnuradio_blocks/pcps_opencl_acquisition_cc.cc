@@ -25,7 +25,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -35,7 +35,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -105,7 +105,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_well_count = 0;
     d_doppler_max = doppler_max;
     d_fft_size = d_sampled_ms * d_samples_per_ms;
-    d_fft_size_pow2 = pow(2, ceil(log2(2*d_fft_size)));
+    d_fft_size_pow2 = pow(2, ceil(log2(2 * d_fft_size)));
     d_mag = 0;
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
@@ -114,17 +114,13 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_cl_fft_batch_size = 1;
 
     d_in_buffer = new gr_complex*[d_max_dwells];
-
-    //todo: do something if posix_memalign fails
     for (unsigned int i = 0; i < d_max_dwells; i++)
         {
-            if (posix_memalign((void**)&d_in_buffer[i], 16,
-                        d_fft_size * sizeof(gr_complex)) == 0){};
-
+            d_in_buffer[i] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
         }
-    if (posix_memalign((void**)&d_magnitude, 16, d_fft_size * sizeof(float)) == 0){};
-    if (posix_memalign((void**)&d_fft_codes, 16, d_fft_size_pow2 * sizeof(gr_complex)) == 0){};
-    if (posix_memalign((void**)&d_zero_vector, 16, (d_fft_size_pow2-d_fft_size) * sizeof(gr_complex)) == 0){};
+    d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
+    d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size_pow2 * sizeof(gr_complex), volk_get_alignment()));
+    d_zero_vector = static_cast<gr_complex*>(volk_malloc((d_fft_size_pow2 - d_fft_size) * sizeof(gr_complex), volk_get_alignment()));
 
     for (unsigned int i = 0; i < (d_fft_size_pow2-d_fft_size); i++)
         {
@@ -156,20 +152,20 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
         {
             for (unsigned int i = 0; i < d_num_doppler_bins; i++)
                 {
-                    free(d_grid_doppler_wipeoffs[i]);
+                    volk_free(d_grid_doppler_wipeoffs[i]);
                 }
             delete[] d_grid_doppler_wipeoffs;
         }
 
     for (unsigned int i = 0; i < d_max_dwells; i++)
         {
-            free(d_in_buffer[i]);
+            volk_free(d_in_buffer[i]);
         }
     delete[] d_in_buffer;
 
-    free(d_fft_codes);
-    free(d_magnitude);
-    free(d_zero_vector);
+    volk_free(d_fft_codes);
+    volk_free(d_magnitude);
+    volk_free(d_zero_vector);
 
     if (d_opencl == 0)
         {
@@ -302,8 +298,8 @@ void pcps_opencl_acquisition_cc::init()
 
     // Count the number of bins
     d_num_doppler_bins = 0;
-    for (int doppler = (int)(-d_doppler_max);
-         doppler <= (int)d_doppler_max;
+    for (int doppler = static_cast<int>(-d_doppler_max);
+         doppler <= static_cast<int>(d_doppler_max);
          doppler += d_doppler_step)
     {
         d_num_doppler_bins++;
@@ -318,10 +314,9 @@ void pcps_opencl_acquisition_cc::init()
 
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            if (posix_memalign((void**)&(d_grid_doppler_wipeoffs[doppler_index]), 16,
-                               d_fft_size * sizeof(gr_complex)) == 0){};
+            d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
 
-            int doppler= -(int)d_doppler_max + d_doppler_step*doppler_index;
+            int doppler= -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
                                  d_freq + doppler, d_fs_in, d_fft_size);
 
@@ -347,44 +342,37 @@ void pcps_opencl_acquisition_cc::init()
 void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> * code)
 {
     if(d_opencl == 0)
-    {
-        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, 0,
-                                       sizeof(gr_complex)*d_fft_size, code);
+        {
+            d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, 0,
+                    sizeof(gr_complex)*d_fft_size, code);
 
-        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, sizeof(gr_complex)*d_fft_size,
-                                       sizeof(gr_complex)*(d_fft_size_pow2 - 2*d_fft_size),
-                                       d_zero_vector);
+            d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, sizeof(gr_complex)*d_fft_size,
+                    sizeof(gr_complex)*(d_fft_size_pow2 - 2*d_fft_size),
+                    d_zero_vector);
 
-        d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, sizeof(gr_complex)
-                                       *(d_fft_size_pow2 - d_fft_size),
-                                       sizeof(gr_complex)*d_fft_size, code);
+            d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, sizeof(gr_complex)
+                    *(d_fft_size_pow2 - d_fft_size),
+                    sizeof(gr_complex)*d_fft_size, code);
 
-        clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
-                                  clFFT_Forward, (*d_cl_buffer_2)(), (*d_cl_buffer_2)(),
-                                  0, NULL, NULL);
+            clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
+                    clFFT_Forward, (*d_cl_buffer_2)(), (*d_cl_buffer_2)(),
+                    0, NULL, NULL);
 
-        //Conjucate the local code
-        cl::Kernel kernel = cl::Kernel(d_cl_program, "conj_vector");
-        kernel.setArg(0, *d_cl_buffer_2);         //input
-        kernel.setArg(1, *d_cl_buffer_fft_codes); //output
-        d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size_pow2), cl::NullRange);
-    }
+            //Conjucate the local code
+            cl::Kernel kernel = cl::Kernel(d_cl_program, "conj_vector");
+            kernel.setArg(0, *d_cl_buffer_2);         //input
+            kernel.setArg(1, *d_cl_buffer_fft_codes); //output
+            d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size_pow2), cl::NullRange);
+        }
     else
-    {
-        memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex)*d_fft_size);
+        {
+            memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex)*d_fft_size);
 
-        d_fft_if->execute(); // We need the FFT of local code
+            d_fft_if->execute(); // We need the FFT of local code
 
-        //Conjugate the local code
-        if (is_unaligned())
-            {
-                volk_32fc_conjugate_32fc_u(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
-            }
-        else
-            {
-                volk_32fc_conjugate_32fc_a(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
-            }
-    }
+            //Conjugate the local code
+            volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
+        }
 }
 
 void pcps_opencl_acquisition_cc::acquisition_core_volk()
@@ -393,7 +381,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
     int doppler;
     unsigned int indext = 0;
     float magt = 0.0;
-    float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
+    float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
     gr_complex* in = d_in_buffer[d_well_count];
     unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
 
@@ -409,19 +397,17 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
             << ", doppler_step: " << d_doppler_step;
 
     // 1- Compute the input signal power estimation
-    volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
-    volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
-    d_input_power /= (float)d_fft_size;
+    volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
+    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
+    d_input_power /= static_cast<float>(d_fft_size);
 
     // 2- Doppler frequency search loop
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             // doppler search steps
-
-            doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
-
-
-            volk_32fc_x2_multiply_32fc_a(d_fft_if->get_inbuf(), in,
+            doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+            
+            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                         d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
 
             // 3- Perform the FFT-based convolution  (parallel time search)
@@ -430,15 +416,15 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
 
             // Multiply carrier wiped--off, Fourier transformed incoming signal
             // with the local FFT'd code reference using SIMD operations with VOLK library
-            volk_32fc_x2_multiply_32fc_a(d_ifft->get_inbuf(),
+            volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
                         d_fft_if->get_outbuf(), d_fft_codes, d_fft_size);
 
             // compute the inverse FFT
             d_ifft->execute();
 
             // Search maximum
-            volk_32fc_magnitude_squared_32f_a(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
-            volk_32f_index_max_16u_a(&indext, d_magnitude, d_fft_size);
+            volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
+            volk_32f_index_max_16u(&indext, d_magnitude, d_fft_size);
 
             // Normalize the maximum value to correct the scale factor introduced by FFTW
             magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
@@ -457,8 +443,8 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
                     // restarted between consecutive dwells in multidwell operation.
                     if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
                     {
-                        d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
-                        d_gnss_synchro->Acq_doppler_hz = (double)doppler;
+                        d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                        d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                         d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
 
                         // 5- Compute the test statistics and compare to the threshold
@@ -517,7 +503,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
     int doppler;
     unsigned int indext = 0;
     float magt = 0.0;
-    float fft_normalization_factor = ((float)d_fft_size_pow2 * (float)d_fft_size); //This works, but I am not sure why.
+    float fft_normalization_factor = (static_cast<float>(d_fft_size_pow2) * static_cast<float>(d_fft_size)); //This works, but I am not sure why.
     gr_complex* in = d_in_buffer[d_well_count];
     unsigned long int samplestamp = d_sample_counter_buffer[d_well_count];
 
@@ -543,9 +529,9 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
             << ", doppler_step: " << d_doppler_step;
 
     // 1- Compute the input signal power estimation
-    volk_32fc_magnitude_squared_32f_a(d_magnitude, in, d_fft_size);
-    volk_32f_accumulator_s32f_a(&d_input_power, d_magnitude, d_fft_size);
-    d_input_power /= (float)d_fft_size;
+    volk_32fc_magnitude_squared_32f(d_magnitude, in, d_fft_size);
+    volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
+    d_input_power /= static_cast<float>(d_fft_size);
 
     cl::Kernel kernel;
 
@@ -554,7 +540,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
         {
             // doppler search steps
 
-            doppler = -(int)d_doppler_max + d_doppler_step*doppler_index;
+            doppler = -static_cast<int>(d_doppler_max) + d_doppler_step*doppler_index;
 
             //Multiply input signal with doppler wipe-off
             kernel = cl::Kernel(d_cl_program, "mult_vectors");
@@ -600,7 +586,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 
             // Search maximum
             // @TODO: find an efficient way to search the maximum with OpenCL in the GPU.
-            volk_32f_index_max_16u_a(&indext, d_magnitude, d_fft_size);
+            volk_32f_index_max_16u(&indext, d_magnitude, d_fft_size);
 
             // Normalize the maximum value to correct the scale factor introduced by FFTW
             magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
@@ -619,8 +605,8 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
                     // restarted between consecutive dwells in multidwell operation.
                     if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
                     {
-                        d_gnss_synchro->Acq_delay_samples = (double)(indext % d_samples_per_code);
-                        d_gnss_synchro->Acq_doppler_hz = (double)doppler;
+                        d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+                        d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                         d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
 
                         // 5- Compute the test statistics and compare to the threshold
@@ -716,7 +702,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                     // Fill internal buffer with d_max_dwells signal blocks. This step ensures that
                     // consecutive signal blocks will be processed in multi-dwell operation. This is
                     // essential when d_bit_transition_flag = true.
-                    unsigned int num_dwells = std::min((int)(d_max_dwells-d_in_dwell_count), ninput_items[0]);
+                    unsigned int num_dwells = std::min(static_cast<int>(d_max_dwells-d_in_dwell_count), ninput_items[0]);
                     for (unsigned int i = 0; i < num_dwells; i++)
                         {
                             memcpy(d_in_buffer[d_in_dwell_count++], (gr_complex*)input_items[i],
@@ -725,7 +711,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                             d_sample_counter_buffer.push_back(d_sample_counter);
                         }
 
-                    if (ninput_items[0] > (int)num_dwells)
+                    if (ninput_items[0] > static_cast<int>(num_dwells))
                         {
                             d_sample_counter += d_fft_size * (ninput_items[0] - num_dwells);
                         }

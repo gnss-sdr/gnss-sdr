@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -17,7 +17,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -40,6 +40,7 @@
 #include <gnuradio/analog/sig_source_c.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
+#include <gtest/gtest.h>
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"
@@ -229,9 +230,16 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
         end = tv.tv_sec *1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
 
-    //ASSERT_NO_THROW( {
-    //    ch_thread.timed_join(boost::posix_time::seconds(1));
-    //}) << "Failure while waiting the queue to stop" << std::endl;
+#ifdef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.timed_join(boost::posix_time::seconds(1));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+            ASSERT_NO_THROW( {
+                ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+            }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;

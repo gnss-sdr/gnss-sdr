@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -83,27 +83,34 @@ if(ENABLE_ARRAY)
 endif(ENABLE_ARRAY)
 
 
-if(ENABLE_RTLSDR)
+if(ENABLE_OSMOSDR)
     ################################################################################
     # OsmoSDR - http://sdr.osmocom.org/trac/
     ################################################################################  
     find_package(GrOsmoSDR REQUIRED)
-        if(NOT GROSMOSDR_FOUND)
-             message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional RTLSDR driver")
-        endif(NOT GROSMOSDR_FOUND)  
-    # set RTL include dirs
-    set(RTL_DRIVER_INCLUDE_DIRS 
+    if(NOT GROSMOSDR_FOUND)
+        message(FATAL_ERROR "gr-osmosdr required to build gnss-sdr with the optional OSMOSDR driver")
+    endif(NOT GROSMOSDR_FOUND)  
+    
+    # set OSMO include dirs
+    set(OSMO_DRIVER_INCLUDE_DIRS 
         ${OPT_DRIVER_INCLUDE_DIRS} 
         ${GROSMOSDR_INCLUDE_DIR}/osmosdr
     )
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} rtlsdr_signal_source.cc)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
     set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GROSMOSDR_LIBRARIES})
-    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${RTL_DRIVER_INCLUDE_DIRS}) 
-endif(ENABLE_RTLSDR)
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${OSMO_DRIVER_INCLUDE_DIRS}) 
+endif(ENABLE_OSMOSDR)
+
+if(ENABLE_UHD)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
+    set(OPT_LIBRARIES ${OPT_LIBRARIES} ${UHD_LIBRARIES} ${GNURADIO_UHD_LIBRARIES})
+    set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS}) 
+endif(ENABLE_UHD)
+
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc 
-                                  gen_signal_source.cc 
-                                  uhd_signal_source.cc 
+                                  gen_signal_source.cc                           
                                   nsr_file_signal_source.cc 
                                   ${OPT_DRIVER_SOURCES}
 )
@@ -116,7 +123,6 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/algorithms/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
-     ${UHD_INCLUDE_DIRS}
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}     
      ${Boost_INCLUDE_DIRS}
@@ -127,15 +133,15 @@ if(ARCH_64BITS)
     add_definitions(-DARCH_64BITS=1)
 endif(ARCH_64BITS)
 
+add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
+
 file(GLOB SIGNAL_SOURCE_ADAPTER_HEADERS "*.h")
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 target_link_libraries(signal_source_adapters signal_source_gr_blocks 
                                              ${Boost_LIBRARIES} 
                                              ${GNURADIO_PMT_LIBRARIES} 
-                                             ${GNURADIO_BLOCKS_LIBRARIES} 
-                                             ${UHD_LIBRARIES}  
-                                             ${GNURADIO_UHD_LIBRARIES} 
+                                             ${GNURADIO_BLOCKS_LIBRARIES}                                         
                                              ${OPT_LIBRARIES} 
                                              gnss_sp_libs
 )

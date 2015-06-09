@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -64,7 +64,7 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
 
     if (sampled_ms_ % 4 != 0)
         {
-            sampled_ms_ = (int)(sampled_ms_/4) * 4;
+            sampled_ms_ = static_cast<int>(sampled_ms_ / 4) * 4;
             LOG(WARNING) << "coherent_integration_time should be multiple of "
                                   << "Galileo code length (4 ms). coherent_integration_time = "
                                   << sampled_ms_ << " ms will be used.";
@@ -82,7 +82,7 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
             / (Galileo_E1_CODE_CHIP_RATE_HZ
                     / Galileo_E1_B_CODE_LENGTH_CHIPS));
 
-    vector_length_ = code_length_ * (int)(sampled_ms_/4);
+    vector_length_ = code_length_ * static_cast<int>(sampled_ms_ / 4);
 
     int samples_per_ms = code_length_ / 4;
 

@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -16,7 +16,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -146,7 +146,7 @@ arma::vec galileo_e1_ls_pvt::leastSquarePos(arma::mat satpos, arma::vec obs, arm
     arma::vec Rot_X;
     double rho2;
     double traveltime;
-    double trop;
+    double trop = 0.0;
     double dlambda;
     double dphi;
     double h;
@@ -347,7 +347,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
             d_position_UTC_time = p_time;
             LOG(INFO) << "Galileo Position at TOW=" << galileo_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
-            cart2geo((double)mypos(0), (double)mypos(1), (double)mypos(2), 4);
+            cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
                 {
@@ -366,17 +366,17 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
             // 1- Rotation matrix from ECEF coordinates to ENU coordinates
             // ref: http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
             arma::mat F = arma::zeros(3,3);
-            F(0,0) = -sin(GPS_TWO_PI*(d_longitude_d/360.0));
-            F(0,1) = -sin(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
-            F(0,2) = cos(GPS_TWO_PI*(d_latitude_d/360.0))*cos(GPS_TWO_PI*(d_longitude_d/360.0));
+            F(0,0) = -sin(GPS_TWO_PI * (d_longitude_d/360.0));
+            F(0,1) = -sin(GPS_TWO_PI * (d_latitude_d/360.0)) * cos(GPS_TWO_PI * (d_longitude_d/360.0));
+            F(0,2) = cos(GPS_TWO_PI * (d_latitude_d/360.0)) * cos(GPS_TWO_PI * (d_longitude_d/360.0));
 
-            F(1,0) = cos((GPS_TWO_PI*d_longitude_d)/360.0);
-            F(1,1) = -sin((GPS_TWO_PI*d_latitude_d)/360.0)*sin((GPS_TWO_PI*d_longitude_d)/360.0);
-            F(1,2) = cos((GPS_TWO_PI*d_latitude_d/360.0))*sin((GPS_TWO_PI*d_longitude_d)/360.0);
+            F(1,0) = cos((GPS_TWO_PI * d_longitude_d)/360.0);
+            F(1,1) = -sin((GPS_TWO_PI * d_latitude_d)/360.0) * sin((GPS_TWO_PI * d_longitude_d)/360.0);
+            F(1,2) = cos((GPS_TWO_PI * d_latitude_d/360.0)) * sin((GPS_TWO_PI * d_longitude_d)/360.0);
 
             F(2,0) = 0;
-            F(2,1) = cos((GPS_TWO_PI*d_latitude_d)/360.0);
-            F(2,2) = sin((GPS_TWO_PI*d_latitude_d/360.0));
+            F(2,1) = cos((GPS_TWO_PI * d_latitude_d)/360.0);
+            F(2,2) = sin((GPS_TWO_PI * d_latitude_d/360.0));
 
             // 2- Apply the rotation to the latest covariance matrix (available in ECEF from LS)
             arma::mat Q_ECEF = d_Q.submat(0, 0, 2, 2);
@@ -384,7 +384,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
 
             try
             {
-                    DOP_ENU = arma::htrans(F)*Q_ECEF*F;
+                    DOP_ENU = arma::htrans(F) * Q_ECEF * F;
                     d_GDOP  = sqrt(arma::trace(DOP_ENU));                       // Geometric DOP
                     d_PDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1) + DOP_ENU(2,2)); // PDOP
                     d_HDOP  = sqrt(DOP_ENU(0,0) + DOP_ENU(1,1));                // HDOP
@@ -461,9 +461,9 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                                     d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
                                     d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
                                 }
-                            d_avg_latitude_d = d_avg_latitude_d / (double)d_averaging_depth;
-                            d_avg_longitude_d = d_avg_longitude_d / (double)d_averaging_depth;
-                            d_avg_height_m = d_avg_height_m / (double)d_averaging_depth;
+                            d_avg_latitude_d = d_avg_latitude_d / static_cast<double>(d_averaging_depth);
+                            d_avg_longitude_d = d_avg_longitude_d / static_cast<double>(d_averaging_depth);
+                            d_avg_height_m = d_avg_height_m / static_cast<double>(d_averaging_depth);
                             b_valid_position = true;
                             return true; //indicates that the returned position is valid
                         }
@@ -514,9 +514,9 @@ void galileo_e1_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_sele
     const double f[5] = {1/297, 1/298.247, 1/298.26, 1/298.257222101, 1/298.257223563};
 
     double lambda  = atan2(Y, X);
-    double ex2 = (2 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1 - f[elipsoid_selection])*(1 - f[elipsoid_selection]));
+    double ex2 = (2 - f[elipsoid_selection]) * f[elipsoid_selection] / ((1 - f[elipsoid_selection]) * (1 - f[elipsoid_selection]));
     double c = a[elipsoid_selection] * sqrt(1+ex2);
-    double phi = atan(Z / ((sqrt(X*X + Y*Y)*(1 - (2 - f[elipsoid_selection])) * f[elipsoid_selection])));
+    double phi = atan(Z / ((sqrt(X * X + Y * Y) * (1 - (2 - f[elipsoid_selection])) * f[elipsoid_selection])));
 
     double h = 0.1;
     double oldh = 0;
@@ -526,8 +526,8 @@ void galileo_e1_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_sele
         {
             oldh = h;
             N = c / sqrt(1 + ex2 * (cos(phi) * cos(phi)));
-            phi = atan(Z / ((sqrt(X*X + Y*Y) * (1 - (2 - f[elipsoid_selection]) * f[elipsoid_selection] *N / (N + h) ))));
-            h = sqrt(X*X + Y*Y) / cos(phi) - N;
+            phi = atan(Z / ((sqrt(X * X + Y * Y) * (1 - (2 - f[elipsoid_selection]) * f[elipsoid_selection] * N / (N + h) ))));
+            h = sqrt(X * X + Y * Y) / cos(phi) - N;
             iterations = iterations + 1;
             if (iterations > 100)
                 {
@@ -535,7 +535,7 @@ void galileo_e1_ls_pvt::cart2geo(double X, double Y, double Z, int elipsoid_sele
                     break;
                 }
         }
-    while (abs(h - oldh) > 1.0e-12);
+    while (std::abs(h - oldh) > 1.0e-12);
     d_latitude_d = phi * 180.0 / GALILEO_PI;
     d_longitude_d = lambda * 180 / GALILEO_PI;
     d_height_m = h;
@@ -582,7 +582,7 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
         }
 
     // first guess
-    double P = sqrt(X*X + Y*Y); // P is distance from spin axis
+    double P = sqrt(X * X + Y * Y); // P is distance from spin axis
 
     //direct calculation of longitude
     if (P > 1.0E-20)
@@ -600,7 +600,7 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
             *dlambda = *dlambda + 360.0;
         }
 
-    double r = sqrt(P*P + Z*Z); // r is distance from origin (0,0,0)
+    double r = sqrt(P * P + Z * Z); // r is distance from origin (0,0,0)
 
     double sinphi;
     if (r > 1.0E-20)
@@ -621,7 +621,7 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
             return;
         }
 
-    *h = r - a*(1 - sinphi*sinphi/finv);
+    *h = r - a * (1 - sinphi * sinphi/finv);
 
     // iterate
     double cosphi;
@@ -636,18 +636,18 @@ void galileo_e1_ls_pvt::togeod(double *dphi, double *dlambda, double *h, double 
             cosphi = cos(*dphi);
 
             // compute radius of curvature in prime vertical direction
-            N_phi = a / sqrt(1 - esq*sinphi*sinphi);
+            N_phi = a / sqrt(1 - esq * sinphi * sinphi);
 
             //    compute residuals in P and Z
             dP = P - (N_phi + (*h)) * cosphi;
-            dZ = Z - (N_phi*oneesq + (*h)) * sinphi;
+            dZ = Z - (N_phi * oneesq + (*h)) * sinphi;
 
             //    update height and latitude
-            *h = *h + (sinphi*dZ + cosphi*dP);
-            *dphi = *dphi + (cosphi*dZ - sinphi*dP)/(N_phi + (*h));
+            *h = *h + (sinphi * dZ + cosphi * dP);
+            *dphi = *dphi + (cosphi * dZ - sinphi * dP)/(N_phi + (*h));
 
             //     test for convergence
-            if ((dP*dP + dZ*dZ) < tolsq)
+            if ((dP * dP + dZ * dZ) < tolsq)
                 {
                     break;
                 }
@@ -693,12 +693,12 @@ void galileo_e1_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x,
     arma::mat F = arma::zeros(3,3);
 
     F(0,0) = -sl;
-    F(0,1) = -sb*cl;
-    F(0,2) = cb*cl;
+    F(0,1) = -sb * cl;
+    F(0,2) = cb * cl;
 
     F(1,0) = cl;
-    F(1,1) = -sb*sl;
-    F(1,2) = cb*sl;
+    F(1,1) = -sb * sl;
+    F(1,2) = cb * sl;
 
     F(2,0) = 0;
     F(2,1) = cb;
@@ -713,7 +713,7 @@ void galileo_e1_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x,
     double U = local_vector(2);
 
     double hor_dis;
-    hor_dis = sqrt(E*E + N*N);
+    hor_dis = sqrt(E * E + N * N);
 
     if (hor_dis < 1.0E-20)
         {
@@ -731,7 +731,7 @@ void galileo_e1_ls_pvt::topocent(double *Az, double *El, double *D, arma::vec x,
             *Az = *Az + 360.0;
         }
 
-    *D = sqrt(dx(0)*dx(0) + dx(1)*dx(1) + dx(2)*dx(2));
+    *D = sqrt(dx(0) * dx(0) + dx(1) * dx(1) + dx(2) * dx(2));
 }
 
 void galileo_e1_ls_pvt::tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km)
@@ -764,7 +764,7 @@ void galileo_e1_ls_pvt::tropo(double *ddr_m, double sinel, double hsta_km, doubl
     const double em     = -978.77 / (2.8704e6 * tlapse * 1.0e-5);
 
     double tkhum  = t_kel + tlapse * (hhum_km - htkel_km);
-    double atkel  = 7.5*(tkhum - 273.15) / (237.3 + tkhum - 273.15);
+    double atkel  = 7.5 * (tkhum - 273.15) / (237.3 + tkhum - 273.15);
     double e0     = 0.0611 * hum * pow(10, atkel);
     double tksea  = t_kel - tlapse * htkel_km;
     double tkelh  = tksea + tlapse * hhum_km;

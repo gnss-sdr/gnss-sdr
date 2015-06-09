@@ -17,7 +17,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2012  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -27,7 +27,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -43,6 +43,7 @@
 
 #include <ctime>
 #include <iostream>
+#include <boost/chrono.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -244,12 +245,21 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoCTest, ValidationOfResults)
         end = tv.tv_sec*1000000 + tv.tv_usec;
     }) << "Failure running the top_block." << std::endl;
 
+#ifdef OLD_BOOST
     ASSERT_NO_THROW( {
         ch_thread.timed_join(boost::posix_time::seconds(1));
     }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
+#ifndef OLD_BOOST
+    ASSERT_NO_THROW( {
+        ch_thread.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
+    }) << "Failure while waiting the queue to stop" << std::endl;
+#endif
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
     EXPECT_EQ(0, message) << "Acquisition failure. Expected message: 0=ACQ STOP.";
+
+
 }

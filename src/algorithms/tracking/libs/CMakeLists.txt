@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
@@ -39,6 +39,10 @@ include_directories(
 if(ENABLE_GENERIC_ARCH)
     add_definitions( -DGENERIC_ARCH=1 )
 endif(ENABLE_GENERIC_ARCH)
+
+if (SSE3_AVAILABLE)
+    add_definitions( -DHAVE_SSE3=1 )
+endif(SSE3_AVAILABLE)
 
 file(GLOB TRACKING_LIB_HEADERS "*.h")
 add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})

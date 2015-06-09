@@ -1,11 +1,11 @@
-# Copyright (C) 2012-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2012-2014  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #
 # GNSS-SDR is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# at your option) any later version.
+# (at your option) any later version.
 #
 # GNSS-SDR is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -145,11 +145,19 @@ You are now ready to build GNSS-SDR by using <a href="http://www.cmake.org/" tar
 $ cd gnss-sdr/build
 $ cmake ../
 $ make
-$ make install
 \endverbatim
 
-If everything goes well, two new executables will be created at <tt>gnss-sdr/install</tt>, namely <tt>gnss-sdr</tt> and <tt>run_tests</tt>. You can create
-this documentation by doing:
+If everything goes well, three new executables will be created at <tt>gnss-sdr/install</tt>, namely <tt>gnss-sdr</tt>, <tt>volk_gnsssdr_profile</tt> and <tt>run_tests</tt>.
+You can run them from that folder, but if you prefer to install gnss-sdr on your system and have it available anywhere else, do:
+\verbatim
+$ sudo make install
+\endverbatim
+
+This will make a copy of the conf/ folder into /usr/local/share/gnss-sdr/conf for your reference. 
+We suggest to create a working directory at your preferred location and store your own configuration and data files there. 
+
+
+You can create the documentation by doing:
 \verbatim
 $ make doc
 \endverbatim
@@ -181,7 +189,7 @@ the internals of the receiver, as well as more fine-grained logging. This can be
 $ cd gnss-sdr/build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
-$ make install
+$ sudo make install
 \endverbatim
 
 \subsection updating_gnss-sdr Updating GNSS-SDR
@@ -192,7 +200,9 @@ $ git pull origin next
 \endverbatim
 Before rebuiling the source code, it is safe (and recommended) to remove the remainders of old builds:
 \verbatim
-$ rm -rf gnss-sdr/build/*
+$ cd gnss-sdr/build
+$ sudo make uninstall
+$ rm -rf *
 \endverbatim
 
 You can also check <a href="http://git-scm.com/book" target="_blank">The Git Book</a> for more information about Git usage.
@@ -202,13 +212,9 @@ You can also check <a href="http://git-scm.com/book" target="_blank">The Git Boo
 With GNSS-SDR, you can define you own receiver, work with captured raw data or from a RF front-end, dump into files intermediate signals, or tune every single algorithm used in the \ref signal_processing. All the configuration
 is done in a single file. Those configuration files reside at the <tt>gnss-sdr/conf</tt> folder. By default, the executable <tt>gnss-sdr</tt> will read the configuration
 available at <tt>gnss-sdr/conf/gnss-sdr.conf</tt>. You can edit that file to fit your needs, or even better, define a new <tt>my_receiver.conf</tt> file with your own configuration. 
-This new receiver can be done by going to the <tt>gnss-sdr/install</tt> folder:
+This new receiver can be done by invoking gnss-sdr with the <tt>--config_file</tt> flag pointing to your configuration file:
 \verbatim
-$ cd gnss-sdr/install
-\endverbatim
-and invoking gnss-sdr with the <tt>--config_file</tt> flag pointing to your configuration file:
-\verbatim
-$ ./gnss-sdr --config_file=../conf/my_receiver.conf
+$ gnss-sdr --config_file=../conf/my_receiver.conf
 \endverbatim
 
 You can see a guide of available implementations at <tt>gnss-sdr/conf/master.conf</tt>. That folder contains other working examples as well. If you have a working
@@ -218,13 +224,13 @@ and we will be happy to upload it to the server.
 You can use a single configuration file for processing
 different data files, specifying the file to be processed with the <tt>--signal_source</tt> flag:
 \verbatim
-$ ./gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
+$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
 \endverbatim
 This will override the <tt>SignalSource.filename</tt> specified in the configuration file.
 
 You can get a complete list of available commandline flags by doing: 
 \verbatim
-$ ./gnss-sdr --help
+$ gnss-sdr --help
 \endverbatim
 For general usage of commandline flags, see <a href="http://google-gflags.googlecode.com/svn/trunk/doc/gflags.html" target="_blank">how to use Google Commandline Flags</a>.
 

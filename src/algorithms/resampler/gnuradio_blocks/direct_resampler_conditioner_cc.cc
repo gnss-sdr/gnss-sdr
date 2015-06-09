@@ -8,7 +8,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2014  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -18,7 +18,7 @@
  * GNSS-SDR is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * at your option) any later version.
+ * (at your option) any later version.
  *
  * GNSS-SDR is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -60,15 +60,14 @@ direct_resampler_conditioner_cc::direct_resampler_conditioner_cc(
                             d_history(1)
 {
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
+    const double two_32 = 4294967296.0;
     if (d_sample_freq_in >= d_sample_freq_out)
         {
-            d_phase_step = (unsigned int)floor((double)4294967296.0
-                    * sample_freq_out / sample_freq_in);
+            d_phase_step = static_cast<unsigned int>(floor(two_32 * sample_freq_out / sample_freq_in));
         }
     else
         {
-            d_phase_step = (unsigned int)floor((double)4294967296.0
-                    * sample_freq_in / sample_freq_out);
+            d_phase_step =  static_cast<unsigned int>(floor(two_32 * sample_freq_in / sample_freq_out));
         }
     set_relative_rate(1.0 * sample_freq_out / sample_freq_in);
     set_output_multiple(1);
@@ -87,7 +86,7 @@ direct_resampler_conditioner_cc::~direct_resampler_conditioner_cc()
 void direct_resampler_conditioner_cc::forecast(int noutput_items,
         gr_vector_int &ninput_items_required)
 {
-    int nreqd = std::max((unsigned)1, (int)((double)(noutput_items + 1)
+    int nreqd = std::max(static_cast<unsigned>(1), static_cast<int>(static_cast<double>(noutput_items + 1)
             * sample_freq_in() / sample_freq_out()) + history() - 1);
     unsigned ninputs = ninput_items_required.size();
     for (unsigned i = 0; i < ninputs; i++)

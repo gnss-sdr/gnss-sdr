@@ -59,6 +59,7 @@ Viterbi_Decoder::Viterbi_Decoder(const int g_encoder[], const int KK, const int 
     d_state0 = new int[d_states];
     d_state1 = new int[d_states];
 
+
     nsc_transit(d_out0, d_state0, 0, g_encoder, d_KK, d_nn);
     nsc_transit(d_out1, d_state1, 1, g_encoder, d_KK, d_nn);
 
@@ -477,12 +478,15 @@ int Viterbi_Decoder::parity_counter(int symbol, int length)
 Viterbi_Decoder::Prev::Prev(int states, int t)
 {
     this->t = t;
-    state = new int[states];
     num_states=states;
+    state = new int[states];
     bit = new int[states];
     metric = new float[states];
     refcount = new int;
     *refcount = 1;
+    memset(state,0,sizeof(int)*num_states);
+    memset(bit,0,sizeof(int)*num_states);
+    memset(metric,0,sizeof(int)*num_states);
 }
 
 

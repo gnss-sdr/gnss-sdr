@@ -324,7 +324,7 @@ void gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::reset()
 }
 
 
-bool gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const std::vector<double> symbols, std::vector<int> &bits)
+bool gps_l2_m_telemetry_decoder_cc::symbol_aligner_and_decoder::get_bits(const std::vector<double> & symbols, std::vector<int> & bits)
 {
     const int traceback_depth = 5 * d_KK;
     int nbits_requested = symbols.size() / GPS_L2_SYMBOLS_PER_BIT;
@@ -370,7 +370,7 @@ void gps_l2_m_telemetry_decoder_cc::frame_detector::reset()
 }
 
 
-void gps_l2_m_telemetry_decoder_cc::frame_detector::get_frame_candidates(const std::vector<int> bits, std::vector<std::pair<int,std::vector<int>>> &msg_candidates)
+void gps_l2_m_telemetry_decoder_cc::frame_detector::get_frame_candidates(const std::vector<int> & bits, std::vector<std::pair<int,std::vector<int>>> & msg_candidates)
 {
     //std::stringstream ss;
     unsigned int cnav_msg_length = 300;
@@ -434,7 +434,7 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::reset()
 }
 
 
-void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t> msg_candidates, std::vector<msg_candiate_int_t> &valid_msgs)
+void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t> & msg_candidates, std::vector<msg_candiate_int_t> & valid_msgs)
 {
     std::vector <unsigned char> tmp_msg;
     LOG(INFO) << "get_valid_frames(): " << "msg_candidates.size()=" << msg_candidates.size();
@@ -461,7 +461,7 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::ve
 
 
 
-void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes)
+void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes)
 {
     //std::stringstream ss;
     const size_t bits_per_byte = 8;
@@ -488,7 +488,7 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_b
 
 
 
-void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_bytes(const std::vector<int> msg_candidate, std::vector<unsigned char> &bytes)
+void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes)
 {
     //std::stringstream ss;
     const size_t bits_per_byte = 8;

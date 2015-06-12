@@ -486,7 +486,7 @@ Viterbi_Decoder::Prev::Prev(int states, int t)
     *refcount = 1;
     memset(state,0,sizeof(int)*num_states);
     memset(bit,0,sizeof(int)*num_states);
-    memset(metric,0,sizeof(int)*num_states);
+    memset(metric,0,sizeof(float)*num_states);
 }
 
 

@@ -311,7 +311,6 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
     int n_im = 0;
 
     VLOG(FLOW) << "do_tb_and_decode(): requested_decoding_length=" << requested_decoding_length;
-
     // decode only decode_length bits -> overstep newer bits which are too much
     decoding_length_mismatch = d_trellis_paths.size() - (traceback_length + requested_decoding_length);
     VLOG(BLOCK) << "decoding_length_mismatch=" << decoding_length_mismatch;
@@ -323,7 +322,6 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
         {
             state = it->get_anchestor_state_of_current_state(state);
         }
-
     t_out = d_trellis_paths.end() - (d_trellis_paths.begin() + traceback_length + overstep_length) - 1;//requested_decoding_length-1;
     indicator_metric = 0;
     for (it = d_trellis_paths.begin() + traceback_length + overstep_length; it < d_trellis_paths.end(); ++it)
@@ -347,6 +345,7 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
     // remove old states
     if (d_trellis_paths.begin() + traceback_length + overstep_length <= d_trellis_paths.end())
         {
+
             d_trellis_paths.erase(d_trellis_paths.begin() + traceback_length+overstep_length, d_trellis_paths.end());
         }
     return decoding_length_mismatch;
@@ -479,6 +478,7 @@ Viterbi_Decoder::Prev::Prev(int states, int t)
 {
     this->t = t;
     state = new int[states];
+    num_states=states;
     bit = new int[states];
     metric = new float[states];
     refcount = new int;
@@ -494,6 +494,7 @@ Viterbi_Decoder::Prev::Prev(const Prev& prev)
     (*refcount)++;
     t = prev.t;
     state = prev.state;
+    num_states=prev.num_states;
     bit = prev.bit;
     metric = prev.metric;
     VLOG(LMORE) << "Prev(" << "?" << ", " << t << ")" << " copy, new refcount = " << *refcount;
@@ -562,7 +563,14 @@ Viterbi_Decoder::Prev::~Prev()
 int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_state)
 {
     //std::cout << "get prev state: for state " << current_state << " at time " << t << ", the prev state at time " << t-1 << " is " << state[current_state] << std::endl;
-    return state[current_state];
+    if (num_states>current_state)
+	{
+		return state[current_state];
+	}else{
+		//std::cout<<"alarm "<<"num_states="<<num_states<<" current_state="<<current_state<<std::endl;
+		//return state[current_state];
+		return 0;
+	}
 }
 
 

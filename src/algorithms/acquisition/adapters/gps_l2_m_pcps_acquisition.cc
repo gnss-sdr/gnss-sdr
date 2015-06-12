@@ -180,6 +180,8 @@ void GpsL2MPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 }
 
 
+// Be aware that Doppler step should be set to 2/(3T) Hz, where T is the coherent integration time (GPS L2 period is 0.02s)
+// Doppler bin minimum size= 33 Hz
 void GpsL2MPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;

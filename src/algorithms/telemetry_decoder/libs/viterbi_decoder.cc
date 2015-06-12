@@ -578,12 +578,22 @@ int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_stat
 int Viterbi_Decoder::Prev::get_bit_of_current_state(int current_state)
 {
     //std::cout << "get prev bit  : for state " << current_state << " at time " << t << ", the send bit is " << bit[current_state] << std::endl;
-    return bit[current_state];
+    if (num_states>current_state)
+	{
+    	return bit[current_state];
+	}else{
+		return 0;
+	}
 }
 
 float Viterbi_Decoder::Prev::get_metric_of_current_state(int current_state)
 {
-    return metric[current_state];
+    if (num_states>current_state)
+	{
+    	return metric[current_state];
+	}else{
+		return 0;
+	}
 }
 
 int Viterbi_Decoder::Prev::get_t()
@@ -593,15 +603,24 @@ int Viterbi_Decoder::Prev::get_t()
 
 void Viterbi_Decoder::Prev::set_current_state_as_ancestor_of_next_state(int next_state, int current_state)
 {
-    state[next_state] = current_state;
+    if (num_states>next_state)
+	{
+    	state[next_state] = current_state;
+	}
 }
 
 void Viterbi_Decoder::Prev::set_decoded_bit_for_next_state(int next_state, int bit)
 {
-    this->bit[next_state] = bit;
+    if (num_states>next_state)
+	{
+    	this->bit[next_state] = bit;
+	}
 }
 
 void Viterbi_Decoder::Prev::set_survivor_branch_metric_of_next_state(int next_state, float metric)
 {
-    this->metric[next_state] = metric;
+    if (num_states>next_state)
+	{
+    	this->metric[next_state] = metric;
+	}
 }

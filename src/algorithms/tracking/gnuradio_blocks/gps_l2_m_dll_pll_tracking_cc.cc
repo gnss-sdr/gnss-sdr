@@ -357,17 +357,18 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
                     int samples_offset;
                     float acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
-                    acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
-                    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples+(1.5*(d_fs_in/GPS_L2_M_CODE_RATE_HZ)));
+                    acq_to_trk_delay_samples = (d_sample_counter - (d_acq_sample_stamp-d_current_prn_length_samples));
+                    acq_trk_shif_correction_samples = fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
+                    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);//+(1.5*(d_fs_in/GPS_L2_M_CODE_RATE_HZ)));
                     // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
                     //d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / static_cast<double>(d_fs_in));
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
-                    //std::cout<<" d_acq_code_phase_samples="<<d_acq_code_phase_samples<<std::endl;
-                    //std::cout<<" acq_trk_shif_correction_samples="<<acq_trk_shif_correction_samples<<std::endl;
-                    //std::cout<<" d_current_prn_length_samples="<<d_current_prn_length_samples<<std::endl;
-                    //std::cout<<" samples_offset="<<samples_offset<<std::endl;
+                    std::cout<<" acq_to_trk_delay_samples="<<acq_to_trk_delay_samples<<std::endl;
+                    std::cout<<" acq_trk_shif_correction_samples="<<acq_trk_shif_correction_samples<<std::endl;
+                    std::cout<<" d_acq_code_phase_samples="<<d_acq_code_phase_samples<<std::endl;
+                    std::cout<<" d_current_prn_length_samples="<<d_current_prn_length_samples<<std::endl;
+                    std::cout<<" samples_offset="<<samples_offset<<std::endl;
                     // Fill the acquisition data
                     current_synchro_data = *d_acquisition_gnss_synchro;
                     current_synchro_data.Flag_valid_tracking = false;

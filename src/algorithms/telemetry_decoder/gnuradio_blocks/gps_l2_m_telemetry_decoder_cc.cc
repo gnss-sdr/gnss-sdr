@@ -194,7 +194,7 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_in
                                         {
                                             tmp_msg = valid_msgs.at(i).second;
                                             d_CNAV_Message.decode_page(tmp_msg);
-                                            std::cout << "Valid CNAV frame with relative preamble start at " << valid_msgs.at(i).first << std::endl;
+                                            //std::cout << "Valid CNAV frame with relative preamble start at " << valid_msgs.at(i).first << std::endl;
                                             flag_new_cnav_frame = true;
                                             d_flag_valid_word = true;
                                             last_frame_preamble_start = valid_msgs.at(i).first;

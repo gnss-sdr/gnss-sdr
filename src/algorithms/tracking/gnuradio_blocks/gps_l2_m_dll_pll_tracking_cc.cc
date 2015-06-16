@@ -53,10 +53,10 @@
 /*!
  * \todo Include in definition header file
  */
-#define CN0_ESTIMATION_SAMPLES 20
-#define MINIMUM_VALID_CN0 25
-#define MAXIMUM_LOCK_FAIL_COUNTER 50
-#define CARRIER_LOCK_THRESHOLD 0.85
+#define GPS_L2M_CN0_ESTIMATION_SAMPLES 10
+#define GPS_L2M_MINIMUM_VALID_CN0 25
+#define GPS_L2M_MAXIMUM_LOCK_FAIL_COUNTER 50
+#define GPS_L2M_CARRIER_LOCK_THRESHOLD 0.75
 
 
 using google::LogMessage;
@@ -158,11 +158,11 @@ gps_l2_m_dll_pll_tracking_cc::gps_l2_m_dll_pll_tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer = new gr_complex[CN0_ESTIMATION_SAMPLES];
+    d_Prompt_buffer = new gr_complex[GPS_L2M_CN0_ESTIMATION_SAMPLES];
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
+    d_carrier_lock_threshold = GPS_L2M_CARRIER_LOCK_THRESHOLD;
 
     systemName["G"] = std::string("GPS");
 
@@ -358,7 +358,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
                     float acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = (d_sample_counter - (d_acq_sample_stamp-d_current_prn_length_samples));
-                    acq_trk_shif_correction_samples = fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
+                    acq_trk_shif_correction_samples = -fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);//+(1.5*(d_fs_in/GPS_L2_M_CODE_RATE_HZ)));
                     // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
                     //d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / static_cast<double>(d_fs_in));
@@ -457,7 +457,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
             //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
+            if (d_cn0_estimation_counter < GPS_L2M_CN0_ESTIMATION_SAMPLES)
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
@@ -467,11 +467,11 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
                 {
                     d_cn0_estimation_counter = 0;
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L2_M_CODE_LENGTH_CHIPS);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, GPS_L2M_CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L2_M_CODE_LENGTH_CHIPS);
                     // Carrier lock indicator
-                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, GPS_L2M_CN0_ESTIMATION_SAMPLES);
                     // Loss of lock detection
-                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
+                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < GPS_L2M_MINIMUM_VALID_CN0)
                         {
                             d_carrier_lock_fail_counter++;
                         }
@@ -479,7 +479,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
                         {
                             if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
                         }
-                    if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+                    if (d_carrier_lock_fail_counter > GPS_L2M_MAXIMUM_LOCK_FAIL_COUNTER)
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";

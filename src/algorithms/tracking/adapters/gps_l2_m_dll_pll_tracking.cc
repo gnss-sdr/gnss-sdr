@@ -50,7 +50,7 @@ GpsL2MDllPllTracking::GpsL2MDllPllTracking(
                 role_(role), in_streams_(in_streams), out_streams_(out_streams),
                 queue_(queue)
 {
-    LOG(INFO) << "role " << role;
+    DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;

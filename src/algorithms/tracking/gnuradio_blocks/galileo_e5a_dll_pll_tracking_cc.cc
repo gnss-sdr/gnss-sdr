@@ -473,6 +473,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 		*out[0] = current_synchro_data;
 		consume_each(samples_offset); //shift input to perform alignment with local replica
 		return 1;
+		break;
 	    }
 	case 2:
 	    {
@@ -696,7 +697,38 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 			current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
 			current_synchro_data.Carrier_Doppler_hz = static_cast<double>(d_carrier_doppler_hz);
 			current_synchro_data.CN0_dB_hz = static_cast<double>(d_CN0_SNV_dB_Hz);
-                        current_synchro_data.Flag_valid_tracking = false;
+            current_synchro_data.Flag_valid_tracking = false;
+
+
+            // ########## DEBUG OUTPUT
+			   /*!
+				*  \todo The stop timer has to be moved to the signal source!
+				*/
+			   // debug: Second counter in channel 0
+			   if (d_channel == 0)
+				   {
+					   if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+						   {
+							   d_last_seg = floor(d_sample_counter / d_fs_in);
+							   std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
+							   std::cout  << "Galileo E5 Tracking CH " << d_channel <<  ": Satellite "
+									<< Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz] "<<"Doppler="<<d_carrier_doppler_hz<<" [Hz]"<< std::endl;
+							   //if (d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
+						   }
+				   }
+			   else
+				   {
+					   if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+						   {
+							   d_last_seg = floor(d_sample_counter / d_fs_in);
+							   std::cout  << "Galileo E5 Tracking CH " << d_channel <<  ": Satellite "
+							   << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+							   << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz] "<<"Doppler="<<d_carrier_doppler_hz<<" [Hz]"<< std::endl;
+							   //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
+						   }
+				   }
+
+
 		    }
 		else
 		    {
@@ -708,8 +740,27 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
 			current_synchro_data.Code_phase_secs = 0.0;
 			current_synchro_data.CN0_dB_hz = 0.0;
 			current_synchro_data.Flag_valid_tracking = false;
+
+            // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
+            /*!
+             *  \todo The stop timer has to be moved to the signal source!
+             */
+            // stream to collect cout calls to improve thread safety
+            std::stringstream tmp_str_stream;
+            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+                {
+                    d_last_seg = floor(d_sample_counter / d_fs_in);
+
+                    if (d_channel == 0)
+                        {
+                            // debug: Second counter in channel 0
+                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
+                            std::cout << tmp_str_stream.rdbuf() << std::flush;
+                        }
+                }
 		    }
 		*out[0] = current_synchro_data;
+		break;
 	    }
     }
 

@@ -72,6 +72,12 @@ public:
     void set_iono_queue(concurrent_queue<Galileo_Iono> *iono_queue);                //!< Set the iono data queue
     void set_almanac_queue(concurrent_queue<Galileo_Almanac> *almanac_queue);       //!< Set the almanac data queue
     void set_utc_model_queue(concurrent_queue<Galileo_Utc_Model> *utc_model_queue); //!< Set the UTC model queue
+
+    /*!
+     * \brief Set decimation factor to average the GPS synchronization estimation output from the tracking module.
+     */
+    void set_decimation(int decimation);
+
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -131,6 +137,10 @@ private:
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;
+
+    // output averaging and decimation
+    int d_average_count;
+    int d_decimation_output_factor;
 
     double d_preamble_time_seconds;
 

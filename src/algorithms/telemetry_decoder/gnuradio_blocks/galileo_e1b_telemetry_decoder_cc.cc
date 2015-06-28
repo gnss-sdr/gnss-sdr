@@ -180,6 +180,8 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_channel = 0;
     Prn_timestamp_at_preamble_ms = 0.0;
     flag_TOW_set = false;
+    d_average_count = 0;
+    d_decimation_output_factor = 1;
 }
 
 
@@ -495,12 +497,28 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }
         }
-    //3. Make the output (copy the object contents to the GNURadio reserved memory)
-    *out[0] = current_synchro_data;
+    //todo: implement averaging
+    d_average_count++;
+    if (d_average_count == d_decimation_output_factor)
+        {
+            d_average_count = 0;
+            //3. Make the output (copy the object contents to the GNURadio reserved memory)
+            *out[0] = current_synchro_data;
+            //std::cout<<"GPS L1 TLM output on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter/d_decimation_output_factor<<std::endl;
+            return 1;
+        }
+    else
+        {
+            return 0;
+        }
 
-    return 1;
 }
 
+
+void galileo_e1b_telemetry_decoder_cc::set_decimation(int decimation)
+{
+    d_decimation_output_factor = decimation;
+}
 
 void galileo_e1b_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {

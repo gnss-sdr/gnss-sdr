@@ -64,6 +64,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
         }
 
     subdevice_ = configuration->property(role + ".subdevice", empty);
+    clock_source_ = configuration->property(role + ".clock_source", std::string("internal"));
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
     sample_rate_ = configuration->property(role + ".sampling_frequency", (double)4.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
@@ -152,8 +153,7 @@ UhdSignalSource::UhdSignalSource(ConfigurationInterface* configuration,
     // 2.1 set sampling clock reference
     // Set the clock source for the usrp device.
     // Options: internal, external, or MIMO
-    std::string clk_reference = "internal";
-    uhd_source_->set_clock_source(clk_reference);
+    uhd_source_->set_clock_source(clock_source_);
 
     // 2.2 set the sample rate for the usrp device
     uhd_source_->set_samp_rate(sample_rate_);

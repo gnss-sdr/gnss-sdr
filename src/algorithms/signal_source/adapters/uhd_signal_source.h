@@ -94,6 +94,7 @@ private:
     size_t item_size_;
 
     std::string subdevice_;
+    std::string clock_source_;
 
     std::vector<double> freq_;
     std::vector<double> gain_;

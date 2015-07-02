@@ -137,38 +137,38 @@ int mixed_observables_cc::general_work (int noutput_items, gr_vector_int &ninput
     /*
      * 2. Compute RAW pseudoranges using COMMON RECEPTION TIME algorithm. Use only the valid channels (channels that are tracking a satellite)
      */
-    if(current_gnss_synchro_map.size() > 0)
-        {
-            /*
-             *  2.1 Use CURRENT set of measurements and find the nearest satellite
-             *  common RX time algorithm
-             */
-            // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
-            gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), MixedPairCompare_gnss_synchro_d_TOW_at_current_symbol);
-            double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
-            double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
-            //int reference_channel= gnss_synchro_iter->second.Channel_ID;
-
-            // Now compute RX time differences due to the PRN alignment in the correlators
-            double traveltime_ms;
-            double pseudorange_m;
-            double delta_rx_time_ms;
-            for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
-            {
-            	// compute the required symbol history shift in order to match the reference symbol
-            	delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms - d_ref_PRN_rx_time_ms;
-            	//compute the pseudorange
-            	traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
-            	pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
-                // update the pseudorange object
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000)/1000 + GPS_STARTOFFSET_ms/1000.0;
-                std::cout<<"Pseudorange_m="<<current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m<<std::endl;
-                std::cout<<"Signal="<<current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Signal<<std::endl;
-            }
-        }
+//    if(current_gnss_synchro_map.size() > 0)
+//        {
+//            /*
+//             *  2.1 Use CURRENT set of measurements and find the nearest satellite
+//             *  common RX time algorithm
+//             */
+//            // what is the most recent symbol TOW in the current set? -> this will be the reference symbol
+//            gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), MixedPairCompare_gnss_synchro_d_TOW_at_current_symbol);
+//            double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
+//            double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
+//            //int reference_channel= gnss_synchro_iter->second.Channel_ID;
+//
+//            // Now compute RX time differences due to the PRN alignment in the correlators
+//            double traveltime_ms;
+//            double pseudorange_m;
+//            double delta_rx_time_ms;
+//            for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
+//            {
+//            	// compute the required symbol history shift in order to match the reference symbol
+//            	delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms - d_ref_PRN_rx_time_ms;
+//            	//compute the pseudorange
+//            	traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
+//            	pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
+//                // update the pseudorange object
+//                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
+//                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
+//                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
+//                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000)/1000 + GPS_STARTOFFSET_ms/1000.0;
+//                std::cout<<"Pseudorange_m="<<current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m<<std::endl;
+//                std::cout<<"Signal="<<current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Signal<<std::endl;
+//            }
+//        }
 
     if(d_dump == true)
         {
@@ -187,6 +187,12 @@ int mixed_observables_cc::general_work (int noutput_items, gr_vector_int &ninput
                             tmp_double = (double)(current_gnss_synchro[i].Flag_valid_pseudorange==true);
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].PRN;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            tmp_double = (double)(current_gnss_synchro[i].Flag_valid_tracking==true);
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            tmp_double = current_gnss_synchro[i].Prompt_I;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            tmp_double = current_gnss_synchro[i].Prompt_Q;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                         }
             }

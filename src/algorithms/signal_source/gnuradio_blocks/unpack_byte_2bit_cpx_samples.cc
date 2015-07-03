@@ -69,19 +69,35 @@ int unpack_byte_2bit_cpx_samples::work(int noutput_items,
 			//*     Most Significant Nibble  - Sample n
 			//*     Least Significant Nibble - Sample n+1
 			//*     Packing order in Nibble Q1 Q0 I1 I0
+    	//normal
+//            signed char c = in[i];
+//            //Q[n]
+//            sample.two_bit_sample = (c>>6) & 3;
+//            out[n++] = (2*(short)sample.two_bit_sample+1);
+//            //I[n]
+//            sample.two_bit_sample = (c>>4) & 3;
+//            out[n++] = (2*(short)sample.two_bit_sample+1);
+//            //Q[n+1]
+//            sample.two_bit_sample = (c>>2) & 3;
+//            out[n++] = (2*(short)sample.two_bit_sample+1);
+//            //I[n+1]
+//            sample.two_bit_sample = c & 3;
+//            out[n++] = (2*(short)sample.two_bit_sample+1);
+
+    	//I/Q swap
             signed char c = in[i];
-            //Q[n]
-            sample.two_bit_sample = (c>>6) & 3;
-            out[n++] = (short)sample.two_bit_sample;
             //I[n]
             sample.two_bit_sample = (c>>4) & 3;
-            out[n++] = (short)sample.two_bit_sample;
-            //Q[n+1]
-            sample.two_bit_sample = (c>>2) & 3;
-            out[n++] = (short)sample.two_bit_sample;
+            out[n++] = (2*(short)sample.two_bit_sample+1);
+            //Q[n]
+            sample.two_bit_sample = (c>>6) & 3;
+            out[n++] = (2*(short)sample.two_bit_sample+1);
             //I[n+1]
             sample.two_bit_sample = c & 3;
-            out[n++] = (short)sample.two_bit_sample;
+            out[n++] = (2*(short)sample.two_bit_sample+1);
+            //Q[n+1]
+            sample.two_bit_sample = (c>>2) & 3;
+            out[n++] = (2*(short)sample.two_bit_sample+1);
 
         }
     return noutput_items;

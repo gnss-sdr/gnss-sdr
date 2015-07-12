@@ -559,7 +559,19 @@ Class ```gr::top_block``` is the top-level hierarchical block representing a flo
 
 Subclassing GNSSBlockInterface, we defined interfaces for the GNSS receiver blocks depicted in the figure above. This hierarchy provides the definition of different algorithms and different implementations, which will be instantiated according to the configuration. This strategy allows multiple implementations sharing a common interface, achieving the objective of decoupling interfaces from implementations: it defines a family of algorithms, encapsulates each one, and makes them interchangeable. Hence, we let the algorithm vary independently from the program that uses it.
 
-   
+Internally, GNSS-SDR makes use of the complex data types defined by [VOLK](http://libvolk.org/ "Vector-Optimized Library of Kernels home"). They are fundamental for handling sample streams in which samples are complex numbers with real and imaginary components of 8, 16 or 32 bits, common formats delivered by GNSS (and generic SDR) radio frequency front-ends. The following list shows the data type names that GNSS-SDR exposes through the configuration file:
+
+- **`byte`**: Signed integer, 8-bit two’s complement number ranging from -128 to 127. C++ type name: `int8_t`  
+- **`short`**: Signed integer, 16-bit two’s complement number ranging from -32768 to 32767.  C++ type name: `int16_t`  
+- **`float`**:  Defines numbers with fractional parts, can represent values ranging from approx. \(1.5 \times 10^{-45}\) to \(3.4 \times 10^{38}\) with a precision of 7 digits (32 bits). C++ type name: `float` 
+- **`ibyte`**: Interleaved (I&Q) stream of samples of type `byte`. C++ type name: `int8_t`  
+- **`ishort`**: Interleaved (I&Q) stream of samples of type `short`. C++ type name: `int16_t`  
+- **`cbyte`**: Complex samples, with real and imaginary parts of type `byte`. C++ type name: `lv_8sc_t` 
+- **`cshort`**: Complex samples, with real and imaginary parts of type `short`. C++ type name: `lv_16sc_t` 
+- **`gr_complex`**: Complex samples, with real and imaginary parts of type `float`. C++ type name: `std::complex<float>` 
+
+
+
 
 ###  Signal Source
 
@@ -606,7 +618,7 @@ SignalSource.subdevice=B:0 ; UHD subdevice specification (for USRP1 use A:0 or B
 
 Other examples are available at [gnss-sdr/conf/](./conf/).
 
-   
+
 
 ### Signal Conditioner
 
@@ -626,7 +638,6 @@ If you need to adapt some aspect of you signal, you can enable the Signal Condit
 ;#[Signal_Conditioner] enables this block. Then you have to configure [DataTypeAdapter], [InputFilter] and [Resampler] blocks
 SignalConditioner.implementation=Signal_Conditioner
 ~~~~~~ 
-
    
 
 #### Data type adapter
@@ -718,19 +729,46 @@ Resampler.sample_freq_out=4000000 ; desired sample frequency of the output signa
 
 A channel encapsulates all signal processing devoted to a single satellite. Thus, it is a large composite object which encapsulates the acquisition, tracking and navigation data decoding modules. As a composite object, it can be treated as a single entity, meaning that it can be easily replicated. Since the number of channels is selectable by the user in the configuration file, this approach helps improving the scalability and maintainability of the receiver.
 
+Each channel must be assigned to a GNSS signal, according to the following identifiers:
+
+| **Signal**        | **Identifier**  |
+|:------------------|:---------------:|
+| GPS L1 C/A        |      1C         |
+| GPS L2 L2C(M)     |      2S         |
+| Galileo E1B       |      1B         |
+| Galileo E5a (I+Q) |      5X         |
+
+
+Example: Eight GPS L1 C/A channels.
+~~~~~~ 
+;######### CHANNELS GLOBAL CONFIG ############
+Channels_1C.count=8 ; Number of available GPS L1 C/A channels.
+Channels_1B.count=0 ; Number of available Galileo E1B channels.
+Channels.in_acquisition=1 ; Number of channels simultaneously acquiring
+Channel.signal=1C ; 
+~~~~~~ 
+
+
+Example: Four GPS L1 C/A and four Galileo E1B channels.
+~~~~~~ 
+;######### CHANNELS GLOBAL CONFIG ############
+Channels_1C.count=4 ; Number of available GPS L1 C/A channels.
+Channels_1B.count=4 ; Number of available Galileo E1B channels.
+Channels.in_acquisition=1 ; Number of channels simultaneously acquiring
+Channel0.signal=1C ;
+Channel1.signal=1C ;
+Channel2.signal=1C ;
+Channel3.signal=1C ;
+Channel4.signal=1B ;
+Channel5.signal=1B ;
+Channel6.signal=1B ;
+Channel7.signal=1B ;
+~~~~~~ 
+
 This module is also in charge of managing the interplay between acquisition and tracking. Acquisition can be initialized in several ways, depending on the prior information available (called cold start when the receiver has no information about its position nor the satellites almanac; warm start when a rough location and the approximate time of day are available, and the receiver has a recently recorded almanac broadcast; or hot start when the receiver was tracking a satellite and the signal line of sight broke for a short period of time, but the ephemeris and almanac data is still valid, or this information is provided by other means), and an acquisition process can finish deciding that the satellite is not present, that longer integration is needed in order to confirm the presence of the satellite, or declaring the satellite present. In the latter case, acquisition process should stop and trigger the tracking module with coarse estimations of the synchronization parameters. The mathematical abstraction used to design this logic is known as finite state machine (FSM), that is a behavior model composed of a finite number of states, transitions between those states, and actions. For the implementation, we use the [Boost.Statechart library](http://www.boost.org/libs/statechart/doc/tutorial.html), which provides desirable features such as support for asynchronous state machines, multi-threading, type-safety, error handling and compile-time validation.
      
 The abstract class [ChannelInterface](./src/core/interfaces/channel_interface.h) represents an interface to a channel GNSS block. Check [Channel](./src/algorithms/channel/adapters/channel.h) for an actual implementation.
 
-~~~~~~ 
-;######### CHANNELS GLOBAL CONFIG ############
-Channels_GPS.count=8 ; Number of available GPS satellite channels.
-Channels_Galileo.count=0
-Channels.in_acquisition=1 ; Number of channels simultaneously acquiring
-Channel.system=GPS ; options: GPS, Galileo, SBAS
-Channel.signal=1C ; options: "1C" for GPS L1 C/A or SBAS L1 C/A; "1B" for GALILEO E1 B (I/NAV OS/CS/SoL)
-~~~~~~ 
-   
      
 #### Acquisition
 
@@ -751,17 +789,17 @@ The user can select a given implementation for the algorithm to be used in each 
 
 ~~~~~~ 
 ;######### ACQUISITION GLOBAL CONFIG ############
-Acquisition_GPS.dump=false ; Enables internal data file logging [true] or [false] 
-Acquisition_GPS.dump_filename=./acq_dump.dat ; Log path and filename
-Acquisition_GPS.item_type=gr_complex
-Acquisition_GPS.if=0 ; Signal intermediate frequency in [Hz] 
-Acquisition_GPS.sampled_ms=1 ; Signal block duration for the acquisition signal detection [ms]
-Acquisition_GPS.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
-Acquisition_GPS.threshold=0.005 ; Acquisition threshold
-Acquisition_GPS.pfa=0.0001 ; Acquisition false alarm probability. This option overrides the threshold option. 
+Acquisition_1C.dump=false ; Enables internal data file logging [true] or [false] 
+Acquisition_1C.dump_filename=./acq_dump.dat ; Log path and filename
+Acquisition_1C.item_type=gr_complex
+Acquisition_1C.if=0 ; Signal intermediate frequency in [Hz] 
+Acquisition_1C.sampled_ms=1 ; Signal block duration for the acquisition signal detection [ms]
+Acquisition_1C.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
+Acquisition_1C.threshold=0.005 ; Acquisition threshold
+Acquisition_1C.pfa=0.0001 ; Acquisition false alarm probability. This option overrides the threshold option. 
 ;                        Only use with implementations: [GPS_L1_CA_PCPS_Acquisition] or [Galileo_E1_PCPS_Ambiguous_Acquisition] 
-Acquisition_GPS.doppler_max=10000 ; Maximum expected Doppler shift [Hz]
-Acquisition_GPS.doppler_step=500 ; Doppler step in the grid search [Hz]
+Acquisition_1C.doppler_max=10000 ; Maximum expected Doppler shift [Hz]
+Acquisition_1C.doppler_step=500 ; Doppler step in the grid search [Hz]
 ~~~~~~ 
 
 
@@ -787,16 +825,16 @@ The user can select a given implementation for the algorithm to be used in all t
 
 ~~~~~~ 
 ;######### TRACKING GLOBAL CONFIG ############
-Tracking_GPS.implementation=GPS_L1_CA_DLL_PLL_Tracking
-Tracking_GPS.item_type=gr_complex
-Tracking_GPS.if=0 ; Signal Intermediate Frequency in [Hz] 
-Tracking_GPS.dump=false ; Enable internal binary data file logging [true] or [false] 
-Tracking_GPS.dump_filename=./tracking_ch_ ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
-Tracking_GPS.pll_bw_hz=50.0 ; PLL loop filter bandwidth [Hz]
-Tracking_GPS.dll_bw_hz=2.0 ; DLL loop filter bandwidth [Hz]
-Tracking_GPS.fll_bw_hz=10.0 ; FLL loop filter bandwidth [Hz]
-Tracking_GPS.order=3 ; PLL/DLL loop filter order [2] or [3]
-Tracking_GPS.early_late_space_chips=0.5 ; correlator early-late space [chips]. 
+Tracking_1C.implementation=GPS_L1_CA_DLL_PLL_Tracking
+Tracking_1C.item_type=gr_complex
+Tracking_1C.if=0 ; Signal Intermediate Frequency in [Hz] 
+Tracking_1C.dump=false ; Enable internal binary data file logging [true] or [false] 
+Tracking_1C.dump_filename=./tracking_ch_ ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
+Tracking_1C.pll_bw_hz=50.0 ; PLL loop filter bandwidth [Hz]
+Tracking_1C.dll_bw_hz=2.0 ; DLL loop filter bandwidth [Hz]
+Tracking_1C.fll_bw_hz=10.0 ; FLL loop filter bandwidth [Hz]
+Tracking_1C.order=3 ; PLL/DLL loop filter order [2] or [3]
+Tracking_1C.early_late_space_chips=0.5 ; correlator early-late space [chips]. 
 ~~~~~~ 
 
    
@@ -809,8 +847,8 @@ The common interface is [TelemetryDecoderInterface](./src/core/interfaces/teleme
 
 ~~~~~~ 
 ;######### TELEMETRY DECODER CONFIG ############
-TelemetryDecoder_GPS.implementation=GPS_L1_CA_Telemetry_Decoder
-TelemetryDecoder_GPS.dump=false
+TelemetryDecoder_1C.implementation=GPS_L1_CA_Telemetry_Decoder
+TelemetryDecoder_1C.dump=false
 ~~~~~~ 
 
 

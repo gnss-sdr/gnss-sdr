@@ -561,14 +561,14 @@ Subclassing GNSSBlockInterface, we defined interfaces for the GNSS receiver bloc
 
 Internally, GNSS-SDR makes use of the complex data types defined by [VOLK](http://libvolk.org/ "Vector-Optimized Library of Kernels home"). They are fundamental for handling sample streams in which samples are complex numbers with real and imaginary components of 8, 16 or 32 bits, common formats delivered by GNSS (and generic SDR) radio frequency front-ends. The following list shows the data type names that GNSS-SDR exposes through the configuration file:
 
-- **`byte`**: Signed integer, 8-bit two’s complement number ranging from -128 to 127. C++ type name: `int8_t`  
-- **`short`**: Signed integer, 16-bit two’s complement number ranging from -32768 to 32767.  C++ type name: `int16_t`  
-- **`float`**:  Defines numbers with fractional parts, can represent values ranging from approx. \(1.5 \times 10^{-45}\) to \(3.4 \times 10^{38}\) with a precision of 7 digits (32 bits). C++ type name: `float` 
-- **`ibyte`**: Interleaved (I&Q) stream of samples of type `byte`. C++ type name: `int8_t`  
-- **`ishort`**: Interleaved (I&Q) stream of samples of type `short`. C++ type name: `int16_t`  
-- **`cbyte`**: Complex samples, with real and imaginary parts of type `byte`. C++ type name: `lv_8sc_t` 
-- **`cshort`**: Complex samples, with real and imaginary parts of type `short`. C++ type name: `lv_16sc_t` 
-- **`gr_complex`**: Complex samples, with real and imaginary parts of type `float`. C++ type name: `std::complex<float>` 
+- **`byte`**: Signed integer, 8-bit two's complement number ranging from -128 to 127. C++ type name: `int8_t`. 
+- **`short`**: Signed integer, 16-bit two's complement number ranging from -32768 to 32767.  C++ type name: `int16_t` .
+- **`float`**:  Defines numbers with fractional parts, can represent values ranging from approx. 1.5e-45 to 3.4e+38 with a precision of 7 digits (32 bits). C++ type name: `float`.
+- **`ibyte`**: Interleaved (I&Q) stream of samples of type `byte`. C++ type name: `int8_t`.
+- **`ishort`**: Interleaved (I&Q) stream of samples of type `short`. C++ type name: `int16_t`.
+- **`cbyte`**: Complex samples, with real and imaginary parts of type `byte`. C++ type name: `lv_8sc_t`.
+- **`cshort`**: Complex samples, with real and imaginary parts of type `short`. C++ type name: `lv_16sc_t`.
+- **`gr_complex`**: Complex samples, with real and imaginary parts of type `float`. C++ type name: `std::complex<float>`.
 
 
 

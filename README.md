@@ -43,7 +43,7 @@ Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and
 
 ### Manual installation of GNU Radio
 
-Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki) (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
+Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki "Python Build Overlay Managed Bundle System wiki") (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
 
 
 ~~~~~~ 
@@ -91,12 +91,12 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 #### Install the [Armadillo](http://arma.sourceforge.net/ "Armadillo's Homepage") C++ linear algebra library:
 
 ~~~~~~
-$ sudo apt-get install libopenblas-dev liblapack-dev gfortran   # For Debian/Ubuntu/LinuxMint
-$ sudo yum install lapack-devel blas-devel gcc-fortran          # For Fedora/CentOS/RHEL
-$ sudo zypper install lapack-devel blas-devel gcc-fortran       # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-5.200.1.tar.gz
-$ tar xvfz armadillo-5.200.1.tar.gz
-$ cd armadillo-5.200.1
+$ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
+$ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
+$ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
+$ wget http://sourceforge.net/projects/arma/files/armadillo-5.200.2.tar.gz
+$ tar xvfz armadillo-5.200.2.tar.gz
+$ cd armadillo-5.200.2
 $ cmake .
 $ make
 $ sudo make install

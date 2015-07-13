@@ -40,6 +40,7 @@ option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based
 option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNURadio driver" OFF)
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
 option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
+option(ENABLE_GNSS_SDR_HE "Enable the use of the GNSS-SDR Hackers Edition Board (experimental)" OFF)
 
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
@@ -908,6 +909,21 @@ endif(ENABLE_GPERFTOOLS)
 ################################################################################
 # Setup of optional drivers
 ################################################################################
+
+if($ENV{GNSS_SDR_HE_DRIVER})
+    message(STATUS "GNSS-SDR Hacker's Edition Driver Build environment variable found.")
+    set(ENABLE_GNSS_SDR_HE ON)
+endif($ENV{GNSS_SDR_HE_DRIVER})
+if(GNSS_SDR_HE_DRIVER)
+    set(ENABLE_GNSS_SDR_HE ON)
+endif(GNSS_SDR_HE_DRIVER)
+if(ENABLE_GNSS_SDR_HE)
+    message(STATUS "The experimental driver for the GNSS-SDR Hacker's Edition Frontend Board will be compiled.")
+    message(STATUS "You may disable it with 'cmake -DENABLE_GNSS_SDR_HE=OFF ../'")
+else(ENABLE_GNSS_SDR_HE)
+    message(STATUS "The experimental driver for the GNSS-SDR Hacker's Edition Frontend Board will not be compiled.")
+    message(STATUS "You may enable it with 'cmake -DENABLE_GNSS_SDR_HE=ON ../'")
+endif(ENABLE_GNSS_SDR_HE)
 
 if($ENV{GN3S_DRIVER})
     message(STATUS "GN3S_DRIVER environment variable found." )

@@ -70,6 +70,10 @@ if(Boost_VERSION LESS 105000)
      add_definitions(-DOLD_BOOST=1)
 endif(Boost_VERSION LESS 105000)
 
+if(ENABLE_GNSS_SDR_HE)
+    add_definitions(-DGNSS_SDR_HE_DRIVER=1)
+endif(ENABLE_GNSS_SDR_HE)
+
 if(ENABLE_GN3S)
     add_definitions(-DGN3S_DRIVER=1)
 endif(ENABLE_GN3S)

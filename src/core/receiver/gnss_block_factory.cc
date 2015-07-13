@@ -102,6 +102,10 @@
 #include "gps_l1_ca_pcps_opencl_acquisition.h"
 #endif
 
+#if GNSS_SDR_HE_DRIVER
+#include "gnss_sdr_he_signal_source.h"
+#endif
+
 #if GN3S_DRIVER
 #include "gn3s_signal_source.h"
 #endif
@@ -1094,6 +1098,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("UHD_Signal_Source") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new UhdSignalSource(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+#endif
+#if GNSS_SDR_HE_DRIVER
+    else if (implementation.compare("GNSS_SDR_HE_Signal_Source") == 0)
+        {
+            std::unique_ptr<GNSSBlockInterface> block_(new GNSS_SDR_HE_SignalSource(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

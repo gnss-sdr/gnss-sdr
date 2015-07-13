@@ -1,6 +1,6 @@
 *~
 build/*
-driver/gr-gnss-sdr/build/*
+drivers/gr-gnss_sdr/build/*
 *.o
 docs/doxygen/Doxyfile
 docs/html

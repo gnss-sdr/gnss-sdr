@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<block>
+  <name>GNSS SDR Hacker's Edition Source</name>
+  <key>gnss_sdr_gnss_sdr_source_b</key>
+  <category>GNSS SDR</category>
+  <import>import gnss_sdr</import>
+  <make>gnss_sdr.gnss_sdr_source_b()</make>
+  <source>
+    <name>out</name>
+    <type>byte</type>
+  </source>
+</block>

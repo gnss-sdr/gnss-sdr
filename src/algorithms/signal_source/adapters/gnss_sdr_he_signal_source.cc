@@ -72,6 +72,18 @@ GNSS_SDR_HE_SignalSource::GNSS_SDR_HE_SignalSource(
             gnss_sdr_source_b_ = gr::gnss_sdr::gnss_sdr_source_b::make();
             unpack_byte_ = make_unpack_byte_2bit_cpx_samples();
             inter_shorts_to_cpx_ =  gr::blocks::interleaved_short_to_complex::make(false,true); //I/Q swap enabled
+
+            gnss_sdr_source_b_->set_frontend_register_LNAMODE(2);
+            gnss_sdr_source_b_->set_frontend_register_ILNA1(15);
+            gnss_sdr_source_b_->set_frontend_register_IQEN(1);
+            gnss_sdr_source_b_->set_frontend_register_FORMAT(3);
+            gnss_sdr_source_b_->set_frontend_register_BITS(2);
+            gnss_sdr_source_b_->set_frontend_register_AGCMODE(2);
+            gnss_sdr_source_b_->set_frontend_register_GAININ(63);
+            gnss_sdr_source_b_->set_frontend_register_PGAQEN(1);
+            gnss_sdr_source_b_->set_frontend_register_STRMEN(0);
+            gnss_sdr_source_b_->set_frontend_register_NDIV(7857);
+            gnss_sdr_source_b_->set_frontend_register_RDIV(96);
         }
       catch (const std::exception &e)
         {
@@ -98,12 +110,13 @@ void GNSS_SDR_HE_SignalSource::connect(gr::top_block_sptr top_block)
 {
     top_block->connect(gnss_sdr_source_b_, 0, unpack_byte_, 0);
     top_block->connect(unpack_byte_, 0,inter_shorts_to_cpx_,0);
+ 
     if (dump_)
     {
       top_block->connect(inter_shorts_to_cpx_, 0, sink_, 0);
     }
     
-    DLOG(INFO) << "connected gnss-sdr hackers edition";
+    DLOG(INFO) << "connected GNSS-SDR Hacker's Edition";
 
 }
 
@@ -116,8 +129,7 @@ void GNSS_SDR_HE_SignalSource::disconnect(gr::top_block_sptr top_block)
       top_block->disconnect(inter_shorts_to_cpx_, 0, sink_, 0);
     }
     
-    DLOG(INFO) << "disconnected gnss-sdr hackers edition";
-
+    DLOG(INFO) << "disconnected GNSS-SDR Hacker's Edition";
 }
 
 gr::basic_block_sptr GNSS_SDR_HE_SignalSource::get_left_block()
@@ -129,5 +141,5 @@ gr::basic_block_sptr GNSS_SDR_HE_SignalSource::get_left_block()
 
 gr::basic_block_sptr GNSS_SDR_HE_SignalSource::get_right_block()
 {
-    return unpack_byte_;
+    return inter_shorts_to_cpx_;
 }

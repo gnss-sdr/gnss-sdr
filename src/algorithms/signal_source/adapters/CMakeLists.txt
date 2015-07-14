@@ -23,21 +23,15 @@ if(ENABLE_GNSS_SDR_HE)
      # GNSS-SDR Hacker's Edition
      ##############################################
 
-     include(ExternalProject)
-     ExternalProject_Add(
-          gr-gnss_sdr
-          SOURCE_DIR ${CMAKE_SOURCE_DIR}/drivers/gr-gnss_sdr
-          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-gnss_sdr
-          UPDATE_COMMAND ""
-          PATCH_COMMAND ""
-          INSTALL_COMMAND ""
-     )
+    find_package(gnss_sdr REQUIRED)
+    if(NOT FOUND_GNSS_SDR_HE_DRIVER)
+        message(FATAL_ERROR "Could not locate GNSS-SDR Hacker's Edition Driver.")
+    endif(NOT FOUND_GNSS_SDR_HE_DRIVER)
 
      # Set up variables
-     set(GRGNSSSDR_INCLUDE_DIRS ${GRGNSSSDR_DIR}/include ${GRGNSSSDR_DIR} ${GRGNSSSDR_DIR}/src)
-     set(GRGNSSSDR_LIBRARIES
-         "${CMAKE_CURRENT_BINARY_DIR}/../../../../gr-gnss_sdr/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gr-gnss_sdr${CMAKE_SHARED_LIBRARY_SUFFIX}"
-     )
+     set(GRGNSSSDR_INCLUDE_DIRS ${GNSS_SDR_INCLUDE_DIRS})
+     set(GRGNSSSDR_LIBRARIES ${GNSS_SDR_LIBRARIES})
+     
      set(OPT_LIBRARIES ${OPT_LIBRARIES} ${GRGNSSSDR_LIBRARIES})
      set(OPT_DRIVER_INCLUDE_DIRS ${OPT_DRIVER_INCLUDE_DIRS} ${GRGNSSSDR_INCLUDE_DIRS})
      set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gnss_sdr_he_signal_source.cc)

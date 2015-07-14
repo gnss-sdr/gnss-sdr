@@ -1,6 +1,8 @@
 INCLUDE(FindPkgConfig)
 PKG_CHECK_MODULES(PC_GNSS_SDR gnss_sdr)
 
+set(FOUND_GNSS_SDR_HE_DRIVER 1)
+
 FIND_PATH(
     GNSS_SDR_INCLUDE_DIRS
     NAMES gnss_sdr/api.h

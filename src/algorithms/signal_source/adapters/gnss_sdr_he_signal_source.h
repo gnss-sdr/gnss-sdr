@@ -33,6 +33,7 @@
 #define GNSS_SDR_HE_SIGNAL_SOURCE_H_
 
 #include <string>
+#include <gnss_sdr/gnss_sdr_source_b.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/file_sink.h>
@@ -87,7 +88,7 @@ private:
     gr::block_sptr gn3s_source_;
     gr::blocks::file_sink::sptr sink_;
     boost::shared_ptr<gr::msg_queue> queue_;
-    gr::block_sptr gnss_sdr_source_b_;
+    boost::shared_ptr<gr::gnss_sdr::gnss_sdr_source_b> gnss_sdr_source_b_;
     unpack_byte_2bit_cpx_samples_sptr unpack_byte_;
     gr::blocks::interleaved_short_to_complex::sptr inter_shorts_to_cpx_;
 

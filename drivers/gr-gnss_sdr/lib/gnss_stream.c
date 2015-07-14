@@ -35,7 +35,9 @@
 #include <string.h>
 #include <ftdi.h>
 #include <pthread.h>
+#include <sched.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "gnss_stream.h"
 #include "max2769.h"
@@ -629,6 +631,35 @@ static void* capture_thread_function(void* device_context)
   data_packet* tmp;
   struct gnss_device_context* dev = (struct gnss_device_context*)device_context;
   dev->exit_thread = 0;
+  struct sched_param priority_param;
+
+  int min_real_pri = sched_get_priority_min(SCHED_FIFO);
+  int max_real_pri = sched_get_priority_max(SCHED_FIFO);
+  int thread_perm_retval = 0;
+
+  memset (&priority_param, 0, sizeof (priority_param));
+  priority_param.sched_priority = max_real_pri;
+
+  fprintf(stdout, "Min thread priority: %d, Max thread priority: %d\n", min_real_pri, max_real_pri);
+  fflush(stdout);
+  /* Set thread priority (Experimental) */
+  thread_perm_retval = pthread_setschedparam(dev->thread_id, SCHED_FIFO, &priority_param);
+  if (thread_perm_retval == EINVAL)
+  {
+    fprintf(stderr, "EINVAL returned from pthread_setschedparam : System does not support SCHED_FIFO.");
+    fflush(stderr);
+  }
+  else if (thread_perm_retval == EPERM)
+  {
+    fprintf(stderr, "EPERM returned from pthread_setschedparam : No sufficient privilleges to shift thread priorities.");
+    fflush(stderr);
+  }
+  else if (thread_perm_retval == 0)
+  {
+    fprintf(stdout, "Thread Priority Changed.");
+    fflush(stdout);
+  }
+  
 
   pthread_mutex_lock(&(dev->thread_lock));
   if (dev->packet_list_head != NULL)

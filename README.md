@@ -173,21 +173,29 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
 
 ~~~~~~ 
  |-gnss-sdr
- |---build      <- where gnss-sdr is built
- |---cmake      <- CMake-related files
- |---conf       <- Configuration files. Each file represents one receiver.
+ |---build      <- where gnss-sdr is built.
+ |---cmake      <- CMake-related files.
+ |---conf       <- Configuration files. Each file defines one particular receiver.
  |---data       <- Populate this folder with your captured data.
- |---docs       <- Contains documentation-related files
- |---drivers    <- Drivers for some RF front-ends
- |---firmware   <- Firmware for some front-ends
- |---install    <- Executables 
- |---src        <- Source code folder
- |-----algorithms
- |-----core
- |-----main
- |-----tests
- |-----utils     <- some utilities (e.g. Matlab scripts)
+ |---docs       <- Contains documentation-related files.
+ |---drivers    <- Drivers for some RF front-ends.
+ |---firmware   <- Firmware for some front-ends.
+ |---install    <- Executables will be placed here. 
+ |---src        <- Source code folder.
+ |-----algorithms  <- Signal processing blocks.
+ |-----core     <- Receiver engine, system parameters.
+ |-----main     <- Main function of the C++ program
+ |-----tests    <- QA code
+ |-----utils    <- some utilities (e.g. Matlab scripts)
 ~~~~~~ 
+
+By default, you will be in the 'master' branch of the Git repository, which corresponds to the lastest stable release. If you want to test the latest developments, get rid of some bugs and try new features, you can use the 'next' branch by doing:
+
+~~~~~~ 
+$ git checkout next
+~~~~~~ 
+
+More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at [How to contribute to the source code](http://gnss-sdr.org/documentation/how-contribute-source-code "How to contribute to the source code").
 
 
 ### Build and install GNSS-SDR
@@ -212,13 +220,13 @@ $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
 ~~~~~~ 
 
-This will create three executables at gnss-sdr/install, namely ```gnss-sdr```, ```run_tests``` and ```volk_gnsssdr_profile```. You can run them from that folder, but if you prefer to install ```gnss-sdr``` on your system and have it available anywhere else, do:
+This will create `four executables at gnss-sdr/install, namely ```gnss-sdr```, ```run_tests```, ```front-end-cal`` and ```volk_gnsssdr_profile```. You can run them from that folder, but if you prefer to install ```gnss-sdr``` on your system and have it available anywhere else, do:
 
 ~~~~~~ 
 $ sudo make install
 ~~~~~~ 
 
-This will make a copy of the conf/ folder into /usr/local/share/gnss-sdr/conf for your reference. We suggest to create a working directory at your preferred location and store your own configuration and data files there.
+This will also make a copy of the conf/ folder into /usr/local/share/gnss-sdr/conf for your reference. We suggest to create a working directory at your preferred location and store your own configuration and data files there.
 
 You could be interested in creating the documentation by doing:
 
@@ -387,7 +395,7 @@ You also might need to activate a Python installation. The list of installed ver
 $ port select list python
 ~~~~~~ 
 
-and you can activate a certain version by typing:
+and you can activate a certain version (2.7 works well) by typing:
 
 ~~~~~~ 
 $ sudo port select --set python python27

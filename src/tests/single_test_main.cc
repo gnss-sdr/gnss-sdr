@@ -42,6 +42,8 @@
 #include "concurrent_map.h"
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"
+#include "gps_cnav_ephemeris.h"
+#include "gps_cnav_iono.h"
 #include "gps_acq_assist.h"
 #include "gps_ref_location.h"
 #include "gps_ref_time.h"
@@ -67,6 +69,11 @@ concurrent_map<Gps_Almanac> global_gps_almanac_map;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 concurrent_map<Gps_Ref_Location> global_gps_ref_location_map;
 concurrent_map<Gps_Ref_Time> global_gps_ref_time_map;
+
+concurrent_queue<Gps_CNAV_Ephemeris> global_gps_cnav_ephemeris_queue;
+concurrent_map<Gps_CNAV_Ephemeris> global_gps_cnav_ephemeris_map;
+concurrent_queue<Gps_CNAV_Iono> global_gps_cnav_iono_queue;
+concurrent_map<Gps_CNAV_Iono> global_gps_cnav_iono_map;
 
 concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
 concurrent_queue<Galileo_Iono> global_galileo_iono_queue;

@@ -1,7 +1,11 @@
 /*!
  * \file unpack_byte_2bit_cpx_samples.cc
  *
- * \brief Unpacks byte samples to NSR 2 bits samples
+ * \brief Unpacks byte samples to 2 bits complex samples.
+ *     Packing Order
+ *     Most Significant Nibble  - Sample n
+ *     Least Significant Nibble - Sample n+1
+ *     Packing order in Nibble Q1 Q0 I1 I0
  * \author Javier Arribas jarribas (at) cttc.es
  * -------------------------------------------------------------------------
  *
@@ -54,8 +58,8 @@ unpack_byte_2bit_cpx_samples::~unpack_byte_2bit_cpx_samples()
 {}
 
 int unpack_byte_2bit_cpx_samples::work(int noutput_items,
-                                   gr_vector_const_void_star &input_items,
-                                   gr_vector_void_star &output_items)
+        gr_vector_const_void_star &input_items,
+        gr_vector_void_star &output_items)
 {
     const signed char *in = (const signed char *)input_items[0];
     short *out = (short*)output_items[0];
@@ -65,40 +69,39 @@ int unpack_byte_2bit_cpx_samples::work(int noutput_items,
     for(int i = 0; i < noutput_items/4; i++)
         {
             // Read packed input sample (1 byte = 2 complex samples)
-			//*     Packing Order
-			//*     Most Significant Nibble  - Sample n
-			//*     Least Significant Nibble - Sample n+1
-			//*     Packing order in Nibble Q1 Q0 I1 I0
-    	//normal
-//            signed char c = in[i];
-//            //Q[n]
-//            sample.two_bit_sample = (c>>6) & 3;
-//            out[n++] = (2*(short)sample.two_bit_sample+1);
-//            //I[n]
-//            sample.two_bit_sample = (c>>4) & 3;
-//            out[n++] = (2*(short)sample.two_bit_sample+1);
-//            //Q[n+1]
-//            sample.two_bit_sample = (c>>2) & 3;
-//            out[n++] = (2*(short)sample.two_bit_sample+1);
-//            //I[n+1]
-//            sample.two_bit_sample = c & 3;
-//            out[n++] = (2*(short)sample.two_bit_sample+1);
+            //*     Packing Order
+            //*     Most Significant Nibble  - Sample n
+            //*     Least Significant Nibble - Sample n+1
+            //*     Packing order in Nibble Q1 Q0 I1 I0
+            //normal
+            //  signed char c = in[i];
+            //  //Q[n]
+            //  sample.two_bit_sample = (c>>6) & 3;
+            //  out[n++] = (2*(short)sample.two_bit_sample+1);
+            //  //I[n]
+            //  sample.two_bit_sample = (c>>4) & 3;
+            //  out[n++] = (2*(short)sample.two_bit_sample+1);
+            //  //Q[n+1]
+            //  sample.two_bit_sample = (c>>2) & 3;
+            //  out[n++] = (2*(short)sample.two_bit_sample+1);
+            //  //I[n+1]
+            //  sample.two_bit_sample = c & 3;
+            //  out[n++] = (2*(short)sample.two_bit_sample+1);
 
-    	//I/Q swap
+            //I/Q swap
             signed char c = in[i];
             //I[n]
-            sample.two_bit_sample = (c>>4) & 3;
-            out[n++] = (2*(short)sample.two_bit_sample+1);
+            sample.two_bit_sample = (c >> 4) & 3;
+            out[n++] = (2*(short)sample.two_bit_sample + 1);
             //Q[n]
-            sample.two_bit_sample = (c>>6) & 3;
-            out[n++] = (2*(short)sample.two_bit_sample+1);
+            sample.two_bit_sample = (c >> 6) & 3;
+            out[n++] = (2*(short)sample.two_bit_sample + 1);
             //I[n+1]
             sample.two_bit_sample = c & 3;
-            out[n++] = (2*(short)sample.two_bit_sample+1);
+            out[n++] = (2*(short)sample.two_bit_sample + 1);
             //Q[n+1]
-            sample.two_bit_sample = (c>>2) & 3;
-            out[n++] = (2*(short)sample.two_bit_sample+1);
-
+            sample.two_bit_sample = (c >> 2) & 3;
+            out[n++] = (2*(short)sample.two_bit_sample + 1);
         }
     return noutput_items;
 }

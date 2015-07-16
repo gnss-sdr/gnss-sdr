@@ -183,19 +183,19 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
  |---install    <- Executables will be placed here. 
  |---src        <- Source code folder.
  |-----algorithms  <- Signal processing blocks.
- |-----core     <- Receiver engine, system parameters.
- |-----main     <- Main function of the C++ program
- |-----tests    <- QA code
- |-----utils    <- some utilities (e.g. Matlab scripts)
+ |-----core     <- Control plane, interfaces, systems' parameters.
+ |-----main     <- Main function of the C++ program.
+ |-----tests    <- QA code.
+ |-----utils    <- some utilities (e.g. Matlab scripts).
 ~~~~~~ 
 
-By default, you will be in the 'master' branch of the Git repository, which corresponds to the lastest stable release. If you want to test the latest developments, get rid of some bugs and try new features, you can use the 'next' branch by doing:
+By default, you will be in the 'master' branch of the Git repository, which corresponds to the lastest stable release. If you want to try the latest developments, you can use the 'next' branch by doing:
 
 ~~~~~~ 
 $ git checkout next
 ~~~~~~ 
 
-More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at [How to contribute to the source code](http://gnss-sdr.org/documentation/how-contribute-source-code "How to contribute to the source code").
+More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at out guide about [how to contribute to the source code](http://gnss-sdr.org/documentation/how-contribute-source-code "How to contribute to the source code").
 
 
 ### Build and install GNSS-SDR

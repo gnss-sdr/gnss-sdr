@@ -19,6 +19,7 @@
 
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
      unpack_byte_2bit_samples.cc
+     unpack_byte_2bit_cpx_samples.cc
      unpack_intspir_1bit_samples.cc
      rtl_tcp_signal_source_c.cc
 )

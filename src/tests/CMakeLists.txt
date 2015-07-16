@@ -184,7 +184,8 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
                                 ${ARMADILLO_LIBRARIES}
                                 ${VOLK_LIBRARIES}
                                 gnss_sp_libs 
-                                gnss_rx  
+                                gnss_rx
+                                gnss_system_parameters  
                                 signal_generator_blocks
                                 signal_generator_adapters
                                 out_adapters

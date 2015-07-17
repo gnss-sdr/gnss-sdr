@@ -25,6 +25,12 @@ set(GNSS_RECEIVER_SOURCES
      in_memory_configuration.cc
 )
 
+
+if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.4)
+     add_definitions(-DMODERN_GNURADIO=1)
+endif(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.4)
+
+
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters

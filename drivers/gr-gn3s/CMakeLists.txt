@@ -20,7 +20,7 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(gr-gn3s CXX C)
 enable_testing()
 
@@ -70,10 +70,7 @@ if(NOT LIBUSB_FOUND)
     message(FATAL_ERROR "libusb required to compile gn3s")
 endif(NOT LIBUSB_FOUND)
 include_directories(${LIBUSB_INCLUDE_DIR})
-#message (" kjhkhkjh ${LIBUSB_INCLUDE_DIR}")
-if(APPLE)
-  include_directories(/usr/include/pcap)
-endif(APPLE)
+
 
 ########################################################################
 # Install directories

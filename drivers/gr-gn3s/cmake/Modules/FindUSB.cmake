@@ -7,6 +7,7 @@ if(NOT LIBUSB_FOUND)
     /usr/include/libusb-1.0
     /usr/include
     /usr/local/include
+    /opt/local/include/libusb-1.0
   )
 
   find_library(LIBUSB_LIBRARIES NAMES usb-1.0
@@ -14,6 +15,7 @@ if(NOT LIBUSB_FOUND)
     ${LIBUSB_PKG_LIBRARY_DIRS}
     /usr/lib
     /usr/local/lib
+    /opt/local/lib
   )
 
 if(LIBUSB_INCLUDE_DIR AND LIBUSB_LIBRARIES)

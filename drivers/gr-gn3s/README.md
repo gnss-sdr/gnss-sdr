@@ -1,4 +1,4 @@
-**How to build gr-gn3s**
+# How to build gr-gn3s
 
 Source maintainer: Javier Arribas (jarribas at cttc.es)
 
@@ -9,9 +9,9 @@ More information on the device (not available anymore) can be found in http://ww
 The driver core is based on Gregory W. Hecker driver available in http://github.com/gps-sdr/gps-sdr.
 
 GR-GN3S contains a GNU Radio fully compliant gr-block signal source intended to be used either with GNSS-SDR as a signal source or as 
-standalone signal source block instantiated from a GNU Radio flowgraph from C++ or using Python (Also includes a gnuradio-companion interface).
+standalone signal source block instantiated from a GNU Radio flowgraph from C++ or using Python (also includes a gnuradio-companion interface).
 
-1. **Install GNU Radio:**
+## Install GNU Radio:
 
 You can install GNU Radio through a .deb package *or* by using pybombs. Please choose only **one** procedure.
 
@@ -67,14 +67,14 @@ This can take some time (up to two hours to complete, depending on your system),
 In case you do not want to use PyBOMBS and prefer to build and install GNU Radio step by step, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide).
 
 
-2. **Get the latest version of GNSS-SDR:**
+## Get the latest version of GNSS-SDR:
 
 ~~~~~~
 $ git clone git://github.com/gnss-sdr/gnss-sdr
 $ git checkout next
 ~~~~~~
 
-3. **Build GR-GN3S:**
+## Build GR-GN3S:
 
 - Go to GR-GN3S root directory and compile the driver:
 
@@ -92,7 +92,7 @@ $ sudo make install
 $ sudo ldconfig
 ~~~~~~
 
-4. **Check that the module is usable by gnuradio-companion**
+## Check that the module is usable by gnuradio-companion
  
 Open gnuradio-companion and check the gn3s_source module under the GN3S tab. 
 In order to gain access to USB ports, gnuradio-companion should be used as root.
@@ -101,7 +101,7 @@ It should be available in the same path where the application is called.
 GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/firmware/GN3S_v2/bin/gn3s_firmware.ihx. 
 Please copy this file to the application path.
 
-5. **Build gnss-sdr with the GN3S option enabled:**
+## Build gnss-sdr with the GN3S option enabled:
 
 ~~~~~~
 $ cmake -DENABLE_GN3S=ON ../

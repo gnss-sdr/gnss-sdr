@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2013  (see AUTHORS file for a list of contributors)
+# Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
 #
 # This file is part of GNSS-SDR.
 #

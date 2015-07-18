@@ -4,11 +4,11 @@ Source maintainer: Javier Arribas (jarribas at cttc.es)
 
 This document describes how to build the GN3S V2 GPS Sampler GNU Radio Source USB 2.0 driver. 
 
-More information on the device (not available anymore) can be found in http://www.sparkfun.com/products/8238
+More information on the device (not available anymore) can be found at http://www.sparkfun.com/products/8238
 
-The driver core is based on Gregory W. Hecker driver available in http://github.com/gps-sdr/gps-sdr.
+The driver core is based on Gregory W. Hecker driver available at http://github.com/gps-sdr/gps-sdr.
 
-GR-GN3S contains a GNU Radio fully compliant gr-block signal source intended to be used either with GNSS-SDR as a signal source or as 
+GR-GN3S is a GNU Radio's compliant signal source block intended to be used either with GNSS-SDR as a signal source or as 
 standalone signal source block instantiated from a GNU Radio flowgraph from C++ or using Python (also includes a gnuradio-companion interface).
 
 ## Install GNU Radio:
@@ -84,6 +84,9 @@ $ cd build
 $ cmake ../
 $ make
 ~~~~~~
+
+NOTE: If you have installed GNU Radio via the gnuradio-dev package, you might need to use ```cmake -DCMAKE_INSTALL_PREFIX=/usr ../``` instead of ```cmake ../``` in order to make the module visible from gnuradio-companion once installed.
+
 
 - If everything went fine, install the driver as root
 

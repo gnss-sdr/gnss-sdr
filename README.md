@@ -189,7 +189,7 @@ Cloning the GNSS-SDR repository as in the line above will create a folder named 
  |-----utils    <- some utilities (e.g. Matlab scripts).
 ~~~~~~ 
 
-By default, you will be in the 'master' branch of the Git repository, which corresponds to the lastest stable release. If you want to try the latest developments, you can use the 'next' branch by doing:
+By default, you will be in the 'master' branch of the Git repository, which corresponds to the lastest stable release. If you want to try the latest developments, you can use the 'next' branch by going to the newly created gnss-sdr folder doing:
 
 ~~~~~~ 
 $ git checkout next
@@ -220,7 +220,7 @@ $ cmake -DCMAKE_BUILD_TYPE=Debug ../
 $ make
 ~~~~~~ 
 
-This will create `four executables at gnss-sdr/install, namely ```gnss-sdr```, ```run_tests```, ```front-end-cal`` and ```volk_gnsssdr_profile```. You can run them from that folder, but if you prefer to install ```gnss-sdr``` on your system and have it available anywhere else, do:
+This will create four executables at gnss-sdr/install, namely ```gnss-sdr```, ```run_tests```, ```front-end-cal``` and ```volk_gnsssdr_profile```. You can run them from that folder, but if you prefer to install ```gnss-sdr``` on your system and have it available anywhere else, do:
 
 ~~~~~~ 
 $ sudo make install
@@ -293,6 +293,7 @@ GNSS-SDR comes with a pre-compiled custom GN3S firmware available at gnss-sdr/fi
 
 (in order to disable the GN3S_Signal_Source compilation, you can pass -DENABLE_GN3S=OFF to cmake and build GNSS-SDR again).
 
+More info at [drivers/gr-gn3s/README.md](./drivers/gr-gn3s/README.md)
    
 
 ###### Build OSMOSDR support (OPTIONAL):

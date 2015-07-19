@@ -214,7 +214,7 @@ OutputFilter.filename=data/gnss-sdr.dat
 OutputFilter.item_type=gr_complex
 ~~~~~~
 
-Save this configuration in a file, for instance ```my_GN3S_receiver.conf```,  copy the file located at ```install\gn3s_firmware.ihx``` to your working directory, and instantiate gnss-sdr by doing:
+Save this configuration in a file, for instance ```my_GN3S_receiver.conf```,  copy the file located at ```install/gn3s_firmware.ihx``` to your working directory, and instantiate gnss-sdr by doing:
 
 ~~~~~~
 $ gnss-sdr --config_file=./my_GN3S_receiver.conf

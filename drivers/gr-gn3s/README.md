@@ -110,7 +110,7 @@ This will enable the *GN3S_Signal_Source* implementation, which is able to read 
 
 # Using the GN3S V2 GPS Sampler as a signal source with GNSS-SDR
 
-This is an example of a gnss-sdr configuration file for a GPS L1 C/A receiver using the *GN3S_Signal_Source* implementation:
+GN3S V2's sampling frequency is 8.1838 Msps, delivering a signal with an intermediate frequency of 38400 Hz. This is an example of a gnss-sdr configuration file for a GPS L1 C/A receiver using the *GN3S_Signal_Source* implementation:
 
 ~~~~~~
 GNSS-SDR.internal_fs_hz=2727933.33  ; 8183800/3 
@@ -119,7 +119,6 @@ GNSS-SDR.internal_fs_hz=2727933.33  ; 8183800/3
 SignalSource.implementation=GN3S_Signal_Source
 SignalSource.item_type=gr_complex
 SignalSource.sampling_frequency=8183800
-SignalSource.freq=1575420000
 SignalSource.dump=false
 SignalSource.dump_filename=../signal_source.dat
 
@@ -203,7 +202,7 @@ PVT.flag_averaging=false
 PVT.output_rate_ms=10
 PVT.display_rate_ms=500
 PVT.dump_filename=./PVT
-PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea;
+PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea
 PVT.flag_nmea_tty_port=false;
 PVT.nmea_dump_devname=/dev/pts/4
 PVT.dump=false

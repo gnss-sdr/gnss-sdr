@@ -107,7 +107,6 @@ endfunction()
 
 GR_MODULE(RUNTIME gnuradio-runtime gnuradio/top_block.h gnuradio-runtime)
 GR_MODULE(ANALOG gnuradio-analog gnuradio/analog/api.h gnuradio-analog)
-GR_MODULE(ATSC gnuradio-atsc gnuradio/atsc/api.h gnuradio-atsc)
 GR_MODULE(AUDIO gnuradio-audio gnuradio/audio/api.h gnuradio-audio)
 GR_MODULE(BLOCKS gnuradio-blocks gnuradio/blocks/api.h gnuradio-blocks)
 GR_MODULE(CHANNELS gnuradio-channels gnuradio/channels/api.h gnuradio-channels)
@@ -128,3 +127,19 @@ GR_MODULE(PMT gnuradio-runtime pmt/pmt.h gnuradio-pmt)
 
 list(REMOVE_DUPLICATES GNURADIO_ALL_INCLUDE_DIRS)
 list(REMOVE_DUPLICATES GNURADIO_ALL_LIBRARIES)
+
+ # Trick to find out that GNU Radio is >= 3.7.4 if pkgconfig is not present
+if(NOT PC_GNURADIO_RUNTIME_VERSION)
+    find_file(GNURADIO_VERSION_GREATER_THAN_373
+              NAMES gnuradio/blocks/tsb_vector_sink_f.h
+              HINTS $ENV{GNURADIO_RUNTIME_DIR}/include
+                    ${CMAKE_INSTALL_PREFIX}/include
+                    ${GNURADIO_INSTALL_PREFIX}/include
+              PATHS /usr/local/include
+                    /usr/include
+                    ${GNURADIO_INSTALL_PREFIX}/include
+              )
+     if(GNURADIO_VERSION_GREATER_THAN_373)
+         set(PC_GNURADIO_RUNTIME_VERSION "3.7.4+")
+     endif(GNURADIO_VERSION_GREATER_THAN_373)
+endif(NOT PC_GNURADIO_RUNTIME_VERSION)

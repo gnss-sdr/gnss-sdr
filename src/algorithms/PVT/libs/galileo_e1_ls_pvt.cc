@@ -353,7 +353,8 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
             mypos = leastSquarePos(satpos, obs, W);
 
             // Compute GST and Gregorian time
-            double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, galileo_current_time);
+            //double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, galileo_current_time);
+            double GST = galileo_ephemeris_map.find(gnss_pseudoranges_iter->first)->second.Galileo_System_Time(Galileo_week_number, galileo_current_time);
             utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
             // get time string Gregorian calendar
             boost::posix_time::time_duration t = boost::posix_time::seconds(utc);

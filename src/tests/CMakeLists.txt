@@ -192,7 +192,8 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
                                 pvt_gr_blocks
                                 ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
-)
+                                ${CMAKE_THREAD_LIBS_INIT}
+                                )
 
 
 #########################################################

@@ -171,7 +171,8 @@ add_custom_command(TARGET run_tests POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:run_tests>
                        ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:run_tests>)
 
-target_link_libraries(run_tests ${CLANG_FLAGS} 
+target_link_libraries(run_tests -lpthread -lm
+								${CLANG_FLAGS} 
                                 ${Boost_LIBRARIES}  
                                 ${GFLAGS_LIBS} 
                                 ${GLOG_LIBRARIES} 

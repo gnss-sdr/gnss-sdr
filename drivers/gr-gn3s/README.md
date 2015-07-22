@@ -14,10 +14,10 @@ GR-GN3S is a GNU Radio's compliant signal source block intended to be used eithe
 
 You can install GNU Radio through a .deb package *or* by using pybombs. Please choose only **one** of these two procedures.
 
-- In Ubuntu 12.10 and later, or Debian Jessie or later, install GNU Radio and its dependencies through a .deb package:
+- In Ubuntu 12.10 and later, or Debian Jessie or later, install GNU Radio and other dependencies through a .deb package:
 
 ~~~~~~ 
-$ sudo apt-get install gnuradio-dev 
+$ sudo apt-get install gnuradio-dev libusb-dev
 ~~~~~~
 
 

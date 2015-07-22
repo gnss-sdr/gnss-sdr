@@ -50,7 +50,6 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     for(lcv = 0; lcv < _code_length; lcv++)
         {
     		switch(_prn){
-
                 case 1:
                    G2[lcv] = G2_register[0]*G2_register[2];
                    break;
@@ -163,6 +162,7 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
                     G2[lcv] = G2_register[9]*G2_register[10];
                     break;                                                              
             }
+
     		// computation of the G2 feedback
             feedback2 = G2_register[0]*G2_register[1]*G2_register[2]*G2_register[3]*G2_register[4]*G2_register[7]*G2_register[8]*G2_register[10];
 
@@ -172,7 +172,7 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
             		G2_register[lcv2] = G2_register[lcv2 + 1];
                 }
             // put feedback in position 1
-            G2_register[0] = feedback1;
+            G2_register[0] = feedback2;
         }
 
 
@@ -182,70 +182,6 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     		_dest[lcv] = G1[lcv]*G2[lcv];
         }
 }
-
-//    /* G2 Delays as defined in GPS-ISD-200D */
-//    const signed int delays[37] = {5 /*PRN1*/, 6, 7, 8, 17, 18, 139, 140, 141, 251, 252, 254 ,255, 256, 257, 258, 469, 470, 471, 472,
-//            473, 474, 509, 512, 513, 514, 515, 516, 859, 860, 861, 862 /*PRN32*/,
-//            145, 175, 52, 21, 237};
-//
-//    // compute delay array index for given PRN number
-//    if(120 <= _prn && _prn <= 138)
-//    {
-//    	prn_idx = _prn - 88;	// SBAS PRNs are at array indices 31 to 50 (offset: -120+33-1 =-88)
-//    	//prn_idx = _prn - 87;	// SBAS PRNs are at array indices 31 to 50 (offset: -120+33 =-87)
-//    }
-//    else
-//    {
-//    	prn_idx = _prn - 1;
-//    }
-//
-//    /* A simple error check */
-//    if((prn_idx < 0) || (prn_idx > 51))
-//        return;
-//
-//
-//    /* Generate G1 & G2 Register */
-//    for(lcv = 0; lcv < _code_length; lcv++)
-//        {
-//            G1[lcv] = G1_register[0];
-//            G2[lcv] = G2_register[0];
-//
-//            feedback1 = G1_register[7]^G1_register[0];
-//            feedback2 = (G2_register[8] + G2_register[7] + G2_register[4] + G2_register[2] + G2_register[1] + G2_register[0]) & 0x1;
-//
-//            for(lcv2 = 0; lcv2 < 10; lcv2++)
-//                {
-//                    G1_register[lcv2] = G1_register[lcv2 + 1];
-//                    G2_register[lcv2] = G2_register[lcv2 + 1];
-//                }
-//
-//            G1_register[10] = feedback1;
-//            G2_register[10] = feedback2;
-//        }
-//
-//    /* Set the delay */
-//    delay = _code_length - delays[prn_idx];
-//    delay += _chip_shift;
-//    delay %= _code_length;
-//
-//    /* Generate PRN from G1 and G2 Registers */
-//    for(lcv = 0; lcv < _code_length; lcv++)
-//        {
-//            aux = G1[(lcv + _chip_shift) % _code_length]^G2[delay];
-//            if(aux == true)
-//                {
-//                    _dest[lcv] = std::complex<float>(1, 0);
-//                }
-//            else
-//                {
-//                    _dest[lcv] = std::complex<float>(-1, 0);
-//                }
-//            delay++;
-//            delay %= _code_length;
-//        }
-//}
-
-
 
 /*
  *  Generates complex GPS L1 C/A code for the desired SV ID and sampled to specific sampling frequency

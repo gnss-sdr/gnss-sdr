@@ -957,6 +957,20 @@ else(ENABLE_OSMOSDR)
     message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)" )
 endif(ENABLE_OSMOSDR)
 
+if($ENV{CUDA_GPU_ACCEL})
+    message(STATUS "CUDA_GPU_ACCEL environment variable found." )
+    set(ENABLE_CUDA ON)
+endif($ENV{CUDA_GPU_ACCEL})
+
+if(ENABLE_CUDA)
+    message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_CUDA=OFF ../'" )
+else(ENABLE_CUDA)
+    message(STATUS "NVIDIA CUDA GPU Acceleration will is not enabled." )
+    message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for the Teleorbit Flexiband front-end." )
+endif(ENABLE_CUDA)
+
+
 if($ENV{FLEXIBAND_DRIVER})
     message(STATUS "FLEXIBAND_DRIVER environment variable found." )
     set(ENABLE_FLEXIBAND ON)

@@ -207,7 +207,7 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
             		G2_register[lcv2] = G2_register[lcv2 + 1];
                 }
             // put feedback in position 1
-            G2_register[0] = feedback1;
+            G2_register[0] = feedback2;
         }
 
 

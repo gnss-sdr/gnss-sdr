@@ -8,7 +8,7 @@ find_path(USB_INCLUDE_DIR NAMES usb.h
 if(NOT USB_INCLUDE_DIR_FOUND)
    message(STATUS "libusb has not been found.")
    message(STATUS "You can install it by 'sudo apt-get install libusb-dev' ")
-   message(ERROR "libusb is required for building gr-gn3s")
+   message(FATAL_ERROR "libusb is required for building gr-gn3s")
 endif(NOT USB_INCLUDE_DIR_FOUND)
 
 

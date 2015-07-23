@@ -18,6 +18,7 @@
 
 
 set(ACQ_ADAPTER_SOURCES
+	beidou_b1i_pcps_acquisition.cc
     gps_l1_ca_pcps_acquisition.cc
     gps_l1_ca_pcps_multithread_acquisition.cc
     gps_l1_ca_pcps_assisted_acquisition.cc

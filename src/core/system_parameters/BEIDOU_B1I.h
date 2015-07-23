@@ -103,7 +103,7 @@ const int BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND = BEIDOU_B1I_TELEMETRY_RATE_B
 
 // SUBFRAME 1-5
 // (WORD 1) first 30 bits
-const std::vector<std::pair<int,int> > PRE( { {1,11} } );      // PREAMBLE from modified Barker code of 11 bits
+/*const std::vector<std::pair<int,int> > PRE( { {1,11} } );      // PREAMBLE from modified Barker code of 11 bits
 const std::vector<std::pair<int,int> > REV({{12,4}});
 const std::vector<std::pair<int,int> > SUBFRAME_ID({{16,3}});  // 3 bits for subframe identification
 const std::vector<std::pair<int,int> > SOW({{19,8}});          // first 8 bits for seconds of week (the number of seconds occurred since the last Sunday, 00:00:00 of BDT)
@@ -122,7 +122,7 @@ const std::vector<std::pair<int,int>> WN({{61,13}});            // Week Number (
 const std::vector<std::pair<int,int>> toc({{74,9}});            // Reference time of clock parameters (in seconds with the effective range of 0-604792)
 const std::vector<std::pair<int,int>> URAI({{83,8}});           // User Range Accuracy Index
 
-const std::vector<std::pair<int,int>> toc({{91,8}});            // Reference time of clock parameters (in seconds with the effective range of 0-604792)
+const std::vector<std::pair<int,int>> toc({{91,8}});            // Reference time of clock parameters (in seconds with the effective range of 0-604792*/)
 
 
 

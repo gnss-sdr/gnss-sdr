@@ -87,7 +87,7 @@ protected:
 void BeidouB1iPcpsAcquisitionTest::init()
 {
     gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = "C";                                                        // "BeiDou" = "C"          see gnss_satellite.h              
+    gnss_synchro.System = 'C';                                                        // "BeiDou" = "C"          see gnss_satellite.h              
     std::string signal = "1C";                                                        // "1C" is for GPS L1 C/A  see gnss_signal.h
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;

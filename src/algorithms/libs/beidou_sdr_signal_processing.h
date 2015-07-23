@@ -5,8 +5,8 @@
  *      Author: giorgio
  */
 
-#ifndef SRC_ALGORITHMS_LIBS_BEIDOU_SDR_SIGNAL_PROCESSING_H_
-#define SRC_ALGORITHMS_LIBS_BEIDOU_SDR_SIGNAL_PROCESSING_H_
+#ifndef GNSS_SDR_BEIDOU_SDR_SIGNAL_PROCESSING_H_
+#define GNSS_SDR_BEIDOU_SDR_SIGNAL_PROCESSING_H_
 
 #include <complex>
 #include <iostream>
@@ -22,5 +22,4 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
 void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift);
 
 
-
-#endif /* SRC_ALGORITHMS_LIBS_BEIDOU_SDR_SIGNAL_PROCESSING_H_ */
+#endif /* GNSS_SDR_BEIDOU_SDR_SIGNAL_PROCESSING_H_ */

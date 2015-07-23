@@ -14,18 +14,15 @@ auto auxCeil = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); }
 void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
 {
     const unsigned int _code_length = 2046;
-    bool G1[_code_length];
-    bool G2[_code_length];
-    bool G1_register[11], G2_register[11];
-    bool feedback1, feedback2;
+    signed int G1[_code_length];
+    signed int G2[_code_length];
+    signed int G1_register[11] = {-1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1};
+    signed int G2_register[11] = {-1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1};
+    signed int feedback1, feedback2;
     bool aux;
     unsigned int lcv, lcv2;
     unsigned int delay;
     signed int prn_idx;
-
-    // Load linear shift register for BeiDou
-    G1_register = {-1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1};
-    G2_register = {-1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1};
 
     /* Generate G1 */
     for(lcv = 0; lcv < _code_length; lcv++)
@@ -293,7 +290,7 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     float _ts;
     float _tc;
     float aux;
-    const signed int _codeFreqBasis = 2046000; //Hz
+    const signed int _codeFreqBasis = 2046000;    //Hz
     const signed int _codeLength = 2046;
 
     //--- Find number of samples per spreading code ----------------------------
@@ -301,8 +298,8 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
 
     //--- Find time constants --------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // C/A chip period in sec
-    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate C/A code 1 sample per chip
+    _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // B1I chip period in sec
+    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate B1I code 1 sample per chip
 
     for (signed int i = 0; i < _samplesPerCode; i++)
         {

@@ -122,7 +122,7 @@ const std::vector<std::pair<int,int>> WN({{61,13}});            // Week Number (
 const std::vector<std::pair<int,int>> toc({{74,9}});            // Reference time of clock parameters (in seconds with the effective range of 0-604792)
 const std::vector<std::pair<int,int>> URAI({{83,8}});           // User Range Accuracy Index
 
-const std::vector<std::pair<int,int>> toc({{91,8}});            // Reference time of clock parameters (in seconds with the effective range of 0-604792*/)
+const std::vector<std::pair<int,int>> toc({{91,8}});            // Reference time of clock parameters (in seconds with the effective range of 0-604792)*/
 
 
 

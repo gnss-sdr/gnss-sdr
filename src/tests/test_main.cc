@@ -111,6 +111,9 @@ DECLARE_string(log_dir);
 #include "gnss_block/galileo_e5a_tracking_test.cc"
 #include "gnss_block/gps_l2_m_dll_pll_tracking_test.cc"
 
+//#include of the beidou acquisition test by Giorgio Savastano
+#include "gnss_block/beidou_B1I_pcps_acquisition_test.cc"
+
 
 // For GPS NAVIGATION (L1)
 concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;

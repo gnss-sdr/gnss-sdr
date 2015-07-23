@@ -16,6 +16,11 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+if(ENABLE_CUDA)
+	FIND_PACKAGE(CUDA REQUIRED)
+endif(ENABLE_CUDA)
+
 set(TRACKING_GR_BLOCKS_SOURCES
      galileo_e1_dll_pll_veml_tracking_cc.cc
      galileo_volk_e1_dll_pll_veml_tracking_cc.cc
@@ -26,6 +31,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      gps_l1_ca_tcp_connector_tracking_cc.cc
      galileo_e5a_dll_pll_tracking_cc.cc
      gps_l2_m_dll_pll_tracking_cc.cc
+     gps_l1_ca_dll_pll_tracking_gpu_cc.cc
 )
 
 include_directories(
@@ -40,6 +46,8 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
+     ${CUDA_INCLUDE_DIRS}
+     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs/cudahelpers
 )
 
 if(ENABLE_GENERIC_ARCH)

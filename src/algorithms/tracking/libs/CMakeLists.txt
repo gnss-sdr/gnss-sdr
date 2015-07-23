@@ -56,6 +56,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${VOLK_INCLUDE_DIRS}
+     ${CUDA_INCLUDE_DIRS}
 )
 
 if(ENABLE_GENERIC_ARCH)

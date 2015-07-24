@@ -138,6 +138,8 @@ private:
 
 	cudaStream_t stream1;
 	cudaStream_t stream2;
+	int num_gpu_devices;
+	int selected_device;
 
 };
 

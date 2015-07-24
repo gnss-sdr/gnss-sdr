@@ -264,23 +264,54 @@ CUDA_32fc_x2_add_32fc(  GPU_Complex *A,   GPU_Complex  *B, GPU_Complex  *C, int 
 bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int signal_length_samples, int local_codes_length_samples, int n_correlators)
 {
 	// use command-line specified CUDA device, otherwise use device with highest Gflops/s
-	findCudaDevice(argc, (const char **)argv);
+//	findCudaDevice(argc, (const char **)argv);
+      cudaDeviceProp  prop;
+    int num_devices, device;
+    cudaGetDeviceCount(&num_devices);
+    num_gpu_devices=num_devices;
+    if (num_devices > 1) {
+          int max_multiprocessors = 0, max_device = 0;
+          for (device = 0; device < num_devices; device++) {
+                  cudaDeviceProp properties;
+                  cudaGetDeviceProperties(&properties, device);
+                  if (max_multiprocessors < properties.multiProcessorCount) {
+                          max_multiprocessors = properties.multiProcessorCount;
+                          max_device = device;
+                  }
+                  printf("Found GPU device # %i\n",device);
+          }
+		    //set random device!
+		    selected_device=(rand() % num_devices);
+		    printf("selected_device=%i\n",selected_device);
+          cudaGetDeviceProperties( &prop, selected_device );
+          //debug code
+          if (prop.canMapHostMemory != 1) {
+              printf( "Device can not map memory.\n" );
+          }
+          printf("L2 Cache size= %u \n",prop.l2CacheSize);
+          printf("maxThreadsPerBlock= %u \n",prop.maxThreadsPerBlock);
+          printf("maxGridSize= %i \n",prop.maxGridSize[0]);
+          printf("sharedMemPerBlock= %lu \n",prop.sharedMemPerBlock);
+          printf("deviceOverlap= %i \n",prop.deviceOverlap);
+  	    printf("multiProcessorCount= %i \n",prop.multiProcessorCount);
+    }else{
+    		selected_device=0;
+    	    int whichDevice;
+    	    cudaGetDevice( &whichDevice );
+    	    cudaGetDeviceProperties( &prop, whichDevice );
+    	    //debug code
+    	    if (prop.canMapHostMemory != 1) {
+    	        printf( "Device can not map memory.\n" );
+    	    }
 
-    cudaDeviceProp  prop;
-    int whichDevice;
-    cudaGetDevice( &whichDevice );
-    cudaGetDeviceProperties( &prop, whichDevice );
-    //debug code
-    if (prop.canMapHostMemory != 1) {
-        printf( "Device can not map memory.\n" );
+    	    printf("L2 Cache size= %u \n",prop.l2CacheSize);
+    	    printf("maxThreadsPerBlock= %u \n",prop.maxThreadsPerBlock);
+    	    printf("maxGridSize= %i \n",prop.maxGridSize[0]);
+    	    printf("sharedMemPerBlock= %lu \n",prop.sharedMemPerBlock);
+    	    printf("deviceOverlap= %i \n",prop.deviceOverlap);
+    	    printf("multiProcessorCount= %i \n",prop.multiProcessorCount);
     }
 
-    printf("L2 Cache size= %u \n",prop.l2CacheSize);
-    printf("maxThreadsPerBlock= %u \n",prop.maxThreadsPerBlock);
-    printf("maxGridSize= %i \n",prop.maxGridSize[0]);
-    printf("sharedMemPerBlock= %lu \n",prop.sharedMemPerBlock);
-    printf("deviceOverlap= %i \n",prop.deviceOverlap);
-    //end debug code
 
 	//checkCudaErrors(cudaFuncSetCacheConfig(CUDA_32fc_x2_multiply_x2_dot_prod_32fc_, cudaFuncCachePreferShared));
 
@@ -288,7 +319,8 @@ bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int sign
     // ALLOCATE GPU MEMORY FOR INPUT/OUTPUT and INTERNAL vectors
 
     size_t size = signal_length_samples * sizeof(GPU_Complex);
-
+    cudaSetDevice(selected_device); //generates a random number between 0 and num_devices to split the threads between GPUs
+    
 	checkCudaErrors(cudaMalloc((void **)&d_sig_in, size));
 	//checkCudaErrors(cudaMalloc((void **)&d_nco_in, size));
 	checkCudaErrors(cudaMalloc((void **)&d_sig_doppler_wiped, size));
@@ -327,7 +359,7 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_cuda(
 	{
 
 	size_t memSize = signal_length_samples * sizeof(std::complex<float>);
-
+    cudaSetDevice(selected_device); //generates a random number between 0 and num_devices to split the threads between GPUs
 	// input signal CPU -> GPU copy memory
 
     checkCudaErrors(cudaMemcpyAsync(d_sig_in, sig_in, memSize,
@@ -398,6 +430,7 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_cuda(
 
 bool cuda_multicorrelator::free_cuda()
 {
+    cudaSetDevice(selected_device); //generates a random number between 0 and num_devices to split the threads between GPUs
 	// Free device global memory
 	cudaFree(d_sig_in);
 	//cudaFree(d_nco_in);

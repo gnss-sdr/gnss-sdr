@@ -46,6 +46,10 @@
 
 #include <complex>
 
+#include <cuda.h>
+// CUDA runtime
+#include <cuda_runtime.h>
+
 // GPU new internal data types for complex numbers
 
 struct GPU_Complex {
@@ -109,7 +113,7 @@ struct GPU_Complex_Short {
 class cuda_multicorrelator
 {
 public:
-	bool init_cuda(const int argc, const char **argv, int signal_length_samples, int *shifts_samples, int n_correlators);
+	bool init_cuda(const int argc, const char **argv, int signal_length_samples, int local_codes_length_samples, int n_correlators);
 
 	bool free_cuda();
 	bool Carrier_wipeoff_multicorrelator_cuda(
@@ -131,6 +135,9 @@ private:
 	int *d_shifts_samples;
 	int threadsPerBlock;
 	int blocksPerGrid;
+
+	cudaStream_t stream1;
+	cudaStream_t stream2;
 
 };
 

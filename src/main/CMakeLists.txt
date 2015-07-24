@@ -16,6 +16,7 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
 set(GNSS_SDR_OPTIONAL_LIBS "")
 set(GNSS_SDR_OPTIONAL_HEADERS "")
 

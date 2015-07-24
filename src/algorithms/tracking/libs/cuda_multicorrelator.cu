@@ -261,7 +261,7 @@ CUDA_32fc_x2_add_32fc(  GPU_Complex *A,   GPU_Complex  *B, GPU_Complex  *C, int 
 }
 
 
-bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int signal_length_samples, int *shifts_samples, int n_correlators)
+bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int signal_length_samples, int local_codes_length_samples, int n_correlators)
 {
 	// use command-line specified CUDA device, otherwise use device with highest Gflops/s
 	findCudaDevice(argc, (const char **)argv);
@@ -298,7 +298,8 @@ bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int sign
 
 	// new version: only one vector with extra samples to shift the local code for the correlator set
 	// Required: The last correlator tap in d_shifts_samples has the largest sample shift
-	checkCudaErrors(cudaMalloc((void **)&d_local_codes_in, size+sizeof(GPU_Complex)*shifts_samples[n_correlators-1]));
+    size_t size_local_code_bytes = local_codes_length_samples * sizeof(GPU_Complex);
+	checkCudaErrors(cudaMalloc((void **)&d_local_codes_in, size_local_code_bytes));
 	checkCudaErrors(cudaMalloc((void **)&d_shifts_samples, size+sizeof(int)*n_correlators));
 
 	//scalars
@@ -308,6 +309,8 @@ bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int sign
 	threadsPerBlock = 256;
     blocksPerGrid =(int)(signal_length_samples+threadsPerBlock-1)/threadsPerBlock;
 
+	cudaStreamCreate (&stream1) ;
+	cudaStreamCreate (&stream2) ;
 	return true;
 }
 
@@ -323,14 +326,10 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_cuda(
 		int n_correlators)
 	{
 
-	cudaStream_t stream1;
-	cudaStream_t stream2;
-	cudaStreamCreate ( &stream1) ;
-	cudaStreamCreate ( &stream2) ;
-
 	size_t memSize = signal_length_samples * sizeof(std::complex<float>);
 
 	// input signal CPU -> GPU copy memory
+
     checkCudaErrors(cudaMemcpyAsync(d_sig_in, sig_in, memSize,
                                     cudaMemcpyHostToDevice, stream1));
 
@@ -362,7 +361,9 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_cuda(
     //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
 
     //wait for Doppler wipeoff end...
-    checkCudaErrors(cudaDeviceSynchronize());
+    checkCudaErrors(cudaStreamSynchronize(stream1));
+    checkCudaErrors(cudaStreamSynchronize(stream2));
+    //checkCudaErrors(cudaDeviceSynchronize());
 
     //old
 //    scalarProdGPUCPXxN<<<blocksPerGrid, threadsPerBlock,0 ,stream2>>>(
@@ -385,16 +386,13 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_cuda(
 		);
     checkCudaErrors(cudaGetLastError());
     //wait for correlators end...
-    checkCudaErrors(cudaDeviceSynchronize());
+    checkCudaErrors(cudaStreamSynchronize(stream2));
     // Copy the device result vector in device memory to the host result vector
     // in host memory.
 
     //scalar products (correlators outputs)
-    checkCudaErrors(cudaMemcpyAsync(corr_out, d_corr_out, sizeof(std::complex<float>)*n_correlators,
-            cudaMemcpyDeviceToHost, 0));
-
-	cudaStreamDestroy(stream1) ;
-	cudaStreamDestroy(stream2) ;
+    checkCudaErrors(cudaMemcpy(corr_out, d_corr_out, sizeof(std::complex<float>)*n_correlators,
+            cudaMemcpyDeviceToHost));
     return true;
 }
 
@@ -406,13 +404,16 @@ bool cuda_multicorrelator::free_cuda()
 	cudaFree(d_local_codes_in);
 	cudaFree(d_corr_out);
 
+	cudaStreamDestroy(stream1) ;
+	cudaStreamDestroy(stream2) ;
+
     // Reset the device and exit
     // cudaDeviceReset causes the driver to clean up all state. While
     // not mandatory in normal operation, it is good practice.  It is also
     // needed to ensure correct operation when the application is being
     // profiled. Calling cudaDeviceReset causes all profile data to be
     // flushed before the application exits
-	checkCudaErrors(cudaDeviceReset());
+	//checkCudaErrors(cudaDeviceReset());
 	return true;
 }
 

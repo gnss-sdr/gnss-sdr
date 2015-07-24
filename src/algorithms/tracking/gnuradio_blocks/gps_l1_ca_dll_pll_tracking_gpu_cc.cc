@@ -48,16 +48,10 @@
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
 #include <volk/volk.h> //volk_alignement
-
-#include <cuda.h>
-// CUDA runtime
-#include <cuda_runtime.h>
 // includes
 #include <cuda_profiler_api.h>
 #include <helper_functions.h>  // helper for shared functions common to CUDA Samples
 #include <helper_cuda.h>       // helper functions for CUDA error checking and initialization
-
-
 
 /*!
  * \todo Include in definition header file
@@ -130,8 +124,9 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
 
 
     multicorrelator_gpu = new cuda_multicorrelator();
-    // Get space for the resampled early / prompt / late local replicas
     int N_CORRELATORS=3;
+    multicorrelator_gpu->init_cuda(0, NULL, 2 * d_vector_length , 2 * d_vector_length , N_CORRELATORS);
+    // Get space for the resampled early / prompt / late local replicas
 	checkCudaErrors(cudaHostAlloc((void**)&d_local_code_shift_samples, N_CORRELATORS * sizeof(int),  cudaHostAllocMapped ));
 
 
@@ -323,9 +318,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
 	multicorrelator_gpu->free_cuda();
 	delete(multicorrelator_gpu);
 
-    volk_free(d_Early);
-    volk_free(d_Prompt);
-    volk_free(d_Late);
     volk_free(d_ca_code);
 
     delete[] d_Prompt_buffer;
@@ -381,18 +373,20 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
 
             // UPDATE NCO COMMAND
             float phase_step_rad = static_cast<float>(GPS_TWO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
-
+            //std::cout<<"d_current_prn_length_samples="<<d_current_prn_length_samples<<std::endl;
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
+        	cudaProfilerStart();
             multicorrelator_gpu->Carrier_wipeoff_multicorrelator_cuda(
     				d_corr_outs_gpu,
-    				in,//in_gpu,
+    				in,
     				d_local_codes_gpu,
     				d_rem_carr_phase_rad,
     				phase_step_rad,
     				d_local_code_shift_samples,
     				d_current_prn_length_samples,
     				3);
-
+        	cudaProfilerStop();
+            //std::cout<<"d_Prompt="<<*d_Prompt<<"d_Early="<<*d_Early<<"d_Late="<<*d_Late<<std::endl;
             // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
             if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true ) // or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
                 {

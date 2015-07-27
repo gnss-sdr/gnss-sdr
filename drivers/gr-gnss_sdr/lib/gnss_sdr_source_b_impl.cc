@@ -37,10 +37,7 @@
 #include <stdio.h>
 #include <gnuradio/io_signature.h>
 #include "gnss_sdr_source_b_impl.h"
-extern "C"
-{
-  #include "gnss_stream.h"
-}
+#include "capture.hpp"
 
 namespace gr {
   namespace gnss_sdr {
@@ -57,7 +54,6 @@ namespace gr {
             gr::io_signature::make(0, 0, 0),
             gr::io_signature::make(1, 1, sizeof(signed char)))
   {
-    init_gnss_device_context(&(this->dev));
   }
 
   gnss_sdr_source_b_impl::~gnss_sdr_source_b_impl()
@@ -66,9 +62,9 @@ namespace gr {
 
   bool gnss_sdr_source_b_impl::start()
   {
-    if (program_registers(&(this->dev)) == -1) return false;
-    if (open_GNSS_SDR(&(this->dev)) == -1) return false;
-    start_capture(&(this->dev));
+    if (cap_gnss_sdr_he.program_registers() == -1) return false;
+    
+    cap_gnss_sdr_he.start_capture();
     fprintf(stdout, "GNSS Sample Capture started.\n");
     fflush(stdout);
     return true;
@@ -76,8 +72,7 @@ namespace gr {
 
   bool gnss_sdr_source_b_impl::stop()
   {
-    stop_capture(&(this->dev));
-    close_GNSS_SDR(&(this->dev));
+    cap_gnss_sdr_he.stop_capture();
     fprintf(stdout, "GNSS Sample Capture stopped.\n");
     fflush(stdout);
     return true;
@@ -89,280 +84,280 @@ namespace gr {
 		  gr_vector_void_star &output_items)
   {
     signed char *out = (signed char *) output_items[0];
-    return get_next_packet_data(&(this->dev), &out, noutput_items);
+    return cap_gnss_sdr_he.pop_samples(&out, noutput_items);
   }
 
   /* Setter routines for CONF1 */
   void gnss_sdr_source_b_impl::set_frontend_register_CHIPEN(unsigned int value)
   {
-    set_CHIPEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_CHIPEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_IDLE(unsigned int value)
   {
-    set_IDLE(&(this->dev), value);
+    cap_gnss_sdr_he.set_IDLE(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_ILNA1(unsigned int value)
   {
-    set_ILNA1(&(this->dev), value);
+    cap_gnss_sdr_he.set_ILNA1(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_ILNA2(unsigned int value)
   {
-    set_ILNA2(&(this->dev), value);
+    cap_gnss_sdr_he.set_ILNA2(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_ILO(unsigned int value)
   {
-    set_ILO(&(this->dev), value);
+    cap_gnss_sdr_he.set_ILO(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_IMIX(unsigned int value)
   {
-    set_IMIX(&(this->dev), value);
+    cap_gnss_sdr_he.set_IMIX(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_MIXPOLE(unsigned int value)
   {
-    set_MIXPOLE(&(this->dev), value);
+    cap_gnss_sdr_he.set_MIXPOLE(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_LNAMODE(unsigned int value)
   {
-    set_LNAMODE(&(this->dev), value);
+    cap_gnss_sdr_he.set_LNAMODE(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_MIXEN(unsigned int value)
   {
-    set_MIXEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_MIXEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_ANTEN(unsigned int value)
   {
-    set_ANTEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_ANTEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FCEN(unsigned int value)
   {
-    set_FCEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_FCEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FBW(unsigned int value)
   {
-    set_FBW(&(this->dev), value);
+    cap_gnss_sdr_he.set_FBW(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_F3OR5(unsigned int value)
   {
-    set_F3OR5(&(this->dev), value);
+    cap_gnss_sdr_he.set_F3OR5(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FCENX(unsigned int value)
   {
-    set_FCENX(&(this->dev), value);
+    cap_gnss_sdr_he.set_FCENX(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FGAIN(unsigned int value)
   {
-    set_FGAIN(&(this->dev), value);
+    cap_gnss_sdr_he.set_FGAIN(value);
   }
 
   /* Setter routines for CONF2 */
   void gnss_sdr_source_b_impl::set_frontend_register_IQEN(unsigned int value)
   {
-    set_IQEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_IQEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_GAINREF(unsigned int value)
   {
-    set_GAINREF(&(this->dev), value);
+    cap_gnss_sdr_he.set_GAINREF(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_AGCMODE(unsigned int value)
   {
-    set_AGCMODE(&(this->dev), value);
+    cap_gnss_sdr_he.set_AGCMODE(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FORMAT(unsigned int value)
   {
-    set_FORMAT(&(this->dev), value);
+    cap_gnss_sdr_he.set_FORMAT(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_BITS(unsigned int value)
   {
-    set_BITS(&(this->dev), value);
+    cap_gnss_sdr_he.set_BITS(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_DRVCFG(unsigned int value)
   {
-    set_DRVCFG(&(this->dev), value);
+    cap_gnss_sdr_he.set_DRVCFG(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_LOEN(unsigned int value)
   {
-    set_LOEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_LOEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_DIEID(unsigned int value)
   {
-    set_DIEID(&(this->dev), value);
+    cap_gnss_sdr_he.set_DIEID(value);
   }
 
 /* Setter routines for CONF3 */
   void gnss_sdr_source_b_impl::set_frontend_register_GAININ(unsigned int value)
   {
-    set_GAININ(&(this->dev), value);
+    cap_gnss_sdr_he.set_GAININ(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FSLOWEN(unsigned int value)
   {
-    set_FSLOWEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_FSLOWEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_HILOADEN(unsigned int value)
   {
-    set_HILOADEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_HILOADEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_ADCEN(unsigned int value)
   {
-    set_ADCEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_ADCEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_DRVEN(unsigned int value)
   {
-    set_DRVEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_DRVEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FOFSTEN(unsigned int value)
   {
-    set_FOFSTEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_FOFSTEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FILTEN(unsigned int value)
   {
-    set_FILTEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_FILTEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FHIPEN(unsigned int value)
   {
-    set_FHIPEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_FHIPEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_PGAIEN(unsigned int value)
   {
-    set_PGAIEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_PGAIEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_PGAQEN(unsigned int value)
   {
-    set_PGAQEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_PGAQEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_STRMEN(unsigned int value)
   {
-    set_STRMEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_STRMEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_STRMSTART(unsigned int value)
   {
-    set_STRMSTART(&(this->dev), value);
+    cap_gnss_sdr_he.set_STRMSTART(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_STRMSTOP(unsigned int value)
   {
-    set_STRMSTOP(&(this->dev), value);
+    cap_gnss_sdr_he.set_STRMSTOP(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_STRMCOUNT(unsigned int value)
   {
-    set_STRMCOUNT(&(this->dev), value);
+    cap_gnss_sdr_he.set_STRMCOUNT(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_STRMBITS(unsigned int value)
   {
-    set_STRMBITS(&(this->dev), value);
+    cap_gnss_sdr_he.set_STRMBITS(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_STAMPEN(unsigned int value)
   {
-    set_STAMPEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_STAMPEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_TIMESYNCEN(unsigned int value)
   {
-    set_TIMESYNCEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_TIMESYNCEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_DATSYNCEN(unsigned int value)
   {
-    set_DATSYNCEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_DATSYNCEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_STRMRST(unsigned int value)
   {
-    set_STRMRST(&(this->dev), value);
+    cap_gnss_sdr_he.set_STRMRST(value);
   }
 
   /* Setter routines for PLLCONF */
 
   void gnss_sdr_source_b_impl::set_frontend_register_VCOEN(unsigned int value)
   {
-    set_VCOEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_VCOEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_IVCO(unsigned int value)
   {
-    set_IVCO(&(this->dev), value);
+    cap_gnss_sdr_he.set_IVCO(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_REFOUTEN(unsigned int value)
   {
-    set_REFOUTEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_REFOUTEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_REFDIV(unsigned int value)
   {
-    set_REFDIV(&(this->dev), value);
+    cap_gnss_sdr_he.set_REFDIV(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_IXTAL(unsigned int value)
   {
-    set_IXTAL(&(this->dev), value);
+    cap_gnss_sdr_he.set_IXTAL(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_XTALCAP(unsigned int value)
   {
-    set_XTALCAP(&(this->dev), value);
+    cap_gnss_sdr_he.set_XTALCAP(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_LDMUX(unsigned int value)
   {
-    set_LDMUX(&(this->dev), value);
+    cap_gnss_sdr_he.set_LDMUX(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_ICP(unsigned int value)
   {
-    set_ICP(&(this->dev), value);
+    cap_gnss_sdr_he.set_ICP(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_PFDEN(unsigned int value)
   {
-    set_PFDEN(&(this->dev), value);
+    cap_gnss_sdr_he.set_PFDEN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_CPTEST(unsigned int value)
   {
-    set_CPTEST(&(this->dev), value);
+    cap_gnss_sdr_he.set_CPTEST(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_INT_PLL(unsigned int value)
   {
-    set_INT_PLL(&(this->dev), value);
+    cap_gnss_sdr_he.set_INT_PLL(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_PWRSAV(unsigned int value)
   {
-    set_PWRSAV(&(this->dev), value);
+    cap_gnss_sdr_he.set_PWRSAV(value);
   }
 
   /* Setter routines for DIV */
   void gnss_sdr_source_b_impl::set_frontend_register_NDIV(unsigned int value)
   {
-    set_NDIV(&(this->dev), value);
+    cap_gnss_sdr_he.set_NDIV(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_RDIV(unsigned int value)
   {
-    set_RDIV(&(this->dev), value);
+    cap_gnss_sdr_he.set_RDIV(value);
   }
 
   /* Setter routines for FDIV */
   void gnss_sdr_source_b_impl::set_frontend_register_FDIV(unsigned int value)
   {
-    set_FDIV(&(this->dev), value);
+    cap_gnss_sdr_he.set_FDIV(value);
   }
 
   /* Setter routines for STRM */
   void gnss_sdr_source_b_impl::set_frontend_register_FRAMECOUNT(unsigned int value)
   {
-    set_FRAMECOUNT(&(this->dev), value);
+    cap_gnss_sdr_he.set_FRAMECOUNT(value);
   }
 
   /* Setter routines for CLK */
   void gnss_sdr_source_b_impl::set_frontend_register_L_CNT(unsigned int value)
   {
-    set_L_CNT(&(this->dev), value);
+    cap_gnss_sdr_he.set_L_CNT(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_M_CNT(unsigned int value)
   {
-    set_M_CNT(&(this->dev), value);
+    cap_gnss_sdr_he.set_M_CNT(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_FCLKIN(unsigned int value)
   {
-    set_FCLKIN(&(this->dev), value);
+    cap_gnss_sdr_he.set_FCLKIN(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_ADCCLK(unsigned int value)
   {
-    set_ADCCLK(&(this->dev), value);
+    cap_gnss_sdr_he.set_ADCCLK(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_SERCLK(unsigned int value)
   {
-    set_SERCLK(&(this->dev), value);
+    cap_gnss_sdr_he.set_SERCLK(value);
   }
   void gnss_sdr_source_b_impl::set_frontend_register_MODE(unsigned int value)
   {
-    set_MODE(&(this->dev), value);
+    cap_gnss_sdr_he.set_MODE(value);
   }
 
 

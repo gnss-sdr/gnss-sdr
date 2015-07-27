@@ -33,17 +33,15 @@
 #define INCLUDED_GNSS_SDR_GNSS_SDR_SOURCE_B_IMPL_H
 
 #include <gnss_sdr/gnss_sdr_source_b.h>
-extern "C"
-{
-  #include "gnss_stream.h"
-}
+#include "capture.hpp"
+ 
 namespace gr {
   namespace gnss_sdr {
 
     class gnss_sdr_source_b_impl : public gnss_sdr_source_b
     {
      private:
-      struct gnss_device_context dev;
+      Capture_GNSS_SDR_HE cap_gnss_sdr_he;
 
      public:
       gnss_sdr_source_b_impl();

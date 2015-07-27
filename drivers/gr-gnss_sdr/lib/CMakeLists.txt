@@ -27,7 +27,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 list(APPEND gnss_sdr_sources
     gnss_sdr_source_b_impl.cc
-    gnss_stream.c
+    capture.cpp
 )
 
 set(gnss_sdr_sources "${gnss_sdr_sources}" PARENT_SCOPE)

@@ -84,6 +84,8 @@ GNSS_SDR_HE_SignalSource::GNSS_SDR_HE_SignalSource(
             gnss_sdr_source_b_->set_frontend_register_STRMEN(0);
             gnss_sdr_source_b_->set_frontend_register_NDIV(7857);
             gnss_sdr_source_b_->set_frontend_register_RDIV(96);
+
+            gnss_sdr_source_b_->set_frontend_register_REFDIV(2);
         }
       catch (const std::exception &e)
         {

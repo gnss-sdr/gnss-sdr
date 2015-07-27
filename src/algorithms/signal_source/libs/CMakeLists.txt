@@ -20,6 +20,11 @@ set (SIGNAL_SOURCE_LIB_SOURCES
   rtl_tcp_commands.cc
   rtl_tcp_dongle_info.cc)
 
+include_directories(
+     $(CMAKE_CURRENT_SOURCE_DIR)
+     ${Boost_INCLUDE_DIRS}
+)
+
 file(GLOB SIGNAL_SOURCE_LIB_HEADERS "*.h")
 add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})

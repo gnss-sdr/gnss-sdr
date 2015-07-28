@@ -190,7 +190,7 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     		{
     			G2[lcv] = G2_register[8]*G2_register[10];
     		}
-    		else if(_prn == 36)
+    		else if(_prn == 37)
     		{
     			G2[lcv] = G2_register[9]*G2_register[10];
     		}
@@ -289,7 +289,7 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     float _tc;
     float aux;
     const signed int _codeFreqBasis = 2046000;    //Hz
-    const signed int _codeLength = 2046;
+    const signed int _codeLength    = 2046;
 
     //--- Find number of samples per spreading code ----------------------------
     _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));

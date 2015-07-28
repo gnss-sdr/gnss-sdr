@@ -233,6 +233,8 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
+    std::cout << "DEBUGGGGG" << std::endl;
+
     ASSERT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);

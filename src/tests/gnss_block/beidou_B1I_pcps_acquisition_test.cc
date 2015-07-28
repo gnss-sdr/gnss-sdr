@@ -90,7 +90,7 @@ void BeidouB1iPcpsAcquisitionTest::init()
     gnss_synchro.System = 'C';                                                        // "BeiDou" = "C"          see gnss_satellite.h              
     std::string signal = "1C";                                                        // "1C" is for GPS L1 C/A  see gnss_signal.h
     signal.copy(gnss_synchro.Signal, 2, 0);
-    gnss_synchro.PRN = 1;
+    gnss_synchro.PRN = 7;                                                             // CAMBIO IL PRN A 7
 
     config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                      // set 16 MHz
     config->set_property("Acquisition.item_type", "gr_complex");
@@ -233,7 +233,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
-    std::cout << "DEBUGGGGG" << std::endl;
+    std::cout << "DEBUGGGGG!!!!!!" << std::endl;
 
     ASSERT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 

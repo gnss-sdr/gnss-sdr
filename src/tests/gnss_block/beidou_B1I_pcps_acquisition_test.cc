@@ -173,7 +173,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
-    double expected_delay_samples =    0;       // da rivedere
+    double expected_delay_samples =  280;       // set  280 [samples]
     double expected_doppler_hz    = 2800;       // set 2800 [Hz]
     init();
     start_queue();

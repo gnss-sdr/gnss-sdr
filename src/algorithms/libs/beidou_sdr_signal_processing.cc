@@ -277,8 +277,6 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
 //        }
 //}
 
-
-
 /*
  *  Generates complex GPS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
  */

@@ -25,8 +25,8 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     configuration_ = configuration;
-    std::string default_item_type = "gr_complex";
-    std::string default_dump_filename = "./data/acquisition.dat";
+    std::string default_item_type     =      "gr_complex";
+    std::string default_dump_filename =  "./data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
 
@@ -89,9 +89,9 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     //     LOG(WARNING) << item_type_
     //             << " unknown acquisition item type";
     // }
-    channel_ = 0;
-    threshold_ = 0.0;
-    doppler_max_ = 0;
+    channel_      = 0;
+    threshold_    = 0.0;
+    doppler_max_  = 0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
     channel_internal_queue_ = 0;

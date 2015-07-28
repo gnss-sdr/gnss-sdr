@@ -135,11 +135,11 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, Instantiate)
 
 TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
 {
-    int fs_in =   16000000;                           // before was 4000000
-    int nsamples = 1600000;                           // defore was 4000
+    int fs_in    =   16000000;                           // before was 4000000
+    int nsamples =    1600000;                           // defore was 4000
     struct timeval tv;
     long long int begin = 0;
-    long long int end = 0;
+    long long int end   = 0;
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
@@ -169,12 +169,12 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 {
     struct timeval tv;
     long long int begin = 0;
-    long long int end = 0;
+    long long int end   = 0;
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
-    double expected_delay_samples = 524;     // da rivedere
-    double expected_doppler_hz = 2800;       // set 2800 [Hz]
+    double expected_delay_samples =    0;       // da rivedere
+    double expected_doppler_hz    = 2800;       // set 2800 [Hz]
     init();
     start_queue();
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -210,8 +210,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        //std::string file = path + "signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat";
-        std::string file = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";                //  change the name of the file
+        std::string file = path + "signal_samples/FF005.dat";                                      //  change the name of the file
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
@@ -237,7 +236,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
-    float delay_error_chips = (float)(delay_error_samples * 1023 / 4000);
+    float delay_error_chips = (float)(delay_error_samples * 2046 / 1600000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
     EXPECT_LE(doppler_error_hz, 666) <<    "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)"; // da rivedere

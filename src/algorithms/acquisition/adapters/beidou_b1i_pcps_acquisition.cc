@@ -34,10 +34,10 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration_->property(role + ".ifreq", 0);
-    dump_ = configuration_->property(role + ".dump", false);
+    if_    = configuration_->property(role + ".ifreq", 0);
+    dump_  = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
+    sampled_ms_       = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 

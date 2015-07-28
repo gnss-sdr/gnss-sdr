@@ -34,6 +34,9 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+
+    std::cout << "fs_in_ has the value " << fs_in_ << std::endl;                               //debug
+
     if_    = configuration_->property(role + ".ifreq", 0);
     dump_  = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
@@ -54,6 +57,8 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
 
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_ / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
+
+    std::cout << "code_length_ has the value " << code_length_ << std::endl;                  //debug
 
     vector_length_ = code_length_ * sampled_ms_;
 
@@ -205,7 +210,9 @@ void BeidouB1iPcpsAcquisition::set_local_code()
     //   {
     std::complex<float>* code = new std::complex<float>[code_length_];
 
-    beidou_b1i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);   // DA MODIFICARE
+    beidou_b1i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);   // DA MODIFICARE??
+
+    std::cout << "the code generated is " << code << std::endl;
 
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {

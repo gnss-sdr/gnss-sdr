@@ -206,8 +206,6 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
             // put feedback in position 1
             G2_register[0] = feedback2;
         }
-
-
     /* Generate PRN from G1 and G2 Registers */
     for(lcv = 0; lcv < _code_length; lcv++)
         {

@@ -5,6 +5,7 @@ docs/html
 docs/latex
 docs/GNSS-SDR_manual.pdf
 src/tests/data/output.dat
+src/tests/signal_samples/FFF005.dat
 thirdparty/
 .project
 .cproject

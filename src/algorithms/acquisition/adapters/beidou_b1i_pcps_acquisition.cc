@@ -64,6 +64,9 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
 
     code_= new gr_complex[vector_length_];
 
+    std::cout << "code_ initial has the value " << code_ << std::endl;                  //debug
+
+
     // if (item_type_.compare("gr_complex") == 0 )
     //         {
     item_size_ = sizeof(gr_complex);
@@ -211,8 +214,9 @@ void BeidouB1iPcpsAcquisition::set_local_code()
     std::complex<float>* code = new std::complex<float>[code_length_];
 
     beidou_b1i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);   // DA MODIFICARE??
+    
 
-    std::cout << "the code generated is " << code << std::endl;
+    std::cout << "the code generated is " << *code << std::endl;                 // debug
 
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
@@ -221,6 +225,8 @@ void BeidouB1iPcpsAcquisition::set_local_code()
         }
 
     acquisition_cc_->set_local_code(code_);
+
+    std::cout << "the code generated is " << *code_ << std::endl;                 // debug
 
     delete[] code;
     //  }

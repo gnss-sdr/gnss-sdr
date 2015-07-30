@@ -241,6 +241,9 @@ void GpsL1CaPcpsAcquisition::set_local_code()
 
     gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
+    std::cout << "the code generated is " << code << std::endl;                  // debug
+    std::cout << "the code generated is " << *code << std::endl;                 // debug
+
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
             memcpy(&(code_[i*code_length_]), code,

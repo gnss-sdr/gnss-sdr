@@ -2,7 +2,7 @@
  * beidou_sdr_signal_processing.cc
  *
  *  Created on: Jul 15, 2015
- *      Author: giorgio
+ *      Author: Giorgio
  */
 
 #include "beidou_sdr_signal_processing.h"
@@ -16,8 +16,8 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     const unsigned int _code_length = 2046;
     signed int G1[_code_length];
     signed int G2[_code_length];
-    signed int G1_register[11] = {-1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1};
-    signed int G2_register[11] = {-1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1};
+    signed int G1_register[11] = { 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1};       // invertiti i segni
+    signed int G2_register[11] = { 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1};       // invertiti i segni
     signed int feedback1, feedback2;
     bool aux;
     unsigned int lcv, lcv2;
@@ -32,12 +32,11 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     		// computation of the G1 feedback
             feedback1 = G1_register[0]*G1_register[6]*G1_register[7]*G1_register[8]*G1_register[9]*G1_register[10];
 
-            // shift to the right
+            // shift to the right (modified)
             for(lcv2 = 0; lcv2 < 10; lcv2++)
-                {
-                    G1_register[lcv2] = G1_register[lcv2 + 1];
-                }
-
+            {
+                G1_register[10 - lcv2] = G1_register[9 - lcv2];
+            }
             // put feedback in position 1
             G1_register[0] = feedback1;
         }
@@ -198,18 +197,18 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     		// computation of the G2 feedback
             feedback2 = G2_register[0]*G2_register[1]*G2_register[2]*G2_register[3]*G2_register[4]*G2_register[7]*G2_register[8]*G2_register[10];
 
-            // shift to the right
+            // shift to the right (modified)
             for(lcv2 = 0; lcv2 < 10; lcv2++)
-                {
-            		G2_register[lcv2] = G2_register[lcv2 + 1];
-                }
+            {
+                G2_register[10 - lcv2] = G2_register[9 - lcv2];
+            }
             // put feedback in position 1
             G2_register[0] = feedback2;
         }
     /* Generate PRN from G1 and G2 Registers */
     for(lcv = 0; lcv < _code_length; lcv++)
         {
-    		_dest[lcv] = G1[lcv]*G2[lcv];
+    		_dest[lcv] = -G1[lcv]*G2[lcv];
         }
 }
 
@@ -292,10 +291,12 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     //--- Find number of samples per spreading code ----------------------------
     _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
+
     //--- Find time constants --------------------------------------------------
     _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
     _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // B1I chip period in sec
     beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate B1I code 1 sample per chip
+
 
     for (signed int i = 0; i < _samplesPerCode; i++)
         {

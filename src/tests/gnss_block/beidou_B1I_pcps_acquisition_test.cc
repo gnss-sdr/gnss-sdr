@@ -87,12 +87,13 @@ protected:
 void BeidouB1iPcpsAcquisitionTest::init()
 {
     gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = 'C';                                                        // "BeiDou" = "C"          see gnss_satellite.h              
-    std::string signal = "1C";                                                        // "1C" is for GPS L1 C/A  see gnss_signal.h
+    gnss_synchro.System = 'C';                                                         // "BeiDou" = "C"          see gnss_satellite.h              
+    std::string signal = "1C";                                                         // "1C" is for GPS L1 C/A  see gnss_signal.h
     signal.copy(gnss_synchro.Signal, 2, 0);
-    gnss_synchro.PRN = 7;                                                             // CAMBIO IL PRN A 7
 
-    config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                      // set 16 MHz
+    gnss_synchro.PRN = 7;                                                              // CAMBIO IL PRN A 7
+
+    config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                       // set 16 MHz
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
     config->set_property("Acquisition.coherent_integration_time_ms", "1");
@@ -100,7 +101,7 @@ void BeidouB1iPcpsAcquisitionTest::init()
     config->set_property("Acquisition.implementation", "BeiDou_B1I_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.001");
     config->set_property("Acquisition.doppler_max", "5000");
-    config->set_property("Acquisition.doppler_step", "500");                            // da rivedere
+    config->set_property("Acquisition.doppler_step", "250");                            // da rivedere
     config->set_property("Acquisition.repeat_satellite", "false");
     config->set_property("Acquisition.pfa", "0.0");
 }
@@ -193,7 +194,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.1);                        // da rivedere
+        acquisition->set_threshold(0.001);                        // da rivedere
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {

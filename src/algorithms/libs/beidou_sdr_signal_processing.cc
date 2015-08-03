@@ -16,8 +16,8 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     const unsigned int _code_length = 2046;
     signed int G1[_code_length];
     signed int G2[_code_length];
-    signed int G1_register[11] = { 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1};       // invertiti i segni
-    signed int G2_register[11] = { 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1};       // invertiti i segni
+    signed int G1_register[11] = { 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1};       /* 1=>-1, 0=>1 */
+    signed int G2_register[11] = { 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1};       /* 1=>-1, 0=>1 */
     signed int feedback1, feedback2;
     bool aux;
     unsigned int lcv, lcv2;

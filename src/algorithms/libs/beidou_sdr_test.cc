@@ -35,12 +35,11 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     		// computation of the G1 feedback
             feedback1 = G1_register[0]*G1_register[6]*G1_register[7]*G1_register[8]*G1_register[9]*G1_register[10];
 
-            // shift to the right
+            // shift to the right (modified)
             for(lcv2 = 0; lcv2 < 10; lcv2++)
-                {
-                    G1_register[lcv2] = G1_register[lcv2 + 1];
-                }
-
+            {
+                G1_register[10 - lcv2] = G1_register[9 - lcv2];
+            }
             // put feedback in position 1
             G1_register[0] = feedback1;
         }
@@ -166,11 +165,11 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     		// computation of the G2 feedback
             feedback2 = G2_register[0]*G2_register[1]*G2_register[2]*G2_register[3]*G2_register[4]*G2_register[7]*G2_register[8]*G2_register[10];
 
-            // shift to the right
+            // shift to the right (modified)
             for(lcv2 = 0; lcv2 < 10; lcv2++)
-                {
-            		G2_register[lcv2] = G2_register[lcv2 + 1];
-                }
+            {
+                G2_register[10 - lcv2] = G2_register[9 - lcv2];
+            }
             // put feedback in position 1
             G2_register[0] = feedback2;
         }

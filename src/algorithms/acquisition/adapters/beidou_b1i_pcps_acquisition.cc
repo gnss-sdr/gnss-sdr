@@ -33,10 +33,13 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000); // change
 
+    if_    = configuration_->property(role + ".ifreq", 98000);      // change to from 0 to 0.098e6 Hz ??
 
-    if_    = configuration_->property(role + ".ifreq", 0.098e6);      // changeto from 0 to 0.098e6 Hz
+    std::cout << "the fs_in_ is " << fs_in_ << std::endl;              // debug
+    std::cout << "the if_ is " << if_ << std::endl;                    // debug  
+
     dump_  = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
     sampled_ms_       = configuration_->property(role + ".coherent_integration_time_ms", 1);
@@ -61,6 +64,12 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     vector_length_ = code_length_ * sampled_ms_;
 
     code_= new gr_complex[vector_length_];
+
+    std::cout << "the shift_resolution_ is "                         << shift_resolution_ << std::endl;                      // debug
+    std::cout << "the sampled_ms_ is "                               << sampled_ms_ << std::endl;                      // debug
+    std::cout << "the code_length_ is "                              << code_length_ << std::endl;                    // debug 
+    std::cout << "the vector_length_ is code_length_ * sampled_ms_ " << vector_length_ << std::endl;                      // debug
+
 
 
     // if (item_type_.compare("gr_complex") == 0 )
@@ -210,6 +219,8 @@ void BeidouB1iPcpsAcquisition::set_local_code()
     std::complex<float>* code = new std::complex<float>[code_length_];
 
     beidou_b1i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);   // DA MODIFICARE??
+
+    std::cout << " the gnss_synchro_->PRN is " << gnss_synchro_->PRN << std::endl;    // debug
     
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {

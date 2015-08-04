@@ -226,10 +226,10 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     //--- Find number of samples per spreading code ----------------------------
     _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
-    std::cout << "STO DENTRO beidou_b1i_code_gen_complex_sampled "    << std::endl;                              // debug
-    std::cout << "the _prn is "                                      << _prn << std::endl;                      // debug
-    std::cout << "the _samplesPerCode is "                           << _samplesPerCode << std::endl;           // debug
-    std::cout << "the _chip_shift is "                               << _chip_shift << std::endl;               // debug 
+    std::cout << "STO DENTRO beidou_b1i_code_gen_complex_sampled"    << std::endl;                              // debug
+    std::cout << "the _prn is"                                      << _prn << std::endl;                      // debug
+    std::cout << "the _samplesPerCode is"                           << _samplesPerCode << std::endl;           // debug
+    std::cout << "the _chip_shift is"                               << _chip_shift << std::endl;               // debug 
     
 
 
@@ -239,7 +239,23 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate B1I code 1 sample per chip
 
 
-    for (signed int i = 0; i < _samplesPerCode; i++)
+    // Provo a fare ricampionamento a modo mio
+    signed int count = 0;
+    for (int i = 0; i < _codeLength; ++i)
+    {
+        //std::cout << i << std::endl;  
+        for (int r = 0; r < 8; ++r)
+        {
+            _codeValueIndex[ count + r ] = i;            
+        }
+        count += 8;    
+    }
+    for (int i = 0; i < _samplesPerCode; ++i)
+    {
+        int k = _codeValueIndex[i]
+        _dest[i] = _code[k]
+    }
+/*    for (signed int i = 0; i < _samplesPerCode; i++)
         {
             //=== Digitizing =======================================================
 
@@ -251,8 +267,9 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
             // _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
             aux = (_ts * (i + 1)) / _tc;
             _codeValueIndex = auxCeil( aux ) - 1;
+            
 
-           //std::cout << _codeValueIndex << std::endl; 
+           std::cout << _codeValueIndex << std::endl; 
 
             //--- Make the digitized version of the B1I code -----------------------
             // The "upsampled" code is made by selecting values form the B1I code
@@ -267,7 +284,7 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
                 {
                     _dest[i] = _code[_codeValueIndex]; //repeat the chip -> upsample
                 }
-        }
+        }*/
 }
 
 

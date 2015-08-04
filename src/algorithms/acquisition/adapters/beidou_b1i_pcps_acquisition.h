@@ -123,7 +123,7 @@ public:
     void init();
 
     /*!
-     * \brief Sets local code for GPS L1/CA PCPS acquisition algorithm.
+     * \brief Sets local code for BeiDOu B1I PCPS acquisition algorithm.
      */
     void set_local_code();
 

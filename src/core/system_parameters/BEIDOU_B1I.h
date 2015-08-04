@@ -62,18 +62,20 @@ const double BEIDOU_B1I_CODE_PERIOD          = 0.001;       //!< BeiDou B1 C/A c
  * [1] J. Bao-Yen Tsui, Fundamentals of Global Positioning System Receivers. A Software Approach, John Wiley & Sons,
  * Inc., Hoboken, NJ, 2nd edition, 2005.
  */
-const double MAX_TOA_DELAY_MS = 20;
+/*const double MAX_TOA_DELAY_MS = 20;*/
 
 //#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
-const double BEIDOU_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)
+/*const double BEIDOU_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)*/
 
 // NH code
+/*
 #define NH_CODE {0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,1,1,1,0}
 const int NH_BITS_RATE = 1000;                      // NH code bit rate [bits/s]
 const int NH_length    = 20;
+*/
 
 // D1 NAV Message
-const int  BEIDOU_D1_NAV_BITS_RATE  = 50;               // D1 NAV message bit rate        [bits/s]
+/*const int  BEIDOU_D1_NAV_BITS_RATE  = 50;               // D1 NAV message bit rate        [bits/s]
 const int  BEIDOU_SUPERFRAME_BITS   = 36000;            // SUPERFRAME  (24 frames)        [bits]
 const int  BEIDOU_SUPERFRAME_SECS   = 720;              // SUPERFRAME duration            [seconds]
 const int  BEIDOU_FRAME_BITS        = 1500;             // FRAME       (5 subframes)      [bits]
@@ -88,11 +90,11 @@ const int  BEIDOU_WORD_SECONDS      = 0.6;              // WORD duration        
 
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
 
-#define BEIDOU_PREAMBLE {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0}  //!< Preamble as defined in ICD-BEIDOU (modified Barker code of 11 bits)
+/*#define BEIDOU_PREAMBLE {1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0}  //!< Preamble as defined in ICD-BEIDOU (modified Barker code of 11 bits)
 const int BEIDOU_B1I_PREAMBLE_LENGTH_BITS = 11;            //!< [bits]
 const int BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND = 50;      //!< NAV message bit rate [bits/s]
 const int BEIDOU_B1I_TELEMETRY_RATE_SYMBOLS_SECOND = BEIDOU_B1I_TELEMETRY_RATE_BITS_SECOND*20;   //!< NAV message bit rate [symbols/s]
-//const int GPS_WORD_LENGTH = 4;                      //!< CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
+*///const int GPS_WORD_LENGTH = 4;                      //!< CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
 //const int GPS_SUBFRAME_LENGTH = 40;                 //!< GPS_WORD_LENGTH x 10 = 40 bytes
 //const int GPS_SUBFRAME_BITS = 300;                  //!< Number of bits per subframe in the NAV message [bits]
 //const int GPS_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [seconds]

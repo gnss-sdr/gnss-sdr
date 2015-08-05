@@ -174,7 +174,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
 
-    double expected_delay_samples = 0;       // set 5000 [samples]
+    double expected_delay_samples = 4678;          // set 5000 [samples]
     double expected_doppler_hz    = 0;       // set 4855 [Hz]
     init();
     start_queue();
@@ -211,7 +211,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/FFF007_test_2.dat";                                      //  change the name of the file
+        std::string file = path + "signal_samples/FFF007_test_5.dat";                                      //  change the name of the file
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);

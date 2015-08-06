@@ -256,6 +256,9 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     // doppler search steps
 
                     doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+                    
+                    std::cout << " the doppler =  "                 << doppler             << std::endl;                                                //DEBUG
+
 
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                                 d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
@@ -276,6 +279,9 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
                     volk_32f_index_max_16u(&indext, d_magnitude, d_fft_size);
 
+                    //std::cout << " the indext =  "                 << indext             << std::endl;                                                //DEBUG
+                    //std::cout << " the d_fft_size =  "             << d_fft_size             << std::endl;                                            //DEBUG
+
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
                     magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
 
@@ -294,6 +300,10 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                             if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
                             {
                                 d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
+
+                                //std::cout << "indext =  "             << indext             << std::endl;                                           //DEBUG
+                                //std::cout << "d_samples_per_code =  " << d_samples_per_code << std::endl;                                           //DEBUG
+
                                 d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                                 d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 

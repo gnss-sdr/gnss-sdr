@@ -594,7 +594,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
 
                     // carrier and code frequency
                     d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&d_code_freq_chips), sizeof(float));
+                    tmp_float=d_code_freq_chips;
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
 
                     //PLL commands
                     d_dump_file.write(reinterpret_cast<char*>(&carr_error_hz), sizeof(float));

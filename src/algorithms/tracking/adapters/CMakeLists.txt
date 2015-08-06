@@ -18,6 +18,7 @@
 
 if(ENABLE_CUDA)
 	FIND_PACKAGE(CUDA REQUIRED) 
+	set(OPT_TRACKING_ADAPTERS ${OPT_TRACKING_ADAPTERS} gps_l1_ca_dll_pll_tracking_gpu.cc)
 endif(ENABLE_CUDA)
 
 set(TRACKING_ADAPTER_SOURCES 
@@ -30,7 +31,7 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l1_ca_tcp_connector_tracking.cc
      galileo_e5a_dll_pll_tracking.cc
      gps_l2_m_dll_pll_tracking.cc
-     gps_l1_ca_dll_pll_tracking_gpu.cc
+     ${OPT_TRACKING_ADAPTERS}
 )
 
 include_directories(

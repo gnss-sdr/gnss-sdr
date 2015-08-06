@@ -33,6 +33,12 @@ if(ENABLE_UHD)
     set(GNSS_SDR_OPTIONAL_HEADERS ${GNSS_SDR_OPTIONAL_HEADERS} ${UHD_INCLUDE_DIRS})
 endif(ENABLE_UHD)
 
+if(ENABLE_CUDA)
+	FIND_PACKAGE(CUDA REQUIRED)
+    add_definitions(-DCUDA_GPU_ACCEL=1)
+endif(ENABLE_CUDA)
+
+
 include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
@@ -48,6 +54,7 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${GNSS_SDR_OPTIONAL_HEADERS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
+     ${CUDA_INCLUDE_DIRS}
 )
 
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
@@ -79,6 +86,7 @@ target_link_libraries(gnss-sdr ${MAC_LIBRARIES}
                                ${GNSS_SDR_OPTIONAL_LIBS}
                                gnss_sp_libs
                                gnss_rx
+                               ${CUDA_LIBRARIES}
                                )
 
 

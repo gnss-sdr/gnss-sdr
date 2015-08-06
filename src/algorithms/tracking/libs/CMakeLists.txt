@@ -33,7 +33,6 @@ if(ENABLE_CUDA)
 
 	SET(LIB_TYPE STATIC) #set the lib type
 	CUDA_ADD_LIBRARY(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
-    
 endif(ENABLE_CUDA)
 
 

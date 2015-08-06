@@ -81,7 +81,6 @@ gps_l1_ca_dll_pll_make_tracking_gpu_cc(
 }
 
 
-
 void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
@@ -120,14 +119,19 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS + 2) * sizeof(gr_complex), volk_get_alignment()));
-
+    //d_ca_code = static_cast<gr_complex*>(volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS + 2) * sizeof(gr_complex), volk_get_alignment()));
+    d_ca_code = static_cast<gr_complex*>(volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
 
     multicorrelator_gpu = new cuda_multicorrelator();
     int N_CORRELATORS=3;
-    multicorrelator_gpu->init_cuda(0, NULL, 2 * d_vector_length , 2 * d_vector_length , N_CORRELATORS);
+    //local code resampler on CPU (old)
+    //multicorrelator_gpu->init_cuda(0, NULL, 2 * d_vector_length , 2 * d_vector_length , N_CORRELATORS);
+
+    //local code resampler on GPU (new)
+    multicorrelator_gpu->init_cuda_integrated_resampler(0, NULL, 2 * d_vector_length , GPS_L1_CA_CODE_LENGTH_CHIPS , N_CORRELATORS);
+
     // Get space for the resampled early / prompt / late local replicas
-	checkCudaErrors(cudaHostAlloc((void**)&d_local_code_shift_samples, N_CORRELATORS * sizeof(int),  cudaHostAllocMapped ));
+	checkCudaErrors(cudaHostAlloc((void**)&d_local_code_shift_chips, N_CORRELATORS * sizeof(float),  cudaHostAllocMapped ));
 
 
     //allocate host memory
@@ -138,7 +142,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
 	//checkCudaErrors(cudaHostAlloc((void**)&d_local_codes_gpu, (V_LEN * sizeof(gr_complex))*N_CORRELATORS, cudaHostAllocWriteCombined ));
 
 	//new integrated shifts
-	checkCudaErrors(cudaHostAlloc((void**)&d_local_codes_gpu, (2 * d_vector_length * sizeof(gr_complex)), cudaHostAllocWriteCombined ));
+	//checkCudaErrors(cudaHostAlloc((void**)&d_local_codes_gpu, (2 * d_vector_length * sizeof(gr_complex)), cudaHostAllocWriteCombined ));
 
 	// correlator outputs (scalar)
 	checkCudaErrors(cudaHostAlloc((void**)&d_corr_outs_gpu ,sizeof(gr_complex)*N_CORRELATORS,  cudaHostAllocWriteCombined ));
@@ -242,9 +246,13 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_code_loop_filter.initialize();    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
-    gps_l1_ca_code_gen_complex(&d_ca_code[1], d_acquisition_gnss_synchro->PRN, 0);
-    d_ca_code[0] = d_ca_code[static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS)];
-    d_ca_code[static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) + 1] = d_ca_code[1];
+    gps_l1_ca_code_gen_complex(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
+
+    d_local_code_shift_chips[0]=-d_early_late_spc_chips;
+    d_local_code_shift_chips[1]=0.0;
+    d_local_code_shift_chips[2]=d_early_late_spc_chips;
+
+    multicorrelator_gpu->set_local_code_and_taps(GPS_L1_CA_CODE_LENGTH_CHIPS,d_ca_code, d_local_code_shift_chips,3);
 
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0;
@@ -272,40 +280,6 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
 }
 
 
-
-
-
-void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::update_local_code()
-{
-    double tcode_chips;
-    double rem_code_phase_chips;
-    int associated_chip_index;
-    int code_length_chips = static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS);
-    double code_phase_step_chips;
-    int epl_loop_length_samples;
-
-    // unified loop for E, P, L code vectors
-    code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
-    rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
-    tcode_chips = -rem_code_phase_chips;
-
-    // Alternative EPL code generation (40% of speed improvement!)
-    d_local_code_shift_samples[0]=0;
-    d_local_code_shift_samples[1]=round(d_early_late_spc_chips / code_phase_step_chips);
-    d_local_code_shift_samples[2]=round((2*d_early_late_spc_chips) / code_phase_step_chips);
-
-    epl_loop_length_samples = d_current_prn_length_samples + d_local_code_shift_samples[2]; //maximum length
-
-    for (int i = 0; i < epl_loop_length_samples; i++)
-        {
-            associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
-            d_local_codes_gpu[i] = d_ca_code[associated_chip_index];
-            tcode_chips = tcode_chips + code_phase_step_chips;
-        }
-
-}
-
-
 Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
 {
     d_dump_file.close();
@@ -313,7 +287,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
 	cudaFreeHost(in_gpu);
 	cudaFreeHost(d_carr_sign_gpu);
 	cudaFreeHost(d_corr_outs_gpu);
-	cudaFreeHost(d_local_codes_gpu);
+	cudaFreeHost(d_local_code_shift_chips);
 
 	multicorrelator_gpu->free_cuda();
 	delete(multicorrelator_gpu);
@@ -329,10 +303,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
-    float carr_error_hz;
-    float carr_error_filt_hz;
-    float code_error_chips;
-    float code_error_filt_chips;
+    float carr_error_hz=0.0;
+    float carr_error_filt_hz=0.0;
+    float code_error_chips=0.0;
+    float code_error_filt_chips=0.0;
 
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0];
@@ -341,23 +315,17 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
-
     if (d_enable_tracking == true)
         {
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
                     int samples_offset;
-                    float acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
-                    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
-                    //d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / static_cast<double>(d_fs_in));
+                    samples_offset = round(d_acq_code_phase_samples)+d_current_prn_length_samples - acq_to_trk_delay_samples%d_current_prn_length_samples;
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
-                    //std::cout<<" samples_offset="<<samples_offset<<"\r\n";
                     // Fill the acquisition data
                     current_synchro_data = *d_acquisition_gnss_synchro;
                     *out[0] = current_synchro_data;
@@ -368,46 +336,24 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             // Fill the acquisition data
             current_synchro_data = *d_acquisition_gnss_synchro;
 
-            // Generate local code and carrier replicas (using \hat{f}_d(k-1))
-            update_local_code();
-
             // UPDATE NCO COMMAND
             float phase_step_rad = static_cast<float>(GPS_TWO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
-            //std::cout<<"d_current_prn_length_samples="<<d_current_prn_length_samples<<std::endl;
-            // perform carrier wipe-off and compute Early, Prompt and Late correlation
-        	cudaProfilerStart();
-            multicorrelator_gpu->Carrier_wipeoff_multicorrelator_cuda(
+
+        	//code resampler on GPU (new)
+            float code_phase_step_chips = static_cast<float>(d_code_freq_chips) / static_cast<float>(d_fs_in);
+            float rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
+
+            cudaProfilerStart();
+            multicorrelator_gpu->Carrier_wipeoff_multicorrelator_resampler_cuda(
     				d_corr_outs_gpu,
     				in,
-    				d_local_codes_gpu,
     				d_rem_carr_phase_rad,
     				phase_step_rad,
-    				d_local_code_shift_samples,
+    				code_phase_step_chips,
+    				rem_code_phase_chips,
     				d_current_prn_length_samples,
     				3);
         	cudaProfilerStop();
-            //std::cout<<"d_Prompt="<<*d_Prompt<<"d_Early="<<*d_Early<<"d_Late="<<*d_Late<<std::endl;
-            // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
-            if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true ) // or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
-                {
-                    const int samples_available = ninput_items[0];
-                    d_sample_counter = d_sample_counter + samples_available;
-                    LOG(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
-                    consume_each(samples_available);
-
-                    // make an output to not stop the rest of the processing blocks
-                    current_synchro_data.Prompt_I = 0.0;
-                    current_synchro_data.Prompt_Q = 0.0;
-                    current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
-                    current_synchro_data.Carrier_phase_rads = 0.0;
-                    current_synchro_data.Code_phase_secs = 0.0;
-                    current_synchro_data.CN0_dB_hz = 0.0;
-                    current_synchro_data.Flag_valid_tracking = false;
-                    current_synchro_data.Flag_valid_pseudorange = false;
-
-                    *out[0] = current_synchro_data;
-                    return 1;
-                }
 
             // ################## PLL ##########################################################
             // PLL discriminator
@@ -444,8 +390,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
             T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
-            d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + static_cast<double>(code_error_filt_secs) * static_cast<double>(d_fs_in);
             //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
@@ -591,7 +536,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
 
                     // carrier and code frequency
                     d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&d_code_freq_chips), sizeof(float));
+                    tmp_float=d_code_freq_chips;
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
 
                     //PLL commands
                     d_dump_file.write(reinterpret_cast<char*>(&carr_error_hz), sizeof(float));

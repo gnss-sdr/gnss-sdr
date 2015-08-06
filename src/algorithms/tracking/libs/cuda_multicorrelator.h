@@ -113,8 +113,20 @@ struct GPU_Complex_Short {
 class cuda_multicorrelator
 {
 public:
+	cuda_multicorrelator();
 	bool init_cuda(const int argc, const char **argv, int signal_length_samples, int local_codes_length_samples, int n_correlators);
-
+	bool init_cuda_integrated_resampler(
+			const int argc, const char **argv,
+			int signal_length_samples,
+			int code_length_chips,
+			int n_correlators
+			);
+	bool set_local_code_and_taps(
+			int code_length_chips,
+			const std::complex<float>* local_codes_in,
+			float *shifts_chips,
+			int n_correlators
+			);
 	bool free_cuda();
 	bool Carrier_wipeoff_multicorrelator_cuda(
 			std::complex<float>* corr_out,
@@ -125,6 +137,15 @@ public:
 			const int *shifts_samples,
 			int signal_length_samples,
 			int n_correlators);
+	bool Carrier_wipeoff_multicorrelator_resampler_cuda(
+			std::complex<float>* corr_out,
+			const std::complex<float>* sig_in,
+			float rem_carrier_phase_in_rad,
+			float phase_step_rad,
+	        float code_phase_step_chips,
+	        float rem_code_phase_chips,
+			int signal_length_samples,
+			int n_correlators);
 private:
 	// Allocate the device input vectors
 	GPU_Complex *d_sig_in;
@@ -133,6 +154,9 @@ private:
 	GPU_Complex *d_local_codes_in;
 	GPU_Complex *d_corr_out;
 	int *d_shifts_samples;
+	float *d_shifts_chips;
+	float d_code_length_chips;
+
 	int threadsPerBlock;
 	int blocksPerGrid;
 

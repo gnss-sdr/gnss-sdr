@@ -53,7 +53,83 @@
 #include <helper_cuda.h>
 #include <helper_functions.h>
 
-#define ACCUM_N 1024
+#define ACCUM_N 256
+
+
+__global__ void scalarProdGPUCPXxN_shifts_chips(
+    GPU_Complex *d_corr_out,
+    GPU_Complex *d_sig_in,
+    GPU_Complex *d_local_code_in,
+    float *d_shifts_chips,
+    float code_length_chips,
+    float code_phase_step_chips,
+    float rem_code_phase_chips,
+    int vectorN,
+    int elementN
+)
+{
+    //Accumulators cache
+    __shared__ GPU_Complex accumResult[ACCUM_N];
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Cycle through every pair of vectors,
+    // taking into account that vector counts can be different
+    // from total number of thread blocks
+    ////////////////////////////////////////////////////////////////////////////
+    for (int vec = blockIdx.x; vec < vectorN; vec += gridDim.x)
+    {
+        //int vectorBase = IMUL(elementN, vec);
+        //int vectorEnd  = elementN;
+
+        ////////////////////////////////////////////////////////////////////////
+        // Each accumulator cycles through vectors with
+        // stride equal to number of total number of accumulators ACCUM_N
+        // At this stage ACCUM_N is only preferred be a multiple of warp size
+        // to meet memory coalescing alignment constraints.
+        ////////////////////////////////////////////////////////////////////////
+        for (int iAccum = threadIdx.x; iAccum < ACCUM_N; iAccum += blockDim.x)
+        {
+        	GPU_Complex sum = GPU_Complex(0,0);
+
+            for (int pos = iAccum; pos < elementN; pos += ACCUM_N)
+            {
+                //sum = sum + d_sig_in[pos-vectorBase] * d_nco_in[pos-vectorBase] * d_local_codes_in[pos];
+            	//sum = sum + d_sig_in[pos-vectorBase] * d_local_codes_in[pos];
+            	//sum.multiply_acc(d_sig_in[pos],d_local_codes_in[pos+d_shifts_samples[vec]]);
+
+            	// 1.resample local code for the current shift
+            	float local_code_chip_index= fmod(code_phase_step_chips*(float)pos + d_shifts_chips[vec] - rem_code_phase_chips, code_length_chips);
+            	//TODO: Take into account that in multitap correlators, the shifts can be negative!
+            	if (local_code_chip_index<0.0) local_code_chip_index+=code_length_chips;
+
+            	// 2.correlate
+            	sum.multiply_acc(d_sig_in[pos],d_local_code_in[__float2int_rd(local_code_chip_index)]);
+
+            }
+            accumResult[iAccum] = sum;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // Perform tree-like reduction of accumulators' results.
+        // ACCUM_N has to be power of two at this stage
+        ////////////////////////////////////////////////////////////////////////
+        for (int stride = ACCUM_N / 2; stride > 0; stride >>= 1)
+        {
+            __syncthreads();
+
+            for (int iAccum = threadIdx.x; iAccum < stride; iAccum += blockDim.x)
+            {
+                accumResult[iAccum] += accumResult[stride + iAccum];
+            }
+        }
+
+        if (threadIdx.x == 0)
+        	{
+        		d_corr_out[vec] = accumResult[0];
+        	}
+    }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Calculate scalar products of VectorN vectors of ElementN elements on GPU
@@ -145,8 +221,9 @@ __global__ void scalarProdGPUCPXxN(
     ////////////////////////////////////////////////////////////////////////////
     for (int vec = blockIdx.x; vec < vectorN; vec += gridDim.x)
     {
-        int vectorBase = IMUL(elementN, vec);
-        int vectorEnd  = vectorBase + elementN;
+        //int vectorBase = IMUL(elementN, vec);
+        //int vectorEnd  = vectorBase + elementN;
+
 
         ////////////////////////////////////////////////////////////////////////
         // Each accumulator cycles through vectors with
@@ -158,11 +235,13 @@ __global__ void scalarProdGPUCPXxN(
         {
         	GPU_Complex sum = GPU_Complex(0,0);
 
-            for (int pos = vectorBase + iAccum; pos < vectorEnd; pos += ACCUM_N)
+            //for (int pos = vectorBase + iAccum; pos < vectorEnd; pos += ACCUM_N)
+        	for (int pos = iAccum; pos < elementN; pos += ACCUM_N)
             {
                 //sum = sum + d_sig_in[pos-vectorBase] * d_nco_in[pos-vectorBase] * d_local_codes_in[pos];
             	//sum = sum + d_sig_in[pos-vectorBase] * d_local_codes_in[pos];
-            	sum.multiply_acc(d_sig_in[pos-vectorBase],d_local_codes_in[pos]);
+            	//sum.multiply_acc(d_sig_in[pos-vectorBase],d_local_codes_in[pos]);
+        		sum.multiply_acc(d_sig_in[pos],d_local_codes_in[pos]);
             }
             accumResult[iAccum] = sum;
         }
@@ -200,9 +279,9 @@ __global__ void scalarProdGPUCPXxN(
  */
 __global__ void CUDA_32fc_x2_multiply_32fc(  GPU_Complex *A,   GPU_Complex  *B, GPU_Complex  *C, int numElements)
 {
-    int i = blockDim.x * blockIdx.x + threadIdx.x;
-
-    if (i < numElements)
+    for (int i = blockIdx.x * blockDim.x + threadIdx.x;
+         i < numElements;
+         i += blockDim.x * gridDim.x)
     {
         C[i] =  A[i] * B[i];
     }
@@ -232,10 +311,11 @@ CUDA_32fc_Doppler_wipeoff(  GPU_Complex *sig_out, GPU_Complex *sig_in, float rem
 
 	// CUDA version of floating point NCO and vector dot product integrated
 
-    int i = blockDim.x * blockIdx.x + threadIdx.x;
     float sin;
     float cos;
-    if (i < numElements)
+    for (int i = blockIdx.x * blockDim.x + threadIdx.x;
+         i < numElements;
+         i += blockDim.x * gridDim.x)
     {
     	__sincosf(rem_carrier_phase_in_rad + i*phase_step_rad, &sin, &cos);
     	sig_out[i] =  sig_in[i] * GPU_Complex(cos,-sin);
@@ -252,11 +332,11 @@ CUDA_32fc_Doppler_wipeoff(  GPU_Complex *sig_out, GPU_Complex *sig_in, float rem
 __global__ void
 CUDA_32fc_x2_add_32fc(  GPU_Complex *A,   GPU_Complex  *B, GPU_Complex  *C, int numElements)
 {
-    int i = blockDim.x * blockIdx.x + threadIdx.x;
-
-    if (i < numElements)
+    for (int i = blockIdx.x * blockDim.x + threadIdx.x;
+         i < numElements;
+         i += blockDim.x * gridDim.x)
     {
-        C[i] =  A[i] * B[i];
+        C[i] =  A[i] + B[i];
     }
 }
 
@@ -264,23 +344,53 @@ CUDA_32fc_x2_add_32fc(  GPU_Complex *A,   GPU_Complex  *B, GPU_Complex  *C, int 
 bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int signal_length_samples, int local_codes_length_samples, int n_correlators)
 {
 	// use command-line specified CUDA device, otherwise use device with highest Gflops/s
-	findCudaDevice(argc, (const char **)argv);
-
-    cudaDeviceProp  prop;
-    int whichDevice;
-    cudaGetDevice( &whichDevice );
-    cudaGetDeviceProperties( &prop, whichDevice );
-    //debug code
-    if (prop.canMapHostMemory != 1) {
-        printf( "Device can not map memory.\n" );
-    }
-
-    printf("L2 Cache size= %u \n",prop.l2CacheSize);
-    printf("maxThreadsPerBlock= %u \n",prop.maxThreadsPerBlock);
-    printf("maxGridSize= %i \n",prop.maxGridSize[0]);
-    printf("sharedMemPerBlock= %lu \n",prop.sharedMemPerBlock);
-    printf("deviceOverlap= %i \n",prop.deviceOverlap);
-    //end debug code
+//	findCudaDevice(argc, (const char **)argv);
+//      cudaDeviceProp  prop;
+//    int num_devices, device;
+//    cudaGetDeviceCount(&num_devices);
+//    if (num_devices > 1) {
+//          int max_multiprocessors = 0, max_device = 0;
+//          for (device = 0; device < num_devices; device++) {
+//                  cudaDeviceProp properties;
+//                  cudaGetDeviceProperties(&properties, device);
+//                  if (max_multiprocessors < properties.multiProcessorCount) {
+//                          max_multiprocessors = properties.multiProcessorCount;
+//                          max_device = device;
+//                  }
+//                  printf("Found GPU device # %i\n",device);
+//          }
+//          //cudaSetDevice(max_device);
+//
+//          //set random device!
+//          cudaSetDevice(rand() % num_devices); //generates a random number between 0 and num_devices to split the threads between GPUs
+//
+//          cudaGetDeviceProperties( &prop, max_device );
+//          //debug code
+//          if (prop.canMapHostMemory != 1) {
+//              printf( "Device can not map memory.\n" );
+//          }
+//          printf("L2 Cache size= %u \n",prop.l2CacheSize);
+//          printf("maxThreadsPerBlock= %u \n",prop.maxThreadsPerBlock);
+//          printf("maxGridSize= %i \n",prop.maxGridSize[0]);
+//          printf("sharedMemPerBlock= %lu \n",prop.sharedMemPerBlock);
+//          printf("deviceOverlap= %i \n",prop.deviceOverlap);
+//  	    printf("multiProcessorCount= %i \n",prop.multiProcessorCount);
+//    }else{
+//    	    int whichDevice;
+//    	    cudaGetDevice( &whichDevice );
+//    	    cudaGetDeviceProperties( &prop, whichDevice );
+//    	    //debug code
+//    	    if (prop.canMapHostMemory != 1) {
+//    	        printf( "Device can not map memory.\n" );
+//    	    }
+//
+//    	    printf("L2 Cache size= %u \n",prop.l2CacheSize);
+//    	    printf("maxThreadsPerBlock= %u \n",prop.maxThreadsPerBlock);
+//    	    printf("maxGridSize= %i \n",prop.maxGridSize[0]);
+//    	    printf("sharedMemPerBlock= %lu \n",prop.sharedMemPerBlock);
+//    	    printf("deviceOverlap= %i \n",prop.deviceOverlap);
+//    	    printf("multiProcessorCount= %i \n",prop.multiProcessorCount);
+//    }
 
 	//checkCudaErrors(cudaFuncSetCacheConfig(CUDA_32fc_x2_multiply_x2_dot_prod_32fc_, cudaFuncCachePreferShared));
 
@@ -300,7 +410,7 @@ bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int sign
 	// Required: The last correlator tap in d_shifts_samples has the largest sample shift
     size_t size_local_code_bytes = local_codes_length_samples * sizeof(GPU_Complex);
 	checkCudaErrors(cudaMalloc((void **)&d_local_codes_in, size_local_code_bytes));
-	checkCudaErrors(cudaMalloc((void **)&d_shifts_samples, size+sizeof(int)*n_correlators));
+	checkCudaErrors(cudaMalloc((void **)&d_shifts_samples, sizeof(int)*n_correlators));
 
 	//scalars
 	checkCudaErrors(cudaMalloc((void **)&d_corr_out, sizeof(std::complex<float>)*n_correlators));
@@ -313,6 +423,116 @@ bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int sign
 	cudaStreamCreate (&stream2) ;
 	return true;
 }
+
+
+bool cuda_multicorrelator::init_cuda_integrated_resampler(
+		const int argc, const char **argv,
+		int signal_length_samples,
+		int code_length_chips,
+		int n_correlators
+		)
+{
+	// use command-line specified CUDA device, otherwise use device with highest Gflops/s
+//	findCudaDevice(argc, (const char **)argv);
+//      cudaDeviceProp  prop;
+//    int num_devices, device;
+//    cudaGetDeviceCount(&num_devices);
+//    if (num_devices > 1) {
+//          int max_multiprocessors = 0, max_device = 0;
+//          for (device = 0; device < num_devices; device++) {
+//                  cudaDeviceProp properties;
+//                  cudaGetDeviceProperties(&properties, device);
+//                  if (max_multiprocessors < properties.multiProcessorCount) {
+//                          max_multiprocessors = properties.multiProcessorCount;
+//                          max_device = device;
+//                  }
+//                  printf("Found GPU device # %i\n",device);
+//          }
+//          //cudaSetDevice(max_device);
+//
+//          //set random device!
+//          cudaSetDevice(rand() % num_devices); //generates a random number between 0 and num_devices to split the threads between GPUs
+//
+//          cudaGetDeviceProperties( &prop, max_device );
+//          //debug code
+//          if (prop.canMapHostMemory != 1) {
+//              printf( "Device can not map memory.\n" );
+//          }
+//          printf("L2 Cache size= %u \n",prop.l2CacheSize);
+//          printf("maxThreadsPerBlock= %u \n",prop.maxThreadsPerBlock);
+//          printf("maxGridSize= %i \n",prop.maxGridSize[0]);
+//          printf("sharedMemPerBlock= %lu \n",prop.sharedMemPerBlock);
+//          printf("deviceOverlap= %i \n",prop.deviceOverlap);
+//  	    printf("multiProcessorCount= %i \n",prop.multiProcessorCount);
+//    }else{
+//    	    int whichDevice;
+//    	    cudaGetDevice( &whichDevice );
+//    	    cudaGetDeviceProperties( &prop, whichDevice );
+//    	    //debug code
+//    	    if (prop.canMapHostMemory != 1) {
+//    	        printf( "Device can not map memory.\n" );
+//    	    }
+//
+//    	    printf("L2 Cache size= %u \n",prop.l2CacheSize);
+//    	    printf("maxThreadsPerBlock= %u \n",prop.maxThreadsPerBlock);
+//    	    printf("maxGridSize= %i \n",prop.maxGridSize[0]);
+//    	    printf("sharedMemPerBlock= %lu \n",prop.sharedMemPerBlock);
+//    	    printf("deviceOverlap= %i \n",prop.deviceOverlap);
+//    	    printf("multiProcessorCount= %i \n",prop.multiProcessorCount);
+//    }
+
+	//checkCudaErrors(cudaFuncSetCacheConfig(CUDA_32fc_x2_multiply_x2_dot_prod_32fc_, cudaFuncCachePreferShared));
+
+    // ALLOCATE GPU MEMORY FOR INPUT/OUTPUT and INTERNAL vectors
+
+    size_t size = signal_length_samples * sizeof(GPU_Complex);
+
+	checkCudaErrors(cudaMalloc((void **)&d_sig_in, size));
+	checkCudaErrors(cudaMemset(d_sig_in,0,size));
+
+	//checkCudaErrors(cudaMalloc((void **)&d_nco_in, size));
+	checkCudaErrors(cudaMalloc((void **)&d_sig_doppler_wiped, size));
+	checkCudaErrors(cudaMemset(d_sig_doppler_wiped,0,size));
+
+	checkCudaErrors(cudaMalloc((void **)&d_local_codes_in, sizeof(std::complex<float>)*code_length_chips));
+	checkCudaErrors(cudaMemset(d_local_codes_in,0,sizeof(std::complex<float>)*code_length_chips));
+
+    d_code_length_chips=code_length_chips;
+
+	checkCudaErrors(cudaMalloc((void **)&d_shifts_chips, sizeof(float)*n_correlators));
+	checkCudaErrors(cudaMemset(d_shifts_chips,0,sizeof(float)*n_correlators));
+
+	//scalars
+	checkCudaErrors(cudaMalloc((void **)&d_corr_out, sizeof(std::complex<float>)*n_correlators));
+	checkCudaErrors(cudaMemset(d_corr_out,0,sizeof(std::complex<float>)*n_correlators));
+
+    // Launch the Vector Add CUDA Kernel
+	threadsPerBlock = 256;
+    blocksPerGrid =(int)(signal_length_samples+threadsPerBlock-1)/threadsPerBlock;
+
+	cudaStreamCreate (&stream1) ;
+	cudaStreamCreate (&stream2) ;
+	return true;
+}
+
+bool cuda_multicorrelator::set_local_code_and_taps(
+		int code_length_chips,
+		const std::complex<float>* local_codes_in,
+		float *shifts_chips,
+		int n_correlators
+		)
+{
+    // local code CPU -> GPU copy memory
+    checkCudaErrors(cudaMemcpyAsync(d_local_codes_in, local_codes_in, sizeof(GPU_Complex)*code_length_chips, cudaMemcpyHostToDevice,stream1));
+    d_code_length_chips=(float)code_length_chips;
+
+    // Correlator shifts vector CPU -> GPU copy memory (fractional chip shifts are allowed!)
+    checkCudaErrors(cudaMemcpyAsync(d_shifts_chips, shifts_chips, sizeof(float)*n_correlators,
+                                    cudaMemcpyHostToDevice,stream1));
+
+	return true;
+}
+
 
 
 bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_cuda(
@@ -396,13 +616,88 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_cuda(
     return true;
 }
 
+bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_resampler_cuda(
+		std::complex<float>* corr_out,
+		const std::complex<float>* sig_in,
+		float rem_carrier_phase_in_rad,
+		float phase_step_rad,
+        float code_phase_step_chips,
+        float rem_code_phase_chips,
+		int signal_length_samples,
+		int n_correlators)
+	{
+
+	size_t memSize = signal_length_samples * sizeof(std::complex<float>);
+	// input signal CPU -> GPU copy memory
+    checkCudaErrors(cudaMemcpyAsync(d_sig_in, sig_in, memSize,
+                                    cudaMemcpyHostToDevice, stream2));
+
+    //***** NOTICE: NCO is computed on-the-fly, not need to copy NCO into GPU! ****
+
+    //Launch carrier wipe-off kernel here, while local codes are being copied to GPU!
+    checkCudaErrors(cudaStreamSynchronize(stream2));
+
+    CUDA_32fc_Doppler_wipeoff<<<blocksPerGrid, threadsPerBlock,0, stream2>>>(d_sig_doppler_wiped, d_sig_in,rem_carrier_phase_in_rad,phase_step_rad, signal_length_samples);
+
+    //wait for Doppler wipeoff end...
+    checkCudaErrors(cudaStreamSynchronize(stream1));
+    checkCudaErrors(cudaStreamSynchronize(stream2));
+
+    //launch the multitap correlator with integrated local code resampler!
+
+    scalarProdGPUCPXxN_shifts_chips<<<blocksPerGrid, threadsPerBlock,0 ,stream1>>>(
+			d_corr_out,
+			d_sig_doppler_wiped,
+			d_local_codes_in,
+			d_shifts_chips,
+			d_code_length_chips,
+	        code_phase_step_chips,
+	        rem_code_phase_chips,
+			n_correlators,
+			signal_length_samples
+		);
+
+    checkCudaErrors(cudaGetLastError());
+    //wait for correlators end...
+    checkCudaErrors(cudaStreamSynchronize(stream1));
+    // Copy the device result vector in device memory to the host result vector
+    // in host memory.
+
+    //scalar products (correlators outputs)
+    checkCudaErrors(cudaMemcpyAsync(corr_out, d_corr_out, sizeof(std::complex<float>)*n_correlators,
+            cudaMemcpyDeviceToHost,stream1));
+    checkCudaErrors(cudaStreamSynchronize(stream1));
+    return true;
+}
+
+
+cuda_multicorrelator::cuda_multicorrelator()
+{
+	d_sig_in=NULL;
+	d_nco_in=NULL;
+	d_sig_doppler_wiped=NULL;
+	d_local_codes_in=NULL;
+	d_shifts_samples=NULL;
+	d_shifts_chips=NULL;
+	d_corr_out=NULL;
+	threadsPerBlock=0;
+	blocksPerGrid=0;
+	d_code_length_chips=0;
+}
+
 bool cuda_multicorrelator::free_cuda()
 {
 	// Free device global memory
-	cudaFree(d_sig_in);
-	//cudaFree(d_nco_in);
-	cudaFree(d_local_codes_in);
-	cudaFree(d_corr_out);
+	if (d_sig_in!=NULL) cudaFree(d_sig_in);
+	if (d_nco_in!=NULL) cudaFree(d_nco_in);
+	if (d_sig_doppler_wiped!=NULL) cudaFree(d_sig_doppler_wiped);
+	if (d_local_codes_in!=NULL) cudaFree(d_local_codes_in);
+	if (d_corr_out!=NULL) cudaFree(d_corr_out);
+
+
+	if (d_shifts_samples!=NULL) cudaFree(d_shifts_samples);
+	if (d_shifts_chips!=NULL) cudaFree(d_shifts_chips);
+
 
 	cudaStreamDestroy(stream1) ;
 	cudaStreamDestroy(stream2) ;

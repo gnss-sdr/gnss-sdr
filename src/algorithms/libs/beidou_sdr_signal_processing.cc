@@ -226,10 +226,10 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     //--- Find number of samples per spreading code ----------------------------
     _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
-    std::cout << "STO DENTRO beidou_b1i_code_gen_complex_sampled "    << std::endl;                              // debug
+/*    std::cout << "STO DENTRO beidou_b1i_code_gen_complex_sampled "    << std::endl;                              // debug
     std::cout << "the _prn is "                                      << _prn << std::endl;                      // debug
     std::cout << "the _samplesPerCode is "                           << _samplesPerCode << std::endl;           // debug
-    std::cout << "the _chip_shift is "                               << _chip_shift << std::endl;               // debug 
+    std::cout << "the _chip_shift is "                               << _chip_shift << std::endl;               // debug */
     
 
 

@@ -5,16 +5,7 @@ docs/html
 docs/latex
 docs/GNSS-SDR_manual.pdf
 src/tests/data/output.dat
-src/tests/signal_samples/FFF005.dat
-src/tests/signal_samples/FFF007_test.dat
-src/tests/signal_samples/FFF007_test_1.dat
-src/tests/signal_samples/FFF007_test_2.dat
-src/tests/signal_samples/FFF007_test_3.dat
-src/tests/signal_samples/FFF007_test_4.dat
-src/tests/signal_samples/FFF007_test_5.dat
-src/tests/signal_samples/FFF007_test_6.dat
-src/tests/signal_samples/FFF007_test_7.dat
-src/tests/signal_samples/GPS_L1_CA_4000000_sps_CN0_48.dat
+src/tests/signal_samples/*.dat
 thirdparty/
 .project
 .cproject

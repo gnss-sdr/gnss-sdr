@@ -37,8 +37,8 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
 
     if_    = configuration_->property(role + ".ifreq", 98000);      // change to from 0 to 0.098e6 Hz ??
 
-    std::cout << "the fs_in_ is " << fs_in_ << std::endl;              // debug
-    std::cout << "the if_ is " << if_ << std::endl;                    // debug  
+/*    std::cout << "the fs_in_ is " << fs_in_ << std::endl;              // debug
+    std::cout << "the if_ is " << if_ << std::endl;                    // debug  */
 
     dump_  = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
@@ -65,10 +65,10 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
 
     code_= new gr_complex[vector_length_];
 
-    std::cout << "the shift_resolution_ is "                         << shift_resolution_ << std::endl;                      // debug
+/*    std::cout << "the shift_resolution_ is "                         << shift_resolution_ << std::endl;                      // debug
     std::cout << "the sampled_ms_ is "                               << sampled_ms_ << std::endl;                      // debug
     std::cout << "the code_length_ is "                              << code_length_ << std::endl;                    // debug 
-    std::cout << "the vector_length_ is code_length_ * sampled_ms_ " << vector_length_ << std::endl;                      // debug
+    std::cout << "the vector_length_ is code_length_ * sampled_ms_ " << vector_length_ << std::endl;                      // debug*/
 
 
 

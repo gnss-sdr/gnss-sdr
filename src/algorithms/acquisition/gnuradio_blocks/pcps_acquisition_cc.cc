@@ -321,6 +321,9 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                 {
                     // doppler search steps
                     doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+                    
+                    std::cout << " the doppler =  "                 << doppler             << std::endl;                                                //DEBUG
+
 
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                             d_grid_doppler_wipeoffs[doppler_index], d_fft_size);
@@ -338,6 +341,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     d_ifft->execute();
 
                     // Search maximum
+<<<<<<< c1f204525acbd37f2f82f5319d26211992d8b0af
                     size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
                     volk_32f_index_max_16u(&indext, d_magnitude, effective_fft_size);
@@ -369,6 +373,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                             // restarted between consecutive dwells in multidwell operation.
 
                             if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
+<<<<<<< c1f204525acbd37f2f82f5319d26211992d8b0af
                                 {
                                     d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
                                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);

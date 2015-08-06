@@ -97,6 +97,10 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     vector_length_ = sampled_ms_ * samples_per_ms;
 
+    if( bit_transition_flag_ ){
+        vector_length_ *= 2;
+    }
+
     code_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("gr_complex") == 0)

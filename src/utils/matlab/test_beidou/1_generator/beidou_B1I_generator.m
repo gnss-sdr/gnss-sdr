@@ -10,14 +10,14 @@ clc;
 clear all;
 close all;
 %% ------------Settings---------------------------------------------------------
-fileName = '/home/giorgio/Desktop/back_up_gnss_sdr/test/data/FFF007_test_5.dat';
+fileName = '/home/giorgio/Desktop/back_up_gnss_sdr/test/data/FFF020_test_1.dat';
 
-f_rf = 1561.098e6;    %[Hz] BeiDou B1 nominal frequency;
-f_if = 0.098e6;       %[Hz] IF nominal frequency;
-f_prn= 2.046e6;       %[Hz] Nominal PRN-generator clock frequency;
-f_nh = 1e3;           %[Hz] Nominal Neiman-Huffman-generator clock frequency;
-f_data = 50;          %[Hz] Nominal data rate of BeiDou D1 signal
-f_data_NH = 1e3;      %[Hz] Data bit rate after modulation by NH code
+f_rf   = 1561.098e6;    %[Hz] BeiDou B1 nominal frequency;
+f_if   = 0.098e6;       %[Hz] IF nominal frequency;      
+f_prn  = 2.046e6;       %[Hz] Nominal PRN-generator clock frequency;
+f_nh   = 1e3;           %[Hz] Nominal Neiman-Huffman-generator clock frequency;
+f_data = 50;            %[Hz] Nominal data rate of BeiDou D1 signal
+f_data_NH = 1e3;        %[Hz] Data bit rate after modulation by NH code
 
 phi0_if   = 0;      %[rad] Initial phase of RF signal;
 phi0_prn1 = 0;      %[rad] Initial phase of PRN signal;
@@ -28,18 +28,18 @@ phi0_data = 0;      %[rad] Initial phase of data signal;
 fs = 16.000e6;      %[Hz] Sampling frequency;                % think about fs = 16.368e6 [Hz]
 ts = 1/fs;          %[sec]
 
-f_d                = 0.0;                %[Hz] Initial Doppler frequeny for RF-signal;
-code_delay         = ts* 4678.0;            %[sec] the delay in seconds rounded to a multiple of ts
-code_delay_samples = code_delay*fs;      %[samples] the delay in samples (see email Luis)
+f_d                = 1650.0;                %[Hz] Initial Doppler frequeny for RF-signal;
+code_delay         = ts* 3767.0;            %[sec] the delay in seconds rounded to a multiple of ts
+code_delay_samples = code_delay*fs;         %[samples] the delay in samples
 
-%df  = -0.55;        %[Hz/sec] Initail Doppler frequency change rate for RF-signal; ASK
+%df  = -0.55;        %[Hz/sec] Initail Doppler frequency change rate for RF-signal; 
 
 T  = 100e-3;                 %[sec] Signal length to be generated;
 n_samples = floor(fs * T);
 
-prn_num  = 7;           %PRN number;
-prn_len  = 2046;        %[chips] PRN-code length in chips (bits);
-nh_len   = 20;          %Neumann-Hoffman code length in chips (bits);
+prn_num  = 20;          % PRN number [0;37];
+prn_len  = 2046;        % [chips] PRN-code length in chips (bits);
+nh_len   = 20;          % Neumann-Hoffman code length in chips (bits);
  
 data_len = T * f_data;  %[bits] Navigation message length in bits;
 
@@ -51,12 +51,12 @@ data_len = T * f_data;  %[bits] Navigation message length in bits;
 
 %% -----------Signal_generator--------------------------------------------------
 
-t = 0:ts:T-ts;    %time samples for generating signal of T_elem length;
+t=(1:n_samples).*(1/fs);    % time samples for generating signal of T_elem length;
 
-PRN1 = generateB1Icode(prn_num);                                       % Generate PRN-code;
+PRN1        = generateB1Icode(prn_num);                                % Generate PRN-code;
 NH_original = [0 0 0 0 0  1 0 0  1  1 0  1 0  1 0 0  1  1  1  0];      % Generate Neiman-Huffman-code
 NH          = [1 1 1 1 1 -1 1 1 -1 -1 1 -1 1 -1 1 1 -1 -1 -1  1];      % 0=>1, 1=>-1 
-DATA = (2 * round(rand(1, data_len))) - 1;                             % Temporary Stub for data bits after convolutional coder; (pseudorandom values of 1 and -1, of data_len values)
+DATA        = (2 * round(rand(1, data_len))) - 1;                      % Temporary Stub for data bits after convolutional coder; (pseudorandom values of 1 and -1, of data_len values)
 
 signal_I = [];
 
@@ -65,19 +65,19 @@ phi_if = (phi0_if) + (2*pi*f_if*t) + (2*pi*f_d*t);                 % INITIAL PHA
 phi_if = mod(phi_if, (2*pi));                                      % Convert carrier phase to the range [0..2*pi];  
 
 %Calculate phase for PRN1;
-phi_prn1  = (phi0_prn1) + (f_prn*(t+code_delay));                     
+phi_prn1  = (phi0_prn1) + (f_prn*(t-code_delay));                  % ho messo il segno meno al code delay  
 prn1_indx = (fix(mod(phi_prn1, prn_len)));					       % from modulo (scilab) to mod (matlab)
 
 %Calculte phase for Neiman-Huffman;
-phi_nh  = (phi0_nh) + (f_nh*(t+code_delay));
+phi_nh  = (phi0_nh) + (f_nh*(t-code_delay));                       % (t-code_delay) 
 nh_indx = (fix( mod(phi_nh, nh_len) ));
  
 %Calculate phase for data-message;
-phi_data  = (phi0_data) + (f_data*(t+code_delay));
+phi_data  = (phi0_data) + (f_data*(t-code_delay));                 % (t-code_delay)
 data_indx = (fix(mod(phi_data, data_len)));
 
 %Generate carrier;
-carr_cos = cos(phi_if);      	% generate carrier (I)  
+carr_cos = cos(phi_if);      	% generate carrier (I)
 
 %Generate PRN;
 prn1 = PRN1(prn1_indx+1);    	% generate PRN for I-channel;

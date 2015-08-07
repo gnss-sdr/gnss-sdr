@@ -2,7 +2,7 @@
  * beidou_b1i_pcps_acquisition.cc
  *
  *  Created on: Jul 15, 2015
- *      Author: giorgio
+ *      Author: Giorgio Savastano
  */
 
 #include "beidou_b1i_pcps_acquisition.h"
@@ -33,12 +33,12 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000); // change
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000); // change ??
 
-    if_    = configuration_->property(role + ".ifreq", 98000);      // change to from 0 to 0.098e6 Hz ??
+    if_    = configuration_->property(role + ".ifreq", 98000);            // change to from 0 to 0.098e6 Hz ??
 
-/*    std::cout << "the fs_in_ is " << fs_in_ << std::endl;              // debug
-    std::cout << "the if_ is " << if_ << std::endl;                    // debug  */
+    std::cout << "the fs_in_ is " << fs_in_ << std::endl;              // debug
+    std::cout << "the if_ is " << if_ << std::endl;                      // debug 
 
     dump_  = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);

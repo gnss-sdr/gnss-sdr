@@ -323,7 +323,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     // doppler search steps
                     doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
-                    std::cout << " the doppler =  "                 << doppler             << std::endl;                                                //DEBUG
+                    //std::cout << " the doppler =  "                 << doppler             << std::endl;                                                //DEBUG
 
 
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,

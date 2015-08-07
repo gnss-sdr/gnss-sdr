@@ -174,8 +174,8 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue     = gr::msg_queue::make(0);
 
-    double expected_delay_samples = 1650;          // set 5000 [samples]
-    double expected_doppler_hz    = 3767;          // set 4855 [Hz]
+    double expected_delay_samples = 3767;          // set 5000 [samples]
+    double expected_doppler_hz    = 1650;          // set 4855 [Hz]
     init();
     start_queue();
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);

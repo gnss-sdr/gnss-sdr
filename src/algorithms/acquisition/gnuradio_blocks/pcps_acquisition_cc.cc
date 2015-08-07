@@ -159,9 +159,9 @@ void pcps_acquisition_cc::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            complex_exp_gen(d_grid_doppler_wipeoffs[doppler_index], d_freq - doppler, d_fs_in, d_fft_size);
+            complex_exp_gen(d_grid_doppler_wipeoffs[doppler_index], d_freq + doppler, d_fs_in, d_fft_size);     // PROVO A METTERE SEGNO + !!!!!!!!!!!!
 
-            std::cout << "d_freq - doppler  " << d_freq - doppler << std::endl;       // DEBUGGGGGGGGG
+            //std::cout << "d_freq - doppler  " << d_freq + doppler << std::endl;                                 // DEBUGGGGGGGGG
         }
 }
 
@@ -261,7 +261,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
                     doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
 
-                    std::cout << " the doppler =  "                 << doppler             << std::endl;                                                //DEBUG
+                    //std::cout << " the doppler =  "                 << doppler             << std::endl;                                                //DEBUG
 
 
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,

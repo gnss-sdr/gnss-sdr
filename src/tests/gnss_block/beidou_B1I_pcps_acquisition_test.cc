@@ -91,7 +91,7 @@ void BeidouB1iPcpsAcquisitionTest::init()
     std::string signal = "1C";                                                         // "1C" is for GPS L1 C/A  see gnss_signal.h
     signal.copy(gnss_synchro.Signal, 2, 0);
 
-    gnss_synchro.PRN = 12;                                                              // CAMBIO IL PRN A 10
+    gnss_synchro.PRN = 20;                                                              // CAMBIO IL PRN A 10
 
     config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                       // set 16.000 MHz
     config->set_property("Acquisition.item_type", "gr_complex");
@@ -174,8 +174,8 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue     = gr::msg_queue::make(0);
 
-    double expected_delay_samples = 3562;          // set 5000 [samples]
-    double expected_doppler_hz    = 2655;          // set 4855 [Hz]
+    double expected_delay_samples = 1650;          // set 5000 [samples]
+    double expected_doppler_hz    = 3767;          // set 4855 [Hz]
     init();
     start_queue();
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -211,7 +211,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/FFF007_test_17.dat";                                      //  change the name of the file
+        std::string file = path + "signal_samples/FFF020_test_1.dat";                                      //  change the name of the file
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);

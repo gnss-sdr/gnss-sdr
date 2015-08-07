@@ -1,7 +1,7 @@
 /*!
  * \file BEIDOU_B1I.h
  * \brief  Defines system parameters for BeiDou B1 signal and NAV data
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \author Giorgio Savastano, 2015. giorgio.savastano(at)uniroma1.it
  *
  * -------------------------------------------------------------------------
  *

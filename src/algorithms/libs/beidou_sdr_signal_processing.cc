@@ -2,7 +2,7 @@
  * beidou_sdr_signal_processing.cc
  *
  *  Created on: Jul 15, 2015
- *      Author: Giorgio
+ *      Author: Giorgio Savastano
  */
 
 #include "beidou_sdr_signal_processing.h"

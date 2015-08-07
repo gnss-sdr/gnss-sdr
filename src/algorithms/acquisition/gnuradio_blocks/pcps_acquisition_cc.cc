@@ -92,6 +92,8 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_channel = 0;
     d_doppler_freq = 0.0;
 
+    std::cout << " d_freq is  " <<  d_freq <<std::endl;                                // DEBUGGGGG
+
     d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
     d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
@@ -158,6 +160,8 @@ void pcps_acquisition_cc::init()
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             complex_exp_gen(d_grid_doppler_wipeoffs[doppler_index], d_freq - doppler, d_fs_in, d_fft_size);
+
+            std::cout << "d_freq - doppler  " << d_freq - doppler << std::endl;       // DEBUGGGGGGGGG
         }
 }
 
@@ -256,7 +260,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     // doppler search steps
 
                     doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-                    
+
                     std::cout << " the doppler =  "                 << doppler             << std::endl;                                                //DEBUG
 
 

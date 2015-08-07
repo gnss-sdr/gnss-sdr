@@ -95,7 +95,7 @@ void BeidouB1iPcpsAcquisitionTest::init()
 
     config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                       // set 16.000 MHz
     config->set_property("Acquisition.item_type", "gr_complex");
-    config->set_property("Acquisition.if", "98000");
+    config->set_property("Acquisition.if", "98000");                                   // see "Development of a PC-Based Software Receiver for the Reception of Beidou Navigation Satellite Signals"
     config->set_property("Acquisition.coherent_integration_time_ms", "1");
     config->set_property("Acquisition.dump", "true");                                  // set "true"
     config->set_property("Acquisition.implementation", "BeiDou_B1I_PCPS_Acquisition");
@@ -194,7 +194,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.001);                        // da rivedere
+        acquisition->set_threshold(0.1);                        // da rivedere
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -211,7 +211,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/FFF007_test_16.dat";                                      //  change the name of the file
+        std::string file = path + "signal_samples/FFF007_test_17.dat";                                      //  change the name of the file
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);

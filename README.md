@@ -390,7 +390,11 @@ Agree to Xcode license:
 $ sudo xcodebuild -license
 ~~~~~~ 
 
-Then, you need a package manager. For example, you can [install Macports](http://www.macports.org/install.php "Macports"). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
+Software pre-requisites can be installed using either [Macports](#macports) or [Homebrew](#homebrew).
+
+####<a name"macports">Macports</a>
+
+First, [install Macports](http://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
 
 In a terminal, type:
 
@@ -416,12 +420,43 @@ and you can activate a certain version (2.7 works well) by typing:
 $ sudo port select --set python python27
 ~~~~~~ 
 
+#### <a name="homebrew">Homebrew</a>
+
+Instructions for installing gnuradio using [homebrew](http://www.brew.sh) can be found [here](http://github.com/odrisci/homebrew-gnuradio) - please ensure to install all dependencies as required.
+
+Install Armadillo and dependencies:
+
+~~~~~~
+$ brew tap homebrew/science
+$ brew install cmake hdf5 arpack superlu
+$ brew install armadillo
+$ brew install glog gflags
+~~~~~~
+
+#### Build GNSS-SDR
+
 Finally, you are ready to clone the GNSS-SDR repository and build the software:
 
 ~~~~~~ 
 $ git clone https://github.com/gnss-sdr/gnss-sdr
 $ cd gnss-sdr/build
+~~~~~~
+
+If using Macports, run:
+
+~~~~~~
+$ cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_PREFIX_PATH=/opt/local -DUSE_MACPORTS_PYTHON=/opt/local/bin/python ../
+~~~~~~
+
+If using homebrew, run:
+
+~~~~~~
 $ cmake ../
+~~~~~~
+
+Finally, run:
+
+~~~~~~
 $ make
 ~~~~~~ 
 
@@ -431,7 +466,7 @@ This will create three executables at gnss-sdr/install, namely ```gnss-sdr```, `
 $ sudo make install
 ~~~~~~ 
 
-
+Note, it is advisable not to run the install step in a homebrew environment.
 
 The documentation can be built by:
 

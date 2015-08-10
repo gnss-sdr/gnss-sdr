@@ -54,18 +54,6 @@ const double BEIDOU_B1I_CODE_RATE_HZ         = 2.046e6;     //!< BeiDou B1 C/A c
 const double BEIDOU_B1I_CODE_LENGTH_CHIPS    = 2046.0;      //!< BeiDou B1 C/A code length [chips]
 const double BEIDOU_B1I_CODE_PERIOD          = 0.001;       //!< BeiDou B1 C/A code period [seconds]
 
-/*!
- * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms
- *
- * According to the GPS orbit model described in [1] Pag. 32.
- * It should be taken into account to set the buffer size for the PRN start timestamp in the pseudoranges block.
- * [1] J. Bao-Yen Tsui, Fundamentals of Global Positioning System Receivers. A Software Approach, John Wiley & Sons,
- * Inc., Hoboken, NJ, 2nd edition, 2005.
- */
-/*const double MAX_TOA_DELAY_MS = 20;*/
-
-//#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
-/*const double BEIDOU_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)*/
 
 // NH code
 /*

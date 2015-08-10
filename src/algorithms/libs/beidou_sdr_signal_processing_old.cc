@@ -53,8 +53,8 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     for(lcv = 0; lcv < _code_length; lcv++)
         {
             // equal to the last value of the shift register
-        G1[lcv] = G1_register[10];
-            // computation of the G1 feedback
+    		G1[lcv] = G1_register[10];
+    		// computation of the G1 feedback
             feedback1 = G1_register[0]*G1_register[6]*G1_register[7]*G1_register[8]*G1_register[9]*G1_register[10];
 
             // shift to the right
@@ -66,125 +66,158 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
             G1_register[0] = feedback1;
         }
 
-
     /* Generate G2 by tapping the shift register */
     for(lcv = 0; lcv < _code_length; lcv++)
         {
-    		switch(_prn){
-                case 1:
-                   G2[lcv] = G2_register[0]*G2_register[2];
-                   break;
-                case 2:
-                   G2[lcv] = G2_register[0]*G2_register[3];
-                   break;
-                case 3:
-                   G2[lcv] = G2_register[0]*G2_register[4];
-                   break;
-                case 4:
-                   G2[lcv] = G2_register[0]*G2_register[5];
-                   break;
-                case 5:
-                   G2[lcv] = G2_register[0]*G2_register[7];
-                   break;
-                case 6:
-                   G2[lcv] = G2_register[0]*G2_register[8];
-                   break;
-                case 7:
-                   G2[lcv] = G2_register[0]*G2_register[9];
-                   break;
-                case 8:
-                   G2[lcv] = G2_register[0]*G2_register[10];
-                   break;
-                case 9:
-                   G2[lcv] = G2_register[1]*G2_register[6];
-                   break;
-                case 10:
-                   G2[lcv] = G2_register[2]*G2_register[3];
-                   break;
-                case 11:
-                   G2[lcv] = G2_register[2]*G2_register[4];
-                   break;
-                case 12:
-                   G2[lcv] = G2_register[2]*G2_register[5];
-                   break;
-                case 13:
-                   G2[lcv] = G2_register[2]*G2_register[7];
-                   break;
-                case 14:
-                   G2[lcv] = G2_register[2]*G2_register[8];
-                   break;
-                case 15:
-                   G2[lcv] = G2_register[2]*G2_register[9];
-                   break;
-                case 16:
-                   G2[lcv] = G2_register[2]*G2_register[10];
-                   break;
-                case 17:
-                   G2[lcv] = G2_register[3]*G2_register[4];
-                   break;
-                case 18:
-                   G2[lcv] = G2_register[3]*G2_register[5];
-                   break;
-                case 19:
-                   G2[lcv] = G2_register[3]*G2_register[7];
-                   break;
-                case 20:
-                   G2[lcv] = G2_register[3]*G2_register[8];
-                   break;
-                case 21:
-                   G2[lcv] = G2_register[3]*G2_register[9];
-                   break;
-                case 22:
-                   G2[lcv] = G2_register[3]*G2_register[10];
-                   break;
-                case 23:
-                   G2[lcv] = G2_register[4]*G2_register[5];
-                   break;
-                case 24:
-                   G2[lcv] = G2_register[4]*G2_register[7];
-                   break;
-                case 25:
-                    G2[lcv] = G2_register[4]*G2_register[8];
-                    break;
-                case 26:
-                    G2[lcv] = G2_register[4]*G2_register[9];
-                    break;
-                case 27:
-                    G2[lcv] = G2_register[4]*G2_register[10];
-                    break;
-                case 28:
-                    G2[lcv] = G2_register[5]*G2_register[7];
-                    break;
-                case 29:
-                    G2[lcv] = G2_register[5]*G2_register[8];
-                    break;
-                case 30:
-                    G2[lcv] = G2_register[5]*G2_register[9];
-                    break;
-                case 31:
-                    G2[lcv] = G2_register[5]*G2_register[10];
-                    break;
-                case 32:
-                    G2[lcv] = G2_register[7]*G2_register[8];
-                    break;
-                case 33:
-                    G2[lcv] = G2_register[7]*G2_register[9];
-                    break;
-                case 34:
-                    G2[lcv] = G2_register[7]*G2_register[10];
-                    break;
-                case 35:
-                    G2[lcv] = G2_register[8]*G2_register[9];
-                    break;
-                case 36:
-                    G2[lcv] = G2_register[8]*G2_register[10];
-                    break;
-                case 37:
-                    G2[lcv] = G2_register[9]*G2_register[10];
-                    break;                                                              
-            }
-
-            // computation of the G2 feedback
+    		if(_prn == 1)
+    		{
+    			G2[lcv] = G2_register[0]*G2_register[2];
+    		}
+    		else if(_prn == 2)
+    		{
+    			G2[lcv] = G2_register[0]*G2_register[3];
+    		}
+    		else if(_prn == 3)
+    		{
+    			G2[lcv] = G2_register[0]*G2_register[4];
+    		}
+    		else if(_prn == 4)
+    		{
+    			G2[lcv] = G2_register[0]*G2_register[5];
+    		}
+    		else if(_prn == 5)
+    		{
+    			G2[lcv] = G2_register[0]*G2_register[7];
+    		}
+    		else if(_prn == 6)
+    		{
+    			G2[lcv] = G2_register[0]*G2_register[8];
+    		}
+    		else if(_prn == 7)
+    		{
+    			G2[lcv] = G2_register[0]*G2_register[9];
+    		}
+    		else if(_prn == 8)
+    		{
+    			G2[lcv] = G2_register[0]*G2_register[10];
+    		}
+    		else if(_prn == 9)
+    		{
+    			G2[lcv] = G2_register[1]*G2_register[6];
+    		}
+    		else if(_prn == 10)
+    		{
+    			G2[lcv] = G2_register[2]*G2_register[3];
+    		}
+    		else if(_prn == 11)
+    		{
+    			G2[lcv] = G2_register[2]*G2_register[4];
+    		}
+    		else if(_prn == 12)
+    		{
+    			G2[lcv] = G2_register[2]*G2_register[5];
+    		}
+    		else if(_prn == 13)
+    		{
+    			G2[lcv] = G2_register[2]*G2_register[7];
+    		}
+    		else if(_prn == 14)
+    		{
+    			G2[lcv] = G2_register[2]*G2_register[8];
+    		}
+    		else if(_prn == 15)
+    		{
+    			G2[lcv] = G2_register[2]*G2_register[9];
+    		}
+    		else if(_prn == 16)
+    		{
+    			G2[lcv] = G2_register[2]*G2_register[10];
+    		}
+    		else if(_prn == 17)
+    		{
+    			G2[lcv] = G2_register[3]*G2_register[4];
+    		}
+    		else if(_prn == 18)
+    		{
+    			G2[lcv] = G2_register[3]*G2_register[5];
+    		}
+    		else if(_prn == 19)
+    		{
+    			G2[lcv] = G2_register[3]*G2_register[7];
+    		}
+    		else if(_prn == 20)
+    		{
+    			G2[lcv] = G2_register[3]*G2_register[8];
+    		}
+    		else if(_prn == 21)
+    		{
+    			G2[lcv] = G2_register[3]*G2_register[9];
+    		}
+    		else if(_prn == 22)
+    		{
+    			G2[lcv] = G2_register[3]*G2_register[10];
+    		}
+    		else if(_prn == 23)
+    		{
+    			G2[lcv] = G2_register[4]*G2_register[5];
+    		}
+    		else if(_prn == 24)
+    		{
+    			G2[lcv] = G2_register[4]*G2_register[7];
+    		}
+    		else if(_prn == 25)
+    		{
+    			G2[lcv] = G2_register[4]*G2_register[8];
+    		}
+    		else if(_prn == 26)
+    		{
+    			G2[lcv] = G2_register[4]*G2_register[9];
+    		}
+    		else if(_prn == 27)
+    		{
+    			G2[lcv] = G2_register[4]*G2_register[10];
+    		}
+    		else if(_prn == 28)
+    		{
+    			G2[lcv] = G2_register[5]*G2_register[7];
+    		}
+    		else if(_prn == 29)
+    		{
+    			G2[lcv] = G2_register[5]*G2_register[8];
+    		}
+    		else if(_prn == 30)
+    		{
+    			G2[lcv] = G2_register[5]*G2_register[9];
+    		}
+    		else if(_prn == 31)
+    		{
+    			G2[lcv] = G2_register[5]*G2_register[10];
+    		}
+    		else if(_prn == 32)
+    		{
+    			G2[lcv] = G2_register[7]*G2_register[8];
+    		}
+    		else if(_prn == 33)
+    		{
+    			G2[lcv] = G2_register[7]*G2_register[9];
+    		}
+    		else if(_prn == 34)
+    		{
+    			G2[lcv] = G2_register[7]*G2_register[10];
+    		}
+    		else if(_prn == 35)
+    		{
+    			G2[lcv] = G2_register[8]*G2_register[9];
+    		}
+    		else if(_prn == 36)
+    		{
+    			G2[lcv] = G2_register[8]*G2_register[10];
+    		}
+    		else if(_prn == 37)
+    		{
+    			G2[lcv] = G2_register[9]*G2_register[10];
+    		}
+    		// computation of the G2 feedback
             feedback2 = G2_register[0]*G2_register[1]*G2_register[2]*G2_register[3]*G2_register[4]*G2_register[7]*G2_register[8]*G2_register[10];
             // shift to the right
             for(lcv2 = 0; lcv2 < 10; lcv2++)
@@ -198,10 +231,9 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
     /* Generate PRN from G1 and G2 Registers */
     for(lcv = 0; lcv < _code_length; lcv++)
         {
-        _dest[lcv] = -G1[lcv]*G2[lcv];
+    		_dest[lcv] = -G1[lcv]*G2[lcv];
         }
 }
-
 /*
  *  Generates complex BeiDou B1I code for the desired SV ID and sampled to specific sampling frequency
  */
@@ -223,6 +255,7 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
     _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // B1I chip period in sec
     beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate B1I code 1 sample per chip
+
 
     for (signed int i = 0; i < _samplesPerCode; i++)
         {

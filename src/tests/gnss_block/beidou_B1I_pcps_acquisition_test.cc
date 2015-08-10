@@ -87,11 +87,11 @@ protected:
 void BeidouB1iPcpsAcquisitionTest::init()
 {
     gnss_synchro.Channel_ID = 0;
-    gnss_synchro.System = 'C';                                                         // "BeiDou" = "C"          see gnss_satellite.h              
-    std::string signal = "1C";                                                         // "1C" is for GPS L1 C/A  see gnss_signal.h
+    gnss_synchro.System = 'C';                                                         // "BeiDou" = "C"                               see gnss_satellite.h              
+    std::string signal = "1C";                                                         // "1C" is for GPS L1 C/A (have to be canched)  see gnss_signal.h 
     signal.copy(gnss_synchro.Signal, 2, 0);
 
-    gnss_synchro.PRN = 20;                                                              // CAMBIO IL PRN A 10
+    gnss_synchro.PRN = 28;                                                              // [1:37]
 
     config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                       // set 16.000 MHz
     config->set_property("Acquisition.item_type", "gr_complex");
@@ -101,7 +101,7 @@ void BeidouB1iPcpsAcquisitionTest::init()
     config->set_property("Acquisition.implementation", "BeiDou_B1I_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.001");
     config->set_property("Acquisition.doppler_max", "5000");
-    config->set_property("Acquisition.doppler_step", "500");                            // da rivedere
+    config->set_property("Acquisition.doppler_step", "500");                            
     config->set_property("Acquisition.repeat_satellite", "false");
     config->set_property("Acquisition.pfa", "0.0");
 }
@@ -136,8 +136,8 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, Instantiate)
 
 TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
 {
-    int fs_in    =   16000000;                           // before was 4000000
-    int nsamples =      16000;                           // defore was 4000
+    int fs_in    =   16000000;                           
+    int nsamples =      16000;                           
     struct timeval tv;
     long long int begin = 0;
     long long int end   = 0;
@@ -174,8 +174,8 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue     = gr::msg_queue::make(0);
 
-    double expected_delay_samples = 3767;          // set 5000 [samples]
-    double expected_doppler_hz    = 1650;          // set 4855 [Hz]
+    double expected_delay_samples = 2600;          // [samples]
+    double expected_doppler_hz    = 4800;          // [Hz]
     init();
     start_queue();
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -194,15 +194,15 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.1);                        // da rivedere
+        acquisition->set_threshold(0.1);                        
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(10000);                    // da rivedere
+        acquisition->set_doppler_max(10000);                    
     }) << "Failure setting doppler_max." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(250);                     // da rivedere
+        acquisition->set_doppler_step(250);                     
     }) << "Failure setting doppler_step." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -211,7 +211,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/FFF020_test_1.dat";                                      //  change the name of the file
+        std::string file = path + "signal_samples/FFF028_test_1.dat";                                      //  set the name of the file
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
@@ -234,19 +234,16 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
-    std::cout << "DEBUGGGGG!!!!!!" << std::endl;
-
     ASSERT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
     float delay_error_chips = (float)(delay_error_samples * 2046 / 16000);
     double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
 
-
     std::cout << "The gnss_synchro.Acq_delay_samples is  " << gnss_synchro.Acq_delay_samples << std::endl;
     std::cout << "The gnss_synchro.Acq_doppler_hz is  "    << gnss_synchro.Acq_doppler_hz    << std::endl;
 
-    EXPECT_LE(doppler_error_hz,  500)   <<    "Doppler error exceeds the expected value: 500 Hz = 2*doppler_step";   // da rivedere modificate per vederese se finisce il run test
-    EXPECT_LT(delay_error_chips,  10)   <<   "Delay error exceeds the expected value: 1 chips";                               // modificato per vedere se finisce il run test
+    EXPECT_LE(doppler_error_hz,  500)   <<    "Doppler error exceeds the expected value: 500 Hz = 2*doppler_step";         
+    EXPECT_LT(delay_error_chips,  10)   <<    "Delay error exceeds the expected value: 1 chips";                             
     ch_thread.join();
 }

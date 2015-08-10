@@ -1,8 +1,33 @@
-/*
- * beidou_b1i_pcps_acquisition.cc
- *
- *  Created on: Jul 15, 2015
+/*!
+ * \file beidou_b1i_pcps_acquisition.cc
+ * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
+ *  BeiDou B1I signals
+ *  Created on: 2015
  *      Author: Giorgio Savastano
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
  */
 
 #include "beidou_b1i_pcps_acquisition.h"
@@ -33,17 +58,11 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
-    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000); // change ??
-
-    if_    = configuration_->property(role + ".ifreq", 98000);            // change to from 0 to 0.098e6 Hz ??
-
-    //std::cout << "the fs_in_ is " << fs_in_ << std::endl;              // debug
-    //std::cout << "the if_ is " << if_ << std::endl;                      // debug 
-
+    fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000); 
+    if_    = configuration_->property(role + ".ifreq", 98000);         
     dump_  = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
     sampled_ms_       = configuration_->property(role + ".coherent_integration_time_ms", 1);
-
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     if (!bit_transition_flag_)
@@ -64,13 +83,6 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     vector_length_ = code_length_ * sampled_ms_;
 
     code_= new gr_complex[vector_length_];
-
-/*    std::cout << "the shift_resolution_ is "                         << shift_resolution_ << std::endl;                      // debug
-    std::cout << "the sampled_ms_ is "                               << sampled_ms_ << std::endl;                      // debug
-    std::cout << "the code_length_ is "                              << code_length_ << std::endl;                    // debug 
-    std::cout << "the vector_length_ is code_length_ * sampled_ms_ " << vector_length_ << std::endl;                      // debug*/
-
-
 
     // if (item_type_.compare("gr_complex") == 0 )
     //         {
@@ -204,13 +216,11 @@ signed int BeidouB1iPcpsAcquisition::mag()
     //      }
 }
 
-
 void BeidouB1iPcpsAcquisition::init()
 {
     acquisition_cc_->init();
     set_local_code();
 }
-
 
 void BeidouB1iPcpsAcquisition::set_local_code()
 {
@@ -218,10 +228,8 @@ void BeidouB1iPcpsAcquisition::set_local_code()
     //   {
     std::complex<float>* code = new std::complex<float>[code_length_];
 
-    beidou_b1i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);   // DA MODIFICARE??
+    beidou_b1i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0); 
 
-    std::cout << " the gnss_synchro_->PRN is " << gnss_synchro_->PRN << std::endl;    // debug
-    
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
             memcpy(&(code_[i*code_length_]), code,
@@ -328,7 +336,6 @@ void BeidouB1iPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
         }
 }
 
-
 gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_left_block()
 {
     if (item_type_.compare("gr_complex") == 0)
@@ -349,7 +356,6 @@ gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_left_block()
             return nullptr;
         }
 }
-
 
 gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_right_block()
 {

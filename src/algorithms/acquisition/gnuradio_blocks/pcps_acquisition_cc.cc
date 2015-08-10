@@ -114,7 +114,6 @@ pcps_acquisition_cc::pcps_acquisition_cc(
             d_max_dwells = 1; //Activation of d_bit_transition_flag invalidates the value of d_max_dwells
         }
 
-
     d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
     d_magnitude = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 
@@ -322,9 +321,6 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                 {
                     // doppler search steps
                     doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-
-                    //std::cout << " the doppler =  "                 << doppler             << std::endl;                                                //DEBUG
-
 
                     volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
                             d_grid_doppler_wipeoffs[doppler_index], d_fft_size);

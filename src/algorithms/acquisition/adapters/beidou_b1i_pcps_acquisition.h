@@ -1,12 +1,9 @@
 /*!
  * \file beidou_b1i_pcps_acquisition.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L1 C/A signals
- * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
- *          <li> Marc Molina, 2013. marc.molina.pena(at)gmail.com
- *          </ul>
+ *  BeiDou B1I signals
+ *  Created on: 2015
+ *      Author: Giorgio Savastano
  *
  * -------------------------------------------------------------------------
  *
@@ -52,7 +49,7 @@ class ConfigurationInterface;
 
 /*!
  * \brief This class adapts a PCPS acquisition block to an AcquisitionInterface
- *  for GPS L1 C/A signals
+ *  for BeiDou B1I signals
  */
 class BeidouB1iPcpsAcquisition: public AcquisitionInterface
 {

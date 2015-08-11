@@ -91,12 +91,12 @@ void BeidouB1iPcpsAcquisitionTest::init()
     std::string signal = "1C";                                                         // "1C" is for GPS L1 C/A (have to be canched)  see gnss_signal.h 
     signal.copy(gnss_synchro.Signal, 2, 0);
 
-    gnss_synchro.PRN = 28;                                                              // [1:37]
+    gnss_synchro.PRN = 30;                                                              // [1:37]
 
     config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                       // set 16.000 MHz
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "98000");                                   // see "Development of a PC-Based Software Receiver for the Reception of Beidou Navigation Satellite Signals"
-    config->set_property("Acquisition.coherent_integration_time_ms", "1");
+    config->set_property("Acquisition.coherent_integration_time_ms", "8");             // Test with a period of integration > 1 ms
     config->set_property("Acquisition.dump", "true");                                  // set "true"
     config->set_property("Acquisition.implementation", "BeiDou_B1I_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.001");
@@ -111,7 +111,6 @@ void BeidouB1iPcpsAcquisitionTest::start_queue()
     ch_thread = boost::thread(&BeidouB1iPcpsAcquisitionTest::wait_message, this);
 }
 
-
 void BeidouB1iPcpsAcquisitionTest::wait_message()
 {
     while (!stop)
@@ -120,7 +119,6 @@ void BeidouB1iPcpsAcquisitionTest::wait_message()
             stop_queue();
         }
 }
-
 
 void BeidouB1iPcpsAcquisitionTest::stop_queue()
 {
@@ -174,8 +172,8 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue     = gr::msg_queue::make(0);
 
-    double expected_delay_samples = 2600;          // [samples]
-    double expected_doppler_hz    = 4800;          // [Hz]
+    double expected_delay_samples = 3565;          // [samples]
+    double expected_doppler_hz    = 1500;          // [Hz]
     init();
     start_queue();
     std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
@@ -211,7 +209,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/FFF028_test_1.dat";                                      //  set the name of the file
+        std::string file = path + "signal_samples/FFF030_test_1.dat";                                      //  set the name of the file
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);

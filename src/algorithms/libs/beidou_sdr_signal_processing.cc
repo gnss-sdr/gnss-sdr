@@ -66,7 +66,6 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
             G1_register[0] = feedback1;
         }
 
-
     /* Generate G2 by tapping the shift register */
     for(lcv = 0; lcv < _code_length; lcv++)
         {

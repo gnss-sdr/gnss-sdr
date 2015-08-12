@@ -2,8 +2,7 @@
  * \file beidou_b1i_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  BeiDou B1I signals
- *  Created on: 2015
- *      Author: Giorgio Savastano
+ * \author Giorgio Savastano, 2015. giorgio.savastano(at)uniroma1.it
  *
  * -------------------------------------------------------------------------
  *
@@ -62,10 +61,8 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     if_    = configuration_->property(role + ".ifreq", 98000);         
     dump_  = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
-    sampled_ms_       = configuration_->property(role + ".coherent_integration_time_ms", 8);                    // test with 2 ms
+    sampled_ms_       = configuration_->property(role + ".coherent_integration_time_ms", 1);           
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
-
-    std::cout << "sto dentro beidou_b1i_pcps_acquisition.cc, il valore del sampled_ms_ è ------>   " << sampled_ms_ << std::endl;                            // DEBUG
 
     if (!bit_transition_flag_)
         {
@@ -81,10 +78,7 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_ / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
 
-
     vector_length_ = code_length_ * sampled_ms_;
-
-    std::cout << "sto dentro beidou_b1i_pcps_acquisition.cc, il valore del vector_length_ è ------>   " << vector_length_ << std::endl;                      // DEBUG
 
     code_= new gr_complex[vector_length_];
 
@@ -234,8 +228,6 @@ void BeidouB1iPcpsAcquisition::set_local_code()
 
     beidou_b1i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0); 
 
-    std::cout << "the gnss_synchro_ -> Signal is   " <<gnss_synchro_-> Signal << std::endl;                           // DEBUG
-
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
             memcpy(&(code_[i*code_length_]), code,
@@ -246,10 +238,6 @@ void BeidouB1iPcpsAcquisition::set_local_code()
 
     delete[] code;
 
-/*    for (int i = 0; i < vector_length_; ++i)
-    {
-        std::cout << "the code_ is   " << code_[i]  << std::endl;                           // DEBUG
-    }*/
     //  }
 }
 
@@ -372,7 +360,3 @@ gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }
-
-
-
-

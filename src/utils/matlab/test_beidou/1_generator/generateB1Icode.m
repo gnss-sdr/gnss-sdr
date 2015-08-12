@@ -10,13 +10,14 @@ function B1code = generateB1Icode(No)
 %       B1code      - a vector containing the desired B1 ranging code(PRN)
 %                   (chips).  
 %                           Test
-% Written by Giorgio Savastano
+%
+% * \author Giorgio Savastano, 2015. giorgio.savastano(at)uniroma1.it
+%
 % Based on Darius Plausinaitis,  Dennis M. Akos, Peter Rinder and 
 % Nicolaj Bertelsen
-% Updated and converted to matlab by Giorgio Savstano
-%
+% Updated and converted to matlab by Giorgio Savastano, 2015. giorgio.savastano(at)uniroma1.it
+% -------------------------------------------------------------------------
 
-%
 
 % Generate G1 code -----------------------------------------------------
 

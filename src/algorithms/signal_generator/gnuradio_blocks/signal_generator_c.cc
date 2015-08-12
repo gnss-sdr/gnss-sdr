@@ -91,6 +91,9 @@ void signal_generator_c::init()
     // True if Galileo satellites are present
     bool galileo_signal = std::find(system_.begin(), system_.end(), "E") != system_.end();
 
+    // True if BeiDou satellites are present
+    bool beidou_signal = std::find(system_.begin(), system_.end(), "C") != system_.end();
+
     for (unsigned int sat = 0; sat < num_sats_; sat++)
         {
             start_phase_rad_.push_back(0);

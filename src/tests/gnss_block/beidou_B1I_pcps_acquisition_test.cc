@@ -96,7 +96,7 @@ void BeidouB1iPcpsAcquisitionTest::init()
     config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                       // set 16.000 MHz
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "98000");                                   // see "Development of a PC-Based Software Receiver for the Reception of Beidou Navigation Satellite Signals"
-    config->set_property("Acquisition.coherent_integration_time_ms", "8");             // Test with a period of integration > 1 ms
+    config->set_property("Acquisition.coherent_integration_time_ms", "1");             // Tested with a period of integration > 1 ms
     config->set_property("Acquisition.dump", "true");                                  // set "true"
     config->set_property("Acquisition.implementation", "BeiDou_B1I_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.001");

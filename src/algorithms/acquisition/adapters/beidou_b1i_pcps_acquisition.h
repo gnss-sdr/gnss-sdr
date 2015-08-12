@@ -2,8 +2,7 @@
  * \file beidou_b1i_pcps_acquisition.h
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
  *  BeiDou B1I signals
- *  Created on: 2015
- *      Author: Giorgio Savastano
+ * \author Giorgio Savastano, 2015. giorgio.savastano(at)uniroma1.it
  *
  * -------------------------------------------------------------------------
  *

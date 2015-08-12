@@ -56,14 +56,14 @@ const double BEIDOU_B1I_CODE_PERIOD          = 0.001;       //!< BeiDou B1 C/A c
 
 
 // NH code
-/*
+
 #define NH_CODE {0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,1,1,1,0}
 const int NH_BITS_RATE = 1000;                      // NH code bit rate [bits/s]
 const int NH_length    = 20;
-*/
+
 
 // D1 NAV Message
-/*const int  BEIDOU_D1_NAV_BITS_RATE  = 50;               // D1 NAV message bit rate        [bits/s]
+const int  BEIDOU_D1_NAV_BITS_RATE  = 50;               // D1 NAV message bit rate        [bits/s]
 const int  BEIDOU_SUPERFRAME_BITS   = 36000;            // SUPERFRAME  (24 frames)        [bits]
 const int  BEIDOU_SUPERFRAME_SECS   = 720;              // SUPERFRAME duration            [seconds]
 const int  BEIDOU_FRAME_BITS        = 1500;             // FRAME       (5 subframes)      [bits]

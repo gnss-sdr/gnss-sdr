@@ -65,8 +65,8 @@ phi_if = (phi0_if) + (2*pi*f_if*t) + (2*pi*f_d*t);                 % INITIAL PHA
 phi_if = mod(phi_if, (2*pi));                                      % Convert carrier phase to the range [0..2*pi];  
 
 %Calculate phase for PRN1;
-phi_prn1  = (phi0_prn1) + (f_prn*(t-code_delay));                  % ho messo il segno meno al code delay  
-prn1_indx = (fix(mod(phi_prn1, prn_len)));					       % from modulo (scilab) to mod (matlab)
+phi_prn1  = (phi0_prn1) + (f_prn*(t-code_delay));                  % (t-code_delay)
+prn1_indx = (fix(mod(phi_prn1, prn_len)));					       
 
 %Calculte phase for Neiman-Huffman;
 phi_nh  = (phi0_nh) + (f_nh*(t-code_delay));                       % (t-code_delay) 

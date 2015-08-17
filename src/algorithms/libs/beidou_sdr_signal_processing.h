@@ -1,8 +1,8 @@
 /*
  * beidou_sdr_signal_processing.h
  *
- *  Created on: 2015
- *      Author: Giorgio Savastano
+ * \author Giorgio Savastano, 2015. giorgio.savastano(at)uniroma1.it
+ *
  */
 
 #ifndef GNSS_SDR_BEIDOU_SDR_SIGNAL_PROCESSING_H_

@@ -268,8 +268,6 @@ void beidou_b1i_code_gen_complex_sampled_2ms(std::complex<float>* _dest, char _S
                   {
                       _signal_B1I_secondary[i*_samplesPerCode + k] = dest[k]
                               * (BEIDOU_B1I_NH_CODE.at(i) == '0' ? std::complex<float>(1,0) : std::complex<float>(-1,0));                      /* 1=>-1, 0=>1 */
-                      
-                      std::cout << "HIIIIII  BEIDOU_B1I_NH_CODE.at(i) is ---- >  "            << (BEIDOU_B1I_NH_CODE.at(i) == '0' ? std::complex<float>(1,0) : std::complex<float>(-1,0))       << std::endl;              // DEBUGG
                   }
           }
 

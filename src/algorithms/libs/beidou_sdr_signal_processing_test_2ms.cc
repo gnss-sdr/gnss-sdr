@@ -30,13 +30,13 @@
  * -------------------------------------------------------------------------
  */
 
-#include "beidou_sdr_signal_processing.h"
+#include "beidou_sdr_signal_processing_test_2ms.h"
 #include <stdlib.h>
 #include <cmath>
 
 auto auxCeil = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); };
 
-void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
+void beidou_b1i_code_gen_complex_2ms(std::complex<float>* _dest, signed int _prn, unsigned int _chip_shift)
 {
     const unsigned int _code_length = 2046;
     signed int G1[_code_length];
@@ -204,9 +204,10 @@ void beidou_b1i_code_gen_complex(std::complex<float>* _dest, signed int _prn, un
 /*
  *  Generates complex BeiDou B1I code for the desired SV ID and sampled to specific sampling frequency
  */
-void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int _prn, signed int _fs, unsigned int _chip_shift)
+void beidou_b1i_code_gen_complex_sampled_2ms(std::complex<float>* _dest, char _Signal[3], unsigned int _prn, signed int _fs, unsigned int _chip_shift, bool _secondary_flag)
 {
     // This function is based on the GNU software GPS for MATLAB in the Kay Borre book
+    std::string _beidou_signal = _Signal;
     std::complex<float> _code[2046];
     signed int _samplesPerCode, _codeValueIndex;
     float _ts;
@@ -215,13 +216,20 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
     const signed int _codeFreqBasis = 2046000;    // [Hz]
     const signed int _codeLength    = 2046;
 
+    unsigned int code_length_;
+
+    code_length_ = round(_fs / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
+    std::complex<float>* dest = new std::complex<float>[code_length_];                                                 // code_length_
+
     //--- Find number of samples per spreading code ----------------------------
     _samplesPerCode = static_cast<signed int>(static_cast<double>(_fs) / static_cast<double>(_codeFreqBasis / _codeLength));
 
+    std::complex<float>* _signal_B1I_secondary = new std::complex<float>[(int)NH_length * _samplesPerCode];
+
         //--- Find time constants --------------------------------------------------
-    _ts = 1.0 / static_cast<float>(_fs);                    // Sampling period in sec
-    _tc = 1.0 / static_cast<float>(_codeFreqBasis);         // B1I chip period in sec
-    beidou_b1i_code_gen_complex(_code, _prn, _chip_shift);  //generate B1I code 1 sample per chip
+    _ts = 1.0 / static_cast<float>(_fs);                           // Sampling period in sec
+    _tc = 1.0 / static_cast<float>(_codeFreqBasis);                // B1I chip period in sec
+    beidou_b1i_code_gen_complex_2ms(_code, _prn, _chip_shift);     //generate B1I code 1 sample per chip --- > the length of _code is 2046
 
     for (signed int i = 0; i < _samplesPerCode; i++)
         {
@@ -242,16 +250,37 @@ void beidou_b1i_code_gen_complex_sampled(std::complex<float>* _dest, unsigned in
             if (i == _samplesPerCode - 1)
                 {
                     //--- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = _code[_codeLength - 1];
+                    dest[i] = _code[_codeLength - 1];
 
                 }
             else
                 {
-                    _dest[i] = _code[_codeValueIndex]; //repeat the chip -> upsample
+                    dest[i] = _code[_codeValueIndex]; //repeat the chip -> upsample
                 }
+        }    
+
+    if (_beidou_signal.rfind("1C") != std::string::npos && _beidou_signal.length() >= 2 && _secondary_flag)
+    {
+                                         
+      for (unsigned int i = 0; i < 8; i++)                                           // repeat the B1I code a number of times equal to the number of ms --> multiply every 16000 chips with a chip of the NH code --> have to be change automatically
+          {
+              for (unsigned k = 0; k < _samplesPerCode; k++)
+                  {
+                      _signal_B1I_secondary[i*_samplesPerCode + k] = dest[k]
+                              * (BEIDOU_B1I_NH_CODE.at(i) == '0' ? std::complex<float>(1,0) : std::complex<float>(-1,0));                      /* 1=>-1, 0=>1 */
+                      
+                      std::cout << "HIIIIII  BEIDOU_B1I_NH_CODE.at(i) is ---- >  "            << (BEIDOU_B1I_NH_CODE.at(i) == '0' ? std::complex<float>(1,0) : std::complex<float>(-1,0))       << std::endl;              // DEBUGG
+                  }
+          }
+
+      _samplesPerCode *= 8;                                                         // have to be change automatically
+
+    }
+
+    for (unsigned int i = 0; i < _samplesPerCode; i++)
+        {
+            _dest[i] = _signal_B1I_secondary[i];                                      // _dest --> long as (vector_length_ = code_length_ * sampled_ms_)
+            
         }
+
 }
-
-
-
-

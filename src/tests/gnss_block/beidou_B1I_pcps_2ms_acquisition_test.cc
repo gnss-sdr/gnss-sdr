@@ -1,7 +1,7 @@
 /*!
  * \file beidou_B1I_pcps_acquisition_test.cc
  * \brief  This class implements an acquisition test for
- * BeidouB1iPcpsAcquisition class based on some input parameters.
+ * BeidouB1iPcps2msAcquisition class based on some input parameters.
  * \author Giorgio Savastano, 2015. giorgio.savastano(at)uniroma1.it
  *
  *
@@ -47,12 +47,12 @@
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
  
-#include "beidou_b1i_pcps_acquisition.h"   
+#include "beidou_b1i_pcps_2ms_acquisition.h"   
 
-class BeidouB1iPcpsAcquisitionTest: public ::testing::Test
+class BeidouB1iPcps2msAcquisitionTest: public ::testing::Test
 {
 protected:
-    BeidouB1iPcpsAcquisitionTest()
+    BeidouB1iPcps2msAcquisitionTest()
     {
         //queue = gr::msg_queue::make(0);
         factory = std::make_shared<GNSSBlockFactory>();
@@ -63,7 +63,7 @@ protected:
         gnss_synchro = Gnss_Synchro();
     }
 
-    ~BeidouB1iPcpsAcquisitionTest()
+    ~BeidouB1iPcps2msAcquisitionTest()
     {}
 
     void init();
@@ -84,19 +84,19 @@ protected:
 };
 
 
-void BeidouB1iPcpsAcquisitionTest::init()
+void BeidouB1iPcps2msAcquisitionTest::init()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'C';                                                         // "BeiDou" = "C"                               see gnss_satellite.h              
     std::string signal = "1C";                                                         // "1C" is for GPS L1 C/A (have to be canched)  see gnss_signal.h 
     signal.copy(gnss_synchro.Signal, 2, 0);
 
-    gnss_synchro.PRN = 20;                                                              // [1:37]
+    gnss_synchro.PRN = 30;                                                              // [1:37]
 
     config->set_property("GNSS-SDR.internal_fs_hz", "16000000");                       // set 16.000 MHz
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "98000");                                   // see "Development of a PC-Based Software Receiver for the Reception of Beidou Navigation Satellite Signals"
-    config->set_property("Acquisition.coherent_integration_time_ms", "1");             // Tested with a period of integration > 1 ms
+    config->set_property("Acquisition.coherent_integration_time_ms", "8");             // Tested with a period of integration > 1 ms
     config->set_property("Acquisition.dump", "true");                                  // set "true"
     config->set_property("Acquisition.implementation", "BeiDou_B1I_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.001");
@@ -106,12 +106,12 @@ void BeidouB1iPcpsAcquisitionTest::init()
     config->set_property("Acquisition.pfa", "0.0");
 }
 
-void BeidouB1iPcpsAcquisitionTest::start_queue()
+void BeidouB1iPcps2msAcquisitionTest::start_queue()
 {
-    ch_thread = boost::thread(&BeidouB1iPcpsAcquisitionTest::wait_message, this);
+    ch_thread = boost::thread(&BeidouB1iPcps2msAcquisitionTest::wait_message, this);
 }
 
-void BeidouB1iPcpsAcquisitionTest::wait_message()
+void BeidouB1iPcps2msAcquisitionTest::wait_message()
 {
     while (!stop)
         {
@@ -120,19 +120,19 @@ void BeidouB1iPcpsAcquisitionTest::wait_message()
         }
 }
 
-void BeidouB1iPcpsAcquisitionTest::stop_queue()
+void BeidouB1iPcps2msAcquisitionTest::stop_queue()
 {
     stop = true;
 }
 
-TEST_F(BeidouB1iPcpsAcquisitionTest, Instantiate)
+TEST_F(BeidouB1iPcps2msAcquisitionTest, Instantiate)
 {
     init();
     queue = gr::msg_queue::make(0);
-    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    std::shared_ptr<BeidouB1iPcps2msAcquisition> acquisition = std::make_shared<BeidouB1iPcps2msAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 }
 
-TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
+TEST_F(BeidouB1iPcps2msAcquisitionTest, ConnectAndRun)
 {
     int fs_in    =   16000000;                           
     int nsamples =      16000;                           
@@ -143,7 +143,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
     queue = gr::msg_queue::make(0);
 
     init();
-    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    std::shared_ptr<BeidouB1iPcps2msAcquisition> acquisition = std::make_shared<BeidouB1iPcps2msAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -164,7 +164,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ConnectAndRun)
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 }
 
-TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
+TEST_F(BeidouB1iPcps2msAcquisitionTest, ValidationOfResults)
 {
     struct timeval tv;
     long long int begin = 0;
@@ -172,11 +172,11 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     top_block = gr::make_top_block("Acquisition test");
     queue     = gr::msg_queue::make(0);
 
-    double expected_delay_samples = 3767;          // [samples]
-    double expected_doppler_hz    = 1650;          // [Hz]
+    double expected_delay_samples = 3565;          // [samples]
+    double expected_doppler_hz    = 1500;          // [Hz]
     init();
     start_queue();
-    std::shared_ptr<BeidouB1iPcpsAcquisition> acquisition = std::make_shared<BeidouB1iPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    std::shared_ptr<BeidouB1iPcps2msAcquisition> acquisition = std::make_shared<BeidouB1iPcps2msAcquisition>(config.get(), "Acquisition", 1, 1, queue);
 
 
     ASSERT_NO_THROW( {
@@ -192,7 +192,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
     }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
-        acquisition->set_threshold(0.001);                        
+        acquisition->set_threshold(0.1);                        
     }) << "Failure setting threshold." << std::endl;
 
     ASSERT_NO_THROW( {
@@ -209,7 +209,7 @@ TEST_F(BeidouB1iPcpsAcquisitionTest, ValidationOfResults)
 
     ASSERT_NO_THROW( {
         std::string path = std::string(TEST_PATH);
-        std::string file = path + "signal_samples/FFF020_test_1.dat";                                      //  set the name of the file
+        std::string file = path + "signal_samples/FFF030_test_1.dat";                                      //  set the name of the file
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);

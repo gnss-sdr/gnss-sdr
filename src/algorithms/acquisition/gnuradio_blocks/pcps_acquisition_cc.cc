@@ -136,7 +136,11 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 {
     memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
+
+    std::cout << " Sto dentro pcps_acquisition_cc e il valore di sizeof(gr_complex) è    " << sizeof(gr_complex) << std::endl;         // DEBUG
+
     d_fft_if->execute(); // We need the FFT of local code
+
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 

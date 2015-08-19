@@ -186,14 +186,13 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
             _signal_E1 = _resampled_signal;
         }
 
-
     if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2 && _secondary_flag)
     {
 
         std::complex<float>* _signal_E1C_secondary = new std::complex<float>
                                                     [(int)Galileo_E1_C_SECONDARY_CODE_LENGTH
                                                     * _samplesPerCode];
-
+                                         
         for (unsigned int i = 0; i < (int)Galileo_E1_C_SECONDARY_CODE_LENGTH; i++)
             {
                 for (unsigned k = 0; k < _samplesPerCode; k++)
@@ -201,6 +200,7 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
                         _signal_E1C_secondary[i*_samplesPerCode + k] = _signal_E1[k]
                                 * (Galileo_E1_C_SECONDARY_CODE.at(i) == '0'
                                    ? std::complex<float>(1,0) : std::complex<float>(-1,0));
+
                     }
             }
 

@@ -30,20 +30,20 @@
  * -------------------------------------------------------------------------
  */
 
-#include "beidou_b1i_pcps_acquisition.h"
+#include "beidou_b1i_pcps_2ms_acquisition.h"
 #include <iostream>
 #include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <gnuradio/msg_queue.h>
-#include "beidou_sdr_signal_processing.h"
+#include "beidou_sdr_signal_processing_test_2ms.h"
 #include "BEIDOU_B1I.h"
 #include "configuration_interface.h"
 
 
 using google::LogMessage;
 
-BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
+BeidouB1iPcps2msAcquisition::BeidouB1iPcps2msAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         gr::msg_queue::sptr queue) :
@@ -62,10 +62,8 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     if_    = configuration_->property(role + ".ifreq", 98000);         
     dump_  = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
-    sampled_ms_       = configuration_->property(role + ".coherent_integration_time_ms", 2);                    // test with 2 ms
+    sampled_ms_       = configuration_->property(role + ".coherent_integration_time_ms", 8);                    // test with 8 ms
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
-
-    std::cout << "sto dentro beidou_b1i_pcps_acquisition.cc, il valore del sampled_ms_ è ------>   " << sampled_ms_ << std::endl;                            // DEBUG
 
     if (sampled_ms_ % 1 != 0)
         {
@@ -87,14 +85,12 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
     vector_length_ = code_length_ * sampled_ms_;
     int samples_per_ms = code_length_ / 1;
 
-    std::cout << "sto dentro beidou_b1i_pcps_acquisition.cc, il valore del vector_length_ è ------>   " << vector_length_ << std::endl;                      // DEBUG
-    std::cout << "sto dentro beidou_b1i_pcps_acquisition.cc, il valore del samples_per_ms è ------>   " << samples_per_ms << std::endl;                      // DEBUG
-
     code_= new gr_complex[vector_length_];
 
     // if (item_type_.compare("gr_complex") == 0 )
     //         {
     item_size_ = sizeof(gr_complex);
+
     acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
             shift_resolution_, if_, fs_in_, code_length_, code_length_,
             bit_transition_flag_, queue_, dump_, dump_filename_);
@@ -131,13 +127,13 @@ BeidouB1iPcpsAcquisition::BeidouB1iPcpsAcquisition(
 }
 
 
-BeidouB1iPcpsAcquisition::~BeidouB1iPcpsAcquisition()
+BeidouB1iPcps2msAcquisition::~BeidouB1iPcps2msAcquisition()
 {
     delete[] code_;
 }
 
 
-void BeidouB1iPcpsAcquisition::set_channel(unsigned int channel)
+void BeidouB1iPcps2msAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
     //if (item_type_.compare("gr_complex") == 0)
@@ -147,7 +143,7 @@ void BeidouB1iPcpsAcquisition::set_channel(unsigned int channel)
 }
 
 
-void BeidouB1iPcpsAcquisition::set_threshold(float threshold)
+void BeidouB1iPcps2msAcquisition::set_threshold(float threshold)
 {
     float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
@@ -170,7 +166,7 @@ void BeidouB1iPcpsAcquisition::set_threshold(float threshold)
 }
 
 
-void BeidouB1iPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
+void BeidouB1iPcps2msAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
     //   if (item_type_.compare("gr_complex") == 0)
@@ -180,7 +176,7 @@ void BeidouB1iPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 }
 
 
-void BeidouB1iPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
+void BeidouB1iPcps2msAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
     //   if (item_type_.compare("gr_complex") == 0)
@@ -191,7 +187,7 @@ void BeidouB1iPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 }
 
 
-void BeidouB1iPcpsAcquisition::set_channel_queue(
+void BeidouB1iPcps2msAcquisition::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
@@ -202,7 +198,7 @@ void BeidouB1iPcpsAcquisition::set_channel_queue(
 }
 
 
-void BeidouB1iPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
+void BeidouB1iPcps2msAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
     // if (item_type_.compare("gr_complex") == 0)
@@ -212,7 +208,7 @@ void BeidouB1iPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 }
 
 
-signed int BeidouB1iPcpsAcquisition::mag()
+signed int BeidouB1iPcps2msAcquisition::mag()
 {
     // //    if (item_type_.compare("gr_complex") == 0)
     //        {
@@ -224,21 +220,22 @@ signed int BeidouB1iPcpsAcquisition::mag()
     //      }
 }
 
-void BeidouB1iPcpsAcquisition::init()
+void BeidouB1iPcps2msAcquisition::init()
 {
     acquisition_cc_->init();
     set_local_code();
 }
 
-void BeidouB1iPcpsAcquisition::set_local_code()
+void BeidouB1iPcps2msAcquisition::set_local_code()
 {
     // if (item_type_.compare("gr_complex") == 0)
-    //   {
-    std::complex<float>* code = new std::complex<float>[code_length_];
 
-    beidou_b1i_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0); 
 
-    std::cout << "the gnss_synchro_ -> Signal is   " <<gnss_synchro_-> Signal << std::endl;                           // DEBUG
+    std::complex<float>* code = new std::complex<float>[vector_length_];                                           // vector_length_
+
+    beidou_b1i_code_gen_complex_sampled_2ms(code, gnss_synchro_->Signal, gnss_synchro_->PRN, fs_in_, 0, true);     // set _secondary_flag = true 
+
+    std::cout << "the gnss_synchro_ -> Signal is   " <<gnss_synchro_-> Signal << std::endl;
 
     for (unsigned int i = 0; i < sampled_ms_; i++)
         {
@@ -253,7 +250,7 @@ void BeidouB1iPcpsAcquisition::set_local_code()
 }
 
 
-void BeidouB1iPcpsAcquisition::reset()
+void BeidouB1iPcps2msAcquisition::reset()
 {
     //  if (item_type_.compare("gr_complex") == 0)
     //  {
@@ -261,7 +258,7 @@ void BeidouB1iPcpsAcquisition::reset()
     //  }
 }
 
-void BeidouB1iPcpsAcquisition::set_state(int state)
+void BeidouB1iPcps2msAcquisition::set_state(int state)
 {
     //  if (item_type_.compare("gr_complex") == 0)
     //  {
@@ -269,7 +266,7 @@ void BeidouB1iPcpsAcquisition::set_state(int state)
     //  }
 }
 
-float BeidouB1iPcpsAcquisition::calculate_threshold(float pfa)
+float BeidouB1iPcps2msAcquisition::calculate_threshold(float pfa)
 {
     //Calculate the threshold
     unsigned int frequency_bins = 0;
@@ -289,7 +286,7 @@ float BeidouB1iPcpsAcquisition::calculate_threshold(float pfa)
 }
 
 
-void BeidouB1iPcpsAcquisition::connect(gr::top_block_sptr top_block)
+void BeidouB1iPcps2msAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -316,7 +313,7 @@ void BeidouB1iPcpsAcquisition::connect(gr::top_block_sptr top_block)
 
 }
 
-void BeidouB1iPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
+void BeidouB1iPcps2msAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -346,7 +343,7 @@ void BeidouB1iPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
         }
 }
 
-gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_left_block()
+gr::basic_block_sptr BeidouB1iPcps2msAcquisition::get_left_block()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -367,7 +364,7 @@ gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_left_block()
         }
 }
 
-gr::basic_block_sptr BeidouB1iPcpsAcquisition::get_right_block()
+gr::basic_block_sptr BeidouB1iPcps2msAcquisition::get_right_block()
 {
     return acquisition_cc_;
 }

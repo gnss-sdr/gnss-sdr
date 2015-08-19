@@ -174,6 +174,7 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
         }
     
     d_fft_if->execute(); // We need the FFT of local code
+
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 

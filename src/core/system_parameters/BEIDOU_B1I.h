@@ -58,8 +58,10 @@ const double BEIDOU_B1I_CODE_PERIOD          = 0.001;       //!< BeiDou B1 C/A c
 // NH code
 
 #define NH_CODE {0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,1,1,1,0}
-const int NH_BITS_RATE = 1000;                      // NH code bit rate [bits/s]
-const int NH_length    = 20;
+const std::string BEIDOU_B1I_NH_CODE = "00000100110101001110";     // similar to Galileo_E1_C_SECONDARY_CODE
+const int NH_BITS_RATE    = 1000;                                     // NH code bit rate [bits/s]
+const int NH_BIT_DURATION = 0.001;                                    // NH code bit duration [s] --> 1 ms
+const int NH_length       = 20;
 
 
 // D1 NAV Message

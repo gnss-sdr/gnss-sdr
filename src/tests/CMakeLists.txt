@@ -39,9 +39,9 @@ if(NOT ${GTEST_DIR_LOCAL})
      if(OS_IS_MACOSX)
          ExternalProject_Add(
               gtest-${gtest_RELEASE}
-              URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
+              GIT_REPOSITORY https://github.com/google/googletest
+              GIT_TAG release-${gtest_RELEASE}
               DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../download/gtest-${gtest_RELEASE}
-              URL_MD5 "2d6ec8ccdf5c46b05ba54a9fd1d130d7"
               SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
               BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
               CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -52,9 +52,9 @@ if(NOT ${GTEST_DIR_LOCAL})
      else(OS_IS_MACOSX)
          ExternalProject_Add(
               gtest-${gtest_RELEASE}
-              URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
+              GIT_REPOSITORY https://github.com/google/googletest
+              GIT_TAG release-${gtest_RELEASE}
               DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../download/gtest-${gtest_RELEASE}
-              URL_MD5 "2d6ec8ccdf5c46b05ba54a9fd1d130d7"
               SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
               BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
               UPDATE_COMMAND ""

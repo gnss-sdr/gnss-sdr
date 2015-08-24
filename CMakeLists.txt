@@ -279,7 +279,7 @@ endif(NOT ENABLE_GENERIC_ARCH)
 
 
 ################################################################################
-# Googletest - http://code.google.com/p/googletest/
+# Googletest - https://github.com/google/googletest
 ################################################################################
 enable_testing()
 if(EXISTS $ENV{GTEST_DIR})
@@ -288,7 +288,7 @@ endif(EXISTS $ENV{GTEST_DIR})
 if(GTEST_DIR)
      message(STATUS "Googletest root folder set at ${GTEST_DIR}")
      find_path(LIBGTEST_DEV_DIR NAMES src/gtest-all.cc PATHS ${GTEST_DIR})
-          if(LIBGTEST_DEV_DIR)
+     if(LIBGTEST_DEV_DIR)
          message (STATUS "Googletest has been found.")
      else(LIBGTEST_DEV_DIR)
          message (FATAL_ERROR " Googletest source code has not been found at ${GTEST_DIR}.")

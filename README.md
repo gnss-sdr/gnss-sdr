@@ -94,9 +94,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-5.200.2.tar.gz
-$ tar xvfz armadillo-5.200.2.tar.gz
-$ cd armadillo-5.200.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-5.400.2.tar.gz
+$ tar xvfz armadillo-5.400.2.tar.gz
+$ cd armadillo-5.400.2
 $ cmake .
 $ make
 $ sudo make install
@@ -134,23 +134,23 @@ $ sudo ldconfig
 
    
 
-#### Build the [Google C++ Testing Framework](http://code.google.com/p/googletest/ "Googletest Homepage"), also known as googletest:
+#### Build the [Google C++ Testing Framework](https://github.com/google/googletest "Googletest Homepage"), also known as googletest:
 
 ~~~~~~ 
-$ wget http://googletest.googlecode.com/files/gtest-1.7.0.zip
-$ unzip gtest-1.7.0.zip
-$ cd gtest-1.7.0
-$ ./configure
+$ wget https://github.com/google/googletest/archive/release-1.7.0.zip
+$ unzip release-1.7.0.zip
+$ cd googletest-release-1.7.0
+$ cmake .
 $ make
 ~~~~~~ 
 
-Please **DO NOT install** gtest (do *not* type ```sudo make install```). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of ```#if``` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of gtest its own tests; it is only required that you tell the system where the gtest folder that you downloaded resides. Just add to your ```$HOME/.bashrc``` file the following line:
+Please **DO NOT install** googletest (do *not* type ```sudo make install```). Every user needs to compile his tests using the same compiler flags used to compile the installed Google Test libraries; otherwise he may run into undefined behaviors (i.e. the tests can behave strangely and may even crash for no obvious reasons). The reason is that C++ has this thing called the One-Definition Rule: if two C++ source files contain different definitions of the same class/function/variable, and you link them together, you violate the rule. The linker may or may not catch the error (in many cases it is not required by the C++ standard to catch the violation). If it does not, you get strange run-time behaviors that are unexpected and hard to debug. If you compile Google Test and your test code using different compiler flags, they may see different definitions of the same class/function/variable (e.g. due to the use of ```#if``` in Google Test). Therefore, for your sanity, we recommend to avoid installing pre-compiled Google Test libraries. Instead, each project should compile Google Test itself such that it can be sure that the same flags are used for both Google Test and the tests. The building system of GNSS-SDR does the compilation and linking of googletest to its own tests; it is only required that you tell the system where the googletest folder that you downloaded resides. Just add to your ```$HOME/.bashrc``` file the following line:
 
 ~~~~~~ 
 export GTEST_DIR=/home/username/gtest-1.7.0
 ~~~~~~ 
 
-changing /home/username/gtest-1.7.0 by the actual directory where you downloaded gtest. 
+changing /home/username/gtest-1.7.0 by the actual directory where you downloaded googletest. 
 
    
 

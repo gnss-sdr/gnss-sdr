@@ -456,7 +456,6 @@ if (NOT GFlags_FOUND)
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
           GIT_REPOSITORY git://github.com/gflags/gflags.git
           GIT_TAG v${gflags_RELEASE}
-          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/gflags-${gflags_RELEASE}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
           CMAKE_ARGS -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=ON -DBUILD_gflags_nothreads_LIB=OFF -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -573,7 +572,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
          GIT_REPOSITORY https://github.com/google/glog/
          GIT_TAG v${glog_RELEASE}
-         DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
@@ -777,7 +775,7 @@ endif(NOT OPENSSL_FOUND)
 
 
 ################################################################################
-# Universal Hardware Driver (UHD) (OPTIONAL, used if found)
+# Universal Hardware Driver (UHD)
 ################################################################################
 find_package(UHD)
 if(NOT UHD_FOUND)

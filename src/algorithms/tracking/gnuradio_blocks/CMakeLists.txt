@@ -16,6 +16,12 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+if(ENABLE_CUDA)
+	FIND_PACKAGE(CUDA REQUIRED)
+	set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} gps_l1_ca_dll_pll_tracking_gpu_cc.cc)
+endif(ENABLE_CUDA)
+
 set(TRACKING_GR_BLOCKS_SOURCES
      galileo_e1_dll_pll_veml_tracking_cc.cc
      galileo_volk_e1_dll_pll_veml_tracking_cc.cc
@@ -26,6 +32,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      gps_l1_ca_tcp_connector_tracking_cc.cc
      galileo_e5a_dll_pll_tracking_cc.cc
      gps_l2_m_dll_pll_tracking_cc.cc
+	 ${OPT_TRACKING_BLOCKS}   
 )
 
 include_directories(
@@ -40,6 +47,8 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
+     ${CUDA_INCLUDE_DIRS}
+     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs/cudahelpers
 )
 
 if(ENABLE_GENERIC_ARCH)
@@ -49,7 +58,8 @@ endif(ENABLE_GENERIC_ARCH)
 file(GLOB TRACKING_GR_BLOCKS_HEADERS "*.h")
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
-target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES} )
+
+target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES} ${CUDA_LIBRARIES})
 if(NOT VOLK_GNSSSDR_FOUND)
     add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
 endif(NOT VOLK_GNSSSDR_FOUND)

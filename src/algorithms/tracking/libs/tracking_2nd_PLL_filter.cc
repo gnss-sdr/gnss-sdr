@@ -94,7 +94,7 @@ Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter ()
 {
     //--- PLL variables --------------------------------------------------------
     d_pdi_carr = 0.001;// Summation interval for carrier
-    d_plldampingratio = 0.65;
+    d_plldampingratio = 0.7;
 }
 
 

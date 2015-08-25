@@ -347,7 +347,7 @@ $ sudo make install
 
 ###### Build CUDA support (OPTIONAL):
 
-In order to enable the building of blocks that use CUDA, NVIDIA's parallel programming model that enables graphics processing unit (GPU) acceleration for data-parallel computations, first you need to install the CUDA Toolkit from [NVIDIA Developers Download page](https://developer.nvidia.com/cuda-downloads "CUDA Downloads"). Then, build GNSS-SDR doing:
+In order to enable the building of blocks that use CUDA, NVIDIA's parallel programming model that enables graphics processing unit (GPU) acceleration for data-parallel computations, first you need to install the CUDA Toolkit from [NVIDIA Developers Download page](https://developer.nvidia.com/cuda-downloads "CUDA Downloads"). Make sure that the SDK samples build well. Then, build GNSS-SDR by doing:
 
 ~~~~~~ 
 $ cmake -DENABLE_CUDA=ON ../

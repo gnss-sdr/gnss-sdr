@@ -1,9 +1,8 @@
 /*!
- * \file nsr_file_signal_source.cc
- * \brief Implementation of a class that reads signals samples from a NSR 2 bits sampler front-end file
- * and adapts it to a SignalSourceInterface. More information about the front-end here
- * http://www.ifen.com/products/sx-scientific-gnss-solutions/nsr-software-receiver.html
- * \author Javier Arribas, 2013 jarribas(at)cttc.es
+ * \file two_bit_cpx_file_signal_source.cc
+ * \brief Implementation of a class that reads signals samples from a 2 bit complex sampler front-end file
+ * and adapts it to a SignalSourceInterface.
+ * \author Javier Arribas, 2015 jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
  *

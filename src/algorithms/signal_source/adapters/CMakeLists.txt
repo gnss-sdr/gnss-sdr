@@ -136,10 +136,12 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES file_signal_source.cc
                                   nsr_file_signal_source.cc
                                   spir_file_signal_source.cc
 				  				  rtl_tcp_signal_source.cc
-				  				  two_bit_cpx_file_signal_source.cc
                                   ${OPT_DRIVER_SOURCES}
 )
 
+if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
+     set(SIGNAL_SOURCE_ADAPTER_SOURCES ${SIGNAL_SOURCE_ADAPTER_SOURCES} two_bit_cpx_file_signal_source.cc )
+endif(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
 
 include_directories(
      ${CMAKE_CURRENT_SOURCE_DIR}

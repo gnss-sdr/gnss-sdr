@@ -107,8 +107,8 @@ concurrent_map<Gps_Ref_Location> global_gps_ref_location_map;
 // For GPS NAVIGATION (L2)
 concurrent_queue<Gps_CNAV_Ephemeris> global_gps_cnav_ephemeris_queue;
 concurrent_map<Gps_CNAV_Ephemeris> global_gps_cnav_ephemeris_map;
-concurrent_queue<Gps_CNAV_Ephemeris> global_gps_cnav_iono_queue;
-concurrent_map<Gps_CNAV_Ephemeris> global_gps_cnav_iono_map;
+concurrent_queue<Gps_CNAV_Iono> global_gps_cnav_iono_queue;
+concurrent_map<Gps_CNAV_Iono> global_gps_cnav_iono_map;
 
 // For GALILEO NAVIGATION
 concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;

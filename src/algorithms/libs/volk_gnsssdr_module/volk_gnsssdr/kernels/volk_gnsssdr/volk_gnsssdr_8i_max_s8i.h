@@ -47,7 +47,7 @@
  \param src0 The buffer of data to be analysed
  \param num_points The number of values in src0 to be analysed
  */
-static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char target, const char* src0, unsigned int num_points)
+static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
         {
@@ -85,7 +85,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char target, const char* src
                             max = src0[i];
                         }
                 }
-            target = max;
+            target[0] = max;
         }
 }
 
@@ -99,7 +99,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char target, const char* src
  \param src0 The buffer of data to be analysed
  \param num_points The number of values in src0 to be analysed
  */
-static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char target, const char* src0, unsigned int num_points)
+static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
         {
@@ -148,7 +148,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char target, const char* src0,
                             max = src0[i];
                         }
                 }
-            target = max;
+            target[0] = max;
         }
 }
 
@@ -161,7 +161,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char target, const char* src0,
  \param src0 The buffer of data to be analysed
  \param num_points The number of values in src0 to be analysed
  */
-static inline void volk_gnsssdr_8i_max_s8i_generic(char target, const char* src0, unsigned int num_points)
+static inline void volk_gnsssdr_8i_max_s8i_generic(char* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
         {
@@ -174,7 +174,7 @@ static inline void volk_gnsssdr_8i_max_s8i_generic(char target, const char* src0
                             max = src0[i];
                         }
                 }
-            target = max;
+            target[0] = max;
         }
 }
 
@@ -198,7 +198,7 @@ static inline void volk_gnsssdr_8i_max_s8i_generic(char target, const char* src0
  \param src0 The buffer of data to be analysed
  \param num_points The number of values in src0 to be analysed
  */
-static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char target, const char* src0, unsigned int num_points)
+static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
         {
@@ -236,7 +236,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char target, const char* src
                             max = src0[i];
                         }
                 }
-            target = max;
+            target[0] = max;
         }
 }
 
@@ -250,7 +250,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char target, const char* src
  \param src0 The buffer of data to be analysed
  \param num_points The number of values in src0 to be analysed
  */
-static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char target, const char* src0, unsigned int num_points)
+static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
         {
@@ -299,7 +299,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char target, const char* src0,
                             max = src0[i];
                         }
                 }
-            target = max;
+            target[0] = max;
         }
 }
 
@@ -312,7 +312,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char target, const char* src0,
  \param src0 The buffer of data to be analysed
  \param num_points The number of values in src0 to be analysed
  */
-static inline void volk_gnsssdr_8i_max_s8i_a_generic(char target, const char* src0, unsigned int num_points)
+static inline void volk_gnsssdr_8i_max_s8i_a_generic(char* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
         {
@@ -326,7 +326,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_generic(char target, const char* sr
                                     max = src0[i];
                                 }
                         }
-                    target = max;
+                    target[0] = max;
                 }
         }
 }

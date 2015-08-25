@@ -26,7 +26,7 @@ endif(GTEST_DIR)
 if(NOT GTEST_DIR_LOCAL)
     set(GTEST_DIR_LOCAL false)
 else()
-	set(GTEST_DIR_LOCAL true)
+    set(GTEST_DIR_LOCAL true)
 endif(NOT GTEST_DIR_LOCAL)
 
 if(GTEST_INCLUDE_DIRS)
@@ -36,32 +36,17 @@ endif(GTEST_INCLUDE_DIRS)
 if(NOT ${GTEST_DIR_LOCAL})
      # if GTEST_DIR is not defined, we download and build it
      set(gtest_RELEASE 1.7.0)
-     if(OS_IS_MACOSX)
-         ExternalProject_Add(
-              gtest-${gtest_RELEASE}
-              URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
-              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../download/gtest-${gtest_RELEASE}
-              URL_MD5 "2d6ec8ccdf5c46b05ba54a9fd1d130d7"
-              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
-              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
-              CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-              UPDATE_COMMAND ""
-              PATCH_COMMAND ""
-              INSTALL_COMMAND ""
-         )
-     else(OS_IS_MACOSX)
-         ExternalProject_Add(
-              gtest-${gtest_RELEASE}
-              URL http://googletest.googlecode.com/files/gtest-${gtest_RELEASE}.zip
-              DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../download/gtest-${gtest_RELEASE}
-              URL_MD5 "2d6ec8ccdf5c46b05ba54a9fd1d130d7"
-              SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
-              BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
-              UPDATE_COMMAND ""
-              PATCH_COMMAND ""
-              INSTALL_COMMAND ""
-         )
-     endif(OS_IS_MACOSX)
+     ExternalProject_Add(
+         gtest-${gtest_RELEASE}
+         GIT_REPOSITORY https://github.com/google/googletest
+         GIT_TAG release-${gtest_RELEASE}
+         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}
+         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}
+         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+         UPDATE_COMMAND ""
+         PATCH_COMMAND ""
+         INSTALL_COMMAND ""
+     )
      # Set up variables
      # Set recently downloaded and build Googletest root folder
      set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/gtest/gtest-${gtest_RELEASE}")
@@ -82,7 +67,7 @@ if(NOT ${GTEST_DIR_LOCAL})
           ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a 
           ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a 
      ) 
-	 set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}")
+     set(GTEST_LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../gtest-${gtest_RELEASE}")
 else(NOT ${GTEST_DIR_LOCAL})
      if(GTEST_INCLUDE_DIRS)
           set(GTEST_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS} ${LIBGTEST_DEV_DIR})
@@ -184,7 +169,8 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
                                 ${ARMADILLO_LIBRARIES}
                                 ${VOLK_LIBRARIES}
                                 gnss_sp_libs 
-                                gnss_rx  
+                                gnss_rx
+                                gnss_system_parameters  
                                 signal_generator_blocks
                                 signal_generator_adapters
                                 out_adapters
@@ -214,7 +200,8 @@ target_link_libraries(control_thread_test ${Boost_LIBRARIES}
                                           ${GFLAGS_LIBS} 
                                           ${GLOG_LIBRARIES} 
                                           ${GTEST_LIBRARIES} 
-                                          gnss_sp_libs 
+                                          gnss_sp_libs
+                                          gnss_system_parameters
                                           gnss_rx
                                           ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                           )
@@ -241,6 +228,7 @@ target_link_libraries(flowgraph_test ${Boost_LIBRARIES}
                                      ${GTEST_LIBRARIES} 
                                      gnss_sp_libs 
                                      gnss_rx
+                                     gnss_system_parameters
                                      ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                      )
 

@@ -106,17 +106,17 @@ void GpsL2MPcpsAcquisitionTest::init()
     gnss_synchro.PRN = 7;
 
     sampling_freqeuncy_hz  = 5000000;
-    nsamples=round((double)sampling_freqeuncy_hz*GPS_L2_M_PERIOD)*2;
+    nsamples = round((double)sampling_freqeuncy_hz*GPS_L2_M_PERIOD)*2;
     config->set_property("GNSS-SDR.internal_fs_hz", std::to_string(sampling_freqeuncy_hz));
     config->set_property("Acquisition.item_type", "gr_complex");
     config->set_property("Acquisition.if", "0");
-    config->set_property("Acquisition.dump", "true");
+    config->set_property("Acquisition.dump", "false");
     config->set_property("Acquisition.implementation", "GPS_L2_M_PCPS_Acquisition");
     config->set_property("Acquisition.threshold", "0.001");
     config->set_property("Acquisition.doppler_max", "5000");
-    config->set_property("Acquisition.doppler_step", "10");
+    config->set_property("Acquisition.doppler_step", "100");
     config->set_property("Acquisition.repeat_satellite", "false");
-    config->set_property("Acquisition.pfa", "0.0");
+    //config->set_property("Acquisition.pfa", "0.0");
 }
 
 
@@ -190,7 +190,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     queue = gr::msg_queue::make(0);
 
 
-    double expected_delay_samples = 99991;//2004;
+    double expected_delay_samples = 1;//2004;
     double expected_doppler_hz = 1200;//3000;
     init();
     start_queue();

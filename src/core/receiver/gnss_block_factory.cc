@@ -77,7 +77,6 @@
 #include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
-#include "gps_l1_ca_dll_pll_tracking_gpu.h"
 #include "gps_l1_ca_dll_pll_optim_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
@@ -121,6 +120,10 @@
 
 #if FLEXIBAND_DRIVER
 #include "flexiband_signal_source.h"
+#endif
+
+#if CUDA_GPU_ACCEL
+#include "gps_l1_ca_dll_pll_tracking_gpu.h"
 #endif
 
 

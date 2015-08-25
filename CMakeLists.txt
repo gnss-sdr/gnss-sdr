@@ -961,11 +961,12 @@ if($ENV{CUDA_GPU_ACCEL})
 endif($ENV{CUDA_GPU_ACCEL})
 
 if(ENABLE_CUDA)
+    FIND_PACKAGE(CUDA REQUIRED)
     message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled." )
     message(STATUS "You can disable it with 'cmake -DENABLE_CUDA=OFF ../'" )
 else(ENABLE_CUDA)
     message(STATUS "NVIDIA CUDA GPU Acceleration will is not enabled." )
-    message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for the Teleorbit Flexiband front-end." )
+    message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA." )
 endif(ENABLE_CUDA)
 
 

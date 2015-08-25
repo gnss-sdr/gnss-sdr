@@ -47,6 +47,7 @@ option(ENABLE_GPROF "Enable the use of the GNU profiler tool 'gprof'" OFF)
 
 # Acceleration
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
+option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (experimental, requires CUDA SDK)" OFF)
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
@@ -883,6 +884,24 @@ else(ENABLE_OPENCL)
 endif(ENABLE_OPENCL)
 
 
+###############################################################################
+# CUDA (OPTIONAL)
+###############################################################################
+if($ENV{CUDA_GPU_ACCEL})
+    message(STATUS "CUDA_GPU_ACCEL environment variable found." )
+    set(ENABLE_CUDA ON)
+endif($ENV{CUDA_GPU_ACCEL})
+
+if(ENABLE_CUDA)
+    FIND_PACKAGE(CUDA REQUIRED)
+    message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_CUDA=OFF ../'" )
+else(ENABLE_CUDA)
+    message(STATUS "NVIDIA CUDA GPU Acceleration will be not enabled." )
+    message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA." )
+endif(ENABLE_CUDA)
+
+
 
 
 ################################################################################
@@ -954,20 +973,6 @@ else(ENABLE_OSMOSDR)
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled." )
     message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)" )
 endif(ENABLE_OSMOSDR)
-
-if($ENV{CUDA_GPU_ACCEL})
-    message(STATUS "CUDA_GPU_ACCEL environment variable found." )
-    set(ENABLE_CUDA ON)
-endif($ENV{CUDA_GPU_ACCEL})
-
-if(ENABLE_CUDA)
-    FIND_PACKAGE(CUDA REQUIRED)
-    message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled." )
-    message(STATUS "You can disable it with 'cmake -DENABLE_CUDA=OFF ../'" )
-else(ENABLE_CUDA)
-    message(STATUS "NVIDIA CUDA GPU Acceleration will is not enabled." )
-    message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA." )
-endif(ENABLE_CUDA)
 
 
 if($ENV{FLEXIBAND_DRIVER})

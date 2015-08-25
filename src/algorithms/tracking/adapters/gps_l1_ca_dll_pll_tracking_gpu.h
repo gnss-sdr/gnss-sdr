@@ -51,7 +51,6 @@ class ConfigurationInterface;
 class GpsL1CaDllPllTrackingGPU : public TrackingInterface
 {
 public:
-
   GpsL1CaDllPllTrackingGPU(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
@@ -65,7 +64,7 @@ public:
         return role_;
     }
 
-    //! Returns "GPS_L1_CA_DLL_PLL_Tracking"
+    //! Returns "GPS_L1_CA_DLL_PLL_Tracking_GPU"
     std::string implementation()
     {
         return "GPS_L1_CA_DLL_PLL_Tracking_GPU";

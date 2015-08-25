@@ -345,6 +345,19 @@ $ sudo make install
 ~~~~~~ 
 
 
+###### Build CUDA support (OPTIONAL):
+
+In order to enable the building of blocks that use CUDA, NVIDIA's parallel programming model that enables graphics processing unit (GPU) acceleration for data-parallel computations, first you need to install the CUDA Toolkit from [NVIDIA Developers Download page](https://developer.nvidia.com/cuda-downloads "CUDA Downloads"). Then, build GNSS-SDR doing:
+
+~~~~~~ 
+$ cmake -DENABLE_CUDA=ON ../
+$ make
+$ sudo make install
+~~~~~~ 
+
+Of course, you will also need a GPU that [supports CUDA](https://developer.nvidia.com/cuda-gpus "CUDA GPUs").
+
+
 ###### Build a portable binary
 
 In order to build an executable that not depends on the specific SIMD instruction set that is present in the processor of the compiling machine, so other users can execute it in other machines without those particular sets, use:
@@ -841,7 +854,6 @@ Tracking_1C.dump=false ; Enable internal binary data file logging [true] or [fal
 Tracking_1C.dump_filename=./tracking_ch_ ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
 Tracking_1C.pll_bw_hz=50.0 ; PLL loop filter bandwidth [Hz]
 Tracking_1C.dll_bw_hz=2.0 ; DLL loop filter bandwidth [Hz]
-Tracking_1C.fll_bw_hz=10.0 ; FLL loop filter bandwidth [Hz]
 Tracking_1C.order=3 ; PLL/DLL loop filter order [2] or [3]
 Tracking_1C.early_late_space_chips=0.5 ; correlator early-late space [chips]. 
 ~~~~~~ 

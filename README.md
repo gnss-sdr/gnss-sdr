@@ -378,7 +378,7 @@ Using this option, all SIMD instructions are exclusively accessed via VOLK, whic
 
 ### Mac OS X 10.9 (Mavericks) and 10.10 (Yosemite)
 
-If you still have not installed [Xcode](http://developer.apple.com/xcode/), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
+If you still have not installed [Xcode](http://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 
 ~~~~~~ 
 $ xcode-select --install
@@ -390,7 +390,7 @@ Agree to Xcode license:
 $ sudo xcodebuild -license
 ~~~~~~ 
 
-Then, [install Macports](http://www.macports.org/install.php). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
+Then, you need a package manager. For example, you can [install Macports](http://www.macports.org/install.php "Macports"). If you are upgrading from a previous installation, please follow the [migration rules](http://trac.macports.org/wiki/Migration).
 
 In a terminal, type:
 
@@ -446,11 +446,21 @@ $ open ../docs/html/index.html
 
 GNSS-SDR comes with a library with some specific Vector-Optimized Library of Kernels (VOLK) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ``volk_gnsssdr_profile`` that is installed into $PREFIX/bin. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to $HOME/.volk_gnsssdr/volk_gnsssdr_config the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's VOLK library, so if you still have not run ```volk_profile```, this is a good moment to do so.
 
+###### Other package managers 
+
+GNU Radio and other dependencies can also be installed using other package managers than Macports, such as [Fink](http://www.finkproject.org/ "Fink") or [Homebrew](http://brew.sh/ "Homebrew"). Since the version of Python that ships with OS X is great for learning but it is not good for development, you could have another Python executable in a non-standard location. If that is the case, you need to inform GNSS-SDR's configuration system by defining the PYTHON_EXECUTABLE variable as:
+
+~~~~~~
+cmake -DPYTHON_EXECUTABLE=/path/to/bin/python ../
+~~~~~~ 
+
+The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog and Google Test on the fly at compile time if they are not detected in your machine.
+
 
 Updating GNSS-SDR
 =================
 
-If you cloned GNSS-SDR some days ago, it is possible that some developer has updated files at the Git repository. You can update your working copy by doing:
+If you cloned GNSS-SDR some time ago, it is possible that some developer has updated files at the Git repository. You can update your working copy by doing:
 
 ~~~~~~ 
 $ git checkout master      # Switch to branch you want to update

@@ -94,9 +94,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-5.400.2.tar.gz
-$ tar xvfz armadillo-5.400.2.tar.gz
-$ cd armadillo-5.400.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-5.400.3.tar.gz
+$ tar xvfz armadillo-5.400.3.tar.gz
+$ cd armadillo-5.400.3
 $ cmake .
 $ make
 $ sudo make install
@@ -648,9 +648,32 @@ SignalSource.gain=60 ; Front-end gain in dB
 SignalSource.subdevice=B:0 ; UHD subdevice specification (for USRP1 use A:0 or B:0, for USRP B210 use A:0)
 ~~~~~~ 
 
+
+***Example: Configuring the USRP X300 with two front-ends for receiving signals in L1 and L2 bands***
+
+~~~~~~ 
+;######### SIGNAL_SOURCE CONFIG ############
+SignalSource.implementation=UHD_Signal_Source
+SignalSource.device_address=192.168.40.2 ; Put your USRP IP address here
+SignalSource.item_type=gr_complex
+SignalSource.RF_channels=2
+SignalSource.sampling_frequency=4000000
+SignalSource.subdevice=A:0 B:0
+
+;######### RF Channels specific settings ######
+SignalSource.freq0=1575420000
+SignalSource.gain0=50
+SignalSource.samples0=0
+SignalSource.dump0=false
+
+SignalSource.freq1=1227600000
+SignalSource.gain1=50
+SignalSource.samples1=0
+SignalSource.dump1=false
+~~~~~~ 
+
+
 Other examples are available at [gnss-sdr/conf/](./conf/).
-
-
 
 ### Signal Conditioner
 

@@ -1,6 +1,6 @@
 .\" Manpage for gnss\-sdr.
 .\" Contact carles.fernandez@cttc.es to correct errors or typos.
-.TH gnss\-sdr 1 "14 Nov 2014" "0.0.5" "gnss\-sdr man page"
+.TH gnss\-sdr 1 "2 Sep 2015" "0.0.6" "gnss\-sdr man page"
 .SH NAME
 \fBgnss\-sdr\fR \- GNSS Software Defined Receiver.
 .SH SYNOPSIS
@@ -30,7 +30,7 @@ Examples of configuration files available at: ${prefix}/share/gnss\-sdr/conf, wh
 \.TP
 Check http://gnss\-sdr.org for more information.
 .SH BUGS
-No known bugs.
+Please report bugs at https://github.com/gnss-sdr/gnss-sdr/issues
 .SH AUTHOR
 Carles Fernandez\-Prades (carles.fernandez@cttc.es)
 \.TP

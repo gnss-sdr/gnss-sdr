@@ -1,6 +1,6 @@
 .\" Manpage for volk_gnsssdr_profile
 .\" Contact carles.fernandez@cttc.es to correct errors or typos.
-.TH volk_gnsssdr_profile 1 "14 Nov 2014" "0.0.5" "volk_gnsssdr_profile man page"
+.TH volk_gnsssdr_profile 1 "02 Sep 2015" "0.0.6" "volk_gnsssdr_profile man page"
 .SH NAME
 \fBvolk_gnsssdr_profile\fR \- Profiler application for libvolk_gnsssdr functions.
 .SH SYNOPSIS

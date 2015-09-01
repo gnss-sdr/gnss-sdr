@@ -62,7 +62,7 @@ endif(ENABLE_PACKAGING)
 ###############################
 # GNSS-SDR version information
 ###############################
-set(THIS_IS_A_RELEASE ON)   # only related to version name, no further implications.
+set(THIS_IS_A_RELEASE OFF)   # only related to version name, no further implications.
 if(NOT ${THIS_IS_A_RELEASE})
     # Get the current working branch
     execute_process(

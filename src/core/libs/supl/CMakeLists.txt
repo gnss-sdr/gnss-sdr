@@ -25,9 +25,10 @@ set (SUPL_SOURCES
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/core/libs/supl
+        ${CMAKE_SOURCE_DIR}/src/core/libs/supl
 	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
 	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+        ${OPENSSL_INCLUDE_DIR}
 	)
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")

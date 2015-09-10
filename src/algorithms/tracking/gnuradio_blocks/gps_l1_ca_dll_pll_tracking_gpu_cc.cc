@@ -47,11 +47,9 @@
 #include "lock_detectors.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
-#include <volk/volk.h> //volk_alignement
-// includes
+#include <volk/volk.h> // volk_alignment
 #include <cuda_profiler_api.h>
-#include <helper_functions.h>  // helper for shared functions common to CUDA Samples
-#include <helper_cuda.h>       // helper functions for CUDA error checking and initialization
+
 
 /*!
  * \todo Include in definition header file
@@ -131,24 +129,24 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     multicorrelator_gpu->init_cuda_integrated_resampler(0, NULL, 2 * d_vector_length , GPS_L1_CA_CODE_LENGTH_CHIPS , N_CORRELATORS);
 
     // Get space for the resampled early / prompt / late local replicas
-    checkCudaErrors(cudaHostAlloc((void**)&d_local_code_shift_chips, N_CORRELATORS * sizeof(float),  cudaHostAllocMapped ));
-
+    cudaHostAlloc((void**)&d_local_code_shift_chips, N_CORRELATORS * sizeof(float),  cudaHostAllocMapped );
 
     //allocate host memory
     //pinned memory mode - use special function to get OS-pinned memory
-    checkCudaErrors(cudaHostAlloc((void**)&in_gpu, 2 * d_vector_length  * sizeof(gr_complex),  cudaHostAllocMapped ));
+    cudaHostAlloc((void**)&in_gpu, 2 * d_vector_length  * sizeof(gr_complex),  cudaHostAllocMapped );
 
     //old local codes vector
-    //checkCudaErrors(cudaHostAlloc((void**)&d_local_codes_gpu, (V_LEN * sizeof(gr_complex))*N_CORRELATORS, cudaHostAllocWriteCombined ));
+    // (cudaHostAlloc((void**)&d_local_codes_gpu, (V_LEN * sizeof(gr_complex))*N_CORRELATORS, cudaHostAllocWriteCombined ));
 
     //new integrated shifts
-    //checkCudaErrors(cudaHostAlloc((void**)&d_local_codes_gpu, (2 * d_vector_length * sizeof(gr_complex)), cudaHostAllocWriteCombined ));
+    // (cudaHostAlloc((void**)&d_local_codes_gpu, (2 * d_vector_length * sizeof(gr_complex)), cudaHostAllocWriteCombined ));
 
     // correlator outputs (scalar)
-    checkCudaErrors(cudaHostAlloc((void**)&d_corr_outs_gpu ,sizeof(gr_complex)*N_CORRELATORS,  cudaHostAllocWriteCombined ));
+    cudaHostAlloc((void**)&d_corr_outs_gpu ,sizeof(gr_complex)*N_CORRELATORS,  cudaHostAllocWriteCombined );
+
     //map to EPL pointers
     d_Early = &d_corr_outs_gpu[0];
-    d_Prompt =  &d_corr_outs_gpu[1];
+    d_Prompt = &d_corr_outs_gpu[1];
     d_Late = &d_corr_outs_gpu[2];
 
     //--- Perform initializations ------------------------------
@@ -180,7 +178,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
 
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
-
 
     set_relative_rate(1.0/((double)d_vector_length*2));
 
@@ -303,10 +300,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
-    float carr_error_hz=0.0;
-    float carr_error_filt_hz=0.0;
-    float code_error_chips=0.0;
-    float code_error_filt_chips=0.0;
+    float carr_error_hz = 0.0;
+    float carr_error_filt_hz = 0.0;
+    float code_error_chips = 0.0;
+    float code_error_filt_chips = 0.0;
 
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0];
@@ -339,20 +336,20 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             // UPDATE NCO COMMAND
             float phase_step_rad = static_cast<float>(GPS_TWO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
 
-            //code resampler on GPU (new)
+        	//code resampler on GPU (new)
             float code_phase_step_chips = static_cast<float>(d_code_freq_chips) / static_cast<float>(d_fs_in);
             float rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
 
             cudaProfilerStart();
             multicorrelator_gpu->Carrier_wipeoff_multicorrelator_resampler_cuda(
-    				d_corr_outs_gpu,
-    				in,
-    				d_rem_carr_phase_rad,
-    				phase_step_rad,
-    				code_phase_step_chips,
-    				rem_code_phase_chips,
-    				d_current_prn_length_samples,
-    				3);
+                    d_corr_outs_gpu,
+                    in,
+                    d_rem_carr_phase_rad,
+                    phase_step_rad,
+                    code_phase_step_chips,
+                    rem_code_phase_chips,
+                    d_current_prn_length_samples,
+                    3);
             cudaProfilerStop();
 
             // ################## PLL ##########################################################

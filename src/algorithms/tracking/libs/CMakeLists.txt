@@ -22,15 +22,11 @@ if(ENABLE_CUDA)
     # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --gpu-architecture sm_30)
     list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30; -std=c++11;-O3; -use_fast_math -default-stream per-thread")
     set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-    CUDA_INCLUDE_DIRECTORIES(
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../libs/cudahelpers
-        )
-
+    CUDA_INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR})
     set(LIB_TYPE STATIC) #set the lib type
     CUDA_ADD_LIBRARY(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
     set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} CUDA_CORRELATOR_LIB)
-    set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/../../libs/cudahelpers)
+    set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS} )
 endif(ENABLE_CUDA)
 
 

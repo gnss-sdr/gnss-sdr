@@ -49,9 +49,6 @@
 // For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
 
-// helper functions and utilities to work with CUDA
-#include <helper_cuda.h>
-#include <helper_functions.h>
 
 #define ACCUM_N 256
 
@@ -224,7 +221,6 @@ __global__ void scalarProdGPUCPXxN(
         //int vectorBase = IMUL(elementN, vec);
         //int vectorEnd  = vectorBase + elementN;
 
-
         ////////////////////////////////////////////////////////////////////////
         // Each accumulator cycles through vectors with
         // stride equal to number of total number of accumulators ACCUM_N
@@ -392,28 +388,28 @@ bool cuda_multicorrelator::init_cuda(const int argc, const char **argv, int sign
 //    	    printf("multiProcessorCount= %i \n",prop.multiProcessorCount);
 //    }
 
-	//checkCudaErrors(cudaFuncSetCacheConfig(CUDA_32fc_x2_multiply_x2_dot_prod_32fc_, cudaFuncCachePreferShared));
+	// (cudaFuncSetCacheConfig(CUDA_32fc_x2_multiply_x2_dot_prod_32fc_, cudaFuncCachePreferShared));
 
 
     // ALLOCATE GPU MEMORY FOR INPUT/OUTPUT and INTERNAL vectors
 
     size_t size = signal_length_samples * sizeof(GPU_Complex);
 
-	checkCudaErrors(cudaMalloc((void **)&d_sig_in, size));
-	//checkCudaErrors(cudaMalloc((void **)&d_nco_in, size));
-	checkCudaErrors(cudaMalloc((void **)&d_sig_doppler_wiped, size));
+	cudaMalloc((void **)&d_sig_in, size);
+	// (cudaMalloc((void **)&d_nco_in, size));
+	cudaMalloc((void **)&d_sig_doppler_wiped, size);
 
 	// old version: all local codes are independent vectors
-	//checkCudaErrors(cudaMalloc((void **)&d_local_codes_in, size*n_correlators));
+	// (cudaMalloc((void **)&d_local_codes_in, size*n_correlators));
 
 	// new version: only one vector with extra samples to shift the local code for the correlator set
 	// Required: The last correlator tap in d_shifts_samples has the largest sample shift
     size_t size_local_code_bytes = local_codes_length_samples * sizeof(GPU_Complex);
-	checkCudaErrors(cudaMalloc((void **)&d_local_codes_in, size_local_code_bytes));
-	checkCudaErrors(cudaMalloc((void **)&d_shifts_samples, sizeof(int)*n_correlators));
+	cudaMalloc((void **)&d_local_codes_in, size_local_code_bytes);
+	cudaMalloc((void **)&d_shifts_samples, sizeof(int)*n_correlators);
 
 	//scalars
-	checkCudaErrors(cudaMalloc((void **)&d_corr_out, sizeof(std::complex<float>)*n_correlators));
+	cudaMalloc((void **)&d_corr_out, sizeof(std::complex<float>)*n_correlators);
 
     // Launch the Vector Add CUDA Kernel
 	threadsPerBlock = 256;
@@ -481,30 +477,30 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
 //    	    printf("multiProcessorCount= %i \n",prop.multiProcessorCount);
 //    }
 
-	//checkCudaErrors(cudaFuncSetCacheConfig(CUDA_32fc_x2_multiply_x2_dot_prod_32fc_, cudaFuncCachePreferShared));
+	// (cudaFuncSetCacheConfig(CUDA_32fc_x2_multiply_x2_dot_prod_32fc_, cudaFuncCachePreferShared));
 
     // ALLOCATE GPU MEMORY FOR INPUT/OUTPUT and INTERNAL vectors
 
     size_t size = signal_length_samples * sizeof(GPU_Complex);
 
-	checkCudaErrors(cudaMalloc((void **)&d_sig_in, size));
-	checkCudaErrors(cudaMemset(d_sig_in,0,size));
+	cudaMalloc((void **)&d_sig_in, size);
+	cudaMemset(d_sig_in,0,size);
 
-	//checkCudaErrors(cudaMalloc((void **)&d_nco_in, size));
-	checkCudaErrors(cudaMalloc((void **)&d_sig_doppler_wiped, size));
-	checkCudaErrors(cudaMemset(d_sig_doppler_wiped,0,size));
+	// (cudaMalloc((void **)&d_nco_in, size));
+	cudaMalloc((void **)&d_sig_doppler_wiped, size);
+	cudaMemset(d_sig_doppler_wiped,0,size);
 
-	checkCudaErrors(cudaMalloc((void **)&d_local_codes_in, sizeof(std::complex<float>)*code_length_chips));
-	checkCudaErrors(cudaMemset(d_local_codes_in,0,sizeof(std::complex<float>)*code_length_chips));
+	cudaMalloc((void **)&d_local_codes_in, sizeof(std::complex<float>)*code_length_chips);
+	cudaMemset(d_local_codes_in,0,sizeof(std::complex<float>)*code_length_chips);
 
     d_code_length_chips=code_length_chips;
 
-	checkCudaErrors(cudaMalloc((void **)&d_shifts_chips, sizeof(float)*n_correlators));
-	checkCudaErrors(cudaMemset(d_shifts_chips,0,sizeof(float)*n_correlators));
+	cudaMalloc((void **)&d_shifts_chips, sizeof(float)*n_correlators);
+	cudaMemset(d_shifts_chips,0,sizeof(float)*n_correlators);
 
 	//scalars
-	checkCudaErrors(cudaMalloc((void **)&d_corr_out, sizeof(std::complex<float>)*n_correlators));
-	checkCudaErrors(cudaMemset(d_corr_out,0,sizeof(std::complex<float>)*n_correlators));
+	cudaMalloc((void **)&d_corr_out, sizeof(std::complex<float>)*n_correlators);
+	cudaMemset(d_corr_out,0,sizeof(std::complex<float>)*n_correlators);
 
     // Launch the Vector Add CUDA Kernel
 	threadsPerBlock = 256;
@@ -523,12 +519,12 @@ bool cuda_multicorrelator::set_local_code_and_taps(
 		)
 {
     // local code CPU -> GPU copy memory
-    checkCudaErrors(cudaMemcpyAsync(d_local_codes_in, local_codes_in, sizeof(GPU_Complex)*code_length_chips, cudaMemcpyHostToDevice,stream1));
+    cudaMemcpyAsync(d_local_codes_in, local_codes_in, sizeof(GPU_Complex)*code_length_chips, cudaMemcpyHostToDevice,stream1);
     d_code_length_chips=(float)code_length_chips;
 
     // Correlator shifts vector CPU -> GPU copy memory (fractional chip shifts are allowed!)
-    checkCudaErrors(cudaMemcpyAsync(d_shifts_chips, shifts_chips, sizeof(float)*n_correlators,
-                                    cudaMemcpyHostToDevice,stream1));
+    cudaMemcpyAsync(d_shifts_chips, shifts_chips, sizeof(float)*n_correlators,
+                                    cudaMemcpyHostToDevice,stream1);
 
 	return true;
 }
@@ -550,40 +546,40 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_cuda(
 
 	// input signal CPU -> GPU copy memory
 
-    checkCudaErrors(cudaMemcpyAsync(d_sig_in, sig_in, memSize,
-                                    cudaMemcpyHostToDevice, stream1));
+    cudaMemcpyAsync(d_sig_in, sig_in, memSize,
+                                    cudaMemcpyHostToDevice, stream1);
 
     //***** NOTICE: NCO is computed on-the-fly, not need to copy NCO into GPU! ****
-    //checkCudaErrors(cudaMemcpyAsync(d_nco_in, nco_in, memSize,
+    // (cudaMemcpyAsync(d_nco_in, nco_in, memSize,
     //                                cudaMemcpyHostToDevice, stream1));
 
 
 	// old version: all local codes are independent vectors
-    //checkCudaErrors(cudaMemcpyAsync(d_local_codes_in, local_codes_in, memSize*n_correlators,
+    // (cudaMemcpyAsync(d_local_codes_in, local_codes_in, memSize*n_correlators,
     //                                cudaMemcpyHostToDevice, stream2));
 
 	// new version: only one vector with extra samples to shift the local code for the correlator set
 	// Required: The last correlator tap in d_shifts_samples has the largest sample shift
 
     // local code CPU -> GPU copy memory
-    checkCudaErrors(cudaMemcpyAsync(d_local_codes_in, local_codes_in, memSize+sizeof(std::complex<float>)*shifts_samples[n_correlators-1],
-                                    cudaMemcpyHostToDevice, stream2));
+    cudaMemcpyAsync(d_local_codes_in, local_codes_in, memSize+sizeof(std::complex<float>)*shifts_samples[n_correlators-1],
+                                    cudaMemcpyHostToDevice, stream2);
     // Correlator shifts vector CPU -> GPU copy memory
-    checkCudaErrors(cudaMemcpyAsync(d_shifts_samples, shifts_samples, sizeof(int)*n_correlators,
-                                    cudaMemcpyHostToDevice, stream2));
+    cudaMemcpyAsync(d_shifts_samples, shifts_samples, sizeof(int)*n_correlators,
+                                    cudaMemcpyHostToDevice, stream2);
 
 
     //Launch carrier wipe-off kernel here, while local codes are being copied to GPU!
-    checkCudaErrors(cudaStreamSynchronize(stream1));
+    cudaStreamSynchronize(stream1);
     CUDA_32fc_Doppler_wipeoff<<<blocksPerGrid, threadsPerBlock,0, stream1>>>(d_sig_doppler_wiped, d_sig_in,rem_carrier_phase_in_rad,phase_step_rad, signal_length_samples);
 
 
     //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
 
     //wait for Doppler wipeoff end...
-    checkCudaErrors(cudaStreamSynchronize(stream1));
-    checkCudaErrors(cudaStreamSynchronize(stream2));
-    //checkCudaErrors(cudaDeviceSynchronize());
+    cudaStreamSynchronize(stream1);
+    cudaStreamSynchronize(stream2);
+    // (cudaDeviceSynchronize());
 
     //old
 //    scalarProdGPUCPXxN<<<blocksPerGrid, threadsPerBlock,0 ,stream2>>>(
@@ -604,15 +600,15 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_cuda(
 			n_correlators,
 			signal_length_samples
 		);
-    checkCudaErrors(cudaGetLastError());
+    cudaGetLastError();
     //wait for correlators end...
-    checkCudaErrors(cudaStreamSynchronize(stream2));
+    cudaStreamSynchronize(stream2);
     // Copy the device result vector in device memory to the host result vector
     // in host memory.
 
     //scalar products (correlators outputs)
-    checkCudaErrors(cudaMemcpy(corr_out, d_corr_out, sizeof(std::complex<float>)*n_correlators,
-            cudaMemcpyDeviceToHost));
+    cudaMemcpy(corr_out, d_corr_out, sizeof(std::complex<float>)*n_correlators,
+            cudaMemcpyDeviceToHost);
     return true;
 }
 
@@ -629,19 +625,19 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_resampler_cuda(
 
 	size_t memSize = signal_length_samples * sizeof(std::complex<float>);
 	// input signal CPU -> GPU copy memory
-    checkCudaErrors(cudaMemcpyAsync(d_sig_in, sig_in, memSize,
-                                    cudaMemcpyHostToDevice, stream2));
+    cudaMemcpyAsync(d_sig_in, sig_in, memSize,
+                                    cudaMemcpyHostToDevice, stream2);
 
     //***** NOTICE: NCO is computed on-the-fly, not need to copy NCO into GPU! ****
 
     //Launch carrier wipe-off kernel here, while local codes are being copied to GPU!
-    checkCudaErrors(cudaStreamSynchronize(stream2));
+    cudaStreamSynchronize(stream2);
 
     CUDA_32fc_Doppler_wipeoff<<<blocksPerGrid, threadsPerBlock,0, stream2>>>(d_sig_doppler_wiped, d_sig_in,rem_carrier_phase_in_rad,phase_step_rad, signal_length_samples);
 
     //wait for Doppler wipeoff end...
-    checkCudaErrors(cudaStreamSynchronize(stream1));
-    checkCudaErrors(cudaStreamSynchronize(stream2));
+    cudaStreamSynchronize(stream1);
+    cudaStreamSynchronize(stream2);
 
     //launch the multitap correlator with integrated local code resampler!
 
@@ -657,16 +653,16 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_resampler_cuda(
 			signal_length_samples
 		);
 
-    checkCudaErrors(cudaGetLastError());
+    cudaGetLastError();
     //wait for correlators end...
-    checkCudaErrors(cudaStreamSynchronize(stream1));
+    cudaStreamSynchronize(stream1);
     // Copy the device result vector in device memory to the host result vector
     // in host memory.
 
     //scalar products (correlators outputs)
-    checkCudaErrors(cudaMemcpyAsync(corr_out, d_corr_out, sizeof(std::complex<float>)*n_correlators,
-            cudaMemcpyDeviceToHost,stream1));
-    checkCudaErrors(cudaStreamSynchronize(stream1));
+    cudaMemcpyAsync(corr_out, d_corr_out, sizeof(std::complex<float>)*n_correlators,
+            cudaMemcpyDeviceToHost,stream1);
+    cudaStreamSynchronize(stream1);
     return true;
 }
 
@@ -708,7 +704,7 @@ bool cuda_multicorrelator::free_cuda()
     // needed to ensure correct operation when the application is being
     // profiled. Calling cudaDeviceReset causes all profile data to be
     // flushed before the application exits
-	//checkCudaErrors(cudaDeviceReset());
+	// (cudaDeviceReset());
 	return true;
 }
 

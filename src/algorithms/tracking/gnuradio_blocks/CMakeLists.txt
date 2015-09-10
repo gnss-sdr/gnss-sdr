@@ -48,7 +48,7 @@ include_directories(
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
      ${CUDA_INCLUDE_DIRS}
-     ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs/cudahelpers
+     # ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs/cudahelpers
 )
 
 if(ENABLE_GENERIC_ARCH)

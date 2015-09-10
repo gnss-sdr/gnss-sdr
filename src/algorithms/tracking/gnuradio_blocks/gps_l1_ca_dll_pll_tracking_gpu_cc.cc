@@ -50,8 +50,7 @@
 #include <volk/volk.h> //volk_alignement
 // includes
 #include <cuda_profiler_api.h>
-#include <helper_functions.h>  // helper for shared functions common to CUDA Samples
-#include <helper_cuda.h>       // helper functions for CUDA error checking and initialization
+
 
 /*!
  * \todo Include in definition header file
@@ -131,21 +130,21 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     multicorrelator_gpu->init_cuda_integrated_resampler(0, NULL, 2 * d_vector_length , GPS_L1_CA_CODE_LENGTH_CHIPS , N_CORRELATORS);
 
     // Get space for the resampled early / prompt / late local replicas
-	checkCudaErrors(cudaHostAlloc((void**)&d_local_code_shift_chips, N_CORRELATORS * sizeof(float),  cudaHostAllocMapped ));
+	cudaHostAlloc((void**)&d_local_code_shift_chips, N_CORRELATORS * sizeof(float),  cudaHostAllocMapped );
 
 
     //allocate host memory
     //pinned memory mode - use special function to get OS-pinned memory
-	checkCudaErrors(cudaHostAlloc((void**)&in_gpu, 2 * d_vector_length  * sizeof(gr_complex),  cudaHostAllocMapped ));
+	cudaHostAlloc((void**)&in_gpu, 2 * d_vector_length  * sizeof(gr_complex),  cudaHostAllocMapped );
 
 	//old local codes vector
-	//checkCudaErrors(cudaHostAlloc((void**)&d_local_codes_gpu, (V_LEN * sizeof(gr_complex))*N_CORRELATORS, cudaHostAllocWriteCombined ));
+	// (cudaHostAlloc((void**)&d_local_codes_gpu, (V_LEN * sizeof(gr_complex))*N_CORRELATORS, cudaHostAllocWriteCombined ));
 
 	//new integrated shifts
-	//checkCudaErrors(cudaHostAlloc((void**)&d_local_codes_gpu, (2 * d_vector_length * sizeof(gr_complex)), cudaHostAllocWriteCombined ));
+	// (cudaHostAlloc((void**)&d_local_codes_gpu, (2 * d_vector_length * sizeof(gr_complex)), cudaHostAllocWriteCombined ));
 
 	// correlator outputs (scalar)
-	checkCudaErrors(cudaHostAlloc((void**)&d_corr_outs_gpu ,sizeof(gr_complex)*N_CORRELATORS,  cudaHostAllocWriteCombined ));
+	cudaHostAlloc((void**)&d_corr_outs_gpu ,sizeof(gr_complex)*N_CORRELATORS,  cudaHostAllocWriteCombined );
 	//map to EPL pointers
     d_Early = &d_corr_outs_gpu[0];
     d_Prompt =  &d_corr_outs_gpu[1];

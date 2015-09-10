@@ -167,5 +167,4 @@ private:
 
 };
 
-
 #endif /* CUDA_MULTICORRELATOR_H_ */

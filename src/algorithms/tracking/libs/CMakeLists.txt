@@ -28,7 +28,7 @@ if(ENABLE_CUDA)
 	
 	CUDA_INCLUDE_DIRECTORIES(
      ${CMAKE_CURRENT_SOURCE_DIR}
-     ${CMAKE_CURRENT_SOURCE_DIR}/cudahelpers
+     #${CMAKE_CURRENT_SOURCE_DIR}/cudahelpers
 	)
 
 	SET(LIB_TYPE STATIC) #set the lib type

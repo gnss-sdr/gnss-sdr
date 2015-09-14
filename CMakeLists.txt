@@ -778,24 +778,24 @@ endif(NOT ARMADILLO_FOUND)
 
 
 ################################################################################
-# OpenSSL - http://www.openssl.org
+# GnuTLS - http://www.gnutls.org/
 ################################################################################
-find_package(OpenSSL)
-if(NOT OPENSSL_FOUND)
-    message(" The OpenSSL library has not been found.")
+find_package(GnuTLS)
+if(NOT GNUTLS_FOUND)
+    message(" The GnuTLS library has not been found.")
     message(" You can try to install it by typing:")
     if(OS_IS_LINUX)
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install openssl-devel")
+            message(" sudo yum install gnutls-devel")
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install libssl-dev")
+            message(" sudo apt-get install libgnutls28-dev")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
     endif(OS_IS_LINUX)
     if(OS_IS_MACOSX)
-        message(" sudo port install openssl")
+        message(" sudo port install gnutls")
     endif(OS_IS_MACOSX)
-    message(FATAL_ERROR "OpenSSL libraries are required to build gnss-sdr")
-endif(NOT OPENSSL_FOUND)
+    message(FATAL_ERROR "GnuTLS libraries are required to build gnss-sdr")
+endif(NOT GNUTLS_FOUND)
 
 
 ################################################################################

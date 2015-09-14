@@ -34,7 +34,7 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev libboost-program-options-dev libboost-test-dev \
        liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr libblas-dev liblapack-dev \
-       libarmadillo-dev libgflags-dev libgoogle-glog-dev libssl-dev libgtest-dev
+       libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls28-dev libgtest-dev
 ~~~~~~
 
 Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). Alternatively, if you need to manually install those libraries, please keep reading. 
@@ -154,11 +154,11 @@ changing /home/username/gtest-1.7.0 by the actual directory where you downloaded
 
    
 
-#### Install the [SSL development libraries](https://www.openssl.org/ "OpenSSL's Homepage"):
+#### Install the [GnuTLS library](http://www.gnutls.org/ "GnuTLS's Homepage"):
 
 ~~~~~~ 
-$ sudo apt-get install libssl-dev    # For Debian/Ubuntu/LinuxMint
-$ sudo yum install openssl-devel     # For Fedora/CentOS/RHEL
+$ sudo apt-get install libgnutls28-dev    # For Debian/Ubuntu/LinuxMint
+$ sudo yum install gnutls-devel           # For Fedora/CentOS/RHEL
 ~~~~~~ 
 
    

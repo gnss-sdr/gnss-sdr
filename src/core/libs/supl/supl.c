@@ -4,9 +4,11 @@
 ** Copyright (c) 2007 Tatu Mannisto <tatu a-t tajuma d-o-t com>
 ** All rights reserved.
 ** Redistribution and modifications are permitted subject to BSD license.
-**
+** Modifified by Carles Fernandez <carles d-o-t fernandez a-t cttc d-o-t es>
+** to make use of the gnutls library.
 */
 
+#include "supl.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -16,16 +18,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include <openssl/crypto.h>
-#include <openssl/x509.h>
-#include <openssl/pem.h>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
 
-#include "ULP-PDU.h"
-#include "PDU.h"
 
-#include "supl.h"
 
 #define PARAM_GSM_CELL_CURRENT 1
 #define PARAM_GSM_CELL_KNOWN 2

@@ -38,7 +38,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
 endif(CMAKE_C_COMPILER_ID MATCHES "Clang")	
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MY_C_FLAGS}")
 
-find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl
+find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
                                     HINTS /usr/lib 
                                           /usr/lib64 
                                           /usr/local/lib 

@@ -400,6 +400,7 @@ $ sudo port upgrade outdated
 $ sudo port install doxygen +latex
 $ sudo port install gnuradio
 $ sudo port install armadillo
+$ sudo port install gnutls
 $ sudo port install google-glog +gflags
 ~~~~~~ 
 

@@ -51,6 +51,18 @@ find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
                                           /usr/lib/i386-linux-gnu
              )
 
+if(NOT GNUTLS_OPENSSL_LIBRARY)
+     message(STATUS "The OpenSSL implementation provided by the GnuTLS library has not been found.")
+    if(OS_IS_LINUX)
+        message("Please install it by doing:")
+        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(FATAL_ERROR " sudo yum install libgnutls-openssl-devel")
+        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(FATAL_ERROR " sudo apt-get install libgnutls-openssl-dev")
+        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+    endif(OS_IS_LINUX)
+endif(NOT GNUTLS_OPENSSL_LIBRARY)
+
 add_library (supl_library STATIC ${ASN_RRLP_SOURCES} ${ASN_SUPL_SOURCES} ${SUPL_SOURCES})
 target_link_libraries (supl_library ${GNUTLS_LIBRARIES} ${GNUTLS_OPENSSL_LIBRARY} gnss_system_parameters) 
 set_target_properties(supl_library PROPERTIES LINKER_LANGUAGE C)

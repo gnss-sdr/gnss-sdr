@@ -20,7 +20,9 @@
 #define INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED_H
 
 #for $i, $arch in enumerate($archs)
+#ifndef LV_$(arch.name.upper())
 #define LV_$(arch.name.upper()) $i
+#endif
 #end for
 
 #endif /*INCLUDED_VOLK_GNSSSDR_CONFIG_FIXED*/

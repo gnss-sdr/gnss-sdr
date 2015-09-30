@@ -47,7 +47,7 @@ Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/pro
 
 
 ~~~~~~ 
-$ git clone git://github.com/pybombs/pybombs 
+$ git clone --recursive https://github.com/pybombs/pybombs 
 $ cd pybombs
 ~~~~~~
 
@@ -166,7 +166,7 @@ $ sudo yum install libgnutls-openssl-devel      # For Fedora/CentOS/RHEL
 ### <a name="download-and-build-linux">Clone GNSS-SDR's Git repository</a>:
 
 ~~~~~~ 
-$ git clone git://github.com/gnss-sdr/gnss-sdr
+$ git clone https://github.com/gnss-sdr/gnss-sdr
 ~~~~~~ 
 
 Cloning the GNSS-SDR repository as in the line above will create a folder named gnss-sdr with the following structure:

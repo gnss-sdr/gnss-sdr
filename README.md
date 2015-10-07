@@ -376,7 +376,7 @@ Using this option, all SIMD instructions are exclusively accessed via VOLK, whic
 ---------
 
 
-### Mac OS X 10.9 (Mavericks) and 10.10 (Yosemite)
+### Mac OS X 10.9 (Mavericks), 10.10 (Yosemite) and 10.11 (El Capitan)
 
 If you still have not installed [Xcode](http://developer.apple.com/xcode/ "Xcode"), do it now from the App Store (it's free). You will also need the Xcode Command Line Tools. Launch the Terminal, found in /Applications/Utilities/, and type:
 
@@ -419,9 +419,9 @@ $ sudo port select --set python python27
 Finally, you are ready to clone the GNSS-SDR repository and build the software:
 
 ~~~~~~ 
-$ git clone git://github.com/gnss-sdr/gnss-sdr
+$ git clone https://github.com/gnss-sdr/gnss-sdr
 $ cd gnss-sdr/build
-$ cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ../
+$ cmake ../
 $ make
 ~~~~~~ 
 

@@ -76,7 +76,8 @@ typedef boost::shared_ptr<unpack_2bit_samples> unpack_2bit_samples_sptr;
 
 unpack_2bit_samples_sptr make_unpack_2bit_samples( bool big_endian_bytes, 
                                                    size_t item_size,
-                                                   bool big_endian_items );
+                                                   bool big_endian_items,
+                                                   bool reverse_interleaving = false );
 
 /*!
  * \brief This class takes 2 bit samples that have been packed into bytes or
@@ -89,12 +90,14 @@ private:
     friend unpack_2bit_samples_sptr
            make_unpack_2bit_samples_sptr( bool big_endian_bytes, 
                                           size_t item_size,
-                                          bool big_endian_items );
+                                          bool big_endian_items,
+                                          bool reverse_interleaving);
 
 public:
     unpack_2bit_samples( bool big_endianBytes,
                          size_t item_size,
-                         bool big_endian_items );
+                         bool big_endian_items,
+                         bool reverse_interleaving );
 
     ~unpack_2bit_samples();
 
@@ -108,6 +111,7 @@ private:
     bool big_endian_items_;
     bool swap_endian_items_;
     bool swap_endian_bytes_;
+    bool reverse_interleaving_;
     std::vector< int8_t > work_buffer_;
     
 };

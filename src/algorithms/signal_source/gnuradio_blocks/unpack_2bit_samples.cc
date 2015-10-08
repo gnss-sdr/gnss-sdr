@@ -87,18 +87,21 @@ void swapEndianness( int8_t const *in, std::vector< int8_t > &out, size_t item_s
 
 unpack_2bit_samples_sptr make_unpack_2bit_samples( bool big_endian_bytes,
                                                    size_t item_size,
-                                                   bool big_endian_items )
+                                                   bool big_endian_items,
+                                                   bool reverse_interleaving )
 {
     return unpack_2bit_samples_sptr(
             new unpack_2bit_samples( big_endian_bytes,
                                      item_size,
-                                     big_endian_items )
+                                     big_endian_items,
+                                     reverse_interleaving )
             );
 }
 
 unpack_2bit_samples::unpack_2bit_samples( bool big_endian_bytes,
                                           size_t item_size,
-                                          bool big_endian_items )
+                                          bool big_endian_items,
+                                          bool reverse_interleaving )
     : sync_interpolator("unpack_2bit_samples",
                         gr::io_signature::make(1, 1, item_size),
                         gr::io_signature::make(1, 1, sizeof(char)),
@@ -106,7 +109,8 @@ unpack_2bit_samples::unpack_2bit_samples( bool big_endian_bytes,
       big_endian_bytes_(big_endian_bytes),
       item_size_(item_size),
       big_endian_items_(big_endian_items),
-      swap_endian_items_(false)
+      swap_endian_items_(false),
+      reverse_interleaving_(reverse_interleaving)
 {
 
     bool big_endian_system = systemIsBigEndian();
@@ -138,7 +142,7 @@ int unpack_2bit_samples::work(int noutput_items,
     // Handle endian swap if needed
     if( swap_endian_items_ )
     {
-        work_buffer_.resize( ninput_bytes );
+        work_buffer_.reserve( ninput_bytes );
         swapEndianness( in, work_buffer_, item_size_, ninput_items );
 
         in = const_cast< signed char const *> ( &work_buffer_[0] );
@@ -152,32 +156,67 @@ int unpack_2bit_samples::work(int noutput_items,
     byte_and_samples raw_byte;
     int n = 0;
 
-    if( swap_endian_bytes_ )
+    if( !reverse_interleaving_ )
     {
-        for(int i = 0; i < ninput_bytes; ++i)
+        if( swap_endian_bytes_ )
         {
-            // Read packed input sample (1 byte = 4 samples)
-            raw_byte.byte = in[i];
+            for(int i = 0; i < ninput_bytes; ++i)
+            {
+                // Read packed input sample (1 byte = 4 samples)
+                raw_byte.byte = in[i];
 
-            out[n++] = (int8_t)( 2*raw_byte.samples.sample_3 + 1 );
-            out[n++] = (int8_t)( 2*raw_byte.samples.sample_2 + 1 );
-            out[n++] = (int8_t)( 2*raw_byte.samples.sample_1 + 1 );
-            out[n++] = (int8_t)( 2*raw_byte.samples.sample_0 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_3 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_2 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_1 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_0 + 1 );
 
+            }
+        }
+        else
+        {
+            for( int i = 0; i < ninput_bytes; ++i )
+            {
+
+                // Read packed input sample (1 byte = 4 samples)
+                raw_byte.byte = in[i];
+
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_0 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_1 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_2 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_3 + 1 );
+            }
         }
     }
     else
     {
-        for( int i = 0; i < ninput_bytes; ++i )
+
+        if( swap_endian_bytes_ )
         {
+            for(int i = 0; i < ninput_bytes; ++i)
+            {
+                // Read packed input sample (1 byte = 4 samples)
+                raw_byte.byte = in[i];
 
-            // Read packed input sample (1 byte = 4 samples)
-            raw_byte.byte = in[i];
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_2 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_3 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_0 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_1 + 1 );
 
-            out[n++] = (int8_t)( 2*raw_byte.samples.sample_0 + 1 );
-            out[n++] = (int8_t)( 2*raw_byte.samples.sample_1 + 1 );
-            out[n++] = (int8_t)( 2*raw_byte.samples.sample_2 + 1 );
-            out[n++] = (int8_t)( 2*raw_byte.samples.sample_3 + 1 );
+            }
+        }
+        else
+        {
+            for( int i = 0; i < ninput_bytes; ++i )
+            {
+
+                // Read packed input sample (1 byte = 4 samples)
+                raw_byte.byte = in[i];
+
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_1 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_0 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_3 + 1 );
+                out[n++] = (int8_t)( 2*raw_byte.samples.sample_2 + 1 );
+            }
         }
     }
 

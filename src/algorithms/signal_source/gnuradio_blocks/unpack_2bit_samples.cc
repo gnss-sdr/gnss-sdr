@@ -71,12 +71,14 @@ void swapEndianness( int8_t const *in, std::vector< int8_t > &out, size_t item_s
     unsigned int i;
     unsigned int j = 0;
     int k = 0;
+    int l = 0;
     size_t skip = item_size - 1;
 
     for( i = 0; i < ninput_items; ++i )
     {
         k = j + skip;
-        while( k >= 0 )
+        l = j;
+        while( k >= l )
         {
             out[j++] = in[k--];
         }

@@ -79,6 +79,10 @@ if(HAVE_POSIX_MEMALIGN)
       add_definitions(-DHAVE_POSIX_MEMALIGN)
 endif(HAVE_POSIX_MEMALIGN)
 
+if(NOT DEFINED _XOPEN_SOURCE)
+      add_definitions(-D_XOPEN_SOURCE=700)
+endif(NOT DEFINED _XOPEN_SOURCE)
+
 ########################################################################
 # detect x86 flavor of CPU
 ########################################################################

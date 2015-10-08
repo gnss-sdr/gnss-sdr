@@ -24,10 +24,11 @@ set (SUPL_SOURCES
 	)
 
 include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src/core/libs/supl
-	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
-	${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
+    ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
+    ${GNUTLS_INCLUDE_DIR}
 	)
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
@@ -37,6 +38,33 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
 endif(CMAKE_C_COMPILER_ID MATCHES "Clang")	
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MY_C_FLAGS}")
 
+find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
+                                    HINTS /usr/lib 
+                                          /usr/lib64 
+                                          /usr/local/lib 
+                                          /usr/local/lib64 
+                                          /opt/local/lib
+                                          /usr/lib/x86_64-linux-gnu
+                                          /usr/lib/aarch64-linux-gnu
+                                          /usr/lib/arm-linux-gnueabihf
+                                          /usr/lib/arm-linux-gnueabi
+                                          /usr/lib/i386-linux-gnu
+             )
+
+if(NOT GNUTLS_OPENSSL_LIBRARY)
+     message(STATUS "The OpenSSL implementation provided by the GnuTLS library has not been found.")
+    if(OS_IS_LINUX)
+        message("Please install it by doing:")
+        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(FATAL_ERROR " sudo yum install libgnutls-openssl-devel")
+        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+            message(FATAL_ERROR " sudo apt-get install libgnutls-openssl-dev")
+        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+    endif(OS_IS_LINUX)
+endif(NOT GNUTLS_OPENSSL_LIBRARY)
+
 add_library (supl_library STATIC ${ASN_RRLP_SOURCES} ${ASN_SUPL_SOURCES} ${SUPL_SOURCES})
-target_link_libraries (supl_library ssl gnss_system_parameters) 
+target_link_libraries (supl_library ${GNUTLS_LIBRARIES} ${GNUTLS_OPENSSL_LIBRARY} gnss_system_parameters) 
 set_target_properties(supl_library PROPERTIES LINKER_LANGUAGE C)
+
+

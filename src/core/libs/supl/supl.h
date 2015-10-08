@@ -4,6 +4,8 @@
 ** Copyright (c) 2007 Tatu Mannisto <tatu a-t tajuma d-o-t com>
 ** All rights reserved.
 ** Redistribution and modifications are permitted subject to BSD license.
+** Modifified by Carles Fernandez <carles d-o-t fernandez a-t cttc d-o-t es>
+** to make use of the gnutls library.
 **
 */
 
@@ -16,7 +18,11 @@
 #define EXPORT
 #endif
 
-#include <openssl/ssl.h>
+#include <gnutls/gnutls.h>
+#include <gnutls/compat.h>
+#include <gnutls/crypto.h>
+#include <gnutls/openssl.h>
+#include <gnutls/x509.h>
 #include <PDU.h>
 #include <ULP-PDU.h>
 

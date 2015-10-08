@@ -16,10 +16,6 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-if(ENABLE_CUDA)
-	FIND_PACKAGE(CUDA REQUIRED)
-	add_definitions(-DCUDA_GPU_ACCEL=1)
-endif(ENABLE_CUDA)
 
 set(GNSS_RECEIVER_SOURCES
      control_thread.cc
@@ -34,6 +30,11 @@ set(GNSS_RECEIVER_SOURCES
 if(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
      add_definitions(-DMODERN_GNURADIO=1)
 endif(PC_GNURADIO_RUNTIME_VERSION VERSION_GREATER 3.7.3)
+
+if(ENABLE_CUDA)
+     add_definitions(-DCUDA_GPU_ACCEL=1)
+     set(OPT_RECEIVER_INCLUDE_DIRS ${OPT_RECEIVER_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
+endif(ENABLE_CUDA)
 
 
 include_directories(
@@ -75,7 +76,7 @@ include_directories(
      ${GFlags_INCLUDE_DIRS}
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
-     ${CUDA_INCLUDE_DIRS}
+     ${OPT_RECEIVER_INCLUDE_DIRS}
 )
      
 if(Boost_VERSION LESS 105000)

@@ -24,6 +24,9 @@
 #ifndef INCLUDE_VOLK_COMPLEX_H
 #define INCLUDE_VOLK_COMPLEX_H
 
+#ifndef INCLUDED_VOLK_COMPLEX_H
+#define INCLUDED_VOLK_COMPLEX_H
+
 /*!
  * \brief Provide typedefs and operators for all complex types in C and C++.
  *
@@ -105,5 +108,7 @@ typedef double complex       lv_64fc_t;
 #endif /* __GNUC__ */
 
 #endif /* __cplusplus */
+
+#endif /* INCLUDED_VOLK_COMPLEX_H */
 
 #endif /* INCLUDE_VOLK_COMPLEX_H */

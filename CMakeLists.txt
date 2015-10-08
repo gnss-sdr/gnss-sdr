@@ -47,6 +47,7 @@ option(ENABLE_GPROF "Enable the use of the GNU profiler tool 'gprof'" OFF)
 
 # Acceleration
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
+option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (experimental, requires CUDA SDK)" OFF)
 
 # Building and packaging options
 option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
@@ -83,9 +84,9 @@ endif(NOT ${THIS_IS_A_RELEASE})
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT    0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 5)
+    set(VERSION_INFO_MINOR_VERSION 6)
 else(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 5.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 6.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif(${THIS_IS_A_RELEASE})
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
@@ -193,6 +194,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
      set(OS_IS_MACOSX TRUE)
      exec_program(uname ARGS -v  OUTPUT_VARIABLE DARWIN_VERSION)
      string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
+     if(${DARWIN_VERSION} MATCHES "15")
+         set(MACOSX_EL_CAPITAN TRUE)
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+         set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on Mac OS X 10.11 El Capitan")
+     endif(${DARWIN_VERSION} MATCHES "15")
      if(${DARWIN_VERSION} MATCHES "14")
          set(MACOSX_YOSEMITE TRUE)
          set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
@@ -401,14 +408,31 @@ if(ENABLE_PACKAGING)
     endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 endif(ENABLE_PACKAGING)
 set(VOLK_GNSSSDR_BUILD_COMMAND "make")
+if(PYTHON_EXECUTABLE)
+     set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
+endif(PYTHON_EXECUTABLE)
 if(OS_IS_MACOSX)
-    set(USE_MACPORTS_PYTHON "-DPYTHON_EXECUTABLE=/opt/local/bin/python")
+     if(NOT PYTHON_EXECUTABLE)
+         find_file(MAC_PYTHON python
+                   PATHS /opt/local/bin
+                         /usr/local/bin )
+         if(MAC_PYTHON)
+              set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${MAC_PYTHON}")
+         endif(MAC_PYTHON)
+     endif(NOT PYTHON_EXECUTABLE)
     if(CMAKE_GENERATOR STREQUAL Xcode)
         set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild" "-configuration" "Debug" "-target")
     endif(CMAKE_GENERATOR STREQUAL Xcode)
 endif(OS_IS_MACOSX)
 if(NOT VOLK_GNSSSDR_FOUND)
-    set(VOLK_GNSSSDR_CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install -DENABLE_STATIC_LIBS=ON ${STRIP_VOLK_GNSSSDR_PROFILE} ${USE_MACPORTS_PYTHON})
+    set(VOLK_GNSSSDR_CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
+                                -DENABLE_STATIC_LIBS=ON
+                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                                ${STRIP_VOLK_GNSSSDR_PROFILE} 
+                                ${USE_THIS_PYTHON} )
     if(CMAKE_TOOLCHAIN_FILE)
         set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
     endif(CMAKE_TOOLCHAIN_FILE)
@@ -456,7 +480,6 @@ if (NOT GFlags_FOUND)
           PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
           GIT_REPOSITORY git://github.com/gflags/gflags.git
           GIT_TAG v${gflags_RELEASE}
-          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/gflags-${gflags_RELEASE}
           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gflags/gflags-${gflags_RELEASE}
           BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gflags-${gflags_RELEASE}
           CMAKE_ARGS -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=ON -DBUILD_gflags_nothreads_LIB=OFF -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -573,7 +596,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}/configure")
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
          GIT_REPOSITORY https://github.com/google/glog/
          GIT_TAG v${glog_RELEASE}
-         DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/glog-${glog_RELEASE}
          SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog/glog-${glog_RELEASE}
          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/glog-${glog_RELEASE}
          CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
@@ -711,8 +733,8 @@ if(NOT ARMADILLO_FOUND)
      message(STATUS " Armadillo will be downloaded and built automatically ")
      message(STATUS " when doing 'make'. ")
 
-     set(armadillo_RELEASE 5.400.2)
-     set(armadillo_MD5 "0f06e5ddef5a3a8ef86f3a7bc480dec3")
+     set(armadillo_RELEASE 5.200.2)
+     set(armadillo_MD5 "ef57ba4c473a3b67c672441a7face09e")
 
      ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
@@ -756,28 +778,28 @@ endif(NOT ARMADILLO_FOUND)
 
 
 ################################################################################
-# OpenSSL - http://www.openssl.org
+# GnuTLS - http://www.gnutls.org/
 ################################################################################
-find_package(OpenSSL)
-if(NOT OPENSSL_FOUND)
-    message(" The OpenSSL library has not been found.")
+find_package(GnuTLS)
+if(NOT GNUTLS_FOUND)
+    message(" The GnuTLS library has not been found.")
     message(" You can try to install it by typing:")
     if(OS_IS_LINUX)
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install openssl-devel")
+            message(" sudo yum install libgnutls-openssl-devel")
         else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install libssl-dev")
+            message(" sudo apt-get install libgnutls-openssl-dev")
         endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
     endif(OS_IS_LINUX)
     if(OS_IS_MACOSX)
-        message(" sudo port install openssl")
+        message(" sudo port install gnutls")
     endif(OS_IS_MACOSX)
-    message(FATAL_ERROR "OpenSSL libraries are required to build gnss-sdr")
-endif(NOT OPENSSL_FOUND)
+    message(FATAL_ERROR "GnuTLS libraries are required to build gnss-sdr")
+endif(NOT GNUTLS_FOUND)
 
 
 ################################################################################
-# Universal Hardware Driver (UHD) (OPTIONAL, used if found)
+# Universal Hardware Driver (UHD)
 ################################################################################
 find_package(UHD)
 if(NOT UHD_FOUND)
@@ -885,6 +907,24 @@ else(ENABLE_OPENCL)
 endif(ENABLE_OPENCL)
 
 
+###############################################################################
+# CUDA (OPTIONAL)
+###############################################################################
+if($ENV{CUDA_GPU_ACCEL})
+    message(STATUS "CUDA_GPU_ACCEL environment variable found." )
+    set(ENABLE_CUDA ON)
+endif($ENV{CUDA_GPU_ACCEL})
+
+if(ENABLE_CUDA)
+    FIND_PACKAGE(CUDA REQUIRED)
+    message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled." )
+    message(STATUS "You can disable it with 'cmake -DENABLE_CUDA=OFF ../'" )
+else(ENABLE_CUDA)
+    message(STATUS "NVIDIA CUDA GPU Acceleration will be not enabled." )
+    message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for GPU-based acceleration using CUDA." )
+endif(ENABLE_CUDA)
+
+
 
 
 ################################################################################
@@ -956,19 +996,6 @@ else(ENABLE_OSMOSDR)
     message(STATUS "The (optional) driver for OsmoSDR and related front-ends is not enabled." )
     message(STATUS "Enable it with 'cmake -DENABLE_OSMOSDR=ON ../' to add support for OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based USB dongles, etc.)" )
 endif(ENABLE_OSMOSDR)
-
-if($ENV{CUDA_GPU_ACCEL})
-    message(STATUS "CUDA_GPU_ACCEL environment variable found." )
-    set(ENABLE_CUDA ON)
-endif($ENV{CUDA_GPU_ACCEL})
-
-if(ENABLE_CUDA)
-    message(STATUS "NVIDIA CUDA GPU Acceleration will be enabled." )
-    message(STATUS "You can disable it with 'cmake -DENABLE_CUDA=OFF ../'" )
-else(ENABLE_CUDA)
-    message(STATUS "NVIDIA CUDA GPU Acceleration will is not enabled." )
-    message(STATUS "Enable it with 'cmake -DENABLE_CUDA=ON ../' to add support for the Teleorbit Flexiband front-end." )
-endif(ENABLE_CUDA)
 
 
 if($ENV{FLEXIBAND_DRIVER})

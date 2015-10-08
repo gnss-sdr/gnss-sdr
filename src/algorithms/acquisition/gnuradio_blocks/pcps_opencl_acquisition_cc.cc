@@ -664,7 +664,7 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 }
 
 
-void pcps_multithread_acquisition_cc::set_state(int state)
+void pcps_opencl_acquisition_cc::set_state(int state)
 {
     d_state = state;
     if (d_state == 1)

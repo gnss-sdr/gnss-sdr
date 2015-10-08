@@ -31,7 +31,7 @@
 * -------------------------------------------------------------------------
 */
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.5"
+#define GNSS_SDR_VERSION "0.0.6"
 #endif
 
 #ifndef GOOGLE_STRIP_LOG
@@ -148,16 +148,16 @@ int main(int argc, char** argv)
     google::ParseCommandLineFlags(&argc, &argv, true);
     std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait." << std::endl;
 
-	#if CUDA_GPU_ACCEL
-		// Reset the device
-		// cudaDeviceReset causes the driver to clean up all state. While
-		// not mandatory in normal operation, it is good practice.  It is also
-		// needed to ensure correct operation when the application is being
-		// profiled. Calling cudaDeviceReset causes all profile data to be
-		// flushed before the application exits
-		cudaDeviceReset();
-		 std::cout << "Reset CUDA device done " << std::endl;
-	#endif
+    #if CUDA_GPU_ACCEL
+        // Reset the device
+        // cudaDeviceReset causes the driver to clean up all state. While
+        // not mandatory in normal operation, it is good practice.  It is also
+        // needed to ensure correct operation when the application is being
+        // profiled. Calling cudaDeviceReset causes all profile data to be
+        // flushed before the application exits
+        cudaDeviceReset();
+        std::cout << "Reset CUDA device done " << std::endl;
+    #endif
 
     if(GOOGLE_STRIP_LOG == 0)
         {

@@ -32,6 +32,7 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l1_ca_tcp_connector_tracking.cc
      galileo_e5a_dll_pll_tracking.cc
      gps_l2_m_dll_pll_tracking.cc
+     galileo_e1_de_tracking.cc
      ${OPT_TRACKING_ADAPTERS}
 )
 

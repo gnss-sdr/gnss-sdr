@@ -58,10 +58,10 @@ void Tracking_2nd_PLL_filter::set_PLL_BW(float pll_bw_hz)
 
 
 
-void Tracking_2nd_PLL_filter::initialize()
+void Tracking_2nd_PLL_filter::initialize(float init_carr_nco)
 {
     // carrier/Costas loop parameters
-    d_old_carr_nco   = 0.0;
+    d_old_carr_nco   = init_carr_nco;
     d_old_carr_error = 0.0;
 }
 

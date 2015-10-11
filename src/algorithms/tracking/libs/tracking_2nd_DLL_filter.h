@@ -61,7 +61,7 @@ private:
 public:
     void set_DLL_BW(float dll_bw_hz); //! Set DLL filter bandwidth [Hz]
     void set_pdi(float pdi_code);     //! Set Summation interval for code [s]
-    void initialize();                //! Start tracking with acquisition information
+    void initialize(float init_freq = 0.0);                //! Start tracking with acquisition information
     float get_code_nco(float DLL_discriminator); //! Numerically controlled oscillator
     Tracking_2nd_DLL_filter(float pdi_code);
     Tracking_2nd_DLL_filter();

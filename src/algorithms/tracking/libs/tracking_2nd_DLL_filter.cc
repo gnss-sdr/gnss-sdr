@@ -59,10 +59,10 @@ void Tracking_2nd_DLL_filter::set_DLL_BW(float dll_bw_hz)
 
 
 
-void Tracking_2nd_DLL_filter::initialize()
+void Tracking_2nd_DLL_filter::initialize(float init_freq)
 {
     // code tracking loop parameters
-    d_old_code_nco   = 0.0;
+    d_old_code_nco   = init_freq;
     d_old_code_error = 0.0;
 }
 

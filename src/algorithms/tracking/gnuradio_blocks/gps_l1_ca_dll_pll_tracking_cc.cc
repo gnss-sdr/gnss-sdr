@@ -51,6 +51,13 @@
 #include "control_message_factory.h"
 
 
+int64_t double_to_fxp64( double in )
+{
+    int64_t out = static_cast< int64_t >( in * std::pow( 2.0, 32.0 ) );
+
+    return out;
+}
+
 /*!
  * \todo Include in definition header file
  */
@@ -279,18 +286,26 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_code()
     rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
     tcode_chips = -rem_code_phase_chips;
 
-    // Alternative EPL code generation (40% of speed improvement!)
-    early_late_spc_samples = round(d_early_late_spc_chips / code_phase_step_chips);
-    epl_loop_length_samples = d_current_prn_length_samples + early_late_spc_samples * 2;
-    for (int i = 0; i < epl_loop_length_samples; i++)
-        {
-            associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
-            d_early_code[i] = d_ca_code[associated_chip_index];
-            tcode_chips = tcode_chips + code_phase_step_chips;
-        }
+    int64_t prompt_code_phase_fxp = double_to_fxp64( tcode_chips );
+    // NOTE: TODO:
+    // This is WRONG!!!!! The early should be + and the late should be -
+    // FIXME
+    int64_t early_code_phase_fxp = double_to_fxp64( tcode_chips - d_early_late_spc_chips );
+    int64_t late_code_phase_fxp = double_to_fxp64( tcode_chips + d_early_late_spc_chips );
 
-    memcpy(d_prompt_code, &d_early_code[early_late_spc_samples], d_current_prn_length_samples * sizeof(gr_complex));
-    memcpy(d_late_code, &d_early_code[early_late_spc_samples * 2], d_current_prn_length_samples * sizeof(gr_complex));
+    int64_t code_phase_step_fxp = double_to_fxp64( code_phase_step_chips );
+
+    //EPL code generation
+    for (int i = 0; i < d_current_prn_length_samples; i++)
+        {
+            d_early_code[i] = d_ca_code[ 1 + ( early_code_phase_fxp >> 32 ) ];
+            d_prompt_code[i] = d_ca_code[ 1 + ( prompt_code_phase_fxp >> 32 ) ];
+            d_late_code[i] = d_ca_code[ 1 + ( late_code_phase_fxp >> 32 ) ];
+
+            early_code_phase_fxp += code_phase_step_fxp;
+            prompt_code_phase_fxp += code_phase_step_fxp;
+            late_code_phase_fxp += code_phase_step_fxp;
+        }
 }
 
 

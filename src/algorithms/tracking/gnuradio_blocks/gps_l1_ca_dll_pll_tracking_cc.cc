@@ -394,18 +394,36 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
 
             // Generate local code and carrier replicas (using \hat{f}_d(k-1))
             update_local_code();
-            update_local_carrier();
+            //update_local_carrier();
+            gr_complex phase_as_complex( std::cos( d_rem_carr_phase_rad ),
+                        -std::sin( d_rem_carr_phase_rad ) );
+
+            double carrier_doppler_inc_rad = 2.0*M_PI*d_carrier_doppler_hz/d_fs_in;
+
+            gr_complex phase_inc_as_complex( std::cos( carrier_doppler_inc_rad ),
+                    -std::sin( carrier_doppler_inc_rad ) );
 
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
-            d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
+            //d_correlator.Carrier_wipeoff_and_EPL_volk(d_current_prn_length_samples,
+                    //in,
+                    //d_carr_sign,
+                    //d_early_code,
+                    //d_prompt_code,
+                    //d_late_code,
+                    //d_Early,
+                    //d_Prompt,
+                    //d_Late);
+
+            d_correlator.Carrier_rotate_and_EPL_volk(d_current_prn_length_samples,
                     in,
-                    d_carr_sign,
+                    &phase_as_complex,
+                    phase_inc_as_complex,
                     d_early_code,
                     d_prompt_code,
                     d_late_code,
                     d_Early,
                     d_Prompt,
-                    d_Late);
+                    d_Late );
 
             // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
             if (std::isnan((*d_Prompt).real()) == true or std::isnan((*d_Prompt).imag()) == true ) // or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)

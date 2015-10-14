@@ -260,26 +260,21 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
     // NOTE: TODO:
     // This is WRONG!!!!! The early should be + and the late should be -
     // FIXME
-    int64_t very_early_code_phase_fxp = double_to_fxpt64( tcode_half_chips + 2*d_very_early_late_spc_chips );
-    int64_t early_code_phase_fxp = double_to_fxpt64( tcode_half_chips + 2*d_early_late_spc_chips );
-    int64_t late_code_phase_fxp = double_to_fxpt64( tcode_half_chips - 2*d_early_late_spc_chips );
-    int64_t very_late_code_phase_fxp = double_to_fxpt64( tcode_half_chips - 2*d_very_early_late_spc_chips );
+    int64_t very_early_code_phase_fxp = double_to_fxpt64( tcode_half_chips - 2*d_very_early_late_spc_chips );
+    int64_t early_code_phase_fxp = double_to_fxpt64( tcode_half_chips - 2*d_early_late_spc_chips );
+    int64_t late_code_phase_fxp = double_to_fxpt64( tcode_half_chips + 2*d_early_late_spc_chips );
+    int64_t very_late_code_phase_fxp = double_to_fxpt64( tcode_half_chips + 2*d_very_early_late_spc_chips );
 
     int64_t code_phase_step_fxp = double_to_fxpt64( code_phase_step_half_chips );
-
-    LOG(INFO) << "Initial code phase: " << very_late_code_phase_fxp << ". "
-              << "Integer part: " << (very_late_code_phase_fxp >> 32 ) << ". "
-              << "Increment: " << code_phase_step_fxp << ". "
-              << "As double: " << static_cast< double >( code_phase_step_fxp ) * std::pow( 2, -32 );
 
     //EPL code generation
     for (int i = 0; i < d_current_prn_length_samples; i++)
         {
-            d_very_early_code[i] = d_ca_code[ 1 + ( very_early_code_phase_fxp >> 32 ) ];
-            d_early_code[i] = d_ca_code[ 1 + ( early_code_phase_fxp >> 32 ) ];
-            d_prompt_code[i] = d_ca_code[ 1 + ( prompt_code_phase_fxp >> 32 ) ];
-            d_late_code[i] = d_ca_code[ 1 + ( late_code_phase_fxp >> 32 ) ];
-            d_very_late_code[i] = d_ca_code[ 1 + ( very_late_code_phase_fxp >> 32 ) ];
+            d_very_early_code[i] = d_ca_code[ 2 + ( very_early_code_phase_fxp >> 32 ) ];
+            d_early_code[i] = d_ca_code[ 2 + ( early_code_phase_fxp >> 32 ) ];
+            d_prompt_code[i] = d_ca_code[ 2 + ( prompt_code_phase_fxp >> 32 ) ];
+            d_late_code[i] = d_ca_code[ 2 + ( late_code_phase_fxp >> 32 ) ];
+            d_very_late_code[i] = d_ca_code[ 2 + ( very_late_code_phase_fxp >> 32 ) ];
 
             very_early_code_phase_fxp += code_phase_step_fxp;
             early_code_phase_fxp += code_phase_step_fxp;
@@ -287,11 +282,6 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
             late_code_phase_fxp += code_phase_step_fxp;
             very_late_code_phase_fxp += code_phase_step_fxp;
         }
-
-    LOG(INFO) << "Final code phase: " << very_early_code_phase_fxp << ". "
-              << "Integer part: " << (very_early_code_phase_fxp >> 32 ) << ". "
-              << "Increment: " << code_phase_step_fxp << ". "
-              << "As double: " << static_cast< double >( code_phase_step_fxp ) * std::pow( 2, -32 );
 }
 
 
@@ -370,6 +360,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, gr_vec
 
             // Generate local code and carrier replicas (using \hat{f}_d(k-1))
             update_local_code();
+
+            /*
             update_local_carrier();
 
 
@@ -387,28 +379,28 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, gr_vec
                     d_Prompt,
                     d_Late,
                     d_Very_Late);
+            */
+            gr_complex phase_as_complex( std::cos( d_rem_carr_phase_rad ),
+                        -std::sin( d_rem_carr_phase_rad ) );
 
-            //gr_complex phase_as_complex( std::cos( d_rem_carr_phase_rad ),
-                        //-std::sin( d_rem_carr_phase_rad ) );
+            double carrier_doppler_inc_rad = 2.0*M_PI*d_carrier_doppler_hz/d_fs_in;
 
-            //double carrier_doppler_inc_rad = 2.0*M_PI*d_carrier_doppler_hz/d_fs_in;
-
-            //gr_complex phase_inc_as_complex( std::cos( carrier_doppler_inc_rad ),
-                    //-std::sin( carrier_doppler_inc_rad ) );
-            //d_correlator.Carrier_rotate_and_VEPL_volk(d_current_prn_length_samples,
-                    //in,
-                    //&phase_as_complex,
-                    //phase_inc_as_complex,
-                    //d_very_early_code,
-                    //d_early_code,
-                    //d_prompt_code,
-                    //d_late_code,
-                    //d_very_late_code,
-                    //d_Very_Early,
-                    //d_Early,
-                    //d_Prompt,
-                    //d_Late,
-                    //d_Very_Late );
+            gr_complex phase_inc_as_complex( std::cos( carrier_doppler_inc_rad ),
+                    -std::sin( carrier_doppler_inc_rad ) );
+            d_correlator.Carrier_rotate_and_VEPL_volk(d_current_prn_length_samples,
+                    in,
+                    &phase_as_complex,
+                    phase_inc_as_complex,
+                    d_very_early_code,
+                    d_early_code,
+                    d_prompt_code,
+                    d_late_code,
+                    d_very_late_code,
+                    d_Very_Early,
+                    d_Early,
+                    d_Prompt,
+                    d_Late,
+                    d_Very_Late );
 
             // ################## PLL ##########################################################
             // PLL discriminator

@@ -30,9 +30,10 @@ if(ENABLE_CUDA)
 endif(ENABLE_CUDA)
 
 
-set(TRACKING_LIB_SOURCES   
+set(TRACKING_LIB_SOURCES
      correlator.cc
      cpu_multicorrelator.cc
+     fxpt64.cc
      lock_detectors.cc
      tcp_communication.cc
      tcp_packet_data.cc

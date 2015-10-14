@@ -49,14 +49,8 @@
 #include "lock_detectors.h"
 #include "GPS_L1_CA.h"
 #include "control_message_factory.h"
+#include "fxpt64.h"
 
-
-int64_t double_to_fxp64( double in )
-{
-    int64_t out = static_cast< int64_t >( in * std::pow( 2.0, 32.0 ) );
-
-    return out;
-}
 
 /*!
  * \todo Include in definition header file
@@ -286,14 +280,14 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_code()
     rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
     tcode_chips = -rem_code_phase_chips;
 
-    int64_t prompt_code_phase_fxp = double_to_fxp64( tcode_chips );
+    int64_t prompt_code_phase_fxp = double_to_fxpt64( tcode_chips );
     // NOTE: TODO:
     // This is WRONG!!!!! The early should be + and the late should be -
     // FIXME
-    int64_t early_code_phase_fxp = double_to_fxp64( tcode_chips - d_early_late_spc_chips );
-    int64_t late_code_phase_fxp = double_to_fxp64( tcode_chips + d_early_late_spc_chips );
+    int64_t early_code_phase_fxp = double_to_fxpt64( tcode_chips - d_early_late_spc_chips );
+    int64_t late_code_phase_fxp = double_to_fxpt64( tcode_chips + d_early_late_spc_chips );
 
-    int64_t code_phase_step_fxp = double_to_fxp64( code_phase_step_chips );
+    int64_t code_phase_step_fxp = double_to_fxpt64( code_phase_step_chips );
 
     //EPL code generation
     for (int i = 0; i < d_current_prn_length_samples; i++)

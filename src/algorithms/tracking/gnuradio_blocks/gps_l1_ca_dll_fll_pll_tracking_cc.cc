@@ -434,6 +434,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
              */
             // Compute DLL error
             code_error_chips = dll_nc_e_minus_l_normalized(*d_Early, *d_Late);
+            code_error_chips *= (1.0 - d_early_late_spc_chips );
             // Compute DLL filtered error
             code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips);
 

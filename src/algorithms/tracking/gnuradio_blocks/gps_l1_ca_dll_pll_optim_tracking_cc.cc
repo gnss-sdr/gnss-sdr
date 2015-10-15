@@ -417,6 +417,7 @@ int Gps_L1_Ca_Dll_Pll_Optim_Tracking_cc::general_work (int noutput_items, gr_vec
             // ################## DLL ##########################################################
             // DLL discriminator
             code_error_chips = dll_nc_e_minus_l_normalized(*d_Early, *d_Late); //[chips/Ti]
+            code_error_chips *= (1.0 - d_early_late_spc_chips );
             // Code discriminator filter
             code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
             //Code phase accumulator

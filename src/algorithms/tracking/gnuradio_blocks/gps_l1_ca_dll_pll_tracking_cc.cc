@@ -392,7 +392,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             gr_complex phase_as_complex( std::cos( d_rem_carr_phase_rad ),
                         -std::sin( d_rem_carr_phase_rad ) );
 
-            double carrier_doppler_inc_rad = 2.0*M_PI*d_carrier_doppler_hz/d_fs_in;
+            double carrier_doppler_inc_rad = 2.0*M_PI*(d_if_freq + d_carrier_doppler_hz )/d_fs_in;
 
             gr_complex phase_inc_as_complex( std::cos( carrier_doppler_inc_rad ),
                     -std::sin( carrier_doppler_inc_rad ) );

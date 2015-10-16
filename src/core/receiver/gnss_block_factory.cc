@@ -48,6 +48,7 @@
 #include "two_bit_cpx_file_signal_source.h"
 #include "spir_file_signal_source.h"
 #include "rtl_tcp_signal_source.h"
+#include "two_bit_packed_file_signal_source.h"
 #include "null_sink_output_filter.h"
 #include "file_output_filter.h"
 #include "channel.h"
@@ -1063,6 +1064,20 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             {
                     std::cout << "GNSS-SDR program ended." << std::endl;
                     exit(1);
+            }
+        }
+    else if(implementation.compare("Two_Bit_Packed_File_Signal_Source") == 0 )
+        {
+            try
+            {
+                std::unique_ptr<GNSSBlockInterface> block_(new TwoBitPackedFileSignalSource(configuration.get(), role, in_streams,
+                            out_streams, queue));
+                block = std::move(block_);
+            }
+            catch(const std::exception &e)
+            {
+                std::cout << "GNSS-SDR program ended." << std::endl;
+                exit(1);
             }
         }
 #endif

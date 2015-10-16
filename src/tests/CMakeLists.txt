@@ -119,6 +119,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/telemetry_decoder/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
+     ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_generator/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/adapters
@@ -267,13 +268,45 @@ target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
                                       out_adapters
                                       ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                       )
-                                      
+
 add_test(gnss_block_test gnss_block_test)
 if(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(gnss_block_test gtest-${gtest_RELEASE})
 else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(gnss_block_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL}) 
+
+add_executable(gnuradio_block_test
+     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/gnuradio_block/unpack_2bit_samples_test.cc
+)
+if(NOT ${ENABLE_PACKAGING})
+     set_property(TARGET gnuradio_block_test PROPERTY EXCLUDE_FROM_ALL TRUE)
+endif(NOT ${ENABLE_PACKAGING})
+
+target_link_libraries(gnuradio_block_test ${Boost_LIBRARIES}
+                                      ${GFLAGS_LIBS}
+                                      ${GLOG_LIBRARIES}
+                                      ${GTEST_LIBRARIES}
+                                      ${GNURADIO_RUNTIME_LIBRARIES}
+                                      ${GNURADIO_BLOCKS_LIBRARIES}
+                                      ${GNURADIO_FILTER_LIBRARIES}
+                                      ${GNURADIO_ANALOG_LIBRARIES}
+                                      gnss_sp_libs
+                                      gnss_rx
+                                      gnss_system_parameters
+                                      # signal_generator_blocks
+                                      out_adapters
+                                      ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                      )
+
+add_test(gnuradio_block_test gnuradio_block_test)
+if(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(gnuradio_block_test gtest-${gtest_RELEASE})
+else(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(gnuradio_block_test gtest)
+endif(NOT ${GTEST_DIR_LOCAL})
+
 
 # add_executable(acq_test ${EXCLUDE}
 #      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
@@ -328,5 +361,6 @@ else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(trk_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL}) 
 
-add_dependencies(check control_thread_test flowgraph_test gnss_block_test trk_test)
+add_dependencies(check control_thread_test flowgraph_test gnss_block_test 
+    gnuradio_block_test trk_test)
 

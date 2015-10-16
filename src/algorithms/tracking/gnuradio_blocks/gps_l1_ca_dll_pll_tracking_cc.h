@@ -145,6 +145,8 @@ private:
     Tracking_2nd_DLL_filter d_code_loop_filter;
     Tracking_2nd_PLL_filter d_carrier_loop_filter;
 
+    bool d_carrier_aiding_enabled;
+
     // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
@@ -153,7 +155,9 @@ private:
 
     // tracking vars
     double d_code_freq_chips;
+    double d_code_phase_chips;
     double d_carrier_doppler_hz;
+    double d_carrier_phase_rad;
     double d_acc_carrier_phase_rad;
     double d_code_phase_samples;
     double d_acc_code_phase_secs;

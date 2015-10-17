@@ -649,7 +649,7 @@ The ```Two_Bit_Packed_File_Signal_Source``` allows reading  two-bit length sampl
 | 1       | 1        | -1         |
 
 
-Within a byte the samples may be packed in big endian ```big_endian_bytes=true``` (if the most significant byte value is stored at the memory location with the lowest address, the next byte value in significance is stored at the following memory location, and so on) or little endian ```big_endian_bytes=false``` (if the least significant byte value is at the lowest address, and the other bytes follow in increasing order of significance) order. If the order is big endian then the most significant two bits will form the first sample output, otherwise the least significant two bits will be used.
+Within a byte the samples may be packed in big endian ```big_endian_bytes=true``` (if the most significant byte value is stored at the memory location with the lowest address, the next byte value in significance is stored at the following memory location, and so on) or little endian ```big_endian_bytes=false``` (if the least significant byte value is at the lowest address, and the other bytes follow in increasing order of significance). If the order is big endian then the most significant two bits will form the first sample output, otherwise the least significant two bits will be used.
 
 Additionally the samples may be either real ```sample_type=real```, or complex. If the sample type is complex, then the samples are either stored in the order: real, imag, real, imag, ... ```sample_type=iq``` or in the order: imag, real, imag, real, ... ```sample_type=qi```.
 

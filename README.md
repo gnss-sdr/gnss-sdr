@@ -614,7 +614,7 @@ The Signal Source module is in charge of implementing the hardware driver, that 
 
 This module also performs bit-depth adaptation, since most of the existing RF front-ends provide samples quantized with 2 or 3 bits, while operations inside the processor are performed on 32- or 64-bit words, depending on its architecture. Although there are implementations of the most intensive computational processes (mainly correlation) that take advantage of specific data types and architectures for the sake of efficiency, the approach is processor-specific and hardly portable. We suggest to keep signal samples in standard data types and letting the compiler select the best library version (implemented using SIMD or any other processor-specific technology) of the required routines for a given processor.
  
-***Example: FileSignalSource***
+***Example: File Signal Source***
 
 The user can configure the receiver for reading from a file, setting in the configuration file the data file location, sample format, and the sampling frequency and intermediate frequency at what the signal was originally captured.
  
@@ -635,7 +635,50 @@ SignalSource.item_type=short
 
 In this latter case, you will need to convert the interleaved I/Q samples to a complex stream via Data Type Adapter block (see below).
 
-***Example: UhdSignalSource***
+
+***Example: Two-bit packed file source***
+
+The ```Two_Bit_Packed_File_Signal_Source``` allows reading  two-bit length samples from a file. The data is assumed to be packed as bytes ```item_type=byte``` or shorts ```item_type=short``` so that there are 4 two bit samples in each byte. The two bit values are assumed to have the following interpretation:
+
+
+| **b_1** | **b_0**  | **Value**  |
+|:-------:|:--------:|:----------:|
+| 0       | 0        | +1         |
+| 0       | 1        | +3         |
+| 1       | 0        | -3         |
+| 1       | 1        | -1         |
+
+
+Within a byte the samples may be packed in big endian ```big_endian_bytes=true``` (if the most significant byte value is stored at the memory location with the lowest address, the next byte value in significance is stored at the following memory location, and so on) or little endian ```big_endian_bytes=false``` (if the least significant byte value is at the lowest address, and the other bytes follow in increasing order of significance) order. If the order is big endian then the most significant two bits will form the first sample output, otherwise the least significant two bits will be used.
+
+Additionally the samples may be either real ```sample_type=real```, or complex. If the sample type is complex, then the samples are either stored in the order: real, imag, real, imag, ... ```sample_type=iq``` or in the order: imag, real, imag, real, ... ```sample_type=qi```.
+
+Finally, if the data is stored as shorts ```item_type=short```, then it may be stored in either big endian ```big_endian_items=true``` or little endian ```big_endian_items=false```. If the shorts are big endian then the 2nd byte in each short is output first.
+
+The output data type is either ```float``` or ```gr_complex``` depending on whether or not ```sample_type``` is real. Example:
+
+
+~~~~~~ 
+;######### SIGNAL_SOURCE CONFIG ############
+SignalSource.implementation=Two_Bit_Packed_File_Signal_Source
+SignalSource.filename=/data/my_capture.datz
+SignalSource.item_type=short
+SignalSource.sampling_frequency=60000000 
+SignalSource.freq=1575468750 
+SignalSource.samples=6000000000  ; Notice that 0 indicates the entire file.
+SignalSource.repeat=false
+SignalSource.dump=false
+SignalSource.dump_filename=./signal_source.dat
+SignalSource.enable_throttle_control=false
+SignalSource.sample_type=iq
+SignalSource.big_endian_items=true
+SignalSource.big_endian_bytes=false
+~~~~~~ 
+
+
+
+
+***Example: UHD Signal Source***
 
 The user may prefer to use a [UHD](http://code.ettus.com/redmine/ettus/projects/uhd/wiki)-compatible RF front-end and try real-time processing. For instance, for a USRP1 + DBSRX daughterboard, use:
 
@@ -672,6 +715,7 @@ SignalSource.gain1=50
 SignalSource.samples1=0
 SignalSource.dump1=false
 ~~~~~~ 
+
 
 
 Other examples are available at [gnss-sdr/conf/](./conf/).

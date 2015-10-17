@@ -637,8 +637,7 @@ In this latter case, you will need to convert the interleaved I/Q samples to a c
 
 
 ***Example: Two-bit packed file source***
-
-The ```Two_Bit_Packed_File_Signal_Source``` allows reading  two-bit length samples from a file. The data is assumed to be packed as bytes ```item_type=byte``` or shorts ```item_type=short``` so that there are 4 two bit samples in each byte. The two bit values are assumed to have the following interpretation:
+Sometimes, samples are stored in files with a format which is not in the list of _native_ types supported by the ```File_Signal_Source``` implementation (i.e, it is not among ```byte```, ```ibyte```, ```short```, ```ishort```, ```float``` or ```gr_complex```). This is the case of 2-bit samples, which is a common format delivered by GNSS RF front-ends. The ```Two_Bit_Packed_File_Signal_Source``` implementation allows reading  two-bit length samples from a file. The data is assumed to be packed as bytes ```item_type=byte``` or shorts ```item_type=short``` so that there are 4 two bit samples in each byte. The two bit values are assumed to have the following interpretation:
 
 
 | **b_1** | **b_0**  | **Value**  |
@@ -717,6 +716,50 @@ SignalSource.dump1=false
 ~~~~~~ 
 
 
+***Example: OsmoSDR-compatible Signal Source***
+
+{OsmoSDR](http://sdr.osmocom.org/trac/) is a small form-factor, inexpensive software defined radio project. It provides a driver for several front-ends, such as [RTL-based dongles](http://sdr.osmocom.org/trac/wiki/rtl-sdr), HackRF, bladeRF, etc. Note that not all the OsmoSDR-compatible devices can work as radio frequency front-ends for proper GNSS signal reception, please check the specifications.
+
+~~~~~~ 
+;######### SIGNAL_SOURCE CONFIG ############
+SignalSource.implementation=Osmosdr_Signal_Source
+SignalSource.item_type=gr_complex
+SignalSource.sampling_frequency=2000000
+SignalSource.freq=1575420000 
+SignalSource.gain=40
+SignalSource.rf_gain=40
+SignalSource.if_gain=30
+SignalSource.enable_throttle_control=false
+SignalSource.osmosdr_args=rtl_tcp,offset_tune=1
+~~~~~~ 
+
+In case of using a Zarlink's RTL2832 based DVB-T receiver, you can even use the ```rtl_tcp``` I/Q server in order to use the USB dongle remotely. In a terminal, type:
+
+~~~~~~ 
+$ rtl_tcp -a 127.0.0.1 -p 1234 -f 1575420000 -g 0 -s 2000000
+~~~~~~ 
+
+and use the following configuration:
+
+~~~~~~ 
+;######### SIGNAL_SOURCE CONFIG ############
+SignalSource.implementation=RtlTcp_Signal_Source
+SignalSource.item_type=gr_complex
+SignalSource.sampling_frequency=1200000
+SignalSource.freq=1575420000
+SignalSource.gain=40
+SignalSource.rf_gain=40
+SignalSource.if_gain=30
+SignalSource.AGC_enabled=false
+SignalSource.samples=0
+SignalSource.enable_throttle_control=false
+SignalSource.address=127.0.0.1
+SignalSource.port=1234
+SignalSource.swap_iq=false
+SignalSource.repeat=false
+SignalSource.dump=false
+SignalSource.dump_filename=../data/signal_source.dat
+~~~~~~ 
 
 Other examples are available at [gnss-sdr/conf/](./conf/).
 
@@ -921,22 +964,34 @@ The source code of all the available tracking algorithms is located at:
   |---------libs              <- libraries of tracking objects (e.g. correlators, discriminators, and so on)
 ~~~~~~ 
 
-The user can select a given implementation for the algorithm to be used in all the tracking blocks, as well as its parameters, in the configuration file:
+The user can select a given implementation for the algorithm to be used in all the tracking blocks, as well as its parameters, in the configuration file. For instance, for GPS l1 channels:
 
 ~~~~~~ 
-;######### TRACKING GLOBAL CONFIG ############
+;######### TRACKING GPS L1 CONFIG ############
 Tracking_1C.implementation=GPS_L1_CA_DLL_PLL_Tracking
 Tracking_1C.item_type=gr_complex
-Tracking_1C.if=0 ; Signal Intermediate Frequency in [Hz] 
-Tracking_1C.dump=false ; Enable internal binary data file logging [true] or [false] 
-Tracking_1C.dump_filename=./tracking_ch_ ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
 Tracking_1C.pll_bw_hz=50.0 ; PLL loop filter bandwidth [Hz]
 Tracking_1C.dll_bw_hz=2.0 ; DLL loop filter bandwidth [Hz]
 Tracking_1C.order=3 ; PLL/DLL loop filter order [2] or [3]
 Tracking_1C.early_late_space_chips=0.5 ; correlator early-late space [chips]. 
+Tracking_1C.dump=false ; Enable internal binary data file logging [true] or [false] 
+Tracking_1C.dump_filename=./tracking_ch_ ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
 ~~~~~~ 
 
-   
+and, for Galileo E1B channels:
+
+~~~~~~ 
+;######### TRACKING GALILEO E1B CONFIG ############
+Tracking_1B.implementation=Galileo_E1_DLL_PLL_VEML_Tracking
+Tracking_1B.item_type=gr_complex
+Tracking_1B.pll_bw_hz=15.0;
+Tracking_1B.dll_bw_hz=2.0;
+Tracking_1B.order=3;
+Tracking_1B.early_late_space_chips=0.15;
+Tracking_1B.very_early_late_space_chips=0.6;
+Tracking_1B.dump=false
+Tracking_1B.dump_filename=../data/veml_tracking_ch_
+~~~~~~ 
 
 #### Decoding of the navigation message
 
@@ -951,6 +1006,19 @@ TelemetryDecoder_1C.dump=false
 ~~~~~~ 
 
 
+In case you are configuring a multi-system receiver, you will need to decimate the one with the fastest code rate in order to get both data streams synchronized. For instance, for hybrid GPS L1 / Galileo E1B receivers:
+
+~~~~~~ 
+;######### TELEMETRY DECODER GPS L1 CONFIG ############
+TelemetryDecoder_1C.implementation=GPS_L1_CA_Telemetry_Decoder
+TelemetryDecoder_1C.dump=false
+TelemetryDecoder_1C.decimation_factor=4;
+
+;######### TELEMETRY DECODER GALILEO E1B CONFIG ############
+TelemetryDecoder_1B.implementation=Galileo_E1B_Telemetry_Decoder
+TelemetryDecoder_1B.dump=false
+TelemetryDecoder_1B.decimation_factor=1;
+~~~~~~ 
    
 
 #### Observables
@@ -968,6 +1036,14 @@ Observables.dump=false
 Observables.dump_filename=./observables.dat
 ~~~~~~ 
 
+For hybrid GPS L1 / Galileo E1B receivers:
+
+~~~~~~ 
+;######### OBSERVABLES CONFIG ############
+Observables.implementation=Hybrid_Observables
+Observables.dump=false
+Observables.dump_filename=./observables.dat
+~~~~~~ 
    
 
 #### Computation of Position, Velocity and Time
@@ -978,21 +1054,15 @@ The common interface is [PvtInterface](./src/core/interfaces/pvt_interface.h). F
 ~~~~~~ 
 ;######### PVT CONFIG ############
 PVT.implementation=GPS_L1_CA_PVT
-PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
-PVT.flag_nmea_tty_port=true ; Enable the NMEA log to a serial TTY port 
-PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
-PVT.dump=false ; Enables the PVT internal binary data file logging [true] or [false] 
-~~~~~~ 
-
-This implementation allows tuning of the following parameters:
-
-~~~~~~ 
 PVT.averaging_depth=10 ; Number of PVT observations in the moving average algorithm
 PVT.flag_averaging=true ; Enables the PVT averaging between output intervals (arithmetic mean) [true] or [false] 
 PVT.output_rate_ms=100 ; Period in [ms] between two PVT outputs
 PVT.display_rate_ms=500 ; Position console print (std::out) interval [ms].
-PVT.dump=false ; Enable or disable the PVT internal binary data file logging [true] or [false] 
+PVT.dump=false ; Enables the PVT internal binary data file logging [true] or [false] 
 PVT.dump_filename=./PVT ; Log path and filename without extension.
+PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
+PVT.flag_nmea_tty_port=true ; Enable the NMEA log to a serial TTY port 
+PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
 ~~~~~~ 
 
    

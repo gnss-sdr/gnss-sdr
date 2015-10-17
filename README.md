@@ -637,6 +637,7 @@ In this latter case, you will need to convert the interleaved I/Q samples to a c
 
 
 ***Example: Two-bit packed file source***
+
 Sometimes, samples are stored in files with a format which is not in the list of _native_ types supported by the ```File_Signal_Source``` implementation (i.e, it is not among ```byte```, ```ibyte```, ```short```, ```ishort```, ```float``` or ```gr_complex```). This is the case of 2-bit samples, which is a common format delivered by GNSS RF front-ends. The ```Two_Bit_Packed_File_Signal_Source``` implementation allows reading  two-bit length samples from a file. The data is assumed to be packed as bytes ```item_type=byte``` or shorts ```item_type=short``` so that there are 4 two bit samples in each byte. The two bit values are assumed to have the following interpretation:
 
 
@@ -718,7 +719,7 @@ SignalSource.dump1=false
 
 ***Example: OsmoSDR-compatible Signal Source***
 
-{OsmoSDR](http://sdr.osmocom.org/trac/) is a small form-factor, inexpensive software defined radio project. It provides a driver for several front-ends, such as [RTL-based dongles](http://sdr.osmocom.org/trac/wiki/rtl-sdr), HackRF, bladeRF, etc. Note that not all the OsmoSDR-compatible devices can work as radio frequency front-ends for proper GNSS signal reception, please check the specifications.
+[OsmoSDR](http://sdr.osmocom.org/trac) is a small form-factor, inexpensive software defined radio project. It provides a driver for several front-ends, such as [RTL-based dongles](http://sdr.osmocom.org/trac/wiki/rtl-sdr), HackRF, bladeRF, etc. Note that not all the OsmoSDR-compatible devices can work as radio frequency front-ends for proper GNSS signal reception, please check the specifications. For suitable RF front-ends, you can use:
 
 ~~~~~~ 
 ;######### SIGNAL_SOURCE CONFIG ############
@@ -726,7 +727,6 @@ SignalSource.implementation=Osmosdr_Signal_Source
 SignalSource.item_type=gr_complex
 SignalSource.sampling_frequency=2000000
 SignalSource.freq=1575420000 
-SignalSource.gain=40
 SignalSource.rf_gain=40
 SignalSource.if_gain=30
 SignalSource.enable_throttle_control=false

@@ -49,6 +49,7 @@
 #include "lock_detectors.h"
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
+#include "fxpt64.h"
 
 
 
@@ -255,54 +256,69 @@ void galileo_e1_de_tracking_cc::start_tracking()
 void galileo_e1_de_tracking_cc::update_local_code()
 {
     double tcode_chips;
-    double tsubcarrier_chips;
+    double tsubcarrier_phase_halfcyles;
     float rem_code_phase_chips;
-    float rem_subcarrier_phase_chips;
+    float rem_subcarrier_phase_halfcycles;
     int associated_chip_index;
     int associated_subcarrier_index;
     int code_length_chips = static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS);
     double code_phase_step_chips;
-    double subcarrier_phase_step_chips;
+    double subcarrier_phase_step_halfcycles;
     int early_late_code_spc_samples;
-    int early_late_subcarrier_spc_samples;
-    int epl_loop_length_samples;
+    int early_late_subcarrier_spc_halfcycles;
+    double subcarrier_freq_halfcycles;
 
-    // unified loop for VE, E, P, L, VL code vectors
+    double chips_to_halfcycles = Galileo_E1_SUB_CARRIER_A_RATE_HZ /
+        Galileo_E1_CODE_CHIP_RATE_HZ * 2.0;
+
+
+    subcarrier_freq_halfcycles = d_subcarrier_freq_chips * chips_to_halfcycles;
+
     code_phase_step_chips = (static_cast<double>(d_code_freq_chips)) / (static_cast<double>(d_fs_in));
-    subcarrier_phase_step_chips = (static_cast<double>(d_subcarrier_freq_chips)) / (static_cast<double>(d_fs_in));
+    subcarrier_phase_step_halfcycles = subcarrier_freq_halfcycles/ (static_cast<double>(d_fs_in));
 
     rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
-    tcode_chips = - static_cast<double>(rem_code_phase_chips);
+    tcode_chips = - static_cast<double>(rem_code_phase_chips) + 1.0;
 
-    rem_subcarrier_phase_chips = d_rem_subcarrier_phase_samples * (d_code_freq_chips / d_fs_in);
-    tsubcarrier_chips = - static_cast<double>(rem_subcarrier_phase_chips);
 
-    early_late_code_spc_samples = round(d_early_late_code_spc_chips / code_phase_step_chips);
-    early_late_subcarrier_spc_samples = round(d_early_late_subcarrier_spc_chips / subcarrier_phase_step_chips);
+    rem_subcarrier_phase_halfcycles = d_rem_subcarrier_phase_samples * subcarrier_freq_halfcycles/static_cast<double>(d_fs_in);
+    tsubcarrier_phase_halfcyles = - static_cast<double>(rem_subcarrier_phase_halfcycles);
 
-    if( early_late_code_spc_samples > early_late_subcarrier_spc_samples )
+    early_late_subcarrier_spc_halfcycles = d_early_late_code_spc_chips * chips_to_halfcycles;
+
+    int64_t early_code_phase_fxp = double_to_fxpt64( tcode_chips + d_early_late_code_spc_chips );
+    int64_t prompt_code_phase_fxp = double_to_fxpt64( tcode_chips );
+    int64_t late_code_phase_fxp = double_to_fxpt64( tcode_chips - d_early_late_code_spc_chips);
+
+    int64_t early_subcarrier_phase_fxp = double_to_fxpt64(
+            tsubcarrier_phase_halfcyles + early_late_subcarrier_spc_halfcycles );
+    int64_t prompt_subcarrier_phase_fxp = double_to_fxpt64(
+            tsubcarrier_phase_halfcyles );
+    int64_t late_subcarrier_phase_fxp = double_to_fxpt64(
+            tsubcarrier_phase_halfcyles - early_late_subcarrier_spc_halfcycles );
+
+    int64_t code_phase_step_fxp = double_to_fxpt64( code_phase_step_chips );
+    int64_t subcarrier_phase_step_fxp = double_to_fxpt64( subcarrier_phase_step_halfcycles );
+
+    for (int i = 0; i < d_current_prn_length_samples; i++)
     {
-        epl_loop_length_samples = d_current_prn_length_samples + early_late_code_spc_samples * 2;
-    }
-    else
-    {
-        epl_loop_length_samples = d_current_prn_length_samples + early_late_subcarrier_spc_samples*2;
-    }
+        d_early_code[i] = d_e1b_code[ (early_code_phase_fxp >> 32 )];
+        d_prompt_code[i] = d_e1b_code[ (prompt_code_phase_fxp >> 32 )];
+        d_late_code[i] = d_e1b_code[ (late_code_phase_fxp >> 32 )];
 
-    for (int i = 0; i < epl_loop_length_samples; i++)
-        {
-            associated_chip_index = 1 + round(fmod(tcode_chips -  d_early_late_code_spc_chips, code_length_chips));
-            d_late_code[i] = d_e1b_code[associated_chip_index];
-            tcode_chips = tcode_chips + code_phase_step_chips;
+        d_early_subcarrier[i] = (1.0 - 2.0*( (early_subcarrier_phase_fxp>>32)&0x01 ) );
+        d_prompt_subcarrier[i] = (1.0 - 2.0*( (prompt_subcarrier_phase_fxp>>32)&0x01 ) );
+        d_late_subcarrier[i] = (1.0 - 2.0*( (late_subcarrier_phase_fxp>>32)&0x01 ) );
 
-            associated_subcarrier_index = round(2*fmod(tsubcarrier_chips - d_early_late_subcarrier_spc_chips, 2 ) );
-            d_late_subcarrier[i] = static_cast< gr_complex >( 1 - 2*associated_subcarrier_index );
-            tsubcarrier_chips = tsubcarrier_chips + subcarrier_phase_step_chips;
-        }
-    memcpy(d_prompt_code, &d_late_code[early_late_code_spc_samples], d_current_prn_length_samples * sizeof(gr_complex));
-    memcpy(d_early_code, &d_late_code[early_late_code_spc_samples*2], d_current_prn_length_samples * sizeof(gr_complex));
-    memcpy(d_prompt_subcarrier, &d_late_subcarrier[early_late_subcarrier_spc_samples], d_current_prn_length_samples * sizeof(gr_complex));
-    memcpy(d_early_subcarrier, &d_late_subcarrier[early_late_subcarrier_spc_samples*2], d_current_prn_length_samples * sizeof(gr_complex));
+        early_code_phase_fxp += code_phase_step_fxp;
+        prompt_code_phase_fxp += code_phase_step_fxp;
+        late_code_phase_fxp += code_phase_step_fxp;
+
+        early_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
+        prompt_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
+        late_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
+
+    }
 }
 
 

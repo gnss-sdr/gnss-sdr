@@ -289,7 +289,8 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_code()
     // unified loop for E, P, L code vectors
     code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
     rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
-    tcode_chips = -rem_code_phase_chips;
+    // Add 1.0 to account for the way the code is stored
+    tcode_chips = -rem_code_phase_chips + 1.0;
 
     int64_t prompt_code_phase_fxp = double_to_fxpt64( tcode_chips );
     int64_t early_code_phase_fxp = double_to_fxpt64( tcode_chips + d_early_late_spc_chips );
@@ -300,9 +301,9 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_code()
     //EPL code generation
     for (int i = 0; i < d_current_prn_length_samples; i++)
         {
-            d_early_code[i] = d_ca_code[ 1 + ( early_code_phase_fxp >> 32 ) ];
-            d_prompt_code[i] = d_ca_code[ 1 + ( prompt_code_phase_fxp >> 32 ) ];
-            d_late_code[i] = d_ca_code[ 1 + ( late_code_phase_fxp >> 32 ) ];
+            d_early_code[i] = d_ca_code[ ( early_code_phase_fxp >> 32 ) ];
+            d_prompt_code[i] = d_ca_code[ ( prompt_code_phase_fxp >> 32 ) ];
+            d_late_code[i] = d_ca_code[ ( late_code_phase_fxp >> 32 ) ];
 
             early_code_phase_fxp += code_phase_step_fxp;
             prompt_code_phase_fxp += code_phase_step_fxp;

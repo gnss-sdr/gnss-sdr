@@ -323,7 +323,7 @@ void galileo_e1_de_tracking_cc::update_local_code()
 void galileo_e1_de_tracking_cc::update_local_carrier()
 {
     float sin_f, cos_f;
-    float phase_step_rad = static_cast<float>(2 * GALILEO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
+    float phase_step_rad = static_cast<float>(2 * GALILEO_PI) * ( d_if_freq + d_carrier_doppler_hz ) / static_cast<float>(d_fs_in);
     int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
     int phase_rad_i = gr::fxpt::float_to_fixed(d_rem_carr_phase_rad);
 

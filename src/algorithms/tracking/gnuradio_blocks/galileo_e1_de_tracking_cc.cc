@@ -158,10 +158,13 @@ galileo_e1_de_tracking_cc::galileo_e1_de_tracking_cc(
     //--- Initializations ------------------------------
     // Initial code frequency basis of NCO
     d_code_freq_chips = static_cast<double>(Galileo_E1_CODE_CHIP_RATE_HZ);
-    d_subcarrier_freq_chips = static_cast<double>(Galileo_E1_SUB_CARRIER_A_RATE_HZ);
+    d_subcarrier_freq_chips = static_cast<double>(Galileo_E1_CODE_CHIP_RATE_HZ);
     // Residual code phase (in chips)
     d_rem_code_phase_samples = 0.0;
     d_rem_subcarrier_phase_samples = 0.0;
+    d_code_phase_chips = 0.0;
+    d_subcarrier_phase_halfcycles = 0.0;
+
     // Residual carrier phase
     d_rem_carr_phase_rad = 0.0;
 
@@ -257,7 +260,6 @@ void galileo_e1_de_tracking_cc::update_local_code()
     double tcode_chips;
     double tsubcarrier_phase_halfcyles;
     float rem_code_phase_chips;
-    float rem_subcarrier_phase_halfcycles;
     int associated_chip_index;
     int associated_subcarrier_index;
     int code_length_chips = static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS);
@@ -279,8 +281,7 @@ void galileo_e1_de_tracking_cc::update_local_code()
     tcode_chips = - static_cast<double>(rem_code_phase_chips) + 1.0;
 
 
-    rem_subcarrier_phase_halfcycles = d_rem_subcarrier_phase_samples * subcarrier_freq_halfcycles/static_cast<double>(d_fs_in);
-    tsubcarrier_phase_halfcyles = - static_cast<double>(rem_subcarrier_phase_halfcycles);
+    tsubcarrier_phase_halfcyles = static_cast<double>(d_subcarrier_phase_halfcycles);
 
     early_late_subcarrier_spc_halfcycles = d_early_late_subcarrier_spc_chips * chips_to_halfcycles;
 
@@ -361,13 +362,22 @@ galileo_e1_de_tracking_cc::~galileo_e1_de_tracking_cc()
 int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    float carr_error_hz;
-    float carr_error_filt_hz;
-    float code_error_chips;
-    float subcarrier_error_chips;
-    float code_error_filt_chips;
-    float subcarrier_error_filt_chips;
+    float carr_error_hz = 0.0;
+    float carr_error_filt_hz = 0.0;
+    float code_error_chips = 0.0;
+    float subcarrier_error_chips = 0.0;
+    float code_error_filt_chips = 0.0;
+    float subcarrier_error_filt_chips = 0.0;
+    double integer_subcarrier_periods = 0.0;
 
+    // Block input data and block output stream pointers
+    const gr_complex* in = (gr_complex*) input_items[0];
+    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+
+    // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+    Gnss_Synchro current_synchro_data;
+
+    int next_prn_length_samples = d_current_prn_length_samples;
     if (d_enable_tracking == true)
         {
             if (d_pull_in == true)
@@ -383,18 +393,21 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
+                    // Now update the code and carrier phase estimates:
+                    d_code_phase_chips = 0.0;
+                    d_rem_code_phase_samples = 0.0;
+                    d_subcarrier_phase_halfcycles = 0.0;
+
+                    //std::cout<<" samples_offset="<<samples_offset<<"\r\n";
+                    // Fill the acquisition data
+                    current_synchro_data = *d_acquisition_gnss_synchro;
+                    *out[0] = current_synchro_data;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     return 1;
                 }
 
-            // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            Gnss_Synchro current_synchro_data;
             // Fill the acquisition data
             current_synchro_data = *d_acquisition_gnss_synchro;
-
-            // Block input data and block output stream pointers
-            const gr_complex* in = (gr_complex*) input_items[0];
-            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
             // Generate local code and carrier replicas (using \hat{f}_d(k-1))
             update_local_code();
@@ -425,6 +438,44 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
                     d_Prompt_Subcarrier_Late_Code,
                     d_Prompt_Code_Early_Subcarrier,
                     d_Prompt_Code_Late_Subcarrier );
+
+            // Now update the code and carrier phase estimates:
+            double chips_to_halfcycles = Galileo_E1_SUB_CARRIER_A_RATE_HZ /
+                Galileo_E1_CODE_CHIP_RATE_HZ * 2.0;
+            double T = static_cast<double>( d_current_prn_length_samples ) / static_cast<double>( d_fs_in );
+            d_code_phase_chips += T*d_code_freq_chips;
+            d_code_phase_chips = std::fmod( d_code_phase_chips, Galileo_E1_B_CODE_LENGTH_CHIPS );
+            d_carrier_phase_rad += T*2.0*M_PI*d_carrier_doppler_hz;
+            //int64_t subcarrier_inc_halfcycles_fxp = double_to_fxpt64(
+                    //d_subcarrier_freq_chips*chips_to_halfcycles/d_fs_in, 48 );
+
+            //int64_t subcarrier_delta_halfcycles_fxp = subcarrier_inc_halfcycles_fxp * d_current_prn_length_samples;
+            //// take out the integer part:
+            //subcarrier_delta_halfcycles_fxp &=0xFFFFFFFFFFFF; // 48 ones in LSB
+
+            //d_subcarrier_phase_halfcycles += static_cast< double >( subcarrier_delta_halfcycles_fxp )*std::pow(2.0,-48.0);
+            d_subcarrier_phase_halfcycles += T*d_subcarrier_freq_chips*chips_to_halfcycles;
+            integer_subcarrier_periods = std::floor( d_subcarrier_phase_halfcycles );
+            d_subcarrier_phase_halfcycles = std::fmod( d_subcarrier_phase_halfcycles, 2.0 );
+            double rem_subcarrier_phase_cycles = 1.0 - d_subcarrier_phase_halfcycles/2.0;
+
+            if( rem_subcarrier_phase_cycles > 0.5 ){
+                rem_subcarrier_phase_cycles -= 1.0;
+            }
+
+            d_rem_subcarrier_phase_samples = rem_subcarrier_phase_cycles*
+                static_cast<double>(d_fs_in)/Galileo_E1_SUB_CARRIER_A_RATE_HZ;
+
+            double rem_code_phase_chips = Galileo_E1_B_CODE_LENGTH_CHIPS - d_code_phase_chips;
+            if( rem_code_phase_chips > Galileo_E1_B_CODE_LENGTH_CHIPS / 2.0 )
+            {
+                rem_code_phase_chips = ( rem_code_phase_chips - Galileo_E1_B_CODE_LENGTH_CHIPS );
+            }
+
+            d_rem_code_phase_samples = rem_code_phase_chips * d_fs_in/Galileo_E1_CODE_CHIP_RATE_HZ;
+
+            // consume the input samples:
+            d_sample_counter += d_current_prn_length_samples;
 
             // ################## PLL ##########################################################
             // PLL discriminator
@@ -468,6 +519,10 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
             if( d_aid_code_with_subcarrier )
             {
                 d_code_freq_chips = d_subcarrier_freq_chips;
+            }
+            else if( d_aid_subcarrier_with_carrier )
+            {
+                d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ + code_doppler_chips;
             }
             else
             {
@@ -518,7 +573,7 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
             T_sc_prn_samples = T_sc_prn_seconds * static_cast<double>(d_fs_in);
             K_sc_samples = T_sc_prn_samples + d_rem_subcarrier_phase_samples; 
 
-            d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
+            next_prn_length_samples = round(K_blk_samples); //round to a discrete samples
             //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
@@ -575,9 +630,9 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
             // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!, but some glitches??)
             current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
             //compute remnant code phase samples AFTER the Tracking timestamp
-            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
+            //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
-            d_rem_subcarrier_phase_samples = K_sc_samples - d_current_prn_length_samples; //rounding error < 1 sample
+            //d_rem_subcarrier_phase_samples = K_sc_samples - d_current_prn_length_samples; //rounding error < 1 sample
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
@@ -637,6 +692,7 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
     	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
         d_acquisition_gnss_synchro->Flag_valid_pseudorange = false;
     	*out[0] = *d_acquisition_gnss_synchro;
+        d_sample_counter += d_current_prn_length_samples;
     }
 
     if(d_dump)
@@ -686,11 +742,14 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
                     d_dump_file.write(reinterpret_cast<char*>(&d_CN0_SNV_dB_Hz), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&d_carrier_lock_test), sizeof(float));
                     // AUX vars (for debug purposes)
-                    tmp_float = d_rem_code_phase_samples/static_cast< float >( d_fs_in )*Galileo_E1_CODE_CHIP_RATE_HZ;
+                    //tmp_float = d_rem_code_phase_samples/static_cast< float >( d_fs_in )*Galileo_E1_CODE_CHIP_RATE_HZ;
+                    tmp_float = d_code_phase_chips;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
-                    tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
+                    //tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
+                    tmp_double = integer_subcarrier_periods;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                    tmp_float = d_rem_subcarrier_phase_samples/static_cast<float>( d_fs_in ) * Galileo_E1_CODE_CHIP_RATE_HZ;
+                    //tmp_float = d_rem_subcarrier_phase_samples/static_cast<float>( d_fs_in ) * Galileo_E1_CODE_CHIP_RATE_HZ;
+                    tmp_float = d_subcarrier_phase_halfcycles/2.0;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
             }
             catch (std::ifstream::failure e)
@@ -699,7 +758,8 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
             }
         }
     consume_each(d_current_prn_length_samples); // this is required for gr_block derivates
-    d_sample_counter += d_current_prn_length_samples; //count for the processed samples
+    //d_sample_counter += d_current_prn_length_samples; //count for the processed samples
+    d_current_prn_length_samples = next_prn_length_samples;
     //std::cout<<"Galileo tracking output at sample "<<d_sample_counter<<std::endl;
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }

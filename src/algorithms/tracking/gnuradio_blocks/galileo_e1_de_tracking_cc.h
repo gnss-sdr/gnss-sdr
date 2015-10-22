@@ -174,8 +174,11 @@ private:
 
     // tracking vars
     double d_code_freq_chips;
+    double d_code_phase_chips;
     double d_subcarrier_freq_chips;
+    double d_subcarrier_phase_halfcycles;
     float d_carrier_doppler_hz;
+    double d_carrier_phase_rad;
     double d_acc_carrier_phase_rad;
     double d_acc_code_phase_secs;
 

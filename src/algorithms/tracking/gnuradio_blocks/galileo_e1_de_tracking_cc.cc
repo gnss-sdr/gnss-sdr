@@ -264,8 +264,7 @@ void galileo_e1_de_tracking_cc::update_local_code()
     int code_length_chips = static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS);
     double code_phase_step_chips;
     double subcarrier_phase_step_halfcycles;
-    int early_late_code_spc_samples;
-    int early_late_subcarrier_spc_halfcycles;
+    double early_late_subcarrier_spc_halfcycles;
     double subcarrier_freq_halfcycles;
 
     double chips_to_halfcycles = Galileo_E1_SUB_CARRIER_A_RATE_HZ /
@@ -284,7 +283,7 @@ void galileo_e1_de_tracking_cc::update_local_code()
     rem_subcarrier_phase_halfcycles = d_rem_subcarrier_phase_samples * subcarrier_freq_halfcycles/static_cast<double>(d_fs_in);
     tsubcarrier_phase_halfcyles = - static_cast<double>(rem_subcarrier_phase_halfcycles);
 
-    early_late_subcarrier_spc_halfcycles = d_early_late_code_spc_chips * chips_to_halfcycles;
+    early_late_subcarrier_spc_halfcycles = d_early_late_subcarrier_spc_chips * chips_to_halfcycles;
 
     int64_t early_code_phase_fxp = double_to_fxpt64( tcode_chips + d_early_late_code_spc_chips );
     int64_t prompt_code_phase_fxp = double_to_fxpt64( tcode_chips );
@@ -400,12 +399,22 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
 
             // Generate local code and carrier replicas (using \hat{f}_d(k-1))
             update_local_code();
-            update_local_carrier();
+            //update_local_carrier();
+
+            gr_complex phase_as_complex( std::cos( d_rem_carr_phase_rad ),
+                        -std::sin( d_rem_carr_phase_rad ) );
+
+            double carrier_doppler_inc_rad = 2.0*M_PI*(d_if_freq + d_carrier_doppler_hz )/d_fs_in;
+
+            gr_complex phase_inc_as_complex( std::cos( carrier_doppler_inc_rad ),
+                    -std::sin( carrier_doppler_inc_rad ) );
+
 
             // perform carrier wipe-off and compute Very Early, Early, Prompt, Late and Very Late correlation
-            d_correlator.Carrier_wipeoff_and_DE_volk(d_current_prn_length_samples,
+            d_correlator.Carrier_rotate_and_DE_volk(d_current_prn_length_samples,
                     in,
-                    d_carr_sign,
+                    &phase_as_complex,
+                    phase_inc_as_complex,
                     d_early_code,
                     d_prompt_code,
                     d_late_code,

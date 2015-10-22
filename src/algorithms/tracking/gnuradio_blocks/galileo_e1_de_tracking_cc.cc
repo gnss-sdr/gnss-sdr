@@ -459,7 +459,7 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
                     *d_Prompt_Code_Late_Subcarrier); //[chips/Ti]
             // normalise the SLL discriminator by the slope of the
             // BOC(1,1) at the origin:
-            float corr_slope = 3.0;
+            float corr_slope = 2.0;
             subcarrier_error_chips *= ( 1 - corr_slope*d_early_late_subcarrier_spc_chips) / corr_slope;
             // Subcarrier discriminator filter
             subcarrier_error_filt_chips = d_subcarrier_loop_filter.get_code_nco(subcarrier_error_chips); //[chips/second]

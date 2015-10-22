@@ -217,9 +217,8 @@ void galileo_e1_de_tracking_cc::start_tracking()
     d_code_loop_filter.initialize(init_freq);    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 samples per chip)
-    galileo_e1_code_gen_complex_sampled(&d_e1b_code[1],
+    galileo_e1_prn_gen_complex_sampled(&d_e1b_code[1],
                                         d_acquisition_gnss_synchro->Signal,
-                                        false,
                                         d_acquisition_gnss_synchro->PRN,
                                         Galileo_E1_CODE_CHIP_RATE_HZ,
                                         0);

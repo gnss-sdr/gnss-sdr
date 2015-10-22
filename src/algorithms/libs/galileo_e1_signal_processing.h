@@ -78,4 +78,10 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
 void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
         bool _cboc, unsigned int _prn, signed int _fs, unsigned int _chip_shift);
 
+
+/*!
+ * \brief galileo_e1_prn_gen_complex_sampled  - just generates the e1 prn code
+ */
+void galileo_e1_prn_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
+        unsigned int _prn, signed int _fs, unsigned int _chip_shift);
 #endif /* GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H_ */

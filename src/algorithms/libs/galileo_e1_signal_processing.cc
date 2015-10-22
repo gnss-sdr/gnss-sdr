@@ -224,3 +224,49 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
 {
     galileo_e1_code_gen_complex_sampled(_dest, _Signal, _cboc, _prn, _fs, _chip_shift, false);
 }
+
+void galileo_e1_prn_gen_complex_sampled(std::complex<float>* _dest, char _Signal[3],
+        unsigned int _prn, signed int _fs, unsigned int _chip_shift )
+{
+    // This function is based on the GNU software GPS for MATLAB in Kay Borre's book
+    std::string _galileo_signal = _Signal;
+    unsigned int _samplesPerCode;
+    const int _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ; //Hz
+    unsigned int _codeLength = Galileo_E1_B_CODE_LENGTH_CHIPS;
+    int primary_code_E1_chips[(int)Galileo_E1_B_CODE_LENGTH_CHIPS];
+    _samplesPerCode = static_cast<unsigned int>( static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis )/ static_cast<double>(_codeLength)));
+    const int _samplesPerChip = 1;
+
+    const unsigned int delay = (((int)Galileo_E1_B_CODE_LENGTH_CHIPS - _chip_shift)
+                                % (int)Galileo_E1_B_CODE_LENGTH_CHIPS)
+                                * _samplesPerCode / Galileo_E1_B_CODE_LENGTH_CHIPS;
+
+    galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn, 0); //generate Galileo E1 code, 1 sample per chip
+
+    std::complex<float>* _signal_E1;
+
+    _codeLength = _samplesPerChip * Galileo_E1_B_CODE_LENGTH_CHIPS;
+    _signal_E1 = new std::complex<float>[_codeLength];
+
+    for( unsigned int i = 0; i < _codeLength; ++i )
+    {
+        _signal_E1[i] = std::complex<float>((float) primary_code_E1_chips[i], 0.0);
+    }
+
+    if (_fs != _samplesPerChip * _codeFreqBasis)
+        {
+            std::complex<float>* _resampled_signal = new std::complex<float>[_samplesPerCode];
+            resampler(_signal_E1, _resampled_signal, _samplesPerChip * _codeFreqBasis, _fs,
+                    _codeLength, _samplesPerCode); //resamples code to fs
+
+            delete[] _signal_E1;
+            _signal_E1 = _resampled_signal;
+        }
+
+    for (unsigned int i = 0; i < _samplesPerCode; i++)
+        {
+            _dest[(i + delay) % _samplesPerCode] = _signal_E1[i];
+        }
+
+    delete[] _signal_E1;
+}

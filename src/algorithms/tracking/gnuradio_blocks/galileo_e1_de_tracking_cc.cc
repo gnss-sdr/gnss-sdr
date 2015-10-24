@@ -474,6 +474,29 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
 
             d_rem_code_phase_samples = rem_code_phase_chips * d_fs_in/Galileo_E1_CODE_CHIP_RATE_HZ;
 
+            // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
+            if (std::isnan((*d_Prompt_Subcarrier_Prompt_Code).real()) == true or
+                    std::isnan((*d_Prompt_Subcarrier_Prompt_Code).imag()) == true ) // or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
+                {
+                    const int samples_available = ninput_items[0];
+                    d_sample_counter = d_sample_counter + samples_available;
+                    LOG(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
+                    consume_each(samples_available);
+
+                    // make an output to not stop the rest of the processing blocks
+                    current_synchro_data.Prompt_I = 0.0;
+                    current_synchro_data.Prompt_Q = 0.0;
+                    current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
+                    current_synchro_data.Carrier_phase_rads = 0.0;
+                    current_synchro_data.Code_phase_secs = 0.0;
+                    current_synchro_data.CN0_dB_hz = 0.0;
+                    current_synchro_data.Flag_valid_tracking = false;
+                    current_synchro_data.Flag_valid_pseudorange = false;
+
+                    *out[0] = current_synchro_data;
+                    return 1;
+                }
+
             // consume the input samples:
             d_sample_counter += d_current_prn_length_samples;
 

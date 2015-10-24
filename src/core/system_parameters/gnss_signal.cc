@@ -73,7 +73,7 @@ bool operator==(const Gnss_Signal &sig1, const Gnss_Signal &sig2)
 
     if (sig1.get_satellite() == sig2.get_satellite())
         {
-            if (sig1.get_signal_str().compare(sig1.get_signal_str()))
+            if (sig1.get_signal_str().compare(sig1.get_signal_str())==0)
                 {
                     equal = true;
                 }

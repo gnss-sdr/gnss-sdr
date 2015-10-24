@@ -43,6 +43,8 @@
 #include "gnss_block_interface.h"
 #include "channel_interface.h"
 #include "gnss_block_factory.h"
+#include <boost/tokenizer.hpp>
+#include <algorithm>
 
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8
 
@@ -313,12 +315,12 @@ void GNSSFlowgraph::connect()
                 }
             channels_.at(i)->set_signal(available_GNSS_signals_.front());
             LOG(INFO) << "Channel " << i << " assigned to " << available_GNSS_signals_.front();
-            available_GNSS_signals_.pop_front();
             channels_.at(i)->start();
 
             if (channels_state_[i] == 1)
                 {
                     channels_.at(i)->start_acquisition();
+                    available_GNSS_signals_.pop_front();
                     LOG(INFO) << "Channel " << i << " connected to observables and ready for acquisition";
                 }
             else
@@ -413,13 +415,20 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         LOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_.at(who)->get_signal().get_satellite();
         channels_state_[who] = 2;
         acq_channels_count_--;
-        if (acq_channels_count_ < max_acq_channels_)
+        if (!available_GNSS_signals_.empty() && acq_channels_count_ < max_acq_channels_)
             {
                 for (unsigned int i = 0; i < channels_count_; i++)
                     {
                         if (channels_state_[i] == 0)
                             {
                                 channels_state_[i] = 1;
+                                while (channels_.at(i)->get_signal().get_signal_str().compare(available_GNSS_signals_.front().get_signal_str()) != 0 )
+                                    {
+                                        available_GNSS_signals_.push_back(available_GNSS_signals_.front());
+                                        available_GNSS_signals_.pop_front();
+                                    }
+                                channels_.at(i)->set_signal(available_GNSS_signals_.front());
+                                available_GNSS_signals_.pop_front();
                                 acq_channels_count_++;
                                 channels_.at(i)->start_acquisition();
                                 break;
@@ -442,6 +451,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             {
                 channels_state_[who] = 0;
                 channels_.at(who)->standby();
+                available_GNSS_signals_.push_back( channels_.at(who)->get_signal() );
             }
 
         // for (unsigned int i = 0; i < channels_count_; i++)
@@ -593,7 +603,54 @@ void GNSSFlowgraph::set_signals_list()
                     11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
                     29, 30, 31, 32, 33, 34, 35, 36};
 
+    std::string sv_list = configuration_->property("Galileo.prns", std::string("") );
 
+
+    if( sv_list.length() > 0 )
+    {
+        // Reset the available prns:
+        std::set< unsigned int > tmp_set;
+        boost::tokenizer<> tok( sv_list );
+        std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
+                boost::lexical_cast<unsigned int, std::string> );
+
+        if( tmp_set.size() > 0 )
+        {
+            available_galileo_prn = tmp_set;
+        }
+    }
+
+    sv_list = configuration_->property("GPS.prns", std::string("") );
+
+    if( sv_list.length() > 0 )
+    {
+        // Reset the available prns:
+        std::set< unsigned int > tmp_set;
+        boost::tokenizer<> tok( sv_list );
+        std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
+                boost::lexical_cast<unsigned int, std::string> );
+
+        if( tmp_set.size() > 0 )
+        {
+            available_gps_prn = tmp_set;
+        }
+    }
+
+    sv_list = configuration_->property("SBAS.prns", std::string("") );
+
+    if( sv_list.length() > 0 )
+    {
+        // Reset the available prns:
+        std::set< unsigned int > tmp_set;
+        boost::tokenizer<> tok( sv_list );
+        std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
+                boost::lexical_cast<unsigned int, std::string> );
+
+        if( tmp_set.size() > 0 )
+        {
+            available_sbas_prn = tmp_set;
+        }
+    }
 
     if ((configuration_->property("Channels_1C.count", 0) > 0) or (default_system.find(std::string("GPS")) != std::string::npos) or (default_signal.compare("1C") == 0) or (configuration_->property("Channels_GPS.count", 0) > 0) )
         {
@@ -691,8 +748,16 @@ void GNSSFlowgraph::set_signals_list()
                 }
             else
                 {
-                    Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, gnss_it->get_satellite().get_PRN()), gnss_signal);
-                    available_GNSS_signals_.remove(signal_value);
+                    Gnss_Signal signal_value = Gnss_Signal(Gnss_Satellite(gnss_system, ( sat != 0 ? sat : gnss_it->get_satellite().get_PRN())), gnss_signal);
+                    if( gnss_it == available_GNSS_signals_.begin() )
+                    {
+                        available_GNSS_signals_.remove(signal_value);
+                        gnss_it = available_GNSS_signals_.begin();
+                    }
+                    else
+                    {
+                        available_GNSS_signals_.remove(signal_value);
+                    }
                     available_GNSS_signals_.insert(gnss_it, signal_value);
                 }
         }

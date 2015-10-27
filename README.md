@@ -16,8 +16,8 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux 
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS, 14.10 and 15.04, Debian 8.0 "jessie", Linaro 15.03 
- * Known to work but not continually tested: Arch Linux, Fedora 19 and 20, and openSUSE 13.1 
+ * Tested distributions: Ubuntu 14.04 LTS, 14.10, 15.04 and 15.10, Debian 8.0 "jessie", Linaro 15.03 
+ * Known to work but not continually tested: Arch Linux, Fedora, and openSUSE
  * Supported microprocessor architectures: 
    * i386: Intel x86 instruction set (32-bit microprocessors). 
    * amd64: also known as x86-64, the 64-bit version of the x86 instruction set, originally created by AMD and implemented by AMD, Intel, VIA and others.

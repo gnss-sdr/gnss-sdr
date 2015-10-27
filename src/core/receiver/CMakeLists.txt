@@ -83,6 +83,10 @@ if(Boost_VERSION LESS 105000)
      add_definitions(-DOLD_BOOST=1)
 endif(Boost_VERSION LESS 105000)
 
+if(OPENSSL_FOUND)
+    add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
+endif(OPENSSL_FOUND)
+
 if(ENABLE_GN3S)
     add_definitions(-DGN3S_DRIVER=1)
 endif(ENABLE_GN3S)

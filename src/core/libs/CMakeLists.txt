@@ -18,6 +18,10 @@
 
 add_subdirectory(supl)
 
+if(OPENSSL_FOUND)
+    add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
+endif(OPENSSL_FOUND)
+
 set(CORE_LIBS_SOURCES 
     ini.cc 
     INIReader.cc 

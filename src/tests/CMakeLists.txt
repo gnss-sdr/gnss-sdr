@@ -96,6 +96,10 @@ endif(ENABLE_GPERFTOOLS)
 if(Boost_VERSION LESS 105000)
      add_definitions(-DOLD_BOOST=1)
 endif(Boost_VERSION LESS 105000)
+
+if(OPENSSL_FOUND)
+    add_definitions( -DUSE_OPENSSL_FALLBACK=1 )
+endif(OPENSSL_FOUND)
      
 include_directories(
      ${GTEST_INCLUDE_DIRECTORIES}

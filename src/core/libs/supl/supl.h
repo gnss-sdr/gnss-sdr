@@ -18,11 +18,20 @@
 #define EXPORT
 #endif
 
+#if USE_OPENSSL_FALLBACK
+#include <openssl/crypto.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#else
 #include <gnutls/gnutls.h>
 #include <gnutls/compat.h>
 #include <gnutls/crypto.h>
 #include <gnutls/openssl.h>
 #include <gnutls/x509.h>
+#endif
+
 #include <PDU.h>
 #include <ULP-PDU.h>
 

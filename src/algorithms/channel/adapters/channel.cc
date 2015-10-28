@@ -45,6 +45,7 @@
 #include "telemetry_decoder_interface.h"
 #include "configuration_interface.h"
 #include "gnss_flowgraph.h"
+#include "gnss_message.h"
 
 
 
@@ -103,6 +104,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     connected_ = false;
     message_ = 0;
     gnss_signal_ = Gnss_Signal();
+    msg_ports_connected_ = false;
 }
 
 
@@ -135,6 +137,51 @@ void Channel::connect(gr::top_block_sptr top_block)
     DLOG(INFO) << "pass_through_ -> tracking";
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
     DLOG(INFO) << "tracking -> telemetry_decoder";
+
+    // Attempt to connect message ports:
+    pmt::pmt_t nav_op_msg_ports = nav_->get_left_block()->message_ports_out();
+    // this is a vector of symbols: check to see if it contains GNSS_MESSAGE_PORT_ID
+    size_t len = pmt::length( nav_op_msg_ports );
+    bool has_gnss_message_port = false;
+    size_t i = 0;
+    for( i = 0; i < len; ++i )
+    {
+        if( pmt::vector_ref( nav_op_msg_ports, i ) == GNSS_MESSAGE_PORT_ID )
+        {
+            has_gnss_message_port = true;
+            break;
+        }
+    }
+
+    // Now check if the tracking loop can accept messages:
+    if( has_gnss_message_port )
+    {
+        has_gnss_message_port = false;
+        pmt::pmt_t trk_ip_msg_ports = trk_->get_left_block()->message_ports_in();
+
+        len = pmt::length( trk_ip_msg_ports );
+        for( size_t j = 0; j < len; ++j )
+        {
+            if( pmt::vector_ref( trk_ip_msg_ports, j ) == GNSS_MESSAGE_PORT_ID )
+            {
+                // Connect the input port to the output port:
+                top_block->msg_connect( nav_->get_right_block(), GNSS_MESSAGE_PORT_ID,
+                                        trk_->get_left_block(), GNSS_MESSAGE_PORT_ID );
+
+                DLOG(INFO) << "Connected gnss_message port: telemetry_decoder -> tracking";
+                has_gnss_message_port = true;
+                msg_ports_connected_ = true;
+                break;
+
+            }
+        }
+    }
+
+    if( !msg_ports_connected_ )
+    {
+        DLOG(INFO) << "No gnss_message ports to connect";
+    }
+
     connected_ = true;
 }
 
@@ -150,6 +197,12 @@ void Channel::disconnect(gr::top_block_sptr top_block)
     top_block->disconnect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
     top_block->disconnect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
     top_block->disconnect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
+
+    if( msg_ports_connected_ )
+    {
+        top_block->msg_disconnect( nav_->get_right_block(), GNSS_MESSAGE_PORT_ID,
+                               trk_->get_left_block(), GNSS_MESSAGE_PORT_ID );
+    }
     pass_through_->disconnect(top_block);
     acq_->disconnect(top_block);
     trk_->disconnect(top_block);

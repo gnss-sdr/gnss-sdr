@@ -26,6 +26,7 @@ set(CORE_LIBS_SOURCES
     ini.cc 
     INIReader.cc 
     string_converter.cc
+    gnss_message.cc
     gnss_sdr_supl_client.cc
 )
 	

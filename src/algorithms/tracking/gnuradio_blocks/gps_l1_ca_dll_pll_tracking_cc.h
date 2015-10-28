@@ -50,6 +50,7 @@
 #include "gnss_synchro.h"
 #include "tracking_loop_filter.h"
 #include "correlator.h"
+#include "gnss_message.h"
 
 class Gps_L1_Ca_Dll_Pll_Tracking_cc;
 
@@ -218,6 +219,9 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
+
+    // Handler for gnss_messages:
+    void handle_gnss_message( pmt::pmt_t msg );
 };
 
 #endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_CC_H

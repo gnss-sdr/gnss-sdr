@@ -108,6 +108,7 @@ private:
     boost::shared_ptr<gr::msg_queue> queue_;
     concurrent_queue<int> channel_internal_queue_;
     boost::thread ch_thread_;
+    bool msg_ports_connected_;
     void run();
     void process_channel_messages();
 };

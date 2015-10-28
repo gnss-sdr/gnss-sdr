@@ -42,6 +42,7 @@
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "gnss_synchro.h"
+#include "gnss_message.h"
 
 #ifndef _rotl
 #define _rotl(X,N)  ((X << N) ^ (X >> (32-N)))  // Used in the parity check algorithm
@@ -79,6 +80,9 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
         gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    // Create the gnss_message port:
+    message_port_register_out( GNSS_MESSAGE_PORT_ID );
+
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -219,6 +223,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 
                             if (!d_flag_frame_sync)
                                 {
+                                    pmt::pmt_t msg = gnss_message::make( "PREAMBLE_START_DETECTED",
+                                            d_preamble_time_seconds );
+
+                                    message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
+
                                     d_flag_frame_sync = true;
                                     if (corr_value < 0)
                                         {
@@ -241,6 +250,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     preamble_diff = d_sample_counter - d_preamble_index;
                     if (preamble_diff > 6001)
                         {
+                            pmt::pmt_t msg = gnss_message::make( "FRAME_SYNC_LOST",
+                                    in[0][0].Tracking_timestamp_secs );
+
+                            message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
+
                             LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff;
                             d_stat = 0; //lost of frame sync
                             d_flag_frame_sync = false;
@@ -316,10 +330,21 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         // TOW, in GPS, is referred to the START of the SUBFRAME, that is, THE FIRST SYMBOL OF THAT SUBFRAME, NOT THE PREAMBLE.
         // thus, no correction should be done. d_TOW_at_Preamble should be renamed to d_TOW_at_subframe_start.
         // Sice we detected the preable, then, we are in the last symbol of that preamble, or just at the start of the first subframe symbol.
+        // COD: 28/10/2015: In fact the 1st symbol of the preamble is the first symbol of the subframe.
+        // The issue here is that we refer everything back to in[0] which is the oldest
+        // input in the history. When d_flag_preamble is true it means that in[0]
+        // is the first symbol in the preamble.
         {
             d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
             d_TOW_at_current_symbol = d_TOW_at_Preamble;
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
+            pmt::pmt_t msg = gnss_message::make( "TOW_ACQUIRED",
+                    in[0][0].Tracking_timestamp_secs );
+
+            msg = pmt::dict_add( msg, pmt::mp("TOW"),
+                                        pmt::from_double( d_TOW_at_current_symbol ) );
+
+            message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
             if (flag_TOW_set == false)
                 {
                     flag_TOW_set = true;

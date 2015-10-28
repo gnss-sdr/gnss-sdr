@@ -124,6 +124,11 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
         d_carrier_loop_filter( 0.001, pll_initial_bw_hz, pll_loop_order, false ),
         d_code_loop_filter( 0.001, dll_initial_bw_hz, dll_loop_order, false )
 {
+    // Create the gnss_message input port
+    message_port_register_in( GNSS_MESSAGE_PORT_ID );
+    set_msg_handler( GNSS_MESSAGE_PORT_ID,
+            boost::bind( &Gps_L1_Ca_Dll_Pll_Tracking_cc::handle_gnss_message, this, _1 ) );
+
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -828,4 +833,24 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel_queue(concurrent_queue<int> *cha
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
+}
+
+
+void Gps_L1_Ca_Dll_Pll_Tracking_cc::handle_gnss_message( pmt::pmt_t msg )
+{
+    std::string telem_msg = gnss_message::get_message( msg );
+
+    std::stringstream log_str("");
+
+    log_str << "Received message " << telem_msg
+               << " with timestamp: " << gnss_message::get_timestamp( msg );
+
+    pmt::pmt_t not_found;
+
+    if( gnss_message::get_message( msg ) == "TOW_ACQUIRED" ){
+        log_str << ". TOW: " << pmt::to_double( pmt::dict_ref( msg, pmt::mp( "TOW" ), not_found ) );
+    }
+
+    LOG(INFO) << log_str.str();
+
 }

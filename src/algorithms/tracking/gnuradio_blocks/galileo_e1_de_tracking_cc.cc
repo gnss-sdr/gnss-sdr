@@ -111,6 +111,12 @@ galileo_e1_de_tracking_cc::galileo_e1_de_tracking_cc(
         gr::block("galileo_e1_de_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    // Create the gnss_message input port
+    message_port_register_in( GNSS_MESSAGE_PORT_ID );
+    set_msg_handler( GNSS_MESSAGE_PORT_ID,
+            boost::bind( &galileo_e1_de_tracking_cc::handle_gnss_message, this, _1 ) );
+
+
     this->set_relative_rate(1.0/vector_length);
     // initialize internal vars
     d_queue = queue;
@@ -832,3 +838,21 @@ void galileo_e1_de_tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
     //DLOG(INFO) << "Tracking Satellite set to " << d_satellite;
 }
 
+void galileo_e1_de_tracking_cc::handle_gnss_message( pmt::pmt_t msg )
+{
+    std::string telem_msg = gnss_message::get_message( msg );
+
+    std::stringstream log_str("");
+
+    log_str << "Received message " << telem_msg
+               << " with timestamp: " << gnss_message::get_timestamp( msg );
+
+    pmt::pmt_t not_found;
+
+    if( gnss_message::get_message( msg ) == "TOW_ACQUIRED" ){
+        log_str << ". TOW: " << pmt::to_double( pmt::dict_ref( msg, pmt::mp( "TOW" ), not_found ) );
+    }
+
+    LOG(INFO) << log_str.str();
+
+}

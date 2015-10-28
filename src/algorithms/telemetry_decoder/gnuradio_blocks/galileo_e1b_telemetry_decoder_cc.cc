@@ -42,7 +42,7 @@
 #include "galileo_navigation_message.h"
 #include "gnss_synchro.h"
 #include "convolutional.h"
-
+#include "gnss_message.h"
 
 #define CRC_ERROR_LIMIT 6
 
@@ -122,6 +122,9 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
            gr::block("galileo_e1b_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
 	   gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    // Create the gnss_message port:
+    message_port_register_out( GNSS_MESSAGE_PORT_ID );
+
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -382,6 +385,10 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
+                                    pmt::pmt_t msg = gnss_message::make( "PREAMBLE_START_DETECTED",
+                                            d_preamble_time_seconds );
+
+                                    message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
                                     LOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
                                 }
                         }
@@ -391,6 +398,10 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp
                             if (d_CRC_error_counter > CRC_ERROR_LIMIT)
                                 {
+                                    pmt::pmt_t msg = gnss_message::make( "FRAME_SYNC_LOST",
+                                            in[0][0].Tracking_timestamp_secs );
+
+                                    message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
                                     LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                     d_flag_frame_sync = false;
                                     d_stat = 0;
@@ -443,6 +454,14 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 
                 }
 
+            pmt::pmt_t msg = gnss_message::make( "TOW_ACQUIRED",
+                    in[0][0].Tracking_timestamp_secs );
+
+            msg = pmt::dict_add( msg, pmt::mp("TOW"),
+                                        pmt::from_double( d_TOW_at_current_symbol ) );
+
+            message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
+
         }
     else //if there is not a new preamble, we define the TOW of the current symbol
         {
@@ -465,7 +484,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
             current_synchro_data.Flag_valid_word = false;
         }
 
-    DLOG(INFO) << "delta_t = " << delta_t;
+    //DLOG(INFO) << "delta_t = " << delta_t;
 
     current_synchro_data.d_TOW = d_TOW_at_Preamble;
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;

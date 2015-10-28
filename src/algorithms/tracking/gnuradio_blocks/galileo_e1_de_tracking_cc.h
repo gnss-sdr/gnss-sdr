@@ -44,6 +44,7 @@
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include "correlator.h"
+#include "gnss_message.h"
 
 class galileo_e1_de_tracking_cc;
 
@@ -207,6 +208,9 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
+
+    // Handler for gnss_messages:
+    void handle_gnss_message( pmt::pmt_t msg );
 };
 
 #endif //GNSS_SDR_GALILEO_E1_de_TRACKING_CC_H

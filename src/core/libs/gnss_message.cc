@@ -63,7 +63,7 @@ std::string gnss_message::get_message( const pmt::pmt_t &msg )
     if( !gnss_message::is_valid( msg ) )
     {
         std::string errMsg("Error: gnss_message ");
-        errMsg += pmt::symbol_to_string( msg ) + " is not a valid gnss_message";
+        errMsg += pmt::write_string( msg ) + " is not a valid gnss_message";
 
         throw errMsg;
     }
@@ -80,7 +80,7 @@ double gnss_message::get_timestamp( const pmt::pmt_t &msg )
     if( !gnss_message::is_valid( msg ) )
     {
         std::string errMsg("Error: gnss_message ");
-        errMsg += pmt::symbol_to_string( msg ) + " is not a valid gnss_message";
+        errMsg += pmt::write_string( msg ) + " is not a valid gnss_message";
 
         throw errMsg;
     }

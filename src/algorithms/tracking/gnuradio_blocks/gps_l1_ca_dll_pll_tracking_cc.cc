@@ -58,6 +58,7 @@
 #define CN0_ESTIMATION_SAMPLES 20
 #define MINIMUM_VALID_CN0 25
 #define MAXIMUM_LOCK_FAIL_COUNTER 50
+#define MINIMUM_LOCK_SUCCESS_COUNTER 50
 #define CARRIER_LOCK_THRESHOLD 0.85
 
 
@@ -71,12 +72,22 @@ gps_l1_ca_dll_pll_make_tracking_cc(
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
-        float pll_bw_hz,
-        float dll_bw_hz,
-        float early_late_space_chips)
+        int   pll_loop_order,
+        float pll_initial_bw_hz,
+        float pll_final_bw_hz,
+        int   dll_loop_order,
+        float dll_initial_bw_hz,
+        float dll_final_bw_hz,
+        float initial_early_late_space_chips,
+        float final_early_late_space_chips,
+        bool aid_code_with_carrier)
 {
     return gps_l1_ca_dll_pll_tracking_cc_sptr(new Gps_L1_Ca_Dll_Pll_Tracking_cc(if_freq,
-            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
+            fs_in, vector_length, queue, dump, dump_filename,
+            pll_loop_order, pll_initial_bw_hz, pll_final_bw_hz,
+            dll_loop_order, dll_initial_bw_hz, dll_final_bw_hz,
+            initial_early_late_space_chips, final_early_late_space_chips,
+            aid_code_with_carrier));
 }
 
 
@@ -99,11 +110,19 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
-        float pll_bw_hz,
-        float dll_bw_hz,
-        float early_late_space_chips) :
+        int   pll_loop_order,
+        float pll_initial_bw_hz,
+        float pll_final_bw_hz,
+        int   dll_loop_order,
+        float dll_initial_bw_hz,
+        float dll_final_bw_hz,
+        float initial_early_late_space_chips,
+        float final_early_late_space_chips,
+        bool aid_code_with_carrier) :
         gr::block("Gps_L1_Ca_Dll_Pll_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+        d_carrier_loop_filter( 0.001, pll_initial_bw_hz, pll_loop_order, false ),
+        d_code_loop_filter( 0.001, dll_initial_bw_hz, dll_loop_order, false )
 {
     // initialize internal vars
     d_queue = queue;
@@ -114,13 +133,28 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     d_dump_filename = dump_filename;
 
     // Initialize tracking  ==========================================
-    d_code_loop_filter.set_DLL_BW(dll_bw_hz);
-    d_carrier_loop_filter.set_PLL_BW(pll_bw_hz);
+    d_dll_loop_order = dll_loop_order;
+    d_pll_loop_order = pll_loop_order;
+    d_initial_pll_bw_hz = pll_initial_bw_hz;
+    d_final_pll_bw_hz = pll_final_bw_hz;
+    d_initial_dll_bw_hz = dll_initial_bw_hz;
+    d_final_dll_bw_hz = dll_final_bw_hz;
 
-    d_carrier_aiding_enabled = true;
+    d_carrier_locked = false;
+
+    d_initial_early_late_space_chips = initial_early_late_space_chips;
+    d_final_early_late_space_chips = final_early_late_space_chips;
+
+    d_code_loop_filter.set_order( dll_loop_order );
+    d_code_loop_filter.set_noise_bandwidth(dll_initial_bw_hz);
+    d_carrier_loop_filter.set_order( pll_loop_order );
+    d_carrier_loop_filter.set_noise_bandwidth(pll_initial_bw_hz);
+
+    d_enable_carrier_aiding = aid_code_with_carrier;
+    d_carrier_aiding_enabled = d_enable_carrier_aiding;
 
     //--- DLL variables --------------------------------------------------------
-    d_early_late_spc_chips = early_late_space_chips; // Define early-late offset (in chips)
+    d_early_late_spc_chips = d_initial_early_late_space_chips; // Define early-late offset (in chips)
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
@@ -232,7 +266,12 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);
     d_code_phase_chips = d_acq_code_phase_samples * GPS_L1_CA_CODE_RATE_HZ / static_cast< double >( d_fs_in );
 
-    // DLL/PLL filter initialization
+    // Initialise the filters:
+    d_carrier_locked = false;
+    d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
+    d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
+    d_early_late_spc_chips = d_initial_early_late_space_chips;
+
     d_carrier_loop_filter.initialize( d_carrier_doppler_hz ); // initialize the carrier filter
     if( d_carrier_aiding_enabled )
     {
@@ -356,10 +395,17 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
+<<<<<<< HEAD
     double carr_error_hz = 0.0;
     double carr_error_filt_hz = 0.0;
     double code_error_chips = 0.0;
     double code_error_filt_chips = 0.0;
+=======
+    float carr_error_hz = 0.0;
+    float carr_error_filt_hz = 0.0;
+    float code_error_chips = 0.0;
+    float code_error_filt_chips = 0.0;
+>>>>>>> Updates to gps_l1_ca_dll_pll_tracking
 
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
@@ -477,7 +523,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             // PLL discriminator
             carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / GPS_TWO_PI;
             // Carrier discriminator filter
-            carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
+            carr_error_filt_hz = d_carrier_loop_filter.apply(carr_error_hz);
             // New carrier Doppler frequency estimation
             d_carrier_doppler_hz = carr_error_filt_hz;
             // New code Doppler frequency estimation
@@ -502,7 +548,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             code_error_chips = dll_nc_e_minus_l_normalized(*d_Early, *d_Late); //[chips/Ti]
             code_error_chips *= (1.0 - d_early_late_spc_chips );
             // Code discriminator filter
-            code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
+            code_error_filt_chips = d_code_loop_filter.apply(code_error_chips); //[chips/second]
             d_code_freq_chips += code_error_filt_chips;
             //Code phase accumulator
             double code_error_filt_secs;
@@ -542,23 +588,60 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
                         {
                             d_carrier_lock_fail_counter++;
+
+                            d_carrier_lock_success_counter = 0;
                         }
                     else
                         {
+                            d_carrier_lock_success_counter++;
                             if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
                         }
-                    if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+                    if( not d_carrier_locked )
+                    {
+                        if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+                            {
+                                std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+                                LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
+                                std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+                                if (d_queue != gr::msg_queue::sptr())
+                                    {
+                                        d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
+                                    }
+                                d_carrier_lock_fail_counter = 0;
+                                d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
+                            }
+
+                        if( d_carrier_lock_success_counter > MINIMUM_LOCK_SUCCESS_COUNTER )
                         {
-                            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
-                            LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                            if (d_queue != gr::msg_queue::sptr())
-                                {
-                                    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-                                }
+                            LOG(INFO) << "Phase lock achieved in channel " << d_channel;
+                            d_carrier_locked = true;
+                            d_code_loop_filter.set_noise_bandwidth( d_final_dll_bw_hz );
+                            d_carrier_loop_filter.set_noise_bandwidth( d_final_pll_bw_hz );
+                            d_early_late_spc_chips = d_final_early_late_space_chips;
+
+                            d_code_loop_filter.initialize( code_error_filt_chips );
+                            d_carrier_loop_filter.initialize( carr_error_filt_hz );
+
                             d_carrier_lock_fail_counter = 0;
-                            d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }
+                    }
+                    else // not d_carrier_locked
+                    {
+                        if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+                            {
+                                LOG(INFO) << "Loss of carrier lock in channel "
+                                          << d_channel << "! Reverting to initial tracking state";
+                                d_carrier_lock_fail_counter = 0;
+                                d_carrier_locked = false;
+                                d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
+                                d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
+                                d_early_late_spc_chips = d_initial_early_late_space_chips;
+                                d_code_loop_filter.initialize( code_error_filt_chips );
+                                d_carrier_loop_filter.initialize( carr_error_filt_hz );
+                            }
+
+                    }
+
                 }
             // ########### Output the tracking data to navigation and PVT ##########
             current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());

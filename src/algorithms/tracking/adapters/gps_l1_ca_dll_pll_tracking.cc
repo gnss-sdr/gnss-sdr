@@ -60,17 +60,30 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
     std::string dump_filename;
     std::string item_type;
     std::string default_item_type = "gr_complex";
-    float pll_bw_hz;
-    float dll_bw_hz;
-    float early_late_space_chips;
+    float pll_initial_bw_hz;
+    float pll_final_bw_hz;
+    float dll_initial_bw_hz;
+    float dll_final_bw_hz;
+    float initial_early_late_space_chips;
+    float final_early_late_space_chips;
+    int pll_loop_order;
+    int dll_loop_order;
+    bool aid_code_with_carrier;
     item_type = configuration->property(role + ".item_type", default_item_type);
     //vector_length = configuration->property(role + ".vector_length", 2048);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
-    early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
+    pll_initial_bw_hz = configuration->property(role + ".pll_initial_bw_hz", 50.0);
+    pll_final_bw_hz = configuration->property(role + ".pll_final_bw_hz", 15.0);
+    dll_initial_bw_hz = configuration->property(role + ".dll_initial_bw_hz", 2.0);
+    dll_final_bw_hz = configuration->property(role + ".dll_final_bw_hz", 2.0);
+    initial_early_late_space_chips = configuration->property(role + ".initial_early_late_space_chips", 0.5);
+    final_early_late_space_chips = configuration->property(role + ".final_early_late_space_chips", 0.5);
+    pll_loop_order = configuration->property(role + ".pll_loop_order", 3);
+    dll_loop_order = configuration->property(role + ".dll_loop_order", 1);
+    aid_code_with_carrier = configuration->property(role + ".aid_code_with_carrier", true );
+
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
             default_dump_filename); //unused!
@@ -87,9 +100,15 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
                     queue_,
                     dump,
                     dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
-                    early_late_space_chips);
+                    pll_loop_order,
+                    pll_initial_bw_hz,
+                    pll_final_bw_hz,
+                    dll_loop_order,
+                    dll_initial_bw_hz,
+                    dll_final_bw_hz,
+                    initial_early_late_space_chips,
+                    final_early_late_space_chips,
+                    aid_code_with_carrier);
         }
     else
         {

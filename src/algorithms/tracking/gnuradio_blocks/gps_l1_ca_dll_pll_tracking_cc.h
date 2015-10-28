@@ -48,8 +48,7 @@
 #include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
 #include "gnss_synchro.h"
-#include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
+#include "tracking_loop_filter.h"
 #include "correlator.h"
 
 class Gps_L1_Ca_Dll_Pll_Tracking_cc;
@@ -64,9 +63,15 @@ gps_l1_ca_dll_pll_make_tracking_cc(long if_freq,
                                    boost::shared_ptr<gr::msg_queue> queue,
                                    bool dump,
                                    std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float early_late_space_chips);
+                                   int   pll_loop_order,
+                                   float pll_initial_bw_hz,
+                                   float pll_final_bw_hz,
+                                   int   dll_loop_order,
+                                   float dll_initial_bw_hz,
+                                   float dll_final_bw_hz,
+                                   float initial_early_late_space_chips,
+                                   float final_early_late_space_chips,
+                                   bool aid_code_with_carrier);
 
 
 
@@ -96,9 +101,15 @@ private:
             boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips);
+            int   pll_loop_order,
+            float pll_initial_bw_hz,
+            float pll_final_bw_hz,
+            int   dll_loop_order,
+            float dll_initial_bw_hz,
+            float dll_final_bw_hz,
+            float initial_early_late_space_chips,
+            float final_early_late_space_chips,
+            bool aid_code_with_carrier );
 
     Gps_L1_Ca_Dll_Pll_Tracking_cc(long if_freq,
             long fs_in, unsigned
@@ -106,9 +117,15 @@ private:
             boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float early_late_space_chips);
+            int   pll_loop_order,
+            float pll_initial_bw_hz,
+            float pll_final_bw_hz,
+            int   dll_loop_order,
+            float dll_initial_bw_hz,
+            float dll_final_bw_hz,
+            float initial_early_late_space_chips,
+            float final_early_late_space_chips,
+            bool aid_code_with_carrier);
     void update_local_code();
     void update_local_carrier();
 
@@ -142,10 +159,23 @@ private:
     double d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
-    Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    Tracking_loop_filter d_code_loop_filter;
+    Tracking_loop_filter d_carrier_loop_filter;
+    int d_pll_loop_order;
+    float d_initial_pll_bw_hz;
+    float d_final_pll_bw_hz;
 
+    int d_dll_loop_order;
+    float d_initial_dll_bw_hz;
+    float d_final_dll_bw_hz;
+
+    float d_initial_early_late_space_chips;
+    float d_final_early_late_space_chips;
+
+    bool d_enable_carrier_aiding;
     bool d_carrier_aiding_enabled;
+
+    bool d_carrier_locked;
 
     // acquisition
     double d_acq_code_phase_samples;
@@ -176,6 +206,7 @@ private:
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
     int d_carrier_lock_fail_counter;
+    int d_carrier_lock_success_counter;
 
     // control vars
     bool d_enable_tracking;

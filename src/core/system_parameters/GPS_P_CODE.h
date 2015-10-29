@@ -37,10 +37,9 @@
 // carrier and code frequencies
 const double GPS_P_CODE_RATE_HZ      = 10.23e6;   //!< GPS P code rate [chips/s]
 const double GPS_P_CODE_PERIOD       = 3600.0*24.0*7.0;     //!< GPS P code period [seconds]
-const double GPS_P_CODE_LENGTH_CHIPS = 1023.0;    //!< GPS P code length [chips]
+const uint64_t GPS_P_CODE_LENGTH_CHIPS = 10230000LL*3600LL*24LL*7LL;    //!< GPS P code length [chips]
 const double GPS_X1_EPOCH_SECONDS    = 1.5;  //! GPS X1 epoch in seconds
 const double GPS_X2_EPOCH_SECONDS    = GPS_X1_EPOCH_SECONDS + 37/GPS_P_CODE_RATE_HZ;  //! GPS X2 epoch in seconds
-const unsigned int GPS_X1A_EPOCHS_PER_X1_EPOCH = 3750; //! Number of X1A epochs per X1 epoch
 
 const unsigned int GPS_X1A_CODE_LENGTH = 4092; //! Length of the X1A code in chips
 const unsigned int GPS_X1B_CODE_LENGTH = 4093; //! Length of the X1A code in chips

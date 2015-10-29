@@ -99,3 +99,37 @@ TEST(PCodeGenTest, X2BTest)
 
 }
 
+
+TEST(PCodeGenTest, FirstChipsTest)
+{
+    std::vector< short > dest;
+
+    std::vector< short > x1a;
+    std::vector< short > x1b;
+    std::vector< short > x2a;
+    std::vector< short > x2b;
+
+    gps_x1a_code_gen( x1a );
+    gps_x1b_code_gen( x1b );
+    gps_x2a_code_gen( x2a );
+    gps_x2b_code_gen( x2b );
+
+    GPS_P_Code_Generator pcode_gen;
+
+    unsigned int num_chips = 24;
+
+    int sv = 1;
+
+    pcode_gen.get_chips( sv, 0, num_chips, dest );
+
+    EXPECT_EQ( dest.size(), num_chips );
+
+    for( unsigned ii = 0; ii < num_chips; ++ii )
+    {
+        short res = x1a[ii] ^ x1b[ii] ^ x2a[ii] ^ x2b[ii];
+
+        EXPECT_EQ( dest[ii], res );
+    }
+
+}
+

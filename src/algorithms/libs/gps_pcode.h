@@ -33,6 +33,7 @@
 #define GNSS_SDR_GPS_PCODE_H_
 
 #include <vector>
+#include <cstdint>
 
 //!Generates the GPS X1A code as a vector of short integers
 void gps_x1a_code_gen(std::vector< short > & _dest );

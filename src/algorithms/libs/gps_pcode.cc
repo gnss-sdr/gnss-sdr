@@ -163,7 +163,7 @@ const unsigned int GPS_P_Code_Generator::X2A_EPOCHS_PER_X2_EPOCH = 3750;
 const unsigned int GPS_P_Code_Generator::X2B_EPOCHS_PER_X2_EPOCH = 3749;
 
 const unsigned int GPS_P_Code_Generator::X1_EPOCHS_PER_WEEK = 403200;
-const unsigned int GPS_P_Code_Generator::X2_EPOCHS_PER_WEEK = 403199;
+const unsigned int GPS_P_Code_Generator::X2_EPOCHS_PER_WEEK = 403200;
 
 const unsigned int GPS_P_Code_Generator::X1B_EXTRA_LENGTH = 343;
 const unsigned int GPS_P_Code_Generator::X2A_EXTRA_LENGTH = 1069;

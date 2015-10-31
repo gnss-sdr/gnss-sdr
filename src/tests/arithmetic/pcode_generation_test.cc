@@ -31,6 +31,7 @@
 
 #include <gtest/gtest.h>
 #include <vector>
+#include "GPS_P_CODE.h"
 #include "gps_pcode.h"
 
 TEST(PCodeGenTest, X1ATest)
@@ -131,5 +132,148 @@ TEST(PCodeGenTest, FirstChipsTest)
         EXPECT_EQ( dest[ii], res );
     }
 
+}
+
+TEST(PCodeGenTest, EndX1EpochTest)
+{
+    std::vector< short > dest;
+
+    std::vector< short > x1a;
+    std::vector< short > x1b;
+    std::vector< short > x2a;
+    std::vector< short > x2b;
+
+    gps_x1a_code_gen( x1a );
+    gps_x1b_code_gen( x1b );
+    gps_x2a_code_gen( x2a );
+    gps_x2b_code_gen( x2b );
+
+    GPS_P_Code_Generator pcode_gen;
+
+    unsigned int num_chips = 24;
+    uint64_t end_x1_epoch = 4092LL*3750LL;
+    uint64_t start_ind = end_x1_epoch - num_chips;
+
+    int sv = 1;
+
+    pcode_gen.get_chips( sv, start_ind, num_chips, dest );
+
+    EXPECT_EQ( dest.size(), num_chips );
+
+    for( unsigned ii = 0; ii < num_chips; ++ii )
+    {
+        short res = x1a[4092-num_chips+ii] 
+            ^ x1b[4092] ^ x2a[4092-num_chips+ii] 
+            ^ x2b[4092];
+
+        EXPECT_EQ( dest[ii], res );
+    }
+}
+
+TEST(PCodeGenTest, StartSecondX1EpochTest)
+{
+    std::vector< short > dest;
+
+    std::vector< short > x1a;
+    std::vector< short > x1b;
+    std::vector< short > x2a;
+    std::vector< short > x2b;
+
+    gps_x1a_code_gen( x1a );
+    gps_x1b_code_gen( x1b );
+    gps_x2a_code_gen( x2a );
+    gps_x2b_code_gen( x2b );
+
+    GPS_P_Code_Generator pcode_gen;
+
+    unsigned int num_chips = 24;
+    uint64_t end_x1_epoch = 4092LL*3750LL;
+    uint64_t start_ind = end_x1_epoch;
+
+    int sv = 1;
+
+    pcode_gen.get_chips( sv, start_ind, num_chips, dest );
+
+    EXPECT_EQ( dest.size(), num_chips );
+
+    for( unsigned ii = 0; ii < num_chips; ++ii )
+    {
+        short res = x1a[ii] 
+            ^ x1b[ii] ^ x2a[4091] 
+            ^ x2b[4092];
+
+        EXPECT_EQ( dest[ii], res );
+    }
+}
+
+TEST(PCodeGenTest, EndOfWeekTest)
+{
+    std::vector< short > dest;
+
+    std::vector< short > x1a;
+    std::vector< short > x1b;
+    std::vector< short > x2a;
+    std::vector< short > x2b;
+
+    gps_x1a_code_gen( x1a );
+    gps_x1b_code_gen( x1b );
+    gps_x2a_code_gen( x2a );
+    gps_x2b_code_gen( x2b );
+
+    GPS_P_Code_Generator pcode_gen;
+
+    unsigned int num_chips = 343;
+    uint64_t end_week = GPS_P_CODE_LENGTH_CHIPS;
+    uint64_t start_ind = end_week - num_chips;
+
+    int sv = 1;
+
+    pcode_gen.get_chips( sv, start_ind, num_chips, dest );
+
+    EXPECT_EQ( dest.size(), num_chips );
+
+    for( unsigned ii = 0; ii < num_chips; ++ii )
+    {
+        short res = x1a[4092-num_chips+ii]
+            ^ x1b[4092] ^ x2a[4091]
+            ^ x2b[4092];
+
+        EXPECT_EQ( dest[ii], res );
+    }
+}
+
+TEST(PCodeGenTest, Prn37Test)
+{
+    std::vector< short > dest;
+
+    std::vector< short > x1a;
+    std::vector< short > x1b;
+    std::vector< short > x2a;
+    std::vector< short > x2b;
+
+    gps_x1a_code_gen( x1a );
+    gps_x1b_code_gen( x1b );
+    gps_x2a_code_gen( x2a );
+    gps_x2b_code_gen( x2b );
+
+    GPS_P_Code_Generator pcode_gen;
+
+    int sv = 37;
+    unsigned int num_chips = 24+sv-1;
+    uint64_t start_ind = 0;
+
+
+    pcode_gen.get_chips( sv, start_ind, num_chips, dest );
+
+    EXPECT_EQ( dest.size(), num_chips );
+
+    for( unsigned ii = sv-1; ii < num_chips; ++ii )
+    {
+        short res = x1a[ii]
+            ^ x1b[ii] ^ x2a[ii-sv+1]
+            ^ x2b[ii-sv+1];
+
+        EXPECT_EQ( dest[ii], res );
+    }
 }
 

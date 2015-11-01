@@ -237,7 +237,7 @@ void sbas_l1_telemetry_decoder_cc::sample_aligner::reset()
  */
 bool sbas_l1_telemetry_decoder_cc::sample_aligner::get_symbols(const std::vector<double> samples, std::vector<double> &symbols)
 {
-    double smpls[d_n_smpls_in_history];
+    double smpls[3] = { };
     double corr_diff;
     bool stand_by = true;
     double sym;

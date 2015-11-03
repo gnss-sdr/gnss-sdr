@@ -1,4 +1,4 @@
-title: gnss.sdr
+title: gnss-sdr
 brief: An open source global navigation satellite systems software defined receiver
 tags:
   - sdr

@@ -172,14 +172,14 @@ const unsigned int GPS_P_Code_Generator::X2B_EXTRA_LENGTH = 965;
 const unsigned int GPS_P_Code_Generator::X2A_EPOCHS_LAST_X2_EPOCH = 104;
 const unsigned int GPS_P_Code_Generator::X2B_EPOCHS_LAST_X2_EPOCH = 104;
 
-void GPS_P_Code_Generator::get_chips( int sv, uint64_t first_chip_index, unsigned num_chips,
+void GPS_P_Code_Generator::get_chips( int prn, uint64_t first_chip_index, unsigned num_chips,
         std::vector< short > &_dest ) const
 {
     // A couple of quick checks:
-    if( sv < 1 or sv > 37 )
+    if( prn < 1 or prn > 210 )
     {
-        LOG(ERROR) << "Invalid SV number: " << sv
-                   << " should be in the range 1 to 37 (inclusive)";
+        LOG(ERROR) << "Invalid SV number: " << prn
+                   << " should be in the range 1 to 210 (inclusive)";
     }
 
     if( first_chip_index > GPS_P_CODE_LENGTH_CHIPS )
@@ -197,6 +197,14 @@ void GPS_P_Code_Generator::get_chips( int sv, uint64_t first_chip_index, unsigne
     }
 
     // OK now we can proceed:
+    // IS GPS 200H - The first 37 PRN codes are unique, identified by sv
+    // below. For PRN values greater than 37 we create the code for
+    // (prn-1) % 37 + 1 and delay it by floor( (prn-1)/37 ) days
+    int sv = ( prn - 1 ) % 37 + 1;
+    int num_days = (prn-1) / 37;
+    uint64_t day_shift = num_days*10230000LL*24LL*3600LL;
+    first_chip_index = first_chip_index + day_shift;
+    first_chip_index %= GPS_P_CODE_LENGTH_CHIPS;
 
     //Ensure we have space:
     _dest.resize( num_chips );
@@ -204,7 +212,7 @@ void GPS_P_Code_Generator::get_chips( int sv, uint64_t first_chip_index, unsigne
 
     // Establish the starting phase:
     // 1) account for the delay of the x2 register
-    int64_t first_chip_index_x2 = first_chip_index - sv + 1;
+    int64_t first_chip_index_x2 = first_chip_index - sv;
     while( first_chip_index_x2 < 0 )
     {
         first_chip_index_x2 += GPS_P_CODE_LENGTH_CHIPS;
@@ -293,11 +301,14 @@ void GPS_P_Code_Generator::get_chips( int sv, uint64_t first_chip_index, unsigne
             extra_code_period = X2A_EXTRA_LENGTH;
         }
 
-        if( x2a_epoch >= max_num_epochs )
+        if( x2a_epoch >= max_num_epochs-1 )
         {
             this_code_period = this_code_period + extra_code_period;
-            x2a_ind += GPS_X2A_CODE_LENGTH;
-            x2a_epoch--;
+            if( x2a_epoch == max_num_epochs )
+            {
+                x2a_ind += GPS_X2A_CODE_LENGTH;
+            }
+            x2a_epoch = max_num_epochs-1;
         }
 
         unsigned int chips_to_gen = std::min( num_chips - dest_ind,
@@ -345,11 +356,14 @@ void GPS_P_Code_Generator::get_chips( int sv, uint64_t first_chip_index, unsigne
             extra_code_period = X2B_EXTRA_LENGTH;
         }
 
-        if( x2b_epoch >= max_num_epochs )
+        if( x2b_epoch >= max_num_epochs - 1 )
         {
             this_code_period = this_code_period + extra_code_period;
-            x2b_ind += GPS_X2B_CODE_LENGTH;
-            x2b_epoch--;
+            if( x2b_epoch == max_num_epochs )
+            {
+                x2b_ind += GPS_X2B_CODE_LENGTH;
+            }
+            x2b_epoch = max_num_epochs - 1;
         }
 
         unsigned int chips_to_gen = std::min( num_chips - dest_ind,

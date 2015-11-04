@@ -32,6 +32,8 @@ set(GNSS_SPLIBS_SOURCES
     short_x2_to_cshort.cc
     complex_float_to_complex_byte.cc
     gps_pcode.cc
+    gps_pcode_generator.cc
+    spirent_prs_code_generator.cc
 )
 
 

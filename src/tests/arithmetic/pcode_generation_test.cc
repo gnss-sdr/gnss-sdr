@@ -340,6 +340,92 @@ TEST(PCodeGenTest, StartSecondX1EpochTest)
     }
 }
 
+TEST(PCodeGenTest, CrossX1EpochTest)
+{
+    std::vector< short > dest;
+
+    std::vector< short > dest0;
+
+
+    GPS_P_Code_Generator pcode_gen;
+
+    uint64_t end_x1_epoch = 4092LL*3750LL;
+
+    int sv = 1;
+
+    unsigned int num_chips_epoch1 = 4092;
+
+    unsigned int num_chips_epoch2 = 124;
+    unsigned int num_chips = num_chips_epoch1 + num_chips_epoch2;
+
+    uint64_t start_ind = end_x1_epoch - num_chips_epoch1;
+
+    pcode_gen.get_chips( sv, start_ind, num_chips, dest );
+
+    EXPECT_EQ( dest.size(), num_chips );
+
+    // First check that the 1st x1 epoch chips are good:
+    pcode_gen.get_chips( sv, start_ind, num_chips_epoch1, dest0 );
+
+    unsigned ii = 0;
+
+    for( ii = 0; ii < num_chips_epoch1; ++ii )
+    {
+        EXPECT_EQ( dest[ii], dest0[ii] );
+    }
+
+    // Now check the batch from the second x1 epoch:
+    pcode_gen.get_chips( sv, end_x1_epoch, num_chips_epoch2, dest0 );
+
+    for( ii = 0; ii < num_chips_epoch2; ++ii )
+    {
+        EXPECT_EQ( dest[ii+num_chips_epoch1], dest0[ii] );
+    }
+}
+
+TEST(PCodeGenTest, CrossX2EpochTest)
+{
+    std::vector< short > dest;
+
+    std::vector< short > dest0;
+
+
+    GPS_P_Code_Generator pcode_gen;
+
+    uint64_t end_x2_epoch = (4092LL+37LL)*3750LL;
+
+    int sv = 1;
+
+    unsigned int num_chips_epoch1 = 4092;
+
+    unsigned int num_chips_epoch2 = 124;
+    unsigned int num_chips = num_chips_epoch1 + num_chips_epoch2;
+
+    uint64_t start_ind = end_x2_epoch - num_chips_epoch1;
+
+    pcode_gen.get_chips( sv, start_ind, num_chips, dest );
+
+    EXPECT_EQ( dest.size(), num_chips );
+
+    // First check that the 1st x1 epoch chips are good:
+    pcode_gen.get_chips( sv, start_ind, num_chips_epoch1, dest0 );
+
+    unsigned ii = 0;
+
+    for( ii = 0; ii < num_chips_epoch1; ++ii )
+    {
+        EXPECT_EQ( dest[ii], dest0[ii] );
+    }
+
+    // Now check the batch from the second x1 epoch:
+    pcode_gen.get_chips( sv, end_x2_epoch, num_chips_epoch2, dest0 );
+
+    for( ii = 0; ii < num_chips_epoch2; ++ii )
+    {
+        EXPECT_EQ( dest[ii+num_chips_epoch1], dest0[ii] );
+    }
+}
+
 TEST(PCodeGenTest, EndOfWeekTest)
 {
     std::vector< short > dest;

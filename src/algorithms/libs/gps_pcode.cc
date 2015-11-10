@@ -253,11 +253,14 @@ void GPS_P_Code_Generator::get_chips( int prn, uint64_t first_chip_index, unsign
     while( dest_ind < num_chips )
     {
         this_code_period = GPS_X1B_CODE_LENGTH;
-        if( x1b_epoch >= X1B_EPOCHS_PER_X1_EPOCH )
+        if( x1b_epoch >= X1B_EPOCHS_PER_X1_EPOCH - 1 )
         {
             this_code_period = GPS_X1B_CODE_LENGTH + X1B_EXTRA_LENGTH;
-            x1b_ind += GPS_X1B_CODE_LENGTH;
-            x1b_epoch--;
+            if( x1b_epoch == X1B_EPOCHS_PER_X1_EPOCH )
+            {
+                x1b_ind += GPS_X1B_CODE_LENGTH;
+            }
+            x1b_epoch = X1B_EPOCHS_PER_X1_EPOCH - 1;
         }
 
         unsigned chips_to_gen = std::min(num_chips-dest_ind,

@@ -78,7 +78,17 @@ TEST(SpirentPrsTest, E1FirstChipsTest)
 
         code_gen.get_chips( first_chip_index, num_chips, prs );
 
-        pcode_gen.get_chips( sv, downsample_factor*first_chip_index+offset, num_chips*downsample_factor, pcode );
+        uint64_t first_p_chip_index = downsample_factor*first_chip_index;
+        if( first_p_chip_index < offset )
+        {
+            first_p_chip_index = first_p_chip_index + code_gen.get_code_length() - offset;
+        }
+        else
+        {
+            first_p_chip_index = first_p_chip_index - offset;
+        }
+
+        pcode_gen.get_chips( sv, first_p_chip_index, num_chips*downsample_factor, pcode );
 
         for( unsigned int ii = 0, jj = 0; ii < num_chips; ++ii, jj+=downsample_factor )
         {
@@ -129,7 +139,17 @@ TEST(SpirentPrsTest, E6FirstChipsTest)
 
         code_gen.get_chips( first_chip_index, num_chips, prs );
 
-        pcode_gen.get_chips( sv, downsample_factor*first_chip_index+offset, num_chips*downsample_factor, pcode );
+        uint64_t first_p_chip_index = downsample_factor*first_chip_index;
+        if( first_p_chip_index < offset )
+        {
+            first_p_chip_index = first_p_chip_index + code_gen.get_code_length() - offset;
+        }
+        else
+        {
+            first_p_chip_index = first_p_chip_index - offset;
+        }
+
+        pcode_gen.get_chips( sv, first_p_chip_index, num_chips*downsample_factor, pcode );
 
         for( unsigned int ii = 0, jj = 0; ii < num_chips; ++ii, jj+=downsample_factor )
         {
@@ -182,7 +202,17 @@ TEST(SpirentPrsTest, E1LastChipsTest)
 
         code_gen.get_chips( first_chip_index, num_chips, prs );
 
-        pcode_gen.get_chips( sv, downsample_factor*first_chip_index+offset, num_chips*downsample_factor, pcode );
+        uint64_t first_p_chip_index = downsample_factor*first_chip_index;
+        if( first_p_chip_index < offset )
+        {
+            first_p_chip_index = first_p_chip_index + code_gen.get_code_length() - offset;
+        }
+        else
+        {
+            first_p_chip_index = first_p_chip_index - offset;
+        }
+
+        pcode_gen.get_chips( sv, first_p_chip_index, num_chips*downsample_factor, pcode );
 
         for( unsigned int ii = 0, jj = 0; ii < num_chips; ++ii, jj+=downsample_factor )
         {
@@ -233,7 +263,17 @@ TEST(SpirentPrsTest, E6LastChipsTest)
 
         code_gen.get_chips( first_chip_index, num_chips, prs );
 
-        pcode_gen.get_chips( sv, downsample_factor*first_chip_index+offset, num_chips*downsample_factor, pcode );
+        uint64_t first_p_chip_index = downsample_factor*first_chip_index;
+        if( first_p_chip_index < offset )
+        {
+            first_p_chip_index = first_p_chip_index + code_gen.get_code_length() - offset;
+        }
+        else
+        {
+            first_p_chip_index = first_p_chip_index - offset;
+        }
+
+        pcode_gen.get_chips( sv, first_p_chip_index, num_chips*downsample_factor, pcode );
 
         for( unsigned int ii = 0, jj = 0; ii < num_chips; ++ii, jj+=downsample_factor )
         {

@@ -30,6 +30,7 @@
  */
 
 #include "spirent_prs_code_generator.h"
+#include "GPS_P_CODE.h"
 
 SpirentPrsCodeGenerator::SpirentPrsCodeGenerator( int sv, bool is_e1 )
 : d_sv( sv ),
@@ -50,7 +51,17 @@ bool SpirentPrsCodeGenerator::get_chips( uint64_t first_chip_index,
     // For E1 we have a downsample factor of 4, while the factor is 2
     // for E6. The offset is chosen by spirent as 0 for even PRNS and 1
     // for odd PRNS
-    d_code_gen.get_chips( d_sv, d_downsample_factor*first_chip_index + d_offset,
+    uint64_t first_p_chip_index = d_downsample_factor*first_chip_index;
+    if( first_p_chip_index < d_offset )
+    {
+        first_p_chip_index = first_p_chip_index + get_code_length() - d_offset;
+    }
+    else
+    {
+        first_p_chip_index = first_p_chip_index - d_offset;
+    }
+
+    d_code_gen.get_chips( d_sv, first_p_chip_index,
             num_chips*d_downsample_factor, d_pcode_store );
 
     dest.resize( num_chips );
@@ -64,6 +75,7 @@ bool SpirentPrsCodeGenerator::get_chips( uint64_t first_chip_index,
     return true;
 }
 
+#include <iostream>
 void SpirentPrsCodeGenerator::set_prn( int sv )
 {
     if( sv < 1 || sv > 50 )

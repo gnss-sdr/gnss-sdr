@@ -58,6 +58,8 @@ const double Galileo_E1_SUB_CARRIER_B_RATE_HZ = 6.138e6; //!< Galileo E1 sub-car
 const double Galileo_E1_B_CODE_LENGTH_CHIPS = 4092.0;    //!< Galileo E1-B code length [chips]
 const double Galileo_E1_B_SYMBOL_RATE_BPS = 250.0;       //!< Galileo E1-B symbol rate [bits/second]
 const double Galileo_E1_C_SECONDARY_CODE_LENGTH = 25.0;  //!< Galileo E1-C secondary code length [chips]
+const double Galileo_E1_A_CODE_CHIP_RATE_HZ = 2.5575e6;  //!< Galileo E1-A code rate [chips/s]
+const double Galileo_E1_A_SUB_CARRIER_RATE_HZ = 15.345e6; //!< Galileo E1-A subcarrier rate [Hz]
 const int Galileo_E1_NUMBER_OF_CODES = 50;
 
 const double GALILEO_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)

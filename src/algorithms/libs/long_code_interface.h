@@ -35,6 +35,11 @@
 
 #include <vector>
 #include <cstdint>
+#include <boost/shared_ptr.hpp>
+
+class LongCodeInterface;
+
+typedef boost::shared_ptr<LongCodeInterface> LongCodeInterface_sptr;
 
 class LongCodeInterface
 {
@@ -44,6 +49,8 @@ class LongCodeInterface
                 std::vector< short > &dest ) = 0;
 
         virtual void set_prn( int sv ) = 0;
+
+        virtual uint64_t get_code_length() const = 0;
 };
 
 #endif // GNSS_SDR_LONG_CODE_INTERFACE_H_

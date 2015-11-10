@@ -30,6 +30,7 @@
  */
 
 #include "gps_pcode_generator.h"
+#include "GPS_P_CODE.h"
 
 GpsPCodeGenerator::GpsPCodeGenerator( int sv )
 {
@@ -54,4 +55,9 @@ void GpsPCodeGenerator::set_prn( int sv )
     }
 
     d_sv = sv;
+}
+
+uint64_t GpsPCodeGenerator::get_code_length(void) const
+{
+    return GPS_P_CODE_LENGTH_CHIPS;
 }

@@ -75,3 +75,8 @@ void SpirentPrsCodeGenerator::set_prn( int sv )
 
     d_offset = d_sv % 2;
 }
+
+uint64_t SpirentPrsCodeGenerator::get_code_length( void ) const
+{
+    return GPS_P_CODE_LENGTH_CHIPS / static_cast< uint64_t >( d_downsample_factor );
+}

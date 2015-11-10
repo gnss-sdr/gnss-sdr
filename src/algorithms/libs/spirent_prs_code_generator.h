@@ -46,6 +46,8 @@ class SpirentPrsCodeGenerator : public LongCodeInterface
 
         void set_prn( int sv );
 
+        uint64_t get_code_length( void ) const;
+
     private:
         int d_sv;
 

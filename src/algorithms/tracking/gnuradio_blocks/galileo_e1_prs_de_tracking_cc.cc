@@ -134,6 +134,9 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_aid_subcarrier_with_carrier = aid_subcarrier_with_carrier;
     d_aid_code_with_subcarrier = aid_code_with_subcarrier;
 
+    d_code_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, dll_bw_hz, 1, false);
+    d_subcarrier_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, sll_bw_hz, 1, false);
+    d_carrier_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, pll_bw_hz, 3, false);
     // Initialize tracking  ==========================================
 
 
@@ -243,6 +246,7 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_acq_code_phase_samples = 0.0;
     d_acq_carrier_doppler_hz = 0.0;
     d_carrier_doppler_hz = 0.0;
+    d_carrier_doppler_hz_prs = 0.0;
     d_acc_carrier_phase_rad = 0.0;
     d_acc_code_phase_secs = 0.0;
 }
@@ -638,6 +642,10 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
 
             d_rem_code_phase_samples = rem_code_phase_chips * d_fs_in/Galileo_E1_CODE_CHIP_RATE_HZ;
 
+            //remnant carrier phase to prevent overflow in the code NCO
+            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * T;
+            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
+
             // PRS tracking
             if( d_prs_tracking_enabled ){
                 // Generate local code and carrier replicas (using \hat{f}_d(k-1))
@@ -687,6 +695,9 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
 
                 d_rem_subcarrier_phase_samples_prs = rem_subcarrier_phase_cycles_prs*
                     static_cast<double>(d_fs_in)/Galileo_E1_A_SUB_CARRIER_RATE_HZ;
+
+                d_rem_carr_phase_rad_prs = d_rem_carr_phase_rad_prs + GPS_TWO_PI * d_carrier_doppler_hz_prs * T;
+                d_rem_carr_phase_rad_prs = fmod(d_rem_carr_phase_rad_prs, GPS_TWO_PI);
 
             }
 
@@ -738,9 +749,6 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
             }
             //carrier phase accumulator for (K) Doppler estimation
             d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
-            //remnant carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
-            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
 
             // ################## SLL ##########################################################
             // SLL discriminator
@@ -791,40 +799,81 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
             d_acc_code_phase_secs = d_acc_code_phase_secs  + code_error_filt_secs;
 
             // ################## PRS ##########################################################
-            // ################## PLL ##########################################################
-            // PLL discriminator
-            carr_error_hz_prs = pll_cloop_two_quadrant_atan(*d_Prompt_Subcarrier_Prompt_Code_prs) / static_cast<float>(GPS_TWO_PI);
+            if( d_prs_tracking_enabled )
+            {
+                // ################## PLL ##########################################################
+                // PLL discriminator
+                carr_error_hz_prs = pll_cloop_two_quadrant_atan(*d_Prompt_Subcarrier_Prompt_Code_prs) / static_cast<float>(GPS_TWO_PI);
 
-            // FOR NOW : Use E1b value
-            d_carrier_doppler_hz_prs = d_carrier_doppler_hz;
+                // Carrier discriminator filter
+                carr_error_filt_hz_prs = d_carrier_loop_filter_prs.apply(carr_error_hz_prs);
 
+                // New carrier Doppler frequency estimation
+                d_carrier_doppler_hz_prs = carr_error_filt_hz_prs;
 
-            // ################## SLL ##########################################################
-            // SLL discriminator
-            subcarrier_error_cycles_prs = dll_nc_e_minus_l_normalized(
-                    *d_Prompt_Code_Early_Subcarrier_prs,
-                    *d_Prompt_Code_Late_Subcarrier_prs); //[chips/Ti]
-            // normalise the SLL discriminator by the slope of the
-            // BOC(1,1) at the origin:
-            corr_slope = 2.0;
-            subcarrier_error_cycles_prs *= ( 1 - corr_slope*d_early_late_subcarrier_spc_cycles) / corr_slope;
+                float subcarrier_doppler_cycles_prs = ((d_carrier_doppler_hz *
+                            Galileo_E1_A_SUB_CARRIER_RATE_HZ) / Galileo_E1_FREQ_HZ);
 
-            // For now use the E1b values
-            d_subcarrier_freq_cycles_prs = d_subcarrier_freq_cycles
-                * Galileo_E1_A_SUB_CARRIER_RATE_HZ / Galileo_E1_SUB_CARRIER_A_RATE_HZ;
+                // New subcarrier Doppler frequency estimation: carrier
+                // aiding of the subcarrier:
+                if( d_aid_subcarrier_with_carrier )
+                {
+                    d_subcarrier_freq_cycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ + subcarrier_doppler_cycles_prs;
+                }
+                else
+                {
+                    d_subcarrier_freq_cycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ;
+                }
 
-            // ################## DLL ##########################################################
-            // DLL discriminator
-            code_error_chips_prs = dll_nc_e_minus_l_normalized(
-                    *d_Prompt_Subcarrier_Early_Code_prs,
-                    *d_Prompt_Subcarrier_Late_Code_prs); //[chips/Ti]
-            //Normalise the code phase error:
-            corr_slope = 1.0;
-            code_error_chips_prs *= ( 1 - corr_slope*d_early_late_code_spc_chips) / corr_slope;
+                // ################## SLL ##########################################################
+                // SLL discriminator
+                subcarrier_error_cycles_prs = dll_nc_e_minus_l_normalized(
+                        *d_Prompt_Code_Early_Subcarrier_prs,
+                        *d_Prompt_Code_Late_Subcarrier_prs); //[chips/Ti]
+                // normalise the SLL discriminator by the slope of the
+                // BOC(1,1) at the origin:
+                corr_slope = 2.0;
+                subcarrier_error_cycles_prs *= ( 1 - corr_slope*d_early_late_subcarrier_spc_cycles) / corr_slope;
 
-            // For now use the E1 values:
-            d_code_freq_chips_prs = d_code_freq_chips * Galileo_E1_A_CODE_CHIP_RATE_HZ /
-                Galileo_E1_CODE_CHIP_RATE_HZ;
+                // Subcarrier discriminator filter
+                subcarrier_error_filt_cycles_prs = d_subcarrier_loop_filter_prs.apply(subcarrier_error_cycles_prs); //[chips/second]
+
+                // For now use the E1b values
+                d_subcarrier_freq_cycles_prs += subcarrier_error_filt_cycles_prs;
+
+                // ################## DLL ##########################################################
+                // DLL discriminator
+                code_error_chips_prs = dll_nc_e_minus_l_normalized(
+                        *d_Prompt_Subcarrier_Early_Code_prs,
+                        *d_Prompt_Subcarrier_Late_Code_prs); //[chips/Ti]
+                //Normalise the code phase error:
+                corr_slope = 1.0;
+                code_error_chips_prs *= ( 1 - corr_slope*d_early_late_code_spc_chips) / corr_slope;
+
+                // Code discriminator filter
+                code_error_filt_chips_prs = d_code_loop_filter_prs.apply(code_error_chips_prs); //[chips/second]
+
+                // Aiding the code tracking with the subcarrier:
+                if( d_aid_code_with_subcarrier )
+                {
+                    d_code_freq_chips_prs = d_subcarrier_freq_cycles_prs *
+                        Galileo_E1_A_CODE_CHIP_RATE_HZ/Galileo_E1_A_SUB_CARRIER_RATE_HZ;
+                }
+                else if( d_aid_subcarrier_with_carrier )
+                {
+                    float code_doppler_chips_prs = ((d_carrier_doppler_hz_prs *
+                                Galileo_E1_A_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ);
+
+                    d_code_freq_chips_prs = Galileo_E1_A_CODE_CHIP_RATE_HZ + code_doppler_chips;
+                }
+                else
+                {
+                    d_code_freq_chips_prs = Galileo_E1_A_CODE_CHIP_RATE_HZ;
+                }
+                // For now use the E1 values:
+                d_code_freq_chips_prs += code_error_filt_chips_prs;
+
+            }
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
             // keep alignment parameters for the next input buffer
@@ -1150,7 +1199,7 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
     d_subcarrier_phase_halfcycles_prs = std::fmod( curr_tow,
             1.0/Galileo_E1_A_SUB_CARRIER_RATE_HZ ) * 2.0 * Galileo_E1_A_SUB_CARRIER_RATE_HZ;
 
-    d_rem_carr_phase_rad_prs = d_rem_carr_phase_rad + M_PI/2.0;
+    d_rem_carr_phase_rad_prs = d_rem_carr_phase_rad - M_PI/2.0;
 
     d_code_freq_chips_prs = d_code_freq_chips * Galileo_E1_A_CODE_CHIP_RATE_HZ /
         Galileo_E1_CODE_CHIP_RATE_HZ;
@@ -1162,7 +1211,14 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
 
 
     // Initialise the filters:
-    // TODO:
+    // DLL/PLL filter initialization
+    d_carrier_loop_filter_prs.initialize(d_carrier_doppler_hz_prs); // initialize the carrier filter
+
+    d_subcarrier_loop_filter_prs.initialize(
+            d_aid_subcarrier_with_carrier ? 0.0 : d_subcarrier_freq_cycles_prs); // initialize the subcarrier filter
+    d_code_loop_filter_prs.initialize(
+            ( d_aid_subcarrier_with_carrier || d_aid_code_with_subcarrier ) ?
+            0.0 : d_code_freq_chips_prs);    // initialize the code filter
 
 
     std::string sys_ = &d_acquisition_gnss_synchro->System;

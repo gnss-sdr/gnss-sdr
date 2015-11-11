@@ -400,12 +400,6 @@ void galileo_e1_prs_de_tracking_cc::update_local_code_prs()
                 static_cast<uint64_t>( std::floor( d_code_phase_chips_prs ) ) + d_prs_code_gen->get_code_length() - 2 :
                 static_cast<uint64_t>( std::floor( d_code_phase_chips_prs) ) - 2 );
 
-        DLOG(INFO) << "Updating the PRS code: starting chip: " << d_start_index_prs_code
-                   << " for code phase: " << std::fixed << d_code_phase_chips_prs
-                   << " given code length: " << d_prs_code_gen->get_code_length()
-                   << " Code freq: " << d_code_freq_chips_prs
-                   << " Size prs code: " << d_size_prs_code
-                   << " Timestamp: " << static_cast< double >( d_sample_counter) /  static_cast<double>( d_fs_in );
         d_prs_code_gen->get_chips(d_start_index_prs_code, d_size_prs_code, d_prs_code_shorts );
 
         for( unsigned int ii = 0; ii < d_size_prs_code; ++ii )
@@ -415,14 +409,6 @@ void galileo_e1_prs_de_tracking_cc::update_local_code_prs()
 
         d_prs_code_initialized = true;
 
-        std::cout << "PRS (" << d_acquisition_gnss_synchro->PRN << ")"
-                  << " Start index: " << d_start_index_prs_code
-                  << " First 12 chips:";
-        for( unsigned int ii = 0; ii < 12; ++ii )
-        {
-            std::cout << " " << d_prs_code[ii];
-        }
-        std::cout << std::endl;
     }
 
     uint64_t int_code_phase = static_cast< uint64_t >( std::floor( d_code_phase_chips_prs ) );

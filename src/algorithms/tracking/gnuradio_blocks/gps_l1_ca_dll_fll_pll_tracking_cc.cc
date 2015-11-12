@@ -162,6 +162,7 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
     systemName["E"] = std::string("Galileo");
     systemName["C"] = std::string("Compass");
 
+    set_relative_rate(1.0/((double)d_vector_length*2));
     d_channel_internal_queue = 0;
     //d_acquisition_gnss_synchro = 0;
     d_channel = 0;

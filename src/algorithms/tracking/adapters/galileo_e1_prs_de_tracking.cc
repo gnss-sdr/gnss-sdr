@@ -55,10 +55,17 @@ GalileoE1PrsDeTracking::GalileoE1PrsDeTracking(
     std::string dump_filename;
     std::string item_type;
     std::string default_item_type = "gr_complex";
-    float pll_bw_hz;
-    float dll_bw_hz;
-    float sll_bw_hz;
-    float early_late_code_space_chips;
+    float pll_initial_bw_hz;
+    float pll_final_bw_hz;
+    float dll_initial_bw_hz;
+    float dll_final_bw_hz;
+    float sll_initial_bw_hz;
+    float sll_final_bw_hz;
+    int   pll_loop_order;
+    int   dll_loop_order;
+    int   sll_loop_order;
+    float initial_early_late_code_space_chips;
+    float final_early_late_code_space_chips;
     float early_late_subcarrier_space_chips;
     bool aid_subcarrier_with_carrier;
     bool aid_code_with_subcarrier;
@@ -67,13 +74,21 @@ GalileoE1PrsDeTracking::GalileoE1PrsDeTracking(
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 15.0);
-    sll_bw_hz = configuration->property(role + ".sll_bw_hz", 2.0);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 0.5);
-    early_late_code_space_chips = configuration->property(role + ".early_late_code_space_chips", 0.5);
+    pll_initial_bw_hz = configuration->property(role + ".pll_initial_bw_hz", 15.0);
+    pll_final_bw_hz = configuration->property(role + ".pll_final_bw_hz", 15.0);
+    sll_initial_bw_hz = configuration->property(role + ".sll_initial_bw_hz", 2.0);
+    sll_final_bw_hz = configuration->property(role + ".sll_final_bw_hz", 2.0);
+    dll_initial_bw_hz = configuration->property(role + ".dll_initial_bw_hz", 0.5);
+    dll_final_bw_hz = configuration->property(role + ".dll_final_bw_hz", 0.5);
+    initial_early_late_code_space_chips = configuration->property(role + ".initial_early_late_code_space_chips", 0.5);
+    final_early_late_code_space_chips = configuration->property(role + ".final_early_late_code_space_chips", 0.5);
     early_late_subcarrier_space_chips = configuration->property(role + ".early_late_subcarrier_space_cycles", 0.125);
     aid_subcarrier_with_carrier = configuration->property(role + ".aid_subcarrier_with_carrier", false );
     aid_code_with_subcarrier = configuration->property(role + ".aid_code_with_subcarrier", false );
+
+    pll_loop_order = configuration->property(role + ".pll_loop_order", 3);
+    sll_loop_order = configuration->property(role + ".sll_loop_order", 3);
+    dll_loop_order = configuration->property(role + ".dll_loop_order", 1);
 
     std::string default_code_type = "Spirent";
     std::string code_type = configuration->property(role + ".prs_code_type", default_code_type );
@@ -111,14 +126,12 @@ GalileoE1PrsDeTracking::GalileoE1PrsDeTracking(
                     queue_,
                     dump,
                     dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
-                    sll_bw_hz,
-                    early_late_code_space_chips,
+                    pll_loop_order, pll_initial_bw_hz, pll_final_bw_hz,
+                    dll_loop_order, dll_initial_bw_hz, dll_final_bw_hz,
+                    sll_loop_order, sll_initial_bw_hz, sll_final_bw_hz,
+                    initial_early_late_code_space_chips, final_early_late_code_space_chips,
                     early_late_subcarrier_space_chips,
-                    aid_subcarrier_with_carrier,
-                    aid_code_with_subcarrier,
-                    code_gen);
+                    aid_subcarrier_with_carrier, aid_code_with_subcarrier, code_gen);
         }
     else
         {

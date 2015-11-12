@@ -59,6 +59,7 @@
 #define CN0_ESTIMATION_SAMPLES 20
 #define MINIMUM_VALID_CN0 25
 #define MAXIMUM_LOCK_FAIL_COUNTER 50
+#define MINIMUM_LOCK_SUCCESS_COUNTER 10
 #define CARRIER_LOCK_THRESHOLD 0.85
 
 
@@ -72,18 +73,29 @@ galileo_e1_prs_de_make_tracking_cc(
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
-        float pll_bw_hz,
-        float dll_bw_hz,
-        float sll_bw_hz,
-        float early_late_code_space_chips,
+        int   pll_loop_order,
+        float pll_initial_bw_hz,
+        float pll_final_bw_hz,
+        int   dll_loop_order,
+        float dll_initial_bw_hz,
+        float dll_final_bw_hz,
+        int   sll_loop_order,
+        float sll_initial_bw_hz,
+        float sll_final_bw_hz,
+        float initial_early_late_code_space_chips,
+        float final_early_late_code_space_chips,
         float early_late_subcarrier_space_cycles,
         bool aid_subcarrier_with_carrier,
         bool aid_code_with_subcarrier,
         LongCodeInterface_sptr prs_code_gen)
 {
     return galileo_e1_prs_de_tracking_cc_sptr(new galileo_e1_prs_de_tracking_cc(if_freq,
-            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz,
-            sll_bw_hz, early_late_code_space_chips, early_late_subcarrier_space_cycles,
+            fs_in, vector_length, queue, dump, dump_filename,
+            pll_loop_order, pll_initial_bw_hz, pll_final_bw_hz,
+            dll_loop_order, dll_initial_bw_hz, dll_final_bw_hz,
+            sll_loop_order, sll_initial_bw_hz, sll_final_bw_hz,
+            initial_early_late_code_space_chips, final_early_late_code_space_chips,
+            early_late_subcarrier_space_cycles,
             aid_subcarrier_with_carrier, aid_code_with_subcarrier, prs_code_gen));
 }
 
@@ -102,10 +114,17 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
-        float pll_bw_hz,
-        float dll_bw_hz,
-        float sll_bw_hz,
-        float early_late_code_space_chips,
+        int   pll_loop_order,
+        float pll_initial_bw_hz,
+        float pll_final_bw_hz,
+        int   dll_loop_order,
+        float dll_initial_bw_hz,
+        float dll_final_bw_hz,
+        int   sll_loop_order,
+        float sll_initial_bw_hz,
+        float sll_final_bw_hz,
+        float initial_early_late_code_space_chips,
+        float final_early_late_code_space_chips,
         float early_late_subcarrier_space_cycles,
         bool aid_subcarrier_with_carrier,
         bool aid_code_with_subcarrier,
@@ -120,6 +139,10 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
 
     d_prs_code_gen = prs_code_gen;
 
+    d_carrier_locked = false;
+    d_code_locked = false;
+    d_code_locked_prs = false;
+
     this->set_relative_rate(1.0/vector_length);
     // initialize internal vars
     d_queue = queue;
@@ -128,20 +151,35 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_fs_in = fs_in;
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
-    d_code_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, dll_bw_hz, 1, false);
-    d_subcarrier_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, sll_bw_hz, 1, false);
-    d_carrier_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, pll_bw_hz, 3, false);
+
+    d_pll_loop_order = pll_loop_order;
+    d_initial_pll_bw_hz = pll_initial_bw_hz;
+    d_final_pll_bw_hz = pll_final_bw_hz;
+
+    d_dll_loop_order = dll_loop_order;
+    d_initial_dll_bw_hz = dll_initial_bw_hz;
+    d_final_dll_bw_hz = dll_final_bw_hz;
+
+    d_sll_loop_order = sll_loop_order;
+    d_initial_sll_bw_hz = sll_initial_bw_hz;
+    d_final_sll_bw_hz = sll_final_bw_hz;
+
+    d_code_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, dll_initial_bw_hz, dll_loop_order, false);
+    d_subcarrier_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, sll_initial_bw_hz, sll_loop_order, false);
+    d_carrier_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, pll_initial_bw_hz, pll_loop_order, false);
     d_aid_subcarrier_with_carrier = aid_subcarrier_with_carrier;
     d_aid_code_with_subcarrier = aid_code_with_subcarrier;
 
-    d_code_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, dll_bw_hz, 1, false);
-    d_subcarrier_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, sll_bw_hz, 1, false);
-    d_carrier_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, pll_bw_hz, 3, false);
+    d_code_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, dll_initial_bw_hz, dll_loop_order, false);
+    d_subcarrier_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, sll_initial_bw_hz, sll_loop_order, false);
+    d_carrier_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, pll_initial_bw_hz, pll_loop_order, false);
     // Initialize tracking  ==========================================
 
 
     // Correlator spacing
-    d_early_late_code_spc_chips = early_late_code_space_chips; // Define early-late offset (in chips)
+    d_initial_early_late_code_space_chips = initial_early_late_code_space_chips;
+    d_final_early_late_code_space_chips = final_early_late_code_space_chips;
+    d_early_late_code_spc_chips = d_initial_early_late_code_space_chips; // Define early-late offset (in chips)
     d_early_late_subcarrier_spc_cycles = early_late_subcarrier_space_cycles; // Define very-early-late offset (in chips)
 
     // Initialization of local code replica
@@ -225,6 +263,7 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;
+    d_carrier_lock_success_counter = 0;
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
     systemName["E"] = std::string("Galileo");
@@ -258,6 +297,10 @@ void galileo_e1_prs_de_tracking_cc::start_tracking()
     d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
     // DLL/PLL filter initialization
+    d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
+    d_subcarrier_loop_filter.set_noise_bandwidth( d_initial_sll_bw_hz );
+    d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
+
     d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); // initialize the carrier filter
     float code_doppler_chips = d_acq_carrier_doppler_hz *( Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ;
 
@@ -265,6 +308,8 @@ void galileo_e1_prs_de_tracking_cc::start_tracking()
     d_subcarrier_loop_filter.initialize(init_freq); // initialize the carrier filter
     init_freq = ( d_aid_code_with_subcarrier ? 0.0 : code_doppler_chips );
     d_code_loop_filter.initialize(init_freq);    // initialize the code filter
+
+
 
     // generate local reference ALWAYS starting at chip 1 (1 samples per chip)
     galileo_e1_prn_gen_complex_sampled(&d_e1b_code[1],
@@ -277,6 +322,7 @@ void galileo_e1_prs_de_tracking_cc::start_tracking()
     d_e1b_code[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS + 2)] = d_e1b_code[1];
 
     d_carrier_lock_fail_counter = 0;
+    d_carrier_lock_success_counter = 0;
     d_rem_code_phase_samples = 0.0;
     d_rem_subcarrier_phase_samples = 0.0;
     d_rem_carr_phase_rad = 0;
@@ -296,6 +342,8 @@ void galileo_e1_prs_de_tracking_cc::start_tracking()
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
+    d_code_locked = false;
+    d_carrier_locked = false;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
@@ -921,23 +969,60 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
                         {
                             d_carrier_lock_fail_counter++;
+                            d_carrier_lock_success_counter = 0;
                         }
                     else
                         {
+                            d_carrier_lock_success_counter++;
                             if (d_carrier_lock_fail_counter > 0) d_carrier_lock_fail_counter--;
                         }
-                    if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+                    if( not d_carrier_locked )
+                    {
+                        if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+                            {
+                                std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
+                                LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
+                                std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+                                if (d_queue != gr::msg_queue::sptr())
+                                    {
+                                        d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
+                                    }
+                                d_carrier_lock_fail_counter = 0;
+                                d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
+                            }
+
+                        if( d_carrier_lock_success_counter > MINIMUM_LOCK_SUCCESS_COUNTER )
                         {
-                            std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
-                            LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                            if (d_queue != gr::msg_queue::sptr())
-                                {
-                                    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-                                }
+                            LOG(INFO) << "Phase lock achieved in channel " << d_channel;
+                            d_carrier_locked = true;
+                            d_code_loop_filter.set_noise_bandwidth( d_final_dll_bw_hz );
+                            d_subcarrier_loop_filter.set_noise_bandwidth( d_final_sll_bw_hz );
+                            d_carrier_loop_filter.set_noise_bandwidth( d_final_pll_bw_hz );
+                            d_early_late_code_spc_chips = d_final_early_late_code_space_chips;
+
+                            d_code_loop_filter.initialize( code_error_filt_chips );
+                            d_subcarrier_loop_filter.initialize( subcarrier_error_filt_cycles );
+                            d_carrier_loop_filter.initialize( carr_error_filt_hz );
+
                             d_carrier_lock_fail_counter = 0;
-                            d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }
+                    }
+                    else // not d_carrier_locked
+                    {
+                        if (d_carrier_lock_fail_counter > MAXIMUM_LOCK_FAIL_COUNTER)
+                            {
+                                LOG(INFO) << "Loss of carrier lock in channel "
+                                          << d_channel << "! Reverting to initial tracking state";
+                                d_carrier_lock_fail_counter = 0;
+                                d_carrier_locked = false;
+                                d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
+                                d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
+                                d_early_late_code_spc_chips = d_initial_early_late_code_space_chips;
+                                d_code_loop_filter.initialize( code_error_filt_chips );
+                                d_carrier_loop_filter.initialize( carr_error_filt_hz );
+                            }
+
+                    }
                 }
 
             // ########### Output the tracking results to Telemetry block ##########
@@ -1211,7 +1296,13 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
 
 
     // Initialise the filters:
-    // DLL/PLL filter initialization
+    // DLL/PLL filter Initialization
+    d_code_loop_filter_prs.set_noise_bandwidth( d_final_dll_bw_hz );
+    d_subcarrier_loop_filter_prs.set_noise_bandwidth( d_final_sll_bw_hz );
+    d_carrier_loop_filter_prs.set_noise_bandwidth( d_final_pll_bw_hz );
+
+    //d_early_late_code_spc_chips = d_initial_early_late_code_space_chips;
+
     d_carrier_loop_filter_prs.initialize(d_carrier_doppler_hz_prs); // initialize the carrier filter
 
     d_subcarrier_loop_filter_prs.initialize(
@@ -1236,7 +1327,7 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
     // enable tracking
     d_prs_tracking_enabled = true;
     d_prs_code_gen->set_prn( d_acquisition_gnss_synchro->PRN );
-
+    d_code_locked_prs = false;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz_prs
               << " PULL-IN Code Phase [samples]=" << d_code_phase_chips_prs;

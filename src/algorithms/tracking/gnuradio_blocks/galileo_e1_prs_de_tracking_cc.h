@@ -57,10 +57,17 @@ galileo_e1_prs_de_make_tracking_cc(long if_freq,
                                    boost::shared_ptr<gr::msg_queue> queue,
                                    bool dump,
                                    std::string dump_filename,
-                                   float pll_bw_hz,
-                                   float dll_bw_hz,
-                                   float sll_bw_hz,
-                                   float early_late_code_space_chips,
+                                   int   pll_loop_order,
+                                   float pll_initial_bw_hz,
+                                   float pll_final_bw_hz,
+                                   int   dll_loop_order,
+                                   float dll_initial_bw_hz,
+                                   float dll_final_bw_hz,
+                                   int   sll_loop_order,
+                                   float sll_initial_bw_hz,
+                                   float sll_final_bw_hz,
+                                   float initial_early_late_code_space_chips,
+                                   float final_early_late_code_space_chips,
                                    float early_late_subcarrier_space_cycles,
                                    bool aid_subcarrier_with_carrier,
                                    bool aid_code_with_subcarrier,
@@ -99,10 +106,17 @@ private:
             boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float sll_bw_hz,
-            float early_late_code_space_chips,
+            int   pll_loop_order,
+            float pll_initial_bw_hz,
+            float pll_final_bw_hz,
+            int   dll_loop_order,
+            float dll_initial_bw_hz,
+            float dll_final_bw_hz,
+            int   sll_loop_order,
+            float sll_initial_bw_hz,
+            float sll_final_bw_hz,
+            float initial_early_late_code_space_chips,
+            float final_early_late_code_space_chips,
             float early_late_subcarrier_space_cycles,
             bool aid_subcarrier_with_carrier,
             bool aid_code_with_subcarrier,
@@ -114,10 +128,17 @@ private:
             boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
-            float pll_bw_hz,
-            float dll_bw_hz,
-            float sll_bw_hz,
-            float early_late_code_space_chips,
+            int   pll_loop_order,
+            float pll_initial_bw_hz,
+            float pll_final_bw_hz,
+            int   dll_loop_order,
+            float dll_initial_bw_hz,
+            float dll_final_bw_hz,
+            int   sll_loop_order,
+            float sll_initial_bw_hz,
+            float sll_final_bw_hz,
+            float initial_early_late_code_space_chips,
+            float final_early_late_code_space_chips,
             float early_late_subcarrier_space_cycles,
             bool aid_subcarrier_with_carrier,
             bool aid_code_with_subcarrier,
@@ -197,6 +218,22 @@ private:
     Tracking_loop_filter d_subcarrier_loop_filter;
     Tracking_loop_filter d_carrier_loop_filter;
 
+
+    int d_pll_loop_order;
+    float d_initial_pll_bw_hz;
+    float d_final_pll_bw_hz;
+
+    int d_dll_loop_order;
+    float d_initial_dll_bw_hz;
+    float d_final_dll_bw_hz;
+
+    int d_sll_loop_order;
+    float d_initial_sll_bw_hz;
+    float d_final_sll_bw_hz;
+
+    float d_initial_early_late_code_space_chips;
+    float d_final_early_late_code_space_chips;
+
     Tracking_loop_filter d_code_loop_filter_prs;
     Tracking_loop_filter d_subcarrier_loop_filter_prs;
     Tracking_loop_filter d_carrier_loop_filter_prs;
@@ -241,10 +278,15 @@ private:
     float d_CN0_SNV_dB_Hz;
     float d_carrier_lock_threshold;
     int d_carrier_lock_fail_counter;
+    int d_carrier_lock_success_counter;
 
     // control vars
     bool d_enable_tracking;
     bool d_pull_in;
+
+    bool d_carrier_locked;
+    bool d_code_locked;
+    bool d_code_locked_prs;
 
     bool d_tow_received;
     double d_last_tow;

@@ -251,60 +251,12 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                 }
 
             // MOVING AVERAGE PVT
-            if (flag_averaging == true)
-                {
-                    if (d_hist_longitude_d.size() == (unsigned int)d_averaging_depth)
-                        {
-                            // Pop oldest value
-                            d_hist_longitude_d.pop_back();
-                            d_hist_latitude_d.pop_back();
-                            d_hist_height_m.pop_back();
-                            // Push new values
-                            d_hist_longitude_d.push_front(d_longitude_d);
-                            d_hist_latitude_d.push_front(d_latitude_d);
-                            d_hist_height_m.push_front(d_height_m);
-
-                            d_avg_latitude_d = 0;
-                            d_avg_longitude_d = 0;
-                            d_avg_height_m = 0;
-                            for (unsigned int i = 0; i < d_hist_longitude_d.size(); i++)
-                                {
-                                    d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
-                                    d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
-                                    d_avg_height_m  = d_avg_height_m + d_hist_height_m.at(i);
-                                }
-                            d_avg_latitude_d = d_avg_latitude_d / static_cast<double>(d_averaging_depth);
-                            d_avg_longitude_d = d_avg_longitude_d / static_cast<double>(d_averaging_depth);
-                            d_avg_height_m = d_avg_height_m / static_cast<double>(d_averaging_depth);
-                            b_valid_position = true;
-                            return true; //indicates that the returned position is valid
-                        }
-                    else
-                        {
-                            // int current_depth=d_hist_longitude_d.size();
-                            // Push new values
-                            d_hist_longitude_d.push_front(d_longitude_d);
-                            d_hist_latitude_d.push_front(d_latitude_d);
-                            d_hist_height_m.push_front(d_height_m);
-
-                            d_avg_latitude_d = d_latitude_d;
-                            d_avg_longitude_d = d_longitude_d;
-                            d_avg_height_m = d_height_m;
-                            b_valid_position = false;
-                            return false; //indicates that the returned position is not valid yet
-                        }
-                }
-            else
-                {
-                    b_valid_position = true;
-                    return true; //indicates that the returned position is valid
-                }
+            galileo_e1_ls_pvt::pos_averaging(flag_averaging);
         }
     else
         {
             b_valid_position = false;
-            return false;
         }
-    return false;
+    return b_valid_position;
 }
 

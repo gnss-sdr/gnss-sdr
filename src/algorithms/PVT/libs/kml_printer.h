@@ -37,7 +37,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
-#include "ls_pvt.h"
+#include "pvt_solution.h"
 
 /*!
  * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
@@ -52,7 +52,7 @@ public:
     Kml_Printer();
     ~Kml_Printer();
     bool set_headers(std::string filename);
-    bool print_position(const std::shared_ptr<Ls_Pvt>& position, bool print_average_values);
+    bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);
     bool close_file();
 };
 

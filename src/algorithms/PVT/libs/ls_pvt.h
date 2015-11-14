@@ -33,144 +33,21 @@
 #define GNSS_SDR_LS_PVT_H_
 
 
-#include <deque>
-#include <armadillo>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-#define PVT_MAX_CHANNELS 24
+#include "pvt_solution.h"
 
 /*!
  * \brief Base class for the Least Squares PVT solution
  *
  */
-class Ls_Pvt
+class Ls_Pvt : public Pvt_Solution
 {
 public:
     Ls_Pvt();
 
     arma::vec leastSquarePos(const arma::mat & satpos, const arma::vec & obs, const arma::mat & w);
-    arma::vec rotateSatellite(double traveltime, const arma::vec & X_sat);
-
-    int d_valid_observations;                               //!< Number of valid pseudorange observations (valid satellites)
-    int d_visible_satellites_IDs[PVT_MAX_CHANNELS];         //!< Array with the IDs of the valid satellites
-    double d_visible_satellites_El[PVT_MAX_CHANNELS];       //!< Array with the LOS Elevation of the valid satellites
-    double d_visible_satellites_Az[PVT_MAX_CHANNELS];       //!< Array with the LOS Azimuth of the valid satellites
-    double d_visible_satellites_Distance[PVT_MAX_CHANNELS]; //!< Array with the LOS Distance of the valid satellites
-    double d_visible_satellites_CN0_dB[PVT_MAX_CHANNELS];   //!< Array with the IDs of the valid satellites
-
-    boost::posix_time::ptime d_position_UTC_time;
-
-    bool b_valid_position;
-
-    double d_latitude_d;  //!< Latitude in degrees
-    double d_longitude_d; //!< Longitude in degrees
-    double d_height_m;    //!< Height [m]
-
-    //averaging
-    int d_averaging_depth;    //!< Length of averaging window
-    std::deque<double> d_hist_latitude_d;
-    std::deque<double> d_hist_longitude_d;
-    std::deque<double> d_hist_height_m;
-
-    double d_avg_latitude_d;  //!< Averaged latitude in degrees
-    double d_avg_longitude_d; //!< Averaged longitude in degrees
-    double d_avg_height_m;    //!< Averaged height [m]
-
     double d_x_m;
     double d_y_m;
     double d_z_m;
-
-    // DOP estimations
-    arma::mat d_Q;
-    double d_GDOP;
-    double d_PDOP;
-    double d_HDOP;
-    double d_VDOP;
-    double d_TDOP;
-    int compute_DOP(); //!< Compute Dilution Of Precision
-
-    bool d_flag_averaging;
-
-    int set_averaging_depth(int depth);
-
-
-    /*!
-     * \brief Conversion of Cartesian coordinates (X,Y,Z) to geographical
-     * coordinates (d_latitude_d, d_longitude_d, d_height_m) on a selected reference ellipsoid.
-     *
-     * \param[in] X [m] Cartesian coordinate
-     * \param[in] Y [m] Cartesian coordinate
-     * \param[in] Z [m] Cartesian coordinate
-     * \param[in] elipsoid_selection. Choices of Reference Ellipsoid for Geographical Coordinates:
-     * 0 - International Ellipsoid 1924.
-     * 1 - International Ellipsoid 1967.
-     * 2 - World Geodetic System 1972.
-     * 3 - Geodetic Reference System 1980.
-     * 4 - World Geodetic System 1984.
-     *
-     */
-    void cart2geo(double X, double Y, double Z, int elipsoid_selection);
-
-    /*!
-     * \brief Transformation of vector dx into topocentric coordinate system with origin at x
-     *
-     * \param[in] x    Vector origin coordinates (in ECEF system [X; Y; Z;])
-     * \param[in] dx   Vector ([dX; dY; dZ;]).
-     *
-     * \param[out] D   Vector length. Units like the input
-     * \param[out] Az  Azimuth from north positive clockwise, degrees
-     * \param[out] El  Elevation angle, degrees
-     *
-     * Based on a Matlab function by Kai Borre
-     */
-    void topocent(double *Az, double *El, double *D, const arma::vec & x, const arma::vec & dx);
-
-    /*!
-     * \brief Subroutine to calculate geodetic coordinates latitude, longitude,
-     * height given Cartesian coordinates X,Y,Z, and reference ellipsoid
-     * values semi-major axis (a) and the inverse of flattening (finv).
-     *
-     *  The output units of angular quantities will be in decimal degrees
-     *  (15.5 degrees not 15 deg 30 min). The output units of h will be the
-     *  same as the units of X,Y,Z,a.
-     *
-     *  \param[in] a           - semi-major axis of the reference ellipsoid
-     *  \param[in] finv        - inverse of flattening of the reference ellipsoid
-     *  \param[in] X,Y,Z       - Cartesian coordinates
-     *:
-     *  \param[out] dphi        - latitude
-     *  \param[out] dlambda     - longitude
-     *  \param[out] h           - height above reference ellipsoid
-     *
-     * Based in a Matlab function by Kai Borre
-     */
-    void togeod(double *dphi, double *dlambda, double *h, double a, double finv, double X, double Y, double Z);
-
-    /*!
-     * \brief Tropospheric correction
-     *
-     *  \param[in] sinel     - sin of elevation angle of satellite
-     *  \param[in] hsta_km   - height of station in km
-     *  \param[in] p_mb      - atmospheric pressure in mb at height hp_km
-     *  \param[in] t_kel     - surface temperature in degrees Kelvin at height htkel_km
-     *  \param[in] hum       - humidity in % at height hhum_km
-     *  \param[in] hp_km     - height of pressure measurement in km
-     *  \param[in] htkel_km  - height of temperature measurement in km
-     *  \param[in] hhum_km   - height of humidity measurement in km
-     *
-     *  \param[out] ddr_m     - range correction (meters)
-     *
-     *
-     * Reference:
-     * Goad, C.C. & Goodman, L. (1974) A Modified Hopfield Tropospheric
-     *   Refraction Correction Model. Paper presented at the
-     *   American Geophysical Union Annual Fall Meeting, San
-     *   Francisco, December 12-17
-     *
-     * Translated to C++ by Carles Fernandez from a Matlab implementation by Kai Borre
-     */
-    void tropo(double *ddr_m, double sinel, double hsta_km, double p_mb, double t_kel, double hum, double hp_km, double htkel_km, double hhum_km);
-
 };
 
 #endif

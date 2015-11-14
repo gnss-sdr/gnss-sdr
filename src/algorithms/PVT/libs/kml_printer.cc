@@ -82,13 +82,13 @@ bool Kml_Printer::set_headers(std::string filename)
 
 
 
-bool Kml_Printer::print_position(const std::shared_ptr<Ls_Pvt>& position, bool print_average_values)
+bool Kml_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values)
 {
     double latitude;
     double longitude;
     double height;
 
-    std::shared_ptr<Ls_Pvt> position_ = position;
+    std::shared_ptr<Pvt_Solution> position_ = position;
 
     if (print_average_values == false)
         {

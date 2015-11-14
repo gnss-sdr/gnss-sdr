@@ -45,6 +45,7 @@
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
+#include "geojson_printer.h"
 #include "gps_l1_ca_ls_pvt.h"
 #include "GPS_L1_CA.h"
 
@@ -107,8 +108,9 @@ private:
     int d_display_rate_ms;
     long unsigned int d_sample_counter;
     long unsigned int d_last_sample_nav_output;
-    std::shared_ptr<Kml_Printer> d_kml_dump;
+    std::shared_ptr<Kml_Printer> d_kml_printer;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
+    std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
     double d_rx_time;
     std::shared_ptr<gps_l1_ca_ls_pvt> d_ls_pvt;
 

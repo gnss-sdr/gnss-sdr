@@ -77,6 +77,13 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
     d_kml_dump = std::make_shared<Kml_Printer>();
     d_kml_dump->set_headers(kml_dump_filename);
 
+    //initialize geojson_printer
+    std::string geojson_dump_filename;
+    geojson_dump_filename = d_dump_filename;
+    geojson_dump_filename.append(".geojson");
+    d_geojson_printer = std::make_shared<GeoJSON_Printer>();
+    d_geojson_printer->set_headers(geojson_dump_filename);
+
     //initialize nmea_printer
     d_nmea_printer = std::make_shared<Nmea_Printer>(nmea_dump_filename, flag_nmea_tty_port, nmea_dump_devname);
     d_dump_filename.append("_raw.dat");
@@ -223,9 +230,9 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                     if (pvt_result == true)
                         {
                             d_kml_dump->print_position(d_ls_pvt, d_flag_averaging);
-                            //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
-                            //   d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
-                            //
+                            d_geojson_printer->print_position(d_ls_pvt, d_flag_averaging);
+                            d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
+
                             if (!b_rinex_header_writen)
                                 {
                                     std::map<int,Galileo_Ephemeris>::iterator galileo_ephemeris_iter;

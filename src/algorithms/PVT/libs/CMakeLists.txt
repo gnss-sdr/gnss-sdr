@@ -19,6 +19,7 @@
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
 set(PVT_LIB_SOURCES 
+     pvt_solution.cc
      ls_pvt.cc
      gps_l1_ca_ls_pvt.cc
      galileo_e1_ls_pvt.cc

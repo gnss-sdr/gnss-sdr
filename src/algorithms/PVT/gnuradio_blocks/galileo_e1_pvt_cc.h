@@ -46,6 +46,7 @@
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
+#include "geojson_printer.h"
 #include "galileo_e1_ls_pvt.h"
 #include "Galileo_E1.h"
 
@@ -108,6 +109,8 @@ private:
     long unsigned int d_last_sample_nav_output;
     std::shared_ptr<Kml_Printer> d_kml_dump;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
+    std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
+
     double d_rx_time;
     std::shared_ptr<galileo_e1_ls_pvt> d_ls_pvt;
     bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b);

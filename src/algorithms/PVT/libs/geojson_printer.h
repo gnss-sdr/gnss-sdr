@@ -37,7 +37,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
-#include "ls_pvt.h"
+#include "pvt_solution.h"
 
 
 /*!
@@ -49,11 +49,13 @@ class GeoJSON_Printer
 {
 private:
     std::ofstream geojson_file;
+    bool first_pos;
+    std::string filename_;
 public:
     GeoJSON_Printer();
     ~GeoJSON_Printer();
     bool set_headers(std::string filename);
-    bool print_position(const std::shared_ptr<Ls_Pvt>& position, bool print_average_values);
+    bool print_position(const std::shared_ptr<Pvt_Solution>& position, bool print_average_values);
     bool close_file();
 };
 

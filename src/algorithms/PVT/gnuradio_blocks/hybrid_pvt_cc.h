@@ -49,7 +49,9 @@
 #include "gps_iono.h"
 #include "nmea_printer.h"
 #include "kml_printer.h"
+#include "geojson_printer.h"
 #include "rinex_printer.h"
+#include "nmea_printer.h"
 #include "hybrid_ls_pvt.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -113,6 +115,7 @@ private:
     long unsigned int d_last_sample_nav_output;
     std::shared_ptr<Kml_Printer> d_kml_dump;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
+    std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
     double d_rx_time;
     double d_TOW_at_curr_symbol_constellation;
     std::shared_ptr<hybrid_ls_pvt> d_ls_pvt;

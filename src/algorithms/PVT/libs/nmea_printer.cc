@@ -132,7 +132,7 @@ void Nmea_Printer::close_serial ()
 }
 
 
-bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<gps_l1_ca_ls_pvt>& pvt_data, bool print_average_values)
+bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Ls_Pvt>& pvt_data, bool print_average_values)
 {
     std::string GPRMC;
     std::string GPGGA;

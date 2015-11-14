@@ -1,7 +1,7 @@
 /*!
- * \file kml_printer.h
- * \brief Interface of a class that prints PVT information to a kml file
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \file geojson_printer.h
+ * \brief Interface of a class that prints PVT solutions in GeoJSON format
+ * \author Carles Fernandez-Prades, 2015. cfernandez(at)cttc.es
  *
  *
  * -------------------------------------------------------------------------
@@ -30,8 +30,8 @@
  */
 
 
-#ifndef GNSS_SDR_KML_PRINTER_H_
-#define GNSS_SDR_KML_PRINTER_H_
+#ifndef GNSS_SDR_GEOJSON_PRINTER_H_
+#define GNSS_SDR_GEOJSON_PRINTER_H_
 
 #include <iostream>
 #include <fstream>
@@ -39,18 +39,19 @@
 #include <string>
 #include "ls_pvt.h"
 
+
 /*!
- * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
+ * \brief Prints PVT solutions in GeoJSON format file
  *
- * See http://www.opengeospatial.org/standards/kml
+ * See http://geojson.org/geojson-spec.html
  */
-class Kml_Printer
+class GeoJSON_Printer
 {
 private:
-    std::ofstream kml_file;
+    std::ofstream geojson_file;
 public:
-    Kml_Printer();
-    ~Kml_Printer();
+    GeoJSON_Printer();
+    ~GeoJSON_Printer();
     bool set_headers(std::string filename);
     bool print_position(const std::shared_ptr<Ls_Pvt>& position, bool print_average_values);
     bool close_file();

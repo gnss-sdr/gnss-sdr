@@ -40,7 +40,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "gps_l1_ca_ls_pvt.h"
+#include "ls_pvt.h"
 
 
 /*!
@@ -60,7 +60,7 @@ public:
     /*!
      * \brief Print NMEA PVT and satellite info to the initialized device
      */
-    bool Print_Nmea_Line(const std::shared_ptr<gps_l1_ca_ls_pvt>& position, bool print_average_values);
+    bool Print_Nmea_Line(const std::shared_ptr<Ls_Pvt>& position, bool print_average_values);
 
     /*!
      * \brief Default destructor.
@@ -72,7 +72,7 @@ private:
     std::ofstream nmea_file_descriptor; // Output file stream for NMEA log file
     std::string nmea_devname;
     int nmea_dev_descriptor; // NMEA serial device descriptor (i.e. COM port)
-    std::shared_ptr<gps_l1_ca_ls_pvt> d_PVT_data;
+    std::shared_ptr<Ls_Pvt> d_PVT_data;
     int init_serial(std::string serial_device); //serial port control
     void close_serial();
     std::string get_GPGGA(); // fix data

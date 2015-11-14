@@ -222,7 +222,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
 
                     if (pvt_result == true)
                         {
-                            d_kml_dump->print_position_galileo(d_ls_pvt, d_flag_averaging);
+                            d_kml_dump->print_position(d_ls_pvt, d_flag_averaging);
                             //ToDo: Implement Galileo RINEX and Galileo NMEA outputs
                             //   d_nmea_printer->Print_Nmea_Line(d_ls_pvt, d_flag_averaging);
                             //

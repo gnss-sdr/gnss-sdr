@@ -82,13 +82,13 @@ bool Kml_Printer::set_headers(std::string filename)
 
 
 
-bool Kml_Printer::print_position(const std::shared_ptr<gps_l1_ca_ls_pvt>& position, bool print_average_values)
+bool Kml_Printer::print_position(const std::shared_ptr<Ls_Pvt>& position, bool print_average_values)
 {
     double latitude;
     double longitude;
     double height;
 
-    std::shared_ptr<gps_l1_ca_ls_pvt> position_ = position;
+    std::shared_ptr<Ls_Pvt> position_ = position;
 
     if (print_average_values == false)
         {
@@ -114,66 +114,6 @@ bool Kml_Printer::print_position(const std::shared_ptr<gps_l1_ca_ls_pvt>& positi
         }
 }
 
-//ToDo: make the class ls_pvt generic and heritate the particular gps/gal/glo ls_pvt in order to
-// reuse kml_printer functions
-bool Kml_Printer::print_position_galileo(const std::shared_ptr<galileo_e1_ls_pvt>& position, bool print_average_values)
-{
-    double latitude;
-    double longitude;
-    double height;
-    std::shared_ptr<galileo_e1_ls_pvt> position_ = position;
-    if (print_average_values == false)
-        {
-            latitude = position_->d_latitude_d;
-            longitude = position_->d_longitude_d;
-            height = position_->d_height_m;
-        }
-    else
-        {
-            latitude = position_->d_avg_latitude_d;
-            longitude = position_->d_avg_longitude_d;
-            height = position_->d_avg_height_m;
-        }
-
-    if (kml_file.is_open())
-        {
-            kml_file << longitude << "," << latitude << "," << height << std::endl;
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-}
-
-bool Kml_Printer::print_position_hybrid(const std::shared_ptr<hybrid_ls_pvt>& position, bool print_average_values)
-{
-    double latitude;
-    double longitude;
-    double height;
-    if (print_average_values == false)
-        {
-            latitude = position->d_latitude_d;
-            longitude = position->d_longitude_d;
-            height = position->d_height_m;
-        }
-    else
-        {
-            latitude = position->d_avg_latitude_d;
-            longitude = position->d_avg_longitude_d;
-            height = position->d_avg_height_m;
-        }
-
-    if (kml_file.is_open())
-        {
-            kml_file << longitude << "," << latitude << "," << height << std::endl;
-            return true;
-        }
-    else
-        {
-            return false;
-        }
-}
 
 bool Kml_Printer::close_file()
 {

@@ -19,13 +19,15 @@
 add_definitions( -DGNSS_SDR_VERSION="${VERSION}" )
 
 set(PVT_LIB_SOURCES 
+     ls_pvt.cc
      gps_l1_ca_ls_pvt.cc
      galileo_e1_ls_pvt.cc
      hybrid_ls_pvt.cc
      kml_printer.cc
      rinex_printer.cc
      nmea_printer.cc  
-     rtcm_printer.cc  
+     rtcm_printer.cc
+     geojson_printer.cc
 )
 
 include_directories(

@@ -33,6 +33,7 @@
 #include "geojson_printer.h"
 #include <iostream>
 #include <iomanip>
+#include <glog/logging.h>
 
 GeoJSON_Printer::GeoJSON_Printer () {}
 
@@ -46,10 +47,6 @@ GeoJSON_Printer::~GeoJSON_Printer ()
 
 bool GeoJSON_Printer::set_headers(std::string filename)
 {
-    //time_t rawtime;
-    //struct tm * timeinfo;
-    //time ( &rawtime );
-    //timeinfo = localtime ( &rawtime );
     geojson_file.open(filename.c_str());
     if (geojson_file.is_open())
         {
@@ -57,10 +54,12 @@ bool GeoJSON_Printer::set_headers(std::string filename)
             // Set iostream numeric format and precision
             geojson_file.setf(geojson_file.fixed, geojson_file.floatfield);
             geojson_file << std::setprecision(14);
-            geojson_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
+            geojson_file << "{" << std::endl;
+            geojson_file << "  \"type\":  \"Feature\"," << std::endl;
+            geojson_file << "  \"geometry\": {" << std::endl;
+            geojson_file << "    \"type\": \"MultiPoint\"," << std::endl;
+            geojson_file << "      \"coordinates\": [" << std::endl;
 
-                    << "<altitudeMode>absolute</altitudeMode>" << std::endl
-                    << "<coordinates>" << std::endl;
             return true;
         }
     else
@@ -94,7 +93,7 @@ bool GeoJSON_Printer::print_position(const std::shared_ptr<Ls_Pvt>& position, bo
 
     if (geojson_file.is_open())
         {
-            geojson_file << longitude << "," << latitude << "," << height << std::endl;
+            geojson_file << "       [" << longitude << ", " << latitude << ", " << height << "]," << std::endl;
             return true;
         }
     else
@@ -109,11 +108,9 @@ bool GeoJSON_Printer::close_file()
 {
     if (geojson_file.is_open())
         {
-            geojson_file << "</coordinates>" << std::endl
-                     << "</LineString>" << std::endl
-                     << "</Placemark>" << std::endl
-                     << "</Document>" << std::endl
-                     << "</kml>";
+            geojson_file << "       ]" << std::endl;
+            geojson_file << "                }" << std::endl;
+            geojson_file << "}" << std::endl;
             geojson_file.close();
             return true;
         }

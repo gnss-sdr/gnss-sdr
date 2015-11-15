@@ -51,7 +51,6 @@
 #include "kml_printer.h"
 #include "geojson_printer.h"
 #include "rinex_printer.h"
-#include "nmea_printer.h"
 #include "hybrid_ls_pvt.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"

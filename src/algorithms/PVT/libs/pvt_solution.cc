@@ -511,9 +511,9 @@ int Pvt_Solution::pos_averaging(bool flag_averaring)
                     d_hist_latitude_d.push_front(d_latitude_d);
                     d_hist_height_m.push_front(d_height_m);
 
-                    d_avg_latitude_d = 0;
-                    d_avg_longitude_d = 0;
-                    d_avg_height_m = 0;
+                    d_avg_latitude_d = 0.0;
+                    d_avg_longitude_d = 0.0;
+                    d_avg_height_m = 0.0;
                     for (unsigned int i = 0; i < d_hist_longitude_d.size(); i++)
                         {
                             d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);

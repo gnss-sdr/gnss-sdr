@@ -41,7 +41,7 @@ GeoJSON_Printer::GeoJSON_Printer () {}
 
 GeoJSON_Printer::~GeoJSON_Printer ()
 {
-    close_file();
+    GeoJSON_Printer::close_file();
 }
 
 

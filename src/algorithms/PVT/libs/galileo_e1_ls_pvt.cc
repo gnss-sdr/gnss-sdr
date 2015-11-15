@@ -181,7 +181,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
             DLOG(INFO) << "obs="<< obs;
             DLOG(INFO) << "W=" << W;
 
-            mypos = leastSquarePos(satpos, obs, W);
+            mypos = galileo_e1_ls_pvt::leastSquarePos(satpos, obs, W);
 
             // Compute GST and Gregorian time
             //double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, galileo_current_time);
@@ -194,7 +194,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
             d_position_UTC_time = p_time;
             DLOG(INFO) << "Galileo Position at TOW=" << galileo_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
-            cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
+            galileo_e1_ls_pvt::cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
                 {

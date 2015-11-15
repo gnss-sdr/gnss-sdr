@@ -81,7 +81,7 @@ public:
     double d_HDOP;
     double d_VDOP;
     double d_TDOP;
-    int compute_DOP(); //!< Compute Dilution Of Precision
+    int compute_DOP(); //!< Compute Dilution Of Precision parameters
 
     bool d_flag_averaging;
 

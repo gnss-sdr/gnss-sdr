@@ -38,9 +38,6 @@
 
 using google::LogMessage;
 
-//DEFINE_bool(tropo, true, "Apply tropospheric correction");
-
-
 
 Ls_Pvt::Ls_Pvt() : Pvt_Solution()
 {

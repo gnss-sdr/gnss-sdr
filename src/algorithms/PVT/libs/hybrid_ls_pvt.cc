@@ -257,7 +257,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             DLOG(INFO) << "satpos=" << satpos;
             DLOG(INFO) << "obs="<< obs;
             DLOG(INFO) << "W=" << W;
-            mypos = leastSquarePos(satpos, obs, W);
+
+            mypos = hybrid_ls_pvt::leastSquarePos(satpos, obs, W);
 
             // Compute GST and Gregorian time
             double GST = galileo_ephemeris_map.find(gnss_pseudoranges_iter->first)->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
@@ -269,7 +270,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             d_position_UTC_time = p_time;
             DLOG(INFO) << "HYBRID Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
-            cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
+            hybrid_ls_pvt::cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
                 {
@@ -290,7 +291,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 
 
             // ###### Compute DOPs ########
-            compute_DOP();
+            hybrid_ls_pvt::compute_DOP();
 
             // ######## LOG FILE #########
             if(d_flag_dump_enabled == true)

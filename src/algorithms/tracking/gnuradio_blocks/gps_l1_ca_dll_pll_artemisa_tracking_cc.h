@@ -49,7 +49,7 @@
 #include "gps_sdr_signal_processing.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
+#include "tracking_FLL_PLL_filter.h"
 #include "correlator.h"
 
 class gps_l1_ca_dll_pll_artemisa_tracking_cc;
@@ -143,7 +143,7 @@ private:
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     float d_acq_code_phase_samples;
@@ -156,7 +156,7 @@ private:
     float d_carrier_doppler_hz;
     float d_acc_carrier_phase_rad;
     float d_code_phase_samples;
-    float d_acc_code_phase_secs;
+    float d_pll_to_dll_assist_secs_ti;
 
     //PRN period in samples
     int d_current_prn_length_samples;

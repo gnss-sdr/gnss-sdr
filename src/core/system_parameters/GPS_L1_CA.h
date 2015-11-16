@@ -53,6 +53,7 @@ const double GPS_L1_FREQ_HZ              = 1.57542e9; //!< L1 [Hz]
 const double GPS_L1_CA_CODE_RATE_HZ      = 1.023e6;   //!< GPS L1 C/A code rate [chips/s]
 const double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;    //!< GPS L1 C/A code length [chips]
 const double GPS_L1_CA_CODE_PERIOD       = 0.001;     //!< GPS L1 C/A code period [seconds]
+const double GPS_L1_CA_CHIP_PERIOD       = 1.0e-6;     //!< GPS L1 C/A chip period [seconds]
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms

@@ -31,6 +31,7 @@
 
 #include "gps_pcode_generator.h"
 #include "GPS_P_CODE.h"
+#include <glog/logging.h>
 
 GpsPCodeGenerator::GpsPCodeGenerator( int sv )
 {
@@ -51,7 +52,8 @@ void GpsPCodeGenerator::set_prn( int sv )
 {
     if( sv < 1 or sv > 210 )
     {
-        throw "Error: sv out of range. Should be 1 <= sv <= 210";
+        LOG(ERROR) << "Error: sv out of range " << sv
+                   << ". Should be 1 <= sv <= 210";
     }
 
     d_sv = sv;

@@ -31,6 +31,7 @@
 
 #include "spirent_prs_code_generator.h"
 #include "GPS_P_CODE.h"
+#include <glog/logging.h>
 
 SpirentPrsCodeGenerator::SpirentPrsCodeGenerator( int sv, bool is_e1 )
 : d_sv( sv ),
@@ -80,7 +81,8 @@ void SpirentPrsCodeGenerator::set_prn( int sv )
 {
     if( sv < 1 || sv > 50 )
     {
-        throw "Error: sv out of range, should be 1<= prn <= 50";
+        LOG(ERROR) << "Error: sv out of range " << sv
+                   << ", should be 1<= prn <= 50";
     }
 
     d_sv = sv;

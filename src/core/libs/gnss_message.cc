@@ -30,6 +30,7 @@
  */
 
 #include "gnss_message.h"
+#include <glog/logging.h>
 
 bool gnss_message::is_valid( const pmt::pmt_t &msg )
 {
@@ -65,7 +66,7 @@ std::string gnss_message::get_message( const pmt::pmt_t &msg )
         std::string errMsg("Error: gnss_message ");
         errMsg += pmt::write_string( msg ) + " is not a valid gnss_message";
 
-        throw errMsg;
+        LOG(ERROR) << errMsg;
     }
 
     pmt::pmt_t the_string;
@@ -82,7 +83,7 @@ double gnss_message::get_timestamp( const pmt::pmt_t &msg )
         std::string errMsg("Error: gnss_message ");
         errMsg += pmt::write_string( msg ) + " is not a valid gnss_message";
 
-        throw errMsg;
+        LOG(ERROR) << errMsg;
     }
 
     pmt::pmt_t the_timestamp;

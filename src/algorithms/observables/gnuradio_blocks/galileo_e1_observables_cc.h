@@ -83,6 +83,8 @@ private:
     int d_output_rate_ms;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+
+    bool d_rx_time_set;
 };
 
 #endif

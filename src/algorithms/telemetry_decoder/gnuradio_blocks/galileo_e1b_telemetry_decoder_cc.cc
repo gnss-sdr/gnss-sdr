@@ -124,6 +124,10 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
 {
     // Create the gnss_message port:
     message_port_register_out( GNSS_MESSAGE_PORT_ID );
+    message_port_register_in( GNSS_MESSAGE_PORT_ID );
+    set_msg_handler( GNSS_MESSAGE_PORT_ID,
+            boost::bind( &galileo_e1b_telemetry_decoder_cc::gnss_message_handler,
+                this, _1 ) );
 
     // initialize internal vars
     d_queue = queue;
@@ -342,6 +346,10 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                             LOG(INFO) << "Starting page decoder for Galileo SAT " << this->d_satellite;
                             d_preamble_index = d_sample_counter; //record the preamble sample stamp
                             d_stat = 2;
+                            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs; // - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
+                            pmt::pmt_t msg = gnss_message::make( "PREAMBLE_START_DETECTED",
+                                    d_preamble_time_seconds );
+                            message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
                         }
                     else
                         {
@@ -596,4 +604,8 @@ void galileo_e1b_telemetry_decoder_cc::set_utc_model_queue(concurrent_queue<Gali
     d_utc_model_queue = utc_model_queue;
 }
 
-
+void galileo_e1b_telemetry_decoder_cc::gnss_message_handler( pmt::pmt_t msg )
+{
+    // Forward incoming messages to listeners
+    message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
+}

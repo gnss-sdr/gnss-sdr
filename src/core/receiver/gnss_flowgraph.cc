@@ -46,6 +46,7 @@
 #include "gnss_block_interface.h"
 #include "channel_interface.h"
 #include "gnss_block_factory.h"
+#include "gnss_message.h"
 
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8
 
@@ -297,6 +298,30 @@ void GNSSFlowgraph::connect()
             {
                     top_block_->connect(channels_.at(i)->get_right_block(), 0,
                             observables_->get_left_block(), i);
+
+                    bool has_gnss_message_port =
+                        observables_->get_left_block()->has_msg_port(
+                                GNSS_MESSAGE_PORT_ID );
+
+                    // Now check if the tracking loop can accept messages:
+                    if( has_gnss_message_port )
+                    {
+                        has_gnss_message_port = channels_.at(i)->get_right_block()->has_msg_port(
+                                GNSS_MESSAGE_PORT_ID );
+
+                        if( has_gnss_message_port )
+                        {
+                            // Connect the input port to the output port:
+                            top_block_->msg_connect( observables_->get_left_block(), GNSS_MESSAGE_PORT_ID,
+                                    channels_.at(i)->get_right_block(), GNSS_MESSAGE_PORT_ID );
+
+                            DLOG(INFO) << "Connected gnss_message port: observables -> tracking";
+                            has_gnss_message_port = true;
+
+                        }
+                    }
+
+
             }
             catch (std::exception& e)
             {

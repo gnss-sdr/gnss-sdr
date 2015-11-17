@@ -43,6 +43,7 @@
 #include "control_message_factory.h"
 #include "gnss_synchro.h"
 #include "Galileo_E1.h"
+#include "gnss_message.h"
 
 
 using google::LogMessage;
@@ -59,6 +60,9 @@ galileo_e1_observables_cc::galileo_e1_observables_cc(unsigned int nchannels, boo
 		                        gr::block("galileo_e1_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
 		                        gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
+    // Create the gnss_message port:
+    message_port_register_out( GNSS_MESSAGE_PORT_ID );
+
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -66,6 +70,7 @@ galileo_e1_observables_cc::galileo_e1_observables_cc(unsigned int nchannels, boo
     d_output_rate_ms = output_rate_ms;
     d_dump_filename = dump_filename;
     d_flag_averaging = flag_averaging;
+    d_rx_time_set = false;
 
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
@@ -191,6 +196,21 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
             double d_TOW_reference = gnss_synchro_iter->second.d_TOW_at_current_symbol;
             double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
             //int reference_channel= gnss_synchro_iter->second.Channel_ID;
+
+
+            if( !d_rx_time_set )
+            {
+                // Let everyone know the current receiver time:
+                pmt::pmt_t msg = gnss_message::make( "RECEIVER_TIME_SET",
+                        d_ref_PRN_rx_time_ms/1000.0 );
+
+                double rx_time_estimate = d_TOW_reference + GALILEO_STARTOFFSET_ms / 1000.0;
+                msg = pmt::dict_add( msg, pmt::mp("TOW"),
+                                            pmt::from_double( rx_time_estimate ) );
+                message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
+
+                d_rx_time_set = true;
+            }
 
             // Now compute RX time differences due to the PRN alignment in the correlators
             double traveltime_ms;

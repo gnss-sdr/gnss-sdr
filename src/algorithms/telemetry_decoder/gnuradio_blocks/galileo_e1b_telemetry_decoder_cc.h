@@ -147,6 +147,8 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+
+    void gnss_message_handler( pmt::pmt_t msg );
 };
 
 #endif

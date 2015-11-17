@@ -159,6 +159,8 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             	pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
                 // update the pseudorange object
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
+            	current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].debug_var1=delta_rx_time_ms;
+                //current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads = current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads+ GPS_TWO_PI*0.001*delta_rx_time_ms*current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz;
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000)/1000 + GPS_STARTOFFSET_ms/1000.0;
@@ -175,11 +177,16 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                         {
                             tmp_double = current_gnss_synchro[i].d_TOW_at_current_symbol;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double = current_gnss_synchro[i].Prn_timestamp_ms;
+                            //tmp_double = current_gnss_synchro[i].Prn_timestamp_ms;
+                            tmp_double = current_gnss_synchro[i].Carrier_Doppler_hz;
+                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            tmp_double = current_gnss_synchro[i].Carrier_phase_rads/GPS_TWO_PI;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].Pseudorange_m;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double = (double)(current_gnss_synchro[i].Flag_valid_pseudorange==true);
+                            //tmp_double = (double)(current_gnss_synchro[i].Flag_valid_pseudorange==true);
+                            //tmp_double = current_gnss_synchro[i].debug_var1;
+                            tmp_double= current_gnss_synchro[i].debug_var2;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].PRN;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));

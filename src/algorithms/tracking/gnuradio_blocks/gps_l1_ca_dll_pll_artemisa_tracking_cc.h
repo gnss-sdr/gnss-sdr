@@ -50,7 +50,7 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-#include "correlator.h"
+#include "cpu_multicorrelator.h"
 
 class gps_l1_ca_dll_pll_artemisa_tracking_cc;
 
@@ -109,8 +109,6 @@ private:
             float pll_bw_hz,
             float dll_bw_hz,
             float early_late_space_chips);
-    void update_local_code();
-    void update_local_carrier();
 
     // tracking configuration vars
     boost::shared_ptr<gr::msg_queue> d_queue;
@@ -125,21 +123,17 @@ private:
     long d_fs_in;
 
     double d_early_late_spc_chips;
+    int d_n_correlator_taps;
 
     gr_complex* d_ca_code;
-
-    gr_complex* d_early_code;
-    gr_complex* d_late_code;
-    gr_complex* d_prompt_code;
-    gr_complex* d_carr_sign;
-
-    gr_complex *d_Early;
-    gr_complex *d_Prompt;
-    gr_complex *d_Late;
+    float* d_local_code_shift_chips;
+    gr_complex* d_correlator_outs;
+    cpu_multicorrelator multicorrelator_cpu;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
-    float d_rem_carr_phase_rad;
+    float d_rem_code_phase_chips;
+    float d_rem_carrier_phase_rad;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
@@ -148,15 +142,15 @@ private:
     // acquisition
     float d_acq_code_phase_samples;
     float d_acq_carrier_doppler_hz;
-    // correlator
-    Correlator d_correlator;
 
     // tracking vars
     double d_code_freq_chips;
+    float d_code_phase_step_chips;
     float d_carrier_doppler_hz;
-    float d_acc_carrier_phase_rad;
+    float d_carrier_phase_step_rad;
+    double d_acc_carrier_phase_rad;
     float d_code_phase_samples;
-    float d_pll_to_dll_assist_secs_ti;
+    float d_pll_to_dll_assist_secs_Ti;
 
     //PRN period in samples
     int d_current_prn_length_samples;

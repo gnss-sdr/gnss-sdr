@@ -170,7 +170,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                             break;
                         }
                     i++;
-                    if (i == (signed int)d_nchannels - 1)
+                    if (i == (signed int)d_nchannels )
                         {
                             break;
                         }
@@ -189,7 +189,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                             break;
                         }
                     i++;
-                    if (i == (signed int)d_nchannels - 1)
+                    if (i == (signed int)d_nchannels )
                         {
                             break;
                         }
@@ -208,7 +208,7 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                             break;
                         }
                     i++;
-                    if (i == (signed int)d_nchannels - 1)
+                    if (i == (signed int)d_nchannels )
                         {
                             break;
                         }

@@ -94,9 +94,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-6.200.2.tar.gz
-$ tar xvfz armadillo-6.200.2.tar.gz
-$ cd armadillo-6.200.2
+$ wget http://sourceforge.net/projects/arma/files/armadillo-6.200.4.tar.gz
+$ tar xvfz armadillo-6.200.4.tar.gz
+$ cd armadillo-6.200.4
 $ cmake .
 $ make
 $ sudo make install
@@ -512,7 +512,7 @@ We use a [DBSRX2](https://www.ettus.com/product/details/DBSRX2) to do the task, 
     3. The configuration file has in-line documentation, you can try to tune the number of channels and several receiver parameters. Store your .conf file in some working directory of your choice.
 4. Run the receiver invoking the configuration by
 ```$ gnss-sdr --config_file=/path/to/my_receiver.conf```
-The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track and decode at least 4 satellites, you will get PVT fixes. The program will write a .kml file and RINEX (yet experimental) files in the install directory. In addition to the console output, GNSS-SDR also writes log files at /tmp/ (configurable with the commandline flag ```./gnss-sdr --log_dir=/path/to/log```).
+The program reports the current status in text mode, directly to the terminal window. If all goes well, and GNSS-SDR is able to successfully track and decode at least 4 satellites, you will get PVT fixes. The program will write .kml, .geojson and RINEX files in the folder from which ```gnss-sdr``` was run. In addition to the console output, GNSS-SDR also writes log files at /tmp/ (configurable with the commandline flag ```./gnss-sdr --log_dir=/path/to/log```).
 
    
 
@@ -928,22 +928,38 @@ Check [GpsL1CaPcpsAcquisition](./src/algorithms/acquisition/adapters/gps_l1_ca_p
   |---------gnuradio_blocks   <- Signal processing blocks implementation
 ~~~~~~ 
 
-The user can select a given implementation for the algorithm to be used in each receiver channel, as well as their parameters, in the configuration file:
+The user can select a given implementation for the algorithm to be used in each receiver channel, as well as their parameters, in the configuration file. For a GPS l1 C/A receiver:
 
 ~~~~~~ 
 ;######### ACQUISITION GLOBAL CONFIG ############
-Acquisition_1C.dump=false ; Enables internal data file logging [true] or [false] 
-Acquisition_1C.dump_filename=./acq_dump.dat ; Log path and filename
+Acquisition_1C.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
 Acquisition_1C.item_type=gr_complex
 Acquisition_1C.if=0 ; Signal intermediate frequency in [Hz] 
 Acquisition_1C.sampled_ms=1 ; Signal block duration for the acquisition signal detection [ms]
-Acquisition_1C.implementation=GPS_L1_CA_PCPS_Acquisition ; Acquisition algorithm selection for this channel
 Acquisition_1C.threshold=0.005 ; Acquisition threshold
 Acquisition_1C.pfa=0.0001 ; Acquisition false alarm probability. This option overrides the threshold option. 
 ;                        Only use with implementations: [GPS_L1_CA_PCPS_Acquisition] or [Galileo_E1_PCPS_Ambiguous_Acquisition] 
 Acquisition_1C.doppler_max=10000 ; Maximum expected Doppler shift [Hz]
 Acquisition_1C.doppler_step=500 ; Doppler step in the grid search [Hz]
+Acquisition_1C.dump=false ; Enables internal data file logging [true] or [false] 
+Acquisition_1C.dump_filename=./acq_dump.dat ; Log path and filename
 ~~~~~~ 
+
+and, for Galileo E1B channels:
+
+~~~~~~ 
+;######### GALILEO ACQUISITION CONFIG ############
+Acquisition_1B.implementation=Galileo_E1_PCPS_Ambiguous_Acquisition
+Acquisition_1B.item_type=gr_complex
+Acquisition_1B.if=0
+Acquisition_1B.sampled_ms=4
+Acquisition_1B.pfa=0.0000008
+Acquisition_1B.doppler_max=15000
+Acquisition_1B.doppler_step=125
+Acquisition_1B.dump=false
+Acquisition_1B.dump_filename=./acq_dump.dat
+~~~~~~ 
+
 
 
 #### Tracking
@@ -1027,11 +1043,20 @@ GNSS systems provide different kinds of observations. The most commonly used are
 
 The common interface is [ObservablesInterface](./src/core/interfaces/observables_interface.h). 
 
-Configuration example:
+Configuration example for GPS L1 C/A signals:
 
 ~~~~~~ 
 ;######### OBSERVABLES CONFIG ############
 Observables.implementation=GPS_L1_CA_Observables
+Observables.dump=false
+Observables.dump_filename=./observables.dat
+~~~~~~ 
+
+For Galileo E1B receivers:
+
+~~~~~~ 
+;######### OBSERVABLES CONFIG ############
+Observables.implementation=Galileo_E1B_Observables
 Observables.dump=false
 Observables.dump_filename=./observables.dat
 ~~~~~~ 
@@ -1047,9 +1072,11 @@ Observables.dump_filename=./observables.dat
    
 
 #### Computation of Position, Velocity and Time
-Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute a simple least square solution and leaves room for more sophisticated positioning methods. The integration with libraries and software tools that are able to deal with multi-constellation data such as [GPSTk](http://www.gpstk.org), [RTKLIB](http://www.rtklib.com/) or [gLAB](http://gage14.upc.es/gLAB/) appear as viable solutions for high performance, completely customizable GNSS receivers.
+Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute simple least square solutions (stored in GIS-friendly formats such as [GeoJSON](http://geojson.org/geojson-spec.html) and [KML](http://www.opengeospatial.org/standards/kml), or transmitted via serial port as [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) messages), and leaves room for more sophisticated positioning methods by storing observables and navigation data in [RINEX](https://en.wikipedia.org/wiki/RINEX) files ([v2.11](https://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt) or [v3.02](ftp://igs.org/pub/data/format/rinex302.pdf)). 
 
-The common interface is [PvtInterface](./src/core/interfaces/pvt_interface.h). For instance, in order to use the implementation GpsL1CaPvt, add to the configuration file:
+The common interface is [PvtInterface](./src/core/interfaces/pvt_interface.h). 
+
+Configuration example for GPS L1 C/A signals:
 
 ~~~~~~ 
 ;######### PVT CONFIG ############
@@ -1059,13 +1086,55 @@ PVT.flag_averaging=true ; Enables the PVT averaging between output intervals (ar
 PVT.output_rate_ms=100 ; Period in [ms] between two PVT outputs
 PVT.display_rate_ms=500 ; Position console print (std::out) interval [ms].
 PVT.dump=false ; Enables the PVT internal binary data file logging [true] or [false] 
-PVT.dump_filename=./PVT ; Log path and filename without extension.
+PVT.dump_filename=./PVT ; Log path and filename without extension of GeoJSON and KML files
 PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
 PVT.flag_nmea_tty_port=true ; Enable the NMEA log to a serial TTY port 
 PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
 ~~~~~~ 
 
-   
+For Galileo E1B receivers:
+
+~~~~~~ 
+;######### PVT CONFIG ############
+PVT.implementation=GALILEO_E1_PVT
+PVT.averaging_depth=100
+PVT.flag_averaging=false
+PVT.output_rate_ms=100;
+PVT.display_rate_ms=500;
+PVT.dump=false
+PVT.dump_filename=./PVT
+~~~~~~ 
+
+
+For hybrid GPS L1 / Galileo E1B receivers:
+
+~~~~~~
+;######### PVT CONFIG ############
+PVT.implementation=Hybrid_PVT
+PVT.averaging_depth=10
+PVT.flag_averaging=false
+PVT.output_rate_ms=100;
+PVT.display_rate_ms=500; 
+PVT.dump=false
+PVT.dump_filename=./PVT
+~~~~~~ 
+
+**Notes on the output formats:**
+
+ * **GeoJSON** is a geospatial data interchange format based on JavaScript Object Notation (JSON) supported by numerous mapping and GIS software packages, including [OpenLayers](http://openlayers.org), [Leaflet](http://leafletjs.com), [MapServer](http://www.mapserver.org), [GeoServer](http://geoserver.org), [GeoDjango](https://www.djangoproject.com), [GDAL](http://www.gdal.org), and [CartoDB](https://cartodb.com). It is also possible to use GeoJSON with [PostGIS](http://postgis.net) and [Mapnik](http://mapnik.org), both of which handle the format via the GDAL OGR conversion library. The [Google Maps Javascript API](https://developers.google.com/maps/documentation/javascript/) v3 directly supports the [integration of GeoJSON data layers](https://developers.google.com/maps/documentation/javascript/examples/layer-data-simple), and [GitHub also supports GeoJSON rendering](https://github.com/blog/1528-there-s-a-map-for-that). 
+
+ * **KML** (Keyhole Markup Language) is an XML grammar used to encode and transport representations of geographic data for display in an earth browser. KML is an open standard officially named the OpenGIS KML Encoding Standard (OGC KML), and it is maintained by the Open Geospatial Consortium, Inc. (OGC). KML files can be displayed in geobrowsers such as [Google Earth](https://www.google.com/earth/), [Marble](https://marble.kde.org), [osgEarth](http://osgearth.org), or used with the [NASA World Wind SDK for Java](http://worldwind.arc.nasa.gov/java/).
+
+ * **NMEA 0183** is a combined electrical and data specification for communication between marine electronics such as echo sounder, sonars, anemometer, gyrocompass, autopilot, GPS receivers and many other types of instruments. It has been defined by, and is controlled by, the U.S. [National Marine Electronics Association](http://www.nmea.org/). The NMEA 0183 standard uses a simple ASCII, serial communications protocol that defines how data are transmitted in a *sentence* from one *talker* to multiple *listeners* at a time. Through the use of intermediate expanders, a talker can have a unidirectional conversation with a nearly unlimited number of listeners, and using multiplexers, multiple sensors can talk to a single computer port. At the application layer, the standard also defines the contents of each sentence (message) type, so that all listeners can parse messages accurately. Those messages can be sent through the serial port (that could be for instance a Bluetooth link) and be used/displayed by a number of software applications (and maybe on other devices).
+
+ * **RINEX** (Receiver Independent Exchange Format) is an interchange format for raw satellite navigation system data, covering observables and the information contained in the navigation message broadcast by GNSS satellites. This allows the user to post-process the received data to produce a more accurate result (usually with other data unknown to the original receiver, such as better models of the atmospheric conditions at time of measurement). RINEX files can be used by software packages such as [GPSTk](http://www.gpstk.org), [RTKLIB](http://www.rtklib.com/) and [gLAB](http://gage14.upc.es/gLAB/). GNSS-SDR by default generates RINEX version 3.02. If 2.11 is needed, it can be requested through a commandline flag when invoking the software receiver:
+~~~~~~ 
+$ gnss-sdr --RINEX_version=2
+~~~~~~ 
+
+**Important note:**
+
+In order to get well-formatted GeoJSON, KML and RINEX files, always terminate ```gnss-sdr``` execution by pressing key ```q``` and then key ```ENTER```. Those files will be automatically deleted if no position fix have been obtained during the execution of the software receiver.
 
 #### Output filter
 

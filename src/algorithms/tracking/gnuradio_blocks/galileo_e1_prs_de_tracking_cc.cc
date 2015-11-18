@@ -744,6 +744,18 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                 d_rem_subcarrier_phase_samples_prs = rem_subcarrier_phase_cycles_prs*
                     static_cast<double>(d_fs_in)/Galileo_E1_A_SUB_CARRIER_RATE_HZ;
 
+                double e1b_code_length_prs_chips = Galileo_E1_B_CODE_LENGTH_CHIPS /
+                    Galileo_E1_CODE_CHIP_RATE_HZ * Galileo_E1_A_CODE_CHIP_RATE_HZ;
+
+                double rem_code_phase_chips_prs = e1b_code_length_prs_chips -
+                    std::fmod( d_code_phase_chips_prs, e1b_code_length_prs_chips );
+                if( rem_code_phase_chips_prs > e1b_code_length_prs_chips / 2.0 )
+                {
+                    rem_code_phase_chips_prs = ( rem_code_phase_chips_prs - e1b_code_length_prs_chips );
+                }
+
+                d_rem_code_phase_samples_prs = rem_code_phase_chips_prs * d_fs_in/Galileo_E1_A_CODE_CHIP_RATE_HZ;
+
                 d_rem_carr_phase_rad_prs = d_rem_carr_phase_rad_prs + GPS_TWO_PI * d_carrier_doppler_hz_prs * T;
                 d_rem_carr_phase_rad_prs = fmod(d_rem_carr_phase_rad_prs, GPS_TWO_PI);
 
@@ -934,10 +946,22 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
             double T_sc_prn_samples;
             double K_sc_samples;
             // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
-            T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
-            T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
-            T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples; // + code_error_filt_secs * static_cast<double>(d_fs_in);
+            if( d_prs_tracking_enabled )
+            {
+                T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips_prs);
+                T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS *
+                    Galileo_E1_A_CODE_CHIP_RATE_HZ/Galileo_E1_CODE_CHIP_RATE_HZ;
+                T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
+                K_blk_samples = T_prn_samples + d_rem_code_phase_samples_prs; // + code_error_filt_secs * static_cast<double>(d_fs_in);
+            }
+            else
+            {
+                T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
+                T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
+                T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
+                K_blk_samples = T_prn_samples + d_rem_code_phase_samples; // + code_error_filt_secs * static_cast<double>(d_fs_in);
+            }
+
 
             T_sc_seconds = 1 / static_cast<double>(d_subcarrier_freq_cycles);
             // THere is one subcarrier period per code chip:

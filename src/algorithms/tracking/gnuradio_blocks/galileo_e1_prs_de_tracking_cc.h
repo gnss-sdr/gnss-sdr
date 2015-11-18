@@ -292,6 +292,13 @@ private:
     double d_last_tow;
     double d_timestamp_last_tow;
 
+    bool d_rx_time_set;
+    double d_tow_rx_time;
+    double d_timestamp_rx_time;
+
+    bool d_preamble_start_detected;
+    double d_preamble_timestamp;
+
     bool d_prs_tracking_enabled;
 
 

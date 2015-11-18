@@ -288,6 +288,10 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_carrier_doppler_hz_prs = 0.0;
     d_acc_carrier_phase_rad = 0.0;
     d_acc_code_phase_secs = 0.0;
+
+    d_tow_received = false;
+    d_rx_time_set = false;
+    d_preamble_start_detected = false;
 }
 
 void galileo_e1_prs_de_tracking_cc::start_tracking()
@@ -344,6 +348,8 @@ void galileo_e1_prs_de_tracking_cc::start_tracking()
     d_enable_tracking = true;
     d_code_locked = false;
     d_carrier_locked = false;
+    d_cn0_estimation_counter = 0;
+    d_outage_detected = false;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
@@ -1299,12 +1305,38 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
         return;
     }
     // Initialise the code/phase and subcarrier estimates:
+    // Two possibilities:
+    // 1) We have decoded TOW from the nav message
+    // 2) We have rx time and a preamble in which case we can estimate TOW:
+    double timestamp_last_tow = d_timestamp_last_tow;
+    double last_tow = d_last_tow;
+
+    if( d_tow_received )
+    {
+        timestamp_last_tow = d_timestamp_last_tow;
+        last_tow = d_last_tow;
+
+    }
+    else if( d_rx_time_set && d_preamble_start_detected )
+    {
+        double t_preamble = std::floor( ( d_tow_rx_time +
+                    ( d_preamble_timestamp - d_timestamp_rx_time ) ) + 0.5 );
+
+        last_tow = t_preamble;
+        timestamp_last_tow = d_preamble_timestamp;
+    }
+    else
+    {
+        DLOG(INFO) << "Attempted to initialise PRS tracking with insufficient timing information. Bailing.";
+        return;
+    }
+
     double time_since_tow = static_cast< double >( d_sample_counter ) /
-        static_cast<double>( d_fs_in ) - d_timestamp_last_tow;
+        static_cast<double>( d_fs_in ) - timestamp_last_tow;
 
     double code_periods_since_tow = std::floor( time_since_tow / Galileo_E1_CODE_PERIOD + 0.5);
 
-    double curr_tow = d_last_tow + code_periods_since_tow*Galileo_E1_CODE_PERIOD +
+    double curr_tow = last_tow + code_periods_since_tow*Galileo_E1_CODE_PERIOD +
         //std::fmod( d_code_phase_chips, Galileo_E1_B_CODE_LENGTH_CHIPS ) / Galileo_E1_CODE_CHIP_RATE_HZ;
         d_rem_code_phase_samples / static_cast<double>( d_fs_in );
 
@@ -1392,6 +1424,27 @@ void galileo_e1_prs_de_tracking_cc::handle_gnss_message( pmt::pmt_t msg )
             log_str << ". Enabling PRS tracking.";
             start_tracking_prs();
         }
+    }
+
+    if( gnss_message::get_message( msg ) == "RECEIVER_TIME_SET" )
+    {
+        d_rx_time_set = true;
+        d_tow_rx_time = pmt::to_double( pmt::dict_ref( msg, pmt::mp( "TOW" ), not_found ) );
+        d_timestamp_rx_time = gnss_message::get_timestamp( msg );
+
+        log_str << ". TOW: " << d_tow_rx_time;
+    }
+
+    if( gnss_message::get_message( msg ) == "PREAMBLE_START_DETECTED" )
+    {
+        d_preamble_start_detected = true;
+        d_preamble_timestamp = gnss_message::get_timestamp( msg );
+    }
+
+    if( !d_prs_tracking_enabled && ( d_preamble_start_detected && d_rx_time_set ) )
+    {
+        log_str << ". Enabling PRS tracking with 1 s ambiguity resolution";
+        start_tracking_prs();
     }
 
     LOG(INFO) << log_str.str();

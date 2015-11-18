@@ -36,22 +36,19 @@ bool gnss_message::is_valid( const pmt::pmt_t &msg )
 {
 
     if( !pmt::is_dict( msg ) ){
+        DLOG(INFO) << "PMT message not a dict " << pmt::write_string( msg );
         return false;
     }
 
-    pmt::pmt_t wrk;
-    pmt::pmt_t not_found;
-    wrk = pmt::dict_ref( msg, pmt::mp( "message" ), not_found );
-
-    if( wrk == not_found )
+    if( !pmt::dict_has_key( msg, pmt::mp("message") ) )
     {
+        DLOG(INFO) << "PMT message does not contain a message key " << pmt::write_string( msg );
         return false;
     }
 
-    wrk = pmt::dict_ref( msg, pmt::mp( "timestamp" ), not_found );
-
-    if( wrk == not_found )
+    if( !pmt::dict_has_key( msg, pmt::mp("timestamp") ) )
     {
+        DLOG(INFO) << "PMT message does not contain a timestamp key " << pmt::write_string( msg );
         return false;
     }
 

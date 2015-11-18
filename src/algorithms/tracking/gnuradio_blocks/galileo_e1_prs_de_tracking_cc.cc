@@ -976,7 +976,9 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
             if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
                 {
                     // fill buffer with prompt correlator output values
-                    d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt_Subcarrier_Prompt_Code;
+                    d_Prompt_buffer[d_cn0_estimation_counter] = ( d_prs_tracking_enabled ?
+                            *d_Prompt_Subcarrier_Prompt_Code_prs :
+                            *d_Prompt_Subcarrier_Prompt_Code );
                     d_cn0_estimation_counter++;
                 }
             else
@@ -1013,6 +1015,8 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                                     }
                                 d_carrier_lock_fail_counter = 0;
                                 d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
+                                d_prs_tracking_enabled = false;
+                                d_tow_received = false;
                             }
 
                         if( d_carrier_lock_success_counter > MINIMUM_LOCK_SUCCESS_COUNTER )
@@ -1029,6 +1033,9 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                             d_carrier_loop_filter.initialize( carr_error_filt_hz );
 
                             d_carrier_lock_fail_counter = 0;
+
+                            // Try to enable prs tracking:
+                            start_tracking_prs();
                         }
                     }
                     else // not d_carrier_locked
@@ -1040,10 +1047,12 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                                 d_carrier_lock_fail_counter = 0;
                                 d_carrier_locked = false;
                                 d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
+                                d_subcarrier_loop_filter.set_noise_bandwidth( d_initial_sll_bw_hz );
                                 d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
                                 d_early_late_code_spc_chips = d_initial_early_late_code_space_chips;
                                 d_code_loop_filter.initialize( code_error_filt_chips );
                                 d_carrier_loop_filter.initialize( carr_error_filt_hz );
+                                d_subcarrier_loop_filter.initialize( subcarrier_error_filt_cycles );
                             }
 
                     }
@@ -1286,6 +1295,9 @@ void galileo_e1_prs_de_tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchr
 void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
 {
 
+    if( d_prs_tracking_enabled ){
+        return;
+    }
     // Initialise the code/phase and subcarrier estimates:
     double time_since_tow = static_cast< double >( d_sample_counter ) /
         static_cast<double>( d_fs_in ) - d_timestamp_last_tow;
@@ -1352,6 +1364,7 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
     d_prs_tracking_enabled = true;
     d_prs_code_gen->set_prn( d_acquisition_gnss_synchro->PRN );
     d_code_locked_prs = false;
+    d_cn0_estimation_counter = 0;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz_prs
               << " PULL-IN Code Phase [samples]=" << d_code_phase_chips_prs;

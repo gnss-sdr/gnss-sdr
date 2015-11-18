@@ -349,7 +349,6 @@ void galileo_e1_prs_de_tracking_cc::start_tracking()
     d_code_locked = false;
     d_carrier_locked = false;
     d_cn0_estimation_counter = 0;
-    d_outage_detected = false;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;

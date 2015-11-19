@@ -89,6 +89,7 @@
 #include "gps_l2_m_dll_pll_tracking.h"
 #include "galileo_e1_de_tracking.h"
 #include "galileo_e1_prs_de_tracking.h"
+#include "galileo_e1_prs_veml_tracking.h"
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "gps_l2_m_telemetry_decoder.h"
 #include "galileo_e1b_telemetry_decoder.h"
@@ -1654,6 +1655,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else if (implementation.compare("Galileo_E1_PRS_DE_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GalileoE1PrsDeTracking(configuration.get(), role, in_streams,
+                    out_streams, queue));
+            block = std::move(block_);
+        }
+    else if (implementation.compare("Galileo_E1_PRS_VEML_Tracking") == 0)
+        {
+            std::unique_ptr<TrackingInterface> block_(new GalileoE1PrsVemlTracking(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

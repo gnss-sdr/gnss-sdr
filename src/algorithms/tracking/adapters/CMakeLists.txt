@@ -34,6 +34,7 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l2_m_dll_pll_tracking.cc
      galileo_e1_de_tracking.cc
      galileo_e1_prs_de_tracking.cc
+     galileo_e1_prs_veml_tracking.cc
      ${OPT_TRACKING_ADAPTERS}
 )
 

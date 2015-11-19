@@ -36,5 +36,6 @@
 #include <cstdint>
 
 int64_t double_to_fxpt64( double in, unsigned int frac_len = 32 );
+double fxpt64_to_double( int64_t in, unsigned int frac_len = 32 );
 
 #endif

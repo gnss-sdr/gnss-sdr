@@ -41,3 +41,10 @@ int64_t double_to_fxpt64( double in, unsigned int frac_len )
     return out;
 }
 
+double fxpt64_to_double( int64_t in, unsigned int frac_len )
+{
+    double out = static_cast< double >( in ) * std::pow( 2.0, -static_cast<double>(frac_len) );
+
+    return out;
+}
+

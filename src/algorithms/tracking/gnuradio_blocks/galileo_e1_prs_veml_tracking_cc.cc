@@ -84,6 +84,8 @@ galileo_e1_prs_veml_make_tracking_cc(
         float initial_very_early_late_code_space_chips,
         float final_very_early_late_code_space_chips,
         bool aid_code_with_carrier,
+        bool use_bump_jumping,
+        unsigned int bump_jumping_threshold,
         LongCodeInterface_sptr prs_code_gen)
 {
     return galileo_e1_prs_veml_tracking_cc_sptr(new galileo_e1_prs_veml_tracking_cc(if_freq,
@@ -94,7 +96,8 @@ galileo_e1_prs_veml_make_tracking_cc(
             final_early_late_code_space_cycles,
             initial_very_early_late_code_space_chips,
             final_very_early_late_code_space_chips,
-            aid_code_with_carrier, prs_code_gen));
+            aid_code_with_carrier,
+            use_bump_jumping, bump_jumping_threshold, prs_code_gen));
 }
 
 
@@ -123,6 +126,8 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
         float initial_very_early_late_code_space_chips,
         float final_very_early_late_code_space_chips,
         bool aid_code_with_carrier,
+        bool use_bump_jumping,
+        unsigned int bump_jumping_threshold,
         LongCodeInterface_sptr prs_code_gen):
         gr::block("galileo_e1_prs_veml_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -186,7 +191,15 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
     d_initial_very_early_late_code_space_chips = initial_very_early_late_code_space_chips;
     d_final_very_early_late_code_space_chips = final_very_early_late_code_space_chips;
     d_very_early_late_code_spc_chips = 0.5; // Define early-late offset (in chips)
-    d_very_early_late_code_spc_chips_prs = d_initial_very_early_late_code_space_chips; // Define early-late offset (in chips)
+    if( !use_bump_jumping )
+    {
+        d_very_early_late_code_spc_chips_prs = d_initial_very_early_late_code_space_chips; // Define early-late offset (in chips)
+    }
+    else
+    {
+        d_very_early_late_code_spc_chips_prs = Galileo_E1_A_CODE_CHIP_RATE_HZ /
+            (2.0*Galileo_E1_A_SUB_CARRIER_RATE_HZ ); // 0.5 subcarrier cycles
+    }
 
     // Initialization of local code replica
     // Get space for a vector with the code replica sampled 1x/chip
@@ -289,6 +302,15 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
     d_tow_received = false;
     d_rx_time_set = false;
     d_preamble_start_detected = false;
+
+    // Bump jumping:
+    d_use_bj = use_bump_jumping;
+    d_bj_ve_counter = 0;
+    d_bj_vl_counter = 0;
+    d_bj_ve_counter_prs = 0;
+    d_bj_vl_counter_prs = 0;
+
+    d_bj_threshold = bump_jumping_threshold;
 }
 
 void galileo_e1_prs_veml_tracking_cc::start_tracking()
@@ -341,6 +363,10 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking()
     d_code_locked = false;
     d_carrier_locked = false;
     d_cn0_estimation_counter = 0;
+
+    // Bump jumping:
+    d_bj_ve_counter = 0;
+    d_bj_vl_counter = 0;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
@@ -851,6 +877,73 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
             corr_slope = 1.0;
             code_error_chips_veml *= ( 1 - corr_slope*d_very_early_late_code_spc_chips) / corr_slope;
 
+            if( d_use_bj && d_carrier_locked ){
+
+                float P = std::abs<float>( *d_Prompt );
+                float VE = std::abs<float>( *d_Very_Early );
+                float VL = std::abs<float>( *d_Very_Late );
+
+                double jump_dir = 0.0;
+                bool do_jump = false;
+
+                if( VE > P && VE > VL )
+                {
+
+                    d_bj_ve_counter++;
+                    if( d_bj_vl_counter > 0 )
+                    {
+                        d_bj_vl_counter--;
+                    }
+
+                    if( d_bj_ve_counter >= d_bj_threshold )
+                    {
+                        // Time to jump!
+                        jump_dir = 1.0;
+                        do_jump = true;
+                    }
+                }
+
+                if( VL > P && VL > VE )
+                {
+                    d_bj_vl_counter++;
+                    if( d_bj_ve_counter > 0 )
+                    {
+                        d_bj_ve_counter--;
+                    }
+
+                    if( d_bj_vl_counter >= d_bj_threshold )
+                    {
+                        jump_dir = -1.0;
+                        do_jump = true;
+                    }
+                }
+
+                if( do_jump )
+                {
+                    double half_cycle_in_chips = 1.0/chips_to_halfcycles;
+
+                    d_code_phase_chips += half_cycle_in_chips*jump_dir;
+
+                    std::stringstream ss("");
+
+                    ss << "BJ: false peak detected! "
+                       << " Jumping " << ( jump_dir < 0 ? "forward" : "backward" )
+                       << " . Channel: " << d_channel
+                       << " . [PRN: " << d_acquisition_gnss_synchro->PRN
+                       << " @ " << static_cast< double >( d_sample_counter )/
+                                   static_cast< double >( d_fs_in )
+                        << "]" << std::endl;
+
+                    LOG(INFO) << ss.str();
+                    std::cout << ss.str();
+
+                    d_bj_ve_counter = 0;
+                    d_bj_vl_counter = 0;
+                }
+
+
+            }
+
             // ################## PRS ##########################################################
             if( d_prs_tracking_enabled )
             {
@@ -898,6 +991,72 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                 corr_slope = 1.0;
                 code_error_chips_veml_prs *= ( 1 - corr_slope*d_very_early_late_code_spc_chips_prs) / corr_slope;
+                if( d_use_bj && d_carrier_locked ){
+
+                    float P = std::abs<float>( *d_Prompt_prs );
+                    float VE = std::abs<float>( *d_Very_Early_prs );
+                    float VL = std::abs<float>( *d_Very_Late_prs );
+
+                    double jump_dir = 0.0;
+                    bool do_jump = false;
+
+                    if( VE > P && VE > VL )
+                    {
+
+                        d_bj_ve_counter_prs++;
+                        if( d_bj_vl_counter_prs > 0 )
+                        {
+                            d_bj_vl_counter_prs--;
+                        }
+
+                        if( d_bj_ve_counter_prs >= d_bj_threshold )
+                        {
+                            // Time to jump!
+                            jump_dir = 1.0;
+                            do_jump = true;
+                        }
+                    }
+
+                    if( VL > P && VL > VE )
+                    {
+                        d_bj_vl_counter_prs++;
+                        if( d_bj_ve_counter_prs > 0 )
+                        {
+                            d_bj_ve_counter_prs--;
+                        }
+
+                        if( d_bj_vl_counter_prs >= d_bj_threshold )
+                        {
+                            jump_dir = -1.0;
+                            do_jump = true;
+                        }
+                    }
+
+                    if( do_jump )
+                    {
+                        double half_cycle_in_chips = 1.0/chips_to_halfcycles_prs;
+
+                        d_code_phase_chips_prs += half_cycle_in_chips*jump_dir;
+
+                        std::stringstream ss("");
+
+                        ss << "BJ: false peak detected on PRS! "
+                            << " Jumping " << ( jump_dir < 0 ? "forward" : "backward" )
+                            << " . Channel: " << d_channel
+                            << " . [PRN: " << d_acquisition_gnss_synchro->PRN
+                            << " @ " << static_cast< double >( d_sample_counter )/
+                                        static_cast< double >( d_fs_in )
+                            << "]" << std::endl;
+
+                        LOG(INFO) << ss.str();
+                        std::cout << ss.str();
+
+                        d_bj_ve_counter_prs = 0;
+                        d_bj_vl_counter_prs = 0;
+                    }
+
+
+                }
             }
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
@@ -990,6 +1149,11 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                             d_carrier_loop_filter.initialize( carr_error_filt_hz );
 
                             d_carrier_lock_fail_counter = 0;
+
+                            if( !d_use_bj )
+                            {
+                                d_very_early_late_code_spc_chips = d_final_very_early_late_code_space_chips;
+                            }
 
                             // Try to enable prs tracking:
                             start_tracking_prs();
@@ -1336,6 +1500,10 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
     d_prs_code_gen->set_prn( d_acquisition_gnss_synchro->PRN );
     d_code_locked_prs = false;
     d_cn0_estimation_counter = 0;
+
+    // Bump jumping
+    d_bj_ve_counter_prs = 0;
+    d_bj_vl_counter_prs = 0;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz_prs
               << " PULL-IN Code Phase [samples]=" << d_code_phase_chips_prs;

@@ -68,6 +68,8 @@ galileo_e1_prs_veml_make_tracking_cc(long if_freq,
                                    float initial_very_early_late_code_space_chips,
                                    float final_very_early_late_code_space_chips,
                                    bool aid_code_with_carrier,
+                                   bool use_bump_jumping,
+                                   unsigned int bump_jumping_threshold,
                                    LongCodeInterface_sptr prs_code_gen);
 
 /*!
@@ -114,6 +116,8 @@ private:
             float initial_very_early_late_code_space_chips,
             float final_very_early_late_code_space_chips,
             bool aid_code_with_carrier,
+            bool use_bump_jumping,
+            unsigned int bump_jumping_threshold,
             LongCodeInterface_sptr prs_code_gen);
 
     galileo_e1_prs_veml_tracking_cc(long if_freq,
@@ -133,6 +137,8 @@ private:
             float initial_very_early_late_code_space_chips,
             float final_very_early_late_code_space_chips,
             bool aid_code_with_carrier,
+            bool use_bump_jumping,
+            unsigned int bump_jumping_threshold,
             LongCodeInterface_sptr prs_code_gen);
 
     void update_local_code();
@@ -281,6 +287,15 @@ private:
 
     bool d_prs_tracking_enabled;
 
+    // Bump jumping variables:
+    bool d_use_bj;
+    unsigned int d_bj_ve_counter;
+    unsigned int d_bj_vl_counter;
+
+    unsigned int d_bj_ve_counter_prs;
+    unsigned int d_bj_vl_counter_prs;
+
+    unsigned int d_bj_threshold;
 
     // file dump
     std::string d_dump_filename;

@@ -70,6 +70,7 @@ galileo_e1_prs_veml_make_tracking_cc(long if_freq,
                                    bool aid_code_with_carrier,
                                    bool use_bump_jumping,
                                    unsigned int bump_jumping_threshold,
+                                   float divergence_bw_hz,
                                    LongCodeInterface_sptr prs_code_gen);
 
 /*!
@@ -118,6 +119,7 @@ private:
             bool aid_code_with_carrier,
             bool use_bump_jumping,
             unsigned int bump_jumping_threshold,
+            float divergence_bw_hz,
             LongCodeInterface_sptr prs_code_gen);
 
     galileo_e1_prs_veml_tracking_cc(long if_freq,
@@ -139,6 +141,7 @@ private:
             bool aid_code_with_carrier,
             bool use_bump_jumping,
             unsigned int bump_jumping_threshold,
+            float divergence_bw_hz,
             LongCodeInterface_sptr prs_code_gen);
 
     void update_local_code();
@@ -250,6 +253,15 @@ private:
     double d_acc_carrier_phase_rad_prs;
     double d_acc_code_phase_secs_prs;
 
+    double d_subcarrier_phase_cycles;
+    double d_subcarrier_freq_cycles;
+
+    double d_subcarrier_phase_cycles_prs;
+    double d_subcarrier_freq_cycles_prs;
+
+    double d_chips_to_cycles;
+    double d_chips_to_cycles_prs;
+
     //PRN period in samples
     int d_current_prn_length_samples;
 
@@ -303,6 +315,19 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
+
+    // Subcarrier aiding approach:
+    bool d_use_sa;
+
+    Tracking_loop_filter d_divergence_loop_filter;
+    Tracking_loop_filter d_divergence_loop_filter_prs;
+
+    double d_divergence_loop_filter_bandwidth;
+
+    bool d_subcarrier_locked;
+    bool d_subcarrier_locked_prs;
+    double d_mean_subcarrier_error;
+    double d_mean_subcarrier_error_prs;
 
     // Handler for gnss_messages:
     void handle_gnss_message( pmt::pmt_t msg );

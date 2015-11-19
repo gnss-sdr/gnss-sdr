@@ -749,7 +749,12 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                 // Now update the code and carrier phase estimates:
                 d_code_phase_chips_prs += T*d_code_freq_chips_prs;
-                d_code_phase_chips_prs = std::fmod( d_code_phase_chips_prs, d_prs_code_gen->get_code_length() );
+                //d_code_phase_chips_prs = std::fmod( d_code_phase_chips_prs, 
+                        //static_cast<double>( d_prs_code_gen->get_code_length() ) );
+                if( d_code_freq_chips_prs >= static_cast< double >( d_prs_code_gen->get_code_length() ) )
+                {
+                    d_code_freq_chips_prs -= static_cast< double >( d_prs_code_gen->get_code_length() );
+                }
                 //DLOG(INFO) << "Propagated PRS code phase: " << std::fixed << std::setprecision( 12 ) << T*d_code_freq_chips_prs;
 
                 d_carrier_phase_rad_prs += T*2.0*M_PI*d_carrier_doppler_hz_prs;
@@ -1170,7 +1175,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                     // carrier and code frequency
                     d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz_prs), sizeof(float));
                     tmp_float = static_cast<float>(d_code_freq_chips_prs);
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_code_freq_chips_prs), sizeof(double));
                     //PLL commands
                     d_dump_file.write(reinterpret_cast<char*>(&carr_error_hz_prs), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&carr_error_filt_hz_prs), sizeof(float));

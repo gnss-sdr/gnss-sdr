@@ -926,10 +926,10 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                 }
                 else if( d_aid_subcarrier_with_carrier )
                 {
-                    float code_doppler_chips_prs = ((d_carrier_doppler_hz_prs *
+                    double code_doppler_chips_prs = ((d_carrier_doppler_hz_prs *
                                 Galileo_E1_A_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ);
 
-                    d_code_freq_chips_prs = Galileo_E1_A_CODE_CHIP_RATE_HZ + code_doppler_chips;
+                    d_code_freq_chips_prs = Galileo_E1_A_CODE_CHIP_RATE_HZ + code_doppler_chips_prs;
                 }
                 else
                 {

@@ -265,8 +265,10 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
 
             int effective_fft_size = ( d_bit_transition_flag ? d_fft_size/2 : d_fft_size );
+            size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
 
-            float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
+            float fft_normalization_factor = static_cast<float>(d_fft_size)
+                * static_cast<float>(d_fft_size);
 
             d_input_power = 0.0;
             d_mag = 0.0;

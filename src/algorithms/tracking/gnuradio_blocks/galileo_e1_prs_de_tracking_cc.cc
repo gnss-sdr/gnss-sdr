@@ -211,8 +211,8 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_late_subcarrier_prs = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
     d_carr_sign = static_cast<gr_complex*>(volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment()));
 
-    // Re-use the late subcarrier for the DPE
-    d_prompt_quadrature_subcarrier_prs = d_late_subcarrier_prs;
+    // Re-use the early subcarrier for the DPE
+    d_prompt_quadrature_subcarrier_prs = d_early_subcarrier_prs;
 
     // correlator outputs (scalar)
     d_Prompt_Subcarrier_Early_Code = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
@@ -228,8 +228,8 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_Prompt_Code_Early_Subcarrier_prs = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
     d_Prompt_Code_Late_Subcarrier_prs= static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
 
-    // Re-use the prompt code late subcarrier for the DPE
-    d_Prompt_Code_Quadrature_Subcarrier_prs = d_Prompt_Code_Late_Subcarrier_prs;
+    // Re-use the prompt code early subcarrier for the DPE
+    d_Prompt_Code_Quadrature_Subcarrier_prs = d_Prompt_Code_Early_Subcarrier_prs;
 
     //--- Initializations ------------------------------
     // Initial code frequency basis of NCO

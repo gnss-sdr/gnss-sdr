@@ -69,6 +69,7 @@ GalileoE1PrsDeTracking::GalileoE1PrsDeTracking(
     float early_late_subcarrier_space_chips;
     bool aid_subcarrier_with_carrier;
     bool aid_code_with_subcarrier;
+    bool model_prs_subcarrier_as_sinusoid;
 
     item_type = configuration->property(role + ".item_type", default_item_type);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -85,6 +86,7 @@ GalileoE1PrsDeTracking::GalileoE1PrsDeTracking(
     early_late_subcarrier_space_chips = configuration->property(role + ".early_late_subcarrier_space_cycles", 0.125);
     aid_subcarrier_with_carrier = configuration->property(role + ".aid_subcarrier_with_carrier", false );
     aid_code_with_subcarrier = configuration->property(role + ".aid_code_with_subcarrier", false );
+    model_prs_subcarrier_as_sinusoid = configuration->property(role + ".model_prs_subcarrier_as_sinusoid", false );
 
     pll_loop_order = configuration->property(role + ".pll_loop_order", 3);
     sll_loop_order = configuration->property(role + ".sll_loop_order", 3);
@@ -131,7 +133,8 @@ GalileoE1PrsDeTracking::GalileoE1PrsDeTracking(
                     sll_loop_order, sll_initial_bw_hz, sll_final_bw_hz,
                     initial_early_late_code_space_chips, final_early_late_code_space_chips,
                     early_late_subcarrier_space_chips,
-                    aid_subcarrier_with_carrier, aid_code_with_subcarrier, code_gen);
+                    aid_subcarrier_with_carrier, aid_code_with_subcarrier,
+                    model_prs_subcarrier_as_sinusoid, code_gen);
         }
     else
         {

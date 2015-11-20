@@ -87,6 +87,7 @@ galileo_e1_prs_de_make_tracking_cc(
         float early_late_subcarrier_space_cycles,
         bool aid_subcarrier_with_carrier,
         bool aid_code_with_subcarrier,
+        bool prs_sinusoidal_subcarrier,
         LongCodeInterface_sptr prs_code_gen)
 {
     return galileo_e1_prs_de_tracking_cc_sptr(new galileo_e1_prs_de_tracking_cc(if_freq,
@@ -96,7 +97,8 @@ galileo_e1_prs_de_make_tracking_cc(
             sll_loop_order, sll_initial_bw_hz, sll_final_bw_hz,
             initial_early_late_code_space_chips, final_early_late_code_space_chips,
             early_late_subcarrier_space_cycles,
-            aid_subcarrier_with_carrier, aid_code_with_subcarrier, prs_code_gen));
+            aid_subcarrier_with_carrier, aid_code_with_subcarrier,
+            prs_sinusoidal_subcarrier, prs_code_gen));
 }
 
 
@@ -128,6 +130,7 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
         float early_late_subcarrier_space_cycles,
         bool aid_subcarrier_with_carrier,
         bool aid_code_with_subcarrier,
+        bool prs_sinusoidal_subcarrier,
         LongCodeInterface_sptr prs_code_gen):
         gr::block("galileo_e1_prs_de_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -208,6 +211,9 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_late_subcarrier_prs = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
     d_carr_sign = static_cast<gr_complex*>(volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment()));
 
+    // Re-use the late subcarrier for the DPE
+    d_prompt_quadrature_subcarrier_prs = d_late_subcarrier_prs;
+
     // correlator outputs (scalar)
     d_Prompt_Subcarrier_Early_Code = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
     d_Prompt_Subcarrier_Prompt_Code = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
@@ -221,6 +227,9 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_Prompt_Subcarrier_Late_Code_prs = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
     d_Prompt_Code_Early_Subcarrier_prs = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
     d_Prompt_Code_Late_Subcarrier_prs= static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+
+    // Re-use the prompt code late subcarrier for the DPE
+    d_Prompt_Code_Quadrature_Subcarrier_prs = d_Prompt_Code_Late_Subcarrier_prs;
 
     //--- Initializations ------------------------------
     // Initial code frequency basis of NCO
@@ -292,6 +301,8 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_tow_received = false;
     d_rx_time_set = false;
     d_preamble_start_detected = false;
+
+    d_prs_sinusoidal_subcarrier = prs_sinusoidal_subcarrier;
 }
 
 void galileo_e1_prs_de_tracking_cc::start_tracking()
@@ -476,7 +487,14 @@ void galileo_e1_prs_de_tracking_cc::update_local_code_prs()
     // Add 1/4 of a cyle here to account for cosine phasing:
     tsubcarrier_phase_halfcyles = static_cast<double>(d_subcarrier_phase_halfcycles_prs) + 0.5;
 
-    early_late_subcarrier_spc_halfcycles = d_early_late_subcarrier_spc_cycles * 2.0;
+    if( d_prs_sinusoidal_subcarrier )
+    {
+        early_late_subcarrier_spc_halfcycles = 0.5; // DPE requires quarter cycle spacing
+    }
+    else
+    {
+        early_late_subcarrier_spc_halfcycles = d_early_late_subcarrier_spc_cycles * 2.0;
+    }
 
     int64_t early_code_phase_fxp = double_to_fxpt64( tcode_chips + d_early_late_code_spc_chips );
     int64_t prompt_code_phase_fxp = double_to_fxpt64( tcode_chips );
@@ -714,22 +732,47 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                         -std::sin( carrier_doppler_inc_rad ) );
 
 
-                // perform carrier wipe-off and compute Very Early, Early, Prompt, Late and Very Late correlation
-                d_correlator.Carrier_rotate_and_DE_volk(d_current_prn_length_samples,
-                        in,
-                        &phase_as_complex,
-                        phase_inc_as_complex,
-                        d_early_code_prs,
-                        d_prompt_code_prs,
-                        d_late_code_prs,
-                        d_early_subcarrier_prs,
-                        d_prompt_subcarrier_prs,
-                        d_late_subcarrier_prs,
-                        d_Prompt_Subcarrier_Early_Code_prs,
-                        d_Prompt_Subcarrier_Prompt_Code_prs,
-                        d_Prompt_Subcarrier_Late_Code_prs,
-                        d_Prompt_Code_Early_Subcarrier_prs,
-                        d_Prompt_Code_Late_Subcarrier_prs );
+                // Two options: Double estimator or Double phase estimator
+                // In the double estimator the subcarrier is assumed to be a square wave
+                // In the double phase estiamtor the subcarrier is approximated by its fundamental
+                // Fourier component
+                //
+                if( d_prs_sinusoidal_subcarrier ){
+
+                    d_correlator.Carrier_rotate_and_DPE_volk(d_current_prn_length_samples,
+                            in,
+                            &phase_as_complex,
+                            phase_inc_as_complex,
+                            d_early_code_prs,
+                            d_prompt_code_prs,
+                            d_late_code_prs,
+                            d_prompt_quadrature_subcarrier_prs,
+                            d_prompt_subcarrier_prs,
+                            d_Prompt_Subcarrier_Early_Code_prs,
+                            d_Prompt_Subcarrier_Prompt_Code_prs,
+                            d_Prompt_Subcarrier_Late_Code_prs,
+                            d_Prompt_Code_Quadrature_Subcarrier_prs );
+                }
+                else
+                {
+
+                    // perform carrier wipe-off and compute Very Early, Early, Prompt, Late and Very Late correlation
+                    d_correlator.Carrier_rotate_and_DE_volk(d_current_prn_length_samples,
+                            in,
+                            &phase_as_complex,
+                            phase_inc_as_complex,
+                            d_early_code_prs,
+                            d_prompt_code_prs,
+                            d_late_code_prs,
+                            d_early_subcarrier_prs,
+                            d_prompt_subcarrier_prs,
+                            d_late_subcarrier_prs,
+                            d_Prompt_Subcarrier_Early_Code_prs,
+                            d_Prompt_Subcarrier_Prompt_Code_prs,
+                            d_Prompt_Subcarrier_Late_Code_prs,
+                            d_Prompt_Code_Early_Subcarrier_prs,
+                            d_Prompt_Code_Late_Subcarrier_prs );
+                }
 
                 // Now update the code and carrier phase estimates:
                 double chips_to_halfcycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ /
@@ -892,13 +935,25 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
 
                 // ################## SLL ##########################################################
                 // SLL discriminator
-                subcarrier_error_cycles_prs = dll_nc_e_minus_l_normalized(
-                        *d_Prompt_Code_Early_Subcarrier_prs,
-                        *d_Prompt_Code_Late_Subcarrier_prs); //[chips/Ti]
-                // normalise the SLL discriminator by the slope of the
-                // BOC(1,1) at the origin:
-                corr_slope = 2.0;
-                subcarrier_error_cycles_prs *= ( 1 - corr_slope*d_early_late_subcarrier_spc_cycles) / corr_slope;
+                if( d_prs_sinusoidal_subcarrier )
+                {
+                    gr_complex Z = (
+                            *d_Prompt_Code_Quadrature_Subcarrier_prs /
+                            *d_Prompt_Subcarrier_Prompt_Code_prs );
+
+                        subcarrier_error_cycles_prs = std::atan( Z.real() ) / static_cast<float>(GPS_TWO_PI);
+                }
+                else
+                {
+                    subcarrier_error_cycles_prs = dll_nc_e_minus_l_normalized(
+                            *d_Prompt_Code_Early_Subcarrier_prs,
+                            *d_Prompt_Code_Late_Subcarrier_prs); //[chips/Ti]
+
+                    // normalise the SLL discriminator by the slope of the
+                    // BOC(1,1) at the origin:
+                    corr_slope = 2.0;
+                    subcarrier_error_cycles_prs *= ( 1 - corr_slope*d_early_late_subcarrier_spc_cycles) / corr_slope;
+                }
 
                 // Subcarrier discriminator filter
                 subcarrier_error_filt_cycles_prs = d_subcarrier_loop_filter_prs.apply(subcarrier_error_cycles_prs); //[chips/second]
@@ -1206,11 +1261,19 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                     // PRS Variables:
                     prompt_I = (*d_Prompt_Subcarrier_Prompt_Code_prs).real();
                     prompt_Q = (*d_Prompt_Subcarrier_Prompt_Code_prs).imag();
-                    tmp_VE = std::abs<float>(*d_Prompt_Code_Early_Subcarrier_prs);
+                    if( d_prs_sinusoidal_subcarrier )
+                    {
+                        tmp_VE = d_Prompt_Code_Quadrature_Subcarrier_prs->real();
+                        tmp_VL = d_Prompt_Code_Quadrature_Subcarrier_prs->imag();
+                    }
+                    else
+                    {
+                        tmp_VE = std::abs<float>(*d_Prompt_Code_Early_Subcarrier_prs);
+                        tmp_VL = std::abs<float>(*d_Prompt_Code_Late_Subcarrier_prs);
+                    }
                     tmp_E = std::abs<float>(*d_Prompt_Subcarrier_Early_Code_prs);
                     tmp_P = std::abs<float>(*d_Prompt_Subcarrier_Prompt_Code_prs);
                     tmp_L = std::abs<float>(*d_Prompt_Subcarrier_Late_Code_prs);
-                    tmp_VL = std::abs<float>(*d_Prompt_Code_Late_Subcarrier_prs);
                     // Dump correlators output
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_VE), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_E), sizeof(float));

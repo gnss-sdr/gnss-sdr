@@ -71,6 +71,7 @@ galileo_e1_prs_de_make_tracking_cc(long if_freq,
                                    float early_late_subcarrier_space_cycles,
                                    bool aid_subcarrier_with_carrier,
                                    bool aid_code_with_subcarrier,
+                                   bool prs_sinusoidal_subcarrier,
                                    LongCodeInterface_sptr prs_code_gen);
 
 /*!
@@ -120,6 +121,7 @@ private:
             float early_late_subcarrier_space_cycles,
             bool aid_subcarrier_with_carrier,
             bool aid_code_with_subcarrier,
+            bool prs_sinusoidal_subcarrier,
             LongCodeInterface_sptr prs_code_gen);
 
     galileo_e1_prs_de_tracking_cc(long if_freq,
@@ -142,6 +144,7 @@ private:
             float early_late_subcarrier_space_cycles,
             bool aid_subcarrier_with_carrier,
             bool aid_code_with_subcarrier,
+            bool prs_sinusoidal_subcarrier,
             LongCodeInterface_sptr prs_code_gen);
 
     void update_local_code();
@@ -192,6 +195,8 @@ private:
     gr_complex* d_prompt_subcarrier_prs;
     gr_complex* d_late_subcarrier_prs;
 
+    gr_complex* d_prompt_quadrature_subcarrier_prs;
+
     gr_complex *d_Prompt_Subcarrier_Early_Code;
     gr_complex *d_Prompt_Subcarrier_Prompt_Code;
     gr_complex *d_Prompt_Subcarrier_Late_Code;
@@ -203,6 +208,8 @@ private:
     gr_complex *d_Prompt_Subcarrier_Late_Code_prs;
     gr_complex *d_Prompt_Code_Early_Subcarrier_prs;
     gr_complex *d_Prompt_Code_Late_Subcarrier_prs;
+
+    gr_complex *d_Prompt_Code_Quadrature_Subcarrier_prs;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
@@ -301,6 +308,8 @@ private:
 
     bool d_prs_tracking_enabled;
 
+    // Should we approximate the PRS subcarrier as a sinusoid?
+    bool d_prs_sinusoidal_subcarrier;
 
     // file dump
     std::string d_dump_filename;

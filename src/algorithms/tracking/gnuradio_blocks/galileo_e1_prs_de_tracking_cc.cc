@@ -500,15 +500,8 @@ void galileo_e1_prs_de_tracking_cc::update_local_code_prs()
     int64_t prompt_code_phase_fxp = double_to_fxpt64( tcode_chips );
     int64_t late_code_phase_fxp = double_to_fxpt64( tcode_chips - d_early_late_code_spc_chips);
 
-    int64_t early_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles + early_late_subcarrier_spc_halfcycles );
-    int64_t prompt_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles );
-    int64_t late_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles - early_late_subcarrier_spc_halfcycles );
 
     int64_t code_phase_step_fxp = double_to_fxpt64( code_phase_step_chips );
-    int64_t subcarrier_phase_step_fxp = double_to_fxpt64( subcarrier_phase_step_halfcycles );
 
     for (int i = 0; i < d_current_prn_length_samples; i++)
     {
@@ -516,20 +509,51 @@ void galileo_e1_prs_de_tracking_cc::update_local_code_prs()
         d_prompt_code_prs[i] = d_prs_code[ (prompt_code_phase_fxp >> 32 )];
         d_late_code_prs[i] = d_prs_code[ (late_code_phase_fxp >> 32 )];
 
-        d_early_subcarrier_prs[i] = (1.0 - 2.0*( (early_subcarrier_phase_fxp>>32)&0x01 ) );
-        d_prompt_subcarrier_prs[i] = (1.0 - 2.0*( (prompt_subcarrier_phase_fxp>>32)&0x01 ) );
-        d_late_subcarrier_prs[i] = (1.0 - 2.0*( (late_subcarrier_phase_fxp>>32)&0x01 ) );
 
         early_code_phase_fxp += code_phase_step_fxp;
         prompt_code_phase_fxp += code_phase_step_fxp;
         late_code_phase_fxp += code_phase_step_fxp;
 
-        early_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
-        prompt_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
-        late_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
 
     }
 
+    if( d_prs_sinusoidal_subcarrier )
+    {
+        float phase_step_rad = subcarrier_phase_step_halfcycles * M_PI;
+        float phase_rad = tsubcarrier_phase_halfcyles * M_PI;
+        int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
+        int phase_rad_i = gr::fxpt::float_to_fixed(phase_rad);
+
+        float sin_f, cos_f;
+        for(int i = 0; i < d_current_prn_length_samples; i++)
+        {
+            gr::fxpt::sincos(phase_rad_i, &sin_f, &cos_f);
+            d_prompt_subcarrier_prs[i] = std::complex<float>(cos_f, 0.0);
+            d_early_subcarrier_prs[i] = std::complex<float>(sin_f, 0.0);
+            phase_rad_i += phase_step_rad_i;
+        }
+    }
+    else
+    {
+        int64_t early_subcarrier_phase_fxp = double_to_fxpt64(
+                tsubcarrier_phase_halfcyles + early_late_subcarrier_spc_halfcycles );
+        int64_t prompt_subcarrier_phase_fxp = double_to_fxpt64(
+                tsubcarrier_phase_halfcyles );
+        int64_t late_subcarrier_phase_fxp = double_to_fxpt64(
+                tsubcarrier_phase_halfcyles - early_late_subcarrier_spc_halfcycles );
+
+        int64_t subcarrier_phase_step_fxp = double_to_fxpt64( subcarrier_phase_step_halfcycles );
+        for (int i = 0; i < d_current_prn_length_samples; i++)
+        {
+            d_early_subcarrier_prs[i] = (1.0 - 2.0*( (early_subcarrier_phase_fxp>>32)&0x01 ) );
+            d_prompt_subcarrier_prs[i] = (1.0 - 2.0*( (prompt_subcarrier_phase_fxp>>32)&0x01 ) );
+            d_late_subcarrier_prs[i] = (1.0 - 2.0*( (late_subcarrier_phase_fxp>>32)&0x01 ) );
+
+            early_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
+            prompt_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
+            late_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
+        }
+    }
     // Check for propagation:
     //double code_phase_at_end = d_code_phase_chips_prs + d_current_prn_length_samples*code_phase_step_chips;
 

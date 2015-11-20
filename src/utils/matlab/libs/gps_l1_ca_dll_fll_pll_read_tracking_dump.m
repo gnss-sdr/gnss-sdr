@@ -34,11 +34,15 @@ function [GNSS_tracking] = gps_l1_ca_dll_fll_pll_read_tracking_dump (filename, s
   %%
 
   m = nargchk (1,3,nargin);
-  num_float_vars=16;
+  num_float_vars=15;
   num_double_vars=1;
   double_size_bytes=8;
   float_size_bytes=4;
-  skip_bytes_each_read=float_size_bytes*num_float_vars+double_size_bytes*num_double_vars;
+  unsigned_long_int_size_bytes=8;
+  num_unsigned_long_int_vars = 1;
+  skip_bytes_each_read=float_size_bytes*num_float_vars+...
+    +unsigned_long_int_size_bytes*num_unsigned_long_int_vars+...
+    double_size_bytes*num_double_vars;
   bytes_shift=0;
   if (m)
     usage (m);
@@ -66,8 +70,8 @@ function [GNSS_tracking] = gps_l1_ca_dll_fll_pll_read_tracking_dump (filename, s
     v5 = fread (f, count, 'float',skip_bytes_each_read-float_size_bytes);
         bytes_shift=bytes_shift+float_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved float
-    v6 = fread (f, count, 'uint32',skip_bytes_each_read-float_size_bytes);
-        bytes_shift=bytes_shift+float_size_bytes;
+    v6 = fread (f, count, 'uint64',skip_bytes_each_read-unsigned_long_int_size_bytes);
+        bytes_shift=bytes_shift+unsigned_long_int_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved float
     v7 = fread (f, count, 'float',skip_bytes_each_read-float_size_bytes);
         bytes_shift=bytes_shift+float_size_bytes;

@@ -127,7 +127,7 @@ public:
     double FNAV_E5ahs_1;
     double FNAV_WN_1;
     double FNAV_TOW_1;
-    double FNAV_E5advs_1;
+    bool FNAV_E5advs_1;
 
     // WORD 2 Ephemeris (1/3) and GST
     int FNAV_IODnav_2;
@@ -186,7 +186,7 @@ public:
     double FNAV_M0_1_5;
     double FNAV_af0_1_5;
     double FNAV_af1_1_5;
-    double FNAV_E5ahs_1_5;
+    unsigned int FNAV_E5ahs_1_5;
     int FNAV_SVID2_5;
     double FNAV_Deltaa12_2_5;
     double FNAV_e_2_5;

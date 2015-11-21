@@ -63,8 +63,10 @@ Galileo_Ephemeris::Galileo_Ephemeris()
     TOW_5 = 0;
     // SV status
     SISA_3 = 0;
+    E5a_HS = 0;
     E5b_HS_5 = 0;
     E1B_HS_5 = 0;
+    E5a_DVS = false;
     E5b_DVS_5 = 0;
     E1B_DVS_5 = 0;
     BGD_E1E5a_5 = 0;        // E1-E5a Broadcast Group Delay [s]

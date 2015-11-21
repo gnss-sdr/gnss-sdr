@@ -85,8 +85,10 @@ public:
 
     // SV status
     double SISA_3;
+    unsigned int E5a_HS;       //!< E5a Signal Health Status
     double E5b_HS_5;           //!< E5b Signal Health Status
     double E1B_HS_5;           //!< E1B Signal Health Status
+    bool E5a_DVS;              //!< E5a Data Validity Status
     double E5b_DVS_5;          //!< E5b Data Validity Status
     double E1B_DVS_5;          //!< E1B Data Validity Status
     

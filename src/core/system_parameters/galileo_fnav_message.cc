@@ -270,10 +270,10 @@ void Galileo_Fnav_Message::decode_page(std::string data)
 	    FNAV_region5_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region5_1_bit));
 	    FNAV_BGD_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_BGD_1_bit));
 	    FNAV_BGD_1 *= FNAV_BGD_1_LSB;
-	    FNAV_E5ahs_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_1_bit));
+	    FNAV_E5ahs_1 = static_cast<unsigned int>(read_navigation_unsigned(data_bits, FNAV_E5ahs_1_bit));
 	    FNAV_WN_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_1_bit));
 	    FNAV_TOW_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_1_bit));
-	    FNAV_E5advs_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5advs_1_bit));
+	    FNAV_E5advs_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_E5advs_1_bit));
 
 	    flag_TOW_1 = true;
 	    flag_TOW_set = true;
@@ -628,6 +628,10 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris()
     /*GST*/
     ephemeris.WN_5 = FNAV_WN_3;          // Week number
     ephemeris.TOW_5 = FNAV_TOW_3;        // Time of Week
+
+    /* Health status */
+    ephemeris.E5a_HS = FNAV_E5ahs_1;
+    ephemeris.E5a_DVS = FNAV_E5advs_1;
     return ephemeris;
 }
 

@@ -86,14 +86,12 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     //initialize kml_printer
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;
-    kml_dump_filename.append(".kml");
     d_kml_printer = std::make_shared<Kml_Printer>();
     d_kml_printer->set_headers(kml_dump_filename);
 
     //initialize geojson_printer
     std::string geojson_dump_filename;
     geojson_dump_filename = d_dump_filename;
-    geojson_dump_filename.append(".geojson");
     d_geojson_printer = std::make_shared<GeoJSON_Printer>();
     d_geojson_printer->set_headers(geojson_dump_filename);
 

@@ -79,6 +79,8 @@ DECLARE_string(log_dir);
 #include "control_thread/control_thread_test.cc"
 #include "flowgraph/pass_through_test.cc"
 #include "flowgraph/gnss_flowgraph_test.cc"
+#include "formats/string_converter_test.cc"
+#include "formats/rtcm_test.cc"
 #include "gnss_block/gnss_block_factory_test.cc"
 #include "gnss_block/rtcm_printer_test.cc"
 #include "gnss_block/file_output_filter_test.cc"
@@ -103,7 +105,6 @@ DECLARE_string(log_dir);
 #include "gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc"
 #include "gnuradio_block/gnss_sdr_valve_test.cc"
 #include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
-#include "string_converter/string_converter_test.cc"
 
 //#include "gnss_block/galileo_e5a_pcps_acquisition_test.cc"
 //#include "gnss_block/galileo_e5a_pcps_acquisition_test_2.cc"

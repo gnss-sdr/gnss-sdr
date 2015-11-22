@@ -31,8 +31,10 @@
 
 
 #include "geojson_printer.h"
+#include <ctime>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 #include <glog/logging.h>
 
 GeoJSON_Printer::GeoJSON_Printer () {}
@@ -45,10 +47,58 @@ GeoJSON_Printer::~GeoJSON_Printer ()
 }
 
 
-bool GeoJSON_Printer::set_headers(std::string filename)
+bool GeoJSON_Printer::set_headers(std::string filename, bool time_tag_name)
 {
-    geojson_file.open(filename.c_str());
-    filename_ = filename;
+    time_t rawtime;
+    struct tm * timeinfo;
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+
+    if (time_tag_name)
+        {
+            std::stringstream strm0;
+            const int year = timeinfo->tm_year - 100;
+            strm0 << year;
+            const int month = timeinfo->tm_mon + 1;
+            if(month < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << month;
+            const int day = timeinfo->tm_mday;
+            if(day < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << day << "_";
+            const int hour = timeinfo->tm_hour;
+            if(hour < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << hour;
+            const int min = timeinfo->tm_min;
+            if(min < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << min;
+            const int sec = timeinfo->tm_sec;
+            if(sec < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << sec;
+
+            filename_ = filename + "_" +  strm0.str() + ".geojson";
+        }
+    else
+        {
+            filename_ = filename + ".geojson";
+        }
+
+    geojson_file.open(filename_.c_str());
+
     first_pos = true;
     if (geojson_file.is_open())
         {

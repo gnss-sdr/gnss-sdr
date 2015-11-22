@@ -78,6 +78,7 @@ public:
     std::string print_M1005_test(); //<! For testing purposes
     int read_M1005(const std::string & message, unsigned int & ref_id, double & ecef_x, double & ecef_y, double & ecef_z, bool & gps, bool & glonass, bool & galileo);
 
+    bool check_CRC(const std::string & message);
 private:
     //
     // Messages
@@ -123,9 +124,8 @@ private:
     std::bitset<10> message_length;
     std::bitset<24> crc_frame;
     typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
-    crc_24_q_type CRC_RTCM;
+
     std::string add_CRC(const std::string& m);
-    bool check_CRC(const std::string & message);
 
     std::string build_message(std::string data); // adds 0s to complete a byte and adds the CRC
 

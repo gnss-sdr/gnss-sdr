@@ -73,11 +73,11 @@ Rtcm_Printer::~Rtcm_Printer()
     if (rtcm_file_descriptor.is_open())
         {
             long pos;
-            rtcm_file_descriptor.close();
             pos = rtcm_file_descriptor.tellp();
+            rtcm_file_descriptor.close();
             if (pos == 0)
                 {
-                    if(remove(rtcm_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary file";
+                    if(remove(rtcm_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary RTCM file";
                 }
         }
     close_serial();

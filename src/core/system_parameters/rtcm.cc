@@ -66,6 +66,7 @@ Rtcm::Rtcm()
 std::string Rtcm::add_CRC (const std::string& message_without_crc)
 {
     // ******  Computes Qualcomm CRC-24Q ******
+    crc_24_q_type CRC_RTCM;
     // 1) Converts the string to a vector of unsigned char:
     boost::dynamic_bitset<unsigned char> frame_bits(message_without_crc);
     std::vector<unsigned char> bytes;
@@ -84,6 +85,8 @@ std::string Rtcm::add_CRC (const std::string& message_without_crc)
 
 bool Rtcm::check_CRC(const std::string & message)
 {
+    crc_24_q_type CRC_RTCM_CHECK;
+
     // Convert message to binary
     std::string message_bin = Rtcm::hex_to_bin(message);
     // Check CRC
@@ -96,8 +99,8 @@ bool Rtcm::check_CRC(const std::string & message)
     boost::to_block_range(frame_bits, std::back_inserter(bytes));
     std::reverse(bytes.begin(),bytes.end());
 
-    CRC_RTCM.process_bytes(bytes.data(), bytes.size());
-    std::bitset<24> computed_crc = std::bitset<24>(CRC_RTCM.checksum());
+    CRC_RTCM_CHECK.process_bytes(bytes.data(), bytes.size());
+    std::bitset<24> computed_crc = std::bitset<24>(CRC_RTCM_CHECK.checksum());
     if(read_crc == computed_crc)
         {
             return true;

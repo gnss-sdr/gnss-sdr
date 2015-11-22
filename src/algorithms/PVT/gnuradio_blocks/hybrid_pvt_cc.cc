@@ -77,14 +77,12 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_q
     //initialize kml_printer
     std::string kml_dump_filename;
     kml_dump_filename = d_dump_filename;
-    kml_dump_filename.append(".kml");
     d_kml_dump = std::make_shared<Kml_Printer>();
     d_kml_dump->set_headers(kml_dump_filename);
 
     //initialize geojson_printer
     std::string geojson_dump_filename;
     geojson_dump_filename = d_dump_filename;
-    geojson_dump_filename.append(".geojson");
     d_geojson_printer = std::make_shared<GeoJSON_Printer>();
     d_geojson_printer->set_headers(geojson_dump_filename);
 

@@ -31,17 +31,63 @@
 
 #include "kml_printer.h"
 #include <ctime>
+#include <sstream>
 #include <glog/logging.h>
 
 using google::LogMessage;
 
-bool Kml_Printer::set_headers(std::string filename)
+bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
 {
+
     time_t rawtime;
     struct tm * timeinfo;
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
-    kml_file.open(filename.c_str());
+    if (time_tag_name)
+        {
+
+
+            std::stringstream strm0;
+            const int year = timeinfo->tm_year - 100;
+            strm0 << year;
+            const int month = timeinfo->tm_mon + 1;
+            if(month < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << month;
+            const int day = timeinfo->tm_mday;
+            if(day < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << day << "_";
+            const int hour = timeinfo->tm_hour;
+            if(hour < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << hour;
+            const int min = timeinfo->tm_min;
+            if(min < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << min;
+            const int sec = timeinfo->tm_sec;
+            if(sec < 10)
+                {
+                    strm0 << "0";
+                }
+            strm0 << sec;
+
+            kml_filename = filename + "_" +  strm0.str() + ".kml";
+        }
+    else
+        {
+            kml_filename = filename + ".kml";
+        }
+    kml_file.open(kml_filename.c_str());
     if (kml_file.is_open())
         {
             DLOG(INFO) << "KML printer writing on " << filename.c_str();
@@ -88,6 +134,8 @@ bool Kml_Printer::print_position(const std::shared_ptr<Pvt_Solution>& position, 
     double longitude;
     double height;
 
+    positions_printed = true;
+
     std::shared_ptr<Pvt_Solution> position_ = position;
 
     if (print_average_values == false)
@@ -119,6 +167,7 @@ bool Kml_Printer::close_file()
 {
     if (kml_file.is_open())
         {
+
             kml_file << "</coordinates>" << std::endl
                      << "</LineString>" << std::endl
                      << "</Placemark>" << std::endl
@@ -135,12 +184,19 @@ bool Kml_Printer::close_file()
 
 
 
-Kml_Printer::Kml_Printer () {}
+Kml_Printer::Kml_Printer ()
+{
+    positions_printed = false;
+}
 
 
 
 Kml_Printer::~Kml_Printer ()
 {
     close_file();
+    if(!positions_printed)
+        {
+            if(remove(kml_filename.c_str()) != 0) LOG(INFO) << "Error deleting temporary KML file";
+        }
 }
 

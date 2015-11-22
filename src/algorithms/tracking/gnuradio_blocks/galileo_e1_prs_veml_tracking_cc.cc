@@ -86,7 +86,8 @@ galileo_e1_prs_veml_make_tracking_cc(
         bool aid_code_with_carrier,
         bool use_bump_jumping,
         unsigned int bump_jumping_threshold,
-        float divergence_bw_hz,
+        float initial_divergence_bw_hz,
+        float final_divergence_bw_hz,
         LongCodeInterface_sptr prs_code_gen)
 {
     return galileo_e1_prs_veml_tracking_cc_sptr(new galileo_e1_prs_veml_tracking_cc(if_freq,
@@ -99,7 +100,8 @@ galileo_e1_prs_veml_make_tracking_cc(
             final_very_early_late_code_space_chips,
             aid_code_with_carrier,
             use_bump_jumping, bump_jumping_threshold,
-            divergence_bw_hz, prs_code_gen));
+            initial_divergence_bw_hz, final_divergence_bw_hz,
+            prs_code_gen));
 }
 
 
@@ -130,7 +132,8 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
         bool aid_code_with_carrier,
         bool use_bump_jumping,
         unsigned int bump_jumping_threshold,
-        float divergence_bw_hz,
+        float initial_divergence_bw_hz,
+        float final_divergence_bw_hz,
         LongCodeInterface_sptr prs_code_gen):
         gr::block("galileo_e1_prs_veml_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -146,6 +149,8 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
                << "\t final_early_late_code_space_cycles:   " << final_early_late_code_space_cycles << std::endl
                << "\t initial_very_early_late_code_space_chips:   " << initial_very_early_late_code_space_chips << std::endl
                << "\t final_very_early_late_code_space_chips:   " << final_very_early_late_code_space_chips << std::endl
+               << "\t initial_divergence_bw_hz:   " << initial_divergence_bw_hz << std::endl
+               << "\t final_divergence_bw_hz:   " << final_divergence_bw_hz << std::endl
                << "\t aid_code_with_carrier:   " << aid_code_with_carrier << std::endl;
 
     // Create the gnss_message input port
@@ -325,12 +330,13 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
 
     // Subcarrier aiding:
     d_use_sa = !use_bump_jumping;
-    d_divergence_loop_filter_bandwidth = divergence_bw_hz;
+    d_initial_divergence_loop_filter_bandwidth = initial_divergence_bw_hz;
+    d_final_divergence_loop_filter_bandwidth = final_divergence_bw_hz;
     d_divergence_loop_filter = Tracking_loop_filter( Galileo_E1_CODE_PERIOD,
-        d_divergence_loop_filter_bandwidth, 1, false );
+        d_initial_divergence_loop_filter_bandwidth, 1, false );
 
     d_divergence_loop_filter_prs = Tracking_loop_filter( Galileo_E1_CODE_PERIOD,
-        d_divergence_loop_filter_bandwidth, 1, false );
+        d_initial_divergence_loop_filter_bandwidth, 1, false );
 
     d_subcarrier_locked = false;
     d_subcarrier_locked_prs = false;
@@ -338,6 +344,11 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
     d_mean_subcarrier_error = 0.0;
     d_mean_subcarrier_error_prs = 0.0;
 
+    d_code_locked = false;
+    d_code_locked_prs = false;
+
+    d_mean_code_error = 0.0;
+    d_mean_code_error_prs = 0.0;
 }
 
 void galileo_e1_prs_veml_tracking_cc::start_tracking()
@@ -349,6 +360,7 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking()
     // DLL/PLL filter initialization
     d_code_loop_filter.set_noise_bandwidth( d_initial_dll_bw_hz );
     d_carrier_loop_filter.set_noise_bandwidth( d_initial_pll_bw_hz );
+    d_divergence_loop_filter.set_noise_bandwidth( d_initial_divergence_loop_filter_bandwidth );
 
     d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); // initialize the carrier filter
     float code_doppler_chips = d_acq_carrier_doppler_hz *( Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ;
@@ -398,6 +410,9 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking()
     d_subcarrier_locked = false;
     d_mean_subcarrier_error = 0.0;
 
+    d_code_locked = false;
+    d_mean_code_error = 0.0;
+
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 }
@@ -407,7 +422,7 @@ void galileo_e1_prs_veml_tracking_cc::update_local_code()
 {
     double tcode_chips;
     double tsubcarrier_phase_halfcyles;
-    float rem_code_phase_chips;
+    double rem_code_phase_chips;
     int associated_chip_index;
     int associated_subcarrier_index;
     int code_length_chips = static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS);
@@ -418,6 +433,8 @@ void galileo_e1_prs_veml_tracking_cc::update_local_code()
     double early_late_spc_chips;
     double very_early_late_spc_chips;
     double subcarrier_freq_halfcycles;
+
+    unsigned int fxpt_frac_len = 40;
 
     double chips_to_halfcycles = d_chips_to_cycles* 2.0;
 
@@ -431,7 +448,7 @@ void galileo_e1_prs_veml_tracking_cc::update_local_code()
     tcode_chips = - static_cast<double>(rem_code_phase_chips) + 1.0;
 
 
-    tsubcarrier_phase_halfcyles = -static_cast<double>(d_subcarrier_phase_cycles)*2.0;
+    tsubcarrier_phase_halfcyles = static_cast<double>(d_subcarrier_phase_cycles)*2.0;
 
     early_late_spc_halfcycles = d_early_late_code_spc_cycles * 2.0;
     very_early_late_spc_halfcycles = d_very_early_late_code_spc_chips * chips_to_halfcycles;
@@ -439,38 +456,42 @@ void galileo_e1_prs_veml_tracking_cc::update_local_code()
     early_late_spc_chips = d_early_late_code_spc_cycles *2.0/ (chips_to_halfcycles );
     very_early_late_spc_chips = d_very_early_late_code_spc_chips;
 
-    int64_t very_early_code_phase_fxp = double_to_fxpt64( tcode_chips + very_early_late_spc_chips );
-    int64_t early_code_phase_fxp = double_to_fxpt64( tcode_chips + early_late_spc_chips );
-    int64_t prompt_code_phase_fxp = double_to_fxpt64( tcode_chips );
-    int64_t late_code_phase_fxp = double_to_fxpt64( tcode_chips - early_late_spc_chips);
-    int64_t very_late_code_phase_fxp = double_to_fxpt64( tcode_chips - very_early_late_spc_chips);
+    int64_t very_early_code_phase_fxp = double_to_fxpt64( tcode_chips + very_early_late_spc_chips, fxpt_frac_len );
+    int64_t early_code_phase_fxp = double_to_fxpt64( tcode_chips + early_late_spc_chips, fxpt_frac_len );
+    int64_t prompt_code_phase_fxp = double_to_fxpt64( tcode_chips, fxpt_frac_len );
+    int64_t late_code_phase_fxp = double_to_fxpt64( tcode_chips - early_late_spc_chips, fxpt_frac_len );
+    int64_t very_late_code_phase_fxp = double_to_fxpt64( tcode_chips - very_early_late_spc_chips, fxpt_frac_len);
 
     int64_t very_early_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles + very_early_late_spc_halfcycles );
+            tsubcarrier_phase_halfcyles + very_early_late_spc_halfcycles, fxpt_frac_len );
     int64_t early_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles + early_late_spc_halfcycles );
+            tsubcarrier_phase_halfcyles + early_late_spc_halfcycles, fxpt_frac_len );
     int64_t prompt_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles );
+            tsubcarrier_phase_halfcyles, fxpt_frac_len );
     int64_t late_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles - early_late_spc_halfcycles );
+            tsubcarrier_phase_halfcyles - early_late_spc_halfcycles, fxpt_frac_len );
     int64_t very_late_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles - very_early_late_spc_halfcycles );
+            tsubcarrier_phase_halfcyles - very_early_late_spc_halfcycles, fxpt_frac_len );
 
-    int64_t code_phase_step_fxp = double_to_fxpt64( code_phase_step_chips );
-    int64_t subcarrier_phase_step_fxp = double_to_fxpt64( subcarrier_phase_step_halfcycles );
+    int64_t code_phase_step_fxp = double_to_fxpt64( code_phase_step_chips, fxpt_frac_len );
+    int64_t subcarrier_phase_step_fxp = double_to_fxpt64( subcarrier_phase_step_halfcycles, fxpt_frac_len );
 
+    //double delta_code_subcarrier = std::fmod( d_code_phase_chips, 1.0 )*d_chips_to_cycles -
+        //(tsubcarrier_phase_halfcyles)/2;
+
+    //DLOG(INFO) << "Delta Code/Subcarrier before correlation: " << delta_code_subcarrier;
     for (int i = 0; i < d_current_prn_length_samples; i++)
     {
-        d_very_early_code[i] = d_e1b_code[ (very_early_code_phase_fxp >> 32 )]*
-            gr_complex( (1.0 - 2.0*( (very_early_subcarrier_phase_fxp>>32)&0x01 ) ), 0.0 );
-        d_early_code[i] = d_e1b_code[ (early_code_phase_fxp >> 32 )]*
-            gr_complex( (1.0 - 2.0*( (early_subcarrier_phase_fxp>>32)&0x01 ) ), 0.0 );
-        d_prompt_code[i] = d_e1b_code[ (prompt_code_phase_fxp >> 32 )]*
-            gr_complex( (1.0 - 2.0*( (prompt_subcarrier_phase_fxp>>32)&0x01 ) ), 0.0 );
-        d_late_code[i] = d_e1b_code[ (late_code_phase_fxp >> 32 )]*
-            gr_complex( (1.0 - 2.0*( (late_subcarrier_phase_fxp>>32)&0x01 ) ), 0.0 );
-        d_very_late_code[i] = d_e1b_code[ (very_late_code_phase_fxp >> 32 )]*
-            gr_complex( (1.0 - 2.0*( (very_late_subcarrier_phase_fxp>>32)&0x01 ) ), 0.0 );
+        d_very_early_code[i] = d_e1b_code[ (very_early_code_phase_fxp >> fxpt_frac_len )]*
+            gr_complex( (1.0 - 2.0*( (very_early_subcarrier_phase_fxp>>fxpt_frac_len)&0x01 ) ), 0.0 );
+        d_early_code[i] = d_e1b_code[ (early_code_phase_fxp >> fxpt_frac_len )]*
+            gr_complex( (1.0 - 2.0*( (early_subcarrier_phase_fxp>>fxpt_frac_len)&0x01 ) ), 0.0 );
+        d_prompt_code[i] = d_e1b_code[ (prompt_code_phase_fxp >> fxpt_frac_len )]*
+            gr_complex( (1.0 - 2.0*( (prompt_subcarrier_phase_fxp>>fxpt_frac_len)&0x01 ) ), 0.0 );
+        d_late_code[i] = d_e1b_code[ (late_code_phase_fxp >> fxpt_frac_len )]*
+            gr_complex( (1.0 - 2.0*( (late_subcarrier_phase_fxp>>fxpt_frac_len)&0x01 ) ), 0.0 );
+        d_very_late_code[i] = d_e1b_code[ (very_late_code_phase_fxp >> fxpt_frac_len )]*
+            gr_complex( (1.0 - 2.0*( (very_late_subcarrier_phase_fxp>>fxpt_frac_len)&0x01 ) ), 0.0 );
 
 
         very_early_code_phase_fxp += code_phase_step_fxp;
@@ -486,6 +507,11 @@ void galileo_e1_prs_veml_tracking_cc::update_local_code()
         very_late_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
 
     }
+
+    //delta_code_subcarrier = std::fmod( fxpt64_to_double( prompt_code_phase_fxp, fxpt_frac_len )*d_chips_to_cycles, 1.0 )
+        //- std::fmod( (
+                    //fxpt64_to_double( prompt_subcarrier_phase_fxp, fxpt_frac_len ) )/2, 1.0 );
+    //DLOG(INFO) << "Delta Code/Subcarrier afer correlation: " << delta_code_subcarrier;
 }
 
 
@@ -546,7 +572,7 @@ void galileo_e1_prs_veml_tracking_cc::update_local_code_prs()
     //tcode_chips = d_code_phase_chips_prs - static_cast< double >( d_start_index_prs_code );
 
     // Add 1/4 of a cyle here to account for cosine phasing:
-    tsubcarrier_phase_halfcyles = d_fractional_code_phase_chips_prs*chips_to_halfcycles + 0.5;
+    tsubcarrier_phase_halfcyles = d_subcarrier_phase_cycles_prs*2.0 + 0.5;
 
     early_late_spc_halfcycles = d_early_late_code_spc_cycles * 2.0;
     very_early_late_spc_halfcycles = d_very_early_late_code_spc_chips_prs * chips_to_halfcycles;
@@ -573,6 +599,11 @@ void galileo_e1_prs_veml_tracking_cc::update_local_code_prs()
 
     int64_t code_phase_step_fxp = double_to_fxpt64( code_phase_step_chips, fxpt_frac_len );
     int64_t subcarrier_phase_step_fxp = double_to_fxpt64( subcarrier_phase_step_halfcycles, fxpt_frac_len );
+
+    //double delta_code_subcarrier = d_fractional_code_phase_chips_prs*d_chips_to_cycles_prs -
+        //(tsubcarrier_phase_halfcyles - 0.5)/2;
+
+    //DLOG(INFO) << "PRS Delta Code/Subcarrier before correlation: " << delta_code_subcarrier;
 
     for (int i = 0; i < d_current_prn_length_samples; i++)
     {
@@ -602,6 +633,10 @@ void galileo_e1_prs_veml_tracking_cc::update_local_code_prs()
 
     }
 
+    //delta_code_subcarrier = std::fmod( fxpt64_to_double( prompt_code_phase_fxp, fxpt_frac_len )*d_chips_to_cycles_prs, 1.0 )
+        //- std::fmod( (
+                    //fxpt64_to_double( prompt_subcarrier_phase_fxp , fxpt_frac_len ) - 0.5)/2, 1.0 );
+    //DLOG(INFO) << "PRS Delta Code/Subcarrier afer correlation: " << delta_code_subcarrier;
     // Amount code phase propagated in chips:
     //int64_t delta_code_phase = prompt_code_phase_fxp - double_to_fxpt64( tcode_chips, fxpt_frac_len );
     //DLOG(INFO) << "FXPT Propagated PRS Code phase: "
@@ -769,6 +804,10 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
             d_subcarrier_phase_cycles = std::fmod( d_subcarrier_phase_cycles, 1.0 );
 
+            //DLOG(INFO) << "Code subcarrier phase difference after propagation: "
+                //<< std::fmod( d_code_phase_chips, 1.0 )*d_chips_to_cycles
+                //- d_subcarrier_phase_cycles;
+
             d_carrier_phase_rad += T*2.0*M_PI*d_carrier_doppler_hz;
 
             double rem_code_phase_chips = Galileo_E1_B_CODE_LENGTH_CHIPS - d_code_phase_chips;
@@ -815,14 +854,17 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                         d_Very_Late_prs );
 
                 // Now update the code and carrier phase estimates:
-                double chips_to_halfcycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ /
-                    Galileo_E1_A_CODE_CHIP_RATE_HZ * 2.0;
                 double delta_code_phase_prs = T*d_code_freq_chips_prs;
 
                 d_fractional_code_phase_chips_prs += delta_code_phase_prs;
 
                 d_integer_code_phase_chips_prs += static_cast< int64_t >(
                         std::floor( d_fractional_code_phase_chips_prs ) );
+
+                if( d_integer_code_phase_chips_prs >= static_cast< double >( d_prs_code_gen->get_code_length() ) )
+                {
+                    d_integer_code_phase_chips_prs -= static_cast< double >( d_prs_code_gen->get_code_length() );
+                }
 
                 d_fractional_code_phase_chips_prs = std::fmod(
                         d_fractional_code_phase_chips_prs, 1.0 );
@@ -834,11 +876,15 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                 }
                 else
                 {
-                    d_subcarrier_phase_cycles_prs = std::fmod( d_code_phase_chips_prs,
+                    d_subcarrier_phase_cycles_prs = std::fmod( d_fractional_code_phase_chips_prs,
                             1.0) *d_chips_to_cycles_prs;
                 }
 
                 d_subcarrier_phase_cycles_prs = std::fmod( d_subcarrier_phase_cycles_prs, 1.0 );
+
+                //DLOG(INFO) << "PRS Code subcarrier phase difference after propagation: "
+                           //<< d_fractional_code_phase_chips_prs*d_chips_to_cycles_prs
+                           //- d_subcarrier_phase_cycles_prs;
 
                 d_carrier_phase_rad_prs += T*2.0*M_PI*d_carrier_doppler_hz_prs;
 
@@ -948,7 +994,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
             {
                 code_error_filt_chips_veml = d_divergence_loop_filter.apply( code_error_chips_veml );
                 d_code_freq_chips = d_subcarrier_freq_cycles/d_chips_to_cycles
-                    - code_error_filt_chips_veml;
+                    + code_error_filt_chips_veml;
             }
             else
             {
@@ -1046,7 +1092,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                     / corr_slope;
 
                 // Code discriminator filter
-                subcarrier_error_filt_cycles_prs = d_code_loop_filter_prs.apply(subcarrier_error_filt_cycles_prs); //[chips/second]
+                subcarrier_error_filt_cycles_prs = d_code_loop_filter_prs.apply(subcarrier_error_cycles_prs); //[chips/second]
 
                 if( d_aid_code_with_carrier )
                 {
@@ -1079,7 +1125,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                     code_error_filt_chips_veml_prs = d_divergence_loop_filter.apply(
                             code_error_chips_veml_prs );
 
-                    d_code_freq_chips_prs -= code_error_filt_chips_veml_prs;
+                    d_code_freq_chips_prs += code_error_filt_chips_veml_prs;
 
                 }
 
@@ -1204,11 +1250,14 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                     d_cn0_estimation_counter++;
 
                     d_mean_subcarrier_error += std::fabs( subcarrier_error_cycles );
+                    d_mean_code_error += std::fabs( code_error_chips_veml );
 
                     if( d_prs_tracking_enabled )
                     {
                         d_mean_subcarrier_error_prs += std::fabs(
                                 subcarrier_error_cycles_prs );
+
+                        d_mean_code_error_prs += std::fabs( code_error_chips_veml_prs );
                     }
                 }
             else
@@ -1217,6 +1266,9 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                     d_mean_subcarrier_error /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
                     d_mean_subcarrier_error_prs /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
+
+                    d_mean_code_error /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
+                    d_mean_code_error_prs /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
                     // Code lock indicator
                     d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, d_current_prn_length_samples);
 
@@ -1313,6 +1365,55 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                                     std::cout << ss.str() << std::endl;;
                                 }
+                                else
+                                {
+                                    if( d_code_locked )
+                                    {
+                                        if( d_mean_code_error > 0.1 )
+                                        {
+                                            d_code_locked = false;
+
+                                            d_divergence_loop_filter.set_noise_bandwidth(
+                                                    d_initial_divergence_loop_filter_bandwidth );
+
+                                            std::stringstream ss("");
+
+                                            ss << "Loss of code lock in channel "
+                                                << d_channel << "!"
+                                                << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                                << ". @ " << static_cast< double >( d_sample_counter )/
+                                                static_cast<double>( d_fs_in )
+                                                << "]";
+
+                                            LOG(INFO) << ss.str();
+
+                                            std::cout << ss.str() << std::endl;;
+                                        }
+                                    }
+                                    else // if d_code_locked
+                                    {
+                                        if( d_mean_code_error < 0.05 )
+                                        {
+                                            d_code_locked = true;
+                                            d_divergence_loop_filter.set_noise_bandwidth(
+                                                    d_final_divergence_loop_filter_bandwidth );
+
+                                            std::stringstream ss("");
+
+                                            ss << "Code lock achieved in channel "
+                                                << d_channel << "!"
+                                                << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                                << ". @ " << static_cast< double >( d_sample_counter )/
+                                                static_cast<double>( d_fs_in )
+                                                << "]";
+
+                                            LOG(INFO) << ss.str();
+
+                                            std::cout << ss.str() << std::endl;;
+                                        }
+                                    }
+
+                                }
 
 
                             }
@@ -1337,11 +1438,14 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                                     if( d_use_sa )
                                     {
+                                        d_divergence_loop_filter.set_noise_bandwidth(
+                                                d_initial_divergence_loop_filter_bandwidth );
                                         d_divergence_loop_filter.initialize( 0.0 );
                                     }
                                 }
 
                             }
+
                             if( d_prs_tracking_enabled )
                             {
 
@@ -1350,6 +1454,12 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                                     if( d_mean_subcarrier_error_prs > 0.4 )
                                     {
                                         d_subcarrier_locked_prs = false;
+
+                                        if( d_use_sa )
+                                        {
+                                            d_divergence_loop_filter_prs.set_noise_bandwidth(
+                                                    d_initial_divergence_loop_filter_bandwidth );
+                                        }
 
                                         std::stringstream ss("");
 
@@ -1363,6 +1473,62 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                                         LOG(INFO) << ss.str();
 
                                         std::cout << ss.str() << std::endl;
+                                    }
+                                    else
+                                    {
+                                        if( d_code_locked_prs )
+                                        {
+                                            if( d_mean_code_error_prs*d_chips_to_cycles_prs > 0.5 )
+                                            {
+                                                d_code_locked_prs = false;
+
+                                                if( d_use_sa )
+                                                {
+                                                    d_divergence_loop_filter_prs.set_noise_bandwidth(
+                                                            d_initial_divergence_loop_filter_bandwidth );
+                                                }
+
+                                                std::stringstream ss("");
+
+                                                ss << "PRS Loss of code lock in channel "
+                                                    << d_channel << "!"
+                                                    << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                                    << ". @ " << static_cast< double >( d_sample_counter )/
+                                                    static_cast<double>( d_fs_in )
+                                                    << "]";
+
+                                                LOG(INFO) << ss.str();
+
+                                                std::cout << ss.str() << std::endl;;
+                                            }
+                                        }
+                                        else // if d_code_locked
+                                        {
+                                            if( d_mean_code_error_prs*d_chips_to_cycles_prs < 0.1 )
+                                            {
+                                                d_code_locked_prs = true;
+
+                                                if( d_use_sa )
+                                                {
+                                                    d_divergence_loop_filter_prs.set_noise_bandwidth(
+                                                            d_final_divergence_loop_filter_bandwidth );
+                                                }
+
+                                                std::stringstream ss("");
+
+                                                ss << "PRS Code lock achieved in channel "
+                                                    << d_channel << "!"
+                                                    << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                                    << ". @ " << static_cast< double >( d_sample_counter )/
+                                                    static_cast<double>( d_fs_in )
+                                                    << "]";
+
+                                                LOG(INFO) << ss.str();
+
+                                                std::cout << ss.str() << std::endl;;
+                                            }
+                                        }
+
                                     }
 
 
@@ -1386,8 +1552,11 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                                         std::cout << ss.str() << std::endl;
 
+                                        d_code_locked_prs = false;
                                         if( d_use_sa )
                                         {
+                                            d_divergence_loop_filter_prs.set_noise_bandwidth(
+                                                    d_initial_divergence_loop_filter_bandwidth );
                                             d_divergence_loop_filter_prs.initialize( 0.0 );
                                         }
                                     }
@@ -1400,6 +1569,9 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                     d_mean_subcarrier_error = 0.0;
                     d_mean_subcarrier_error_prs = 0.0;
+
+                    d_mean_code_error = 0.0;
+                    d_mean_code_error_prs = 0.0;
                 }
 
             // ########### Output the tracking results to Telemetry block ##########
@@ -1685,12 +1857,11 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
     double code_phase_chips_prs = std::fmod( curr_tow * Galileo_E1_A_CODE_CHIP_RATE_HZ,
             d_prs_code_gen->get_code_length() );
 
-    d_subcarrier_phase_cycles_prs = std::fmod( curr_tow, 1.0/Galileo_E1_A_SUB_CARRIER_RATE_HZ )
-        * Galileo_E1_A_SUB_CARRIER_RATE_HZ;
-
     d_integer_code_phase_chips_prs = static_cast< int64_t >( std::floor( code_phase_chips_prs ) );
 
     d_fractional_code_phase_chips_prs = std::fmod( code_phase_chips_prs, 1.0 );
+
+    d_subcarrier_phase_cycles_prs = d_fractional_code_phase_chips_prs * d_chips_to_cycles_prs;
 
     d_rem_carr_phase_rad_prs = d_rem_carr_phase_rad - M_PI/2.0;
 
@@ -1704,6 +1875,7 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
     // DLL/PLL filter Initialization
     d_code_loop_filter_prs.set_noise_bandwidth( d_final_dll_bw_hz );
     d_carrier_loop_filter_prs.set_noise_bandwidth( d_final_pll_bw_hz );
+    d_divergence_loop_filter_prs.set_noise_bandwidth( d_initial_divergence_loop_filter_bandwidth );
     //d_code_loop_filter_prs.set_noise_bandwidth( d_initial_dll_bw_hz );
     //d_carrier_loop_filter_prs.set_noise_bandwidth( d_initial_pll_bw_hz );
 
@@ -1714,7 +1886,7 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
     d_code_loop_filter_prs.initialize(
             d_aid_code_with_carrier  ?
             0.0 :
-            d_carrier_doppler_hz_prs * Galileo_E1_A_CODE_CHIP_RATE_HZ / Galileo_E1_FREQ_HZ
+            d_carrier_doppler_hz_prs * Galileo_E1_A_SUB_CARRIER_RATE_HZ / Galileo_E1_FREQ_HZ
             );    // initialize the code filter
 
 
@@ -1742,6 +1914,9 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
     // subcarrieri aiding:
     d_subcarrier_locked_prs = false;
     d_mean_subcarrier_error_prs = 0.0;
+
+    d_code_locked_prs = false;
+    d_mean_code_error_prs = 0.0;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz_prs
               << " PULL-IN Code Phase [samples]=" << code_phase_chips_prs;

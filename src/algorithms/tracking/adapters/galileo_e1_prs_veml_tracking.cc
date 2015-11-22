@@ -67,7 +67,8 @@ GalileoE1PrsVemlTracking::GalileoE1PrsVemlTracking(
     float final_very_early_late_code_space_chips;
     bool aid_code_with_carrier;
     bool use_bump_jumping;
-    float divergence_bw_hz;
+    float initial_divergence_bw_hz;
+    float final_divergence_bw_hz;
     unsigned int bump_jumping_threshold;
 
     item_type = configuration->property(role + ".item_type", default_item_type);
@@ -85,7 +86,8 @@ GalileoE1PrsVemlTracking::GalileoE1PrsVemlTracking(
     aid_code_with_carrier = configuration->property(role + ".aid_code_with_carrier", false );
     use_bump_jumping = configuration->property(role + ".use_bump_jumping", false );
     bump_jumping_threshold = configuration->property(role + ".bump_jumping_threshold", 6 );
-    divergence_bw_hz = configuration->property(role + ".divergence_bw_hz", 0.001 );
+    initial_divergence_bw_hz = configuration->property(role + ".initial_divergence_bw_hz", 1.0 );
+    final_divergence_bw_hz = configuration->property(role + ".final_divergence_bw_hz", 0.01 );
 
     pll_loop_order = configuration->property(role + ".pll_loop_order", 3);
     dll_loop_order = configuration->property(role + ".dll_loop_order", 1);
@@ -131,7 +133,7 @@ GalileoE1PrsVemlTracking::GalileoE1PrsVemlTracking(
                     initial_early_late_code_space_cycles, final_early_late_code_space_cycles,
                     initial_very_early_late_code_space_chips, final_very_early_late_code_space_chips,
                     aid_code_with_carrier, use_bump_jumping, bump_jumping_threshold,
-                    divergence_bw_hz, code_gen);
+                    initial_divergence_bw_hz, final_divergence_bw_hz, code_gen);
         }
     else
         {

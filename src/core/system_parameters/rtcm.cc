@@ -30,6 +30,7 @@
 
 #include "rtcm.h"
 #include <algorithm>  // for std::reverse
+#include <cmath>      // for std::fmod
 #include <cstdlib>    // for strtol
 #include <sstream>    // for std::stringstream
 #include <boost/algorithm/string.hpp>  // for to_upper_copy
@@ -86,7 +87,6 @@ std::string Rtcm::add_CRC (const std::string& message_without_crc)
 bool Rtcm::check_CRC(const std::string & message)
 {
     crc_24_q_type CRC_RTCM_CHECK;
-
     // Convert message to binary
     std::string message_bin = Rtcm::hex_to_bin(message);
     // Check CRC
@@ -116,15 +116,28 @@ std::string Rtcm::bin_to_hex(const std::string& s)
 {
     std::string s_aux;
     std::stringstream ss;
-    for(int i = 0; i < s.length() - 1; i = i + 32)
+    int remainder = static_cast<int>(std::fmod(s.length(), 4));
+
+    if (remainder != 0)
         {
-            s_aux.assign(s, i, 32);
-            std::bitset<32> bs(s_aux);
+            s_aux.assign(s, 0 , remainder);
+            boost::dynamic_bitset<> rembits(s_aux);
+            unsigned n = rembits.to_ulong();
+            ss << std::hex << n;
+        }
+
+    int start = std::max(remainder, 0);
+    for(int i = start; i < s.length() - 1; i = i + 4)
+        {
+            s_aux.assign(s, i, 4);
+            std::bitset<4> bs(s_aux);
             unsigned n = bs.to_ulong();
             ss << std::hex << n;
         }
+
     return boost::to_upper_copy(ss.str());
 }
+
 
 std::string Rtcm::hex_to_bin(const std::string& s)
 {
@@ -143,6 +156,7 @@ std::string Rtcm::hex_to_bin(const std::string& s)
     return s_aux;
 }
 
+
 unsigned long int Rtcm::bin_to_uint(const std::string& s)
 {
     if(s.length() > 32)
@@ -154,6 +168,7 @@ unsigned long int Rtcm::bin_to_uint(const std::string& s)
     return reading;
 }
 
+
 long int Rtcm::bin_to_int(const std::string& s)
 {
     if(s.length() > 32)
@@ -161,7 +176,20 @@ long int Rtcm::bin_to_int(const std::string& s)
             LOG(WARNING) << "Cannot convert to a long int";
             return 0;
         }
-    long int reading = strtol(s.c_str(), NULL, 2);
+    long int reading;
+
+    // Handle negative numbers
+    if(s.substr(0,1).compare("0"))
+        {
+            // Computing two's complement
+            boost::dynamic_bitset<> original_bitset(s);
+            original_bitset.flip();
+            reading = - (original_bitset.to_ulong() + 1);
+        }
+    else
+        {
+            reading = strtol(s.c_str(), NULL, 2);
+        }
     return reading;
 }
 
@@ -175,7 +203,7 @@ double Rtcm::bin_to_double(const std::string& s)
             return 0;
         }
 
-    long long int reading_int = strtoll(s.c_str(), NULL, 2);
+    long long int reading_int;
 
     // Handle negative numbers
     if(s.substr(0,1).compare("0"))
@@ -184,6 +212,10 @@ double Rtcm::bin_to_double(const std::string& s)
             boost::dynamic_bitset<> original_bitset(s);
             original_bitset.flip();
             reading_int = - (original_bitset.to_ulong() + 1);
+        }
+    else
+        {
+            reading_int = strtoll(s.c_str(), NULL, 2);
         }
 
     reading = static_cast<double>(reading_int);
@@ -239,6 +271,104 @@ std::string Rtcm::build_message(std::string data)
 // *****************************************************************************************************
 
 
+
+// **********************************************
+//
+//   MESSAGE TYPE 1001 (GPS L1 OBSERVATIONS)
+//
+// **********************************************
+
+std::bitset<64> Rtcm::get_M1001_header(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges,
+        unsigned int ref_id, unsigned int smooth_int, bool sync_flag, bool divergence_free)
+{
+    unsigned int m1001 = 1001;
+    unsigned int reference_station_id = ref_id; // Max: 4095
+    const std::map<int, Gnss_Synchro> pseudoranges_ = pseudoranges;
+    bool synchronous_GNSS_flag = sync_flag;
+    bool divergence_free_smoothing_indicator = divergence_free;
+    unsigned int smoothing_interval = smooth_int;
+    Rtcm::set_DF002(m1001);
+    Rtcm::set_DF003(reference_station_id);
+    Rtcm::set_DF004(gps_eph, obs_time);
+    Rtcm::set_DF005(synchronous_GNSS_flag);
+    Rtcm::set_DF006(pseudoranges_);
+    Rtcm::set_DF007(divergence_free_smoothing_indicator);
+    Rtcm::set_DF008(smoothing_interval);
+
+    std::string header = DF002.to_string() +
+            DF003.to_string() +
+            DF004.to_string() +
+            DF005.to_string() +
+            DF006.to_string() +
+            DF007.to_string() +
+            DF008.to_string();
+
+    std::bitset<64> header_msg(header);
+    return header_msg;
+}
+
+
+std::bitset<58> Rtcm::get_M1001_sat_content(const Gnss_Synchro & gnss_synchro)
+{
+    Gnss_Synchro gnss_synchro_ = gnss_synchro;
+    bool code_indicator = false; // code indicator   0: C/A code   1: P(Y) code direct
+    Rtcm::set_DF009(gnss_synchro_);
+    Rtcm::set_DF010(code_indicator); // code indicator   0: C/A code   1: P(Y) code direct
+    Rtcm::set_DF011(gnss_synchro_);
+
+    long int  gps_L1_phaserange_minus_L1_pseudorange;
+    long int  phaserange_m = (gnss_synchro.Carrier_phase_rads * GPS_C_m_s) / (GPS_TWO_PI * GPS_L1_FREQ_HZ);
+    gps_L1_phaserange_minus_L1_pseudorange  = phaserange_m; // TODO
+    DF012 = std::bitset<20>(gps_L1_phaserange_minus_L1_pseudorange);
+
+    unsigned int lock_time_indicator = 0;  // TODO
+    DF013 = std::bitset<7>(lock_time_indicator);
+
+    std::string content = DF009.to_string() +
+            DF010.to_string() +
+            DF011.to_string() +
+            DF012.to_string() +
+            DF013.to_string();
+
+    std::bitset<58> content_msg(content);
+    return content_msg;
+}
+
+
+
+std::string Rtcm::print_M1001(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+{
+    unsigned int ref_id = static_cast<unsigned int>(FLAGS_RTCM_Ref_Station_ID);
+    unsigned int smooth_int = 0;
+    bool sync_flag = false;
+    bool divergence_free = false;
+
+    std::bitset<64> header = Rtcm::get_M1001_header(gps_eph, obs_time, pseudoranges, ref_id, smooth_int, sync_flag, divergence_free);
+    std::string data = header.to_string();
+
+    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
+    for(pseudoranges_iter = pseudoranges.begin();
+            pseudoranges_iter != pseudoranges.end();
+            pseudoranges_iter++)
+        {
+
+            std::bitset<58> content = Rtcm::get_M1001_sat_content(pseudoranges_iter->second);
+            data += content.to_string();
+        }
+
+    return Rtcm::build_message(data);
+}
+
+
+
+
+// **********************************************
+//
+//   MESSAGE TYPE 1005 (STATION DESCRIPTION)
+//
+// **********************************************
+
+
 /* Stationary Antenna Reference Point, No Height Information
  * Reference Station Id = 2003
    GPS Service supported, but not GLONASS or Galileo
@@ -290,6 +420,42 @@ std::bitset<152> Rtcm::get_M1005_test ()
     return test_msg;
 }
 
+std::string Rtcm::print_M1005( unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator)
+{
+    unsigned int msg_number = 1005;
+    std::bitset<1> DF001_;
+
+    Rtcm::set_DF002(msg_number);
+    Rtcm::set_DF003(ref_id);
+    Rtcm::set_DF021();
+    Rtcm::set_DF022(gps);
+    Rtcm::set_DF023(glonass);
+    Rtcm::set_DF024(galileo);
+    DF141 = std::bitset<1>(non_physical);
+    DF001_ = std::bitset<1>("0");
+    Rtcm::set_DF025(ecef_x);
+    DF142 = std::bitset<1>(single_oscillator);
+    Rtcm::set_DF026(ecef_y);
+    DF364 = std::bitset<2>(quarter_cycle_indicator);
+    Rtcm::set_DF027(ecef_z);
+
+    std::string data = DF002.to_string() +
+            DF003.to_string() +
+            DF021.to_string() +
+            DF022.to_string() +
+            DF023.to_string() +
+            DF024.to_string() +
+            DF141.to_string() +
+            DF025.to_string() +
+            DF142.to_string() +
+            DF001_.to_string() +
+            DF026.to_string() +
+            DF364.to_string() +
+            DF027.to_string() ;
+
+    std::string message = build_message(data);
+    return message;
+}
 
 int Rtcm::read_M1005(const std::string & message, unsigned int & ref_id, double & ecef_x, double & ecef_y, double & ecef_z, bool & gps, bool & glonass, bool & galileo)
 {
@@ -368,88 +534,12 @@ std::string Rtcm::print_M1005_test()
 }
 
 
-std::bitset<64> Rtcm::get_M1001_header(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges,
-        unsigned int ref_id, unsigned int smooth_int, bool sync_flag, bool divergence_free)
-{
-    unsigned int m1001 = 1001;
-    unsigned int reference_station_id = ref_id; // Max: 4095
-    const std::map<int, Gnss_Synchro> pseudoranges_ = pseudoranges;
-    bool synchronous_GNSS_flag = sync_flag;
-    bool divergence_free_smoothing_indicator = divergence_free;
-    unsigned int smoothing_interval = smooth_int;
-    Rtcm::set_DF002(m1001);
-    Rtcm::set_DF003(reference_station_id);
-    Rtcm::set_DF004(gps_eph, obs_time);
-    Rtcm::set_DF005(synchronous_GNSS_flag);
-    Rtcm::set_DF006(pseudoranges_);
-    Rtcm::set_DF007(divergence_free_smoothing_indicator);
-    Rtcm::set_DF008(smoothing_interval);
 
-    std::string header = DF002.to_string() +
-            DF003.to_string() +
-            DF004.to_string() +
-            DF005.to_string() +
-            DF006.to_string() +
-            DF007.to_string() +
-            DF008.to_string();
-
-    std::bitset<64> header_msg(header);
-    return header_msg;
-}
-
-
-std::bitset<58> Rtcm::get_M1001_sat_content(const Gnss_Synchro & gnss_synchro)
-{
-    Gnss_Synchro gnss_synchro_ = gnss_synchro;
-    bool code_indicator = false; // code indicator   0: C/A code   1: P(Y) code direct
-    Rtcm::set_DF009(gnss_synchro_);
-    Rtcm::set_DF010(code_indicator); // code indicator   0: C/A code   1: P(Y) code direct
-    Rtcm::set_DF011(gnss_synchro_);
-
-    long int  gps_L1_phaserange_minus_L1_pseudorange;
-    long int  phaserange_m = (gnss_synchro.Carrier_phase_rads * GPS_C_m_s) / (GPS_TWO_PI * GPS_L1_FREQ_HZ);
-    gps_L1_phaserange_minus_L1_pseudorange  = phaserange_m; // TODO
-    DF012 = std::bitset<20>(gps_L1_phaserange_minus_L1_pseudorange);
-
-    unsigned int lock_time_indicator = 0;  // TODO
-    DF013 = std::bitset<7>(lock_time_indicator);
-
-    std::string content = DF009.to_string() +
-             DF010.to_string() +
-             DF011.to_string() +
-             DF012.to_string() +
-             DF013.to_string();
-
-     std::bitset<58> content_msg(content);
-     return content_msg;
-}
-
-
-
-std::string Rtcm::print_M1001(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
-{
-    unsigned int ref_id = static_cast<unsigned int>(FLAGS_RTCM_Ref_Station_ID);
-    unsigned int smooth_int = 0;
-    bool sync_flag = false;
-    bool divergence_free = false;
-
-    std::bitset<64> header = Rtcm::get_M1001_header(gps_eph, obs_time, pseudoranges, ref_id, smooth_int, sync_flag, divergence_free);
-    std::string data = header.to_string();
-
-    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
-    for(pseudoranges_iter = pseudoranges.begin();
-            pseudoranges_iter != pseudoranges.end();
-            pseudoranges_iter++)
-        {
-
-            std::bitset<58> content = Rtcm::get_M1001_sat_content(pseudoranges_iter->second);
-            data += content.to_string();
-        }
-
-    return Rtcm::build_message(data);
-}
-
-
+// **********************************************
+//
+//   MESSAGE TYPE 1019 (GPS EPHEMERIS)
+//
+// **********************************************
 
 std::string Rtcm::print_M1019(const Gps_Ephemeris & gps_eph)
 {
@@ -540,13 +630,12 @@ int Rtcm::read_M1019(const std::string & message, Gps_Ephemeris & gps_eph)
     if(!Rtcm::check_CRC(message) )
         {
             LOG(WARNING) << " Bad CRC detected in RTCM message M1019";
-            std::cout << " ----- Bad CRC detected in RTCM message M1019 " << std::endl;
             return 1;
         }
 
     unsigned int preamble_length = 8;
     unsigned int reserved_field_length = 6;
-    unsigned int index = preamble_length + reserved_field_length - 1;
+    unsigned int index = preamble_length + reserved_field_length;
 
     unsigned int read_message_length = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
     index += 10;
@@ -558,58 +647,116 @@ int Rtcm::read_M1019(const std::string & message, Gps_Ephemeris & gps_eph)
         }
 
     // Check than the message number is correct
-    unsigned int msg_number = 1019;
-    Rtcm::set_DF002(msg_number);
-    std::bitset<12> read_msg_number(message_bin.substr(index, 12));
+    unsigned int read_msg_number = Rtcm::bin_to_uint(message_bin.substr(index, 12));
     index += 12;
 
-    if (DF002 != read_msg_number)
+    if (1019 != read_msg_number)
         {
             LOG(WARNING) << " This is not a M1019 message";
             return 1;
         }
 
+    // Fill Gps Ephemeris with message data content
     gps_eph.i_satellite_PRN = static_cast<unsigned int>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
     index += 6;
 
-    // idea: define get_DFXXX?
+    gps_eph.i_GPS_week = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    index += 10;
 
-//    Rtcm::set_DF002(msg_number);
-//       Rtcm::set_DF009(gps_eph);
-//       Rtcm::set_DF076(gps_eph);
-//       Rtcm::set_DF077(gps_eph);
-//       Rtcm::set_DF078(gps_eph);
-//       Rtcm::set_DF079(gps_eph);
-//       Rtcm::set_DF071(gps_eph);
-//       Rtcm::set_DF081(gps_eph);
-//       Rtcm::set_DF082(gps_eph);
-//       Rtcm::set_DF083(gps_eph);
-//       Rtcm::set_DF084(gps_eph);
-//       Rtcm::set_DF085(gps_eph);
-//       Rtcm::set_DF086(gps_eph);
-//       Rtcm::set_DF087(gps_eph);
-//       Rtcm::set_DF088(gps_eph);
-//       Rtcm::set_DF089(gps_eph);
-//       Rtcm::set_DF090(gps_eph);
-//       Rtcm::set_DF091(gps_eph);
-//       Rtcm::set_DF092(gps_eph);
-//       Rtcm::set_DF093(gps_eph);
-//       Rtcm::set_DF094(gps_eph);
-//       Rtcm::set_DF095(gps_eph);
-//       Rtcm::set_DF096(gps_eph);
-//       Rtcm::set_DF097(gps_eph);
-//       Rtcm::set_DF098(gps_eph);
-//       Rtcm::set_DF099(gps_eph);
-//       Rtcm::set_DF100(gps_eph);
-//       Rtcm::set_DF101(gps_eph);
-//       Rtcm::set_DF102(gps_eph);
-//       Rtcm::set_DF103(gps_eph);
-//       Rtcm::set_DF137(gps_eph);
+    gps_eph.i_SV_accuracy = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 4)));
+    index += 4;
 
+    gps_eph.i_code_on_L2 = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
+    index += 2;
+
+    gps_eph.d_IDOT = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 14))) * I_DOT_LSB;
+    index += 14;
+
+    gps_eph.d_IODE_SF2 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 8)));
+    gps_eph.d_IODE_SF3 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 8)));
+    index += 8;
+
+    gps_eph.d_Toc = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 16))) * T_OC_LSB;
+    index += 16;
+
+    gps_eph.d_A_f2 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 8))) * A_F2_LSB;
+    index += 8;
+
+    gps_eph.d_A_f1 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * A_F1_LSB;
+    index += 16;
+
+    gps_eph.d_A_f0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 22))) * A_F0_LSB;
+    index += 22;
+
+    gps_eph.d_IODC = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    index += 10;
+
+    gps_eph.d_Crs = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_RS_LSB;
+    index += 16;
+
+    gps_eph.d_Delta_n = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * DELTA_N_LSB;
+    index += 16;
+
+    gps_eph.d_M_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * M_0_LSB;
+    index += 32;
+
+    gps_eph.d_Cuc = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_UC_LSB;
+    index += 16;
+
+    gps_eph.d_e_eccentricity = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * E_LSB;
+    index += 32;
+
+    gps_eph.d_Cus = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_US_LSB;
+    index += 16;
+
+    gps_eph.d_sqrt_A = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * SQRT_A_LSB;
+    index += 32;
+
+    gps_eph.d_Toe = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 16))) * T_OE_LSB;
+    index += 16;
+
+    gps_eph.d_Cic = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_IC_LSB;
+    index += 16;
+
+    gps_eph.d_OMEGA0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * OMEGA_0_LSB;
+    index += 32;
+
+    gps_eph.d_Cis = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_IS_LSB;
+    index += 16;
+
+    gps_eph.d_i_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * I_0_LSB;
+    index += 32;
+
+    gps_eph.d_Crc = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_RC_LSB;
+    index += 16;
+
+    gps_eph.d_OMEGA = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * OMEGA_LSB;
+    index += 32;
+
+    gps_eph.d_OMEGA_DOT = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 24))) * OMEGA_DOT_LSB;
+    index += 24;
+
+    gps_eph.d_TGD = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 8))) * T_GD_LSB;
+    index += 8;
+
+    gps_eph.i_SV_health = static_cast<int>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
+    index += 6;
+
+    gps_eph.b_L2_P_data_flag = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+    index += 1;
+
+    gps_eph.b_fit_interval_flag = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
 
     return 0;
 }
 
+
+
+// **********************************************
+//
+//   MESSAGE TYPE 1045 (GALILEO EPHEMERIS)
+//
+// **********************************************
 
 std::string Rtcm::print_M1045(const Galileo_Ephemeris & gal_eph)
 {
@@ -685,17 +832,6 @@ std::string Rtcm::print_M1045(const Galileo_Ephemeris & gal_eph)
     std::string message = build_message(data);
     return message;
 }
-
-
-
-std::bitset<138> Rtcm::get_M1002 ()
-{
-    std::bitset<138> fake_msg;
-    fake_msg.reset();
-    return fake_msg;
-}
-
-
 
 
 

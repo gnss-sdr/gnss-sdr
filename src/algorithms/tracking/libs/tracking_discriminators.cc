@@ -101,7 +101,14 @@ float dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1)
     float P_early, P_late;
     P_early = std::abs(early_s1);
     P_late  = std::abs(late_s1);
-    return (P_early - P_late) / ((P_early + P_late));
+    if( P_early + P_late == 0.0 )
+    {
+        return 0.0;
+    }
+    else
+    {
+        return (P_early - P_late) / ((P_early + P_late));
+    }
 }
 
 /*

@@ -1122,7 +1122,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                 if( d_use_sa && d_subcarrier_locked_prs )
                 {
-                    code_error_filt_chips_veml_prs = d_divergence_loop_filter.apply(
+                    code_error_filt_chips_veml_prs = d_divergence_loop_filter_prs.apply(
                             code_error_chips_veml_prs );
 
                     d_code_freq_chips_prs += code_error_filt_chips_veml_prs;

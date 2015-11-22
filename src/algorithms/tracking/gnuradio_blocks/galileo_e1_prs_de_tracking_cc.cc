@@ -304,6 +304,9 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
     d_preamble_start_detected = false;
 
     d_prs_sinusoidal_subcarrier = prs_sinusoidal_subcarrier;
+
+    d_mean_code_error = 0.0;
+    d_mean_code_error_prs = 0.0;
 }
 
 void galileo_e1_prs_de_tracking_cc::start_tracking()
@@ -361,6 +364,9 @@ void galileo_e1_prs_de_tracking_cc::start_tracking()
     d_code_locked = false;
     d_carrier_locked = false;
     d_cn0_estimation_counter = 0;
+
+    d_code_locked = false;
+    d_mean_code_error = 0.0;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
@@ -741,6 +747,8 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
             d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * T;
             d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
 
+            double chips_to_halfcycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ /
+                Galileo_E1_A_CODE_CHIP_RATE_HZ * 2.0;
             // PRS tracking
             if( d_prs_tracking_enabled ){
                 // Generate local code and carrier replicas (using \hat{f}_d(k-1))
@@ -799,8 +807,6 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                 }
 
                 // Now update the code and carrier phase estimates:
-                double chips_to_halfcycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ /
-                    Galileo_E1_A_CODE_CHIP_RATE_HZ * 2.0;
                 double delta_code_phase_prs = T*d_code_freq_chips_prs;
 
                 d_fractional_code_phase_chips_prs += delta_code_phase_prs;
@@ -1082,10 +1088,20 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                             *d_Prompt_Subcarrier_Prompt_Code_prs :
                             *d_Prompt_Subcarrier_Prompt_Code );
                     d_cn0_estimation_counter++;
+
+                    d_mean_code_error += std::fabs( code_error_chips );
+
+                    if( d_prs_tracking_enabled )
+                    {
+                        d_mean_code_error_prs += std::fabs( code_error_chips_prs );
+                    }
                 }
             else
                 {
                     d_cn0_estimation_counter = 0;
+
+                    d_mean_code_error /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
+                    d_mean_code_error_prs /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
 
                     // Code lock indicator
                     d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, d_current_prn_length_samples);
@@ -1156,9 +1172,113 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                                 d_carrier_loop_filter.initialize( carr_error_filt_hz );
                                 d_subcarrier_loop_filter.initialize( subcarrier_error_filt_cycles );
                             }
+                        else
+                        {
+                            if( d_code_locked )
+                            {
+                                if( d_mean_code_error > 0.1 )
+                                {
+                                    d_code_locked = false;
 
-                    }
-                }
+                                    d_code_loop_filter.set_noise_bandwidth(
+                                            d_initial_dll_bw_hz );
+
+                                    std::stringstream ss("");
+
+                                    ss << "Loss of code lock in channel "
+                                        << d_channel << "!"
+                                        << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                        << ". @ " << static_cast< double >( d_sample_counter )/
+                                        static_cast<double>( d_fs_in )
+                                        << "]";
+
+                                    LOG(INFO) << ss.str();
+
+                                    std::cout << ss.str() << std::endl;;
+                                }
+                            }
+                            else // if d_code_locked
+                            {
+                                if( d_mean_code_error < 0.05 )
+                                {
+                                    d_code_locked = true;
+                                    d_code_loop_filter.set_noise_bandwidth(
+                                            d_final_dll_bw_hz );
+
+                                    std::stringstream ss("");
+
+                                    ss << "Code lock achieved in channel "
+                                        << d_channel << "!"
+                                        << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                        << ". @ " << static_cast< double >( d_sample_counter )/
+                                        static_cast<double>( d_fs_in )
+                                        << "]";
+
+                                    LOG(INFO) << ss.str();
+
+                                    std::cout << ss.str() << std::endl;;
+                                }
+                            }
+
+                            if( d_prs_tracking_enabled )
+                            {
+
+                                if( d_code_locked_prs )
+                                {
+                                    if( d_mean_code_error_prs*chips_to_halfcycles_prs > 1.0 )
+                                    {
+                                        d_code_locked_prs = false;
+
+                                        d_code_loop_filter_prs.set_noise_bandwidth(
+                                                d_initial_dll_bw_hz );
+
+                                        std::stringstream ss("");
+
+                                        ss << "PRS Loss of code lock in channel "
+                                            << d_channel << "!"
+                                            << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                            << ". @ " << static_cast< double >( d_sample_counter )/
+                                            static_cast<double>( d_fs_in )
+                                            << "]";
+
+                                        LOG(INFO) << ss.str();
+
+                                        std::cout << ss.str() << std::endl;;
+                                    }
+                                }
+                                else // if d_code_locked
+                                {
+                                    if( d_mean_code_error_prs*chips_to_halfcycles_prs < 0.2 )
+                                    {
+                                        d_code_locked_prs = true;
+
+                                        d_code_loop_filter_prs.set_noise_bandwidth(
+                                                d_final_dll_bw_hz );
+
+                                        std::stringstream ss("");
+
+                                        ss << "PRS Code lock achieved in channel "
+                                            << d_channel << "!"
+                                            << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                            << ". @ " << static_cast< double >( d_sample_counter )/
+                                            static_cast<double>( d_fs_in )
+                                            << "]";
+
+                                        LOG(INFO) << ss.str();
+
+                                        std::cout << ss.str() << std::endl;;
+                                    }
+                                }
+
+                            }
+
+                        } // Carrier lock fail counter > threshold
+
+                    } // else if not carrier locked
+
+                    d_mean_code_error = 0.0;
+                    d_mean_code_error_prs = 0.0;
+                } // cno estimation
 
             // ########### Output the tracking results to Telemetry block ##########
 
@@ -1476,7 +1596,7 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
 
     // Initialise the filters:
     // DLL/PLL filter Initialization
-    d_code_loop_filter_prs.set_noise_bandwidth( d_final_dll_bw_hz );
+    d_code_loop_filter_prs.set_noise_bandwidth( d_initial_dll_bw_hz );
     d_subcarrier_loop_filter_prs.set_noise_bandwidth( d_final_sll_bw_hz );
     d_carrier_loop_filter_prs.set_noise_bandwidth( d_final_pll_bw_hz );
 
@@ -1509,6 +1629,7 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
     d_prs_code_gen->set_prn( d_acquisition_gnss_synchro->PRN );
     d_code_locked_prs = false;
     d_cn0_estimation_counter = 0;
+    d_mean_code_error_prs = 0.0;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz_prs
               << " PULL-IN Code Phase [chips]=" << d_integer_code_phase_chips_prs

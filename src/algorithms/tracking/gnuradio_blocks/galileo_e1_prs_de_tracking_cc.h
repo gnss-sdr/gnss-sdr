@@ -321,6 +321,10 @@ private:
     std::map<std::string, std::string> systemName;
     std::string sys;
 
+    // For determining code lock:
+    double d_mean_code_error;
+    double d_mean_code_error_prs;
+
     // Handler for gnss_messages:
     void handle_gnss_message( pmt::pmt_t msg );
 };

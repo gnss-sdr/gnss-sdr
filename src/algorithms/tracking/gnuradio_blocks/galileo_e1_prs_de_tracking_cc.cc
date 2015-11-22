@@ -246,7 +246,8 @@ galileo_e1_prs_de_tracking_cc::galileo_e1_prs_de_tracking_cc(
 
     d_rem_code_phase_samples_prs = 0.0;
     d_rem_subcarrier_phase_samples_prs = 0.0;
-    d_code_phase_chips_prs = 0.0;
+    d_integer_code_phase_chips_prs = 0;
+    d_fractional_code_phase_chips_prs = 0.0;
     d_subcarrier_phase_halfcycles_prs = 0.0;
 
     // Residual carrier phase
@@ -458,15 +459,15 @@ void galileo_e1_prs_de_tracking_cc::update_local_code_prs()
     // Update the local PRS code if necessary:
     uint64_t last_code_phase_store = d_start_index_prs_code + d_size_prs_code;
 
-    uint64_t last_code_phase_required = static_cast< uint64_t >(
-            d_code_phase_chips_prs + code_phase_step_chips*d_current_prn_length_samples );
+    uint64_t last_code_phase_required = d_integer_code_phase_chips_prs + static_cast< uint64_t >(
+            d_fractional_code_phase_chips_prs + code_phase_step_chips*d_current_prn_length_samples );
 
     if( !d_prs_code_initialized || ( last_code_phase_required > last_code_phase_store - 2 ) )
     {
         // Make sure we go back at least 2 chips:
-        d_start_index_prs_code = ( d_code_phase_chips_prs < 2.0 ?
-                static_cast<uint64_t>( std::floor( d_code_phase_chips_prs ) ) + d_prs_code_gen->get_code_length() - 2 :
-                static_cast<uint64_t>( std::floor( d_code_phase_chips_prs) ) - 2 );
+        d_start_index_prs_code = ( d_integer_code_phase_chips_prs < 2 ?
+                d_integer_code_phase_chips_prs + d_prs_code_gen->get_code_length() - 2 :
+                d_integer_code_phase_chips_prs - 2 );
 
         d_prs_code_gen->get_chips(d_start_index_prs_code, d_size_prs_code, d_prs_code_shorts );
 
@@ -479,9 +480,8 @@ void galileo_e1_prs_de_tracking_cc::update_local_code_prs()
 
     }
 
-    uint64_t int_code_phase = static_cast< uint64_t >( std::floor( d_code_phase_chips_prs ) );
-    double frac_code_phase = std::fmod( d_code_phase_chips_prs, 1.0 );
-    tcode_chips = frac_code_phase + static_cast< double >( int_code_phase - d_start_index_prs_code );
+    tcode_chips = d_fractional_code_phase_chips_prs +
+        static_cast< double >( d_integer_code_phase_chips_prs - d_start_index_prs_code );
     //tcode_chips = d_code_phase_chips_prs - static_cast< double >( d_start_index_prs_code );
 
     // Add 1/4 of a cyle here to account for cosine phasing:
@@ -801,8 +801,16 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                 // Now update the code and carrier phase estimates:
                 double chips_to_halfcycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ /
                     Galileo_E1_A_CODE_CHIP_RATE_HZ * 2.0;
-                d_code_phase_chips_prs += T*d_code_freq_chips_prs;
-                d_code_phase_chips_prs = std::fmod( d_code_phase_chips_prs, d_prs_code_gen->get_code_length() );
+                double delta_code_phase_prs = T*d_code_freq_chips_prs;
+
+                d_fractional_code_phase_chips_prs += delta_code_phase_prs;
+
+                d_integer_code_phase_chips_prs += static_cast< int64_t >(
+                        std::floor( d_fractional_code_phase_chips_prs ) );
+
+                d_fractional_code_phase_chips_prs = std::fmod(
+                        d_fractional_code_phase_chips_prs, 1.0 );
+
                 d_carrier_phase_rad_prs += T*2.0*M_PI*d_carrier_doppler_hz_prs;
 
                 d_subcarrier_phase_halfcycles_prs += T*d_subcarrier_freq_cycles_prs*2.0;
@@ -816,14 +824,24 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                 d_rem_subcarrier_phase_samples_prs = rem_subcarrier_phase_cycles_prs*
                     static_cast<double>(d_fs_in)/Galileo_E1_A_SUB_CARRIER_RATE_HZ;
 
-                double e1b_code_length_prs_chips = Galileo_E1_B_CODE_LENGTH_CHIPS /
-                    Galileo_E1_CODE_CHIP_RATE_HZ * Galileo_E1_A_CODE_CHIP_RATE_HZ;
+                int64_t e1b_code_length_prs_chips = static_cast< int64_t>(
+                        Galileo_E1_B_CODE_LENGTH_CHIPS /
+                        Galileo_E1_CODE_CHIP_RATE_HZ * Galileo_E1_A_CODE_CHIP_RATE_HZ
+                        );
 
-                double rem_code_phase_chips_prs = e1b_code_length_prs_chips -
-                    std::fmod( d_code_phase_chips_prs, e1b_code_length_prs_chips );
-                if( rem_code_phase_chips_prs > e1b_code_length_prs_chips / 2.0 )
+
+                int64_t chips_into_e1b_code_period =
+                    d_integer_code_phase_chips_prs % e1b_code_length_prs_chips;
+
+                double rem_code_phase_chips_prs = static_cast< double >(
+                        e1b_code_length_prs_chips - chips_into_e1b_code_period
+                        ) - d_fractional_code_phase_chips_prs;
+
+                if( rem_code_phase_chips_prs > static_cast< double >(
+                            e1b_code_length_prs_chips / 2 ) )
                 {
-                    rem_code_phase_chips_prs = ( rem_code_phase_chips_prs - e1b_code_length_prs_chips );
+                    rem_code_phase_chips_prs = ( rem_code_phase_chips_prs -
+                            static_cast<double>(e1b_code_length_prs_chips) );
                 }
 
                 d_rem_code_phase_samples_prs = rem_code_phase_chips_prs * d_fs_in/Galileo_E1_A_CODE_CHIP_RATE_HZ;
@@ -965,7 +983,7 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                             *d_Prompt_Code_Quadrature_Subcarrier_prs /
                             *d_Prompt_Subcarrier_Prompt_Code_prs );
 
-                        subcarrier_error_cycles_prs = std::atan( Z.real() ) / static_cast<float>(GPS_TWO_PI);
+                    subcarrier_error_cycles_prs = std::atan( Z.real() ) / static_cast<float>(GPS_TWO_PI);
                 }
                 else
                 {
@@ -1323,7 +1341,9 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                     d_dump_file.write(reinterpret_cast<char*>(&subcarrier_error_cycles_prs), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&subcarrier_error_filt_cycles_prs), sizeof(float));
 
-                    d_dump_file.write(reinterpret_cast<char*>(&d_code_phase_chips_prs), sizeof(double));
+                    tmp_double = static_cast< double >( d_integer_code_phase_chips_prs ) +
+                        d_fractional_code_phase_chips_prs;
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                     tmp_float = d_subcarrier_phase_halfcycles_prs/2.0;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
             }
@@ -1431,12 +1451,17 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
         curr_tow -= 604800.0;
     }
 
-    d_code_phase_chips_prs = std::fmod( curr_tow * Galileo_E1_A_CODE_CHIP_RATE_HZ,
+    double code_phase_chips_prs = std::fmod( curr_tow * Galileo_E1_A_CODE_CHIP_RATE_HZ,
             d_prs_code_gen->get_code_length() );
 
+    d_integer_code_phase_chips_prs = static_cast< int64_t >( std::floor( code_phase_chips_prs ) );
 
-    d_subcarrier_phase_halfcycles_prs = std::fmod( curr_tow,
-            1.0/Galileo_E1_A_SUB_CARRIER_RATE_HZ ) * 2.0 * Galileo_E1_A_SUB_CARRIER_RATE_HZ;
+    d_fractional_code_phase_chips_prs = std::fmod( code_phase_chips_prs, 1.0 );
+
+    d_subcarrier_phase_halfcycles_prs = d_fractional_code_phase_chips_prs *
+        Galileo_E1_A_SUB_CARRIER_RATE_HZ / Galileo_E1_A_CODE_CHIP_RATE_HZ * 2.0;
+
+    d_subcarrier_phase_halfcycles_prs = std::fmod( d_subcarrier_phase_halfcycles_prs, 2.0 );
 
     d_rem_carr_phase_rad_prs = d_rem_carr_phase_rad - M_PI/2.0;
 
@@ -1474,7 +1499,8 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
     LOG(INFO) << "Starting tracking of PRS for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
     DLOG(INFO) << "Starting params: current TOW estimate: " << curr_tow
-               << " Code phase " << d_code_phase_chips_prs << " chips."
+               << " Code phase " << d_integer_code_phase_chips_prs
+               << std::setw(6) << std::fixed << d_fractional_code_phase_chips_prs << " chips."
                << " Subcarrier Phase " << ( d_subcarrier_phase_halfcycles_prs*2.0 ) << " cycles"
                << " Last TOW: " << d_last_tow << " @ " << d_timestamp_last_tow
                << " Correction: " << (curr_tow - d_last_tow);
@@ -1485,7 +1511,8 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
     d_cn0_estimation_counter = 0;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz_prs
-              << " PULL-IN Code Phase [samples]=" << d_code_phase_chips_prs;
+              << " PULL-IN Code Phase [chips]=" << d_integer_code_phase_chips_prs
+              << std::setw(6) << std::fixed << d_fractional_code_phase_chips_prs;
 }
 
 void galileo_e1_prs_de_tracking_cc::handle_gnss_message( pmt::pmt_t msg )

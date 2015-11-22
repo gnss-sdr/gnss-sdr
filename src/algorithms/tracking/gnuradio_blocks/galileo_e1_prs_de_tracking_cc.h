@@ -263,7 +263,10 @@ private:
     double d_acc_code_phase_secs;
 
     double d_code_freq_chips_prs;
-    double d_code_phase_chips_prs;
+    int64_t d_integer_code_phase_chips_prs;
+    double d_fractional_code_phase_chips_prs;
+
+
     double d_subcarrier_freq_cycles_prs;
     double d_subcarrier_phase_halfcycles_prs;
     float d_carrier_doppler_hz_prs;

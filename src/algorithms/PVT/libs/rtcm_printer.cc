@@ -84,23 +84,23 @@ Rtcm_Printer::~Rtcm_Printer()
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_M1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
 {
-    std::string m1001 = rtcm->print_M1001( gps_eph, obs_time, pseudoranges);
+    std::string m1001 = rtcm->print_MT1001( gps_eph, obs_time, pseudoranges);
     Rtcm_Printer::Print_Message(m1001);
     return true;
 }
 
-bool Rtcm_Printer::Print_Rtcm_M1019(const Gps_Ephemeris & gps_eph)
+bool Rtcm_Printer::Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph)
 {
-    std::string m1019 = rtcm->print_M1019(gps_eph);
+    std::string m1019 = rtcm->print_MT1019(gps_eph);
     Rtcm_Printer::Print_Message(m1019);
     return true;
 }
 
-bool Rtcm_Printer::Print_Rtcm_M1045(const Galileo_Ephemeris & gal_eph)
+bool Rtcm_Printer::Print_Rtcm_MT1045(const Galileo_Ephemeris & gal_eph)
 {
-    std::string m1045 = rtcm->print_M1045(gal_eph);
+    std::string m1045 = rtcm->print_MT1045(gal_eph);
     Rtcm_Printer::Print_Message(m1045);
     return true;
 }
@@ -108,8 +108,8 @@ bool Rtcm_Printer::Print_Rtcm_M1045(const Galileo_Ephemeris & gal_eph)
 
 int Rtcm_Printer::init_serial(std::string serial_device)
 {
-    /*!
-     * Opens the serial device and sets the default baud rate for a NMEA transmission (9600,8,N,1)
+    /*
+     * Opens the serial device and sets the default baud rate for a RTCM transmission (9600,8,N,1)
      */
     int fd = 0;
     struct termios options;
@@ -183,8 +183,8 @@ bool Rtcm_Printer::Print_Message(std::string message)
 }
 
 
-std::string Rtcm_Printer::print_M1005_test()
+std::string Rtcm_Printer::print_MT1005_test()
 {
-    std::string test = rtcm->print_M1005_test();
+    std::string test = rtcm->print_MT1005_test();
     return test;
 }

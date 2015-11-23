@@ -55,11 +55,11 @@ public:
      */
     ~Rtcm_Printer();
 
-    bool Print_Rtcm_M1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
-    bool Print_Rtcm_M1019(const Gps_Ephemeris & gps_eph); //<! GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
-    bool Print_Rtcm_M1045(const Galileo_Ephemeris & gal_eph); //<! Galileo Ephemeris, should be broadcast every 2 minutes
+    bool Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    bool Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph); //<! GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
+    bool Print_Rtcm_MT1045(const Galileo_Ephemeris & gal_eph); //<! Galileo Ephemeris, should be broadcast every 2 minutes
 
-    std::string print_M1005_test(); //<!  For testing purposes
+    std::string print_MT1005_test(); //<!  For testing purposes
 
 private:
     std::string rtcm_filename; // String with the RTCM log filename

@@ -73,7 +73,7 @@ TEST(Rtcm_Printer_Test, Run)
     std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, flag_rtcm_tty_port, rtcm_dump_devname));
 
     std::string reference_msg = "D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98";
-    std::string testing_msg = RTCM_printer->print_M1005_test();
+    std::string testing_msg = RTCM_printer->print_MT1005_test();
 
     EXPECT_EQ(reference_msg, testing_msg);
 }

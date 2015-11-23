@@ -63,6 +63,13 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, boost
     d_dump_filename = dump_filename;
     d_flag_averaging = flag_averaging;
 
+    for (int i=0;i<d_nchannels;i++)
+    {
+		d_acc_carrier_phase_queue_rads.push_back(std::deque<double>(d_nchannels));
+		d_carrier_doppler_queue_hz.push_back(std::deque<double>(d_nchannels));
+		d_symbol_TOW_queue_s.push_back(std::deque<double>(d_nchannels));
+    }
+
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {
@@ -128,6 +135,33 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                 {
                     //record the word structure in a map for pseudorange computation
                     current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
+
+                    //################### SAVE DOPPLER AND ACC CARRIER PHASE HISTORIC DATA FOR INTERPOLATION IN OBSERVABLE MODULE #######
+                    d_carrier_doppler_queue_hz[i].push_back(current_gnss_synchro[i].Carrier_Doppler_hz);
+                    d_acc_carrier_phase_queue_rads[i].push_back(current_gnss_synchro[i].Carrier_phase_rads);
+                    // save TOW history
+                    d_symbol_TOW_queue_s[i].push_back(current_gnss_synchro[i].d_TOW_at_current_symbol);
+
+                    if (d_carrier_doppler_queue_hz[i].size()>GPS_L1_CA_HISTORY_DEEP)
+                    {
+                    	d_carrier_doppler_queue_hz[i].pop_front();
+                    }
+                    if (d_acc_carrier_phase_queue_rads[i].size()>GPS_L1_CA_HISTORY_DEEP)
+                    {
+                    	d_acc_carrier_phase_queue_rads[i].pop_front();
+                    }
+                    if (d_symbol_TOW_queue_s[i].size()>GPS_L1_CA_HISTORY_DEEP)
+                    {
+                    	d_symbol_TOW_queue_s[i].pop_front();
+                    }
+                }else{
+                	// Clear the observables history for this channel
+                	if (d_symbol_TOW_queue_s[i].size()>0)
+                	{
+						d_symbol_TOW_queue_s[i].clear();
+						d_carrier_doppler_queue_hz[i].clear();
+						d_acc_carrier_phase_queue_rads[i].clear();
+                	}
                 }
         }
 
@@ -150,6 +184,12 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
             double traveltime_ms;
             double pseudorange_m;
             double delta_rx_time_ms;
+            arma::vec symbol_TOW_vec_s;
+            arma::vec dopper_vec_hz;
+            arma::vec dopper_vec_interp_hz;
+            arma::vec acc_phase_vec_rads;
+            arma::vec acc_phase_vec_interp_rads;
+            arma::vec desired_symbol_TOW(1);
             for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
             {
             	// compute the required symbol history shift in order to match the reference symbol
@@ -160,10 +200,36 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                 // update the pseudorange object
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
             	current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].debug_var1=delta_rx_time_ms;
-                //current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads = current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads+ GPS_TWO_PI*0.001*delta_rx_time_ms*current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz;
                 current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000)/1000 + GPS_STARTOFFSET_ms/1000.0;
+            	current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
+                current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000.0)/1000.0 + GPS_STARTOFFSET_ms/1000.0;
+
+                if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size()>=GPS_L1_CA_HISTORY_DEEP)
+                {
+					// compute interpolated observation values for Doppler and Accumulate carrier phase
+					symbol_TOW_vec_s=arma::vec(std::vector<double>(d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].begin(), d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].end()));
+					acc_phase_vec_rads=arma::vec(std::vector<double>(d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].begin(), d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].end()));
+					dopper_vec_hz=arma::vec(std::vector<double>(d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].begin(), d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].end()));
+
+
+					//std::cout<<"symbol_TOW_vec_s[0]="<<symbol_TOW_vec_s[0]<<std::endl;
+					//std::cout<<"symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1]="<<symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1]<<std::endl;
+					//std::cout<<"acc_phase_vec_rads="<<acc_phase_vec_rads<<std::endl;
+					//std::cout<<"dopper_vec_hz="<<dopper_vec_hz<<std::endl;
+
+					desired_symbol_TOW[0]=symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1]+delta_rx_time_ms/1000.0;
+					//std::cout<<"desired_symbol_TOW="<<desired_symbol_TOW[0]<<std::endl;
+
+					arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
+					arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
+
+					//std::cout<<"acc_phase_vec_interp_rads="<<acc_phase_vec_interp_rads[0]<<std::endl;
+					//std::cout<<"dopper_vec_interp_hz="<<dopper_vec_interp_hz[0]<<std::endl;
+
+					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads =acc_phase_vec_interp_rads[0];
+					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz =dopper_vec_interp_hz[0];
+                }
+
             }
         }
 

@@ -132,25 +132,25 @@ private:
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
-    float d_rem_code_phase_chips;
-    float d_rem_carrier_phase_rad;
+    double d_rem_code_phase_chips;
+    double d_rem_carrier_phase_rad;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // acquisition
-    float d_acq_code_phase_samples;
-    float d_acq_carrier_doppler_hz;
+    double d_acq_code_phase_samples;
+    double d_acq_carrier_doppler_hz;
 
     // tracking vars
     double d_code_freq_chips;
-    float d_code_phase_step_chips;
-    float d_carrier_doppler_hz;
-    float d_carrier_phase_step_rad;
-    double d_acc_carrier_phase_rad;
-    float d_code_phase_samples;
-    float d_pll_to_dll_assist_secs_Ti;
+    double d_code_phase_step_chips;
+    double d_carrier_doppler_hz;
+    double d_carrier_phase_step_rad;
+    double d_acc_carrier_phase_cycles;
+    double d_code_phase_samples;
+    double d_pll_to_dll_assist_secs_Ti;
 
     //PRN period in samples
     int d_current_prn_length_samples;
@@ -162,9 +162,9 @@ private:
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
     gr_complex* d_Prompt_buffer;
-    float d_carrier_lock_test;
-    float d_CN0_SNV_dB_Hz;
-    float d_carrier_lock_threshold;
+    double d_carrier_lock_test;
+    double d_CN0_SNV_dB_Hz;
+    double d_carrier_lock_threshold;
     int d_carrier_lock_fail_counter;
 
     // control vars

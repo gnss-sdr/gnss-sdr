@@ -167,7 +167,7 @@ gps_l1_ca_dll_pll_artemisa_tracking_cc::gps_l1_ca_dll_pll_artemisa_tracking_cc(
     d_acq_code_phase_samples = 0.0;
     d_acq_carrier_doppler_hz = 0.0;
     d_carrier_doppler_hz = 0.0;
-    d_acc_carrier_phase_rad = 0.0;
+    d_acc_carrier_phase_cycles = 0.0;
     d_code_phase_samples = 0.0;
 
     d_pll_to_dll_assist_secs_Ti=0.0;
@@ -177,7 +177,6 @@ gps_l1_ca_dll_pll_artemisa_tracking_cc::gps_l1_ca_dll_pll_artemisa_tracking_cc(
 
 void gps_l1_ca_dll_pll_artemisa_tracking_cc::start_tracking()
 {
-
     /*
      *  correct the code phase according to the delay between acq and trk
      */
@@ -186,31 +185,31 @@ void gps_l1_ca_dll_pll_artemisa_tracking_cc::start_tracking()
     d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
     long int acq_trk_diff_samples;
-    float acq_trk_diff_seconds;
+    double acq_trk_diff_seconds;
     acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);//-d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
-    acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
+    acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
     //doppler effect
     // Fd=(C/(C+Vr))*F
-    float radial_velocity = (GPS_L1_FREQ_HZ + d_acq_carrier_doppler_hz) / GPS_L1_FREQ_HZ;
+    double radial_velocity = (GPS_L1_FREQ_HZ + d_acq_carrier_doppler_hz) / GPS_L1_FREQ_HZ;
     // new chip and prn sequence periods based on acq Doppler
-    float T_chip_mod_seconds;
-    float T_prn_mod_seconds;
-    float T_prn_mod_samples;
+    double T_chip_mod_seconds;
+    double T_prn_mod_seconds;
+    double T_prn_mod_samples;
     d_code_freq_chips = radial_velocity * GPS_L1_CA_CODE_RATE_HZ;
     d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
     T_chip_mod_seconds = 1/d_code_freq_chips;
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
-    T_prn_mod_samples = T_prn_mod_seconds * static_cast<float>(d_fs_in);
+    T_prn_mod_samples = T_prn_mod_seconds * static_cast<double>(d_fs_in);
 
     d_current_prn_length_samples = round(T_prn_mod_samples);
 
-    float T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
-    float T_prn_true_samples = T_prn_true_seconds * static_cast<float>(d_fs_in);
-    float T_prn_diff_seconds=  T_prn_true_seconds - T_prn_mod_seconds;
-    float N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
-    float corrected_acq_phase_samples, delay_correction_samples;
-    corrected_acq_phase_samples = fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<float>(d_fs_in)), T_prn_true_samples);
+    double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
+    double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
+    double T_prn_diff_seconds=  T_prn_true_seconds - T_prn_mod_seconds;
+    double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
+    double corrected_acq_phase_samples, delay_correction_samples;
+    corrected_acq_phase_samples = fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<double>(d_fs_in)), T_prn_true_samples);
     if (corrected_acq_phase_samples < 0)
         {
             corrected_acq_phase_samples = T_prn_mod_samples + corrected_acq_phase_samples;
@@ -220,7 +219,7 @@ void gps_l1_ca_dll_pll_artemisa_tracking_cc::start_tracking()
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
-    d_carrier_phase_step_rad=GPS_TWO_PI*d_carrier_doppler_hz/static_cast<float>(d_fs_in);
+    d_carrier_phase_step_rad=GPS_TWO_PI*d_carrier_doppler_hz/static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); //The carrier loop filter implements the Doppler accumulator
@@ -240,7 +239,7 @@ void gps_l1_ca_dll_pll_artemisa_tracking_cc::start_tracking()
     d_rem_code_phase_samples = 0.0;
     d_rem_carrier_phase_rad = 0.0;
     d_rem_code_phase_chips =0.0;
-    d_acc_carrier_phase_rad = 0.0;
+    d_acc_carrier_phase_cycles = 0.0;
     d_pll_to_dll_assist_secs_Ti=0.0;
 
     d_code_phase_samples = d_acq_code_phase_samples;
@@ -288,26 +287,26 @@ int gps_l1_ca_dll_pll_artemisa_tracking_cc::general_work (int noutput_items, gr_
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     // process vars
-    float code_error_chips_Ti=0.0;
-    float code_error_filt_chips=0.0;
-    float code_error_filt_secs_Ti=0.0;
-    float INTEGRATION_TIME=0.0;
+    double code_error_chips_Ti=0.0;
+    double code_error_filt_chips=0.0;
+    double code_error_filt_secs_Ti=0.0;
+    double INTEGRATION_TIME;
     INTEGRATION_TIME=GPS_L1_CA_CODE_PERIOD; // [Ti]
-    float dll_code_error_secs_Ti=0.0;
-    float carr_phase_error_secs_Ti=0.0;
-    float carr_phase_error_filt_secs_ti=0.0;
+    double dll_code_error_secs_Ti=0.0;
+    double carr_phase_error_secs_Ti=0.0;
+    double carr_phase_error_filt_secs_ti=0.0;
     double old_d_rem_code_phase_samples;
-    double old_d_acc_carrier_phase_rad;
+    double old_d_acc_carrier_phase_cycles;
     if (d_enable_tracking == true)
         {
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
                     int samples_offset;
-                    float acq_trk_shif_correction_samples;
+                    double acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
+                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
@@ -344,9 +343,9 @@ int gps_l1_ca_dll_pll_artemisa_tracking_cc::general_work (int noutput_items, gr_
             // Input [s/Ti] -> output [Hz]
             d_carrier_doppler_hz = d_carrier_loop_filter.get_carrier_error(0.0, carr_phase_error_secs_Ti, INTEGRATION_TIME);
             //carrier phase accumulator for (K) doppler estimation
-            //d_acc_carrier_phase_rad -= (GPS_TWO_PI*d_carrier_doppler_hz*INTEGRATION_TIME);
-            old_d_acc_carrier_phase_rad=d_acc_carrier_phase_rad;
-            d_acc_carrier_phase_rad -= (GPS_TWO_PI*static_cast<double>(d_carrier_doppler_hz)*static_cast<double>(INTEGRATION_TIME));
+            //d_acc_carrier_phase_cycles -= (d_carrier_doppler_hz*INTEGRATION_TIME);
+            old_d_acc_carrier_phase_cycles=d_acc_carrier_phase_cycles;
+            d_acc_carrier_phase_cycles -= static_cast<double>(d_carrier_doppler_hz)*INTEGRATION_TIME;
             // PLL to DLL assistance [Secs/Ti]
             d_pll_to_dll_assist_secs_Ti = (d_carrier_doppler_hz*GPS_L1_CA_CODE_PERIOD)/GPS_L1_FREQ_HZ;
             // code frequency (include code Doppler estimation here)
@@ -365,7 +364,7 @@ int gps_l1_ca_dll_pll_artemisa_tracking_cc::general_work (int noutput_items, gr_
 
             //################### PLL COMMANDS #################################################
             //carrier phase step (NCO phase increment per sample) [rads/sample]
-            d_carrier_phase_step_rad=GPS_TWO_PI*d_carrier_doppler_hz/static_cast<float>(d_fs_in);
+            d_carrier_phase_step_rad=GPS_TWO_PI*d_carrier_doppler_hz/static_cast<double>(d_fs_in);
             //remnant carrier phase [rad]
             d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * GPS_L1_CA_CODE_PERIOD,GPS_TWO_PI);//GPS_TWO_PI*carr_phase_error_filt_secs_ti;
 
@@ -422,7 +421,7 @@ int gps_l1_ca_dll_pll_artemisa_tracking_cc::general_work (int noutput_items, gr_
 
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
-            current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
+            current_synchro_data.Carrier_phase_rads = GPS_TWO_PI*static_cast<double>(d_acc_carrier_phase_cycles);
             current_synchro_data.Carrier_Doppler_hz = static_cast<double>(d_carrier_doppler_hz);
             current_synchro_data.CN0_dB_hz = static_cast<double>(d_CN0_SNV_dB_Hz);
             current_synchro_data.Flag_valid_pseudorange = false;
@@ -509,28 +508,27 @@ int gps_l1_ca_dll_pll_artemisa_tracking_cc::general_work (int noutput_items, gr_
                     //tmp_float=(float)d_sample_counter;
                     d_dump_file.write(reinterpret_cast<char*>(&d_sample_counter), sizeof(unsigned long int));
                     // accumulated carrier phase
-                    d_dump_file.write(reinterpret_cast<char*>(&d_acc_carrier_phase_rad), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_acc_carrier_phase_cycles), sizeof(double));
 
                     // carrier and code frequency
-                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(float));
-                    tmp_float=d_code_freq_chips;
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_code_freq_chips), sizeof(double));
 
                     //PLL commands
-                    d_dump_file.write(reinterpret_cast<char*>(&carr_phase_error_secs_Ti), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&carr_phase_error_secs_Ti), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(double));
 
                     //DLL commands
-                    d_dump_file.write(reinterpret_cast<char*>(&code_error_chips_Ti), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&code_error_chips_Ti), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips), sizeof(double));
 
                     // CN0 and carrier lock test
-                    d_dump_file.write(reinterpret_cast<char*>(&d_CN0_SNV_dB_Hz), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_lock_test), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_CN0_SNV_dB_Hz), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_lock_test), sizeof(double));
 
                     // AUX vars (for debug purposes)
-                    tmp_float = d_rem_code_phase_samples;
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
+                    tmp_double = d_rem_code_phase_samples;
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                     tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }

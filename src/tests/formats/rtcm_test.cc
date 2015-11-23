@@ -173,6 +173,10 @@ TEST(Rtcm_Test, Test_MT1005)
 
     EXPECT_EQ(0, reference_msg.compare(reference_msg2));
 
+    std::string reference_msg2 = rtcm->print_M1005(2003, 1114104.5999, -4850729.7108, 3975521.4643, true, false, false, false, false, 0);
+
+    EXPECT_EQ(0, reference_msg.compare(reference_msg2));
+
     unsigned int ref_id;
     double ecef_x;
     double ecef_y;

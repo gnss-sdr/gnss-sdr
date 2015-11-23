@@ -97,6 +97,7 @@ public:
     std::string print_MT1005_test();                     //<! For testing purposes
 
     bool check_CRC(const std::string & message);         //<! Checks that the CRC of a RTCM package is correct
+
 private:
     //
     // Messages

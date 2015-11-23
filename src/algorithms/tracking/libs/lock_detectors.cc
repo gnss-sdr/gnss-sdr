@@ -73,16 +73,20 @@ float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, doubl
     float SNR_dB_Hz = 0;
     float Psig = 0;
     float Ptot = 0;
+    float Psig2, Ptot2, SNR_dB_Hz2; Psig2=0; Ptot2=0;
     for (int i=0; i<length; i++)
         {
-            Psig += std::abs(Prompt_buffer[i].real());
+            Psig += Prompt_buffer[i].real() * Prompt_buffer[i].real(); //std::abs(Prompt_buffer[i].real());
+            Psig2 += std::abs(Prompt_buffer[i].real());
             Ptot += Prompt_buffer[i].imag() * Prompt_buffer[i].imag() + Prompt_buffer[i].real() * Prompt_buffer[i].real();
         }
-    Psig = Psig / (float)length;
-    Psig = Psig * Psig;
-    Ptot = Ptot / (float)length;
+    Psig2 = Psig2 / (float)length;//
+    Psig2 = Psig2 * Psig2;//
+    Ptot2 = Ptot / (float)length;//
     SNR = Psig / (Ptot - Psig);
-    SNR_dB_Hz = 10 * log10(SNR) + 10 * log10(fs_in/2) - 10 * log10((float)code_length);
+    SNR_dB_Hz = 10 * log10(Psig2 / (Ptot2 - Psig2)) + 10 * log10(fs_in/2) - 10 * log10((float)code_length  * 1023000 /fs_in ); // 10 * log10(SNR) + 10 * log10(fs_in/2) - 10 * log10((float)code_length);
+    SNR_dB_Hz2 = 10 * log10(Psig2 / (Ptot2 - Psig2)) + 10 * log10(fs_in/2) - 10 * log10((float)code_length);
+    //std::cout << "CNO = " << SNR_dB_Hz << "  old: " << SNR_dB_Hz2 << "  code_length: " << code_length << std::endl;
     return SNR_dB_Hz;
 }
 

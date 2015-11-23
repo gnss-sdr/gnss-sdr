@@ -349,7 +349,7 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
             pseudoranges_iter != pseudoranges.end();
             pseudoranges_iter++)
         {
-            std::bitset<58> content = Rtcm::get_M1001_sat_content(pseudoranges_iter->second);
+            std::bitset<58> content = Rtcm::get_MT1001_sat_content(pseudoranges_iter->second);
             data += content.to_string();
         }
 
@@ -417,42 +417,6 @@ std::bitset<152> Rtcm::get_MT1005_test ()
     return test_msg;
 }
 
-std::string Rtcm::print_M1005( unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator)
-{
-    unsigned int msg_number = 1005;
-    std::bitset<1> DF001_;
-
-    Rtcm::set_DF002(msg_number);
-    Rtcm::set_DF003(ref_id);
-    Rtcm::set_DF021();
-    Rtcm::set_DF022(gps);
-    Rtcm::set_DF023(glonass);
-    Rtcm::set_DF024(galileo);
-    DF141 = std::bitset<1>(non_physical);
-    DF001_ = std::bitset<1>("0");
-    Rtcm::set_DF025(ecef_x);
-    DF142 = std::bitset<1>(single_oscillator);
-    Rtcm::set_DF026(ecef_y);
-    DF364 = std::bitset<2>(quarter_cycle_indicator);
-    Rtcm::set_DF027(ecef_z);
-
-    std::string data = DF002.to_string() +
-            DF003.to_string() +
-            DF021.to_string() +
-            DF022.to_string() +
-            DF023.to_string() +
-            DF024.to_string() +
-            DF141.to_string() +
-            DF025.to_string() +
-            DF142.to_string() +
-            DF001_.to_string() +
-            DF026.to_string() +
-            DF364.to_string() +
-            DF027.to_string() ;
-
-    std::string message = build_message(data);
-    return message;
-}
 
 std::string Rtcm::print_MT1005( unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator)
 {

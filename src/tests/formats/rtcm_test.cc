@@ -34,7 +34,7 @@
 
 TEST(Rtcm_Test, Hex_to_bin)
 {
-    auto  rtcm = std::make_shared<Rtcm>();
+    auto rtcm = std::make_shared<Rtcm>();
 
     std::string test1 = "2A";
     std::string test1_bin = rtcm->hex_to_bin(test1);
@@ -64,7 +64,7 @@ TEST(Rtcm_Test, Hex_to_bin)
 
 TEST(Rtcm_Test, Bin_to_hex)
 {
-    auto  rtcm = std::make_shared<Rtcm>();
+    auto rtcm = std::make_shared<Rtcm>();
 
     std::string test1 = "00101010";
     std::string test1_hex = rtcm->bin_to_hex(test1);
@@ -108,6 +108,14 @@ TEST(Rtcm_Test, Hex_to_int)
 }
 
 
+TEST(Rtcm_Test, Hex_to_uint)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    long unsigned int expected1 = 42;
+    EXPECT_EQ(expected1,  rtcm->hex_to_uint(rtcm->bin_to_hex("00101010")));
+}
+
+
 TEST(Rtcm_Test, Bin_to_double)
 {
     auto rtcm = std::make_shared<Rtcm>();
@@ -124,10 +132,46 @@ TEST(Rtcm_Test, Bin_to_double)
     EXPECT_DOUBLE_EQ(0, rtcm->bin_to_double(test3.to_string()));
 }
 
-TEST(Rtcm_Test, Test_Read_M1005)
+
+TEST(Rtcm_Test, Bin_to_uint)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    long unsigned int expected1 = 42;
+    EXPECT_EQ(expected1, rtcm->bin_to_uint("00101010"));
+    long unsigned int expected2 = 214;
+    EXPECT_EQ(expected2, rtcm->bin_to_uint("11010110"));
+}
+
+
+TEST(Rtcm_Test, Bin_to_int)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    long unsigned int expected1 = 42;
+    EXPECT_EQ(expected1, rtcm->bin_to_int("00101010"));
+    long unsigned int expected2 = -42;
+    EXPECT_EQ(expected2, rtcm->bin_to_int("11010110"));
+}
+
+
+TEST(Rtcm_Test, Check_CRC)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    EXPECT_EQ(true, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98"));
+    EXPECT_EQ(false, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B99"));
+
+    EXPECT_EQ(true, rtcm->check_CRC(rtcm->print_M1005_test()));
+    EXPECT_EQ(true, rtcm->check_CRC(rtcm->print_M1005_test()));  // Run twice to check that CRC has no memory
+}
+
+
+TEST(Rtcm_Test, Test_MT1005)
 {
     auto rtcm = std::make_shared<Rtcm>();
     std::string reference_msg = rtcm->print_M1005_test();
+
+    std::string reference_msg2 = rtcm->print_M1005(2003, 1114104.5999, -4850729.7108, 3975521.4643, true, false, false, false, false, 0);
+
+    EXPECT_EQ(0, reference_msg.compare(reference_msg2));
 
     unsigned int ref_id;
     double ecef_x;
@@ -160,13 +204,26 @@ TEST(Rtcm_Test, Test_Read_M1005)
     EXPECT_DOUBLE_EQ(3975521.4643, ecef_z);
 }
 
-TEST(Rtcm_Test, Check_CRC)
+
+
+TEST(Rtcm_Test, Test_MT1019)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    EXPECT_EQ(true, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98"));
-    EXPECT_EQ(false, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B99"));
 
-    EXPECT_EQ(true, rtcm->check_CRC(rtcm->print_M1005_test()));
-    EXPECT_EQ(true, rtcm->check_CRC(rtcm->print_M1005_test()));
+    Gps_Ephemeris gps_eph = Gps_Ephemeris();
+    Gps_Ephemeris gps_eph_read = Gps_Ephemeris();
+
+    gps_eph.i_satellite_PRN = 3;
+    gps_eph.d_IODC = 4;
+    gps_eph.d_e_eccentricity = 2.0 * E_LSB;
+    gps_eph.b_fit_interval_flag = true;
+    std::string tx_msg = rtcm->print_M1019(gps_eph);
+
+    EXPECT_EQ(0, rtcm->read_M1019(tx_msg, gps_eph_read));
+    EXPECT_EQ(3, gps_eph_read.i_satellite_PRN);
+    EXPECT_DOUBLE_EQ(4, gps_eph_read.d_IODC);
+    EXPECT_DOUBLE_EQ( 2.0 * E_LSB, gps_eph_read.d_e_eccentricity);
+    EXPECT_EQ(true, gps_eph_read.b_fit_interval_flag);
+    EXPECT_EQ(1, rtcm->read_M1019("FFFFFFFFFFF", gps_eph_read));
 }
 

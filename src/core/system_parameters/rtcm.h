@@ -43,42 +43,57 @@
 #include "gps_navigation_message.h"
 
 /*!
- * \brief This class implements the RTCM 3.2 Stardard
+ * \brief This class implements the RTCM 3.2 Standard
  *
  */
 class Rtcm
 {
 public:
-    Rtcm();
+    Rtcm(); //<! Default constructor
 
     std::string print_M1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
-    std::string print_M1045(const Galileo_Ephemeris & gal_eph); //<! Galileo Ephemeris, should be broadcast every 2 minutes
+    /*!
+     * \brief Prints message type 1005 (Stationary Antenna Reference Point)
+     */
+    std::string print_M1005(unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator);
 
     /*!
-     * \brief GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
+     * \brief Verifies and reads messages of type 1005 (Stationary Antenna Reference Point)
      */
-    std::string print_M1019(const Gps_Ephemeris & gps_eph);
-    int read_M1019(const std::string & message, Gps_Ephemeris & gps_eph);
-
-
-
-    std::string bin_to_hex(const std::string& s);
-
-    std::string hex_to_bin(const std::string& s);
-
-    unsigned long int bin_to_uint(const std::string& s);
-    long int bin_to_int(const std::string& s);
-
-    unsigned long int hex_to_uint(const std::string& s);
-    long int hex_to_int(const std::string& s);
-
-    double bin_to_double(const std::string& s);
-
-    std::string print_M1005_test(); //<! For testing purposes
     int read_M1005(const std::string & message, unsigned int & ref_id, double & ecef_x, double & ecef_y, double & ecef_z, bool & gps, bool & glonass, bool & galileo);
 
-    bool check_CRC(const std::string & message);
+    /*!
+     * \brief Prints message type 1019 (GPS Ephemeris), should be broadcast in the event that
+     * the IODC does not match the IODE, and every 2 minutes.
+     */
+    std::string print_M1019(const Gps_Ephemeris & gps_eph);
+
+    /*!
+     * \brief Verifies and reads messages of type 1019 (GPS Ephemeris)
+     */
+    int read_M1019(const std::string & message, Gps_Ephemeris & gps_eph);
+
+    /*!
+     * \brief Prints message type 1045 (Galileo Ephemeris)
+     */
+    std::string print_M1045(const Galileo_Ephemeris & gal_eph); //<! Galileo Ephemeris, should be broadcast every 2 minutes
+
+
+    std::string bin_to_hex(const std::string& s); //<! Returns a string of hexadecimal symbols from a string of binary symbols
+    std::string hex_to_bin(const std::string& s); //<! Returns a string of binary symbols from a string of hexadecimal symbols
+
+    unsigned long int bin_to_uint(const std::string& s); //<! Returns an unsigned long int from a string of binary symbols
+    long int bin_to_int(const std::string& s);           //<! Returns a long int from a string of binary symbols
+
+    unsigned long int hex_to_uint(const std::string& s); //<! Returns an unsigned long int from a string of hexadecimal symbols
+    long int hex_to_int(const std::string& s);           //<! Returns a long int from a string of hexadecimal symbols
+
+    double bin_to_double(const std::string& s);   //<! Returns double from a string of binary symbols
+
+    std::string print_M1005_test();   //<! For testing purposes
+
+    bool check_CRC(const std::string & message); //<! Checks that the CRC of a RTCM package is correct
 private:
     //
     // Messages
@@ -109,7 +124,7 @@ private:
 
     std::bitset<58> get_M1001_sat_content(const Gnss_Synchro & gnss_synchro);
 
-    std::bitset<138> get_M1002();  //  GPS observables
+    //std::bitset<138> get_M1002();  //  GPS observables
     //std::bitset<488> get_M1019();  // GPS ephemeris
     //std::bitset<496> get_M1045();  // Galileo ephemeris
     std::bitset<152> get_M1005_test();
@@ -124,9 +139,7 @@ private:
     std::bitset<10> message_length;
     std::bitset<24> crc_frame;
     typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
-
     std::string add_CRC(const std::string& m);
-
     std::string build_message(std::string data); // adds 0s to complete a byte and adds the CRC
 
 

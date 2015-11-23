@@ -126,8 +126,8 @@ std::string Rtcm::bin_to_hex(const std::string& s)
             ss << std::hex << n;
         }
 
-    int start = std::max(remainder, 0);
-    for(int i = start; i < s.length() - 1; i = i + 4)
+    unsigned int start = std::max(remainder, 0);
+    for(unsigned int i = start; i < s.length() - 1; i = i + 4)
         {
             s_aux.assign(s, i, 4);
             std::bitset<4> bs(s_aux);
@@ -146,7 +146,7 @@ std::string Rtcm::hex_to_bin(const std::string& s)
     std::stringstream ss;
     ss << s;
     std::string s_lower = boost::to_upper_copy(ss.str());
-    for(int i = 0; i < s.length(); i++)
+    for(unsigned int i = 0; i < s.length(); i++)
         {
             unsigned long int n;
             std::istringstream(s_lower.substr(i,1)) >> std::hex >> n;
@@ -1015,7 +1015,7 @@ int Rtcm::set_DF007(bool divergence_free_smoothing_indicator)
 
 int Rtcm::set_DF008(short int smoothing_interval)
 {
-    std::bitset<3> DF008_ = std::bitset<3>(smoothing_interval);
+    DF008 = std::bitset<3>(smoothing_interval);
     return 0;
 }
 

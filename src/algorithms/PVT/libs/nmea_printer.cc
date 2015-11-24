@@ -141,6 +141,7 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data
 
     // set the new PVT data
     d_PVT_data = pvt_data;
+    d_PVT_data->d_flag_averaging = print_average_values;
 
     // generate the NMEA sentences
 

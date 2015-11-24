@@ -86,10 +86,11 @@ Rtcm_Printer::~Rtcm_Printer()
 
 bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
 {
-    std::string m1001 = rtcm->print_MT1001( gps_eph, obs_time, pseudoranges);
+    std::string m1001 = rtcm->print_MT1001(gps_eph, obs_time, pseudoranges);
     Rtcm_Printer::Print_Message(m1001);
     return true;
 }
+
 
 bool Rtcm_Printer::Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph)
 {
@@ -97,6 +98,7 @@ bool Rtcm_Printer::Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph)
     Rtcm_Printer::Print_Message(m1019);
     return true;
 }
+
 
 bool Rtcm_Printer::Print_Rtcm_MT1045(const Galileo_Ephemeris & gal_eph)
 {
@@ -156,28 +158,26 @@ void Rtcm_Printer::close_serial()
 
 bool Rtcm_Printer::Print_Message(std::string message)
 {
+    //write to file
     try
     {
             rtcm_file_descriptor << message << std::endl;
-
     }
     catch(std::exception ex)
     {
             DLOG(INFO) << "RTCM printer can not write on output file" << rtcm_filename.c_str();
+            return false;
     }
 
     //write to serial device
-    if (rtcm_dev_descriptor!=-1)
+    if (rtcm_dev_descriptor != -1)
         {
-            try
-            {
-                    int n_bytes_written;
-                    n_bytes_written = write(rtcm_dev_descriptor, message.c_str(), message.length());
-            }
-            catch(std::exception ex)
-            {
-                    DLOG(INFO) << "RTCM printer can not write on serial device" << rtcm_filename.c_str();;
-            }
+            if(write(rtcm_dev_descriptor, message.c_str(), message.length()) == -1)
+                {
+                    DLOG(INFO) << "RTCM printer cannot write on serial device" << rtcm_devname.c_str();
+                    std::cout << "RTCM printer cannot write on serial device" << rtcm_devname.c_str() << std::endl;
+                    return false;
+                }
         }
     return true;
 }

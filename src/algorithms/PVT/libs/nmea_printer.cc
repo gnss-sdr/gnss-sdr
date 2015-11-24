@@ -173,22 +173,26 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data
     //write to serial device
     if (nmea_dev_descriptor!=-1)
         {
-            try
-            {
-                    int n_bytes_written;
-                    //GPRMC
-                    n_bytes_written = write(nmea_dev_descriptor, GPRMC.c_str(), GPRMC.length());
-                    //GPGGA (Global Positioning System Fixed Data)
-                    n_bytes_written = write(nmea_dev_descriptor, GPGGA.c_str(), GPGGA.length());
-                    //GPGSA
-                    n_bytes_written = write(nmea_dev_descriptor, GPGSA.c_str(), GPGSA.length());
-                    //GPGSV
-                    n_bytes_written = write(nmea_dev_descriptor, GPGSV.c_str(), GPGSV.length());
-            }
-            catch(std::exception ex)
-            {
-                    DLOG(INFO) << "NMEA printer can not write on serial device" << nmea_filename.c_str();;
-            }
+            if(write(nmea_dev_descriptor, GPRMC.c_str(), GPRMC.length()) == -1)
+                {
+                    DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
+                    return false;
+                }
+            if(write(nmea_dev_descriptor, GPGGA.c_str(), GPGGA.length()) == -1)
+                {
+                    DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
+                    return false;
+                }
+            if(write(nmea_dev_descriptor, GPGSA.c_str(), GPGSA.length()) == -1)
+                {
+                    DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
+                    return false;
+                }
+            if(write(nmea_dev_descriptor, GPGSV.c_str(), GPGSV.length()) == -1)
+                {
+                    DLOG(INFO) << "NMEA printer cannot write on serial device" << nmea_devname.c_str();
+                    return false;
+                }
         }
     return true;
 }

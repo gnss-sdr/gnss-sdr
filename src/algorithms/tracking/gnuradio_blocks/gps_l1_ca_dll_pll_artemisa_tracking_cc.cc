@@ -345,18 +345,22 @@ int gps_l1_ca_dll_pll_artemisa_tracking_cc::general_work (int noutput_items, gr_
             //carrier phase accumulator for (K) doppler estimation
             //d_acc_carrier_phase_cycles -= (d_carrier_doppler_hz*INTEGRATION_TIME);
             old_d_acc_carrier_phase_cycles=d_acc_carrier_phase_cycles;
-            d_acc_carrier_phase_cycles -= static_cast<double>(d_carrier_doppler_hz)*INTEGRATION_TIME;
+            d_acc_carrier_phase_cycles += static_cast<double>(d_carrier_doppler_hz)*d_current_prn_length_samples/static_cast<double>(d_fs_in);//INTEGRATION_TIME;
             // PLL to DLL assistance [Secs/Ti]
             d_pll_to_dll_assist_secs_Ti = (d_carrier_doppler_hz*GPS_L1_CA_CODE_PERIOD)/GPS_L1_FREQ_HZ;
             // code frequency (include code Doppler estimation here)
-            d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ;
+            d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ + ((d_carrier_doppler_hz * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);//GPS_L1_CA_CODE_RATE_HZ;
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
             // keep alignment parameters for the next input buffer
+            double T_chip_seconds;
+            double T_prn_seconds;
             double T_prn_samples;
             double K_blk_samples;
             // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
-            T_prn_samples = GPS_L1_CA_CODE_PERIOD * static_cast<double>(d_fs_in);
+            T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
+            T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
+            T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples - static_cast<double>(dll_code_error_secs_Ti) * static_cast<double>(d_fs_in);
             d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
             old_d_rem_code_phase_samples=d_rem_code_phase_samples;

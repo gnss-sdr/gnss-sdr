@@ -150,6 +150,7 @@ private:
 
     double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;
+    bool flag_PLL_180_deg_phase_locked;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;

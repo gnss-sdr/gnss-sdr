@@ -1180,7 +1180,7 @@ int Rtcm::set_DF012(const Gnss_Synchro & gnss_synchro)
     double L1_pseudorange_field = std::fmod(L1_pseudorange, 299792.458);
     double L1_phaserange_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * GPS_C_m_s / GPS_L1_FREQ_HZ;
 
-    long int gps_L1_phaserange_minus_L1_pseudorange =  static_cast<long int>((0 - L1_pseudorange_field) / 0.0005); ///////////////////////
+    long int gps_L1_phaserange_minus_L1_pseudorange =  static_cast<long int>((L1_phaserange_m - L1_pseudorange_field) / 0.0005); ///////////////////////
     DF012 = std::bitset<20>(gps_L1_phaserange_minus_L1_pseudorange);
     return 0;
 }

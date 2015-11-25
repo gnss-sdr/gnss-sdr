@@ -83,6 +83,7 @@ private:
     std::string longitude_to_hm(double longitude);
     std::string latitude_to_hm(double lat);
     char checkSum(std::string sentence);
+    bool print_avg_pos;
 };
 
 #endif

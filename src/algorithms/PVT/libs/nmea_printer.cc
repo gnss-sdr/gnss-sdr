@@ -68,6 +68,7 @@ Nmea_Printer::Nmea_Printer(std::string filename, bool flag_nmea_tty_port, std::s
         {
             nmea_dev_descriptor = -1;
         }
+    print_avg_pos = false;
 }
 
 
@@ -141,7 +142,7 @@ bool Nmea_Printer::Print_Nmea_Line(const std::shared_ptr<Pvt_Solution>& pvt_data
 
     // set the new PVT data
     d_PVT_data = pvt_data;
-    d_PVT_data->d_flag_averaging = print_average_values;
+    print_avg_pos = print_average_values;
 
     // generate the NMEA sentences
 
@@ -366,7 +367,7 @@ std::string Nmea_Printer::get_GPRMC()
             sentence_str << ",V";
         };
 
-    if (d_PVT_data->d_flag_averaging == true)
+    if (print_avg_pos == true)
         {
             // Latitude ddmm.mmmm,(N or S)
             sentence_str << "," << latitude_to_hm(d_PVT_data->d_avg_latitude_d);

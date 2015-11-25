@@ -321,7 +321,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         // Sice we detected the preable, then, we are in the last symbol of that preamble, or just at the start of the first subframe symbol.
         {
             d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
-            d_TOW_at_current_symbol = d_TOW_at_Preamble;//GPS_L1_CA_CODE_PERIOD;// + (double)GPS_CA_PREAMBLE_LENGTH_BITS/(double)GPS_CA_TELEMETRY_RATE_BITS_SECOND;
+            d_TOW_at_current_symbol = d_TOW_at_Preamble;
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
             if (flag_TOW_set == false)
                 {

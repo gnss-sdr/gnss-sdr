@@ -1167,7 +1167,8 @@ int Rtcm::set_DF010(bool code_indicator)
 
 int Rtcm::set_DF011(const Gnss_Synchro & gnss_synchro)
 {
-    unsigned long int gps_L1_pseudorange = static_cast<long unsigned int>(std::round(std::fmod(gnss_synchro.Pseudorange_m, 299792.458) / 0.02 ));
+    double ambiguity = std::floor( gnss_synchro.Pseudorange_m / 299792.458 );
+    unsigned long int gps_L1_pseudorange = static_cast<unsigned long int>(std::round(( gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02 ));
     DF011 = std::bitset<24>(gps_L1_pseudorange);
     return 0;
 }
@@ -1175,12 +1176,14 @@ int Rtcm::set_DF011(const Gnss_Synchro & gnss_synchro)
 
 int Rtcm::set_DF012(const Gnss_Synchro & gnss_synchro)
 {
+    const double lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
     double L1_pseudorange = gnss_synchro.Pseudorange_m;
-    //double L1_pseudorange_integers = std::floor(L1_pseudorange / 299792.458);
-    double L1_pseudorange_field = std::fmod(L1_pseudorange, 299792.458);
-    double L1_phaserange_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * GPS_C_m_s / GPS_L1_FREQ_HZ;
-
-    long int gps_L1_phaserange_minus_L1_pseudorange =  static_cast<long int>((L1_phaserange_m - L1_pseudorange_field) / 0.0005); ///////////////////////
+    double ambiguity = std::floor( gnss_synchro.Pseudorange_m / 299792.458 );
+    double gps_L1_pseudorange = std::round(( gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02 );
+    double gps_L1_pseudorange_c = static_cast<double>(gps_L1_pseudorange) * 0.02 + ambiguity * 299792.458;
+    double L1_phaserange_c = gnss_synchro.Carrier_phase_rads * GPS_TWO_PI;
+    double L1_phaserange_c_r = std::fmod(L1_phaserange_c - gps_L1_pseudorange_c / lambda + 1500.0, 3000.0) - 1500.0;
+    long int gps_L1_phaserange_minus_L1_pseudorange = static_cast<long int>(std::round(L1_phaserange_c_r * lambda / 0.0005 ));
     DF012 = std::bitset<20>(gps_L1_phaserange_minus_L1_pseudorange);
     return 0;
 }

@@ -201,7 +201,7 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
             doppler_hz = d_config_doppler_min + d_doppler_step*doppler_index;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
-            phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
+            phase_step_rad = static_cast<float>(GPS_TWO_PI) * ( d_freq + doppler_hz ) / static_cast<float>(d_fs_in);
             d_grid_doppler_wipeoffs[doppler_index] = new gr_complex[d_fft_size];
             fxp_nco(d_grid_doppler_wipeoffs[doppler_index], d_fft_size,0, phase_step_rad);
         }

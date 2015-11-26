@@ -297,7 +297,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_code()
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_carrier()
 {
     float sin_f, cos_f;
-    float phase_step_rad = static_cast<float>(GPS_TWO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
+    float phase_step_rad = static_cast<float>(GPS_TWO_PI) * ( d_if_freq + d_carrier_doppler_hz ) / static_cast<float>(d_fs_in);
     int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
     int phase_rad_i = gr::fxpt::float_to_fixed(d_rem_carr_phase_rad);
 
@@ -424,7 +424,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             //carrier phase accumulator for (K) doppler estimation
             d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * GPS_L1_CA_CODE_PERIOD;
             //remanent carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * GPS_L1_CA_CODE_PERIOD;
+            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * ( d_if_freq + d_carrier_doppler_hz ) * GPS_L1_CA_CODE_PERIOD;
             d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
 
             // ################## DLL ##########################################################

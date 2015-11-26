@@ -152,8 +152,8 @@ private:
     double d_code_phase_samples;
     double d_pll_to_dll_assist_secs_Ti;
 
-    //PRN period in samples
-    int d_current_prn_length_samples;
+    //Integration period in samples
+    int d_correlation_length_samples;
 
     //processing samples counters
     unsigned long int d_sample_counter;

@@ -18,8 +18,9 @@
 
 
 if(ENABLE_CUDA)
-	FIND_PACKAGE(CUDA REQUIRED)
-	set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} gps_l1_ca_dll_pll_tracking_gpu_cc.cc)
+     set(OPT_TRACKING_BLOCKS ${OPT_TRACKING_BLOCKS} gps_l1_ca_dll_pll_tracking_gpu_cc.cc)
+     set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS})
+     set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} ${CUDA_LIBRARIES}) 
 endif(ENABLE_CUDA)
 
 set(TRACKING_GR_BLOCKS_SOURCES
@@ -33,7 +34,7 @@ set(TRACKING_GR_BLOCKS_SOURCES
      galileo_e5a_dll_pll_tracking_cc.cc
      gps_l2_m_dll_pll_tracking_cc.cc
      gps_l1_ca_dll_pll_artemisa_tracking_cc.cc
-	 ${OPT_TRACKING_BLOCKS}   
+     ${OPT_TRACKING_BLOCKS}   
 )
 
 include_directories(
@@ -48,8 +49,7 @@ include_directories(
      ${Boost_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
      ${VOLK_GNSSSDR_INCLUDE_DIRS}
-     ${CUDA_INCLUDE_DIRS}
-     # ${CMAKE_SOURCE_DIR}/src/algorithms/tracking/libs/cudahelpers
+     ${OPT_TRACKING_INCLUDES}
 )
 
 if(ENABLE_GENERIC_ARCH)
@@ -60,7 +60,8 @@ file(GLOB TRACKING_GR_BLOCKS_HEADERS "*.h")
 add_library(tracking_gr_blocks ${TRACKING_GR_BLOCKS_SOURCES} ${TRACKING_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${TRACKING_GR_BLOCKS_HEADERS})
 
-target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES} ${CUDA_LIBRARIES})
+target_link_libraries(tracking_gr_blocks tracking_lib ${GNURADIO_RUNTIME_LIBRARIES} gnss_sp_libs ${Boost_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES} ${OPT_TRACKING_LIBRARIES})
+
 if(NOT VOLK_GNSSSDR_FOUND)
     add_dependencies(tracking_gr_blocks volk_gnsssdr_module)
 endif(NOT VOLK_GNSSSDR_FOUND)

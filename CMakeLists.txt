@@ -733,8 +733,8 @@ if(NOT ARMADILLO_FOUND)
      message(STATUS " Armadillo will be downloaded and built automatically ")
      message(STATUS " when doing 'make'. ")
 
-     set(armadillo_RELEASE 5.200.2)
-     set(armadillo_MD5 "ef57ba4c473a3b67c672441a7face09e")
+     set(armadillo_RELEASE 6.200.2)
+     set(armadillo_MD5 "e07910be1a79b20fa2efe1006a274390")
 
      ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
@@ -781,21 +781,42 @@ endif(NOT ARMADILLO_FOUND)
 # GnuTLS - http://www.gnutls.org/
 ################################################################################
 find_package(GnuTLS)
-if(NOT GNUTLS_FOUND)
-    message(" The GnuTLS library has not been found.")
-    message(" You can try to install it by typing:")
-    if(OS_IS_LINUX)
-        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo yum install libgnutls-openssl-devel")
-        else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-            message(" sudo apt-get install libgnutls-openssl-dev")
-        endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-    endif(OS_IS_LINUX)
-    if(OS_IS_MACOSX)
-        message(" sudo port install gnutls")
-    endif(OS_IS_MACOSX)
-    message(FATAL_ERROR "GnuTLS libraries are required to build gnss-sdr")
-endif(NOT GNUTLS_FOUND)
+find_library(GNUTLS_OPENSSL_LIBRARY NAMES gnutls-openssl libgnutls-openssl.so.27
+                                    HINTS /usr/lib 
+                                          /usr/lib64 
+                                          /usr/local/lib 
+                                          /usr/local/lib64 
+                                          /opt/local/lib
+                                          /usr/lib/x86_64-linux-gnu
+                                          /usr/lib/aarch64-linux-gnu
+                                          /usr/lib/arm-linux-gnueabihf
+                                          /usr/lib/arm-linux-gnueabi
+                                          /usr/lib/i386-linux-gnu
+             )
+ 
+if(NOT GNUTLS_OPENSSL_LIBRARY)
+     message(STATUS "Looking for OpenSSL instead...")
+     find_package(OpenSSL)
+     if(OPENSSL_FOUND)
+        set(GNUTLS_INCLUDE_DIR ${OPENSSL_INCLUDE_DIR})
+        set(GNUTLS_LIBRARIES "")
+        set(GNUTLS_OPENSSL_LIBRARY ${OPENSSL_SSL_LIBRARY})
+     else(OPENSSL_FOUND)
+         message(" The GnuTLS library with openssl compatibility enabled has not been found.")
+         message(" You can try to install the required libraries by typing:")
+         if(OS_IS_LINUX)
+            if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                message(" sudo yum install openssl-devel")
+            else(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                message(" sudo apt-get install libgnutls-openssl-dev")
+            endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+         endif(OS_IS_LINUX)
+         if(OS_IS_MACOSX)
+            message(" sudo port install gnutls")
+         endif(OS_IS_MACOSX)
+            message(FATAL_ERROR "GnuTLS libraries with openssl compatibility are required to build gnss-sdr")
+     endif(OPENSSL_FOUND)
+endif(NOT GNUTLS_OPENSSL_LIBRARY)
 
 
 ################################################################################
@@ -1085,9 +1106,9 @@ endif(ENABLE_GPROF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
 
 if(OS_IS_LINUX)
-    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "openSUSE" OR ${LINUX_DISTRIBUTION} MATCHES "ArchLinux")
         link_libraries(pthread)
-    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+    endif(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "openSUSE" OR ${LINUX_DISTRIBUTION} MATCHES "ArchLinux")
 endif(OS_IS_LINUX)
 
 

@@ -211,7 +211,6 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
 					acc_phase_vec_rads=arma::vec(std::vector<double>(d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].begin(), d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].end()));
 					dopper_vec_hz=arma::vec(std::vector<double>(d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].begin(), d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].end()));
 
-
 					//std::cout<<"symbol_TOW_vec_s[0]="<<symbol_TOW_vec_s[0]<<std::endl;
 					//std::cout<<"symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1]="<<symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1]<<std::endl;
 					//std::cout<<"acc_phase_vec_rads="<<acc_phase_vec_rads<<std::endl;
@@ -223,52 +222,22 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
 //					arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
 //					arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
 
-					// linear regression
+					// Curve fitting to cuadratic function
 					arma::mat A=arma::ones<arma::mat> (GPS_L1_CA_HISTORY_DEEP,2);
 					A.col(1)=symbol_TOW_vec_s;
-					arma::mat coef_acc_phase(1,2);
+					//A.col(2)=symbol_TOW_vec_s % symbol_TOW_vec_s;
+					arma::mat coef_acc_phase(1,3);
 					coef_acc_phase=arma::pinv(A.t()*A)*A.t()*acc_phase_vec_rads;
-					arma::mat coef_doppler(1,2);
+					arma::mat coef_doppler(1,3);
 					coef_doppler=arma::pinv(A.t()*A)*A.t()*dopper_vec_hz;
 					arma::vec acc_phase_lin;
 					arma::vec carrier_doppler_lin;
-					acc_phase_lin=coef_acc_phase[0]+coef_acc_phase[1]*desired_symbol_TOW[0];
-					carrier_doppler_lin=coef_doppler[0]+coef_doppler[1]*desired_symbol_TOW[0];
+					acc_phase_lin=coef_acc_phase[0]+coef_acc_phase[1]*desired_symbol_TOW[0];//+coef_acc_phase[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
+					carrier_doppler_lin=coef_doppler[0]+coef_doppler[1]*desired_symbol_TOW[0];//+coef_doppler[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
 					//std::cout<<"acc_phase_vec_interp_rads="<<acc_phase_vec_interp_rads[0]<<std::endl;
 					//std::cout<<"dopper_vec_interp_hz="<<dopper_vec_interp_hz[0]<<std::endl;
-
-//					if (std::isnan(acc_phase_vec_interp_rads[0]) != true and  std::isnan(dopper_vec_interp_hz[0]) != true)
-//					{
-						current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads =acc_phase_lin[0];
-						current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz =carrier_doppler_lin[0];
-//					}else{
-//						std::cout<<"NaN detected in interpolation output, desired_symbol_TOW[0]= "<<desired_symbol_TOW[0]<<std::endl;
-//						std::cout<<"symbol_TOW_vec_s[0]="<<symbol_TOW_vec_s[0]<<std::endl;
-//						std::cout<<"symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1]="<<symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1]<<std::endl;
-//
-//						for (int n=0;n<symbol_TOW_vec_s.size();n++)
-//						{
-//							if (std::isnan(symbol_TOW_vec_s[n])==true)
-//							{
-//								std::cout<<"NaN detected in symbol_TOW_vec_s index "<<n<<std::endl;
-//								//std::cout<<"symbol_TOW_vec_s="<<symbol_TOW_vec_s<<std::endl;
-//								//std::cout<<"acc_phase_vec_rads="<<acc_phase_vec_rads<<std::endl;
-//							}
-//							if (std::isnan(dopper_vec_hz[n])==true)
-//							{
-//								std::cout<<"NaN detected in dopper_vec_hz index "<<n<<std::endl;
-//								//std::cout<<"symbol_TOW_vec_s="<<symbol_TOW_vec_s<<std::endl;
-//								//std::cout<<"acc_phase_vec_rads="<<acc_phase_vec_rads<<std::endl;
-//							}
-//							if (std::isnan(acc_phase_vec_rads[n])==true)
-//							{
-//								std::cout<<"NaN detected in acc_phase_vec_rads index "<<n<<std::endl;
-//								//std::cout<<"symbol_TOW_vec_s="<<symbol_TOW_vec_s<<std::endl;
-//								//std::cout<<"acc_phase_vec_rads="<<acc_phase_vec_rads<<std::endl;
-//							}
-//						}
-//
-//					}
+					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads =acc_phase_lin[0];
+					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz =carrier_doppler_lin[0];
                 }
 
             }

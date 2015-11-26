@@ -315,7 +315,7 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_carrier()
             phase += phase_step;
         }
     d_rem_carr_phase = fmod(phase, GPS_TWO_PI);
-    d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + phase;
+    d_acc_carrier_phase_rad -= d_acc_carrier_phase_rad + phase;
 }
 
 
@@ -439,6 +439,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             if (d_FLL_wait == 1)
                 {
                     d_Prompt_prev = *d_Prompt;
+                    d_FLL_discriminator_hz=0.0;
                     d_FLL_wait = 0;
                 }
             else
@@ -454,7 +455,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             /*
              * DLL and FLL+PLL filter and get current carrier Doppler and code frequency
              */
-            carr_nco_hz = d_carrier_loop_filter.get_carrier_error(0.0, PLL_discriminator_hz, GPS_L1_CA_CODE_PERIOD);
+            carr_nco_hz = d_carrier_loop_filter.get_carrier_error(d_FLL_discriminator_hz, PLL_discriminator_hz, correlation_time_s);
             d_carrier_doppler_hz = d_if_freq + carr_nco_hz;
 
             d_code_freq_hz = GPS_L1_CA_CODE_RATE_HZ + (((d_carrier_doppler_hz + d_if_freq) * GPS_L1_CA_CODE_RATE_HZ) / GPS_L1_FREQ_HZ);
@@ -528,9 +529,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             double T_prn_samples;
             double K_blk_samples;
             T_chip_seconds = 1 / static_cast<double>(d_code_freq_hz);
-            T_chip_seconds=GPS_L1_CA_CHIP_PERIOD;
-            //T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
-            T_prn_seconds = GPS_L1_CA_CODE_PERIOD;
+            T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * d_fs_in;
 
             float code_error_filt_samples;

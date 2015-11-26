@@ -18,21 +18,15 @@
 
 
 if(ENABLE_CUDA)
-	FIND_PACKAGE(CUDA REQUIRED)
-	
-	# Append current NVCC flags by something, eg comput capability
-	# set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --gpu-architecture sm_30)
-	
-	list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30; -std=c++11;-O3; -use_fast_math -default-stream per-thread")
-	SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
-	
-	CUDA_INCLUDE_DIRECTORIES(
-     ${CMAKE_CURRENT_SOURCE_DIR}
-     #${CMAKE_CURRENT_SOURCE_DIR}/cudahelpers
-	)
-
-	SET(LIB_TYPE STATIC) #set the lib type
-	CUDA_ADD_LIBRARY(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
+    # Append current NVCC flags by something, eg comput capability
+    # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --gpu-architecture sm_30)
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30; -std=c++11;-O3; -use_fast_math -default-stream per-thread")
+    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+    CUDA_INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR})
+    set(LIB_TYPE STATIC) #set the lib type
+    CUDA_ADD_LIBRARY(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
+    set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} CUDA_CORRELATOR_LIB)
+    set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS} )
 endif(ENABLE_CUDA)
 
 
@@ -54,7 +48,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${VOLK_INCLUDE_DIRS}
-     ${CUDA_INCLUDE_DIRS}
+     ${OPT_TRACKING_INCLUDES}
 )
 
 if(ENABLE_GENERIC_ARCH)
@@ -69,4 +63,4 @@ endif(SSE3_AVAILABLE)
 file(GLOB TRACKING_LIB_HEADERS "*.h")
 add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 source_group(Headers FILES ${TRACKING_LIB_HEADERS})
-target_link_libraries(tracking_lib ${CUDA_CORRELATOR_LIB} ${VOLK_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
+target_link_libraries(tracking_lib ${OPT_TRACKING_LIBRARIES} ${VOLK_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})

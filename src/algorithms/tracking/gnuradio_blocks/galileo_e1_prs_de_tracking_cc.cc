@@ -967,7 +967,7 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                 // New carrier Doppler frequency estimation
                 d_carrier_doppler_hz_prs = carr_error_filt_hz_prs;
 
-                float subcarrier_doppler_cycles_prs = ((d_carrier_doppler_hz *
+                float subcarrier_doppler_cycles_prs = ((d_carrier_doppler_hz_prs *
                             Galileo_E1_A_SUB_CARRIER_RATE_HZ) / Galileo_E1_FREQ_HZ);
 
                 // New subcarrier Doppler frequency estimation: carrier

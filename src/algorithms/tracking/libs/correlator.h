@@ -67,6 +67,32 @@ public:
     void Carrier_wipeoff_and_EPL_volk_custom(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
 #endif
 
+    void Carrier_rotate_and_EPL_volk(int signal_length_samples,
+            const gr_complex* input,
+            gr_complex *phase_as_complex,
+            gr_complex phase_inc_as_complex,
+            const gr_complex* E_code,
+            const gr_complex* P_code,
+            const gr_complex* L_code,
+            gr_complex* E_out,
+            gr_complex* P_out,
+            gr_complex* L_out );
+
+    void Carrier_rotate_and_VEPL_volk(int signal_length_samples,
+            const gr_complex* input,
+            gr_complex *phase_as_complex,
+            gr_complex phase_inc_as_complex,
+            const gr_complex* VE_code,
+            const gr_complex* E_code,
+            const gr_complex* P_code,
+            const gr_complex* L_code,
+            const gr_complex* VL_code,
+            gr_complex* VE_out,
+            gr_complex* E_out,
+            gr_complex* P_out,
+            gr_complex* L_out,
+            gr_complex* VL_out );
+
 private:
     unsigned long next_power_2(unsigned long v);
 };

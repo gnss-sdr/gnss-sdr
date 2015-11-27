@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_artemisa_tracking.h
+ * \file gps_l1_ca_dll_pll_c_aid_tracking.h
  * \brief  Interface of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
@@ -35,13 +35,13 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_ARTEMISA_TRACKING_H_
-#define GNSS_SDR_GPS_L1_CA_DLL_PLL_ARTEMISA_TRACKING_H_
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_H_
+#define GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_H_
 
 #include <string>
 #include <gnuradio/msg_queue.h>
 #include "tracking_interface.h"
-#include "gps_l1_ca_dll_pll_artemisa_tracking_cc.h"
+#include "gps_l1_ca_dll_pll_c_aid_tracking_cc.h"
 
 
 class ConfigurationInterface;
@@ -49,27 +49,27 @@ class ConfigurationInterface;
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking loop
  */
-class GpsL1CaDllPllArtemisaTracking : public TrackingInterface
+class GpsL1CaDllPllCAidTracking : public TrackingInterface
 {
 public:
 
-  GpsL1CaDllPllArtemisaTracking(ConfigurationInterface* configuration,
+  GpsL1CaDllPllCAidTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
             boost::shared_ptr<gr::msg_queue> queue);
 
-    virtual ~GpsL1CaDllPllArtemisaTracking();
+    virtual ~GpsL1CaDllPllCAidTracking();
 
     std::string role()
     {
         return role_;
     }
 
-    //! Returns "gps_l1_ca_dll_pll_artemisa_tracking"
+    //! Returns "gps_l1_ca_dll_pll_c_aid_tracking"
     std::string implementation()
     {
-        return "gps_l1_ca_dll_pll_artemisa_tracking";
+        return "gps_l1_ca_dll_pll_c_aid_tracking";
     }
     size_t item_size()
     {
@@ -101,7 +101,7 @@ public:
     void start_tracking();
 
 private:
-    gps_l1_ca_dll_pll_artemisa_tracking_cc_sptr tracking_;
+    gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr tracking_;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
@@ -111,4 +111,4 @@ private:
     concurrent_queue<int> *channel_internal_queue_;
 };
 
-#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_ARTEMISA_TRACKING_H_
+#endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_H_

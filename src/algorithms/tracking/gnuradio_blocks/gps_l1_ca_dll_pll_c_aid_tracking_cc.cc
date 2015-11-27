@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_artemisa_tracking_cc.cc
+ * \file gps_l1_ca_dll_pll_c_aid_tracking_cc.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_dll_pll_artemisa_tracking_cc.h"
+#include "gps_l1_ca_dll_pll_c_aid_tracking_cc.h"
 #include <cmath>
 #include <iostream>
 #include <memory>
@@ -56,8 +56,8 @@
 
 using google::LogMessage;
 
-gps_l1_ca_dll_pll_artemisa_tracking_cc_sptr
-gps_l1_ca_dll_pll_artemisa_make_tracking_cc(
+gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
+gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
@@ -68,13 +68,13 @@ gps_l1_ca_dll_pll_artemisa_make_tracking_cc(
         float dll_bw_hz,
         float early_late_space_chips)
 {
-    return gps_l1_ca_dll_pll_artemisa_tracking_cc_sptr(new gps_l1_ca_dll_pll_artemisa_tracking_cc(if_freq,
+    return gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_cc(if_freq,
             fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
 }
 
 
 
-void gps_l1_ca_dll_pll_artemisa_tracking_cc::forecast (int noutput_items,
+void gps_l1_ca_dll_pll_c_aid_tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
     ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
@@ -82,7 +82,7 @@ void gps_l1_ca_dll_pll_artemisa_tracking_cc::forecast (int noutput_items,
 
 
 
-gps_l1_ca_dll_pll_artemisa_tracking_cc::gps_l1_ca_dll_pll_artemisa_tracking_cc(
+gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
@@ -92,7 +92,7 @@ gps_l1_ca_dll_pll_artemisa_tracking_cc::gps_l1_ca_dll_pll_artemisa_tracking_cc(
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips) :
-        gr::block("gps_l1_ca_dll_pll_artemisa_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+        gr::block("gps_l1_ca_dll_pll_c_aid_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
@@ -175,7 +175,7 @@ gps_l1_ca_dll_pll_artemisa_tracking_cc::gps_l1_ca_dll_pll_artemisa_tracking_cc(
 }
 
 
-void gps_l1_ca_dll_pll_artemisa_tracking_cc::start_tracking()
+void gps_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
 {
     /*
      *  correct the code phase according to the delay between acq and trk
@@ -262,7 +262,7 @@ void gps_l1_ca_dll_pll_artemisa_tracking_cc::start_tracking()
 }
 
 
-gps_l1_ca_dll_pll_artemisa_tracking_cc::~gps_l1_ca_dll_pll_artemisa_tracking_cc()
+gps_l1_ca_dll_pll_c_aid_tracking_cc::~gps_l1_ca_dll_pll_c_aid_tracking_cc()
 {
     d_dump_file.close();
 
@@ -276,7 +276,7 @@ gps_l1_ca_dll_pll_artemisa_tracking_cc::~gps_l1_ca_dll_pll_artemisa_tracking_cc(
 
 
 
-int gps_l1_ca_dll_pll_artemisa_tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // Block input data and block output stream pointers
@@ -347,7 +347,7 @@ int gps_l1_ca_dll_pll_artemisa_tracking_cc::general_work (int noutput_items, gr_
             code_error_filt_secs_Ti = code_error_filt_chips*CURRENT_INTEGRATION_TIME_S/d_code_freq_chips; // [s/Ti]
             // DLL code error estimation [s/Ti]
             // TODO: PLL carrier aid to DLL is disabled. Re-enable it and measure performance
-            dll_code_error_secs_Ti=-code_error_filt_secs_Ti;//+d_pll_to_dll_assist_secs_Ti;
+            dll_code_error_secs_Ti=-code_error_filt_secs_Ti+d_pll_to_dll_assist_secs_Ti;
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
             // keep alignment parameters for the next input buffer
@@ -552,7 +552,7 @@ int gps_l1_ca_dll_pll_artemisa_tracking_cc::general_work (int noutput_items, gr_
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 
-void gps_l1_ca_dll_pll_artemisa_tracking_cc::set_channel(unsigned int channel)
+void gps_l1_ca_dll_pll_c_aid_tracking_cc::set_channel(unsigned int channel)
 {
     d_channel = channel;
     LOG(INFO) << "Tracking Channel set to " << d_channel;
@@ -577,12 +577,12 @@ void gps_l1_ca_dll_pll_artemisa_tracking_cc::set_channel(unsigned int channel)
         }
 }
 
-void gps_l1_ca_dll_pll_artemisa_tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
+void gps_l1_ca_dll_pll_c_aid_tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
 {
     d_channel_internal_queue = channel_internal_queue;
 }
 
-void gps_l1_ca_dll_pll_artemisa_tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void gps_l1_ca_dll_pll_c_aid_tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }

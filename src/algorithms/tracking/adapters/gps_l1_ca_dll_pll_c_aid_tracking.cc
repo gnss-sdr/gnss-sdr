@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_artemisa_tracking.cc
+ * \file gps_l1_ca_dll_pll_c_aid_tracking.cc
  * \brief Implementation of an adapter of a DLL+PLL tracking loop block
  * for GPS L1 C/A to a TrackingInterface
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
@@ -36,7 +36,7 @@
  */
 
 
-#include "gps_l1_ca_dll_pll_artemisa_tracking.h"
+#include "gps_l1_ca_dll_pll_c_aid_tracking.h"
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
@@ -44,7 +44,7 @@
 
 using google::LogMessage;
 
-GpsL1CaDllPllArtemisaTracking::GpsL1CaDllPllArtemisaTracking(
+GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
@@ -80,7 +80,7 @@ GpsL1CaDllPllArtemisaTracking::GpsL1CaDllPllArtemisaTracking(
     if (item_type.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = gps_l1_ca_dll_pll_artemisa_make_tracking_cc(
+            tracking_ = gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
                     f_if,
                     fs_in,
                     vector_length,
@@ -102,11 +102,11 @@ GpsL1CaDllPllArtemisaTracking::GpsL1CaDllPllArtemisaTracking(
 }
 
 
-GpsL1CaDllPllArtemisaTracking::~GpsL1CaDllPllArtemisaTracking()
+GpsL1CaDllPllCAidTracking::~GpsL1CaDllPllCAidTracking()
 {}
 
 
-void GpsL1CaDllPllArtemisaTracking::start_tracking()
+void GpsL1CaDllPllCAidTracking::start_tracking()
 {
     tracking_->start_tracking();
 }
@@ -114,7 +114,7 @@ void GpsL1CaDllPllArtemisaTracking::start_tracking()
 /*
  * Set tracking channel unique ID
  */
-void GpsL1CaDllPllArtemisaTracking::set_channel(unsigned int channel)
+void GpsL1CaDllPllCAidTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
     tracking_->set_channel(channel);
@@ -123,36 +123,36 @@ void GpsL1CaDllPllArtemisaTracking::set_channel(unsigned int channel)
 /*
  * Set tracking channel internal queue
  */
-void GpsL1CaDllPllArtemisaTracking::set_channel_queue(
+void GpsL1CaDllPllCAidTracking::set_channel_queue(
         concurrent_queue<int> *channel_internal_queue)
 {
     channel_internal_queue_ = channel_internal_queue;
     tracking_->set_channel_queue(channel_internal_queue_);
 }
 
-void GpsL1CaDllPllArtemisaTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void GpsL1CaDllPllCAidTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
-void GpsL1CaDllPllArtemisaTracking::connect(gr::top_block_sptr top_block)
+void GpsL1CaDllPllCAidTracking::connect(gr::top_block_sptr top_block)
 {
 	if(top_block) { /* top_block is not null */};
 	//nothing to connect, now the tracking uses gr_sync_decimator
 }
 
-void GpsL1CaDllPllArtemisaTracking::disconnect(gr::top_block_sptr top_block)
+void GpsL1CaDllPllCAidTracking::disconnect(gr::top_block_sptr top_block)
 {
 	if(top_block) { /* top_block is not null */};
 	//nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
-gr::basic_block_sptr GpsL1CaDllPllArtemisaTracking::get_left_block()
+gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_left_block()
 {
     return tracking_;
 }
 
-gr::basic_block_sptr GpsL1CaDllPllArtemisaTracking::get_right_block()
+gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_right_block()
 {
     return tracking_;
 }

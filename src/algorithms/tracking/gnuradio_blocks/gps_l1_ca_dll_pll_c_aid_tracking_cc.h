@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_artemisa_tracking_cc.h
+ * \file gps_l1_ca_dll_pll_c_aid_tracking_cc.h
  * \brief Interface of a code DLL + carrier PLL tracking block
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
@@ -34,8 +34,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_ARTEMISA_TRACKING_CC_H
-#define	GNSS_SDR_GPS_L1_CA_DLL_PLL_ARTEMISA_TRACKING_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H
+#define	GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H
 
 #include <fstream>
 #include <queue>
@@ -52,13 +52,13 @@
 #include "tracking_FLL_PLL_filter.h"
 #include "cpu_multicorrelator.h"
 
-class gps_l1_ca_dll_pll_artemisa_tracking_cc;
+class gps_l1_ca_dll_pll_c_aid_tracking_cc;
 
-typedef boost::shared_ptr<gps_l1_ca_dll_pll_artemisa_tracking_cc>
-        gps_l1_ca_dll_pll_artemisa_tracking_cc_sptr;
+typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_cc>
+        gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr;
 
-gps_l1_ca_dll_pll_artemisa_tracking_cc_sptr
-gps_l1_ca_dll_pll_artemisa_make_tracking_cc(long if_freq,
+gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
+gps_l1_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
                                    long fs_in, unsigned
                                    int vector_length,
                                    boost::shared_ptr<gr::msg_queue> queue,
@@ -73,10 +73,10 @@ gps_l1_ca_dll_pll_artemisa_make_tracking_cc(long if_freq,
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class gps_l1_ca_dll_pll_artemisa_tracking_cc: public gr::block
+class gps_l1_ca_dll_pll_c_aid_tracking_cc: public gr::block
 {
 public:
-    ~gps_l1_ca_dll_pll_artemisa_tracking_cc();
+    ~gps_l1_ca_dll_pll_c_aid_tracking_cc();
 
     void set_channel(unsigned int channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
@@ -89,8 +89,8 @@ public:
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend gps_l1_ca_dll_pll_artemisa_tracking_cc_sptr
-    gps_l1_ca_dll_pll_artemisa_make_tracking_cc(long if_freq,
+    friend gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
+    gps_l1_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
             boost::shared_ptr<gr::msg_queue> queue,
@@ -100,7 +100,7 @@ private:
             float dll_bw_hz,
             float early_late_space_chips);
 
-    gps_l1_ca_dll_pll_artemisa_tracking_cc(long if_freq,
+    gps_l1_ca_dll_pll_c_aid_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
             boost::shared_ptr<gr::msg_queue> queue,
@@ -179,4 +179,4 @@ private:
     std::string sys;
 };
 
-#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_ARTEMISA_TRACKING_CC_H
+#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H

@@ -32,6 +32,7 @@
 #define GNSS_SDR_GNSS_SYNCHRO_H_
 
 #include "gnss_signal.h"
+#include <deque>
 
 /*!
  * \brief This is the class that contains the information that is shared
@@ -73,6 +74,10 @@ public:
     // Pseudorange
     double Pseudorange_m;
     bool Flag_valid_pseudorange;
+
+    //debug
+    double debug_var1;
+    double debug_var2;
 };
 
 #endif

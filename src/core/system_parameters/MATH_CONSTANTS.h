@@ -55,7 +55,7 @@ const double TWO_N2 = (0.25);                     //!< 2^-2
 const double TWO_N5 = (0.03125);                  //!< 2^-5
 const double TWO_N8 = (0.00390625);               //!< 2^-8
 const double TWO_N9 = (0.001953125);              //!< 2^-9
-
+const double TWO_N10 = (0.0009765625);            //!< 2^-10
 const double TWO_N11 = (4.882812500000000e-004);  //!< 2^-11
 const double TWO_N14 = (0.00006103515625);        //!< 2^-14
 const double TWO_N15 = (0.00003051757813);	  //!< 2^-15

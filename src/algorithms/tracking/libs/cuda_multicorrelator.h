@@ -32,8 +32,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef CUDA_MULTICORRELATOR_H_
-#define CUDA_MULTICORRELATOR_H_
+#ifndef GNSS_SDR_CUDA_MULTICORRELATOR_H_
+#define GNSS_SDR_CUDA_MULTICORRELATOR_H_
 
 
 #ifdef __CUDACC__
@@ -107,6 +107,8 @@ struct GPU_Complex_Short
         return GPU_Complex_Short(r+a.r, i+a.i);
     }
 };
+
+
 /*!
  * \brief Class that implements carrier wipe-off and correlators using NVIDIA CUDA GPU accelerators.
  */
@@ -114,9 +116,7 @@ class cuda_multicorrelator
 {
 public:
     cuda_multicorrelator();
-    bool init_cuda(const int argc, const char **argv, int signal_length_samples, int local_codes_length_samples, int n_correlators);
     bool init_cuda_integrated_resampler(
-            const int argc, const char **argv,
             int signal_length_samples,
             int code_length_chips,
             int n_correlators
@@ -127,19 +127,12 @@ public:
             float *shifts_chips,
             int n_correlators
     );
+    bool set_input_output_vectors(
+    		std::complex<float>* corr_out,
+    		std::complex<float>* sig_in
+    		);
     bool free_cuda();
-    bool Carrier_wipeoff_multicorrelator_cuda(
-            std::complex<float>* corr_out,
-            const std::complex<float>* sig_in,
-            const std::complex<float>* local_codes_in,
-            float rem_carrier_phase_in_rad,
-            float phase_step_rad,
-            const int *shifts_samples,
-            int signal_length_samples,
-            int n_correlators);
     bool Carrier_wipeoff_multicorrelator_resampler_cuda(
-            std::complex<float>* corr_out,
-            const std::complex<float>* sig_in,
             float rem_carrier_phase_in_rad,
             float phase_step_rad,
             float code_phase_step_chips,
@@ -154,6 +147,11 @@ private:
     GPU_Complex *d_sig_doppler_wiped;
     GPU_Complex *d_local_codes_in;
     GPU_Complex *d_corr_out;
+
+    //
+    std::complex<float> *d_sig_in_cpu;
+    std::complex<float> *d_corr_out_cpu;
+
     int *d_shifts_samples;
     float *d_shifts_chips;
     float d_code_length_chips;
@@ -162,10 +160,10 @@ private:
     int blocksPerGrid;
 
     cudaStream_t stream1;
-    cudaStream_t stream2;
+    //cudaStream_t stream2;
     int num_gpu_devices;
     int selected_device;
 };
 
 
-#endif /* CUDA_MULTICORRELATOR_H_ */
+#endif /* GNSS_SDR_CUDA_MULTICORRELATOR_H_ */

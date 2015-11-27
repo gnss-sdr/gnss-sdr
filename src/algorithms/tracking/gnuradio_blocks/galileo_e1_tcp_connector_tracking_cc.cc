@@ -387,7 +387,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
             // New code Doppler frequency estimation
             d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ + ((d_carrier_doppler_hz * Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ);
             //carrier phase accumulator for (K) doppler estimation
-            d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_TWO_PI*d_carrier_doppler_hz*Galileo_E1_CODE_PERIOD;
+            d_acc_carrier_phase_rad -= GPS_TWO_PI*d_carrier_doppler_hz*Galileo_E1_CODE_PERIOD;
             //remnant carrier phase to prevent overflow in the code NCO
             d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI*d_carrier_doppler_hz*Galileo_E1_CODE_PERIOD;
             d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);

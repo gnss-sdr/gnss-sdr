@@ -135,6 +135,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_decimation_output_factor = 1;
     d_channel = 0;
     Prn_timestamp_at_preamble_ms = 0.0;
+    flag_PLL_180_deg_phase_locked = false;
     //set_history(d_samples_per_bit*8); // At least a history of 8 bits are needed to correlate with the preamble
 }
 
@@ -224,7 +225,16 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                             if (!d_flag_frame_sync)
                                 {
                                     d_flag_frame_sync = true;
-                                    LOG(INFO) <<" Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
+                                    if (corr_value < 0)
+                                    {
+                                    	flag_PLL_180_deg_phase_locked = true; //PLL is locked to opposite phase!
+                                    	LOG(INFO) << " PLL in opposite phase for Sat "<< this->d_satellite.get_PRN();
+                                    }
+                                    else
+                                    {
+                                    	flag_PLL_180_deg_phase_locked = false;
+                                    }
+                                    LOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
                                 }
                         }
                 }
@@ -313,7 +323,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         // Sice we detected the preable, then, we are in the last symbol of that preamble, or just at the start of the first subframe symbol.
         {
             d_TOW_at_Preamble = d_GPS_FSM.d_nav.d_TOW + GPS_SUBFRAME_SECONDS; //we decoded the current TOW when the last word of the subframe arrive, so, we have a lag of ONE SUBFRAME
-            d_TOW_at_current_symbol = d_TOW_at_Preamble;//GPS_L1_CA_CODE_PERIOD;// + (double)GPS_CA_PREAMBLE_LENGTH_BITS/(double)GPS_CA_TELEMETRY_RATE_BITS_SECOND;
+            d_TOW_at_current_symbol = d_TOW_at_Preamble;
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
             if (flag_TOW_set == false)
                 {
@@ -327,13 +337,17 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 
     current_synchro_data.d_TOW = d_TOW_at_Preamble;
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
-
     current_synchro_data.d_TOW_hybrid_at_current_symbol = current_synchro_data.d_TOW_at_current_symbol; // to be  used in the hybrid configuration
     current_synchro_data.Flag_valid_word = (d_flag_frame_sync == true and d_flag_parity == true and flag_TOW_set == true);
     current_synchro_data.Flag_preamble = d_flag_preamble;
     current_synchro_data.Prn_timestamp_ms = in[0][0].Tracking_timestamp_secs * 1000.0;
     current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
 
+    if (flag_PLL_180_deg_phase_locked == true)
+    {
+    	//correct the accumulated phase for the costas loop phase shift, if required
+    	current_synchro_data.Carrier_phase_rads += GPS_PI;
+    }
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file

@@ -761,6 +761,30 @@ SignalSource.dump=false
 SignalSource.dump_filename=../data/signal_source.dat
 ~~~~~~ 
 
+Example for a dual-frequency receiver:
+
+~~~~~~ 
+;######### SIGNAL_SOURCE CONFIG ############
+SignalSource.implementation=UHD_Signal_Source
+SignalSource.device_address=192.168.40.2 ; Put your USRP IP address here
+SignalSource.item_type=gr_complex
+SignalSource.RF_channels=2
+SignalSource.sampling_frequency=4000000
+SignalSource.subdevice=A:0 B:0
+
+;######### RF Channels specific settings ######
+SignalSource.freq0=1575420000
+SignalSource.gain0=50
+SignalSource.samples0=0
+SignalSource.dump0=false
+
+SignalSource.freq1=1227600000
+SignalSource.gain1=50
+SignalSource.samples1=0
+SignalSource.dump1=false
+~~~~~~ 
+
+
 Other examples are available at [gnss-sdr/conf/](./conf/).
 
 ### Signal Conditioner

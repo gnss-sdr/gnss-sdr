@@ -33,10 +33,13 @@
 
 #include <fstream>
 #include <queue>
+#include <deque>
+#include <vector>
 #include <string>
 #include <utility>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include "concurrent_queue.h"
@@ -67,6 +70,12 @@ private:
     friend gps_l1_ca_observables_cc_sptr
     gps_l1_ca_make_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
     gps_l1_ca_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+
+
+    //Tracking observable history
+    std::vector<std::deque<double>> d_acc_carrier_phase_queue_rads;
+    std::vector<std::deque<double>> d_carrier_doppler_queue_hz;
+    std::vector<std::deque<double>> d_symbol_TOW_queue_s;
 
     // class private vars
     boost::shared_ptr<gr::msg_queue> d_queue;

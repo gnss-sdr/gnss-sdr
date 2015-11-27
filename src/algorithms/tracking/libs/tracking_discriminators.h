@@ -50,7 +50,7 @@
  * \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_1\f$, and
  * \f$I_{PS2},Q_{PS2}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_2\f$. The output is in [radians/second].
  */
-float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, float t1, float t2);
+double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, double t2);
 
 
 /*! \brief PLL four quadrant arctan discriminator
@@ -61,7 +61,7 @@ float fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, float t
  * \f}
  * where \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively. The output is in [radians].
  */
-float pll_four_quadrant_atan(gr_complex prompt_s1);
+double pll_four_quadrant_atan(gr_complex prompt_s1);
 
 
 /*! \brief PLL Costas loop two quadrant arctan discriminator
@@ -72,7 +72,7 @@ float pll_four_quadrant_atan(gr_complex prompt_s1);
  * \f}
  * where \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively. The output is in [radians].
  */
-float pll_cloop_two_quadrant_atan(gr_complex prompt_s1);
+double pll_cloop_two_quadrant_atan(gr_complex prompt_s1);
 
 
 /*! \brief DLL Noncoherent Early minus Late envelope normalized discriminator
@@ -84,7 +84,7 @@ float pll_cloop_two_quadrant_atan(gr_complex prompt_s1);
  * where \f$E=\sqrt{I_{ES}^2+Q_{ES}^2}\f$ is the Early correlator output absolute value and
  * \f$L=\sqrt{I_{LS}^2+Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].
  */
-float dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1);
+double dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1);
 
 
 /*! \brief DLL Noncoherent Very Early Minus Late Power (VEMLP) normalized discriminator
@@ -97,7 +97,7 @@ float dll_nc_e_minus_l_normalized(gr_complex early_s1, gr_complex late_s1);
  * where \f$E=\sqrt{I_{VE}^2+Q_{VE}^2+I_{E}^2+Q_{E}^2}\f$ and
  * \f$L=\sqrt{I_{VL}^2+Q_{VL}^2+I_{L}^2+Q_{L}^2}\f$ . The output is in [chips].
  */
-float dll_nc_vemlp_normalized(gr_complex very_early_s1, gr_complex early_s1, gr_complex late_s1, gr_complex very_late_s1);
+double dll_nc_vemlp_normalized(gr_complex very_early_s1, gr_complex early_s1, gr_complex late_s1, gr_complex very_late_s1);
 
 
 #endif

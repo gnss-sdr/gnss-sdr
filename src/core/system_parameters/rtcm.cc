@@ -39,6 +39,8 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
+#include "GPS_L2C.h"
+#include "MATH_CONSTANTS.h"
 
 
 
@@ -314,11 +316,7 @@ std::bitset<58> Rtcm::get_MT1001_sat_content(const Gnss_Synchro & gnss_synchro)
     Rtcm::set_DF009(gnss_synchro_);
     Rtcm::set_DF010(code_indicator); // code indicator   0: C/A code   1: P(Y) code direct
     Rtcm::set_DF011(gnss_synchro_);
-
-    long int  gps_L1_phaserange_minus_L1_pseudorange;
-    long int  phaserange_m = (gnss_synchro.Carrier_phase_rads * GPS_C_m_s) / (GPS_TWO_PI * GPS_L1_FREQ_HZ);
-    gps_L1_phaserange_minus_L1_pseudorange  = phaserange_m; // TODO
-    DF012 = std::bitset<20>(gps_L1_phaserange_minus_L1_pseudorange);
+    Rtcm::set_DF012(gnss_synchro_);
 
     unsigned int lock_time_indicator = 0;  // TODO
     DF013 = std::bitset<7>(lock_time_indicator);
@@ -949,6 +947,159 @@ int Rtcm::read_MT1045(const std::string & message, Galileo_Ephemeris & gal_eph)
 }
 
 
+
+
+// **********************************************
+//
+//   MESSAGE TYPE MSM1 (COMPACT PSEUDORANGES)
+//
+// **********************************************
+
+
+std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
+        const Galileo_Ephemeris & gal_eph,
+        double obs_time,
+        const std::map<int, Gnss_Synchro> & pseudoranges,
+        unsigned int ref_id,
+        unsigned int clock_steering_indicator,
+        unsigned int external_clock_indicator,
+        int smooth_int,
+        bool sync_flag,
+        bool divergence_free,
+        bool more_messages)
+{
+    unsigned int msg_number = 1071; /// check for Galileo, it's 1091
+    std::string header = Rtcm::get_MSM_header(msg_number, gps_eph,
+             gal_eph,
+             obs_time,
+             pseudoranges,
+             ref_id,
+             clock_steering_indicator,
+             external_clock_indicator,
+             smooth_int,
+             sync_flag,
+             divergence_free,
+             more_messages);
+
+    std::string sat_data = Rtcm::get_MSM_1_content_sat_data(pseudoranges);
+    std::string signal_data = Rtcm::get_MSM_1_content_signal_data(pseudoranges);
+
+    std::string message = build_message(header + sat_data + signal_data);
+    return message;
+}
+
+std::string Rtcm::get_MSM_header(unsigned int msg_number, const Gps_Ephemeris & gps_eph,
+        const Galileo_Ephemeris & gal_eph,
+        double obs_time,
+        const std::map<int, Gnss_Synchro> & pseudoranges,
+        unsigned int ref_id,
+        unsigned int clock_steering_indicator,
+        unsigned int external_clock_indicator,
+        int smooth_int,
+        bool sync_flag,
+        bool divergence_free,
+        bool more_messages)
+{
+    Rtcm::set_DF002(msg_number);
+    Rtcm::set_DF003(ref_id);
+    if(gps_eph.i_satellite_PRN != 0)
+        {
+            Rtcm::set_DF004(gps_eph, obs_time);
+        }
+    else
+        {
+            Rtcm::set_DF248(gal_eph, obs_time);
+        }
+    Rtcm::set_DF393(more_messages);
+    Rtcm::set_DF409(0); // Issue of Data Station. 0: not utilized
+    std::bitset<7> DF001_ = std::bitset<7>("0000000");
+    Rtcm::set_DF411(clock_steering_indicator);
+    Rtcm::set_DF412(external_clock_indicator);
+    Rtcm::set_DF417(divergence_free);
+    Rtcm::set_DF418(smooth_int);
+    Rtcm::set_DF394(pseudoranges);
+    Rtcm::set_DF395(pseudoranges);
+
+    std::string header = DF002.to_string() + DF003.to_string();
+    if(gps_eph.i_satellite_PRN != 0)
+        {
+            header += DF004.to_string();
+        }
+    else
+        {
+            header += DF248.to_string();
+        }
+    header = header + DF393.to_string() +
+            DF409.to_string() +
+            DF001_.to_string() +
+            DF411.to_string() +
+            DF412.to_string() +
+            DF418.to_string() +
+            DF394.to_string() +
+            DF395.to_string() +
+            Rtcm::set_DF396(pseudoranges);
+
+    return header;
+}
+
+std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges)
+{
+    std::string sat_data;
+    sat_data.clear();
+
+    Rtcm::set_DF394(pseudoranges);
+    unsigned int num_satellites = DF394.count();
+
+    std::map<int, Gnss_Synchro> pseudoranges_ordered;
+
+    std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
+    std::vector<unsigned int> pos;
+    std::vector<unsigned int>::iterator it;
+
+    for(gnss_synchro_iter = pseudoranges.begin();
+            gnss_synchro_iter != pseudoranges.end();
+            gnss_synchro_iter++)
+        {
+            pseudoranges_ordered.insert(std::pair<int, Gnss_Synchro>(65 - gnss_synchro_iter->second.PRN, gnss_synchro_iter->second));
+
+            it = std::find (pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
+            if (it == pos.end())
+                {
+                    pos.push_back(65 - gnss_synchro_iter->second.PRN);
+                }
+        }
+
+    std::sort(pos.begin(), pos.end());
+    std::reverse(pos.begin(), pos.end());
+
+    for(unsigned int Nsat = 1; Nsat < num_satellites; Nsat++)
+        {
+            Rtcm::set_DF398(pseudoranges_ordered.at( pos.at(Nsat-1) ));
+            sat_data += DF398.to_string();
+        }
+
+    return sat_data;
+}
+
+std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro> & pseudoranges)
+{
+    std::string s("Not implemented");
+    return s;
+}
+
+std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges)
+{
+    //std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
+    std::string data("Not implemented");
+    return data;
+}
+
+//std::string Rtcm::get_MSM_1_content(const std::map<int, Gnss_Synchro> & pseudoranges)
+//{
+//    std::string DF396 = set_DF396(pseudoranges);
+//}
+
+
 // *****************************************************************************************************
 //
 //   DATA FIELDS AS DEFINED AT RTCM STANDARD 10403.2
@@ -1005,6 +1156,8 @@ int Rtcm::reset_data_fields()
     DF103.reset();
     DF137.reset();
 
+    DF248.reset();
+
     // Contents of Galileo F/NAV Satellite Ephemeris Data, Message Type 1045
     DF252.reset();
     DF289.reset();
@@ -1039,6 +1192,10 @@ int Rtcm::reset_data_fields()
     DF393.reset();
     DF394.reset();
     DF395.reset();
+
+    DF397.reset();
+    DF398.reset();
+    DF399.reset();
 
     DF409.reset();
 
@@ -1502,6 +1659,19 @@ int Rtcm::set_DF137(const Gps_Ephemeris & gps_eph)
 }
 
 
+int Rtcm::set_DF248(const Galileo_Ephemeris & gal_eph, double obs_time)
+{
+    // TOW in milliseconds from the beginning of the Galileo week, measured in Galileo time
+    unsigned long int tow = static_cast<unsigned long int>(std::round((obs_time + 604800 * static_cast<double>(gal_eph.WN_5)) * 1000));
+    if(tow > 604799999)
+        {
+            LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";
+            tow = 604799999;
+        }
+    DF248 = std::bitset<30>(tow);
+    return 0;
+}
+
 
 int Rtcm::set_DF252(const Galileo_Ephemeris & gal_eph)
 {
@@ -1819,10 +1989,161 @@ int Rtcm::set_DF395(const std::map<int, Gnss_Synchro> & gnss_synchro)
     return 0;
 }
 
+std::string Rtcm::set_DF396(const std::map<int, Gnss_Synchro> & pseudoranges)
+{
+    std::string DF396;
+    std::map<int, Gnss_Synchro>::const_iterator pseudoranges_iter;
+    Rtcm::set_DF394(pseudoranges);
+    Rtcm::set_DF395(pseudoranges);
+    unsigned int num_signals = DF395.count();
+    unsigned int num_satellites = DF394.count();
+    std::vector<std::vector<bool> > matrix( num_signals, std::vector<bool>(num_satellites) );
+
+    unsigned int element = 0;
+    std::string sig;
+    // fill matrix
+    for(unsigned int row = 0; row < num_signals - 1; row++)
+        {
+            for (unsigned int signal_id = 1; signal_id < 32; signal_id++)
+                {
+                    bool we_have_signal_for_this_sat = false;
+
+                    if(static_cast<bool>(DF395.test(signal_id)))
+                        {
+                            for(pseudoranges_iter = pseudoranges.begin();
+                                    pseudoranges_iter != pseudoranges.end();
+                                    pseudoranges_iter++)
+                                {
+                                    std::string sig_(pseudoranges_iter->second.Signal);
+                                    sig = sig_.substr(0,2);
+                                    std::string sys(pseudoranges_iter->second.System, 1);
+                                    bool this_sat = static_cast<bool>(DF394.test(65 - pseudoranges_iter->second.PRN));
+                                    if (this_sat)
+                                        {
+                                            if( (signal_id == 2) && (sig.compare("1C") == 0) && (sys.compare("G") == 0 ) )
+                                                {
+                                                    we_have_signal_for_this_sat = true;
+                                                }
+
+                                            if( (signal_id == 4) && (sig.compare("1B") == 0) && (sys.compare("E") == 0 ) )
+                                                {
+                                                    we_have_signal_for_this_sat = true;
+                                                }
+
+                                            if( (signal_id == 15) && (sig.compare("2S") == 0) && (sys.compare("G") == 0 ) )
+                                                {
+                                                    we_have_signal_for_this_sat = true;
+                                                }
+
+                                            if( (signal_id == 24) && (sig.compare("5X") == 0) && (sys.compare("E") == 0 ) )
+                                                {
+                                                    we_have_signal_for_this_sat = true;
+                                                }
+
+                                            matrix[row].push_back(we_have_signal_for_this_sat);
+                                        }
+                                }
+                        }
+
+                }
+        }
+
+    // write matrix
+    DF396.clear();
+    std::stringstream ss;
+    for(unsigned int row = 0; row < num_signals - 1; row++)
+        {
+            for(unsigned int col = 0; col < num_satellites - 1; col++)
+                {
+                    ss << std::boolalpha << matrix[row].at(col);
+                    DF396 += ss.str();
+                }
+        }
+
+    return DF396;
+}
+
+
+
+int Rtcm::set_DF397(const Gnss_Synchro & gnss_synchro)
+{
+    double meters_to_miliseconds = GPS_C_m_s * 0.001;
+    double rough_range_ms = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+
+    unsigned int int_ms = 0;
+
+    if (rough_range_ms == 0.0)
+        {
+            int_ms = 255;
+        }
+    else if((rough_range_ms < 0.0) || (rough_range_ms > meters_to_miliseconds * 255.0))
+        {
+            int_ms = 255;
+        }
+    else
+        {
+            int_ms = static_cast<unsigned int>(std::floor(rough_range_ms / meters_to_miliseconds / TWO_N10) + 0.5) >> 10;
+        }
+
+    DF397 = std::bitset<8>(int_ms);
+    return 0;
+}
+
+
+
+int Rtcm::set_DF398(const Gnss_Synchro & gnss_synchro)
+{
+    double meters_to_miliseconds = GPS_C_m_s * 0.001;
+    double rough_range_ms = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    DF398 = std::bitset<10>(static_cast<unsigned int>(rough_range_ms));
+    return 0;
+}
+
+int Rtcm::set_DF399(const Gnss_Synchro & gnss_synchro)
+{
+    double lambda;
+    std::string sig_(gnss_synchro.Signal);
+    std::string sig = sig_.substr(0,2);
+
+    if (sig.compare("1C") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
+        }
+    if (sig.compare("2S") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
+        }
+
+    if (sig.compare("5X") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
+        }
+    if (sig.compare("1B") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
+        }
+
+    double rough_phase_range_ms = std::round(- gnss_synchro.Carrier_Doppler_hz / lambda);
+    DF399 = std::bitset<14>(static_cast<int>(rough_phase_range_ms));
+    return 0;
+}
+
 
 int Rtcm::set_DF409(unsigned int iods)
 {
     DF409 = std::bitset<3>(iods);
+    return 0;
+}
+
+int Rtcm::set_DF411(unsigned int clock_steering_indicator)
+{
+    DF411 = std::bitset<2>(clock_steering_indicator);
+    return 0;
+}
+
+int Rtcm::set_DF412(unsigned int external_clock_indicator)
+{
+    DF412 = std::bitset<2>(external_clock_indicator);
     return 0;
 }
 
@@ -1832,3 +2153,45 @@ int Rtcm::set_DF417(bool using_divergence_free_smoothing)
     DF417 = std::bitset<1>(using_divergence_free_smoothing);
     return 0;
 }
+
+int Rtcm::set_DF418(int carrier_smoothing_interval_s)
+{
+    unsigned int smoothing_int = abs(carrier_smoothing_interval_s);
+    if(carrier_smoothing_interval_s < 0)
+        {
+            DF418 = std::bitset<3>("111");
+        }
+    else
+        {
+            if(carrier_smoothing_interval_s == 0)
+                {
+                    DF418 = std::bitset<3>("000");
+                }
+            else if(carrier_smoothing_interval_s < 30)
+                {
+                    DF418 = std::bitset<3>("001");
+                }
+            else if(carrier_smoothing_interval_s < 60)
+                {
+                    DF418 = std::bitset<3>("010");
+                }
+            else if(carrier_smoothing_interval_s < 120)
+                {
+                    DF418 = std::bitset<3>("011");
+                }
+            else if(carrier_smoothing_interval_s < 240)
+                {
+                    DF418 = std::bitset<3>("100");
+                }
+            else if(carrier_smoothing_interval_s < 480)
+                {
+                    DF418 = std::bitset<3>("101");
+                }
+            else
+                {
+                    DF418 = std::bitset<3>("110");
+                }
+        }
+    return 0;
+}
+

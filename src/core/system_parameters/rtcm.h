@@ -42,6 +42,7 @@
 #include "galileo_fnav_message.h"
 #include "gps_navigation_message.h"
 
+
 /*!
  * \brief This class implements the generation and reading of some Message Types
  * defined in the RTCM 3.2 Standard.
@@ -84,6 +85,18 @@ public:
      */
     int read_MT1045(const std::string & message, Galileo_Ephemeris & gal_eph);
 
+    std::string print_MSM_1( const Gps_Ephemeris & gps_eph,
+            const Galileo_Ephemeris & gal_eph,
+            double obs_time,
+            const std::map<int, Gnss_Synchro> & pseudoranges,
+            unsigned int ref_id,
+            unsigned int clock_steering_indicator,
+            unsigned int external_clock_indicator,
+            int smooth_int,
+            bool sync_flag,
+            bool divergence_free,
+            bool more_messages);
+
     std::string bin_to_hex(const std::string& s); //<! Returns a string of hexadecimal symbols from a string of binary symbols
     std::string hex_to_bin(const std::string& s); //<! Returns a string of binary symbols from a string of hexadecimal symbols
 
@@ -123,6 +136,23 @@ private:
     std::bitset<58> get_MT1001_sat_content(const Gnss_Synchro & gnss_synchro);
 
     std::bitset<152> get_MT1005_test();
+
+    std::string get_MSM_header(unsigned int msg_number, const Gps_Ephemeris & gps_eph,
+            const Galileo_Ephemeris & gal_eph,
+            double obs_time,
+            const std::map<int, Gnss_Synchro> & pseudoranges,
+            unsigned int ref_id,
+            unsigned int clock_steering_indicator,
+            unsigned int external_clock_indicator,
+            int smooth_int,
+            bool sync_flag,
+            bool divergence_free,
+            bool more_messages);
+
+    std::string get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro> & pseudoranges);
+
+    std::string get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges);
 
     //
     // Transport Layer
@@ -302,6 +332,9 @@ private:
     std::bitset<1> DF142;
     int set_DF142(const Gps_Ephemeris & gps_eph);
 
+    std::bitset<30> DF248;
+    int set_DF248(const Galileo_Ephemeris & gal_eph, double obs_time);
+
     // Contents of Galileo F/NAV Satellite Ephemeris Data, Message Type 1045
     std::bitset<6> DF252;
     int set_DF252(const Galileo_Ephemeris & gal_eph);
@@ -394,28 +427,36 @@ private:
     int set_DF393(bool more_messages); //1 indicates that more MSMs follow for given physical time and reference station ID
 
     std::bitset<64> DF394;
-    int set_DF394(const std::map<int, Gnss_Synchro> & gnss_synchro);
+    int set_DF394(const std::map<int, Gnss_Synchro> & pseudoranges);
 
     std::bitset<32> DF395;
-    int set_DF395(const std::map<int, Gnss_Synchro> & gnss_synchro);
+    int set_DF395(const std::map<int, Gnss_Synchro> & pseudoranges);
 
-    //std::bitset<1> DF396; //variable
+    std::string set_DF396(const std::map<int, Gnss_Synchro> & pseudoranges);
+
+    std::bitset<8> DF397;
+    int set_DF397(const Gnss_Synchro & gnss_synchro);
+
+    std::bitset<10> DF398;
+    int set_DF398(const Gnss_Synchro & gnss_synchro);
+
+    std::bitset<14> DF399;
+    int set_DF399(const Gnss_Synchro & gnss_synchro);
+
     std::bitset<3> DF409;
     int set_DF409(unsigned int iods);
 
     std::bitset<2> DF411;
+    int set_DF411(unsigned int clock_steering_indicator);
+
     std::bitset<2> DF412;
+    int set_DF412(unsigned int external_clock_indicator);
+
     std::bitset<1> DF417;
     int set_DF417(bool using_divergence_free_smoothing);
 
     std::bitset<3> DF418;
-
-    // Content of Satellite data for MSM4 and MSM6
-    std::vector<std::bitset<8> > DF397; // 8*NSAT
-    std::vector<std::bitset<10> > DF398; // 10*NSAT
-
-    // Content of Satellite data for MSM5 and MSM7
-    std::vector<std::bitset<14> > DF399; // 14*NSAT
+    int set_DF418(int carrier_smoothing_interval_s);
 };
 
 #endif

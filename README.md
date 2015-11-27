@@ -763,7 +763,7 @@ SignalSource.dump_filename=../data/signal_source.dat
 
 Example for a dual-frequency receiver:
 
-~~~~~~ 
+~~~~~~
 ;######### SIGNAL_SOURCE CONFIG ############
 SignalSource.implementation=UHD_Signal_Source
 SignalSource.device_address=192.168.40.2 ; Put your USRP IP address here
@@ -782,7 +782,7 @@ SignalSource.freq1=1227600000
 SignalSource.gain1=50
 SignalSource.samples1=0
 SignalSource.dump1=false
-~~~~~~ 
+~~~~~~
 
 
 Other examples are available at [gnss-sdr/conf/](./conf/).

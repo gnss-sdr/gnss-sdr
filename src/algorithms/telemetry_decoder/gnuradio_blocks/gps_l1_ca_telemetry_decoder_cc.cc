@@ -226,14 +226,14 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                                 {
                                     d_flag_frame_sync = true;
                                     if (corr_value < 0)
-                                    {
-                                    	flag_PLL_180_deg_phase_locked = true; //PLL is locked to opposite phase!
-                                    	LOG(INFO) << " PLL in opposite phase for Sat "<< this->d_satellite.get_PRN();
-                                    }
+                                        {
+                                            flag_PLL_180_deg_phase_locked = true; //PLL is locked to opposite phase!
+                                            LOG(INFO) << " PLL in opposite phase for Sat "<< this->d_satellite.get_PRN();
+                                        }
                                     else
-                                    {
-                                    	flag_PLL_180_deg_phase_locked = false;
-                                    }
+                                        {
+                                            flag_PLL_180_deg_phase_locked = false;
+                                        }
                                     LOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
                                 }
                         }
@@ -344,10 +344,10 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     current_synchro_data.Prn_timestamp_at_preamble_ms = Prn_timestamp_at_preamble_ms;
 
     if (flag_PLL_180_deg_phase_locked == true)
-    {
-    	//correct the accumulated phase for the costas loop phase shift, if required
-    	current_synchro_data.Carrier_phase_rads += GPS_PI;
-    }
+        {
+            //correct the accumulated phase for the costas loop phase shift, if required
+            current_synchro_data.Carrier_phase_rads += GPS_PI;
+        }
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file

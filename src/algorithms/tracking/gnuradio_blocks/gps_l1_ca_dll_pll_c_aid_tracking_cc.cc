@@ -119,9 +119,9 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
     d_n_correlator_taps = 3; // Early, Prompt, and Late
     d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
-    {
-    	d_correlator_outs[n] = gr_complex(0,0);
-    }
+        {
+            d_correlator_outs[n] = gr_complex(0,0);
+        }
     d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps*sizeof(float), volk_get_alignment()));
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = - d_early_late_spc_chips;
@@ -229,9 +229,9 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
 
     multicorrelator_cpu.set_local_code_and_taps(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
     for (int n = 0; n < d_n_correlator_taps; n++)
-    {
-    	d_correlator_outs[n] = gr_complex(0,0);
-    }
+        {
+            d_correlator_outs[n] = gr_complex(0,0);
+        }
 
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0.0;
@@ -479,10 +479,10 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
                             std::cout << tmp_str_stream.rdbuf() << std::flush;
                         }
                 }
-            for (int n=0;n<d_n_correlator_taps;n++)
-            {
-            	d_correlator_outs[n] = gr_complex(0,0);
-            }
+            for (int n = 0; n < d_n_correlator_taps; n++)
+                {
+                    d_correlator_outs[n] = gr_complex(0,0);
+                }
 
             current_synchro_data.System = {'G'};
             current_synchro_data.Flag_valid_pseudorange = false;

@@ -247,3 +247,87 @@ TEST(Rtcm_Test, Test_MT1045)
     EXPECT_EQ(1, rtcm->read_MT1045("FFFFFFFFFFF", gal_eph_read));
 }
 
+
+TEST(Rtcm_Test, MT1001)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    Gps_Ephemeris gps_eph = Gps_Ephemeris();
+    Gnss_Synchro gnss_synchro;
+    gnss_synchro.PRN = 2;
+    std::string sys = "G";
+
+    std::string sig = "1C";
+    gnss_synchro.System = *sys.c_str();
+    std::memcpy((void*)gnss_synchro.Signal, sig.c_str(), 3);
+    gnss_synchro.Pseudorange_m = 20000000.0;
+    double obs_time = 25.0;
+    std::map<int, Gnss_Synchro> pseudoranges;
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro));
+
+    std::string MT1001 = rtcm->print_MT1001(gps_eph, obs_time, pseudoranges);
+    EXPECT_EQ(true, rtcm->check_CRC(MT1001));
+}
+
+
+TEST(Rtcm_Test, MSM1)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    Gps_Ephemeris gps_eph = Gps_Ephemeris();
+    Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
+    std::map<int, Gnss_Synchro> pseudoranges;
+
+    Gnss_Synchro gnss_synchro;
+    Gnss_Synchro gnss_synchro2;
+    Gnss_Synchro gnss_synchro3;
+
+    gnss_synchro.PRN = 2;
+    gnss_synchro2.PRN = 4;
+    gnss_synchro3.PRN = 32;
+
+    std::string sys = "G";
+
+    std::string sig = "1C";
+    std::string sig2 = "2S";
+
+    gnss_synchro.System = *sys.c_str();
+    gnss_synchro2.System = *sys.c_str();
+    gnss_synchro3.System = *sys.c_str();
+
+    std::memcpy((void*)gnss_synchro.Signal, sig.c_str(), 3);
+    std::memcpy((void*)gnss_synchro2.Signal, sig.c_str(), 3);
+    std::memcpy((void*)gnss_synchro3.Signal, sig2.c_str(), 3);
+
+    gnss_synchro.Pseudorange_m = 20000000.0;
+    gnss_synchro2.Pseudorange_m = 20000010.0;
+    gnss_synchro3.Pseudorange_m = 20000020.0;
+
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro));
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(2, gnss_synchro2));
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(3, gnss_synchro3));
+
+    unsigned int ref_id = 1234;
+    unsigned int clock_steering_indicator = 0;
+    unsigned int external_clock_indicator = 0;
+    int smooth_int = 0;
+    bool sync_flag = false;
+    bool divergence_free = false;
+    bool more_messages = false;
+    double obs_time = 25.0;
+
+    gps_eph.i_satellite_PRN = gnss_synchro.PRN;
+
+    std::string MSM1 = rtcm->print_MSM_1(gps_eph,
+            gal_eph,
+            obs_time,
+            pseudoranges,
+            ref_id,
+            clock_steering_indicator,
+            external_clock_indicator,
+            smooth_int,
+            sync_flag,
+            divergence_free,
+            more_messages);
+
+    EXPECT_EQ(true, rtcm->check_CRC(MSM1));
+}
+

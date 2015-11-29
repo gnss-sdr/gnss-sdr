@@ -54,6 +54,8 @@ public:
 
     std::string print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
+    std::string print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+
     /*!
      * \brief Prints message type 1005 (Stationary Antenna Reference Point)
      */
@@ -125,7 +127,8 @@ private:
     std::vector<std::bitset<18> > MSM4_content; // 18 * Nsat
     std::vector<std::bitset<36> > MSM5_content; // 36 * Nsat
 
-    std::bitset<64> get_MT1001_header(const Gps_Ephemeris & gps_eph,
+    std::bitset<64> get_MT1001_4_header(unsigned int msg_number,
+            const Gps_Ephemeris & gps_eph,
             double obs_time,
             const std::map<int, Gnss_Synchro> & pseudoranges,
             unsigned int ref_id,
@@ -134,6 +137,7 @@ private:
             bool divergence_free);
 
     std::bitset<58> get_MT1001_sat_content(const Gnss_Synchro & gnss_synchro);
+    std::bitset<74>get_MT1002_sat_content(const Gnss_Synchro & gnss_synchro);
 
     std::bitset<152> get_MT1005_test();
 
@@ -442,6 +446,9 @@ private:
 
     std::bitset<14> DF399;
     int set_DF399(const Gnss_Synchro & gnss_synchro);
+
+    std::bitset<15> DF400;
+    int set_DF400(const Gnss_Synchro & gnss_synchro);
 
     std::bitset<3> DF409;
     int set_DF409(unsigned int iods);

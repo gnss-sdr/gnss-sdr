@@ -35,6 +35,7 @@
 #ifndef GNSS_SDR_CPU_MULTICORRELATOR_H_
 #define GNSS_SDR_CPU_MULTICORRELATOR_H_
 
+
 #include <complex>
 
 /*!
@@ -51,6 +52,7 @@ public:
     void update_local_carrier(int correlator_length_samples, float rem_carr_phase_rad, float phase_step_rad);
     bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, int signal_length_samples);
     bool free();
+
 private:
     // Allocate the device input vectors
     const std::complex<float> *d_sig_in;

@@ -131,6 +131,7 @@ public:
             std::complex<float>* corr_out,
             std::complex<float>* sig_in
     );
+
     bool free_cuda();
     bool Carrier_wipeoff_multicorrelator_resampler_cuda(
             float rem_carrier_phase_in_rad,

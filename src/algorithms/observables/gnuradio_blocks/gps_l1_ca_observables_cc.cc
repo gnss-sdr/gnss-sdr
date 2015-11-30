@@ -198,16 +198,15 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                     // compute the required symbol history shift in order to match the reference symbol
                     delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms - d_ref_PRN_rx_time_ms;
                     //compute the pseudorange
-                    traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
+                    traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol) * 1000.0 + delta_rx_time_ms + GPS_STARTOFFSET_ms;
                     pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
                     // update the pseudorange object
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
-                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].debug_var1 = delta_rx_time_ms;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
                     current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000.0)/1000.0 + GPS_STARTOFFSET_ms/1000.0;
 
-                    if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size() >= GPS_L1_CA_HISTORY_DEEP)
+                    if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size()>=GPS_L1_CA_HISTORY_DEEP)
                         {
                             // compute interpolated observation values for Doppler and Accumulate carrier phase
                             symbol_TOW_vec_s = arma::vec(std::vector<double>(d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].begin(), d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].end()));
@@ -219,14 +218,14 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             //std::cout<<"acc_phase_vec_rads="<<acc_phase_vec_rads<<std::endl;
                             //std::cout<<"dopper_vec_hz="<<dopper_vec_hz<<std::endl;
 
-                            desired_symbol_TOW[0] = symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1] + delta_rx_time_ms / 1000.0;
+                            desired_symbol_TOW[0] = symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP - 1] + delta_rx_time_ms / 1000.0;
                             //std::cout<<"desired_symbol_TOW="<<desired_symbol_TOW[0]<<std::endl;
 
-                            // arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
-                            // arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
+                            //					arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
+                            //					arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
 
                             // Curve fitting to cuadratic function
-                            arma::mat A = arma::ones<arma::mat>(GPS_L1_CA_HISTORY_DEEP,2);
+                            arma::mat A = arma::ones<arma::mat> (GPS_L1_CA_HISTORY_DEEP, 2);
                             A.col(1) = symbol_TOW_vec_s;
                             //A.col(2)=symbol_TOW_vec_s % symbol_TOW_vec_s;
                             arma::mat coef_acc_phase(1,3);

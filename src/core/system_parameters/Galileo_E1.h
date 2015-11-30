@@ -42,6 +42,7 @@
 
 // Physical constants
 const double GALILEO_PI = 3.1415926535898; //!< Pi as defined in GALILEO ICD
+const double GALILEO_TWO_PI = 6.283185307179600 ; //!< 2*Pi as defined in GALILEO ICD
 const double GALILEO_GM = 3.986004418e14;  //!< Geocentric gravitational constant[m^3/s^2]
 const double GALILEO_OMEGA_EARTH_DOT = 7.2921151467e-5;  //!< Mean angular velocity of the Earth [rad/s]
 const double GALILEO_C_m_s = 299792458.0;  //!< The speed of light, [m/s]
@@ -60,6 +61,10 @@ const double Galileo_E1_C_SECONDARY_CODE_LENGTH = 25.0;  //!< Galileo E1-C secon
 const int Galileo_E1_NUMBER_OF_CODES = 50;
 
 const double GALILEO_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)
+
+
+// OBSERVABLE HISTORY DEEP FOR INTERPOLATION
+const int GALILEO_E1_HISTORY_DEEP=100;
 
 // Galileo INAV Telemetry structure
 

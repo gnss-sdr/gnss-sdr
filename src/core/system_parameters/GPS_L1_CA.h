@@ -71,6 +71,7 @@ const double GPS_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this
 
 // OBSERVABLE HISTORY DEEP FOR INTERPOLATION
 const int GPS_L1_CA_HISTORY_DEEP = 100;
+
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
 
 #define GPS_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}

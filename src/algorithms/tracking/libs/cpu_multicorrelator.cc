@@ -63,6 +63,7 @@ bool cpu_multicorrelator::init(
 }
 
 
+
 bool cpu_multicorrelator::set_local_code_and_taps(
 		int code_length_chips,
 		const std::complex<float>* local_code_in,
@@ -85,6 +86,7 @@ bool cpu_multicorrelator::set_input_output_vectors(std::complex<float>* corr_out
 }
 
 
+
 void cpu_multicorrelator::update_local_code(int correlator_length_samples,float rem_code_phase_chips, float code_phase_step_chips)
 {
     float local_code_chip_index;
@@ -93,7 +95,7 @@ void cpu_multicorrelator::update_local_code(int correlator_length_samples,float 
             for (int n = 0; n < correlator_length_samples; n++)
                 {
                     // resample code for current tap
-                    local_code_chip_index = fmod(code_phase_step_chips*static_cast<float>(n)+ d_shifts_chips[current_correlator_tap] - rem_code_phase_chips, d_code_length_chips);
+                    local_code_chip_index = std::fmod(code_phase_step_chips*static_cast<float>(n)+ d_shifts_chips[current_correlator_tap] - rem_code_phase_chips, d_code_length_chips);
                     //Take into account that in multitap correlators, the shifts can be negative!
                     if (local_code_chip_index < 0.0) local_code_chip_index += d_code_length_chips;
                     d_local_codes_resampled[current_correlator_tap][n] = d_local_code_in[static_cast<int>(round(local_code_chip_index))];

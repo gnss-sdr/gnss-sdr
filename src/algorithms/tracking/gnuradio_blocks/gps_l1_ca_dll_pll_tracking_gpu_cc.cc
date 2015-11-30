@@ -122,16 +122,16 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     //pinned memory mode - use special function to get OS-pinned memory
     int N_CORRELATORS = 3;
     // Get space for a vector with the C/A code replica sampled 1x/chip
-	cudaHostAlloc((void**)&d_ca_code, (GPS_L1_CA_CODE_LENGTH_CHIPS* sizeof(gr_complex)), cudaHostAllocMapped || cudaHostAllocWriteCombined);
+    cudaHostAlloc((void**)&d_ca_code, (GPS_L1_CA_CODE_LENGTH_CHIPS* sizeof(gr_complex)), cudaHostAllocMapped || cudaHostAllocWriteCombined);
     // Get space for the resampled early / prompt / late local replicas
-	cudaHostAlloc((void**)&d_local_code_shift_chips, N_CORRELATORS * sizeof(float),  cudaHostAllocMapped || cudaHostAllocWriteCombined);
-	cudaHostAlloc((void**)&in_gpu, 2 * d_vector_length  * sizeof(gr_complex), cudaHostAllocMapped || cudaHostAllocWriteCombined);
-	// correlator outputs (scalar)
-	cudaHostAlloc((void**)&d_corr_outs_gpu ,sizeof(gr_complex)*N_CORRELATORS, cudaHostAllocMapped ||  cudaHostAllocWriteCombined );
+    cudaHostAlloc((void**)&d_local_code_shift_chips, N_CORRELATORS * sizeof(float),  cudaHostAllocMapped || cudaHostAllocWriteCombined);
+    cudaHostAlloc((void**)&in_gpu, 2 * d_vector_length * sizeof(gr_complex), cudaHostAllocMapped || cudaHostAllocWriteCombined);
+    // correlator outputs (scalar)
+    cudaHostAlloc((void**)&d_corr_outs_gpu ,sizeof(gr_complex)*N_CORRELATORS, cudaHostAllocMapped ||  cudaHostAllocWriteCombined );
 
-	//map to EPL pointers
+    //map to EPL pointers
     d_Early = &d_corr_outs_gpu[0];
-    d_Prompt = &d_corr_outs_gpu[1];
+    d_Prompt =  &d_corr_outs_gpu[1];
     d_Late = &d_corr_outs_gpu[2];
 
     //--- Perform initializations ------------------------------
@@ -139,6 +139,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     //local code resampler on GPU
     multicorrelator_gpu->init_cuda_integrated_resampler(2 * d_vector_length, GPS_L1_CA_CODE_LENGTH_CHIPS, 3);
     multicorrelator_gpu->set_input_output_vectors(d_corr_outs_gpu, in_gpu);
+
     // define initial code frequency basis of NCO
     d_code_freq_chips = GPS_L1_CA_CODE_RATE_HZ;
     // define residual code phase (in chips)
@@ -167,6 +168,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
 
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
+
 
     set_relative_rate(1.0/((double)d_vector_length*2));
 
@@ -234,9 +236,9 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
     gps_l1_ca_code_gen_complex(d_ca_code, d_acquisition_gnss_synchro->PRN, 0);
 
-    d_local_code_shift_chips[0]=-d_early_late_spc_chips;
-    d_local_code_shift_chips[1]=0.0;
-    d_local_code_shift_chips[2]=d_early_late_spc_chips;
+    d_local_code_shift_chips[0] = - d_early_late_spc_chips;
+    d_local_code_shift_chips[1] = 0.0;
+    d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
     multicorrelator_gpu->set_local_code_and_taps(GPS_L1_CA_CODE_LENGTH_CHIPS, d_ca_code, d_local_code_shift_chips, 3);
 
@@ -273,7 +275,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
     cudaFreeHost(d_corr_outs_gpu);
     cudaFreeHost(d_local_code_shift_chips);
     cudaFreeHost(d_ca_code);
-
     multicorrelator_gpu->free_cuda();
     delete(multicorrelator_gpu);
     delete[] d_Prompt_buffer;
@@ -285,10 +286,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
-    float carr_error_hz = 0.0;
-    float carr_error_filt_hz = 0.0;
-    float code_error_chips = 0.0;
-    float code_error_filt_chips = 0.0;
+    float carr_error_hz=0.0;
+    float carr_error_filt_hz=0.0;
+    float code_error_chips=0.0;
+    float code_error_filt_chips=0.0;
 
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0];

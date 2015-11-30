@@ -41,6 +41,7 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
+#include <armadillo>
 #include "concurrent_queue.h"
 #include "galileo_navigation_message.h"
 #include "rinex_printer.h"
@@ -69,6 +70,11 @@ private:
     friend galileo_e1_observables_cc_sptr
     galileo_e1_make_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
     galileo_e1_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+
+    //Tracking observable history
+    std::vector<std::deque<double>> d_acc_carrier_phase_queue_rads;
+    std::vector<std::deque<double>> d_carrier_doppler_queue_hz;
+    std::vector<std::deque<double>> d_symbol_TOW_queue_s;
 
     // class private vars
     boost::shared_ptr<gr::msg_queue> d_queue;

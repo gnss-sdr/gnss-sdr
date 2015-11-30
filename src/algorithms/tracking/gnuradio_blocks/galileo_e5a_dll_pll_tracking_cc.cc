@@ -404,6 +404,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
     double carr_error_filt_hz;
     double code_error_chips;
     double code_error_filt_chips;
+
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
 

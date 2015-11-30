@@ -2992,7 +2992,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int>(ssi), 1);
 
             // Galileo E1B PHASE
-            lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_phase_rads / (2 * GALILEO_PI), 3), 14);
+            lineObs += Rinex_Printer::rightJustify(asString(pseudoranges_iter->second.Carrier_phase_rads / (GALILEO_TWO_PI), 3), 14);
             if (lli == 0)
                 {
                     lineObs += std::string(1, ' ');

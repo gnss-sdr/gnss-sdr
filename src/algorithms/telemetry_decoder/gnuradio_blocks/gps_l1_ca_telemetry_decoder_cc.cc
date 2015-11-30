@@ -348,6 +348,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
             //correct the accumulated phase for the costas loop phase shift, if required
             current_synchro_data.Carrier_phase_rads += GPS_PI;
         }
+
     if(d_dump == true)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file

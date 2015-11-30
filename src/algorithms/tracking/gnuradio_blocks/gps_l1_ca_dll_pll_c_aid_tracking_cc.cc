@@ -218,7 +218,8 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
-    d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz/static_cast<double>(d_fs_in);
+
+    d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); //The carrier loop filter implements the Doppler accumulator
@@ -239,7 +240,6 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     d_rem_code_phase_chips = 0.0;
     d_acc_carrier_phase_cycles = 0.0;
     d_pll_to_dll_assist_secs_Ti = 0.0;
-
     d_code_phase_samples = d_acq_code_phase_samples;
 
     std::string sys_ = &d_acquisition_gnss_synchro->System;

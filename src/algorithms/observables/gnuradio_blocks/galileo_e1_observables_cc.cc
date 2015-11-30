@@ -37,6 +37,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <armadillo>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"

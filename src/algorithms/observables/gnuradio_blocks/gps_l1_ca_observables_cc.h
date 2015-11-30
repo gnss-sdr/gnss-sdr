@@ -42,7 +42,6 @@
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-#include <armadillo>
 #include "concurrent_queue.h"
 #include "gps_navigation_message.h"
 #include "rinex_printer.h"

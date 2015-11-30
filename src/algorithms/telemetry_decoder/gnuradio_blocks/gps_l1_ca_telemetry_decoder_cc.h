@@ -35,6 +35,7 @@
 #include <string>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
+#include <deque>
 #include "GPS_L1_CA.h"
 #include "gps_l1_ca_subframe_fsm.h"
 #include "concurrent_queue.h"
@@ -142,8 +143,14 @@ private:
 
     double d_TOW_at_Preamble;
     double d_TOW_at_current_symbol;
+    std::deque<double> d_symbol_TOW_queue_s;
+    // Doppler and Phase accumulator queue for interpolation in Observables
+    std::deque<double> d_carrier_doppler_queue_hz;
+    std::deque<double> d_acc_carrier_phase_queue_rads;
+
     double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;
+    bool flag_PLL_180_deg_phase_locked;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;

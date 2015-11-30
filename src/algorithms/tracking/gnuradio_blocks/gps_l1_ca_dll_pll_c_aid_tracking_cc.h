@@ -1,7 +1,8 @@
 /*!
- * \file gps_l2_m_dll_pll_tracking_cc.h
+ * \file gps_l1_ca_dll_pll_c_aid_tracking_cc.h
  * \brief Interface of a code DLL + carrier PLL tracking block
- * \author Javier Arribas, 2015. jarribas(at)cttc.es
+ * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
+ *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
  * K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -33,8 +34,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_CC_H
-#define	GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H
+#define	GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H
 
 #include <fstream>
 #include <queue>
@@ -45,18 +46,19 @@
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include "concurrent_queue.h"
+#include "gps_sdr_signal_processing.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
-#include "correlator.h"
+#include "tracking_FLL_PLL_filter.h"
+#include "cpu_multicorrelator.h"
 
-class gps_l2_m_dll_pll_tracking_cc;
+class gps_l1_ca_dll_pll_c_aid_tracking_cc;
 
-typedef boost::shared_ptr<gps_l2_m_dll_pll_tracking_cc>
-        gps_l2_m_dll_pll_tracking_cc_sptr;
+typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_cc>
+        gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr;
 
-gps_l2_m_dll_pll_tracking_cc_sptr
-gps_l2_m_dll_pll_make_tracking_cc(long if_freq,
+gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
+gps_l1_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
                                    long fs_in, unsigned
                                    int vector_length,
                                    boost::shared_ptr<gr::msg_queue> queue,
@@ -71,10 +73,10 @@ gps_l2_m_dll_pll_make_tracking_cc(long if_freq,
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class gps_l2_m_dll_pll_tracking_cc: public gr::block
+class gps_l1_ca_dll_pll_c_aid_tracking_cc: public gr::block
 {
 public:
-    ~gps_l2_m_dll_pll_tracking_cc();
+    ~gps_l1_ca_dll_pll_c_aid_tracking_cc();
 
     void set_channel(unsigned int channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
@@ -87,8 +89,8 @@ public:
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend gps_l2_m_dll_pll_tracking_cc_sptr
-    gps_l2_m_dll_pll_make_tracking_cc(long if_freq,
+    friend gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr
+    gps_l1_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
             boost::shared_ptr<gr::msg_queue> queue,
@@ -98,7 +100,7 @@ private:
             float dll_bw_hz,
             float early_late_space_chips);
 
-    gps_l2_m_dll_pll_tracking_cc(long if_freq,
+    gps_l1_ca_dll_pll_c_aid_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
             boost::shared_ptr<gr::msg_queue> queue,
@@ -107,8 +109,6 @@ private:
             float pll_bw_hz,
             float dll_bw_hz,
             float early_late_space_chips);
-    void update_local_code();
-    void update_local_carrier();
 
     // tracking configuration vars
     boost::shared_ptr<gr::msg_queue> d_queue;
@@ -123,41 +123,37 @@ private:
     long d_fs_in;
 
     double d_early_late_spc_chips;
+    int d_n_correlator_taps;
 
     gr_complex* d_ca_code;
-
-    gr_complex* d_early_code;
-    gr_complex* d_late_code;
-    gr_complex* d_prompt_code;
-    gr_complex* d_carr_sign;
-
-    gr_complex *d_Early;
-    gr_complex *d_Prompt;
-    gr_complex *d_Late;
+    float* d_local_code_shift_chips;
+    gr_complex* d_correlator_outs;
+    cpu_multicorrelator multicorrelator_cpu;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
-    double d_rem_carr_phase_rad;
+    double d_rem_code_phase_chips;
+    double d_rem_carrier_phase_rad;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
-    // correlator
-    Correlator d_correlator;
 
     // tracking vars
     double d_code_freq_chips;
+    double d_code_phase_step_chips;
     double d_carrier_doppler_hz;
-    double d_acc_carrier_phase_rad;
+    double d_carrier_phase_step_rad;
+    double d_acc_carrier_phase_cycles;
     double d_code_phase_samples;
-    double d_acc_code_phase_secs;
+    double d_pll_to_dll_assist_secs_Ti;
 
-    //PRN period in samples
-    int d_current_prn_length_samples;
+    //Integration period in samples
+    int d_correlation_length_samples;
 
     //processing samples counters
     unsigned long int d_sample_counter;
@@ -183,4 +179,4 @@ private:
     std::string sys;
 };
 
-#endif //GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_CC_H
+#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H

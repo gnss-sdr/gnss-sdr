@@ -41,6 +41,7 @@
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "gnss_synchro.h"
+#include "Galileo_E1.h"
 
 
 using google::LogMessage;
@@ -64,6 +65,13 @@ galileo_e1_observables_cc::galileo_e1_observables_cc(unsigned int nchannels, boo
     d_output_rate_ms = output_rate_ms;
     d_dump_filename = dump_filename;
     d_flag_averaging = flag_averaging;
+
+    for (int i=0;i<d_nchannels;i++)
+    {
+		d_acc_carrier_phase_queue_rads.push_back(std::deque<double>(d_nchannels));
+		d_carrier_doppler_queue_hz.push_back(std::deque<double>(d_nchannels));
+		d_symbol_TOW_queue_s.push_back(std::deque<double>(d_nchannels));
+    }
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -129,11 +137,39 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
              */
             current_gnss_synchro[i].Flag_valid_pseudorange = false;
             current_gnss_synchro[i].Pseudorange_m = 0.0;
-            if (current_gnss_synchro[i].Flag_valid_word)
-                {
-                    //record the word structure in a map for pseudorange computation
-                    current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
-                }
+
+            if (current_gnss_synchro[i].Flag_valid_word) //if this channel have valid word
+			 {
+				 //record the word structure in a map for pseudorange computation
+				 current_gnss_synchro_map.insert(std::pair<int, Gnss_Synchro>(current_gnss_synchro[i].Channel_ID, current_gnss_synchro[i]));
+
+				 //################### SAVE DOPPLER AND ACC CARRIER PHASE HISTORIC DATA FOR INTERPOLATION IN OBSERVABLE MODULE #######
+				 d_carrier_doppler_queue_hz[i].push_back(current_gnss_synchro[i].Carrier_Doppler_hz);
+				 d_acc_carrier_phase_queue_rads[i].push_back(current_gnss_synchro[i].Carrier_phase_rads);
+				 // save TOW history
+				 d_symbol_TOW_queue_s[i].push_back(current_gnss_synchro[i].d_TOW_at_current_symbol);
+
+				 if (d_carrier_doppler_queue_hz[i].size()>GALILEO_E1_HISTORY_DEEP)
+				 {
+					d_carrier_doppler_queue_hz[i].pop_front();
+				 }
+				 if (d_acc_carrier_phase_queue_rads[i].size()>GALILEO_E1_HISTORY_DEEP)
+				 {
+					d_acc_carrier_phase_queue_rads[i].pop_front();
+				 }
+				 if (d_symbol_TOW_queue_s[i].size()>GALILEO_E1_HISTORY_DEEP)
+				 {
+					d_symbol_TOW_queue_s[i].pop_front();
+				 }
+			 }else{
+				// Clear the observables history for this channel
+				if (d_symbol_TOW_queue_s[i].size()>0)
+				{
+					d_symbol_TOW_queue_s[i].clear();
+					d_carrier_doppler_queue_hz[i].clear();
+					d_acc_carrier_phase_queue_rads[i].clear();
+				}
+			 }
         }
 
     /*
@@ -155,18 +191,47 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
             double traveltime_ms;
             double pseudorange_m;
             double delta_rx_time_ms;
+            arma::vec symbol_TOW_vec_s;
+            arma::vec dopper_vec_hz;
+            arma::vec dopper_vec_interp_hz;
+            arma::vec acc_phase_vec_rads;
+            arma::vec acc_phase_vec_interp_rads;
+            arma::vec desired_symbol_TOW(1);
             for(gnss_synchro_iter = current_gnss_synchro_map.begin(); gnss_synchro_iter != current_gnss_synchro_map.end(); gnss_synchro_iter++)
                 {
-                    // compute the required symbol history shift in order to match the reference symbol
-                    delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms-d_ref_PRN_rx_time_ms;
-                    //compute the pseudorange
-                    traveltime_ms = (d_TOW_reference - gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GALILEO_STARTOFFSET_ms;
-                    pseudorange_m = traveltime_ms * GALILEO_C_m_ms; // [m]
-                    // update the pseudorange object
-                    //current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
-                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
-                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
-                    current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000)/1000 + GALILEO_STARTOFFSET_ms/1000.0;
+               	// compute the required symbol history shift in order to match the reference symbol
+				delta_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms - d_ref_PRN_rx_time_ms;
+				//compute the pseudorange
+				traveltime_ms = (d_TOW_reference-gnss_synchro_iter->second.d_TOW_at_current_symbol)*1000.0 + delta_rx_time_ms + GALILEO_STARTOFFSET_ms;
+				pseudorange_m = traveltime_ms * GPS_C_m_ms; // [m]
+				// update the pseudorange object
+				current_gnss_synchro[gnss_synchro_iter->second.Channel_ID] = gnss_synchro_iter->second;
+				current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Pseudorange_m = pseudorange_m;
+				current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Flag_valid_pseudorange = true;
+				current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].d_TOW_at_current_symbol = round(d_TOW_reference*1000.0)/1000.0 + GALILEO_STARTOFFSET_ms/1000.0;
+
+				if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size()>=GPS_L1_CA_HISTORY_DEEP)
+				{
+					// compute interpolated observation values for Doppler and Accumulate carrier phase
+					symbol_TOW_vec_s=arma::vec(std::vector<double>(d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].begin(), d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].end()));
+					acc_phase_vec_rads=arma::vec(std::vector<double>(d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].begin(), d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].end()));
+					dopper_vec_hz=arma::vec(std::vector<double>(d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].begin(), d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].end()));
+					desired_symbol_TOW[0]=symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1]+delta_rx_time_ms/1000.0;
+					// Curve fitting to cuadratic function
+					arma::mat A=arma::ones<arma::mat> (GPS_L1_CA_HISTORY_DEEP,2);
+					A.col(1)=symbol_TOW_vec_s;
+					//A.col(2)=symbol_TOW_vec_s % symbol_TOW_vec_s;
+					arma::mat coef_acc_phase(1,3);
+					coef_acc_phase=arma::pinv(A.t()*A)*A.t()*acc_phase_vec_rads;
+					arma::mat coef_doppler(1,3);
+					coef_doppler=arma::pinv(A.t()*A)*A.t()*dopper_vec_hz;
+					arma::vec acc_phase_lin;
+					arma::vec carrier_doppler_lin;
+					acc_phase_lin=coef_acc_phase[0]+coef_acc_phase[1]*desired_symbol_TOW[0];//+coef_acc_phase[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
+					carrier_doppler_lin=coef_doppler[0]+coef_doppler[1]*desired_symbol_TOW[0];//+coef_doppler[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
+					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads =acc_phase_lin[0];
+					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz =carrier_doppler_lin[0];
+				}
                 }
         }
 

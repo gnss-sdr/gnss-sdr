@@ -53,6 +53,7 @@ const double GPS_L1_FREQ_HZ              = 1.57542e9; //!< L1 [Hz]
 const double GPS_L1_CA_CODE_RATE_HZ      = 1.023e6;   //!< GPS L1 C/A code rate [chips/s]
 const double GPS_L1_CA_CODE_LENGTH_CHIPS = 1023.0;    //!< GPS L1 C/A code length [chips]
 const double GPS_L1_CA_CODE_PERIOD       = 0.001;     //!< GPS L1 C/A code period [seconds]
+const double GPS_L1_CA_CHIP_PERIOD       = 9.7752e-07;     //!< GPS L1 C/A chip period [seconds]
 
 /*!
  * \brief Maximum Time-Of-Arrival (TOA) difference between satellites for a receiver operated on Earth surface is 20 ms
@@ -67,6 +68,9 @@ const double MAX_TOA_DELAY_MS = 20;
 //#define NAVIGATION_SOLUTION_RATE_MS 1000 // this cannot go here
 const double GPS_STARTOFFSET_ms = 68.802; //[ms] Initial sign. travel time (this cannot go here)
 
+
+// OBSERVABLE HISTORY DEEP FOR INTERPOLATION
+const int GPS_L1_CA_HISTORY_DEEP=100;
 // NAVIGATION MESSAGE DEMODULATION AND DECODING
 
 #define GPS_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}

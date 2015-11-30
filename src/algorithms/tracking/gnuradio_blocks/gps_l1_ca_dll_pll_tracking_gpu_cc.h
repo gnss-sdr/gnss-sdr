@@ -128,13 +128,9 @@ private:
 
     //GPU HOST PINNED MEMORY IN/OUT VECTORS
     gr_complex* in_gpu;
-    gr_complex* d_carr_sign_gpu;
-    gr_complex* d_local_codes_gpu;
     float* d_local_code_shift_chips;
     gr_complex* d_corr_outs_gpu;
     cuda_multicorrelator *multicorrelator_gpu;
-
-
     gr_complex* d_ca_code;
 
     gr_complex *d_Early;

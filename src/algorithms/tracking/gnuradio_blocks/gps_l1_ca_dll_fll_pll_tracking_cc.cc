@@ -315,7 +315,7 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_carrier()
             phase += phase_step;
         }
     d_rem_carr_phase = fmod(phase, GPS_TWO_PI);
-    d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + phase;
+    d_acc_carrier_phase_rad -= d_acc_carrier_phase_rad + phase;
 }
 
 
@@ -439,6 +439,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             if (d_FLL_wait == 1)
                 {
                     d_Prompt_prev = *d_Prompt;
+                    d_FLL_discriminator_hz=0.0;
                     d_FLL_wait = 0;
                 }
             else
@@ -532,7 +533,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             T_prn_samples = T_prn_seconds * d_fs_in;
 
             float code_error_filt_samples;
-            code_error_filt_samples = T_prn_seconds * code_error_filt_chips * T_chip_seconds * static_cast<double>(d_fs_in); //[seconds]
+            code_error_filt_samples = GPS_L1_CA_CODE_PERIOD * code_error_filt_chips * GPS_L1_CA_CHIP_PERIOD * static_cast<double>(d_fs_in); //[seconds]
             d_acc_code_phase_samples = d_acc_code_phase_samples + code_error_filt_samples;
 
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_samples;

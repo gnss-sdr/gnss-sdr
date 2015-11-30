@@ -49,6 +49,8 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/core/interfaces
      ${CMAKE_SOURCE_DIR}/src/core/receiver
      ${VOLK_INCLUDE_DIRS}
+     ${GLOG_INCLUDE_DIRS}
+     ${GFlags_INCLUDE_DIRS}
      ${OPT_TRACKING_INCLUDES}
 )
 

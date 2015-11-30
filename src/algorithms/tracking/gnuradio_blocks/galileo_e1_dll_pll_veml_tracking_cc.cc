@@ -210,10 +210,10 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
 
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0.0;
-    d_rem_carr_phase_rad = 0.0;
-    d_acc_carrier_phase_rad = 0.0;
+    d_rem_carr_phase_rad = 0;
+    d_acc_carrier_phase_rad = 0;
 
-    d_acc_code_phase_secs = 0.0;
+    d_acc_code_phase_secs = 0;
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_current_prn_length_samples = d_vector_length;
 
@@ -249,17 +249,17 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
     code_phase_step_chips = d_code_freq_chips / (static_cast<double>(d_fs_in));
     code_phase_step_half_chips = (2.0 * d_code_freq_chips) / (static_cast<double>(d_fs_in));
 
-    rem_code_phase_half_chips = d_rem_code_phase_samples * (2.0 * d_code_freq_chips / static_cast<double>(d_fs_in));
+    rem_code_phase_half_chips = d_rem_code_phase_samples * (2*d_code_freq_chips / d_fs_in);
     tcode_half_chips = - rem_code_phase_half_chips;
 
-    early_late_spc_samples = std::round(d_early_late_spc_chips / code_phase_step_chips);
-    very_early_late_spc_samples = std::round(d_very_early_late_spc_chips / code_phase_step_chips);
+    early_late_spc_samples = round(d_early_late_spc_chips / code_phase_step_chips);
+    very_early_late_spc_samples = round(d_very_early_late_spc_chips / code_phase_step_chips);
 
     epl_loop_length_samples = d_current_prn_length_samples + very_early_late_spc_samples * 2;
 
     for (int i = 0; i < epl_loop_length_samples; i++)
         {
-            associated_chip_index = 2 + std::round(std::fmod(tcode_half_chips - 2.0 * d_very_early_late_spc_chips, static_cast<double>(code_length_half_chips)));
+            associated_chip_index = 2 + round(fmod(tcode_half_chips - 2 * d_very_early_late_spc_chips, code_length_half_chips));
             d_very_early_code[i] = d_ca_code[associated_chip_index];
             tcode_half_chips = tcode_half_chips + code_phase_step_half_chips;
         }
@@ -273,7 +273,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::update_local_code()
 void galileo_e1_dll_pll_veml_tracking_cc::update_local_carrier()
 {
     float sin_f, cos_f;
-    float phase_step_rad = static_cast<float>(2.0 * GALILEO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
+    float phase_step_rad = static_cast<float>(2 * GALILEO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
     int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
     int phase_rad_i = gr::fxpt::float_to_fixed(d_rem_carr_phase_rad);
 
@@ -310,10 +310,11 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    double carr_error_hz = 0.0;
-    double carr_error_filt_hz = 0.0;
-    double code_error_chips = 0.0;
-    double code_error_filt_chips = 0.0;
+	double carr_error_hz = 0.0;
+	double carr_error_filt_hz = 0.0;
+	double code_error_chips = 0.0;
+	double code_error_filt_chips = 0.0;
+
 
     if (d_enable_tracking == true)
         {
@@ -326,8 +327,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                     double acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = static_cast<double>(d_current_prn_length_samples) - static_cast<double>(std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples)));
-                    samples_offset = static_cast<int>(std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples));
+                    acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
+                    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
@@ -364,7 +365,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
 
             // ################## PLL ##########################################################
             // PLL discriminator
-            carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / static_cast<double>(GPS_TWO_PI);
+            carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / static_cast<float>(GPS_TWO_PI);
             // Carrier discriminator filter
             carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
             // New carrier Doppler frequency estimation
@@ -375,7 +376,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             d_acc_carrier_phase_rad -= GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
             //remnant carrier phase to prevent overflow in the code NCO
             d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
-            d_rem_carr_phase_rad = std::fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
+            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
 
             // ################## DLL ##########################################################
             // DLL discriminator
@@ -399,7 +400,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
-            d_current_prn_length_samples = static_cast<int>(std::round(K_blk_samples)); //round to a discrete samples
+            d_current_prn_length_samples = round(K_blk_samples); //round to a discrete samples
             //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
@@ -456,7 +457,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!, but some glitches??)
             current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
             //compute remnant code phase samples AFTER the Tracking timestamp
-            d_rem_code_phase_samples = K_blk_samples - static_cast<double>(d_current_prn_length_samples); //rounding error < 1 sample
+            d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
@@ -471,9 +472,10 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
              *  \todo The stop timer has to be moved to the signal source!
              */
             // stream to collect cout calls to improve thread safety
-            if (std::floor(d_sample_counter / d_fs_in) != d_last_seg)
+            std::stringstream tmp_str_stream;
+            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
                 {
-                    d_last_seg = std::floor(d_sample_counter / d_fs_in);
+                    d_last_seg = floor(d_sample_counter / d_fs_in);
 
                     if (d_channel == 0)
                         {
@@ -496,9 +498,9 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
     	 */
     	// stream to collect cout calls to improve thread safety
     	std::stringstream tmp_str_stream;
-    	if (std::floor(d_sample_counter / d_fs_in) != d_last_seg)
+    	if (floor(d_sample_counter / d_fs_in) != d_last_seg)
     	{
-    		d_last_seg = std::floor(d_sample_counter / d_fs_in);
+    		d_last_seg = floor(d_sample_counter / d_fs_in);
 
     		if (d_channel == 0)
     		{

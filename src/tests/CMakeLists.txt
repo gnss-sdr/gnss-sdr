@@ -335,8 +335,9 @@ endif(NOT ${GTEST_DIR_LOCAL})
 # add_test(acq_test acq_test)
 
 add_executable(trk_test
-     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc 
+     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/tracking_loop_filter_test.cc
 )
 if(NOT ${ENABLE_PACKAGING})
      set_property(TARGET trk_test PROPERTY EXCLUDE_FROM_ALL TRUE)

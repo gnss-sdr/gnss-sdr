@@ -56,13 +56,40 @@
 class Correlator
 {
 public:
+    Correlator();
+    ~Correlator();
     void Carrier_wipeoff_and_EPL_generic(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
     void Carrier_wipeoff_and_EPL_volk(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
     void Carrier_wipeoff_and_VEPL_volk(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* VE_code, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* VL_code, gr_complex* VE_out, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* VL_out);
     // void Carrier_wipeoff_and_EPL_volk_IQ(int prn_length_samples,int integration_time ,const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* P_data_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* P_data_out);
     void Carrier_wipeoff_and_EPL_volk_IQ(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* P_data_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out, gr_complex* P_data_out);
-    Correlator();
-    ~Correlator();
+
+    void Carrier_rotate_and_EPL_volk(int signal_length_samples,
+            const gr_complex* input,
+            gr_complex *phase_as_complex,
+            gr_complex phase_inc_as_complex,
+            const gr_complex* E_code,
+            const gr_complex* P_code,
+            const gr_complex* L_code,
+            gr_complex* E_out,
+            gr_complex* P_out,
+            gr_complex* L_out );
+
+    void Carrier_rotate_and_VEPL_volk(int signal_length_samples,
+            const gr_complex* input,
+            gr_complex *phase_as_complex,
+            gr_complex phase_inc_as_complex,
+            const gr_complex* VE_code,
+            const gr_complex* E_code,
+            const gr_complex* P_code,
+            const gr_complex* L_code,
+            const gr_complex* VL_code,
+            gr_complex* VE_out,
+            gr_complex* E_out,
+            gr_complex* P_out,
+            gr_complex* L_out,
+            gr_complex* VL_out );
+
 #if USING_VOLK_CW_EPL_CORR_CUSTOM
     void Carrier_wipeoff_and_EPL_volk_custom(int signal_length_samples, const gr_complex* input, gr_complex* carrier, gr_complex* E_code, gr_complex* P_code, gr_complex* L_code, gr_complex* E_out, gr_complex* P_out, gr_complex* L_out);
 #endif

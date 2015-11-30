@@ -58,6 +58,8 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     std::string default_item_type = "short";
     std::string default_dump_filename = "./my_capture.dat";
 
+    double default_seconds_to_skip = 0.0;
+    size_t header_size = 0;
     samples_ = configuration->property(role + ".samples", 0);
     sampling_frequency_ = configuration->property(role + ".sampling_frequency", 0);
     filename_ = configuration->property(role + ".filename", default_filename);
@@ -72,6 +74,11 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
     std::string s = "InputFilter";
     //double IF = configuration->property(s + ".IF", 0.0);
+    double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip );
+    header_size = configuration->property( role + ".header_size", 0 );
+    long samples_to_skip = 0;
+
+    bool is_complex = false;
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -88,6 +95,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     else if (item_type_.compare("ishort") == 0)
         {
             item_size_ = sizeof(int16_t);
+            is_complex = true;
         }
     else if (item_type_.compare("byte") == 0)
         {
@@ -96,6 +104,7 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     else if (item_type_.compare("ibyte") == 0)
         {
     		item_size_ = sizeof(int8_t);
+            is_complex = true;
         }
     else
         {
@@ -106,6 +115,30 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     try
     {
             file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
+
+            if( seconds_to_skip > 0 )
+            {
+                samples_to_skip = static_cast< long >(
+                        seconds_to_skip * sampling_frequency_ );
+
+                if( is_complex )
+                {
+                    samples_to_skip *= 2;
+                }
+            }
+            if( header_size > 0 )
+            {
+                samples_to_skip += header_size;
+            }
+
+            if( samples_to_skip > 0 )
+            {
+                LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
+                if( not file_source_->seek( samples_to_skip, SEEK_SET ) )
+                {
+                    LOG(INFO) << "Error skipping bytes!";
+                }
+            }
 
     }
     catch (const std::exception &e)
@@ -174,7 +207,9 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
 
             if (size > 0)
                 {
-                    samples_ = floor(static_cast<double>(size) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_))); //process all the samples available in the file excluding at least the last 1 ms
+                    long bytes_to_skip = samples_to_skip*item_size_;
+                    long bytes_to_process = static_cast<long>(size) - bytes_to_skip;
+                    samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size()) - ceil(0.002 * static_cast<double>(sampling_frequency_))); //process all the samples available in the file excluding at least the last 1 ms
                 }
         }
 
@@ -182,10 +217,11 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
     double signal_duration_s;
     signal_duration_s = static_cast<double>(samples_) * ( 1 / static_cast<double>(sampling_frequency_));
 
-    if ((item_type_.compare("gr_complex") != 0) || (item_type_.compare("ishort") != 0) || (item_type_.compare("ibyte") != 0) )  // signal is complex (interleaved)
-        {
-            signal_duration_s /= 2;
-        }
+    if( is_complex )
+    {
+        signal_duration_s /= 2.0;
+    }
+
     DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 

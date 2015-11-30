@@ -35,7 +35,7 @@ function [GNSS_tracking] = gps_l1_ca_dll_pll_read_tracking_dump (filename, count
 
   m = nargchk (1,2,nargin);
   num_float_vars=16;
-  num_double_vars=1;
+  num_double_vars=2;
   double_size_bytes=8;
   float_size_bytes=4;
   skip_bytes_each_read=float_size_bytes*num_float_vars+double_size_bytes*num_double_vars;
@@ -100,6 +100,9 @@ function [GNSS_tracking] = gps_l1_ca_dll_pll_read_tracking_dump (filename, count
             bytes_shift=bytes_shift+float_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved float
     v17 = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+            bytes_shift=bytes_shift+double_size_bytes;
+    fseek(f,bytes_shift,'bof'); % move to next interleaved float
+    v18 = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
     fclose (f);
     
     %%%%%%%% output vars %%%%%%%%
@@ -155,6 +158,7 @@ function [GNSS_tracking] = gps_l1_ca_dll_pll_read_tracking_dump (filename, count
     carrier_lock_test=v15;
     var1=v16;
     var2=v17;
+    var3=v18;
     
     GNSS_tracking.E=E;
     GNSS_tracking.P=P;
@@ -173,5 +177,6 @@ function [GNSS_tracking] = gps_l1_ca_dll_pll_read_tracking_dump (filename, count
     GNSS_tracking.carrier_lock_test=carrier_lock_test;
     GNSS_tracking.var1=var1;
     GNSS_tracking.var2=var2;
+    GNSS_tracking.var3=var3;
   end
   

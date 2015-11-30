@@ -32,7 +32,7 @@
 #define GNSS_SDR_GNSS_SYNCHRO_H_
 
 #include "gnss_signal.h"
-#include <deque>
+
 
 /*!
  * \brief This is the class that contains the information that is shared

@@ -151,3 +151,50 @@ void Correlator::Carrier_wipeoff_and_EPL_volk_custom(int signal_length_samples, 
     volk_cw_epl_corr_u(input, carrier, E_code, P_code, L_code, E_out, P_out, L_out, signal_length_samples);
 }
 #endif
+void Correlator::Carrier_rotate_and_EPL_volk(int signal_length_samples,
+                                             const gr_complex* input,
+                                             gr_complex *phase_as_complex,
+                                             gr_complex phase_inc_as_complex,
+                                             const gr_complex* E_code,
+                                             const gr_complex* P_code,
+                                             const gr_complex* L_code,
+                                             gr_complex* E_out,
+                                             gr_complex* P_out,
+                                             gr_complex* L_out )
+{
+    gr_complex* bb_signal = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
+
+    volk_32fc_s32fc_x2_rotator_32fc(bb_signal, input, phase_inc_as_complex, phase_as_complex, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc(E_out, bb_signal, E_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc(P_out, bb_signal, P_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc(L_out, bb_signal, L_code, signal_length_samples);
+
+    volk_free(bb_signal);
+}
+
+void Correlator::Carrier_rotate_and_VEPL_volk(int signal_length_samples,
+                                              const gr_complex* input,
+                                              gr_complex *phase_as_complex,
+                                              gr_complex phase_inc_as_complex,
+                                              const gr_complex* VE_code,
+                                              const gr_complex* E_code,
+                                              const gr_complex* P_code,
+                                              const gr_complex* L_code,
+                                              const gr_complex* VL_code,
+                                              gr_complex* VE_out,
+                                              gr_complex* E_out,
+                                              gr_complex* P_out,
+                                              gr_complex* L_out,
+                                              gr_complex* VL_out )
+{
+    gr_complex* bb_signal = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
+
+    volk_32fc_s32fc_x2_rotator_32fc(bb_signal, input, phase_inc_as_complex, phase_as_complex, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc(VE_out, bb_signal, VE_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc(E_out, bb_signal, E_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc(P_out, bb_signal, P_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc(L_out, bb_signal, L_code, signal_length_samples);
+    volk_32fc_x2_dot_prod_32fc(VL_out, bb_signal, VL_code, signal_length_samples);
+
+    volk_free(bb_signal);
+}

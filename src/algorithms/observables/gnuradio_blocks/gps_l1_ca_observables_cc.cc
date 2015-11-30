@@ -264,8 +264,8 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             //tmp_double = (double)(current_gnss_synchro[i].Flag_valid_pseudorange==true);
                             //tmp_double = current_gnss_synchro[i].debug_var1;
-                            tmp_double = current_gnss_synchro[i].debug_var2;
-                            d_dump_file.write((char*)&tmp_double, sizeof(double));
+                            //tmp_double = current_gnss_synchro[i].debug_var2;
+                            //d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].PRN;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                         }

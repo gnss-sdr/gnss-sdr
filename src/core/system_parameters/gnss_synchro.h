@@ -74,10 +74,6 @@ public:
     // Pseudorange
     double Pseudorange_m;
     bool Flag_valid_pseudorange;
-
-    //debug
-    double debug_var1;
-    double debug_var2;
 };
 
 #endif

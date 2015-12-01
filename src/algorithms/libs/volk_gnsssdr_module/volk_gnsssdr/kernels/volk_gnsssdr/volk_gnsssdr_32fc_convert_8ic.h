@@ -30,12 +30,15 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_32fc_convert_8ic_u_H
-#define INCLUDED_volk_gnsssdr_32fc_convert_8ic_u_H
 
 #include <inttypes.h>
 #include <stdio.h>
 #include <math.h>
+#include "volk_gnsssdr/volk_gnsssdr_complex.h"
+
+
+#ifndef INCLUDED_volk_gnsssdr_32fc_convert_8ic_u_H
+#define INCLUDED_volk_gnsssdr_32fc_convert_8ic_u_H
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
@@ -129,10 +132,6 @@ static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector,
 #ifndef INCLUDED_volk_gnsssdr_32fc_convert_8ic_a_H
 #define INCLUDED_volk_gnsssdr_32fc_convert_8ic_a_H
 
-#include <volk/volk_common.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include <math.h>
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>

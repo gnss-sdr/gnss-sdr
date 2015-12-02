@@ -372,6 +372,7 @@ endif(NOT ${GTEST_DIR_LOCAL})
 add_executable(arithmetic_test
      ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/code_resampler_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/subcarrier_resampler_test.cc
 )
 if(NOT ${ENABLE_PACKAGING})
      set_property(TARGET arithmetic_test PROPERTY EXCLUDE_FROM_ALL TRUE)

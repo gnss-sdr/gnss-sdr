@@ -256,7 +256,7 @@ public:
             curr_offset += d_subcarrier_spacing_cycles;
 
             d_replica_store[ii] = static_cast< T *>( volk_malloc(
-                        maximum_num_samples * sizeof( T ),
+                        2*maximum_num_samples * sizeof( T ),
                         volk_get_alignment() ) );
 
         }

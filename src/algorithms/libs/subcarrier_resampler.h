@@ -58,7 +58,15 @@ public:
             int num_samples,
             std::vector< T * > resampled_subcarriers,
             bool is_cosine_phased = false) = 0;
+
+protected:
+
+    static const std::vector< T > d_subcarrier_table;
 };
+
+template< typename T >
+const std::vector< T > SubcarrierResamplerInterface< T >::d_subcarrier_table =
+    { static_cast< T >( 1.0 ), static_cast<T >( -1.0 ) };
 
 /*!
  * \brief Simple generic implementation of subcarrier resampling. Most accurate
@@ -100,7 +108,8 @@ public:
             for( int j = 0; j < num_samples; ++j )
             {
                 int_phase = static_cast< int64_t >( tsubcarrier_halfcycles );
-                *curr_sample = static_cast< T >( 1.0 - 2.0 *( int_phase & 0x01 ) );
+                //*curr_sample = static_cast< T >( 1.0 - 2.0 *( int_phase & 0x01 ) );
+                *curr_sample = this->d_subcarrier_table[ int_phase & 0x01 ];
                 tsubcarrier_halfcycles += subcarrier_phase_step;
                 ++curr_sample;
             }
@@ -212,7 +221,8 @@ public:
 
             for( int j = 0 ; j < num_samples; ++j )
             {
-                *curr_sample = static_cast< T >( 1 - 2*( (subcarrier_phase_fxp>>FRAC_LEN) & 0x01 ) );
+                //*curr_sample = static_cast< T >( 1 - 2*( (subcarrier_phase_fxp>>FRAC_LEN) & 0x01 ) );
+                *curr_sample = this->d_subcarrier_table[ ( subcarrier_phase_fxp >> FRAC_LEN ) & 0x01 ];
                 subcarrier_phase_fxp += subcarrier_phase_step_fxp;
                 ++curr_sample;
             }

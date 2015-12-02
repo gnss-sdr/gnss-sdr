@@ -577,6 +577,6 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             break;
         }
     }
-    //DLOG(INFO) << "END GENERAL WORK";
+    output_items.clear();  // removes a warning
     return noutput_items;
 }

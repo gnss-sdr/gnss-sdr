@@ -85,7 +85,10 @@ galileo_volk_e1_dll_pll_veml_make_tracking_cc(
 void galileo_volk_e1_dll_pll_veml_tracking_cc::forecast (int noutput_items,
                                                     gr_vector_int &ninput_items_required)
 {
-    ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
+    if (noutput_items != 0)
+        {
+            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
+        }
 }
 
 
@@ -135,21 +138,21 @@ gr::block("galileo_volk_e1_dll_pll_veml_tracking_cc", gr::io_signature::make(1, 
     d_very_late_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
     d_carr_sign = static_cast<gr_complex*>(volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment()));
     
-    d_very_early_code16=static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_early_code16=static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_prompt_code16=static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_late_code16=static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_very_late_code16=static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_carr_sign16=static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    in16=static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
+    d_very_early_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
+    d_early_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
+    d_prompt_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
+    d_late_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
+    d_very_late_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
+    d_carr_sign16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
+    in16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
     
-    d_very_early_code8=static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_early_code8=static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_prompt_code8=static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_late_code8=static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_very_late_code8=static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_carr_sign8=static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    in8=static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
+    d_very_early_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
+    d_early_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
+    d_prompt_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
+    d_late_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
+    d_very_late_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
+    d_carr_sign8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
+    in8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
     
     // correlator outputs (scalar)
     d_Very_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
@@ -337,13 +340,13 @@ galileo_volk_e1_dll_pll_veml_tracking_cc::~galileo_volk_e1_dll_pll_veml_tracking
 
 
 
-int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vector_int &ninput_items,
+int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                                                        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    double carr_error_hz;
-    double carr_error_filt_hz;
-    double code_error_chips;
-    double code_error_filt_chips;
+    double carr_error_hz = 0.0;
+    double carr_error_filt_hz = 0.0;
+    double code_error_chips = 0.0;
+    double code_error_filt_chips = 0.0;
     
     if (d_enable_tracking == true)
     {
@@ -411,7 +414,7 @@ int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr
 
         // ################## PLL ##########################################################
         // PLL discriminator
-        carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / static_cast<float>(GPS_TWO_PI);
+        carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / GPS_TWO_PI;
         // Carrier discriminator filter
         carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
         // New carrier Doppler frequency estimation
@@ -629,7 +632,11 @@ int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr
     }
     consume_each(d_current_prn_length_samples); // this is required for gr_block derivates
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
-    //std::cout<<"Galileo tracking output at sample "<<d_sample_counter<<std::endl;
+
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

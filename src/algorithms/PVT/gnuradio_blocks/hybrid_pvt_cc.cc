@@ -370,7 +370,12 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         }
 
     consume_each(1); //one by one
-    return noutput_items;
+    output_items.clear();  // removes a warning
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
+    return 1;
 }
 
 

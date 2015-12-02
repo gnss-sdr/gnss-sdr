@@ -55,17 +55,18 @@ using google::LogMessage;
 
 
 galileo_e5a_telemetry_decoder_cc_sptr
-galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-		int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump)
+galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
 {
-    return galileo_e5a_telemetry_decoder_cc_sptr(new galileo_e5a_telemetry_decoder_cc(satellite, if_freq,
-            fs_in, vector_length, queue, dump));
+    return galileo_e5a_telemetry_decoder_cc_sptr(new galileo_e5a_telemetry_decoder_cc(satellite, queue, dump));
 }
 
 void galileo_e5a_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
 {
     //ninput_items_required[0] = GALILEO_FNAV_SAMPLES_PER_PAGE; // set the required sample history
-    ninput_items_required[0] = GALILEO_FNAV_CODES_PER_PREAMBLE;
+    if (noutput_items != 0)
+        {
+            ninput_items_required[0] = GALILEO_FNAV_CODES_PER_PREAMBLE;
+        }
 }
 
 void galileo_e5a_telemetry_decoder_cc::viterbi_decoder(double *page_part_symbols, int *page_part_bits)
@@ -192,10 +193,6 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
 
 galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        long if_freq,
-        long fs_in,
-        unsigned
-        int vector_length,
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump) :
            gr::block("galileo_e5a_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -206,9 +203,7 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "GALILEO E5A TELEMETRY PROCESSING: satellite " << d_satellite;
-    d_vector_length = vector_length;
     //d_samples_per_symbol = ( Galileo_E5a_CODE_CHIP_RATE_HZ / Galileo_E5a_CODE_LENGTH_CHIPS ) / Galileo_E1_B_SYMBOL_RATE_BPS;
-    d_fs_in = fs_in;
 
     // set the preamble
     //unsigned short int preambles_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS] = GALILEO_FNAV_PREAMBLE;
@@ -585,6 +580,10 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
     d_sample_counter++; //count for the processed samples
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_synchro_data;
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
     return 1;
 }
 

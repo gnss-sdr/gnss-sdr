@@ -1434,7 +1434,6 @@ int Rtcm::set_DF011(const Gnss_Synchro & gnss_synchro)
 int Rtcm::set_DF012(const Gnss_Synchro & gnss_synchro)
 {
     const double lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
-    double L1_pseudorange = gnss_synchro.Pseudorange_m;
     double ambiguity = std::floor( gnss_synchro.Pseudorange_m / 299792.458 );
     double gps_L1_pseudorange = std::round(( gnss_synchro.Pseudorange_m - ambiguity * 299792.458) / 0.02 );
     double gps_L1_pseudorange_c = static_cast<double>(gps_L1_pseudorange) * 0.02 + ambiguity * 299792.458;

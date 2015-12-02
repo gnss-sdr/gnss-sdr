@@ -62,14 +62,10 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* c
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./navigation.dat";
     DLOG(INFO) << "role " << role;
-    DLOG(INFO) << "vector length " << vector_length_;
-    vector_length_ = configuration->property(role + ".vector_length", 2048);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-    int fs_in;
-    fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     // make telemetry decoder object
-    telemetry_decoder_ = galileo_e1b_make_telemetry_decoder_cc(satellite_, 0, (long)fs_in, vector_length_, queue_, dump_); // TODO fix me
+    telemetry_decoder_ = galileo_e1b_make_telemetry_decoder_cc(satellite_, queue_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     // set the navigation msg queue;
     telemetry_decoder_->set_ephemeris_queue(&global_galileo_ephemeris_queue);

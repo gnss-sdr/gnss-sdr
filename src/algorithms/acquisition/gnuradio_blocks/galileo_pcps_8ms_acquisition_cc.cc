@@ -413,5 +413,6 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
         }
     }
 
+    output_items.clear();  // removes a warning
     return noutput_items;
 }

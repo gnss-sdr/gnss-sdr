@@ -48,21 +48,15 @@ using google::LogMessage;
 
 
 sbas_l1_telemetry_decoder_cc_sptr
-sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-        int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump)
+sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
 {
-    return sbas_l1_telemetry_decoder_cc_sptr(new sbas_l1_telemetry_decoder_cc(satellite, if_freq,
-            fs_in, vector_length, queue, dump));
+    return sbas_l1_telemetry_decoder_cc_sptr(new sbas_l1_telemetry_decoder_cc(satellite, queue, dump));
 }
 
 
 
 sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        long if_freq,
-        long fs_in,
-        unsigned
-        int vector_length,
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump) :
                 gr::block("sbas_l1_telemetry_decoder_cc",
@@ -73,7 +67,6 @@ sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "SBAS L1 TELEMETRY PROCESSING: satellite " << d_satellite;
-    d_fs_in = fs_in;
     d_block_size = d_samples_per_symbol * d_symbols_per_bit * d_block_size_in_bits;
     d_channel = 0;
     set_output_multiple (1);
@@ -187,6 +180,10 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int
             current_synchro_data[i].Flag_valid_word = false; // indicate to observable block that this synchro object isn't valid for pseudorange computation
         }
     consume_each(noutput_items); // tell scheduler input items consumed
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
     return noutput_items; // tell scheduler output items produced
 }
 

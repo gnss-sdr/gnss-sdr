@@ -58,8 +58,7 @@ class galileo_e5a_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e5a_telemetry_decoder_cc> galileo_e5a_telemetry_decoder_cc_sptr;
 
-galileo_e5a_telemetry_decoder_cc_sptr galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-    int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+galileo_e5a_telemetry_decoder_cc_sptr galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
 
 /*!
@@ -90,10 +89,8 @@ public:
 
 private:
     friend galileo_e5a_telemetry_decoder_cc_sptr
-    galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
-            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
-    galileo_e5a_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    galileo_e5a_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
 
@@ -101,10 +98,10 @@ private:
 
     void decode_word(double *page_symbols,int frame_length);
 
-    signed int d_preamble_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-//    signed int d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+    int d_preamble_bits[GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+    // signed int d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
     double d_page_symbols[GALILEO_FNAV_SYMBOLS_PER_PAGE + GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-   // signed int *d_preamble_symbols;
+    // signed int *d_preamble_symbols;
     double d_current_symbol;
     long unsigned int d_symbol_counter;
     int d_prompt_counter;
@@ -120,8 +117,6 @@ private:
     bool d_flag_preamble;
     int d_CRC_error_counter;
 
-    long d_fs_in;
-
     // navigation message vars
     Galileo_Fnav_Message d_nav;
 
@@ -135,7 +130,6 @@ private:
     concurrent_queue<Galileo_Almanac> *d_almanac_queue;
 
     boost::shared_ptr<gr::msg_queue> d_queue;
-    unsigned int d_vector_length;
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;

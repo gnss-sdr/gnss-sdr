@@ -82,7 +82,10 @@ gps_l2_m_dll_pll_make_tracking_cc(
 void gps_l2_m_dll_pll_tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
-    ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
+    if (noutput_items != 0)
+        {
+            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
+        }
 }
 
 
@@ -627,7 +630,10 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
         }
     consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
-    //LOG(INFO)<<"GPS L2 tracking output end on CH="<<this->d_channel << " SAMPLE STAMP="<<d_sample_counter<<std::endl;
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

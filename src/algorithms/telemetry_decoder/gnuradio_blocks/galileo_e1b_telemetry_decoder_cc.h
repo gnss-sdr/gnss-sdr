@@ -54,8 +54,7 @@ class galileo_e1b_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e1b_telemetry_decoder_cc> galileo_e1b_telemetry_decoder_cc_sptr;
 
-galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-    int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the INAV data defined in Galileo ICD
@@ -92,10 +91,8 @@ public:
 
 private:
     friend galileo_e1b_telemetry_decoder_cc_sptr
-    galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
-            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
-    galileo_e1b_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    galileo_e1b_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
 
@@ -105,7 +102,7 @@ private:
 
     unsigned short int d_preambles_bits[GALILEO_INAV_PREAMBLE_LENGTH_BITS];
 
-    signed int *d_preambles_symbols;
+    int *d_preambles_symbols;
     unsigned int d_samples_per_symbol;
     int d_symbols_per_preamble;
 
@@ -117,8 +114,6 @@ private:
     bool d_flag_parity;
     bool d_flag_preamble;
     int d_CRC_error_counter;
-
-    long d_fs_in;
 
     // navigation message vars
     Galileo_Navigation_Message d_nav;
@@ -133,7 +128,6 @@ private:
     concurrent_queue<Galileo_Almanac> *d_almanac_queue;
 
     boost::shared_ptr<gr::msg_queue> d_queue;
-    unsigned int d_vector_length;
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;
@@ -150,7 +144,6 @@ private:
     double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;
     double delta_t; //GPS-GALILEO time offset
-
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;

@@ -84,7 +84,10 @@ galileo_e1_dll_pll_veml_make_tracking_cc(
 void galileo_e1_dll_pll_veml_tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
-    ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
+    if (noutput_items != 0)
+        {
+            ninput_items_required[0] = static_cast<int>(d_vector_length) * 2; //set the required available samples in each call
+        }
 }
 
 
@@ -210,10 +213,10 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
 
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0.0;
-    d_rem_carr_phase_rad = 0;
-    d_acc_carrier_phase_rad = 0;
+    d_rem_carr_phase_rad = 0.0;
+    d_acc_carrier_phase_rad = 0.0;
 
-    d_acc_code_phase_secs = 0;
+    d_acc_code_phase_secs = 0.0;
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_current_prn_length_samples = d_vector_length;
 
@@ -307,7 +310,7 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 
 
 
-int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vector_int &ninput_items,
+int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     double carr_error_hz = 0.0;
@@ -326,7 +329,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
                     double acq_trk_shif_correction_samples;
                     int acq_to_trk_delay_samples;
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - std::fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
+                    acq_trk_shif_correction_samples = d_current_prn_length_samples - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
                     samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
@@ -394,7 +397,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
             double T_prn_seconds;
             double T_prn_samples;
             double K_blk_samples;
-            // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
+            // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
             T_chip_seconds = 1.0 / d_code_freq_chips;
             T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
@@ -582,7 +585,11 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items,gr_vect
         }
     consume_each(d_current_prn_length_samples); // this is required for gr_block derivates
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
-    //std::cout<<"Galileo tracking output at sample "<<d_sample_counter<<std::endl;
+
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

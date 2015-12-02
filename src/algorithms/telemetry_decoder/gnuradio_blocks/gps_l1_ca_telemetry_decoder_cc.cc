@@ -52,20 +52,21 @@ using google::LogMessage;
  * \todo name and move the magic numbers to GPS_L1_CA.h
  */
 gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-        int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump)
+gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
 {
-    return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, if_freq,
-            fs_in, vector_length, queue, dump));
+    return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, queue, dump));
 }
 
 
 
 void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
 {
-    for (unsigned i = 0; i < 3; i++)
+    if (noutput_items != 0)
         {
-            ninput_items_required[i] = d_samples_per_bit * 8; //set the required sample history
+            for (unsigned i = 0; i < 3; i++)
+                {
+                    ninput_items_required[i] = d_samples_per_bit * 8; //set the required sample history
+                }
         }
 }
 
@@ -73,10 +74,6 @@ void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int 
 
 gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        long if_freq,
-        long fs_in,
-        unsigned
-        int vector_length,
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump) :
         gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -86,9 +83,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_queue = queue;
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    d_vector_length = vector_length;
     d_samples_per_bit = ( GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS ) / GPS_CA_TELEMETRY_RATE_BITS_SECOND;
-    d_fs_in = fs_in;
     //d_preamble_duration_seconds = (1.0 / GPS_CA_TELEMETRY_RATE_BITS_SECOND) * GPS_CA_PREAMBLE_LENGTH_BITS;
     //std::cout<<"d_preamble_duration_seconds="<<d_preamble_duration_seconds<<"\r\n";
     // set the preamble
@@ -371,6 +366,10 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //todo: implement averaging
 
     d_average_count++;
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
     if (d_average_count == d_decimation_output_factor)
         {
             d_average_count = 0;

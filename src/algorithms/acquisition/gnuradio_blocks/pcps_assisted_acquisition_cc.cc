@@ -173,7 +173,10 @@ void pcps_assisted_acquisition_cc::init()
 void pcps_assisted_acquisition_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
-    ninput_items_required[0] = d_gnuradio_forecast_samples ; //set the required available samples in each call
+    if (noutput_items != 0)
+        {
+            ninput_items_required[0] = d_gnuradio_forecast_samples ; //set the required available samples in each call
+        }
 }
 
 
@@ -482,5 +485,6 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         break;
     }
 
+    output_items.clear();  // removes a warning
     return noutput_items;
 }

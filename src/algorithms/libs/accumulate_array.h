@@ -51,10 +51,10 @@
 #define GNSS_SDR_ACCUMULATE_ARRAY_H_
 
 template< typename T >
-void accumulate_array( T *input_vec, int *index_vec, T *output_vec, int num_samples )
+void accumulate_array( const T *input_vec, const int *index_vec, T *output_vec, int num_samples )
 {
-    int *curr_index = index_vec;
-    T *curr_input = input_vec;
+    const int *curr_index = index_vec;
+    const T *curr_input = input_vec;
 
     for( unsigned int ii = 0; ii < num_samples; ++ii )
     {

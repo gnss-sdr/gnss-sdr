@@ -37,7 +37,13 @@
 #ifndef GNSS_SDR_CODE_RESAMPLER_H_
 #define GNSS_SDR_CODE_RESAMPLER_H_
 
+#include <volk/volk.h>
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <limits>
 #include "fxpt64.h"
+#include <cassert>
+
 /*!
  * \brief Interface for a generic code resampler
  *
@@ -52,7 +58,7 @@ public:
      * Actually perform the code resampling.
      */
     virtual void resample_code( T const *orig_code, unsigned int code_length,
-            std::vector< double > &init_code_phase, double code_phase_step,
+            std::vector< double > &init_code_phase, double &code_phase_step,
             int num_samples,
             std::vector< T * > resampled_codes ) = 0;
 };
@@ -70,22 +76,49 @@ public:
      * output.
      */
     virtual void resample_code( T const *orig_code, unsigned int code_length,
-            std::vector< double > &init_code_phase, double code_phase_step,
+            std::vector< double > &init_code_phase, double &code_phase_step,
             int num_samples,
             std::vector< T * > resampled_codes )
     {
         // Loop over the desired outputs:
         for( int i = 0; i < init_code_phase.size(); ++i )
         {
-            double tcode_chips = init_code_phase[i];
+            double tcode_chips = std::fmod( init_code_phase[i], code_length);
+            if( tcode_chips < 0.0 )
+            {
+                tcode_chips += static_cast< double >( code_length );
+            }
+
             int associated_chip_index;
             T *curr_sample = resampled_codes[i];
-            for( int j = 0; j < num_samples; ++j )
+
+            int j = 0;
+
+            // Here we lift the bounds checking out of the loop:
+            // This gave a performance improvement of about a factor 3.3
+            while( j < num_samples )
             {
-                associated_chip_index = std::floor(std::fmod(tcode_chips , code_length_chips));
-                *curr_sample = orig_code[associated_chip_index];
-                tcode_chips = tcode_chips + code_phase_step_chips;
-                ++curr_sample;
+                int num_samples_this_iter = num_samples;
+
+                int num_samples_at_rollover = j + std::floor(
+                        ( code_length - tcode_chips )/code_phase_step
+                        )  + 1;
+
+                if( num_samples_at_rollover < num_samples )
+                {
+                    num_samples_this_iter = num_samples_at_rollover;
+                }
+
+
+                for( ; j < num_samples_this_iter; ++j )
+                {
+                    associated_chip_index = std::floor(tcode_chips);
+                    *curr_sample = orig_code[associated_chip_index];
+                    tcode_chips += code_phase_step;
+                    ++curr_sample;
+                }
+
+                tcode_chips = std::fmod( tcode_chips, code_length );
             }
         }
     }
@@ -108,7 +141,7 @@ public:
      * Resample the code computing the code phases exactly for the latest output
      * and forcing all others to be integer shifts of the latest value*/
     virtual void resample_code( T const *orig_code, unsigned int code_length,
-            std::vector< double > &init_code_phase, double code_phase_step,
+            std::vector< double > &init_code_phase, double &code_phase_step,
             int num_samples,
             std::vector< T * > resampled_codes )
     {
@@ -129,7 +162,7 @@ public:
         std::vector< T * > dummy_resampled_codes(1, resampled_codes[0] );
         std::vector< double > dummy_init_code_phase(1, init_code_phase[0] );
 
-        core_resampler->resample_code( orig_code, code_length,
+        d_core_resampler->resample_code( orig_code, code_length,
                 dummy_init_code_phase, code_phase_step,
                 total_samples, dummy_resampled_codes );
 
@@ -154,6 +187,7 @@ private:
 
 /*!
  * \brief Code resampler that uses 64 bit fixed point arithmetic */
+
 template< typename T, unsigned FRAC_LEN = 32  >
 class CodeResamplerFxpt64 : public CodeResamplerInterface<T>
 {
@@ -162,7 +196,7 @@ public:
      * Resample the code using 64-bit fixed point arithmetic
      */
     virtual void resample_code( T const *orig_code, unsigned int code_length,
-            std::vector< double > &init_code_phase, double code_phase_step,
+            std::vector< double > &init_code_phase, double &code_phase_step,
             int num_samples,
             std::vector< T * > resampled_codes )
     {
@@ -171,20 +205,175 @@ public:
         // Loop over the desired outputs:
         for( int i = 0; i < init_code_phase.size(); ++i )
         {
-            int64_t code_phase_fxp = double_to_fxpt64( init_code_phase[i], FRAC_LEN );
-            T *curr_sample = resampled_codes[i];
+            double tcode_chips = std::fmod( init_code_phase[i], code_length );
+            if( tcode_chips < 0.0 )
+            {
+                tcode_chips += code_length;
+            }
 
+            int64_t code_phase_fxp = double_to_fxpt64( tcode_chips, FRAC_LEN );
+            T *curr_sample = resampled_codes[i];
             init_code_phase[i] = fxpt64_to_double( code_phase_fxp );
 
-            for( int j = 0; j < num_samples; ++j )
+            int j = 0;
+
+            while( j < num_samples )
             {
-                *curr_sample = orig_code[ code_phase_fxp >> FRAC_LEN ];
-                code_phase_fxp += code_phase_step_fxp;
-                ++curr_sample;
+
+                int num_samples_this_iter = num_samples;
+
+                int num_samples_at_rollover = j + std::floor(
+                        (static_cast<double>( code_length ) - fxpt64_to_double( code_phase_fxp )
+                         )/code_phase_step
+                        )  + 1;
+
+                if( num_samples_at_rollover < num_samples )
+                {
+                    num_samples_this_iter = num_samples_at_rollover;
+                }
+
+
+                for( ; j < num_samples_this_iter; ++j )
+                {
+                    *curr_sample = orig_code[ code_phase_fxp >> FRAC_LEN ];
+                    code_phase_fxp += code_phase_step_fxp;
+                    ++curr_sample;
+                }
+
+                assert( static_cast<int>( 
+                            fxpt64_to_double( code_phase_fxp - code_phase_step_fxp )
+                            ) < code_length );
+
+                code_phase_fxp -= ( static_cast< int64_t >( code_length ) << FRAC_LEN );
             }
         }
+
+        code_phase_step = fxpt64_to_double( code_phase_step_fxp );
     }
 };
-#endif
 
+/*!
+ * \brief Code resampler that uses a fixed number of replicas in memory*/
+template< typename T >
+class CodeResamplerMemoryStore : public CodeResamplerInterface<T>
+{
+public:
+    CodeResamplerMemoryStore( T const *orig_code,
+            unsigned int code_length,
+            double nominal_code_phase_step,
+            unsigned int maximum_num_samples,
+            double code_spacing_chips,
+            double maximum_code_offset_chips )
+        : d_nominal_code_phase_step( nominal_code_phase_step ),
+        d_code_spacing_chips( code_spacing_chips ),
+        d_maximum_code_offset_chips( maximum_code_offset_chips )
+    {
+        int num_replicas = static_cast< int >(
+                std::ceil( d_maximum_code_offset_chips /
+                d_code_spacing_chips ) );
+
+
+        // Resize the storage:
+        d_code_phase_offsets.resize( num_replicas );
+        d_replica_store.resize( num_replicas );
+
+        // Use a generic resampler to generate the local replica store:
+        CodeResamplerGeneric<T> baseResampler;
+
+        double curr_offset = 0.0;
+
+        for( int ii = 0; ii < num_replicas; ++ii )
+        {
+            d_code_phase_offsets[ii] = curr_offset;
+            curr_offset += d_code_spacing_chips;
+
+            d_replica_store[ii] = static_cast< T *>( volk_malloc(
+                        maximum_num_samples * sizeof( T ),
+                        volk_get_alignment() ) );
+
+        }
+
+        // Now we generate the codes to be at least twice as long as the maximum possible
+        baseResampler.resample_code( orig_code, code_length,
+                d_code_phase_offsets, d_nominal_code_phase_step, 2*maximum_num_samples,
+                d_replica_store );
+
+
+    };
+
+    ~CodeResamplerMemoryStore()
+    {
+        for( unsigned int ii = 0; ii < d_replica_store.size(); ++ii )
+        {
+            volk_free( d_replica_store[ii] );
+        }
+    }
+
+    /*!
+     * Resample the code by choosing the local replicas that most closely match
+     * the code phase offsets required
+     */
+    virtual void resample_code( T const *orig_code, unsigned int code_length,
+            std::vector< double > &init_code_phase, double &code_phase_step,
+            int num_samples,
+            std::vector< T * > resampled_codes )
+    {
+
+        // Loop over the desired outputs:
+        for( int ii = 0; ii < init_code_phase.size(); ++ii )
+        {
+            int offset_ind = 0;
+            double delta_offset = std::numeric_limits<double>::infinity();
+
+            double desired_code_phase = init_code_phase[ii];
+            double desired_code_phase_mod_one_chip = std::fmod( desired_code_phase, 1.0 );
+
+            if( desired_code_phase_mod_one_chip < 0.0 )
+            {
+                desired_code_phase_mod_one_chip += 1.0;
+            }
+
+            double achieved_code_phase = 0.0;
+
+            for( int jj = 0; jj < d_code_phase_offsets.size(); ++jj )
+            {
+                double abs_diff = std::abs( desired_code_phase_mod_one_chip - d_code_phase_offsets[jj] );
+                if( abs_diff < delta_offset )
+                {
+                    delta_offset = abs_diff;
+                    offset_ind = jj;
+                    achieved_code_phase = desired_code_phase - desired_code_phase_mod_one_chip
+                        + d_code_phase_offsets[jj];
+                }
+            }
+
+            init_code_phase[ii] = achieved_code_phase;
+
+            int integer_offset = static_cast< int >( desired_code_phase - desired_code_phase_mod_one_chip );
+
+            memcpy( resampled_codes[ii], d_replica_store[offset_ind] + integer_offset*sizeof(T),
+                    num_samples * sizeof( T ) );
+
+        }
+
+        code_phase_step = d_nominal_code_phase_step;
+    }
+
+private:
+
+    double d_nominal_code_phase_step;
+
+    double d_maximum_code_offset_chips;
+
+    double d_code_spacing_chips;
+
+    std::vector< double > d_code_phase_offsets;
+
+    std::vector< T * > d_replica_store;
+
+
+
+};
+
+#endif
 

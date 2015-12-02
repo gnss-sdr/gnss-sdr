@@ -366,6 +366,40 @@ else(NOT ${GTEST_DIR_LOCAL})
     add_dependencies(trk_test gtest)
 endif(NOT ${GTEST_DIR_LOCAL}) 
 
+
+#####################
+## Arithmetic test
+add_executable(arithmetic_test
+     ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/code_resampler_test.cc
+)
+if(NOT ${ENABLE_PACKAGING})
+     set_property(TARGET arithmetic_test PROPERTY EXCLUDE_FROM_ALL TRUE)
+endif(NOT ${ENABLE_PACKAGING})
+
+target_link_libraries(arithmetic_test ${Boost_LIBRARIES}
+                               ${GFLAGS_LIBS}
+                               ${GLOG_LIBRARIES}
+                               ${GTEST_LIBRARIES}
+                               ${GNURADIO_RUNTIME_LIBRARIES}
+                               ${GNURADIO_BLOCKS_LIBRARIES}
+                               ${GNURADIO_FILTER_LIBRARIES}
+                               ${GNURADIO_ANALOG_LIBRARIES}
+                               gnss_sp_libs
+                               gnss_rx
+                               gnss_system_parameters
+                               signal_generator_blocks
+                               out_adapters
+                               ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                               )
+
+add_test(arithmetic_test arithmetic_test)
+if(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(arithmetic_test gtest-${gtest_RELEASE})
+else(NOT ${GTEST_DIR_LOCAL})
+    add_dependencies(arithmetic_test gtest)
+endif(NOT ${GTEST_DIR_LOCAL})
+
 add_dependencies(check control_thread_test flowgraph_test gnss_block_test 
-    gnuradio_block_test trk_test)
+    gnuradio_block_test trk_test arithmetic_test)
 

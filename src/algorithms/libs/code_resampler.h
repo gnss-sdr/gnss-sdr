@@ -112,7 +112,7 @@ public:
 
                 for( ; j < num_samples_this_iter; ++j )
                 {
-                    associated_chip_index = std::floor(tcode_chips);
+                    associated_chip_index = static_cast< int >(tcode_chips);
                     *curr_sample = orig_code[associated_chip_index];
                     tcode_chips += code_phase_step;
                     ++curr_sample;
@@ -240,7 +240,7 @@ public:
                     ++curr_sample;
                 }
 
-                assert( static_cast<int>( 
+                assert( static_cast<int>(
                             fxpt64_to_double( code_phase_fxp - code_phase_step_fxp )
                             ) < code_length );
 

@@ -195,30 +195,30 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
     long int acq_trk_diff_samples;
-    float acq_trk_diff_seconds;
+    double acq_trk_diff_seconds;
     acq_trk_diff_samples = static_cast<long int>(d_sample_counter) - static_cast<long int>(d_acq_sample_stamp);//-d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
-    acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
+    acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
     //doppler effect
     // Fd=(C/(C+Vr))*F
-    float radial_velocity = (GPS_L1_FREQ_HZ + d_acq_carrier_doppler_hz) / GPS_L1_FREQ_HZ;
+    double radial_velocity = (GPS_L1_FREQ_HZ + d_acq_carrier_doppler_hz) / GPS_L1_FREQ_HZ;
     // new chip and prn sequence periods based on acq Doppler
-    float T_chip_mod_seconds;
-    float T_prn_mod_seconds;
-    float T_prn_mod_samples;
+    double T_chip_mod_seconds;
+    double T_prn_mod_seconds;
+    double T_prn_mod_samples;
     d_code_freq_chips = radial_velocity * GPS_L1_CA_CODE_RATE_HZ;
-    T_chip_mod_seconds = 1/d_code_freq_chips;
+    T_chip_mod_seconds = 1.0/d_code_freq_chips;
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
-    T_prn_mod_samples = T_prn_mod_seconds * static_cast<float>(d_fs_in);
+    T_prn_mod_samples = T_prn_mod_seconds * static_cast<double>(d_fs_in);
 
     d_current_prn_length_samples = round(T_prn_mod_samples);
 
-    float T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
-    float T_prn_true_samples = T_prn_true_seconds * static_cast<float>(d_fs_in);
-    float T_prn_diff_seconds=  T_prn_true_seconds - T_prn_mod_seconds;
-    float N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
-    float corrected_acq_phase_samples, delay_correction_samples;
-    corrected_acq_phase_samples = fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<float>(d_fs_in)), T_prn_true_samples);
+    double T_prn_true_seconds = GPS_L1_CA_CODE_LENGTH_CHIPS / GPS_L1_CA_CODE_RATE_HZ;
+    double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
+    double T_prn_diff_seconds=  T_prn_true_seconds - T_prn_mod_seconds;
+    double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
+    double corrected_acq_phase_samples, delay_correction_samples;
+    corrected_acq_phase_samples = fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<double>(d_fs_in)), T_prn_true_samples);
     if (corrected_acq_phase_samples < 0)
         {
             corrected_acq_phase_samples = T_prn_mod_samples + corrected_acq_phase_samples;
@@ -286,10 +286,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
-    float carr_error_hz=0.0;
-    float carr_error_filt_hz=0.0;
-    float code_error_chips=0.0;
-    float code_error_filt_chips=0.0;
+	double carr_error_hz=0.0;
+	double carr_error_filt_hz=0.0;
+	double code_error_chips=0.0;
+	double code_error_filt_chips=0.0;
 
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0];
@@ -320,20 +320,24 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             current_synchro_data = *d_acquisition_gnss_synchro;
 
             // UPDATE NCO COMMAND
-            float phase_step_rad = static_cast<float>(GPS_TWO_PI) * d_carrier_doppler_hz / static_cast<float>(d_fs_in);
+            double phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
         	//code resampler on GPU (new)
-            float code_phase_step_chips = static_cast<float>(d_code_freq_chips) / static_cast<float>(d_fs_in);
-            float rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
+            double code_phase_step_chips = d_code_freq_chips / static_cast<double>(d_fs_in);
+            double rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
 
             memcpy(in_gpu, in, sizeof(gr_complex) * d_current_prn_length_samples);
             cudaProfilerStart();
-            multicorrelator_gpu->Carrier_wipeoff_multicorrelator_resampler_cuda(d_rem_carr_phase_rad, phase_step_rad, code_phase_step_chips, rem_code_phase_chips, d_current_prn_length_samples, 3);
+            multicorrelator_gpu->Carrier_wipeoff_multicorrelator_resampler_cuda( static_cast<float>(d_rem_carr_phase_rad),
+            		static_cast<float>(phase_step_rad),
+            		static_cast<float>(code_phase_step_chips),
+            		static_cast<float>(rem_code_phase_chips),
+            		d_current_prn_length_samples, 3);
             cudaProfilerStop();
 
             // ################## PLL ##########################################################
             // PLL discriminator
-            carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / static_cast<float>(GPS_TWO_PI);
+            carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / GPS_TWO_PI;
             // Carrier discriminator filter
             carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
             // New carrier Doppler frequency estimation
@@ -352,7 +356,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             // Code discriminator filter
             code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
             //Code phase accumulator
-            float code_error_filt_secs;
+            double code_error_filt_secs;
             code_error_filt_secs = (GPS_L1_CA_CODE_PERIOD * code_error_filt_chips) / GPS_L1_CA_CODE_RATE_HZ; //[seconds]
             d_acc_code_phase_secs = d_acc_code_phase_secs + code_error_filt_secs;
 
@@ -363,10 +367,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             double T_prn_samples;
             double K_blk_samples;
             // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
-            T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
+            T_chip_seconds = 1.0 / d_code_freq_chips;
             T_prn_seconds = T_chip_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
-            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + static_cast<double>(code_error_filt_secs) * static_cast<double>(d_fs_in);
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
             //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
@@ -415,16 +419,16 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples)/static_cast<double>(d_fs_in);
 
             // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!, but some glitches??)
-            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in);
             //compute remnant code phase samples AFTER the Tracking timestamp
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter)/static_cast<double>(d_fs_in);
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
-            current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
-            current_synchro_data.Carrier_Doppler_hz = static_cast<double>(d_carrier_doppler_hz);
-            current_synchro_data.CN0_dB_hz = static_cast<double>(d_CN0_SNV_dB_Hz);
+            current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
+            current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+            current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_pseudorange = false;
             *out[0] = current_synchro_data;
 
@@ -497,41 +501,50 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             tmp_L = std::abs<float>(*d_Late);
             try
             {
-                    // EPR
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_E), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_P), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_L), sizeof(float));
-                    // PROMPT I and Q (to analyze navigation symbols)
-                    d_dump_file.write(reinterpret_cast<char*>(&prompt_I), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&prompt_Q), sizeof(float));
-                    // PRN start sample stamp
-                    //tmp_float=(float)d_sample_counter;
-                    d_dump_file.write(reinterpret_cast<char*>(&d_sample_counter), sizeof(unsigned long int));
-                    // accumulated carrier phase
-                    d_dump_file.write(reinterpret_cast<char*>(&d_acc_carrier_phase_rad), sizeof(float));
 
-                    // carrier and code frequency
-                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(float));
-                    tmp_float=d_code_freq_chips;
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
+                // EPR
+                d_dump_file.write((char*)&tmp_E, sizeof(float));
+                d_dump_file.write((char*)&tmp_P, sizeof(float));
+                d_dump_file.write((char*)&tmp_L, sizeof(float));
+                // PROMPT I and Q (to analyze navigation symbols)
+                d_dump_file.write((char*)&prompt_I, sizeof(float));
+                d_dump_file.write((char*)&prompt_Q, sizeof(float));
+                // PRN start sample stamp
+                //tmp_float=(float)d_sample_counter;
+                d_dump_file.write((char*)&d_sample_counter, sizeof(unsigned long int));
+                // accumulated carrier phase
+                tmp_float = d_acc_carrier_phase_rad;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
 
-                    //PLL commands
-                    d_dump_file.write(reinterpret_cast<char*>(&carr_error_hz), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&carr_error_filt_hz), sizeof(float));
+                // carrier and code frequency
+                tmp_float = d_carrier_doppler_hz;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
+                tmp_float = d_code_freq_chips;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
 
-                    //DLL commands
-                    d_dump_file.write(reinterpret_cast<char*>(&code_error_chips), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips), sizeof(float));
+                //PLL commands
+                tmp_float = carr_error_hz;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
+                tmp_float = carr_error_filt_hz;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
 
-                    // CN0 and carrier lock test
-                    d_dump_file.write(reinterpret_cast<char*>(&d_CN0_SNV_dB_Hz), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&d_carrier_lock_test), sizeof(float));
+                //DLL commands
+                tmp_float = code_error_chips;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
+                tmp_float = code_error_filt_chips;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
 
-                    // AUX vars (for debug purposes)
-                    tmp_float = d_rem_code_phase_samples;
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
-                    tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
+                // CN0 and carrier lock test
+                tmp_float = d_CN0_SNV_dB_Hz;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
+                tmp_float = d_carrier_lock_test;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
+
+                // AUX vars (for debug purposes)
+                tmp_float = d_rem_code_phase_samples;
+                d_dump_file.write((char*)&tmp_float, sizeof(float));
+                tmp_double = (double)(d_sample_counter + d_current_prn_length_samples);
+                d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
             catch (std::ifstream::failure e)
             {

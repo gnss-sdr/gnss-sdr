@@ -83,7 +83,6 @@ private:
     gps_l2_m_telemetry_decoder_cc_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
     int channel_;
-    unsigned int vector_length_;
     std::string item_type_;
     bool dump_;
     std::string dump_filename_;

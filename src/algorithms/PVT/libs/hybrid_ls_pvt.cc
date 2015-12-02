@@ -48,6 +48,7 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
     d_valid_GPS_obs = 0;
     d_valid_GAL_obs = 0;
     count_valid_position = 0;
+    d_flag_averaging = false;
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
         {

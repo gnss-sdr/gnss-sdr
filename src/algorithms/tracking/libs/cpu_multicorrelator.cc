@@ -146,6 +146,7 @@ cpu_multicorrelator::cpu_multicorrelator()
     d_local_code_in = NULL;
     d_shifts_chips = NULL;
     d_corr_out = NULL;
+    d_local_codes_resampled = NULL;
     d_code_length_chips = 0;
     d_n_correlators = 0;
 }

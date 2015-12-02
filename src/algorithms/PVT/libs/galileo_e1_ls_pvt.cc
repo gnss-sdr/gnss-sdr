@@ -44,6 +44,7 @@ galileo_e1_ls_pvt::galileo_e1_ls_pvt(int nchannels, std::string dump_filename, b
     d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
     d_galileo_current_time = 0;
+    d_flag_averaging = false;
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)

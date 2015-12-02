@@ -2325,7 +2325,7 @@ int Rtcm::set_DF398(const Gnss_Synchro & gnss_synchro)
 
 int Rtcm::set_DF399(const Gnss_Synchro & gnss_synchro)
 {
-    double lambda;
+    double lambda = 0.0;
     std::string sig_(gnss_synchro.Signal);
     std::string sig = sig_.substr(0,2);
 
@@ -2358,31 +2358,31 @@ int Rtcm::set_DF400(const Gnss_Synchro & gnss_synchro)
     double meters_to_miliseconds = GPS_C_m_s * 0.001;
     double rough_range_s = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
     double psrng_s;
-    double lambda;
-        std::string sig_(gnss_synchro.Signal);
-        std::string sig = sig_.substr(0,2);
+    double lambda = 0.0;
+    std::string sig_(gnss_synchro.Signal);
+    std::string sig = sig_.substr(0,2);
 
-        if (sig.compare("1C") == 0 )
-            {
-                lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
-            }
-        if (sig.compare("2S") == 0 )
-            {
-                lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
-            }
+    if (sig.compare("1C") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
+        }
+    if (sig.compare("2S") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
+        }
 
-        if (sig.compare("5X") == 0 )
-            {
-                lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
-            }
-        if (sig.compare("1B") == 0 )
-            {
-                lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
-            }
-        psrng_s = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * lambda - rough_range_s;
+    if (sig.compare("5X") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
+        }
+    if (sig.compare("1B") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
+        }
+    psrng_s = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI) * lambda - rough_range_s;
 
 
-        DF400 = std::bitset<15>(static_cast<int>( psrng_s)); // Units!!
+    DF400 = std::bitset<15>(static_cast<int>( psrng_s)); // Units!!
     return 0;
 }
 

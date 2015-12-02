@@ -173,6 +173,9 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
     d_code_phase_samples = 0.0;
 
     d_pll_to_dll_assist_secs_Ti = 0.0;
+    d_rem_code_phase_chips = 0.0;
+    d_code_phase_step_chips = 0.0;
+    d_carrier_phase_step_rad = 0.0;
     //set_min_output_buffer((long int)300);
 }
 

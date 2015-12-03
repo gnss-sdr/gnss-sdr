@@ -400,17 +400,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
-<<<<<<< HEAD
     double carr_error_hz = 0.0;
     double carr_error_filt_hz = 0.0;
     double code_error_chips = 0.0;
     double code_error_filt_chips = 0.0;
-=======
-    float carr_error_hz = 0.0;
-    float carr_error_filt_hz = 0.0;
-    float code_error_chips = 0.0;
-    float code_error_filt_chips = 0.0;
->>>>>>> Updates to gps_l1_ca_dll_pll_tracking
 
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment

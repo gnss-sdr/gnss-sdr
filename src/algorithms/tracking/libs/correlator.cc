@@ -40,6 +40,7 @@
   #define LV_HAVE_SSE3
   #include "volk_cw_epl_corr.h"
 #endif
+#include "accumulate_array.h"
 
 
 unsigned long Correlator::next_power_2(unsigned long v)
@@ -197,4 +198,131 @@ void Correlator::Carrier_rotate_and_VEPL_volk(int signal_length_samples,
     volk_32fc_x2_dot_prod_32fc(VL_out, bb_signal, VL_code, signal_length_samples);
 
     volk_free(bb_signal);
+}
+
+void Correlator::Carrier_rotate_and_EPL_codeless(int signal_length_samples,
+            const gr_complex* input,
+            gr_complex *phase_as_complex,
+            gr_complex phase_inc_as_complex,
+            const int *E_code_phases,
+            const int *P_code_phases,
+            const int *L_code_phases,
+            gr_complex* E_out,
+            gr_complex* P_out,
+            gr_complex* L_out,
+            int code_length )
+{
+
+    gr_complex* bb_signal = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
+
+
+    gr_complex* accum_early = static_cast<gr_complex*>(volk_malloc(code_length* sizeof(gr_complex), volk_get_alignment()));
+    std::fill( accum_early, accum_early+code_length, 0.0 );
+
+    gr_complex* accum_prompt = static_cast<gr_complex*>(volk_malloc(code_length* sizeof(gr_complex), volk_get_alignment()));
+    std::fill( accum_prompt, accum_prompt+code_length, 0.0 );
+
+    gr_complex* accum_late = static_cast<gr_complex*>(volk_malloc(code_length* sizeof(gr_complex), volk_get_alignment()));
+    std::fill( accum_late, accum_late+code_length, 0.0 );
+
+    volk_32fc_s32fc_x2_rotator_32fc(bb_signal, input, phase_inc_as_complex, phase_as_complex, signal_length_samples);
+
+    // Now we do an accumulation of the input by code phase bins:
+    accumulate_array< gr_complex >( bb_signal, E_code_phases, accum_early, signal_length_samples );
+    accumulate_array< gr_complex >( bb_signal, P_code_phases, accum_prompt, signal_length_samples );
+    accumulate_array< gr_complex >( bb_signal, L_code_phases, accum_late, signal_length_samples );
+
+    // Now sum the squares of the partial sums: this is implemented as a simple
+    // dot product
+    volk_32fc_x2_dot_prod_32fc(E_out, accum_early, accum_early, code_length);
+    volk_32fc_x2_dot_prod_32fc(P_out, accum_prompt, accum_prompt, code_length);
+    volk_32fc_x2_dot_prod_32fc(L_out, accum_late, accum_late, code_length);
+
+    volk_free(bb_signal);
+    volk_free(accum_early);
+    volk_free(accum_prompt);
+    volk_free(accum_late);
+}
+
+void Correlator::Carrier_rotate_and_VEPL_codeless(int signal_length_samples,
+            const gr_complex* input,
+            gr_complex *phase_as_complex,
+            gr_complex phase_inc_as_complex,
+            const int *VE_code_phases,
+            const int *E_code_phases,
+            const int *P_code_phases,
+            const int *L_code_phases,
+            const int *VL_code_phases,
+            const int *VE_subcarrier,
+            const int *E_subcarrier,
+            const int *P_subcarrier,
+            const int *L_subcarrier,
+            const int *VL_subcarrier,
+            gr_complex* VE_out,
+            gr_complex* E_out,
+            gr_complex* P_out,
+            gr_complex* L_out,
+            gr_complex* VL_out,
+            int code_length)
+{
+
+    gr_complex* bb_signal = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
+    gr_complex* ve_subcarrier_wipeoff = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
+    gr_complex* e_subcarrier_wipeoff = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
+    gr_complex* p_subcarrier_wipeoff = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
+    gr_complex* l_subcarrier_wipeoff = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
+    gr_complex* vl_subcarrier_wipeoff = static_cast<gr_complex*>(volk_malloc(signal_length_samples * sizeof(gr_complex), volk_get_alignment()));
+
+    gr_complex* accum_very_early = static_cast<gr_complex*>(volk_malloc(code_length* sizeof(gr_complex), volk_get_alignment()));
+    std::fill( accum_very_early, accum_very_early+code_length, 0.0 );
+
+    gr_complex* accum_early = static_cast<gr_complex*>(volk_malloc(code_length* sizeof(gr_complex), volk_get_alignment()));
+    std::fill( accum_early, accum_early+code_length, 0.0 );
+
+    gr_complex* accum_prompt = static_cast<gr_complex*>(volk_malloc(code_length* sizeof(gr_complex), volk_get_alignment()));
+    std::fill( accum_prompt, accum_prompt+code_length, 0.0 );
+
+    gr_complex* accum_late = static_cast<gr_complex*>(volk_malloc(code_length* sizeof(gr_complex), volk_get_alignment()));
+    std::fill( accum_late, accum_late+code_length, 0.0 );
+
+    gr_complex* accum_very_late = static_cast<gr_complex*>(volk_malloc(code_length* sizeof(gr_complex), volk_get_alignment()));
+    std::fill( accum_very_late, accum_very_late+code_length, 0.0 );
+
+    // 1) Carrier wipe-off
+    volk_32fc_s32fc_x2_rotator_32fc(bb_signal, input, phase_inc_as_complex, phase_as_complex, signal_length_samples);
+
+    // 2) Subcarrier wipe-off
+    volk_32fc_x2_multiply_32fc( ve_subcarrier_wipeoff, bb_signal, VE_subcarrier, signal_length_samples );
+    volk_32fc_x2_multiply_32fc( e_subcarrier_wipeoff, bb_signal, E_subcarrier, signal_length_samples );
+    volk_32fc_x2_multiply_32fc( p_subcarrier_wipeoff, bb_signal, P_subcarrier, signal_length_samples );
+    volk_32fc_x2_multiply_32fc( l_subcarrier_wipeoff, bb_signal, L_subcarrier, signal_length_samples );
+    volk_32fc_x2_multiply_32fc( vl_subcarrier_wipeoff, bb_signal, VL_subcarrier, signal_length_samples );
+
+    // 3) Do an accumulation of the input by code phase bins:
+    accumulate_array< gr_complex >( ve_subcarrier_wipeoff, VE_code_phases, accum_very_early, signal_length_samples );
+    accumulate_array< gr_complex >( e_subcarrier_wipeoff, E_code_phases, accum_early, signal_length_samples );
+    accumulate_array< gr_complex >( p_subcarrier_wipeoff, P_code_phases, accum_prompt, signal_length_samples );
+    accumulate_array< gr_complex >( l_subcarrier_wipeoff, L_code_phases, accum_late, signal_length_samples );
+    accumulate_array< gr_complex >( vl_subcarrier_wipeoff, VL_code_phases, accum_very_late, signal_length_samples );
+
+    // 4) Now sum the squares of the partial sums: this is implemented as a simple
+    // dot product
+    volk_32fc_x2_dot_prod_32fc(VE_out, accum_very_early, accum_very_early, code_length);
+    volk_32fc_x2_dot_prod_32fc(E_out, accum_early, accum_early, code_length);
+    volk_32fc_x2_dot_prod_32fc(P_out, accum_prompt, accum_prompt, code_length);
+    volk_32fc_x2_dot_prod_32fc(L_out, accum_late, accum_late, code_length);
+    volk_32fc_x2_dot_prod_32fc(VL_out, accum_very_late, accum_very_late, code_length);
+
+    volk_free(bb_signal);
+    volk_free(ve_subcarrier_wipeoff);
+    volk_free(e_subcarrier_wipeoff);
+    volk_free(p_subcarrier_wipeoff);
+    volk_free(l_subcarrier_wipeoff);
+    volk_free(vl_subcarrier_wipeoff);
+    volk_free(accum_very_early);
+    volk_free(accum_early);
+    volk_free(accum_prompt);
+    volk_free(accum_late);
+    volk_free(accum_very_late);
+
 }

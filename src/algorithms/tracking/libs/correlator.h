@@ -134,6 +134,39 @@ public:
             gr_complex* P_subcarrier_L_code_out,
             gr_complex* P_code_PQ_subcarrier_out );
 
+    void Carrier_rotate_and_EPL_codeless(int signal_length_samples,
+            const gr_complex* input,
+            gr_complex *phase_as_complex,
+            gr_complex phase_inc_as_complex,
+            const int *E_code_phases,
+            const int *P_code_phases,
+            const int *L_code_phases,
+            gr_complex* E_out,
+            gr_complex* P_out,
+            gr_complex* L_out,
+            int code_length);
+
+    void Carrier_rotate_and_VEPL_codeless(int signal_length_samples,
+            const gr_complex* input,
+            gr_complex *phase_as_complex,
+            gr_complex phase_inc_as_complex,
+            const int *VE_code_phases,
+            const int *E_code_phases,
+            const int *P_code_phases,
+            const int *L_code_phases,
+            const int *VL_code_phases,
+            const gr_complex *VE_subcarrier,
+            const gr_complex *E_subcarrier,
+            const gr_complex *P_subcarrier,
+            const gr_complex *L_subcarrier,
+            const gr_complex *VL_subcarrier,
+            gr_complex* VE_out,
+            gr_complex* E_out,
+            gr_complex* P_out,
+            gr_complex* L_out,
+            gr_complex* VL_out,
+            int code_length);
+
 private:
     unsigned long next_power_2(unsigned long v);
 };

@@ -36,6 +36,7 @@
 #include <bitset>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 #include <boost/crc.hpp>
 #include "gnss_synchro.h"
@@ -52,8 +53,14 @@ class Rtcm
 public:
     Rtcm(); //<! Default constructor
 
+    /*!
+     * \brief Prints message type 1001 (L1-Only GPS RTK Observables)
+     */
     std::string print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
+    /*!
+     * \brief Prints message type 1002 (Extended L1-Only GPS RTK Observables)
+     */
     std::string print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
     /*!
@@ -87,6 +94,9 @@ public:
      */
     int read_MT1045(const std::string & message, Galileo_Ephemeris & gal_eph);
 
+    /*!
+     * \brief Prints messages of type MSM1 (Compact GNSS pseudoranges)
+     */
     std::string print_MSM_1( const Gps_Ephemeris & gps_eph,
             const Galileo_Ephemeris & gal_eph,
             double obs_time,
@@ -157,6 +167,12 @@ private:
     std::string get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro> & pseudoranges);
 
     std::string get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges);
+
+    // Utilities
+    static std::map<std::string, int> galileo_signal_map;
+    static std::map<std::string, int> gps_signal_map;
+    std::vector<std::pair<int, Gnss_Synchro> > sort_by_signal(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map);
+    std::vector<std::pair<int, Gnss_Synchro> > sort_by_PRN_mask(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map);
 
     //
     // Transport Layer
@@ -464,6 +480,9 @@ private:
 
     std::bitset<3> DF418;
     int set_DF418(int carrier_smoothing_interval_s);
+
+    std::bitset<1> DF420;
+    int set_DF420(const Gnss_Synchro & gnss_synchro);
 };
 
 #endif

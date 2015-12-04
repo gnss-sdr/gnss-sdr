@@ -1261,7 +1261,7 @@ std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_signal(const std::vecto
 }
 
 
-auto Rtcm::gps_signal_map = []
+std::map<std::string, int> Rtcm::gps_signal_map = []
 {
     std::map<std::string, int> gps_signal_map_;
     // Table 3.5-91
@@ -1280,7 +1280,7 @@ auto Rtcm::gps_signal_map = []
     return gps_signal_map_;
 }();
 
-auto Rtcm::galileo_signal_map = []
+std::map<std::string, int> Rtcm::galileo_signal_map = []
 {
     std::map<std::string, int> galileo_signal_map_;
     // Table 3.5-100

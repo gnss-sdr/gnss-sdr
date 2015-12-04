@@ -1405,10 +1405,16 @@ int Rtcm::reset_data_fields()
     DF397.reset();
     DF398.reset();
     DF399.reset();
-
-    DF409.reset();
     DF400.reset();
+    DF401.reset();
 
+    DF403.reset();
+    DF404.reset();
+    DF405.reset();
+    DF406.reset();
+
+    DF408.reset();
+    DF409.reset();
     DF411.reset();
     DF412.reset();
     DF417.reset();
@@ -2427,7 +2433,7 @@ int Rtcm::set_DF400(const Gnss_Synchro & gnss_synchro)
 
     psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
 
-    if(psrng_s == 0)
+    if(psrng_s == 0.0)
         {
             fine_pseudorange = - 16384;
         }
@@ -2441,6 +2447,190 @@ int Rtcm::set_DF400(const Gnss_Synchro & gnss_synchro)
         }
 
     DF400 = std::bitset<15>(fine_pseudorange);
+    return 0;
+}
+
+
+int Rtcm::set_DF401(const Gnss_Synchro & gnss_synchro)
+{
+    double meters_to_miliseconds = GPS_C_m_s * 0.001;
+    double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    double phrng_m;
+    long int fine_phaserange;
+
+    double lambda = 0.0;
+    std::string sig_(gnss_synchro.Signal);
+    std::string sig = sig_.substr(0,2);
+
+    if (sig.compare("1C") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
+        }
+    if (sig.compare("2S") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
+        }
+
+    if (sig.compare("5X") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
+        }
+    if (sig.compare("1B") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
+        }
+
+    phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI ) * lambda - rough_range_m;
+
+    if(phrng_m == 0.0)
+        {
+            fine_phaserange = - 2097152;
+        }
+    else if(std::fabs(phrng_m) > 1171.0)
+        {
+            fine_phaserange = - 2097152;
+        }
+    else
+        {
+            fine_phaserange = static_cast<long int>(std::round(phrng_m / meters_to_miliseconds / TWO_N29));
+        }
+
+    DF401 = std::bitset<22>(fine_phaserange);
+    return 0;
+}
+
+
+int Rtcm::set_DF403(const Gnss_Synchro & gnss_synchro)
+{
+    unsigned int cnr_dB_Hz;
+    cnr_dB_Hz = static_cast<unsigned int>(std::round(gnss_synchro.CN0_dB_hz));
+    DF403 = std::bitset<6>(cnr_dB_Hz);
+    return 0;
+}
+
+
+int Rtcm::set_DF404(const Gnss_Synchro & gnss_synchro)
+{
+    double lambda = 0.0;
+    std::string sig_(gnss_synchro.Signal);
+    std::string sig = sig_.substr(0,2);
+    int fine_phaserange_rate;
+
+    if (sig.compare("1C") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
+        }
+    if (sig.compare("2S") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
+        }
+
+    if (sig.compare("5X") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
+        }
+    if (sig.compare("1B") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
+        }
+
+    double phrr = std::round(- gnss_synchro.Carrier_Doppler_hz / lambda);
+
+    if(phrr == 0.0)
+          {
+              fine_phaserange_rate = -16384;
+          }
+      else if(std::fabs(phrr) > 1.6384)
+          {
+              fine_phaserange_rate = -16384;
+          }
+      else
+          {
+              fine_phaserange_rate = static_cast<int>(std::round(phrr / 0.0001));
+          }
+
+    DF404 = std::bitset<15>(fine_phaserange_rate);
+    return 0;
+}
+
+
+int Rtcm::set_DF405(const Gnss_Synchro & gnss_synchro)
+{
+    double meters_to_miliseconds = GPS_C_m_s * 0.001;
+    double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    double psrng_s;
+    long int fine_pseudorange;
+
+    psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
+
+    if(psrng_s == 0.0)
+        {
+            fine_pseudorange = - 524288;
+        }
+    else if(std::fabs(psrng_s) > 292.7)
+        {
+            fine_pseudorange = - 524288;
+        }
+    else
+        {
+            fine_pseudorange = static_cast<long int>(std::round(psrng_s / meters_to_miliseconds / TWO_N29));
+        }
+    DF405 = std::bitset<20>(fine_pseudorange);
+    return 0;
+
+}
+
+
+int Rtcm::set_DF406(const Gnss_Synchro & gnss_synchro)
+{
+    long int fine_phaserange_ex;
+    double meters_to_miliseconds = GPS_C_m_s * 0.001;
+    double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    double phrng_m;
+    double lambda = 0.0;
+    std::string sig_(gnss_synchro.Signal);
+    std::string sig = sig_.substr(0,2);
+
+    if (sig.compare("1C") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L1_FREQ_HZ;
+        }
+    if (sig.compare("2S") == 0 )
+        {
+            lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
+        }
+
+    if (sig.compare("5X") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
+        }
+    if (sig.compare("1B") == 0 )
+        {
+            lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
+        }
+    phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI ) * lambda - rough_range_m;
+    if(phrng_m == 0.0)
+        {
+            fine_phaserange_ex = - 8388608;
+        }
+    else if(std::fabs(phrng_m) > 1171.0)
+        {
+            fine_phaserange_ex = - 8388608;
+        }
+    else
+        {
+            fine_phaserange_ex = static_cast<long int>(std::round(phrng_m / meters_to_miliseconds / TWO_N31));
+        }
+
+    DF406 = std::bitset<24>(fine_phaserange_ex);
+    return 0;
+}
+
+int Rtcm::set_DF408(const Gnss_Synchro & gnss_synchro)
+{
+    unsigned int cnr_dB_Hz;
+    cnr_dB_Hz = static_cast<unsigned int>(std::round(gnss_synchro.CN0_dB_hz / 0.0625));
+    DF408 = std::bitset<10>(cnr_dB_Hz);
     return 0;
 }
 

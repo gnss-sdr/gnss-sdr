@@ -466,6 +466,24 @@ private:
     std::bitset<15> DF400;
     int set_DF400(const Gnss_Synchro & gnss_synchro);
 
+    std::bitset<22> DF401;
+    int set_DF401(const Gnss_Synchro & gnss_synchro);
+
+    std::bitset<6> DF403;
+    int set_DF403(const Gnss_Synchro & gnss_synchro);
+
+    std::bitset<15> DF404;
+    int set_DF404(const Gnss_Synchro & gnss_synchro);
+
+    std::bitset<20> DF405;
+    int set_DF405(const Gnss_Synchro & gnss_synchro);
+
+    std::bitset<24> DF406;
+    int set_DF406(const Gnss_Synchro & gnss_synchro);
+
+    std::bitset<10> DF408;
+    int set_DF408(const Gnss_Synchro & gnss_synchro);
+
     std::bitset<3> DF409;
     int set_DF409(unsigned int iods);
 

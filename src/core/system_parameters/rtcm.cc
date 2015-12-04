@@ -212,7 +212,9 @@ double Rtcm::bin_to_double(const std::string& s)
             // Computing two's complement
             boost::dynamic_bitset<> original_bitset(s);
             original_bitset.flip();
-            reading_int = - (original_bitset.to_ulong() + 1);
+            std::string aux;
+            to_string(original_bitset, aux);
+            reading_int = - (strtoll(aux.c_str(), NULL, 2) + 1);
         }
     else
         {

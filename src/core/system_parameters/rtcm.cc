@@ -74,7 +74,7 @@ std::string Rtcm::add_CRC (const std::string& message_without_crc)
     boost::dynamic_bitset<unsigned char> frame_bits(message_without_crc);
     std::vector<unsigned char> bytes;
     boost::to_block_range(frame_bits, std::back_inserter(bytes));
-    std::reverse(bytes.begin(),bytes.end());
+    std::reverse(bytes.begin(), bytes.end());
 
     // 2) Computes CRC
     CRC_RTCM.process_bytes(bytes.data(), bytes.size());
@@ -99,7 +99,7 @@ bool Rtcm::check_CRC(const std::string & message)
     boost::dynamic_bitset<unsigned char> frame_bits(msg_without_crc);
     std::vector<unsigned char> bytes;
     boost::to_block_range(frame_bits, std::back_inserter(bytes));
-    std::reverse(bytes.begin(),bytes.end());
+    std::reverse(bytes.begin(), bytes.end());
 
     CRC_RTCM_CHECK.process_bytes(bytes.data(), bytes.size());
     std::bitset<24> computed_crc = std::bitset<24>(CRC_RTCM_CHECK.checksum());
@@ -1144,18 +1144,18 @@ std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro
     unsigned int Ncells = pseudoranges.size();
 
     std::vector<std::pair<int, Gnss_Synchro> > pseudoranges_vector;
-    std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
+    std::map<int, Gnss_Synchro>::const_iterator map_iter;
 
-    for(gnss_synchro_iter = pseudoranges.begin();
-            gnss_synchro_iter != pseudoranges.end();
-            gnss_synchro_iter++)
+    for(map_iter = pseudoranges.begin();
+            map_iter != pseudoranges.end();
+            map_iter++)
         {
-            pseudoranges_vector.push_back(*gnss_synchro_iter);
+            pseudoranges_vector.push_back(*map_iter);
         }
 
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(pseudoranges_vector);
-
-    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(ordered_by_PRN_pos);
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(pseudoranges_vector);
+    std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
+    std::vector<std::pair<int, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
     for(unsigned int cell = 0; cell < Ncells ; cell++)
            {
@@ -1944,6 +1944,7 @@ int Rtcm::set_DF292(const Galileo_Ephemeris & gal_eph)
     return 0;
 }
 
+
 int Rtcm::set_DF293(const Galileo_Ephemeris & gal_eph)
 {
 
@@ -2011,6 +2012,7 @@ int Rtcm::set_DF300(const Galileo_Ephemeris & gal_eph)
     DF300 = std::bitset<16>(cuc);
     return 0;
 }
+
 
 int Rtcm::set_DF301(const Galileo_Ephemeris & gal_eph)
 {
@@ -2410,7 +2412,6 @@ int Rtcm::set_DF399(const Gnss_Synchro & gnss_synchro)
         {
             lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
         }
-
     if (sig.compare("5X") == 0 )
         {
             lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
@@ -2418,6 +2419,10 @@ int Rtcm::set_DF399(const Gnss_Synchro & gnss_synchro)
     if (sig.compare("1B") == 0 )
         {
             lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
+        }
+    if (sig.compare("7X") == 0 )
+        {
+            lambda = GPS_C_m_s / 1.207140e9; // Galileo_E1b_FREQ_HZ;
         }
 
     double rough_phase_range_ms = std::round(- gnss_synchro.Carrier_Doppler_hz / lambda);
@@ -2472,7 +2477,6 @@ int Rtcm::set_DF401(const Gnss_Synchro & gnss_synchro)
         {
             lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
         }
-
     if (sig.compare("5X") == 0 )
         {
             lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
@@ -2480,6 +2484,10 @@ int Rtcm::set_DF401(const Gnss_Synchro & gnss_synchro)
     if (sig.compare("1B") == 0 )
         {
             lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
+        }
+    if (sig.compare("7X") == 0 )
+        {
+            lambda = GPS_C_m_s / 1.207140e9; // Galileo_E1b_FREQ_HZ;
         }
 
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI ) * lambda - rough_range_m;
@@ -2526,7 +2534,6 @@ int Rtcm::set_DF404(const Gnss_Synchro & gnss_synchro)
         {
             lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
         }
-
     if (sig.compare("5X") == 0 )
         {
             lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
@@ -2534,6 +2541,10 @@ int Rtcm::set_DF404(const Gnss_Synchro & gnss_synchro)
     if (sig.compare("1B") == 0 )
         {
             lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
+        }
+    if (sig.compare("7X") == 0 )
+        {
+            lambda = GPS_C_m_s / 1.207140e9; // Galileo_E1b_FREQ_HZ;
         }
 
     double phrr = std::round(- gnss_synchro.Carrier_Doppler_hz / lambda);
@@ -2601,7 +2612,6 @@ int Rtcm::set_DF406(const Gnss_Synchro & gnss_synchro)
         {
             lambda = GPS_C_m_s / GPS_L2_FREQ_HZ;
         }
-
     if (sig.compare("5X") == 0 )
         {
             lambda = GPS_C_m_s / Galileo_E5a_FREQ_HZ;
@@ -2610,6 +2620,11 @@ int Rtcm::set_DF406(const Gnss_Synchro & gnss_synchro)
         {
             lambda = GPS_C_m_s / Galileo_E1_FREQ_HZ;
         }
+    if (sig.compare("7X") == 0 )
+        {
+            lambda = GPS_C_m_s / 1.207140e9; // Galileo_E1b_FREQ_HZ;
+        }
+
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI ) * lambda - rough_range_m;
     if(phrng_m == 0.0)
         {

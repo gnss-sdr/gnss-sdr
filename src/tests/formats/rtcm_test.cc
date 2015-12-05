@@ -269,6 +269,135 @@ TEST(Rtcm_Test, MT1001)
 }
 
 
+TEST(Rtcm_Test, MSMCell)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    Gps_Ephemeris gps_eph = Gps_Ephemeris();
+    Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
+    std::map<int, Gnss_Synchro> pseudoranges;
+
+    Gnss_Synchro gnss_synchro;
+    Gnss_Synchro gnss_synchro2;
+    Gnss_Synchro gnss_synchro3;
+    Gnss_Synchro gnss_synchro4;
+    Gnss_Synchro gnss_synchro5;
+
+    gnss_synchro.PRN = 4;
+    gnss_synchro2.PRN = 8;
+    gnss_synchro3.PRN = 32;
+    gnss_synchro4.PRN = 10;
+    gnss_synchro5.PRN = 10;
+
+    std::string gps = "G";
+    std::string gal = "E";
+
+    std::string c1 = "1C";
+    std::string s2 = "2S";
+    std::string x5 = "5X";
+
+    gnss_synchro.System = *gal.c_str();
+    gnss_synchro2.System = *gps.c_str();
+    gnss_synchro3.System = *gps.c_str();
+    gnss_synchro4.System = *gal.c_str();
+    gnss_synchro5.System = *gps.c_str();
+
+    std::memcpy((void*)gnss_synchro.Signal, x5.c_str(), 3);
+    std::memcpy((void*)gnss_synchro2.Signal, s2.c_str(), 3);
+    std::memcpy((void*)gnss_synchro3.Signal, c1.c_str(), 3);
+    std::memcpy((void*)gnss_synchro4.Signal, x5.c_str(), 3);
+    std::memcpy((void*)gnss_synchro5.Signal, c1.c_str(), 3);
+
+    gnss_synchro.Pseudorange_m = 20000000.0;
+    gnss_synchro2.Pseudorange_m = 20001010.0;
+    gnss_synchro3.Pseudorange_m = 24002020.0;
+    gnss_synchro4.Pseudorange_m = 20003010.1;
+    gnss_synchro5.Pseudorange_m = 22003010.1;
+
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro));
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(2, gnss_synchro2));
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(3, gnss_synchro3));
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro4));
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(5, gnss_synchro5));
+
+    unsigned int ref_id = 1234;
+    unsigned int clock_steering_indicator = 0;
+    unsigned int external_clock_indicator = 0;
+    int smooth_int = 0;
+    bool sync_flag = false;
+    bool divergence_free = false;
+    bool more_messages = false;
+    double obs_time = 25.0;
+
+    gps_eph.i_satellite_PRN = gnss_synchro.PRN;
+
+    std::string MSM1 = rtcm->print_MSM_1(gps_eph,
+            gal_eph,
+            obs_time,
+            pseudoranges,
+            ref_id,
+            clock_steering_indicator,
+            external_clock_indicator,
+            smooth_int,
+            sync_flag,
+            divergence_free,
+            more_messages);
+
+    std::string MSM1_bin = rtcm->hex_to_bin(MSM1);
+    unsigned int Nsat = 4;
+    unsigned int Nsig = 3;
+    unsigned int size_header = 14;
+    unsigned int size_msg_length = 10;
+    EXPECT_EQ(0, MSM1_bin.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010101100")); // check cell mask
+
+    std::map<int, Gnss_Synchro> pseudoranges2;
+    pseudoranges2.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro5));
+    pseudoranges2.insert(std::pair<int, Gnss_Synchro>(2, gnss_synchro4));
+    pseudoranges2.insert(std::pair<int, Gnss_Synchro>(3, gnss_synchro3));
+    pseudoranges2.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro2));
+    pseudoranges2.insert(std::pair<int, Gnss_Synchro>(5, gnss_synchro));
+    std::string MSM1_2 = rtcm->print_MSM_1(gps_eph,
+             gal_eph,
+             obs_time,
+             pseudoranges2,
+             ref_id,
+             clock_steering_indicator,
+             external_clock_indicator,
+             smooth_int,
+             sync_flag,
+             divergence_free,
+             more_messages);
+    std::string MSM1_bin_2 = rtcm->hex_to_bin(MSM1_2);
+    EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010101100")); // check cell mask
+
+    Gnss_Synchro gnss_synchro6;
+    gnss_synchro6.PRN = 10;
+    gnss_synchro6.System = *gps.c_str();
+    std::memcpy((void*)gnss_synchro6.Signal, s2.c_str(), 3);
+    gnss_synchro6.Pseudorange_m = 24000000.0;
+
+    std::map<int, Gnss_Synchro> pseudoranges3;
+    pseudoranges3.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro));
+    pseudoranges3.insert(std::pair<int, Gnss_Synchro>(2, gnss_synchro2));
+    pseudoranges3.insert(std::pair<int, Gnss_Synchro>(3, gnss_synchro6));
+    pseudoranges3.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro4));
+    pseudoranges3.insert(std::pair<int, Gnss_Synchro>(5, gnss_synchro5));
+
+    std::string MSM1_3 = rtcm->print_MSM_1(gps_eph,
+                gal_eph,
+                obs_time,
+                pseudoranges3,
+                ref_id,
+                clock_steering_indicator,
+                external_clock_indicator,
+                smooth_int,
+                sync_flag,
+                divergence_free,
+                more_messages);
+    std::string MSM1_bin_3 = rtcm->hex_to_bin(MSM1_3);
+    EXPECT_EQ(0, MSM1_bin_3.substr(size_header + size_msg_length + 169, (Nsat-1) * Nsig).compare("001010111")); // check cell mask
+}
+
+
 TEST(Rtcm_Test, MSM1)
 {
     auto rtcm = std::make_shared<Rtcm>();
@@ -353,16 +482,37 @@ TEST(Rtcm_Test, MSM1)
     unsigned int rough_range_1 = static_cast<unsigned int>(std::floor(std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10)) + 0.5) & 0x3FFu;
     unsigned int rough_range_2 = static_cast<unsigned int>(std::floor(std::round(gnss_synchro2.Pseudorange_m / meters_to_miliseconds / TWO_N10)) + 0.5) & 0x3FFu;
     unsigned int rough_range_4 = static_cast<unsigned int>(std::floor(std::round(gnss_synchro3.Pseudorange_m / meters_to_miliseconds / TWO_N10)) + 0.5) & 0x3FFu;
-    unsigned int read_pseudorange_1 =  rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length +  169 + Nsat * Nsig , 10));
-    unsigned int read_pseudorange_2 =  rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length +  169 + Nsat * Nsig + 10, 10));
-    unsigned int read_pseudorange_4 =  rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length +  169 + Nsat * Nsig + 20, 10));
+    unsigned int read_pseudorange_1 = rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length + 169 + Nsat * Nsig , 10));
+    unsigned int read_pseudorange_2 = rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length + 169 + Nsat * Nsig + 10, 10));
+    unsigned int read_pseudorange_4 = rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length + 169 + Nsat * Nsig + 20, 10));
 
     EXPECT_EQ(rough_range_1, read_pseudorange_1);
     EXPECT_EQ(rough_range_2, read_pseudorange_2);
     EXPECT_EQ(rough_range_4, read_pseudorange_4);
 
     int psrng4_s = static_cast<int>(std::round( (gnss_synchro3.Pseudorange_m  - std::round(gnss_synchro3.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10)/ meters_to_miliseconds / TWO_N24));
-    int read_psrng4_s =  rtcm->bin_to_int( MSM1_bin.substr(size_header + size_msg_length +  169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
+    int read_psrng4_s = rtcm->bin_to_int( MSM1_bin.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
     EXPECT_EQ(psrng4_s, read_psrng4_s);
+
+
+    std::map<int, Gnss_Synchro> pseudoranges2;
+    pseudoranges2.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro4));
+    pseudoranges2.insert(std::pair<int, Gnss_Synchro>(2, gnss_synchro3));
+    pseudoranges2.insert(std::pair<int, Gnss_Synchro>(3, gnss_synchro2));
+    pseudoranges2.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro));
+    std::string MSM1_2 = rtcm->print_MSM_1(gps_eph,
+            gal_eph,
+            obs_time,
+            pseudoranges2,
+            ref_id,
+            clock_steering_indicator,
+            external_clock_indicator,
+            smooth_int,
+            sync_flag,
+            divergence_free,
+            more_messages);
+    std::string MSM1_bin2 = rtcm->hex_to_bin(MSM1_2);
+    int read_psrng4_s_2 =  rtcm->bin_to_int( MSM1_bin2.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
+    EXPECT_EQ(psrng4_s, read_psrng4_s_2);
 }
 

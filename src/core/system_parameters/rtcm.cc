@@ -1021,7 +1021,18 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
         bool divergence_free,
         bool more_messages)
 {
-    unsigned int msg_number = 1071; /// check for Galileo, it's 1091
+    unsigned int msg_number = 0;
+    if(gps_eph.i_satellite_PRN != 0) msg_number = 1071;
+    if(gal_eph.i_satellite_PRN != 0) msg_number = 1091;
+    if((gps_eph.i_satellite_PRN != 0) && (gal_eph.i_satellite_PRN != 0))
+        {
+            LOG(WARNING) << "MSM messages for observables from different systems are not defined"; //print two messages?
+        }
+    if(msg_number == 0)
+        {
+            LOG(WARNING) << "Invalid ephemeris provided";
+            msg_number = 1071;
+        }
 
     std::string header = Rtcm::get_MSM_header(msg_number, gps_eph,
              gal_eph,
@@ -2508,6 +2519,29 @@ int Rtcm::set_DF401(const Gnss_Synchro & gnss_synchro)
     DF401 = std::bitset<22>(fine_phaserange);
     return 0;
 }
+
+//int Rtcm::set_DF402(const Gnss_Synchro & gnss_synchro)
+//{
+//    unsigned indicator = 15;
+//    // Table 3.5-74
+//    if (lock < 32    ) indicator = 0;
+//    if (lock < 64    ) indicator = 1;
+//    if (lock < 128   ) indicator = 2;
+//    if (lock < 256   ) indicator = 3;
+//    if (lock < 512   ) indicator = 4;
+//    if (lock < 1024  ) indicator = 5;
+//    if (lock < 2048  ) indicator = 6;
+//    if (lock < 4096  ) indicator = 7;
+//    if (lock < 8192  ) indicator = 8;
+//    if (lock < 16384 ) indicator = 9;
+//    if (lock < 32768 ) indicator = 10;
+//    if (lock < 65536 ) indicator = 11;
+//    if (lock < 131072) indicator = 12;
+//    if (lock < 262144) indicator = 13;
+//    if (lock < 524288) indicator = 14;
+//    return 0;
+//}
+
 
 
 int Rtcm::set_DF403(const Gnss_Synchro & gnss_synchro)

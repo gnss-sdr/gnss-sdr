@@ -328,7 +328,8 @@ TEST(Rtcm_Test, MSMCell)
     bool more_messages = false;
     double obs_time = 25.0;
 
-    gps_eph.i_satellite_PRN = gnss_synchro.PRN;
+    gps_eph.i_satellite_PRN = gnss_synchro2.PRN;
+    gal_eph.i_satellite_PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
             gal_eph,
@@ -402,7 +403,6 @@ TEST(Rtcm_Test, MSM1)
 {
     auto rtcm = std::make_shared<Rtcm>();
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
-    Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
     std::map<int, Gnss_Synchro> pseudoranges;
 
     Gnss_Synchro gnss_synchro;
@@ -452,7 +452,7 @@ TEST(Rtcm_Test, MSM1)
     gps_eph.i_satellite_PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
-            gal_eph,
+            {},
             obs_time,
             pseudoranges,
             ref_id,
@@ -501,7 +501,7 @@ TEST(Rtcm_Test, MSM1)
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(3, gnss_synchro2));
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro));
     std::string MSM1_2 = rtcm->print_MSM_1(gps_eph,
-            gal_eph,
+            {},
             obs_time,
             pseudoranges2,
             ref_id,

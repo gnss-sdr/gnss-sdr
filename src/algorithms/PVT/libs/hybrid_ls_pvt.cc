@@ -95,11 +95,12 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     arma::mat satpos = arma::zeros(3, valid_pseudoranges);           // satellite positions matrix
 
     int Galileo_week_number = 0;
-    int GPS_week;
-    double utc = 0;
-    double utc_tx_corrected = 0; //utc computed at tx_time_corrected, added for Galileo constellation (in GPS utc is directly computed at TX_time_corrected_s)
+    int GPS_week = 0;
+    double utc = 0.0;
+    double GST = 0.0;
+    double utc_tx_corrected = 0.0; //utc computed at tx_time_corrected, added for Galileo constellation (in GPS utc is directly computed at TX_time_corrected_s)
     double TX_time_corrected_s;
-    double SV_clock_bias_s = 0;
+    double SV_clock_bias_s = 0.0;
 
     d_flag_averaging = flag_averaging;
 
@@ -127,13 +128,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                              */
                             W(obs_counter, obs_counter) = 1;
 
-                            // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
-                            // first estimate of transmit time
-                            //Galileo_week_number = galileo_ephemeris_iter->second.WN_5;//for GST
-                            //double sec_in_day = 86400;
-                            //double day_in_week = 7;
-                            //   t = WN*sec_in_day*day_in_week + TOW; // t is Galileo System Time to use to compute satellite positions
-
+                            // COMMON RX TIME PVT ALGORITHM
                             double Rx_time = hybrid_current_time;
                             double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GALILEO_C_m_s;
 
@@ -154,22 +149,9 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
                             valid_obs++;
                             valid_obs_GALILEO_counter ++;
-                            Galileo_week_number = galileo_ephemeris_iter->second.WN_5; //for GST
 
-                            //debug
-                            double GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
-                            utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number); // this shoud be removed and it should be considered the  utc_tx_corrected
-                            utc_tx_corrected = galileo_utc_model.GST_to_UTC_time(TX_time_corrected_s, Galileo_week_number);
-                            //std::cout<<"Gal UTC at TX_time_corrected_s = "<<utc_tx_corrected<< std::endl;
-                            //std::cout<<"Gal_week = "<<Galileo_week_number<< std::endl;
-                            //std::cout << "Gal UTC = " <<  utc << std::endl;
-                            // get time string gregorian calendar
-                            boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
-                            // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
-                            boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
-                            d_position_UTC_time = p_time;
-                            LOG(INFO) << "Galileo RX time at " << boost::posix_time::to_simple_string(p_time);
-                            //end debug
+                            Galileo_week_number = galileo_ephemeris_iter->second.WN_5; //for GST
+                            GST = galileo_ephemeris_iter->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
 
                             // SV ECEF DEBUG OUTPUT
                             DLOG(INFO) << "ECEF satellite SV ID=" << galileo_ephemeris_iter->second.i_satellite_PRN
@@ -222,16 +204,14 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
                             valid_obs++;
                             valid_obs_GPS_counter++;
+                            GPS_week = gps_ephemeris_iter->second.i_GPS_week;
+
                             // SV ECEF DEBUG OUTPUT
                             DLOG(INFO) << "(new)ECEF satellite SV ID=" << gps_ephemeris_iter->second.i_satellite_PRN
                                     << " X=" << gps_ephemeris_iter->second.d_satpos_X
                                     << " [m] Y=" << gps_ephemeris_iter->second.d_satpos_Y
                                     << " [m] Z=" << gps_ephemeris_iter->second.d_satpos_Z
                                     << " [m] PR_obs=" << obs(obs_counter) << " [m]";
-
-                            // compute the UTC time for this SV (just to print the asociated UTC timestamp)
-                            GPS_week = gps_ephemeris_iter->second.i_GPS_week;
-                            utc = gps_utc_model.utc_time(TX_time_corrected_s, GPS_week);
                         }
                     else // the ephemeris are not available for this SV
                         {
@@ -262,8 +242,14 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             mypos = hybrid_ls_pvt::leastSquarePos(satpos, obs, W);
 
             // Compute GST and Gregorian time
-            double GST = galileo_ephemeris_map.find(gnss_pseudoranges_iter->first)->second.Galileo_System_Time(Galileo_week_number, hybrid_current_time);
-            utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
+            if( GST != 0.0)
+                {
+                    utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
+                }
+            else
+                {
+                    utc = gps_utc_model.utc_time(TX_time_corrected_s, GPS_week);
+                }
             // get time string Gregorian calendar
             boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
             // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
@@ -289,7 +275,6 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             LOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
             << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
             << " [deg], Height= " << d_height_m << " [m]";
-
 
             // ###### Compute DOPs ########
             hybrid_ls_pvt::compute_DOP();

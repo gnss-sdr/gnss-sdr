@@ -512,6 +512,12 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
             case 22 :
                 block_ = std::string("FOC-FM4"); // Galileo Full Operational Capability (FOC) satellite FM4, launched on March 27, 2015.
                 break;
+            case 24 :
+                block_ = std::string("FOC-FM5"); // Galileo Full Operational Capability (FOC) satellite FM5, launched on Sept. 11, 2015.
+                break;
+            case 30 :
+                block_ = std::string("FOC-FM6"); // Galileo Full Operational Capability (FOC) satellite FM6, launched on Sept. 11, 2015.
+                break;
             default:
                 block_ = std::string("Unknown(Simulated)");
             }

@@ -1414,6 +1414,13 @@ std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro
 }
 
 
+// **********************************************
+//
+//   MESSAGE TYPE MSM2 (COMPACT PHASERANGES)
+//
+// **********************************************
+
+
 std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges)
 {
     //std::map<int, Gnss_Synchro>::const_iterator gnss_synchro_iter;
@@ -1711,7 +1718,7 @@ unsigned int Rtcm::msm_extended_lock_time_indicator(unsigned int lock_time_perio
     if(   131072 <= lock_time_period_s && lock_time_period_s < 262144   ) return (416 + (lock_time_period_s - 131072  ) / 4096   );
     if(   262144 <= lock_time_period_s && lock_time_period_s < 524288   ) return (448 + (lock_time_period_s - 262144  ) / 8192   );
     if(   524288 <= lock_time_period_s && lock_time_period_s < 1048576  ) return (480 + (lock_time_period_s - 524288  ) / 16384  );
-    if(  1048576 <= lock_time_period_s && lock_time_period_s < 2097152  ) return (512 + (lock_time_period_s - 1048576 ) /32768   );
+    if(  1048576 <= lock_time_period_s && lock_time_period_s < 2097152  ) return (512 + (lock_time_period_s - 1048576 ) / 32768  );
     if(  2097152 <= lock_time_period_s && lock_time_period_s < 4194304  ) return (544 + (lock_time_period_s - 2097152 ) / 65536  );
     if(  4194304 <= lock_time_period_s && lock_time_period_s < 8388608  ) return (576 + (lock_time_period_s - 4194304 ) / 131072 );
     if(  8388608 <= lock_time_period_s && lock_time_period_s < 16777216 ) return (608 + (lock_time_period_s - 8388608 ) / 262144 );
@@ -1824,12 +1831,12 @@ int Rtcm::reset_data_fields()
     DF399.reset();
     DF400.reset();
     DF401.reset();
-
+    DF402.reset();
     DF403.reset();
     DF404.reset();
     DF405.reset();
     DF406.reset();
-
+    DF407.reset();
     DF408.reset();
     DF409.reset();
     DF411.reset();
@@ -2993,28 +3000,28 @@ int Rtcm::set_DF401(const Gnss_Synchro & gnss_synchro)
     return 0;
 }
 
-//int Rtcm::set_DF402(const Gnss_Synchro & gnss_synchro)
-//{
-//    unsigned indicator = 15;
-//    // Table 3.5-74
-//    if (lock < 32    ) indicator = 0;
-//    if (lock < 64    ) indicator = 1;
-//    if (lock < 128   ) indicator = 2;
-//    if (lock < 256   ) indicator = 3;
-//    if (lock < 512   ) indicator = 4;
-//    if (lock < 1024  ) indicator = 5;
-//    if (lock < 2048  ) indicator = 6;
-//    if (lock < 4096  ) indicator = 7;
-//    if (lock < 8192  ) indicator = 8;
-//    if (lock < 16384 ) indicator = 9;
-//    if (lock < 32768 ) indicator = 10;
-//    if (lock < 65536 ) indicator = 11;
-//    if (lock < 131072) indicator = 12;
-//    if (lock < 262144) indicator = 13;
-//    if (lock < 524288) indicator = 14;
-//    return 0;
-//}
 
+int Rtcm::set_DF402(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const Gnss_Synchro & gnss_synchro)
+{
+    unsigned int lock_time_period_s = 0;
+    unsigned int lock_time_indicator;
+    std::string sig_(gnss_synchro.Signal);
+    if(sig_.compare("1C"))
+        {
+            lock_time_period_s = Rtcm::lock_time(ephNAV, obs_time, gnss_synchro);
+        }
+    if(sig_.compare("2S"))
+        {
+            lock_time_period_s = Rtcm::lock_time(ephCNAV, obs_time, gnss_synchro);
+        }
+    if(sig_.compare("1B") || sig_.compare("5X") || sig_.compare("7X") || sig_.compare("8X"))
+        {
+            lock_time_period_s = Rtcm::lock_time(ephFNAV, obs_time, gnss_synchro);
+        }
+    lock_time_indicator = Rtcm::msm_lock_time_indicator(lock_time_period_s);
+    DF402 = std::bitset<4>(lock_time_indicator);
+    return 0;
+}
 
 
 int Rtcm::set_DF403(const Gnss_Synchro & gnss_synchro)
@@ -3149,6 +3156,31 @@ int Rtcm::set_DF406(const Gnss_Synchro & gnss_synchro)
     DF406 = std::bitset<24>(fine_phaserange_ex);
     return 0;
 }
+
+
+int Rtcm::set_DF407(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const Gnss_Synchro & gnss_synchro)
+{
+    unsigned int lock_time_indicator;
+    unsigned int lock_time_period_s = 0;
+
+    std::string sig_(gnss_synchro.Signal);
+    if(sig_.compare("1C"))
+        {
+            lock_time_period_s = Rtcm::lock_time(ephNAV, obs_time, gnss_synchro);
+        }
+    if(sig_.compare("2S"))
+        {
+            lock_time_period_s = Rtcm::lock_time(ephCNAV, obs_time, gnss_synchro);
+        }
+    if(sig_.compare("1B") || sig_.compare("5X") || sig_.compare("7X") || sig_.compare("8X"))
+        {
+            lock_time_period_s = Rtcm::lock_time(ephFNAV, obs_time, gnss_synchro);
+        }
+    lock_time_indicator = Rtcm::msm_extended_lock_time_indicator(lock_time_period_s);
+    DF407 = std::bitset<10>(lock_time_indicator);
+    return 0;
+}
+
 
 int Rtcm::set_DF408(const Gnss_Synchro & gnss_synchro)
 {

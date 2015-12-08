@@ -498,7 +498,8 @@ private:
     std::bitset<22> DF401;
     int set_DF401(const Gnss_Synchro & gnss_synchro);
 
-    // TODO: DF402 for MSM2+
+    std::bitset<4> DF402;
+    int set_DF402(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const Gnss_Synchro & gnss_synchro);
 
     std::bitset<6> DF403;
     int set_DF403(const Gnss_Synchro & gnss_synchro);
@@ -512,7 +513,8 @@ private:
     std::bitset<24> DF406;
     int set_DF406(const Gnss_Synchro & gnss_synchro);
 
-    // TODO: DF407 for MSM6+
+    std::bitset<10> DF407;
+    int set_DF407(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const Gnss_Synchro & gnss_synchro);
 
     std::bitset<10> DF408;
     int set_DF408(const Gnss_Synchro & gnss_synchro);

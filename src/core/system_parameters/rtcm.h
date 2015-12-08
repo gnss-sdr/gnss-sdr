@@ -68,12 +68,12 @@ public:
     /*!
      * \brief Prints message type 1003 (L1 & L2 GPS RTK Observables)
      */
-    std::string print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
     /*!
      * \brief Prints message type 1004 (Extended L1 & L2 GPS RTK Observables)
      */
-    std::string print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
 
     /*!
      * \brief Prints message type 1005 (Stationary Antenna Reference Point)

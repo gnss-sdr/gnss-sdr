@@ -436,7 +436,7 @@ std::bitset<74> Rtcm::get_MT1002_sat_content(const Gps_Ephemeris & eph, double o
 //
 // **********************************************
 
-std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
 {
     unsigned int ref_id = static_cast<unsigned int>(FLAGS_RTCM_Ref_Station_ID);
     unsigned int smooth_int = 0;
@@ -541,7 +541,7 @@ std::bitset<101> Rtcm::get_MT1003_sat_content(const Gps_Ephemeris & ephL1, const
 //
 // **********************************************
 
-std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
 {
     unsigned int ref_id = static_cast<unsigned int>(FLAGS_RTCM_Ref_Station_ID);
     unsigned int smooth_int = 0;
@@ -1364,7 +1364,7 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro> &
             gnss_synchro_iter != pseudoranges.end();
             gnss_synchro_iter++)
         {
-            it = std::find (pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
+            it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
             if(it == pos.end())
                 {
                     pos.push_back(65 - gnss_synchro_iter->second.PRN);

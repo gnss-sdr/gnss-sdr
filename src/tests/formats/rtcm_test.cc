@@ -332,6 +332,7 @@ TEST(Rtcm_Test, MSMCell)
     gal_eph.i_satellite_PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
+            {},
             gal_eph,
             obs_time,
             pseudoranges,
@@ -357,6 +358,7 @@ TEST(Rtcm_Test, MSMCell)
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro2));
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(5, gnss_synchro));
     std::string MSM1_2 = rtcm->print_MSM_1(gps_eph,
+             {},
              gal_eph,
              obs_time,
              pseudoranges2,
@@ -384,6 +386,7 @@ TEST(Rtcm_Test, MSMCell)
     pseudoranges3.insert(std::pair<int, Gnss_Synchro>(5, gnss_synchro5));
 
     std::string MSM1_3 = rtcm->print_MSM_1(gps_eph,
+                {},
                 gal_eph,
                 obs_time,
                 pseudoranges3,
@@ -452,7 +455,7 @@ TEST(Rtcm_Test, MSM1)
     gps_eph.i_satellite_PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
-            {},
+            {}, {},
             obs_time,
             pseudoranges,
             ref_id,
@@ -501,7 +504,7 @@ TEST(Rtcm_Test, MSM1)
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(3, gnss_synchro2));
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro));
     std::string MSM1_2 = rtcm->print_MSM_1(gps_eph,
-            {},
+            {}, {},
             obs_time,
             pseudoranges2,
             ref_id,

@@ -47,8 +47,33 @@
 
 
 /*!
- * \brief This class implements the generation and reading of some Message Types
- * defined in the RTCM 3.2 Standard.
+ * This class implements the generation and reading of some Message Types
+ * defined in the RTCM 3.2 Standard, plus some utilities to handle messages.
+ *
+ * Generation of the following Message Types:
+ *   1001, 1002, 1003, 1004, 1005, 1019, 1045
+ *
+ * Decoding of the following Message Types:
+ *   1019, 1045
+ *
+ * Generation of the following Multiple Signal Messages:
+ *   MSM1 (message types 1071, 1091)
+ *   MSM2 (message types 1072, 1092)
+ *   MSM3 (message types 1073, 1093)
+ *   MSM4 (message types 1074, 1094)
+ *   MSM5 (message types 1075, 1095)
+ *   MSM6 (message types 1076, 1096)
+ *   MSM7 (message types 1077, 1097)
+ *
+ * RTCM 3 message format (size in bits):
+ *   +----------+--------+-----------+--------------------+----------+
+ *   | preamble | 000000 |  length   |    data message    |  parity  |
+ *   +----------+--------+-----------+--------------------+----------+
+ *   |<-- 8 --->|<- 6 -->|<-- 10 --->|<--- length x 8 --->|<-- 24 -->|
+ *   +----------+--------+-----------+--------------------+----------+
+ *
+ *
+ *   (C) Carles Fernandez-Prades, 2015. cfernandez(at)cttc.es
  */
 class Rtcm
 {
@@ -110,6 +135,7 @@ public:
      * \brief Prints messages of type MSM1 (Compact GNSS pseudoranges)
      */
     std::string print_MSM_1( const Gps_Ephemeris & gps_eph,
+            const Gps_CNAV_Ephemeris & gps_cnav_eph,
             const Galileo_Ephemeris & gal_eph,
             double obs_time,
             const std::map<int, Gnss_Synchro> & pseudoranges,
@@ -120,6 +146,106 @@ public:
             bool sync_flag,
             bool divergence_free,
             bool more_messages);
+
+    /*!
+     * \brief Prints messages of type MSM2 (Compact GNSS phaseranges)
+     */
+    std::string print_MSM_2( const Gps_Ephemeris & gps_eph,
+            const Gps_CNAV_Ephemeris & gps_cnav_eph,
+            const Galileo_Ephemeris & gal_eph,
+            double obs_time,
+            const std::map<int, Gnss_Synchro> & pseudoranges,
+            unsigned int ref_id,
+            unsigned int clock_steering_indicator,
+            unsigned int external_clock_indicator,
+            int smooth_int,
+            bool sync_flag,
+            bool divergence_free,
+            bool more_messages);
+
+    /*!
+     * \brief Prints messages of type MSM3 (Compact GNSS pseudoranges and phaseranges)
+     */
+    std::string print_MSM_3( const Gps_Ephemeris & gps_eph,
+            const Gps_CNAV_Ephemeris & gps_cnav_eph,
+            const Galileo_Ephemeris & gal_eph,
+            double obs_time,
+            const std::map<int, Gnss_Synchro> & pseudoranges,
+            unsigned int ref_id,
+            unsigned int clock_steering_indicator,
+            unsigned int external_clock_indicator,
+            int smooth_int,
+            bool sync_flag,
+            bool divergence_free,
+            bool more_messages);
+
+    /*!
+     * \brief Prints messages of type MSM4 (Full GNSS pseudoranges and phaseranges plus CNR)
+     */
+    std::string print_MSM_4( const Gps_Ephemeris & gps_eph,
+            const Gps_CNAV_Ephemeris & gps_cnav_eph,
+            const Galileo_Ephemeris & gal_eph,
+            double obs_time,
+            const std::map<int, Gnss_Synchro> & pseudoranges,
+            unsigned int ref_id,
+            unsigned int clock_steering_indicator,
+            unsigned int external_clock_indicator,
+            int smooth_int,
+            bool sync_flag,
+            bool divergence_free,
+            bool more_messages);
+
+    /*!
+     * \brief Prints messages of type MSM5 (Full GNSS pseudoranges, phaseranges, phaserange rate and CNR)
+     */
+    std::string print_MSM_5( const Gps_Ephemeris & gps_eph,
+            const Gps_CNAV_Ephemeris & gps_cnav_eph,
+            const Galileo_Ephemeris & gal_eph,
+            double obs_time,
+            const std::map<int, Gnss_Synchro> & pseudoranges,
+            unsigned int ref_id,
+            unsigned int clock_steering_indicator,
+            unsigned int external_clock_indicator,
+            int smooth_int,
+            bool sync_flag,
+            bool divergence_free,
+            bool more_messages);
+
+    /*!
+     * \brief Prints messages of type MSM6 (Full GNSS pseudoranges and phaseranges plus CNR, high resolution)
+     */
+    std::string print_MSM_6( const Gps_Ephemeris & gps_eph,
+            const Gps_CNAV_Ephemeris & gps_cnav_eph,
+            const Galileo_Ephemeris & gal_eph,
+            double obs_time,
+            const std::map<int, Gnss_Synchro> & pseudoranges,
+            unsigned int ref_id,
+            unsigned int clock_steering_indicator,
+            unsigned int external_clock_indicator,
+            int smooth_int,
+            bool sync_flag,
+            bool divergence_free,
+            bool more_messages);
+
+    /*!
+     * \brief Prints messages of type MSM7 (Full GNSS pseudoranges, phaseranges, phaserange rate and CNR, high resolution)
+     */
+    std::string print_MSM_7( const Gps_Ephemeris & gps_eph,
+            const Gps_CNAV_Ephemeris & gps_cnav_eph,
+            const Galileo_Ephemeris & gal_eph,
+            double obs_time,
+            const std::map<int, Gnss_Synchro> & pseudoranges,
+            unsigned int ref_id,
+            unsigned int clock_steering_indicator,
+            unsigned int external_clock_indicator,
+            int smooth_int,
+            bool sync_flag,
+            bool divergence_free,
+            bool more_messages);
+
+    unsigned int lock_time(const Gps_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro); //<! Returns the time period in which GPS L1 signals have been continually tracked.
+    unsigned int lock_time(const Gps_CNAV_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro); //<! Returns the time period in which GPS L2 signals have been continually tracked.
+    unsigned int lock_time(const Galileo_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro); //<! Returns the time period in which Galileo signals have been continually tracked.
 
     std::string bin_to_hex(const std::string& s); //<! Returns a string of hexadecimal symbols from a string of binary symbols
     std::string hex_to_bin(const std::string& s); //<! Returns a string of binary symbols from a string of hexadecimal symbols
@@ -137,7 +263,7 @@ public:
 
 private:
     //
-    // Messages
+    // Generation of messages content
     //
     std::bitset<64> get_MT1001_4_header(unsigned int msg_number,
             const Gps_Ephemeris & gps_eph,
@@ -156,6 +282,7 @@ private:
     std::bitset<152> get_MT1005_test();
 
     std::string get_MSM_header(unsigned int msg_number, const Gps_Ephemeris & gps_eph,
+            const Gps_CNAV_Ephemeris & gps_cnav_eph,
             const Galileo_Ephemeris & gal_eph,
             double obs_time,
             const std::map<int, Gnss_Synchro> & pseudoranges,
@@ -168,11 +295,20 @@ private:
             bool more_messages);
 
     std::string get_MSM_1_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges);
-    std::string get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro> & pseudoranges);
-
     std::string get_MSM_4_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string get_MSM_5_content_sat_data(const std::map<int, Gnss_Synchro> & pseudoranges);
 
+    std::string get_MSM_1_content_signal_data(const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string get_MSM_2_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string get_MSM_3_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string get_MSM_4_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string get_MSM_5_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string get_MSM_6_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string get_MSM_7_content_signal_data(const Gps_Ephemeris & ephNAV, const Gps_CNAV_Ephemeris & ephCNAV, const Galileo_Ephemeris & ephFNAV, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+
+    //
     // Utilities
+    //
     static std::map<std::string, int> galileo_signal_map;
     static std::map<std::string, int> gps_signal_map;
     std::vector<std::pair<int, Gnss_Synchro> > sort_by_signal(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map);
@@ -184,9 +320,6 @@ private:
     boost::posix_time::ptime gps_L2_last_lock_time[64];
     boost::posix_time::ptime gal_E1_last_lock_time[64];
     boost::posix_time::ptime gal_E5_last_lock_time[64];
-    unsigned int lock_time(const Gps_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro);
-    unsigned int lock_time(const Gps_CNAV_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro);
-    unsigned int lock_time(const Galileo_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro);
     unsigned int lock_time_indicator(unsigned int lock_time_period_s);
     unsigned int msm_lock_time_indicator(unsigned int lock_time_period_s);
     unsigned int msm_extended_lock_time_indicator(unsigned int lock_time_period_s);
@@ -215,6 +348,7 @@ private:
 
     std::bitset<30> DF004;
     int set_DF004(const Gps_Ephemeris & gps_eph, double obs_time);
+    int set_DF004(const Gps_CNAV_Ephemeris & gps_eph, double obs_time);
 
     std::bitset<1> DF005;
     int set_DF005(bool sync_flag);

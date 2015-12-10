@@ -64,7 +64,7 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, boost
     d_dump_filename = dump_filename;
     d_flag_averaging = flag_averaging;
 
-    for (int i = 0; i < d_nchannels; i++)
+    for (unsigned int i = 0; i < d_nchannels; i++)
         {
             d_acc_carrier_phase_queue_rads.push_back(std::deque<double>(d_nchannels));
             d_carrier_doppler_queue_hz.push_back(std::deque<double>(d_nchannels));
@@ -119,6 +119,11 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
     Gnss_Synchro current_gnss_synchro[d_nchannels];
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
     std::map<int,Gnss_Synchro>::iterator gnss_synchro_iter;
+    
+    if (d_nchannels != ninput_items.size())
+        {
+            LOG(WARNING) << "The Observables block is not well connected";
+        }
 
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels
@@ -229,9 +234,10 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             A.col(1) = symbol_TOW_vec_s;
                             //A.col(2)=symbol_TOW_vec_s % symbol_TOW_vec_s;
                             arma::mat coef_acc_phase(1,3);
-                            coef_acc_phase = arma::pinv(A.t() * A) * A.t() * acc_phase_vec_rads;
+                            arma::mat pinv_A = arma::pinv(A.t() * A) * A.t();
+                            coef_acc_phase = pinv_A * acc_phase_vec_rads;
                             arma::mat coef_doppler(1,3);
-                            coef_doppler = arma::pinv(A.t() * A) * A.t() * dopper_vec_hz;
+                            coef_doppler = pinv_A * dopper_vec_hz;
                             arma::vec acc_phase_lin;
                             arma::vec carrier_doppler_lin;
                             acc_phase_lin = coef_acc_phase[0] + coef_acc_phase[1] * desired_symbol_TOW[0];//+coef_acc_phase[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
@@ -281,6 +287,10 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
         {
             *out[i] = current_gnss_synchro[i];
         }
-    return 1; // Output the observables
+    if (noutput_items == 0)
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
+    return 1;
 }
 

@@ -121,6 +121,11 @@ int hybrid_observables_cc::general_work (int noutput_items, gr_vector_int &ninpu
     std::map<int,Gnss_Synchro> current_gnss_synchro_map_gps_only;
     std::map<int,Gnss_Synchro>::iterator gnss_synchro_iter;
 
+    if (d_nchannels != ninput_items.size())
+        {
+            LOG(WARNING) << "The Observables block is not well connected";
+        }
+
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels
      */
@@ -228,7 +233,11 @@ int hybrid_observables_cc::general_work (int noutput_items, gr_vector_int &ninpu
         {
             *out[i] = current_gnss_synchro[i];
         }
-    //todo: enable output when the hybrid algorithm is completed
-    return 1; //Output the observables
+
+    if (noutput_items == 0)
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
+    return 1;
 }
 

@@ -41,7 +41,7 @@ gnss_sdr_supl_client::gnss_sdr_supl_client()
     lac = 0;
     ci = 0;
     supl_ctx_new(&ctx);
-    assist = {0};
+    assist = {};
     server_port = 0;
     request = 0;
 }

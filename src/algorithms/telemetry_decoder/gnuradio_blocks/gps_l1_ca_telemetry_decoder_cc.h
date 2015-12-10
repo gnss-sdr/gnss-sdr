@@ -48,8 +48,7 @@ class gps_l1_ca_telemetry_decoder_cc;
 typedef boost::shared_ptr<gps_l1_ca_telemetry_decoder_cc> gps_l1_ca_telemetry_decoder_cc_sptr;
 
 gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-    int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
@@ -90,11 +89,9 @@ public:
 
 private:
     friend gps_l1_ca_telemetry_decoder_cc_sptr
-    gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
-            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
-    gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
     bool gps_word_parityCheck(unsigned int gpsword);
 
@@ -102,7 +99,7 @@ private:
     unsigned short int d_preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS];
     // class private vars
 
-    signed int *d_preambles_symbols;
+    int *d_preambles_symbols;
     unsigned int d_samples_per_bit;
     long unsigned int d_sample_counter;
     long unsigned int d_preamble_index;
@@ -125,14 +122,12 @@ private:
     int d_average_count;
     int d_decimation_output_factor;
 
-    long d_fs_in;
     //double d_preamble_duration_seconds;
     // navigation message vars
     Gps_Navigation_Message d_nav;
     GpsL1CaSubframeFsm d_GPS_FSM;
 
     boost::shared_ptr<gr::msg_queue> d_queue;
-    unsigned int d_vector_length;
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;

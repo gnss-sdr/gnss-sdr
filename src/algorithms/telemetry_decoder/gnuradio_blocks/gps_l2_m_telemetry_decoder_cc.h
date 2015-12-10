@@ -53,8 +53,7 @@ class gps_l2_m_telemetry_decoder_cc;
 typedef boost::shared_ptr<gps_l2_m_telemetry_decoder_cc> gps_l2_m_telemetry_decoder_cc_sptr;
 
 gps_l2_m_telemetry_decoder_cc_sptr
-gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-    int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
@@ -87,17 +86,14 @@ public:
 
 private:
     friend gps_l2_m_telemetry_decoder_cc_sptr
-    gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in,unsigned
-            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
-    gps_l2_m_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-            int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    gps_l2_m_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
     void align_samples();
 
     concurrent_queue<Gps_CNAV_Iono> *d_iono_queue;
     concurrent_queue<Gps_CNAV_Ephemeris> *d_ephemeris_queue;
-    long d_fs_in;
 
     bool d_dump;
     Gnss_Satellite d_satellite;

@@ -48,21 +48,15 @@ using google::LogMessage;
 
 
 gps_l2_m_telemetry_decoder_cc_sptr
-gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, long if_freq, long fs_in, unsigned
-        int vector_length, boost::shared_ptr<gr::msg_queue> queue, bool dump)
+gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
 {
-    return gps_l2_m_telemetry_decoder_cc_sptr(new gps_l2_m_telemetry_decoder_cc(satellite, if_freq,
-            fs_in, vector_length, queue, dump));
+    return gps_l2_m_telemetry_decoder_cc_sptr(new gps_l2_m_telemetry_decoder_cc(satellite, queue, dump));
 }
 
 
 
 gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        long if_freq,
-        long fs_in,
-        unsigned
-        int vector_length,
         boost::shared_ptr<gr::msg_queue> queue,
         bool dump) :
                 gr::block("gps_l2_m_telemetry_decoder_cc",
@@ -73,7 +67,6 @@ gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "GPS L2C M TELEMETRY PROCESSING: satellite " << d_satellite;
-    d_fs_in = fs_in;
     d_block_size = GPS_L2_SAMPLES_PER_SYMBOL * GPS_L2_SYMBOLS_PER_BIT * GPS_L2_CNAV_DATA_PAGE_BITS * 2; // two CNAV frames
     d_decimation_output_factor = 0;
     //set_output_multiple (1);
@@ -99,9 +92,12 @@ gps_l2_m_telemetry_decoder_cc::~gps_l2_m_telemetry_decoder_cc()
 
 void gps_l2_m_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
 {
-    unsigned ninputs = ninput_items_required.size ();
-    for (unsigned i = 0; i < ninputs; i++)
-        ninput_items_required[i] = noutput_items;
+    if (noutput_items != 0)
+        {
+            unsigned ninputs = ninput_items_required.size ();
+            for (unsigned i = 0; i < ninputs; i++)
+                ninput_items_required[i] = noutput_items;
+        }
     //LOG(INFO) << "forecast(): " << "noutput_items=" << noutput_items << "\tninput_items_required ninput_items_required.size()=" << ninput_items_required.size();
 }
 
@@ -262,6 +258,10 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_in
         }
 
     d_average_count++;
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
     if (d_average_count == d_decimation_output_factor)
         {
             d_average_count = 0;

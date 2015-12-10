@@ -438,5 +438,6 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
         }
     }
 
+    output_items.clear();  // removes a warning
     return noutput_items;
 }

@@ -329,8 +329,8 @@ gr_vector_void_star &output_items)
 				    // New random data bit
 				    current_data_bit_int_[sat] = (rand()%2) == 0 ? 1 : -1;
 				}
-        		    data_modulation_[sat] = current_data_bit_int_[sat] * (Galileo_E5a_I_SECONDARY_CODE.at((ms_counter_[sat]+delay_sec_[sat])%20)=='0' ? 1 : -1);
-        		    pilot_modulation_[sat] = (Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat] - 1].at((ms_counter_[sat] + delay_sec_[sat]) % 100)=='0' ? 1 : -1);
+        		    data_modulation_[sat] = current_data_bit_int_[sat] * (Galileo_E5a_I_SECONDARY_CODE.at((ms_counter_[sat]+delay_sec_[sat]) % 20) == '0' ? 1 : -1);
+        		    pilot_modulation_[sat] = (Galileo_E5a_Q_SECONDARY_CODE[PRN_[sat] - 1].at((ms_counter_[sat] + delay_sec_[sat]) % 100) == '0' ? 1 : -1);
 
         		    ms_counter_[sat] = ms_counter_[sat] + static_cast<int>(round(1e3*GALILEO_E5a_CODE_PERIOD));
 
@@ -382,6 +382,11 @@ gr_vector_void_star &output_items)
                 {
                     out[out_idx] += gr_complex(random_->gasdev(),random_->gasdev());
                 }
+        }
+
+    if((noutput_items == 0) || (ninput_items.size() != 0) || input_items[0] == 0)
+        {
+            // do nothing
         }
 
     // Tell runtime system how many output items we produced.

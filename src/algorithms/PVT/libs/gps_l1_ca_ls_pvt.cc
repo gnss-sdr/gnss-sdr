@@ -44,7 +44,7 @@ gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels, std::string dump_filename, boo
     d_ephemeris = new Gps_Navigation_Message[nchannels];
     d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
-
+    d_flag_averaging = false;
     d_GPS_current_time = 0;
 
     // ############# ENABLE DATA FILE LOG #################

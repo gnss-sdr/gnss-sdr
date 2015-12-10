@@ -67,12 +67,12 @@ galileo_e1_observables_cc::galileo_e1_observables_cc(unsigned int nchannels, boo
     d_dump_filename = dump_filename;
     d_flag_averaging = flag_averaging;
 
-    for (int i=0;i<d_nchannels;i++)
-    {
-		d_acc_carrier_phase_queue_rads.push_back(std::deque<double>(d_nchannels));
-		d_carrier_doppler_queue_hz.push_back(std::deque<double>(d_nchannels));
-		d_symbol_TOW_queue_s.push_back(std::deque<double>(d_nchannels));
-    }
+    for (unsigned int i = 0; i < d_nchannels; i++)
+        {
+            d_acc_carrier_phase_queue_rads.push_back(std::deque<double>(d_nchannels));
+            d_carrier_doppler_queue_hz.push_back(std::deque<double>(d_nchannels));
+            d_symbol_TOW_queue_s.push_back(std::deque<double>(d_nchannels));
+        }
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -125,6 +125,10 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
     Gnss_Synchro current_gnss_synchro[d_nchannels];
     std::map<int,Gnss_Synchro> current_gnss_synchro_map;
     std::map<int,Gnss_Synchro>::iterator gnss_synchro_iter;
+    if (d_nchannels != ninput_items.size())
+        {
+            LOG(WARNING) << "The Observables block is not well connected";
+        }
 
     /*
      * 1. Read the GNSS SYNCHRO objects from available channels
@@ -214,24 +218,25 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
 				if (d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].size()>=GPS_L1_CA_HISTORY_DEEP)
 				{
 					// compute interpolated observation values for Doppler and Accumulate carrier phase
-					symbol_TOW_vec_s=arma::vec(std::vector<double>(d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].begin(), d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].end()));
-					acc_phase_vec_rads=arma::vec(std::vector<double>(d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].begin(), d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].end()));
-					dopper_vec_hz=arma::vec(std::vector<double>(d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].begin(), d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].end()));
-					desired_symbol_TOW[0]=symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP-1]+delta_rx_time_ms/1000.0;
+					symbol_TOW_vec_s = arma::vec(std::vector<double>(d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].begin(), d_symbol_TOW_queue_s[gnss_synchro_iter->second.Channel_ID].end()));
+					acc_phase_vec_rads = arma::vec(std::vector<double>(d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].begin(), d_acc_carrier_phase_queue_rads[gnss_synchro_iter->second.Channel_ID].end()));
+					dopper_vec_hz = arma::vec(std::vector<double>(d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].begin(), d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].end()));
+					desired_symbol_TOW[0] = symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP - 1] + delta_rx_time_ms / 1000.0;
 					// Curve fitting to cuadratic function
-					arma::mat A=arma::ones<arma::mat> (GPS_L1_CA_HISTORY_DEEP,2);
-					A.col(1)=symbol_TOW_vec_s;
+					arma::mat A = arma::ones<arma::mat>(GPS_L1_CA_HISTORY_DEEP, 2);
+					A.col(1) = symbol_TOW_vec_s;
 					//A.col(2)=symbol_TOW_vec_s % symbol_TOW_vec_s;
 					arma::mat coef_acc_phase(1,3);
-					coef_acc_phase=arma::pinv(A.t()*A)*A.t()*acc_phase_vec_rads;
+					arma::mat pinv_A = arma::pinv(A.t() * A) * A.t();
+					coef_acc_phase = pinv_A * acc_phase_vec_rads;
 					arma::mat coef_doppler(1,3);
-					coef_doppler=arma::pinv(A.t()*A)*A.t()*dopper_vec_hz;
+					coef_doppler = pinv_A * dopper_vec_hz;
 					arma::vec acc_phase_lin;
 					arma::vec carrier_doppler_lin;
-					acc_phase_lin=coef_acc_phase[0]+coef_acc_phase[1]*desired_symbol_TOW[0];//+coef_acc_phase[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
-					carrier_doppler_lin=coef_doppler[0]+coef_doppler[1]*desired_symbol_TOW[0];//+coef_doppler[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
-					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads =acc_phase_lin[0];
-					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz =carrier_doppler_lin[0];
+					acc_phase_lin = coef_acc_phase[0] + coef_acc_phase[1] * desired_symbol_TOW[0];//+coef_acc_phase[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
+					carrier_doppler_lin = coef_doppler[0] + coef_doppler[1] * desired_symbol_TOW[0];//+coef_doppler[2]*desired_symbol_TOW[0]*desired_symbol_TOW[0];
+					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_phase_rads = acc_phase_lin[0];
+					current_gnss_synchro[gnss_synchro_iter->second.Channel_ID].Carrier_Doppler_hz = carrier_doppler_lin[0];
 				}
                 }
         }
@@ -267,6 +272,10 @@ int galileo_e1_observables_cc::general_work (int noutput_items, gr_vector_int &n
         {
             *out[i] = current_gnss_synchro[i];
         }
-    return 1; //Output the observables
+    if (noutput_items == 0)
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
+    return 1;
 }
 

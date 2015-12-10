@@ -73,6 +73,7 @@ DECLARE_string(log_dir);
 #include "arithmetic/magnitude_squared_test.cc"
 #include "arithmetic/multiply_test.cc"
 #include "arithmetic/code_generation_test.cc"
+#include "arithmetic/tracking_loop_filter_test.cc"
 #include "configuration/file_configuration_test.cc"
 #include "configuration/in_memory_configuration_test.cc"
 #include "control_thread/control_message_factory_test.cc"

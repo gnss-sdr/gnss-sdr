@@ -37,7 +37,10 @@
 #include <sstream>
 #include <glog/logging.h>
 
-GeoJSON_Printer::GeoJSON_Printer () {}
+GeoJSON_Printer::GeoJSON_Printer()
+{
+    first_pos = true;
+}
 
 
 

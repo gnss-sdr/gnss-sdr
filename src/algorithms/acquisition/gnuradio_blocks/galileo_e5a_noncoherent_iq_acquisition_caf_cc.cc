@@ -647,7 +647,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                     // weighting_factor = 0;
                     // std::cout << "weighting_factor " << weighting_factor << std::endl;
                     // Initialize first iterations
-                    for (int doppler_index=0; doppler_index < CAF_bins_half; doppler_index++)
+                    for (int doppler_index = 0; doppler_index < CAF_bins_half; doppler_index++)
                         {
                             d_CAF_vector[doppler_index] = 0;
                             // volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], d_CAF_vector_I, CAF_bins_half+doppler_index+1);
@@ -656,7 +656,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                     d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1 - weighting_factor * static_cast<unsigned int>((doppler_index - i)));
                                 }
                             // d_CAF_vector[doppler_index] /= CAF_bins_half+doppler_index+1;
-                            d_CAF_vector[doppler_index] /= 1 + CAF_bins_half+doppler_index - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor*doppler_index*(doppler_index+1)/2; // triangles = [n*(n+1)/2]
+                            d_CAF_vector[doppler_index] /= 1 + CAF_bins_half + doppler_index - weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2 - weighting_factor * doppler_index * (doppler_index + 1) / 2; // triangles = [n*(n+1)/2]
                             if (d_both_signal_components)
                                 {
                                     accum[0] = 0;
@@ -671,21 +671,21 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                 }
                         }
                     // Body loop
-                    for (unsigned int doppler_index = CAF_bins_half;doppler_index<d_num_doppler_bins-CAF_bins_half;doppler_index++)
+                    for (unsigned int doppler_index = CAF_bins_half; doppler_index < d_num_doppler_bins - CAF_bins_half; doppler_index++)
                         {
                             d_CAF_vector[doppler_index] = 0;
-                            //				volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], 2*CAF_bins_half+1);
-                            for (int i = doppler_index-CAF_bins_half; i < doppler_index+CAF_bins_half + 1; i++)
+                            // volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], 2*CAF_bins_half+1);
+                            for (int i = doppler_index - CAF_bins_half; i < static_cast<int>(doppler_index + CAF_bins_half + 1); i++)
                                 {
-                                    d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1-weighting_factor * static_cast<unsigned int>((doppler_index - i)));
+                                    d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1 - weighting_factor * static_cast<unsigned int>((doppler_index - i)));
                                 }
-                            //				d_CAF_vector[doppler_index] /= 2*CAF_bins_half+1;
+                            // d_CAF_vector[doppler_index] /= 2*CAF_bins_half+1;
                             d_CAF_vector[doppler_index] /= 1 + 2 * CAF_bins_half - 2 * weighting_factor * CAF_bins_half * (CAF_bins_half + 1) / 2;
                             if (d_both_signal_components)
                                 {
                                     accum[0] = 0;
                                     // volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], 2*CAF_bins_half);
-                                    for (int i = doppler_index-CAF_bins_half; i < doppler_index + CAF_bins_half + 1; i++)
+                                    for (int i = doppler_index-CAF_bins_half; i < static_cast<int>(doppler_index + CAF_bins_half + 1); i++)
                                         {
                                             accum[0] += d_CAF_vector_Q[i] * (1 - weighting_factor * static_cast<unsigned int>((doppler_index - i)));
                                         }
@@ -695,11 +695,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                 }
                         }
                     // Final iterations
-                    for (int doppler_index = d_num_doppler_bins - CAF_bins_half; doppler_index < d_num_doppler_bins; doppler_index++)
+                    for (int doppler_index = d_num_doppler_bins - CAF_bins_half; doppler_index < static_cast<int>(d_num_doppler_bins); doppler_index++)
                         {
                             d_CAF_vector[doppler_index] = 0;
                             // volk_32f_accumulator_s32f_a(&d_CAF_vector[doppler_index], &d_CAF_vector_I[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
-                            for (int i = doppler_index - CAF_bins_half; i < d_num_doppler_bins; i++)
+                            for (int i = doppler_index - CAF_bins_half; i < static_cast<int>(d_num_doppler_bins); i++)
                                 {
                                     d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1 - weighting_factor * (abs(doppler_index - i)));
                                 }
@@ -709,7 +709,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                 {
                                     accum[0] = 0;
                                     // volk_32f_accumulator_s32f_a(&accum[0], &d_CAF_vector_Q[doppler_index-CAF_bins_half], CAF_bins_half + (d_num_doppler_bins-doppler_index));
-                                    for (int i = doppler_index-CAF_bins_half; i < d_num_doppler_bins; i++)
+                                    for (int i = doppler_index-CAF_bins_half; i < static_cast<int>(d_num_doppler_bins); i++)
                                         {
                                             accum[0] += d_CAF_vector_Q[i] * (1 - weighting_factor * (abs(doppler_index - i)));
                                         }
@@ -803,6 +803,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
         }
     }
 
+    output_items.clear();  // removes a warning
     return noutput_items;
 }
 

@@ -86,7 +86,10 @@ galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking
 void Galileo_E1_Tcp_Connector_Tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
-    ninput_items_required[0] = (int)d_vector_length*2; // set the required available samples in each call
+    if (noutput_items != 0)
+        {
+            ninput_items_required[0] = (int)d_vector_length*2; // set the required available samples in each call
+        }
 }
 
 
@@ -589,6 +592,10 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_ve
         }
     consume_each(d_current_prn_length_samples); // this is needed in gr::block derivates
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

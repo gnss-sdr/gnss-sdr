@@ -466,5 +466,6 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
 
     consume_each(ninput_items[0]);
 
+    output_items.clear();  // removes a warning
     return noutput_items;
 }

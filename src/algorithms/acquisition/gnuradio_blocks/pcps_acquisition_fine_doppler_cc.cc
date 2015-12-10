@@ -174,7 +174,10 @@ void pcps_acquisition_fine_doppler_cc::init()
 void pcps_acquisition_fine_doppler_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
-    ninput_items_required[0] = d_gnuradio_forecast_samples ; //set the required available samples in each call
+    if (noutput_items != 0)
+        {
+            ninput_items_required[0] = d_gnuradio_forecast_samples ; //set the required available samples in each call
+        }
 }
 
 
@@ -519,5 +522,6 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     //DLOG(INFO)<<"d_sample_counter="<<d_sample_counter<<std::endl;
     d_sample_counter += d_fft_size; // sample counter
     consume_each(d_fft_size);
+    output_items.clear();  // removes a warning
     return noutput_items;
 }

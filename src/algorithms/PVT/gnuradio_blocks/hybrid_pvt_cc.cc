@@ -316,7 +316,7 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
                                     galileo_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
                                     std::map<int, Gps_Ephemeris>::iterator gps_ephemeris_iter;
                                     gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
-                                    if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()) || (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())  )
+                                    if ((galileo_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end()) && (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())  )
                                         {
                                             rp->log_rinex_obs(rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
                                         }
@@ -370,7 +370,12 @@ int hybrid_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
         }
 
     consume_each(1); //one by one
-    return noutput_items;
+    output_items.clear();  // removes a warning
+    if((noutput_items == 0) || (ninput_items[0] == 0))
+        {
+            LOG(WARNING) << "noutput_items = 0";
+        }
+    return 1;
 }
 
 

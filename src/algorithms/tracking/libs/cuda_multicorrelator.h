@@ -155,7 +155,7 @@ private:
 
     int *d_shifts_samples;
     float *d_shifts_chips;
-    float d_code_length_chips;
+    int d_code_length_chips;
 
     int threadsPerBlock;
     int blocksPerGrid;

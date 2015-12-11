@@ -48,7 +48,7 @@
 #include "gps_sdr_signal_processing.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
-#include "tracking_2nd_PLL_filter.h"
+#include "tracking_FLL_PLL_filter.h"
 #include "cuda_multicorrelator.h"
 
 class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc;
@@ -124,12 +124,13 @@ private:
     long d_fs_in;
 
     double d_early_late_spc_chips;
+    int d_n_correlator_taps;
 
 
     //GPU HOST PINNED MEMORY IN/OUT VECTORS
     gr_complex* in_gpu;
     float* d_local_code_shift_chips;
-    gr_complex* d_corr_outs_gpu;
+    gr_complex* d_correlator_outs;
     cuda_multicorrelator *multicorrelator_gpu;
     gr_complex* d_ca_code;
 
@@ -140,11 +141,12 @@ private:
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
-    double d_rem_carr_phase_rad;
+    double d_rem_code_phase_chips;
+    double d_rem_carrier_phase_rad;
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_2nd_PLL_filter d_carrier_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     double d_acq_code_phase_samples;
@@ -152,13 +154,15 @@ private:
 
     // tracking vars
     double d_code_freq_chips;
+    double d_code_phase_step_chips;
     double d_carrier_doppler_hz;
-    double d_acc_carrier_phase_rad;
+    double d_carrier_phase_step_rad;
+    double d_acc_carrier_phase_cycles;
     double d_code_phase_samples;
-    double d_acc_code_phase_secs;
+    double d_pll_to_dll_assist_secs_Ti;
 
-    //PRN period in samples
-    int d_current_prn_length_samples;
+    //Integration period in samples
+    int d_correlation_length_samples;
 
     //processing samples counters
     unsigned long int d_sample_counter;

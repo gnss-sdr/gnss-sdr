@@ -455,6 +455,7 @@ private:
     }
 
     private:
+
         void do_accept()
         {
             acceptor_.async_accept(socket_, [this](boost::system::error_code ec)
@@ -475,8 +476,8 @@ private:
         }
 
         boost::asio::ip::tcp::acceptor acceptor_;
-        boost::asio::ip::tcp::socket socket_;
         std::shared_ptr< concurrent_queue<std::string> >  & queue_;
+        boost::asio::ip::tcp::socket socket_;
     };
 
 

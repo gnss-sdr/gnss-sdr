@@ -30,6 +30,7 @@
  */
 
 #include <memory>
+#include <thread>
 #include "rtcm.h"
 
 TEST(Rtcm_Test, Hex_to_bin)
@@ -518,4 +519,40 @@ TEST(Rtcm_Test, MSM1)
     int read_psrng4_s_2 =  rtcm->bin_to_int( MSM1_bin2.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
     EXPECT_EQ(psrng4_s, read_psrng4_s_2);
 }
+
+
+TEST(Rtcm_Test, InstantiateServer)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    rtcm->run_server();
+    std::string msg("Hello");
+    rtcm->send_message(msg);
+    std::string test3 = "ff";
+    std::string test3_bin = rtcm->hex_to_bin(test3);
+    EXPECT_EQ(0, test3_bin.compare("11111111"));
+    rtcm->stop_server();
+    std::string test6 = "0011";
+    std::string test6_hex = rtcm->bin_to_hex(test6);
+    EXPECT_EQ(0, test6_hex.compare("3"));
+    long unsigned int expected1 = 42;
+    EXPECT_EQ(expected1, rtcm->bin_to_uint("00101010"));
+    rtcm->run_server();
+    std::string test4_bin = rtcm->hex_to_bin(test3);
+    std::string s("Testing");
+    rtcm->send_message(s);
+    rtcm->stop_server();
+    EXPECT_EQ(0, test4_bin.compare("11111111"));
+}
+
+
+TEST(Rtcm_Test, InstantiateClient)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    rtcm->run_client();
+    std::string test3 = "ff";
+    std::string test3_bin = rtcm->hex_to_bin(test3);
+    EXPECT_EQ(0, test3_bin.compare("11111111"));
+    rtcm->stop_client();
+}
+
 

@@ -615,7 +615,7 @@ private:
         {
             boost::asio::async_read(socket_,
                     boost::asio::buffer(read_msg_.data(), 1029),
-                    [this](boost::system::error_code ec, std::size_t length)
+                    [this](boost::system::error_code ec, std::size_t /*length*/))
                     {
                 if (!ec )
                     {

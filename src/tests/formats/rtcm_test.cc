@@ -553,6 +553,8 @@ TEST(Rtcm_Test, InstantiateClient)
     std::string test3_bin = rtcm->hex_to_bin(test3);
     EXPECT_EQ(0, test3_bin.compare("11111111"));
     rtcm->stop_client();
+    std::string test3_bin2 = rtcm->hex_to_bin(test3);
+    EXPECT_EQ(0, test3_bin2.compare("11111111"));
 }
 
 

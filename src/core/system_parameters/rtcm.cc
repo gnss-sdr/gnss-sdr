@@ -102,9 +102,10 @@ void Rtcm::stop_service()
 void Rtcm::stop_server()
 {
     std::cout << "Stopping TCP Server on port " << FLAGS_RTCM_Port << std::endl;
-    rtcm_message_queue->push("Goodbye"); // this kills tq
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    rtcm_message_queue->push("Goodbye"); // this terminates tq
     Rtcm::stop_service();
+    servers.front().close_server();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     server_is_running = false;
 }
 

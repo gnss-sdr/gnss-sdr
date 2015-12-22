@@ -544,7 +544,7 @@ TEST(Rtcm_Test, InstantiateServer)
     EXPECT_EQ(0, test4_bin.compare("11111111"));
 }
 
-
+/*
 TEST(Rtcm_Test, InstantiateClient)
 {
     auto rtcm = std::make_shared<Rtcm>();
@@ -555,6 +555,6 @@ TEST(Rtcm_Test, InstantiateClient)
     rtcm->stop_client();
     std::string test3_bin2 = rtcm->hex_to_bin(test3);
     EXPECT_EQ(0, test3_bin2.compare("11111111"));
-}
+} */
 
 

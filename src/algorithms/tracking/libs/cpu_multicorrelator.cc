@@ -128,7 +128,8 @@ bool cpu_multicorrelator::Carrier_wipeoff_multicorrelator_resampler(
     //update_local_carrier(signal_length_samples, rem_carrier_phase_in_rad, phase_step_rad); //replaced by VOLK phase rotator
     //volk_32fc_x2_multiply_32fc(d_sig_doppler_wiped, d_sig_in, d_nco_in, signal_length_samples); //replaced by VOLK phase rotator
 
-    lv_32fc_t phase_offset_as_complex[1]= lv_cmake(std::cos(rem_carrier_phase_in_rad),-std::sin(rem_carrier_phase_in_rad));
+    lv_32fc_t phase_offset_as_complex[1];
+    phase_offset_as_complex[0]= lv_cmake(std::cos(rem_carrier_phase_in_rad),-std::sin(rem_carrier_phase_in_rad));
     volk_32fc_s32fc_x2_rotator_32fc(d_sig_doppler_wiped, d_sig_in, std::exp(lv_32fc_t(0, -phase_step_rad)),phase_offset_as_complex, signal_length_samples);
     update_local_code(signal_length_samples,rem_code_phase_chips, code_phase_step_chips);
     for (int current_correlator_tap = 0; current_correlator_tap < d_n_correlators; current_correlator_tap++)

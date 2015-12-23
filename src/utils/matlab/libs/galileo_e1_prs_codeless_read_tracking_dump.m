@@ -36,7 +36,7 @@ function [GNSS_tracking] = galileo_e1_prs_codeless_read_tracking_dump (filename,
   m = nargchk (1,2,nargin);
   num_float_vars=15;
   num_unsigned_long_int_vars=1;
-  num_double_vars=20;
+  num_double_vars=22;
   double_size_bytes=8;
   unsigned_long_int_size_bytes=8;
   float_size_bytes=4;
@@ -107,6 +107,9 @@ function [GNSS_tracking] = galileo_e1_prs_codeless_read_tracking_dump (filename,
     v20 = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
         bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved float
+    v20a = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+        bytes_shift=bytes_shift+double_size_bytes;
+    fseek(f,bytes_shift,'bof'); % move to next interleaved float
     v21 = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
             bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved float
@@ -159,6 +162,9 @@ function [GNSS_tracking] = galileo_e1_prs_codeless_read_tracking_dump (filename,
             bytes_shift=bytes_shift+double_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved float
     v41 = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+            bytes_shift=bytes_shift+double_size_bytes;
+    fseek(f,bytes_shift,'bof'); % move to next interleaved float
+    v42 = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
     fclose (f);
 %%%%%%%% output vars %%%%%%%%
 %                     // EPR
@@ -215,6 +221,7 @@ function [GNSS_tracking] = galileo_e1_prs_codeless_read_tracking_dump (filename,
     CN0_SNV_dB_Hz=v18;
     carrier_lock_test=v19;
     rem_code_phase=v20;
+    subcarrier_phase_cycles=v20a;
     code_error_veml=v21;
     code_nco_veml=v22;
     VE_prs=v23;
@@ -233,6 +240,7 @@ function [GNSS_tracking] = galileo_e1_prs_codeless_read_tracking_dump (filename,
     code_phase_chips_prs=v39;
     code_error_veml_prs=v40;
     code_nco_veml_prs=v41;
+    subcarrier_phase_cycles_prs=v42;
     
     GNSS_tracking.VE=VE;
     GNSS_tracking.E=E;
@@ -252,6 +260,7 @@ function [GNSS_tracking] = galileo_e1_prs_codeless_read_tracking_dump (filename,
     GNSS_tracking.CN0_SNV_dB_Hz=CN0_SNV_dB_Hz;
     GNSS_tracking.carrier_lock_test=carrier_lock_test;
     GNSS_tracking.rem_code_phase=rem_code_phase;
+    GNSS_tracking.subcarrier_phase_cycles=subcarrier_phase_cycles;
     GNSS_tracking.code_error_veml=code_error_veml;
     GNSS_tracking.code_nco_veml=code_nco_veml;
     GNSS_tracking.VE_prs=VE_prs;
@@ -270,6 +279,7 @@ function [GNSS_tracking] = galileo_e1_prs_codeless_read_tracking_dump (filename,
     GNSS_tracking.code_phase_chips_prs=code_phase_chips_prs;
     GNSS_tracking.code_error_veml_prs=code_error_veml_prs;
     GNSS_tracking.code_nco_veml_prs=code_nco_veml_prs;
+    GNSS_tracking.subcarrier_phase_cycles_prs=subcarrier_phase_cycles_prs;
   end
   
 

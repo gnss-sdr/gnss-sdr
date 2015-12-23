@@ -914,6 +914,109 @@ std::string Rtcm::print_MT1005_test()
     return Rtcm::build_message(mt1005.to_string());
 }
 
+// ********************************************************
+//
+//   MESSAGE TYPE 1006 (STATION DESCRIPTION PLUS HEIGHT INFORMATION)
+//
+// ********************************************************
+
+std::string Rtcm::print_MT1006( unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator, double height)
+{
+    unsigned int msg_number = 1006;
+    std::bitset<1> DF001_;
+
+    Rtcm::set_DF002(msg_number);
+    Rtcm::set_DF003(ref_id);
+    Rtcm::set_DF021();
+    Rtcm::set_DF022(gps);
+    Rtcm::set_DF023(glonass);
+    Rtcm::set_DF024(galileo);
+    DF141 = std::bitset<1>(non_physical);
+    DF001_ = std::bitset<1>("0");
+    Rtcm::set_DF025(ecef_x);
+    DF142 = std::bitset<1>(single_oscillator);
+    Rtcm::set_DF026(ecef_y);
+    DF364 = std::bitset<2>(quarter_cycle_indicator);
+    Rtcm::set_DF027(ecef_z);
+    Rtcm::set_DF028(height);
+
+    std::string data = DF002.to_string() +
+            DF003.to_string() +
+            DF021.to_string() +
+            DF022.to_string() +
+            DF023.to_string() +
+            DF024.to_string() +
+            DF141.to_string() +
+            DF025.to_string() +
+            DF142.to_string() +
+            DF001_.to_string() +
+            DF026.to_string() +
+            DF364.to_string() +
+            DF027.to_string() +
+            DF028.to_string();
+
+    std::string message = build_message(data);
+    return message;
+}
+
+
+// ********************************************************
+//
+//   MESSAGE TYPE 1008 (ANTENNA DESCRIPTOR & SERIAL NUMBER)
+//
+// ********************************************************
+std::string Rtcm::print_MT1008(unsigned int ref_id, const std::string & antenna_descriptor, unsigned int antenna_setup_id, const std::string & antenna_serial_number)
+{
+    unsigned int msg_number = 1008;
+    std::bitset<12> DF002_ = std::bitset<12>(msg_number);
+    Rtcm::set_DF003(ref_id);
+    std::string ant_descriptor = antenna_descriptor;
+    unsigned int len = ant_descriptor.length();
+    if (len > 31)
+        {
+            ant_descriptor = ant_descriptor.substr(0, 31);
+            len = 31;
+        }
+    DF029 = std::bitset<8>(len);
+
+    std::string DF030_str_;
+    for(auto it = ant_descriptor.begin(); it != ant_descriptor.end(); it++)
+        {
+            char c = *it;
+            std::bitset<8> character = std::bitset<8>(c);
+            DF030_str_ += character.to_string();
+        }
+
+    Rtcm::set_DF031(antenna_setup_id);
+
+    std::string ant_sn(antenna_serial_number);
+    unsigned int len2 = ant_sn.length();
+    if (len2 > 31)
+        {
+            ant_sn = ant_sn.substr(0, 31);
+            len2 = 31;
+        }
+    DF032 = std::bitset<8>(len2);
+
+    std::string DF033_str_;
+    for(auto it = ant_sn.begin(); it != ant_sn.end(); it++)
+        {
+            char c = *it;
+            std::bitset<8> character = std::bitset<8>(c);
+            DF033_str_ += character.to_string();
+        }
+
+    std::string data = DF002_.to_string() +
+            DF003.to_string() +
+            DF029.to_string() +
+            DF030_str_ +
+            DF031.to_string() +
+            DF032.to_string() +
+            DF033_str_;
+
+    std::string message = build_message(data);
+    return message;
+}
 
 
 // ********************************************************
@@ -2899,13 +3002,27 @@ int Rtcm::set_DF026(double antenna_ECEF_Y_m)
 }
 
 
-int  Rtcm::set_DF027(double antenna_ECEF_Z_m)
+int Rtcm::set_DF027(double antenna_ECEF_Z_m)
 {
     long long int ant_ref_z = static_cast<long long int>(std::round( antenna_ECEF_Z_m * 10000));
     DF027 = std::bitset<38>(ant_ref_z);
     return 0;
 }
 
+
+int Rtcm::set_DF028(double height)
+{
+    unsigned int h_ = static_cast<unsigned int>(std::round( height * 10000));
+    DF028 = std::bitset<16>(h_);
+    return 0;
+}
+
+
+int Rtcm::set_DF031(unsigned int antenna_setup_id)
+{
+    DF031 = std::bitset<8>(antenna_setup_id);
+    return 0;
+}
 
 int Rtcm::set_DF071(const Gps_Ephemeris & gps_eph)
 {

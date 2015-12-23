@@ -118,6 +118,16 @@ public:
     int read_MT1005(const std::string & message, unsigned int & ref_id, double & ecef_x, double & ecef_y, double & ecef_z, bool & gps, bool & glonass, bool & galileo);
 
     /*!
+     * \brief Prints message type 1006 (Stationary Antenna Reference Point, with Height Information)
+     */
+    std::string print_MT1006(unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator, double height);
+
+    /*!
+     * \brief Prints message type 1008 (Antenna Descriptor & Serial Number)
+     */
+    std::string print_MT1008(unsigned int ref_id, const std::string & antenna_descriptor, unsigned int antenna_setup_id, const std::string & antenna_serial_number);
+
+    /*!
      * \brief Prints message type 1019 (GPS Ephemeris), should be broadcast in the event that
      * the IODC does not match the IODE, and every 2 minutes.
      */
@@ -913,6 +923,16 @@ private:
 
     std::bitset<38> DF027;
     int set_DF027(double antenna_ECEF_Z_m);
+
+    std::bitset<16> DF028;
+    int set_DF028(double height);
+
+    std::bitset<8> DF029;
+
+    std::bitset<8> DF031;
+    int set_DF031(unsigned int antenna_setup_id);
+
+    std::bitset<8> DF032;
 
     // Contents of GPS Satellite Ephemeris Data, Message Type 1019
     std::bitset<8> DF071;

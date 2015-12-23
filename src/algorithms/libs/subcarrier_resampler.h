@@ -110,7 +110,7 @@ public:
                 int_phase = static_cast< int64_t >( tsubcarrier_halfcycles );
                 //*curr_sample = static_cast< T >( 1.0 - 2.0 *( int_phase & 0x01 ) );
                 *curr_sample = this->d_subcarrier_table[ int_phase & 0x01 ];
-                tsubcarrier_halfcycles += subcarrier_phase_step;
+                tsubcarrier_halfcycles += subcarrier_phase_step_halfcycles;
                 ++curr_sample;
             }
 

@@ -201,6 +201,7 @@ public:
             std::vector< T * > resampled_codes )
     {
         int64_t code_phase_step_fxp = double_to_fxpt64( code_phase_step );
+        int64_t code_length_fxp = static_cast< int64_t >( code_length ) << FRAC_LEN;
 
         // Loop over the desired outputs:
         for( int i = 0; i < init_code_phase.size(); ++i )
@@ -222,10 +223,9 @@ public:
 
                 int num_samples_this_iter = num_samples;
 
-                int num_samples_at_rollover = j + std::floor(
-                        (static_cast<double>( code_length ) - fxpt64_to_double( code_phase_fxp )
-                         )/code_phase_step
-                        )  + 1;
+                int num_samples_at_rollover = j +
+                        ( code_length_fxp - code_phase_fxp ) / code_phase_step_fxp
+                        + 1;
 
                 if( num_samples_at_rollover < num_samples )
                 {

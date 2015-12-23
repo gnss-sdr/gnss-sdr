@@ -40,7 +40,6 @@
 #include <glog/logging.h>
 #include "gnss_sdr_valve.h"
 #include "configuration_interface.h"
-#include <gnuradio/blocks/char_to_float.h>
 
 
 using google::LogMessage;
@@ -77,6 +76,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
     double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip );
     long bytes_to_skip = 0;
+    long items_to_skip = 0;
 
     if (item_type_.compare("byte") == 0)
         {
@@ -84,16 +84,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
         }
     else if( item_type_.compare("short") == 0)
         {
-            // If we have shorts stored in little endian format, might as
-            // well read them in as bytes.
-            if( big_endian_items_ )
-            {
-                item_size_ = sizeof(short);
-            }
-            else
-            {
-                item_size_ = sizeof(char);
-            }
+            item_size_ = sizeof(short);
         }
     else
         {
@@ -133,21 +124,15 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
                 {
                     bytes_to_skip <<= 1;
                 }
-                file_source_->seek( bytes_to_skip, SEEK_SET );
+
+                items_to_skip = bytes_to_skip / item_size_;
+
+                file_source_->seek( items_to_skip, SEEK_SET );
+
             }
 
             unpack_samples_ = make_unpack_2bit_samples( big_endian_bytes_,
                     item_size_, big_endian_items_, reverse_interleaving_);
-            if( is_complex_ )
-            {
-                char_to_float_ =
-                    gr::blocks::interleaved_char_to_complex::make(false);
-            }
-            else
-            {
-                char_to_float_ =
-                    gr::blocks::char_to_float::make();
-            }
 
     }
     catch (const std::exception &e)
@@ -188,12 +173,12 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             if (file.is_open())
                 {
                     size = file.tellg();
-                    samples_ = floor((double)size * ( is_complex_ ? 2.0 : 4.0 ) );
+                    samples_ = floor(static_cast<double>(size) * ( is_complex_ ? 2.0 : 4.0 ) );
                     LOG(INFO) << "Total samples in the file= " << samples_; // 4 samples per byte
-                    samples_ -= bytes_to_skip;
+                    samples_ -= bytes_to_skip * ( is_complex_ ? 2.0 : 4.0 );
 
                     //Also skip the last two milliseconds:
-                    samples_ -= ceil( 0.002 * sampling_frequency_ / (is_complex_ ? 2.0 : 4.0 ) );
+                    samples_ -= ceil( 0.002 * static_cast<double>( sampling_frequency_ ) );
                 }
             else
                 {
@@ -207,23 +192,24 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
 
     CHECK(samples_ > 0) << "File does not contain enough samples to process.";
     double signal_duration_s;
-    signal_duration_s = (double)samples_ * ( 1 /(double)sampling_frequency_);
+    signal_duration_s = (double)( samples_ ) * ( 1 /(double)sampling_frequency_);
     LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
     std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]" << std::endl;
 
-    valve_ = gnss_sdr_make_valve(sizeof(gr_complex), samples_, queue_);
+    valve_ = gnss_sdr_make_valve(sizeof(int8_t), ( is_complex_ ? 2.0*samples_ : samples_ ),
+            queue_);
     DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
 
     if (dump_)
         {
             //sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
-            sink_ = gr::blocks::file_sink::make(sizeof(gr_complex), dump_filename_.c_str());
+            sink_ = gr::blocks::file_sink::make(sizeof(int8_t), dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
         }
 
     if (enable_throttle_control_)
         {
-            throttle_ = gr::blocks::throttle::make(sizeof(gr_complex), sampling_frequency_);
+            throttle_ = gr::blocks::throttle::make(sizeof(int8_t), sampling_frequency_);
         }
     DLOG(INFO) << "File source filename " << filename_;
     DLOG(INFO) << "Samples " << samples_;
@@ -253,10 +239,6 @@ void TwoBitPackedFileSignalSource::connect(gr::top_block_sptr top_block)
     left_block = right_block;
 
     DLOG(INFO) << "connected file source to unpack samples";
-    right_block = char_to_float_;
-    top_block->connect( left_block, 0, right_block, 0 );
-    left_block = right_block;
-    DLOG(INFO) << "connected unpack samples to char to float";
 
     if( enable_throttle_control_ )
     {
@@ -290,10 +272,6 @@ void TwoBitPackedFileSignalSource::disconnect(gr::top_block_sptr top_block)
 
 
     DLOG(INFO) << "disconnected file source to unpack samples";
-    right_block = char_to_float_;
-    top_block->disconnect( left_block, 0, right_block, 0 );
-    left_block = right_block;
-    DLOG(INFO) << "disconnected unpack samples to char to float";
 
     if( enable_throttle_control_ )
     {

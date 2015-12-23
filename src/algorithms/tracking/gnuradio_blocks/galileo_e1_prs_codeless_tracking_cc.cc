@@ -1493,7 +1493,7 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
 
             if( d_prs_tracking_enabled )
             {
-            
+
                 if (d_cn0_estimation_counter_prs < CN0_ESTIMATION_SAMPLES)
                     {
                         d_cn0_estimation_counter_prs++;

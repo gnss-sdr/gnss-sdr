@@ -82,7 +82,11 @@ galileo_e1_prs_codeless_make_tracking_cc(long if_freq,
                                    bool use_bump_jumping,
                                    unsigned int bump_jumping_threshold,
                                    float initial_divergence_bw_hz,
-                                   float final_divergence_bw_hz, int prs_accumulation_length);
+                                   float final_divergence_bw_hz,
+                                   int prs_accumulation_length,
+                                   bool close_prs_loops,
+                                   float pll_bw_hz_prs,
+                                   float dll_bw_hz_prs);
 
 /*!
  * \brief This class implements a double estimator tracking block for Galileo E1 signals
@@ -132,7 +136,10 @@ private:
             unsigned int bump_jumping_threshold,
             float initial_divergence_bw_hz,
             float final_divergence_bw_hz,
-            int prs_accumulation_length);
+            int prs_accumulation_length,
+            bool close_prs_loops,
+            float pll_bw_hz_prs,
+            float dll_bw_hz_prs);
 
     galileo_e1_prs_codeless_tracking_cc(long if_freq,
             long fs_in, unsigned
@@ -155,7 +162,10 @@ private:
             unsigned int bump_jumping_threshold,
             float initial_divergence_bw_hz,
             float final_divergence_bw_hz,
-            int prs_accumulation_length);
+            int prs_accumulation_length,
+            bool close_prs_loops,
+            float pll_bw_hz_prs,
+            float dll_bw_hz_prs);
 
     void update_local_code();
     void update_local_code_prs();
@@ -242,6 +252,12 @@ private:
     float d_initial_dll_bw_hz;
     float d_final_dll_bw_hz;
 
+    int d_pll_loop_order_prs;
+    float d_pll_bw_hz_prs;
+
+    int d_dll_loop_order_prs;
+    float d_dll_bw_hz_prs;
+
     float d_initial_early_late_code_space_cycles;
     float d_final_early_late_code_space_cycles;
 
@@ -261,7 +277,7 @@ private:
     // tracking vars
     double d_code_freq_chips;
     double d_code_phase_chips;
-    float d_carrier_doppler_hz;
+    double d_carrier_doppler_hz;
     double d_carrier_phase_rad;
     double d_acc_carrier_phase_rad;
     double d_acc_code_phase_secs;
@@ -270,7 +286,7 @@ private:
     int64_t d_integer_code_phase_chips_prs;
     double d_fractional_code_phase_chips_prs;
 
-    float d_carrier_doppler_hz_prs;
+    double d_carrier_doppler_hz_prs;
     double d_carrier_phase_rad_prs;
     double d_acc_carrier_phase_rad_prs;
     double d_acc_code_phase_secs_prs;
@@ -278,11 +294,20 @@ private:
     double d_subcarrier_phase_cycles;
     double d_subcarrier_freq_cycles;
 
-    double d_subcarrier_phase_cycles_prs;
+    int64_t d_integer_subcarrier_phase_cycles_prs;
+    double d_fractional_subcarrier_phase_cycles_prs;
     double d_subcarrier_freq_cycles_prs;
 
     double d_chips_to_cycles;
     double d_chips_to_cycles_prs;
+
+    // PRS tracking variables: need to maintain state during accumulation
+    double d_carr_error_hz_prs;
+    double d_carr_error_filt_hz_prs;
+    double d_subcarrier_error_cycles_prs;
+    double d_subcarrier_error_filt_cycles_prs;
+    double d_code_error_chips_veml_prs;
+    double d_code_error_filt_chips_veml_prs;
 
     //PRN period in samples
     int d_current_prn_length_samples;
@@ -293,9 +318,11 @@ private:
 
     // CN0 estimation and lock detector
     int d_cn0_estimation_counter;
+    int d_cn0_estimation_counter_prs;
     gr_complex* d_Prompt_buffer;
     float d_carrier_lock_test;
-    float d_CN0_SNV_dB_Hz;
+    double d_CN0_SNV_dB_Hz;
+    double d_CN0_SNV_dB_Hz_prs;
     float d_carrier_lock_threshold;
     int d_carrier_lock_fail_counter;
     int d_carrier_lock_success_counter;

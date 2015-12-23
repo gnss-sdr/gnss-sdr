@@ -70,6 +70,9 @@ GalileoE1PrsCodelessTracking::GalileoE1PrsCodelessTracking(
     float final_divergence_bw_hz;
     unsigned int bump_jumping_threshold;
     int prs_accumulation_length;
+    bool close_prs_loops;
+    float pll_bw_hz_prs;
+    float dll_bw_hz_prs;
 
     item_type = configuration->property(role + ".item_type", default_item_type);
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -87,8 +90,11 @@ GalileoE1PrsCodelessTracking::GalileoE1PrsCodelessTracking(
     use_bump_jumping = configuration->property(role + ".use_bump_jumping", false );
     bump_jumping_threshold = configuration->property(role + ".bump_jumping_threshold", 6 );
     initial_divergence_bw_hz = configuration->property(role + ".initial_divergence_bw_hz", 1.0 );
-    final_divergence_bw_hz = configuration->property(role + ".final_divergence_bw_hz", 0.01 );
+    final_divergence_bw_hz = configuration->property(role + ".final_divergence_bw_hz", 0.1 );
     prs_accumulation_length = configuration->property(role + ".prs_accumulation_length", 50 );
+    close_prs_loops = configuration->property(role + ".close_prs_loops", true );
+    pll_bw_hz_prs = configuration->property(role + ".pll_bw_hz_prs", 0.1 );
+    dll_bw_hz_prs = configuration->property(role + ".dll_bw_hz_prs", 0.1 );
 
     pll_loop_order = configuration->property(role + ".pll_loop_order", 3);
     dll_loop_order = configuration->property(role + ".dll_loop_order", 1);
@@ -117,7 +123,10 @@ GalileoE1PrsCodelessTracking::GalileoE1PrsCodelessTracking(
                     initial_very_early_late_code_space_chips, final_very_early_late_code_space_chips,
                     aid_code_with_carrier, use_bump_jumping, bump_jumping_threshold,
                     initial_divergence_bw_hz, final_divergence_bw_hz,
-                    prs_accumulation_length);
+                    prs_accumulation_length,
+                    close_prs_loops,
+                    pll_bw_hz_prs,
+                    dll_bw_hz_prs);
         }
     else
         {

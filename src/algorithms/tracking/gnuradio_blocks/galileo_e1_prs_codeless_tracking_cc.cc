@@ -95,7 +95,10 @@ galileo_e1_prs_codeless_make_tracking_cc(
         unsigned int bump_jumping_threshold,
         float initial_divergence_bw_hz,
         float final_divergence_bw_hz,
-        int prs_accumulation_length
+        int prs_accumulation_length,
+        bool close_prs_loops,
+        float pll_bw_hz_prs,
+        float dll_bw_hz_prs
         )
 {
     return galileo_e1_prs_codeless_tracking_cc_sptr(new galileo_e1_prs_codeless_tracking_cc(if_freq,
@@ -109,7 +112,10 @@ galileo_e1_prs_codeless_make_tracking_cc(
             aid_code_with_carrier,
             use_bump_jumping, bump_jumping_threshold,
             initial_divergence_bw_hz, final_divergence_bw_hz,
-            prs_accumulation_length
+            prs_accumulation_length,
+            close_prs_loops,
+            pll_bw_hz_prs,
+            dll_bw_hz_prs
             ));
 }
 
@@ -142,7 +148,10 @@ galileo_e1_prs_codeless_tracking_cc::galileo_e1_prs_codeless_tracking_cc(
         bool use_bump_jumping,
         unsigned int bump_jumping_threshold,
         float initial_divergence_bw_hz,
-        float final_divergence_bw_hz, int prs_accumulation_length):
+        float final_divergence_bw_hz, int prs_accumulation_length,
+        bool close_prs_loops,
+        float pll_bw_hz_prs,
+        float dll_bw_hz_prs):
         gr::block("galileo_e1_prs_codeless_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
@@ -187,16 +196,24 @@ galileo_e1_prs_codeless_tracking_cc::galileo_e1_prs_codeless_tracking_cc(
     d_initial_dll_bw_hz = dll_initial_bw_hz;
     d_final_dll_bw_hz = dll_final_bw_hz;
 
+    d_dll_loop_order_prs = 1;
+    d_dll_bw_hz_prs = dll_bw_hz_prs;
+
+    d_pll_loop_order_prs = 1;
+    d_pll_bw_hz_prs = pll_bw_hz_prs;
+
 
     d_code_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, dll_initial_bw_hz, dll_loop_order, false);
     d_carrier_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, pll_initial_bw_hz, pll_loop_order, false);
     d_aid_code_with_carrier = aid_code_with_carrier;
 
-    // TODO: Set this with initializer
-    d_close_prs_loops = false;
+    // Should we close the PRS loops?
+    d_close_prs_loops = close_prs_loops;
 
-    d_code_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, dll_initial_bw_hz, dll_loop_order, false);
-    d_carrier_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, pll_initial_bw_hz, pll_loop_order, false);
+    d_code_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD * prs_accumulation_length,
+            d_dll_bw_hz_prs, d_dll_loop_order_prs, false);
+    d_carrier_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD * prs_accumulation_length,
+            d_pll_bw_hz_prs, d_pll_loop_order_prs, false);
     // Initialize tracking  ==========================================
 
 
@@ -295,6 +312,8 @@ galileo_e1_prs_codeless_tracking_cc::galileo_e1_prs_codeless_tracking_cc(
     d_integer_code_phase_chips_prs = 0;
     d_fractional_code_phase_chips_prs = 0.0;
 
+    d_integer_subcarrier_phase_cycles_prs = 0;
+    d_fractional_subcarrier_phase_cycles_prs = 0.0;
     // Residual carrier phase
     d_rem_carr_phase_rad = 0.0;
     d_rem_carr_phase_rad_prs = 0.0;
@@ -363,7 +382,7 @@ galileo_e1_prs_codeless_tracking_cc::galileo_e1_prs_codeless_tracking_cc(
     d_divergence_loop_filter = Tracking_loop_filter( Galileo_E1_CODE_PERIOD,
         d_initial_divergence_loop_filter_bandwidth, 1, false );
 
-    d_divergence_loop_filter_prs = Tracking_loop_filter( Galileo_E1_CODE_PERIOD,
+    d_divergence_loop_filter_prs = Tracking_loop_filter( Galileo_E1_CODE_PERIOD * d_prs_accumulation_length,
         d_initial_divergence_loop_filter_bandwidth, 1, false );
 
     d_subcarrier_locked = false;
@@ -377,6 +396,14 @@ galileo_e1_prs_codeless_tracking_cc::galileo_e1_prs_codeless_tracking_cc(
 
     d_mean_code_error = 0.0;
     d_mean_code_error_prs = 0.0;
+
+    d_carr_error_hz_prs = 0;
+    d_carr_error_filt_hz_prs = 0;
+    d_subcarrier_error_cycles_prs = 0;
+    d_subcarrier_error_filt_cycles_prs = 0;
+    d_code_error_chips_veml_prs = 0;
+    d_code_error_filt_chips_veml_prs = 0;
+
 
     // How many OS code periods do we accumulate over for the PRS:
     d_prs_accumulation_length = prs_accumulation_length;
@@ -497,7 +524,7 @@ void galileo_e1_prs_codeless_tracking_cc::update_local_code()
     resampled_codes[3] = d_late_code;
     resampled_codes[4] = d_very_late_code;
 
-    double code_phase_step = d_code_freq_chips_prs / static_cast< double >( d_fs_in );
+    double code_phase_step = d_code_freq_chips / static_cast< double >( d_fs_in );
 
     unsigned int code_len = 4092;
 
@@ -589,18 +616,18 @@ void galileo_e1_prs_codeless_tracking_cc::update_local_code_prs()
     // 1) Resample the subcarrier:
     std::vector< double > init_subcarrier_phase_cycles( 5 );
     // very early:
-    init_subcarrier_phase_cycles[0] = d_subcarrier_phase_cycles_prs
+    init_subcarrier_phase_cycles[0] = d_fractional_subcarrier_phase_cycles_prs
         + d_very_early_late_code_spc_chips_prs * d_chips_to_cycles_prs;
     // early:
-    init_subcarrier_phase_cycles[1] = d_subcarrier_phase_cycles_prs
+    init_subcarrier_phase_cycles[1] = d_fractional_subcarrier_phase_cycles_prs
         + d_early_late_code_spc_cycles;
     // prompt:
-    init_subcarrier_phase_cycles[2] = d_subcarrier_phase_cycles_prs;
+    init_subcarrier_phase_cycles[2] = d_fractional_subcarrier_phase_cycles_prs;
     // late:
-    init_subcarrier_phase_cycles[3] = d_subcarrier_phase_cycles_prs
+    init_subcarrier_phase_cycles[3] = d_fractional_subcarrier_phase_cycles_prs
         - d_early_late_code_spc_cycles;
     // very late:
-    init_subcarrier_phase_cycles[4] = d_subcarrier_phase_cycles_prs
+    init_subcarrier_phase_cycles[4] = d_fractional_subcarrier_phase_cycles_prs
         - d_very_early_late_code_spc_chips_prs * d_chips_to_cycles_prs;
 
     double subcarrier_phase_step = d_subcarrier_freq_cycles_prs
@@ -698,14 +725,8 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
     double subcarrier_error_cycles = 0.0;
     double subcarrier_error_filt_cycles = 0.0;
     double integer_subcarrier_periods = 0.0;
-    double carr_error_hz_prs = 0.0;
-    double carr_error_filt_hz_prs = 0.0;
-    double subcarrier_error_cycles_prs = 0.0;
-    double subcarrier_error_filt_cycles_prs = 0.0;
     double code_error_chips_veml = 0.0;
-    double code_error_chips_veml_prs = 0.0;
     double code_error_filt_chips_veml = 0.0;
-    double code_error_filt_chips_veml_prs = 0.0;
 
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0];
@@ -734,7 +755,7 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
                     d_code_phase_chips = 0.0;
                     d_rem_code_phase_samples = 0.0;
                     d_subcarrier_phase_cycles = 0;
-                    d_subcarrier_phase_cycles_prs = 0;
+                    d_fractional_subcarrier_phase_cycles_prs = 0;
 
                     //std::cout<<" samples_offset="<<samples_offset<<"\r\n";
                     // Fill the acquisition data
@@ -813,8 +834,24 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
             d_rem_code_phase_samples = rem_code_phase_chips * d_fs_in/Galileo_E1_CODE_CHIP_RATE_HZ;
 
             //remnant carrier phase to prevent overflow in the code NCO
-            d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * T;
-            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
+            d_rem_carr_phase_rad = d_rem_carr_phase_rad + 2.0 * M_PI * (d_if_freq + d_carrier_doppler_hz )* T;
+            d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, 2.0 * M_PI);
+
+            if( d_rem_carr_phase_rad >= M_PI )
+            {
+                d_rem_carr_phase_rad -= 2.0 * M_PI;
+            }
+
+            if( d_rem_carr_phase_rad < -M_PI )
+            {
+                d_rem_carr_phase_rad += 2.0 * M_PI;
+            }
+
+            // Compare carrier phase with the rotated phase from VOLK:
+            //double rotator_carr_phase_rad = std::atan2( -phase_as_complex.imag(), phase_as_complex.real() );
+            //LOG(INFO) << "Propagated Phase: " << d_rem_carr_phase_rad
+                      //<< " . Rotated phase : " << rotator_carr_phase_rad
+                      //<< " . Diff: " << d_rem_carr_phase_rad - rotator_carr_phase_rad;
 
             // PRS tracking
             if( d_prs_tracking_enabled ){
@@ -853,6 +890,16 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
                         d_prs_code_phase_store.size() );
 
                 // Accumulate:
+                if( d_prs_accumulation_index == 0 )
+                {
+
+                    d_VE_acumm_prs = 0.0;
+                    d_E_acumm_prs  = 0.0;
+                    d_P_acumm_prs  = 0.0;
+                    d_L_acumm_prs  = 0.0;
+                    d_VL_acumm_prs = 0.0;
+                }
+
                 d_VE_acumm_prs += *d_Very_Early_prs;
                 d_E_acumm_prs += *d_Early_prs;
                 d_P_acumm_prs += *d_Prompt_prs;
@@ -877,19 +924,22 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
 
                 if( d_use_sa )
                 {
-                    d_subcarrier_phase_cycles_prs += T*d_subcarrier_freq_cycles_prs;
+                    d_fractional_subcarrier_phase_cycles_prs += T*d_subcarrier_freq_cycles_prs;
+
+                    d_integer_subcarrier_phase_cycles_prs += static_cast< int64_t >(
+                            std::floor( d_fractional_subcarrier_phase_cycles_prs ) );
                 }
                 else
                 {
-                    d_subcarrier_phase_cycles_prs = std::fmod( d_fractional_code_phase_chips_prs,
+                    d_fractional_subcarrier_phase_cycles_prs = std::fmod( d_fractional_code_phase_chips_prs,
                             1.0) *d_chips_to_cycles_prs;
                 }
 
-                d_subcarrier_phase_cycles_prs = std::fmod( d_subcarrier_phase_cycles_prs, 1.0 );
+                d_fractional_subcarrier_phase_cycles_prs = std::fmod( d_fractional_subcarrier_phase_cycles_prs, 1.0 );
 
                 //DLOG(INFO) << "PRS Code subcarrier phase difference after propagation: "
                            //<< d_fractional_code_phase_chips_prs*d_chips_to_cycles_prs
-                           //- d_subcarrier_phase_cycles_prs;
+                           //- d_fractional_subcarrier_phase_cycles_prs;
 
                 d_carrier_phase_rad_prs += T*2.0*M_PI*d_carrier_doppler_hz_prs;
 
@@ -915,7 +965,7 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
 
                 d_rem_code_phase_samples_prs = rem_code_phase_chips_prs * d_fs_in/Galileo_E1_A_CODE_CHIP_RATE_HZ;
 
-                d_rem_carr_phase_rad_prs = d_rem_carr_phase_rad_prs + 2.0*M_PI * d_carrier_doppler_hz_prs * T;
+                d_rem_carr_phase_rad_prs = d_rem_carr_phase_rad_prs + 2.0*M_PI *( d_if_freq + d_carrier_doppler_hz_prs ) * T;
                 d_rem_carr_phase_rad_prs = fmod(d_rem_carr_phase_rad_prs, 2.0*M_PI);
 
             }
@@ -1073,80 +1123,46 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
 
             }
 
-            // By default we simply update the PRS frequencies from the OS:
-            d_carrier_doppler_hz_prs = d_carrier_doppler_hz;
-            d_code_freq_chips_prs = d_code_freq_chips * Galileo_E1_A_CODE_CHIP_RATE_HZ/
-                Galileo_E1_CODE_CHIP_RATE_HZ;
-            d_subcarrier_freq_cycles_prs = d_subcarrier_freq_cycles * Galileo_E1_A_SUB_CARRIER_RATE_HZ/
-                Galileo_E1_SUB_CARRIER_A_RATE_HZ;
 
             // ################## PRS ##########################################################
             if( d_prs_tracking_enabled && d_prs_accumulation_index == d_prs_accumulation_length )
             {
                 // ################## PLL ##########################################################
                 // PLL discriminator
-                carr_error_hz_prs = pll_cloop_two_quadrant_atan(d_P_acumm_prs) / static_cast<float>(GPS_TWO_PI);
+                d_carr_error_hz_prs = pll_cloop_two_quadrant_atan(d_P_acumm_prs) / static_cast<float>(GPS_TWO_PI);
 
                 // Carrier discriminator filter
-                carr_error_filt_hz_prs = d_carrier_loop_filter_prs.apply(carr_error_hz_prs);
+                d_carr_error_filt_hz_prs = d_carrier_loop_filter_prs.apply(d_carr_error_hz_prs);
 
-                // New carrier Doppler frequency estimation
-                if( d_close_prs_loops )
-                {
-                    d_carrier_doppler_hz_prs = carr_error_filt_hz_prs;
-                }
 
                 // ################## DLL ##########################################################
                 // DLL discriminator
-                subcarrier_error_cycles_prs = dll_nc_e_minus_l_normalized(
+                d_subcarrier_error_cycles_prs = dll_nc_e_minus_l_normalized(
                         d_E_acumm_prs,
                         d_L_acumm_prs); //[chips/Ti]
                 //Normalise the code phase error:
                 corr_slope = 25.0/6.0;
-                subcarrier_error_cycles_prs *= ( 1.0- corr_slope*d_early_late_code_spc_cycles)
+                d_subcarrier_error_cycles_prs *= ( 1.0- corr_slope*d_early_late_code_spc_cycles)
                     / corr_slope;
 
                 // Code discriminator filter
-                subcarrier_error_filt_cycles_prs = d_code_loop_filter_prs.apply(subcarrier_error_cycles_prs); //[chips/second]
-
-                if( d_close_prs_loops )
-                {
-                    if( d_aid_code_with_carrier )
-                    {
-                        double subcarrier_doppler_cycles_prs = ((d_carrier_doppler_hz_prs *
-                                    Galileo_E1_A_SUB_CARRIER_RATE_HZ) / Galileo_E1_FREQ_HZ);
-
-                        d_subcarrier_freq_cycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ
-                            + subcarrier_doppler_cycles_prs;
-                    }
-                    else
-                    {
-                        d_subcarrier_freq_cycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ;
-                    }
-
-                    d_subcarrier_freq_cycles_prs += subcarrier_error_filt_cycles_prs;
-                }
-
+                d_subcarrier_error_filt_cycles_prs = d_code_loop_filter_prs.apply(d_subcarrier_error_cycles_prs); //[chips/second]
 
                 // ################## VE - VL Processing ############################################
 
-                code_error_chips_veml_prs = dll_nc_e_minus_l_normalized(
+                d_code_error_chips_veml_prs = dll_nc_e_minus_l_normalized(
                         d_VE_acumm_prs, d_VL_acumm_prs );
 
                 corr_slope = 1.0;
-                code_error_chips_veml_prs *= ( 1 - corr_slope*d_very_early_late_code_spc_chips_prs) / corr_slope;
+                d_code_error_chips_veml_prs *= ( 1 - corr_slope*d_very_early_late_code_spc_chips_prs) / corr_slope;
 
                 if( d_close_prs_loops )
                 {
-                    d_code_freq_chips_prs = d_subcarrier_freq_cycles_prs /d_chips_to_cycles_prs;
 
                     if( d_use_sa && d_subcarrier_locked_prs )
                     {
-                        code_error_filt_chips_veml_prs = d_divergence_loop_filter_prs.apply(
-                                code_error_chips_veml_prs );
-
-                        d_code_freq_chips_prs += code_error_filt_chips_veml_prs;
-
+                        d_code_error_filt_chips_veml_prs = d_divergence_loop_filter_prs.apply(
+                                d_code_error_chips_veml_prs );
                     }
 
                     if( d_use_bj && d_carrier_locked ){
@@ -1230,11 +1246,24 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
                 }
 
                 d_prs_accumulation_index = 0;
-                d_VE_acumm_prs = 0.0;
-                d_E_acumm_prs  = 0.0;
-                d_P_acumm_prs  = 0.0;
-                d_L_acumm_prs  = 0.0;
-                d_VL_acumm_prs = 0.0;
+            }
+
+            // By default we simply update the PRS frequencies from the OS:
+            d_carrier_doppler_hz_prs = d_carrier_doppler_hz;
+            d_code_freq_chips_prs = d_code_freq_chips * Galileo_E1_A_CODE_CHIP_RATE_HZ/
+                Galileo_E1_CODE_CHIP_RATE_HZ;
+            d_subcarrier_freq_cycles_prs = d_subcarrier_freq_cycles * Galileo_E1_A_SUB_CARRIER_RATE_HZ/
+                Galileo_E1_SUB_CARRIER_A_RATE_HZ;
+
+            if( d_close_prs_loops )
+            {
+                d_carrier_doppler_hz_prs += d_carr_error_filt_hz_prs;
+                d_subcarrier_freq_cycles_prs += d_subcarrier_error_filt_cycles_prs;
+                if( d_use_sa && d_subcarrier_locked_prs )
+                {
+                    d_code_freq_chips_prs = d_subcarrier_freq_cycles_prs /d_chips_to_cycles_prs;
+                    d_code_freq_chips_prs += d_code_error_filt_chips_veml_prs;
+                }
             }
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNEMENT #######################
@@ -1248,21 +1277,10 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
             double T_sc_prn_samples;
             double K_sc_samples;
             // Compute the next buffer lenght based in the new period of the PRN sequence and the code phase error estimation
-            if( d_prs_tracking_enabled )
-            {
-                T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips_prs);
-                T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS *
-                    Galileo_E1_A_CODE_CHIP_RATE_HZ/Galileo_E1_CODE_CHIP_RATE_HZ;
-                T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
-                K_blk_samples = T_prn_samples + d_rem_code_phase_samples_prs; // + code_error_filt_secs * static_cast<double>(d_fs_in);
-            }
-            else
-            {
-                T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
-                T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
-                T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
-                K_blk_samples = T_prn_samples + d_rem_code_phase_samples; // + code_error_filt_secs * static_cast<double>(d_fs_in);
-            }
+            T_chip_seconds = 1 / static_cast<double>(d_code_freq_chips);
+            T_prn_seconds = T_chip_seconds * Galileo_E1_B_CODE_LENGTH_CHIPS;
+            T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
+            K_blk_samples = T_prn_samples + d_rem_code_phase_samples; // + code_error_filt_secs * static_cast<double>(d_fs_in);
 
 
             next_prn_length_samples = round(K_blk_samples); //round to a discrete samples
@@ -1272,31 +1290,20 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
             if (d_cn0_estimation_counter < CN0_ESTIMATION_SAMPLES)
                 {
                     // fill buffer with prompt correlator output values
-                    d_Prompt_buffer[d_cn0_estimation_counter] = ( d_prs_tracking_enabled ?
-                            *d_Prompt_prs :
-                            *d_Prompt);
+                    d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
                     d_cn0_estimation_counter++;
 
                     d_mean_subcarrier_error += std::fabs( subcarrier_error_cycles );
                     d_mean_code_error += std::fabs( code_error_chips_veml );
 
-                    if( d_prs_tracking_enabled )
-                    {
-                        d_mean_subcarrier_error_prs += std::fabs(
-                                subcarrier_error_cycles_prs );
-
-                        d_mean_code_error_prs += std::fabs( code_error_chips_veml_prs );
-                    }
                 }
             else
                 {
                     d_cn0_estimation_counter = 0;
 
                     d_mean_subcarrier_error /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
-                    d_mean_subcarrier_error_prs /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
 
                     d_mean_code_error /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
-                    d_mean_code_error_prs /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
                     // Code lock indicator
                     d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, d_current_prn_length_samples);
 
@@ -1344,10 +1351,12 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
 
                             d_carrier_lock_fail_counter = 0;
 
-                            if( !d_use_bj )
-                            {
-                                d_very_early_late_code_spc_chips = d_final_very_early_late_code_space_chips;
-                            }
+                            /*
+                             *if( !d_use_bj )
+                             *{
+                             *    d_very_early_late_code_spc_chips = d_final_very_early_late_code_space_chips;
+                             *}
+                             */
 
                             // Try to enable prs tracking:
                             start_tracking_prs();
@@ -1370,7 +1379,7 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
                                 d_code_loop_filter.initialize( subcarrier_error_filt_cycles );
                                 d_carrier_loop_filter.initialize( carr_error_filt_hz );
                                 d_early_late_code_spc_cycles = d_initial_early_late_code_space_cycles;
-                                d_very_early_late_code_spc_chips = d_initial_very_early_late_code_space_chips;
+                                //d_very_early_late_code_spc_chips = d_initial_very_early_late_code_space_chips;
                             }
                         else
                         {
@@ -1474,133 +1483,160 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
 
                             }
 
-                            if( d_prs_tracking_enabled )
-                            {
-
-                                if( d_subcarrier_locked_prs )
-                                {
-                                    if( d_mean_subcarrier_error_prs > 0.4 )
-                                    {
-                                        d_subcarrier_locked_prs = false;
-
-                                        if( d_use_sa )
-                                        {
-                                            d_divergence_loop_filter_prs.set_noise_bandwidth(
-                                                    d_initial_divergence_loop_filter_bandwidth );
-                                        }
-
-                                        std::stringstream ss("");
-
-                                        ss << "Loss of PRS subcarrier lock in channel "
-                                            << d_channel << "!"
-                                            << "[PRN: " << d_acquisition_gnss_synchro->PRN
-                                            << ". @ " << static_cast< double >( d_sample_counter )/
-                                            static_cast<double>( d_fs_in )
-                                            << "]";
-
-                                        LOG(INFO) << ss.str();
-
-                                        std::cout << ss.str() << std::endl;
-                                    }
-                                    else
-                                    {
-                                        if( d_code_locked_prs )
-                                        {
-                                            if( d_mean_code_error_prs*d_chips_to_cycles_prs > 0.5 )
-                                            {
-                                                d_code_locked_prs = false;
-
-                                                if( d_use_sa )
-                                                {
-                                                    d_divergence_loop_filter_prs.set_noise_bandwidth(
-                                                            d_initial_divergence_loop_filter_bandwidth );
-                                                }
-
-                                                std::stringstream ss("");
-
-                                                ss << "PRS Loss of code lock in channel "
-                                                    << d_channel << "!"
-                                                    << "[PRN: " << d_acquisition_gnss_synchro->PRN
-                                                    << ". @ " << static_cast< double >( d_sample_counter )/
-                                                    static_cast<double>( d_fs_in )
-                                                    << "]";
-
-                                                LOG(INFO) << ss.str();
-
-                                                std::cout << ss.str() << std::endl;;
-                                            }
-                                        }
-                                        else // if d_code_locked
-                                        {
-                                            if( d_mean_code_error_prs*d_chips_to_cycles_prs < 0.1 )
-                                            {
-                                                d_code_locked_prs = true;
-
-                                                if( d_use_sa )
-                                                {
-                                                    d_divergence_loop_filter_prs.set_noise_bandwidth(
-                                                            d_final_divergence_loop_filter_bandwidth );
-                                                }
-
-                                                std::stringstream ss("");
-
-                                                ss << "PRS Code lock achieved in channel "
-                                                    << d_channel << "!"
-                                                    << "[PRN: " << d_acquisition_gnss_synchro->PRN
-                                                    << ". @ " << static_cast< double >( d_sample_counter )/
-                                                    static_cast<double>( d_fs_in )
-                                                    << "]";
-
-                                                LOG(INFO) << ss.str();
-
-                                                std::cout << ss.str() << std::endl;;
-                                            }
-                                        }
-
-                                    }
-
-
-                                }
-                                else
-                                {
-                                    if( d_mean_subcarrier_error_prs < 0.01 )
-                                    {
-                                        d_subcarrier_locked_prs = true;
-
-                                        std::stringstream ss("");
-
-                                        ss << "PRS Subcarrier lock achieved in channel "
-                                            << d_channel << "!"
-                                            << "[PRN: " << d_acquisition_gnss_synchro->PRN
-                                            << ". @ " << static_cast< double >( d_sample_counter )/
-                                            static_cast<double>( d_fs_in )
-                                            << "]";
-
-                                        LOG(INFO) << ss.str();
-
-                                        std::cout << ss.str() << std::endl;
-
-                                        d_code_locked_prs = false;
-                                        if( d_use_sa )
-                                        {
-                                            d_divergence_loop_filter_prs.set_noise_bandwidth(
-                                                    d_initial_divergence_loop_filter_bandwidth );
-                                            d_divergence_loop_filter_prs.initialize( 0.0 );
-                                        }
-                                    }
-
-                                }
-                            }
                         }
 
                     }
 
                     d_mean_subcarrier_error = 0.0;
-                    d_mean_subcarrier_error_prs = 0.0;
-
                     d_mean_code_error = 0.0;
-                    d_mean_code_error_prs = 0.0;
                 }
+
+            if( d_prs_tracking_enabled )
+            {
+            
+                if (d_cn0_estimation_counter_prs < CN0_ESTIMATION_SAMPLES)
+                    {
+                        d_cn0_estimation_counter_prs++;
+
+                        d_mean_subcarrier_error_prs += std::fabs(
+                                d_subcarrier_error_cycles_prs );
+
+                        d_mean_code_error_prs += std::fabs( d_code_error_chips_veml_prs );
+                    }
+                else
+                    {
+                        d_cn0_estimation_counter_prs = 0;
+
+                        d_mean_subcarrier_error_prs /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
+
+                        d_mean_code_error_prs /= static_cast<double>( CN0_ESTIMATION_SAMPLES );
+
+
+                        if( d_prs_accumulation_index == 0 )
+                        {
+
+                            if( d_subcarrier_locked_prs )
+                            {
+                                if( d_mean_subcarrier_error_prs > 0.4 )
+                                {
+                                    d_subcarrier_locked_prs = false;
+
+                                    if( d_use_sa )
+                                    {
+                                        d_divergence_loop_filter_prs.set_noise_bandwidth(
+                                                d_initial_divergence_loop_filter_bandwidth );
+                                    }
+
+                                    std::stringstream ss("");
+
+                                    ss << "Loss of PRS subcarrier lock in channel "
+                                        << d_channel << "!"
+                                        << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                        << ". @ " << static_cast< double >( d_sample_counter )/
+                                        static_cast<double>( d_fs_in )
+                                        << "]";
+
+                                    LOG(INFO) << ss.str();
+
+                                    std::cout << ss.str() << std::endl;
+                                }
+                                else
+                                {
+                                    if( d_code_locked_prs )
+                                    {
+                                        if( d_mean_code_error_prs*d_chips_to_cycles_prs > 0.5 )
+                                        {
+                                            d_code_locked_prs = false;
+
+                                            if( d_use_sa )
+                                            {
+                                                d_divergence_loop_filter_prs.set_noise_bandwidth(
+                                                        d_initial_divergence_loop_filter_bandwidth );
+                                            }
+
+                                            std::stringstream ss("");
+
+                                            ss << "PRS Loss of code lock in channel "
+                                                << d_channel << "!"
+                                                << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                                << ". @ " << static_cast< double >( d_sample_counter )/
+                                                static_cast<double>( d_fs_in )
+                                                << "]";
+
+                                            LOG(INFO) << ss.str();
+
+                                            std::cout << ss.str() << std::endl;;
+                                        }
+                                    }
+                                    else // if d_code_locked
+                                    {
+                                        if( d_mean_code_error_prs*d_chips_to_cycles_prs < 0.1 )
+                                        {
+                                            d_code_locked_prs = true;
+
+                                            if( d_use_sa )
+                                            {
+                                                d_very_early_late_code_spc_chips_prs = d_final_very_early_late_code_space_chips;
+                                                d_divergence_loop_filter_prs.set_noise_bandwidth(
+                                                        d_final_divergence_loop_filter_bandwidth );
+                                            }
+
+                                            std::stringstream ss("");
+
+                                            ss << "PRS Code lock achieved in channel "
+                                                << d_channel << "!"
+                                                << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                                << ". @ " << static_cast< double >( d_sample_counter )/
+                                                static_cast<double>( d_fs_in )
+                                                << "]";
+
+                                            LOG(INFO) << ss.str();
+
+                                            std::cout << ss.str() << std::endl;;
+                                        }
+                                    }
+
+                                }
+
+
+                            } // if d_subcarrier_locked_prs
+                            else
+                            {
+                                if( d_mean_subcarrier_error_prs < 0.01 )
+                                {
+                                    d_subcarrier_locked_prs = true;
+
+                                    std::stringstream ss("");
+
+                                    ss << "PRS Subcarrier lock achieved in channel "
+                                        << d_channel << "!"
+                                        << "[PRN: " << d_acquisition_gnss_synchro->PRN
+                                        << ". @ " << static_cast< double >( d_sample_counter )/
+                                        static_cast<double>( d_fs_in )
+                                        << "]";
+
+                                    LOG(INFO) << ss.str();
+
+                                    std::cout << ss.str() << std::endl;
+
+                                    d_code_locked_prs = false;
+                                    if( d_use_sa )
+                                    {
+                                        d_divergence_loop_filter_prs.set_noise_bandwidth(
+                                                d_initial_divergence_loop_filter_bandwidth );
+                                        d_divergence_loop_filter_prs.initialize( 0.0 );
+                                    }
+                                }
+
+                            }
+                        } // if d_prs_accumulation_index == 0
+
+                        d_mean_subcarrier_error_prs = 0.0;
+                        d_mean_code_error_prs = 0.0;
+                    }
+
+
+            } // d_prs_tracking_enabled
 
             // ########### Output the tracking results to Telemetry block ##########
 
@@ -1736,6 +1772,7 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
                     //tmp_float = d_rem_code_phase_samples/static_cast< float >( d_fs_in )*Galileo_E1_CODE_CHIP_RATE_HZ;
                     tmp_float = d_code_phase_chips;
                     d_dump_file.write(reinterpret_cast<char*>(&d_code_phase_chips), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_subcarrier_phase_cycles), sizeof(double));
                     //tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&code_error_chips_veml), sizeof(double));
                     d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips_veml), sizeof(double));
@@ -1762,18 +1799,21 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
                     d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz_prs), sizeof(double));
                     d_dump_file.write(reinterpret_cast<char*>(&d_code_freq_chips_prs), sizeof(double));
                     //PLL commands
-                    d_dump_file.write(reinterpret_cast<char*>(&carr_error_hz_prs), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char*>(&carr_error_filt_hz_prs), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_carr_error_hz_prs), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_carr_error_filt_hz_prs), sizeof(double));
                     //DLL commands
-                    d_dump_file.write(reinterpret_cast<char*>(&subcarrier_error_cycles_prs), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char*>(&subcarrier_error_filt_cycles_prs), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_subcarrier_error_cycles_prs), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_subcarrier_error_filt_cycles_prs), sizeof(double));
                     // SLL commands
 
                     tmp_double = static_cast< double >( d_integer_code_phase_chips_prs ) +
                         d_fractional_code_phase_chips_prs;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char*>(&code_error_chips_veml_prs), sizeof(double));
-                    d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips_veml_prs), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_code_error_chips_veml_prs), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_code_error_filt_chips_veml_prs), sizeof(double));
+                    tmp_double = static_cast< double >( d_integer_subcarrier_phase_cycles_prs ) +
+                        d_fractional_subcarrier_phase_cycles_prs;
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
             catch (std::ifstream::failure e)
             {
@@ -1838,11 +1878,16 @@ void galileo_e1_prs_codeless_tracking_cc::start_tracking_prs()
     double code_phase_chips_prs = d_code_phase_chips * Galileo_E1_A_CODE_CHIP_RATE_HZ /
         Galileo_E1_CODE_CHIP_RATE_HZ;
 
-    d_integer_code_phase_chips_prs = static_cast< int64_t >( std::floor( code_phase_chips_prs ) );
+    d_integer_code_phase_chips_prs = 0;
 
     d_fractional_code_phase_chips_prs = std::fmod( code_phase_chips_prs, 1.0 );
 
-    d_subcarrier_phase_cycles_prs = d_fractional_code_phase_chips_prs * d_chips_to_cycles_prs;
+    d_fractional_subcarrier_phase_cycles_prs = d_fractional_code_phase_chips_prs * d_chips_to_cycles_prs;
+
+    d_integer_subcarrier_phase_cycles_prs = static_cast< int64_t >(
+            std::floor( d_fractional_subcarrier_phase_cycles_prs ) );
+
+    d_fractional_subcarrier_phase_cycles_prs = std::fmod( d_fractional_subcarrier_phase_cycles_prs, 1.0 );
 
     d_rem_carr_phase_rad_prs = d_rem_carr_phase_rad - M_PI/2.0;
 
@@ -1854,21 +1899,17 @@ void galileo_e1_prs_codeless_tracking_cc::start_tracking_prs()
 
     // Initialise the filters:
     // DLL/PLL filter Initialization
-    d_code_loop_filter_prs.set_noise_bandwidth( d_final_dll_bw_hz );
-    d_carrier_loop_filter_prs.set_noise_bandwidth( d_final_pll_bw_hz );
+    d_code_loop_filter_prs.set_noise_bandwidth( d_dll_bw_hz_prs );
+    d_carrier_loop_filter_prs.set_noise_bandwidth( d_pll_bw_hz_prs );
     d_divergence_loop_filter_prs.set_noise_bandwidth( d_initial_divergence_loop_filter_bandwidth );
     //d_code_loop_filter_prs.set_noise_bandwidth( d_initial_dll_bw_hz );
     //d_carrier_loop_filter_prs.set_noise_bandwidth( d_initial_pll_bw_hz );
 
     //d_early_late_code_spc_chips = d_initial_early_late_code_space_chips;
 
-    d_carrier_loop_filter_prs.initialize(d_carrier_doppler_hz_prs); // initialize the carrier filter
+    d_carrier_loop_filter_prs.initialize(0.0); // initialize the carrier filter
 
-    d_code_loop_filter_prs.initialize(
-            d_aid_code_with_carrier  ?
-            0.0 :
-            d_carrier_doppler_hz_prs * Galileo_E1_A_SUB_CARRIER_RATE_HZ / Galileo_E1_FREQ_HZ
-            );    // initialize the code filter
+    d_code_loop_filter_prs.initialize( 0.0 );    // initialize the code filter
 
 
     std::string sys_ = &d_acquisition_gnss_synchro->System;
@@ -1903,6 +1944,14 @@ void galileo_e1_prs_codeless_tracking_cc::start_tracking_prs()
     d_L_acumm_prs = 0;
     d_VL_acumm_prs = 0;
 
+    d_carr_error_hz_prs = 0;
+    d_carr_error_filt_hz_prs = 0;
+    d_subcarrier_error_cycles_prs = 0;
+    d_subcarrier_error_filt_cycles_prs = 0;
+    d_code_error_chips_veml_prs = 0;
+    d_code_error_filt_chips_veml_prs = 0;
+
+    d_cn0_estimation_counter_prs = 0;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz_prs
               << " PULL-IN Code Phase [samples]=" << code_phase_chips_prs;

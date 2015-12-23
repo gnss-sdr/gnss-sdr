@@ -144,7 +144,7 @@ galileo_e1_de_tracking_cc::galileo_e1_de_tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the code replica sampled 1x/chip
-    d_e1b_code = static_cast<gr_complex*>(volk_malloc((Galileo_E1_B_CODE_LENGTH_CHIPS + 2) * sizeof(gr_complex), volk_get_alignment()));
+    d_e1b_code = static_cast<gr_complex*>(volk_malloc((Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
 
     d_early_code= static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
     d_prompt_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
@@ -226,15 +226,11 @@ void galileo_e1_de_tracking_cc::start_tracking()
     d_code_loop_filter.initialize(init_freq);    // initialize the code filter
 
     // generate local reference ALWAYS starting at chip 1 (1 samples per chip)
-    galileo_e1_prn_gen_complex_sampled(&d_e1b_code[1],
+    galileo_e1_prn_gen_complex_sampled(d_e1b_code,
                                         d_acquisition_gnss_synchro->Signal,
                                         d_acquisition_gnss_synchro->PRN,
                                         Galileo_E1_CODE_CHIP_RATE_HZ,
                                         0);
-    // Fill head and tail
-    d_e1b_code[0] = d_e1b_code[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS+1)];
-    d_e1b_code[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS + 2)] = d_e1b_code[1];
-
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0.0;
     d_rem_subcarrier_phase_samples = 0.0;
@@ -263,67 +259,54 @@ void galileo_e1_de_tracking_cc::start_tracking()
 
 void galileo_e1_de_tracking_cc::update_local_code()
 {
-    double tcode_chips;
-    double tsubcarrier_phase_halfcyles;
-    float rem_code_phase_chips;
-    int associated_chip_index;
-    int associated_subcarrier_index;
-    int code_length_chips = static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS);
-    double code_phase_step_chips;
-    double subcarrier_phase_step_halfcycles;
-    double early_late_subcarrier_spc_halfcycles;
-    double subcarrier_freq_halfcycles;
+    std::vector< double > init_code_phase( 3 );
 
-    double chips_to_halfcycles = Galileo_E1_SUB_CARRIER_A_RATE_HZ /
-        Galileo_E1_CODE_CHIP_RATE_HZ * 2.0;
+    init_code_phase[0] = d_code_phase_chips +
+        d_early_late_code_spc_chips;
+    init_code_phase[1] = d_code_phase_chips;
+    init_code_phase[2] = d_code_phase_chips - d_early_late_code_spc_chips;
 
+    // Store the output in a vector:
+    std::vector< gr_complex * > resampled_codes( 3 );
+    resampled_codes[0] = d_early_code;
+    resampled_codes[1] = d_prompt_code;
+    resampled_codes[2] = d_late_code;
 
-    subcarrier_freq_halfcycles = d_subcarrier_freq_chips * chips_to_halfcycles;
+    double code_phase_step = d_code_freq_chips / static_cast< double >( d_fs_in );
 
-    code_phase_step_chips = (static_cast<double>(d_code_freq_chips)) / (static_cast<double>(d_fs_in));
-    subcarrier_phase_step_halfcycles = subcarrier_freq_halfcycles/ (static_cast<double>(d_fs_in));
+    // Now resample the code:
+    d_code_resampler.resample_code( d_e1b_code, Galileo_E1_B_CODE_LENGTH_CHIPS,
+            init_code_phase, code_phase_step,
+            d_current_prn_length_samples,
+            resampled_codes );
 
-    rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
-    tcode_chips = - static_cast<double>(rem_code_phase_chips) + 1.0;
+    //Resample the subcarrier:
+    std::vector< double > init_subcarrier_phase_cycles( 3 );
+    // early:
+    init_subcarrier_phase_cycles[0] = d_subcarrier_phase_halfcycles/2.0
+        + d_early_late_subcarrier_spc_chips;
+    // prompt:
+    init_subcarrier_phase_cycles[1] = d_subcarrier_phase_halfcycles/2.0;
+    // late:
+    init_subcarrier_phase_cycles[2] = d_subcarrier_phase_halfcycles/2.0
+        - d_early_late_subcarrier_spc_chips;
 
+    double subcarrier_phase_step = d_subcarrier_freq_chips
+        / static_cast< double >( d_fs_in );
 
-    tsubcarrier_phase_halfcyles = static_cast<double>(d_subcarrier_phase_halfcycles);
+    // Store the output in a vector:
+    std::vector< gr_complex * > resampled_subcarriers( 3 );
+    resampled_subcarriers[0] = d_early_subcarrier;
+    resampled_subcarriers[1] = d_prompt_subcarrier;
+    resampled_subcarriers[2] = d_late_subcarrier;
 
-    early_late_subcarrier_spc_halfcycles = d_early_late_subcarrier_spc_chips * chips_to_halfcycles;
+    d_subcarrier_resampler.resample_subcarrier( init_subcarrier_phase_cycles,
+            subcarrier_phase_step,
+            d_current_prn_length_samples,
+            resampled_subcarriers,
+            false // <-- Sine phasing
+            );
 
-    int64_t early_code_phase_fxp = double_to_fxpt64( tcode_chips + d_early_late_code_spc_chips );
-    int64_t prompt_code_phase_fxp = double_to_fxpt64( tcode_chips );
-    int64_t late_code_phase_fxp = double_to_fxpt64( tcode_chips - d_early_late_code_spc_chips);
-
-    int64_t early_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles + early_late_subcarrier_spc_halfcycles );
-    int64_t prompt_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles );
-    int64_t late_subcarrier_phase_fxp = double_to_fxpt64(
-            tsubcarrier_phase_halfcyles - early_late_subcarrier_spc_halfcycles );
-
-    int64_t code_phase_step_fxp = double_to_fxpt64( code_phase_step_chips );
-    int64_t subcarrier_phase_step_fxp = double_to_fxpt64( subcarrier_phase_step_halfcycles );
-
-    for (int i = 0; i < d_current_prn_length_samples; i++)
-    {
-        d_early_code[i] = d_e1b_code[ (early_code_phase_fxp >> 32 )];
-        d_prompt_code[i] = d_e1b_code[ (prompt_code_phase_fxp >> 32 )];
-        d_late_code[i] = d_e1b_code[ (late_code_phase_fxp >> 32 )];
-
-        d_early_subcarrier[i] = (1.0 - 2.0*( (early_subcarrier_phase_fxp>>32)&0x01 ) );
-        d_prompt_subcarrier[i] = (1.0 - 2.0*( (prompt_subcarrier_phase_fxp>>32)&0x01 ) );
-        d_late_subcarrier[i] = (1.0 - 2.0*( (late_subcarrier_phase_fxp>>32)&0x01 ) );
-
-        early_code_phase_fxp += code_phase_step_fxp;
-        prompt_code_phase_fxp += code_phase_step_fxp;
-        late_code_phase_fxp += code_phase_step_fxp;
-
-        early_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
-        prompt_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
-        late_subcarrier_phase_fxp += subcarrier_phase_step_fxp;
-
-    }
 }
 
 
@@ -617,7 +600,7 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
                     d_cn0_estimation_counter = 0;
 
                     // Code lock indicator
-                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, Galileo_E1_B_CODE_LENGTH_CHIPS);
+                    d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, d_current_prn_length_samples);
 
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
@@ -757,7 +740,8 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
                     d_dump_file.write(reinterpret_cast<char*>(&d_acc_carrier_phase_rad), sizeof(float));
                     // carrier and code frequency
                     d_dump_file.write(reinterpret_cast<char*>(&d_carrier_doppler_hz), sizeof(float));
-                    d_dump_file.write(reinterpret_cast<char*>(&d_code_freq_chips), sizeof(float));
+                    tmp_float = static_cast<float>( d_code_freq_chips );
+                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
                     //PLL commands
                     d_dump_file.write(reinterpret_cast<char*>(&carr_error_hz), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&carr_error_filt_hz), sizeof(float));

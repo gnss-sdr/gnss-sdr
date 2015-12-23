@@ -43,8 +43,10 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
+#include "code_resampler.h"
 #include "correlator.h"
 #include "gnss_message.h"
+#include "subcarrier_resampler.h"
 
 class galileo_e1_de_tracking_cc;
 
@@ -155,6 +157,9 @@ private:
     gr_complex *d_Prompt_Subcarrier_Late_Code;
     gr_complex *d_Prompt_Code_Early_Subcarrier;
     gr_complex *d_Prompt_Code_Late_Subcarrier;
+
+    CodeResamplerFxpt64< gr_complex > d_code_resampler;
+    SubcarrierResamplerFxpt64< gr_complex > d_subcarrier_resampler;
 
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;

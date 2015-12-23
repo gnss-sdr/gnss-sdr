@@ -110,36 +110,6 @@ void Rtcm::stop_server()
 }
 
 
-void Rtcm::run_client()
-{
-    std::cout << "Starting a TCP Client on port " << FLAGS_Remote_RTCM_Port << std::endl;
-    std::string remote_host = FLAGS_Remote_RTCM_Server;
-    std::string remote_port = std::to_string(FLAGS_Remote_RTCM_Port);
-    boost::asio::ip::tcp::resolver resolver(io_service);
-    auto endpoint_iterator = resolver.resolve({ remote_host.c_str(), remote_port.c_str() });
-
-    clients.emplace_back(io_service, endpoint_iterator);
-    try
-    {
-            std::thread t([&](){ io_service.run(); });
-            t.detach();
-    }
-    catch (std::exception& e)
-    {
-            std::cerr << "Exception: " << e.what() << "\n";
-    }
-}
-
-
-void Rtcm::stop_client()
-{
-    std::cout << "Stopping TCP Client on port " << FLAGS_Remote_RTCM_Port << std::endl;
-    clients.front().close();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    Rtcm::stop_service();
-}
-
-
 void Rtcm::send_message(const std::string & msg)
 {
     rtcm_message_queue->push(msg);

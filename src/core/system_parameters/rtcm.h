@@ -57,7 +57,7 @@
  * defined in the RTCM 3.2 Standard, plus some utilities to handle messages.
  *
  * Generation of the following Message Types:
- *   1001, 1002, 1003, 1004, 1005, 1019, 1045
+ *   1001, 1002, 1003, 1004, 1005, 1006, 1008, 1019, 1045
  *
  * Decoding of the following Message Types:
  *   1019, 1045
@@ -755,79 +755,11 @@ private:
     };
 
 
-    class Tcp_Client
-    {
-    public:
-        Tcp_Client(boost::asio::io_service& io_service,
-                boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
-    : io_service_(io_service), socket_(io_service)
-    {
-            do_connect(endpoint_iterator);
-    }
-
-        void close()
-        {
-            io_service_.post([this]() { socket_.close(); });
-        }
-
-    private:
-        void do_connect(boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
-        {
-            std::cout << "Connecting to server..." << std::endl;
-            boost::asio::async_connect(socket_, endpoint_iterator,
-                    [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
-                    {
-                if (!ec)
-                    {
-                        std::cout << "Connected." << std::endl;
-                        do_read_message();
-                    }
-                else
-                    {
-                        std::cout << "Server is down." << std::endl;
-                    }
-                    });
-        }
-
-        void do_read_message()
-        {
-            // Waiting for data and reading forever, until connection is closed.
-            for(;;)
-                {
-                    std::array<char, 1029> buf;
-                    boost::system::error_code error;
-
-                    size_t len = socket_.read_some(boost::asio::buffer(buf), error);
-
-                    if(error == boost::asio::error::eof)
-                        break; // // Connection closed cleanly by peer.
-                    else if(error)
-                        {
-                            std::cout << "Error: " << error << std::endl;
-                            //socket_.close();
-                            break;
-                        }
-                    std::cout << "Received message: ";
-                    std::cout.write(buf.data(), len);
-                    std::cout << std::endl;
-                }
-
-            std::cout << std::endl;
-            socket_.close();
-            std::cout << "Connection closed by the server. Good bye." << std::endl;
-        }
-
-        boost::asio::io_service& io_service_;
-        boost::asio::ip::tcp::socket socket_;
-    };
-
-
     boost::asio::io_service io_service;
     std::shared_ptr< concurrent_queue<std::string> > rtcm_message_queue;
     std::thread t;
     std::thread tq;
     std::list<Rtcm::Tcp_Server> servers;
-    std::list<Rtcm::Tcp_Client> clients;
     bool server_is_running;
     void stop_service();
 

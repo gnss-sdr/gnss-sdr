@@ -165,7 +165,28 @@ TEST(Rtcm_Test, Check_CRC)
 }
 
 
-TEST(Rtcm_Test, Test_MT1005)
+TEST(Rtcm_Test, MT1001)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    Gps_Ephemeris gps_eph = Gps_Ephemeris();
+    Gnss_Synchro gnss_synchro;
+    gnss_synchro.PRN = 2;
+    std::string sys = "G";
+
+    std::string sig = "1C";
+    gnss_synchro.System = *sys.c_str();
+    std::memcpy((void*)gnss_synchro.Signal, sig.c_str(), 3);
+    gnss_synchro.Pseudorange_m = 20000000.0;
+    double obs_time = 25.0;
+    std::map<int, Gnss_Synchro> pseudoranges;
+    pseudoranges.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro));
+
+    std::string MT1001 = rtcm->print_MT1001(gps_eph, obs_time, pseudoranges);
+    EXPECT_EQ(true, rtcm->check_CRC(MT1001));
+}
+
+
+TEST(Rtcm_Test, MT1005)
 {
     auto rtcm = std::make_shared<Rtcm>();
     std::string reference_msg = rtcm->print_MT1005_test();
@@ -205,7 +226,7 @@ TEST(Rtcm_Test, Test_MT1005)
 
 
 
-TEST(Rtcm_Test, Test_MT1019)
+TEST(Rtcm_Test, MT1019)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -227,8 +248,25 @@ TEST(Rtcm_Test, Test_MT1019)
 }
 
 
+TEST(Rtcm_Test, MT1029)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    std::string s_test("UTF-8 проверка wörter");
+    unsigned int ref_id = 23;
+    double obs_time = 0;
+    Gps_Ephemeris gps_eph = Gps_Ephemeris();
+    std::string m1029 = rtcm->print_MT1029(ref_id, gps_eph,  obs_time, s_test);
+    std::string encoded_text = m1029.substr(24, 60);
+    std::string expected_encoded_text("5554462D3820D0BFD180D0BED0B2D0B5D180D0BAD0B02077C3B672746572");
+    EXPECT_EQ(0, expected_encoded_text.compare(encoded_text));
 
-TEST(Rtcm_Test, Test_MT1045)
+    std::string characters_to_follow = m1029.substr(22, 2);
+    std::string expected_characters_to_follow("1E");
+    EXPECT_EQ(0, expected_characters_to_follow.compare(characters_to_follow));
+}
+
+
+TEST(Rtcm_Test, MT1045)
 {
     auto rtcm = std::make_shared<Rtcm>();
 
@@ -246,27 +284,6 @@ TEST(Rtcm_Test, Test_MT1045)
     EXPECT_DOUBLE_EQ( 53.0 * OMEGA_dot_3_LSB, gal_eph_read.OMEGA_dot_3);
     EXPECT_EQ(5, gal_eph_read.i_satellite_PRN);
     EXPECT_EQ(1, rtcm->read_MT1045("FFFFFFFFFFF", gal_eph_read));
-}
-
-
-TEST(Rtcm_Test, MT1001)
-{
-    auto rtcm = std::make_shared<Rtcm>();
-    Gps_Ephemeris gps_eph = Gps_Ephemeris();
-    Gnss_Synchro gnss_synchro;
-    gnss_synchro.PRN = 2;
-    std::string sys = "G";
-
-    std::string sig = "1C";
-    gnss_synchro.System = *sys.c_str();
-    std::memcpy((void*)gnss_synchro.Signal, sig.c_str(), 3);
-    gnss_synchro.Pseudorange_m = 20000000.0;
-    double obs_time = 25.0;
-    std::map<int, Gnss_Synchro> pseudoranges;
-    pseudoranges.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro));
-
-    std::string MT1001 = rtcm->print_MT1001(gps_eph, obs_time, pseudoranges);
-    EXPECT_EQ(true, rtcm->check_CRC(MT1001));
 }
 
 
@@ -498,7 +515,6 @@ TEST(Rtcm_Test, MSM1)
     int read_psrng4_s = rtcm->bin_to_int( MSM1_bin.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
     EXPECT_EQ(psrng4_s, read_psrng4_s);
 
-
     std::map<int, Gnss_Synchro> pseudoranges2;
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro4));
     pseudoranges2.insert(std::pair<int, Gnss_Synchro>(2, gnss_synchro3));
@@ -516,7 +532,7 @@ TEST(Rtcm_Test, MSM1)
             divergence_free,
             more_messages);
     std::string MSM1_bin2 = rtcm->hex_to_bin(MSM1_2);
-    int read_psrng4_s_2 =  rtcm->bin_to_int( MSM1_bin2.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
+    int read_psrng4_s_2 = rtcm->bin_to_int( MSM1_bin2.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
     EXPECT_EQ(psrng4_s, read_psrng4_s_2);
 }
 
@@ -544,17 +560,18 @@ TEST(Rtcm_Test, InstantiateServer)
     EXPECT_EQ(0, test4_bin.compare("11111111"));
 }
 
-/*
-TEST(Rtcm_Test, InstantiateClient)
+
+TEST(Rtcm_Test, InstantiateServerWithoutClosing)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    rtcm->run_client();
+    rtcm->run_server();
+    std::string msg("Hello");
+    rtcm->send_message(msg);
     std::string test3 = "ff";
     std::string test3_bin = rtcm->hex_to_bin(test3);
     EXPECT_EQ(0, test3_bin.compare("11111111"));
-    rtcm->stop_client();
-    std::string test3_bin2 = rtcm->hex_to_bin(test3);
-    EXPECT_EQ(0, test3_bin2.compare("11111111"));
-} */
+}
+
+
 
 

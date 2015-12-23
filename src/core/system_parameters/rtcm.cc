@@ -37,6 +37,7 @@
 #include <thread>
 #include <boost/algorithm/string.hpp>  // for to_upper_copy
 #include <boost/crc.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -51,11 +52,9 @@ DEFINE_int32(RTCM_Port, 2101 , "TCP port of the RTCM message server");
 
 Rtcm::Rtcm()
 {
-    Rtcm::reset_data_fields();
     preamble = std::bitset<8>("11010011");
     reserved_field = std::bitset<6>("000000");
     rtcm_message_queue = std::make_shared< concurrent_queue<std::string> >();
-    // for each server, do:
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), FLAGS_RTCM_Port);
     servers.emplace_back(io_service, endpoint);
     server_is_running = false;
@@ -63,7 +62,12 @@ Rtcm::Rtcm()
 
 
 Rtcm::~Rtcm()
-{}
+{
+    if(server_is_running)
+        {
+            stop_server();
+        }
+}
 
 
 
@@ -424,7 +428,12 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
             data += content.to_string();
         }
 
-    return Rtcm::build_message(data);
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
 }
 
 
@@ -469,7 +478,12 @@ std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, c
             data += content.to_string();
         }
 
-    return Rtcm::build_message(data);
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
 }
 
 
@@ -568,7 +582,12 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
             data += content.to_string();
         }
 
-    return Rtcm::build_message(data);
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
 }
 
 
@@ -673,7 +692,12 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
             data += content.to_string();
         }
 
-    return Rtcm::build_message(data);
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
 }
 
 
@@ -804,8 +828,12 @@ std::string Rtcm::print_MT1005( unsigned int ref_id, double ecef_x, double ecef_
             DF364.to_string() +
             DF027.to_string() ;
 
-    std::string message = build_message(data);
-    return message;
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
 }
 
 
@@ -888,7 +916,7 @@ std::string Rtcm::print_MT1005_test()
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1006( unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator, double height)
+std::string Rtcm::print_MT1006(unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator, double height)
 {
     unsigned int msg_number = 1006;
     std::bitset<1> DF001_;
@@ -923,8 +951,12 @@ std::string Rtcm::print_MT1006( unsigned int ref_id, double ecef_x, double ecef_
             DF027.to_string() +
             DF028.to_string();
 
-    std::string message = build_message(data);
-    return message;
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
 }
 
 
@@ -982,8 +1014,12 @@ std::string Rtcm::print_MT1008(unsigned int ref_id, const std::string & antenna_
             DF032.to_string() +
             DF033_str_;
 
-    std::string message = build_message(data);
-    return message;
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
 }
 
 
@@ -1068,8 +1104,12 @@ std::string Rtcm::print_MT1019(const Gps_Ephemeris & gps_eph)
             LOG(WARNING) << "Bad-formatted RTCM MT1019 (488 bits expected, found " <<  data.length() << ")";
         }
 
-    std::string message = build_message(data);
-    return message;
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
 }
 
 
@@ -1202,6 +1242,72 @@ int Rtcm::read_MT1019(const std::string & message, Gps_Ephemeris & gps_eph)
 }
 
 
+// ********************************************************
+//
+//   MESSAGE TYPE 1029 (UNICODE TEXT STRING)
+//
+// ********************************************************
+
+std::string Rtcm::print_MT1029(unsigned int ref_id, const Gps_Ephemeris & gps_eph, double obs_time, const std::string & message)
+{
+    unsigned int msg_number = 1029;
+
+    Rtcm::set_DF002(msg_number);
+    Rtcm::set_DF003(ref_id);
+    Rtcm::set_DF051(gps_eph, obs_time);
+    Rtcm::set_DF052(gps_eph, obs_time);
+
+    unsigned int i = 0;
+    bool first = true;
+    std::string text_binary;
+    for(auto it = message.begin(); it != message.end(); it++)
+        {
+            char c = *it;
+            if(isgraph(c))
+                {
+                    i++;
+                    first = true;
+                }
+            else if(c == ' ')
+                {
+                    i++;
+                    first = true;
+                }
+            else
+                {
+                    if(!first)
+                        {
+                            i++;
+                            first = true;
+                        }
+                    else
+                        {
+                            first = false;
+                        }
+                }
+            std::bitset<8> character = std::bitset<8>(c);
+            text_binary += character.to_string();
+        }
+
+    std::bitset<7> DF138_ = std::bitset<7>(i);
+    std::bitset<8> DF139_ = std::bitset<8>(message.length());
+
+    std::string data = DF002.to_string() +
+            DF003.to_string() +
+            DF051.to_string() +
+            DF052.to_string() +
+            DF138_.to_string() +
+            DF139_.to_string() +
+            text_binary;
+
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
+}
+
 
 // ********************************************************
 //
@@ -1280,8 +1386,12 @@ std::string Rtcm::print_MT1045(const Galileo_Ephemeris & gal_eph)
             LOG(WARNING) << "Bad-formatted RTCM MT1045 (496 bits expected, found " <<  data.length() << ")";
         }
 
-    std::string message = build_message(data);
-    return message;
+    std::string msg = build_message(data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
 }
 
 
@@ -1455,6 +1565,12 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
     std::string signal_data = Rtcm::get_MSM_1_content_signal_data(pseudoranges);
 
     std::string message = build_message(header + sat_data + signal_data);
+
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(message);
+        }
+
     return message;
 }
 
@@ -1636,6 +1752,11 @@ std::string Rtcm::print_MSM_2( const Gps_Ephemeris & gps_eph,
     std::string signal_data = Rtcm::get_MSM_2_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
 
     std::string message = build_message(header + sat_data + signal_data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(message);
+        }
+
     return message;
 }
 
@@ -1728,6 +1849,11 @@ std::string Rtcm::print_MSM_3( const Gps_Ephemeris & gps_eph,
     std::string signal_data = Rtcm::get_MSM_3_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
 
     std::string message = build_message(header + sat_data + signal_data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(message);
+        }
+
     return message;
 }
 
@@ -1822,6 +1948,11 @@ std::string Rtcm::print_MSM_4( const Gps_Ephemeris & gps_eph,
     std::string signal_data = Rtcm::get_MSM_4_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
 
     std::string message = build_message(header + sat_data + signal_data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(message);
+        }
+
     return message;
 }
 
@@ -1959,6 +2090,11 @@ std::string Rtcm::print_MSM_5( const Gps_Ephemeris & gps_eph,
     std::string signal_data = Rtcm::get_MSM_5_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
 
     std::string message = build_message(header + sat_data + signal_data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(message);
+        }
+
     return message;
 }
 
@@ -2106,6 +2242,11 @@ std::string Rtcm::print_MSM_6( const Gps_Ephemeris & gps_eph,
     std::string signal_data = Rtcm::get_MSM_6_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
 
     std::string message = build_message(header + sat_data + signal_data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(message);
+        }
+
     return message;
 }
 
@@ -2204,6 +2345,11 @@ std::string Rtcm::print_MSM_7( const Gps_Ephemeris & gps_eph,
     std::string signal_data = Rtcm::get_MSM_7_content_signal_data(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges);
 
     std::string message = build_message(header + sat_data + signal_data);
+    if(server_is_running)
+        {
+            rtcm_message_queue->push(message);
+        }
+
     return message;
 }
 
@@ -2562,120 +2708,6 @@ unsigned int Rtcm::msm_extended_lock_time_indicator(unsigned int lock_time_perio
 //
 // *****************************************************************************************************
 
-int Rtcm::reset_data_fields()
-{
-    //DF001.reset();
-    DF002.reset();
-    DF003.reset();
-    DF004.reset();
-    DF005.reset();
-    DF006.reset();
-    DF007.reset();
-    DF008.reset();
-    DF009.reset();
-    DF010.reset();
-    DF011.reset();
-    DF012.reset();
-    DF013.reset();
-    DF014.reset();
-    DF015.reset();
-    DF017.reset();
-    DF018.reset();
-    DF019.reset();
-    DF020.reset();
-
-    // Contents of GPS Satellite Ephemeris Data, Message Type 1019
-    DF071.reset();
-    DF076.reset();
-    DF077.reset();
-    DF078.reset();
-    DF079.reset();
-    DF081.reset();
-    DF082.reset();
-    DF083.reset();
-    DF084.reset();
-    DF085.reset();
-    DF086.reset();
-    DF087.reset();
-
-    DF088.reset();
-    DF089.reset();
-    DF090.reset();
-    DF091.reset();
-    DF092.reset();
-    DF093.reset();
-    DF094.reset();
-    DF095.reset();
-    DF096.reset();
-    DF097.reset();
-    DF098.reset();
-    DF099.reset();
-    DF100.reset();
-    DF101.reset();
-    DF102.reset();
-    DF103.reset();
-    DF137.reset();
-
-    DF248.reset();
-
-    // Contents of Galileo F/NAV Satellite Ephemeris Data, Message Type 1045
-    DF252.reset();
-    DF289.reset();
-    DF290.reset();
-    DF291.reset();
-    DF292.reset();
-    DF293.reset();
-    DF294.reset();
-    DF295.reset();
-    DF296.reset();
-    DF297.reset();
-    DF298.reset();
-    DF299.reset();
-    DF300.reset();
-    DF301.reset();
-    DF302.reset();
-    DF303.reset();
-    DF304.reset();
-    DF305.reset();
-    DF306.reset();
-    DF307.reset();
-    DF308.reset();
-    DF309.reset();
-    DF310.reset();
-    DF311.reset();
-    DF312.reset();
-    DF314.reset();
-    DF315.reset();
-
-    DF364.reset();
-
-    DF393.reset();
-    DF394.reset();
-    DF395.reset();
-
-    DF397.reset();
-    DF398.reset();
-    DF399.reset();
-    DF400.reset();
-    DF401.reset();
-    DF402.reset();
-    DF403.reset();
-    DF404.reset();
-    DF405.reset();
-    DF406.reset();
-    DF407.reset();
-    DF408.reset();
-    DF409.reset();
-    DF411.reset();
-    DF412.reset();
-    DF417.reset();
-    DF418.reset();
-    DF420.reset();
-
-    return 0;
-}
-
-
 int Rtcm::set_DF002(unsigned int message_number)
 {
     if (message_number > 4095)
@@ -2983,6 +3015,37 @@ int Rtcm::set_DF031(unsigned int antenna_setup_id)
     DF031 = std::bitset<8>(antenna_setup_id);
     return 0;
 }
+
+
+int Rtcm::set_DF051(const Gps_Ephemeris & gps_eph, double obs_time)
+{
+    const double gps_t = obs_time;
+    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000);
+    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    std::string now_ptime = to_iso_string(p_time);
+    std::string today_ptime = now_ptime.substr(0, 8);
+    boost::gregorian::date d(boost::gregorian::from_undelimited_string(today_ptime));
+    unsigned int mjd = d.modjulian_day();
+    DF051 = std::bitset<16>(mjd);
+    return 0;
+}
+
+
+int Rtcm::set_DF052(const Gps_Ephemeris & gps_eph, double obs_time)
+{
+    const double gps_t = obs_time;
+    boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000);
+    boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
+    std::string now_ptime = to_iso_string(p_time);
+    std::string hours = now_ptime.substr(9, 2);
+    std::string minutes = now_ptime.substr(11, 2);
+    std::string seconds = now_ptime.substr(13, 8);
+    //boost::gregorian::date d(boost::gregorian::from_undelimited_string(today_ptime));
+    long unsigned int seconds_of_day = boost::lexical_cast<unsigned int>(hours) * 60 * 60 + boost::lexical_cast<unsigned int>(minutes) * 60 + boost::lexical_cast<unsigned int>(seconds);
+    DF052 = std::bitset<17>(seconds_of_day);
+    return 0;
+}
+
 
 int Rtcm::set_DF071(const Gps_Ephemeris & gps_eph)
 {

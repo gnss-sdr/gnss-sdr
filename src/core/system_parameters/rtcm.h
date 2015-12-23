@@ -56,7 +56,7 @@
  * defined in the RTCM 3.2 Standard, plus some utilities to handle messages.
  *
  * Generation of the following Message Types:
- *   1001, 1002, 1003, 1004, 1005, 1006, 1008, 1019, 1045
+ *   1001, 1002, 1003, 1004, 1005, 1006, 1008, 1019, 1029, 1045
  *
  * Decoding of the following Message Types:
  *   1019, 1045
@@ -138,6 +138,11 @@ public:
      * \brief Verifies and reads messages of type 1019 (GPS Ephemeris). Returns 1 if anything goes wrong, 0 otherwise.
      */
     int read_MT1019(const std::string & message, Gps_Ephemeris & gps_eph);
+
+    /*!
+     * \brief Prints message type 1029 (Unicode Text String)
+     */
+    std::string print_MT1029(unsigned int ref_id, const Gps_Ephemeris & gps_eph, double obs_time, const std::string & message);
 
     /*!
      * \brief Prints message type 1045 (Galileo Ephemeris), should be broadcast every 2 minutes
@@ -769,8 +774,6 @@ private:
     //
     // Data Fields
     //
-    int reset_data_fields();
-
     std::bitset<12> DF002;
     int set_DF002(unsigned int message_number);
 
@@ -857,6 +860,12 @@ private:
     int set_DF031(unsigned int antenna_setup_id);
 
     std::bitset<8> DF032;
+
+    std::bitset<16> DF051;
+    int set_DF051(const Gps_Ephemeris & gps_eph, double obs_time);
+
+    std::bitset<17> DF052;
+    int set_DF052(const Gps_Ephemeris & gps_eph, double obs_time);
 
     // Contents of GPS Satellite Ephemeris Data, Message Type 1019
     std::bitset<8> DF071;

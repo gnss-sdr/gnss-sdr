@@ -43,7 +43,6 @@
 #include <utility>
 #include <vector>
 #include <boost/asio.hpp>
-#include <boost/crc.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
@@ -121,6 +120,8 @@ public:
      * \brief Prints message type 1006 (Stationary Antenna Reference Point, with Height Information)
      */
     std::string print_MT1006(unsigned int ref_id, double ecef_x, double ecef_y, double ecef_z, bool gps, bool glonass, bool galileo, bool non_physical, bool single_oscillator, unsigned int quarter_cycle_indicator, double height);
+
+    std::string print_MT1005_test();  //<! For testing purposes
 
     /*!
      * \brief Prints message type 1008 (Antenna Descriptor & Serial Number)
@@ -264,28 +265,23 @@ public:
     unsigned int lock_time(const Gps_CNAV_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro); //<! Returns the time period in which GPS L2 signals have been continually tracked.
     unsigned int lock_time(const Galileo_Ephemeris & eph, double obs_time, const Gnss_Synchro & gnss_synchro);  //<! Returns the time period in which Galileo signals have been continually tracked.
 
-    std::string bin_to_hex(const std::string& s);        //<! Returns a string of hexadecimal symbols from a string of binary symbols
-    std::string hex_to_bin(const std::string& s);        //<! Returns a string of binary symbols from a string of hexadecimal symbols
+    std::string bin_to_hex(const std::string & s) const;        //<! Returns a string of hexadecimal symbols from a string of binary symbols
+    std::string hex_to_bin(const std::string & s) const;        //<! Returns a string of binary symbols from a string of hexadecimal symbols
 
-    unsigned long int bin_to_uint(const std::string& s); //<! Returns an unsigned long int from a string of binary symbols
-    long int bin_to_int(const std::string& s);           //<! Returns a long int from a string of binary symbols
+    unsigned long int bin_to_uint(const std::string & s) const; //<! Returns an unsigned long int from a string of binary symbols
+    long int bin_to_int(const std::string & s) const;           //<! Returns a long int from a string of binary symbols
+    double bin_to_double(const std::string & s) const;          //<! Returns double from a string of binary symbols
 
-    unsigned long int hex_to_uint(const std::string& s); //<! Returns an unsigned long int from a string of hexadecimal symbols
-    long int hex_to_int(const std::string& s);           //<! Returns a long int from a string of hexadecimal symbols
+    unsigned long int hex_to_uint(const std::string & s) const; //<! Returns an unsigned long int from a string of hexadecimal symbols
+    long int hex_to_int(const std::string & s) const;           //<! Returns a long int from a string of hexadecimal symbols
 
-    double bin_to_double(const std::string& s);          //<! Returns double from a string of binary symbols
-    std::string print_MT1005_test();                     //<! For testing purposes
-
-    bool check_CRC(const std::string & message);         //<! Checks that the CRC of a RTCM package is correct
+    bool check_CRC(const std::string & message) const;          //<! Checks that the CRC of a RTCM package is correct
 
     void run_server();                                   //<! Starts running the server
     void stop_server();                                  //<! Stops the server
 
-    void run_client();                                   //<! Starts running the client
-    void stop_client();                                  //<! Stops the client
-
-    void send_message(const std::string & message);      //<! Sends a message through the server
-    bool is_server_running();                            //<! Returns true if the server is running, false otherwise
+    void send_message(const std::string & message);      //<! Sends a message through the server to all connected clients
+    bool is_server_running() const;                      //<! Returns true if the server is running, false otherwise
 
 private:
     //
@@ -316,7 +312,6 @@ private:
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,
-            bool sync_flag,
             bool divergence_free,
             bool more_messages);
 
@@ -337,11 +332,11 @@ private:
     //
     static std::map<std::string, int> galileo_signal_map;
     static std::map<std::string, int> gps_signal_map;
-    std::vector<std::pair<int, Gnss_Synchro> > sort_by_signal(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map);
-    std::vector<std::pair<int, Gnss_Synchro> > sort_by_PRN_mask(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map);
-    boost::posix_time::ptime compute_GPS_time(const Gps_Ephemeris& eph, double obs_time);
-    boost::posix_time::ptime compute_GPS_time(const Gps_CNAV_Ephemeris & eph, double obs_time);
-    boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris& eph, double obs_time);
+    std::vector<std::pair<int, Gnss_Synchro> > sort_by_signal(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map) const;
+    std::vector<std::pair<int, Gnss_Synchro> > sort_by_PRN_mask(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map) const;
+    boost::posix_time::ptime compute_GPS_time(const Gps_Ephemeris& eph, double obs_time) const;
+    boost::posix_time::ptime compute_GPS_time(const Gps_CNAV_Ephemeris & eph, double obs_time) const;
+    boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime gps_L1_last_lock_time[64];
     boost::posix_time::ptime gps_L2_last_lock_time[64];
     boost::posix_time::ptime gal_E1_last_lock_time[64];
@@ -768,11 +763,8 @@ private:
     //
     std::bitset<8> preamble;
     std::bitset<6> reserved_field;
-    std::bitset<10> message_length;
-    std::bitset<24> crc_frame;
-    typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> crc_24_q_type;
-    std::string add_CRC(const std::string& m);
-    std::string build_message(std::string data); // adds 0s to complete a byte and adds the CRC
+    std::string add_CRC(const std::string & m) const;
+    std::string build_message(const std::string & data) const; // adds 0s to complete a byte and adds the CRC
 
     //
     // Data Fields

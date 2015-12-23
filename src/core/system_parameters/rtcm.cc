@@ -36,6 +36,7 @@
 #include <sstream>    // for std::stringstream
 #include <thread>
 #include <boost/algorithm/string.hpp>  // for to_upper_copy
+#include <boost/crc.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -46,9 +47,6 @@ DEFINE_int32(RTCM_Ref_Station_ID, 1234, "Reference Station ID in RTCM messages")
 DEFINE_int32(RTCM_Port, 2101 , "TCP port of the RTCM message server");
 // 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA)
 // https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
-
-DEFINE_string(Remote_RTCM_Server, "localhost", "Remote RTCM server address");
-DEFINE_int32(Remote_RTCM_Port, 2101 , "Remote TCP port of the RTCM message server");
 
 
 Rtcm::Rtcm()
@@ -71,7 +69,7 @@ Rtcm::~Rtcm()
 
 // *****************************************************************************************************
 //
-//   TCP Server / Client helper classes
+//   TCP Server helper classes
 //
 // *****************************************************************************************************
 void Rtcm::run_server()
@@ -116,7 +114,7 @@ void Rtcm::send_message(const std::string & msg)
 }
 
 
-bool Rtcm::is_server_running()
+bool Rtcm::is_server_running() const
 {
     return server_is_running;
 }
@@ -128,10 +126,10 @@ bool Rtcm::is_server_running()
 //
 // *****************************************************************************************************
 
-std::string Rtcm::add_CRC (const std::string& message_without_crc)
+std::string Rtcm::add_CRC (const std::string & message_without_crc) const
 {
     // ******  Computes Qualcomm CRC-24Q ******
-    crc_24_q_type CRC_RTCM;
+    boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_RTCM;
     // 1) Converts the string to a vector of unsigned char:
     boost::dynamic_bitset<unsigned char> frame_bits(message_without_crc);
     std::vector<unsigned char> bytes;
@@ -140,7 +138,7 @@ std::string Rtcm::add_CRC (const std::string& message_without_crc)
 
     // 2) Computes CRC
     CRC_RTCM.process_bytes(bytes.data(), bytes.size());
-    crc_frame = std::bitset<24>(CRC_RTCM.checksum());
+    std::bitset<24> crc_frame = std::bitset<24>(CRC_RTCM.checksum());
 
     // 3) Builds the complete message
     std::string complete_message = message_without_crc + crc_frame.to_string();
@@ -148,9 +146,9 @@ std::string Rtcm::add_CRC (const std::string& message_without_crc)
 }
 
 
-bool Rtcm::check_CRC(const std::string & message)
+bool Rtcm::check_CRC(const std::string & message) const
 {
-    crc_24_q_type CRC_RTCM_CHECK;
+    boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_RTCM_CHECK;
     // Convert message to binary
     std::string message_bin = Rtcm::hex_to_bin(message);
     // Check CRC
@@ -176,7 +174,7 @@ bool Rtcm::check_CRC(const std::string & message)
 }
 
 
-std::string Rtcm::bin_to_hex(const std::string& s)
+std::string Rtcm::bin_to_hex(const std::string& s) const
 {
     std::string s_aux;
     std::stringstream ss;
@@ -202,7 +200,7 @@ std::string Rtcm::bin_to_hex(const std::string& s)
 }
 
 
-std::string Rtcm::hex_to_bin(const std::string& s)
+std::string Rtcm::hex_to_bin(const std::string& s) const
 {
     std::string s_aux;
     s_aux.clear();
@@ -220,7 +218,7 @@ std::string Rtcm::hex_to_bin(const std::string& s)
 }
 
 
-unsigned long int Rtcm::bin_to_uint(const std::string& s)
+unsigned long int Rtcm::bin_to_uint(const std::string& s) const
 {
     if(s.length() > 32)
         {
@@ -232,7 +230,7 @@ unsigned long int Rtcm::bin_to_uint(const std::string& s)
 }
 
 
-long int Rtcm::bin_to_int(const std::string& s)
+long int Rtcm::bin_to_int(const std::string& s) const
 {
     if(s.length() > 32)
         {
@@ -257,7 +255,7 @@ long int Rtcm::bin_to_int(const std::string& s)
 }
 
 
-double Rtcm::bin_to_double(const std::string& s)
+double Rtcm::bin_to_double(const std::string& s) const
 {
     double reading;
     if(s.length() > 64)
@@ -288,7 +286,7 @@ double Rtcm::bin_to_double(const std::string& s)
 }
 
 
-unsigned long int Rtcm::hex_to_uint(const std::string& s)
+unsigned long int Rtcm::hex_to_uint(const std::string& s) const
 {
     if(s.length() > 32)
         {
@@ -300,7 +298,7 @@ unsigned long int Rtcm::hex_to_uint(const std::string& s)
 }
 
 
-long int Rtcm::hex_to_int(const std::string& s)
+long int Rtcm::hex_to_int(const std::string& s) const
 {
     if(s.length() > 32)
         {
@@ -312,11 +310,11 @@ long int Rtcm::hex_to_int(const std::string& s)
 }
 
 
-std::string Rtcm::build_message(std::string data)
+std::string Rtcm::build_message(const std::string & data) const
 {
     unsigned int msg_length_bits = data.length();
     unsigned int msg_length_bytes = std::ceil(static_cast<float>(msg_length_bits) / 8.0);
-    message_length = std::bitset<10>(msg_length_bytes);
+    std::bitset<10> message_length = std::bitset<10>(msg_length_bytes);
     unsigned int zeros_to_fill = 8 * msg_length_bytes -  msg_length_bits;
     std::string b(zeros_to_fill, '0');
     std::string msg_content = data + b;
@@ -1449,7 +1447,6 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
              clock_steering_indicator,
              external_clock_indicator,
              smooth_int,
-             sync_flag,
              divergence_free,
              more_messages);
 
@@ -1471,7 +1468,6 @@ std::string Rtcm::get_MSM_header(unsigned int msg_number, const Gps_Ephemeris & 
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
         int smooth_int,
-        bool sync_flag,
         bool divergence_free,
         bool more_messages)
 {
@@ -1632,7 +1628,6 @@ std::string Rtcm::print_MSM_2( const Gps_Ephemeris & gps_eph,
              clock_steering_indicator,
              external_clock_indicator,
              smooth_int,
-             sync_flag,
              divergence_free,
              more_messages);
 
@@ -1725,7 +1720,6 @@ std::string Rtcm::print_MSM_3( const Gps_Ephemeris & gps_eph,
              clock_steering_indicator,
              external_clock_indicator,
              smooth_int,
-             sync_flag,
              divergence_free,
              more_messages);
 
@@ -1820,7 +1814,6 @@ std::string Rtcm::print_MSM_4( const Gps_Ephemeris & gps_eph,
              clock_steering_indicator,
              external_clock_indicator,
              smooth_int,
-             sync_flag,
              divergence_free,
              more_messages);
 
@@ -1958,7 +1951,6 @@ std::string Rtcm::print_MSM_5( const Gps_Ephemeris & gps_eph,
              clock_steering_indicator,
              external_clock_indicator,
              smooth_int,
-             sync_flag,
              divergence_free,
              more_messages);
 
@@ -2106,7 +2098,6 @@ std::string Rtcm::print_MSM_6( const Gps_Ephemeris & gps_eph,
              clock_steering_indicator,
              external_clock_indicator,
              smooth_int,
-             sync_flag,
              divergence_free,
              more_messages);
 
@@ -2205,7 +2196,6 @@ std::string Rtcm::print_MSM_7( const Gps_Ephemeris & gps_eph,
              clock_steering_indicator,
              external_clock_indicator,
              smooth_int,
-             sync_flag,
              divergence_free,
              more_messages);
 
@@ -2270,7 +2260,7 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris & ephNAV, co
 // Some utilities
 // *****************************************************************************************************
 
-std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map)
+std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map) const
 {
     std::vector<std::pair<int, Gnss_Synchro> >::const_iterator synchro_map_iter;
     std::vector<std::pair<int, Gnss_Synchro> > my_vec;
@@ -2298,7 +2288,7 @@ std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std::vec
 }
 
 
-std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_signal(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map)
+std::vector<std::pair<int, Gnss_Synchro> > Rtcm::sort_by_signal(const std::vector<std::pair<int, Gnss_Synchro> >  & synchro_map) const
 {
     std::vector<std::pair<int, Gnss_Synchro> >::const_iterator synchro_map_iter;
     std::vector<std::pair<int, Gnss_Synchro> > my_vec;
@@ -2401,7 +2391,7 @@ std::map<std::string, int> Rtcm::galileo_signal_map = []
 }();
 
 
-boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris & eph, double obs_time)
+boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris & eph, double obs_time) const
 {
     const double gps_t = obs_time;
     boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000);
@@ -2410,7 +2400,7 @@ boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_Ephemeris & eph, doubl
 }
 
 
-boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris & eph, double obs_time)
+boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris & eph, double obs_time) const
 {
     const double gps_t = obs_time;
     boost::posix_time::time_duration t = boost::posix_time::millisec((gps_t + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000);
@@ -2419,7 +2409,7 @@ boost::posix_time::ptime Rtcm::compute_GPS_time(const Gps_CNAV_Ephemeris & eph, 
 }
 
 
-boost::posix_time::ptime Rtcm::compute_Galileo_time(const Galileo_Ephemeris & eph, double obs_time)
+boost::posix_time::ptime Rtcm::compute_Galileo_time(const Galileo_Ephemeris & eph, double obs_time) const
 {
     double galileo_t = obs_time;
     boost::posix_time::time_duration t = boost::posix_time::millisec((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000);
@@ -4083,7 +4073,6 @@ int Rtcm::set_DF417(bool using_divergence_free_smoothing)
 
 int Rtcm::set_DF418(int carrier_smoothing_interval_s)
 {
-    unsigned int smoothing_int = abs(carrier_smoothing_interval_s);
     if(carrier_smoothing_interval_s < 0)
         {
             DF418 = std::bitset<3>("111");

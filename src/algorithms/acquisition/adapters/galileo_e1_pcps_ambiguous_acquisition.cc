@@ -291,10 +291,11 @@ float GalileoE1PcpsAmbiguousAcquisition::calculate_threshold(float pfa)
 
 	DLOG(INFO) <<"Channel "<<channel_<<"  Pfa = "<< pfa;
 
-    unsigned int ncells = vector_length_ * frequency_bins;
+    int effective_vector_length = ( bit_transition_flag_ ? vector_length_ / 2 : vector_length_ );
+    unsigned int ncells = effective_vector_length * frequency_bins;
 	double exponent = 1 / static_cast<double>(ncells);
 	double val = pow(1.0 - pfa,exponent);
-    double lambda = double(vector_length_);
+    double lambda = double(effective_vector_length);
 	boost::math::exponential_distribution<double> mydist (lambda);
 	float threshold = (float)quantile(mydist,val);
 

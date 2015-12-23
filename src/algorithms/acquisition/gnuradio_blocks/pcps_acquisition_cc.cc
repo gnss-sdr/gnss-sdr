@@ -310,12 +310,12 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     d_ifft->execute();
 
                     // Search maximum
-                    size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
                     volk_32f_index_max_16u(&indext, d_magnitude, effective_fft_size);
 
                     // Normalize the maximum value to correct the scale factor introduced by FFTW
-                    magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
+                    magt = d_magnitude[indext] / (static_cast<float>( effective_fft_size ) *
+                            static_cast< float >( effective_fft_size ) * fft_normalization_factor);
 
                     // 4- record the maximum peak and the associated synchronization parameters
                     if (d_mag < magt)

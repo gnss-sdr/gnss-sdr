@@ -59,7 +59,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
-    //float pfa =  configuration_->property(role + ".pfa", 0.0);
+    float pfa =  configuration_->property(role + ".pfa", 0.0);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration_->property(role + ".ifreq", 0);
@@ -149,6 +149,10 @@ void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
     if(pfa == 0.0)
         {
             pfa = configuration_->property(role_ + ".pfa", 0.0);
+
+        }
+    if( pfa == 0.0)
+    {
             threshold_ = threshold;
         }
     else

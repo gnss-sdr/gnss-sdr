@@ -31,6 +31,7 @@
 
 #include "unpack_2bit_samples.h"
 #include <iostream>
+#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 
 struct byte_2bit_struct
@@ -118,11 +119,16 @@ unpack_2bit_samples::unpack_2bit_samples( bool big_endian_bytes,
     // Only swap the item bytes if the item size > 1 byte and the system 
     // endianess is not the same as the item endianness:
     swap_endian_items_ = ( item_size_ > 1 ) && 
-                         ( big_endian_system != big_endian_items);
+                         (  !big_endian_items);
 
     bool big_endian_bytes_system = systemBytesAreBigEndian();
 
     swap_endian_bytes_ = ( big_endian_bytes_system != big_endian_bytes_ );
+
+    LOG(INFO) << "swap_endian_items_ : " << swap_endian_items_
+               << ". swap_endian_bytes_ : " << swap_endian_bytes_
+               << ". item_size_ : " << item_size_
+               << ". reverse_interleaving_ : " << reverse_interleaving_;
 
 }
 
@@ -138,7 +144,7 @@ int unpack_2bit_samples::work(int noutput_items,
 
     size_t ninput_bytes = noutput_items/4;
     size_t ninput_items = ninput_bytes/item_size_;
-    
+
     // Handle endian swap if needed
     if( swap_endian_items_ )
     {

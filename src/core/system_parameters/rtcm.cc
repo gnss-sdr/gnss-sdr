@@ -1531,7 +1531,6 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
         int smooth_int,
-        bool sync_flag,
         bool divergence_free,
         bool more_messages)
 {
@@ -1718,7 +1717,6 @@ std::string Rtcm::print_MSM_2( const Gps_Ephemeris & gps_eph,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
         int smooth_int,
-        bool sync_flag,
         bool divergence_free,
         bool more_messages)
 {
@@ -1815,7 +1813,6 @@ std::string Rtcm::print_MSM_3( const Gps_Ephemeris & gps_eph,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
         int smooth_int,
-        bool sync_flag,
         bool divergence_free,
         bool more_messages)
 {
@@ -1914,7 +1911,6 @@ std::string Rtcm::print_MSM_4( const Gps_Ephemeris & gps_eph,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
         int smooth_int,
-        bool sync_flag,
         bool divergence_free,
         bool more_messages)
 {
@@ -2056,7 +2052,6 @@ std::string Rtcm::print_MSM_5( const Gps_Ephemeris & gps_eph,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
         int smooth_int,
-        bool sync_flag,
         bool divergence_free,
         bool more_messages)
 {
@@ -2208,7 +2203,6 @@ std::string Rtcm::print_MSM_6( const Gps_Ephemeris & gps_eph,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
         int smooth_int,
-        bool sync_flag,
         bool divergence_free,
         bool more_messages)
 {
@@ -2311,7 +2305,6 @@ std::string Rtcm::print_MSM_7( const Gps_Ephemeris & gps_eph,
         unsigned int clock_steering_indicator,
         unsigned int external_clock_indicator,
         int smooth_int,
-        bool sync_flag,
         bool divergence_free,
         bool more_messages)
 {

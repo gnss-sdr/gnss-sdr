@@ -166,7 +166,6 @@ public:
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,
-            bool sync_flag,
             bool divergence_free,
             bool more_messages);
 
@@ -182,7 +181,6 @@ public:
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,
-            bool sync_flag,
             bool divergence_free,
             bool more_messages);
 
@@ -198,7 +196,6 @@ public:
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,
-            bool sync_flag,
             bool divergence_free,
             bool more_messages);
 
@@ -214,7 +211,6 @@ public:
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,
-            bool sync_flag,
             bool divergence_free,
             bool more_messages);
 
@@ -230,7 +226,6 @@ public:
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,
-            bool sync_flag,
             bool divergence_free,
             bool more_messages);
 
@@ -246,7 +241,6 @@ public:
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,
-            bool sync_flag,
             bool divergence_free,
             bool more_messages);
 
@@ -262,7 +256,6 @@ public:
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,
-            bool sync_flag,
             bool divergence_free,
             bool more_messages);
 

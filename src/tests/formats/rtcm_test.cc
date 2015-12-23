@@ -341,7 +341,6 @@ TEST(Rtcm_Test, MSMCell)
     unsigned int clock_steering_indicator = 0;
     unsigned int external_clock_indicator = 0;
     int smooth_int = 0;
-    bool sync_flag = false;
     bool divergence_free = false;
     bool more_messages = false;
     double obs_time = 25.0;
@@ -358,7 +357,6 @@ TEST(Rtcm_Test, MSMCell)
             clock_steering_indicator,
             external_clock_indicator,
             smooth_int,
-            sync_flag,
             divergence_free,
             more_messages);
 
@@ -384,7 +382,6 @@ TEST(Rtcm_Test, MSMCell)
              clock_steering_indicator,
              external_clock_indicator,
              smooth_int,
-             sync_flag,
              divergence_free,
              more_messages);
     std::string MSM1_bin_2 = rtcm->hex_to_bin(MSM1_2);
@@ -412,7 +409,6 @@ TEST(Rtcm_Test, MSMCell)
                 clock_steering_indicator,
                 external_clock_indicator,
                 smooth_int,
-                sync_flag,
                 divergence_free,
                 more_messages);
     std::string MSM1_bin_3 = rtcm->hex_to_bin(MSM1_3);
@@ -465,7 +461,6 @@ TEST(Rtcm_Test, MSM1)
     unsigned int clock_steering_indicator = 0;
     unsigned int external_clock_indicator = 0;
     int smooth_int = 0;
-    bool sync_flag = false;
     bool divergence_free = false;
     bool more_messages = false;
     double obs_time = 25.0;
@@ -480,7 +475,6 @@ TEST(Rtcm_Test, MSM1)
             clock_steering_indicator,
             external_clock_indicator,
             smooth_int,
-            sync_flag,
             divergence_free,
             more_messages);
 
@@ -528,7 +522,6 @@ TEST(Rtcm_Test, MSM1)
             clock_steering_indicator,
             external_clock_indicator,
             smooth_int,
-            sync_flag,
             divergence_free,
             more_messages);
     std::string MSM1_bin2 = rtcm->hex_to_bin(MSM1_2);

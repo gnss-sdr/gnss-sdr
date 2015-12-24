@@ -47,6 +47,7 @@
 #include "kml_printer.h"
 #include "rinex_printer.h"
 #include "geojson_printer.h"
+#include "rtcm_printer.h"
 #include "galileo_e1_ls_pvt.h"
 #include "Galileo_E1.h"
 
@@ -64,7 +65,10 @@ galileo_e1_pvt_cc_sptr galileo_e1_make_pvt_cc(unsigned int n_channels,
                                               int display_rate_ms,
                                               bool flag_nmea_tty_port,
                                               std::string nmea_dump_filename,
-                                              std::string nmea_dump_devname);
+                                              std::string nmea_dump_devname,
+                                              bool flag_rtcm_server,
+                                              bool flag_rtcm_tty_port,
+                                              std::string rtcm_dump_devname);
 
 /*!
  * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
@@ -82,7 +86,10 @@ private:
                                                          int display_rate_ms,
                                                          bool flag_nmea_tty_port,
                                                          std::string nmea_dump_filename,
-                                                         std::string nmea_dump_devname);
+                                                         std::string nmea_dump_devname,
+                                                         bool flag_rtcm_server,
+                                                         bool flag_rtcm_tty_port,
+                                                         std::string rtcm_dump_devname);
     galileo_e1_pvt_cc(unsigned int nchannels,
                       boost::shared_ptr<gr::msg_queue> queue,
                       bool dump, std::string dump_filename,
@@ -92,7 +99,10 @@ private:
                       int display_rate_ms,
                       bool flag_nmea_tty_port,
                       std::string nmea_dump_filename,
-                      std::string nmea_dump_devname);
+                      std::string nmea_dump_devname,
+                      bool flag_rtcm_server,
+                      bool flag_rtcm_tty_port,
+                      std::string rtcm_dump_devname);
     boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool b_rinex_header_writen;
@@ -110,6 +120,7 @@ private:
     std::shared_ptr<Kml_Printer> d_kml_dump;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;
+    std::shared_ptr<Rtcm_Printer> d_rtcm_printer;
 
     double d_rx_time;
     std::shared_ptr<galileo_e1_ls_pvt> d_ls_pvt;

@@ -409,7 +409,7 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
             pseudoranges_iter != pseudoranges.end();
             pseudoranges_iter++)
         {
-            std::string system_(pseudoranges_iter->second.System, 1);
+            std::string system_(&pseudoranges_iter->second.System, 1);
             std::string sig_(pseudoranges_iter->second.Signal);
             if((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
@@ -459,7 +459,7 @@ std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, c
             pseudoranges_iter != pseudoranges.end();
             pseudoranges_iter++)
         {
-            std::string system_(pseudoranges_iter->second.System, 1);
+            std::string system_(&pseudoranges_iter->second.System, 1);
             std::string sig_(pseudoranges_iter->second.Signal);
             if((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
@@ -533,7 +533,7 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
             pseudoranges_iter != pseudoranges.end();
             pseudoranges_iter++)
         {
-            std::string system_(pseudoranges_iter->second.System, 1);
+            std::string system_(&pseudoranges_iter->second.System, 1);
             std::string sig_(pseudoranges_iter->second.Signal);
             if((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {
@@ -643,7 +643,7 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
             pseudoranges_iter != pseudoranges.end();
             pseudoranges_iter++)
         {
-            std::string system_(pseudoranges_iter->second.System, 1);
+            std::string system_(&pseudoranges_iter->second.System, 1);
             std::string sig_(pseudoranges_iter->second.Signal);
             if((system_.compare("G") == 0) && (sig_.compare("1C") == 0))
                 {

@@ -48,7 +48,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Rtcm_Printer(std::string filename, bool flag_rtcm_tty_port, std::string rtcm_dump_filename);
+    Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_filename, bool time_tag_name = true);
 
     /*!
      * \brief Default destructor.
@@ -56,6 +56,7 @@ public:
     ~Rtcm_Printer();
 
     bool Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    bool Print_Rtcm_MT1002(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
     bool Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph); //<! GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
     bool Print_Rtcm_MT1045(const Galileo_Ephemeris & gal_eph); //<! Galileo Ephemeris, should be broadcast every 2 minutes
 
@@ -69,7 +70,7 @@ private:
     int init_serial (std::string serial_device); //serial port control
     void close_serial ();
     std::shared_ptr<Rtcm> rtcm;
-    bool Print_Message(std::string message);
+    bool Print_Message(const std::string & message);
 };
 
 #endif

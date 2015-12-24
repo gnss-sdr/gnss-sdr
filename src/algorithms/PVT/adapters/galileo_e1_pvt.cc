@@ -53,6 +53,7 @@ GalileoE1Pvt::GalileoE1Pvt(ConfigurationInterface* configuration,
     std::string default_dump_filename = "./pvt.dat";
     std::string default_nmea_dump_filename = "./nmea_pvt.nmea";
     std::string default_nmea_dump_devname = "/dev/tty1";
+    std::string default_rtcm_dump_devname = "/dev/pts/1";
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
@@ -74,8 +75,15 @@ GalileoE1Pvt::GalileoE1Pvt(ConfigurationInterface* configuration,
     nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
     std::string nmea_dump_devname;
     nmea_dump_devname = configuration->property(role + ".nmea_dump_devname", default_nmea_dump_devname);
+    // RTCM Printer settings
+    bool flag_rtcm_tty_port;
+    flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
+    std::string rtcm_dump_devname;
+    rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);
+    bool flag_rtcm_server;
+    flag_rtcm_server = configuration->property(role + ".flag_rtcm_server", false);
     // make PVT object
-    pvt_ = galileo_e1_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname);
+    pvt_ = galileo_e1_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 

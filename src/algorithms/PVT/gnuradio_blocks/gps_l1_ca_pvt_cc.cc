@@ -56,9 +56,9 @@ extern concurrent_map<Sbas_Satellite_Correction> global_sbas_sat_corr_map;
 extern concurrent_map<Sbas_Ephemeris> global_sbas_ephemeris_map;
 
 gps_l1_ca_pvt_cc_sptr
-gps_l1_ca_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname)
+gps_l1_ca_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
 {
-    return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname));
+    return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
 }
 
 
@@ -71,7 +71,10 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         int display_rate_ms,
         bool flag_nmea_tty_port,
         std::string nmea_dump_filename,
-        std::string nmea_dump_devname) :
+        std::string nmea_dump_devname,
+        bool flag_rtcm_server,
+        bool flag_rtcm_tty_port,
+        std::string rtcm_dump_devname) :
              gr::block("gps_l1_ca_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
              gr::io_signature::make(1, 1, sizeof(gr_complex)) )
 {
@@ -97,6 +100,12 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
 
     //initialize nmea_printer
     d_nmea_printer = std::make_shared<Nmea_Printer>(nmea_dump_filename, flag_nmea_tty_port, nmea_dump_devname);
+
+    //initialize rtcm_printer
+    std::string rtcm_dump_filename;
+    rtcm_dump_filename = d_dump_filename;
+    d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname);
+    b_rtcm_writing_started = false;
 
     d_dump_filename.append("_raw.dat");
     dump_ls_pvt_filename.append("_ls_pvt.dat");
@@ -302,6 +311,39 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                                             rp->update_nav_header(rp->navFile, d_ls_pvt->gps_utc_model, d_ls_pvt->gps_iono);
                                             b_rinex_header_updated = true;
                                         }
+                                }
+                            if(b_rtcm_writing_started)
+                                {
+                                    if((d_sample_counter % 1000) == 0)
+                                        {
+                                            std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                                            gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                                            if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MT1002(gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                                }
+                                        }
+                                    if((d_sample_counter % 5000) == 0)
+                                        {
+                                            std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                                            gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                                            if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
+                                                }
+                                        }
+                                }
+
+                            if(!b_rtcm_writing_started) // the first time
+                                {
+                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                        {
+                                            d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
+                                            d_rtcm_printer->Print_Rtcm_MT1002(gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                        }
+                                    b_rtcm_writing_started = true;
                                 }
                         }
                 }

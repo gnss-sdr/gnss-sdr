@@ -220,7 +220,7 @@ bool Rtcm_Printer::Print_Rtcm_MSM(unsigned int msm_number, const Gps_Ephemeris &
         }
 
 
-    Rtcm_Printer::Print_Message(msm7);
+    Rtcm_Printer::Print_Message(msm);
     return true;
 }
 

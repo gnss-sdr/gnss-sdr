@@ -173,6 +173,58 @@ bool Rtcm_Printer::Print_Rtcm_MT1045(const Galileo_Ephemeris & gal_eph)
 }
 
 
+bool Rtcm_Printer::Print_Rtcm_MSM(unsigned int msm_number, const Gps_Ephemeris & gps_eph,
+        const Gps_CNAV_Ephemeris & gps_cnav_eph,
+        const Galileo_Ephemeris & gal_eph,
+        double obs_time,
+        const std::map<int, Gnss_Synchro> & pseudoranges,
+        unsigned int ref_id,
+        unsigned int clock_steering_indicator,
+        unsigned int external_clock_indicator,
+        int smooth_int,
+        bool divergence_free,
+        bool more_messages)
+{
+    std::string msm;
+    if(msm_number == 1)
+        {
+            std::string msm = rtcm->print_MSM_1(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, ref_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+        }
+    else if(msm_number == 2)
+        {
+            std::string msm = rtcm->print_MSM_2(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, ref_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+        }
+    else if(msm_number == 3)
+        {
+            std::string msm = rtcm->print_MSM_3(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, ref_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+        }
+    else if(msm_number == 4)
+        {
+            std::string msm = rtcm->print_MSM_4(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, ref_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+        }
+    else if(msm_number == 5)
+        {
+            std::string msm = rtcm->print_MSM_5(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, ref_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+        }
+    else if(msm_number == 6)
+        {
+            std::string msm = rtcm->print_MSM_6(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, ref_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+        }
+    else if(msm_number == 7)
+        {
+            std::string msm = rtcm->print_MSM_7(gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, ref_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more_messages);
+        }
+    else
+        {
+            return false;
+        }
+
+
+    Rtcm_Printer::Print_Message(msm7);
+    return true;
+}
+
+
 int Rtcm_Printer::init_serial(std::string serial_device)
 {
     /*

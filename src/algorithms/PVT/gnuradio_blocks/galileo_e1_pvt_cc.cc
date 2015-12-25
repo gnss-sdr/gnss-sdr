@@ -104,6 +104,7 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
 
     b_rinex_header_writen = false;
     b_rinex_header_updated = false;
+    b_rtcm_writing_started = false;
     rp = std::make_shared<Rinex_Printer>();
 
     // ############# ENABLE DATA FILE LOG #################
@@ -269,6 +270,41 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
                                             rp->update_obs_header(rp->obsFile, d_ls_pvt->galileo_utc_model);
                                             b_rinex_header_updated = true;
                                         }
+                                }
+
+                            if(b_rtcm_writing_started)
+                                {
+                                    if((d_sample_counter % (1000 / 4) ) == 0) // every second
+                                        {
+                                            std::map<int, Galileo_Ephemeris>::iterator gal_ephemeris_iter;
+                                            gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                            if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, false, false );
+                                                    // gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, ref_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more messages
+                                                }
+                                        }
+                                    if((d_sample_counter % (120000 / 4)) == 0) // every 2 minutes
+                                        {
+                                            std::map<int, Galileo_Ephemeris>::iterator gal_ephemeris_iter;
+                                            gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                            if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MT1045(gal_ephemeris_iter->second);
+                                                }
+                                        }
+                                }
+
+                            if(!b_rtcm_writing_started) // the first time
+                                {
+                                    std::map<int,Galileo_Ephemeris>::iterator gal_ephemeris_iter;
+                                    gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                    if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                        {
+                                            d_rtcm_printer->Print_Rtcm_MT1045(gal_ephemeris_iter->second);
+                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, false, false );
+                                        }
+                                    b_rtcm_writing_started = true;
                                 }
                         }
                 }

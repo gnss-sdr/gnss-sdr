@@ -107,6 +107,7 @@ private:
     bool d_dump;
     bool b_rinex_header_writen;
     bool b_rinex_header_updated;
+    bool b_rtcm_writing_started;
     std::shared_ptr<Rinex_Printer> rp;
     unsigned int d_nchannels;
     std::string d_dump_filename;

@@ -60,6 +60,18 @@ public:
     bool Print_Rtcm_MT1019(const Gps_Ephemeris & gps_eph); //<! GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
     bool Print_Rtcm_MT1045(const Galileo_Ephemeris & gal_eph); //<! Galileo Ephemeris, should be broadcast every 2 minutes
 
+    bool Print_Rtcm_MSM(int msm_number, const Gps_Ephemeris & gps_eph,
+            const Gps_CNAV_Ephemeris & gps_cnav_eph,
+            const Galileo_Ephemeris & gal_eph,
+            double obs_time,
+            const std::map<int, Gnss_Synchro> & pseudoranges,
+            unsigned int ref_id,
+            unsigned int clock_steering_indicator,
+            unsigned int external_clock_indicator,
+            int smooth_int,
+            bool divergence_free,
+            bool more_messages);
+
     std::string print_MT1005_test(); //<!  For testing purposes
 
 private:

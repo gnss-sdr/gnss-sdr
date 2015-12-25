@@ -1131,7 +1131,7 @@ Observables.dump_filename=./observables.dat
    
 
 #### Computation of Position, Velocity and Time
-Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute simple least square solutions (stored in GIS-friendly formats such as [GeoJSON](http://geojson.org/geojson-spec.html) and [KML](http://www.opengeospatial.org/standards/kml), or transmitted via serial port as [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) messages), and leaves room for more sophisticated positioning methods by storing observables and navigation data in [RINEX](https://en.wikipedia.org/wiki/RINEX) files (v2.11 or v3.02). 
+Although data processing for obtaining high-accuracy PVT solutions is out of the scope of GNSS-SDR, we provide a module that can compute simple least square solutions (stored in GIS-friendly formats such as [GeoJSON](http://geojson.org/geojson-spec.html) and [KML](http://www.opengeospatial.org/standards/kml), or transmitted via serial port as [NMEA 0183](https://en.wikipedia.org/wiki/NMEA_0183) messages), and leaves room for more sophisticated positioning methods by storing observables and navigation data in [RINEX](https://en.wikipedia.org/wiki/RINEX) files (v2.11 or v3.02), and generating [RTCM](http://www.rtcm.org) 3.2 messages that can be disseminated through the Internet in real time.
 
 The common interface is [PvtInterface](./src/core/interfaces/pvt_interface.h). 
 
@@ -1147,8 +1147,11 @@ PVT.display_rate_ms=500 ; Position console print (std::out) interval [ms].
 PVT.dump=false ; Enables the PVT internal binary data file logging [true] or [false] 
 PVT.dump_filename=./PVT ; Log path and filename without extension of GeoJSON and KML files
 PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
-PVT.flag_nmea_tty_port=true ; Enable the NMEA log to a serial TTY port 
+PVT.flag_nmea_tty_port=true ; Enables the NMEA log to a serial TTY port 
 PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
+PVT.flag_rtcm_server=false ; Enables or disables a TCP/IP server dispatching RTCM messages 
+PVT.flag_rtcm_tty_port=true ; Enables the RTCM log to a serial TTY port 
+PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
 ~~~~~~ 
 
 For Galileo E1B receivers:
@@ -1162,6 +1165,12 @@ PVT.output_rate_ms=100;
 PVT.display_rate_ms=500;
 PVT.dump=false
 PVT.dump_filename=./PVT
+PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
+PVT.flag_nmea_tty_port=true ; Enables the NMEA log to a serial TTY port 
+PVT.nmea_dump_devname=/dev/pts/4 ; serial device descriptor for NMEA logging
+PVT.flag_rtcm_server=false ; Enables or disables a TCP/IP server dispatching RTCM messages 
+PVT.flag_rtcm_tty_port=true ; Enables the RTCM log to a serial TTY port 
+PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
 ~~~~~~ 
 
 
@@ -1189,6 +1198,11 @@ PVT.dump_filename=./PVT
  * **RINEX** (Receiver Independent Exchange Format) is an interchange format for raw satellite navigation system data, covering observables and the information contained in the navigation message broadcast by GNSS satellites. This allows the user to post-process the received data to produce a more accurate result (usually with other data unknown to the original receiver, such as better models of the atmospheric conditions at time of measurement). RINEX files can be used by software packages such as [GPSTk](http://www.gpstk.org), [RTKLIB](http://www.rtklib.com/) and [gLAB](http://gage14.upc.es/gLAB/). GNSS-SDR by default generates RINEX version [3.02](https://igscb.jpl.nasa.gov/igscb/data/format/rinex302.pdf). If [2.11](https://igscb.jpl.nasa.gov/igscb/data/format/rinex211.txt) is needed, it can be requested through a commandline flag when invoking the software receiver:
 ~~~~~~ 
 $ gnss-sdr --RINEX_version=2
+~~~~~~ 
+
+* **RTCM SC-104** provides standards that define the data structure for differential GNSS correction information for a variety of differential correction applications. It was developed by the Radio Technical Commission for Maritime Services ([RTCM](http://www.rtcm.org/overview.php#Standards "Radio Technical Commission for Maritime Services")) and has become an industry standard for communication of correction information. GNSS-SDR implements RTCM version 3.2, defined in the document *RTCM 10403.2, Differential GNSS (Global Navigation Satellite Systems) Services - Version 3* (February 1, 2013), which can be [purchased online](https://ssl29.pair.com/dmarkle/puborder.php?show=3). By default, the generated RTCM messages are dumped into a text file. However, GNSS-SDR is equipped with a TCP/IP server, acting as an NTRIP source that can feed an NTRIP server. NTRIP (Networked Transport of RTCM via Internet Protocol) is an open standard protocol that can be freely download from [BKG](http://igs.bkg.bund.de/root_ftp/NTRIP/documentation/NtripDocumentation.pdf), and it is designed for disseminating differential correction data (e.g in the RTCM-104 format) or other kinds of GNSS streaming data to stationary or mobile users over the Internet. The TCP/IP server can be activated by setting ```PVT.flag_rtcm_server=true``` in the configuration file, and will be active during the execution of the software receiver. By default, the server will work on port 2101 (which is the recommended port for RTCM services according to the according to the Internet Assigned Numbers Authority, [IANA](http://www.iana.org/assignments/service-names-port-numbers)), and will identify the Reference Station with ID=1234. Both the port server and the Station ID can be changed by invoking GNSS-SDR with the following flags:
+~~~~~~ 
+$ gnss-sdr --RTCM_Port=12345 --RTCM_Ref_Station_ID=10
 ~~~~~~ 
 
 **Important note:**

@@ -506,6 +506,22 @@ private:
                     {
                         do_read_message_body();
                     }
+                else if(!ec && !read_msg_.decode_header())
+                    {
+                        client_says += read_msg_.data();
+                        bool first = true;
+                        while(client_says.length() >= 80)
+                            {
+                                if(first == true)
+                                    {
+                                        std::cout << "Client from " << socket_.remote_endpoint().address() << " says ";
+                                        first = false;
+                                    }
+                                std::cout << client_says.substr(0, 80) << std::endl;
+                                client_says = client_says.substr(80, client_says.length() - 80);
+                            }
+                        do_read_message_header();
+                    }
                 else
                     {
                         std::cout << "Closing connection with client from " << socket_.remote_endpoint().address() << std::endl;
@@ -564,6 +580,7 @@ private:
         Rtcm_Listener_Room & room_;
         Rtcm_Message read_msg_;
         std::deque<Rtcm_Message> write_msgs_;
+        std::string client_says;
     };
 
 

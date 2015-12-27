@@ -41,11 +41,12 @@
 TEST(Control_Message_Factory_Test, GetQueueMessage)
 {
     std::shared_ptr<ControlMessageFactory> factory = std::make_shared<ControlMessageFactory>();
-    gr::message::sptr queue_message = factory->GetQueueMessage(0, 0);
-    std::shared_ptr<ControlMessage> control_message = std::make_shared<ControlMessage>();
+    gr::message::sptr queue_message = factory->GetQueueMessage(0, 2);
+    auto control_messages = factory->GetControlMessages(queue_message);
     unsigned int expected0 = 0;
-    EXPECT_EQ(expected0, control_message->who);
-    EXPECT_EQ(expected0, control_message->what);
+    unsigned int expected2 = 2;
+    EXPECT_EQ(expected0, control_messages->at(0)->who);
+    EXPECT_EQ(expected2, control_messages->at(0)->what);
     EXPECT_EQ(sizeof(ControlMessage), queue_message->length());
 }
 

@@ -94,9 +94,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-6.200.4.tar.gz
-$ tar xvfz armadillo-6.200.4.tar.gz
-$ cd armadillo-6.200.4
+$ wget http://sourceforge.net/projects/arma/files/armadillo-6.400.3.tar.gz
+$ tar xvfz armadillo-6.400.3.tar.gz
+$ cd armadillo-6.400.3
 $ cmake .
 $ make
 $ sudo make install

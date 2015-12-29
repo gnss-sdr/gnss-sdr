@@ -138,7 +138,8 @@ TEST(SubcarrierResamplerTest, SubcarrierResamplerIntegerSampleSpacing )
     std::vector< double > _desired_subcarrier_phases;
     _desired_subcarrier_phases.resize(_num_replicas);
 
-    allocate_subcarrier_replicas( _resampled_subcarriers, _num_samples );
+    int extra_samples = static_cast<int>( std::ceil( 2*subcarrier_spacing_cycles/subcarrier_phase_step ) );
+    allocate_subcarrier_replicas( _resampled_subcarriers, _num_samples + extra_samples );
 
     SubcarrierResamplerIntegerSampleSpacing< std::complex< float > >  the_resampler(
             boost::shared_ptr< SubcarrierResamplerInterface< std::complex<float> > >(
@@ -172,6 +173,7 @@ TEST(SubcarrierResamplerTest, SubcarrierResamplerIntegerSampleSpacing )
     std::cout << "Resampling completed in " << (end - begin) << " microseconds" << std::endl;
 
     deallocate_subcarrier_replicas( _resampled_subcarriers );
+    delete [] _orig_subcarrier;
 
 }
 
@@ -230,6 +232,7 @@ TEST(SubcarrierResamplerTest, SubcarrierResamplerFxpt64 )
     std::cout << "Resampling completed in " << (end - begin) << " microseconds" << std::endl;
 
     deallocate_subcarrier_replicas( _resampled_subcarriers );
+    delete [] _orig_subcarrier;
 
 }
 
@@ -257,7 +260,8 @@ TEST(SubcarrierResamplerTest, SubcarrierResamplerIntegerSampleSpacingFxpt64 )
     std::vector< double > _desired_subcarrier_phases;
     _desired_subcarrier_phases.resize(_num_replicas);
 
-    allocate_subcarrier_replicas( _resampled_subcarriers, _num_samples );
+    int extra_samples = static_cast<int>( std::ceil( 2*subcarrier_spacing_cycles/subcarrier_phase_step ) );
+    allocate_subcarrier_replicas( _resampled_subcarriers, _num_samples + extra_samples );
 
     SubcarrierResamplerIntegerSampleSpacing< std::complex< float > >  the_resampler(
             boost::shared_ptr< SubcarrierResamplerInterface< std::complex<float> > >(
@@ -291,7 +295,7 @@ TEST(SubcarrierResamplerTest, SubcarrierResamplerIntegerSampleSpacingFxpt64 )
     std::cout << "Resampling completed in " << (end - begin) << " microseconds" << std::endl;
 
     deallocate_subcarrier_replicas( _resampled_subcarriers );
-
+    delete [] _orig_subcarrier;
 }
 
 TEST(SubcarrierResamplerTest, SubcarrierResamplerMemoryStore )
@@ -351,6 +355,7 @@ TEST(SubcarrierResamplerTest, SubcarrierResamplerMemoryStore )
 
     deallocate_subcarrier_replicas( _resampled_subcarriers );
 
+    delete []_orig_subcarrier;
 }
 
 

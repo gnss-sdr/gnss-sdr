@@ -145,7 +145,10 @@ TEST(CodeResamplerTest, CodeResamplerIntegerChipSpacing )
 
     gps_l1_ca_code_gen_complex( _orig_code,  _prn,  0);
 
-    allocate_replicas( _resampled_codes, _num_samples );
+    // Need to account for the fact that the integer resampler needs to generate
+    // more samples for the early code:
+    int extra_samples = static_cast<int>( std::ceil( code_spacing_chips / code_phase_step ) );
+    allocate_replicas( _resampled_codes, 2*_num_samples + extra_samples + 2);
 
     CodeResamplerIntegerChipSpacing< std::complex< float > >  the_resampler(
             boost::shared_ptr< CodeResamplerInterface< std::complex<float> > >(
@@ -268,7 +271,10 @@ TEST(CodeResamplerTest, CodeResamplerIntegerChipSpacingFxpt64 )
 
     gps_l1_ca_code_gen_complex( _orig_code,  _prn,  0);
 
-    allocate_replicas( _resampled_codes, _num_samples );
+    // Need to account for the fact that the integer resampler needs to generate
+    // more samples for the early code:
+    int extra_samples = static_cast<int>( std::ceil( 2.0*code_spacing_chips / code_phase_step ) );
+    allocate_replicas( _resampled_codes, _num_samples+extra_samples );
 
     CodeResamplerIntegerChipSpacing< std::complex< float > >  the_resampler(
             boost::shared_ptr< CodeResamplerInterface< std::complex<float> > >(
@@ -331,7 +337,7 @@ TEST(CodeResamplerTest, CodeResamplerMemoryStore )
 
     gps_l1_ca_code_gen_complex( _orig_code,  _prn,  0);
 
-    allocate_replicas( _resampled_codes, _num_samples );
+    allocate_replicas( _resampled_codes, 2*_num_samples + 12 );
 
     CodeResamplerMemoryStore< std::complex< float > >  the_resampler(
             _orig_code, 1023, code_phase_step, _num_samples, 0.1, 1.0 );

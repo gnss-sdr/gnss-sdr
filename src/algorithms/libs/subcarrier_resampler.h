@@ -39,6 +39,8 @@
 #include <limits>
 #include "fxpt64.h"
 #include <cassert>
+#include <cstring>
+
 
 /*!
  * \brief Interface for a generic subcarrier resampler
@@ -165,7 +167,7 @@ public:
         for( int i = 1; i < init_subcarrier_phase_cycles.size(); ++i )
         {
             // Copy the shifted 'early' code to the later codes:
-            memcpy( resampled_subcarriers[i], resampled_subcarriers[0] +
+            std::memcpy( resampled_subcarriers[i], resampled_subcarriers[0] +
                     subcarrier_phase_offsets_samples[i],
                     num_samples * sizeof( T ) );
 
@@ -340,7 +342,7 @@ public:
             init_subcarrier_phase_cycles[ii] = achieved_subcarrier_phase;
 
 
-            memcpy( resampled_subcarriers[ii], d_replica_store[offset_ind],
+            std::memcpy( resampled_subcarriers[ii], d_replica_store[offset_ind],
                     num_samples * sizeof( T ) );
 
         }

@@ -43,7 +43,7 @@
 #include <limits>
 #include "fxpt64.h"
 #include <cassert>
-
+#include <cstring> // memcpy
 /*!
  * \brief Interface for a generic code resampler
  *
@@ -101,7 +101,7 @@ public:
                 int num_samples_this_iter = num_samples;
 
                 int num_samples_at_rollover = j + std::floor(
-                        ( code_length - tcode_chips )/code_phase_step
+                        ( static_cast< double >(code_length) - tcode_chips )/code_phase_step
                         )  + 1;
 
                 if( num_samples_at_rollover < num_samples )
@@ -170,7 +170,7 @@ public:
         for( int i = 1; i < init_code_phase.size(); ++i )
         {
             // Copy the shifted 'early' code to the later codes:
-            memcpy( resampled_codes[i], resampled_codes[0] + code_phase_offsets_samples[i],
+            std::memcpy( resampled_codes[i], resampled_codes[0] + code_phase_offsets_samples[i],
                     num_samples * sizeof( T ) );
 
             // Upate the init_code_phase parameter to reflect the true code phases
@@ -288,7 +288,7 @@ public:
             curr_offset += d_code_spacing_chips;
 
             d_replica_store[ii] = static_cast< T *>( volk_malloc(
-                        maximum_num_samples * sizeof( T ),
+                        2*maximum_num_samples * sizeof( T ),
                         volk_get_alignment() ) );
 
         }
@@ -326,6 +326,12 @@ public:
             double delta_offset = std::numeric_limits<double>::infinity();
 
             double desired_code_phase = init_code_phase[ii];
+
+            if( desired_code_phase < 0.0 )
+            {
+                desired_code_phase += static_cast< double >( code_length );
+            }
+
             double desired_code_phase_mod_one_chip = std::fmod( desired_code_phase, 1.0 );
 
             if( desired_code_phase_mod_one_chip < 0.0 )
@@ -351,7 +357,7 @@ public:
 
             int integer_offset = static_cast< int >( desired_code_phase - desired_code_phase_mod_one_chip );
 
-            memcpy( resampled_codes[ii], d_replica_store[offset_ind] + integer_offset*sizeof(T),
+            std::memcpy( resampled_codes[ii], d_replica_store[offset_ind] + integer_offset,
                     num_samples * sizeof( T ) );
 
         }

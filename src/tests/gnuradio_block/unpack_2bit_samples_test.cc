@@ -173,11 +173,11 @@ TEST(Unpack_2bit_Samples_Test, CheckLittleEndianByte)
 
 }
 
-TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortBigEndianByte)
+TEST(Unpack_2bit_Samples_Test, CheckLittleEndianShortBigEndianByte)
 {
     bool big_endian_bytes = true;
     size_t item_size = 2;
-    bool big_endian_items = true;
+    bool big_endian_items = false;
 
 
     std::vector< int8_t > raw_data = { -1, 3, 1, -1, -3, 1, 3, 1 };
@@ -241,11 +241,11 @@ TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortBigEndianByte)
 
 }
 
-TEST(Unpack_2bit_Samples_Test, CheckBigEndianShortLittleEndianByte)
+TEST(Unpack_2bit_Samples_Test, CheckLittleEndianShortLittleEndianByte)
 {
     bool big_endian_bytes = false;
     size_t item_size = 2;
-    bool big_endian_items = true;
+    bool big_endian_items = false;
 
 
     std::vector< int8_t > raw_data = { -1, 3, 1, -1, -3, 1, 3, 1 };

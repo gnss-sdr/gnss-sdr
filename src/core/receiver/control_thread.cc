@@ -174,41 +174,39 @@ void ControlThread::run()
         }
     std::cout << "Stopping GNSS-SDR, please wait!" << std::endl;
     flowgraph_->stop();
+    stop_ = true;
+    // sending empty data to terminate the threads
+    global_gps_ephemeris_queue.push(Gps_Ephemeris());
+    global_gps_iono_queue.push(Gps_Iono());
+    global_gps_utc_model_queue.push(Gps_Utc_Model());
+    global_gps_almanac_queue.push(Gps_Almanac());
+    global_gps_acq_assist_queue.push(Gps_Acq_Assist());
+    global_gps_ref_location_queue.push(Gps_Ref_Location());
+    global_gps_ref_time_queue.push(Gps_Ref_Time());
+    global_galileo_ephemeris_queue.push(Galileo_Ephemeris());
+    global_galileo_iono_queue.push(Galileo_Iono());
+    global_galileo_utc_model_queue.push(Galileo_Utc_Model());
+    global_galileo_almanac_queue.push(Galileo_Almanac());
 
-#ifdef OLD_BOOST
     // Join GPS threads
-    gps_ephemeris_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
-    gps_iono_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
-    gps_utc_model_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
-    gps_acq_assist_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
-    gps_ref_location_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
-    gps_ref_time_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
+    gps_ephemeris_data_collector_thread_.join();
+    gps_iono_data_collector_thread_.join();
+    gps_utc_model_data_collector_thread_.join();
+    gps_acq_assist_data_collector_thread_.join();
+    gps_ref_location_data_collector_thread_.join();
+    gps_ref_time_data_collector_thread_.join();
 
     //Join Galileo threads
-    galileo_ephemeris_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
-    galileo_iono_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
-    galileo_almanac_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
-    galileo_utc_model_data_collector_thread_.timed_join(boost::posix_time::seconds(1));
+    galileo_ephemeris_data_collector_thread_.join();
+    galileo_iono_data_collector_thread_.join();
+    galileo_almanac_data_collector_thread_.join();
+    galileo_utc_model_data_collector_thread_.join();
 
-    //Join keyboard threads
+    //Join keyboard thread
+#ifdef OLD_BOOST
     keyboard_thread_.timed_join(boost::posix_time::seconds(1));
 #endif
 #ifndef OLD_BOOST
-    // Join GPS threads
-    gps_ephemeris_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-    gps_iono_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-    gps_utc_model_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-    gps_acq_assist_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-    gps_ref_location_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-    gps_ref_time_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-
-    //Join Galileo threads
-    galileo_ephemeris_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-    galileo_iono_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-    galileo_almanac_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-    galileo_utc_model_data_collector_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-
-    //Join keyboard threads
     keyboard_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
 #endif
 
@@ -613,6 +611,7 @@ void ControlThread::gps_acq_assist_data_collector()
     while(stop_ == false)
         {
             global_gps_acq_assist_queue.wait_and_pop(gps_acq);
+            if(gps_acq.i_satellite_PRN == 0) break;
 
             // DEBUG MESSAGE
             std::cout << "Acquisition assistance record has arrived from SAT ID "
@@ -645,6 +644,7 @@ void ControlThread::gps_ephemeris_data_collector()
     while(stop_ == false)
         {
             global_gps_ephemeris_queue.wait_and_pop(gps_eph);
+            if(gps_eph.i_satellite_PRN == 0) break;
 
             // DEBUG MESSAGE
             LOG(INFO) << "Ephemeris record has arrived from SAT ID "
@@ -692,6 +692,7 @@ void ControlThread::galileo_ephemeris_data_collector()
     while(stop_ == false)
         {
             global_galileo_ephemeris_queue.wait_and_pop(galileo_eph);
+            if(galileo_eph.SV_ID_PRN_4 == 0) break;
 
             // DEBUG MESSAGE
             std::cout << "Galileo Ephemeris record has arrived from SAT ID "
@@ -735,6 +736,7 @@ void ControlThread::galileo_ephemeris_data_collector()
 
 }
 
+
 void ControlThread::gps_iono_data_collector()
 {
     // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
@@ -742,12 +744,15 @@ void ControlThread::gps_iono_data_collector()
     while(stop_ == false)
         {
             global_gps_iono_queue.wait_and_pop(gps_iono);
-
-            LOG(INFO) << "New IONO record has arrived ";
+            if(gps_iono.valid == true)
+                {
+                    LOG(INFO) << "New IONO record has arrived ";
+                }
             // there is no timestamp for the iono data, new entries must always be added
             global_gps_iono_map.write(0, gps_iono);
         }
 }
+
 
 void ControlThread::galileo_almanac_data_collector()
 {
@@ -756,8 +761,10 @@ void ControlThread::galileo_almanac_data_collector()
     while(stop_ == false)
         {
             global_galileo_almanac_queue.wait_and_pop(galileo_almanac);
-
-            LOG(INFO) << "New galileo_almanac record has arrived ";
+            if(galileo_almanac.WN_a_7 != 0.0)
+                {
+                    LOG(INFO) << "New galileo_almanac record has arrived ";
+                }
             // there is no timestamp for the galileo_almanac data, new entries must always be added
             global_galileo_almanac_map.write(0, galileo_almanac);
         }
@@ -772,7 +779,10 @@ void ControlThread::galileo_iono_data_collector()
             global_galileo_iono_queue.wait_and_pop(galileo_iono);
 
             // DEBUG MESSAGE
-            LOG(INFO) << "Iono record has arrived";
+            if(galileo_iono.WN_5 != 0)
+                {
+                    LOG(INFO) << "Iono record has arrived";
+                }
 
             // insert new Iono record to the global Iono map
             if (global_galileo_iono_map.read(0, galileo_iono_old))
@@ -936,7 +946,7 @@ void ControlThread::keyboard_listener()
 {
     bool read_keys = true;
     char c = '0';
-    while(read_keys)
+    while(read_keys && !stop_)
         {
             std::cin.get(c);
             if (c == 'q')

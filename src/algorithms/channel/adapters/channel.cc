@@ -226,8 +226,8 @@ void Channel::standby()
  */
 void Channel::stop()
 {
-    channel_internal_queue_.push(0); //message to stop channel
     stop_ = true;
+    channel_internal_queue_.push(0); //message to stop channel
     /* When the boost::thread object that represents a thread of execution
      * is destroyed the thread becomes detached. Once a thread is detached,
      * it will continue executing until the invocation of the function or
@@ -237,15 +237,8 @@ void Channel::stop()
      * the boost::thread object must be used. join() will block the calling
      * thread until the thread represented by the boost::thread object
      * has completed.
-     * NOTE: timed_join() is deprecated and only present up to Boost 1.56
-     *       try_join_until() was introduced in Boost 1.50
      */
-#ifdef OLD_BOOST
-    ch_thread_.timed_join(boost::posix_time::seconds(1));
-#endif
-#ifndef OLD_BOOST
-    ch_thread_.try_join_until(boost::chrono::steady_clock::now() + boost::chrono::milliseconds(50));
-#endif
+    ch_thread_.join();
 }
 
 

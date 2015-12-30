@@ -18,10 +18,6 @@
 
 set(CHANNEL_ADAPTER_SOURCES channel.cc)
 
-if(Boost_VERSION LESS 105000)
-     add_definitions(-DOLD_BOOST=1)
-endif(Boost_VERSION LESS 105000)
-
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters

@@ -164,7 +164,6 @@ int hybrid_observables_cc::general_work (int noutput_items, gr_vector_int &ninpu
             gnss_synchro_iter = max_element(current_gnss_synchro_map.begin(), current_gnss_synchro_map.end(), Hybrid_pairCompare_gnss_synchro_d_TOW_hybrid_at_current_symbol);
             //gnss_synchro_iter = max_element(current_gnss_synchro_map_gps_only.begin(), current_gnss_synchro_map_gps_only.end(), Hybrid_pairCompare_gnss_synchro_d_TOW_hybrid_at_current_symbol);
             double d_TOW_reference = gnss_synchro_iter->second.d_TOW_hybrid_at_current_symbol;
-            char ref_sat_system = gnss_synchro_iter->second.System;
             DLOG(INFO) << "d_TOW_hybrid_reference [ms] = " << d_TOW_reference * 1000;
             double d_ref_PRN_rx_time_ms = gnss_synchro_iter->second.Prn_timestamp_ms;
             DLOG(INFO) << "ref_PRN_rx_time_ms [ms] = " << d_ref_PRN_rx_time_ms;

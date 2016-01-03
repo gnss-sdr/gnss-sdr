@@ -34,7 +34,6 @@
 #define GNSS_GPS_L2C_SIGNAL_H_
 
 #include <complex>
-#include <iostream>
 #include "GPS_L2C.h"
 
 

@@ -41,6 +41,7 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <volk/volk.h>
 #include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"

@@ -42,13 +42,14 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gnss_synchro.h"
 #include "galileo_e1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
 #include "Galileo_E1.h"
 #include "control_message_factory.h"
-#include "volk_gnsssdr/volk_gnsssdr.h"
+
 
 
 
@@ -78,7 +79,7 @@ galileo_volk_e1_dll_pll_veml_make_tracking_cc(
                                          float very_early_late_space_chips)
 {
     return galileo_volk_e1_dll_pll_veml_tracking_cc_sptr(new galileo_volk_e1_dll_pll_veml_tracking_cc(if_freq,
-                                                                                            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, very_early_late_space_chips));
+               fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, very_early_late_space_chips));
 }
 
 
@@ -129,37 +130,37 @@ gr::block("galileo_volk_e1_dll_pll_veml_tracking_cc", gr::io_signature::make(1, 
     
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_malloc((2 * Galileo_E1_B_CODE_LENGTH_CHIPS + 4) * sizeof(gr_complex), volk_get_alignment()));
+    d_ca_code = static_cast<gr_complex*>(volk_malloc((2 * Galileo_E1_B_CODE_LENGTH_CHIPS + 4) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     
-    d_very_early_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_early_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_prompt_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_late_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_very_late_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_carr_sign = static_cast<gr_complex*>(volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    d_very_early_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_early_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_prompt_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_late_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_very_late_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_carr_sign = static_cast<gr_complex*>(volk_malloc(2*d_vector_length * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     
-    d_very_early_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_early_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_prompt_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_late_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_very_late_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    d_carr_sign16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
-    in16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
+    d_very_early_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    d_early_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    d_prompt_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    d_late_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    d_very_late_code16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    d_carr_sign16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    in16 = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
     
-    d_very_early_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_early_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_prompt_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_late_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_very_late_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    d_carr_sign8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
-    in8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_get_alignment()));
+    d_very_early_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_gnsssdr_get_alignment()));
+    d_early_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_gnsssdr_get_alignment()));
+    d_prompt_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_gnsssdr_get_alignment()));
+    d_late_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_gnsssdr_get_alignment()));
+    d_very_late_code8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_gnsssdr_get_alignment()));
+    d_carr_sign8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_gnsssdr_get_alignment()));
+    in8 = static_cast<lv_8sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_8sc_t), volk_gnsssdr_get_alignment()));
     
     // correlator outputs (scalar)
-    d_Very_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
-    d_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
-    d_Prompt = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
-    d_Late = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
-    d_Very_Late = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+    d_Very_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_Early = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_Prompt = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_Late = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_Very_Late = static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_gnsssdr_get_alignment()));
     
     //--- Initializations ------------------------------
     // Initial code frequency basis of NCO

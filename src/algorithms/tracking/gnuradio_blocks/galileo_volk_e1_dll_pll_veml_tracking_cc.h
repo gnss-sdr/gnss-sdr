@@ -29,8 +29,9 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALIELEO_VOLK_E1_DLL_PLL_VEML_TRACKING_CC_H
-#define GNSS_SDR_GALIELEO_VOLK_E1_DLL_PLL_VEML_TRACKING_CC_H
+#ifndef GNSS_SDR_GALILEO_VOLK_E1_DLL_PLL_VEML_TRACKING_CC_H
+#define GNSS_SDR_GALILEO_VOLK_E1_DLL_PLL_VEML_TRACKING_CC_H
+
 
 #include <fstream>
 #include <queue>
@@ -40,11 +41,13 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
+#include <volk/volk.h>
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include "correlator.h"
+
 
 class galileo_volk_e1_dll_pll_veml_tracking_cc;
 

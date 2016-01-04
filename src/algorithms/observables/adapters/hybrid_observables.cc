@@ -32,7 +32,6 @@
 
 #include "hybrid_observables.h"
 #include "configuration_interface.h"
-#include "hybrid_observables_cc.h"
 #include <glog/logging.h>
 
 using google::LogMessage;

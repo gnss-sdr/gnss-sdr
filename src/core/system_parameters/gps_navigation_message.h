@@ -46,7 +46,7 @@
 #include "gps_iono.h"
 #include "gps_almanac.h"
 #include "gps_utc_model.h"
-#include "GPS_L1_CA.h"
+
 
 
 /*!

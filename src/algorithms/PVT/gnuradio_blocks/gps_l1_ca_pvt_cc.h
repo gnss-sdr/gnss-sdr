@@ -38,17 +38,13 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-#include "gps_navigation_message.h"
-#include "gps_ephemeris.h"
-#include "gps_utc_model.h"
-#include "gps_iono.h"
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
 #include "geojson_printer.h"
 #include "rtcm_printer.h"
 #include "gps_l1_ca_ls_pvt.h"
-#include "GPS_L1_CA.h"
+
 
 class gps_l1_ca_pvt_cc;
 
@@ -110,7 +106,7 @@ private:
     bool b_rinex_sbs_header_writen;
     bool b_rinex_header_updated;
     bool b_rtcm_writing_started;
-    std::shared_ptr<Rinex_Printer> rp;
+
     unsigned int d_nchannels;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
@@ -120,6 +116,8 @@ private:
     int d_display_rate_ms;
     long unsigned int d_sample_counter;
     long unsigned int d_last_sample_nav_output;
+
+    std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_printer;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;

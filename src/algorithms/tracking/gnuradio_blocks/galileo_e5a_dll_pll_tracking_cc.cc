@@ -42,6 +42,7 @@
 #include <gnuradio/io_signature.h>
 #include <gnuradio/fxpt.h>  // fixed point sine and cosine
 #include <glog/logging.h>
+#include <volk/volk.h>
 #include "gnss_synchro.h"
 #include "galileo_e5_signal_processing.h"
 #include "tracking_discriminators.h"

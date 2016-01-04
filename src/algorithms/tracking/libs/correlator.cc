@@ -36,6 +36,7 @@
 
 #include "correlator.h"
 #include <iostream>
+#include <volk/volk.h>
 #if USING_VOLK_CW_EPL_CORR_CUSTOM
   #define LV_HAVE_SSE3
   #include "volk_cw_epl_corr.h"

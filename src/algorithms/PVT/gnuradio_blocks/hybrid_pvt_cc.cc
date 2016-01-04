@@ -39,8 +39,6 @@
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include "control_message_factory.h"
-#include "gnss_synchro.h"
 #include "concurrent_map.h"
 
 using google::LogMessage;

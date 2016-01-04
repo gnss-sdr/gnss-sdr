@@ -38,8 +38,6 @@
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include "control_message_factory.h"
-#include "gnss_synchro.h"
 #include "concurrent_map.h"
 #include "sbas_telemetry_data.h"
 #include "sbas_ionospheric_correction.h"

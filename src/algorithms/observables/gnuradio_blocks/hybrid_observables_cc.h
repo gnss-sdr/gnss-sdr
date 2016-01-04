@@ -41,11 +41,7 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-#include "concurrent_queue.h"
-#include "galileo_navigation_message.h"
-#include "rinex_printer.h"
-#include "Galileo_E1.h"
-#include "gnss_synchro.h"
+
 
 class hybrid_observables_cc;
 

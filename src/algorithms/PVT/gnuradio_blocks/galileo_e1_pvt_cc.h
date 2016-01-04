@@ -39,17 +39,13 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-#include "galileo_navigation_message.h"
-#include "galileo_ephemeris.h"
-#include "galileo_utc_model.h"
-#include "galileo_iono.h"
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
 #include "geojson_printer.h"
 #include "rtcm_printer.h"
 #include "galileo_e1_ls_pvt.h"
-#include "Galileo_E1.h"
+
 
 class galileo_e1_pvt_cc;
 
@@ -108,7 +104,7 @@ private:
     bool b_rinex_header_writen;
     bool b_rinex_header_updated;
     bool b_rtcm_writing_started;
-    std::shared_ptr<Rinex_Printer> rp;
+
     unsigned int d_nchannels;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
@@ -118,6 +114,8 @@ private:
     int d_display_rate_ms;
     long unsigned int d_sample_counter;
     long unsigned int d_last_sample_nav_output;
+
+    std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;
     std::shared_ptr<Nmea_Printer> d_nmea_printer;
     std::shared_ptr<GeoJSON_Printer> d_geojson_printer;

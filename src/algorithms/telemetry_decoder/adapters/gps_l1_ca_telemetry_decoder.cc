@@ -38,7 +38,7 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include "configuration_interface.h"
-#include "gps_l1_ca_telemetry_decoder_cc.h"
+
 
 extern concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
 extern concurrent_queue<Gps_Iono> global_gps_iono_queue;

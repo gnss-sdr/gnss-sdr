@@ -39,11 +39,7 @@
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-#include "concurrent_queue.h"
-#include "gps_navigation_message.h"
-#include "rinex_printer.h"
-#include "GPS_L1_CA.h"
-#include "gnss_synchro.h"
+
 
 class mixed_observables_cc;
 

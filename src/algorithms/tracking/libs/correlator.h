@@ -38,7 +38,6 @@
 #define GNSS_SDR_CORRELATOR_H_
 
 #include <string>
-#include <volk/volk.h>
 #include <gnuradio/gr_complex.h>
 
 #if !defined(GENERIC_ARCH) && HAVE_SSE3

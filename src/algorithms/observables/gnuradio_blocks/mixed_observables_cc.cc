@@ -39,6 +39,8 @@
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "gnss_synchro.h"
+#include "GPS_L1_CA.h"
+
 
 
 using google::LogMessage;

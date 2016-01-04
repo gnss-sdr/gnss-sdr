@@ -34,7 +34,6 @@
 #include "hybrid_pvt.h"
 #include <glog/logging.h>
 #include "configuration_interface.h"
-#include "hybrid_pvt_cc.h"
 
 
 using google::LogMessage;

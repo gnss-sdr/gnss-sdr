@@ -39,8 +39,10 @@
 #include <vector>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include "control_message_factory.h"
 #include "gnss_synchro.h"
+#include "Galileo_E1.h"
+#include "GPS_L1_CA.h"
+
 
 
 using google::LogMessage;

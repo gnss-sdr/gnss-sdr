@@ -34,7 +34,6 @@
 #include "galileo_e1_pvt.h"
 #include <glog/logging.h>
 #include "configuration_interface.h"
-#include "galileo_e1_pvt_cc.h"
 
 
 using google::LogMessage;

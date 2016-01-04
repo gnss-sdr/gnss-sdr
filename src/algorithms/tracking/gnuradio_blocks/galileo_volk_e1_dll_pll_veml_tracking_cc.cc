@@ -43,7 +43,6 @@
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "gnss_synchro.h"
 #include "galileo_e1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"

@@ -37,7 +37,6 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <glog/logging.h>
-#include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"

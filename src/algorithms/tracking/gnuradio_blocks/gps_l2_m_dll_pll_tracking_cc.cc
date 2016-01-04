@@ -43,7 +43,6 @@
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include "gnss_synchro.h"
 #include "gps_l2c_signal.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
@@ -580,7 +579,6 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
             float prompt_I;
             float prompt_Q;
             float tmp_E, tmp_P, tmp_L;
-            float tmp_float;
             double tmp_double;
             prompt_I = (*d_Prompt).real();
             prompt_Q = (*d_Prompt).imag();

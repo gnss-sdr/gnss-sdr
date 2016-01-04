@@ -43,7 +43,6 @@
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include "concurrent_queue.h"
-#include "gps_sdr_signal_processing.h"
 #include "tracking_FLL_PLL_filter.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "gnss_synchro.h"

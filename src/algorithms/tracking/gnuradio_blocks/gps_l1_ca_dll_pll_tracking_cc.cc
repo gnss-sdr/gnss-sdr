@@ -44,7 +44,6 @@
 #include <gnuradio/fxpt.h>  // fixed point sine and cosine
 #include <glog/logging.h>
 #include <volk/volk.h>
-#include "gnss_synchro.h"
 #include "gps_sdr_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
@@ -573,7 +572,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             float prompt_I;
             float prompt_Q;
             float tmp_E, tmp_P, tmp_L;
-            float tmp_float;
             double tmp_double;
             prompt_I = (*d_Prompt).real();
             prompt_Q = (*d_Prompt).imag();

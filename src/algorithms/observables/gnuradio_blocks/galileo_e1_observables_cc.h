@@ -35,19 +35,10 @@
 
 
 #include <fstream>
-#include <queue>
 #include <string>
-#include <utility>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 
-//#include "concurrent_queue.h"
-//#include "galileo_navigation_message.h"
-//#include "rinex_printer.h"
-//#include "Galileo_E1.h"
-//#include "gnss_synchro.h"
 
 class galileo_e1_observables_cc;
 
@@ -63,7 +54,7 @@ class galileo_e1_observables_cc : public gr::block
 {
 public:
     ~galileo_e1_observables_cc ();
-    //void set_fs_in(unsigned long int fs_in) {d_fs_in = fs_in;};
+
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 

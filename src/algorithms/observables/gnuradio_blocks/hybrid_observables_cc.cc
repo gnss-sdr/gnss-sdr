@@ -31,11 +31,10 @@
 
 #include "hybrid_observables_cc.h"
 #include <algorithm>
-#include <bitset>
 #include <cmath>
 #include <iostream>
 #include <map>
-#include <sstream>
+#include <utility>
 #include <vector>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>

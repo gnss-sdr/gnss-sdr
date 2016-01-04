@@ -38,11 +38,7 @@
 #define GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H_
 
 #include <fstream>
-#include <queue>
 #include <string>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/shared_array.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/gr_complex.h>

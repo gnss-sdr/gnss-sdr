@@ -33,14 +33,10 @@
 #define GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_CC_H
 
 #include <fstream>
-#include <queue>
 #include <string>
 #include <map>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
-//#include <volk/volk.h>
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"

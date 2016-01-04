@@ -33,6 +33,7 @@
 #include "sbas_l1_telemetry_decoder.h"
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include "concurrent_queue.h"
 #include "sbas_telemetry_data.h"
 #include "sbas_ionospheric_correction.h"
 #include "sbas_satellite_correction.h"

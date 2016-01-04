@@ -52,11 +52,8 @@
 #define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H_
 
 #include <fstream>
-#include <queue>
 #include <string>
 #include <vector>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/gr_complex.h>

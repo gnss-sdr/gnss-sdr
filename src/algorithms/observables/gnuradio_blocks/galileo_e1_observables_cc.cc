@@ -32,16 +32,14 @@
 
 #include "galileo_e1_observables_cc.h"
 #include <algorithm>
-#include <bitset>
 #include <cmath>
 #include <iostream>
 #include <map>
-#include <sstream>
+#include <utility>
 #include <vector>
 #include <armadillo>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-//#include "control_message_factory.h"
 #include "gnss_synchro.h"
 #include "Galileo_E1.h"
 #include "galileo_navigation_message.h"

@@ -30,7 +30,6 @@
 
 
 #include "unpack_intspir_1bit_samples.h"
-#include <iostream>
 #include <gnuradio/io_signature.h>
 
 

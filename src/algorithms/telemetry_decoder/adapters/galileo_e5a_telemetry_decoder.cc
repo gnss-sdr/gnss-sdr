@@ -35,9 +35,9 @@
  */
 
 #include "galileo_e5a_telemetry_decoder.h"
-#include <boost/shared_ptr.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include "concurrent_queue.h"
 #include "galileo_ephemeris.h"
 #include "galileo_almanac.h"
 #include "galileo_iono.h"
@@ -96,16 +96,16 @@ void GalileoE5aTelemetryDecoder::set_satellite(Gnss_Satellite satellite)
 
 void GalileoE5aTelemetryDecoder::connect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	// Nothing to connect internally
+    if(top_block) { /* top_block is not null */};
+    // Nothing to connect internally
     DLOG(INFO) << "nothing to connect internally";
 }
 
 
 void GalileoE5aTelemetryDecoder::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	// Nothing to disconnect
+    if(top_block) { /* top_block is not null */};
+    // Nothing to disconnect
 }
 
 

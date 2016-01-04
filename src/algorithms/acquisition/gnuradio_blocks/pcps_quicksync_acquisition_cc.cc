@@ -29,7 +29,6 @@
  */
 
 #include "pcps_quicksync_acquisition_cc.h"
-#include <ctime>
 #include <cmath>
 #include <sstream>
 #include <gnuradio/io_signature.h>

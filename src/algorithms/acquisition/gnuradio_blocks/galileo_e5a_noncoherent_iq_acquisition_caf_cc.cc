@@ -36,7 +36,6 @@
  */
 
 #include "galileo_e5a_noncoherent_iq_acquisition_caf_cc.h"
-#include <sys/time.h>
 #include <sstream>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>

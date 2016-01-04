@@ -31,10 +31,9 @@
 
 
 #include "galileo_e1b_telemetry_decoder_cc.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
-#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>

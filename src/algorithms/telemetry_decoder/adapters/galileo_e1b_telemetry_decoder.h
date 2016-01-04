@@ -50,7 +50,7 @@ class ConfigurationInterface;
 class GalileoE1BTelemetryDecoder : public TelemetryDecoderInterface
 {
 public:
-	GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
+    GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,

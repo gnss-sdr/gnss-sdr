@@ -36,7 +36,6 @@
 
 #include "gps_l1_ca_telemetry_decoder_cc.h"
 #include <iostream>
-#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>

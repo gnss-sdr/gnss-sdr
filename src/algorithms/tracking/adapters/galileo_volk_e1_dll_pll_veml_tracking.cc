@@ -36,7 +36,6 @@
 
 #include "galileo_volk_e1_dll_pll_veml_tracking.h"
 #include <glog/logging.h>
-#include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 

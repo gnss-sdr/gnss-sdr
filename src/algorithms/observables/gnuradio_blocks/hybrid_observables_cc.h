@@ -30,15 +30,11 @@
  */
 
 
-#ifndef GNSS_SDR_hybrid_observables_CC_H
-#define	GNSS_SDR_hybrid_observables_CC_H
+#ifndef GNSS_SDR_HYBRID_OBSERVABLES_CC_H
+#define	GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 
 #include <fstream>
-#include <queue>
 #include <string>
-#include <utility>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 

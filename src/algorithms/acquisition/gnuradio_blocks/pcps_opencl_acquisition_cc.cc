@@ -49,7 +49,6 @@
  */
 
 #include "pcps_opencl_acquisition_cc.h"
-#include <sys/time.h>
 #include <algorithm>
 #include <fstream>
 #include <iostream>

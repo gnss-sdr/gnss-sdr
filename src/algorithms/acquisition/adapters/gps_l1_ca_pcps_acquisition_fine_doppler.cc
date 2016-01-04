@@ -33,7 +33,6 @@
  */
 
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
-#include <iostream>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include "gps_sdr_signal_processing.h"
@@ -46,17 +45,14 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(
-            queue)
+    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
-
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
 
     DLOG(INFO) << "role " << role;
 
-    item_type_ = configuration->property(role + ".item_type",
-            default_item_type);
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
 
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration->property(role + ".ifreq", 0);
@@ -65,8 +61,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     doppler_min_ = configuration->property(role + ".doppler_min", -5000);
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
     max_dwells_= configuration->property(role + ".max_dwells", 1);
-    dump_filename_ = configuration->property(role + ".dump_filename",
-            default_dump_filename);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_

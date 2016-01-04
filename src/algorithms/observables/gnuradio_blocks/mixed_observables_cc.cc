@@ -29,12 +29,11 @@
 
 #include "mixed_observables_cc.h"
 #include <algorithm>
-#include <bitset>
 #include <cmath>
 #include <iostream>
 #include <map>
-#include <sstream>
 #include <vector>
+#include <utility>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"

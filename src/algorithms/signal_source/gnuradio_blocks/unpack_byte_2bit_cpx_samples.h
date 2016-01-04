@@ -50,8 +50,7 @@ unpack_byte_2bit_cpx_samples_sptr make_unpack_byte_2bit_cpx_samples();
 class unpack_byte_2bit_cpx_samples: public gr::sync_interpolator
 {
 private:
-    friend unpack_byte_2bit_cpx_samples_sptr
-    make_unpack_byte_2bit_cpx_samples_sptr();
+    friend unpack_byte_2bit_cpx_samples_sptr make_unpack_byte_2bit_cpx_samples_sptr();
 
 public:
     unpack_byte_2bit_cpx_samples();

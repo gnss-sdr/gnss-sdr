@@ -30,11 +30,8 @@
 
 #include "galileo_e1_pvt_cc.h"
 #include <algorithm>
-#include <bitset>
 #include <iostream>
 #include <map>
-#include <sstream>
-#include <vector>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>

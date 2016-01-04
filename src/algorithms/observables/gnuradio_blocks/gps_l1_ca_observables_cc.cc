@@ -29,12 +29,11 @@
 
 #include "gps_l1_ca_observables_cc.h"
 #include <algorithm>
-#include <bitset>
 #include <cmath>
 #include <iostream>
 #include <map>
-#include <sstream>
 #include <vector>
+#include <utility>
 #include <armadillo>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>

@@ -30,7 +30,6 @@
 
 
 #include "unpack_byte_2bit_samples.h"
-#include <iostream>
 #include <gnuradio/io_signature.h>
 
 struct byte_2bit_struct

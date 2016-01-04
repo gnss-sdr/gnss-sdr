@@ -34,6 +34,8 @@
 
 #include "pcps_multithread_acquisition_cc.h"
 #include <sstream>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>

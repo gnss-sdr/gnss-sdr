@@ -34,11 +34,8 @@
 
 
 #include <fstream>
-#include <queue>
 #include <string>
 #include <map>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include <volk/volk.h>

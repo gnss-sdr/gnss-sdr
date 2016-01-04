@@ -33,6 +33,7 @@
 #include "gps_l1_ca_telemetry_decoder.h"
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
+#include "concurrent_queue.h"
 #include "gps_ephemeris.h"
 #include "gps_almanac.h"
 #include "gps_iono.h"

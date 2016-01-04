@@ -42,7 +42,6 @@
 #include "gps_sdr_signal_processing.h"
 #include "control_message_factory.h"
 
-
 using google::LogMessage;
 
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(

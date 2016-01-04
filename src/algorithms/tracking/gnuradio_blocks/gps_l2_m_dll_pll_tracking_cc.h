@@ -40,8 +40,6 @@
 #include <queue>
 #include <map>
 #include <string>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include "concurrent_queue.h"

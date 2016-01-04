@@ -36,7 +36,6 @@
 
 #include <string>
 #include <gnuradio/msg_queue.h>
-#include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
 #include "pcps_acquisition_fine_doppler_cc.h"

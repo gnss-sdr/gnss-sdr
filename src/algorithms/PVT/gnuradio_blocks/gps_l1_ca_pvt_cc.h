@@ -31,11 +31,7 @@
 #define	GNSS_SDR_GPS_L1_CA_PVT_CC_H
 
 #include <fstream>
-#include <queue>
-#include <utility>
 #include <string>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include "nmea_printer.h"

@@ -38,11 +38,8 @@
 #define GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_CC_H_
 
 #include <fstream>
-#include <queue>
 #include <map>
 #include <string>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include "concurrent_queue.h"

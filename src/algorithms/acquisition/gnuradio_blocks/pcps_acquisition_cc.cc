@@ -33,14 +33,14 @@
  */
 
 #include "pcps_acquisition_cc.h"
-#include <sys/time.h>
 #include <sstream>
+#include <boost/filesystem.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include <volk/volk.h>
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
-#include <boost/filesystem.hpp>
+
 
 using google::LogMessage;
 

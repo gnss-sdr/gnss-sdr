@@ -37,7 +37,6 @@
 
 #include "galileo_e1_tcp_connector_tracking.h"
 #include <glog/logging.h>
-#include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 

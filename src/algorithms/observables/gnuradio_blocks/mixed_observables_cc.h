@@ -32,11 +32,7 @@
 #define	GNSS_SDR_MIXED_OBSERVABLES_CC_H_
 
 #include <fstream>
-#include <queue>
 #include <string>
-#include <utility>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 

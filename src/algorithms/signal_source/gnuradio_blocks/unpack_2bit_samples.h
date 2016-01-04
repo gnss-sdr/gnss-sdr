@@ -68,7 +68,9 @@
 #ifndef GNSS_SDR_UNPACK_2BIT_SAMPLES_H
 #define GNSS_SDR_UNPACK_2BIT_SAMPLES_H
 
+#include <cstdint>
 #include <gnuradio/sync_interpolator.h>
+
 
 class unpack_2bit_samples;
 
@@ -92,6 +94,13 @@ private:
                                           size_t item_size,
                                           bool big_endian_items,
                                           bool reverse_interleaving);
+    bool big_endian_bytes_;
+    size_t item_size_;
+    bool big_endian_items_;
+    bool swap_endian_items_;
+    bool swap_endian_bytes_;
+    bool reverse_interleaving_;
+    std::vector< int8_t > work_buffer_;
 
 public:
     unpack_2bit_samples( bool big_endianBytes,
@@ -104,16 +113,6 @@ public:
     int work (int noutput_items,
               gr_vector_const_void_star &input_items,
               gr_vector_void_star &output_items);
-
-private:
-    bool big_endian_bytes_;
-    size_t item_size_;
-    bool big_endian_items_;
-    bool swap_endian_items_;
-    bool swap_endian_bytes_;
-    bool reverse_interleaving_;
-    std::vector< int8_t > work_buffer_;
-    
 };
 
 #endif

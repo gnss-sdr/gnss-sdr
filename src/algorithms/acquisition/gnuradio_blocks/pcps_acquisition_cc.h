@@ -51,7 +51,6 @@
 #define GNSS_SDR_PCPS_ACQUISITION_CC_H_
 
 #include <fstream>
-#include <queue>
 #include <string>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>

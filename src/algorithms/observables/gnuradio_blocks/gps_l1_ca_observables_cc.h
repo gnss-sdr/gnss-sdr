@@ -33,12 +33,8 @@
 
 #include <deque>
 #include <fstream>
-#include <queue>
 #include <string>
-#include <utility>
 #include <vector>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>

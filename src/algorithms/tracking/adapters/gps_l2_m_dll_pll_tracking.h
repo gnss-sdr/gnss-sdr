@@ -52,8 +52,7 @@ class ConfigurationInterface;
 class GpsL2MDllPllTracking : public TrackingInterface
 {
 public:
-
-  GpsL2MDllPllTracking(ConfigurationInterface* configuration,
+    GpsL2MDllPllTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
@@ -71,6 +70,7 @@ public:
     {
         return "gps_l2_m_dll_pll_tracking";
     }
+
     size_t item_size()
     {
         return item_size_;

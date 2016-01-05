@@ -52,10 +52,8 @@ class ConfigurationInterface;
  */
 class GalileoE1TcpConnectorTracking : public TrackingInterface
 {
-
 public:
-
-  GalileoE1TcpConnectorTracking(ConfigurationInterface* configuration,
+    GalileoE1TcpConnectorTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
@@ -67,6 +65,7 @@ public:
     {
         return role_;
     }
+
     //! Returns "Galileo_E1_TCP_CONNECTOR_Tracking"
     std::string implementation()
     {
@@ -103,12 +102,9 @@ public:
     void start_tracking();
 
 private:
-
     galileo_e1_tcp_connector_tracking_cc_sptr tracking_;
     size_t item_size_;
-
     unsigned int channel_;
-
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

@@ -37,8 +37,7 @@
  */
 
 #include "gps_l1_ca_dll_pll_optim_tracking.h"
-#include <boost/math/special_functions/round.hpp>
-#include <gnuradio/io_signature.h>
+#include <cmath>
 #include <glog/logging.h>
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"

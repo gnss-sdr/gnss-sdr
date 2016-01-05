@@ -32,12 +32,8 @@
  */
 
 #include "gps_l2_m_pcps_acquisition.h"
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
 #include "gps_l2c_signal.h"
 #include "GPS_L2C.h"
 #include "configuration_interface.h"
@@ -57,8 +53,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 
     LOG(INFO) << "role " << role;
 
-    item_type_ = configuration_->property(role + ".item_type",
-            default_item_type);
+    item_type_ = configuration_->property(role + ".item_type", default_item_type);
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
@@ -77,16 +72,15 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             max_dwells_ = 2;
         }
 
-    dump_filename_ = configuration_->property(role + ".dump_filename",
-            default_dump_filename);
+    dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
-    code_length_ = round((double)fs_in_
-            / (GPS_L2_M_CODE_RATE_HZ / (double)GPS_L2_M_CODE_LENGTH_CHIPS));
+    code_length_ = round(static_cast<double>(fs_in_)
+            / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_;
 
-    code_= new gr_complex[vector_length_];
+    code_ = new gr_complex[vector_length_];
 
     // if (item_type_.compare("gr_complex") == 0 )
     //         {
@@ -161,11 +155,11 @@ void GpsL2MPcpsAcquisition::set_threshold(float threshold)
             threshold_ = calculate_threshold(pfa);
         }
 
-    DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
+    DLOG(INFO) << "Channel " << channel_ <<" Threshold = " << threshold_;
 
-   // if (item_type_.compare("gr_complex") == 0)
+    // if (item_type_.compare("gr_complex") == 0)
     //    {
-            acquisition_cc_->set_threshold(threshold_);
+    acquisition_cc_->set_threshold(threshold_);
     //    }
 }
 
@@ -277,13 +271,13 @@ float GpsL2MPcpsAcquisition::calculate_threshold(float pfa)
 {
     //Calculate the threshold
     unsigned int frequency_bins = 0;
-    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += doppler_step_)
         {
             frequency_bins++;
         }
     DLOG(INFO) << "Channel " << channel_<< "  Pfa = " << pfa;
     unsigned int ncells = vector_length_ * frequency_bins;
-    double exponent = 1 / static_cast<double>(ncells);
+    double exponent = 1.0 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
     double lambda = double(vector_length_);
     boost::math::exponential_distribution<double> mydist (lambda);

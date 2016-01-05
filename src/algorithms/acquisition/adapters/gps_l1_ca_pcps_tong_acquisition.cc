@@ -30,11 +30,8 @@
  */
 
 #include "gps_l1_ca_pcps_tong_acquisition.h"
-#include <iostream>
-#include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
@@ -54,8 +51,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
 
     DLOG(INFO) << "role " << role;
 
-    item_type_ = configuration_->property(role + ".item_type",
-            default_item_type);
+    item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration_->property(role + ".ifreq", 0);
@@ -66,8 +62,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     tong_init_val_ = configuration->property(role + ".tong_init_val", 1);
     tong_max_val_ = configuration->property(role + ".tong_max_val", 2);
 
-    dump_filename_ = configuration_->property(role + ".dump_filename",
-            default_dump_filename);
+    dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_
@@ -75,7 +70,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
 
     vector_length_ = code_length_ * sampled_ms_;
 
-    code_= new gr_complex[vector_length_];
+    code_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -86,10 +81,8 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
 
-            DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id()
-                    << ")";
-            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id()
-                    << ")";
+            DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
+            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
     else
         {
@@ -125,22 +118,22 @@ void GpsL1CaPcpsTongAcquisition::set_channel(unsigned int channel)
 
 void GpsL1CaPcpsTongAcquisition::set_threshold(float threshold)
 {
-	float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-	if(pfa==0.0)
+    if(pfa == 0.0)
         {
-                 pfa = configuration_->property(role_+".pfa", 0.0);
+            pfa = configuration_->property(role_+".pfa", 0.0);
         }
-	if(pfa==0.0)
-		{
-			threshold_ = threshold;
-		}
-	else
-		{
-			threshold_ = calculate_threshold(pfa);
-		}
+    if(pfa == 0.0)
+        {
+            threshold_ = threshold;
+        }
+    else
+        {
+            threshold_ = calculate_threshold(pfa);
+        }
 
-	DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
+    DLOG(INFO) << "Channel " << channel_ << "  Threshold = " << threshold_;
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -230,6 +223,7 @@ void GpsL1CaPcpsTongAcquisition::set_local_code()
     }
 }
 
+
 void GpsL1CaPcpsTongAcquisition::reset()
 {
     if (item_type_.compare("gr_complex") == 0)
@@ -237,6 +231,7 @@ void GpsL1CaPcpsTongAcquisition::reset()
             acquisition_cc_->set_active(true);
         }
 }
+
 
 void GpsL1CaPcpsTongAcquisition::set_state(int state)
 {
@@ -246,27 +241,28 @@ void GpsL1CaPcpsTongAcquisition::set_state(int state)
     }
 }
 
+
 float GpsL1CaPcpsTongAcquisition::calculate_threshold(float pfa)
 {
-	//Calculate the threshold
-
-	unsigned int frequency_bins = 0;
-	for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+    //Calculate the threshold
+    unsigned int frequency_bins = 0;
+    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
         {
             frequency_bins++;
         }
 
-	DLOG(INFO) << "Channel "<< channel_ <<"   Pfa = "<< pfa;
+    DLOG(INFO) << "Channel "<< channel_ <<"   Pfa = "<< pfa;
 
-	unsigned int ncells = vector_length_ * frequency_bins;
-	double exponent = 1 / static_cast<double>(ncells);
-	double val = pow(1.0 - pfa,exponent);
-	double lambda = double(vector_length_);
-	boost::math::exponential_distribution<double> mydist (lambda);
-	float threshold = (float)quantile(mydist, val);
+    unsigned int ncells = vector_length_ * frequency_bins;
+    double exponent = 1 / static_cast<double>(ncells);
+    double val = pow(1.0 - pfa,exponent);
+    double lambda = double(vector_length_);
+    boost::math::exponential_distribution<double> mydist (lambda);
+    float threshold = (float)quantile(mydist, val);
 
-	return threshold;
+    return threshold;
 }
+
 
 void GpsL1CaPcpsTongAcquisition::connect(gr::top_block_sptr top_block)
 {

@@ -34,7 +34,6 @@
 
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
@@ -53,7 +52,6 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration->property(role + ".ifreq", 0);
     dump_ = configuration->property(role + ".dump", false);
@@ -67,7 +65,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     vector_length_ = round(fs_in_
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    code_= new gr_complex[vector_length_];
+    code_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -75,7 +73,6 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
             acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(max_dwells_,sampled_ms_,
                     doppler_max_, doppler_min_, if_, fs_in_, vector_length_, queue_,
                     dump_, dump_filename_);
-
         }
     else
         {
@@ -161,22 +158,21 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_local_code()
 
 void GpsL1CaPcpsAcquisitionFineDoppler::reset()
 {
-        acquisition_cc_->set_active(true);
+    acquisition_cc_->set_active(true);
 }
 
 
 void GpsL1CaPcpsAcquisitionFineDoppler::connect(boost::shared_ptr<gr::top_block> top_block)
 {
-	if(top_block) { /* top_block is not null */};
+    if(top_block) { /* top_block is not null */};
     //nothing to disconnect, now the tracking uses gr_sync_decimator
-
 }
 
 
 void GpsL1CaPcpsAcquisitionFineDoppler::disconnect(boost::shared_ptr<gr::top_block> top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to disconnect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

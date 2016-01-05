@@ -33,7 +33,6 @@
  */
 
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
-#include <iostream>
 #include <glog/logging.h>
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
@@ -54,9 +53,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
 
     DLOG(INFO) << "role " << role;
 
-    item_type_ = configuration->property(role + ".item_type",
-                                         default_item_type);
-
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration->property(role + ".ifreq", 0);
     dump_ = configuration->property(role + ".dump", false);
@@ -64,14 +61,13 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     doppler_min_ = configuration->property(role + ".doppler_min", -5000);
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
     max_dwells_= configuration->property(role + ".max_dwells", 1);
-    dump_filename_ = configuration->property(role + ".dump_filename",
-                                             default_dump_filename);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    code_= new gr_complex[vector_length_];
+    code_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -164,21 +160,21 @@ void GpsL1CaPcpsAssistedAcquisition::set_local_code()
 
 void GpsL1CaPcpsAssistedAcquisition::reset()
 {
-        acquisition_cc_->set_active(true);
+    acquisition_cc_->set_active(true);
 }
 
 
 void GpsL1CaPcpsAssistedAcquisition::connect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
+    if(top_block) { /* top_block is not null */};
     //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 
 void GpsL1CaPcpsAssistedAcquisition::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to disconnect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 

@@ -54,119 +54,121 @@ public:
             std::string role, unsigned int in_streams,
             unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 
-	virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
+    virtual ~GalileoE5aNoncoherentIQAcquisitionCaf();
 
-	std::string role()
-	    {
-	        return role_;
-	    }
-	/*!
-	 * \brief Returns "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF"
-	 */
-	 std::string implementation()
-	    {
-	        return "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF";
-	    }
-	 size_t item_size()
-	    {
-	        return item_size_;
-	    }
+    std::string role()
+    {
+        return role_;
+    }
 
-	 void connect(gr::top_block_sptr top_block);
-	 void disconnect(gr::top_block_sptr top_block);
-	 gr::basic_block_sptr get_left_block();
-	 gr::basic_block_sptr get_right_block();
+    /*!
+     * \brief Returns "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF"
+     */
+    std::string implementation()
+    {
+        return "Galileo_E5a_Noncoherent_IQ_Acquisition_CAF";
+    }
 
-	 /*!
-	  * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-	  * to efficiently exchange synchronization data between acquisition and
-	  *  tracking blocks
-	  */
-	 void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
+    size_t item_size()
+    {
+        return item_size_;
+    }
 
-	 /*!
-	  * \brief Set acquisition channel unique ID
-	  */
-	 void set_channel(unsigned int channel);
+    void connect(gr::top_block_sptr top_block);
+    void disconnect(gr::top_block_sptr top_block);
+    gr::basic_block_sptr get_left_block();
+    gr::basic_block_sptr get_right_block();
 
-	 /*!
-	  * \brief Set statistics threshold of PCPS algorithm
-	  */
-	 void set_threshold(float threshold);
+    /*!
+     * \brief Set acquisition/tracking common Gnss_Synchro object pointer
+     * to efficiently exchange synchronization data between acquisition and
+     *  tracking blocks
+     */
+    void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
 
-	 /*!
-	  * \brief Set maximum Doppler off grid search
-	  */
-	 void set_doppler_max(unsigned int doppler_max);
+    /*!
+     * \brief Set acquisition channel unique ID
+     */
+    void set_channel(unsigned int channel);
 
-	 /*!
-	  * \brief Set Doppler steps for the grid search
-	  */
-	 void set_doppler_step(unsigned int doppler_step);
+    /*!
+     * \brief Set statistics threshold of PCPS algorithm
+     */
+    void set_threshold(float threshold);
 
-	 /*!
-	  * \brief Set tracking channel internal queue
-	  */
-	 void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
+    /*!
+     * \brief Set maximum Doppler off grid search
+     */
+    void set_doppler_max(unsigned int doppler_max);
 
-	 /*!
-	  * \brief Initializes acquisition algorithm.
-	  */
-	 void init();
+    /*!
+     * \brief Set Doppler steps for the grid search
+     */
+    void set_doppler_step(unsigned int doppler_step);
 
-	 /*!
-	  * \brief Sets local Galileo E5a code for PCPS acquisition algorithm.
-	  */
-	 void set_local_code();
+    /*!
+     * \brief Set tracking channel internal queue
+     */
+    void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
-	 /*!
-	  * \brief Returns the maximum peak of grid search
-	  */
-	 signed int mag();
+    /*!
+     * \brief Initializes acquisition algorithm.
+     */
+    void init();
 
-	 /*!
-	  * \brief Restart acquisition algorithm
-	  */
-	 void reset();
+    /*!
+     * \brief Sets local Galileo E5a code for PCPS acquisition algorithm.
+     */
+    void set_local_code();
 
-     /*!
-      * \brief If set to 1, ensures that acquisition starts at the
-      * first available sample.
-      * \param state - int=1 forces start of acquisition
-      */
-	 void set_state(int state);
+    /*!
+     * \brief Returns the maximum peak of grid search
+     */
+    signed int mag();
+
+    /*!
+     * \brief Restart acquisition algorithm
+     */
+    void reset();
+
+    /*!
+     * \brief If set to 1, ensures that acquisition starts at the
+     * first available sample.
+     * \param state - int=1 forces start of acquisition
+     */
+    void set_state(int state);
 
 private:
-	 ConfigurationInterface* configuration_;
-	 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr acquisition_cc_;
-	 gr::blocks::stream_to_vector::sptr stream_to_vector_;
-	 size_t item_size_;
-	 std::string item_type_;
-	 unsigned int vector_length_;
-	 unsigned int code_length_;
-	 bool bit_transition_flag_;
-	 unsigned int channel_;
-	 float threshold_;
-	 unsigned int doppler_max_;
-	 unsigned int doppler_step_;
-	 unsigned int shift_resolution_;
-	 unsigned int sampled_ms_;
-	 unsigned int max_dwells_;
-	 long fs_in_;
-	 long if_;
-	 bool dump_;
-	 std::string dump_filename_;
-	 int Zero_padding;
-	 int CAF_window_hz_;
-	 std::complex<float> * codeI_;
-	 std::complex<float> * codeQ_;
-	 bool both_signal_components;
-	 Gnss_Synchro * gnss_synchro_;
-	 std::string role_;
-	 unsigned int in_streams_;
-	 unsigned int out_streams_;
-	 boost::shared_ptr<gr::msg_queue> queue_;
-	 concurrent_queue<int> *channel_internal_queue_;
-	 float calculate_threshold(float pfa);
+    ConfigurationInterface* configuration_;
+    galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr acquisition_cc_;
+    gr::blocks::stream_to_vector::sptr stream_to_vector_;
+    size_t item_size_;
+    std::string item_type_;
+    unsigned int vector_length_;
+    unsigned int code_length_;
+    bool bit_transition_flag_;
+    unsigned int channel_;
+    float threshold_;
+    unsigned int doppler_max_;
+    unsigned int doppler_step_;
+    unsigned int shift_resolution_;
+    unsigned int sampled_ms_;
+    unsigned int max_dwells_;
+    long fs_in_;
+    long if_;
+    bool dump_;
+    std::string dump_filename_;
+    int Zero_padding;
+    int CAF_window_hz_;
+    std::complex<float> * codeI_;
+    std::complex<float> * codeQ_;
+    bool both_signal_components;
+    Gnss_Synchro * gnss_synchro_;
+    std::string role_;
+    unsigned int in_streams_;
+    unsigned int out_streams_;
+    boost::shared_ptr<gr::msg_queue> queue_;
+    concurrent_queue<int> *channel_internal_queue_;
+    float calculate_threshold(float pfa);
 };
 #endif /* GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_H_ */

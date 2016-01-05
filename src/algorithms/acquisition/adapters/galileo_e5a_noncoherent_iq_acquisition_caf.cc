@@ -36,12 +36,9 @@
  */
 
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
-#include <iostream>
 #include <boost/lexical_cast.hpp>
-#include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E5a.h"
 #include "configuration_interface.h"

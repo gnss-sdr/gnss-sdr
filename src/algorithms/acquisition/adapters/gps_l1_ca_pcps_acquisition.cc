@@ -34,11 +34,8 @@
  */
 
 #include "gps_l1_ca_pcps_acquisition.h"
-#include <iostream>
-#include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
@@ -85,7 +82,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
     vector_length_ = code_length_ * sampled_ms_;
 
-    code_= new gr_complex[vector_length_];
+    code_ = new gr_complex[vector_length_];
 
     // if (item_type_.compare("gr_complex") == 0 )
     //         {
@@ -274,7 +271,7 @@ float GpsL1CaPcpsAcquisition::calculate_threshold(float pfa)
         {
             frequency_bins++;
         }
-    DLOG(INFO) << "Channel " << channel_<< "  Pfa = " << pfa;
+    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
     unsigned int ncells = vector_length_ * frequency_bins;
     double exponent = 1 / static_cast<double>(ncells);
     double val = pow(1.0 - pfa, exponent);
@@ -310,7 +307,6 @@ void GpsL1CaPcpsAcquisition::connect(gr::top_block_sptr top_block)
         {
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-
 }
 
 

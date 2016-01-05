@@ -30,8 +30,6 @@
  */
 
 #include "galileo_e1_pcps_8ms_ambiguous_acquisition.h"
-#include <iostream>
-#include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
@@ -68,7 +66,6 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
             LOG(WARNING) << "coherent_integration_time should be multiple of "
                                      << "Galileo code length (4 ms). coherent_integration_time = "
                                      << sampled_ms_ << " ms will be used.";
-
         }
 
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);

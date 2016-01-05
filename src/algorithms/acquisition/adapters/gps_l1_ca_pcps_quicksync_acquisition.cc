@@ -31,12 +31,8 @@
  */
 
 #include "gps_l1_ca_pcps_quicksync_acquisition.h"
-#include <iostream>
-#include <cmath>
-#include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
@@ -49,7 +45,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
         ConfigurationInterface* configuration, std::string role,
         unsigned int in_streams, unsigned int out_streams,
         gr::msg_queue::sptr queue) :
-            role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+                    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -63,13 +59,13 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     dump_ = configuration_->property(role + ".dump", false);
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
-    
+
 
     //--- Find number of samples per spreading code -------------------------
     code_length_ = round(fs_in_
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    
+
     /*Calculate the folding factor value based on the calculations*/
     unsigned int temp = (unsigned int)ceil(sqrt(log2(code_length_)));
     folding_factor_ = configuration_->property(role + ".folding_factor", temp);
@@ -92,7 +88,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
                     << sampled_ms_ << " ms will be used instead.";
 
         }
-	vector_length_ = code_length_ * sampled_ms_;
+    vector_length_ = code_length_ * sampled_ms_;
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     if (!bit_transition_flag_)
@@ -110,11 +106,11 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     code_ = new gr_complex[code_length_]();
     /*Object relevant information for debugging*/
     LOG(INFO) << "Implementation: " << this->implementation()
-                         << ", Vector Length: " << vector_length_
-                         << ", Samples per ms: " << samples_per_ms
-                         << ", Folding factor: " << folding_factor_
-                         << ", Sampled  ms: " << sampled_ms_
-                         << ", Code Length: " << code_length_;
+                                 << ", Vector Length: " << vector_length_
+                                 << ", Samples per ms: " << samples_per_ms
+                                 << ", Folding factor: " << folding_factor_
+                                 << ", Sampled  ms: " << sampled_ms_
+                                 << ", Code Length: " << code_length_;
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -179,7 +175,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_threshold(float threshold)
             threshold_ = calculate_threshold(pfa);
         }
 
-    DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
+    DLOG(INFO) << "Channel "<< channel_ << " Threshold = " << threshold_;
 
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -205,7 +201,6 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_doppler_step(unsigned int doppler_step
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
-
 }
 
 
@@ -259,13 +254,13 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_local_code()
 
             gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
-            
+
             for (unsigned int i = 0; i < (sampled_ms_/folding_factor_); i++)
-            {
-                memcpy(&(code_[i*code_length_]), code,
-                       sizeof(gr_complex)*code_length_);
-            }
-            
+                {
+                    memcpy(&(code_[i*code_length_]), code,
+                            sizeof(gr_complex)*code_length_);
+                }
+
             //memcpy(code_, code,sizeof(gr_complex)*code_length_);
             acquisition_cc_->set_local_code(code_);
 

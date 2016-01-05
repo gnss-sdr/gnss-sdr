@@ -30,11 +30,9 @@
  */
 
 #include "galileo_e1_pcps_cccwsr_ambiguous_acquisition.h"
-#include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <volk/volk.h>
 #include "galileo_e1_signal_processing.h"
 #include "Galileo_E1.h"
 #include "configuration_interface.h"

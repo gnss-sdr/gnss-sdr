@@ -52,8 +52,6 @@
 
 #include <fstream>
 #include <string>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
 #include <gnuradio/gr_complex.h>
@@ -224,7 +222,6 @@ public:
      {
          d_doppler_step = doppler_step;
      }
-
 
      /*!
       * \brief Set tracking channel internal queue.

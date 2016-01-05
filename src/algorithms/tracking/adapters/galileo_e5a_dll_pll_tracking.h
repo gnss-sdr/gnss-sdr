@@ -53,7 +53,6 @@ class ConfigurationInterface;
 class GalileoE5aDllPllTracking : public TrackingInterface
 {
 public:
-
     GalileoE5aDllPllTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
@@ -81,7 +80,6 @@ public:
     void disconnect(gr::top_block_sptr top_block);
     gr::basic_block_sptr get_left_block();
     gr::basic_block_sptr get_right_block();
-
 
     /*!
      * \brief Set tracking channel unique ID

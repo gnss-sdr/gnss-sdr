@@ -51,10 +51,8 @@ class ConfigurationInterface;
  */
 class GalileoE1DllPllVemlTracking : public TrackingInterface
 {
-
 public:
-
-  GalileoE1DllPllVemlTracking(ConfigurationInterface* configuration,
+    GalileoE1DllPllVemlTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
             unsigned int out_streams,
@@ -103,12 +101,9 @@ public:
     void start_tracking();
 
 private:
-
     galileo_e1_dll_pll_veml_tracking_cc_sptr tracking_;
     size_t item_size_;
-
     unsigned int channel_;
-
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;

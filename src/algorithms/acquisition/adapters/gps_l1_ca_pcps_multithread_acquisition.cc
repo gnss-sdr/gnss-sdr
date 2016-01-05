@@ -30,11 +30,8 @@
  */
 
 #include "gps_l1_ca_pcps_multithread_acquisition.h"
-#include <iostream>
-#include <stdexcept>
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
-#include <gnuradio/msg_queue.h>
 #include "gps_sdr_signal_processing.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
@@ -83,7 +80,7 @@ GpsL1CaPcpsMultithreadAcquisition::GpsL1CaPcpsMultithreadAcquisition(
 
     vector_length_ = code_length_ * sampled_ms_;
 
-    code_= new gr_complex[vector_length_];
+    code_ = new gr_complex[vector_length_];
 
     if (item_type_.compare("gr_complex") == 0)
         {

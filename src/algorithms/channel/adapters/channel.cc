@@ -30,22 +30,12 @@
  */
 
 #include "channel.h"
-#include <cstring>
-#include <iostream>
-#include <sstream>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/chrono.hpp>
 #include <glog/logging.h>
-#include <gnuradio/io_signature.h>
-#include <gnuradio/message.h>
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 #include "configuration_interface.h"
-#include "gnss_flowgraph.h"
-
 
 
 
@@ -197,7 +187,7 @@ void Channel::start_acquisition()
 
 void Channel::start()
 {
-    ch_thread_ = boost::thread(&Channel::run, this);
+    ch_thread_ = std::thread(&Channel::run, this);
 }
 
 
@@ -228,14 +218,14 @@ void Channel::stop()
 {
     stop_ = true;
     channel_internal_queue_.push(0); //message to stop channel
-    /* When the boost::thread object that represents a thread of execution
+    /* When the std::thread object that represents a thread of execution
      * is destroyed the thread becomes detached. Once a thread is detached,
      * it will continue executing until the invocation of the function or
      * callable object supplied on construction has completed,
      * or the program is terminated. In order to wait for a thread of
-     * execution to finish, the join() or timed_join() member functions of
-     * the boost::thread object must be used. join() will block the calling
-     * thread until the thread represented by the boost::thread object
+     * execution to finish, the join() member function of
+     * the std::thread object must be used. join() will block the calling
+     * thread until the thread represented by the std::thread object
      * has completed.
      */
     ch_thread_.join();

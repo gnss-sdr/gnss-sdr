@@ -29,11 +29,14 @@
  */
 
 #include "channel_fsm.h"
-#include <list>
 #include <memory>
+#include <boost/statechart/simple_state.hpp>
+#include <boost/statechart/state.hpp>
+#include <boost/statechart/transition.hpp>
+#include <boost/statechart/custom_reaction.hpp>
+#include <boost/mpl/list.hpp>
 #include <glog/logging.h>
 #include "control_message_factory.h"
-#include "channel.h"
 
 
 struct Ev_channel_start_acquisition: sc::event<Ev_channel_start_acquisition>

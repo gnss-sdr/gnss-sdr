@@ -36,12 +36,11 @@
 #define GNSS_SDR_CHANNEL_H_
 
 #include <string>
+#include <thread>
 #include <gnuradio/msg_queue.h>
 #include "channel_interface.h"
 #include "channel_fsm.h"
-#include "control_message_factory.h"
 #include "concurrent_queue.h"
-#include "gnss_signal.h"
 #include "gnss_synchro.h"
 
 
@@ -107,7 +106,7 @@ private:
     ChannelFsm channel_fsm_;
     boost::shared_ptr<gr::msg_queue> queue_;
     concurrent_queue<int> channel_internal_queue_;
-    boost::thread ch_thread_;
+    std::thread ch_thread_;
     void run();
     void process_channel_messages();
 };

@@ -35,7 +35,6 @@
 #include <string>
 #include <gnuradio/msg_queue.h>
 #include "gnss_block_interface.h"
-#include "control_message_factory.h"
 
 
 class ConfigurationInterface;

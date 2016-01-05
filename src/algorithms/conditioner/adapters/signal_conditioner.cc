@@ -30,14 +30,7 @@
  */
 
 #include "signal_conditioner.h"
-#include <iostream>
-#include <sstream>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread/thread.hpp>
-#include <gnuradio/io_signature.h>
-#include <gnuradio/message.h>
 #include <glog/logging.h>
-#include "gnss_flowgraph.h"
 
 
 using google::LogMessage;

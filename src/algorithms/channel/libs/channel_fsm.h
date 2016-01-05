@@ -32,17 +32,8 @@
 #ifndef GNSS_SDR_CHANNEL_FSM_H
 #define GNSS_SDR_CHANNEL_FSM_H
 
-#include <cstring>
-#include <iostream>
-#include <queue>
+
 #include <boost/statechart/state_machine.hpp>
-#include <boost/statechart/simple_state.hpp>
-#include <boost/statechart/state.hpp>
-#include <boost/statechart/transition.hpp>
-#include <boost/statechart/custom_reaction.hpp>
-#include <boost/mpl/list.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <gnuradio/msg_queue.h>
 #include "acquisition_interface.h"
 #include "tracking_interface.h"

@@ -345,7 +345,7 @@ endif(NOT Boost_FOUND)
 ################################################################################
 # GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
 ################################################################################
-set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER UHD)
+set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER PMT UHD)
 find_package(Gnuradio)
 if(PC_GNURADIO_RUNTIME_VERSION)
    if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS 3.7.3)

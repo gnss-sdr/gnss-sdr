@@ -345,7 +345,7 @@ endif(NOT Boost_FOUND)
 ################################################################################
 # GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
 ################################################################################
-set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS DIGITAL FFT FILTER PMT FEC TRELLIS UHD)
+set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER UHD)
 find_package(Gnuradio)
 if(PC_GNURADIO_RUNTIME_VERSION)
    if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS 3.7.3)
@@ -372,23 +372,18 @@ if(NOT GNURADIO_RUNTIME_FOUND)
 endif(NOT GNURADIO_RUNTIME_FOUND)
 
 if(NOT GNURADIO_BLOCKS_FOUND)
-    message(FATAL_ERROR "*** gnuradio-blocks 3.7 or later is required to build gnss-sdr")
+    message(FATAL_ERROR "*** gnuradio-blocks 3.7.3 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FILTER_FOUND)
-    message(FATAL_ERROR "*** gnuradio-filter 3.7 or later is required to build gnss-sdr")
+    message(FATAL_ERROR "*** gnuradio-filter 3.7.3 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_FFT_FOUND)
-    message(FATAL_ERROR "*** gnuradio-fft 3.7 or later is required to build gnss-sdr")
+    message(FATAL_ERROR "*** gnuradio-fft 3.7.3 or later is required to build gnss-sdr")
 endif()
 if(NOT GNURADIO_ANALOG_FOUND)
-    message(FATAL_ERROR "*** gnuradio-analog 3.7 or later is required to build gnss-sdr")
+    message(FATAL_ERROR "*** gnuradio-analog 3.7.3 or later is required to build gnss-sdr")
 endif()
-if(NOT GNURADIO_FEC_FOUND)
-    message(FATAL_ERROR "*** gnuradio-fec 3.7 or later is required to build gnss-sdr")
-endif()
-if(NOT GNURADIO_TRELLIS_FOUND)
-    message(FATAL_ERROR "*** gnuradio-trellis 3.7 or later is required to build gnss-sdr")
-endif()
+
 
 
 ################################################################################
@@ -428,6 +423,7 @@ if(OS_IS_MACOSX)
     endif(CMAKE_GENERATOR STREQUAL Xcode)
 endif(OS_IS_MACOSX)
 if(NOT VOLK_GNSSSDR_FOUND)
+    message(STATUS " volk_gnsssdr will be built along with gnss-sdr when doing 'make'")
     set(VOLK_GNSSSDR_CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install

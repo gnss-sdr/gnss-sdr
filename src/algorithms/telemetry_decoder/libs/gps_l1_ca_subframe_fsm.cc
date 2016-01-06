@@ -29,8 +29,12 @@
  */
 
 #include "gps_l1_ca_subframe_fsm.h"
-#include <list>
 #include <string>
+#include <boost/statechart/simple_state.hpp>
+#include <boost/statechart/state.hpp>
+#include <boost/statechart/transition.hpp>
+#include <boost/statechart/custom_reaction.hpp>
+#include <boost/mpl/list.hpp>
 
 
 //************ GPS WORD TO SUBFRAME DECODER STATE MACHINE **********

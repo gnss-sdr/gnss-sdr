@@ -33,17 +33,7 @@
 #define GNSS_SDR_GPS_L1_CA_SUBFRAME_FSM_H_
 
 #include <boost/statechart/state_machine.hpp>
-#include <boost/statechart/simple_state.hpp>
-#include <boost/statechart/state.hpp>
-#include <boost/statechart/transition.hpp>
-#include <boost/statechart/custom_reaction.hpp>
-#include <boost/mpl/list.hpp>
-#include <queue>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include "concurrent_queue.h"
-#include <iostream>
-#include <cstring>
 #include "GPS_L1_CA.h"
 #include "gps_navigation_message.h"
 #include "gps_ephemeris.h"

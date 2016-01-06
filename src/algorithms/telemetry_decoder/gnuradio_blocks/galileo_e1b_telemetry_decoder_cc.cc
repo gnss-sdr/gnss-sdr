@@ -38,7 +38,6 @@
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
-#include "galileo_navigation_message.h"
 #include "gnss_synchro.h"
 #include "convolutional.h"
 

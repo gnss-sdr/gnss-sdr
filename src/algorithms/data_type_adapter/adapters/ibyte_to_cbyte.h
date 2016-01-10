@@ -35,7 +35,6 @@
 #include <string>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_synchro.h"
 #include "gnss_block_interface.h"
 #include "interleaved_byte_to_complex_byte.h"
 

@@ -31,8 +31,6 @@
  */
 
 #include "gps_sdr_signal_processing.h"
-#include <stdlib.h>
-#include <cmath>
 
 auto auxCeil = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); };
 

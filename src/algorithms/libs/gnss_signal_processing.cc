@@ -33,6 +33,7 @@
 
 #include "gnss_signal_processing.h"
 #include <gnuradio/fxpt_nco.h>
+#include "GPS_L1_CA.h"
 
 
 auto auxCeil2 = [](float x){ return static_cast<int>(static_cast<long>((x)+1)); };

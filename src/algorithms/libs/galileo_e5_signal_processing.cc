@@ -32,6 +32,11 @@
  */
 
 #include "galileo_e5_signal_processing.h"
+#include <gnuradio/math.h>
+#include "Galileo_E5a.h"
+#include "gnss_signal_processing.h"
+
+
 
 void galileo_e5_a_code_gen_complex_primary(std::complex<float>* _dest, signed int _prn, char _Signal[3])
 {

@@ -34,7 +34,6 @@
 #define GNSS_GPS_L2C_SIGNAL_H_
 
 #include <complex>
-#include "GPS_L2C.h"
 
 
 //!Generates complex GPS L2C M code for the desired SV ID

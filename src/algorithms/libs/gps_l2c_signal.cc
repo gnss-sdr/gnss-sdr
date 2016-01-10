@@ -33,23 +33,24 @@
 #include <gps_l2c_signal.h>
 #include <cstdint>
 #include <cmath>
+#include "GPS_L2C.h"
 
 
 int32_t gps_l2c_m_shift(int32_t x)
 {
-	return static_cast<int32_t>((x >> 1)^((x & 1) * 0445112474));
+    return static_cast<int32_t>((x >> 1)^((x & 1) * 0445112474));
 }
 
 
 void gps_l2c_m_code(int32_t * _dest, unsigned int _prn)
 {
-	int32_t x;
-	x = GPS_L2C_M_INIT_REG[ _prn - 1];
-	for (int n = 0; n < GPS_L2_M_CODE_LENGTH_CHIPS; n++)
-	{
-		_dest[n] = (int8_t)(x&1);
-		x = gps_l2c_m_shift(x);
-	}
+    int32_t x;
+    x = GPS_L2C_M_INIT_REG[ _prn - 1];
+    for (int n = 0; n < GPS_L2_M_CODE_LENGTH_CHIPS; n++)
+        {
+            _dest[n] = (int8_t)(x&1);
+            x = gps_l2c_m_shift(x);
+        }
 }
 
 
@@ -100,7 +101,7 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
             //=== Digitizing =======================================================
 
             //--- Make index array to read L2C code values -------------------------
-    	    //TODO: Check this formula! Seems to start with an extra sample
+            //TODO: Check this formula! Seems to start with an extra sample
             _codeValueIndex = ceil((_ts * ((float)i + 1)) / _tc) - 1;
             //aux = (_ts * (i + 1)) / _tc;
             //_codeValueIndex = static_cast<int>(static_cast<long>(aux)) - 1;
@@ -110,7 +111,6 @@ void gps_l2c_m_code_gen_complex_sampled(std::complex<float>* _dest, unsigned int
                 {
                     //--- Correct the last index (due to number rounding issues) -----------
                     _dest[i] = std::complex<float>(1.0 - 2.0 * _code[_codeLength - 1], 0);
-
                 }
             else
                 {

@@ -41,6 +41,7 @@
 #include "gnss_signal_processing.h"
 #include "gps_sdr_signal_processing.h"
 #include "control_message_factory.h"
+#include "GPS_L1_CA.h"
 
 using google::LogMessage;
 

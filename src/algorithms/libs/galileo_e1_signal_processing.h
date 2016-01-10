@@ -33,10 +33,7 @@
 #define GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H_
 
 #include <complex>
-#include <iostream>
-#include <gnuradio/math.h>
-#include "Galileo_E1.h"
-#include "gnss_signal_processing.h"
+
 
 /*!
  * \brief This function generates Galileo E1 code (one sample per chip).

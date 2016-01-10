@@ -290,7 +290,7 @@ void galileo_volk_e1_dll_pll_veml_tracking_cc::update_local_carrier()
 {
     float phase_rad, phase_step_rad;
     // Compute the carrier phase step for the K-1 carrier doppler estimation
-    phase_step_rad = static_cast<float> (GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in));
+    phase_step_rad = static_cast<float> (GALILEO_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in));
     // Initialize the carrier phase with the remanent carrier phase of the K-2 loop
     phase_rad = static_cast<float> (d_rem_carr_phase_rad);
     
@@ -414,7 +414,7 @@ int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, g
 
         // ################## PLL ##########################################################
         // PLL discriminator
-        carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / GPS_TWO_PI;
+        carr_error_hz = pll_cloop_two_quadrant_atan(*d_Prompt) / GALILEO_TWO_PI;
         // Carrier discriminator filter
         carr_error_filt_hz = d_carrier_loop_filter.get_carrier_nco(carr_error_hz);
         // New carrier Doppler frequency estimation
@@ -422,10 +422,10 @@ int galileo_volk_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, g
         // New code Doppler frequency estimation
         d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ + ((d_carrier_doppler_hz * Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ);
         //carrier phase accumulator for (K) Doppler estimation
-        d_acc_carrier_phase_rad -= GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
+        d_acc_carrier_phase_rad -= GALILEO_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
         //remnant carrier phase to prevent overflow in the code NCO
-        d_rem_carr_phase_rad = d_rem_carr_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
-        d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GPS_TWO_PI);
+        d_rem_carr_phase_rad = d_rem_carr_phase_rad + GALILEO_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
+        d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, GALILEO_TWO_PI);
         
         // ################## DLL ##########################################################
         // DLL discriminator

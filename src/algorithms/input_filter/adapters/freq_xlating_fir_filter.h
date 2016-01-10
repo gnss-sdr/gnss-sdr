@@ -43,7 +43,6 @@
 #include <gnuradio/blocks/char_to_short.h>
 #include <gnuradio/blocks/float_to_short.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_synchro.h"
 #include "gnss_block_interface.h"
 #include "short_x2_to_cshort.h"
 #include "complex_float_to_complex_byte.h"

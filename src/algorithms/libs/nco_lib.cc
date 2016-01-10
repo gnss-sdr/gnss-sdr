@@ -33,7 +33,7 @@
  */
 
 #include "nco_lib.h"
-
+#include <cmath>
 
 
 void fxp_nco(std::complex<float> *dest, int n_samples, float start_phase_rad, float phase_step_rad)

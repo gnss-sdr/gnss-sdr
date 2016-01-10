@@ -44,7 +44,6 @@
 #include <gnuradio/filter/fir_filter_ccf.h>
 #include <gnuradio/filter/fir_filter_fff.h>
 #include <gnuradio/msg_queue.h>
-#include "gnss_synchro.h"
 #include "gnss_block_interface.h"
 #include "complex_byte_to_float_x2.h"
 #include "byte_x2_to_complex_byte.h"

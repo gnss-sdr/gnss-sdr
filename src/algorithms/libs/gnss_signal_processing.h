@@ -36,8 +36,7 @@
 #define GNSS_SDR_GNSS_SIGNAL_PROCESSING_H_
 
 #include <complex>
-#include <iostream>
-#include "GPS_L1_CA.h"
+
 
 /*!
  * \brief This function generates a complex exponential in _dest.

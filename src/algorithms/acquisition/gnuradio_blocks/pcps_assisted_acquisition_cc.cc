@@ -40,6 +40,7 @@
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
 #include "gps_acq_assist.h"
+#include "GPS_L1_CA.h"
 
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 

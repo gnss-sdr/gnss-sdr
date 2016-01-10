@@ -31,8 +31,7 @@
  */
 
 #include "gps_cnav_navigation_message.h"
-#include <cmath>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <iostream>
 #include "gnss_satellite.h"
 
 

@@ -32,7 +32,7 @@
 #ifndef GNSS_SDR_GPS_CNAV_IONO_H_
 #define GNSS_SDR_GPS_CNAV_IONO_H_
 
-#include "GPS_L2C.h"
+
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
 

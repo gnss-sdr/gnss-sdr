@@ -37,16 +37,12 @@
 #ifndef GNSS_SDR_GALILEO_FNAV_MESSAGE_H_
 #define GNSS_SDR_GALILEO_FNAV_MESSAGE_H_
 
-#include <iostream>
-#include <map>
-#include <vector>
-#include <string>
-#include <algorithm>
+
 #include <bitset>
-#include <boost/assign.hpp>
-#include <boost/cstdint.hpp>  // for boost::uint16_t
-#include <cmath>
+#include <string>
+#include <vector>
 #include <utility>
+#include <boost/cstdint.hpp>  // for boost::uint16_t
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_almanac.h"

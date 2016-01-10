@@ -32,6 +32,7 @@
  */
 
 #include "gnss_sdr_supl_client.h"
+#include <cmath>
 #include <utility>
 
 gnss_sdr_supl_client::gnss_sdr_supl_client()

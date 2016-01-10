@@ -32,7 +32,6 @@
 #ifndef GNSS_SDR_GPS_UTC_MODEL_H_
 #define GNSS_SDR_GPS_UTC_MODEL_H_
 
-#include "GPS_L1_CA.h"
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
 

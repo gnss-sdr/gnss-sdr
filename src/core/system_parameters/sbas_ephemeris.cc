@@ -30,8 +30,6 @@
  */
 
 
-#include <stdio.h>
-#include <math.h>
 #include <iostream>
 #include "sbas_ephemeris.h"
 

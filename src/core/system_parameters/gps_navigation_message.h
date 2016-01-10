@@ -32,15 +32,12 @@
 #ifndef GNSS_SDR_GPS_NAVIGATION_MESSAGE_H_
 #define GNSS_SDR_GPS_NAVIGATION_MESSAGE_H_
 
-#include <algorithm>
+
 #include <bitset>
-#include <cmath>
-#include <iostream>
 #include <map>
 #include <string>
-#include <vector>
 #include <utility>
-#include "boost/assign.hpp"
+#include <vector>
 #include "GPS_L1_CA.h"
 #include "gps_ephemeris.h"
 #include "gps_iono.h"

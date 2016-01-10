@@ -29,19 +29,15 @@
  */
 
 
-#ifndef GNSS_SDR_Gps_CNAV_Navigation_Message_H_
-#define GNSS_SDR_Gps_CNAV_Navigation_Message_H_
+#ifndef GNSS_SDR_GPS_CNAV_NAVIGATION_MESSAGE_H_
+#define GNSS_SDR_GPS_CNAV_NAVIGATION_MESSAGE_H_
 
-#include "stdint.h"
-#include <algorithm>
+
 #include <bitset>
-#include <cmath>
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 #include <utility>
-#include <boost/assign.hpp>
 #include "GPS_L2C.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"

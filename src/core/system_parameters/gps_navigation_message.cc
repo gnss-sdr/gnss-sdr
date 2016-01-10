@@ -1,5 +1,5 @@
 /*!
- * \file gps_navigation_message.cc
+m * \file gps_navigation_message.cc
  * \brief  Implementation of a GPS NAV Data message decoder as described in IS-GPS-200E
  *
  * See http://www.gps.gov/technical/icwg/IS-GPS-200E.pdf Appendix II
@@ -32,7 +32,7 @@
 
 #include "gps_navigation_message.h"
 #include <cmath>
-#include "boost/date_time/posix_time/posix_time.hpp"
+#include <iostream>
 
 
 void Gps_Navigation_Message::reset()

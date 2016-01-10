@@ -41,6 +41,8 @@
 #include <boost/dynamic_bitset.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include "Galileo_E1.h"
+
 
 using google::LogMessage;
 

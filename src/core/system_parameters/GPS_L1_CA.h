@@ -32,10 +32,8 @@
 #ifndef GNSS_SDR_GPS_L1_CA_H_
 #define GNSS_SDR_GPS_L1_CA_H_
 
-#include <complex>
 #include <vector>
 #include <utility> // std::pair
-#include <gnss_satellite.h>
 #include "MATH_CONSTANTS.h"
 
 // Physical constants

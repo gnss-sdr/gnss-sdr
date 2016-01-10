@@ -35,13 +35,11 @@
  */
 
 #include "galileo_fnav_message.h"
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/crc.hpp>      // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>
 #include <glog/logging.h>
 #include <iostream>
-#include <cstring>
-#include <string>
+
 
 typedef boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_Galileo_FNAV_type;
 

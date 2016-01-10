@@ -32,8 +32,6 @@
 #ifndef GNSS_SDR_GPS_ALMANAC_H_
 #define GNSS_SDR_GPS_ALMANAC_H_
 
-#include "GPS_L1_CA.h"
-
 
 /*!
  * \brief This class is a storage for the GPS SV ALMANAC data as described in IS-GPS-200E

@@ -32,12 +32,12 @@
 #ifndef GNSS_SDR_GPS_EPHEMERIS_H_
 #define GNSS_SDR_GPS_EPHEMERIS_H_
 
-#include <iostream>
+
 #include <map>
 #include <string>
 #include "boost/assign.hpp"
 #include <boost/serialization/nvp.hpp>
-#include "GPS_L1_CA.h"
+
 
 
 /*!

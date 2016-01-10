@@ -33,11 +33,9 @@
 #ifndef GNSS_SDR_GALILEO_EPHEMERIS_H_
 #define GNSS_SDR_GALILEO_EPHEMERIS_H_
 
-#include <iostream>
-#include <map>
 #include <boost/assign.hpp>
 #include <boost/serialization/nvp.hpp>
-#include "Galileo_E1.h"
+
 
 /*!
  * \brief This class is a storage and orbital model functions for the Galileo SV ephemeris data as described in Galileo ICD paragraph 5.1.1

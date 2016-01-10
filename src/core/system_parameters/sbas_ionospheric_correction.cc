@@ -29,12 +29,8 @@
  */
 
 #include "sbas_ionospheric_correction.h"
-#include <stdarg.h>
-#include <stdio.h>
 #include <cmath>
 #include <iostream>
-#include <sstream>
-#include <boost/serialization/map.hpp>
 #include <glog/logging.h>
 
 
@@ -72,7 +68,7 @@ void Sbas_Ionosphere_Correction::print(std::ostream &out)
  * \param[in]  longitude_d  Receiver's longitude in terms of WGS84 (degree)
  * \param[in]  latitude_d   Receiver's latitude in terms of WGS84 (degree)
  * \param[in]  azimuth_d    Satellite azimuth/elavation angle (rad). Azimuth is the angle of
- *                             the satellite from the userÕs location measured clockwise from north
+ *                             the satellite from the userï¿½s location measured clockwise from north
  * \param[in]  elevation_d  Elevation is the angle of the satellite from the user's location measured
  *                             with respect to the local-tangent-plane
  */

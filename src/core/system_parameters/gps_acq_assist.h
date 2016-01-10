@@ -32,7 +32,6 @@
 #ifndef GNSS_SDR_GPS_ACQ_ASSIST_H_
 #define GNSS_SDR_GPS_ACQ_ASSIST_H_
 
-#include "GPS_L1_CA.h"
 
 
 /*!

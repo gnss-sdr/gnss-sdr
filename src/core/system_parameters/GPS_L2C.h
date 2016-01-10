@@ -32,11 +32,9 @@
 #ifndef GNSS_SDR_GPS_L2C_H_
 #define GNSS_SDR_GPS_L2C_H_
 
-#include <stdint.h>
-#include <complex>
+#include <cstdint>
 #include <vector>
 #include <utility> // std::pair
-#include "gnss_satellite.h"
 #include "MATH_CONSTANTS.h"
 
 // Physical constants

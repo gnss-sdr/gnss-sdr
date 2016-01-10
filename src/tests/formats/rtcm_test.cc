@@ -32,6 +32,7 @@
 #include <memory>
 #include <thread>
 #include "rtcm.h"
+#include "Galileo_E1.h"
 
 TEST(Rtcm_Test, Hex_to_bin)
 {

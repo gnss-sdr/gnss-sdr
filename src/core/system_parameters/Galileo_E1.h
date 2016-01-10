@@ -33,8 +33,6 @@
 #ifndef GNSS_SDR_GALILEO_E1_H_
 #define GNSS_SDR_GALILEO_E1_H_
 
-#include <complex>
-#include <gnss_satellite.h>
 #include <string>
 #include <vector>
 #include <utility> // std::pair

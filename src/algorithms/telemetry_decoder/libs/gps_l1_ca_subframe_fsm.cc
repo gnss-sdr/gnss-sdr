@@ -35,6 +35,7 @@
 #include <boost/statechart/transition.hpp>
 #include <boost/statechart/custom_reaction.hpp>
 #include <boost/mpl/list.hpp>
+#include "gnss_satellite.h"
 
 
 //************ GPS WORD TO SUBFRAME DECODER STATE MACHINE **********

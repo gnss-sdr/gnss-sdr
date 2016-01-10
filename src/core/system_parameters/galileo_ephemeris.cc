@@ -29,6 +29,8 @@
  */
 
 #include "galileo_ephemeris.h"
+#include <cmath>
+#include "Galileo_E1.h"
 
 
 Galileo_Ephemeris::Galileo_Ephemeris()

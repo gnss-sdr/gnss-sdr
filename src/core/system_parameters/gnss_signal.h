@@ -33,6 +33,7 @@
 #define GNSS_SDR_GNSS_SIGNAL_H_
 
 #include "gnss_satellite.h"
+#include <ostream>
 #include <string>
 
 /*!

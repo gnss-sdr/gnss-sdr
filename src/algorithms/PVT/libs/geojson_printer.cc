@@ -32,7 +32,6 @@
 
 #include "geojson_printer.h"
 #include <ctime>
-#include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <glog/logging.h>

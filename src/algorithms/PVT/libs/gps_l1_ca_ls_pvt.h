@@ -32,7 +32,6 @@
 #define GNSS_SDR_GPS_L1_CA_LS_PVT_H_
 
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <string>
 #include "ls_pvt.h"

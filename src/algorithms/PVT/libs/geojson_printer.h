@@ -33,7 +33,6 @@
 #ifndef GNSS_SDR_GEOJSON_PRINTER_H_
 #define GNSS_SDR_GEOJSON_PRINTER_H_
 
-#include <iostream>
 #include <fstream>
 #include <memory>
 #include <string>

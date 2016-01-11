@@ -38,8 +38,6 @@
 #include "gnss_block_interface.h"
 
 
-class ConfigurationInterface;
-
 /*!
  * \brief This class wraps blocks that generates synthesized GNSS signal and
  * filters the signal.
@@ -48,8 +46,7 @@ class GenSignalSource: public GNSSBlockInterface
 {
 public:
     //! Constructor
-    GenSignalSource(ConfigurationInterface *configuration,
-            GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
+    GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
             std::string role, boost::shared_ptr<gr::msg_queue> queue);
 
     //! Virtual destructor

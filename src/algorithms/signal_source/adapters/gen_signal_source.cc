@@ -42,8 +42,7 @@
 using google::LogMessage;
 
 // Constructor
-GenSignalSource::GenSignalSource(ConfigurationInterface *configuration,
-        GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
+GenSignalSource::GenSignalSource(GNSSBlockInterface *signal_generator, GNSSBlockInterface *filter,
         std::string role, boost::shared_ptr<gr::msg_queue> queue) :
     signal_generator_(signal_generator),
     filter_(filter),

@@ -438,7 +438,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResults)
         boost::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
-        signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
+        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
@@ -528,7 +528,7 @@ TEST_F(GpsL1CaPcpsTongAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
         boost::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
         FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
-        signal_source.reset(new GenSignalSource(config.get(), signal_generator, filter, "SignalSource", queue));
+        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
     }) << "Failure connecting the blocks of acquisition test." << std::endl;

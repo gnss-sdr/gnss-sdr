@@ -36,7 +36,7 @@
 #include "gnss_signal_processing.h"
 
 
-void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn, unsigned int _chip_shift)
+void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn)
 {
     std::string _galileo_signal = _Signal;
     signed int prn = _prn - 1;
@@ -76,16 +76,16 @@ void galileo_e1_code_gen_int(int* _dest, char _Signal[3], signed int _prn, unsig
 void galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn, unsigned int _length_out)
 {
     const unsigned int _length_in = Galileo_E1_B_CODE_LENGTH_CHIPS;
-    unsigned int _period = (unsigned int) (_length_out / _length_in);
+    unsigned int _period = static_cast<unsigned int>( _length_out / _length_in );
     for (unsigned int i = 0; i < _length_in; i++)
         {
             for (unsigned int j = 0; j < (_period / 2); j++)
                 {
-                    _dest[i * _period + j] = std::complex<float>((float) _prn[i], 0.0);
+                    _dest[i * _period + j] = std::complex<float>(static_cast<float>(_prn[i]), 0.0);
                 }
             for (unsigned int j = (_period / 2); j < _period; j++)
                 {
-                    _dest[i * _period + j] = std::complex<float>((float) (- _prn[i]), 0.0);
+                    _dest[i * _period + j] = std::complex<float>(static_cast<float>(- _prn[i]), 0.0);
                 }
         }
 }
@@ -95,17 +95,17 @@ void galileo_e1_sinboc_11_gen(std::complex<float>* _dest, int* _prn, unsigned in
 void galileo_e1_sinboc_61_gen(std::complex<float>* _dest, int* _prn, unsigned int _length_out)
 {
     const unsigned int _length_in = Galileo_E1_B_CODE_LENGTH_CHIPS;
-    unsigned int _period = (unsigned int) (_length_out / _length_in);
+    unsigned int _period = static_cast<unsigned int>(_length_out / _length_in);
 
     for (unsigned int i = 0; i < _length_in; i++)
         {
             for (unsigned int j = 0; j < _period; j += 2)
                 {
-                    _dest[i * _period + j] = std::complex<float>((float) _prn[i], 0.0);
+                    _dest[i * _period + j] = std::complex<float>(static_cast<float>(_prn[i]), 0.0);
                 }
             for (unsigned int j = 1; j < _period; j += 2)
                 {
-                    _dest[i * _period + j] = std::complex<float>((float) (- _prn[i]), 0.0);
+                    _dest[i * _period + j] = std::complex<float>(static_cast<float>(- _prn[i]), 0.0);
                 }
         }
 }
@@ -154,15 +154,15 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
     unsigned int _samplesPerCode;
     const int _codeFreqBasis = Galileo_E1_CODE_CHIP_RATE_HZ; //Hz
     unsigned int _codeLength = Galileo_E1_B_CODE_LENGTH_CHIPS;
-    int primary_code_E1_chips[(int)Galileo_E1_B_CODE_LENGTH_CHIPS];
-    _samplesPerCode = static_cast<unsigned int>( static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis )/ static_cast<double>(_codeLength)));
+    int primary_code_E1_chips[static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS)];
+    _samplesPerCode = static_cast<unsigned int>( static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis ) / static_cast<double>(_codeLength)));
     const int _samplesPerChip = (_cboc == true) ? 12 : 2;
 
-    const unsigned int delay = (((int)Galileo_E1_B_CODE_LENGTH_CHIPS - _chip_shift)
-                                % (int)Galileo_E1_B_CODE_LENGTH_CHIPS)
+    const unsigned int delay = ((static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS) - _chip_shift)
+                                % static_cast<int>(Galileo_E1_B_CODE_LENGTH_CHIPS))
                                 * _samplesPerCode / Galileo_E1_B_CODE_LENGTH_CHIPS;
 
-    galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn, 0); //generate Galileo E1 code, 1 sample per chip
+    galileo_e1_code_gen_int(primary_code_E1_chips, _Signal, _prn); //generate Galileo E1 code, 1 sample per chip
 
     std::complex<float>* _signal_E1;
 
@@ -193,10 +193,10 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
     {
 
         std::complex<float>* _signal_E1C_secondary = new std::complex<float>
-                                                    [(int)Galileo_E1_C_SECONDARY_CODE_LENGTH
+                                                    [static_cast<int>(Galileo_E1_C_SECONDARY_CODE_LENGTH)
                                                     * _samplesPerCode];
 
-        for (unsigned int i = 0; i < (int)Galileo_E1_C_SECONDARY_CODE_LENGTH; i++)
+        for (unsigned int i = 0; i < static_cast<unsigned int>(Galileo_E1_C_SECONDARY_CODE_LENGTH); i++)
             {
                 for (unsigned k = 0; k < _samplesPerCode; k++)
                     {
@@ -206,7 +206,7 @@ void galileo_e1_code_gen_complex_sampled(std::complex<float>* _dest, char _Signa
                     }
             }
 
-        _samplesPerCode *= (int)Galileo_E1_C_SECONDARY_CODE_LENGTH;
+        _samplesPerCode *= static_cast<int>(Galileo_E1_C_SECONDARY_CODE_LENGTH);
 
         delete[] _signal_E1;
         _signal_E1 = _signal_E1C_secondary;

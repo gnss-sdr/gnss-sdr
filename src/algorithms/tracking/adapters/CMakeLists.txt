@@ -32,9 +32,10 @@ set(TRACKING_ADAPTER_SOURCES
      gps_l1_ca_tcp_connector_tracking.cc
      galileo_e5a_dll_pll_tracking.cc
      gps_l2_m_dll_pll_tracking.cc
+     gps_l1_ca_dll_pll_c_aid_tracking_16sc.cc
      ${OPT_TRACKING_ADAPTERS}
 )
-
+ 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)
      ${CMAKE_SOURCE_DIR}/src/core/system_parameters

@@ -46,28 +46,6 @@
 /* define constants used throughout the library */
 const float MAXLOG = 1e7;  /* Define infinity */
 
-/*!
- * \brief Converts an integer symbol into a vector of bits
- *
- * \param[out] binvec_p The binary vector
- * \param[in] symbol  The integer-valued symbol
- * \param[in] length  The length of the binary vector
- *
- * This function is used by conv_encode()
- */
-static void itob(int binvec_p[], int symbol, int length)
-{
-    int counter;
-    /* Go through each bit in the vector */
-    for (counter = 0; counter < length; counter++)
-        {
-            binvec_p[length - counter - 1] = (symbol & 1);
-            symbol = symbol >> 1;
-        }
-    return;
-}
-
-
 
 /*!
  * \brief Determines if a symbol has odd (1) or even (0) parity
@@ -137,42 +115,6 @@ static int nsc_enc_bit(int state_out_p[],
 
 
 /*!
- * \brief  like nsc_enc_bit() but for a RSC code
- */
-static int rsc_enc_bit(int state_out_p[],
-                       int input,
-                       int state_in,
-                       int g[],
-                       int KK,
-                       int nn)
-{
-    /* declare variables */
-    int state, i, out_, a_k;
-
-    /* systematic output */
-    out_ = input;
-
-    /* determine feedback bit */
-    a_k = input^parity_counter(g[0]&state_in, KK);
-
-    /* create a word made up of state and feedback bit */
-    state = (a_k << (KK - 1))^state_in;
-
-    /* AND the word with the generators */
-    for (i = 1; i < nn; i++)
-        {
-            /* update output symbol */
-            out_ = (out_ << 1) + parity_counter(state & g[i], KK);
-        }
-
-    /* shift the state to make the new state */
-    state_out_p[0] = state >> 1;
-    return(out_);
-}
-
-
-
-/*!
  * \brief Function that creates the transit and output vectors
  */
 static void nsc_transit(int output_p[],
@@ -204,7 +146,6 @@ static void nsc_transit(int output_p[],
  *  \param[in] symbol        The hypothetical symbol
  *  \param[in] nn            The length of the received vector
  *
- * This function is used by siso()
  */
 static float Gamma(float  rec_array[],
                    int symbol,

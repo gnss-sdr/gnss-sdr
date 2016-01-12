@@ -36,7 +36,7 @@
 #define GNSS_SDR_CPU_MULTICORRELATOR_16SC_H_
 
 #include <volk/volk.h> //include original volk first!
-#include "volk_gnsssdr/volk_gnsssdr.h"
+#include <volk_gnsssdr/volk_gnsssdr.h>
 
 
 /*!

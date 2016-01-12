@@ -36,11 +36,14 @@
 #include <iostream>
 #include <gnuradio/fxpt.h>  // fixed point sine and cosine
 
+#include "volk_gnsssdr/volk_gnsssdr.h"
+
 #define LV_HAVE_GENERIC
 #define LV_HAVE_SSE2
-#include "volk_gnsssdr_16ic_x2_dot_prod_16ic.h"
+
+//#include "volk_gnsssdr_16ic_x2_dot_prod_16ic.h"
 #include "volk_gnsssdr_16ic_x2_multiply_16ic.h"
-#include "volk_gnsssdr_16ic_resampler_16ic.h"
+//#include "volk_gnsssdr_16ic_resampler_16ic.h"
 #include "volk_gnsssdr_16ic_xn_resampler_16ic_xn.h"
 #include "volk_gnsssdr_16ic_xn_dot_prod_16ic_xn.h"
 

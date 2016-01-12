@@ -38,7 +38,7 @@
 
 
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include "saturated_arithmetic.h"
+#include <volk_gnsssdr/saturated_arithmetic.h>
 
 #ifdef LV_HAVE_GENERIC
 /*!
@@ -50,18 +50,17 @@
  */
 static inline void volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_generic(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, unsigned int num_points, int num_a_vectors)
 {
-	for (int n_vec=0;n_vec<num_a_vectors;n_vec++)
-	{
-		result[n_vec]=lv_cmake(0,0);
-		for (unsigned int n=0;n<num_points;n++)
-		{
-			//r*a.r - i*a.i, i*a.r + r*a.i
-			//result[n_vec]+=in_common[n]*in_a[n_vec][n];
-			lv_16sc_t tmp=in_common[n]*in_a[n_vec][n];
-			result[n_vec]=lv_cmake(sat_adds16b(lv_creal(result[n_vec]),lv_creal(tmp)),sat_adds16b(lv_cimag(result[n_vec]),lv_cimag(tmp)));
-		}
-
-	}
+    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+        {
+            result[n_vec] = lv_cmake(0,0);
+            for (unsigned int n = 0; n < num_points; n++)
+                {
+                    //r*a.r - i*a.i, i*a.r + r*a.i
+                    //result[n_vec]+=in_common[n]*in_a[n_vec][n];
+                    lv_16sc_t tmp = in_common[n]*in_a[n_vec][n];
+                    result[n_vec] = lv_cmake(sat_adds16b(lv_creal(result[n_vec]), lv_creal(tmp)), sat_adds16b(lv_cimag(result[n_vec]), lv_cimag(tmp)));
+                }
+        }
 }
 
 #endif /*LV_HAVE_GENERIC*/
@@ -71,99 +70,92 @@ static inline void volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_generic(lv_16sc_t* resu
 #include <emmintrin.h>
 static inline void volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a, unsigned int num_points, int num_a_vectors)
 {
-
-	lv_16sc_t dotProduct=lv_cmake(0,0);
+    lv_16sc_t dotProduct = lv_cmake(0,0);
 
     const unsigned int sse_iters = num_points / 4;
 
-	const lv_16sc_t** _in_a = in_a;
-	const lv_16sc_t* _in_common = in_common;
-	lv_16sc_t* _out = out;
+    const lv_16sc_t** _in_a = in_a;
+    const lv_16sc_t* _in_common = in_common;
+    lv_16sc_t* _out = out;
 
-    if (sse_iters>0)
+    if (sse_iters > 0)
         {
+            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
-		__VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
+            //todo dyn mem reg
 
-		//todo dyn mem reg
+            __m128i* realcacc;
+            __m128i* imagcacc;
 
-		__m128i* realcacc;
-		__m128i* imagcacc;
+            realcacc=(__m128i*)calloc(num_a_vectors,sizeof(__m128i)); //calloc also sets memory to 0
+            imagcacc=(__m128i*)calloc(num_a_vectors,sizeof(__m128i)); //calloc also sets memory to 0
 
-    	realcacc=(__m128i*)calloc(num_a_vectors,sizeof(__m128i)); //calloc also sets memory to 0
-    	imagcacc=(__m128i*)calloc(num_a_vectors,sizeof(__m128i)); //calloc also sets memory to 0
+            __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
 
+            mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
+            mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
 
-		__m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
+            for(unsigned int number = 0; number < sse_iters; number++)
+                {
+                    //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
+                    //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
+                    // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
 
-        mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
-        mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
+                    b = _mm_loadu_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                        {
+                            a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 
-		for(unsigned int number = 0;number < sse_iters; number++)
-			{
-	    	//std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
-	    	//imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
-	    	// a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
+                            c = _mm_mullo_epi16 (a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
-            	b = _mm_loadu_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-            	for (int n_vec=0;n_vec<num_a_vectors;n_vec++)
-            	{
+                            c_sr = _mm_srli_si128 (c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                            real = _mm_subs_epi16 (c, c_sr);
 
-					a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                            b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
+                            a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
 
-					c=_mm_mullo_epi16 (a, b); // a3.i*b3.i, a3.r*b3.r, ....
+                            imag1 = _mm_mullo_epi16(a, b_sl); // a3.i*b3.r, ....
+                            imag2 = _mm_mullo_epi16(b, a_sl); // b3.i*a3.r, ....
 
-					c_sr = _mm_srli_si128 (c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
-					real = _mm_subs_epi16 (c,c_sr);
+                            imag = _mm_adds_epi16(imag1, imag2);
 
-					b_sl = _mm_slli_si128(b,2); // b3.r, b2.i ....
-					a_sl = _mm_slli_si128(a,2); // a3.r, a2.i ....
+                            realcacc[n_vec] = _mm_adds_epi16 (realcacc[n_vec], real);
+                            imagcacc[n_vec] = _mm_adds_epi16 (imagcacc[n_vec], imag);
 
-					imag1 = _mm_mullo_epi16(a,b_sl); // a3.i*b3.r, ....
-					imag2 = _mm_mullo_epi16(b,a_sl); // b3.i*a3.r, ....
+                        }
+                    _in_common += 4;
+                }
 
-					imag = _mm_adds_epi16(imag1,imag2);
+            for (int n_vec=0;n_vec<num_a_vectors;n_vec++)
+                {
+                    realcacc[n_vec] = _mm_and_si128 (realcacc[n_vec], mask_real);
+                    imagcacc[n_vec] = _mm_and_si128 (imagcacc[n_vec], mask_imag);
 
-					realcacc[n_vec] = _mm_adds_epi16 (realcacc[n_vec], real);
-					imagcacc[n_vec] = _mm_adds_epi16 (imagcacc[n_vec], imag);
+                    result = _mm_or_si128 (realcacc[n_vec], imagcacc[n_vec]);
 
-            	}
-				_in_common += 4;
-
-			}
-
-			for (int n_vec=0;n_vec<num_a_vectors;n_vec++)
-			{
-				realcacc[n_vec] = _mm_and_si128 (realcacc[n_vec], mask_real);
-				imagcacc[n_vec] = _mm_and_si128 (imagcacc[n_vec], mask_imag);
-
-				result = _mm_or_si128 (realcacc[n_vec], imagcacc[n_vec]);
-
-				_mm_storeu_si128((__m128i*)dotProductVector,result); // Store the results back into the dot product vector
-				dotProduct=lv_cmake(0,0);
-				for (int i = 0; i<4; ++i)
-					{
-
-				dotProduct=lv_cmake(sat_adds16b(lv_creal(dotProduct),lv_creal(dotProductVector[i])),
-						sat_adds16b(lv_cimag(dotProduct),lv_cimag(dotProductVector[i])));
-					}
-				_out[n_vec]=dotProduct;
-			}
-			free(realcacc);
-			free(imagcacc);
+                    _mm_storeu_si128((__m128i*)dotProductVector, result); // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0,0);
+                    for (int i = 0; i<4; ++i)
+                        {
+                            dotProduct = lv_cmake(sat_adds16b(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
+                                    sat_adds16b(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                        }
+                    _out[n_vec] = dotProduct;
+                }
+            free(realcacc);
+            free(imagcacc);
         }
 
-	for (int n_vec=0;n_vec<num_a_vectors;n_vec++)
-	{
-		for(unsigned int n  = sse_iters * 4;n < num_points; n++){
+    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+        {
+            for(unsigned int n  = sse_iters * 4;n < num_points; n++){
 
-				lv_16sc_t tmp=in_common[n]*in_a[n_vec][n];
+                    lv_16sc_t tmp = in_common[n]*in_a[n_vec][n];
 
-				_out[n_vec]=lv_cmake(sat_adds16b(lv_creal(_out[n_vec]),lv_creal(tmp)),
-						sat_adds16b(lv_cimag(_out[n_vec]),lv_cimag(tmp)));
-
-			}
-	}
+                    _out[n_vec] = lv_cmake(sat_adds16b(lv_creal(_out[n_vec]), lv_creal(tmp)),
+                            sat_adds16b(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+            }
+        }
 
 }
 #endif /* LV_HAVE_SSE2 */

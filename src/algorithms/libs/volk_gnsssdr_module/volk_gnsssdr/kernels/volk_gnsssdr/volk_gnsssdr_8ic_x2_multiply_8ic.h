@@ -113,13 +113,13 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse4_1(lv_8sc_t* cVector, 
 {
     const unsigned int sse_iters = num_points / 8;
 
-    __m128i x, y, zero;
+    __m128i x, y;
     __m128i mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc;
     lv_8sc_t* c = cVector;
     const lv_8sc_t* a = aVector;
     const lv_8sc_t* b = bVector;
 
-    zero = _mm_setzero_si128();
+    _mm_setzero_si128();
     mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
 
     for(unsigned int number = 0;number < sse_iters; number++)
@@ -264,13 +264,13 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, 
 {
     const unsigned int sse_iters = num_points / 8;
 
-    __m128i x, y, zero;
+    __m128i x, y;
     __m128i mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc;
     lv_8sc_t* c = cVector;
     const lv_8sc_t* a = aVector;
     const lv_8sc_t* b = bVector;
 
-    zero = _mm_setzero_si128();
+    _mm_setzero_si128();
     mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
 
     for(unsigned int number = 0;number < sse_iters; number++)

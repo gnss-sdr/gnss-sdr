@@ -1,4 +1,3 @@
-/* -*- c++ -*- */
 /* Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
  *
  * This file is part of GNSS-SDR.
@@ -21,11 +20,10 @@
 #include <config.h>
 #endif
 
-#include <iostream>
-#include <boost/program_options.hpp>
-#include "volk_gnsssdr/constants.h"
+#include <volk_gnsssdr/constants.h>
 #include "volk_gnsssdr/volk_gnsssdr.h"
-
+#include <boost/program_options.hpp>
+#include <iostream>
 
 namespace po = boost::program_options;
 
@@ -38,7 +36,6 @@ main(int argc, char **argv)
   desc.add_options()
     ("help,h", "print help message")
     ("prefix", "print VOLK installation prefix")
-    ("builddate", "print VOLK build date (RFC2822 format)")
     ("cc", "print VOLK C compiler version")
     ("cflags", "print VOLK CFLAGS")
     ("all-machines", "print VOLK machines built into library")
@@ -64,9 +61,6 @@ main(int argc, char **argv)
 
   if(vm.count("prefix"))
     std::cout << volk_gnsssdr_prefix() << std::endl;
-
-  if(vm.count("builddate"))
-    std::cout << volk_gnsssdr_build_date() << std::endl;
 
   if(vm.count("version"))
     std::cout << volk_gnsssdr_version() << std::endl;

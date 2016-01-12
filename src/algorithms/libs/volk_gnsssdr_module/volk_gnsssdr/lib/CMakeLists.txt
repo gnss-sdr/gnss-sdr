@@ -17,6 +17,23 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# Copyright 2011-2012,2014 Free Software Foundation, Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 ########################################################################
 # header file detection
 ########################################################################
@@ -78,10 +95,6 @@ CHECK_FUNCTION_EXISTS(posix_memalign HAVE_POSIX_MEMALIGN)
 if(HAVE_POSIX_MEMALIGN)
       add_definitions(-DHAVE_POSIX_MEMALIGN)
 endif(HAVE_POSIX_MEMALIGN)
-
-if(NOT DEFINED _XOPEN_SOURCE)
-      add_definitions(-D_XOPEN_SOURCE=700)
-endif(NOT DEFINED _XOPEN_SOURCE)
 
 ########################################################################
 # detect x86 flavor of CPU
@@ -244,7 +257,6 @@ endif(NOT CPU_IS_x86)
 # implement overruling in the ORC case,
 # since ORC always passes flag detection
 ########################################################################
-find_package(ORC)
 if(NOT ORC_FOUND)
     OVERRULE_ARCH(orc "ORC support not found")
 endif()
@@ -254,17 +266,20 @@ endif()
 # this makes things work when both -m32 and -m64 pass
 ########################################################################
 if(NOT CROSSCOMPILE_MULTILIB AND CPU_IS_x86)
-    if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    include(CheckTypeSize)
+    check_type_size("void*[8]" SIZEOF_CPU BUILTIN_TYPES_ONLY)
+    if (${SIZEOF_CPU} EQUAL 64)
         OVERRULE_ARCH(32 "CPU width is 64 bits")
     endif()
-    if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+    if (${SIZEOF_CPU} EQUAL 32)
         OVERRULE_ARCH(64 "CPU width is 32 bits")
     endif()
 
     #MSVC 64 bit does not have MMX, overrule it
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8 AND MSVC)
+    if (${SIZEOF_CPU} EQUAL 64 AND MSVC)
         OVERRULE_ARCH(mmx "No MMX for Win64")
     endif()
+
 endif()
 
 ########################################################################
@@ -336,24 +351,24 @@ gen_template(${CMAKE_SOURCE_DIR}/tmpl/volk_gnsssdr_machines.tmpl.h     ${CMAKE_B
 gen_template(${CMAKE_SOURCE_DIR}/tmpl/volk_gnsssdr_machines.tmpl.c     ${CMAKE_BINARY_DIR}/lib/volk_gnsssdr_machines.c)
 
 set(BASE_CFLAGS NONE)
-STRING(TOUPPER ${CMAKE_BUILD_TYPE} CBTU)
-MESSAGE(STATUS BUILT TYPE ${CBTU})
-MESSAGE(STATUS "Base cflags = ${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS}")
+string(TOUPPER ${CMAKE_BUILD_TYPE} CBTU)
+message(STATUS "BUILD TYPE = ${CBTU}")
+message(STATUS "Base cflags = ${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS}")
 set(COMPILER_INFO "")
-IF(MSVC)
-    IF(MSVC90)   #Visual Studio 9
-        SET(cmake_c_compiler_version "Microsoft Visual Studio 9.0")
-    ELSE(MSVC10) #Visual Studio 10
-        SET(cmake_c_compiler_version "Microsoft Visual Studio 10.0")
-    ELSE(MSVC11) #Visual Studio 11
-        SET(cmake_c_compiler_version "Microsoft Visual Studio 11.0")
-    ELSE(MSVC12) #Visual Studio 12
+if(MSVC)
+    if(MSVC90)   #Visual Studio 9
+        set(cmake_c_compiler_version "Microsoft Visual Studio 9.0")
+    elseif(MSVC10) #Visual Studio 10
+        set(cmake_c_compiler_version "Microsoft Visual Studio 10.0")
+    elseif(MSVC11) #Visual Studio 11
+        set(cmake_c_compiler_version "Microsoft Visual Studio 11.0")
+    elseif(MSVC12) #Visual Studio 12
         SET(cmake_c_compiler_version "Microsoft Visual Studio 12.0")
-    ENDIF()
-ELSE()
+    endif()
+else()
     execute_process(COMMAND ${CMAKE_C_COMPILER} --version
             OUTPUT_VARIABLE cmake_c_compiler_version)
-ENDIF(MSVC)
+endif(MSVC)
 set(COMPILER_INFO "${CMAKE_C_COMPILER}:::${CMAKE_C_FLAGS_${GRCBTU}} ${CMAKE_C_FLAGS}\n${CMAKE_CXX_COMPILER}:::${CMAKE_CXX_FLAGS_${GRCBTU}} ${CMAKE_CXX_FLAGS}\n" )
 
 foreach(machine_name ${available_machines})
@@ -402,7 +417,7 @@ include_directories(
 #  on by default, but let users turn it off
 ########################################################################
 if(${CMAKE_VERSION} VERSION_GREATER "2.8.9")
-  set(ASM_ARCHS_AVAILABLE "armv7")
+  set(ASM_ARCHS_AVAILABLE "neon")
 
   set(FULL_C_FLAGS "${CMAKE_C_FLAGS}" "${CMAKE_CXX_COMPILER_ARG1}")
 
@@ -410,10 +425,10 @@ if(${CMAKE_VERSION} VERSION_GREATER "2.8.9")
   # if we find one that matches our current system architecture
   # set up the assembler flags and include the source files
   foreach(ARCH ${ASM_ARCHS_AVAILABLE})
-    string(REGEX MATCH "${ARCH}" ASM_ARCH "${FULL_C_FLAGS}")
-    if( ASM_ARCH STREQUAL "armv7" )
+      string(REGEX MATCH "${ARCH}" ASM_ARCH "${available_archs}")
+    if( ASM_ARCH STREQUAL "neon" )
       message(STATUS "---- Adding ASM files") # we always use ATT syntax
-      message(STATUS "-- Detected armv7 architecture; enabling ASM")
+      message(STATUS "-- Detected neon architecture; enabling ASM")
       # setup architecture specific assembler flags
       set(ARCH_ASM_FLAGS "-mfpu=neon -g")
       # then add the files
@@ -450,7 +465,7 @@ if(ORC_FOUND)
     list(APPEND volk_gnsssdr_libraries ${ORC_LIBRARIES})
 
     #setup orc functions
-    file(GLOB orc_files ${CMAKE_SOURCE_DIR}/orc/*.orc)
+    file(GLOB orc_files ${CMAKE_SOURCE_DIR}/kernels/volk_gnsssdr/asm/orc/*.orc)
     foreach(orc_file ${orc_files})
 
         #extract the name for the generated c source from the orc file
@@ -469,16 +484,10 @@ else()
     message(STATUS "Did not find liborc and orcc, disabling orc support...")
 endif()
 
-
 ########################################################################
 # Handle the generated constants
 ########################################################################
 
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
-    "import time;print time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime())"
-    OUTPUT_VARIABLE BUILD_DATE OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-message(STATUS "Loading build date ${BUILD_DATE} into constants...")
 message(STATUS "Loading version ${VERSION} into constants...")
 
 #double escape for windows backslash path separators
@@ -520,71 +529,84 @@ if(MSVC)
     set_source_files_properties(${volk_gnsssdr_sources} PROPERTIES LANGUAGE CXX)
 endif()
 
-#create the volk_gnsssdr runtime library
+#Use object library for faster overall build in newer versions of cmake
+if(CMAKE_VERSION VERSION_GREATER "2.8.7")
+    #Create a volk_gnsssdr object library (requires cmake >= 2.8.8)
+    add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
 
-#MODIFICATIONS BY GNSS-SDR
-file(GLOB orc ${CMAKE_SOURCE_DIR}/orc/*.orc)
-file(GLOB CommonMacros ${CMAKE_SOURCE_DIR}/kernels/CommonMacros/*.h ${CMAKE_SOURCE_DIR}/kernels/CommonMacros/README.txt)
+    #Add dynamic library
+    add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+    target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries})
 
-#add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources})
-if(ENABLE_STATIC_LIBS)
-    add_library(volk_gnsssdr STATIC ${volk_gnsssdr_sources} ${h_files} ${CommonMacros} ${orc})
-else(ENABLE_STATIC_LIBS)
-    add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources} ${h_files} ${CommonMacros} ${orc})
-endif(ENABLE_STATIC_LIBS)
+    #Configure target properties
+    set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
+    set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
+    set_target_properties(volk_gnsssdr PROPERTIES DEFINE_SYMBOL "volk_gnsssdr_EXPORTS")
 
-source_group("Kernels" FILES ${h_files})
-source_group("Common Macros" FILES ${CommonMacros})
-source_group("ORC Files" FILES ${orc})
-#END OF MODIFICATIONS
-
-target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries})
-set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
-set_target_properties(volk_gnsssdr PROPERTIES DEFINE_SYMBOL "volk_gnsssdr_EXPORTS")
-
-install(TARGETS volk_gnsssdr
-    LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_runtime" # .so file
-    ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
-    RUNTIME DESTINATION bin              COMPONENT "volk_gnsssdr_runtime" # .dll file
-)
-
-if(ENABLE_STATIC_LIBS)
-  add_library(volk_gnsssdr_static STATIC ${volk_gnsssdr_sources})
-
-  if(NOT WIN32)
-    set_target_properties(volk_gnsssdr_static
-      PROPERTIES OUTPUT_NAME volk_gnsssdr)
-  endif(NOT WIN32)
-
-  install(TARGETS volk_gnsssdr_static
-    ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
+    #Install locations
+    install(TARGETS volk_gnsssdr
+        LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_runtime" # .so file
+        ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
+        RUNTIME DESTINATION bin              COMPONENT "volk_gnsssdr_runtime" # .dll file
     )
-endif(ENABLE_STATIC_LIBS)
 
+    #Configure static library
+    if(ENABLE_STATIC_LIBS)
+        add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+
+        set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
+
+        install(TARGETS volk_gnsssdr_static
+            ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"
+        )
+    endif(ENABLE_STATIC_LIBS)
+
+#Older cmake versions (slower to build when building dynamic/static libs)
+else()
+    #create the volk_gnsssdr runtime library
+    add_library(volk_gnsssdr SHARED ${volk_gnsssdr_sources})
+    target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries})
+    set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
+    set_target_properties(volk_gnsssdr PROPERTIES DEFINE_SYMBOL "volk_gnsssdr_EXPORTS")
+
+    install(TARGETS volk_gnsssdr
+        LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_runtime" # .so file
+        ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
+        RUNTIME DESTINATION bin              COMPONENT "volk_gnsssdr_runtime" # .dll file
+    )
+
+    if(ENABLE_STATIC_LIBS)
+        add_library(volk_gnsssdr_static STATIC ${volk_gnsssdr_sources})
+
+        if(NOT WIN32)
+            set_target_properties(volk_gnsssdr_static
+                PROPERTIES OUTPUT_NAME volk_gnsssdr)
+        endif(NOT WIN32)
+
+        install(TARGETS volk_gnsssdr_static
+            ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT "volk_gnsssdr_devel"   # .lib file
+        )
+    endif(ENABLE_STATIC_LIBS)
+
+endif(CMAKE_VERSION VERSION_GREATER "2.8.7")
 ########################################################################
 # Build the QA test application
 ########################################################################
+if(ENABLE_TESTING)
 
-
-if(Boost_FOUND)
+    #include Boost headers
+    include_directories(${Boost_INCLUDE_DIRS})
+    make_directory(${CMAKE_CURRENT_BINARY_DIR}/.unittest)
     set_source_files_properties(
         ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc PROPERTIES
         COMPILE_DEFINITIONS "BOOST_TEST_DYN_LINK;BOOST_TEST_MAIN"
     )
 
-    include_directories(${Boost_INCLUDE_DIRS})
-    link_directories(${Boost_LIBRARY_DIRS})
-
-    add_executable(test_all
-        ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
+    include(VolkAddTest)
+    VOLK_ADD_TEST(test_all
+        SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc
+                       ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
+        TARGET_DEPS volk_gnsssdr
     )
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-       set(Clang_required_link "c++")
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-       set(Clang_required_link "")
-    endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    target_link_libraries(test_all volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link})
-    add_test(qa_volk_gnsssdr_test_all test_all)
 
-endif(Boost_FOUND)
+endif(ENABLE_TESTING)

@@ -19,42 +19,111 @@
 
 
 #include "qa_utils.h"
+#include "kernel_tests.h"
+
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <boost/test/unit_test.hpp>
 
-//GNSS-SDR PROTO-KERNELS
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x2_multiply_8ic, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8u_x2_multiply_8u, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x2_dot_prod_8ic, 1e-4, 0, 204603, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_s8ic_multiply_8ic, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_conjugate_8ic, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8i_x2_add_8i, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8i_index_max_16u, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8i_accumulator_s8i, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_magnitude_squared_8i, 1e-4, 0, 20462, 1);
+#include <vector>
+#include <utility>
+#include <iostream>
+#include <fstream>
 
-VOLK_RUN_TESTS(volk_gnsssdr_8i_max_s8i, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_64f_accumulator_64f, 3, 0, 20462, 1);
+void print_qa_xml(std::vector<volk_gnsssdr_test_results_t> results, unsigned int nfails);
 
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_convert_16ic, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_s32f_convert_8ic, 3, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_convert_8ic, 3, 0, 20462, 1);
+int main()
+{
+    bool qa_ret_val = 0;
 
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_16ic_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_16ic_x5_cw_epl_corr_TEST_32fc_x3, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x5_cw_epl_corr_32fc_x3, 1e-4, 0, 20462, 1);
+    float def_tol = 1e-6;
+    lv_32fc_t def_scalar = 327.0;
+    int def_iter = 1;
+    int def_vlen = 131071;
+    bool def_benchmark_mode = true;
+    std::string def_kernel_regex = "";
 
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_16ic_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_safe_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_unsafe_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_32fc_x5, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_8ic_x7_cw_vepl_corr_TEST_32fc_x5, 1e-4, 0, 20462, 1);
+    volk_gnsssdr_test_params_t test_params(def_tol, def_scalar, def_vlen, def_iter,
+        def_benchmark_mode, def_kernel_regex);
+    std::vector<volk_gnsssdr_test_case_t> test_cases = init_test_list(test_params);
 
-VOLK_RUN_TESTS(volk_gnsssdr_32fc_s32f_x4_update_local_code_32fc, 1e-4, 0, 20462, 1);
-VOLK_RUN_TESTS(volk_gnsssdr_s32f_x2_update_local_carrier_32fc, 1e-4, 0, 20462, 1);
+    std::vector<std::string> qa_failures;
+    std::vector<volk_gnsssdr_test_results_t> results;
+    // Test every kernel reporting failures when they occur
+    for(unsigned int ii = 0; ii < test_cases.size(); ++ii) {
+        bool qa_result = false;
+        volk_gnsssdr_test_case_t test_case = test_cases[ii];
+        try {
+            qa_result = run_volk_gnsssdr_tests(test_case.desc(), test_case.kernel_ptr(), test_case.name(),
+                test_case.test_parameters(), &results, test_case.puppet_master_name());
+        }
+        catch(...) {
+            // TODO: what exceptions might we need to catch and how do we handle them?
+            std::cerr << "Exception found on kernel: " << test_case.name() << std::endl;
+            qa_result = false;
+        }
+
+        if(qa_result) {
+            std::cerr << "Failure on " << test_case.name() << std::endl;
+            qa_failures.push_back(test_case.name());
+        }
+    }
+
+    // Generate XML results
+    print_qa_xml(results, qa_failures.size());
+
+    // Summarize QA results
+    std::cerr << "Kernel QA finished: " << qa_failures.size() << " failures out of "
+        << test_cases.size() << " tests." << std::endl;
+    if(qa_failures.size() > 0) {
+        std::cerr << "The following kernels failed QA:" << std::endl;
+        for(unsigned int ii = 0; ii < qa_failures.size(); ++ii) {
+            std::cerr << "    " << qa_failures[ii] << std::endl;
+        }
+        qa_ret_val = 1;
+    }
+
+    return qa_ret_val;
+}
+
+/*
+ * This function prints qa results as XML output similar to output
+ * from Junit. For reference output see http://llg.cubic.org/docs/junit/
+ */
+void print_qa_xml(std::vector<volk_gnsssdr_test_results_t> results, unsigned int nfails)
+{
+    std::ofstream qa_file;
+    qa_file.open(".unittest/kernels.xml");
+
+    qa_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+    qa_file << "<testsuites name=\"kernels\" " <<
+        "tests=\"" << results.size() << "\" " <<
+        "failures=\"" << nfails << "\" id=\"1\">" << std::endl;
+
+    // Results are in a vector by kernel. Each element has a result
+    // map containing time and arch name with test result
+    for(unsigned int ii=0; ii < results.size(); ++ii) {
+        volk_gnsssdr_test_results_t result = results[ii];
+        qa_file << "  <testsuite name=\"" << result.name << "\">" << std::endl;
+
+        std::map<std::string, volk_gnsssdr_test_time_t>::iterator kernel_time_pair;
+        for(kernel_time_pair = result.results.begin(); kernel_time_pair != result.results.end(); ++kernel_time_pair) {
+            volk_gnsssdr_test_time_t test_time = kernel_time_pair->second;
+            qa_file << "    <testcase name=\"" << test_time.name << "\" " <<
+                "classname=\"" << result.name << "\" " <<
+                "time=\"" << test_time.time << "\">" << std::endl;
+            if(!test_time.pass)
+                qa_file << "      <failure " <<
+                    "message=\"fail on arch " <<  test_time.name << "\">" <<
+                    "</failure>" << std::endl;
+            qa_file << "    </testcase>" << std::endl;
+        }
+        qa_file << "  </testsuite>" << std::endl;
+    }
+
+
+    qa_file << "</testsuites>" << std::endl;
+    qa_file.close();
+
+}
 
 
 

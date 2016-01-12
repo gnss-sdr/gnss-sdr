@@ -4,16 +4,6 @@
 <archs>generic orc|</archs>
 </machine>
 
-<!--
-<machine name="mmx">
-<archs>generic 32|64 mmx orc|</archs>
-</machine>
-
-<machine name="sse">
-<archs>generic 32|64| mmx| sse orc|</archs>
-</machine>
--->
-
 <machine name="neon">
 <archs>generic neon softfp|hardfp orc|</archs>
 </machine>
@@ -48,8 +38,9 @@
 <archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount avx orc|</archs>
 </machine>
 
-<machine name="altivec">
-<archs>generic altivec</archs>
+<!-- trailing | bar means generate without either for MSVC -->
+<machine name="avx2">
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount avx fma avx2 orc|</archs>
 </machine>
 
 </grammar>

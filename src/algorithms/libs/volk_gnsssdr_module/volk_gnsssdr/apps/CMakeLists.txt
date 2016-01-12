@@ -20,8 +20,6 @@
 ########################################################################
 # Setup profiler
 ########################################################################
-if(Boost_FOUND)
-
 if(MSVC)
     include_directories(${CMAKE_SOURCE_DIR}/cmake/msvc)
 endif(MSVC)
@@ -36,12 +34,12 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
 )
 
-
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    set(Clang_required_link "c++")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    set(Clang_required_link "")
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+
 
 # MAKE volk_gnsssdr_profile
 add_executable(volk_gnsssdr_profile
@@ -49,8 +47,13 @@ add_executable(volk_gnsssdr_profile
     ${CMAKE_SOURCE_DIR}/lib/qa_utils.cc
 )
 
-target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link})
-add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
+if(ORC_FOUND)
+    set(orc_lib ${ORC_LIBRARIES})
+elseif(ORC_FOUND)
+    set(orc_lib "")
+endif(ORC_FOUND)
+
+target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
 
 if(ENABLE_STRIP)
     if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
@@ -58,6 +61,7 @@ if(ENABLE_STRIP)
                               PROPERTIES LINK_FLAGS "-s")
     endif(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
 endif(ENABLE_STRIP)
+
 
 install(
     TARGETS volk_gnsssdr_profile
@@ -67,13 +71,12 @@ install(
 
 # MAKE volk_gnsssdr-config-info
 add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc)
-target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link})
-add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
 
-install(
-    TARGETS volk_gnsssdr-config-info
-    DESTINATION bin
-    COMPONENT "volk_gnsssdr"
-)
+target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
 
-endif(Boost_FOUND)
+#install(
+#    TARGETS volk_gnsssdr-config-info
+#    DESTINATION bin
+#    COMPONENT "volk_gnsssdr"
+#)
+

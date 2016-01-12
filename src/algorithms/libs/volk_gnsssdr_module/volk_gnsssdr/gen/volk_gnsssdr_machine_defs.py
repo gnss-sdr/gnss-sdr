@@ -34,7 +34,7 @@ class machine_class:
             self.archs.append(arch)
             self.arch_names.append(arch_name)
         self.alignment = max(map(lambda a: a.alignment, self.archs))
-
+    
     def __repr__(self): return self.name
 
 def register_machine(name, archs):

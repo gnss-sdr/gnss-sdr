@@ -71,7 +71,7 @@ endif(PYTHON_EXECUTABLE)
 # - have the result variable to set
 ########################################################################
 macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
-    #message(STATUS "")
+    message(STATUS "")
     message(STATUS "Python checking for ${desc}")
     execute_process(
         COMMAND ${PYTHON_EXECUTABLE} -c "
@@ -97,11 +97,13 @@ endmacro(VOLK_PYTHON_CHECK_MODULE)
 ########################################################################
 # Sets the python installation directory VOLK_PYTHON_DIR
 ########################################################################
+if(NOT DEFINED VOLK_PYTHON_DIR)
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "
 from distutils import sysconfig
 print sysconfig.get_python_lib(plat_specific=True, prefix='')
 " OUTPUT_VARIABLE VOLK_PYTHON_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+endif()
 file(TO_CMAKE_PATH ${VOLK_PYTHON_DIR} VOLK_PYTHON_DIR)
 
 ########################################################################

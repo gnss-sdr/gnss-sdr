@@ -21,24 +21,38 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.6)
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose build type: None Debug Release RelWithDebInfo MinSizeRel")
 project(volk_gnsssdr)
 enable_language(CXX)
 enable_language(C)
 enable_testing()
-set(VERSION 0.1)
-set(LIBVER 0.0.0)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall")
 
 option(ENABLE_STRIP "Create a stripped volk_gnsssdr_profile binary (without shared libraries)" OFF)
 
 set(CMAKE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) #allows this to be a sub-project
 set(CMAKE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}) #allows this to be a sub-project
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake) #location for custom "Modules"
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules) #location for custom "Modules"
+
+include(VolkBuildTypes)
+#select the release build type by default to get optimization flags
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+    message(STATUS "Build type not specified: defaulting to release.")
+endif()
+VOLK_CHECK_BUILD_TYPE(${CMAKE_BUILD_TYPE})
+set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
+message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
+
+set(VERSION_INFO_MAJOR_VERSION 0)
+set(VERSION_INFO_MINOR_VERSION 0)
+set(VERSION_INFO_MAINT_VERSION 6)
+include(VolkVersion) #setup version info
+
+
+
 
 ########################################################################
 # Environment setup
@@ -56,7 +70,9 @@ SET(CROSSCOMPILE_MULTILIB ${CROSSCOMPILE_MULTILIB} CACHE STRING "Define \"true\"
 ########################################################################
 # Dependencies setup
 ########################################################################
-include(GrPython) #sets PYTHON_EXECUTABLE and PYTHON_DASH_B
+
+# Python
+include(VolkPython) #sets PYTHON_EXECUTABLE and PYTHON_DASH_B
 VOLK_PYTHON_CHECK_MODULE("python >= 2.5" sys "sys.version.split()[0] >= '2.5'" PYTHON_MIN_VER_FOUND)
 VOLK_PYTHON_CHECK_MODULE("Cheetah >= 2.0.0" Cheetah "Cheetah.Version >= '2.0.0'" CHEETAH_FOUND)
 
@@ -64,10 +80,12 @@ if(NOT PYTHON_MIN_VER_FOUND)
     message(FATAL_ERROR "Python 2.5 or greater required to build VOLK_GNSSSDR")
 endif()
 
+# Cheetah
 if(NOT CHEETAH_FOUND)
     message(FATAL_ERROR "Cheetah templates required to build VOLK_GNSSSDR")
 endif()
 
+# Boost
 if(MSVC)
     if (NOT DEFINED BOOST_ALL_DYN_LINK)
         set(BOOST_ALL_DYN_LINK TRUE)
@@ -79,18 +97,39 @@ if(MSVC)
         unset(BOOST_REQUIRED_COMPONENTS) #empty components list for static link
     endif(BOOST_ALL_DYN_LINK)
 endif(MSVC)
+
 include(VolkBoost)
 
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "VOLK_GNSSSDR Requires boost to build")
 endif()
 
+# Orc
 option(ENABLE_ORC "Enable Orc" True)
 if(ENABLE_ORC)
   find_package(ORC)
 else(ENABLE_ORC)
   message(STATUS "Disabling use of ORC")
 endif(ENABLE_ORC)
+
+
+########################################################################
+# Setup doxygen
+########################################################################
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/Doxyfile.in
+        ${CMAKE_BINARY_DIR}/Doxyfile
+    @ONLY)
+
+    add_custom_target(doc
+        ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Generating documentation with Doxygen" VERBATIM
+    )
+endif(DOXYGEN_FOUND)
+
 
 ########################################################################
 # Setup the package config file
@@ -129,6 +168,8 @@ install(FILES
     ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_prefs.h
     ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_complex.h
     ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_common.h
+    ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h
+    ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h
     ${CMAKE_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr.h
     ${CMAKE_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_cpu.h
     ${CMAKE_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_config_fixed.h
@@ -137,6 +178,58 @@ install(FILES
     DESTINATION include/volk_gnsssdr
     COMPONENT "volk_gnsssdr_devel"
 )
+
+
+########################################################################
+# On Apple only, set install name and use rpath correctly, if not already set
+########################################################################
+if(APPLE)
+    if(NOT CMAKE_INSTALL_NAME_DIR)
+        set(CMAKE_INSTALL_NAME_DIR
+            ${CMAKE_INSTALL_PREFIX}/${VOLK_LIBRARY_DIR} CACHE
+            PATH "Library Install Name Destination Directory" FORCE)
+    endif(NOT CMAKE_INSTALL_NAME_DIR)
+    if(NOT CMAKE_INSTALL_RPATH)
+        set(CMAKE_INSTALL_RPATH
+            ${CMAKE_INSTALL_PREFIX}/${VOLK_LIBRARY_DIR} CACHE
+            PATH "Library Install RPath" FORCE)
+    endif(NOT CMAKE_INSTALL_RPATH)
+    if(NOT CMAKE_BUILD_WITH_INSTALL_RPATH)
+        set(CMAKE_BUILD_WITH_INSTALL_RPATH ON CACHE
+            BOOL "Do Build Using Library Install RPath" FORCE)
+    endif(NOT CMAKE_BUILD_WITH_INSTALL_RPATH)
+endif(APPLE)
+
+
+########################################################################
+# Create uninstall target
+########################################################################
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+@ONLY)
+
+# Only add the target if there isn't one defined already
+if(NOT TARGET uninstall)
+    add_custom_target(uninstall
+        ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+    )
+endif()
+
+
+
+
+########################################################################
+# Install our Cmake modules into $prefix/lib/cmake/volk_gnsssdr
+# See "Package Configuration Files" on page:
+#    http://www.cmake.org/Wiki/CMake/Tutorials/Packaging
+########################################################################
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/VolkConfigVersion.cmake.in
+  ${CMAKE_BINARY_DIR}/cmake/Modules/VolkConfigVersion.cmake
+@ONLY)
+
 
 ########################################################################
 # Install cmake search routine for external use
@@ -147,30 +240,23 @@ if(NOT CMAKE_MODULES_DIR)
 endif(NOT CMAKE_MODULES_DIR)
 
 install(
-    FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/VolkConfig.cmake
+    FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/VolkConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/VolkConfigVersion.cmake
     DESTINATION ${CMAKE_MODULES_DIR}/volk_gnsssdr
     COMPONENT "volk_gnsssdr_devel"
 )
 
 ########################################################################
-# On Apple only, set install name and use rpath correctly, if not already set
+# Option to enable QA testing, on by default
 ########################################################################
-if(APPLE)
-    if(NOT CMAKE_INSTALL_NAME_DIR)
-        set(CMAKE_INSTALL_NAME_DIR
-            ${CMAKE_INSTALL_PREFIX}/lib CACHE
-            PATH "Library Install Name Destination Directory" FORCE)
-    endif(NOT CMAKE_INSTALL_NAME_DIR)
-    if(NOT CMAKE_INSTALL_RPATH)
-        set(CMAKE_INSTALL_RPATH
-            ${CMAKE_INSTALL_PREFIX}/lib CACHE
-            PATH "Library Install RPath" FORCE)
-    endif(NOT CMAKE_INSTALL_RPATH)
-    if(NOT CMAKE_BUILD_WITH_INSTALL_RPATH)
-        set(CMAKE_BUILD_WITH_INSTALL_RPATH ON CACHE
-            BOOL "Do Build Using Library Install RPath" FORCE)
-    endif(NOT CMAKE_BUILD_WITH_INSTALL_RPATH)
-endif(APPLE)
+OPTION(ENABLE_TESTING "Enable QA testing" ON)
+if(ENABLE_TESTING)
+  message(STATUS "QA Testing is enabled.")
+else()
+  message(STATUS "QA Testing is disabled.")
+endif()
+message(STATUS "  Modify using: -DENABLE_TESTING=ON/OFF")
 
 ########################################################################
 # Setup the library
@@ -183,16 +269,6 @@ add_subdirectory(lib)
 add_subdirectory(apps)
 add_subdirectory(python/volk_gnsssdr_modtool)
 
-########################################################################
-# Create uninstall target
-########################################################################
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
-    @ONLY)
-
-add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
 ########################################################################
 # Print summary

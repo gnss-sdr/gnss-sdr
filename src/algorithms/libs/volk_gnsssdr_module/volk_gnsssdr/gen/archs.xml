@@ -4,12 +4,6 @@
 <arch name="generic"> <!-- name is required-->
 </arch>
 
-<arch name="altivec">
-  <flag compiler="gnu">-maltivec</flag>
-  <alignment>16</alignment>
-  <check name="has_ppc"></check>
-</arch>
-
 <arch name="softfp">
   <flag compiler="gnu">-mfloat-abi=softfp</flag>
 </arch>
@@ -85,6 +79,16 @@
   <flag compiler="clang">-mmmx</flag>
   <flag compiler="msvc">/arch:SSE</flag>
   <alignment>8</alignment>
+</arch>
+
+<arch name="fma">
+    <check name="cpuid_x86_bit">
+        <param>2</param>
+        <param>0x00000001</param>
+        <param>12</param>
+    </check>
+    <flag compiler="gnu">-mfma</flag>
+    <alignment>32</alignment>
 </arch>
 
 <arch name="sse">
@@ -199,6 +203,26 @@
   <flag compiler="clang">-mavx</flag>
   <flag compiler="msvc">/arch:AVX</flag>
   <alignment>32</alignment>
+</arch>
+
+<arch name="avx2">
+    <check name="cpuid_count_x86_bit">
+        <param>7</param>
+        <param>0</param>
+        <param>1</param>
+        <param>5</param>
+    </check>
+    <!-- check to make sure that xgetbv is enabled in OS -->
+    <check name="cpuid_x86_bit">
+        <param>2</param>
+        <param>0x00000001</param>
+        <param>27</param>
+    </check>
+    <!-- check to see that the OS has enabled AVX2 -->
+    <check name="get_avx2_enabled"></check>
+    <flag compiler="gnu">-mavx2</flag>
+    <flag compiler="msvc">/arch:AVX2</flag>
+    <alignment>32</alignment>
 </arch>
 
 </grammar>

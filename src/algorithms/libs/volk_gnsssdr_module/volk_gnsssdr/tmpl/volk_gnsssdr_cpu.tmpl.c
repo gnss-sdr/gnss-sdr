@@ -19,6 +19,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_cpu.h>
 #include <volk_gnsssdr/volk_gnsssdr_config_fixed.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct VOLK_CPU volk_gnsssdr_cpu;
 
@@ -30,11 +31,7 @@ struct VOLK_CPU volk_gnsssdr_cpu;
 
 //implement get cpuid for gcc compilers using a system or local copy of cpuid.h
 #if defined(__GNUC__)
-    #if defined(HAVE_CPUID_H)
-        #include <cpuid.h>
-    #else
-        #include "gcc_x86_cpuid.h"
-    #endif
+    #include <cpuid.h>
     #define cpuid_x86(op, r) __get_cpuid(op, (unsigned int *)r+0, (unsigned int *)r+1, (unsigned int *)r+2, (unsigned int *)r+3)
 
     /* Return Intel AVX extended CPU capabilities register.
@@ -69,9 +66,20 @@ struct VOLK_CPU volk_gnsssdr_cpu;
 
 #endif //defined(VOLK_CPU_x86)
 
+static inline unsigned int cpuid_count_x86_bit(unsigned int level, unsigned int count, unsigned int reg, unsigned int bit) {
+#if defined(VOLK_CPU_x86)
+    unsigned int regs[4];
+    __cpuid_count(level, count, regs[0],  regs[1],  regs[2], regs[3]);
+    return regs[reg] >> bit & 0x01;
+#else
+    return 0;
+#endif
+}
+
 static inline unsigned int cpuid_x86_bit(unsigned int reg, unsigned int op, unsigned int bit) {
 #if defined(VOLK_CPU_x86)
     unsigned int regs[4];
+    memset(regs, 0, sizeof(unsigned int)*4);
     cpuid_x86(op, regs);
     return regs[reg] >> bit & 0x01;
 #else
@@ -82,6 +90,7 @@ static inline unsigned int cpuid_x86_bit(unsigned int reg, unsigned int op, unsi
 static inline unsigned int check_extended_cpuid(unsigned int val) {
 #if defined(VOLK_CPU_x86)
     unsigned int regs[4];
+    memset(regs, 0, sizeof(unsigned int)*4);
     cpuid_x86(0x80000000, regs);
     return regs[0] >= val;
 #else
@@ -90,6 +99,14 @@ static inline unsigned int check_extended_cpuid(unsigned int val) {
 }
 
 static inline unsigned int get_avx_enabled(void) {
+#if defined(VOLK_CPU_x86)
+    return __xgetbv() & 0x6;
+#else
+    return 0;
+#endif
+}
+
+static inline unsigned int get_avx2_enabled(void) {
 #if defined(VOLK_CPU_x86)
     return __xgetbv() & 0x6;
 #else
@@ -124,14 +141,6 @@ static int has_neon(void){
 
     fclose(auxvec_f);
     return found_neon;
-#else
-    return 0;
-#endif
-}
-
-static int has_ppc(void){
-#ifdef __PPC__
-    return 1;
 #else
     return 0;
 #endif

@@ -109,6 +109,7 @@ typedef double complex       lv_64fc_t;
 
 #endif /* __cplusplus */
 
+
 #endif /* INCLUDED_VOLK_COMPLEX_H */
 
 #endif /* INCLUDE_VOLK_COMPLEX_H */

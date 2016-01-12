@@ -19,7 +19,7 @@
 ########################################################################
 # Install python files and apps
 ########################################################################
-include(GrPython)
+include(VolkPython)
 
 VOLK_PYTHON_INSTALL(
     FILES

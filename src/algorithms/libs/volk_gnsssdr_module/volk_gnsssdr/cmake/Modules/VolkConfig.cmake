@@ -1,9 +1,9 @@
 INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_VOLK volk_gnsssdr)
+PKG_CHECK_MODULES(PC_VOLK volk_gnsssdr_module)
 
 FIND_PATH(
     VOLK_INCLUDE_DIRS
-    NAMES volk_gnsssdr/volk_gnsssdr.h
+    NAMES volk_gnsssdr_module/volk_gnsssdr_module.h
     HINTS $ENV{VOLK_DIR}/include
         ${PC_VOLK_INCLUDEDIR}
     PATHS /usr/local/include
@@ -12,7 +12,7 @@ FIND_PATH(
 
 FIND_LIBRARY(
     VOLK_LIBRARIES
-    NAMES volk_gnsssdr
+    NAMES volk_gnsssdr_module
     HINTS $ENV{VOLK_DIR}/lib
         ${PC_VOLK_LIBDIR}
     PATHS /usr/local/lib

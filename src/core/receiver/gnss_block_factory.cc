@@ -83,7 +83,7 @@
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "galileo_e1_dll_pll_veml_tracking.h"
-#include "galileo_volk_e1_dll_pll_veml_tracking.h"
+//#include "galileo_volk_e1_dll_pll_veml_tracking.h"
 #include "galileo_e1_tcp_connector_tracking.h"
 #include "galileo_e5a_dll_pll_tracking.h"
 #include "gps_l2_m_dll_pll_tracking.h"
@@ -1342,12 +1342,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
-    else if (implementation.compare("Galileo_volk_E1_DLL_PLL_VEML_Tracking") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
+//    else if (implementation.compare("Galileo_volk_E1_DLL_PLL_VEML_Tracking") == 0)
+//        {
+//            std::unique_ptr<GNSSBlockInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
+//                    out_streams, queue));
+//            block = std::move(block_);
+//        }
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
@@ -1613,12 +1613,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
-    else if (implementation.compare("Galileo_Volk_E1_DLL_PLL_VEML_Tracking") == 0)
-        {
-            std::unique_ptr<TrackingInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
+//    else if (implementation.compare("Galileo_Volk_E1_DLL_PLL_VEML_Tracking") == 0)
+//        {
+//            std::unique_ptr<TrackingInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
+//                    out_streams, queue));
+//            block = std::move(block_);
+//        }
     else if (implementation.compare("Galileo_E1_TCP_CONNECTOR_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GalileoE1TcpConnectorTracking(configuration.get(), role, in_streams,
@@ -1631,12 +1631,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
-    else if (implementation.compare("Galileo_volk_E1_DLL_PLL_VEML_Tracking") == 0)
-        {
-            std::unique_ptr<TrackingInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
+//    else if (implementation.compare("Galileo_volk_E1_DLL_PLL_VEML_Tracking") == 0)
+//        {
+//            std::unique_ptr<TrackingInterface> block_(new GalileoVolkE1DllPllVemlTracking(configuration.get(), role, in_streams,
+//                    out_streams, queue));
+//            block = std::move(block_);
+//        }
     else if (implementation.compare("GPS_L2_M_DLL_PLL_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GpsL2MDllPllTracking(configuration.get(), role, in_streams,

@@ -33,6 +33,7 @@ endif(ENABLE_CUDA)
 set(TRACKING_LIB_SOURCES   
      correlator.cc
      cpu_multicorrelator.cc
+     cpu_multicorrelator_16sc.cc
      lock_detectors.cc
      tcp_communication.cc
      tcp_packet_data.cc
@@ -52,6 +53,7 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${OPT_TRACKING_INCLUDES}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
 if(ENABLE_GENERIC_ARCH)
@@ -66,5 +68,5 @@ endif(SSE3_AVAILABLE)
 file(GLOB TRACKING_LIB_HEADERS "*.h")
 add_library(tracking_lib ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 source_group(Headers FILES ${TRACKING_LIB_HEADERS})
-target_link_libraries(tracking_lib ${OPT_TRACKING_LIBRARIES} ${VOLK_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
+target_link_libraries(tracking_lib ${OPT_TRACKING_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})
 add_dependencies(tracking_lib glog-${glog_RELEASE})

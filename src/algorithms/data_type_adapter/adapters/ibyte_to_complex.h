@@ -32,10 +32,10 @@
 #define GNSS_SDR_IBYTE_TO_COMPLEX_H_
 
 #include <string>
-#include <gnuradio/blocks/interleaved_short_to_complex.h>
-#include <gnuradio/blocks/char_to_short.h>
+#include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/msg_queue.h>
+#include "gnss_synchro.h"
 #include "gnss_block_interface.h"
 
 
@@ -74,8 +74,7 @@ public:
     gr::basic_block_sptr get_right_block();
 
 private:
-    gr::blocks::interleaved_short_to_complex::sptr gr_interleaved_short_to_complex_;
-    gr::blocks::char_to_short::sptr gr_char_to_short_;
+    gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex_;
     ConfigurationInterface* config_;
     bool dump_;
     std::string dump_filename_;

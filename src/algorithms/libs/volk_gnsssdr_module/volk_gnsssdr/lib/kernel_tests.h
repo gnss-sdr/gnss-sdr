@@ -57,16 +57,7 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
             test_params.vlen(), test_params.iter(), test_params.benchmark_mode(), test_params.kernel_regex());
 
     std::vector<volk_gnsssdr_test_case_t> test_cases = boost::assign::list_of
-        // no one uses these, so don't test them
-        //VOLK_PROFILE(volk_gnsssdr_16i_x5_add_quad_16i_x4, 1e-4, 2046, 10000, &results, benchmark_mode, kernel_regex);
-        //VOLK_PROFILE(volk_gnsssdr_16i_branch_4_state_8, 1e-4, 2046, 10000, &results, benchmark_mode, kernel_regex);
-        //VOLK_PROFILE(volk_gnsssdr_16i_max_star_16i, 0, 0, 204602, 10000, &results, benchmark_mode, kernel_regex);
-        //VOLK_PROFILE(volk_gnsssdr_16i_max_star_horizontal_16i, 0, 0, 204602, 10000, &results, benchmark_mode, kernel_regex);
-        //VOLK_PROFILE(volk_gnsssdr_16i_permute_and_scalar_add, 1e-4, 0, 2046, 10000, &results, benchmark_mode, kernel_regex);
-        //VOLK_PROFILE(volk_gnsssdr_16i_x4_quad_max_star_16i, 1e-4, 0, 2046, 10000, &results, benchmark_mode, kernel_regex);
-        // we need a puppet for this one
-        //(VOLK_INIT_TEST(volk_gnsssdr_32fc_s32f_x2_power_spectral_density_32f,   test_params))
-        //(VOLK_INIT_TEST(volk_gnsssdr_32f_null_32f, test_params))
+
         (VOLK_INIT_TEST(volk_gnsssdr_8i_accumulator_s8i, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_8i_index_max_16u, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_8i_max_s8i, test_params))
@@ -77,11 +68,13 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
         (VOLK_INIT_TEST(volk_gnsssdr_8ic_x2_multiply_8ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_8u_x2_multiply_8u, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_64f_accumulator_64f, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_8ic, test_params))
+        (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_8ic, test_params_int1))
         (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_16ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_multiply_16ic, test_params))
+        (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic_xn, volk_gnsssdr_test_params_t(1e-2, test_params.scalar(), test_params.vlen(), test_params.iter(), test_params.benchmark_mode(), test_params.kernel_regex())))
         //(VOLK_INIT_TEST(volk_gnsssdr_16ic_resampler_16ic, test_params))
+        //(VOLK_INIT_TEST(volk_gnsssdr_16ic_xn_resampler_16ic_xn, test_params))
         ;
 
     return test_cases;

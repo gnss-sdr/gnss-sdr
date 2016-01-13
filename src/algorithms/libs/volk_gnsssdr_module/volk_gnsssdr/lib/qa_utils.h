@@ -173,9 +173,9 @@ typedef void (*volk_gnsssdr_fn_3arg_s8ic)(void *, void *, void *, lv_8sc_t, unsi
 //typedef void (*volk_gnsssdr_fn_1arg_s16i)(void *, int16_t, unsigned int, const char*); //one input vector, one scalar int16_t input
 //typedef void (*volk_gnsssdr_fn_2arg_s16i)(void *, void *, int16_t, unsigned int, const char*);
 //typedef void (*volk_gnsssdr_fn_3arg_s16i)(void *, void *, void *, int16_t, unsigned int, const char*);
-//typedef void (*volk_gnsssdr_fn_1arg_s16ic)(void *, lv_16sc_t, unsigned int, const char*); //one input vector, one scalar lv_16sc_t vector input
-//typedef void (*volk_gnsssdr_fn_2arg_s16ic)(void *, void *, lv_16sc_t, unsigned int, const char*);
-//typedef void (*volk_gnsssdr_fn_3arg_s16ic)(void *, void *, void *, lv_16sc_t, unsigned int, const char*);
+typedef void (*volk_gnsssdr_fn_1arg_s16ic)(void *, lv_16sc_t, unsigned int, const char*); //one input vector, one scalar lv_16sc_t vector input
+typedef void (*volk_gnsssdr_fn_2arg_s16ic)(void *, void *, lv_16sc_t, unsigned int, const char*);
+typedef void (*volk_gnsssdr_fn_3arg_s16ic)(void *, void *, void *, lv_16sc_t, unsigned int, const char*);
 typedef void (*volk_gnsssdr_fn_6arg_s16ic)(void *, void *, void *, void *, void *, void *, lv_16sc_t, unsigned int, const char*);
 
 typedef void (*volk_gnsssdr_fn_8arg)(void *, void *, void *, void *, void *, void *, void *, void *, unsigned int, const char*);

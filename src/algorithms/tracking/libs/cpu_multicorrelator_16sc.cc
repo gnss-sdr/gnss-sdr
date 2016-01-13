@@ -31,18 +31,13 @@
  *
  * -------------------------------------------------------------------------
  */
+
 #include "cpu_multicorrelator_16sc.h"
 #include <cmath>
 #include <iostream>
 #include <gnuradio/fxpt.h>  // fixed point sine and cosine
-
 #include "volk_gnsssdr/volk_gnsssdr.h"
 
-#define LV_HAVE_GENERIC
-#define LV_HAVE_SSE2
-
-#include "volk_gnsssdr_16ic_xn_resampler_16ic_xn.h"
-#include "volk_gnsssdr_16ic_xn_dot_prod_16ic_xn.h"
 
 bool cpu_multicorrelator_16sc::init(
         int max_signal_length_samples,
@@ -99,7 +94,7 @@ void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples,f
 		tmp_code_phases_chips[n] = d_shifts_chips[n] - rem_code_phase_chips;
 	}
 
-	volk_gnsssdr_16ic_xn_resampler_16ic_xn_sse2(d_local_codes_resampled,
+	volk_gnsssdr_16ic_xn_resampler_16ic_xn(d_local_codes_resampled,
 			d_local_code_in,
 			tmp_code_phases_chips,
 			code_phase_step_chips,
@@ -153,7 +148,7 @@ bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
     //std::cout<<"d_sig_doppler_wiped 16sc="<<d_sig_doppler_wiped[23]<<std::endl;
     update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
 
-    volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_a_sse2(d_corr_out, d_sig_doppler_wiped, (const lv_16sc_t**)d_local_codes_resampled, signal_length_samples, d_n_correlators);
+    volk_gnsssdr_16ic_x2_dot_prod_16ic_xn(d_corr_out, d_sig_doppler_wiped, (const lv_16sc_t**)d_local_codes_resampled, signal_length_samples, d_n_correlators);
 
     //for (int current_correlator_tap = 0; current_correlator_tap < d_n_correlators; current_correlator_tap++)
     //    {

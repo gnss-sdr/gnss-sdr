@@ -49,39 +49,47 @@ void random_floats (t *buf, unsigned n)
     buf[i] = uniform ();
 }
 
-void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n) {
+void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
+{
     if(type.is_complex) n *= 2;
-    if(type.is_float) {
-        if(type.size == 8) random_floats<double>((double *)data, n);
-        else random_floats<float>((float *)data, n);
-    } else {
-        float int_max = float(uint64_t(2) << (type.size*8));
-        if(type.is_signed) int_max /= 2.0;
-        for(unsigned int i=0; i<n; i++) {
-            float scaled_rand = (((float) (rand() - (RAND_MAX/2))) / static_cast<float>((RAND_MAX/2))) * int_max;
-            //man i really don't know how to do this in a more clever way, you have to cast down at some point
-            switch(type.size) {
-            case 8:
-                if(type.is_signed) ((int64_t *)data)[i] = (int64_t) scaled_rand;
-                else ((uint64_t *)data)[i] = (uint64_t) scaled_rand;
-            break;
-            case 4:
-                if(type.is_signed) ((int32_t *)data)[i] = (int32_t) scaled_rand;
-                else ((uint32_t *)data)[i] = (uint32_t) scaled_rand;
-            break;
-            case 2:
-                if(type.is_signed) ((int16_t *)data)[i] = (int16_t) scaled_rand;
-                else ((uint16_t *)data)[i] = (uint16_t) scaled_rand;
-            break;
-            case 1:
-                if(type.is_signed) ((int8_t *)data)[i] = (int8_t) scaled_rand;
-                else ((uint8_t *)data)[i] = (uint8_t) scaled_rand;
-            break;
-            default:
-                throw "load_random_data: no support for data size > 8 or < 1"; //no shenanigans here
-            }
+    if(type.is_float)
+        {
+            if(type.size == 8) random_floats<double>((double *)data, n);
+            else random_floats<float>((float *)data, n);
         }
-    }
+    else
+        {
+            float int_max = float(uint64_t(2) << (type.size*8));
+            if(type.is_signed) int_max /= 2.0;
+            for(unsigned int i = 0; i < n; i++)
+                {
+                    float scaled_rand = (((float) (rand() - (RAND_MAX/2))) / static_cast<float>((RAND_MAX/2))) * int_max;
+                    //man i really don't know how to do this in a more clever way, you have to cast down at some point
+                    switch(type.size)
+                    {
+                    case 8:
+                        if(type.is_signed) ((int64_t *)data)[i] = (int64_t) scaled_rand;
+                        else ((uint64_t *)data)[i] = (uint64_t) scaled_rand;
+                        break;
+                    case 4:
+
+                                if(type.is_signed) ((int32_t *)data)[i] = (int32_t) scaled_rand;
+                                else ((uint32_t *)data)[i] = (uint32_t) scaled_rand;
+
+                        break;
+                    case 2:
+                        if(type.is_signed) ((int16_t *)data)[i] = (int16_t) scaled_rand / 11; //sqrt(std::abs(scaled_rand / 2.0)); //// std::cout << "222222222222" << std::endl;}
+                        else ((uint16_t *)data)[i] = (uint16_t) scaled_rand;
+                        break;
+                    case 1:
+                        if(type.is_signed) ((int8_t *)data)[i] = (int8_t) scaled_rand;
+                        else ((uint8_t *)data)[i] = (uint8_t) scaled_rand;
+                        break;
+                    default:
+                        throw "load_random_data: no support for data size > 8 or < 1"; //no shenanigans here
+                    }
+                }
+        }
 }
 
 static std::vector<std::string> get_arch_list(volk_gnsssdr_func_desc_t desc) {
@@ -172,15 +180,21 @@ static void get_signatures_from_name(std::vector<volk_gnsssdr_type_t> &inputsig,
             if(side == SIDE_INPUT) inputsig.push_back(type);
             else outputsig.push_back(type);
         } catch (...){
-            if(token[0] == 'x' && (token.size() > 1) && (token[1] > '0' || token[1] < '9')) { //it's a multiplier
+            if(token[0] == 'x' && (token.size() > 1) && (token[1] > '0' || token[1] < '9')) { std::cout << "multiplier normsl" << std::endl;//it's a multiplier
                 if(side == SIDE_INPUT) assert(inputsig.size() > 0);
                 else assert(outputsig.size() > 0);
-                int multiplier = boost::lexical_cast<int>(token.substr(1, token.size()-1)); //will throw if invalid
+                int multiplier = 1;
+                try {
+                        multiplier = boost::lexical_cast<int>(token.substr(1, token.size()-1)); //will throw if invalid ///////////
+                } catch(...) {
+                        multiplier = 1; std::cout << "multiplier 333333333" << std::endl;
+                }
                 for(int i=1; i<multiplier; i++) {
-                    if(side == SIDE_INPUT) inputsig.push_back(inputsig.back());
-                    else outputsig.push_back(outputsig.back());
+                        if(side == SIDE_INPUT) inputsig.push_back(inputsig.back());
+                        else outputsig.push_back(outputsig.back());
                 }
             }
+
             else if(side == SIDE_INPUT) { //it's the function name, at least it better be
                 side = SIDE_NAME;
                 fn_name.append("_");
@@ -267,6 +281,24 @@ inline void run_cast_test3_s8ic(volk_gnsssdr_fn_3arg_s8ic func, std::vector<void
     while(iter--) func(buffs[0], buffs[1], buffs[2], scalar, vlen, arch.c_str());
 }
 
+
+// new
+inline void run_cast_test1_s16ic(volk_gnsssdr_fn_1arg_s16ic func, std::vector<void *> &buffs, lv_16sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
+{
+    while(iter--) func(buffs[0], scalar, vlen, arch.c_str());
+}
+
+inline void run_cast_test2_s16ic(volk_gnsssdr_fn_2arg_s16ic func, std::vector<void *> &buffs, lv_16sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
+{
+    while(iter--) func(buffs[0], buffs[1], scalar, vlen, arch.c_str());
+}
+
+inline void run_cast_test3_s16ic(volk_gnsssdr_fn_3arg_s16ic func, std::vector<void *> &buffs, lv_16sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
+{
+    while(iter--) func(buffs[0], buffs[1], buffs[2], scalar, vlen, arch.c_str());
+}
+
+// end new
 
 inline void run_cast_test8(volk_gnsssdr_fn_8arg func, std::vector<void *> &buffs, unsigned int vlen, unsigned int iter, std::string arch)
 {
@@ -439,14 +471,14 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                     unsigned int iter,
                     std::vector<volk_gnsssdr_test_results_t> *results,
                     std::string puppet_master_name,
-                    bool benchmark_mode
-) {
+                    bool benchmark_mode)
+{
     // Initialize this entry in results vector
     results->push_back(volk_gnsssdr_test_results_t());
     results->back().name = name;
     results->back().vlen = vlen;
     results->back().iter = iter;
-    std::cout << "RUN_VOLK_TESTS: " << name << "(" << vlen << "," << iter << ")" << std::endl;
+    std::cout << "RUN_VOLK_GNSSSDR_TESTS: " << name << "(" << vlen << "," << iter << ")" << std::endl;
 
     // vlen_twiddle will increase vlen for malloc and data generation
     // but kernels will still be called with the user provided vlen.
@@ -546,7 +578,14 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                 {
                     if(inputsc[0].is_complex)
                         {
-                            run_cast_test1_s8ic((volk_gnsssdr_fn_1arg_s8ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                            if(inputsc[0].size == 2)
+                                {
+                                    run_cast_test1_s16ic((volk_gnsssdr_fn_1arg_s16ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                }
+                            else
+                                {
+                                    run_cast_test1_s8ic((volk_gnsssdr_fn_1arg_s8ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                }
                         }
                     else
                         {
@@ -557,6 +596,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
             else throw "unsupported 1 arg function >1 scalars";
             break;
         case 2:
+            //std::cout << "case 2 " << inputsc.size() << std::endl;
             if(inputsc.size() == 0)
                 {
                     run_cast_test2((volk_gnsssdr_fn_2arg)(manual_func), test_data[i], vlen, iter, arch_list[i]);
@@ -577,7 +617,14 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                 {
                     if(inputsc[0].is_complex)
                         {
-                            run_cast_test2_s8ic((volk_gnsssdr_fn_2arg_s8ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                            if(inputsc[0].size == 2)
+                                {
+                                    run_cast_test2_s16ic((volk_gnsssdr_fn_2arg_s16ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                }
+                            else
+                                {
+                                    run_cast_test2_s8ic((volk_gnsssdr_fn_2arg_s8ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                }
                         }
                     else
                         {
@@ -590,6 +637,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
         case 3:
             if(inputsc.size() == 0)
                 {
+                    // multipliers are here!
                     run_cast_test3((volk_gnsssdr_fn_3arg)(manual_func), test_data[i], vlen, iter, arch_list[i]);
                 }
             else if(inputsc.size() == 1 && inputsc[0].is_float)
@@ -608,7 +656,16 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                 {
                     if(inputsc[0].is_complex)
                         {
-                            run_cast_test3_s8ic((volk_gnsssdr_fn_3arg_s8ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                            {
+                                 if(inputsc[0].size == 4)
+                                     {
+                                         run_cast_test3_s16ic((volk_gnsssdr_fn_3arg_s16ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                     }
+                                 else
+                                     {
+                                         run_cast_test3_s8ic((volk_gnsssdr_fn_3arg_s8ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                     }
+                             }
                         }
                     else
                         {
@@ -650,7 +707,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
     bool fail;
     bool fail_global = false;
     std::vector<bool> arch_results;
-    for(size_t i=0; i<arch_list.size(); i++)
+    for(size_t i = 0; i < arch_list.size(); i++)
         {
             fail = false;
             if(i != generic_offset)
@@ -698,29 +755,57 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                             }
                                         break;
                                     case 4:
-                                        if(both_sigs[j].is_signed)
+                                        if(both_sigs[j].is_complex)
                                             {
-                                                fail = icompare((int32_t *) test_data[generic_offset][j], (int32_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                if(both_sigs[j].is_signed)
+                                                    {
+                                                        fail = icompare((int16_t *) test_data[generic_offset][j], (int16_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                    }
+                                                else
+                                                    {
+                                                        fail = icompare((uint16_t *) test_data[generic_offset][j], (uint16_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                    }
                                             }
                                         else
                                             {
-                                                fail = icompare((uint32_t *) test_data[generic_offset][j], (uint32_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                if(both_sigs[j].is_signed)
+                                                    {
+                                                        fail = icompare((int32_t *) test_data[generic_offset][j], (int32_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                    }
+                                                else
+                                                    {
+                                                        fail = icompare((uint32_t *) test_data[generic_offset][j], (uint32_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                    }
                                             }
                                         break;
                                     case 2:
-                                        if(both_sigs[j].is_signed)
+                                        if(both_sigs[j].is_complex)
                                             {
-                                                fail = icompare((int16_t *) test_data[generic_offset][j], (int16_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                if(both_sigs[j].is_signed)
+                                                    {
+                                                        fail = icompare((int8_t *) test_data[generic_offset][j], (int8_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                    }
+                                                else
+                                                    {
+                                                        fail = icompare((uint16_t *) test_data[generic_offset][j], (uint16_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                    }
                                             }
                                         else
                                             {
-                                                fail = icompare((uint16_t *) test_data[generic_offset][j], (uint16_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                if(both_sigs[j].is_signed)
+                                                    {
+                                                        fail = icompare((int16_t *) test_data[generic_offset][j], (int16_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i); //
+                                                    }
+                                                else
+                                                    {
+                                                        fail = icompare((uint16_t *) test_data[generic_offset][j], (uint16_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                    }
                                             }
                                         break;
                                     case 1:
                                         if(both_sigs[j].is_signed)
                                             {
-                                                fail = icompare((int8_t *) test_data[generic_offset][j], (int8_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i);
+                                                fail = icompare((int8_t *) test_data[generic_offset][j], (int8_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), 3); // check volk_gnsssdr_32fc_convert_8ic !
                                             }
                                         else
                                             {

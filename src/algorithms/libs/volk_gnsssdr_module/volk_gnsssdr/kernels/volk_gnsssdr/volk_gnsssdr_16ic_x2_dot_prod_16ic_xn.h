@@ -48,7 +48,7 @@
  \param bVector One of the vectors to be multiplied and accumulated
  \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
  */
-static inline void volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_generic(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, unsigned int num_points, int num_a_vectors)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, unsigned int num_points, int num_a_vectors)
 {
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
@@ -57,7 +57,7 @@ static inline void volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_generic(lv_16sc_t* resu
                 {
                     //r*a.r - i*a.i, i*a.r + r*a.i
                     //result[n_vec]+=in_common[n]*in_a[n_vec][n];
-                    lv_16sc_t tmp = in_common[n]*in_a[n_vec][n];
+                    lv_16sc_t tmp = in_common[n] * in_a[n_vec][n];
                     result[n_vec] = lv_cmake(sat_adds16b(lv_creal(result[n_vec]), lv_creal(tmp)), sat_adds16b(lv_cimag(result[n_vec]), lv_cimag(tmp)));
                 }
         }
@@ -68,7 +68,7 @@ static inline void volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_generic(lv_16sc_t* resu
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
-static inline void volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a, unsigned int num_points, int num_a_vectors)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a, unsigned int num_points, int num_a_vectors)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
 
@@ -148,13 +148,13 @@ static inline void volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
 
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            for(unsigned int n  = sse_iters * 4;n < num_points; n++){
-
-                    lv_16sc_t tmp = in_common[n]*in_a[n_vec][n];
+            for(unsigned int n  = sse_iters * 4; n < num_points; n++)
+                {
+                    lv_16sc_t tmp = in_common[n] * in_a[n_vec][n];
 
                     _out[n_vec] = lv_cmake(sat_adds16b(lv_creal(_out[n_vec]), lv_creal(tmp)),
                             sat_adds16b(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
-            }
+                }
         }
 
 }

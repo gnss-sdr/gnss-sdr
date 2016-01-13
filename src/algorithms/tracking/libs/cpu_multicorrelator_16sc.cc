@@ -41,19 +41,14 @@
 #define LV_HAVE_GENERIC
 #define LV_HAVE_SSE2
 
-//#include "volk_gnsssdr_16ic_x2_dot_prod_16ic.h"
-#include "volk_gnsssdr_16ic_x2_multiply_16ic.h"
-//#include "volk_gnsssdr_16ic_resampler_16ic.h"
 #include "volk_gnsssdr_16ic_xn_resampler_16ic_xn.h"
 #include "volk_gnsssdr_16ic_xn_dot_prod_16ic_xn.h"
 
 bool cpu_multicorrelator_16sc::init(
-		int max_signal_length_samples,
-		int n_correlators
-		)
+        int max_signal_length_samples,
+        int n_correlators)
 {
-
-	// ALLOCATE MEMORY FOR INTERNAL vectors
+    // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(lv_16sc_t);
 
     // NCO signal
@@ -76,8 +71,7 @@ bool cpu_multicorrelator_16sc::init(
 bool cpu_multicorrelator_16sc::set_local_code_and_taps(
 		int code_length_chips,
 		const lv_16sc_t* local_code_in,
-		float *shifts_chips
-		)
+		float *shifts_chips)
 {
     d_local_code_in = local_code_in;
     d_shifts_chips = shifts_chips;
@@ -98,12 +92,11 @@ bool cpu_multicorrelator_16sc::set_input_output_vectors(lv_16sc_t* corr_out, con
 
 void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples,float rem_code_phase_chips, float code_phase_step_chips)
 {
-
 	float *tmp_code_phases_chips;
-	tmp_code_phases_chips=static_cast<float*>(volk_malloc(d_n_correlators*sizeof(float), volk_get_alignment()));
-	for (int n=0;n<d_n_correlators;n++)
+	tmp_code_phases_chips = static_cast<float*>(volk_malloc(d_n_correlators*sizeof(float), volk_get_alignment()));
+	for (int n = 0; n < d_n_correlators; n++)
 	{
-		tmp_code_phases_chips[n]=d_shifts_chips[n]-rem_code_phase_chips;
+		tmp_code_phases_chips[n] = d_shifts_chips[n] - rem_code_phase_chips;
 	}
 
 	volk_gnsssdr_16ic_xn_resampler_16ic_xn_sse2(d_local_codes_resampled,
@@ -155,11 +148,12 @@ bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
     update_local_carrier(signal_length_samples, rem_carrier_phase_in_rad, phase_step_rad);
 
     //std::cout<<"d_nco_in 16sc="<<d_nco_in[23]<<std::endl;
-    volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(d_sig_doppler_wiped,d_sig_in,d_nco_in,signal_length_samples);
+    //volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(d_sig_doppler_wiped,d_sig_in,d_nco_in,signal_length_samples);
+    volk_gnsssdr_16ic_x2_multiply_16ic(d_sig_doppler_wiped, d_sig_in, d_nco_in, signal_length_samples);
     //std::cout<<"d_sig_doppler_wiped 16sc="<<d_sig_doppler_wiped[23]<<std::endl;
-	update_local_code(signal_length_samples,rem_code_phase_chips, code_phase_step_chips);
+    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
 
-	volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_a_sse2(d_corr_out, d_sig_doppler_wiped, (const lv_16sc_t**)d_local_codes_resampled,signal_length_samples,d_n_correlators);
+    volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_a_sse2(d_corr_out, d_sig_doppler_wiped, (const lv_16sc_t**)d_local_codes_resampled, signal_length_samples, d_n_correlators);
 
     //for (int current_correlator_tap = 0; current_correlator_tap < d_n_correlators; current_correlator_tap++)
     //    {

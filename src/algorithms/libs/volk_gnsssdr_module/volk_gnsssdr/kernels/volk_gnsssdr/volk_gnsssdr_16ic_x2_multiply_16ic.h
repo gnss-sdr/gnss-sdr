@@ -51,11 +51,11 @@
  */
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_generic(lv_16sc_t* result, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
-	for (unsigned int n=0;n<num_points;n++)
-	{
-		//r*a.r - i*a.i, i*a.r + r*a.i
-		result[n]=in_a[n]*in_b[n];
-	}
+    for (unsigned int n = 0; n < num_points; n++)
+        {
+            //r*a.r - i*a.i, i*a.r + r*a.i
+            result[n] = in_a[n] * in_b[n];
+        }
 }
 
 #endif /*LV_HAVE_GENERIC*/
@@ -74,27 +74,27 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
     const lv_16sc_t* _in_a = in_a;
     const lv_16sc_t* _in_b = in_b;
     lv_16sc_t* _out = out;
-    for(unsigned int number = 0;number < sse_iters; number++)
+    for(unsigned int number = 0; number < sse_iters; number++)
         {
 
-    	//std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
-    	//imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
-    	// a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
+            //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
+            //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
+            // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
             a = _mm_loadu_si128((__m128i*)_in_a); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
             b = _mm_loadu_si128((__m128i*)_in_b);
-            c=_mm_mullo_epi16 (a, b); // a3.i*b3.i, a3.r*b3.r, ....
+            c = _mm_mullo_epi16 (a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
             c_sr = _mm_srli_si128 (c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
-            real = _mm_subs_epi16 (c,c_sr);
+            real = _mm_subs_epi16 (c, c_sr);
             real = _mm_and_si128 (real, mask_real); // a3.r*b3.r-a3.i*b3.i , 0,  a3.r*b3.r- a3.i*b3.i
 
-            b_sl = _mm_slli_si128(b,2); // b3.r, b2.i ....
-            a_sl = _mm_slli_si128(a,2); // a3.r, a2.i ....
+            b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
+            a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
 
-            imag1 = _mm_mullo_epi16(a,b_sl); // a3.i*b3.r, ....
-            imag2 = _mm_mullo_epi16(b,a_sl); // b3.i*a3.r, ....
+            imag1 = _mm_mullo_epi16(a, b_sl); // a3.i*b3.r, ....
+            imag2 = _mm_mullo_epi16(b, a_sl); // b3.i*a3.r, ....
 
-            imag = _mm_adds_epi16(imag1,imag2);
+            imag = _mm_adds_epi16(imag1, imag2);
             imag = _mm_and_si128 (imag, mask_imag); // a3.i*b3.r+b3.i*a3.r, 0, ...
 
             result = _mm_or_si128 (real, imag);
@@ -104,10 +104,9 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
             _in_a += 4;
             _in_b += 4;
             _out += 4;
-
         }
 
-    for (unsigned int i = 0; i<(num_points % 4); ++i)
+    for (unsigned int i = 0; i < (num_points % 4); ++i)
         {
             *_out++ = (*_in_a++) * (*_in_b++);
         }

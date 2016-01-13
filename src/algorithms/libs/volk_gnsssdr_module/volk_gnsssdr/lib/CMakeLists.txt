@@ -539,11 +539,10 @@ if(CMAKE_VERSION VERSION_GREATER "2.8.7")
     add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
 
     #Add dynamic library
-    add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
     file(GLOB orc ${CMAKE_SOURCE_DIR}/kernels/volk_gnsssdr/asm/orc/*.orc)
     
     if(ENABLE_STATIC_LIBS)
-        add_library(volk_gnsssdr STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj> ${orc} )
+        add_library(volk_gnsssdr STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj> ${orc})
     else(ENABLE_STATIC_LIBS)
         add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj> ${orc})
     endif(ENABLE_STATIC_LIBS)

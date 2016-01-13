@@ -37,7 +37,6 @@
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>

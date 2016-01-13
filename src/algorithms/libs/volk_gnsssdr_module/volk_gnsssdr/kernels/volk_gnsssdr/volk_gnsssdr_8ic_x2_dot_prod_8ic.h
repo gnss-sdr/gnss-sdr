@@ -38,8 +38,6 @@
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include <stdio.h>
-#include <string.h>
 
 #ifdef LV_HAVE_GENERIC
 /*!

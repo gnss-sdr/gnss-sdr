@@ -36,7 +36,6 @@
 #define INCLUDED_volk_gnsssdr_8i_x2_add_8i_u_H
 
 #include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>

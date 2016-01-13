@@ -31,7 +31,6 @@
  */
 
 #include <inttypes.h>
-#include <stdio.h>
 #include <math.h>
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"
 

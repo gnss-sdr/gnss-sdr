@@ -1,12 +1,13 @@
 /*!
  * \file volk_gnsssdr_16ic_xn_resampler_16ic_xn.h
- * \brief Volk protokernel: resample a 16 bits complex vector
+ * \brief Volk protokernel: Resamples N 16 bits integer short complex vectors using zero hold resample algorithm.
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Volk protokernel that multiplies two 16 bits vectors (8 bits the real part 
- * and 8 bits the imaginary part) and accumulates them
+ * Volk protokernel that esamples N 16 bits integer short complex vectors using zero hold resample algorithm.
+ * It is optimized to resample a sigle GNSS local code signal replica into N vectors fractional-resampled and fractional-delayed
+ * (i.e. it creates the Early, Prompt, and Late code replicas)
  *
  * -------------------------------------------------------------------------
  *

@@ -36,7 +36,6 @@
 #define INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_u_H
 
 #include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>

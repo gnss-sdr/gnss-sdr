@@ -1,9 +1,9 @@
-#ifndef SATURATED_ARITHMETIC_H_
-#define SATURATED_ARITHMETIC_H_
+#ifndef SATURATION_ARITHMETIC_H_
+#define SATURATION_ARITHMETIC_H_
 
 #include <limits.h>
 //#include <types.h>
-static inline int16_t sat_adds16b(int16_t x, int16_t y)
+static inline int16_t sat_adds16i(int16_t x, int16_t y)
 {
 //	int16_t ux = x;
 //	int16_t uy = y;
@@ -28,4 +28,4 @@ static inline int16_t sat_adds16b(int16_t x, int16_t y)
 	return res;
 }
 
-#endif /*SATURATED_ARITHMETIC_H_*/
+#endif /*SATURATION_ARITHMETIC_H_*/

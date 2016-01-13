@@ -53,21 +53,17 @@ add_executable(volk_gnsssdr_profile
     ${CMAKE_SOURCE_DIR}/lib/qa_utils.cc
 )
 
-
-
-
-if(OS_IS_MACOSX)
-    target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
-elseif(OS_IS_MACOSX)
-    if(ENABLE_STATIC_LIBS)
-        target_link_libraries(volk_gnsssdr_profile volk_gnsssdr_static ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+if(ENABLE_STATIC_LIBS)
+    target_link_libraries(volk_gnsssdr_profile volk_gnsssdr_static ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+    if(NOT APPLE)
         set_target_properties(volk_gnsssdr_profile PROPERTIES LINK_FLAGS "-static")
-    else(ENABLE_STATIC_LIBS)
-        target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
-    endif(ENABLE_STATIC_LIBS)
-endif(OS_IS_MACOSX)
+    endif(NOT APPLE)
+    add_dependencies(volk_gnsssdr_profile volk_gnsssdr-static)
+else(ENABLE_STATIC_LIBS)
+    target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+    add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
+endif(ENABLE_STATIC_LIBS)
 
-add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
 
 if(ENABLE_STRIP)
     if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)

@@ -37,7 +37,6 @@
 #define INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_u_H
 
 #include <inttypes.h>
-#include <stdio.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 #ifdef LV_HAVE_SSE2

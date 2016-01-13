@@ -37,11 +37,9 @@
 #define INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_u_H
 
 #include <inttypes.h>
-#include <stdio.h>
-#include <string.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include <volk_gnsssdr/saturated_arithmetic.h>
+#include <volk_gnsssdr/saturation_arithmetic.h>
 
 
 #ifdef LV_HAVE_GENERIC
@@ -60,9 +58,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_generic(lv_16sc_t* result,
             //r*a.r - i*a.i, i*a.r + r*a.i
             //result[0]+=in_a[n]*in_b[n];
             lv_16sc_t tmp = in_a[n] * in_b[n];
-            result[0] = lv_cmake(sat_adds16b(lv_creal(result[0]), lv_creal(tmp)), sat_adds16b(lv_cimag(result[0]), lv_cimag(tmp) ));
-            //result[0].real(sat_adds16b(result[0].real(),lv_creal(tmp)));
-            //result[0].imag(sat_adds16b(result[0].imag(),tmp.imag()));
+            result[0] = lv_cmake(sat_adds16i(lv_creal(result[0]), lv_creal(tmp)), sat_adds16i(lv_cimag(result[0]), lv_cimag(tmp) ));
+            //result[0].real(sat_adds16i(result[0].real(),lv_creal(tmp)));
+            //result[0].imag(sat_adds16i(result[0].imag(),tmp.imag()));
         }
 }
 
@@ -130,9 +128,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 
             for (int i = 0; i < 4; ++i)
                 {
-                    dotProduct = lv_cmake(sat_adds16b(lv_creal(dotProduct), lv_creal(dotProductVector[i])), sat_adds16b(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
-                    //dotProduct.real(sat_adds16b(lv_creal(dotProduct),lv_creal(dotProductVector[i])));
-                    //dotProduct.imag(sat_adds16b(lv_cimag(dotProduct),lv_cimag(dotProductVector[i])));
+                    dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])), sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                    //dotProduct.real(sat_adds16i(lv_creal(dotProduct),lv_creal(dotProductVector[i])));
+                    //dotProduct.imag(sat_adds16i(lv_cimag(dotProduct),lv_cimag(dotProductVector[i])));
                 }
         }
 
@@ -140,9 +138,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
         {
             //dotProduct += (*_in_a++) * (*_in_b++);
             lv_16sc_t tmp = (*_in_a++) * (*_in_b++);
-            dotProduct = lv_cmake( sat_adds16b(lv_creal(dotProduct), lv_creal(tmp)), sat_adds16b(lv_cimag(dotProduct), lv_cimag(tmp)));
-            //dotProduct.real(sat_adds16b(lv_creal(dotProduct),lv_creal(tmp)));
-            //dotProduct.imag(sat_adds16b(lv_cimag(dotProduct),lv_cimag(tmp)));
+            dotProduct = lv_cmake( sat_adds16i(lv_creal(dotProduct), lv_creal(tmp)), sat_adds16i(lv_cimag(dotProduct), lv_cimag(tmp)));
+            //dotProduct.real(sat_adds16i(lv_creal(dotProduct),lv_creal(tmp)));
+            //dotProduct.imag(sat_adds16i(lv_cimag(dotProduct),lv_cimag(tmp)));
         }
 
     *_out = dotProduct;

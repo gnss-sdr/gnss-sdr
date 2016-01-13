@@ -1,12 +1,12 @@
 /*!
- * \file volk_gnsssdr_16ic_x2_dot_prod_16ic.h
- * \brief Volk protokernel: multiplies two 16 bits vectors and accumulates them
+ * \file volk_gnsssdr_16ic_xn_dot_prod_16ic_xn.h
+ * \brief Volk protokernel: multiplies N 16 bits vectors by a common vector and accumulates the results in N 16 bits short complex outputs.
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Volk protokernel that multiplies two 16 bits vectors (8 bits the real part 
- * and 8 bits the imaginary part) and accumulates them
+ * Volk protokernel that multiplies N 16 bits vectors by a common vector and accumulates the results in N 16 bits short complex outputs.
+ * It is optimized to perform the N tap correlation process in GNSS receivers.
  *
  * -------------------------------------------------------------------------
  *
@@ -38,7 +38,7 @@
 
 
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include <volk_gnsssdr/saturated_arithmetic.h>
+#include <volk_gnsssdr/saturation_arithmetic.h>
 
 #ifdef LV_HAVE_GENERIC
 /*!
@@ -58,7 +58,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* resu
                     //r*a.r - i*a.i, i*a.r + r*a.i
                     //result[n_vec]+=in_common[n]*in_a[n_vec][n];
                     lv_16sc_t tmp = in_common[n] * in_a[n_vec][n];
-                    result[n_vec] = lv_cmake(sat_adds16b(lv_creal(result[n_vec]), lv_creal(tmp)), sat_adds16b(lv_cimag(result[n_vec]), lv_cimag(tmp)));
+                    result[n_vec] = lv_cmake(sat_adds16i(lv_creal(result[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(result[n_vec]), lv_cimag(tmp)));
                 }
         }
 }
@@ -137,8 +137,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
                     dotProduct = lv_cmake(0,0);
                     for (int i = 0; i<4; ++i)
                         {
-                            dotProduct = lv_cmake(sat_adds16b(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
-                                    sat_adds16b(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                            dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
+                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
                         }
                     _out[n_vec] = dotProduct;
                 }
@@ -152,9 +152,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
                 {
                     lv_16sc_t tmp = in_common[n] * in_a[n_vec][n];
 
-                    _out[n_vec] = lv_cmake(sat_adds16b(lv_creal(_out[n_vec]), lv_creal(tmp)),
-                            sat_adds16b(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
-                }
+                    _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
+                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+            }
         }
 
 }

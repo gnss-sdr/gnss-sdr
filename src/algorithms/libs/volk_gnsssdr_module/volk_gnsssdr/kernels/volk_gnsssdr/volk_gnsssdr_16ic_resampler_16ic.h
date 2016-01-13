@@ -39,7 +39,6 @@
 #include <math.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include <volk_gnsssdr/saturated_arithmetic.h>
 
 //#pragma STDC FENV_ACCESS ON
 

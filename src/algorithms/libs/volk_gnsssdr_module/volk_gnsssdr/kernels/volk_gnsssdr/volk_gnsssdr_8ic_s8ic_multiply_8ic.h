@@ -37,7 +37,6 @@
 #define INCLUDED_volk_gnsssdr_8ic_s8ic_multiply_8ic_u_H
 
 #include <inttypes.h>
-#include <stdio.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <float.h>
 

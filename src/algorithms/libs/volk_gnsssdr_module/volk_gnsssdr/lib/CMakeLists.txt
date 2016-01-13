@@ -533,14 +533,23 @@ if(MSVC)
     set_source_files_properties(${volk_gnsssdr_sources} PROPERTIES LANGUAGE CXX)
 endif()
 
+message("+++++++++++++++++ ${volk_gnsssdr_sources}")
+
 #Use object library for faster overall build in newer versions of cmake
 if(CMAKE_VERSION VERSION_GREATER "2.8.7")
     #Create a volk_gnsssdr object library (requires cmake >= 2.8.8)
     add_library(volk_gnsssdr_obj OBJECT ${volk_gnsssdr_sources})
 
     #Add dynamic library
-    add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
-    target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries})
+    #add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+    file(GLOB orc ${CMAKE_SOURCE_DIR}/kernels/volk_gnsssdr/asm/orc/*.orc)
+    
+    if(ENABLE_STATIC_LIBS)
+    add_library(volk_gnsssdr STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj> ${orc} ${h_files})
+else(ENABLE_STATIC_LIBS)
+    add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj> ${orc} ${h_files})
+endif(ENABLE_STATIC_LIBS)
+    target_link_libraries(volk_gnsssdr ${volk_gnsssdr_libraries} ${Boost_LIBRARIES})
 
     #Configure target properties
     set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
@@ -600,6 +609,7 @@ if(ENABLE_TESTING)
 
     #include Boost headers
     include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
     make_directory(${CMAKE_CURRENT_BINARY_DIR}/.unittest)
     set_source_files_properties(
         ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc PROPERTIES

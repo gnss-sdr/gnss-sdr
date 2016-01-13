@@ -80,7 +80,7 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
         (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_8ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_16ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_16ic_resampler_16ic, test_params))
+        //(VOLK_INIT_TEST(volk_gnsssdr_16ic_resampler_16ic, test_params))
         ;
 
     return test_cases;

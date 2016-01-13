@@ -1129,7 +1129,7 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
             {
                 // ################## PLL ##########################################################
                 // PLL discriminator
-                d_carr_error_hz_prs = pll_cloop_two_quadrant_atan(d_P_acumm_prs) / static_cast<float>(GPS_TWO_PI);
+                d_carr_error_hz_prs = 0.5 * pll_cloop_two_quadrant_atan(d_P_acumm_prs) / static_cast<float>(2.0*M_PI);
 
                 // Carrier discriminator filter
                 d_carr_error_filt_hz_prs = d_carrier_loop_filter_prs.apply(d_carr_error_hz_prs);
@@ -1138,8 +1138,8 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
                 // ################## DLL ##########################################################
                 // DLL discriminator
                 d_subcarrier_error_cycles_prs = dll_nc_e_minus_l_normalized(
-                        d_E_acumm_prs,
-                        d_L_acumm_prs); //[chips/Ti]
+                        std::sqrt( d_E_acumm_prs ),
+                        std::sqrt( d_L_acumm_prs ) ); //[chips/Ti]
                 //Normalise the code phase error:
                 corr_slope = 25.0/6.0;
                 d_subcarrier_error_cycles_prs *= ( 1.0- corr_slope*d_early_late_code_spc_cycles)

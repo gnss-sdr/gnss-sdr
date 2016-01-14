@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
             boost::program_options::value<float>()->default_value( 1e-6 ),
             "Set the default error tolerance for tests")
       ("vlen,v",
-            boost::program_options::value<int>()->default_value( 131071 ),
+            boost::program_options::value<int>()->default_value( 8111 ), //it is also prime
             "Set the default vector length for tests") // default is a mersenne prime
       ("iter,i",
             boost::program_options::value<int>()->default_value( 1987 ),

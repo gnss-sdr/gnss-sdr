@@ -72,7 +72,7 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
         (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_16ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_multiply_16ic, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic_xn, volk_gnsssdr_test_params_t(1e-2, test_params.scalar(), test_params.vlen(), test_params.iter(), test_params.benchmark_mode(), test_params.kernel_regex())))
+        //(VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic_xn,test_params))
         //(VOLK_INIT_TEST(volk_gnsssdr_16ic_resampler_16ic, test_params))
         //(VOLK_INIT_TEST(volk_gnsssdr_16ic_xn_resampler_16ic_xn, test_params))
         ;

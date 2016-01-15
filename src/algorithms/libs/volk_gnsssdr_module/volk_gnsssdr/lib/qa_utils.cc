@@ -183,14 +183,14 @@ static void get_signatures_from_name(std::vector<volk_gnsssdr_type_t> &inputsig,
             if(side == SIDE_INPUT) inputsig.push_back(type);
             else outputsig.push_back(type);
         } catch (...){
-            if(token[0] == 'x' && (token.size() > 1) && (token[1] > '0' || token[1] < '9')) { std::cout << "multiplier normsl" << std::endl;//it's a multiplier
+            if(token[0] == 'x' && (token.size() > 1) && (token[1] > '0' || token[1] < '9')) {
                 if(side == SIDE_INPUT) assert(inputsig.size() > 0);
                 else assert(outputsig.size() > 0);
                 int multiplier = 1;
                 try {
                         multiplier = boost::lexical_cast<int>(token.substr(1, token.size()-1)); //will throw if invalid ///////////
                 } catch(...) {
-                        multiplier = 1; std::cout << "multiplier 333333333" << std::endl;
+                        multiplier = 1; // This is our '..._xn' mulriple correlator. Assign a fixed number here for the test?
                 }
                 for(int i=1; i<multiplier; i++) {
                         if(side == SIDE_INPUT) inputsig.push_back(inputsig.back());
@@ -599,7 +599,6 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
             else throw "unsupported 1 arg function >1 scalars";
             break;
         case 2:
-            //std::cout << "case 2 " << inputsc.size() << std::endl;
             if(inputsc.size() == 0)
                 {
                     run_cast_test2((volk_gnsssdr_fn_2arg)(manual_func), test_data[i], vlen, iter, arch_list[i]);
@@ -808,7 +807,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                     case 1:
                                         if(both_sigs[j].is_signed)
                                             {
-                                                fail = icompare((int8_t *) test_data[generic_offset][j], (int8_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), 3); // check volk_gnsssdr_32fc_convert_8ic !
+                                                fail = icompare((int8_t *) test_data[generic_offset][j], (int8_t *) test_data[i][j], vlen*(both_sigs[j].is_complex ? 2 : 1), tol_i); // check volk_gnsssdr_32fc_convert_8ic !
                                             }
                                         else
                                             {

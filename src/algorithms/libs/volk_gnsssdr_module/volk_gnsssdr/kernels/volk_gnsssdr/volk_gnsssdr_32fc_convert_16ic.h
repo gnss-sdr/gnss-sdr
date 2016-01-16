@@ -46,8 +46,9 @@
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
-    const unsigned int sse_iters = num_points/4;
+static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    const unsigned int sse_iters = num_points / 4;
 
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
@@ -61,7 +62,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector
     __m128 vmin_val = _mm_set_ps1(min_val);
     __m128 vmax_val = _mm_set_ps1(max_val);
 
-    for(unsigned int i = 0;i < sse_iters; i++){
+    for(unsigned int i = 0; i < sse_iters; i++)
+        {
             inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
 
@@ -76,29 +78,30 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector
 
             _mm_storeu_si128((__m128i*)outputVectorPtr, intInputVal1);
             outputVectorPtr += 8;
-    }
+        }
 
-    for(unsigned int i = 0; i < (num_points%4)*2; i++)
+    for(unsigned int i = sse_iters * 8; i < num_points * 2; i++)
         {
             if(inputVectorPtr[i] > max_val)
                 inputVectorPtr[i] = max_val;
             else if(inputVectorPtr[i] < min_val)
                 inputVectorPtr[i] = min_val;
-            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
         }
 }
 #endif /* LV_HAVE_SSE2 */
 
 #ifdef LV_HAVE_SSE
-#include <xmmintrin.h>
+#include <xmmintrin.h> // __m64, __m128 ??
 /*!
  \brief Converts a float vector of 64 bits (32 bits each part) into a 32 integer vector (16 bits each part)
  \param inputVector The floating point input data buffer
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
-    const unsigned int sse_iters = num_points/4;
+static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    const unsigned int sse_iters = num_points / 4;
 
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
@@ -112,7 +115,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector,
     __m128 vmin_val = _mm_set_ps1(min_val);
     __m128 vmax_val = _mm_set_ps1(max_val);
 
-    for(unsigned int i = 0;i < sse_iters; i++){
+    for(unsigned int i = 0;i < sse_iters; i++)
+        {
             inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
 
@@ -127,15 +131,15 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector,
 
             _mm_storeu_si128((__m128i*)outputVectorPtr, intInputVal1);
             outputVectorPtr += 8;
-    }
+        }
 
-    for(unsigned int i = 0; i < (num_points%4)*2; i++)
+    for(unsigned int i = sse_iters * 8; i < num_points*2; i++)
         {
             if(inputVectorPtr[i] > max_val)
                 inputVectorPtr[i] = max_val;
             else if(inputVectorPtr[i] < min_val)
                 inputVectorPtr[i] = min_val;
-            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
         }
 }
 #endif /* LV_HAVE_SSE */
@@ -147,7 +151,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector,
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
+static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
     float min_val = -32768;
@@ -178,8 +183,9 @@ static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVecto
  \param outputVector The 16 bit output data buffer
  \param num_points The number of data values to be converted
  */
-static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points){
-    const unsigned int sse_iters = num_points/4;
+static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    const unsigned int sse_iters = num_points / 4;
 
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
@@ -193,7 +199,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector
     __m128 vmin_val = _mm_set_ps1(min_val);
     __m128 vmax_val = _mm_set_ps1(max_val);
 
-    for(unsigned int i = 0;i < sse_iters; i++)
+    for(unsigned int i = 0; i < sse_iters; i++)
         {
             inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
@@ -211,13 +217,13 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector
             outputVectorPtr += 8;
         }
 
-    for(unsigned int i = 0; i < (num_points%4)*2; i++)
+    for(unsigned int i = sse_iters * 8; i < num_points * 2; i++)
         {
             if(inputVectorPtr[i] > max_val)
                 inputVectorPtr[i] = max_val;
             else if(inputVectorPtr[i] < min_val)
                 inputVectorPtr[i] = min_val;
-            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
         }
 }
 #endif /* LV_HAVE_SSE2 */
@@ -264,13 +270,13 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector,
             outputVectorPtr += 8;
         }
 
-    for(unsigned int i = 0; i < (num_points%4)*2; i++)
+    for(unsigned int i = sse_iters * 8; i < num_points * 2; i++)
         {
             if(inputVectorPtr[i] > max_val)
                 inputVectorPtr[i] = max_val;
             else if(inputVectorPtr[i] < min_val)
                 inputVectorPtr[i] = min_val;
-            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
         }
 }
 #endif /* LV_HAVE_SSE */

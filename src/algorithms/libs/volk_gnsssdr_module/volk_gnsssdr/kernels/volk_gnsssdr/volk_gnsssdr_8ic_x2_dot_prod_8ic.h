@@ -162,7 +162,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
                 }
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             dotProduct += (*a++) * (*b++);
         }
@@ -241,7 +241,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
                 }
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             dotProduct += (*a++) * (*b++);
         }
@@ -273,13 +273,14 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
  */
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_generic(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
 {
-    /*lv_8sc_t* cPtr = result;
-     const lv_8sc_t* aPtr = input;
-     const lv_8sc_t* bPtr = taps;
-
-     for(int number = 0; number < num_points; number++){
-     *cPtr += (*aPtr++) * (*bPtr++);
-     }*/
+    //    lv_8sc_t* cPtr = result;
+    //    const lv_8sc_t* aPtr = input;
+    //    const lv_8sc_t* bPtr = taps;
+    //
+    //    for(int number = 0; number < num_points; number++)
+    //        {
+    //            *cPtr += (*aPtr++) * (*bPtr++);
+    //        }
 
     char * res = (char*) result;
     char * in = (char*) input;
@@ -385,7 +386,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
                 }
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             dotProduct += (*a++) * (*b++);
         }
@@ -464,7 +465,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
                 }
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             dotProduct += (*a++) * (*b++);
         }

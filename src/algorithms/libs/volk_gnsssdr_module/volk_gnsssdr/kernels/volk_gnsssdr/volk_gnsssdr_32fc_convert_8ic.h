@@ -90,7 +90,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
             outputVectorPtr += 16;
         }
 
-    for(unsigned int i = 0; i < (num_points%4)*4; i++)
+    for(unsigned int i = 0; i < (num_points%8)*2; i++)
         {
             if(inputVectorPtr[i] > max_val)
                 inputVectorPtr[i] = max_val;
@@ -183,7 +183,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
             outputVectorPtr += 16;
         }
 
-    for(unsigned int i = 0; i < (num_points%4)*4; i++)
+    for(unsigned int i = 0; i < (num_points%8)*2; i++)
         {
             if(inputVectorPtr[i] > max_val)
                 inputVectorPtr[i] = max_val;

@@ -51,6 +51,7 @@
  */
 static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t scalar, unsigned int num_points)
 {
+    unsigned int number = 0;
     const unsigned int sse_iters = num_points / 8;
 
     __m128i x, y, mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc;
@@ -65,7 +66,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, 
     imagy = _mm_and_si128 (imagy, mult1);
     realy = _mm_and_si128 (y, mult1);
 
-    for(unsigned int number = 0;number < sse_iters; number++)
+    for(; number < sse_iters; number++)
         {
             x = _mm_lddqu_si128((__m128i*)a);
 
@@ -92,7 +93,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, 
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (number = sse_iters * 8; number < num_points; ++number)
         {
             *c++ = (*a++) * scalar;
         }
@@ -164,6 +165,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_generic(lv_8sc_t* cVector,
  */
 static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t scalar, unsigned int num_points)
 {
+    unsigned int number = 0;
     const unsigned int sse_iters = num_points / 8;
 
     __m128i x, y, mult1, realx, imagx, realy, imagy, realx_mult_realy, imagx_mult_imagy, realx_mult_imagy, imagx_mult_realy, realc, imagc, totalc;
@@ -178,7 +180,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
     imagy = _mm_and_si128 (imagy, mult1);
     realy = _mm_and_si128 (y, mult1);
 
-    for(unsigned int number = 0;number < sse_iters; number++)
+    for(; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
 
@@ -205,7 +207,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (number = sse_iters * 8; number < num_points; ++number)
         {
             *c++ = (*a++) * scalar;
         }

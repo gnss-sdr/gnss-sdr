@@ -70,7 +70,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_u_sse2(char* cVector, const char* a
             cPtr += 16;
         }
 
-    for(unsigned int i = 0; i<(num_points % 16); ++i)
+    for(unsigned int i = sse_iters * 16; i < num_points; ++i)
         {
             *cPtr++ = (*aPtr++) + (*bPtr++);
         }
@@ -134,14 +134,14 @@ static inline void volk_gnsssdr_8i_x2_add_8i_a_sse2(char* cVector, const char* a
 
             cVal = _mm_add_epi8(aVal, bVal);
 
-            _mm_store_si128((__m128i*)cPtr,cVal); // Store the results back into the C container
+            _mm_store_si128((__m128i*)cPtr, cVal); // Store the results back into the C container
 
             aPtr += 16;
             bPtr += 16;
             cPtr += 16;
         }
 
-    for(unsigned int i = 0; i<(num_points % 16); ++i)
+    for(unsigned int i = sse_iters * 16; i < num_points; ++i)
         {
             *cPtr++ = (*aPtr++) + (*bPtr++);
         }
@@ -163,7 +163,7 @@ static inline void volk_gnsssdr_8i_x2_add_8i_a_generic(char* cVector, const char
     const char* bPtr=  bVector;
     unsigned int number = 0;
 
-    for(number = 0; number < num_points; number++)
+    for(; number < num_points; number++)
         {
             *cPtr++ = (*aPtr++) + (*bPtr++);
         }

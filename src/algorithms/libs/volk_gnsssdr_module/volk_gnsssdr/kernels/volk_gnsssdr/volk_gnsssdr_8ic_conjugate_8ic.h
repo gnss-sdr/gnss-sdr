@@ -75,7 +75,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_avx(lv_8sc_t* cVector, const
             c += 16;
         }
 
-    for (unsigned int i = 0; i<(num_points % 16); ++i)
+    for (unsigned int i = sse_iters * 16; i < num_points; ++i)
         {
             *c++ = lv_conj(*a++);
         }
@@ -109,7 +109,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_ssse3(lv_8sc_t* cVector, con
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             *c++ = lv_conj(*a++);
         }
@@ -146,7 +146,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_sse3(lv_8sc_t* cVector, cons
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             *c++ = lv_conj(*a++);
         }
@@ -220,7 +220,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_avx(lv_8sc_t* cVector, const
             c += 16;
         }
 
-    for (unsigned int i = 0; i<(num_points % 16); ++i)
+    for (unsigned int i = sse_iters * 16; i < num_points; ++i)
         {
             *c++ = lv_conj(*a++);
         }
@@ -254,7 +254,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_ssse3(lv_8sc_t* cVector, con
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             *c++ = lv_conj(*a++);
         }
@@ -291,7 +291,7 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_sse3(lv_8sc_t* cVector, cons
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             *c++ = lv_conj(*a++);
         }

@@ -90,7 +90,7 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_sse3(char* magnitudeV
             magnitudeVectorPtr += 16;
         }
 
-    for (unsigned int i = 0; i<(num_points % 16); ++i)
+    for (unsigned int i = sse_iters * 16; i < num_points; ++i)
         {
             const char valReal = *complexVectorPtr++;
             const char valImag = *complexVectorPtr++;
@@ -226,7 +226,7 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
             magnitudeVectorPtr += 16;
         }
 
-    for (unsigned int i = 0; i<(num_points % 16); ++i)
+    for (unsigned int i = sse_iters * 16; i < num_points; ++i)
         {
             const char valReal = *complexVectorPtr++;
             const char valImag = *complexVectorPtr++;

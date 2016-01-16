@@ -74,7 +74,6 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
     lv_16sc_t* _out = out;
     for(unsigned int number = 0; number < sse_iters; number++)
         {
-
             //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
             //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
             // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
@@ -104,7 +103,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
             _out += 4;
         }
 
-    for (unsigned int i = 0; i < (num_points % 4); ++i)
+    for (unsigned int i = sse_iters * 4; i < num_points; ++i)
         {
             *_out++ = (*_in_a++) * (*_in_b++);
         }

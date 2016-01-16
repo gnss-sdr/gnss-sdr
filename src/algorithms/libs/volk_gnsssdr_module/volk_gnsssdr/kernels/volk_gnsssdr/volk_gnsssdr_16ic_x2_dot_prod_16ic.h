@@ -58,7 +58,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_generic(lv_16sc_t* result,
         {
             //r*a.r - i*a.i, i*a.r + r*a.i
             lv_16sc_t tmp = in_a[n] * in_b[n];
-            result[0] = lv_cmake(sat_adds16i(lv_creal(result[0]), lv_creal(tmp)), sat_adds16i(lv_cimag(result[0]), lv_cimag(tmp) ));
+            result[0] += lv_cmake(sat_adds16i(lv_creal(tmp), lv_creal(tmp)), sat_adds16i(lv_cimag(tmp), lv_cimag(tmp) ));
         }
     	//printf("generic result = %i,%i", lv_creal(result[0]),lv_cimag(result[0]));
 }
@@ -127,14 +127,14 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 
             for (int i = 0; i < 4; ++i)
                 {
-                    dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])), sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                    dotProduct += lv_cmake(sat_adds16i(lv_creal(dotProductVector[i]), lv_creal(dotProductVector[i])), sat_adds16i(lv_cimag(dotProductVector[i]), lv_cimag(dotProductVector[i])));
                 }
         }
 
-    for (unsigned int i = 0; i < (num_points % 4); ++i)
+    for (unsigned int i = sse_iters * 4; i < num_points; ++i)
         {
             lv_16sc_t tmp = (*_in_a++) * (*_in_b++);
-            dotProduct = lv_cmake( sat_adds16i(lv_creal(dotProduct), lv_creal(tmp)), sat_adds16i(lv_cimag(dotProduct), lv_cimag(tmp)));
+            dotProduct += lv_cmake( sat_adds16i(lv_creal(tmp), lv_creal(tmp)), sat_adds16i(lv_cimag(tmp), lv_cimag(tmp)));
         }
 
     *_out = dotProduct;

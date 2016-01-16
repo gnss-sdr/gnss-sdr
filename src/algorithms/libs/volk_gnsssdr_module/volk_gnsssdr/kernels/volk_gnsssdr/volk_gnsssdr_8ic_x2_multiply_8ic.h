@@ -59,7 +59,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse2(lv_8sc_t* cVector, co
 
     mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
 
-    for(unsigned int number = 0;number < sse_iters; number++)
+    for(unsigned int number = 0; number < sse_iters; number++)
         {
             x = _mm_loadu_si128((__m128i*)a);
             y = _mm_loadu_si128((__m128i*)b);
@@ -92,7 +92,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse2(lv_8sc_t* cVector, co
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             *c++ = (*a++) * (*b++);
         }
@@ -121,7 +121,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse4_1(lv_8sc_t* cVector, 
     _mm_setzero_si128();
     mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
 
-    for(unsigned int number = 0;number < sse_iters; number++)
+    for(unsigned int number = 0; number < sse_iters; number++)
         {
             x = _mm_lddqu_si128((__m128i*)a);
             y = _mm_lddqu_si128((__m128i*)b);
@@ -152,7 +152,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse4_1(lv_8sc_t* cVector, 
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             *c++ = (*a++) * (*b++);
         }
@@ -210,7 +210,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse2(lv_8sc_t* cVector, co
 
     mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
 
-    for(unsigned int number = 0;number < sse_iters; number++)
+    for(unsigned int number = 0; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);
@@ -243,7 +243,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse2(lv_8sc_t* cVector, co
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             *c++ = (*a++) * (*b++);
         }
@@ -272,7 +272,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, 
     _mm_setzero_si128();
     mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
 
-    for(unsigned int number = 0;number < sse_iters; number++)
+    for(unsigned int number = 0; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);
@@ -303,7 +303,7 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, 
             c += 8;
         }
 
-    for (unsigned int i = 0; i<(num_points % 8); ++i)
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
         {
             *c++ = (*a++) * (*b++);
         }

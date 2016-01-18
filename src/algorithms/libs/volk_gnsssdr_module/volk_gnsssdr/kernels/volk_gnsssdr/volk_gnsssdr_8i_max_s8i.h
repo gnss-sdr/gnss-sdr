@@ -77,7 +77,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char* target, const char* sr
                         }
                 }
 
-            for(unsigned int i = 0; i<(num_points % 16); ++i)
+            for(unsigned int i = sse_iters * 16; i< num_points; ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -140,7 +140,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char* target, const char* src0
                     inputPtr += 16;
                 }
 
-            for(unsigned int i = 0; i<(num_points % 16); ++i)
+            for(unsigned int i = sse_iters * 16; i < num_points; ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -228,7 +228,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char* target, const char* sr
                         }
                 }
 
-            for(unsigned int i = 0; i<(num_points % 16); ++i)
+            for(unsigned int i = sse_iters * 16; i < num_points; ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -291,7 +291,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char* target, const char* src0
                     inputPtr += 16;
                 }
 
-            for(unsigned int i = 0; i<(num_points % 16); ++i)
+            for(unsigned int i = sse_iters * 16; i < num_points; ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -315,18 +315,15 @@ static inline void volk_gnsssdr_8i_max_s8i_a_generic(char* target, const char* s
 {
     if(num_points > 0)
         {
-            if(num_points > 0)
+            char max = src0[0];
+            for(unsigned int i = 1; i < num_points; ++i)
                 {
-                    char max = src0[0];
-                    for(unsigned int i = 1; i < num_points; ++i)
+                    if(src0[i] > max)
                         {
-                            if(src0[i] > max)
-                                {
-                                    max = src0[i];
-                                }
+                            max = src0[i];
                         }
-                    target[0] = max;
                 }
+            target[0] = max;
         }
 }
 

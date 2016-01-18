@@ -39,7 +39,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 
 float uniform() {
-  return M_PI*2.0f * ((float) rand() / RAND_MAX - 0.5f);        // uniformly (-1, 1)
+    return 2.0f * ((float) rand() / RAND_MAX - 0.5f);     // uniformly (-1, 1)
 }
 
 template <class t>
@@ -72,13 +72,11 @@ void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
                         else ((uint64_t *)data)[i] = (uint64_t) scaled_rand;
                         break;
                     case 4:
-
-							if(type.is_signed) ((int32_t *)data)[i] = (int32_t) scaled_rand;
-							else ((uint32_t *)data)[i] = (uint32_t) scaled_rand;
-
+                        if(type.is_signed) ((int32_t *)data)[i] = (int32_t) scaled_rand;
+                        else ((uint32_t *)data)[i] = (uint32_t) scaled_rand;
                         break;
                     case 2:
-                    	// 16 bits dot product saturates very fast even with moderate lenght vectors
+                        // 16 bits dot product saturates very fast even with moderate length vectors
                     	// we produce here only 4 bits input range
                         if(type.is_signed) ((int16_t *)data)[i] = (int16_t)((int16_t) scaled_rand % 16);
 
@@ -190,7 +188,7 @@ static void get_signatures_from_name(std::vector<volk_gnsssdr_type_t> &inputsig,
                 try {
                         multiplier = boost::lexical_cast<int>(token.substr(1, token.size()-1)); //will throw if invalid ///////////
                 } catch(...) {
-                        multiplier = 1; // This is our '..._xn' mulriple correlator. Assign a fixed number here for the test?
+                        multiplier = 1; // This is our '..._xn' multiple correlator. Assign a fixed number here for the test?
                 }
                 for(int i=1; i<multiplier; i++) {
                         if(side == SIDE_INPUT) inputsig.push_back(inputsig.back());
@@ -220,6 +218,10 @@ inline void run_cast_test1(volk_gnsssdr_fn_1arg func, std::vector<void *> &buffs
 inline void run_cast_test2(volk_gnsssdr_fn_2arg func, std::vector<void *> &buffs, unsigned int vlen, unsigned int iter, std::string arch) {
     while(iter--) func(buffs[0], buffs[1], vlen, arch.c_str());
 }
+
+//inline void run_cast_test2(volk_gnsssdr_fn_2arg_r func, std::vector<void *> &buffs, float rem_code_phase_chips, float code_phase_step_chips, unsigned int vlen, int code_length_chips, unsigned int iter, std::string arch) {
+//    while(iter--) func(buffs[0], buffs[1],  rem_code_phase_chips, code_phase_step_chips, vlen, code_length_chips, arch.c_str());
+//}
 
 inline void run_cast_test3(volk_gnsssdr_fn_3arg func, std::vector<void *> &buffs, unsigned int vlen, unsigned int iter, std::string arch) {
     while(iter--) func(buffs[0], buffs[1], buffs[2], vlen, arch.c_str());
@@ -291,15 +293,24 @@ inline void run_cast_test1_s16ic(volk_gnsssdr_fn_1arg_s16ic func, std::vector<vo
     while(iter--) func(buffs[0], scalar, vlen, arch.c_str());
 }
 
+
+
+
 inline void run_cast_test2_s16ic(volk_gnsssdr_fn_2arg_s16ic func, std::vector<void *> &buffs, lv_16sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
 {
     while(iter--) func(buffs[0], buffs[1], scalar, vlen, arch.c_str());
 }
 
+//inline void run_cast_test2_s16ic(volk_gnsssdr_fn_2arg_s16ic func, std::vector<void *> &buffs, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int vlen, unsigned int iter, std::string arch)
+//{
+//    while(iter--) func(buffs[0], buffs[1], rem_code_phase_chips,  code_phase_step_chips,  vlen, code_length_chips,  arch.c_str());
+//}
+
 inline void run_cast_test3_s16ic(volk_gnsssdr_fn_3arg_s16ic func, std::vector<void *> &buffs, lv_16sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
 {
     while(iter--) func(buffs[0], buffs[1], buffs[2], scalar, vlen, arch.c_str());
 }
+
 
 // end new
 
@@ -601,7 +612,14 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
         case 2:
             if(inputsc.size() == 0)
                 {
-                    run_cast_test2((volk_gnsssdr_fn_2arg)(manual_func), test_data[i], vlen, iter, arch_list[i]);
+                   // if(name.find("resampler") != std::string::npos)
+                   //     {
+                   //         run_cast_test2((volk_gnsssdr_fn_2arg_r)(manual_func), test_data[i], 1, 1, vlen, 1000, iter, arch_list[i]);
+                   //     }
+                   // else
+                    //    {
+                            run_cast_test2((volk_gnsssdr_fn_2arg)(manual_func), test_data[i], vlen, iter, arch_list[i]);
+                   //     }
                 }
             else if(inputsc.size() == 1 && inputsc[0].is_float)
                 {

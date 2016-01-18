@@ -110,7 +110,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector,
     float max_val = 32767;
 
     __m128 inputVal1, inputVal2;
-    __m128i intInputVal1, intInputVal2;
+    __m128i intInputVal1, intInputVal2; // is __m128i defined in xmmintrin.h?
     __m128 ret1, ret2;
     __m128 vmin_val = _mm_set_ps1(min_val);
     __m128 vmax_val = _mm_set_ps1(max_val);

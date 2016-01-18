@@ -151,6 +151,7 @@ bool run_volk_gnsssdr_tests(
 #define VOLK_PUPPET_PROFILE(func, puppet_master_func, test_params, results) run_volk_gnsssdr_tests(func##_get_func_desc(), (void (*)())func##_manual, std::string(#func), test_params, results, std::string(#puppet_master_func))
 typedef void (*volk_gnsssdr_fn_1arg)(void *, unsigned int, const char*); //one input, operate in place
 typedef void (*volk_gnsssdr_fn_2arg)(void *, void *, unsigned int, const char*);
+//typedef void (*volk_gnsssdr_fn_2arg_r)(void *, void *, float, float, unsigned int, float, const char*);
 typedef void (*volk_gnsssdr_fn_3arg)(void *, void *, void *, unsigned int, const char*);
 typedef void (*volk_gnsssdr_fn_4arg)(void *, void *, void *, void *, unsigned int, const char*);
 typedef void (*volk_gnsssdr_fn_1arg_s32f)(void *, float, unsigned int, const char*); //one input vector, one scalar float input

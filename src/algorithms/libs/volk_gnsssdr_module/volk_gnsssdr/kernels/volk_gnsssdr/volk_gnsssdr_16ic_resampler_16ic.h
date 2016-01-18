@@ -54,7 +54,7 @@
  \param bVector One of the vectors to be multiplied
  \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
  */
-static inline void volk_gnsssdr_16ic_resampler_16ic_generic(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, unsigned int num_output_samples, int code_length_chips)
+static inline void volk_gnsssdr_16ic_resampler_16ic_generic(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)
 {
     int local_code_chip_index;
     //fesetround(FE_TONEAREST);
@@ -75,7 +75,7 @@ static inline void volk_gnsssdr_16ic_resampler_16ic_generic(lv_16sc_t* result, c
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
-static inline void volk_gnsssdr_16ic_resampler_16ic_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, unsigned int num_output_samples, int code_length_chips)//, int* scratch_buffer, float* scratch_buffer_float)
+static inline void volk_gnsssdr_16ic_resampler_16ic_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
 {
     _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
     unsigned int number;

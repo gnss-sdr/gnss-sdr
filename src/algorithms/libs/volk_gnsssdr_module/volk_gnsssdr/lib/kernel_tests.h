@@ -66,14 +66,15 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
         (VOLK_INIT_TEST(volk_gnsssdr_8ic_magnitude_squared_8i, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_8ic_x2_dot_prod_8ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_8ic_x2_multiply_8ic, test_params))
+        (VOLK_INIT_TEST(volk_gnsssdr_8ic_s8ic_multiply_8ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_8u_x2_multiply_8u, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_64f_accumulator_64f, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_8ic, test_params_int1))
+        (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_8ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_16ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_multiply_16ic, test_params))
+        (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerpuppet_16ic, volk_gnsssdr_16ic_resampler_16ic, test_params))
         //(VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic_xn,test_params))
-        //(VOLK_INIT_TEST(volk_gnsssdr_16ic_resampler_16ic, test_params))
         //(VOLK_INIT_TEST(volk_gnsssdr_16ic_xn_resampler_16ic_xn, test_params))
         ;
 

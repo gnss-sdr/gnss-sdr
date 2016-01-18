@@ -39,7 +39,7 @@
 
 
 #ifdef LV_HAVE_GENERIC
-static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_generic(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_u_generic(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float rem_code_phase_chips = -0.123;
     float code_phase_step_chips = 0.1;
@@ -50,7 +50,7 @@ static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_generic(lv_16sc_t* res
 #endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_SSE2
-static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_u_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float rem_code_phase_chips = -0.123;
     float code_phase_step_chips = 0.1;
@@ -71,7 +71,7 @@ static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_sse2(lv_16sc_t* result
 
 
 #ifdef LV_HAVE_GENERIC
-static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_generic(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_a_generic(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float rem_code_phase_chips = -0.123;
     float code_phase_step_chips = 0.1;
@@ -82,7 +82,7 @@ static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_generic(lv_16sc_t* res
 #endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_SSE2
-static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_resamplerpuppet_16ic_a_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float rem_code_phase_chips = -0.123;
     float code_phase_step_chips = 0.1;

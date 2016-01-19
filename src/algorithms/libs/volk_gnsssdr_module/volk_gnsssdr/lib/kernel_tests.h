@@ -74,8 +74,8 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_multiply_16ic, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerpuppet_16ic, volk_gnsssdr_16ic_resampler_16ic, test_params))
+        (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerxnpuppet_16ic, volk_gnsssdr_16ic_xn_resampler_16ic_xn, test_params))
         //(VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic_xn,test_params))
-        //(VOLK_INIT_TEST(volk_gnsssdr_16ic_xn_resampler_16ic_xn, test_params))
         ;
 
     return test_cases;

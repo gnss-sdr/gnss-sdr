@@ -39,6 +39,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <string.h>
 
 #ifdef LV_HAVE_GENERIC
 static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_generic(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
@@ -47,13 +48,16 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_generic(lv_16sc_t*
     int code_length_chips = 1023;
     int num_out_vectors = 3;
     float * rem_code_phase_chips = (float*)volk_gnsssdr_malloc(sizeof(float)* num_out_vectors, volk_gnsssdr_get_alignment());
+
     lv_16sc_t** result_aux =  (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_out_vectors, volk_gnsssdr_get_alignment());
     for(unsigned int n = 0; n < num_out_vectors; n++)
     {
-        result_aux[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_points, volk_gnsssdr_get_alignment());
+       rem_code_phase_chips[n] = -0.234; 
+       result_aux[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_points, volk_gnsssdr_get_alignment());
     }
     volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_length_chips, num_out_vectors, num_points);
-    *result = *result_aux[0];
+    
+    memcpy(result, result_aux[0], sizeof(lv_16sc_t)*num_points);
     volk_gnsssdr_free(rem_code_phase_chips);
     for(unsigned int n = 0; n < num_out_vectors; n++)
     {
@@ -74,10 +78,12 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse2(lv_16sc_t* re
     lv_16sc_t** result_aux =  (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_out_vectors, volk_gnsssdr_get_alignment());
     for(unsigned int n = 0; n < num_out_vectors; n++)
     {
+        rem_code_phase_chips[n] = -0.234; 
         result_aux[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_points, volk_gnsssdr_get_alignment());
     }
     volk_gnsssdr_16ic_xn_resampler_16ic_xn_sse2(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_length_chips, num_out_vectors, num_points);
-    *result = *result_aux[0];
+
+    memcpy(result, result_aux[0], sizeof(lv_16sc_t)*num_points);
     volk_gnsssdr_free(rem_code_phase_chips);
     for(unsigned int n = 0; n < num_out_vectors; n++)
     {

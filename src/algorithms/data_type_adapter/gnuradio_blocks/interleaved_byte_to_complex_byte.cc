@@ -60,7 +60,7 @@ int interleaved_byte_to_complex_byte::work(int noutput_items,
     // This could be put into a Volk kernel
     int8_t real_part;
     int8_t imag_part;
-    for(int number = 0; number < 2 * noutput_items; number++)
+    for(int number = 0; number < noutput_items; number++)
         {
             // lv_cmake(r, i) defined at volk/volk_complex.h
             real_part = *in++;

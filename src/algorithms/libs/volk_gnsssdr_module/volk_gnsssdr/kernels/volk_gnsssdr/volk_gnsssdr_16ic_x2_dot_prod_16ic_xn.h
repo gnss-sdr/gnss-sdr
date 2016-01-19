@@ -1,5 +1,5 @@
 /*!
- * \file volk_gnsssdr_16ic_xn_dot_prod_16ic_xn.h
+ * \file volk_gnsssdr_16ic_x2_dot_prod_16ic_xn.h
  * \brief Volk protokernel: multiplies N 16 bits vectors by a common vector and accumulates the results in N 16 bits short complex outputs.
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
@@ -48,7 +48,7 @@
  \param bVector One of the vectors to be multiplied and accumulated
  \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
  */
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, unsigned int num_points, int num_a_vectors)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
@@ -68,7 +68,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* resu
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a, unsigned int num_points, int num_a_vectors)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
 

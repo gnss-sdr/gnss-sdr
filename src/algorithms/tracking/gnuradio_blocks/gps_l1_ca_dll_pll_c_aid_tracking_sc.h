@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc.h
+ * \file gps_l1_ca_dll_pll_c_aid_tracking_sc.h
  * \brief Interface of a code DLL + carrier PLL tracking block
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
@@ -34,8 +34,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_16SC_CC_H
-#define	GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_16SC_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#define	GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
 
 #include <fstream>
 #include <queue>
@@ -51,16 +51,15 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
-#include "cpu_multicorrelator.h"
 #include "cpu_multicorrelator_16sc.h"
 
-class gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc;
+class gps_l1_ca_dll_pll_c_aid_tracking_sc;
 
-typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc>
-        gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc_sptr;
+typedef boost::shared_ptr<gps_l1_ca_dll_pll_c_aid_tracking_sc>
+        gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr;
 
-gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc_sptr
-gps_l1_ca_dll_pll_c_aid_make_tracking_16sc_cc(long if_freq,
+gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr
+gps_l1_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
                                    long fs_in, unsigned
                                    int vector_length,
                                    boost::shared_ptr<gr::msg_queue> queue,
@@ -75,10 +74,10 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_16sc_cc(long if_freq,
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc: public gr::block
+class gps_l1_ca_dll_pll_c_aid_tracking_sc: public gr::block
 {
 public:
-    ~gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc();
+    ~gps_l1_ca_dll_pll_c_aid_tracking_sc();
 
     void set_channel(unsigned int channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
@@ -91,8 +90,8 @@ public:
     void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc_sptr
-    gps_l1_ca_dll_pll_c_aid_make_tracking_16sc_cc(long if_freq,
+    friend gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr
+    gps_l1_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
             long fs_in, unsigned
             int vector_length,
             boost::shared_ptr<gr::msg_queue> queue,
@@ -102,7 +101,7 @@ private:
             float dll_bw_hz,
             float early_late_space_chips);
 
-    gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc(long if_freq,
+    gps_l1_ca_dll_pll_c_aid_tracking_sc(long if_freq,
             long fs_in, unsigned
             int vector_length,
             boost::shared_ptr<gr::msg_queue> queue,
@@ -126,8 +125,6 @@ private:
 
     double d_early_late_spc_chips;
     int d_n_correlator_taps;
-
-    lv_16sc_t* d_in_16sc;
 
     gr_complex* d_ca_code;
     lv_16sc_t* d_ca_code_16sc;
@@ -186,4 +183,4 @@ private:
     std::string sys;
 };
 
-#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_16SC_CC_H
+#endif //GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H

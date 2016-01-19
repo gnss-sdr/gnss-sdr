@@ -20,6 +20,7 @@
 set(DATA_TYPE_GR_BLOCKS_SOURCES 
      interleaved_byte_to_complex_byte.cc
      interleaved_short_to_complex_short.cc
+     interleaved_byte_to_complex_short.cc
 )
 
 include_directories(

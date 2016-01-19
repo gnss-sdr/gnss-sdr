@@ -42,6 +42,7 @@
 #include <gnuradio/msg_queue.h>
 #include "tracking_interface.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking_cc.h"
+#include "gps_l1_ca_dll_pll_c_aid_tracking_sc.h"
 
 
 class ConfigurationInterface;
@@ -101,8 +102,10 @@ public:
     void start_tracking();
 
 private:
-    gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr tracking_;
+    gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr tracking_cc;
+    gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr tracking_sc;
     size_t item_size_;
+    std::string item_type_;
     unsigned int channel_;
     std::string role_;
     unsigned int in_streams_;

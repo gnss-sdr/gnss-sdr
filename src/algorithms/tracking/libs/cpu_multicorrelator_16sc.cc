@@ -99,8 +99,8 @@ void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples,f
 			tmp_code_phases_chips,
 			code_phase_step_chips,
 			correlator_length_samples,
-			d_code_length_chips,
-			d_n_correlators);
+			d_n_correlators,
+			d_code_length_chips);
 
 	volk_free(tmp_code_phases_chips);
 
@@ -148,7 +148,7 @@ bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
     //std::cout<<"d_sig_doppler_wiped 16sc="<<d_sig_doppler_wiped[23]<<std::endl;
     update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
 
-    volk_gnsssdr_16ic_x2_dot_prod_16ic_xn(d_corr_out, d_sig_doppler_wiped, (const lv_16sc_t**)d_local_codes_resampled, signal_length_samples, d_n_correlators);
+    volk_gnsssdr_16ic_x2_dot_prod_16ic_xn(d_corr_out, d_sig_doppler_wiped, (const lv_16sc_t**)d_local_codes_resampled, d_n_correlators,  signal_length_samples);
 
     //for (int current_correlator_tap = 0; current_correlator_tap < d_n_correlators; current_correlator_tap++)
     //    {

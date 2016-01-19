@@ -21,6 +21,7 @@ set(DATATYPE_ADAPTER_SOURCES
     byte_to_short.cc
     ibyte_to_cbyte.cc
     ibyte_to_complex.cc
+    ibyte_to_cshort.cc
     ishort_to_cshort.cc
 	ishort_to_complex.cc 
 	 )

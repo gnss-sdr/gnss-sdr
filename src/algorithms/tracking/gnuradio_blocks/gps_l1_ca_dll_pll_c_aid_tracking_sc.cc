@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc.cc
+ * \file gps_l1_ca_dll_pll_c_aid_tracking_sc.cc
  * \brief Implementation of a code DLL + carrier PLL tracking block
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc.h"
+#include "gps_l1_ca_dll_pll_c_aid_tracking_sc.h"
 #include <cmath>
 #include <iostream>
 #include <memory>
@@ -56,8 +56,8 @@
 
 using google::LogMessage;
 
-gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc_sptr
-gps_l1_ca_dll_pll_c_aid_make_tracking_16sc_cc(
+gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr
+gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
@@ -68,13 +68,13 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_16sc_cc(
         float dll_bw_hz,
         float early_late_space_chips)
 {
-    return gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc(if_freq,
+    return gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_sc(if_freq,
             fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
 }
 
 
 
-void gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::forecast (int noutput_items,
+void gps_l1_ca_dll_pll_c_aid_tracking_sc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
     if (noutput_items != 0)
@@ -85,7 +85,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::forecast (int noutput_items,
 
 
 
-gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc(
+gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
@@ -95,7 +95,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::gps_l1_ca_dll_pll_c_aid_tracking_16sc_
         float pll_bw_hz,
         float dll_bw_hz,
         float early_late_space_chips) :
-        gr::block("gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+        gr::block("gps_l1_ca_dll_pll_c_aid_tracking_sc", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
@@ -118,8 +118,6 @@ gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::gps_l1_ca_dll_pll_c_aid_tracking_16sc_
     // Get space for a vector with the C/A code replica sampled 1x/chip
     d_ca_code = static_cast<gr_complex*>(volk_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
     d_ca_code_16sc = static_cast<lv_16sc_t*>(volk_malloc(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(lv_16sc_t), volk_get_alignment()));
-
-    d_in_16sc = static_cast<lv_16sc_t*>(volk_malloc(2 * d_vector_length * sizeof(lv_16sc_t), volk_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 3; // Early, Prompt, and Late
@@ -185,7 +183,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::gps_l1_ca_dll_pll_c_aid_tracking_16sc_
 }
 
 
-void gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::start_tracking()
+void gps_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
 {
     /*
      *  correct the code phase according to the delay between acq and trk
@@ -272,14 +270,12 @@ void gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::start_tracking()
 }
 
 
-gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::~gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc()
+gps_l1_ca_dll_pll_c_aid_tracking_sc::~gps_l1_ca_dll_pll_c_aid_tracking_sc()
 {
     d_dump_file.close();
 
     volk_free(d_local_code_shift_chips);
     volk_free(d_ca_code);
-
-    volk_free(d_in_16sc);
     volk_free(d_ca_code_16sc);
     volk_free(d_correlator_outs_16sc);
 
@@ -289,11 +285,11 @@ gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::~gps_l1_ca_dll_pll_c_aid_tracking_16sc
 
 
 
-int gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // Block input data and block output stream pointers
-    const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignment
+    const lv_16sc_t* in = (lv_16sc_t*) input_items[0]; //PRN start block alignment
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
@@ -334,16 +330,16 @@ int gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::general_work (int noutput_items, g
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
 
-            volk_gnsssdr_32fc_convert_16ic(d_in_16sc,in,d_correlation_length_samples);
+            //volk_gnsssdr_32fc_convert_16ic(d_in_16sc,in,d_correlation_length_samples);
             //std::cout << std::fixed << std::setw( 11 ) << std::setprecision( 6 );
-            //std::cout<<"in="<<in[0]<<" in 16sc="<<d_in_16sc[0]<<std::endl;
+            //std::cout<<"in="<<in[0]<<std::endl;
 
-            multicorrelator_cpu_16sc.set_input_output_vectors(d_correlator_outs_16sc,d_in_16sc);
+            multicorrelator_cpu_16sc.set_input_output_vectors(d_correlator_outs_16sc,in);
             multicorrelator_cpu_16sc.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad, d_carrier_phase_step_rad, d_rem_code_phase_chips, d_code_phase_step_chips, d_correlation_length_samples);
 
-            //std::cout<<"E float="<<d_correlator_outs[0]<<" E 16sc="<<d_correlator_outs_16sc[0]<<std::endl;
-            //std::cout<<"P float="<<d_correlator_outs[1]<<" P 16sc="<<d_correlator_outs_16sc[1]<<std::endl;
-            //std::cout<<"L float="<<d_correlator_outs[2]<<" L 16sc="<<d_correlator_outs_16sc[2]<<std::endl;
+            //std::cout<<"E 16sc="<<d_correlator_outs_16sc[0]<<std::endl;
+            //std::cout<<"P 16sc="<<d_correlator_outs_16sc[1]<<std::endl;
+            //std::cout<<"L 16sc="<<d_correlator_outs_16sc[2]<<std::endl;
 
             //std::cout<<std::endl;
             // UPDATE INTEGRATION TIME
@@ -576,7 +572,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::general_work (int noutput_items, g
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 
-void gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::set_channel(unsigned int channel)
+void gps_l1_ca_dll_pll_c_aid_tracking_sc::set_channel(unsigned int channel)
 {
     d_channel = channel;
     LOG(INFO) << "Tracking Channel set to " << d_channel;
@@ -601,12 +597,12 @@ void gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::set_channel(unsigned int channel)
         }
 }
 
-void gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
+void gps_l1_ca_dll_pll_c_aid_tracking_sc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
 {
     d_channel_internal_queue = channel_internal_queue;
 }
 
-void gps_l1_ca_dll_pll_c_aid_tracking_16sc_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void gps_l1_ca_dll_pll_c_aid_tracking_sc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }

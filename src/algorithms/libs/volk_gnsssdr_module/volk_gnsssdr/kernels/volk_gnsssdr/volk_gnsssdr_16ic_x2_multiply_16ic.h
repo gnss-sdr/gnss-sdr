@@ -33,8 +33,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_a_H
-#define INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_a_H
+#ifndef INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_H
+#define INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
@@ -110,4 +110,4 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
 }
 #endif /* LV_HAVE_SSE2 */
 
-#endif /*INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_a_H*/
+#endif /*INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_H*/

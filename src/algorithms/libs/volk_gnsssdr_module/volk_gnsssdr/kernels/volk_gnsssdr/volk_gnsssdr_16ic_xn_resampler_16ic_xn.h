@@ -34,8 +34,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_H
-#define INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_H
+#ifndef INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_H
+#define INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_H
 
 #include <math.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
@@ -80,7 +80,99 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** re
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
-static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_sse2(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
+static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
+{
+    _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
+    unsigned int number;
+    const unsigned int quarterPoints = num_output_samples / 4;
+
+    lv_16sc_t** _result = result;
+    __attribute__((aligned(16))) int local_code_chip_index[4];
+    float tmp_rem_code_phase_chips;
+    __m128 _rem_code_phase,_code_phase_step_chips;
+    __m128i _code_length_chips,_code_length_chips_minus1;
+    __m128 _code_phase_out,_code_phase_out_with_offset;
+
+    _code_phase_step_chips = _mm_load1_ps(&code_phase_step_chips); //load float to all four float values in m128 register
+    __attribute__((aligned(16))) int four_times_code_length_chips_minus1[4];
+    four_times_code_length_chips_minus1[0] = code_length_chips - 1;
+    four_times_code_length_chips_minus1[1] = code_length_chips - 1;
+    four_times_code_length_chips_minus1[2] = code_length_chips - 1;
+    four_times_code_length_chips_minus1[3] = code_length_chips - 1;
+
+    __attribute__((aligned(16))) int four_times_code_length_chips[4];
+    four_times_code_length_chips[0] = code_length_chips;
+    four_times_code_length_chips[1] = code_length_chips;
+    four_times_code_length_chips[2] = code_length_chips;
+    four_times_code_length_chips[3] = code_length_chips;
+
+    _code_length_chips = _mm_load_si128((__m128i*)&four_times_code_length_chips); //load float to all four float values in m128 register
+    _code_length_chips_minus1 = _mm_load_si128((__m128i*)&four_times_code_length_chips_minus1); //load float to all four float values in m128 register
+
+    __m128i negative_indexes, overflow_indexes,_code_phase_out_int, _code_phase_out_int_neg,_code_phase_out_int_over;
+
+    __m128i zero=_mm_setzero_si128();
+
+    __attribute__((aligned(16))) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
+    __m128 _4output_index = _mm_load_ps(init_idx_float);
+    __attribute__((aligned(16))) float init_4constant_float[4] = { 4.0f, 4.0f, 4.0f, 4.0f };
+    __m128 _4constant_float = _mm_load_ps(init_4constant_float);
+
+    int current_vector = 0;
+    int sample_idx = 0;
+    for(number = 0; number < quarterPoints; number++)
+        {
+            //common to all outputs
+            _code_phase_out = _mm_mul_ps(_code_phase_step_chips, _4output_index); //compute the code phase point with the phase step
+
+            //output vector dependant (different code phase offset)
+            for(current_vector = 0; current_vector < num_out_vectors; current_vector++)
+                {
+                    tmp_rem_code_phase_chips = rem_code_phase_chips[current_vector] - 0.5f; // adjust offset to perform correct rounding (chip transition at 0)
+                    _rem_code_phase = _mm_load1_ps(&tmp_rem_code_phase_chips); //load float to all four float values in m128 register
+
+                    _code_phase_out_with_offset = _mm_add_ps(_code_phase_out, _rem_code_phase); //add the phase offset
+                    _code_phase_out_int = _mm_cvtps_epi32(_code_phase_out_with_offset); //convert to integer
+
+                    negative_indexes = _mm_cmplt_epi32 (_code_phase_out_int, zero); //test for negative values
+                    _code_phase_out_int_neg = _mm_add_epi32(_code_phase_out_int, _code_length_chips); //the negative values branch
+                    _code_phase_out_int_neg = _mm_xor_si128(_code_phase_out_int, _mm_and_si128( negative_indexes,_mm_xor_si128( _code_phase_out_int_neg, _code_phase_out_int )));
+
+                    overflow_indexes = _mm_cmpgt_epi32  (_code_phase_out_int_neg, _code_length_chips_minus1); //test for overflow values
+                    _code_phase_out_int_over = _mm_sub_epi32(_code_phase_out_int_neg, _code_length_chips); //the negative values branch
+                    _code_phase_out_int_over = _mm_xor_si128(_code_phase_out_int_neg, _mm_and_si128( overflow_indexes, _mm_xor_si128( _code_phase_out_int_over, _code_phase_out_int_neg )));
+
+                    _mm_store_si128((__m128i*)local_code_chip_index, _code_phase_out_int_over); // Store the results back
+
+                    //todo: optimize the local code lookup table with intrinsics, if possible
+                    _result[current_vector][sample_idx] = local_code[local_code_chip_index[0]];
+                    _result[current_vector][sample_idx + 1] = local_code[local_code_chip_index[1]];
+                    _result[current_vector][sample_idx + 2] = local_code[local_code_chip_index[2]];
+                    _result[current_vector][sample_idx + 3] = local_code[local_code_chip_index[3]];
+                }
+            _4output_index = _mm_add_ps(_4output_index, _4constant_float);
+            sample_idx += 4;
+        }
+
+    for(number = quarterPoints * 4; number < num_output_samples; number++)
+        {
+            for(current_vector = 0; current_vector < num_out_vectors; current_vector++)
+                {
+                    local_code_chip_index[0] = (int)(code_phase_step_chips * (float)(number) + rem_code_phase_chips[current_vector]);
+                    if (local_code_chip_index[0] < 0.0) local_code_chip_index[0] += code_length_chips - 1;
+                    if (local_code_chip_index[0] > (code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
+                    _result[current_vector][number] = local_code[local_code_chip_index[0]];
+                }
+
+        }
+
+}
+#endif /* LV_HAVE_SSE2 */
+
+#ifdef LV_HAVE_SSE2
+#include <emmintrin.h>
+
+static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_sse2(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
     _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
     unsigned int number;
@@ -114,9 +206,9 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_sse2(lv_16sc_t** resul
     __m128i zero=_mm_setzero_si128();
 
     __attribute__((aligned(16))) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
-    __m128 _4output_index = _mm_load_ps(init_idx_float);
+    __m128 _4output_index = _mm_loadu_ps(init_idx_float);
     __attribute__((aligned(16))) float init_4constant_float[4] = { 4.0f, 4.0f, 4.0f, 4.0f };
-    __m128 _4constant_float = _mm_load_ps(init_4constant_float);
+    __m128 _4constant_float = _mm_loadu_ps(init_4constant_float);
 
     int current_vector = 0;
     int sample_idx = 0;
@@ -167,6 +259,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_sse2(lv_16sc_t** resul
         }
 
 }
+
 #endif /* LV_HAVE_SSE2 */
 
-#endif /*INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_H*/
+#endif /*INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_H*/

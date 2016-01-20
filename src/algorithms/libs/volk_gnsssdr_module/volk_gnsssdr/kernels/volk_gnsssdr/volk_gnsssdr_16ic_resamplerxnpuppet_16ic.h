@@ -32,8 +32,8 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_H
-#define INCLUDED_volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_H
+#ifndef INCLUDED_volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_H
+#define INCLUDED_volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_H
 
 #include "volk_gnsssdr/volk_gnsssdr_16ic_xn_resampler_16ic_xn.h"
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
@@ -42,7 +42,7 @@
 #include <string.h>
 
 #ifdef LV_HAVE_GENERIC
-static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_generic(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_generic(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float code_phase_step_chips = 0.1;
     int code_length_chips = 1023;
@@ -56,7 +56,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_generic(lv_16sc_t*
        result_aux[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_points, volk_gnsssdr_get_alignment());
     }
     volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, code_length_chips, num_out_vectors, num_points);
-    
+
     memcpy(result, result_aux[0], sizeof(lv_16sc_t)*num_points);
     volk_gnsssdr_free(rem_code_phase_chips);
     for(unsigned int n = 0; n < num_out_vectors; n++)
@@ -69,7 +69,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_generic(lv_16sc_t*
 #endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_SSE2
-static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float code_phase_step_chips = 0.1;
     int code_length_chips = 1023;
@@ -94,4 +94,4 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse2(lv_16sc_t* re
 
 #endif
 
-#endif // INCLUDED_volk_gnsssdr_16ic_resamplerpuppet_16ic_u_H
+#endif // INCLUDED_volk_gnsssdr_16ic_resamplerpuppet_16ic_a_H

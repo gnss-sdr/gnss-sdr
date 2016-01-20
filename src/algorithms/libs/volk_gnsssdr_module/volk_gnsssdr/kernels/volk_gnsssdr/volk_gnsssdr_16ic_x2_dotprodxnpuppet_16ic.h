@@ -42,7 +42,7 @@
 #include <string.h>
 
 #ifdef LV_HAVE_GENERIC
-static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_u_generic(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_a_generic(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_a_vectors, volk_gnsssdr_get_alignment());
@@ -63,7 +63,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_u_generic(lv_16sc_t
 #endif  // Generic
 
 #ifdef LV_HAVE_SSE2
-static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_u_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_a_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_a_vectors, volk_gnsssdr_get_alignment());

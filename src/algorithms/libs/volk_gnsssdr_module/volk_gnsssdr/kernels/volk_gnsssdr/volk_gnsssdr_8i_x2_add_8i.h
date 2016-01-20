@@ -32,10 +32,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_8i_x2_add_8i_u_H
-#define INCLUDED_volk_gnsssdr_8i_x2_add_8i_u_H
+#ifndef INCLUDED_volk_gnsssdr_8i_x2_add_8i_H
+#define INCLUDED_volk_gnsssdr_8i_x2_add_8i_H
 
 #include <inttypes.h>
+#include <stdio.h>
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
@@ -99,14 +100,6 @@ static inline void volk_gnsssdr_8i_x2_add_8i_generic(char* cVector, const char* 
 }
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_volk_gnsssdr_8i_x2_add_8i_u_H */
-
-
-#ifndef INCLUDED_volk_gnsssdr_8i_x2_add_8i_a_H
-#define INCLUDED_volk_gnsssdr_8i_x2_add_8i_a_H
-
-#include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
@@ -148,27 +141,6 @@ static inline void volk_gnsssdr_8i_x2_add_8i_a_sse2(char* cVector, const char* a
 }
 #endif /* LV_HAVE_SSE2 */
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Adds the two input vectors and store their results in the third vector
- \param cVector The vector where the results will be stored
- \param aVector One of the vectors to be added
- \param bVector One of the vectors to be added
- \param num_points The number of values in aVector and bVector to be added together and stored into cVector
- */
-static inline void volk_gnsssdr_8i_x2_add_8i_a_generic(char* cVector, const char* aVector, const char* bVector, unsigned int num_points)
-{
-    char* cPtr = cVector;
-    const char* aPtr = aVector;
-    const char* bPtr=  bVector;
-    unsigned int number = 0;
-
-    for(; number < num_points; number++)
-        {
-            *cPtr++ = (*aPtr++) + (*bPtr++);
-        }
-}
-#endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_ORC
 /*!
@@ -185,4 +157,4 @@ static inline void volk_gnsssdr_8i_x2_add_8i_u_orc(char* cVector, const char* aV
 }
 #endif /* LV_HAVE_ORC */
 
-#endif /* INCLUDED_volk_gnsssdr_8i_x2_add_8i_a_H */
+#endif /* INCLUDED_volk_gnsssdr_8i_x2_add_8i_H */

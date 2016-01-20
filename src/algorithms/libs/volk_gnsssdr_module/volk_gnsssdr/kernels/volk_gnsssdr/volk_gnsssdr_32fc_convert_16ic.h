@@ -34,8 +34,8 @@
 #include <math.h>
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"
 
-#ifndef INCLUDED_volk_gnsssdr_32fc_convert_16ic_u_H
-#define INCLUDED_volk_gnsssdr_32fc_convert_16ic_u_H
+#ifndef INCLUDED_volk_gnsssdr_32fc_convert_16ic_H
+#define INCLUDED_volk_gnsssdr_32fc_convert_16ic_H
 
 
 #ifdef LV_HAVE_SSE2
@@ -168,11 +168,6 @@ static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVecto
         }
 }
 #endif /* LV_HAVE_GENERIC */
-#endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_u_H */
-
-
-#ifndef INCLUDED_volk_gnsssdr_32fc_convert_16ic_a_H
-#define INCLUDED_volk_gnsssdr_32fc_convert_16ic_a_H
 
 
 #ifdef LV_HAVE_SSE2
@@ -281,28 +276,4 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector,
 }
 #endif /* LV_HAVE_SSE */
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Converts a float vector of 64 bits (32 bits each part) into a 32 integer vector (16 bits each part)
- \param inputVector The floating point input data buffer
- \param outputVector The 16 bit output data buffer
- \param num_points The number of data values to be converted
- */
-static inline void volk_gnsssdr_32fc_convert_16ic_a_generic(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
-{
-    float* inputVectorPtr = (float*)inputVector;
-    int16_t* outputVectorPtr = (int16_t*)outputVector;
-    float min_val = -32768;
-    float max_val = 32767;
-
-    for(unsigned int i = 0; i < num_points*2; i++)
-        {
-            if(inputVectorPtr[i] > max_val)
-                inputVectorPtr[i] = max_val;
-            else if(inputVectorPtr[i] < min_val)
-                inputVectorPtr[i] = min_val;
-            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
-        }
-}
-#endif /* LV_HAVE_GENERIC */
-#endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_a_H */
+#endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_H */

@@ -33,10 +33,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_8ic_s8ic_multiply_8ic_u_H
-#define INCLUDED_volk_gnsssdr_8ic_s8ic_multiply_8ic_u_H
+#ifndef INCLUDED_volk_gnsssdr_8ic_s8ic_multiply_8ic_H
+#define INCLUDED_volk_gnsssdr_8ic_s8ic_multiply_8ic_H
 
 #include <inttypes.h>
+#include <stdio.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <float.h>
 
@@ -143,16 +144,6 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_generic(lv_8sc_t* cVector,
 }
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_volk_gnsssdr_32fc_x2_multiply_32fc_u_H */
-
-
-#ifndef INCLUDED_volk_gnsssdr_8ic_s8ic_multiply_8ic_a_H
-#define INCLUDED_volk_gnsssdr_8ic_s8ic_multiply_8ic_a_H
-
-#include <inttypes.h>
-#include <stdio.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include <float.h>
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
@@ -215,46 +206,6 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
 }
 #endif /* LV_HAVE_SSE3 */
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Multiplies the input vector by a scalar and stores the results in the third vector
- \param cVector The vector where the results will be stored
- \param aVector The vector to be multiplied
- \param scalar The complex scalar to multiply aVector
- \param num_points The number of complex values in aVector to be multiplied by sacalar and stored into cVector
- */
-static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_generic(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t scalar, unsigned int num_points)
-{
-    /*lv_8sc_t* cPtr = cVector;
-     const lv_8sc_t* aPtr = aVector;
-
-     for (int i = 0; i<num_points; ++i)
-     {
-     *cPtr++ = (*aPtr++) * scalar;
-     }*/
-
-    lv_8sc_t* cPtr = cVector;
-    const lv_8sc_t* aPtr = aVector;
-    unsigned int number = num_points;
-
-    // unwrap loop
-    while (number >= 8){
-            *cPtr++ = (*aPtr++) * scalar;
-            *cPtr++ = (*aPtr++) * scalar;
-            *cPtr++ = (*aPtr++) * scalar;
-            *cPtr++ = (*aPtr++) * scalar;
-            *cPtr++ = (*aPtr++) * scalar;
-            *cPtr++ = (*aPtr++) * scalar;
-            *cPtr++ = (*aPtr++) * scalar;
-            *cPtr++ = (*aPtr++) * scalar;
-            number -= 8;
-    }
-
-    // clean up any remaining
-    while (number-- > 0)
-        *cPtr++ = *aPtr++ * scalar;
-}
-#endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_ORC
 /*!
@@ -271,4 +222,4 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_orc(lv_8sc_t* cVector, c
 }
 #endif /* LV_HAVE_ORC */
 
-#endif /* INCLUDED_volk_gnsssdr_32fc_x2_multiply_32fc_a_H */
+#endif /* INCLUDED_volk_gnsssdr_32fc_x2_multiply_32fc_H */

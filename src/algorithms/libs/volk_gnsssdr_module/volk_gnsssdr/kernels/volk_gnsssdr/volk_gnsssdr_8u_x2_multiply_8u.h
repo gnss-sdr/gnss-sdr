@@ -32,10 +32,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_u_H
-#define INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_u_H
+#ifndef INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_H
+#define INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_H
 
 #include <inttypes.h>
+#include <stdio.h>
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
@@ -112,14 +113,6 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_generic(unsigned char* cChar, 
 }
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_u_H */
-
-
-#ifndef INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_a_H
-#define INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_a_H
-
-#include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
@@ -176,26 +169,6 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_a_sse3(unsigned char* cChar, c
 }
 #endif /* LV_HAVE_SSE */
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Multiplies the two input unsigned char values and stores their results in the third unisgned char
- \param cChar The unsigned char where the results will be stored
- \param aChar One of the unsigned char to be multiplied
- \param bChar One of the unsigned char to be multiplied
- \param num_points The number of unsigned char values in aChar and bChar to be multiplied together and stored into cChar
- */
-static inline void volk_gnsssdr_8u_x2_multiply_8u_a_generic(unsigned char* cChar, const unsigned char* aChar, const unsigned char* bChar, unsigned int num_points)
-{
-    unsigned char* cPtr = cChar;
-    const unsigned char* aPtr = aChar;
-    const unsigned char* bPtr = bChar;
-
-    for(unsigned int number = 0; number < num_points; number++)
-        {
-            *cPtr++ = (*aPtr++) * (*bPtr++);
-        }
-}
-#endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_ORC
 /*!
@@ -212,4 +185,4 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_u_orc(unsigned char* cVector, 
 }
 #endif /* LV_HAVE_ORC */
 
-#endif /* INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_a_H */
+#endif /* INCLUDED_volk_gnsssdr_8u_x2_multiply_8u_H */

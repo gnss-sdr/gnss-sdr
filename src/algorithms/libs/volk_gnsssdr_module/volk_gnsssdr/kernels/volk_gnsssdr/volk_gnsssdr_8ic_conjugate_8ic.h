@@ -33,10 +33,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_u_H
-#define INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_u_H
+#ifndef INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_H
+#define INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_H
 
 #include <inttypes.h>
+#include <stdio.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 #ifdef LV_HAVE_AVX
@@ -174,15 +175,6 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_generic(lv_8sc_t* cVector, con
 }
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_u_H */
-
-
-#ifndef INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_a_H
-#define INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_a_H
-
-#include <inttypes.h>
-#include <stdio.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
@@ -299,25 +291,6 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_sse3(lv_8sc_t* cVector, cons
 }
 #endif /* LV_HAVE_SSE3 */
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Takes the conjugate of an unsigned char vector.
- \param cVector The vector where the results will be stored
- \param aVector Vector to be conjugated
- \param num_points The number of unsigned char values in aVector to be conjugated and stored into cVector
- */
-static inline void volk_gnsssdr_8ic_conjugate_8ic_a_generic(lv_8sc_t* cVector, const lv_8sc_t* aVector, unsigned int num_points)
-{
-    lv_8sc_t* cPtr = cVector;
-    const lv_8sc_t* aPtr = aVector;
-    unsigned int number = 0;
-
-    for(number = 0; number < num_points; number++)
-        {
-            *cPtr++ = lv_conj(*aPtr++);
-        }
-}
-#endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_ORC
 /*!
@@ -333,4 +306,4 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_orc(lv_8sc_t* cVector, const
 }
 #endif /* LV_HAVE_ORC */
 
-#endif /* INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_a_H */
+#endif /* INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_H */

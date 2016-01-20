@@ -33,10 +33,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_u_H
-#define INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_u_H
+#ifndef INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_H
+#define INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_H
 
 #include <inttypes.h>
+#include <stdio.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 #ifdef LV_HAVE_SSE2
@@ -180,15 +181,6 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_generic(lv_8sc_t* cVector, c
 }
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_u_H */
-
-
-#ifndef INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_a_H
-#define INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_a_H
-
-#include <inttypes.h>
-#include <stdio.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
@@ -310,27 +302,6 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, 
 }
 #endif /* LV_HAVE_SSE4_1 */
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Multiplies the two input complex vectors and stores their results in the third vector
- \param cVector The vector where the results will be stored
- \param aVector One of the vectors to be multiplied
- \param bVector One of the vectors to be multiplied
- \param num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
- */
-static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_generic(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points)
-{
-    lv_8sc_t* cPtr = cVector;
-    const lv_8sc_t* aPtr = aVector;
-    const lv_8sc_t* bPtr = bVector;
-
-    for(unsigned int number = 0; number < num_points; number++)
-        {
-            *cPtr++ = (*aPtr++) * (*bPtr++);
-        }
-
-}
-#endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_ORC
 /*!
@@ -347,4 +318,4 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_orc(lv_8sc_t* cVector, con
 }
 #endif /* LV_HAVE_ORC */
 
-#endif /* INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_a_H */
+#endif /* INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_H */

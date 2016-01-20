@@ -34,10 +34,11 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_8ic_magnitude_squared_8i_u_H
-#define INCLUDED_volk_gnsssdr_8ic_magnitude_squared_8i_u_H
+#ifndef INCLUDED_volk_gnsssdr_8ic_magnitude_squared_8i_H
+#define INCLUDED_volk_gnsssdr_8ic_magnitude_squared_8i_H
 
 #include <inttypes.h>
+#include <stdio.h>
 #include <math.h>
 
 #ifdef LV_HAVE_SSSE3
@@ -166,15 +167,6 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_generic(char* magnitude
 }
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_volk_gnsssdr_32fc_magnitude_32f_u_H */
-
-
-#ifndef INCLUDED_volk_gnsssdr_8ic_magnitude_squared_8i_a_H
-#define INCLUDED_volk_gnsssdr_8ic_magnitude_squared_8i_a_H
-
-#include <inttypes.h>
-#include <stdio.h>
-#include <math.h>
 
 #ifdef LV_HAVE_SSSE3
 #include <tmmintrin.h>
@@ -281,26 +273,6 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
 //}
 //#endif /* LV_HAVE_SSE */
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Calculates the magnitude squared of complexVector and stores the results in magnitudeVector
- \param complexVector The vector containing the complex input values
- \param magnitudeVector The vector containing the real output values
- \param num_points The number of complex values in complexVector to be calculated and stored into cVector
- */
-static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_generic(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points)
-{
-    const char* complexVectorPtr = (char*)complexVector;
-    char* magnitudeVectorPtr = magnitudeVector;
-
-    for(unsigned int number = 0; number < num_points; number++)
-        {
-            const char real = *complexVectorPtr++;
-            const char imag = *complexVectorPtr++;
-            *magnitudeVectorPtr++ = (real*real) + (imag*imag);
-        }
-}
-#endif /* LV_HAVE_GENERIC */
 
 #ifdef LV_HAVE_ORC
 /*!
@@ -316,4 +288,4 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_orc(char* magnitudeVe
 }
 #endif /* LV_HAVE_ORC */
 
-#endif /* INCLUDED_volk_gnsssdr_32fc_magnitude_32f_a_H */
+#endif /* INCLUDED_volk_gnsssdr_32fc_magnitude_32f_H */

@@ -151,7 +151,6 @@ bool run_volk_gnsssdr_tests(
 #define VOLK_PUPPET_PROFILE(func, puppet_master_func, test_params, results) run_volk_gnsssdr_tests(func##_get_func_desc(), (void (*)())func##_manual, std::string(#func), test_params, results, std::string(#puppet_master_func))
 typedef void (*volk_gnsssdr_fn_1arg)(void *, unsigned int, const char*); //one input, operate in place
 typedef void (*volk_gnsssdr_fn_2arg)(void *, void *, unsigned int, const char*);
-//typedef void (*volk_gnsssdr_fn_2arg_r)(void *, void *, float, float, unsigned int, float, const char*);
 typedef void (*volk_gnsssdr_fn_3arg)(void *, void *, void *, unsigned int, const char*);
 typedef void (*volk_gnsssdr_fn_4arg)(void *, void *, void *, void *, unsigned int, const char*);
 typedef void (*volk_gnsssdr_fn_1arg_s32f)(void *, float, unsigned int, const char*); //one input vector, one scalar float input
@@ -161,8 +160,6 @@ typedef void (*volk_gnsssdr_fn_1arg_s32fc)(void *, lv_32fc_t, unsigned int, cons
 typedef void (*volk_gnsssdr_fn_2arg_s32fc)(void *, void *, lv_32fc_t, unsigned int, const char*);
 typedef void (*volk_gnsssdr_fn_3arg_s32fc)(void *, void *, void *, lv_32fc_t, unsigned int, const char*);
 
-
-
 //ADDED BY GNSS-SDR. START
 typedef void (*volk_gnsssdr_fn_1arg_s8i)(void *, char, unsigned int, const char*); //one input vector, one scalar char input
 typedef void (*volk_gnsssdr_fn_2arg_s8i)(void *, void *, char, unsigned int, const char*);
@@ -170,26 +167,9 @@ typedef void (*volk_gnsssdr_fn_3arg_s8i)(void *, void *, void *, char, unsigned 
 typedef void (*volk_gnsssdr_fn_1arg_s8ic)(void *, lv_8sc_t, unsigned int, const char*); //one input vector, one scalar lv_8sc_t vector input
 typedef void (*volk_gnsssdr_fn_2arg_s8ic)(void *, void *, lv_8sc_t, unsigned int, const char*);
 typedef void (*volk_gnsssdr_fn_3arg_s8ic)(void *, void *, void *, lv_8sc_t, unsigned int, const char*);
-
-//typedef void (*volk_gnsssdr_fn_1arg_s16i)(void *, int16_t, unsigned int, const char*); //one input vector, one scalar int16_t input
-//typedef void (*volk_gnsssdr_fn_2arg_s16i)(void *, void *, int16_t, unsigned int, const char*);
-//typedef void (*volk_gnsssdr_fn_3arg_s16i)(void *, void *, void *, int16_t, unsigned int, const char*);
 typedef void (*volk_gnsssdr_fn_1arg_s16ic)(void *, lv_16sc_t, unsigned int, const char*); //one input vector, one scalar lv_16sc_t vector input
 typedef void (*volk_gnsssdr_fn_2arg_s16ic)(void *, void *, lv_16sc_t, unsigned int, const char*);
 typedef void (*volk_gnsssdr_fn_3arg_s16ic)(void *, void *, void *, lv_16sc_t, unsigned int, const char*);
-typedef void (*volk_gnsssdr_fn_6arg_s16ic)(void *, void *, void *, void *, void *, void *, lv_16sc_t, unsigned int, const char*);
-
-typedef void (*volk_gnsssdr_fn_8arg)(void *, void *, void *, void *, void *, void *, void *, void *, unsigned int, const char*);
-typedef void (*volk_gnsssdr_fn_8arg_s32f)(void *, void *, void *, void *, void *, void *, void *, void *, float, unsigned int, const char*);
-typedef void (*volk_gnsssdr_fn_8arg_s32fc)(void *, void *, void *, void *, void *, void *, void *, void *, lv_32fc_t, unsigned int, const char*);
-typedef void (*volk_gnsssdr_fn_8arg_s8i)(void *, void *, void *, void *, void *, void *, void *, void *, char, unsigned int, const char*);
-typedef void (*volk_gnsssdr_fn_8arg_s8ic)(void *, void *, void *, void *, void *, void *, void *, void *, lv_8sc_t, unsigned int, const char*);
-
-typedef void (*volk_gnsssdr_fn_12arg)(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, unsigned int, const char*);
-typedef void (*volk_gnsssdr_fn_12arg_s32f)(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, float, unsigned int, const char*);
-typedef void (*volk_gnsssdr_fn_12arg_s32fc)(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, lv_32fc_t, unsigned int, const char*);
-typedef void (*volk_gnsssdr_fn_12arg_s8i)(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, char, unsigned int, const char*);
-typedef void (*volk_gnsssdr_fn_12arg_s8ic)(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, lv_8sc_t, unsigned int, const char*);
 //ADDED BY GNSS-SDR. END
 
 

@@ -79,7 +79,6 @@ void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
                         // 16 bits dot product saturates very fast even with moderate length vectors
                     	// we produce here only 4 bits input range
                         if(type.is_signed) ((int16_t *)data)[i] = (int16_t)((int16_t) scaled_rand % 16);
-
                         else ((uint16_t *)data)[i] = (uint16_t) (int16_t)((int16_t) scaled_rand % 16);
                         break;
                     case 1:
@@ -184,12 +183,7 @@ static void get_signatures_from_name(std::vector<volk_gnsssdr_type_t> &inputsig,
             if(token[0] == 'x' && (token.size() > 1) && (token[1] > '0' || token[1] < '9')) {
                 if(side == SIDE_INPUT) assert(inputsig.size() > 0);
                 else assert(outputsig.size() > 0);
-                int multiplier = 1;
-                try {
-                        multiplier = boost::lexical_cast<int>(token.substr(1, token.size()-1)); //will throw if invalid ///////////
-                } catch(...) {
-                        multiplier = 1; // This is our '..._xn' multiple correlator. Assign a fixed number here for the test?
-                }
+                int multiplier = boost::lexical_cast<int>(token.substr(1, token.size()-1)); //will throw if invalid ///////////
                 for(int i=1; i<multiplier; i++) {
                         if(side == SIDE_INPUT) inputsig.push_back(inputsig.back());
                         else outputsig.push_back(outputsig.back());
@@ -218,10 +212,6 @@ inline void run_cast_test1(volk_gnsssdr_fn_1arg func, std::vector<void *> &buffs
 inline void run_cast_test2(volk_gnsssdr_fn_2arg func, std::vector<void *> &buffs, unsigned int vlen, unsigned int iter, std::string arch) {
     while(iter--) func(buffs[0], buffs[1], vlen, arch.c_str());
 }
-
-//inline void run_cast_test2(volk_gnsssdr_fn_2arg_r func, std::vector<void *> &buffs, float rem_code_phase_chips, float code_phase_step_chips, unsigned int vlen, int code_length_chips, unsigned int iter, std::string arch) {
-//    while(iter--) func(buffs[0], buffs[1],  rem_code_phase_chips, code_phase_step_chips, vlen, code_length_chips, arch.c_str());
-//}
 
 inline void run_cast_test3(volk_gnsssdr_fn_3arg func, std::vector<void *> &buffs, unsigned int vlen, unsigned int iter, std::string arch) {
     while(iter--) func(buffs[0], buffs[1], buffs[2], vlen, arch.c_str());
@@ -255,7 +245,7 @@ inline void run_cast_test3_s32fc(volk_gnsssdr_fn_3arg_s32fc func, std::vector<vo
     while(iter--) func(buffs[0], buffs[1], buffs[2], scalar, vlen, arch.c_str());
 }
 
-//ADDED BY GNSS-SDR. START
+// *************** ADDED BY GNSS-SDR. START
 inline void run_cast_test1_s8i(volk_gnsssdr_fn_1arg_s8i func, std::vector<void *> &buffs, char scalar, unsigned int vlen, unsigned int iter, std::string arch)
 {
     while(iter--) func(buffs[0], scalar, vlen, arch.c_str());
@@ -270,7 +260,6 @@ inline void run_cast_test3_s8i(volk_gnsssdr_fn_3arg_s8i func, std::vector<void *
 {
     while(iter--) func(buffs[0], buffs[1], buffs[2], scalar, vlen, arch.c_str());
 }
-
 inline void run_cast_test1_s8ic(volk_gnsssdr_fn_1arg_s8ic func, std::vector<void *> &buffs, lv_8sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
 {
     while(iter--) func(buffs[0], scalar, vlen, arch.c_str());
@@ -286,84 +275,21 @@ inline void run_cast_test3_s8ic(volk_gnsssdr_fn_3arg_s8ic func, std::vector<void
     while(iter--) func(buffs[0], buffs[1], buffs[2], scalar, vlen, arch.c_str());
 }
 
-
-// new
 inline void run_cast_test1_s16ic(volk_gnsssdr_fn_1arg_s16ic func, std::vector<void *> &buffs, lv_16sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
 {
     while(iter--) func(buffs[0], scalar, vlen, arch.c_str());
 }
-
-
-
 
 inline void run_cast_test2_s16ic(volk_gnsssdr_fn_2arg_s16ic func, std::vector<void *> &buffs, lv_16sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
 {
     while(iter--) func(buffs[0], buffs[1], scalar, vlen, arch.c_str());
 }
 
-//inline void run_cast_test2_s16ic(volk_gnsssdr_fn_2arg_s16ic func, std::vector<void *> &buffs, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int vlen, unsigned int iter, std::string arch)
-//{
-//    while(iter--) func(buffs[0], buffs[1], rem_code_phase_chips,  code_phase_step_chips,  vlen, code_length_chips,  arch.c_str());
-//}
-
 inline void run_cast_test3_s16ic(volk_gnsssdr_fn_3arg_s16ic func, std::vector<void *> &buffs, lv_16sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
 {
     while(iter--) func(buffs[0], buffs[1], buffs[2], scalar, vlen, arch.c_str());
 }
-
-
-// end new
-
-inline void run_cast_test8(volk_gnsssdr_fn_8arg func, std::vector<void *> &buffs, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], vlen, arch.c_str());
-}
-
-inline void run_cast_test8_s8i(volk_gnsssdr_fn_8arg_s8i func, std::vector<void *> &buffs, char scalar, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], scalar, vlen, arch.c_str());
-}
-
-inline void run_cast_test8_s8ic(volk_gnsssdr_fn_8arg_s8ic func, std::vector<void *> &buffs, lv_8sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], scalar, vlen, arch.c_str());
-}
-
-inline void run_cast_test8_s32f(volk_gnsssdr_fn_8arg_s32f func, std::vector<void *> &buffs, float scalar, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], scalar, vlen, arch.c_str());
-}
-
-inline void run_cast_test8_s32fc(volk_gnsssdr_fn_8arg_s32fc func, std::vector<void *> &buffs, lv_32fc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], scalar, vlen, arch.c_str());
-}
-
-inline void run_cast_test12(volk_gnsssdr_fn_12arg func, std::vector<void *> &buffs, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], buffs[8], buffs[9], buffs[10], buffs[11], vlen, arch.c_str());
-}
-
-inline void run_cast_test12_s8i(volk_gnsssdr_fn_12arg_s8i func, std::vector<void *> &buffs, char scalar, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], buffs[8], buffs[9], buffs[10], buffs[11], scalar, vlen, arch.c_str());
-}
-
-inline void run_cast_test12_s8ic(volk_gnsssdr_fn_12arg_s8ic func, std::vector<void *> &buffs, lv_8sc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], buffs[8], buffs[9], buffs[10], buffs[11], scalar, vlen, arch.c_str());
-}
-
-inline void run_cast_test12_s32f(volk_gnsssdr_fn_12arg_s32f func, std::vector<void *> &buffs, float scalar, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], buffs[8], buffs[9], buffs[10], buffs[11], scalar, vlen, arch.c_str());
-}
-
-inline void run_cast_test12_s32fc(volk_gnsssdr_fn_12arg_s32fc func, std::vector<void *> &buffs, lv_32fc_t scalar, unsigned int vlen, unsigned int iter, std::string arch)
-{
-    while(iter--) func(buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], buffs[8], buffs[9], buffs[10], buffs[11], scalar, vlen, arch.c_str());
-}
-//ADDED BY GNSS-SDR. END
+// *************** ADDED BY GNSS-SDR. END
 
 template <class t>
 bool fcompare(t *in1, t *in2, unsigned int vlen, float tol) {
@@ -612,14 +538,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
         case 2:
             if(inputsc.size() == 0)
                 {
-                   // if(name.find("resampler") != std::string::npos)
-                   //     {
-                   //         run_cast_test2((volk_gnsssdr_fn_2arg_r)(manual_func), test_data[i], 1, 1, vlen, 1000, iter, arch_list[i]);
-                   //     }
-                   // else
-                    //    {
                             run_cast_test2((volk_gnsssdr_fn_2arg)(manual_func), test_data[i], vlen, iter, arch_list[i]);
-                   //     }
                 }
             else if(inputsc.size() == 1 && inputsc[0].is_float)
                 {
@@ -657,7 +576,6 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
         case 3:
             if(inputsc.size() == 0)
                 {
-                    // multipliers are here!
                     run_cast_test3((volk_gnsssdr_fn_3arg)(manual_func), test_data[i], vlen, iter, arch_list[i]);
                 }
             else if(inputsc.size() == 1 && inputsc[0].is_float)
@@ -775,7 +693,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                             }
                                         break;
                                     case 4:
-                                        if(both_sigs[j].is_complex)
+                                        if(both_sigs[j].is_complex) // ADDED BY GNSS_SDR
                                             {
                                                 if(both_sigs[j].is_signed)
                                                     {
@@ -799,7 +717,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                             }
                                         break;
                                     case 2:
-                                        if(both_sigs[j].is_complex)
+                                        if(both_sigs[j].is_complex)  // ADDED BY GNSS_SDR
                                             {
                                                 if(both_sigs[j].is_signed)
                                                     {
@@ -870,12 +788,10 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
     std::cout << "Best unaligned arch: " << best_arch_u << std::endl;
 
     if(puppet_master_name == "NULL") {
-            results->back().config_name = name;
-    }
-    else
-        {
-            results->back().config_name = puppet_master_name;
-        }
+         results->back().config_name = name;
+     } else {
+         results->back().config_name = puppet_master_name;
+     }
     results->back().best_arch_a = best_arch_a;
     results->back().best_arch_u = best_arch_u;
 

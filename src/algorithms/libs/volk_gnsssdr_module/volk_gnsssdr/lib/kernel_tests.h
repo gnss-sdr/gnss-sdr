@@ -55,28 +55,31 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
             test_params.vlen(), test_params.iter(), test_params.benchmark_mode(), test_params.kernel_regex());
     volk_gnsssdr_test_params_t test_params_int1 = volk_gnsssdr_test_params_t(1, test_params.scalar(),
             test_params.vlen(), test_params.iter(), test_params.benchmark_mode(), test_params.kernel_regex());
+    // some others need more iterations *****  ADDED BY GNSS-SDR
+    volk_gnsssdr_test_params_t test_params_more_iters = volk_gnsssdr_test_params_t(test_params.tol(), test_params.scalar(),
+                test_params.vlen(), 100000, test_params.benchmark_mode(), test_params.kernel_regex());
 
     std::vector<volk_gnsssdr_test_case_t> test_cases = boost::assign::list_of
 
-        (VOLK_INIT_TEST(volk_gnsssdr_8i_accumulator_s8i, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_8i_index_max_16u, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_8i_max_s8i, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_8i_x2_add_8i, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_8ic_conjugate_8ic, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_8ic_magnitude_squared_8i, test_params))
+        (VOLK_INIT_TEST(volk_gnsssdr_8i_accumulator_s8i, test_params_more_iters))
+        (VOLK_INIT_TEST(volk_gnsssdr_8i_index_max_16u, test_params_more_iters))
+        (VOLK_INIT_TEST(volk_gnsssdr_8i_max_s8i, test_params_more_iters))
+        (VOLK_INIT_TEST(volk_gnsssdr_8i_x2_add_8i, test_params_more_iters))
+        (VOLK_INIT_TEST(volk_gnsssdr_8ic_conjugate_8ic, test_params_more_iters))
+        (VOLK_INIT_TEST(volk_gnsssdr_8ic_magnitude_squared_8i, test_params_more_iters))
         (VOLK_INIT_TEST(volk_gnsssdr_8ic_x2_dot_prod_8ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_8ic_x2_multiply_8ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_8ic_s8ic_multiply_8ic, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_8u_x2_multiply_8u, test_params))
+        (VOLK_INIT_TEST(volk_gnsssdr_8u_x2_multiply_8u, test_params_more_iters))
         (VOLK_INIT_TEST(volk_gnsssdr_64f_accumulator_64f, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_8ic, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_16ic, test_params))
+        (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_16ic, test_params_more_iters))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_multiply_16ic, test_params))
+        (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_multiply_16ic, test_params_more_iters))
+        (VOLK_INIT_TEST(volk_gnsssdr_16ic_convert_32fc, test_params_more_iters))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerpuppet_16ic, volk_gnsssdr_16ic_resampler_16ic, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerxnpuppet_16ic, volk_gnsssdr_16ic_xn_resampler_16ic_xn, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_x2_dot_prod_16ic_xn, test_params))
-        (VOLK_INIT_TEST(volk_gnsssdr_16ic_convert_32fc, test_params))
         ;
 
     return test_cases;

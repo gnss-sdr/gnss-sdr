@@ -19,6 +19,7 @@
 
 set(ACQ_GR_BLOCKS_SOURCES
     pcps_acquisition_cc.cc
+    pcps_acquisition_sc.cc
     pcps_multithread_acquisition_cc.cc
     pcps_assisted_acquisition_cc.cc
     pcps_acquisition_fine_doppler_cc.cc
@@ -42,6 +43,7 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
 
@@ -57,5 +59,5 @@ endif(OPENCL_FOUND)
 file(GLOB ACQ_GR_BLOCKS_HEADERS "*.h")
 add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS}) 
-target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${OPT_LIBRARIES})
+target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES})
 

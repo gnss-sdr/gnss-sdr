@@ -30,12 +30,6 @@ volk_gnsssdr_prefix()
 }
 
 char*
-volk_gnsssdr_build_date()
-{
-  return "@BUILD_DATE@";
-}
-
-char*
 volk_gnsssdr_version()
 {
   return "@VERSION@";

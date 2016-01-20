@@ -59,10 +59,10 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_generic(lv_16sc_t* r
 
     memcpy(result, result_aux[0], sizeof(lv_16sc_t)*num_points);
     volk_gnsssdr_free(rem_code_phase_chips);
-    for(unsigned int n = 0; n < num_out_vectors; n++)
-    {
-        volk_gnsssdr_free(result_aux[n]);
-    }
+//    for(unsigned int n = 0; n < num_out_vectors; n++)
+//    {
+//        volk_gnsssdr_free(result_aux[n]);
+//    }
     volk_gnsssdr_free(result_aux);
 }
 
@@ -85,10 +85,10 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_sse2(lv_16sc_t* re
 
     memcpy(result, result_aux[0], sizeof(lv_16sc_t)*num_points);
     volk_gnsssdr_free(rem_code_phase_chips);
-    for(unsigned int n = 0; n < num_out_vectors; n++)
-    {
-        volk_gnsssdr_free(result_aux[n]);
-    }
+//    for(unsigned int n = 0; n < num_out_vectors; n++)
+//    {
+//        volk_gnsssdr_free(result_aux[n]);
+//    }
     volk_gnsssdr_free(result_aux);
 }
 
@@ -112,10 +112,10 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse2(lv_16sc_t* re
 
     memcpy(result, result_aux[0], sizeof(lv_16sc_t)*num_points);
     volk_gnsssdr_free(rem_code_phase_chips);
-    for(unsigned int n = 0; n < num_out_vectors; n++)
-    {
-        volk_gnsssdr_free(result_aux[n]);
-    }
+//    for(unsigned int n = 0; n < num_out_vectors; n++)
+//    {
+//        volk_gnsssdr_free(result_aux[n]);
+//    }
     volk_gnsssdr_free(result_aux);
 }
 

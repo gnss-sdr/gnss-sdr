@@ -61,3 +61,6 @@ add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS}) 
 target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES})
 
+if(NOT VOLK_GNSSSDR_FOUND)
+    add_dependencies(acq_gr_blocks volk_gnsssdr_module)
+endif(NOT VOLK_GNSSSDR_FOUND)

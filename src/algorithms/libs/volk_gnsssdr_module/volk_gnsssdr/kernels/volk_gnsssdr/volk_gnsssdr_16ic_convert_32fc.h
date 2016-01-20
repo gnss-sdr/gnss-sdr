@@ -45,7 +45,7 @@ static inline void volk_gnsssdr_16ic_convert_32fc_generic(lv_32fc_t* outputVecto
 {
     for(unsigned int i = 0; i < num_points; i++)
         {
-    		outputVector[i]=lv_cmake((float)lv_creal(inputVector[i]),(float)lv_cimag(inputVector[i]));
+            outputVector[i] = lv_cmake((float)lv_creal(inputVector[i]), (float)lv_cimag(inputVector[i]));
         }
 }
 #endif /* LV_HAVE_GENERIC */
@@ -62,18 +62,18 @@ static inline void volk_gnsssdr_16ic_convert_32fc_a_sse2(lv_32fc_t* outputVector
     __m128 a;
     for(unsigned int number = 0; number < sse_iters; number++)
         {
-	 	 	 a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
-    	     _mm_store_ps((float*)_out, a);
-    	     _in+=2;
-    	     _out+=2;
-             //*_out++ = lv_cmake((float)lv_creal(*_in),(float)lv_cimag(*_in));
-             //_in++;
-             //*_out++ = lv_cmake((float)lv_creal(*_in),(float)lv_cimag(*_in));
-             //_in++;
+            a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
+            _mm_store_ps((float*)_out, a);
+            _in += 2;
+            _out += 2;
+            //*_out++ = lv_cmake((float)lv_creal(*_in),(float)lv_cimag(*_in));
+            //_in++;
+            //*_out++ = lv_cmake((float)lv_creal(*_in),(float)lv_cimag(*_in));
+            //_in++;
         }
     for (unsigned int i = 0; i < (num_points % 2); ++i)
         {
-            *_out++ = lv_cmake((float)lv_creal(*_in),(float)lv_cimag(*_in));
+            *_out++ = lv_cmake((float)lv_creal(*_in), (float)lv_cimag(*_in));
             _in++;
         }
 
@@ -92,14 +92,14 @@ static inline void volk_gnsssdr_16ic_convert_32fc_u_sse2(lv_32fc_t* outputVector
     __m128 a;
     for(unsigned int number = 0; number < sse_iters; number++)
         {
-	 	 	 a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
-	 	 	 _mm_storeu_ps((float*)_out, a);
-    	     _in+=2;
-    	     _out+=2;
+            a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
+            _mm_storeu_ps((float*)_out, a);
+            _in += 2;
+            _out += 2;
         }
     for (unsigned int i = 0; i < (num_points % 2); ++i)
         {
-            *_out++ = lv_cmake((float)lv_creal(*_in),(float)lv_cimag(*_in));
+            *_out++ = lv_cmake((float)lv_creal(*_in), (float)lv_cimag(*_in));
             _in++;
         }
 
@@ -110,4 +110,4 @@ static inline void volk_gnsssdr_16ic_convert_32fc_u_sse2(lv_32fc_t* outputVector
 // a = _mm_load_si128((__m128i*)_in); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 //use _mm_cvtepi16_epi32 !!!!
 
-#endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_u_H */
+#endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_H */

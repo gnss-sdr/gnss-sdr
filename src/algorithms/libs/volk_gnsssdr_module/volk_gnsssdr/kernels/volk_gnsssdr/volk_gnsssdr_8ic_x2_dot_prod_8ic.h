@@ -33,9 +33,10 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_u_H
-#define INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_u_H
+#ifndef INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H
+#define INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H
 
+#include <stdio.h>
 #include <string.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
@@ -251,69 +252,6 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
 
 #endif /*LV_HAVE_SSE4_1*/
 
-#endif /*INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_u_H*/
-
-
-#ifndef INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_a_H
-#define INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_a_H
-
-#include <volk_gnsssdr/volk_gnsssdr_common.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include <stdio.h>
-#include <string.h>
-
-
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
- */
-static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_generic(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
-{
-    //    lv_8sc_t* cPtr = result;
-    //    const lv_8sc_t* aPtr = input;
-    //    const lv_8sc_t* bPtr = taps;
-    //
-    //    for(int number = 0; number < num_points; number++)
-    //        {
-    //            *cPtr += (*aPtr++) * (*bPtr++);
-    //        }
-
-    char * res = (char*) result;
-    char * in = (char*) input;
-    char * tp = (char*) taps;
-    unsigned int n_2_ccomplex_blocks = num_points/2;
-    unsigned int isodd = num_points & 1;
-
-    char sum0[2] = {0,0};
-    char sum1[2] = {0,0};
-    unsigned int i = 0;
-
-    for(i = 0; i < n_2_ccomplex_blocks; ++i)
-        {
-            sum0[0] += in[0] * tp[0] - in[1] * tp[1];
-            sum0[1] += in[0] * tp[1] + in[1] * tp[0];
-            sum1[0] += in[2] * tp[2] - in[3] * tp[3];
-            sum1[1] += in[2] * tp[3] + in[3] * tp[2];
-
-            in += 4;
-            tp += 4;
-        }
-
-    res[0] = sum0[0] + sum1[0];
-    res[1] = sum0[1] + sum1[1];
-
-    // Cleanup if we had an odd number of points
-    for(i = 0; i < isodd; ++i)
-        {
-            *result += input[num_points - 1] * taps[num_points - 1];
-        }
-}
-
-#endif /*LV_HAVE_GENERIC*/
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
@@ -500,4 +438,4 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_orc(lv_8sc_t* result, cons
 }
 #endif /* LV_HAVE_ORC */
 
-#endif /*INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_a_H*/
+#endif /*INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H*/

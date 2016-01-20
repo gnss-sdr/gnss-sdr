@@ -32,11 +32,13 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_8i_max_s8i_u_H
-#define INCLUDED_volk_gnsssdr_8i_max_s8i_u_H
+#ifndef INCLUDED_volk_gnsssdr_8i_max_s8i_H
+#define INCLUDED_volk_gnsssdr_8i_max_s8i_H
+
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <inttypes.h>
+#include <stdio.h>
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
@@ -179,15 +181,8 @@ static inline void volk_gnsssdr_8i_max_s8i_generic(char* target, const char* src
 
 #endif /*LV_HAVE_GENERIC*/
 
-#endif /*INCLUDED_volk_gnsssdr_8i_max_s8i_u_H*/
 
 
-#ifndef INCLUDED_volk_gnsssdr_8i_max_s8i_a_H
-#define INCLUDED_volk_gnsssdr_8i_max_s8i_a_H
-
-#include <volk_gnsssdr/volk_gnsssdr_common.h>
-#include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
@@ -304,29 +299,5 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char* target, const char* src0
 
 #endif /*LV_HAVE_SSE2*/
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Returns the max value in src0
- \param target The max value in src0
- \param src0 The buffer of data to be analysed
- \param num_points The number of values in src0 to be analysed
- */
-static inline void volk_gnsssdr_8i_max_s8i_a_generic(char* target, const char* src0, unsigned int num_points)
-{
-    if(num_points > 0)
-        {
-            char max = src0[0];
-            for(unsigned int i = 1; i < num_points; ++i)
-                {
-                    if(src0[i] > max)
-                        {
-                            max = src0[i];
-                        }
-                }
-            target[0] = max;
-        }
-}
 
-#endif /*LV_HAVE_GENERIC*/
-
-#endif /*INCLUDED_volk_gnsssdr_8i_max_s8i_a_H*/
+#endif /*INCLUDED_volk_gnsssdr_8i_max_s8i_H*/

@@ -134,15 +134,6 @@ static inline void volk_gnsssdr_64f_accumulator_64f_generic(double* result,const
 }
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_volk_gnsssdr_64f_accumulator_64f_u_H */
-
-
-#ifndef INCLUDED_volk_gnsssdr_64f_accumulator_64f_a_H
-#define INCLUDED_volk_gnsssdr_64f_accumulator_64f_a_H
-
-#include <volk_gnsssdr/volk_gnsssdr_common.h>
-#include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
@@ -222,21 +213,4 @@ static inline void volk_gnsssdr_64f_accumulator_64f_a_sse3(double* result,const 
 }
 #endif /* LV_HAVE_SSE3 */
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
-static inline void volk_gnsssdr_64f_accumulator_64f_a_generic(double* result,const double* inputBuffer, unsigned int num_points){
-    const double* aPtr = inputBuffer;
-    double returnValue = 0;
-    
-    for(unsigned int number = 0;number < num_points; number++){
-        returnValue += (*aPtr++);
-    }
-    *result = returnValue;
-}
-#endif /* LV_HAVE_GENERIC */
-#endif /* INCLUDED_volk_gnsssdr_64f_accumulator_64f_a_H */
+#endif /* INCLUDED_volk_gnsssdr_64f_accumulator_64f_H */

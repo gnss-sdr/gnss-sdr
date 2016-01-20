@@ -32,11 +32,12 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_8i_accumulator_s8i_u_H
-#define INCLUDED_volk_gnsssdr_8i_accumulator_s8i_u_H
+#ifndef INCLUDED_volk_gnsssdr_8i_accumulator_s8i_H
+#define INCLUDED_volk_gnsssdr_8i_accumulator_s8i_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <inttypes.h>
+#include <stdio.h>
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
@@ -99,16 +100,6 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_generic(char* result, const c
 }
 #endif /* LV_HAVE_GENERIC */
 
-#endif /* INCLUDED_volk_gnsssdr_8i_accumulator_s8i_u_H */
-
-
-#ifndef INCLUDED_volk_gnsssdr_8i_accumulator_s8i_a_H
-#define INCLUDED_volk_gnsssdr_8i_accumulator_s8i_a_H
-
-#include <volk_gnsssdr/volk_gnsssdr_common.h>
-#include <inttypes.h>
-#include <stdio.h>
-
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 /*!
@@ -149,26 +140,6 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_a_sse3(char* result, const ch
 }
 #endif /* LV_HAVE_SSE3 */
 
-#ifdef LV_HAVE_GENERIC
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
-static inline void volk_gnsssdr_8i_accumulator_s8i_a_generic(char* result, const char* inputBuffer, unsigned int num_points)
-{
-    const char* aPtr = inputBuffer;
-    char returnValue = 0;
-
-    for(unsigned int number = 0;number < num_points; number++)
-        {
-            returnValue += (*aPtr++);
-        }
-    *result = returnValue;
-}
-#endif /* LV_HAVE_GENERIC */
-
 #ifdef LV_HAVE_ORC
 /*!
  \brief Accumulates the values in the input buffer
@@ -190,5 +161,5 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_u_orc(char* result, const cha
 }
 #endif /* LV_HAVE_ORC */
 
-#endif /* INCLUDED_volk_gnsssdr_8i_accumulator_s8i_a_H */
+#endif /* INCLUDED_volk_gnsssdr_8i_accumulator_s8i_H */
 

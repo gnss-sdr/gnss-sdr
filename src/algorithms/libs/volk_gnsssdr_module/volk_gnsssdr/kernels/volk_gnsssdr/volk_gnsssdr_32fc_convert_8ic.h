@@ -33,6 +33,7 @@
 
 #include <inttypes.h>
 #include <math.h>
+#include <limits.h>
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"
 
 
@@ -55,8 +56,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
 
-    float min_val = -128;
-    float max_val = 127;
+    float min_val = SCHAR_MIN;
+    float max_val = SCHAR_MAX;
 
     __m128 inputVal1, inputVal2, inputVal3, inputVal4;
     __m128i intInputVal1, intInputVal2, intInputVal3, intInputVal4;
@@ -113,8 +114,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector,
 {
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
-    float min_val = -128;
-    float max_val = 127;
+    float min_val = SCHAR_MIN;
+    float max_val = SCHAR_MAX;
 
     for(unsigned int i = 0; i < num_points * 2; i++)
         {
@@ -143,8 +144,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
     float* inputVectorPtr = (float*)inputVector;
     int8_t* outputVectorPtr = (int8_t*)outputVector;
 
-    float min_val = -128;
-    float max_val = 127;
+    float min_val = SCHAR_MIN;
+    float max_val = SCHAR_MAX;
 
     __m128 inputVal1, inputVal2, inputVal3, inputVal4;
     __m128i intInputVal1, intInputVal2, intInputVal3, intInputVal4;

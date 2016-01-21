@@ -158,11 +158,13 @@ TEST(Rtcm_Test, Bin_to_int)
 TEST(Rtcm_Test, Check_CRC)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    EXPECT_EQ(true, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98"));
-    EXPECT_EQ(false, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B99"));
+    bool expected_true = true;
+    bool expected_false = false;
+    EXPECT_EQ(expected_true, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98"));
+    EXPECT_EQ(expected_false, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B99"));
 
-    EXPECT_EQ(true, rtcm->check_CRC(rtcm->print_MT1005_test()));
-    EXPECT_EQ(true, rtcm->check_CRC(rtcm->print_MT1005_test()));  // Run twice to check that CRC has no memory
+    EXPECT_EQ(expected_true, rtcm->check_CRC(rtcm->print_MT1005_test()));
+    EXPECT_EQ(expected_true, rtcm->check_CRC(rtcm->print_MT1005_test()));  // Run twice to check that CRC has no memory
 }
 
 
@@ -173,6 +175,7 @@ TEST(Rtcm_Test, MT1001)
     Gnss_Synchro gnss_synchro;
     gnss_synchro.PRN = 2;
     std::string sys = "G";
+    bool expected_true = true;
 
     std::string sig = "1C";
     gnss_synchro.System = *sys.c_str();
@@ -183,7 +186,7 @@ TEST(Rtcm_Test, MT1001)
     pseudoranges.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro));
 
     std::string MT1001 = rtcm->print_MT1001(gps_eph, obs_time, pseudoranges);
-    EXPECT_EQ(true, rtcm->check_CRC(MT1001));
+    EXPECT_EQ(expected_true, rtcm->check_CRC(MT1001));
 }
 
 
@@ -201,12 +204,14 @@ TEST(Rtcm_Test, MT1005)
     bool gps;
     bool glonass;
     bool galileo;
+    bool expected_true = true;
+    bool expected_false = false;
 
     rtcm->read_MT1005(reference_msg, ref_id, ecef_x, ecef_y, ecef_z, gps, glonass, galileo);
 
-    EXPECT_EQ(true, gps);
-    EXPECT_EQ(false, glonass);
-    EXPECT_EQ(false, galileo);
+    EXPECT_EQ(expected_true, gps);
+    EXPECT_EQ(expected_false, glonass);
+    EXPECT_EQ(expected_false, galileo);
 
     EXPECT_EQ(2003, ref_id);
     EXPECT_DOUBLE_EQ(1114104.5999, ecef_x);
@@ -215,9 +220,9 @@ TEST(Rtcm_Test, MT1005)
 
     rtcm->read_MT1005("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98", ref_id, ecef_x, ecef_y, ecef_z, gps, glonass, galileo);
 
-    EXPECT_EQ(true, gps);
-    EXPECT_EQ(false, glonass);
-    EXPECT_EQ(false, galileo);
+    EXPECT_EQ(expected_true, gps);
+    EXPECT_EQ(expected_false, glonass);
+    EXPECT_EQ(expected_false, galileo);
 
     EXPECT_EQ(2003, ref_id);
     EXPECT_DOUBLE_EQ(1114104.5999, ecef_x);
@@ -230,6 +235,7 @@ TEST(Rtcm_Test, MT1005)
 TEST(Rtcm_Test, MT1019)
 {
     auto rtcm = std::make_shared<Rtcm>();
+    bool expected_true = true;
 
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
     Gps_Ephemeris gps_eph_read = Gps_Ephemeris();
@@ -244,7 +250,7 @@ TEST(Rtcm_Test, MT1019)
     EXPECT_EQ(3, gps_eph_read.i_satellite_PRN);
     EXPECT_DOUBLE_EQ(4, gps_eph_read.d_IODC);
     EXPECT_DOUBLE_EQ( 2.0 * E_LSB, gps_eph_read.d_e_eccentricity);
-    EXPECT_EQ(true, gps_eph_read.b_fit_interval_flag);
+    EXPECT_EQ(expected_true, gps_eph_read.b_fit_interval_flag);
     EXPECT_EQ(1, rtcm->read_MT1019("FFFFFFFFFFF", gps_eph_read));
 }
 
@@ -270,6 +276,7 @@ TEST(Rtcm_Test, MT1029)
 TEST(Rtcm_Test, MT1045)
 {
     auto rtcm = std::make_shared<Rtcm>();
+    bool expected_true = true;
 
     Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
     Galileo_Ephemeris gal_eph_read = Galileo_Ephemeris();
@@ -281,7 +288,7 @@ TEST(Rtcm_Test, MT1045)
     std::string tx_msg = rtcm->print_MT1045(gal_eph);
 
     EXPECT_EQ(0, rtcm->read_MT1045(tx_msg, gal_eph_read));
-    EXPECT_EQ(true, gal_eph_read.E5a_DVS);
+    EXPECT_EQ(expected_true, gal_eph_read.E5a_DVS);
     EXPECT_DOUBLE_EQ( 53.0 * OMEGA_dot_3_LSB, gal_eph_read.OMEGA_dot_3);
     EXPECT_EQ(5, gal_eph_read.i_satellite_PRN);
     EXPECT_EQ(1, rtcm->read_MT1045("FFFFFFFFFFF", gal_eph_read));
@@ -420,6 +427,7 @@ TEST(Rtcm_Test, MSMCell)
 TEST(Rtcm_Test, MSM1)
 {
     auto rtcm = std::make_shared<Rtcm>();
+    bool expected_true = true;
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
     std::map<int, Gnss_Synchro> pseudoranges;
 
@@ -479,7 +487,7 @@ TEST(Rtcm_Test, MSM1)
             divergence_free,
             more_messages);
 
-    EXPECT_EQ(true, rtcm->check_CRC(MSM1));
+    EXPECT_EQ(expected_true, rtcm->check_CRC(MSM1));
 
     std::string MSM1_bin = rtcm->hex_to_bin(MSM1);
     unsigned int Nsat = 3;
@@ -489,7 +497,7 @@ TEST(Rtcm_Test, MSM1)
     unsigned int size_msg_length = 10;
     unsigned int upper_bound = 169 + Nsat * 10 + 43 * Nsig;
     unsigned int data_size = MSM1_bin.length() - size_header - size_msg_length - size_crc;
-    EXPECT_EQ(true, upper_bound >= data_size);
+    EXPECT_EQ(expected_true, upper_bound >= data_size);
     EXPECT_EQ(0, MSM1_bin.substr(0, size_header).compare("11010011000000"));
     EXPECT_EQ(ref_id, rtcm->bin_to_uint( MSM1_bin.substr(size_header + size_msg_length + 12, 12)));
     EXPECT_EQ(0, MSM1_bin.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("101101")); // check cell mask

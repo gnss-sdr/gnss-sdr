@@ -30,13 +30,13 @@
  * -------------------------------------------------------------------------
  */
 
-#include <inttypes.h>
-#include <math.h>
-#include "volk_gnsssdr/volk_gnsssdr_complex.h"
-
 #ifndef INCLUDED_volk_gnsssdr_32fc_convert_16ic_H
 #define INCLUDED_volk_gnsssdr_32fc_convert_16ic_H
 
+#include <inttypes.h>
+#include <math.h>
+#include <limits.h>
+#include "volk_gnsssdr/volk_gnsssdr_complex.h"
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
@@ -53,8 +53,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
 
-    float min_val = -32768;
-    float max_val = 32767;
+    float min_val = SHRT_MIN;
+    float max_val = SHRT_MAX;
 
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
@@ -106,8 +106,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector,
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
 
-    float min_val = -32768;
-    float max_val = 32767;
+    float min_val = SHRT_MIN;
+    float max_val = SHRT_MAX;
 
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2; // is __m128i defined in xmmintrin.h?
@@ -160,8 +160,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
 
-    float min_val = -32768;
-    float max_val = 32767;
+    float min_val = SHRT_MIN;
+    float max_val = SHRT_MAX;
 
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
@@ -213,8 +213,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector,
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
 
-    float min_val = -32768;
-    float max_val = 32767;
+    float min_val = SHRT_MIN;
+    float max_val = SHRT_MAX;
 
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
@@ -262,8 +262,8 @@ static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVecto
 {
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
-    float min_val = -32768;
-    float max_val = 32767;
+    float min_val = SHRT_MIN;
+    float max_val = SHRT_MAX;
 
     for(unsigned int i = 0; i < num_points*2; i++)
         {

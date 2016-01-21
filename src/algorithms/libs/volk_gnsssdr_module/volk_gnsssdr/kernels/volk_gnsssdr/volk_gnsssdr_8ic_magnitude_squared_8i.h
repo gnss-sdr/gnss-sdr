@@ -37,9 +37,6 @@
 #ifndef INCLUDED_volk_gnsssdr_8ic_magnitude_squared_8i_H
 #define INCLUDED_volk_gnsssdr_8ic_magnitude_squared_8i_H
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <math.h>
 
 #ifdef LV_HAVE_SSSE3
 #include <tmmintrin.h>

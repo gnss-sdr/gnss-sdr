@@ -36,8 +36,6 @@
 #define INCLUDED_volk_gnsssdr_8i_index_max_16u_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
-#include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>

@@ -35,10 +35,7 @@
 #ifndef INCLUDED_volk_gnsssdr_8i_max_s8i_H
 #define INCLUDED_volk_gnsssdr_8i_max_s8i_H
 
-
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
-#include <inttypes.h>
-#include <stdio.h>
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>

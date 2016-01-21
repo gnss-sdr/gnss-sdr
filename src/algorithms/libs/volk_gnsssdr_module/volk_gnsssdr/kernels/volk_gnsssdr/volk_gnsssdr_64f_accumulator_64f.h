@@ -36,7 +36,6 @@
 #define INCLUDED_volk_gnsssdr_64f_accumulator_64f_u_H
 
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
-#include <inttypes.h>
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>

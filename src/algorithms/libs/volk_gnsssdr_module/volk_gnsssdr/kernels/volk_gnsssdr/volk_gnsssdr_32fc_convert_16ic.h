@@ -33,8 +33,6 @@
 #ifndef INCLUDED_volk_gnsssdr_32fc_convert_16ic_H
 #define INCLUDED_volk_gnsssdr_32fc_convert_16ic_H
 
-#include <inttypes.h>
-#include <math.h>
 #include <limits.h>
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"
 

@@ -31,13 +31,10 @@
  */
 
 
-#include <inttypes.h>
-#include <volk_gnsssdr/volk_gnsssdr_common.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
-
 #ifndef INCLUDED_volk_gnsssdr_16ic_convert_32fc_H
 #define INCLUDED_volk_gnsssdr_16ic_convert_32fc_H
 
+#include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 #ifdef LV_HAVE_GENERIC
 

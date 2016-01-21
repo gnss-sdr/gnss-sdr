@@ -30,15 +30,14 @@
  * -------------------------------------------------------------------------
  */
 
+#ifndef INCLUDED_volk_gnsssdr_32fc_convert_8ic_H
+#define INCLUDED_volk_gnsssdr_32fc_convert_8ic_H
 
 #include <inttypes.h>
 #include <math.h>
 #include <limits.h>
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"
 
-
-#ifndef INCLUDED_volk_gnsssdr_32fc_convert_8ic_H
-#define INCLUDED_volk_gnsssdr_32fc_convert_8ic_H
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>

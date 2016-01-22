@@ -34,6 +34,7 @@
 #define INCLUDED_volk_gnsssdr_32fc_convert_16ic_H
 
 #include <limits.h>
+#include <math.h>
 #include "volk_gnsssdr/volk_gnsssdr_complex.h"
 
 #ifdef LV_HAVE_SSE2

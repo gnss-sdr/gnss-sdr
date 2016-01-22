@@ -249,6 +249,69 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector,
 }
 #endif /* LV_HAVE_SSE */
 
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+/*!
+ \brief Converts a float vector of 64 bits (32 bits each part) into a 32 integer vector (16 bits each part)
+ \param inputVector The floating point input data buffer
+ \param outputVector The 16 bit output data buffer
+ \param num_points The number of data values to be converted
+ */
+static inline void volk_gnsssdr_32fc_convert_16ic_neon(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    const unsigned int neon_iters = num_points / 4;
+
+    float32_t* inputVectorPtr = (float32_t*)inputVector;
+    int16_t* outputVectorPtr = (int16_t*)outputVector;
+
+    float32x4_t min_val = vmovq_n_f32(SHRT_MIN);
+    float32x4_t max_val = vmovq_n_f32(SHRT_MAX);
+    float32x4_t half = vdupq_n_f32(0.5f);
+    float32x4_t ret1, ret2, a, b, sign, PlusHalf, Round;
+
+    int32x4_t toint_a, toint_b;
+    int16x4_t intInputVal1, intInputVal2;
+    int16x8_t res;
+
+    for(unsigned int i = 0;i < neon_iters; i++)
+        {
+            a = vld1q_f32((const float32_t*)(inputVectorPtr)); inputVectorPtr += 4;
+            b = vld1q_f32((const float32_t*)(inputVectorPtr)); inputVectorPtr += 4;
+
+            ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
+            ret2 = vmaxq_f32(vminq_f32(b, max_val), min_val);
+
+            /* in __aarch64__ we can do that with vcvtaq_s32_f32(ret1); vcvtaq_s32_f32(ret2); */
+            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
+            PlusHalf = vaddq_f32(ret1, half);
+            Round = vsubq_f32(PlusHalf, sign);
+            toint_a = vcvtq_s32_f32(Round);
+
+            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret2), 31)));
+            PlusHalf = vaddq_f32(ret2, half);
+            Round = vsubq_f32(PlusHalf, sign);
+            toint_b = vcvtq_s32_f32(Round);
+
+            intInputVal1 = vqmovn_s32(toint_a);
+            intInputVal2 = vqmovn_s32(toint_b);
+
+            res = vcombine_s16(intInputVal1, intInputVal2);
+            vst1q_s16((int16_t*)outputVectorPtr, res);
+            outputVectorPtr += 8;
+        }
+
+    for(unsigned int i = neon * 8; i < num_points * 2; i++)
+        {
+            if(inputVectorPtr[i] > SHRT_MAX)
+                inputVectorPtr[i] = (int16_t)SHRT_MAX;
+            else if(inputVectorPtr[i] < SHRT_MIN)
+                inputVectorPtr[i] = (int16_t)SHRT_MIN;
+            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
+        }
+}
+
+#endif /* LV_HAVE_NEON */
+
 #ifdef LV_HAVE_GENERIC
 /*!
  \brief Converts a float vector of 64 bits (32 bits each part) into a 32 integer vector (16 bits each part)

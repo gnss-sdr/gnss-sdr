@@ -1,0 +1,8 @@
+*~
+*.pyc
+*.pyo
+html/
+build/
+.project
+.cproject
+/.DS_Store

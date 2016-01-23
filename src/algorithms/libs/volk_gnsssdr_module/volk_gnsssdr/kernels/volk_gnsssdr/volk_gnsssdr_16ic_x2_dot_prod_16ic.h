@@ -213,4 +213,63 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 }
 #endif /* LV_HAVE_SSE2 */
 
+
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+{
+    unsigned int quarter_points = num_points / 4;
+    unsigned int number;
+
+    lv_16sc_t* a_ptr = (lv_16sc_t*) in_a;
+    lv_16sc_t* b_ptr = (lv_16sc_t*) in_b;
+    // for 2-lane vectors, 1st lane holds the real part,
+    // 2nd lane holds the imaginary part
+    int16x4x2_t a_val, b_val, c_val, accumulator;
+    int16x4x2_t tmp_real, tmp_imag;
+    lv_16sc_t accum_result[4];
+    accumulator.val[0] = vdup_n_s16(0);
+    accumulator.val[1] = vdup_n_s16(0);
+
+    for(number = 0; number < quarter_points; ++number)
+        {
+            a_val = vld2_s16((int16_t*)a_ptr); // a0r|a1r|a2r|a3r || a0i|a1i|a2i|a3i
+            b_val = vld2_s16((int16_t*)b_ptr); // b0r|b1r|b2r|b3r || b0i|b1i|b2i|b3i
+            __builtin_prefetch(a_ptr + 8);
+            __builtin_prefetch(b_ptr + 8);
+
+            // multiply the real*real and imag*imag to get real result
+            // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r
+            tmp_real.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
+            // a0i*b0i|a1i*b1i|a2i*b2i|a3i*b3i
+            tmp_real.val[1] = vmul_s16(a_val.val[1], b_val.val[1]);
+
+            // Multiply cross terms to get the imaginary result
+            // a0r*b0i|a1r*b1i|a2r*b2i|a3r*b3i
+            tmp_imag.val[0] = vmul_s16(a_val.val[0], b_val.val[1]);
+            // a0i*b0r|a1i*b1r|a2i*b2r|a3i*b3r
+            tmp_imag.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
+
+            c_val.val[0] = vsub_s16(tmp_real.val[0], tmp_real.val[1]);
+            c_val.val[1] = vadd_s16(tmp_imag.val[0], tmp_imag.val[1]);
+
+            accumulator.val[0] = vadd_s16(accumulator.val[0], c_val.val[0]);
+            accumulator.val[1] = vadd_s16(accumulator.val[1], c_val.val[1]);
+
+            a_ptr += 4;
+            b_ptr += 4;
+        }
+
+    vst2_s16((int16_t*)accum_result, accumulator);
+    *out = accum_result[0] + accum_result[1] + accum_result[2] + accum_result[3];
+
+    // tail case
+    for(number = quarter_points * 4; number < num_points; ++number)
+        {
+            *out += (*a_ptr++) * (*b_ptr++);
+        }
+}
+
+#endif /* LV_HAVE_NEON */
+
 #endif /*INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_H*/

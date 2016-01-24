@@ -301,7 +301,7 @@ static inline void volk_gnsssdr_32fc_convert_16ic_neon(lv_16sc_t* outputVector, 
             outputVectorPtr += 8;
         }
 
-    for(unsigned int i = neon * 8; i < num_points * 2; i++)
+    for(unsigned int i = neon_iters * 8; i < num_points * 2; i++)
         {
             if(inputVectorPtr[i] > SHRT_MAX)
                 inputVectorPtr[i] = (int16_t)SHRT_MAX;

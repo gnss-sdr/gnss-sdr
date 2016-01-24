@@ -437,4 +437,71 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_orc(lv_8sc_t* result, cons
 }
 #endif /* LV_HAVE_ORC */
 
+
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+/*!
+ \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
+ \param cVector The vector where the accumulated result will be stored
+ \param aVector One of the vectors to be multiplied and accumulated
+ \param bVector One of the vectors to be multiplied and accumulated
+ \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ */
+static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_neon(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
+{
+    lv_8sc_t dotProduct;
+    dotProduct = lv_cmake(0,0);
+    *result = lv_cmake(0,0);
+
+    const lv_8sc_t* a = input;
+    const lv_8sc_t* b = taps;
+    // for 2-lane vectors, 1st lane holds the real part,
+    // 2nd lane holds the imaginary part
+    int8x8x2_t a_val, b_val, c_val, accumulator, tmp_real, tmp_imag;
+    lv_8sc_t accum_result[8] = { lv_cmake(0,0) };
+    accumulator.val[0] = vdup_n_s8(0);
+    accumulator.val[1] = vdup_n_s8(0);
+    unsigned int number;
+
+    const unsigned int neon_iters = num_points / 8;
+
+    for(number = 0; number < neon_iters; ++number)
+        {
+            a_val = vld2_s8((const int8_t*)a);
+            b_val = vld2_s8((const int8_t*)b);
+            __builtin_prefetch(a + 16);
+            __builtin_prefetch(b + 16);
+
+            // multiply the real*real and imag*imag to get real result
+            tmp_real.val[0] = vmul_s8(a_val.val[0], b_val.val[0]);
+            tmp_real.val[1] = vmul_s8(a_val.val[1], b_val.val[1]);
+
+            // Multiply cross terms to get the imaginary result
+            tmp_imag.val[0] = vmul_s8(a_val.val[0], b_val.val[1]);
+            tmp_imag.val[1] = vmul_s8(a_val.val[1], b_val.val[0]);
+
+            c_val.val[0] = vsub_s8(tmp_real.val[0], tmp_real.val[1]);
+            c_val.val[1] = vadd_s8(tmp_imag.val[0], tmp_imag.val[1]);
+
+            accumulator.val[0] = vadd_s8(accumulator.val[0], c_val.val[0]);
+            accumulator.val[1] = vadd_s8(accumulator.val[1], c_val.val[1]);
+
+            a += 8;
+            b += 8;
+        }
+    vst2_s8((int8_t*)accum_result, accumulator);
+    for(number = 0; number < 8; ++number)
+        {
+            *result += accum_result[number];
+        }
+
+    for (number = neon_iters * 8; number < num_points; ++number)
+        {
+            dotProduct += (*a++) * (*b++);
+        }
+
+    *result += dotProduct;
+}
+#endif  /* LV_HAVE_NEON */
+
 #endif /*INCLUDED_volk_gnsssdr_8ic_x2_dot_prod_8ic_H*/

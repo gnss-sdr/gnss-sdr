@@ -279,7 +279,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* out, co
             accumulator = (int16x4x2_t*)calloc(num_a_vectors, sizeof(int16x4x2_t));
 
             int16x4x2_t tmp_real, tmp_imag;
-            lv_16sc_t accum_result[4];
 
             for(int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {

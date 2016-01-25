@@ -304,4 +304,39 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_u_orc(lv_8sc_t* cVector, const
 }
 #endif /* LV_HAVE_ORC */
 
+
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+/*!
+ \brief Takes the conjugate of an unsigned char vector.
+ \param cVector The vector where the results will be stored
+ \param aVector Vector to be conjugated
+ \param num_points The number of unsigned char values in aVector to be conjugated and stored into cVector
+ */
+static inline void volk_gnsssdr_8ic_conjugate_8ic_neon(lv_8sc_t* cVector, const lv_8sc_t* aVector, unsigned int num_points)
+{
+    const unsigned int sse_iters = num_points / 8;
+    lv_8sc_t* c = cVector;
+    const lv_8sc_t* a = aVector;
+
+    int8x8x2_t a_val;
+
+    for (unsigned int i = 0; i < sse_iters; ++i)
+        {
+            a_val = vld2_s8((const int8_t*)a);
+            __builtin_prefetch(a + 16);
+            a_val.val[1] = vneg_s8(a_val.val[1]);
+            vst2_s8((int8_t*)c, a_val);
+            a += 8;
+            c += 8;
+        }
+
+    for (unsigned int i = sse_iters * 8; i < num_points; ++i)
+        {
+            *c++ = lv_conj(*a++);
+        }
+
+}
+#endif /* LV_HAVE_NEON */
+
 #endif /* INCLUDED_volk_gnsssdr_8ic_conjugate_8ic_H */

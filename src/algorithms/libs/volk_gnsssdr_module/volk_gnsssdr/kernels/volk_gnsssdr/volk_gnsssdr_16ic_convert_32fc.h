@@ -107,4 +107,36 @@ static inline void volk_gnsssdr_16ic_convert_32fc_u_sse2(lv_32fc_t* outputVector
 // a = _mm_load_si128((__m128i*)_in); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 //use _mm_cvtepi16_epi32 !!!!
 
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+
+static inline void volk_gnsssdr_16ic_convert_32fc_neon(lv_32fc_t* outputVector, const lv_16sc_t* inputVector, unsigned int num_points)
+{
+    const unsigned int sse_iters = num_points / 2;
+
+    const lv_16sc_t* _in = inputVector;
+    lv_32fc_t* _out = outputVector;
+
+    int16x4_t a16x4;
+    int32x4_t a32x4;
+    float32x4_t f32x4;
+
+    for(unsigned int number = 0; number < sse_iters; number++)
+        {
+            a16x4 = vld1_s16((const int16_t*)_in);
+            __builtin_prefetch(_in + 4);
+            a32x4 = vmovl_s16(a16x4);
+            f32x4 = vcvtq_f32_s32(a32x4);
+            vst1q_f32((float32_t*)_out, f32x4);
+            _in += 2;
+            _out += 2;
+        }
+    for (unsigned int i = 0; i < (num_points % 2); ++i)
+        {
+            *_out++ = lv_cmake((float)lv_creal(*_in), (float)lv_cimag(*_in));
+            _in++;
+        }
+}
+#endif /* LV_HAVE_NEON */
+
 #endif /* INCLUDED_volk_gnsssdr_32fc_convert_16ic_H */

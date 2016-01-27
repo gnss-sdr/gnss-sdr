@@ -35,7 +35,6 @@
 #ifndef GNSS_SDR_CPU_MULTICORRELATOR_16SC_H_
 #define GNSS_SDR_CPU_MULTICORRELATOR_16SC_H_
 
-#include <volk/volk.h> //include original volk first!
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
 
@@ -50,7 +49,6 @@ public:
     bool set_local_code_and_taps(int code_length_chips, const lv_16sc_t* local_code_in, float *shifts_chips);
     bool set_input_output_vectors(lv_16sc_t* corr_out, const lv_16sc_t* sig_in);
     void update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips);
-    void update_local_carrier(int correlator_length_samples, float rem_carr_phase_rad, float phase_step_rad);
     bool Carrier_wipeoff_multicorrelator_resampler(float rem_carrier_phase_in_rad, float phase_step_rad, float rem_code_phase_chips, float code_phase_step_chips, int signal_length_samples);
     bool free();
 

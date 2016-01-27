@@ -34,9 +34,7 @@
 
 #include "cpu_multicorrelator_16sc.h"
 #include <cmath>
-#include <iostream>
-#include <gnuradio/fxpt.h>  // fixed point sine and cosine
-#include "volk_gnsssdr/volk_gnsssdr.h"
+
 
 
 bool cpu_multicorrelator_16sc::init(
@@ -47,15 +45,15 @@ bool cpu_multicorrelator_16sc::init(
     size_t size = max_signal_length_samples * sizeof(lv_16sc_t);
 
     // NCO signal
-    d_nco_in = static_cast<lv_16sc_t*>(volk_malloc(size, volk_get_alignment()));
+    d_nco_in = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(size, volk_gnsssdr_get_alignment()));
 
     // Doppler-free signal
-    d_sig_doppler_wiped = static_cast<lv_16sc_t*>(volk_malloc(size, volk_get_alignment()));
+    d_sig_doppler_wiped = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(size, volk_gnsssdr_get_alignment()));
 
     d_local_codes_resampled = new lv_16sc_t*[n_correlators];
     for (int n = 0; n < n_correlators; n++)
         {
-            d_local_codes_resampled[n] = static_cast<lv_16sc_t*>(volk_malloc(size, volk_get_alignment()));
+            d_local_codes_resampled[n] = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(size, volk_gnsssdr_get_alignment()));
         }
     d_n_correlators = n_correlators;
     return true;
@@ -88,7 +86,7 @@ bool cpu_multicorrelator_16sc::set_input_output_vectors(lv_16sc_t* corr_out, con
 void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples,float rem_code_phase_chips, float code_phase_step_chips)
 {
 	float *tmp_code_phases_chips;
-	tmp_code_phases_chips = static_cast<float*>(volk_malloc(d_n_correlators*sizeof(float), volk_get_alignment()));
+	tmp_code_phases_chips = static_cast<float*>(volk_gnsssdr_malloc(d_n_correlators*sizeof(float), volk_gnsssdr_get_alignment()));
 	for (int n = 0; n < d_n_correlators; n++)
 	{
 		tmp_code_phases_chips[n] = d_shifts_chips[n] - rem_code_phase_chips;
@@ -102,36 +100,9 @@ void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples,f
 			d_n_correlators,
 			d_code_length_chips);
 
-	volk_free(tmp_code_phases_chips);
-
-//    float local_code_chip_index;
-//    for (int current_correlator_tap = 0; current_correlator_tap < d_n_correlators; current_correlator_tap++)
-//        {
-//            for (int n = 0; n < correlator_length_samples; n++)
-//                {
-//                    // resample code for current tap
-//                    local_code_chip_index = std::fmod(code_phase_step_chips*static_cast<float>(n)+ d_shifts_chips[current_correlator_tap] - rem_code_phase_chips, d_code_length_chips);
-//                    //Take into account that in multitap correlators, the shifts can be negative!
-//                    if (local_code_chip_index < 0.0) local_code_chip_index += d_code_length_chips;
-//                    d_local_codes_resampled[current_correlator_tap][n] = d_local_code_in[static_cast<int>(round(local_code_chip_index))];
-//                }
-//        }
+	volk_gnsssdr_free(tmp_code_phases_chips);
 }
 
-
-void cpu_multicorrelator_16sc::update_local_carrier(int correlator_length_samples, float rem_carr_phase_rad, float phase_step_rad)
-{
-    float sin_f, cos_f;
-    int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
-    int phase_rad_i = gr::fxpt::float_to_fixed(rem_carr_phase_rad);
-
-    for(int i = 0; i < correlator_length_samples; i++)
-        {
-            gr::fxpt::sincos(phase_rad_i, &sin_f, &cos_f);
-            d_nco_in[i] = lv_16sc_t((short int)(cos_f*2.0), (short int)(-sin_f*2.0));
-            phase_rad_i += phase_step_rad_i;
-        }
-}
 
 bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
         float rem_carrier_phase_in_rad,
@@ -165,11 +136,11 @@ cpu_multicorrelator_16sc::cpu_multicorrelator_16sc()
 bool cpu_multicorrelator_16sc::free()
 {
     // Free memory
-    if (d_sig_doppler_wiped != NULL) volk_free(d_sig_doppler_wiped);
-    if (d_nco_in != NULL) volk_free(d_nco_in);
+    if (d_sig_doppler_wiped != NULL) volk_gnsssdr_free(d_sig_doppler_wiped);
+    if (d_nco_in != NULL) volk_gnsssdr_free(d_nco_in);
     for (int n = 0; n < d_n_correlators; n++)
         {
-            volk_free(d_local_codes_resampled[n]);
+            volk_gnsssdr_free(d_local_codes_resampled[n]);
         }
     delete d_local_codes_resampled;
     return true;

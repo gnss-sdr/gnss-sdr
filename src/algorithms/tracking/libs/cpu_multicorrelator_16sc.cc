@@ -140,20 +140,11 @@ bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
         float code_phase_step_chips,
         int signal_length_samples)
 {
-    update_local_carrier(signal_length_samples, rem_carrier_phase_in_rad, phase_step_rad);
-
-    //std::cout<<"d_nco_in 16sc="<<d_nco_in[23]<<std::endl;
-    //volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(d_sig_doppler_wiped,d_sig_in,d_nco_in,signal_length_samples);
-    volk_gnsssdr_16ic_x2_multiply_16ic(d_sig_doppler_wiped, d_sig_in, d_nco_in, signal_length_samples);
-    //std::cout<<"d_sig_doppler_wiped 16sc="<<d_sig_doppler_wiped[23]<<std::endl;
+    lv_32fc_t phase_offset_as_complex[1];
+    phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
+    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic(d_sig_doppler_wiped, d_sig_in, std::exp(lv_32fc_t(0, -phase_step_rad)), phase_offset_as_complex, signal_length_samples);
     update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
-
     volk_gnsssdr_16ic_x2_dot_prod_16ic_xn(d_corr_out, d_sig_doppler_wiped, (const lv_16sc_t**)d_local_codes_resampled, d_n_correlators,  signal_length_samples);
-
-    //for (int current_correlator_tap = 0; current_correlator_tap < d_n_correlators; current_correlator_tap++)
-    //    {
-    //		volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(&d_corr_out[current_correlator_tap], d_sig_doppler_wiped, d_local_codes_resampled[current_correlator_tap],signal_length_samples);
-    //    }
     return true;
 }
 

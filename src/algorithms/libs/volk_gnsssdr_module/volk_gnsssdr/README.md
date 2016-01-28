@@ -14,6 +14,12 @@ This library is automatically built and installed along with GNSS-SDR if it is n
 
 However, you can install and use VOLK_GNSSSDR kernels as you use VOLK's, independently from GNSS-SDR.
 
+First, make sure that the required dependencies are installed in you machine:
+
+~~~~~~ 
+$ sudo apt-get install git subversion cmake python-cheetah libboost-dev libbbost-filesystem
+~~~~~~ 
+
 In order to build and install the library, go to the base folder of the source code and do:
 
 ~~~~~~ 

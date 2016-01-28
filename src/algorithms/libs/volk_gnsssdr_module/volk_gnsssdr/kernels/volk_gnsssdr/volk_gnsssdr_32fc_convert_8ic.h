@@ -190,4 +190,90 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
 }
 #endif /* LV_HAVE_SSE2 */
 
+
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+/*!
+ \brief Converts a float vector of 64 bits (32 bits each part) into a 32 integer vector (16 bits each part)
+ \param inputVector The floating point input data buffer
+ \param outputVector The 16 bit output data buffer
+ \param num_points The number of data values to be converted
+ */
+static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
+{
+    const unsigned int neon_iters = num_points / 8;
+
+    float32_t* inputVectorPtr = (float32_t*)inputVector;
+    int8_t* outputVectorPtr = (int8_t*)outputVector;
+
+    const float32x4_t min_val = vmovq_n_f32((float32_t)SCHAR_MIN);
+    const float32x4_t max_val = vmovq_n_f32((float32_t)SCHAR_MAX);
+
+    const float32x4_t half = vdupq_n_f32(0.5f);
+
+    float32x4_t sign, PlusHalf, Round, ret1, a;
+    int32x4_t toint_a;
+    int16x4_t intInputVal1, intInputVal2;
+    int16x8_t pack16_8_1;
+    int8x8_t res8_1, res8_2;
+    int8x16_t outputVal;
+
+    for(unsigned int i = 0; i < neon_iters; i++)
+        {
+            a = vld1q_f32((const float32_t*)inputVectorPtr); inputVectorPtr += 4;
+            ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
+            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
+            PlusHalf = vaddq_f32(ret1, half);
+            Round = vsubq_f32(PlusHalf, sign);
+            toint_a = vcvtq_s32_f32(Round);
+            intInputVal1 = vqmovn_s32(toint_a);
+
+            a = vld1q_f32((const float32_t*)inputVectorPtr); inputVectorPtr += 4;
+            ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
+            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
+            PlusHalf = vaddq_f32(ret1, half);
+            Round = vsubq_f32(PlusHalf, sign);
+            toint_a = vcvtq_s32_f32(Round);
+            intInputVal2 = vqmovn_s32(toint_a);
+
+            pack16_8_1 = vcombine_s16(intInputVal1, intInputVal2);
+            res8_1 = vqmovn_s16(pack16_8_1);
+
+            a = vld1q_f32((const float32_t*)inputVectorPtr); inputVectorPtr += 4;
+            ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
+            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
+            PlusHalf = vaddq_f32(ret1, half);
+            Round = vsubq_f32(PlusHalf, sign);
+            toint_a = vcvtq_s32_f32(Round);
+            intInputVal1 = vqmovn_s32(toint_a);
+
+            a = vld1q_f32((const float32_t*)inputVectorPtr); inputVectorPtr += 4;
+            ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
+            sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(ret1), 31)));
+            PlusHalf = vaddq_f32(ret1, half);
+            Round = vsubq_f32(PlusHalf, sign);
+            toint_a = vcvtq_s32_f32(Round);
+            intInputVal2 = vqmovn_s32(toint_a);
+
+            pack16_8_1 = vcombine_s16(intInputVal1, intInputVal2);
+            res8_2 = vqmovn_s16(pack16_8_1);
+
+            outputVal = vcombine_s8(res8_1, res8_2);
+
+            vst1q_s8((int8_t*)outputVectorPtr, outputVal);
+            outputVectorPtr += 16;
+        }
+
+    for(unsigned int i = neon_iters * 16; i < num_points * 2; i++)
+        {
+            if(inputVectorPtr[i] > (float32_t)SCHAR_MAX)
+                inputVectorPtr[i] = (float32_t)SCHAR_MAX;
+            else if(inputVectorPtr[i] < (float32_t)SCHAR_MIN)
+                inputVectorPtr[i] = (float32_t)SCHAR_MIN;
+            *outputVectorPtr++ = (int8_t)rintf(*inputVectorPtr++);
+        }
+}
+
+#endif /* LV_HAVE_NEON */
+
 #endif /* INCLUDED_volk_gnsssdr_32fc_convert_8ic_H */

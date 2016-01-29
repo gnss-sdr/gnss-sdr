@@ -357,7 +357,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
             vst1q_f32((float32_t*)__phase_real, _phase_real);
             vst1q_f32((float32_t*)__phase_imag, _phase_imag);
 
-            (*phase) = lv_cmake(__phase_real[3], __phase_imag[3]);
+            (*phase) = lv_cmake((float32_t)__phase_real[3], (float32_t)__phase_imag[3]) * phase_inc;
         }
     for(i = 0; i < neon_iters % 4; ++i)
         {

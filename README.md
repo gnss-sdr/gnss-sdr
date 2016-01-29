@@ -37,52 +37,30 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev
 ~~~~~~
 
-Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). Alternatively, if you need to manually install those libraries, please keep reading. 
+Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). Alternatively, if you need to manually build and install those libraries, please keep reading.
 
-Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT ```libuhd-dev```, ```gnuradio-dev``` and ```gr-osmosdr``` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS. 
+Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT ```libuhd-dev```, ```gnuradio-dev``` and ```gr-osmosdr``` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS.
 
 ### Manual installation of GNU Radio
 
-Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki "Python Build Overlay Managed Bundle System wiki") (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
+Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/pybombs "Python Build Overlay Managed Bundle System wiki") (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
 
-
-~~~~~~ 
-$ git clone --recursive https://github.com/pybombs/pybombs 
+~~~~~~
+$ git clone https://github.com/gnuradio/pybombs.git
 $ cd pybombs
+$ sudo python setup.py install
+$ pybombs recipes add gr-recipes https://github.com/gnuradio/gr-recipes.git
+$ pybombs recipes add gr-etcetera https://github.com/gnuradio/gr-etcetera.git
+$ sudo pybombs prefix init /usr/local -a myprefix
+$ pybombs config default_prefix myprefix
+$ sudo pybombs install gnuradio gr-osmosdr armadillo glog
 ~~~~~~
 
-Configure PyBOMBS:
+Other installation and configuration options are available from https://github.com/gnuradio/pybombs
 
-~~~~~~
-$ ./pybombs config 
-~~~~~~
+The last step can take some time (up to two hours to complete, depending on your system), and it downloads, builds and installs the latest versions of GNU Radio, related drivers and dependencies in your system.
 
-You can safely accept the default options but for ```prefix```. We recommend to put ```/usr/local``` there. After the configuration, you should get something similar to:
-
-~~~~~~
-gituser = username
-prefix = /usr/local
-satisfy_order = deb,src  # For Debian/Ubuntu/LinuxMint
-satisfy_order = rpm,src  # For Fedora/CentOS/RHEL/openSUSE
-forcepkgs =
-forcebuild = gnuradio,uhd,gr-osmosdr,rtl-sdr
-timeout = 30
-cmakebuildtype = RelWithDebInfo
-builddocs = OFF
-cc = gcc
-cxx = g++
-makewidth = 4
-~~~~~~
-
-
-Then, you are ready to download and install [UHD](http://files.ettus.com/uhd_docs/manual/html/) (the Universal Hardware Driver), GNU Radio and all their required dependencies by doing:
-
-~~~~~~
-$ sudo ./pybombs install uhd gnuradio
-~~~~~~
-
-This can take some time (up to two hours to complete, depending on your system), and downloads, builds and installs the latest versions of the Universal Hardware Driver (UHD) and GNU Radio in your system, including all their dependencies. 
-In case you do not want to use PyBOMBS and prefer to build and install GNU Radio step by step, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide).
+In case you do not want to use PyBOMBS and prefer to build and install GNU Radio step by step, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide). Other GNSS-SDR dependencies can be built and installed manually as explained below.
 
     
     
@@ -94,9 +72,9 @@ In case you do not want to use PyBOMBS and prefer to build and install GNU Radio
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
-$ wget http://sourceforge.net/projects/arma/files/armadillo-6.400.3.tar.gz
-$ tar xvfz armadillo-6.400.3.tar.gz
-$ cd armadillo-6.400.3
+$ wget http://sourceforge.net/projects/arma/files/armadillo-6.500.4.tar.gz
+$ tar xvfz armadillo-6.500.4.tar.gz
+$ cd armadillo-6.500.4
 $ cmake .
 $ make
 $ sudo make install

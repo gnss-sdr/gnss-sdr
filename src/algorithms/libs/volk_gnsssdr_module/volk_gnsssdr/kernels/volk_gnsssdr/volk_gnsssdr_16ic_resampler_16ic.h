@@ -47,12 +47,15 @@
 //int round_int( float r ) {
 //    return (r > 0.0) ? (r + 0.5) : (r - 0.5);
 //}
+
 /*!
- \brief Multiplies the two input complex vectors, point-by-point, storing the result in the third vector
- \param cVector The vector where the result will be stored
- \param aVector One of the vectors to be multiplied
- \param bVector One of the vectors to be multiplied
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Resamples a complex vector (16-bit integer each component)
+ \param[out] result                The vector where the result will be stored
+ \param[in]  local_code            One of the vectors to be multiplied
+ \param[in]  rem_code_phase_chips  Remnant code phase [chips]
+ \param[in]  code_phase_step_chips Phase increment per sample [chips/sample]
+ \param[in]  code_length_chips     Code length in chips
+ \param[in]  num_output_samples    Number of samples to be processed
  */
 static inline void volk_gnsssdr_16ic_resampler_16ic_generic(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)
 {
@@ -73,6 +76,16 @@ static inline void volk_gnsssdr_16ic_resampler_16ic_generic(lv_16sc_t* result, c
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
+
+/*!
+ \brief Resamples a complex vector (16-bit integer each component)
+ \param[out] result                The vector where the result will be stored
+ \param[in]  local_code            One of the vectors to be multiplied
+ \param[in]  rem_code_phase_chips  Remnant code phase [chips]
+ \param[in]  code_phase_step_chips Phase increment per sample [chips/sample]
+ \param[in]  code_length_chips     Code length in chips
+ \param[in]  num_output_samples    Number of samples to be processed
+ */
 static inline void volk_gnsssdr_16ic_resampler_16ic_a_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
 {
     _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
@@ -155,6 +168,15 @@ static inline void volk_gnsssdr_16ic_resampler_16ic_a_sse2(lv_16sc_t* result, co
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
+/*!
+ \brief Resamples a complex vector (16-bit integer each component)
+ \param[out] result                The vector where the result will be stored
+ \param[in]  local_code            One of the vectors to be multiplied
+ \param[in]  rem_code_phase_chips  Remnant code phase [chips]
+ \param[in]  code_phase_step_chips Phase increment per sample [chips/sample]
+ \param[in]  code_length_chips     Code length in chips
+ \param[in]  num_output_samples    Number of samples to be processed
+ */
 static inline void volk_gnsssdr_16ic_resampler_16ic_u_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
 {
     _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
@@ -235,6 +257,16 @@ static inline void volk_gnsssdr_16ic_resampler_16ic_u_sse2(lv_16sc_t* result, co
 
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
+
+/*!
+ \brief Resamples a complex vector (16-bit integer each component)
+ \param[out] result                The vector where the result will be stored
+ \param[in]  local_code            One of the vectors to be multiplied
+ \param[in]  rem_code_phase_chips  Remnant code phase [chips]
+ \param[in]  code_phase_step_chips Phase increment per sample [chips/sample]
+ \param[in]  code_length_chips     Code length in chips
+ \param[in]  num_output_samples    Number of samples to be processed
+ */
 static inline void volk_gnsssdr_16ic_resampler_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
 {
     unsigned int number;
@@ -281,7 +313,6 @@ static inline void volk_gnsssdr_16ic_resampler_16ic_neon(lv_16sc_t* result, cons
         {
             _code_phase_out = vmulq_f32(_code_phase_step_chips, _4output_index); //compute the code phase point with the phase step
             _code_phase_out_with_offset = vaddq_f32(_code_phase_out, _rem_code_phase); //add the phase offset
-            //_code_phase_out_int = _mm_cvtps_epi32(_code_phase_out_with_offset); //convert to integer  int32x4_t = f(float32x4_t)
             sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(_code_phase_out_with_offset), 31)));
             PlusHalf = vaddq_f32(_code_phase_out_with_offset, half);
             Round = vsubq_f32(PlusHalf, sign);

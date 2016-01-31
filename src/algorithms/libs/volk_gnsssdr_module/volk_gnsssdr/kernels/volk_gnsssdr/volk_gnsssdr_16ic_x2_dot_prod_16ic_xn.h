@@ -42,11 +42,12 @@
 
 #ifdef LV_HAVE_GENERIC
 /*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
+ \param[out] result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
+ \param[in]  in_common     Pointer to one of the vectors to be multiplied and accumulated (reference vector)
+ \param[in]  in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
+ \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
+ \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
  */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
@@ -68,6 +69,15 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* resu
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
+
+/*!
+ \brief Multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
+ \param[out] result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
+ \param[in]  in_common     Pointer to one of the vectors to be multiplied and accumulated (reference vector)
+ \param[in]  in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
+ \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
+ \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
+ */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
@@ -87,8 +97,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
             __m128i* realcacc;
             __m128i* imagcacc;
 
-            realcacc=(__m128i*)calloc(num_a_vectors,sizeof(__m128i)); //calloc also sets memory to 0
-            imagcacc=(__m128i*)calloc(num_a_vectors,sizeof(__m128i)); //calloc also sets memory to 0
+            realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
+            imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
             __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
 
@@ -163,6 +173,14 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
+/*!
+ \brief Multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
+ \param[out] result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
+ \param[in]  in_common     Pointer to one of the vectors to be multiplied and accumulated (reference vector)
+ \param[in]  in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
+ \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
+ \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
+ */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
@@ -182,8 +200,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, 
             __m128i* realcacc;
             __m128i* imagcacc;
 
-            realcacc=(__m128i*)calloc(num_a_vectors,sizeof(__m128i)); //calloc also sets memory to 0
-            imagcacc=(__m128i*)calloc(num_a_vectors,sizeof(__m128i)); //calloc also sets memory to 0
+            realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
+            imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
             __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
 
@@ -214,8 +232,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, 
 
                             imag = _mm_adds_epi16(imag1, imag2);
 
-                            realcacc[n_vec] = _mm_adds_epi16 (realcacc[n_vec], real);
-                            imagcacc[n_vec] = _mm_adds_epi16 (imagcacc[n_vec], imag);
+                            realcacc[n_vec] = _mm_adds_epi16(realcacc[n_vec], real);
+                            imagcacc[n_vec] = _mm_adds_epi16(imagcacc[n_vec], imag);
 
                         }
                     _in_common += 4;
@@ -223,10 +241,10 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, 
 
             for (int n_vec=0;n_vec<num_a_vectors;n_vec++)
                 {
-                    realcacc[n_vec] = _mm_and_si128 (realcacc[n_vec], mask_real);
-                    imagcacc[n_vec] = _mm_and_si128 (imagcacc[n_vec], mask_imag);
+                    realcacc[n_vec] = _mm_and_si128(realcacc[n_vec], mask_real);
+                    imagcacc[n_vec] = _mm_and_si128(imagcacc[n_vec], mask_imag);
 
-                    result = _mm_or_si128 (realcacc[n_vec], imagcacc[n_vec]);
+                    result = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
                     _mm_storeu_si128((__m128i*)dotProductVector, result); // Store the results back into the dot product vector
                     dotProduct = lv_cmake(0,0);
@@ -258,6 +276,14 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, 
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
+/*!
+ \brief Multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
+ \param[out] result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
+ \param[in]  in_common     Pointer to one of the vectors to be multiplied and accumulated (reference vector)
+ \param[in]  in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
+ \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
+ \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
+ */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);

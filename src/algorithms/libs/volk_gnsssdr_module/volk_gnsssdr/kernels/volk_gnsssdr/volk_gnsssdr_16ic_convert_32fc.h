@@ -38,6 +38,12 @@
 
 #ifdef LV_HAVE_GENERIC
 
+/*!
+ \brief Converts a complex vector of 16-bits integer each component into a complex vector of 32-bits float each component.
+ \param[out] outputVector The complex 32-bit float output data buffer
+ \param[in]  inputVector  The complex 16-bit integer input data buffer
+ \param[in]  num_points   The number of data values to be converted
+ */
 static inline void volk_gnsssdr_16ic_convert_32fc_generic(lv_32fc_t* outputVector, const lv_16sc_t* inputVector, unsigned int num_points)
 {
     for(unsigned int i = 0; i < num_points; i++)
@@ -50,6 +56,12 @@ static inline void volk_gnsssdr_16ic_convert_32fc_generic(lv_32fc_t* outputVecto
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
+/*!
+ \brief Converts a complex vector of 16-bits integer each component into a complex vector of 32-bits float each component.
+ \param[out] outputVector The complex 32-bit float output data buffer
+ \param[in]  inputVector  The complex 16-bit integer input data buffer
+ \param[in]  num_points   The number of data values to be converted
+ */
 static inline void volk_gnsssdr_16ic_convert_32fc_a_sse2(lv_32fc_t* outputVector, const lv_16sc_t* inputVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 2;
@@ -80,6 +92,12 @@ static inline void volk_gnsssdr_16ic_convert_32fc_a_sse2(lv_32fc_t* outputVector
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
+/*!
+ \brief Converts a complex vector of 16-bits integer each component into a complex vector of 32-bits float each component.
+ \param[out] outputVector The complex 32-bit float output data buffer
+ \param[in]  inputVector  The complex 16-bit integer input data buffer
+ \param[in]  num_points   The number of data values to be converted
+ */
 static inline void volk_gnsssdr_16ic_convert_32fc_u_sse2(lv_32fc_t* outputVector, const lv_16sc_t* inputVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 2;
@@ -110,6 +128,12 @@ static inline void volk_gnsssdr_16ic_convert_32fc_u_sse2(lv_32fc_t* outputVector
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
+/*!
+ \brief Converts a complex vector of 16-bits integer each component into a complex vector of 32-bits float each component.
+ \param[out] outputVector The complex 32-bit float output data buffer
+ \param[in]  inputVector  The complex 16-bit integer input data buffer
+ \param[in]  num_points   The number of data values to be converted
+ */
 static inline void volk_gnsssdr_16ic_convert_32fc_neon(lv_32fc_t* outputVector, const lv_16sc_t* inputVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 2;

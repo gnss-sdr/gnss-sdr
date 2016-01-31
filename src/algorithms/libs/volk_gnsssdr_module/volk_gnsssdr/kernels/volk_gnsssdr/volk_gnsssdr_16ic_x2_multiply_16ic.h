@@ -42,10 +42,10 @@
 #ifdef LV_HAVE_GENERIC
 /*!
  \brief Multiplies the two input complex vectors, point-by-point, storing the result in the third vector
- \param cVector The vector where the result will be stored
- \param aVector One of the vectors to be multiplied
- \param bVector One of the vectors to be multiplied
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \param[out] result The vector where the result will be stored
+ \param[in] in_a One of the vectors to be multiplied
+ \param[in] in_b One of the vectors to be multiplied
+ \param[in] num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
  */
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_generic(lv_16sc_t* result, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
@@ -61,6 +61,14 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_generic(lv_16sc_t* result,
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
+
+/*!
+ \brief Multiplies the two input complex vectors, point-by-point, storing the result in the third vector
+ \param[out] result The vector where the result will be stored
+ \param[in] in_a One of the vectors to be multiplied
+ \param[in] in_b One of the vectors to be multiplied
+ \param[in] num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
+ */
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
@@ -112,6 +120,14 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
+
+/*!
+ \brief Multiplies the two input complex vectors, point-by-point, storing the result in the third vector
+ \param[out] result The vector where the result will be stored
+ \param[in] in_a One of the vectors to be multiplied
+ \param[in] in_b One of the vectors to be multiplied
+ \param[in] num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
+ */
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
@@ -164,6 +180,13 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_sse2(lv_16sc_t* out, con
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
+/*!
+ \brief Multiplies the two input complex vectors, point-by-point, storing the result in the third vector
+ \param[out] result The vector where the result will be stored
+ \param[in] in_a One of the vectors to be multiplied
+ \param[in] in_b One of the vectors to be multiplied
+ \param[in] num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
+ */
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_neon(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     lv_16sc_t *a_ptr = (lv_16sc_t*) in_a;

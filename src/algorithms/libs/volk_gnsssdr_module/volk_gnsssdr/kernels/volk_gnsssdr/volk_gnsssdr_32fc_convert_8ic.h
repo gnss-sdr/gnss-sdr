@@ -41,11 +41,12 @@
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
+
 /*!
- \brief Converts a float vector of 64 bits (32 bits each part) into a 16 integer vector (8 bits each part)
- \param inputVector The floating point input data buffer
- \param outputVector The 16 bit output data buffer
- \param num_points The number of data values to be converted
+ \brief Converts a complex vector of 32-bits float each component into a complex vector of 8-bits integer each component. Values are saturated to the limit values of the output data type.
+ \param[out] outputVector The complex 8-bit integer output data buffer
+ \param[in]  inputVector  The complex 32-bit float data buffer
+ \param[in]  num_points   The number of data values to be converted
  */
 static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
@@ -103,11 +104,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
 #endif /* LV_HAVE_SSE2 */
 
 #ifdef LV_HAVE_GENERIC
+
 /*!
- \brief Converts a float vector of 64 bits (32 bits each part) into a 16 integer vector (8 bits each part)
- \param inputVector The floating point input data buffer
- \param outputVector The 16 bit output data buffer
- \param num_points The number of data values to be converted
+ \brief Converts a complex vector of 32-bits float each component into a complex vector of 8-bits integer each component. Values are saturated to the limit values of the output data type.
+ \param[out] outputVector The complex 8-bit integer output data buffer
+ \param[in]  inputVector  The complex 32-bit float data buffer
+ \param[in]  num_points   The number of data values to be converted
  */
 static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
@@ -130,11 +132,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector,
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
+
 /*!
- \brief Converts a float vector of 64 bits (32 bits each part) into a 16 integer vector (8 bits each part)
- \param inputVector The floating point input data buffer
- \param outputVector The 16 bit output data buffer
- \param num_points The number of data values to be converted
+ \brief Converts a complex vector of 32-bits float each component into a complex vector of 8-bits integer each component. Values are saturated to the limit values of the output data type.
+ \param[out] outputVector The complex 8-bit integer output data buffer
+ \param[in]  inputVector  The complex 32-bit float data buffer
+ \param[in]  num_points   The number of data values to be converted
  */
 static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
@@ -193,11 +196,12 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
 
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
+
 /*!
- \brief Converts a float vector of 64 bits (32 bits each part) into a 32 integer vector (16 bits each part)
- \param inputVector The floating point input data buffer
- \param outputVector The 16 bit output data buffer
- \param num_points The number of data values to be converted
+ \brief Converts a complex vector of 32-bits float each component into a complex vector of 8-bits integer each component. Values are saturated to the limit values of the output data type.
+ \param[out] outputVector The complex 8-bit integer output data buffer
+ \param[in]  inputVector  The complex 32-bit float data buffer
+ \param[in]  num_points   The number of data values to be converted
  */
 static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {

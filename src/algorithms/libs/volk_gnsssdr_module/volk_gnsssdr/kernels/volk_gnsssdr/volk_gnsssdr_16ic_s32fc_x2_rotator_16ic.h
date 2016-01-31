@@ -290,7 +290,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
             for(; i < neon_iters; ++i)
                 {
                     /* load 4 complex numbers (int 16 bits each component) */
-                    tmp16 = vld2_s16((int16_t*)_in); _in += 4;
+                    tmp16 = vld2_s16((int16_t*)_in);
+                    __builtin_prefetch(_in + 8);
+                    _in += 4;
 
                     /* promote them to int 32 bits */
                     tmp32i.val[0] = vmovl_s16(tmp16.val[0]);

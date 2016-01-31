@@ -77,6 +77,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
     if (sse_iters > 0)
         {
             __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, realcacc, imagcacc, result;
+            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
@@ -116,8 +117,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 
             result = _mm_or_si128 (realcacc, imagcacc);
 
-            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
-
             _mm_store_si128((__m128i*)dotProductVector,result); // Store the results back into the dot product vector
 
             for (int i = 0; i < 4; ++i)
@@ -154,6 +153,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
     if (sse_iters > 0)
         {
             __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, realcacc, imagcacc, result;
+            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
             realcacc = _mm_setzero_si128();
             imagcacc = _mm_setzero_si128();
@@ -193,8 +193,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 
             result = _mm_or_si128 (realcacc, imagcacc);
 
-            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
-
             _mm_storeu_si128((__m128i*)dotProductVector,result); // Store the results back into the dot product vector
 
             for (int i = 0; i < 4; ++i)
@@ -227,7 +225,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon(lv_16sc_t* out, const
     // 2nd lane holds the imaginary part
     int16x4x2_t a_val, b_val, c_val, accumulator;
     int16x4x2_t tmp_real, tmp_imag;
-    lv_16sc_t accum_result[4];
+    __VOLK_ATTR_ALIGNED(16) lv_16sc_t accum_result[4];
     accumulator.val[0] = vdup_n_s16(0);
     accumulator.val[1] = vdup_n_s16(0);
 

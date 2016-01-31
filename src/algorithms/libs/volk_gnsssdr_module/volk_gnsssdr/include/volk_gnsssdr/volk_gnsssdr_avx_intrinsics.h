@@ -1,6 +1,8 @@
 /*!
  * \file volk_gnsssdr_avx_intrinsics.h
  * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ * \brief This file is intended to hold AVX intrinsics of intrinsics.
+ * They should be used in VOLK kernels to avoid copy-paste.
  *
  * Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
  *
@@ -20,13 +22,9 @@
  * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * This file is intended to hold AVX intrinsics of intrinsics.
- * They should be used in VOLK kernels to avoid copy-pasta.
- */
 
-#ifndef INCLUDE_VOLK_VOLK_AVX_INTRINSICS_H_
-#define INCLUDE_VOLK_VOLK_AVX_INTRINSICS_H_
+#ifndef INCLUDED_VOLK_VOLK_AVX_INTRINSICS_H_
+#define INCLUDED_VOLK_VOLK_AVX_INTRINSICS_H_
 #include <immintrin.h>
 
 static inline __m256

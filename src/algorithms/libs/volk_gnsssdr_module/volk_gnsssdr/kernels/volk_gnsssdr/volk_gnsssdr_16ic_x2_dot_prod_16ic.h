@@ -42,12 +42,13 @@
 
 
 #ifdef LV_HAVE_GENERIC
+
 /*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
+ \param[out] result     Value of the accumulated result
+ \param[in]  in_a       One of the vectors to be multiplied and accumulated
+ \param[in]  in_b       One of the vectors to be multiplied and accumulated
+ \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
  */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_generic(lv_16sc_t* result, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
@@ -64,6 +65,14 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_generic(lv_16sc_t* result,
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
+
+/*!
+ \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
+ \param[out] result     Value of the accumulated result
+ \param[in]  in_a       One of the vectors to be multiplied and accumulated
+ \param[in]  in_b       One of the vectors to be multiplied and accumulated
+ \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake((int16_t)0, (int16_t)0);
@@ -92,10 +101,10 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
                     // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     a = _mm_load_si128((__m128i*)_in_a); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     b = _mm_load_si128((__m128i*)_in_b);
-                    c = _mm_mullo_epi16 (a, b); // a3.i*b3.i, a3.r*b3.r, ....
+                    c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
-                    c_sr = _mm_srli_si128 (c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
-                    real = _mm_subs_epi16 (c,c_sr);
+                    c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                    real = _mm_subs_epi16(c,c_sr);
 
                     b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
                     a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
@@ -105,17 +114,17 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 
                     imag = _mm_adds_epi16(imag1, imag2); //with saturation aritmetic!
 
-                    realcacc = _mm_adds_epi16 (realcacc, real);
-                    imagcacc = _mm_adds_epi16 (imagcacc, imag);
+                    realcacc = _mm_adds_epi16(realcacc, real);
+                    imagcacc = _mm_adds_epi16(imagcacc, imag);
 
                     _in_a += 4;
                     _in_b += 4;
                 }
 
-            realcacc = _mm_and_si128 (realcacc, mask_real);
-            imagcacc = _mm_and_si128 (imagcacc, mask_imag);
+            realcacc = _mm_and_si128(realcacc, mask_real);
+            imagcacc = _mm_and_si128(imagcacc, mask_imag);
 
-            result = _mm_or_si128 (realcacc, imagcacc);
+            result = _mm_or_si128(realcacc, imagcacc);
 
             _mm_store_si128((__m128i*)dotProductVector,result); // Store the results back into the dot product vector
 
@@ -128,7 +137,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
     for (unsigned int i = 0; i < (num_points % 4); ++i)
         {
             lv_16sc_t tmp = (*_in_a++) * (*_in_b++);
-            dotProduct = lv_cmake( sat_adds16i(lv_creal(dotProduct), lv_creal(tmp)), sat_adds16i(lv_cimag(dotProduct), lv_cimag(tmp)));
+            dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(tmp)), sat_adds16i(lv_cimag(dotProduct), lv_cimag(tmp)));
         }
 
     *_out = dotProduct;
@@ -140,6 +149,13 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
+/*!
+ \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
+ \param[out] result     Value of the accumulated result
+ \param[in]  in_a       One of the vectors to be multiplied and accumulated
+ \param[in]  in_b       One of the vectors to be multiplied and accumulated
+ \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake((int16_t)0, (int16_t)0);
@@ -149,6 +165,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
     const lv_16sc_t* _in_a = in_a;
     const lv_16sc_t* _in_b = in_b;
     lv_16sc_t* _out = out;
+    unsigned int i;
 
     if (sse_iters > 0)
         {
@@ -168,10 +185,10 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
                     // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     a = _mm_loadu_si128((__m128i*)_in_a); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     b = _mm_loadu_si128((__m128i*)_in_b);
-                    c = _mm_mullo_epi16 (a, b); // a3.i*b3.i, a3.r*b3.r, ....
+                    c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
-                    c_sr = _mm_srli_si128 (c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
-                    real = _mm_subs_epi16 (c,c_sr);
+                    c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                    real = _mm_subs_epi16(c, c_sr);
 
                     b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
                     a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
@@ -181,30 +198,30 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 
                     imag = _mm_adds_epi16(imag1, imag2); //with saturation aritmetic!
 
-                    realcacc = _mm_adds_epi16 (realcacc, real);
-                    imagcacc = _mm_adds_epi16 (imagcacc, imag);
+                    realcacc = _mm_adds_epi16(realcacc, real);
+                    imagcacc = _mm_adds_epi16(imagcacc, imag);
 
                     _in_a += 4;
                     _in_b += 4;
                 }
 
-            realcacc = _mm_and_si128 (realcacc, mask_real);
-            imagcacc = _mm_and_si128 (imagcacc, mask_imag);
+            realcacc = _mm_and_si128(realcacc, mask_real);
+            imagcacc = _mm_and_si128(imagcacc, mask_imag);
 
-            result = _mm_or_si128 (realcacc, imagcacc);
+            result = _mm_or_si128(realcacc, imagcacc);
 
             _mm_storeu_si128((__m128i*)dotProductVector,result); // Store the results back into the dot product vector
 
-            for (int i = 0; i < 4; ++i)
+            for (i = 0; i < 4; ++i)
                 {
                     dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])), sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
                 }
         }
 
-    for (unsigned int i = 0; i < (num_points % 4); ++i)
+    for (i = 0; i < (num_points % 4); ++i)
         {
             lv_16sc_t tmp = (*_in_a++) * (*_in_b++);
-            dotProduct = lv_cmake( sat_adds16i(lv_creal(dotProduct), lv_creal(tmp)), sat_adds16i(lv_cimag(dotProduct), lv_cimag(tmp)));
+            dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(tmp)), sat_adds16i(lv_cimag(dotProduct), lv_cimag(tmp)));
         }
 
     *_out = dotProduct;
@@ -214,6 +231,14 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
+
+/*!
+ \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
+ \param[out] result     Value of the accumulated result
+ \param[in]  in_a       One of the vectors to be multiplied and accumulated
+ \param[in]  in_b       One of the vectors to be multiplied and accumulated
+ \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     unsigned int quarter_points = num_points / 4;

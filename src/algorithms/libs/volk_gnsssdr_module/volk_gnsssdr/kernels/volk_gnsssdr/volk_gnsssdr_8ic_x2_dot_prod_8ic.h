@@ -41,12 +41,13 @@
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
 #ifdef LV_HAVE_GENERIC
+
 /*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Multiplies the two input complex vectors of 8-bit integer each component and accumulates them, storing the result.
+ \param[out] result     Value of the accumulated result
+ \param[in]  input      One of the vectors to be multiplied
+ \param[in]  taps       One of the vectors to be multiplied
+ \param[in]  num_points The number of complex values in input and taps to be multiplied together, accumulated and stored into result
  */
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_generic(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
 {
@@ -93,12 +94,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_generic(lv_8sc_t* result, co
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
+
 /*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Multiplies the two input complex vectors of 8-bit integer each component and accumulates them, storing the result.
+ \param[out] result     Value of the accumulated result
+ \param[in]  input      One of the vectors to be multiplied
+ \param[in]  taps       One of the vectors to be multiplied
+ \param[in]  num_points The number of complex values in input and taps to be multiplied together, accumulated and stored into result
  */
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
 {
@@ -174,12 +176,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse2(lv_8sc_t* result, con
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
+
 /*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Multiplies the two input complex vectors of 8-bit integer each component and accumulates them, storing the result.
+ \param[out] result     Value of the accumulated result
+ \param[in]  input      One of the vectors to be multiplied
+ \param[in]  taps       One of the vectors to be multiplied
+ \param[in]  num_points The number of complex values in input and taps to be multiplied together, accumulated and stored into result
  */
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
 {
@@ -254,12 +257,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_sse4_1(lv_8sc_t* result, c
 
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
+
 /*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Multiplies the two input complex vectors of 8-bit integer each component and accumulates them, storing the result.
+ \param[out] result     Value of the accumulated result
+ \param[in]  input      One of the vectors to be multiplied
+ \param[in]  taps       One of the vectors to be multiplied
+ \param[in]  num_points The number of complex values in input and taps to be multiplied together, accumulated and stored into result
  */
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
 {
@@ -335,12 +339,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse2(lv_8sc_t* result, con
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
+
 /*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Multiplies the two input complex vectors of 8-bit integer each component and accumulates them, storing the result.
+ \param[out] result     Value of the accumulated result
+ \param[in]  input      One of the vectors to be multiplied
+ \param[in]  taps       One of the vectors to be multiplied
+ \param[in]  num_points The number of complex values in input and taps to be multiplied together, accumulated and stored into result
  */
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
 {
@@ -413,12 +418,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_sse4_1(lv_8sc_t* result, c
 #endif /*LV_HAVE_SSE4_1*/
 
 #ifdef LV_HAVE_ORC
+
 /*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Multiplies the two input complex vectors of 8-bit integer each component and accumulates them, storing the result.
+ \param[out] result     Value of the accumulated result
+ \param[in]  input      One of the vectors to be multiplied
+ \param[in]  taps       One of the vectors to be multiplied
+ \param[in]  num_points The number of complex values in input and taps to be multiplied together, accumulated and stored into result
  */
 extern void volk_gnsssdr_8ic_x2_dot_prod_8ic_a_orc_impl(short* resRealShort, short* resImagShort, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points);
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_orc(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
@@ -440,12 +446,13 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_u_orc(lv_8sc_t* result, cons
 
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
+
 /*!
- \brief Multiplies the two input complex vectors and accumulates them, storing the result in the third vector
- \param cVector The vector where the accumulated result will be stored
- \param aVector One of the vectors to be multiplied and accumulated
- \param bVector One of the vectors to be multiplied and accumulated
- \param num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
+ \brief Multiplies the two input complex vectors of 8-bit integer each component and accumulates them, storing the result.
+ \param[out] result     Value of the accumulated result
+ \param[in]  input      One of the vectors to be multiplied
+ \param[in]  taps       One of the vectors to be multiplied
+ \param[in]  num_points The number of complex values in input and taps to be multiplied together, accumulated and stored into result
  */
 static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_neon(lv_8sc_t* result, const lv_8sc_t* input, const lv_8sc_t* taps, unsigned int num_points)
 {
@@ -458,7 +465,7 @@ static inline void volk_gnsssdr_8ic_x2_dot_prod_8ic_neon(lv_8sc_t* result, const
     // for 2-lane vectors, 1st lane holds the real part,
     // 2nd lane holds the imaginary part
     int8x8x2_t a_val, b_val, c_val, accumulator, tmp_real, tmp_imag;
-    lv_8sc_t accum_result[8] = { lv_cmake(0,0) };
+    __VOLK_ATTR_ALIGNED(16) lv_8sc_t accum_result[8] = { lv_cmake(0,0) };
     accumulator.val[0] = vdup_n_s8(0);
     accumulator.val[1] = vdup_n_s8(0);
     unsigned int number;

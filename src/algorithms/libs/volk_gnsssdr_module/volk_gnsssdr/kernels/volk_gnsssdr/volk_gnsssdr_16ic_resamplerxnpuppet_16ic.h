@@ -1,6 +1,6 @@
 /*!
  * \file volk_gnsssdr_16ic_resamplerxnpuppet_16ic.h
- * \brief Volk puppet for the 16-bit complex vector resampler kernel
+ * \brief Volk puppet for the multiple 16-bit complex vector resampler kernel
  * \authors <ul>
  *          <li> Carles Fernandez Prades 2016 cfernandez at cttc dot cat
  *          </ul>

@@ -1,6 +1,8 @@
 /*!
  * \file volk_gnsssdr_sse3_intrinsics.h
  * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
+ * \brief Holds SSE3 intrinsics of intrinsics.
+ * They should be used in VOLK kernels to avoid copy-paste.
  *
  * Copyright (C) 2010-2015 (see AUTHORS file for a list of contributors)
  *
@@ -21,13 +23,8 @@
  */
 
 
-/*
- * This file is intended to hold SSE3 intrinsics of intrinsics.
- * They should be used in VOLK kernels to avoid copy-pasta.
- */
-
-#ifndef INCLUDE_VOLK_VOLK_SSE3_INTRINSICS_H_
-#define INCLUDE_VOLK_VOLK_SSE3_INTRINSICS_H_
+#ifndef INCLUDED_VOLK_VOLK_SSE3_INTRINSICS_H_
+#define INCLUDED_VOLK_VOLK_SSE3_INTRINSICS_H_
 #include <pmmintrin.h>
 
 static inline __m128

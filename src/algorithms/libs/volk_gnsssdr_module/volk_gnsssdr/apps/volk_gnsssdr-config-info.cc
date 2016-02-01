@@ -35,13 +35,13 @@ main(int argc, char **argv)
 
   desc.add_options()
     ("help,h", "print help message")
-    ("prefix", "print VOLK installation prefix")
-    ("cc", "print VOLK C compiler version")
-    ("cflags", "print VOLK CFLAGS")
-    ("all-machines", "print VOLK machines built into library")
-    ("avail-machines", "print VOLK machines the current platform can use")
-    ("machine", "print the VOLK machine that will be used")
-    ("version,v", "print VOLK version")
+    ("prefix", "print VOLK_GNSSSDR installation prefix")
+    ("cc", "print VOLK_GNSSSDR C compiler version")
+    ("cflags", "print VOLK_GNSSSDR CFLAGS")
+    ("all-machines", "print VOLK_GNSSSDR machines built into library")
+    ("avail-machines", "print VOLK_GNSSSDR machines the current platform can use")
+    ("machine", "print the VOLK_GNSSSDR machine that will be used")
+    ("version,v", "print VOLK_GNSSSDR version")
     ;
 
   try {

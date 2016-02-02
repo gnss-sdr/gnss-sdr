@@ -831,6 +831,8 @@ if(NOT UHD_FOUND)
     message(STATUS " so all USRP-based front-ends will not be usable.")
     message(STATUS " Please check http://files.ettus.com/manual/")
 else(NOT UHD_FOUND)
+    set(GR_REQUIRED_COMPONENTS UHD)
+    find_package(Gnuradio)
     set(ENABLE_UHD ON)
 endif(NOT UHD_FOUND)
 

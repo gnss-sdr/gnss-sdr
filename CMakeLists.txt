@@ -345,7 +345,7 @@ endif(NOT Boost_FOUND)
 ################################################################################
 # GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
 ################################################################################
-set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER PMT UHD)
+set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER PMT)
 find_package(Gnuradio)
 if(PC_GNURADIO_RUNTIME_VERSION)
    if(PC_GNURADIO_RUNTIME_VERSION VERSION_LESS 3.7.3)
@@ -822,18 +822,15 @@ endif(NOT GNUTLS_OPENSSL_LIBRARY)
 
 
 ################################################################################
-# Universal Hardware Driver (UHD)
+# USRP Hardware Driver (UHD) - OPTIONAL
 ################################################################################
 find_package(UHD)
 if(NOT UHD_FOUND)
     set(ENABLE_UHD OFF)
-    message(STATUS "The Universal Hardware Driver (UHD) based signal source will not be built,")
-    message(STATUS "so all USRP-based front-ends will not be usable.")
-    message(STATUS "Please check http://code.ettus.com/redmine/ettus/projects/uhd/wiki")
+    message(STATUS " The USRP Hardware Driver (UHD) signal source will not be built,")
+    message(STATUS " so all USRP-based front-ends will not be usable.")
+    message(STATUS " Please check http://files.ettus.com/manual/")
 else(NOT UHD_FOUND)
-    if(NOT GNURADIO_UHD_FOUND)
-        message(FATAL_ERROR "*** gnuradio-uhd 3.7 or later is required to build gnss-sdr")
-    endif(NOT GNURADIO_UHD_FOUND)
     set(ENABLE_UHD ON)
 endif(NOT UHD_FOUND)
 

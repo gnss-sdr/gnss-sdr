@@ -81,7 +81,7 @@ public:
 private:
     std::string role_;
 
-    // UHD SETTINGS
+    // Front-end settings
     bool AGC_enabled_;
     double sample_rate_;
 

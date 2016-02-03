@@ -913,8 +913,8 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                     *d_Prompt_Code_Late_Subcarrier); //[chips/Ti]
             // normalise the SLL discriminator by the slope of the
             // BOC(1,1) at the origin:
-            float corr_slope = 2.0;
-            subcarrier_error_cycles *= ( 1 - corr_slope*d_early_late_subcarrier_spc_cycles) / corr_slope;
+            float corr_slope = 4.0;
+            subcarrier_error_cycles *= 2.0*( 1 - corr_slope*d_early_late_subcarrier_spc_cycles) / corr_slope;
             // Subcarrier discriminator filter
             subcarrier_error_filt_cycles = d_subcarrier_loop_filter.apply(subcarrier_error_cycles); //[chips/second]
             d_subcarrier_freq_cycles += subcarrier_error_filt_cycles;
@@ -944,7 +944,7 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                     *d_Prompt_Subcarrier_Late_Code); //[chips/Ti]
             //Normalise the code phase error:
             corr_slope = 1.0;
-            code_error_chips *= ( 1 - corr_slope*d_early_late_code_spc_chips) / corr_slope;
+            code_error_chips *= 2.0*( 1 - corr_slope*d_early_late_code_spc_chips) / corr_slope;
             // Code discriminator filter
             code_error_filt_chips = d_code_loop_filter.apply(code_error_chips); //[chips/second]
             //Code phase accumulator
@@ -999,8 +999,8 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
 
                     // normalise the SLL discriminator by the slope of the
                     // BOC(1,1) at the origin:
-                    corr_slope = 2.0;
-                    subcarrier_error_cycles_prs *= ( 1 - corr_slope*d_early_late_subcarrier_spc_cycles) / corr_slope;
+                    corr_slope = 4.0;
+                    subcarrier_error_cycles_prs *= 2.0*( 1 - corr_slope*d_early_late_subcarrier_spc_cycles) / corr_slope;
                 }
 
                 // Subcarrier discriminator filter
@@ -1016,7 +1016,7 @@ int galileo_e1_prs_de_tracking_cc::general_work (int noutput_items,gr_vector_int
                         *d_Prompt_Subcarrier_Late_Code_prs); //[chips/Ti]
                 //Normalise the code phase error:
                 corr_slope = 1.0;
-                code_error_chips_prs *= ( 1 - corr_slope*d_early_late_code_spc_chips) / corr_slope;
+                code_error_chips_prs *= 2.0*( 1 - corr_slope*d_early_late_code_spc_chips) / corr_slope;
 
                 // Code discriminator filter
                 code_error_filt_chips_prs = d_code_loop_filter_prs.apply(code_error_chips_prs); //[chips/second]

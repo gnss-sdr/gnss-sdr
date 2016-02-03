@@ -522,8 +522,8 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
                     *d_Prompt_Code_Late_Subcarrier); //[chips/Ti]
             // normalise the SLL discriminator by the slope of the
             // BOC(1,1) at the origin:
-            float corr_slope = 2.0;
-            subcarrier_error_chips *= ( 1 - corr_slope*d_early_late_subcarrier_spc_chips) / corr_slope;
+            float corr_slope = 4.0;
+            subcarrier_error_chips *= 2.0*( 1 - corr_slope*d_early_late_subcarrier_spc_chips) / corr_slope;
             // Subcarrier discriminator filter
             subcarrier_error_filt_chips = d_subcarrier_loop_filter.get_code_nco(subcarrier_error_chips); //[chips/second]
             d_subcarrier_freq_chips += subcarrier_error_filt_chips;
@@ -553,7 +553,7 @@ int galileo_e1_de_tracking_cc::general_work (int noutput_items,gr_vector_int &ni
                     *d_Prompt_Subcarrier_Late_Code); //[chips/Ti]
             //Normalise the code phase error:
             corr_slope = 1.0;
-            code_error_chips *= ( 1 - corr_slope*d_early_late_code_spc_chips) / corr_slope;
+            code_error_chips *= 2.0*( 1 - corr_slope*d_early_late_code_spc_chips) / corr_slope;
             // Code discriminator filter
             code_error_filt_chips = d_code_loop_filter.get_code_nco(code_error_chips); //[chips/second]
             //Code phase accumulator

@@ -974,7 +974,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                     *d_Late); //[chips/Ti]
             //Normalise the code phase error:
             double corr_slope = 3.0;
-            subcarrier_error_cycles *= ( 1 - corr_slope*d_early_late_code_spc_cycles ) / corr_slope;
+            subcarrier_error_cycles *= 2.0*( 1 - corr_slope*d_early_late_code_spc_cycles ) / corr_slope;
             // Code discriminator filter
             subcarrier_error_filt_cycles = d_code_loop_filter.apply(subcarrier_error_cycles); //[chips/second]
             //Code phase accumulator
@@ -988,7 +988,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                     *d_Very_Early, *d_Very_Late );
 
             corr_slope = 1.0;
-            code_error_chips_veml *= ( 1 - corr_slope*d_very_early_late_code_spc_chips) / corr_slope;
+            code_error_chips_veml *= 2.0*( 1 - corr_slope*d_very_early_late_code_spc_chips) / corr_slope;
 
             if( d_use_sa && d_subcarrier_locked )
             {
@@ -1088,7 +1088,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                         *d_Late_prs); //[chips/Ti]
                 //Normalise the code phase error:
                 corr_slope = 25.0/6.0;
-                subcarrier_error_cycles_prs *= ( 1.0- corr_slope*d_early_late_code_spc_cycles)
+                subcarrier_error_cycles_prs *= 2.0*( 1.0- corr_slope*d_early_late_code_spc_cycles)
                     / corr_slope;
 
                 // Code discriminator filter
@@ -1116,7 +1116,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                         *d_Very_Early_prs, *d_Very_Late_prs );
 
                 corr_slope = 1.0;
-                code_error_chips_veml_prs *= ( 1 - corr_slope*d_very_early_late_code_spc_chips_prs) / corr_slope;
+                code_error_chips_veml_prs *= 2.0*( 1 - corr_slope*d_very_early_late_code_spc_chips_prs) / corr_slope;
 
                 d_code_freq_chips_prs = d_subcarrier_freq_cycles_prs /d_chips_to_cycles_prs;
 

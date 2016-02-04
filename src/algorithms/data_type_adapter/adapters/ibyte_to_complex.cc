@@ -56,11 +56,9 @@ IbyteToComplex::IbyteToComplex(ConfigurationInterface* configuration, std::strin
 
     size_t item_size = sizeof(gr_complex);
 
-    gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
-    gr_char_to_short_ = gr::blocks::char_to_short::make();
+    gr_interleaved_char_to_complex_ = gr::blocks::interleaved_char_to_complex::make();
 
-    DLOG(INFO) << "data_type_adapter_(" << gr_interleaved_short_to_complex_->unique_id() << ")";
-    DLOG(INFO) << "data_type_adapter_(" << gr_char_to_short_->unique_id() << ")";
+    DLOG(INFO) << "data_type_adapter_(" << gr_interleaved_char_to_complex_->unique_id() << ")";
 
     if (dump_)
         {
@@ -77,22 +75,19 @@ IbyteToComplex::~IbyteToComplex()
 
 void IbyteToComplex::connect(gr::top_block_sptr top_block)
 {
-	top_block->connect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
-
 
     if (dump_)
         {
-            top_block->connect(gr_interleaved_short_to_complex_, 0, file_sink_, 0);
+            top_block->connect(gr_interleaved_char_to_complex_, 0, file_sink_, 0);
         }
 }
 
 
 void IbyteToComplex::disconnect(gr::top_block_sptr top_block)
 {
-	top_block->disconnect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
     if (dump_)
         {
-            top_block->disconnect(gr_interleaved_short_to_complex_, 0, file_sink_, 0);
+            top_block->disconnect(gr_interleaved_char_to_complex_, 0, file_sink_, 0);
         }
 }
 
@@ -100,14 +95,14 @@ void IbyteToComplex::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr IbyteToComplex::get_left_block()
 {
-    return gr_char_to_short_;
+    return gr_interleaved_char_to_complex_;
 }
 
 
 
 gr::basic_block_sptr IbyteToComplex::get_right_block()
 {
-    return gr_interleaved_short_to_complex_;
+    return gr_interleaved_char_to_complex_;
 }
 
 

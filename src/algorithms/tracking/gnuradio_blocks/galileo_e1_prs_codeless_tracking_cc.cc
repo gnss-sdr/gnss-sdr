@@ -1138,12 +1138,14 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
                 // ################## DLL ##########################################################
                 // DLL discriminator
                 d_subcarrier_error_cycles_prs = dll_nc_e_minus_l_normalized(
-                        std::sqrt( d_E_acumm_prs ),
-                        std::sqrt( d_L_acumm_prs ) ); //[chips/Ti]
+                         d_E_acumm_prs,
+                         d_L_acumm_prs ); //[chips/Ti]
                 //Normalise the code phase error:
-                corr_slope = 25.0/6.0;
-                d_subcarrier_error_cycles_prs *= 2.0*( 1.0- corr_slope*d_early_late_code_spc_cycles)
-                    / corr_slope;
+                // Here we assume that the front-end filter is only passing the
+                // first lobe of the PRS and we enforce a correlator spacing of
+                // +/- 1/8 of a subchip.
+                corr_slope = 4*M_PI;
+                d_subcarrier_error_cycles_prs *= 2.0/corr_slope;
 
                 // Code discriminator filter
                 d_subcarrier_error_filt_cycles_prs = d_code_loop_filter_prs.apply(d_subcarrier_error_cycles_prs); //[chips/second]
@@ -1153,8 +1155,8 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
                 d_code_error_chips_veml_prs = dll_nc_e_minus_l_normalized(
                         d_VE_acumm_prs, d_VL_acumm_prs );
 
-                corr_slope = 1.0;
-                d_code_error_chips_veml_prs *= 2.0*( 1 - corr_slope*d_very_early_late_code_spc_chips_prs) / corr_slope;
+                corr_slope = 2.0;
+                d_code_error_chips_veml_prs *= 2.0 / corr_slope;
 
                 if( d_close_prs_loops )
                 {

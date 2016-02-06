@@ -48,6 +48,7 @@ Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/pro
 ~~~~~~
 $ git clone https://github.com/gnuradio/pybombs.git
 $ cd pybombs
+$ python setup.py build
 $ sudo python setup.py install
 $ pybombs recipes add gr-recipes https://github.com/gnuradio/gr-recipes.git
 $ pybombs recipes add gr-etcetera https://github.com/gnuradio/gr-etcetera.git

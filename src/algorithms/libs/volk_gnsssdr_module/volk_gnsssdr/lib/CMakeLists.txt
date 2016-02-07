@@ -87,7 +87,7 @@ endif(NOT DEFINED _XOPEN_SOURCE)
 ########################################################################
 # detect x86 flavor of CPU
 ########################################################################
-if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "^(i.86|x86|x86_64|amd64)$")
+if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "^(i.86|x86|x86_64|amd64|AMD64)$")
     message(STATUS "x86* CPU detected")
     set(CPU_IS_x86 TRUE)
 endif()
@@ -106,19 +106,24 @@ macro(check_arch arch_name)
     set(flags ${ARGN})
     set(have_${arch_name} TRUE)
     foreach(flag ${flags})
-        include(CheckCXXCompilerFlag)
-        set(have_flag have${flag})
-        execute_process( #make the have_flag have nice alphanum chars (just for looks/not necessary)
-            COMMAND ${PYTHON_EXECUTABLE} -c "import re; print(re.sub('\\W', '_', '${have_flag}'))"
-            OUTPUT_VARIABLE have_flag OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-        if(VOLK_FLAG_CHECK_FLAGS)
-            set(CMAKE_REQUIRED_FLAGS ${VOLK_FLAG_CHECK_FLAGS})
-        endif()
-        CHECK_CXX_COMPILER_FLAG(${flag} ${have_flag})
-        unset(CMAKE_REQUIRED_FLAGS)
-        if (NOT ${have_flag})
-            set(have_${arch_name} FALSE)
+        if ( (${COMPILER_NAME} STREQUAL "MSVC") AND (${flag} STREQUAL "/arch:SSE2" OR ${flag} STREQUAL "/arch:SSE" ))
+            # SSE/SSE2 is supported in MSVC since VS 2005 but flag not available when compiling 64-bit so do not check
+        else()
+            include(CheckCXXCompilerFlag)
+            set(have_flag have${flag})
+            #make the have_flag have nice alphanum chars (just for looks/not necessary)
+            execute_process(
+                COMMAND ${PYTHON_EXECUTABLE} -c "import re; print(re.sub('\\W', '_', '${have_flag}'))"
+                OUTPUT_VARIABLE have_flag OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+            if(VOLK_FLAG_CHECK_FLAGS)
+                set(CMAKE_REQUIRED_FLAGS ${VOLK_FLAG_CHECK_FLAGS})
+            endif()
+            CHECK_CXX_COMPILER_FLAG(${flag} ${have_flag})
+            unset(CMAKE_REQUIRED_FLAGS)
+            if (NOT ${have_flag})
+                set(have_${arch_name} FALSE)
+            endif()
         endif()
     endforeach()
     if (have_${arch_name})

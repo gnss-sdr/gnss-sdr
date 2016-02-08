@@ -136,11 +136,7 @@ pcps_acquisition_cc::~pcps_acquisition_cc()
 void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
 {
     memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
-
-    std::cout << " Sto dentro pcps_acquisition_cc e il valore di sizeof(gr_complex) è    " << sizeof(gr_complex) << std::endl;         // DEBUG
-
     d_fft_if->execute(); // We need the FFT of local code
-
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 
@@ -161,8 +157,7 @@ void pcps_acquisition_cc::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            complex_exp_gen(d_grid_doppler_wipeoffs[doppler_index], d_freq + doppler, d_fs_in, d_fft_size);                                                                        // sign +
-
+            complex_exp_gen(d_grid_doppler_wipeoffs[doppler_index], d_freq - doppler, d_fs_in, d_fft_size);
         }
 }
 

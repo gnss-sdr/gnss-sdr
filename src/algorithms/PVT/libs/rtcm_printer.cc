@@ -304,3 +304,9 @@ std::string Rtcm_Printer::print_MT1005_test()
     std::string test = rtcm->print_MT1005_test();
     return test;
 }
+
+
+unsigned int Rtcm_Printer::lock_time(const Gps_Ephemeris& gps_eph, double obs_time, const Gnss_Synchro & gnss_synchro)
+{
+    return rtcm->lock_time(gps_eph, obs_time, gnss_synchro);
+}

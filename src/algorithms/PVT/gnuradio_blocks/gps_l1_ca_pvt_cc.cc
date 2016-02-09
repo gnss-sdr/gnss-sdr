@@ -163,19 +163,26 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
     //Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; //Get the output pointer
 
+    // ############ 1. READ EPHEMERIS FROM GLOBAL MAP ####
+    d_ls_pvt->gps_ephemeris_map = global_gps_ephemeris_map.get_map_copy();
+
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
+            std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
+            gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
                     gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
                     d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
+                    d_rtcm_printer->lock_time(gps_ephemeris_iter->second, d_rx_time, in[i][0]); // keep track of locking time
+                }
+            else
+                {
+                    d_rtcm_printer->lock_time(gps_ephemeris_iter->second, 0.0, in[i][0]);
                 }
         }
 
-    // ############ 1. READ EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
-
-    d_ls_pvt->gps_ephemeris_map = global_gps_ephemeris_map.get_map_copy();
-
+    // ############ READ UTC_MODEL/IONO FROM GLOBAL MAPS ####
     if (global_gps_utc_model_map.size() > 0)
         {
             // UTC MODEL data is shared for all the GPS satellites. Read always at a locked channel
@@ -337,7 +344,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                                     if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                         {
                                             d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
-                                            d_rtcm_printer->Print_Rtcm_MT1002(gps_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map);
+                                            d_rtcm_printer->Print_Rtcm_MSM(1, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, 0, 0);
                                         }
                                     b_rtcm_writing_started = true;
                                 }

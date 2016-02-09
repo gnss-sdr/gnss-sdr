@@ -62,23 +62,6 @@ TEST(GNSS_Block_Factory_Test, InstantiateFileSignalSource)
     EXPECT_STREQ("File_Signal_Source", signal_source->implementation().c_str());
 }
 
-/*
-TEST(GNSS_Block_Factory_Test, InstantiateUHDSignalSource)
-{
-    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("SignalSource.implementation", "UHD_Signal_Source");
-    configuration->set_property("SignalSource.item_type", "gr_complex");
-    configuration->set_property("SignalSource.device_address", "192.168.40.2");
-    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
-    // Example of a factory created with auto
-    auto factory = new GNSSBlockFactory();
-    // Example of a block created with auto
-    auto signal_source = factory->GetSignalSource(configuration, queue);
-
-    EXPECT_STREQ("SignalSource", signal_source->role().c_str());
-    EXPECT_STREQ("UHD_Signal_Source", signal_source->implementation().c_str());
-}
-*/
 
 TEST(GNSS_Block_Factory_Test, InstantiateWrongSignalSource)
 {

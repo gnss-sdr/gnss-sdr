@@ -40,8 +40,6 @@
 #include <math.h>
 #include <stdio.h>
 
-#define ROTATOR_RELOAD 512
-
 
 #ifdef LV_HAVE_GENERIC
 
@@ -56,25 +54,14 @@
 static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     unsigned int i = 0;
-    int j = 0;
     lv_16sc_t tmp16;
     lv_32fc_t tmp32;
-    for(i = 0; i < (unsigned int)(num_points / ROTATOR_RELOAD); ++i)
+    for(i = 0; i < (unsigned int)(num_points); ++i)
         {
-            for(j = 0; j < ROTATOR_RELOAD; ++j)
-                {
                     tmp16 = *inVector++;
                     tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
                     *outVector++ = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
                     (*phase) *= phase_inc;
-                }
-        }
-    for(i = 0; i < num_points % ROTATOR_RELOAD; ++i)
-        {
-            tmp16 = *inVector++;
-            tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
-            *outVector++ = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
-            (*phase) *= phase_inc;
         }
 }
 

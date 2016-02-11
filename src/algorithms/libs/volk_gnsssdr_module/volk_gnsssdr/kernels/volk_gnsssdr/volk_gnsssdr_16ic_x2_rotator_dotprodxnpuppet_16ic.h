@@ -55,17 +55,17 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_generic(lv_
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for(unsigned int n = 0; n < num_a_vectors; n++)
-    {
-       in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
-       memcpy(in_a[n], in, sizeof(lv_16sc_t) * num_points);
-    }
+        {
+            in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
+            memcpy(in_a[n], in, sizeof(lv_16sc_t) * num_points);
+        }
     result = (lv_16sc_t*)calloc(num_points, sizeof(lv_16sc_t));
     volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_generic(result, local_code, phase_inc[0], phase,(const lv_16sc_t**) in_a, num_a_vectors, num_points);
 
     for(unsigned int n = 0; n < num_a_vectors; n++)
-    {
-        volk_gnsssdr_free(in_a[n]);
-    }
+        {
+            volk_gnsssdr_free(in_a[n]);
+        }
     volk_gnsssdr_free(in_a);
 }
 
@@ -85,17 +85,17 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_a_sse3(lv_1
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for(unsigned int n = 0; n < num_a_vectors; n++)
-    {
-       in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
-       memcpy((lv_16sc_t*)in_a[n], (lv_16sc_t*)in, sizeof(lv_16sc_t) * num_points);
-    }
+        {
+            in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());
+            memcpy((lv_16sc_t*)in_a[n], (lv_16sc_t*)in, sizeof(lv_16sc_t) * num_points);
+        }
     result = (lv_16sc_t*)calloc(num_points, sizeof(lv_16sc_t));
     volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(result, local_code, phase_inc[0], phase, (const lv_16sc_t**) in_a, num_a_vectors, num_points);
 
     for(unsigned int n = 0; n < num_a_vectors; n++)
-    {
-        volk_gnsssdr_free(in_a[n]);
-    }
+        {
+            volk_gnsssdr_free(in_a[n]);
+        }
     volk_gnsssdr_free(in_a);
 }
 
@@ -116,17 +116,17 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_u_sse3(lv_1
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for(unsigned int n = 0; n < num_a_vectors; n++)
-    {
-       in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_points, volk_gnsssdr_get_alignment());
-       memcpy(in_a[n], in, sizeof(lv_16sc_t)*num_points);
-    }
+        {
+            in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_points, volk_gnsssdr_get_alignment());
+            memcpy(in_a[n], in, sizeof(lv_16sc_t)*num_points);
+        }
     result = (lv_16sc_t*)calloc(num_points, sizeof(lv_16sc_t));
     volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(result, local_code, phase_inc[0], phase, (const lv_16sc_t**) in_a, num_a_vectors, num_points);
 
     for(unsigned int n = 0; n < num_a_vectors; n++)
-    {
-        volk_gnsssdr_free(in_a[n]);
-    }
+        {
+            volk_gnsssdr_free(in_a[n]);
+        }
     volk_gnsssdr_free(in_a);
 }
 
@@ -147,17 +147,17 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_neon(lv_16s
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
     for(unsigned int n = 0; n < num_a_vectors; n++)
-    {
-       in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_points, volk_gnsssdr_get_alignment());
-       memcpy(in_a[n], in, sizeof(lv_16sc_t)*num_points);
-    }
+        {
+            in_a[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t)*num_points, volk_gnsssdr_get_alignment());
+            memcpy(in_a[n], in, sizeof(lv_16sc_t)*num_points);
+        }
     result = (lv_16sc_t*)calloc(num_points, sizeof(lv_16sc_t));
-    volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_neon(result, local_code, phase_inc[0], phase, (const lv_16sc_t**) in_a, num_a_vectors, num_points);
+    volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(result, local_code, phase_inc[0], phase, (const lv_16sc_t**) in_a, num_a_vectors, num_points);
 
     for(unsigned int n = 0; n < num_a_vectors; n++)
-    {
-        volk_gnsssdr_free(in_a[n]);
-    }
+        {
+            volk_gnsssdr_free(in_a[n]);
+        }
     volk_gnsssdr_free(in_a);
 }
 

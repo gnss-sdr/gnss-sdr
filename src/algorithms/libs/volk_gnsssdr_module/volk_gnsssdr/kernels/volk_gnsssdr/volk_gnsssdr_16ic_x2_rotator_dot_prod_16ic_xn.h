@@ -404,7 +404,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 //        {
 //            result[n_vec] = lv_cmake(0,0);
 //        }
-    lv_16sc_t dotProduct = lv_cmake(0,0);
+   lv_16sc_t dotProduct;
 
     const unsigned int neon_iters = num_points / 4;
 
@@ -451,7 +451,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
     if (neon_iters > 0)
         {
             int16x4x2_t a_val, b_val, c_val;
-
+            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
             for(unsigned int number = 0; number < neon_iters; number++)
                 {
@@ -502,11 +502,9 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     _phase_real = vsubq_f32(tmp_real.val[0], tmp_real.val[1]);
                     _phase_imag = vaddq_f32(tmp_imag.val[0], tmp_imag.val[1]);
 
-
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                            //__builtin_prefetch(_in_a[n_vec] + 8);
 
                             // multiply the real*real and imag*imag to get real result
                             // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r
@@ -528,11 +526,20 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                         }
 
 
-
-
                 }
 
-
+            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                {
+                    vst2_s16((int16_t*)dotProductVector, accumulator[n_vec]); // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0,0);
+                    for (int i = 0; i < 4; ++i)
+                        {
+                            dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
+                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                        }
+                    _out[n_vec] = dotProduct;
+                }
+            free(accumulator);
         }
 
 

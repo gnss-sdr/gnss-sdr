@@ -441,7 +441,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
     int16x4x2_t* accumulator;
     accumulator = (int16x4x2_t*)calloc(num_a_vectors, sizeof(int16x4x2_t));
 
-    int16x4x2_t tmp_real, tmp_imag;
+    int16x4x2_t tmp_real16, tmp_imag16;
 
     for(int n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
@@ -511,18 +511,18 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 
                             // multiply the real*real and imag*imag to get real result
                             // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r
-                            tmp_real.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
+                            tmp_real16.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
                             // a0i*b0i|a1i*b1i|a2i*b2i|a3i*b3i
-                            tmp_real.val[1] = vmul_s16(a_val.val[1], b_val.val[1]);
+                            tmp_real16.val[1] = vmul_s16(a_val.val[1], b_val.val[1]);
 
                             // Multiply cross terms to get the imaginary result
                             // a0r*b0i|a1r*b1i|a2r*b2i|a3r*b3i
-                            tmp_imag.val[0] = vmul_s16(a_val.val[0], b_val.val[1]);
+                            tmp_imag16.val[0] = vmul_s16(a_val.val[0], b_val.val[1]);
                             // a0i*b0r|a1i*b1r|a2i*b2r|a3i*b3r
-                            tmp_imag.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
+                            tmp_imag16.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
 
-                            c_val.val[0] = vsub_s16(tmp_real.val[0], tmp_real.val[1]);
-                            c_val.val[1] = vadd_s16(tmp_imag.val[0], tmp_imag.val[1]);
+                            c_val.val[0] = vsub_s16(tmp_real16.val[0], tmp_real16.val[1]);
+                            c_val.val[1] = vadd_s16(tmp_imag16.val[0], tmp_imag16.val[1]);
 
                             accumulator[n_vec].val[0] = vadd_s16(accumulator[n_vec].val[0], c_val.val[0]);
                             accumulator[n_vec].val[1] = vadd_s16(accumulator[n_vec].val[1], c_val.val[1]);

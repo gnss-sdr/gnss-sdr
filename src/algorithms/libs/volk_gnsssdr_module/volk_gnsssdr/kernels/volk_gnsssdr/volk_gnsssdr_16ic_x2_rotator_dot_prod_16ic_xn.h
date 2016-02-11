@@ -391,7 +391,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
                             sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }
-    _out[2] =
 }
 #endif /* LV_HAVE_SSE3 */
 
@@ -539,7 +538,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            for(unsigned int n  = sse_iters * 4; n < num_points; n++)
+            for(unsigned int n  = neon_iters * 4; n < num_points; n++)
                 {
                     tmp16_ = *in_common++;
                     tmp32_ = lv_cmake((float)lv_creal(tmp16_), (float)lv_cimag(tmp16_)) * (*phase);

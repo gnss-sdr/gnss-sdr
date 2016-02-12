@@ -555,7 +555,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
             for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp = tmp16_ * in_a[n_vec][n];
-                    _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(result[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(result[n_vec]), lv_cimag(tmp)));
+                    _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }
 }

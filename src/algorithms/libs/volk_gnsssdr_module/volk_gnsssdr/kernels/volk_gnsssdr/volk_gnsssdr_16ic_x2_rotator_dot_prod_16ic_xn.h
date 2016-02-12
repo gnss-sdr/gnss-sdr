@@ -39,6 +39,7 @@
 
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/saturation_arithmetic.h>
+#include <math.h>
 
 #ifdef LV_HAVE_GENERIC
 /*!

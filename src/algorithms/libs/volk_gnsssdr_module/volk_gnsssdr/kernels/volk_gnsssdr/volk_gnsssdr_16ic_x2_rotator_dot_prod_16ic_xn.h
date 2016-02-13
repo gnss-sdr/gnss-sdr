@@ -272,7 +272,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
     realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
     imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
-    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
+    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, result;
 
     mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
     mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
@@ -344,10 +344,10 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
                 {
                     a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 
-                    c = _mm_mullo_epi16 (a, b); // a3.i*b3.i, a3.r*b3.r, ....
+                    c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
-                    c_sr = _mm_srli_si128 (c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
-                    real = _mm_subs_epi16 (c, c_sr);
+                    c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                    real = _mm_subs_epi16(c, c_sr);
 
                     b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
                     a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
@@ -555,7 +555,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 
             (*phase) = lv_cmake((float32_t)__phase_real[0], (float32_t)__phase_imag[0]);
         }
-
 
     for (unsigned int n = neon_iters * 4; n < num_points; n++)
         {

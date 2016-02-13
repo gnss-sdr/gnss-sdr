@@ -428,7 +428,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 
             lv_32fc_t phase2 = (lv_32fc_t)(*phase) * phase_inc;
             lv_32fc_t phase3 = phase2 * phase_inc;
-            lv_32fc_t phase4 = ___phase4;
+            lv_32fc_t phase4 = phase3 * phase_inc;;
 
             __VOLK_ATTR_ALIGNED(16) float32_t __phase_real[4] = { lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4) };
             __VOLK_ATTR_ALIGNED(16) float32_t __phase_imag[4] = { lv_cimag((*phase)), lv_cimag(phase2), lv_cimag(phase3), lv_cimag(phase4) };

@@ -1,12 +1,4 @@
-*~
-.*.swp
-docs/doxygen/Doxyfile
-docs/html
-docs/latex
-docs/GNSS-SDR_manual.pdf
-src/tests/data/output.dat
-thirdparty/
-.project
-.cproject
-/install
-/.DS_Store
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore

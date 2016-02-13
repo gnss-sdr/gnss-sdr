@@ -520,7 +520,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-
+                            __builtin_prefetch(&_in_a[n_vec][number*4] + 8);
                             // multiply the real*real and imag*imag to get real result
                             // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r
                             tmp_real16.val[0] = vmul_s16(a_val.val[0], tmp16.val[0]);

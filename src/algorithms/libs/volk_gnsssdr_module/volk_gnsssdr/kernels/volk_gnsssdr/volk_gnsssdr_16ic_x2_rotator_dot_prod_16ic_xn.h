@@ -371,7 +371,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
 
             _mm_storeu_si128((__m128i*)dotProductVector, result); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
-            for (int i = 0; i<4; ++i)
+            for (int i = 0; i < 4; ++i)
                 {
                     dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
                             sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
@@ -404,6 +404,16 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
+/*!
+ \brief Rotates and multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
+ \param[out]    result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
+ \param[in]     in_common     Pointer to one of the vectors to be rotated, multiplied and accumulated (reference vector)
+ \param[in]     phase_inc     Phase increment = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad))
+ \param[in,out] phase         Initial / final phase
+ \param[in]     in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
+ \param[in]     num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
+ \param[in]     num_points    The Number of complex values to be multiplied together, accumulated and stored into result
+ */
 static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     const unsigned int neon_iters = num_points / 4;
@@ -428,7 +438,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 
             lv_32fc_t phase2 = (lv_32fc_t)(*phase) * phase_inc;
             lv_32fc_t phase3 = phase2 * phase_inc;
-            lv_32fc_t phase4 = phase3 * phase_inc;;
+            lv_32fc_t phase4 = phase3 * phase_inc;
 
             __VOLK_ATTR_ALIGNED(16) float32_t __phase_real[4] = { lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4) };
             __VOLK_ATTR_ALIGNED(16) float32_t __phase_imag[4] = { lv_cimag((*phase)), lv_cimag(phase2), lv_cimag(phase3), lv_cimag(phase4) };

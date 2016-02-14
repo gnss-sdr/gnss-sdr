@@ -449,18 +449,16 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
             float32x4_t _phase_real = vld1q_f32(__phase_real);
             float32x4_t _phase_imag = vld1q_f32(__phase_imag);
 
-            int16x4x2_t a_val, c_val;
+            int16x4x2_t a_val, b_val, c_val;
             __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
             float32x4_t half = vdupq_n_f32(0.5f);
             int16x4x2_t tmp16;
             int32x4x2_t tmp32i;
-            float32x4x2_t tmp32f, tmp_real, tmp_imag;
+            float32x4x2_t tmp32f, tmp32_real, tmp32_imag;
             float32x4_t sign, PlusHalf, Round;
 
             int16x4x2_t* accumulator;
             accumulator = (int16x4x2_t*)calloc(num_a_vectors, sizeof(int16x4x2_t));
-
-            int16x4x2_t tmp_real16, tmp_imag16;
 
             for(int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
@@ -509,32 +507,32 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     tmp16.val[1] = vqmovn_s32(tmp32i.val[1]);
 
                     /* compute next four phases */
-                    tmp_real.val[0] = vmulq_f32(_phase_real, _phase4_real);
-                    tmp_real.val[1] = vmulq_f32(_phase_imag, _phase4_imag);
-                    tmp_imag.val[0] = vmulq_f32(_phase_real, _phase4_imag);
-                    tmp_imag.val[1] = vmulq_f32(_phase_imag, _phase4_real);
+                    tmp32_real.val[0] = vmulq_f32(_phase_real, _phase4_real);
+                    tmp32_real.val[1] = vmulq_f32(_phase_imag, _phase4_imag);
+                    tmp32_imag.val[0] = vmulq_f32(_phase_real, _phase4_imag);
+                    tmp32_imag.val[1] = vmulq_f32(_phase_imag, _phase4_real);
 
-                    _phase_real = vsubq_f32(tmp_real.val[0], tmp_real.val[1]);
-                    _phase_imag = vaddq_f32(tmp_imag.val[0], tmp_imag.val[1]);
+                    _phase_real = vsubq_f32(tmp32_real.val[0], tmp32_real.val[1]);
+                    _phase_imag = vaddq_f32(tmp32_imag.val[0], tmp32_imag.val[1]);
 
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                             __builtin_prefetch(&_in_a[n_vec][number*4] + 8);
+
                             // multiply the real*real and imag*imag to get real result
                             // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r
-                            tmp_real16.val[0] = vmul_s16(a_val.val[0], tmp16.val[0]);
+                            b_val.val[0] = vmul_s16(a_val.val[0], tmp16.val[0]);
                             // a0i*b0i|a1i*b1i|a2i*b2i|a3i*b3i
-                            tmp_real16.val[1] = vmul_s16(a_val.val[1], tmp16.val[1]);
+                            b_val.val[1] = vmul_s16(a_val.val[1], tmp16.val[1]);
+                            c_val.val[0] = vsub_s16(b_val.val[0], b_val.val[1]);
 
                             // Multiply cross terms to get the imaginary result
                             // a0r*b0i|a1r*b1i|a2r*b2i|a3r*b3i
-                            tmp_imag16.val[0] = vmul_s16(a_val.val[0], tmp16.val[1]);
+                            b_val.val[0] = vmul_s16(a_val.val[0], tmp16.val[1]);
                             // a0i*b0r|a1i*b1r|a2i*b2r|a3i*b3r
-                            tmp_imag16.val[1] = vmul_s16(a_val.val[1], tmp16.val[0]);
-
-                            c_val.val[0] = vsub_s16(tmp_real16.val[0], tmp_real16.val[1]);
-                            c_val.val[1] = vadd_s16(tmp_imag16.val[0], tmp_imag16.val[1]);
+                            b_val.val[1] = vmul_s16(a_val.val[1], tmp16.val[0]);
+                            c_val.val[1] = vadd_s16(b_val.val[0], b_val.val[1]);
 
                             accumulator[n_vec].val[0] = vadd_s16(accumulator[n_vec].val[0], c_val.val[0]);
                             accumulator[n_vec].val[1] = vadd_s16(accumulator[n_vec].val[1], c_val.val[1]);

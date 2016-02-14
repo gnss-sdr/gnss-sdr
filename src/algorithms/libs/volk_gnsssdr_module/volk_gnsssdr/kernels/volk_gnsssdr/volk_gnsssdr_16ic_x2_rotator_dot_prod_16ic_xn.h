@@ -482,13 +482,13 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     tmp32f.val[1] = vcvtq_f32_s32(tmp32i.val[1]);
 
                     /* complex multiplication of four complex samples (float 32 bits each component) */
-                    tmp_real.val[0] = vmulq_f32(tmp32f.val[0], _phase_real);
-                    tmp_real.val[1] = vmulq_f32(tmp32f.val[1], _phase_imag);
-                    tmp_imag.val[0] = vmulq_f32(tmp32f.val[0], _phase_imag);
-                    tmp_imag.val[1] = vmulq_f32(tmp32f.val[1], _phase_real);
+                    tmp32_real.val[0] = vmulq_f32(tmp32f.val[0], _phase_real);
+                    tmp32_real.val[1] = vmulq_f32(tmp32f.val[1], _phase_imag);
+                    tmp32_imag.val[0] = vmulq_f32(tmp32f.val[0], _phase_imag);
+                    tmp32_imag.val[1] = vmulq_f32(tmp32f.val[1], _phase_real);
 
-                    tmp32f.val[0] = vsubq_f32(tmp_real.val[0], tmp_real.val[1]);
-                    tmp32f.val[1] = vaddq_f32(tmp_imag.val[0], tmp_imag.val[1]);
+                    tmp32f.val[0] = vsubq_f32(tmp32_real.val[0], tmp32_real.val[1]);
+                    tmp32f.val[1] = vaddq_f32(tmp32_imag.val[0], tmp32_imag.val[1]);
 
                     /* downcast results to int32 */
                     /* in __aarch64__ we can do that with vcvtaq_s32_f32(ret1); vcvtaq_s32_f32(ret2); */

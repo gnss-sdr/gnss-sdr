@@ -93,7 +93,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_generic(lv_16sc
  \param[in]     num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
  \param[in]     num_points    The Number of complex values to be multiplied together, accumulated and stored into result
  */
-static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
 
@@ -101,7 +101,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
 
     const lv_16sc_t** _in_a = in_a;
     const lv_16sc_t* _in_common = in_common;
-    lv_16sc_t* _out = out;
+    lv_16sc_t* _out = result;
 
     __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
@@ -113,7 +113,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
     realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
     imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
-    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
+    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, results;
 
     mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
     mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
@@ -208,9 +208,9 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
             realcacc[n_vec] = _mm_and_si128(realcacc[n_vec], mask_real);
             imagcacc[n_vec] = _mm_and_si128(imagcacc[n_vec], mask_imag);
 
-            result = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
+            results = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-            _mm_store_si128((__m128i*)dotProductVector, result); // Store the results back into the dot product vector
+            _mm_store_si128((__m128i*)dotProductVector, results); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
             for (int i = 0; i < 4; ++i)
                 {
@@ -255,7 +255,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
  \param[in]     num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
  \param[in]     num_points    The Number of complex values to be multiplied together, accumulated and stored into result
  */
-static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
 
@@ -263,7 +263,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
 
     const lv_16sc_t** _in_a = in_a;
     const lv_16sc_t* _in_common = in_common;
-    lv_16sc_t* _out = out;
+    lv_16sc_t* _out = result;
 
     __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
@@ -275,7 +275,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
     realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
     imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
-    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, result;
+    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, results;
 
     mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
     mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
@@ -370,9 +370,9 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
             realcacc[n_vec] = _mm_and_si128 (realcacc[n_vec], mask_real);
             imagcacc[n_vec] = _mm_and_si128 (imagcacc[n_vec], mask_imag);
 
-            result = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
+            results = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-            _mm_storeu_si128((__m128i*)dotProductVector, result); // Store the results back into the dot product vector
+            _mm_storeu_si128((__m128i*)dotProductVector, results); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
             for (int i = 0; i < 4; ++i)
                 {
@@ -417,13 +417,13 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
  \param[in]     num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
  \param[in]     num_points    The Number of complex values to be multiplied together, accumulated and stored into result
  */
-static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     const unsigned int neon_iters = num_points / 4;
 
     const lv_16sc_t** _in_a = in_a;
     const lv_16sc_t* _in_common = in_common;
-    lv_16sc_t* _out = out;
+    lv_16sc_t* _out = result;
 
     lv_16sc_t tmp16_, tmp;
     lv_32fc_t tmp32_;
@@ -561,13 +561,13 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 
     for (unsigned int n = neon_iters * 4; n < num_points; n++)
         {
-            tmp16_ = *_in_common++;
+            tmp16_ = in_common[n];
             tmp32_ = lv_cmake((float32_t)lv_creal(tmp16_), (float32_t)lv_cimag(tmp16_)) * (*phase);
             tmp16_ = lv_cmake((int16_t)rintf(lv_creal(tmp32_)), (int16_t)rintf(lv_cimag(tmp32_)));
             (*phase) *= phase_inc;
             for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
-                    tmp = tmp16_ * _in_a[n_vec][n];
+                    tmp = tmp16_ * in_a[n_vec][n];
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
                 }
         }

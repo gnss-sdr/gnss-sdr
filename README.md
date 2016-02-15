@@ -409,7 +409,7 @@ Install Armadillo and dependencies:
 $ brew tap homebrew/science
 $ brew install cmake hdf5 arpack superlu
 $ brew install armadillo
-$ brew install glog gflags
+$ brew install glog gflags gnutls
 ~~~~~~
 
 #### Build GNSS-SDR

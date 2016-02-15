@@ -78,7 +78,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* resu
  \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
  \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
  */
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
 
@@ -86,7 +86,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
 
     const lv_16sc_t** _in_a = in_a;
     const lv_16sc_t* _in_common = in_common;
-    lv_16sc_t* _out = out;
+    lv_16sc_t* _out = result;
 
     if (sse_iters > 0)
         {
@@ -100,7 +100,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
             realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
             imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
-            __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
+            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, results;
 
             mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
             mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
@@ -116,10 +116,10 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
                         {
                             a = _mm_load_si128((__m128i*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 
-                            c = _mm_mullo_epi16 (a, b); // a3.i*b3.i, a3.r*b3.r, ....
+                            c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
-                            c_sr = _mm_srli_si128 (c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
-                            real = _mm_subs_epi16 (c, c_sr);
+                            c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                            real = _mm_subs_epi16(c, c_sr);
 
                             b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
                             a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
@@ -129,23 +129,23 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
 
                             imag = _mm_adds_epi16(imag1, imag2);
 
-                            realcacc[n_vec] = _mm_adds_epi16 (realcacc[n_vec], real);
-                            imagcacc[n_vec] = _mm_adds_epi16 (imagcacc[n_vec], imag);
+                            realcacc[n_vec] = _mm_adds_epi16(realcacc[n_vec], real);
+                            imagcacc[n_vec] = _mm_adds_epi16(imagcacc[n_vec], imag);
 
                         }
                     _in_common += 4;
                 }
 
-            for (int n_vec=0;n_vec<num_a_vectors;n_vec++)
+            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
-                    realcacc[n_vec] = _mm_and_si128 (realcacc[n_vec], mask_real);
-                    imagcacc[n_vec] = _mm_and_si128 (imagcacc[n_vec], mask_imag);
+                    realcacc[n_vec] = _mm_and_si128(realcacc[n_vec], mask_real);
+                    imagcacc[n_vec] = _mm_and_si128(imagcacc[n_vec], mask_imag);
 
-                    result = _mm_or_si128 (realcacc[n_vec], imagcacc[n_vec]);
+                    results = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-                    _mm_store_si128((__m128i*)dotProductVector, result); // Store the results back into the dot product vector
+                    _mm_store_si128((__m128i*)dotProductVector, results); // Store the results back into the dot product vector
                     dotProduct = lv_cmake(0,0);
-                    for (int i = 0; i<4; ++i)
+                    for (int i = 0; i < 4; ++i)
                         {
                             dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
                                     sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
@@ -181,7 +181,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* out, 
  \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
  \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
  */
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
 
@@ -189,7 +189,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, 
 
     const lv_16sc_t** _in_a = in_a;
     const lv_16sc_t* _in_common = in_common;
-    lv_16sc_t* _out = out;
+    lv_16sc_t* _out = result;
 
     if (sse_iters > 0)
         {
@@ -203,7 +203,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, 
             realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
             imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
-            __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
+            __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, results;
 
             mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
             mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
@@ -219,10 +219,10 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, 
                         {
                             a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
 
-                            c = _mm_mullo_epi16 (a, b); // a3.i*b3.i, a3.r*b3.r, ....
+                            c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
-                            c_sr = _mm_srli_si128 (c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
-                            real = _mm_subs_epi16 (c, c_sr);
+                            c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                            real = _mm_subs_epi16(c, c_sr);
 
                             b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
                             a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
@@ -239,16 +239,16 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, 
                     _in_common += 4;
                 }
 
-            for (int n_vec=0;n_vec<num_a_vectors;n_vec++)
+            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     realcacc[n_vec] = _mm_and_si128(realcacc[n_vec], mask_real);
                     imagcacc[n_vec] = _mm_and_si128(imagcacc[n_vec], mask_imag);
 
-                    result = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
+                    results = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-                    _mm_storeu_si128((__m128i*)dotProductVector, result); // Store the results back into the dot product vector
+                    _mm_storeu_si128((__m128i*)dotProductVector, results); // Store the results back into the dot product vector
                     dotProduct = lv_cmake(0,0);
-                    for (int i = 0; i<4; ++i)
+                    for (int i = 0; i < 4; ++i)
                         {
                             dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
                                     sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
@@ -284,7 +284,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* out, 
  \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
  \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
  */
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* out, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
 
@@ -292,7 +292,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* out, co
 
     const lv_16sc_t** _in_a = in_a;
     const lv_16sc_t* _in_common = in_common;
-    lv_16sc_t* _out = out;
+    lv_16sc_t* _out = result;
 
     if (neon_iters > 0)
         {
@@ -319,7 +319,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* out, co
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                            //__builtin_prefetch(_in_a[n_vec] + 8);
+                            //__builtin_prefetch(&_in_a[n_vec][number*4] + 8);
 
                             // multiply the real*real and imag*imag to get real result
                             // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r

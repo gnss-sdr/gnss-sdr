@@ -150,7 +150,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
         }
 
     _mm_storeu_ps((float*)two_phase_acc, two_phase_acc_reg);
-    (*phase) = lv_cmake(two_phase_acc[0], two_phase_acc[0]);
+    (*phase) = two_phase_acc[0];
 
     for (unsigned int i = sse_iters * 4; i < num_points; ++i)
         {
@@ -247,7 +247,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
         }
 
     _mm_storeu_ps((float*)two_phase_acc, two_phase_acc_reg);
-    (*phase) = lv_cmake(two_phase_acc[0], two_phase_acc[0]);
+    (*phase) = two_phase_acc[0];
 
     for (unsigned int i = sse_iters * 4; i < num_points; ++i)
         {

@@ -528,7 +528,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     vst1q_f32((float32_t*)__phase_imag, _phase_imag);
 
                     //(*phase) = lv_cmake((float32_t)__phase_real[0], (float32_t)__phase_imag[0]);
-                    if(n<10 || n >= 8108) printf("neon phase %i: %f,%f\n", (1+number)*4,(float32_t)__phase_real[0],(float32_t)__phase_imag[0]);
+                    if((1+number)*4 <10 || (1+number)*4 >= 8108) printf("neon phase %i: %f,%f\n", (1+number)*4,(float32_t)__phase_real[0],(float32_t)__phase_imag[0]);
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg

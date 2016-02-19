@@ -139,9 +139,9 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_neon(lv_16s
     float rem_carrier_phase_in_rad = 0.345;
     float phase_step_rad = 0.123;
     lv_32fc_t phase[1];
-    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
+    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
-    phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
+    phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
 
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());

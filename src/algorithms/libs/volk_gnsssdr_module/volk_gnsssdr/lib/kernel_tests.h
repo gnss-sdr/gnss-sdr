@@ -59,9 +59,6 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
     volk_gnsssdr_test_params_t test_params_more_iters = volk_gnsssdr_test_params_t(test_params.tol(), test_params.scalar(),
                 test_params.vlen(), 100000, test_params.benchmark_mode(), test_params.kernel_regex());
 
-    volk_gnsssdr_test_params_t test_params_1_iter = volk_gnsssdr_test_params_t(test_params.tol(), test_params.scalar(),
-                   test_params.vlen(), 1, test_params.benchmark_mode(), test_params.kernel_regex());
-
     std::vector<volk_gnsssdr_test_case_t> test_cases = boost::assign::list_of
 
         (VOLK_INIT_TEST(volk_gnsssdr_8i_accumulator_s8i, test_params_more_iters))
@@ -84,7 +81,7 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerpuppet_16ic, volk_gnsssdr_16ic_resampler_16ic, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_resamplerxnpuppet_16ic, volk_gnsssdr_16ic_xn_resampler_16ic_xn, test_params))
         (VOLK_INIT_PUPP(volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_x2_dot_prod_16ic_xn, test_params))
-        (VOLK_INIT_PUPP(volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn, test_params_1_iter))
+        (VOLK_INIT_PUPP(volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic, volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn, test_params))
         ;
 
     return test_cases;

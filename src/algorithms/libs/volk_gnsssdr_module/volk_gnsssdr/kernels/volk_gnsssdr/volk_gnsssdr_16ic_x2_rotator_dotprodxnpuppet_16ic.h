@@ -46,7 +46,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_generic(lv_
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
     float rem_carrier_phase_in_rad = 0.345;
-    float phase_step_rad = 0.001;
+    float phase_step_rad = 0.123;
     lv_32fc_t phase[1];
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
@@ -75,7 +75,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_a_sse3(lv_1
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
     float rem_carrier_phase_in_rad = 0.345;
-    float phase_step_rad = 0.001;
+    float phase_step_rad = 0.123;
     lv_32fc_t phase[1];
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];

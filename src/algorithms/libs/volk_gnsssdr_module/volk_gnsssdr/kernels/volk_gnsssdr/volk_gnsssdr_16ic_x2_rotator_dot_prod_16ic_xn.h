@@ -43,7 +43,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/saturation_arithmetic.h>
 #include <math.h>
-#include <stdio.h>
+//#include <stdio.h>
 
 #ifdef LV_HAVE_GENERIC
 /*!
@@ -66,7 +66,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_generic(lv_16sc
         }
     for (unsigned int n = 0; n < num_points; n++)
         {
-            tmp16 = *in_common++; if(n<10 || n >= 8108) printf("generic phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
+            tmp16 = *in_common++; //if(n<10 || n >= 8108) printf("generic phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
             tmp16 = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
             (*phase) *= phase_inc;
@@ -130,8 +130,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
     __attribute__((aligned(16))) lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
     two_phase_acc[1] = (*phase) * phase_inc;
-    printf("a_sse phase %i: %f,%f\n", 0,lv_creal(two_phase_acc[0]),lv_cimag(two_phase_acc[0]));
-    printf("a_sse phase %i: %f,%f\n", 1,lv_creal(two_phase_acc[1]),lv_cimag(two_phase_acc[1]));
     two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
     __m128 yl, yh, tmp1, tmp2, tmp3;
     lv_16sc_t tmp16;
@@ -232,7 +230,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
 
     for(unsigned int n  = sse_iters * 4; n < num_points; n++)
         {
-            tmp16 = in_common[n];  printf("a_sse phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
+            tmp16 = in_common[n];  //printf("a_sse phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
             tmp16 = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
             (*phase) *= phase_inc;
@@ -527,8 +525,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     vst1q_f32((float32_t*)__phase_real, _phase_real);
                     vst1q_f32((float32_t*)__phase_imag, _phase_imag);
 
-                    //(*phase) = lv_cmake((float32_t)__phase_real[0], (float32_t)__phase_imag[0]);
-                    if((1+number)*4 <10 || (1+number)*4 >= 8108) printf("neon phase %i: %f,%f\n", (1+number)*4,(float32_t)__phase_real[0],(float32_t)__phase_imag[0]);
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
@@ -573,7 +569,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 
     for (unsigned int n = neon_iters * 4; n < num_points; n++)
         {
-            tmp16_ = in_common[n];  printf("neon phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
+            tmp16_ = in_common[n];  //printf("neon phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
             tmp32_ = lv_cmake((float32_t)lv_creal(tmp16_), (float32_t)lv_cimag(tmp16_)) * (*phase);
             tmp16_ = lv_cmake((int16_t)rintf(lv_creal(tmp32_)), (int16_t)rintf(lv_cimag(tmp32_)));
             (*phase) *= phase_inc;

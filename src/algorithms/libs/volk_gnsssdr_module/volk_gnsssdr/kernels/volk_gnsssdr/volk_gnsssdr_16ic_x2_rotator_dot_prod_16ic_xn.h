@@ -390,8 +390,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
     free(imagcacc);
 
     _mm_storeu_ps((float*)two_phase_acc, two_phase_acc_reg);
-    (*phase) = two_phase_acc[0];//lv_cmake(two_phase_acc[0], two_phase_acc[1]);
-
+    (*phase) = two_phase_acc[0];
 
     for(unsigned int n  = sse_iters * 4; n < num_points; n++)
         {

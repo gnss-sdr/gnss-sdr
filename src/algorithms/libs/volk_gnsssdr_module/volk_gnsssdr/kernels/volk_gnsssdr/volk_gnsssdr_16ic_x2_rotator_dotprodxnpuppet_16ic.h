@@ -37,8 +37,7 @@
 
 #include "volk_gnsssdr/volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn.h"
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
-//#include <volk_gnsssdr/volk_gnsssdr_complex.h>
-//#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string.h>
 
 #ifdef LV_HAVE_GENERIC

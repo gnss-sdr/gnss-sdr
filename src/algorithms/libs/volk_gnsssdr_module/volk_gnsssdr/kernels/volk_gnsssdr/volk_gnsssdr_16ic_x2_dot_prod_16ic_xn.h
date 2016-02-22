@@ -302,7 +302,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
 
             //todo dyn mem reg
             int16x4x2_t* accumulator;
-            accumulator = (int16x4x2_t*)calloc(num_a_vectors, sizeof(int16x4x2_t));
+            accumulator = (int16x4x2_t*)malloc(num_a_vectors * sizeof(int16x4x2_t));
 
             int16x4x2_t tmp_real, tmp_imag;
 
@@ -333,11 +333,11 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
                             // a0i*b0r|a1i*b1r|a2i*b2r|a3i*b3r
                             tmp_imag.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
 
-                            c_val.val[0] = vsub_s16(tmp_real.val[0], tmp_real.val[1]);
-                            c_val.val[1] = vadd_s16(tmp_imag.val[0], tmp_imag.val[1]);
+                            c_val.val[0] = vqsub_s16(tmp_real.val[0], tmp_real.val[1]);
+                            c_val.val[1] = vqadd_s16(tmp_imag.val[0], tmp_imag.val[1]);
 
-                            accumulator[n_vec].val[0] = vadd_s16(accumulator[n_vec].val[0], c_val.val[0]);
-                            accumulator[n_vec].val[1] = vadd_s16(accumulator[n_vec].val[1], c_val.val[1]);
+                            accumulator[n_vec].val[0] = vqadd_s16(accumulator[n_vec].val[0], c_val.val[0]);
+                            accumulator[n_vec].val[1] = vqadd_s16(accumulator[n_vec].val[1], c_val.val[1]);
                         }
                     _in_common += 4;
                 }

@@ -37,8 +37,8 @@
 
 #include "volk_gnsssdr/volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn.h"
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
-#include <volk_gnsssdr/volk_gnsssdr_complex.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+//#include <volk_gnsssdr/volk_gnsssdr_complex.h>
+//#include <volk_gnsssdr/volk_gnsssdr.h>
 #include <string.h>
 
 #ifdef LV_HAVE_GENERIC
@@ -46,11 +46,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_generic(lv_
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
     float rem_carrier_phase_in_rad = 0.345;
-    float phase_step_rad = 0.123;
+    float phase_step_rad = 0.1;
     lv_32fc_t phase[1];
-    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
+    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
-    phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
+    phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
 
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
@@ -75,11 +75,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_a_sse3(lv_1
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
     float rem_carrier_phase_in_rad = 0.345;
-    float phase_step_rad = 0.123;
+    float phase_step_rad = 0.1;
     lv_32fc_t phase[1];
-    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
+    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
-    phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
+    phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
 
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
@@ -106,11 +106,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_u_sse3(lv_1
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
     float rem_carrier_phase_in_rad = 0.345;
-    float phase_step_rad = 0.123;
+    float phase_step_rad = 0.1;
     lv_32fc_t phase[1];
-    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
+    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
-    phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
+    phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
 
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());
@@ -137,11 +137,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_neon(lv_16s
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
     float rem_carrier_phase_in_rad = 0.345;
-    float phase_step_rad = 0.123;
+    float phase_step_rad = 0.1;
     lv_32fc_t phase[1];
-    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
+    phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
-    phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
+    phase_inc[0] = lv_cmake(cos(phase_step_rad), sin(phase_step_rad));
 
     int num_a_vectors = 3;
     lv_16sc_t** in_a = (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_a_vectors, volk_gnsssdr_get_alignment());

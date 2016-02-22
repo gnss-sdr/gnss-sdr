@@ -488,6 +488,12 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
             // Check http://en.wikipedia.org/wiki/List_of_Galileo_satellites
             switch ( PRN_ )
             {
+            case 8:
+                block_ = std::string("FOC-FM8"); // Galileo Full Operational Capability (FOC) satellite FM8, launched on December 17, 2015
+                break;
+            case 9:
+                block_ = std::string("FOC-FM9"); // Galileo Full Operational Capability (FOC) satellite FM9, launched on December 17, 2015
+                break;
             case 11 :
                 block_ = std::string("IOV-PFM"); //  PFM, the ProtoFlight Model (GSAT0101), launched from French Guiana at 10:30 GMT on October 21, 2011
                 break;
@@ -506,14 +512,14 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
             case 14 :
                 block_ = std::string("FOC-FM2"); // Galileo Full Operational Capability (FOC) satellite FM2, launched into incorrect orbit on August 22, 2014.
                 break;
-            case 26 :
-                block_ = std::string("FOC-FM3"); // Galileo Full Operational Capability (FOC) satellite FM3, launched on March 27, 2015.
-                break;
             case 22 :
                 block_ = std::string("FOC-FM4"); // Galileo Full Operational Capability (FOC) satellite FM4, launched on March 27, 2015.
                 break;
             case 24 :
                 block_ = std::string("FOC-FM5"); // Galileo Full Operational Capability (FOC) satellite FM5, launched on Sept. 11, 2015.
+                break;
+            case 26 :
+                block_ = std::string("FOC-FM3"); // Galileo Full Operational Capability (FOC) satellite FM3, launched on March 27, 2015.
                 break;
             case 30 :
                 block_ = std::string("FOC-FM6"); // Galileo Full Operational Capability (FOC) satellite FM6, launched on Sept. 11, 2015.

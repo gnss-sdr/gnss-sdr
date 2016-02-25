@@ -32,8 +32,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall")
 
 option(ENABLE_STRIP "Create a stripped volk_gnsssdr_profile binary (without shared libraries)" OFF)
 
-set(CMAKE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) #allows this to be a sub-project
-set(CMAKE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}) #allows this to be a sub-project
+set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) #allows this to be a sub-project
+set(PROJECT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}) #allows this to be a sub-project
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules) #location for custom "Modules"
 
 include(VolkBuildTypes)
@@ -119,13 +119,13 @@ endif(ENABLE_ORC)
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     configure_file(
-        ${CMAKE_SOURCE_DIR}/Doxyfile.in
-        ${CMAKE_BINARY_DIR}/Doxyfile
+        ${PROJECT_SOURCE_DIR}/Doxyfile.in
+        ${PROJECT_BINARY_DIR}/Doxyfile
     @ONLY)
 
     add_custom_target(doc
-        ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         COMMENT "Generating documentation with Doxygen" VERBATIM
     )
 endif(DOXYGEN_FOUND)
@@ -159,22 +159,22 @@ set(VOLK_LIBRARY_DIR   lib${LIB_SUFFIX})
 set(VOLK_INCLUDE_DIR   include)
 
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/kernels/volk_gnsssdr
+    DIRECTORY ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr
     DESTINATION include COMPONENT "volk_gnsssdr_devel"
     FILES_MATCHING PATTERN "*.h"
 )
 
 install(FILES
-    ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_prefs.h
-    ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_complex.h
-    ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_common.h
-    ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h
-    ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h
-    ${CMAKE_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr.h
-    ${CMAKE_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_cpu.h
-    ${CMAKE_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_config_fixed.h
-    ${CMAKE_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_typedefs.h
-    ${CMAKE_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_malloc.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_prefs.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_complex.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_common.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_avx_intrinsics.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_sse3_intrinsics.h
+    ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr.h
+    ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_cpu.h
+    ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_config_fixed.h
+    ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_typedefs.h
+    ${PROJECT_SOURCE_DIR}/include/volk_gnsssdr/volk_gnsssdr_malloc.h
     DESTINATION include/volk_gnsssdr
     COMPONENT "volk_gnsssdr_devel"
 )
@@ -205,7 +205,7 @@ endif(APPLE)
 # Create uninstall target
 ########################################################################
 configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in
+    ${PROJECT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
 @ONLY)
 
@@ -226,8 +226,8 @@ endif()
 ########################################################################
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/cmake/Modules/VolkConfigVersion.cmake.in
-  ${CMAKE_BINARY_DIR}/cmake/Modules/VolkConfigVersion.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/Modules/VolkConfigVersion.cmake.in
+  ${PROJECT_BINARY_DIR}/cmake/Modules/VolkConfigVersion.cmake
 @ONLY)
 
 

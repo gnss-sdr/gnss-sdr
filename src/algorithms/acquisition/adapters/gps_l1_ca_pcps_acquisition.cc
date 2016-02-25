@@ -65,6 +65,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
+    use_CFAR_algorithm_flag_=configuration_->property(role + ".use_CFAR_algorithm", true); //will be false in future versions
 
     if (!bit_transition_flag_)
         {
@@ -89,14 +90,14 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
             item_size_ = sizeof(lv_16sc_t);
             acquisition_sc_ = pcps_make_acquisition_sc(sampled_ms_, max_dwells_,
                     shift_resolution_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, queue_, dump_, dump_filename_);
+                    bit_transition_flag_, use_CFAR_algorithm_flag_,  queue_, dump_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
 
         }else{
                 item_size_ = sizeof(gr_complex);
                 acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
                         shift_resolution_, if_, fs_in_, code_length_, code_length_,
-                        bit_transition_flag_, queue_, dump_, dump_filename_);
+                        bit_transition_flag_, use_CFAR_algorithm_flag_, queue_, dump_, dump_filename_);
                 DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 

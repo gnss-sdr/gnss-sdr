@@ -143,6 +143,7 @@ private:
     unsigned int vector_length_;
     unsigned int code_length_;
     bool bit_transition_flag_;
+    bool use_CFAR_algorithm_flag_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;

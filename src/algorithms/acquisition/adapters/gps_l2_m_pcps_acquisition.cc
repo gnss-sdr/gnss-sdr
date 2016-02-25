@@ -62,6 +62,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
+    use_CFAR_algorithm_flag_=configuration_->property(role + ".use_CFAR_algorithm", true); //will be false in future versions
 
     if (!bit_transition_flag_)
         {
@@ -87,7 +88,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     item_size_ = sizeof(gr_complex);
     acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
             shift_resolution_, if_, fs_in_, code_length_, code_length_,
-            bit_transition_flag_, queue_, dump_, dump_filename_);
+            bit_transition_flag_, use_CFAR_algorithm_flag_, queue_, dump_, dump_filename_);
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
 

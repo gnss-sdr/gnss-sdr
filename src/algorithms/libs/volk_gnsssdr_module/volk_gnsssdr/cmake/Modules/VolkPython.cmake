@@ -111,7 +111,7 @@ file(TO_CMAKE_PATH ${VOLK_PYTHON_DIR} VOLK_PYTHON_DIR)
 # Usage: VOLK_UNIQUE_TARGET(<description> <dependencies list>)
 ########################################################################
 function(VOLK_UNIQUE_TARGET desc)
-    file(RELATIVE_PATH reldir ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+    file(RELATIVE_PATH reldir ${PROJECT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import re, hashlib
 unique = hashlib.md5('${reldir}${ARGN}').hexdigest()[:5]
 print(re.sub('\\W', '_', '${desc} ${reldir} ' + unique))"
@@ -163,13 +163,13 @@ function(VOLK_PYTHON_INSTALL)
         #the command to generate the pyc files
         add_custom_command(
             DEPENDS ${pysrcfiles} OUTPUT ${pycfiles}
-            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/python_compile_helper.py ${pysrcfiles} ${pycfiles}
+            COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/python_compile_helper.py ${pysrcfiles} ${pycfiles}
         )
 
         #the command to generate the pyo files
         add_custom_command(
             DEPENDS ${pysrcfiles} OUTPUT ${pyofiles}
-            COMMAND ${PYTHON_EXECUTABLE} -O ${CMAKE_BINARY_DIR}/python_compile_helper.py ${pysrcfiles} ${pyofiles}
+            COMMAND ${PYTHON_EXECUTABLE} -O ${PROJECT_BINARY_DIR}/python_compile_helper.py ${pysrcfiles} ${pyofiles}
         )
 
         #create install rule and add generated files to target list
@@ -192,7 +192,7 @@ function(VOLK_PYTHON_INSTALL)
         foreach(pyfile ${VOLK_PYTHON_INSTALL_PROGRAMS})
             get_filename_component(pyfile_name ${pyfile} NAME)
             get_filename_component(pyfile ${pyfile} ABSOLUTE)
-            string(REPLACE "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" pyexefile "${pyfile}.exe")
+            string(REPLACE "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}" pyexefile "${pyfile}.exe")
             list(APPEND python_install_gen_targets ${pyexefile})
 
             get_filename_component(pyexefile_path ${pyexefile} PATH)
@@ -227,7 +227,7 @@ endfunction(VOLK_PYTHON_INSTALL)
 ########################################################################
 # Write the python helper script that generates byte code files
 ########################################################################
-file(WRITE ${CMAKE_BINARY_DIR}/python_compile_helper.py "
+file(WRITE ${PROJECT_BINARY_DIR}/python_compile_helper.py "
 import sys, py_compile
 files = sys.argv[1:]
 srcs, gens = files[:len(files)/2], files[len(files)/2:]

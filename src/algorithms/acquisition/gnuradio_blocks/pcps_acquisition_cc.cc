@@ -333,6 +333,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
                     size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
                     volk_32f_index_max_16u(&indext, d_magnitude, effective_fft_size);
+                	magt = d_magnitude[indext];
 
                     if (d_use_CFAR_algorithm_flag==true)
                     {

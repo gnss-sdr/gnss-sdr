@@ -41,7 +41,7 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include "correlator.h"
+#include "cpu_multicorrelator.h"
 
 class galileo_e1_dll_pll_veml_tracking_cc;
 
@@ -123,17 +123,16 @@ private:
     long d_if_freq;
     long d_fs_in;
 
+    //Integration period in samples
+    int d_correlation_length_samples;
+    int d_n_correlator_taps;
     double d_early_late_spc_chips;
     double d_very_early_late_spc_chips;
 
     gr_complex* d_ca_code;
-
-    gr_complex* d_very_early_code;
-    gr_complex* d_early_code;
-    gr_complex* d_prompt_code;
-    gr_complex* d_late_code;
-    gr_complex* d_very_late_code;
-    gr_complex* d_carr_sign;
+    float* d_local_code_shift_chips;
+    gr_complex* d_correlator_outs;
+    cpu_multicorrelator multicorrelator_cpu;
 
     gr_complex *d_Very_Early;
     gr_complex *d_Early;
@@ -152,9 +151,6 @@ private:
     // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
-
-    // correlator
-    Correlator d_correlator;
 
     // tracking vars
     double d_code_freq_chips;

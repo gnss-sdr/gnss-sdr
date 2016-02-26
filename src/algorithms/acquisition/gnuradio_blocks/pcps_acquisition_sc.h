@@ -67,7 +67,7 @@ pcps_acquisition_sc_sptr
 pcps_make_acquisition_sc(unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
-                         bool bit_transition_flag,
+                         bool bit_transition_flag, bool use_CFAR_algorithm_flag,
                          gr::msg_queue::sptr queue, bool dump,
                          std::string dump_filename);
 
@@ -84,19 +84,21 @@ private:
     pcps_make_acquisition_sc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
-            bool bit_transition_flag,
+            bool bit_transition_flag, bool use_CFAR_algorithm_flag,
             gr::msg_queue::sptr queue, bool dump,
             std::string dump_filename);
 
     pcps_acquisition_sc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
-            bool bit_transition_flag,
+            bool bit_transition_flag, bool use_CFAR_algorithm_flag,
             gr::msg_queue::sptr queue, bool dump,
             std::string dump_filename);
 
-    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
-            int doppler_offset);
+    void update_local_carrier(gr_complex* carrier_vector,
+    		int correlator_length_samples,
+    		float freq);
+
 
     long d_fs_in;
     long d_freq;
@@ -126,6 +128,7 @@ private:
     float d_input_power;
     float d_test_statistics;
     bool d_bit_transition_flag;
+    bool d_use_CFAR_algorithm_flag;
     gr::msg_queue::sptr d_queue;
     concurrent_queue<int> *d_channel_internal_queue;
     std::ofstream d_dump_file;

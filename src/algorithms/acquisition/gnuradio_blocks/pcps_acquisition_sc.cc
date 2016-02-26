@@ -41,6 +41,8 @@
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <gnuradio/fxpt.h>  // fixed point sine and cosine
+#include "GPS_L1_CA.h" //GPS_TWO_PI
 
 using google::LogMessage;
 
@@ -48,21 +50,21 @@ pcps_acquisition_sc_sptr pcps_make_acquisition_sc(
                                  unsigned int sampled_ms, unsigned int max_dwells,
                                  unsigned int doppler_max, long freq, long fs_in,
                                  int samples_per_ms, int samples_per_code,
-                                 bool bit_transition_flag,
+                                 bool bit_transition_flag, bool use_CFAR_algorithm_flag,
                                  gr::msg_queue::sptr queue, bool dump,
                                  std::string dump_filename)
 {
 
     return pcps_acquisition_sc_sptr(
             new pcps_acquisition_sc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                                     samples_per_code, bit_transition_flag, queue, dump, dump_filename));
+                                     samples_per_code, bit_transition_flag, use_CFAR_algorithm_flag, queue, dump, dump_filename));
 }
 
 pcps_acquisition_sc::pcps_acquisition_sc(
                          unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
-                         bool bit_transition_flag,
+                         bool bit_transition_flag, bool use_CFAR_algorithm_flag,
                          gr::msg_queue::sptr queue, bool dump,
                          std::string dump_filename) :
     gr::block("pcps_acquisition_sc",
@@ -86,6 +88,7 @@ pcps_acquisition_sc::pcps_acquisition_sc(
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
     d_bit_transition_flag = bit_transition_flag;
+    d_use_CFAR_algorithm_flag=use_CFAR_algorithm_flag;
     d_threshold = 0.0;
     d_doppler_step = 250;
     d_code_phase = 0;
@@ -172,6 +175,22 @@ void pcps_acquisition_sc::set_local_code(std::complex<float> * code)
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }
 
+void pcps_acquisition_sc::update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq)
+{
+    float sin_f, cos_f;
+    float phase_step_rad= GPS_TWO_PI * freq/ static_cast<float>(d_fs_in);
+
+    int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
+    int phase_rad_i = 0;
+
+    for(int i = 0; i < correlator_length_samples; i++)
+        {
+            gr::fxpt::sincos(phase_rad_i, &sin_f, &cos_f);
+            carrier_vector[i] = gr_complex(cos_f, -sin_f);
+            phase_rad_i += phase_step_rad_i;
+        }
+}
+
 void pcps_acquisition_sc::init()
 {
     d_gnss_synchro->Acq_delay_samples = 0.0;
@@ -189,7 +208,7 @@ void pcps_acquisition_sc::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            complex_exp_gen(d_grid_doppler_wipeoffs[doppler_index], -d_freq - doppler, d_fs_in, d_fft_size);
+            update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, d_freq + doppler);
         }
 }
 
@@ -273,11 +292,9 @@ int pcps_acquisition_sc::general_work(int noutput_items,
 
             float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
 
-            d_input_power = 0.0;
             d_mag = 0.0;
 
             d_sample_counter += d_fft_size; // sample counter
-
             d_well_count++;
 
             DLOG(INFO) << "Channel: " << d_channel
@@ -286,10 +303,13 @@ int pcps_acquisition_sc::general_work(int noutput_items,
                     << d_threshold << ", doppler_max: " << d_doppler_max
                     << ", doppler_step: " << d_doppler_step;
 
-            // 1- Compute the input signal power estimation
-            volk_32fc_magnitude_squared_32f(d_magnitude, d_in_32fc, d_fft_size);
-            volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
-            d_input_power /= static_cast<float>(d_fft_size);
+            if (d_use_CFAR_algorithm_flag==true)
+            {
+                // 1- (optional) Compute the input signal power estimation
+            	volk_32fc_magnitude_squared_32f(d_magnitude, d_in_32fc, d_fft_size);
+            	volk_32f_accumulator_s32f(&d_input_power, d_magnitude, d_fft_size);
+                d_input_power /= static_cast<float>(d_fft_size);
+            }
             // 2- Doppler frequency search loop
             for (unsigned int doppler_index=0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
@@ -316,14 +336,26 @@ int pcps_acquisition_sc::general_work(int noutput_items,
                     size_t offset = ( d_bit_transition_flag ? effective_fft_size : 0 );
                     volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf() + offset, effective_fft_size);
                     volk_32f_index_max_16u(&indext, d_magnitude, effective_fft_size);
+                	magt = d_magnitude[indext];
 
-                    // Normalize the maximum value to correct the scale factor introduced by FFTW
-                    magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
+                    if (d_use_CFAR_algorithm_flag==true)
+                    {
+                        // Normalize the maximum value to correct the scale factor introduced by FFTW
+                        magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
+                    }
+
 
                     // 4- record the maximum peak and the associated synchronization parameters
                     if (d_mag < magt)
                         {
                             d_mag = magt;
+
+                            if (d_use_CFAR_algorithm_flag==false)
+                            {
+								// Search grid noise floor approximation for this doppler line
+								volk_32f_accumulator_s32f(&d_input_power, d_magnitude, effective_fft_size);
+								d_input_power=(d_input_power-d_mag)/(effective_fft_size-1);
+                            }
 
                             // In case that d_bit_transition_flag = true, we compare the potentially
                             // new maximum test statistics (d_mag/d_input_power) with the value in
@@ -332,6 +364,7 @@ int pcps_acquisition_sc::general_work(int noutput_items,
                             // the maximum test statistics in the previous dwell is greater than
                             // current d_mag/d_input_power). Note that d_test_statistics is not
                             // restarted between consecutive dwells in multidwell operation.
+
                             if (d_test_statistics < (d_mag / d_input_power) || !d_bit_transition_flag)
                             {
                                 d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % d_samples_per_code);
@@ -339,8 +372,9 @@ int pcps_acquisition_sc::general_work(int noutput_items,
                                 d_gnss_synchro->Acq_samplestamp_samples = d_sample_counter;
 
                                 // 5- Compute the test statistics and compare to the threshold
-                                //d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
                                 d_test_statistics = d_mag / d_input_power;
+                                //std::cout<<"d_input_power="<<d_input_power<<" d_test_statistics="<<d_test_statistics<<" d_gnss_synchro->Acq_doppler_hz ="<<d_gnss_synchro->Acq_doppler_hz <<std::endl;
+
                             }
                         }
 
@@ -455,18 +489,3 @@ int pcps_acquisition_sc::general_work(int noutput_items,
     output_items.clear();  // removes a warning
     return noutput_items;
 }
-
-
-//void pcps_acquisition_sc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
-//{
-    //// COD:
-    //// For zero-padded case we need one extra code period
-    //if( d_bit_transition_flag )
-    //{
-        //ninput_items_required[0] = noutput_items*(d_samples_per_code * d_max_dwells + d_samples_per_code);
-    //}
-    //else
-    //{
-        //ninput_items_required[0] = noutput_items*d_fft_size*d_max_dwells;
-    //}
-//}

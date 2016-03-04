@@ -224,4 +224,5 @@ int main(int argc, char** argv)
 
     google::ShutDownCommandLineFlags();
     std::cout << "GNSS-SDR program ended." << std::endl;
+    return 0;
 }

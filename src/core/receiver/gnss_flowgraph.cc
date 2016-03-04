@@ -406,7 +406,11 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             }
         channels_.at(who)->set_signal(available_GNSS_signals_.front());
         available_GNSS_signals_.pop_front();
-
+        //todo: This is a provisional bug fix to avoid random channel state machine deadlock caused by an incorrect sequence of events
+        //      Correct sequence: start_acquisition() is triggered after the negative acquisition driven by the process_channel_messages() thread inside channel class
+        //      Incorrect sequence: due to thread concurrency, some times start_acquisition is triggered BEFORE the last negative_acquisition notification, thus producing a deadlock
+        //      a short delay here (5ms) apparently reduces the chances to enter in this deadlock
+        usleep(5000);
         channels_.at(who)->start_acquisition();
 
         break;

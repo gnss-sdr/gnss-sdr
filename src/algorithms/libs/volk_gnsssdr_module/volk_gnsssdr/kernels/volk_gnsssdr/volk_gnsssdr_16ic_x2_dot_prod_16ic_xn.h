@@ -107,6 +107,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
                 {
                     // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     b = _mm_load_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    __builtin_prefetch(_in_common + 8);
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a = _mm_load_si128((__m128i*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
@@ -204,6 +205,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
                 {
                     // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     b = _mm_loadu_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    __builtin_prefetch(_in_common + 8);
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a = _mm_loadu_si128((__m128i*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg

@@ -140,6 +140,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
             // Phase rotation on operand in_common starts here:
             //printf("generic phase %i: %f,%f\n", n*4,lv_creal(*phase),lv_cimag(*phase));
             pa = _mm_set_ps((float)(lv_cimag(_in_common[1])), (float)(lv_creal(_in_common[1])), (float)(lv_cimag(_in_common[0])), (float)(lv_creal(_in_common[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
+            __builtin_prefetch(_in_common + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg); // Load yh with ci,ci,di,di
@@ -303,7 +304,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
     for(unsigned int number = 0; number < sse_iters; number++)
         {
             // Phase rotation on operand in_common starts here:
-
             pa = _mm_set_ps((float)(lv_cimag(_in_common[1])), (float)(lv_creal(_in_common[1])), (float)(lv_cimag(_in_common[0])), (float)(lv_creal(_in_common[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
             __builtin_prefetch(_in_common + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
@@ -378,7 +378,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
 
             a = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-            _mm_storeu_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
+            _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
             for (int i = 0; i < 4; ++i)
                 {
@@ -390,9 +390,8 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
     free(realcacc);
     free(imagcacc);
 
-    _mm_storeu_ps((float*)two_phase_acc, two_phase_acc_reg);
+    _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
-
 
     for(unsigned int n  = sse_iters * 4; n < num_points; n++)
         {

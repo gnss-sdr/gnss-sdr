@@ -92,25 +92,20 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
         {
             __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
-            //todo dyn mem reg
-
             __m128i* realcacc;
             __m128i* imagcacc;
 
             realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
             imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
-            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, results;
+            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag;
 
             mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
             mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
 
             for(unsigned int number = 0; number < sse_iters; number++)
                 {
-                    //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
-                    //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
-                    // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
-
+                    // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     b = _mm_load_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
@@ -121,13 +116,13 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
                             c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
                             real = _mm_subs_epi16(c, c_sr);
 
-                            b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
-                            a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
+                            c_sr = _mm_slli_si128(b, 2); // b3.r, b2.i ....
+                            c = _mm_mullo_epi16(a, c_sr); // a3.i*b3.r, ....
 
-                            imag1 = _mm_mullo_epi16(a, b_sl); // a3.i*b3.r, ....
-                            imag2 = _mm_mullo_epi16(b, a_sl); // b3.i*a3.r, ....
+                            c_sr = _mm_slli_si128(a, 2); // a3.r, a2.i ....
+                            imag = _mm_mullo_epi16(b, c_sr); // b3.i*a3.r, ....
 
-                            imag = _mm_adds_epi16(imag1, imag2);
+                            imag = _mm_adds_epi16(c, imag);
 
                             realcacc[n_vec] = _mm_adds_epi16(realcacc[n_vec], real);
                             imagcacc[n_vec] = _mm_adds_epi16(imagcacc[n_vec], imag);
@@ -141,9 +136,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
                     realcacc[n_vec] = _mm_and_si128(realcacc[n_vec], mask_real);
                     imagcacc[n_vec] = _mm_and_si128(imagcacc[n_vec], mask_imag);
 
-                    results = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
+                    a = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-                    _mm_store_si128((__m128i*)dotProductVector, results); // Store the results back into the dot product vector
+                    _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
                     dotProduct = lv_cmake(0,0);
                     for (int i = 0; i < 4; ++i)
                         {
@@ -166,7 +161,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
                             sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
             }
         }
-
 }
 #endif /* LV_HAVE_SSE2 */
 
@@ -195,25 +189,20 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
         {
             __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
-            //todo dyn mem reg
-
             __m128i* realcacc;
             __m128i* imagcacc;
 
             realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
             imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
-            __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, results;
+            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag;
 
             mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
             mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
 
             for(unsigned int number = 0; number < sse_iters; number++)
                 {
-                    //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
-                    //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
-                    // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
-
+                    // b[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     b = _mm_loadu_si128((__m128i*)_in_common); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
@@ -224,13 +213,13 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
                             c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
                             real = _mm_subs_epi16(c, c_sr);
 
-                            b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
-                            a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
+                            c_sr = _mm_slli_si128(b, 2); // b3.r, b2.i ....
+                            c = _mm_mullo_epi16(a, c_sr); // a3.i*b3.r, ....
 
-                            imag1 = _mm_mullo_epi16(a, b_sl); // a3.i*b3.r, ....
-                            imag2 = _mm_mullo_epi16(b, a_sl); // b3.i*a3.r, ....
+                            c_sr = _mm_slli_si128(a, 2); // a3.r, a2.i ....
+                            imag = _mm_mullo_epi16(b, c_sr); // b3.i*a3.r, ....
 
-                            imag = _mm_adds_epi16(imag1, imag2);
+                            imag = _mm_adds_epi16(c, imag);
 
                             realcacc[n_vec] = _mm_adds_epi16(realcacc[n_vec], real);
                             imagcacc[n_vec] = _mm_adds_epi16(imagcacc[n_vec], imag);
@@ -244,9 +233,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
                     realcacc[n_vec] = _mm_and_si128(realcacc[n_vec], mask_real);
                     imagcacc[n_vec] = _mm_and_si128(imagcacc[n_vec], mask_imag);
 
-                    results = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
+                    a = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-                    _mm_storeu_si128((__m128i*)dotProductVector, results); // Store the results back into the dot product vector
+                    _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
                     dotProduct = lv_cmake(0,0);
                     for (int i = 0; i < 4; ++i)
                         {
@@ -269,7 +258,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
                             sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
             }
         }
-
 }
 #endif /* LV_HAVE_SSE2 */
 

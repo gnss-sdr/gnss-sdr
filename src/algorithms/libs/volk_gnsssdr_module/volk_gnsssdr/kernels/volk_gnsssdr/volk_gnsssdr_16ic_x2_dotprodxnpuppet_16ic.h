@@ -85,6 +85,9 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_a_sse2(lv_16sc_t* r
 
 #endif // SSE2
 
+#define WORKAROUND 1
+#ifdef WORKAROUND
+
 #ifdef LV_HAVE_SSE2
 
 static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_u_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
@@ -105,7 +108,7 @@ static inline void volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic_u_sse2(lv_16sc_t* r
     }
     volk_gnsssdr_free(in_a);
 }
-
+#endif
 #endif // SSE2
 
 #ifdef LV_HAVE_NEON

@@ -38,6 +38,7 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "gnss_synchro.h"
@@ -78,6 +79,9 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
         gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+	// create asynchronous message ports
+	this->message_port_register_out(pmt::mp("preamble_index"));
+
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -178,6 +182,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
 
     // TODO Optimize me!
+    if (in[0][d_samples_per_bit*8 - 1].symbol_integration_enabled==false)
+    {
     //******* preamble correlation ********
     for (unsigned int i = 0; i < d_samples_per_bit*8; i++)
         {
@@ -190,20 +196,37 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     corr_value += d_preambles_symbols[i];
                 }
         }
+    }else{
+        //******* preamble correlation ********
+        for (unsigned int i = 0; i < d_samples_per_bit*8; i++)
+            {
+        		if (in[0][i].Flag_valid_symbol_output==true)
+        		{
+					if (in[0][i].Prompt_I < 0)	// symbols clipping
+						{
+							corr_value -= d_preambles_symbols[i]*d_samples_per_bit;
+						}
+					else
+						{
+							corr_value += d_preambles_symbols[i]*d_samples_per_bit;
+						}
+        		}
+            }
+    }
     d_flag_preamble = false;
 
     //******* frame sync ******************
-    if (abs(corr_value) >= 160)
+    if (abs(corr_value) == 160)
         {
             //TODO: Rewrite with state machine
             if (d_stat == 0)
                 {
                     d_GPS_FSM.Event_gps_word_preamble();
                     d_preamble_index = d_sample_counter;//record the preamble sample stamp
-                    LOG(INFO) << "Preamble detection for SAT " << this->d_satellite;
+                    DLOG(INFO)  << "Preamble detection for SAT " << this->d_satellite;
                     d_symbol_accumulator = 0; //sync the symbol to bits integrator
                     d_symbol_accumulator_counter = 0;
-                    d_frame_bit_index = 8;
+                    d_frame_bit_index = 7;
                     d_stat = 1; // enter into frame pre-detection status
                 }
             else if (d_stat == 1) //check 6 seconds of preamble separation
@@ -215,20 +238,24 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                             d_flag_preamble = true;
                             d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
                             d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;// - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
-
+                            d_frame_bit_index = 7;
                             if (!d_flag_frame_sync)
                                 {
+                            	//send asynchronous message to tracking to inform of frame sync and extend correlation time
+                                pmt::pmt_t value = pmt::from_long(d_preamble_index-1);
+                                this->message_port_pub(pmt::mp("preamble_index"),value);
+
                                     d_flag_frame_sync = true;
                                     if (corr_value < 0)
                                         {
                                             flag_PLL_180_deg_phase_locked = true; //PLL is locked to opposite phase!
-                                            LOG(INFO) << " PLL in opposite phase for Sat "<< this->d_satellite.get_PRN();
+                                            DLOG(INFO)  << " PLL in opposite phase for Sat "<< this->d_satellite.get_PRN();
                                         }
                                     else
                                         {
                                             flag_PLL_180_deg_phase_locked = false;
                                         }
-                                    LOG(INFO) << " Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
+                                    DLOG(INFO)  << " Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
                                 }
                         }
                 }
@@ -240,7 +267,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     preamble_diff = d_sample_counter - d_preamble_index;
                     if (preamble_diff > 6001)
                         {
-                            LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff;
+                            DLOG(INFO)  << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff;
                             d_stat = 0; //lost of frame sync
                             d_flag_frame_sync = false;
                             flag_TOW_set = false;
@@ -249,16 +276,29 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         }
 
     //******* SYMBOL TO BIT *******
-    d_symbol_accumulator += in[0][d_samples_per_bit*8 - 1].Prompt_I; // accumulate the input value in d_symbol_accumulator
-    d_symbol_accumulator_counter++;
-    if (d_symbol_accumulator_counter == 20)
+    if (in[0][d_samples_per_bit*8 - 1].Flag_valid_symbol_output==true)
+    {
+	    if (in[0][d_samples_per_bit*8 - 1].symbol_integration_enabled==true)
+	    {
+	    	// extended correlation to bit period is enabled in tracking!
+	    	// 1 symbol = 1 bit
+		    d_symbol_accumulator = in[0][d_samples_per_bit*8 - 1].Prompt_I; // accumulate the input value in d_symbol_accumulator
+	    	d_symbol_accumulator_counter=20;
+	    }else{
+	    	// 20 symbols = 1 bit: do symbols integration in telemetry decoder
+		    d_symbol_accumulator += in[0][d_samples_per_bit*8 - 1].Prompt_I; // accumulate the input value in d_symbol_accumulator
+	    	d_symbol_accumulator_counter++;
+	    }
+    }
+
+    if (d_symbol_accumulator_counter == 20 )
         {
-            if (d_symbol_accumulator > 0)
-                { //symbol to bit
-                    d_GPS_frame_4bytes += 1; //insert the telemetry bit in LSB
-                }
-            d_symbol_accumulator = 0;
-            d_symbol_accumulator_counter = 0;
+			if (d_symbol_accumulator > 0)
+				{ //symbol to bit
+					d_GPS_frame_4bytes += 1; //insert the telemetry bit in LSB
+				}
+			d_symbol_accumulator = 0;
+			d_symbol_accumulator_counter = 0;
             //******* bits to words ******
             d_frame_bit_index++;
             if (d_frame_bit_index == 30)
@@ -302,6 +342,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 {
                     d_GPS_frame_4bytes <<= 1; //shift 1 bit left the telemetry word
                 }
+
+
         }
     // output the frame
     consume_each(1); //one by one

@@ -115,7 +115,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
     realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
     imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
-    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, results;
+    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl;
 
     mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
     mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
@@ -140,6 +140,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
             // Phase rotation on operand in_common starts here:
             //printf("generic phase %i: %f,%f\n", n*4,lv_creal(*phase),lv_cimag(*phase));
             pa = _mm_set_ps((float)(lv_cimag(_in_common[1])), (float)(lv_creal(_in_common[1])), (float)(lv_cimag(_in_common[0])), (float)(lv_creal(_in_common[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
+            __builtin_prefetch(_in_common + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg); // Load yh with ci,ci,di,di
@@ -200,8 +201,8 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
 
                     imag = _mm_adds_epi16(imag1, imag2);
 
-                    realcacc[n_vec] = _mm_adds_epi16 (realcacc[n_vec], real);
-                    imagcacc[n_vec] = _mm_adds_epi16 (imagcacc[n_vec], imag);
+                    realcacc[n_vec] = _mm_adds_epi16(realcacc[n_vec], real);
+                    imagcacc[n_vec] = _mm_adds_epi16(imagcacc[n_vec], imag);
                 }
         }
 
@@ -210,9 +211,9 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
             realcacc[n_vec] = _mm_and_si128(realcacc[n_vec], mask_real);
             imagcacc[n_vec] = _mm_and_si128(imagcacc[n_vec], mask_imag);
 
-            results = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
+            a = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-            _mm_store_si128((__m128i*)dotProductVector, results); // Store the results back into the dot product vector
+            _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
             for (int i = 0; i < 4; ++i)
                 {
@@ -280,7 +281,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
     realcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
     imagcacc = (__m128i*)calloc(num_a_vectors, sizeof(__m128i)); //calloc also sets memory to 0
 
-    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, results;
+    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl;
 
     mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
     mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
@@ -303,8 +304,8 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
     for(unsigned int number = 0; number < sse_iters; number++)
         {
             // Phase rotation on operand in_common starts here:
-
             pa = _mm_set_ps((float)(lv_cimag(_in_common[1])), (float)(lv_creal(_in_common[1])), (float)(lv_cimag(_in_common[0])), (float)(lv_creal(_in_common[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
+            __builtin_prefetch(_in_common + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg); // Load yh with ci,ci,di,di
@@ -372,12 +373,12 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
 
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
-            realcacc[n_vec] = _mm_and_si128 (realcacc[n_vec], mask_real);
-            imagcacc[n_vec] = _mm_and_si128 (imagcacc[n_vec], mask_imag);
+            realcacc[n_vec] = _mm_and_si128(realcacc[n_vec], mask_real);
+            imagcacc[n_vec] = _mm_and_si128(imagcacc[n_vec], mask_imag);
 
-            results = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
+            a = _mm_or_si128(realcacc[n_vec], imagcacc[n_vec]);
 
-            _mm_storeu_si128((__m128i*)dotProductVector, results); // Store the results back into the dot product vector
+            _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
             for (int i = 0; i < 4; ++i)
                 {
@@ -389,7 +390,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
     free(realcacc);
     free(imagcacc);
 
-    _mm_storeu_ps((float*)two_phase_acc, two_phase_acc_reg);
+    _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
 
     for(unsigned int n  = sse_iters * 4; n < num_points; n++)
@@ -527,7 +528,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
-                            __builtin_prefetch(&_in_a[n_vec][number*4] + 8);
+                            //__builtin_prefetch(&_in_a[n_vec][number*4] + 8);
 
                             // multiply the real*real and imag*imag to get real result
                             // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r

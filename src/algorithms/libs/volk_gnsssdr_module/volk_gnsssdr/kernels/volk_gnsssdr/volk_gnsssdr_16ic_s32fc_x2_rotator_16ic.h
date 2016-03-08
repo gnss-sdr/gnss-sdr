@@ -103,6 +103,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
     for(unsigned int number = 0; number < sse_iters; number++)
         {
             a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
+            __builtin_prefetch(_in + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg); // Load yh with ci,ci,di,di
@@ -149,7 +150,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
             _out += 4;
         }
 
-    _mm_storeu_ps((float*)two_phase_acc, two_phase_acc_reg);
+    _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
 
     for (unsigned int i = sse_iters * 4; i < num_points; ++i)
@@ -199,6 +200,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
     for(unsigned int number = 0; number < sse_iters; number++)
         {
             a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
+            __builtin_prefetch(_in + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg); // Load yh with ci,ci,di,di
@@ -219,7 +221,6 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
             //next two samples
             _in += 2;
             a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
-            __builtin_prefetch(_in + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg); // Load yh with ci,ci,di,di

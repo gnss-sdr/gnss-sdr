@@ -106,7 +106,7 @@ macro(check_arch arch_name)
     set(flags ${ARGN})
     set(have_${arch_name} TRUE)
     foreach(flag ${flags})
-        if ( (${COMPILER_NAME} STREQUAL "MSVC") AND (${flag} STREQUAL "/arch:SSE2" OR ${flag} STREQUAL "/arch:SSE" ))
+        if (MSVC AND (${flag} STREQUAL "/arch:SSE2" OR ${flag} STREQUAL "/arch:SSE" ))
             # SSE/SSE2 is supported in MSVC since VS 2005 but flag not available when compiling 64-bit so do not check
         else()
             include(CheckCXXCompilerFlag)

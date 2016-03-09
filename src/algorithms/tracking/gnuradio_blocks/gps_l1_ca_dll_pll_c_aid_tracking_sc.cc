@@ -66,10 +66,12 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
         float early_late_space_chips)
 {
     return gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_sc(if_freq,
-            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
+            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_narrow_hz, dll_bw_narrow_hz, early_late_space_chips));
 }
 
 
@@ -94,6 +96,8 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
         float early_late_space_chips) :
         gr::block("gps_l1_ca_dll_pll_c_aid_tracking_sc", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -108,6 +112,10 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
     d_correlation_length_samples = static_cast<int>(d_vector_length);
 
     // Initialize tracking  ==========================================
+    d_pll_bw_hz=pll_bw_hz;
+    d_dll_bw_hz=dll_bw_hz;
+    d_pll_bw_narrow_hz=pll_bw_narrow_hz;
+    d_dll_bw_narrow_hz=dll_bw_narrow_hz;
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
     d_carrier_loop_filter.set_params(10.0, pll_bw_hz,2);
 

@@ -67,6 +67,8 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
                                    std::string dump_filename,
                                    float pll_bw_hz,
                                    float dll_bw_hz,
+                                   float pll_bw_narrow_hz,
+                                   float dll_bw_narrow_hz,
                                    float early_late_space_chips);
 
 
@@ -99,6 +101,8 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
+            float pll_bw_narrow_hz,
+            float dll_bw_narrow_hz,
             float early_late_space_chips);
 
     gps_l1_ca_dll_pll_c_aid_tracking_sc(long if_freq,
@@ -109,6 +113,8 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
+            float pll_bw_narrow_hz,
+            float dll_bw_narrow_hz,
             float early_late_space_chips);
 
     // tracking configuration vars
@@ -148,6 +154,10 @@ private:
     double d_acq_carrier_doppler_hz;
 
     // tracking vars
+    float d_dll_bw_hz;
+    float d_pll_bw_hz;
+    float d_dll_bw_narrow_hz;
+    float d_pll_bw_narrow_hz;
     double d_code_freq_chips;
     double d_code_phase_step_chips;
     double d_carrier_doppler_hz;

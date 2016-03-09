@@ -67,10 +67,12 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
         float early_late_space_chips)
 {
     return gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_cc(if_freq,
-            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips));
+            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz,pll_bw_narrow_hz, dll_bw_narrow_hz, early_late_space_chips));
 }
 
 
@@ -106,6 +108,8 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
         std::string dump_filename,
         float pll_bw_hz,
         float dll_bw_hz,
+        float pll_bw_narrow_hz,
+        float dll_bw_narrow_hz,
         float early_late_space_chips) :
         gr::block("gps_l1_ca_dll_pll_c_aid_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -129,6 +133,8 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
     // Initialize tracking  ==========================================
     d_pll_bw_hz=pll_bw_hz;
     d_dll_bw_hz=dll_bw_hz;
+    d_pll_bw_narrow_hz=pll_bw_narrow_hz;
+    d_dll_bw_narrow_hz=dll_bw_narrow_hz;
     d_code_loop_filter.set_DLL_BW(d_dll_bw_hz);
     d_carrier_loop_filter.set_params(10.0, d_pll_bw_hz,2);
 
@@ -394,8 +400,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 					current_synchro_data.symbol_integration_enabled=true;
 					// UPDATE INTEGRATION TIME
 	            	CURRENT_INTEGRATION_TIME_S = static_cast<double>(GPS_CA_TELEMETRY_SYMBOLS_PER_BIT)*GPS_L1_CA_CODE_PERIOD;
-				    d_code_loop_filter.set_DLL_BW(d_dll_bw_hz);
-				    d_carrier_loop_filter.set_params(10.0, d_pll_bw_hz/5,2);
+				    d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
+				    d_carrier_loop_filter.set_params(10.0, d_pll_bw_narrow_hz,2);
 					enable_dll_pll=true;
 
 				}else{

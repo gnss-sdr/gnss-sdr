@@ -1,0 +1,121 @@
+/*! \page concepts_terms_and_techniques Concepts, Terms, and Techniques
+
+This page is primarily a list of definitions and brief overview of successful
+techniques previously used to develop VOLK_GNSSSDR protokernels.
+
+## Definitions and Concepts
+
+### SIMD
+
+SIMD stands for Single Instruction Multiple Data. Leveraging SIMD instructions
+is the primary optimization in VOLK_GNSSSDR.
+
+### Architecture
+
+A VOLK_GNSSSDR architecture is normally called an Instruction Set Architecture (ISA).
+The architectures we target in VOLK_GNSSSDR usually have SIMD instructions.
+
+### Vector
+
+A vector in VOLK_GNSSSDR is the same as a C array. It sometimes, but not always
+coincides with the mathematical definition of a vector.
+
+### Kernel
+
+The 'kernel' part of the VOLK_GNSSSDR name comes from the high performance computing
+use of the word. In this context it is the inner loop of a vector operation.
+Since we don't use the word vector in the math sense a vector operation is an
+operation that is performed on a C array.
+
+### Protokernel
+
+A protokernel is an implementation of a kernel. Every kernel has a 'generic'
+protokernel that is implemented in C. Other protokernels are optimized for a
+particular architecture.
+
+
+## Techniques
+
+### New Kernels
+
+Add new kernels to the list in lib/kernel_tests.h. This adds the kernel to
+VOLK_GNSSSDR's QA tool as well as the volk profiler. Many kernels are able to
+share test parameters, but new kernels might need new ones.
+
+If the VOLK_GNSSSDR kernel does not 'fit' the the standard set of function parameters
+expected by the volk_profile structure, you need to create a VOLK_GNSSSDR puppet
+function to help the profiler call the kernel. This is essentially due to the
+function run_volk_gnsssdr_tests which has a limited number of function prototypes that
+it can test.
+
+### Protokernels
+
+Adding new proto-kernels (implementations of VOLK_GNSSSDR kernels for specific
+architectures) is relatively easy. In the relevant <kernel>.h file in
+the volk_gnsssdr/include/volk_gnsssdr/volk_gnsssdr<input-fingerprint_function-name_output-fingerprint>.h
+file, add a new #ifdef/#endif block for the LV_HAVE_<arch> corresponding
+to the <arch> you a working on (e.g. SSE, AVX, NEON, etc.).
+
+For example, for volk_gnsssdr_16ic_x2_multiply_16ic_neon:
+
+\code
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+
+static inline void volk_gnsssdr_16ic_x2_multiply_16ic_neon(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+{
+    lv_16sc_t *a_ptr = (lv_16sc_t*) in_a;
+    lv_16sc_t *b_ptr = (lv_16sc_t*) in_b;
+    unsigned int quarter_points = num_points / 4;
+    int16x4x2_t a_val, b_val, c_val;
+    int16x4x2_t tmp_real, tmp_imag;
+    unsigned int number = 0;
+
+    for(; number < quarter_points; ++number)
+        {
+            a_val = vld2_s16((int16_t*)a_ptr);
+            b_val = vld2_s16((int16_t*)b_ptr);
+
+            tmp_real.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
+            tmp_real.val[1] = vmul_s16(a_val.val[1], b_val.val[1]);
+
+            tmp_imag.val[0] = vmul_s16(a_val.val[0], b_val.val[1]);
+            tmp_imag.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
+
+            c_val.val[0] = vsub_s16(tmp_real.val[0], tmp_real.val[1]);
+            c_val.val[1] = vadd_s16(tmp_imag.val[0], tmp_imag.val[1]);
+            vst2_s16((int16_t*)out, c_val);
+
+            a_ptr += 4;
+            b_ptr += 4;
+            out += 4;
+        }
+
+    for(number = quarter_points * 4; number < num_points; number++)
+        {
+            *out++ = (*a_ptr++) * (*b_ptr++);
+        }
+}
+#endif /* LV_HAVE_NEON */
+\endcode
+
+### Allocating Memory
+
+SIMD code can be very sensitive to the alignment of the vectors, which is
+generally something like a 16-byte or 32-byte alignment requirement. The
+VOLK_GNSSSDR dispatcher functions, which is what we will normally call as users of
+VOLK_GNSSSDR, makes sure that the correct aligned or unaligned version is called
+depending on the state of the vectors passed to it. However, things typically
+work faster and more efficiently when the vectors are aligned. As such, VOLK_GNSSSDR
+has memory allocate and free methods to provide us with properly aligned
+vectors. We can also ask VOLK_GNSSSDR to give us the current machine's alignment
+requirement, which makes our job even easier when porting code.
+
+To get the machine's alignment, simply call the size_t volk_gnsssdr_get_alignment().
+
+Allocate memory using void* volk_gnsssdr_malloc(size_t size, size_t alignment).
+
+Make sure that any memory allocated by VOLK_GNSSSDR is also freed by VOLK_GNSSSDR with volk_gnsssdr_free(void *p).
+
+
+*/

@@ -1,6 +1,6 @@
 /*!
- * \file volk_gnsssdr_32fc_convert_16ic.h
- * \brief Volk protokernel: converts 16 bit integer complex complex values to  32 bits float complex values
+ * \file volk_gnsssdr_16ic_convert_32fc.h
+ * \brief Volk protokernel: converts 16 bit integer complex complex values to 32 bits float complex values
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>

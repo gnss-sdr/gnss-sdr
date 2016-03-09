@@ -1,0 +1,19 @@
+/*! \page using_volk_gnsssdr Using VOLK_GNSSSDR
+
+Using VOLK_GNSSSDR in your code requires proper linking and including the correct headers. 
+VOLK_GNSSSDR currently supports both C and C++ bindings.
+
+VOLK_GNSSSDR provides both a pkgconfig and CMake module to help configuration and
+linking. The pkfconfig file is installed to
+$install_prefix/lib/pkgconfig/volk_gnsssdr.pc. The CMake configuration module is in
+$install_prefix/lib/cmake/volk_gnsssdr/VolkConfig.cmake.
+
+The header in the VOLK_GNSSSDR include directory (includedir in pkgconfig,
+VOLK_GNSSSDR_INCLUDE_DIRS in cmake module) contains the header volk_gnsssdr/volk_gnsssdr.h defines all
+of the symbols exposed by VOLK_GNSSSDR. Alternatively individual kernel headers are in
+the same location.
+
+In most cases it is sufficient to call the dispatcher for the kernel you are using.
+
+*/
+

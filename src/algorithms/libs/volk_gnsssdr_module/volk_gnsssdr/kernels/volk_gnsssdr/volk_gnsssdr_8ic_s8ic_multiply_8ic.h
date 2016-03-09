@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_8ic_s8ic_multiply_8ic.h
- * \brief Volk protokernel: multiplies a group of 16 bits vectors by one constant vector
+ * \brief VOLK_GNSSSDR kernel: multiplies a group of 16 bits vectors by one constant vector.
  * \authors <ul>
  *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
- * Volk protokernel that multiplies a group of 16 bits vectors 
+ * VOLK_GNSSSDR kernel that multiplies a group of 16 bits vectors
  * (8 bits the real part and 8 bits the imaginary part) by one constant vector
  *
  * -------------------------------------------------------------------------
@@ -33,6 +33,28 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_8ic_s8ic_multiply_8ic
+ *
+ * \b Overview
+ *
+ * Multiplies the input vector by a scalar and stores the results in the third vector
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_8ic_s8ic_multiply_8ic(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t scalar, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li aVector: The vector to be multiplied.
+ * \li scalar The complex scalar to multiply \p aVector
+ * \li num_points: The number of complex values in \p aVector to be multiplied by \p scalar and stored into \p cVector.
+ *
+ * \b Outputs
+ * \li cVector: The vector where the results will be stored
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_8ic_s8ic_multiply_8ic_H
 #define INCLUDED_volk_gnsssdr_8ic_s8ic_multiply_8ic_H
 
@@ -40,13 +62,7 @@
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-/*!
- \brief Multiplies the input vector by a scalar and stores the results in the third vector
- \param cVector The vector where the results will be stored
- \param aVector The vector to be multiplied
- \param scalar The complex scalar to multiply aVector
- \param num_points The number of complex values in aVector to be multiplied by sacalar and stored into cVector
- */
+
 static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t scalar, unsigned int num_points)
 {
     unsigned int number = 0;
@@ -59,31 +75,31 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, 
 
     mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
 
-    y = _mm_set1_epi16 (*(short*)&scalar);
-    imagy = _mm_srli_si128 (y, 1);
-    imagy = _mm_and_si128 (imagy, mult1);
-    realy = _mm_and_si128 (y, mult1);
+    y = _mm_set1_epi16(*(short*)&scalar);
+    imagy = _mm_srli_si128(y, 1);
+    imagy = _mm_and_si128(imagy, mult1);
+    realy = _mm_and_si128(y, mult1);
 
     for(; number < sse_iters; number++)
         {
             x = _mm_lddqu_si128((__m128i*)a);
 
-            imagx = _mm_srli_si128 (x, 1);
-            imagx = _mm_and_si128 (imagx, mult1);
-            realx = _mm_and_si128 (x, mult1);
+            imagx = _mm_srli_si128(x, 1);
+            imagx = _mm_and_si128(imagx, mult1);
+            realx = _mm_and_si128(x, mult1);
 
-            realx_mult_realy = _mm_mullo_epi16 (realx, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imagx, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (realx, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imagx, realy);
+            realx_mult_realy = _mm_mullo_epi16(realx, realy);
+            imagx_mult_imagy = _mm_mullo_epi16(imagx, imagy);
+            realx_mult_imagy = _mm_mullo_epi16(realx, imagy);
+            imagx_mult_realy = _mm_mullo_epi16(imagx, realy);
 
-            realc = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            realc = _mm_and_si128 (realc, mult1);
-            imagc = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            imagc = _mm_and_si128 (imagc, mult1);
-            imagc = _mm_slli_si128 (imagc, 1);
+            realc = _mm_sub_epi16(realx_mult_realy, imagx_mult_imagy);
+            realc = _mm_and_si128(realc, mult1);
+            imagc = _mm_add_epi16(realx_mult_imagy, imagx_mult_realy);
+            imagc = _mm_and_si128(imagc, mult1);
+            imagc = _mm_slli_si128(imagc, 1);
 
-            totalc = _mm_or_si128 (realc, imagc);
+            totalc = _mm_or_si128(realc, imagc);
 
             _mm_storeu_si128((__m128i*)c, totalc);
 
@@ -99,14 +115,9 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_sse3(lv_8sc_t* cVector, 
 }
 #endif /* LV_HAVE_SSE3 */
 
+
 #ifdef LV_HAVE_GENERIC
-/*!
- \brief Multiplies the input vector by a scalar and stores the results in the third vector
- \param cVector The vector where the results will be stored
- \param aVector The vector to be multiplied
- \param scalar The complex scalar to multiply aVector
- \param num_points The number of complex values in aVector to be multiplied by sacalar and stored into cVector
- */
+
 static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_generic(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t scalar, unsigned int num_points)
 {
     /*lv_8sc_t* cPtr = cVector;
@@ -144,13 +155,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_generic(lv_8sc_t* cVector,
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-/*!
- \brief Multiplies the input vector by a scalar and stores the results in the third vector
- \param cVector The vector where the results will be stored
- \param aVector The vector to be multiplied
- \param scalar The complex scalar to multiply aVector
- \param num_points The number of complex values in aVector to be multiplied by sacalar and stored into cVector
- */
+
 static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t scalar, unsigned int num_points)
 {
     unsigned int number = 0;
@@ -163,31 +168,31 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
 
     mult1 = _mm_set_epi8(0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255, 0, 255);
 
-    y = _mm_set1_epi16 (*(short*)&scalar);
-    imagy = _mm_srli_si128 (y, 1);
-    imagy = _mm_and_si128 (imagy, mult1);
-    realy = _mm_and_si128 (y, mult1);
+    y = _mm_set1_epi16(*(short*)&scalar);
+    imagy = _mm_srli_si128(y, 1);
+    imagy = _mm_and_si128(imagy, mult1);
+    realy = _mm_and_si128(y, mult1);
 
     for(; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
 
-            imagx = _mm_srli_si128 (x, 1);
-            imagx = _mm_and_si128 (imagx, mult1);
-            realx = _mm_and_si128 (x, mult1);
+            imagx = _mm_srli_si128(x, 1);
+            imagx = _mm_and_si128(imagx, mult1);
+            realx = _mm_and_si128(x, mult1);
 
-            realx_mult_realy = _mm_mullo_epi16 (realx, realy);
-            imagx_mult_imagy = _mm_mullo_epi16 (imagx, imagy);
-            realx_mult_imagy = _mm_mullo_epi16 (realx, imagy);
-            imagx_mult_realy = _mm_mullo_epi16 (imagx, realy);
+            realx_mult_realy = _mm_mullo_epi16(realx, realy);
+            imagx_mult_imagy = _mm_mullo_epi16(imagx, imagy);
+            realx_mult_imagy = _mm_mullo_epi16(realx, imagy);
+            imagx_mult_realy = _mm_mullo_epi16(imagx, realy);
 
-            realc = _mm_sub_epi16 (realx_mult_realy, imagx_mult_imagy);
-            realc = _mm_and_si128 (realc, mult1);
-            imagc = _mm_add_epi16 (realx_mult_imagy, imagx_mult_realy);
-            imagc = _mm_and_si128 (imagc, mult1);
-            imagc = _mm_slli_si128 (imagc, 1);
+            realc = _mm_sub_epi16(realx_mult_realy, imagx_mult_imagy);
+            realc = _mm_and_si128(realc, mult1);
+            imagc = _mm_add_epi16(realx_mult_imagy, imagx_mult_realy);
+            imagc = _mm_and_si128(imagc, mult1);
+            imagc = _mm_slli_si128(imagc, 1);
 
-            totalc = _mm_or_si128 (realc, imagc);
+            totalc = _mm_or_si128(realc, imagc);
 
             _mm_store_si128((__m128i*)c, totalc);
 
@@ -205,13 +210,7 @@ static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_sse3(lv_8sc_t* cVector, 
 
 
 #ifdef LV_HAVE_ORC
-/*!
- \brief Multiplies the input vector by a scalar and stores the results in the third vector
- \param cVector The vector where the results will be stored
- \param aVector The vector to be multiplied
- \param scalar The complex scalar to multiply aVector
- \param num_points The number of complex values in aVector to be multiplied by sacalar and stored into cVector
- */
+
 extern void volk_gnsssdr_8ic_s8ic_multiply_8ic_a_orc_impl(lv_8sc_t* cVector, const lv_8sc_t* aVector, const char scalarreal, const char scalarimag, unsigned int num_points);
 static inline void volk_gnsssdr_8ic_s8ic_multiply_8ic_u_orc(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t scalar, unsigned int num_points)
 {

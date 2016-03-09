@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_16ic_x2_dot_prod_16ic_xn.h
- * \brief Volk protokernel: multiplies N 16 bits vectors by a common vector and accumulates the results in N 16 bits short complex outputs.
+ * \brief VOLK_GNSSSDR kernel: multiplies N 16 bits vectors by a common vector and accumulates the results in N 16 bits short complex outputs.
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Volk protokernel that multiplies N 16 bits vectors by a common vector and accumulates the results in N 16 bits short complex outputs.
+ * VOLK_GNSSSDR kernel that multiplies N 16 bits vectors by a common vector and accumulates the results in N 16 bits short complex outputs.
  * It is optimized to perform the N tap correlation process in GNSS receivers.
  *
  * -------------------------------------------------------------------------
@@ -33,6 +33,30 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_16ic_x2_dot_prod_16ic_xn
+ *
+ * \b Overview
+ *
+ * Multiplies a reference complex vector by an arbitrary number of other complex vectors, accumulates the results and stores them in the output vector.
+ * This function can be used as a multiple correlator.
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li in_common:     Pointer to one of the vectors to be multiplied and accumulated (reference vector)
+ * \li in_a:          Pointer to an array of pointers to other vectors to be multiplied by \p in_common and accumulated.
+ * \li num_a_vectors: Number of vectors to be multiplied by the reference vector \p in_common and accumulated.
+ * \li num_points:    Number of complex values to be multiplied together, accumulated and stored into \p result
+ *
+ * \b Outputs
+ * \li result:        Vector of \p num_a_vectors components with vector \p in_common multiplied by the vectors in \p in_a and accumulated.
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_H
 #define INCLUDED_volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_H
 
@@ -41,14 +65,7 @@
 #include <volk_gnsssdr/saturation_arithmetic.h>
 
 #ifdef LV_HAVE_GENERIC
-/*!
- \brief Multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
- \param[out] result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
- \param[in]  in_common     Pointer to one of the vectors to be multiplied and accumulated (reference vector)
- \param[in]  in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
- \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
- \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
- */
+
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
@@ -70,14 +87,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* resu
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
- \param[out] result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
- \param[in]  in_common     Pointer to one of the vectors to be multiplied and accumulated (reference vector)
- \param[in]  in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
- \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
- \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
@@ -160,22 +169,15 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_sse2(lv_16sc_t* resul
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
                             sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
-            }
+                }
         }
 }
 #endif /* LV_HAVE_SSE2 */
 
+
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
- \param[out] result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
- \param[in]  in_common     Pointer to one of the vectors to be multiplied and accumulated (reference vector)
- \param[in]  in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
- \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
- \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
@@ -258,22 +260,15 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
                             sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
-            }
+                }
         }
 }
 #endif /* LV_HAVE_SSE2 */
 
+
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-/*!
- \brief Multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
- \param[out] result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
- \param[in]  in_common     Pointer to one of the vectors to be multiplied and accumulated (reference vector)
- \param[in]  in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
- \param[in]  num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
- \param[in]  num_points    The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
@@ -354,9 +349,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
 
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
                             sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
-            }
+                }
         }
-
 }
 #endif /* LV_HAVE_NEON */
 

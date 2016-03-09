@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_16ic_x2_dot_prod_16ic.h
- * \brief Volk protokernel: multiplies two 16 bits vectors and accumulates them
+ * \brief VOLK_GNSSSDR kernel: multiplies two 16 bits vectors and accumulates them.
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Volk protokernel that multiplies two 16 bits vectors (8 bits the real part 
+ * VOLK_GNSSSDR kernel that multiplies two 16 bits vectors (8 bits the real part
  * and 8 bits the imaginary part) and accumulates them
  *
  * -------------------------------------------------------------------------
@@ -33,6 +33,29 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_16ic_x2_dot_prod_16ic
+ *
+ * \b Overview
+ *
+ * Multiplies two input complex vectors (16-bit integer each component) and accumulates them,
+ * storing the result. Results are saturated so never go beyond the limits of the data type.
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_16ic_x2_dot_prod_16ic(lv_16sc_t* result, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li in_a:          One of the vectors to be multiplied and accumulated.
+ * \li in_b:          The other vector to be multiplied and accumulated.
+ * \li num_points:    Number of complex values to be multiplied together, accumulated and stored into \p result
+ *
+ * \b Outputs
+ * \li result:        Value of the accumulated result.
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_H
 #define INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_H
 
@@ -43,13 +66,6 @@
 
 #ifdef LV_HAVE_GENERIC
 
-/*!
- \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
- \param[out] result     Value of the accumulated result
- \param[in]  in_a       One of the vectors to be multiplied and accumulated
- \param[in]  in_b       One of the vectors to be multiplied and accumulated
- \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_generic(lv_16sc_t* result, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     result[0] = lv_cmake((int16_t)0, (int16_t)0);
@@ -66,13 +82,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_generic(lv_16sc_t* result,
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
- \param[out] result     Value of the accumulated result
- \param[in]  in_a       One of the vectors to be multiplied and accumulated
- \param[in]  in_b       One of the vectors to be multiplied and accumulated
- \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake((int16_t)0, (int16_t)0);
@@ -149,13 +158,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
- \param[out] result     Value of the accumulated result
- \param[in]  in_a       One of the vectors to be multiplied and accumulated
- \param[in]  in_b       One of the vectors to be multiplied and accumulated
- \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake((int16_t)0, (int16_t)0);
@@ -232,13 +234,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-/*!
- \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
- \param[out] result     Value of the accumulated result
- \param[in]  in_a       One of the vectors to be multiplied and accumulated
- \param[in]  in_b       One of the vectors to be multiplied and accumulated
- \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     unsigned int quarter_points = num_points / 4;

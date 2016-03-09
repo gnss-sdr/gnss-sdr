@@ -1,12 +1,12 @@
 /*!
- * \file volk_gnsssdr_16ic_x2_dot_prod_16ic_xn.h
- * \brief Volk protokernel: multiplies N 16 bits vectors by a common vector
+ * \file volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn.h
+ * \brief VOLK_GNSSSDR kernel: multiplies N 16 bits vectors by a common vector
  * phase rotated and accumulates the results in N 16 bits short complex outputs.
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Volk protokernel that multiplies N 16 bits vectors by a common vector, which is
+ * VOLK_GNSSSDR kernel that multiplies N 16 bits vectors by a common vector, which is
  * phase-rotated by phase offset and phase increment, and accumulates the results
  * in N 16 bits short complex outputs.
  * It is optimized to perform the N tap correlation process in GNSS receivers.
@@ -36,8 +36,36 @@
  * -------------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_volk_gnsssdr_16ic_xn_rotator_dot_prod_16ic_xn_H
-#define INCLUDED_volk_gnsssdr_16ic_xn_rotator_dot_prod_16ic_xn_H
+/*!
+ * \page volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn
+ *
+ * \b Overview
+ *
+ * Rotates and multiplies the reference complex vector with an arbitrary number of other complex vectors,
+ * accumulates the results and stores them in the output vector.
+ * This function can be used for Doppler wipe-off and multiple correlator.
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn((lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li in_common:     Pointer to one of the vectors to be rotated, multiplied and accumulated (reference vector).
+ * \li phase_inc:     Phase increment = lv_cmake(cos(phase_step_rad), sin(phase_step_rad))
+ * \li phase:         Initial phase = lv_cmake(cos(initial_phase_rad), sin(initial_phase_rad))
+ * \li in_a:          Pointer to an array of pointers to multiple vectors to be multiplied and accumulated.
+ * \li num_a_vectors: Number of vectors to be multiplied by the reference vector and accumulated.
+ * \li num_points:    Number of complex values to be multiplied together, accumulated and stored into \p result.
+ *
+ * \b Outputs
+ * \li phase:         Final phase.
+ * \li result:        Vector of \p num_a_vectors components with the multiple vectors of \p in_a rotated, multiplied by \p in_common and accumulated.
+ *
+ */
+
+#ifndef INCLUDED_volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_H
+#define INCLUDED_volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_H
 
 
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
@@ -46,16 +74,7 @@
 //#include <stdio.h>
 
 #ifdef LV_HAVE_GENERIC
-/*!
- \brief Rotates and multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
- \param[out]    result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
- \param[in]     in_common     Pointer to one of the vectors to be rotated, multiplied and accumulated (reference vector)
- \param[in]     phase_inc     Phase increment = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad))
- \param[in,out] phase         Initial / final phase
- \param[in]     in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
- \param[in]     num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
- \param[in]     num_points    The Number of complex values to be multiplied together, accumulated and stored into result
- */
+
 static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_generic(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t tmp16;
@@ -85,16 +104,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_generic(lv_16sc
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 
-/*!
- \brief Rotates and multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
- \param[out]    result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
- \param[in]     in_common     Pointer to one of the vectors to be rotated, multiplied and accumulated (reference vector)
- \param[in]     phase_inc     Phase increment = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad))
- \param[in,out] phase         Initial / final phase
- \param[in]     in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
- \param[in]     num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
- \param[in]     num_points    The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
@@ -247,19 +256,10 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
 }
 #endif /* LV_HAVE_SSE3 */
 
+
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 
-/*!
- \brief Rotates and multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
- \param[out]    result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
- \param[in]     in_common     Pointer to one of the vectors to be rotated, multiplied and accumulated (reference vector)
- \param[in]     phase_inc     Phase increment = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad))
- \param[in,out] phase         Initial / final phase
- \param[in]     in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
- \param[in]     num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
- \param[in]     num_points    The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake(0,0);
@@ -414,16 +414,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-/*!
- \brief Rotates and multiplies the reference complex vector with multiple versions of another complex vector, accumulates the results and stores them in the output vector
- \param[out]    result        Array of num_a_vectors components with the multiple versions of in_a multiplied and accumulated The vector where the accumulated result will be stored
- \param[in]     in_common     Pointer to one of the vectors to be rotated, multiplied and accumulated (reference vector)
- \param[in]     phase_inc     Phase increment = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad))
- \param[in,out] phase         Initial / final phase
- \param[in]     in_a          Pointer to an array of pointers to multiple versions of the other vector to be multiplied and accumulated
- \param[in]     num_a_vectors Number of vectors to be multiplied by the reference vector and accumulated
- \param[in]     num_points    The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
 {
     const unsigned int neon_iters = num_points / 4;
@@ -584,4 +574,4 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 
 #endif /* LV_HAVE_NEON */
 
-#endif /*INCLUDED_volk_gnsssdr_16ic_xn_dot_prod_16ic_xn_H*/
+#endif /*INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_H*/

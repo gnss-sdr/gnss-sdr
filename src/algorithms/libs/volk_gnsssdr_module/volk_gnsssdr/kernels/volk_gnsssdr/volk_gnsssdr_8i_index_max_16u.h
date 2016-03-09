@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_8i_index_max_16u.h
- * \brief Volk protokernel: calculates the index of the maximum value in a group of 8 bits (char) scalars
+ * \brief VOLK_GNSSSDR kernel: calculates the index of the maximum value in a group of 8 bits (char) scalars.
  * \authors <ul>
  *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
- * Volk protokernel that returns the index of the maximum value of a group of 8 bits (char) scalars
+ * VOLK_GNSSSDR kernel that returns the index of the maximum value of a group of 8 bits (char) scalars
  *
  * -------------------------------------------------------------------------
  *
@@ -32,6 +32,27 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_8i_index_max_16u
+ *
+ * \b Overview
+ *
+ * Returns the index of the max value in \p src0
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_8i_index_max_16u(unsigned int* target, const char* src0, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li src0: The buffer of data to be analyzed.
+ * \li num_points:  The number of values in \p src0 to be analyzed.
+ *
+ * \b Outputs
+ * \li target: The index of the maximum value in \p src0
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_8i_index_max_16u_H
 #define INCLUDED_volk_gnsssdr_8i_index_max_16u_H
 
@@ -39,12 +60,7 @@
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
-/*!
- \brief Returns the index of the max value in src0
- \param target The index of the max value in src0
- \param src0 The buffer of data to be analysed
- \param num_points The number of values in src0 to be analysed
- */
+
 static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
@@ -107,14 +123,10 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_avx(unsigned int* target, con
 
 #endif /*LV_HAVE_AVX*/
 
+
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
-/*!
- \brief Returns the index of the max value in src0
- \param target The index of the max value in src0
- \param src0 The buffer of data to be analysed
- \param num_points The number of values in src0 to be analysed
- */
+
 static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
@@ -168,14 +180,10 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse4_1(unsigned int* target, 
 
 #endif /*LV_HAVE_SSE4_1*/
 
+
 #ifdef LV_HAVE_SSE2
 #include<emmintrin.h>
-/*!
- \brief Returns the index of the max value in src0
- \param target The index of the max value in src0
- \param src0 The buffer of data to be analysed
- \param num_points The number of values in src0 to be analysed
- */
+
 static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
@@ -235,13 +243,9 @@ static inline void volk_gnsssdr_8i_index_max_16u_u_sse2(unsigned int* target, co
 
 #endif /*LV_HAVE_SSE2*/
 
+
 #ifdef LV_HAVE_GENERIC
-/*!
- \brief Returns the index of the max value in src0
- \param target The index of the max value in src0
- \param src0 The buffer of data to be analysed
- \param num_points The number of values in src0 to be analysed
- */
+
 static inline void volk_gnsssdr_8i_index_max_16u_generic(unsigned int* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
@@ -266,12 +270,7 @@ static inline void volk_gnsssdr_8i_index_max_16u_generic(unsigned int* target, c
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
-/*!
- \brief Returns the index of the max value in src0
- \param target The index of the max value in src0
- \param src0 The buffer of data to be analysed
- \param num_points The number of values in src0 to be analysed
- */
+
 static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
@@ -334,14 +333,10 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_avx(unsigned int* target, con
 
 #endif /*LV_HAVE_AVX*/
 
+
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
-/*!
- \brief Returns the index of the max value in src0
- \param target The index of the max value in src0
- \param src0 The buffer of data to be analysed
- \param num_points The number of values in src0 to be analysed
- */
+
 static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
@@ -395,14 +390,10 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse4_1(unsigned int* target, 
 
 #endif /*LV_HAVE_SSE4_1*/
 
+
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
-/*!
- \brief Returns the index of the max value in src0
- \param target The index of the max value in src0
- \param src0 The buffer of data to be analysed
- \param num_points The number of values in src0 to be analysed
- */
+
 static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, const char* src0, unsigned int num_points)
 {
     if(num_points > 0)
@@ -461,7 +452,6 @@ static inline void volk_gnsssdr_8i_index_max_16u_a_sse2(unsigned int* target, co
 }
 
 #endif /*LV_HAVE_SSE2*/
-
 
 
 #endif /*INCLUDED_volk_gnsssdr_8i_index_max_16u_H*/

@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_16ic_rotatorpuppet_16ic.h
- * \brief Volk puppet for the 16-bit complex rotator kernel
+ * \brief VOLK_GNSSSDR puppet for the 16-bit complex rotator kernel.
  * \authors <ul>
  *          <li> Carles Fernandez Prades 2016 cfernandez at cttc dot cat
  *          </ul>
  *
- * Volk puppet for integrating the resampler into volk's test system
+ * VOLK_GNSSSDR puppet for integrating the rotator into the test system
  *
  * -------------------------------------------------------------------------
  *

@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_64f_accumulator_64f.h
- * \brief Volk protokernel: 64 bits (double) scalar accumulator
+ * \brief VOLK_GNSSSDR kernel: 64 bits (double) scalar accumulator.
  * \authors <ul>
  *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
- * Volk protokernel that implements an accumulator of char values
+ * VOLK_GNSSSDR kernel that implements an accumulator of double (64-bit float) values.
  *
  * -------------------------------------------------------------------------
  *
@@ -32,6 +32,27 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_64f_accumulator_64f
+ *
+ * \b Overview
+ *
+ * Accumulates the values in the input buffer.
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_64f_accumulator_64f(double* result, const double* inputBuffer, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li inputBuffer: The buffer of data to be accumulated.
+ * \li num_points:  The number of values in \p inputBuffer to be accumulated.
+ *
+ * \b Outputs
+ * \li result: The accumulated result.
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_64f_accumulator_64f_u_H
 #define INCLUDED_volk_gnsssdr_64f_accumulator_64f_u_H
 
@@ -39,96 +60,91 @@
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
-static inline void volk_gnsssdr_64f_accumulator_64f_u_avx(double* result,const double* inputBuffer, unsigned int num_points){
+
+static inline void volk_gnsssdr_64f_accumulator_64f_u_avx(double* result, const double* inputBuffer, unsigned int num_points)
+{
     double returnValue = 0;
     const unsigned int sse_iters = num_points / 4;
-    
+
     const double* aPtr = inputBuffer;
-    
+
     __VOLK_ATTR_ALIGNED(32) double tempBuffer[4];
     __m256d accumulator = _mm256_setzero_pd();
     __m256d aVal = _mm256_setzero_pd();
-    
+
     for(unsigned int number = 0; number < sse_iters; number++)
-    {
-        aVal = _mm256_loadu_pd(aPtr);
-        accumulator = _mm256_add_pd(accumulator, aVal);
-        aPtr += 4;
-    }
-    
-    _mm256_storeu_pd((double*)tempBuffer,accumulator);
-    
-    for(unsigned int i = 0; i<4; ++i){
-        returnValue += tempBuffer[i];
-    }
-    
-    for(unsigned int i = 0; i<(num_points % 4); ++i){
-        returnValue += (*aPtr++);
-    }
-    
+        {
+            aVal = _mm256_loadu_pd(aPtr);
+            accumulator = _mm256_add_pd(accumulator, aVal);
+            aPtr += 4;
+        }
+
+    _mm256_storeu_pd((double*)tempBuffer, accumulator);
+
+    for(unsigned int i = 0; i < 4; ++i)
+        {
+            returnValue += tempBuffer[i];
+        }
+
+    for(unsigned int i = 0; i < (num_points % 4); ++i)
+        {
+            returnValue += (*aPtr++);
+        }
+
     *result = returnValue;
 }
 #endif /* LV_HAVE_AVX */
 
+
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
-static inline void volk_gnsssdr_64f_accumulator_64f_u_sse3(double* result,const double* inputBuffer, unsigned int num_points){
+
+static inline void volk_gnsssdr_64f_accumulator_64f_u_sse3(double* result,const double* inputBuffer, unsigned int num_points)
+{
     double returnValue = 0;
     const unsigned int sse_iters = num_points / 2;
-    
+
     const double* aPtr = inputBuffer;
-    
+
     __VOLK_ATTR_ALIGNED(16) double tempBuffer[2];
     __m128d accumulator = _mm_setzero_pd();
     __m128d aVal = _mm_setzero_pd();
-    
+
     for(unsigned int number = 0; number < sse_iters; number++)
-    {
-        aVal = _mm_loadu_pd(aPtr);
-        accumulator = _mm_add_pd(accumulator, aVal);
-        aPtr += 2;
-    }
-    
-    _mm_storeu_pd((double*)tempBuffer,accumulator);
-    
-    for(unsigned int i = 0; i<2; ++i){
-        returnValue += tempBuffer[i];
-    }
-    
-    for(unsigned int i = 0; i<(num_points % 2); ++i){
-        returnValue += (*aPtr++);
-    }
-    
+        {
+            aVal = _mm_loadu_pd(aPtr);
+            accumulator = _mm_add_pd(accumulator, aVal);
+            aPtr += 2;
+        }
+
+    _mm_storeu_pd((double*)tempBuffer, accumulator);
+
+    for(unsigned int i = 0; i < 2; ++i)
+        {
+            returnValue += tempBuffer[i];
+        }
+
+    for(unsigned int i = 0; i < (num_points % 2); ++i)
+        {
+            returnValue += (*aPtr++);
+        }
+
     *result = returnValue;
 }
 #endif /* LV_HAVE_SSE3 */
 
+
 #ifdef LV_HAVE_GENERIC
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
-static inline void volk_gnsssdr_64f_accumulator_64f_generic(double* result,const double* inputBuffer, unsigned int num_points){
+
+static inline void volk_gnsssdr_64f_accumulator_64f_generic(double* result,const double* inputBuffer, unsigned int num_points)
+{
     const double* aPtr = inputBuffer;
     double returnValue = 0;
-    
-    for(unsigned int number = 0;number < num_points; number++){
-        returnValue += (*aPtr++);
-    }
+
+    for(unsigned int number = 0;number < num_points; number++)
+        {
+            returnValue += (*aPtr++);
+        }
     *result = returnValue;
 }
 #endif /* LV_HAVE_GENERIC */
@@ -136,78 +152,75 @@ static inline void volk_gnsssdr_64f_accumulator_64f_generic(double* result,const
 
 #ifdef LV_HAVE_AVX
 #include <immintrin.h>
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
-static inline void volk_gnsssdr_64f_accumulator_64f_a_avx(double* result,const double* inputBuffer, unsigned int num_points){
+
+static inline void volk_gnsssdr_64f_accumulator_64f_a_avx(double* result,const double* inputBuffer, unsigned int num_points)
+{
     double returnValue = 0;
     const unsigned int sse_iters = num_points / 4;
-    
+
     const double* aPtr = inputBuffer;
-    
+
     __VOLK_ATTR_ALIGNED(32) double tempBuffer[4];
     __m256d accumulator = _mm256_setzero_pd();
     __m256d aVal = _mm256_setzero_pd();
-    
+
     for(unsigned int number = 0; number < sse_iters; number++)
-    {
-        aVal = _mm256_load_pd(aPtr);
-        accumulator = _mm256_add_pd(accumulator, aVal);
-        aPtr += 4;
-    }
-    
-    _mm256_store_pd((double*)tempBuffer,accumulator);
-    
-    for(unsigned int i = 0; i<4; ++i){
-        returnValue += tempBuffer[i];
-    }
-    
-    for(unsigned int i = 0; i<(num_points % 4); ++i){
-        returnValue += (*aPtr++);
-    }
-    
+        {
+            aVal = _mm256_load_pd(aPtr);
+            accumulator = _mm256_add_pd(accumulator, aVal);
+            aPtr += 4;
+        }
+
+    _mm256_store_pd((double*)tempBuffer, accumulator);
+
+    for(unsigned int i = 0; i < 4; ++i)
+        {
+            returnValue += tempBuffer[i];
+        }
+
+    for(unsigned int i = 0; i < (num_points % 4); ++i)
+        {
+            returnValue += (*aPtr++);
+        }
+
     *result = returnValue;
 }
 #endif /* LV_HAVE_AVX */
 
+
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
-static inline void volk_gnsssdr_64f_accumulator_64f_a_sse3(double* result,const double* inputBuffer, unsigned int num_points){
+
+static inline void volk_gnsssdr_64f_accumulator_64f_a_sse3(double* result,const double* inputBuffer, unsigned int num_points)
+{
     double returnValue = 0;
     const unsigned int sse_iters = num_points / 2;
-    
+
     const double* aPtr = inputBuffer;
-    
+
     __VOLK_ATTR_ALIGNED(16) double tempBuffer[2];
     __m128d accumulator = _mm_setzero_pd();
     __m128d aVal = _mm_setzero_pd();
-    
+
     for(unsigned int number = 0; number < sse_iters; number++)
-    {
-        aVal = _mm_load_pd(aPtr);
-        accumulator = _mm_add_pd(accumulator, aVal);
-        aPtr += 2;
-    }
-    
-    _mm_store_pd((double*)tempBuffer,accumulator);
-    
-    for(unsigned int i = 0; i<2; ++i){
-        returnValue += tempBuffer[i];
-    }
-    
-    for(unsigned int i = 0; i<(num_points % 2); ++i){
-        returnValue += (*aPtr++);
-    }
-    
+        {
+            aVal = _mm_load_pd(aPtr);
+            accumulator = _mm_add_pd(accumulator, aVal);
+            aPtr += 2;
+        }
+
+    _mm_store_pd((double*)tempBuffer, accumulator);
+
+    for(unsigned int i = 0; i < 2; ++i)
+        {
+            returnValue += tempBuffer[i];
+        }
+
+    for(unsigned int i = 0; i < (num_points % 2); ++i)
+        {
+            returnValue += (*aPtr++);
+        }
+
     *result = returnValue;
 }
 #endif /* LV_HAVE_SSE3 */

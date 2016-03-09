@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_16ic_xn_resampler_16ic_xn.h
- * \brief Volk protokernel: Resamples N 16 bits integer short complex vectors using zero hold resample algorithm.
+ * \brief VOLK_GNSSSDR kernel: Resamples N 16 bits integer short complex vectors using zero hold resample algorithm.
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Volk protokernel that esamples N 16 bits integer short complex vectors using zero hold resample algorithm.
+ * VOLK_GNSSSDR kernel that esamples N 16 bits integer short complex vectors using zero hold resample algorithm.
  * It is optimized to resample a sigle GNSS local code signal replica into N vectors fractional-resampled and fractional-delayed
  * (i.e. it creates the Early, Prompt, and Late code replicas)
  *
@@ -34,6 +34,31 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_16ic_xn_resampler_16ic_xn
+ *
+ * \b Overview
+ *
+ * Resamples a complex vector (16-bit integer each component), providing \p num_out_vectors outputs.
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_16ic_xn_resampler_16ic_xn(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips, float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
+ * \endcode
+ *
+ * \b Inputs
+ * \li local_code:            One of the vectors to be multiplied.
+ * \li rem_code_phase_chips:  Remnant code phase [chips].
+ * \li code_phase_step_chips: Phase increment per sample [chips/sample].
+ * \li code_length_chips:     Code length in chips.
+ * \li num_out_vectors        Number of output vectors.
+ * \li num_output_samples:    The number of data values to be in the resampled vector.
+ *
+ * \b Outputs
+ * \li result:                Pointer to a vector of pointers where the results will be stored.
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_H
 #define INCLUDED_volk_gnsssdr_16ic_xn_resampler_16ic_xn_H
 
@@ -49,16 +74,7 @@
 //    return (r > 0.0) ? (r + 0.5) : (r - 0.5);
 //}
 
-/*!
- \brief Resamples a complex vector (16-bit integer each component), providing num_out_vectors outputs
- \param[out] result                Pointer to the vector where the results will be stored
- \param[in]  local_code            One of the vectors to be multiplied
- \param[in]  rem_code_phase_chips  Pointer to the vector containing the remnant code phase for each output [chips]
- \param[in]  code_phase_step_chips Phase increment per sample [chips/sample]
- \param[in]  code_length_chips     Code length in chips
- \param[in]  num_out_vectors       Number of output vectors
- \param[in]  num_output_samples    Number of samples to be processed
- */
+
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips, float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
     int local_code_chip_index;
@@ -84,16 +100,6 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** re
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Resamples a complex vector (16-bit integer each component), providing num_out_vectors outputs
- \param[out] result                Pointer to the vector where the results will be stored
- \param[in]  local_code            One of the vectors to be multiplied
- \param[in]  rem_code_phase_chips  Pointer to the vector containing the remnant code phase for each output [chips]
- \param[in]  code_phase_step_chips Phase increment per sample [chips/sample]
- \param[in]  code_length_chips     Code length in chips
- \param[in]  num_out_vectors       Number of output vectors
- \param[in]  num_output_samples    Number of samples to be processed
- */
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
     _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
@@ -125,7 +131,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** res
 
     __m128i negative_indexes, overflow_indexes,_code_phase_out_int, _code_phase_out_int_neg,_code_phase_out_int_over;
 
-    __m128i zero=_mm_setzero_si128();
+    __m128i zero = _mm_setzero_si128();
 
     __attribute__((aligned(16))) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
     __m128 _4output_index = _mm_load_ps(init_idx_float);
@@ -148,11 +154,11 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** res
                     _code_phase_out_with_offset = _mm_add_ps(_code_phase_out, _rem_code_phase); //add the phase offset
                     _code_phase_out_int = _mm_cvtps_epi32(_code_phase_out_with_offset); //convert to integer
 
-                    negative_indexes = _mm_cmplt_epi32 (_code_phase_out_int, zero); //test for negative values
+                    negative_indexes = _mm_cmplt_epi32(_code_phase_out_int, zero); //test for negative values
                     _code_phase_out_int_neg = _mm_add_epi32(_code_phase_out_int, _code_length_chips); //the negative values branch
-                    _code_phase_out_int_neg = _mm_xor_si128(_code_phase_out_int, _mm_and_si128( negative_indexes,_mm_xor_si128( _code_phase_out_int_neg, _code_phase_out_int )));
+                    _code_phase_out_int_neg = _mm_xor_si128(_code_phase_out_int, _mm_and_si128( negative_indexes, _mm_xor_si128( _code_phase_out_int_neg, _code_phase_out_int )));
 
-                    overflow_indexes = _mm_cmpgt_epi32  (_code_phase_out_int_neg, _code_length_chips_minus1); //test for overflow values
+                    overflow_indexes = _mm_cmpgt_epi32(_code_phase_out_int_neg, _code_length_chips_minus1); //test for overflow values
                     _code_phase_out_int_over = _mm_sub_epi32(_code_phase_out_int_neg, _code_length_chips); //the negative values branch
                     _code_phase_out_int_over = _mm_xor_si128(_code_phase_out_int_neg, _mm_and_si128( overflow_indexes, _mm_xor_si128( _code_phase_out_int_over, _code_phase_out_int_neg )));
 
@@ -183,19 +189,10 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** res
 }
 #endif /* LV_HAVE_SSE2 */
 
+
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Resamples a complex vector (16-bit integer each component), providing num_out_vectors outputs
- \param[out] result                Pointer to the vector where the results will be stored
- \param[in]  local_code            One of the vectors to be multiplied
- \param[in]  rem_code_phase_chips  Pointer to the vector containing the remnant code phase for each output [chips]
- \param[in]  code_phase_step_chips Phase increment per sample [chips/sample]
- \param[in]  code_length_chips     Code length in chips
- \param[in]  num_out_vectors       Number of output vectors
- \param[in]  num_output_samples    Number of samples to be processed
- */
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_sse2(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
     _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
@@ -227,7 +224,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_sse2(lv_16sc_t** res
 
     __m128i negative_indexes, overflow_indexes,_code_phase_out_int, _code_phase_out_int_neg,_code_phase_out_int_over;
 
-    __m128i zero=_mm_setzero_si128();
+    __m128i zero = _mm_setzero_si128();
 
     __attribute__((aligned(16))) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
     __m128 _4output_index = _mm_loadu_ps(init_idx_float);
@@ -250,11 +247,11 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_sse2(lv_16sc_t** res
                     _code_phase_out_with_offset = _mm_add_ps(_code_phase_out, _rem_code_phase); //add the phase offset
                     _code_phase_out_int = _mm_cvtps_epi32(_code_phase_out_with_offset); //convert to integer
 
-                    negative_indexes = _mm_cmplt_epi32 (_code_phase_out_int, zero); //test for negative values
+                    negative_indexes = _mm_cmplt_epi32(_code_phase_out_int, zero); //test for negative values
                     _code_phase_out_int_neg = _mm_add_epi32(_code_phase_out_int, _code_length_chips); //the negative values branch
-                    _code_phase_out_int_neg = _mm_xor_si128(_code_phase_out_int, _mm_and_si128( negative_indexes,_mm_xor_si128( _code_phase_out_int_neg, _code_phase_out_int )));
+                    _code_phase_out_int_neg = _mm_xor_si128(_code_phase_out_int, _mm_and_si128( negative_indexes, _mm_xor_si128( _code_phase_out_int_neg, _code_phase_out_int )));
 
-                    overflow_indexes = _mm_cmpgt_epi32  (_code_phase_out_int_neg, _code_length_chips_minus1); //test for overflow values
+                    overflow_indexes = _mm_cmpgt_epi32(_code_phase_out_int_neg, _code_length_chips_minus1); //test for overflow values
                     _code_phase_out_int_over = _mm_sub_epi32(_code_phase_out_int_neg, _code_length_chips); //the negative values branch
                     _code_phase_out_int_over = _mm_xor_si128(_code_phase_out_int_neg, _mm_and_si128( overflow_indexes, _mm_xor_si128( _code_phase_out_int_over, _code_phase_out_int_neg )));
 
@@ -286,19 +283,10 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_sse2(lv_16sc_t** res
 
 #endif /* LV_HAVE_SSE2 */
 
+
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-/*!
- \brief Resamples a complex vector (16-bit integer each component), providing num_out_vectors outputs
- \param[out] result                Pointer to the vector where the results will be stored
- \param[in]  local_code            One of the vectors to be multiplied
- \param[in]  rem_code_phase_chips  Pointer to the vector containing the remnant code phase for each output [chips]
- \param[in]  code_phase_step_chips Phase increment per sample [chips/sample]
- \param[in]  code_length_chips     Code length in chips
- \param[in]  num_out_vectors       Number of output vectors
- \param[in]  num_output_samples    Number of samples to be processed
- */
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_neon(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
     unsigned int number;

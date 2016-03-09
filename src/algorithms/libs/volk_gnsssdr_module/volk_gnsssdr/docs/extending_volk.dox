@@ -13,39 +13,39 @@ if other users find them useful.
 
 ### Adding kernels
 
-Adding kernels refers to introducing a new function to the VOLK API that is
+Adding kernels refers to introducing a new function to the VOLK_GNSSSDR API that is
 presumably a useful math function/operation. The first step is to create
-the file in volk/kernels/volk. Follow the naming scheme provided in the
-VOLK terms and techniques page. First create the generic protokernel.
+the file in volk_gnsssdr/kernels/volk_gnsssdr. Follow the naming scheme provided in the
+VOLK_GNSSSDR terms and techniques page. First create the generic protokernel.
 
 The generic protokernel should be written in plain C using explicitly sized
-types from stdint.h or volk_complex.h when appropriate. volk_complex.h
+types from stdint.h or volk_gnsssdr_complex.h when appropriate. volk_gnsssdr_complex.h
 includes explicitly sized complex types for floats and ints. The name of
-the generic kernel should be volk_signature_from_file_generic. If multiple
+the generic kernel should be volk_gnsssdr_signature_from_file_generic. If multiple
 versions of the generic kernel exist then a description can be appended to
 generic_, but it is not required to use alignment flags in the generic
 protokernel name. It is required to surround the entire generic function
 with preprocessor ifdef fences on the symbol LV_HAVE_GENERIC.
 
-Finally, add the kernel to the list of test cases in volk/lib/kernel_tests.h.
+Finally, add the kernel to the list of test cases in volk_gnsssdr/lib/kernel_tests.h.
 Many kernels should be able to use the default test parameters, but if yours
 requires a lower tolerance, specific vector length, or other test parameters
-just create a new instance of volk_test_params_t for your kernel.
+just create a new instance of volk_gnsssdr_test_params_t for your kernel.
 
 ### Adding protokernels
 
-The primary purpose of VOLK is to have multiple implementations of an operation
+The primary purpose of VOLK_GNSSSDR is to have multiple implementations of an operation
 tuned for a specific CPU architecture. Ideally there is at least one
-protokernel of each kernel for every architecture that VOLK supports.
-The pattern for protokernel naming is volk_kernel_signature_architecture_nick.
-The architecture should be one of the supported VOLK architectures. The nick is
+protokernel of each kernel for every architecture that VOLK_GNSSSDR supports.
+The pattern for protokernel naming is volk_gnsssdr_kernel_signature_architecture_nick.
+The architecture should be one of the supported VOLK_GNSSSDR architectures. The nick is
 an optional name to distinguish between multiple implementations for a
 particular architecture.
 
 Architecture specific protokernels can be written in one of three ways.
 The first approach should always be to use compiler intrinsic functions.
 The second and third approaches are using either in-line assembly or
-assembly with .S files. Both methods of writing assembly exist in VOLK and
+assembly with .S files. Both methods of writing assembly exist in VOLK_GNSSSDR and
 should yield equivalent performance; which method you might choose is a
 matter of opinion. Regardless of the actual method the public function should
 be declared in the kernel header surrounded by ifdef fences on the symbol that
@@ -54,7 +54,7 @@ fits the architecture implementation.
 #### Compiler Intrinsics
 
 Compiler intrinsics should be treated as functions that map to a specific
-assembly instruction. Most VOLK kernels take the form of a loop that iterates
+assembly instruction. Most VOLK_GNSSSDR kernels take the form of a loop that iterates
 through a vector. Form a loop that iterates on a number of items that is natural
 for the architecture and then use compiler intrinsics to do the math for your
 operation or algorithm. Include the appropriate header inside the ifdef fences,
@@ -72,7 +72,7 @@ based on intrinsics.
 To write pure assembly protokernels, first declare the function name in the
 kernel header file the same way as any other protokernel, but include the extern
 keyword. Second, create a file (one for each protokernel) in
-volk/kernels/volk/asm/$arch. Disassemble another protokernel and copy the
+volk_gnsssdr/kernels/volk_gnsssdr/asm/$arch. Disassemble another protokernel and copy the
 disassembled code in to this file to bootstrap a working implementation. Often
 the disassembled code can be hand-tuned to improve performance.
 

@@ -1,6 +1,6 @@
 /*!
- * \file volk_gnsssdr_16ic_x2_dotprodxnpuppet_16ic.h
- * \brief Volk puppet for the multiple 16-bit complex dot product kernel
+ * \file volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic.h
+ * \brief Volk puppet for the multiple 16-bit complex dot product kernel.
  * \authors <ul>
  *          <li> Carles Fernandez Prades 2016 cfernandez at cttc dot cat
  *          </ul>

@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_16ic_resamplerxnpuppet_16ic.h
- * \brief Volk puppet for the multiple 16-bit complex vector resampler kernel
+ * \brief VOLK_GNSSSDR puppet for the multiple 16-bit complex vector resampler kernel.
  * \authors <ul>
  *          <li> Carles Fernandez Prades 2016 cfernandez at cttc dot cat
  *          </ul>
  *
- * Volk puppet for integrating the multiple resampler into volk's test system
+ * VOLK_GNSSSDR puppet for integrating the multiple resampler into the test system
  *
  * -------------------------------------------------------------------------
  *

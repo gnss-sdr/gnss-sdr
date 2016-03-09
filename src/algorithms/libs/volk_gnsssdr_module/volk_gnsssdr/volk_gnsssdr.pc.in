@@ -8,7 +8,7 @@ LV_CXXFLAGS=@LV_CXXFLAGS@
 Name: volk_gnsssdr
 Description: VOLK_GNSSSDR: Vector Optimized Library of Kernels specific for GNSS-SDR
 Requires:
-Version: @VERSION@
+Version: @LIBVER@
 Libs: -L${libdir} -lvolk_gnsssdr
 Cflags: -I${includedir} ${LV_CXXFLAGS}
 

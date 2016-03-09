@@ -60,6 +60,8 @@ public:
     double Code_phase_secs;         //!< Set by Tracking processing block
     double Tracking_timestamp_secs; //!< Set by Tracking processing block
     bool Flag_valid_tracking;
+    bool Flag_valid_symbol_output;
+    bool symbol_integration_enabled; //!< Set by Tracking processing block
 
     //Telemetry Decoder
     double Prn_timestamp_ms;             //!< Set by Telemetry Decoder processing block

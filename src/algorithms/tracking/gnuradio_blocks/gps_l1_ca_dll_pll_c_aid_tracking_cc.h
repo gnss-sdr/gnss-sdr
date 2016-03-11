@@ -160,6 +160,9 @@ private:
     double d_acc_carrier_phase_cycles;
     double d_code_phase_samples;
     double d_pll_to_dll_assist_secs_Ti;
+    double d_code_error_chips_Ti;
+    double d_code_error_filt_chips;
+    double d_carr_phase_error_secs_Ti;
 
     // symbol history to detect bit transition
     std::deque<gr_complex> d_E_history;

@@ -1252,10 +1252,10 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
 
             // By default we simply update the PRS frequencies from the OS:
             d_carrier_doppler_hz_prs = d_carrier_doppler_hz;
-            d_code_freq_chips_prs = d_code_freq_chips * Galileo_E1_A_CODE_CHIP_RATE_HZ/
-                Galileo_E1_CODE_CHIP_RATE_HZ;
-            d_subcarrier_freq_cycles_prs = d_subcarrier_freq_cycles * Galileo_E1_A_SUB_CARRIER_RATE_HZ/
-                Galileo_E1_SUB_CARRIER_A_RATE_HZ;
+            d_code_freq_chips_prs = Galileo_E1_A_CODE_CHIP_RATE_HZ +
+                    d_carrier_doppler_hz * Galileo_E1_A_CODE_CHIP_RATE_HZ/Galileo_E1_FREQ_HZ;
+            d_subcarrier_freq_cycles_prs = Galileo_E1_A_SUB_CARRIER_RATE_HZ +
+                   d_carrier_doppler_hz * Galileo_E1_A_SUB_CARRIER_RATE_HZ/Galileo_E1_FREQ_HZ;
 
             if( d_close_prs_loops )
             {

@@ -574,4 +574,159 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
 
 #endif /* LV_HAVE_NEON */
 
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+
+static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_fma(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+{
+    const unsigned int neon_iters = num_points / 4;
+
+    const lv_16sc_t** _in_a = in_a;
+    const lv_16sc_t* _in_common = in_common;
+    lv_16sc_t* _out = result;
+
+    lv_16sc_t tmp16_, tmp;
+    lv_32fc_t tmp32_;
+
+    if (neon_iters > 0)
+        {
+            lv_16sc_t dotProduct = lv_cmake(0,0);
+
+            lv_32fc_t ___phase4 = phase_inc * phase_inc * phase_inc * phase_inc;
+            __VOLK_ATTR_ALIGNED(16) float32_t __phase4_real[4] = { lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4) };
+            __VOLK_ATTR_ALIGNED(16) float32_t __phase4_imag[4] = { lv_cimag(___phase4), lv_cimag(___phase4), lv_cimag(___phase4), lv_cimag(___phase4) };
+
+            float32x4_t _phase4_real = vld1q_f32(__phase4_real);
+            float32x4_t _phase4_imag = vld1q_f32(__phase4_imag);
+
+            lv_32fc_t phase2 = (lv_32fc_t)(*phase) * phase_inc;
+            lv_32fc_t phase3 = phase2 * phase_inc;
+            lv_32fc_t phase4 = phase3 * phase_inc;
+
+            __VOLK_ATTR_ALIGNED(16) float32_t __phase_real[4] = { lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4) };
+            __VOLK_ATTR_ALIGNED(16) float32_t __phase_imag[4] = { lv_cimag((*phase)), lv_cimag(phase2), lv_cimag(phase3), lv_cimag(phase4) };
+
+            float32x4_t _phase_real = vld1q_f32(__phase_real);
+            float32x4_t _phase_imag = vld1q_f32(__phase_imag);
+
+            int16x4x2_t a_val, b_val;
+            __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
+            float32x4_t half = vdupq_n_f32(0.5f);
+            int16x4x2_t tmp16;
+            int32x4x2_t tmp32i;
+
+            float32x4x2_t tmp32f, tmp32_real, tmp32_imag;
+            float32x4_t sign, PlusHalf, Round;
+
+            int16x4x2_t* accumulator;
+            accumulator = (int16x4x2_t*)calloc(num_a_vectors, sizeof(int16x4x2_t));
+
+            for(int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                {
+                    accumulator[n_vec].val[0] = vdup_n_s16(0);
+                    accumulator[n_vec].val[1] = vdup_n_s16(0);
+                }
+
+            for(unsigned int number = 0; number < neon_iters; number++)
+                {
+                    /* load 4 complex numbers (int 16 bits each component) */
+                    tmp16 = vld2_s16((int16_t*)_in_common);
+                    __builtin_prefetch(_in_common + 8);
+                    _in_common += 4;
+
+                    /* promote them to int 32 bits */
+                    tmp32i.val[0] = vmovl_s16(tmp16.val[0]);
+                    tmp32i.val[1] = vmovl_s16(tmp16.val[1]);
+
+                    /* promote them to float 32 bits */
+                    tmp32f.val[0] = vcvtq_f32_s32(tmp32i.val[0]);
+                    tmp32f.val[1] = vcvtq_f32_s32(tmp32i.val[1]);
+
+                    /* complex multiplication of four complex samples (float 32 bits each component) */
+                    tmp32_real.val[0] = vmulq_f32(tmp32f.val[0], _phase_real);
+                    tmp32_real.val[1] = vmulq_f32(tmp32f.val[1], _phase_imag);
+                    tmp32_imag.val[0] = vmulq_f32(tmp32f.val[0], _phase_imag);
+                    tmp32_imag.val[1] = vmulq_f32(tmp32f.val[1], _phase_real);
+
+                    tmp32f.val[0] = vsubq_f32(tmp32_real.val[0], tmp32_real.val[1]);
+                    tmp32f.val[1] = vaddq_f32(tmp32_imag.val[0], tmp32_imag.val[1]);
+
+                    /* downcast results to int32 */
+                    /* in __aarch64__ we can do that with vcvtaq_s32_f32(ret1); vcvtaq_s32_f32(ret2); */
+                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[0]), 31)));
+                    PlusHalf = vaddq_f32(tmp32f.val[0], half);
+                    Round = vsubq_f32(PlusHalf, sign);
+                    tmp32i.val[0] = vcvtq_s32_f32(Round);
+
+                    sign = vcvtq_f32_u32((vshrq_n_u32(vreinterpretq_u32_f32(tmp32f.val[1]), 31)));
+                    PlusHalf = vaddq_f32(tmp32f.val[1], half);
+                    Round = vsubq_f32(PlusHalf, sign);
+                    tmp32i.val[1] = vcvtq_s32_f32(Round);
+
+                    /* downcast results to int16 */
+                    tmp16.val[0] = vqmovn_s32(tmp32i.val[0]);
+                    tmp16.val[1] = vqmovn_s32(tmp32i.val[1]);
+
+                    /* compute next four phases */
+                    tmp32_real.val[0] = vmulq_f32(_phase_real, _phase4_real);
+                    tmp32_real.val[1] = vmulq_f32(_phase_imag, _phase4_imag);
+                    tmp32_imag.val[0] = vmulq_f32(_phase_real, _phase4_imag);
+                    tmp32_imag.val[1] = vmulq_f32(_phase_imag, _phase4_real);
+
+                    _phase_real = vsubq_f32(tmp32_real.val[0], tmp32_real.val[1]);
+                    _phase_imag = vaddq_f32(tmp32_imag.val[0], tmp32_imag.val[1]);
+
+                    vst1q_f32((float32_t*)__phase_real, _phase_real);
+                    vst1q_f32((float32_t*)__phase_imag, _phase_imag);
+
+                    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                        {
+                            a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4]));
+
+                            b_val.val[0] = vmul_s16(a_val.val[0], tmp16.val[0]);
+                            b_val.val[1] = vmul_s16(a_val.val[1], tmp16.val[0]);
+
+                            // use multiply accumulate/subtract to get result
+                            b_val.val[0] = vmls_s16(b_val.val[0], a_val.val[1], tmp16.val[1]);
+                            b_val.val[1] = vmla_s16(b_val.val[1], a_val.val[0], tmp16.val[1]);
+
+                            accumulator[n_vec].val[0] = vqadd_s16(accumulator[n_vec].val[0], b_val.val[0]);
+                            accumulator[n_vec].val[1] = vqadd_s16(accumulator[n_vec].val[1], b_val.val[1]);
+                        }
+                }
+
+            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                {
+                    vst2_s16((int16_t*)dotProductVector, accumulator[n_vec]); // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0,0);
+                    for (int i = 0; i < 4; ++i)
+                        {
+                            dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
+                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                        }
+                    _out[n_vec] = dotProduct;
+                }
+            free(accumulator);
+            vst1q_f32((float32_t*)__phase_real, _phase_real);
+            vst1q_f32((float32_t*)__phase_imag, _phase_imag);
+
+            (*phase) = lv_cmake((float32_t)__phase_real[0], (float32_t)__phase_imag[0]);
+        }
+
+    for (unsigned int n = neon_iters * 4; n < num_points; n++)
+        {
+            tmp16_ = in_common[n];  //printf("neon phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
+            tmp32_ = lv_cmake((float32_t)lv_creal(tmp16_), (float32_t)lv_cimag(tmp16_)) * (*phase);
+            tmp16_ = lv_cmake((int16_t)rintf(lv_creal(tmp32_)), (int16_t)rintf(lv_cimag(tmp32_)));
+            (*phase) *= phase_inc;
+            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                {
+                    tmp = tmp16_ * in_a[n_vec][n];
+                    _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                }
+        }
+}
+
+#endif /* LV_HAVE_NEON */
+
 #endif /*INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_H*/

@@ -307,7 +307,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon_fma(lv_16sc_t* out, c
     // for 2-lane vectors, 1st lane holds the real part,
     // 2nd lane holds the imaginary part
     int16x4x2_t a_val, b_val, accumulator;
-    int16x4x2_t tmp_imag;
+    int16x4x2_t tmp;
     __VOLK_ATTR_ALIGNED(16) lv_16sc_t accum_result[4];
     accumulator.val[0] = vdup_n_s16(0);
     accumulator.val[1] = vdup_n_s16(0);
@@ -319,15 +319,15 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon_fma(lv_16sc_t* out, c
             __builtin_prefetch(a_ptr + 8);
             __builtin_prefetch(b_ptr + 8);
 
-            tmp_imag.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
-            tmp_imag.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
+            tmp.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
+            tmp.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
 
             // use multiply accumulate/subtract to get result
-            tmp_imag.val[0] = vmls_s16(tmp_imag.val[0], a_val.val[1], b_val.val[1]);
-            tmp_imag.val[1] = vmla_s16(tmp_imag.val[1], a_val.val[0], b_val.val[1]);
+            tmp.val[0] = vmls_s16(tmp.val[0], a_val.val[1], b_val.val[1]);
+            tmp.val[1] = vmla_s16(tmp.val[1], a_val.val[0], b_val.val[1]);
 
-            accumulator.val[0] = vadd_s16(accumulator.val[0], tmp_imag.val[0]);
-            accumulator.val[1] = vadd_s16(accumulator.val[1], tmp_imag.val[1]);
+            accumulator.val[0] = vadd_s16(accumulator.val[0], tmp.val[0]);
+            accumulator.val[1] = vadd_s16(accumulator.val[1], tmp.val[1]);
 
             a_ptr += 4;
             b_ptr += 4;

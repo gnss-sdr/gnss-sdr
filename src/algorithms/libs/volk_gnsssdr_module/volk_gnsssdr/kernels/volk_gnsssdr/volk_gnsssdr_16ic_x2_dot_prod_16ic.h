@@ -294,10 +294,11 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon(lv_16sc_t* out, const
 
 #endif /* LV_HAVE_NEON */
 
+
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon_fma(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon_vma(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     unsigned int quarter_points = num_points / 4;
     unsigned int number;

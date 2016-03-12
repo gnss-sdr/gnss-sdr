@@ -42,7 +42,6 @@
 
 
 #ifdef LV_HAVE_GENERIC
-
 static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_generic(lv_16sc_t* outVector, const lv_16sc_t* inVector, unsigned int num_points)
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
@@ -59,7 +58,6 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_generic(lv_16sc_t* outVe
 
 
 #ifdef LV_HAVE_SSE3
-
 static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_a_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, unsigned int num_points)
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
@@ -74,8 +72,8 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_a_sse3(lv_16sc_t* outVec
 
 #endif /* LV_HAVE_SSE3 */
 
-#ifdef LV_HAVE_SSE3
 
+#ifdef LV_HAVE_SSE3
 static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_u_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, unsigned int num_points)
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
@@ -90,8 +88,8 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_u_sse3(lv_16sc_t* outVec
 
 #endif /* LV_HAVE_SSE3 */
 
-#ifdef LV_HAVE_NEON
 
+#ifdef LV_HAVE_NEON
 static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_neon(lv_16sc_t* outVector, const lv_16sc_t* inVector, unsigned int num_points)
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!

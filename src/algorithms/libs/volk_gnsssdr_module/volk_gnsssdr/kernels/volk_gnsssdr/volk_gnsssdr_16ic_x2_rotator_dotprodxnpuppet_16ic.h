@@ -69,6 +69,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_generic(lv_
 
 #endif  // Generic
 
+
 #ifdef LV_HAVE_SSE3
 static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_a_sse3(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {
@@ -99,8 +100,8 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_a_sse3(lv_1
 
 #endif // SSE3
 
-#ifdef LV_HAVE_SSE3
 
+#ifdef LV_HAVE_SSE3
 static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_u_sse3(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
@@ -130,8 +131,8 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_u_sse3(lv_1
 
 #endif // SSE3
 
-#ifdef LV_HAVE_NEON
 
+#ifdef LV_HAVE_NEON
 static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
@@ -161,9 +162,9 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_neon(lv_16s
 
 #endif // NEON
 
-#ifdef LV_HAVE_NEON
 
-static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_neon_fma(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
+#ifdef LV_HAVE_NEON
+static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_neon_vma(lv_16sc_t* result, const lv_16sc_t* local_code, const lv_16sc_t* in, unsigned int num_points)
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
     float rem_carrier_phase_in_rad = 0.345;
@@ -181,7 +182,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dotprodxnpuppet_16ic_neon_fma(lv
             memcpy((lv_16sc_t*)in_a[n], (lv_16sc_t*)in, sizeof(lv_16sc_t) * num_points);
         }
 
-    volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_fma(result, local_code, phase_inc[0], phase, (const lv_16sc_t**) in_a, num_a_vectors, num_points);
+    volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_vma(result, local_code, phase_inc[0], phase, (const lv_16sc_t**) in_a, num_a_vectors, num_points);
 
     for(unsigned int n = 0; n < num_a_vectors; n++)
         {

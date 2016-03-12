@@ -634,7 +634,7 @@ EXCLUDE                = @top_srcdir@/docs/html \
                          @top_srcdir@/cmake \
                          @top_srcdir@/data \
                          @top_srcdir@/src/core/libs/supl \
-						 @top_srcdir@/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/docs \
+						 @top_srcdir@/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr \
 
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or

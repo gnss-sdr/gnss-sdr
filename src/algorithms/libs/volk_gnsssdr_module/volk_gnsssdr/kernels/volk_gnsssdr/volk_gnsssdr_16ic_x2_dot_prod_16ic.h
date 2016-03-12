@@ -94,7 +94,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 
     if (sse_iters > 0)
         {
-            __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, realcacc, imagcacc, result;
+            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, realcacc, imagcacc, result;
             __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
             realcacc = _mm_setzero_si128();
@@ -109,7 +109,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
                     //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
                     // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     a = _mm_load_si128((__m128i*)_in_a); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    __builtin_prefetch(_in_a + 8);
                     b = _mm_load_si128((__m128i*)_in_b);
+                    __builtin_prefetch(_in_b + 8);
                     c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
                     c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
@@ -171,7 +173,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 
     if (sse_iters > 0)
         {
-            __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, realcacc, imagcacc, result;
+            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, realcacc, imagcacc, result;
             __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
             realcacc = _mm_setzero_si128();
@@ -186,7 +188,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
                     //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
                     // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     a = _mm_loadu_si128((__m128i*)_in_a); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    __builtin_prefetch(_in_a + 8);
                     b = _mm_loadu_si128((__m128i*)_in_b);
+                    __builtin_prefetch(_in_b + 8);
                     c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
                     c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
@@ -212,7 +216,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 
             result = _mm_or_si128(realcacc, imagcacc);
 
-            _mm_storeu_si128((__m128i*)dotProductVector,result); // Store the results back into the dot product vector
+            _mm_storeu_si128((__m128i*)dotProductVector, result); // Store the results back into the dot product vector
 
             for (i = 0; i < 4; ++i)
                 {

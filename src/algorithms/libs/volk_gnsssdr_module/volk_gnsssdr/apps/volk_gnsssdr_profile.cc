@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 
     /** --help option */
     if ( vm.count("help") ) {
-      std::cout << "The VOLK profiler." << std::endl
+      std::cout << "The VOLK_GNSSSDR profiler." << std::endl
                 << desc << std::endl;
       return 0;
     }

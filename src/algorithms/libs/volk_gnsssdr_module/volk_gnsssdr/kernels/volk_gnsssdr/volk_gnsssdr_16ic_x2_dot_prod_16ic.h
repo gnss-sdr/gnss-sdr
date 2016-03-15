@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_16ic_x2_dot_prod_16ic.h
- * \brief Volk protokernel: multiplies two 16 bits vectors and accumulates them
+ * \brief VOLK_GNSSSDR kernel: multiplies two 16 bits vectors and accumulates them.
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
- * Volk protokernel that multiplies two 16 bits vectors (8 bits the real part 
+ * VOLK_GNSSSDR kernel that multiplies two 16 bits vectors (8 bits the real part
  * and 8 bits the imaginary part) and accumulates them
  *
  * -------------------------------------------------------------------------
@@ -33,6 +33,29 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_16ic_x2_dot_prod_16ic
+ *
+ * \b Overview
+ *
+ * Multiplies two input complex vectors (16-bit integer each component) and accumulates them,
+ * storing the result. Results are saturated so never go beyond the limits of the data type.
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_16ic_x2_dot_prod_16ic(lv_16sc_t* result, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li in_a:          One of the vectors to be multiplied and accumulated.
+ * \li in_b:          The other vector to be multiplied and accumulated.
+ * \li num_points:    Number of complex values to be multiplied together, accumulated and stored into \p result
+ *
+ * \b Outputs
+ * \li result:        Value of the accumulated result.
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_H
 #define INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_H
 
@@ -43,13 +66,6 @@
 
 #ifdef LV_HAVE_GENERIC
 
-/*!
- \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
- \param[out] result     Value of the accumulated result
- \param[in]  in_a       One of the vectors to be multiplied and accumulated
- \param[in]  in_b       One of the vectors to be multiplied and accumulated
- \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_generic(lv_16sc_t* result, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     result[0] = lv_cmake((int16_t)0, (int16_t)0);
@@ -66,13 +82,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_generic(lv_16sc_t* result,
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
- \param[out] result     Value of the accumulated result
- \param[in]  in_a       One of the vectors to be multiplied and accumulated
- \param[in]  in_b       One of the vectors to be multiplied and accumulated
- \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake((int16_t)0, (int16_t)0);
@@ -85,7 +94,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 
     if (sse_iters > 0)
         {
-            __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, realcacc, imagcacc, result;
+            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, realcacc, imagcacc, result;
             __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
             realcacc = _mm_setzero_si128();
@@ -100,7 +109,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
                     //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
                     // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     a = _mm_load_si128((__m128i*)_in_a); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    __builtin_prefetch(_in_a + 8);
                     b = _mm_load_si128((__m128i*)_in_b);
+                    __builtin_prefetch(_in_b + 8);
                     c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
                     c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
@@ -149,13 +160,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
- \param[out] result     Value of the accumulated result
- \param[in]  in_a       One of the vectors to be multiplied and accumulated
- \param[in]  in_b       One of the vectors to be multiplied and accumulated
- \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     lv_16sc_t dotProduct = lv_cmake((int16_t)0, (int16_t)0);
@@ -169,7 +173,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 
     if (sse_iters > 0)
         {
-            __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, realcacc, imagcacc, result;
+            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, realcacc, imagcacc, result;
             __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
             realcacc = _mm_setzero_si128();
@@ -184,7 +188,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
                     //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
                     // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     a = _mm_loadu_si128((__m128i*)_in_a); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
+                    __builtin_prefetch(_in_a + 8);
                     b = _mm_loadu_si128((__m128i*)_in_b);
+                    __builtin_prefetch(_in_b + 8);
                     c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
                     c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
@@ -210,7 +216,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 
             result = _mm_or_si128(realcacc, imagcacc);
 
-            _mm_storeu_si128((__m128i*)dotProductVector,result); // Store the results back into the dot product vector
+            _mm_storeu_si128((__m128i*)dotProductVector, result); // Store the results back into the dot product vector
 
             for (i = 0; i < 4; ++i)
                 {
@@ -232,13 +238,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-/*!
- \brief Multiplies the two input complex vectors (16-bit integer each component) and accumulates them, storing the result. Results are saturated so never go beyond the limits of the data type.
- \param[out] result     Value of the accumulated result
- \param[in]  in_a       One of the vectors to be multiplied and accumulated
- \param[in]  in_b       One of the vectors to be multiplied and accumulated
- \param[in]  num_points The number of complex values in aVector and bVector to be multiplied together, accumulated and stored into cVector
- */
 static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     unsigned int quarter_points = num_points / 4;
@@ -278,6 +277,58 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon(lv_16sc_t* out, const
 
             accumulator.val[0] = vadd_s16(accumulator.val[0], c_val.val[0]);
             accumulator.val[1] = vadd_s16(accumulator.val[1], c_val.val[1]);
+
+            a_ptr += 4;
+            b_ptr += 4;
+        }
+
+    vst2_s16((int16_t*)accum_result, accumulator);
+    *out = accum_result[0] + accum_result[1] + accum_result[2] + accum_result[3];
+
+    // tail case
+    for(number = quarter_points * 4; number < num_points; ++number)
+        {
+            *out += (*a_ptr++) * (*b_ptr++);
+        }
+}
+
+#endif /* LV_HAVE_NEON */
+
+
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon_vma(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+{
+    unsigned int quarter_points = num_points / 4;
+    unsigned int number;
+
+    lv_16sc_t* a_ptr = (lv_16sc_t*) in_a;
+    lv_16sc_t* b_ptr = (lv_16sc_t*) in_b;
+    // for 2-lane vectors, 1st lane holds the real part,
+    // 2nd lane holds the imaginary part
+    int16x4x2_t a_val, b_val, accumulator;
+    int16x4x2_t tmp;
+    __VOLK_ATTR_ALIGNED(16) lv_16sc_t accum_result[4];
+    accumulator.val[0] = vdup_n_s16(0);
+    accumulator.val[1] = vdup_n_s16(0);
+
+    for(number = 0; number < quarter_points; ++number)
+        {
+            a_val = vld2_s16((int16_t*)a_ptr); // a0r|a1r|a2r|a3r || a0i|a1i|a2i|a3i
+            b_val = vld2_s16((int16_t*)b_ptr); // b0r|b1r|b2r|b3r || b0i|b1i|b2i|b3i
+            __builtin_prefetch(a_ptr + 8);
+            __builtin_prefetch(b_ptr + 8);
+
+            tmp.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
+            tmp.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
+
+            // use multiply accumulate/subtract to get result
+            tmp.val[0] = vmls_s16(tmp.val[0], a_val.val[1], b_val.val[1]);
+            tmp.val[1] = vmla_s16(tmp.val[1], a_val.val[0], b_val.val[1]);
+
+            accumulator.val[0] = vadd_s16(accumulator.val[0], tmp.val[0]);
+            accumulator.val[1] = vadd_s16(accumulator.val[1], tmp.val[1]);
 
             a_ptr += 4;
             b_ptr += 4;

@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_8ic_x2_multiply_8ic.h
- * \brief Volk protokernel: multiplies two 16 bits vectors
+ * \brief VOLK_GNSSSDR kernel: multiplies two 16 bits vectors.
  * \authors <ul>
  *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
- * Volk protokernel that multiplies two 16 bits vectors (8 bits the real part
+ * VOLK_GNSSSDR kernel that multiplies two 16 bits vectors (8 bits the real part
  * and 8 bits the imaginary part)
  *
  * -------------------------------------------------------------------------
@@ -33,6 +33,28 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_8ic_x2_multiply_8ic
+ *
+ * \b Overview
+ *
+ * Multiplies two input complex vectors, point-by-point, storing the result in the third vector
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_8ic_x2_multiply_8ic(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li aVector: One of the vectors to be multiplied
+ * \li bVector: The other vector to be multiplied
+ * \li num_points: The number of complex data points.
+ *
+ * \b Outputs
+ * \li cVector: The vector where the result will be stored
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_H
 #define INCLUDED_volk_gnsssdr_8ic_x2_multiply_8ic_H
 
@@ -41,13 +63,6 @@
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Multiplies the two input complex vectors of 8-bit integer each component and stores the results in the third vector
- \param[out] cVector    The vector where the results will be stored
- \param[in]  aVector    One of the vectors to be multiplied
- \param[in]  bVector    One of the vectors to be multiplied
- \param{in]  num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
- */
 static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse2(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
@@ -99,16 +114,10 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse2(lv_8sc_t* cVector, co
 }
 #endif /* LV_HAVE_SSE2 */
 
+
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
 
-/*!
- \brief Multiplies the two input complex vectors of 8-bit integer each component and stores the results in the third vector
- \param[out] cVector    The vector where the results will be stored
- \param[in]  aVector    One of the vectors to be multiplied
- \param[in]  bVector    One of the vectors to be multiplied
- \param{in]  num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
- */
 static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse4_1(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
@@ -160,15 +169,9 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_sse4_1(lv_8sc_t* cVector, 
 }
 #endif /* LV_HAVE_SSE4_1 */
 
+
 #ifdef LV_HAVE_GENERIC
 
-/*!
- \brief Multiplies the two input complex vectors of 8-bit integer each component and stores the results in the third vector
- \param[out] cVector    The vector where the results will be stored
- \param[in]  aVector    One of the vectors to be multiplied
- \param[in]  bVector    One of the vectors to be multiplied
- \param{in]  num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
- */
 static inline void volk_gnsssdr_8ic_x2_multiply_8ic_generic(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points)
 {
     lv_8sc_t* cPtr = cVector;
@@ -186,13 +189,6 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_generic(lv_8sc_t* cVector, c
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Multiplies the two input complex vectors of 8-bit integer each component and stores the results in the third vector
- \param[out] cVector    The vector where the results will be stored
- \param[in]  aVector    One of the vectors to be multiplied
- \param[in]  bVector    One of the vectors to be multiplied
- \param{in]  num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
- */
 static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse2(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
@@ -244,16 +240,10 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse2(lv_8sc_t* cVector, co
 }
 #endif /* LV_HAVE_SSE2 */
 
+
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
 
-/*!
- \brief Multiplies the two input complex vectors of 8-bit integer each component and stores the results in the third vector
- \param[out] cVector    The vector where the results will be stored
- \param[in]  aVector    One of the vectors to be multiplied
- \param[in]  bVector    One of the vectors to be multiplied
- \param{in]  num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
- */
 static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
@@ -310,13 +300,6 @@ static inline void volk_gnsssdr_8ic_x2_multiply_8ic_a_sse4_1(lv_8sc_t* cVector, 
 
 extern void volk_gnsssdr_8ic_x2_multiply_8ic_a_orc_impl(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points);
 
-/*!
- \brief Multiplies the two input complex vectors of 8-bit integer each component and stores the results in the third vector
- \param[out] cVector    The vector where the results will be stored
- \param[in]  aVector    One of the vectors to be multiplied
- \param[in]  bVector    One of the vectors to be multiplied
- \param{in]  num_points The number of complex values in aVector and bVector to be multiplied together and stored into cVector
- */
 static inline void volk_gnsssdr_8ic_x2_multiply_8ic_u_orc(lv_8sc_t* cVector, const lv_8sc_t* aVector, const lv_8sc_t* bVector, unsigned int num_points)
 {
     volk_gnsssdr_8ic_x2_multiply_8ic_a_orc_impl(cVector, aVector, bVector, num_points);

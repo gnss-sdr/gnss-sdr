@@ -1,6 +1,6 @@
 /*!
  * \file volk_gnsssdr_32fc_convert_8ic.h
- * \brief Volk protokernel: converts float32 complex values to 8 integer complex values taking care of overflow
+ * \brief VOLK_GNSSSDR kernel: converts float32 complex values to 8 integer complex values taking care of overflow.
  * \authors <ul>
  *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
@@ -30,6 +30,29 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_32fc_convert_8ic
+ *
+ * \b Overview
+ *
+ * Converts a complex vector of 32-bits float each component into
+ * a complex vector of 8-bits integer each component.
+ * Values are saturated to the limit values of the output data type.
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_32fc_convert_8ic(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li inputVector:  The complex 32-bit float input data buffer.
+ * \li num_points:   The number of data values to be converted.
+ *
+ * \b Outputs
+ * \li outputVector: The complex 8-bit integer output data buffer.
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_32fc_convert_8ic_H
 #define INCLUDED_volk_gnsssdr_32fc_convert_8ic_H
 
@@ -42,12 +65,6 @@
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Converts a complex vector of 32-bits float each component into a complex vector of 8-bits integer each component. Values are saturated to the limit values of the output data type.
- \param[out] outputVector The complex 8-bit integer output data buffer
- \param[in]  inputVector  The complex 32-bit float data buffer
- \param[in]  num_points   The number of data values to be converted
- */
 static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
     unsigned i = 0;
@@ -103,14 +120,9 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
 }
 #endif /* LV_HAVE_SSE2 */
 
+
 #ifdef LV_HAVE_GENERIC
 
-/*!
- \brief Converts a complex vector of 32-bits float each component into a complex vector of 8-bits integer each component. Values are saturated to the limit values of the output data type.
- \param[out] outputVector The complex 8-bit integer output data buffer
- \param[in]  inputVector  The complex 32-bit float data buffer
- \param[in]  num_points   The number of data values to be converted
- */
 static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
     float* inputVectorPtr = (float*)inputVector;
@@ -133,12 +145,6 @@ static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector,
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-/*!
- \brief Converts a complex vector of 32-bits float each component into a complex vector of 8-bits integer each component. Values are saturated to the limit values of the output data type.
- \param[out] outputVector The complex 8-bit integer output data buffer
- \param[in]  inputVector  The complex 32-bit float data buffer
- \param[in]  num_points   The number of data values to be converted
- */
 static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 8;
@@ -197,12 +203,6 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-/*!
- \brief Converts a complex vector of 32-bits float each component into a complex vector of 8-bits integer each component. Values are saturated to the limit values of the output data type.
- \param[out] outputVector The complex 8-bit integer output data buffer
- \param[in]  inputVector  The complex 32-bit float data buffer
- \param[in]  num_points   The number of data values to be converted
- */
 static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
     const unsigned int neon_iters = num_points / 8;

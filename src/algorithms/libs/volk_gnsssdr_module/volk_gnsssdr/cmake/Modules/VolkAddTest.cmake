@@ -166,7 +166,7 @@ function(VOLK_ADD_TEST test_name)
     #functionality will be removed in the future.  Leave it here for
     #now until someone can figure out how to do this in Windows.
     foreach(target ${test_name} ${VOLK_TEST_TARGET_DEPS})
-      get_target_property(location ${target} LOCATION)
+      get_target_property(location "${target}" LOCATION)
       if(location)
         get_filename_component(path ${location} PATH)
         string(REGEX REPLACE "\\$\\(.*\\)" ${CMAKE_BUILD_TYPE} path ${path})

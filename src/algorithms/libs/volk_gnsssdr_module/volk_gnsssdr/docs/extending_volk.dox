@@ -1,0 +1,92 @@
+/*! \page extending_volk Extending VOLK
+
+There are two primary routes for extending VOLK for your own use. The
+preferred route is by writing kernels and proto-kernels as part of this
+repository and sending patches upstream. The alternative is creating your
+own VOLK module, as it is the case of VOLK_GNSSSDR ;-). There is a good reason
+for that: to provide GNSS-SDR users with adequate protokernels as soon as possible, 
+without needing to upgrade to the latest VOLK version to enjoy the benefits. 
+Notwithstanding, some of VOLK_GNSSSDR can be integrated into VOLK in the future,
+if other users find them useful.
+
+## Modifying this repository
+
+### Adding kernels
+
+Adding kernels refers to introducing a new function to the VOLK_GNSSSDR API that is
+presumably a useful math function/operation. The first step is to create
+the file in volk_gnsssdr/kernels/volk_gnsssdr. Follow the naming scheme provided in the
+VOLK_GNSSSDR terms and techniques page. First create the generic protokernel.
+
+The generic protokernel should be written in plain C using explicitly sized
+types from stdint.h or volk_gnsssdr_complex.h when appropriate. volk_gnsssdr_complex.h
+includes explicitly sized complex types for floats and ints. The name of
+the generic kernel should be volk_gnsssdr_signature_from_file_generic. If multiple
+versions of the generic kernel exist then a description can be appended to
+generic_, but it is not required to use alignment flags in the generic
+protokernel name. It is required to surround the entire generic function
+with preprocessor ifdef fences on the symbol LV_HAVE_GENERIC.
+
+Finally, add the kernel to the list of test cases in volk_gnsssdr/lib/kernel_tests.h.
+Many kernels should be able to use the default test parameters, but if yours
+requires a lower tolerance, specific vector length, or other test parameters
+just create a new instance of volk_gnsssdr_test_params_t for your kernel.
+
+### Adding protokernels
+
+The primary purpose of VOLK_GNSSSDR is to have multiple implementations of an operation
+tuned for a specific CPU architecture. Ideally there is at least one
+protokernel of each kernel for every architecture that VOLK_GNSSSDR supports.
+The pattern for protokernel naming is volk_gnsssdr_kernel_signature_architecture_nick.
+The architecture should be one of the supported VOLK_GNSSSDR architectures. The nick is
+an optional name to distinguish between multiple implementations for a
+particular architecture.
+
+Architecture specific protokernels can be written in one of three ways.
+The first approach should always be to use compiler intrinsic functions.
+The second and third approaches are using either in-line assembly or
+assembly with .S files. Both methods of writing assembly exist in VOLK_GNSSSDR and
+should yield equivalent performance; which method you might choose is a
+matter of opinion. Regardless of the actual method the public function should
+be declared in the kernel header surrounded by ifdef fences on the symbol that
+fits the architecture implementation.
+
+#### Compiler Intrinsics
+
+Compiler intrinsics should be treated as functions that map to a specific
+assembly instruction. Most VOLK_GNSSSDR kernels take the form of a loop that iterates
+through a vector. Form a loop that iterates on a number of items that is natural
+for the architecture and then use compiler intrinsics to do the math for your
+operation or algorithm. Include the appropriate header inside the ifdef fences,
+but before your protokernel declaration.
+
+
+#### In-line Assembly
+
+In-line assembly uses a compiler macro to include verbatim assembly with C code.
+The process of in-line assembly protokernels is very similar to protokernels
+based on intrinsics.
+
+#### Assembly with .S files
+
+To write pure assembly protokernels, first declare the function name in the
+kernel header file the same way as any other protokernel, but include the extern
+keyword. Second, create a file (one for each protokernel) in
+volk_gnsssdr/kernels/volk_gnsssdr/asm/$arch. Disassemble another protokernel and copy the
+disassembled code in to this file to bootstrap a working implementation. Often
+the disassembled code can be hand-tuned to improve performance.
+
+## VOLK Modules
+
+VOLK has a concept of modules. Each module is an independent VOLK tree. Modules
+can be managed with the volk_modtool application. At a high level the module is
+a clone of all of the VOLK machinery without kernels. volk_modtool also makes it
+easy to copy kernels to a module.
+
+Kernels and protokernels are added to your own VOLK module the same way they are
+added to this repository, which was described in the previous section.
+
+VOLK_GNSSSDR is a VOLK Module.
+
+*/
+

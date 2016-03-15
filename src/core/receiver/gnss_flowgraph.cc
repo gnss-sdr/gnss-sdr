@@ -390,12 +390,12 @@ void GNSSFlowgraph::wait()
  */
 void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
 {
-    DLOG(INFO) << "received " << what << " from " << who;
+	DLOG(INFO) << "received " << what << " from " << who;
 
     switch (what)
     {
     case 0:
-        LOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
+    	DLOG(INFO) << "Channel " << who << " ACQ FAILED satellite " << channels_.at(who)->get_signal().get_satellite() << ", Signal " << channels_.at(who)->get_signal().get_signal_str();
         available_GNSS_signals_.push_back(channels_.at(who)->get_signal());
 
         //TODO: Optimize the channel and signal matching!
@@ -403,9 +403,11 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             {
                 available_GNSS_signals_.push_back(available_GNSS_signals_.front());
                 available_GNSS_signals_.pop_front();
+                std::cout << "loop"<<std::endl;
             }
         channels_.at(who)->set_signal(available_GNSS_signals_.front());
         available_GNSS_signals_.pop_front();
+
         //todo: This is a provisional bug fix to avoid random channel state machine deadlock caused by an incorrect sequence of events
         //      Correct sequence: start_acquisition() is triggered after the negative acquisition driven by the process_channel_messages() thread inside channel class
         //      Incorrect sequence: due to thread concurrency, some times start_acquisition is triggered BEFORE the last negative_acquisition notification, thus producing a deadlock
@@ -417,7 +419,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         // TODO: Tracking messages
 
     case 1:
-        LOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_.at(who)->get_signal().get_satellite();
+    	DLOG(INFO)  << "Channel " << who << " ACQ SUCCESS satellite " << channels_.at(who)->get_signal().get_satellite();
         channels_state_[who] = 2;
         acq_channels_count_--;
         if (!available_GNSS_signals_.empty() && acq_channels_count_ < max_acq_channels_)
@@ -445,7 +447,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         break;
 
     case 2:
-        LOG(INFO) << "Channel " << who << " TRK FAILED satellite " << channels_.at(who)->get_signal().get_satellite();
+    	DLOG(INFO)  << "Channel " << who << " TRK FAILED satellite " << channels_.at(who)->get_signal().get_satellite();
         if (acq_channels_count_ < max_acq_channels_)
             {
                 channels_state_[who] = 1;
@@ -468,7 +470,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     default:
         break;
     }
-    DLOG(INFO) << "Number of available signals: " << available_GNSS_signals_.size();
+    DLOG(INFO)  << "Number of available signals: " << available_GNSS_signals_.size();
 }
 
 

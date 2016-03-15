@@ -1,0 +1,19 @@
+/*! \mainpage VOLK_GNSSSDR
+
+Welcome to VOLK_GNSSSDR!
+
+VOLK_GNSSSDR is the Vector-Optimized Library of Kernels for GNSS-SDR. 
+It is a library that contains kernels of hand-written SIMD code for different 
+mathematical operations. Since each SIMD architecture can be very different 
+and no compiler has yet come along to handle vectorization properly or highly 
+efficiently, VOLK_GNSSSDR approaches the problem differently.
+
+For each architecture or platform that a developer wishes to vectorize for, a
+new proto-kernel is added to VOLK_GNSSSDR. At runtime, VOLK_GNSSSDR will select the correct
+proto-kernel. In this way, the users of VOLK_GNSSSDR call a kernel for performing the
+operation that is platform/architecture agnostic. This allows us to write
+portable SIMD code.
+
+VOLK_GNSSSDR is a module generated from the original VOLK library http://libvolk.org
+
+*/

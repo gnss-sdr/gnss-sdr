@@ -1,11 +1,11 @@
 /*!
- * \file volk_16ic_s32fc_x2_rotator_16ic.h
- * \brief Volk protokernel: rotates a 16 bits complex vector
+ * \file volk_gnsssdr_16ic_s32fc_x2_rotator_16ic.h
+ * \brief VOLK_GNSSSDR kernel: rotates a 16 bits complex vector.
  * \authors <ul>
  *          <li> Carles Fernandez-Prades, 2015  cfernandez at cttc.es
  *          </ul>
  *
- * Volk protokernel that rotates a 16-bit complex vector
+ * VOLK_GNSSSDR kernel that rotates a 16-bit complex vector
  *
  * -------------------------------------------------------------------------
  *
@@ -32,6 +32,29 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_16ic_s32fc_x2_rotator_16ic
+ *
+ * \b Overview
+ *
+ * Rotates a complex vector (16-bit integer samples each component).
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li inVector:   Vector to be rotated.
+ * \li phase_inc:  Phase increment in each sample = lv_cmake(cos(phase_step_rad), sin(phase_step_rad))
+ * \li phase:      Initial phase = lv_cmake(cos(initial_phase_rad), sin(initial_phase_rad))
+ * \li num_points: Number of complex values to be rotated and stored into \p outVector
+ *
+ * \b Outputs
+ * \li phase:      Final phase.
+ * \li outVector:  The resampled vector.
+ *
+ */
 
 #ifndef INCLUDED_volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_H
 #define INCLUDED_volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_H
@@ -42,14 +65,6 @@
 
 #ifdef LV_HAVE_GENERIC
 
-/*!
- \brief Rotates a complex vector (16-bit integer samples each component)
- \param[out]    outVector  Rotated vector
- \param[in]     inVector   Vector to be rotated
- \param[in]     phase_inc  Phase increment = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad))
- \param[in,out] phase      Initial / final phase
- \param[in]     num_points The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     unsigned int i = 0;
@@ -70,14 +85,6 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic(lv_16sc_t* ou
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 
-/*!
- \brief Rotates a complex vector (16-bit integer samples each component)
- \param[out]    outVector  Rotated vector
- \param[in]     inVector   Vector to be rotated
- \param[in]     phase_inc  Phase increment = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad))
- \param[in,out] phase      Initial / final phase
- \param[in]     num_points The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
@@ -103,7 +110,6 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
     for(unsigned int number = 0; number < sse_iters; number++)
         {
             a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
-            __builtin_prefetch(_in + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg); // Load yh with ci,ci,di,di
@@ -150,7 +156,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
             _out += 4;
         }
 
-    _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
+    _mm_storeu_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
 
     for (unsigned int i = sse_iters * 4; i < num_points; ++i)
@@ -164,17 +170,10 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
 
 #endif /* LV_HAVE_SSE3 */
 
+
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 
-/*!
- \brief Rotates a complex vector (16-bit integer samples each component)
- \param[out]    outVector  Rotated vector
- \param[in]     inVector   Vector to be rotated
- \param[in]     phase_inc  Phase increment = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad))
- \param[in,out] phase      Initial / final phase
- \param[in]     num_points The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
@@ -200,7 +199,6 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
     for(unsigned int number = 0; number < sse_iters; number++)
         {
             a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
-            __builtin_prefetch(_in + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg); // Load yh with ci,ci,di,di
@@ -221,6 +219,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
             //next two samples
             _in += 2;
             a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
+            __builtin_prefetch(_in + 8);
             //complex 32fc multiplication b=a*two_phase_acc_reg
             yl = _mm_moveldup_ps(two_phase_acc_reg); // Load yl with cr,cr,dr,dr
             yh = _mm_movehdup_ps(two_phase_acc_reg); // Load yh with ci,ci,di,di
@@ -261,17 +260,10 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
 
 #endif /* LV_HAVE_SSE3 */
 
+
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-/*!
- \brief Rotates a complex vector (16-bit integer samples each component)
- \param[out]    outVector  Rotated vector
- \param[in]     inVector   Vector to be rotated
- \param[in]     phase_inc  Phase increment = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad))
- \param[in,out] phase      Initial / final phase
- \param[in]     num_points The Number of complex values to be multiplied together, accumulated and stored into result
- */
 static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     unsigned int i = 0;

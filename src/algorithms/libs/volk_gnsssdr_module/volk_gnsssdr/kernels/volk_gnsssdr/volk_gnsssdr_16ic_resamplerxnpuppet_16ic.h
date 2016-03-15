@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_16ic_resamplerxnpuppet_16ic.h
- * \brief Volk puppet for the multiple 16-bit complex vector resampler kernel
+ * \brief VOLK_GNSSSDR puppet for the multiple 16-bit complex vector resampler kernel.
  * \authors <ul>
  *          <li> Carles Fernandez Prades 2016 cfernandez at cttc dot cat
  *          </ul>
  *
- * Volk puppet for integrating the multiple resampler into volk's test system
+ * VOLK_GNSSSDR puppet for integrating the multiple resampler into the test system
  *
  * -------------------------------------------------------------------------
  *
@@ -68,6 +68,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_generic(lv_16sc_t* r
 
 #endif /* LV_HAVE_GENERIC */
 
+
 #ifdef LV_HAVE_SSE2
 static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
@@ -94,8 +95,8 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_sse2(lv_16sc_t* re
 
 #endif
 
-#ifdef LV_HAVE_SSE2
 
+#ifdef LV_HAVE_SSE2
 static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float code_phase_step_chips = 0.1;
@@ -121,8 +122,8 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse2(lv_16sc_t* re
 
 #endif
 
-#ifdef LV_HAVE_NEON
 
+#ifdef LV_HAVE_NEON
 static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float code_phase_step_chips = 0.1;

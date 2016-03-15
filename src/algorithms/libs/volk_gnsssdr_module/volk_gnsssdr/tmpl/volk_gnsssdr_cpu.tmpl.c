@@ -33,6 +33,7 @@ struct VOLK_CPU volk_gnsssdr_cpu;
 #if defined(__GNUC__)
     #include <cpuid.h>
     #define cpuid_x86(op, r) __get_cpuid(op, (unsigned int *)r+0, (unsigned int *)r+1, (unsigned int *)r+2, (unsigned int *)r+3)
+    #define cpuid_x86_count(op, count, regs) __cpuid_count(op, count, *((unsigned int*)regs), *((unsigned int*)regs+1), *((unsigned int*)regs+2), *((unsigned int*)regs+3))
 
     /* Return Intel AVX extended CPU capabilities register.
      * This function will bomb on non-AVX-capable machines, so
@@ -68,8 +69,8 @@ struct VOLK_CPU volk_gnsssdr_cpu;
 
 static inline unsigned int cpuid_count_x86_bit(unsigned int level, unsigned int count, unsigned int reg, unsigned int bit) {
 #if defined(VOLK_CPU_x86)
-    unsigned int regs[4];
-    __cpuid_count(level, count, regs[0],  regs[1],  regs[2], regs[3]);
+    unsigned int regs[4] = {0};
+    cpuid_x86_count(level, count, regs);
     return regs[reg] >> bit & 0x01;
 #else
     return 0;

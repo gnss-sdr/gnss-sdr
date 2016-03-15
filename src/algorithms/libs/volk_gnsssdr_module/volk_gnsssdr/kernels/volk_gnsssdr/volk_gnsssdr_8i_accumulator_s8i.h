@@ -1,11 +1,11 @@
 /*!
  * \file volk_gnsssdr_8i_accumulator_s8i.h
- * \brief Volk protokernel: 8 bits (char) scalar accumulator
+ * \brief VOLK_GNSSSDR kernel: 8 bits (char) scalar accumulator.
  * \authors <ul>
  *          <li> Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *          </ul>
  *
- * Volk protokernel that implements an accumulator of char values
+ * VOLK_GNSSSDR kernel that implements an accumulator of char values
  *
  * -------------------------------------------------------------------------
  *
@@ -32,6 +32,27 @@
  * -------------------------------------------------------------------------
  */
 
+/*!
+ * \page volk_gnsssdr_8i_accumulator_s8i
+ *
+ * \b Overview
+ *
+ * Accumulates the values in the input buffer.
+ *
+ * <b>Dispatcher Prototype</b>
+ * \code
+ * void volk_gnsssdr_8i_accumulator_s8i(char* result, const char* inputBuffer, unsigned int num_points);
+ * \endcode
+ *
+ * \b Inputs
+ * \li inputBuffer: The buffer of data to be accumulated.
+ * \li num_points:  The number of values in \p inputBuffer to be accumulated.
+ *
+ * \b Outputs
+ * \li result: The accumulated result.
+ *
+ */
+
 #ifndef INCLUDED_volk_gnsssdr_8i_accumulator_s8i_H
 #define INCLUDED_volk_gnsssdr_8i_accumulator_s8i_H
 
@@ -40,12 +61,7 @@
 
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
+
 static inline void volk_gnsssdr_8i_accumulator_s8i_u_sse3(char* result, const char* inputBuffer, unsigned int num_points)
 {
     char returnValue = 0;
@@ -63,14 +79,14 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_u_sse3(char* result, const ch
             accumulator = _mm_add_epi8(accumulator, aVal);
             aPtr += 16;
         }
-    _mm_storeu_si128((__m128i*)tempBuffer,accumulator);
+    _mm_storeu_si128((__m128i*)tempBuffer, accumulator);
 
-    for(unsigned int i = 0; i<16; ++i)
+    for(unsigned int i = 0; i < 16; ++i)
         {
             returnValue += tempBuffer[i];
         }
 
-    for(unsigned int i = 0; i<(num_points % 16); ++i)
+    for(unsigned int i = 0; i < (num_points % 16); ++i)
         {
             returnValue += (*aPtr++);
         }
@@ -79,13 +95,9 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_u_sse3(char* result, const ch
 }
 #endif /* LV_HAVE_SSE3 */
 
+
 #ifdef LV_HAVE_GENERIC
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
+
 static inline void volk_gnsssdr_8i_accumulator_s8i_generic(char* result, const char* inputBuffer, unsigned int num_points)
 {
     const char* aPtr = inputBuffer;
@@ -99,14 +111,10 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_generic(char* result, const c
 }
 #endif /* LV_HAVE_GENERIC */
 
+
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
+
 static inline void volk_gnsssdr_8i_accumulator_s8i_a_sse3(char* result, const char* inputBuffer, unsigned int num_points)
 {
     char returnValue = 0;
@@ -126,11 +134,12 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_a_sse3(char* result, const ch
         }
     _mm_store_si128((__m128i*)tempBuffer,accumulator);
 
-    for(unsigned int i = 0; i<16; ++i){
+    for(unsigned int i = 0; i < 16; ++i)
+        {
             returnValue += tempBuffer[i];
-    }
+        }
 
-    for(unsigned int i = 0; i<(num_points % 16); ++i)
+    for(unsigned int i = 0; i < (num_points % 16); ++i)
         {
             returnValue += (*aPtr++);
         }
@@ -139,13 +148,9 @@ static inline void volk_gnsssdr_8i_accumulator_s8i_a_sse3(char* result, const ch
 }
 #endif /* LV_HAVE_SSE3 */
 
+
 #ifdef LV_HAVE_ORC
-/*!
- \brief Accumulates the values in the input buffer
- \param result The accumulated result
- \param inputBuffer The buffer of data to be accumulated
- \param num_points The number of values in inputBuffer to be accumulated
- */
+
 extern void volk_gnsssdr_8i_accumulator_s8i_a_orc_impl(short* result, const char* inputBuffer, unsigned int num_points);
 
 static inline void volk_gnsssdr_8i_accumulator_s8i_u_orc(char* result, const char* inputBuffer, unsigned int num_points)

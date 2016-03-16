@@ -67,6 +67,7 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
                                    float dll_bw_hz,
                                    float pll_bw_narrow_hz,
                                    float dll_bw_narrow_hz,
+                                   int extend_correlation_ms,
                                    float early_late_space_chips);
 
 
@@ -101,6 +102,7 @@ private:
             float dll_bw_hz,
             float pll_bw_narrow_hz,
             float dll_bw_narrow_hz,
+            int extend_correlation_ms,
             float early_late_space_chips);
 
     gps_l1_ca_dll_pll_c_aid_tracking_cc(long if_freq,
@@ -113,6 +115,7 @@ private:
             float dll_bw_hz,
             float pll_bw_narrow_hz,
             float dll_bw_narrow_hz,
+            int extend_correlation_ms,
             float early_late_space_chips);
 
     // tracking configuration vars
@@ -173,7 +176,8 @@ private:
     std::deque<gr_complex> d_L_history;
     long int d_preamble_index;
     long int d_symbol_counter;
-    bool d_enable_20ms_integration;
+    int d_extend_correlation_ms;
+    bool d_enable_extended_integration;
     bool d_preamble_synchronized;
     int d_correlation_symbol_counter;
     void msg_handler_preamble_index(pmt::pmt_t msg);

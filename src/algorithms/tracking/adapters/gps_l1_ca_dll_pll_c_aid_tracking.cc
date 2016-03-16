@@ -73,6 +73,9 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
+    int extend_correlation_ms;
+    extend_correlation_ms = configuration->property(role + ".extend_correlation_ms", 1);
+
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
@@ -94,6 +97,7 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
                     dll_bw_hz,
                     pll_bw_narrow_hz,
                     dll_bw_narrow_hz,
+                    extend_correlation_ms,
                     early_late_space_chips);
             DLOG(INFO) << "tracking(" << tracking_cc->unique_id() << ")";
     }else if(item_type_.compare("cshort") == 0)

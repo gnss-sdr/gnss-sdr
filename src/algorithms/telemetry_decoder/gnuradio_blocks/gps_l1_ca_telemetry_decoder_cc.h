@@ -85,7 +85,7 @@ public:
      * \brief Function which tells the scheduler how many input items
      *        are required to produce noutput_items output items.
      */
-    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    //void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
     friend gps_l1_ca_telemetry_decoder_cc_sptr
@@ -107,6 +107,7 @@ private:
     bool d_flag_frame_sync;
 
     // symbols
+    std::deque<double> d_symbol_history;
     double d_symbol_accumulator;
     short int d_symbol_accumulator_counter;
 
@@ -138,10 +139,6 @@ private:
 
     double d_TOW_at_Preamble;
     double d_TOW_at_current_symbol;
-    std::deque<double> d_symbol_TOW_queue_s;
-    // Doppler and Phase accumulator queue for interpolation in Observables
-    std::deque<double> d_carrier_doppler_queue_hz;
-    std::deque<double> d_acc_carrier_phase_queue_rads;
 
     double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;

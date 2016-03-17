@@ -61,7 +61,7 @@ public:
     double Tracking_timestamp_secs; //!< Set by Tracking processing block
     bool Flag_valid_tracking;
     bool Flag_valid_symbol_output;
-    bool symbol_integration_enabled; //!< Set by Tracking processing block
+    int correlation_length_ms; //!< Set by Tracking processing block
 
     //Telemetry Decoder
     double Prn_timestamp_ms;             //!< Set by Telemetry Decoder processing block

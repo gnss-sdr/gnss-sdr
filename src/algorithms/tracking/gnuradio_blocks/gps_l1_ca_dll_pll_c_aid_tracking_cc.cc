@@ -347,6 +347,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
                     d_pull_in = false;
                     // Fill the acquisition data
                     current_synchro_data = *d_acquisition_gnss_synchro;
+    	            current_synchro_data.correlation_length_ms=1;
+    	            current_synchro_data.Flag_valid_symbol_output = false;
                     *out[0] = current_synchro_data;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     d_symbol_counter++;
@@ -361,13 +363,13 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
             multicorrelator_cpu.set_input_output_vectors(d_correlator_outs,in);
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad, d_carrier_phase_step_rad, d_rem_code_phase_chips, d_code_phase_step_chips, d_correlation_length_samples);
 
-            // ####### 20ms coherent intergration extension (experimental)
-            // keep the last 40 symbols (2 bits to detect transitions)
+            // ####### coherent intergration extension
+            // keep the last symbols
             d_E_history.push_back(d_correlator_outs[0]); // save early output
             d_P_history.push_back(d_correlator_outs[1]); // save prompt output
             d_L_history.push_back(d_correlator_outs[2]); // save late output
 
-            if (d_P_history.size()>d_extend_correlation_ms)
+            if (static_cast<int>(d_P_history.size())>d_extend_correlation_ms)
             {
             	d_E_history.pop_front();
             	d_P_history.pop_front();
@@ -382,7 +384,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 				{
 					// compute coherent integration and enable tracking loop
 		            // perform coherent integration using correlator output history
-					//gr_complex d_correlator_outs_2[3];
 					//std::cout<<"##### RESET COHERENT INTEGRATION ####"<<std::endl;
                     d_correlator_outs[0]=gr_complex(0.0,0.0);
 				    d_correlator_outs[1]=gr_complex(0.0,0.0);
@@ -402,14 +403,11 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 		            		std::cout<<"dll="<<d_dll_bw_hz<<" dll_n="<<d_dll_bw_narrow_hz<<" pll="<<d_pll_bw_hz<<" pll_n="<<d_pll_bw_narrow_hz<<std::endl;
 
 		            }
-					current_synchro_data.symbol_integration_enabled=true;
 					// UPDATE INTEGRATION TIME
 	            	CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms)*GPS_L1_CA_CODE_PERIOD;
-
 					enable_dll_pll=true;
 
 				}else{
-					current_synchro_data.symbol_integration_enabled=false;
 					if(d_preamble_synchronized==true)
 					{
 						// continue extended coherent correlation
@@ -434,6 +432,10 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 						//remnant code phase [chips]
 						d_rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / static_cast<double>(d_fs_in));
 
+						// UPDATE ACCUMULATED CARRIER PHASE
+						CORRECTED_INTEGRATION_TIME_S=(static_cast<double>(d_correlation_length_samples)/static_cast<double>(d_fs_in));
+						d_acc_carrier_phase_cycles -= d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S;
+
 						// disable tracking loop and inform telemetry decoder
 						enable_dll_pll=false;
 					}else{
@@ -444,13 +446,11 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 					}
 				}
 			}else{
-				current_synchro_data.symbol_integration_enabled=false;
 	            // UPDATE INTEGRATION TIME
 	            CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in);
 	            enable_dll_pll=true;
 			}
 
-            // ###### end 20ms correlation extension
 
 			if (enable_dll_pll==true)
 			{
@@ -498,7 +498,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 				d_correlation_length_samples = K_prn_samples + d_rem_code_phase_integer_samples; //round to a discrete samples
 				d_rem_code_phase_samples=d_rem_code_phase_samples-d_rem_code_phase_integer_samples;
 
-				// UPDATE REMNANT CARRIER PHASE
+				// UPDATE ACCUMULATED CARRIER PHASE
 				CORRECTED_INTEGRATION_TIME_S=(static_cast<double>(d_correlation_length_samples)/static_cast<double>(d_fs_in));
 				//remnant carrier phase [rad]
 				d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S, GPS_TWO_PI);
@@ -527,13 +527,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 					{
 						d_cn0_estimation_counter = 0;
 						// Code lock indicator
-						if (current_synchro_data.symbol_integration_enabled==false)
-						{
-							d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
-						}else{
-							d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS*d_extend_correlation_ms);
-						}
-							// Carrier lock indicator
+						d_CN0_SNV_dB_Hz = cn0_svn_estimator(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES, d_fs_in, GPS_L1_CA_CODE_LENGTH_CHIPS);
+						// Carrier lock indicator
 						d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer, CN0_ESTIMATION_SAMPLES);
 						// Loss of lock detection
 						if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < MINIMUM_VALID_CN0)
@@ -569,6 +564,12 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 	            current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
 	            current_synchro_data.Flag_valid_pseudorange = false;
 	            current_synchro_data.Flag_valid_symbol_output = true;
+	            if (d_preamble_synchronized==true)
+	            {
+	            	current_synchro_data.correlation_length_ms=d_extend_correlation_ms;
+	            }else{
+	            	current_synchro_data.correlation_length_ms=1;
+	            }
 	            *out[0] = current_synchro_data;
 			}else{
 				//todo: fill synchronization data to produce output while coherent integration is running
@@ -579,10 +580,16 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 	            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in);
 	            // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
 	            current_synchro_data.Code_phase_secs = 0;
-	            current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles; // todo: project the acc carrier phase
+	            current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles;
 	            current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;// todo: project the carrier doppler
 	            current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
 	            current_synchro_data.Flag_valid_pseudorange = false;
+	            if (d_preamble_synchronized==true)
+	            {
+	            	current_synchro_data.correlation_length_ms=d_extend_correlation_ms;
+	            }else{
+	            	current_synchro_data.correlation_length_ms=1;
+	            }
 	            *out[0] = current_synchro_data;
 			}
 
@@ -597,7 +604,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
                             std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                            std::cout  << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+                            DLOG(INFO)  << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
                                               << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
                             //if (d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
                         }
@@ -607,7 +614,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
                     if (floor(d_sample_counter / d_fs_in) != d_last_seg)
                         {
                             d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout  << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+                            DLOG(INFO)  << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
                                                << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
                         }
                 }

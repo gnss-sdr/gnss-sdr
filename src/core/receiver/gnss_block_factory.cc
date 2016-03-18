@@ -80,7 +80,6 @@
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_dll_pll_c_aid_tracking.h"
-#include "gps_l1_ca_dll_pll_optim_tracking.h"
 #include "gps_l1_ca_dll_fll_pll_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "galileo_e1_dll_pll_veml_tracking.h"
@@ -1324,12 +1323,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams, queue));
             block = std::move(block_);
         }
-    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Optim_Tracking") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaDllPllOptimTracking(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
     else if (implementation.compare("GPS_L1_CA_DLL_FLL_PLL_Tracking") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaDllFllPllTracking(configuration.get(), role, in_streams,
@@ -1586,12 +1579,6 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else if (implementation.compare("GPS_L1_CA_DLL_PLL_C_Aid_Tracking") == 0)
         {
             std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllCAidTracking(configuration.get(), role, in_streams,
-                    out_streams, queue));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("GPS_L1_CA_DLL_PLL_Optim_Tracking") == 0)
-        {
-            std::unique_ptr<TrackingInterface> block_(new GpsL1CaDllPllOptimTracking(configuration.get(), role, in_streams,
                     out_streams, queue));
             block = std::move(block_);
         }

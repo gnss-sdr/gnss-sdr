@@ -94,7 +94,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 
     if (sse_iters > 0)
         {
-            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, realcacc, imagcacc, result;
+            __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, realcacc, imagcacc;
             __VOLK_ATTR_ALIGNED(16) lv_16sc_t dotProductVector[4];
 
             realcacc = _mm_setzero_si128();
@@ -105,8 +105,6 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
 
             for(unsigned int number = 0; number < sse_iters; number++)
                 {
-                    //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
-                    //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
                     // a[127:0]=[a3.i,a3.r,a2.i,a2.r,a1.i,a1.r,a0.i,a0.r]
                     a = _mm_load_si128((__m128i*)_in_a); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
                     __builtin_prefetch(_in_a + 8);
@@ -115,7 +113,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
                     c = _mm_mullo_epi16(a, b); // a3.i*b3.i, a3.r*b3.r, ....
 
                     c_sr = _mm_srli_si128(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
-                    real = _mm_subs_epi16(c,c_sr);
+                    real = _mm_subs_epi16(c, c_sr);
 
                     b_sl = _mm_slli_si128(b, 2); // b3.r, b2.i ....
                     a_sl = _mm_slli_si128(a, 2); // a3.r, a2.i ....
@@ -123,7 +121,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
                     imag1 = _mm_mullo_epi16(a, b_sl); // a3.i*b3.r, ....
                     imag2 = _mm_mullo_epi16(b, a_sl); // b3.i*a3.r, ....
 
-                    imag = _mm_adds_epi16(imag1, imag2); //with saturation aritmetic!
+                    imag = _mm_adds_epi16(imag1, imag2); //with saturation arithmetic!
 
                     realcacc = _mm_adds_epi16(realcacc, real);
                     imagcacc = _mm_adds_epi16(imagcacc, imag);
@@ -135,9 +133,9 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_sse2(lv_16sc_t* out, con
             realcacc = _mm_and_si128(realcacc, mask_real);
             imagcacc = _mm_and_si128(imagcacc, mask_imag);
 
-            result = _mm_or_si128(realcacc, imagcacc);
+            a = _mm_or_si128(realcacc, imagcacc);
 
-            _mm_store_si128((__m128i*)dotProductVector,result); // Store the results back into the dot product vector
+            _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
 
             for (int i = 0; i < 4; ++i)
                 {
@@ -202,7 +200,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
                     imag1 = _mm_mullo_epi16(a, b_sl); // a3.i*b3.r, ....
                     imag2 = _mm_mullo_epi16(b, a_sl); // b3.i*a3.r, ....
 
-                    imag = _mm_adds_epi16(imag1, imag2); //with saturation aritmetic!
+                    imag = _mm_adds_epi16(imag1, imag2); //with saturation arithmetic!
 
                     realcacc = _mm_adds_epi16(realcacc, real);
                     imagcacc = _mm_adds_epi16(imagcacc, imag);
@@ -245,45 +243,56 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon(lv_16sc_t* out, const
 
     lv_16sc_t* a_ptr = (lv_16sc_t*) in_a;
     lv_16sc_t* b_ptr = (lv_16sc_t*) in_b;
-    // for 2-lane vectors, 1st lane holds the real part,
-    // 2nd lane holds the imaginary part
-    int16x4x2_t a_val, b_val, c_val, accumulator;
-    int16x4x2_t tmp_real, tmp_imag;
-    __VOLK_ATTR_ALIGNED(16) lv_16sc_t accum_result[4];
-    accumulator.val[0] = vdup_n_s16(0);
-    accumulator.val[1] = vdup_n_s16(0);
+    *out = lv_cmake((int16_t)0, (int16_t)0);
 
-    for(number = 0; number < quarter_points; ++number)
+    if (quarter_points > 0)
         {
-            a_val = vld2_s16((int16_t*)a_ptr); // a0r|a1r|a2r|a3r || a0i|a1i|a2i|a3i
-            b_val = vld2_s16((int16_t*)b_ptr); // b0r|b1r|b2r|b3r || b0i|b1i|b2i|b3i
-            __builtin_prefetch(a_ptr + 8);
-            __builtin_prefetch(b_ptr + 8);
+            // for 2-lane vectors, 1st lane holds the real part,
+            // 2nd lane holds the imaginary part
+            int16x4x2_t a_val, b_val, c_val, accumulator;
+            int16x4x2_t tmp_real, tmp_imag;
+            __VOLK_ATTR_ALIGNED(16) lv_16sc_t accum_result[4];
+            accumulator.val[0] = vdup_n_s16(0);
+            accumulator.val[1] = vdup_n_s16(0);
+            lv_16sc_t dotProduct = lv_cmake((int16_t)0, (int16_t)0);
 
-            // multiply the real*real and imag*imag to get real result
-            // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r
-            tmp_real.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
-            // a0i*b0i|a1i*b1i|a2i*b2i|a3i*b3i
-            tmp_real.val[1] = vmul_s16(a_val.val[1], b_val.val[1]);
+            for(number = 0; number < quarter_points; ++number)
+                {
+                    a_val = vld2_s16((int16_t*)a_ptr); // a0r|a1r|a2r|a3r || a0i|a1i|a2i|a3i
+                    b_val = vld2_s16((int16_t*)b_ptr); // b0r|b1r|b2r|b3r || b0i|b1i|b2i|b3i
+                    __builtin_prefetch(a_ptr + 8);
+                    __builtin_prefetch(b_ptr + 8);
 
-            // Multiply cross terms to get the imaginary result
-            // a0r*b0i|a1r*b1i|a2r*b2i|a3r*b3i
-            tmp_imag.val[0] = vmul_s16(a_val.val[0], b_val.val[1]);
-            // a0i*b0r|a1i*b1r|a2i*b2r|a3i*b3r
-            tmp_imag.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
+                    // multiply the real*real and imag*imag to get real result
+                    // a0r*b0r|a1r*b1r|a2r*b2r|a3r*b3r
+                    tmp_real.val[0] = vmul_s16(a_val.val[0], b_val.val[0]);
+                    // a0i*b0i|a1i*b1i|a2i*b2i|a3i*b3i
+                    tmp_real.val[1] = vmul_s16(a_val.val[1], b_val.val[1]);
 
-            c_val.val[0] = vsub_s16(tmp_real.val[0], tmp_real.val[1]);
-            c_val.val[1] = vadd_s16(tmp_imag.val[0], tmp_imag.val[1]);
+                    // Multiply cross terms to get the imaginary result
+                    // a0r*b0i|a1r*b1i|a2r*b2i|a3r*b3i
+                    tmp_imag.val[0] = vmul_s16(a_val.val[0], b_val.val[1]);
+                    // a0i*b0r|a1i*b1r|a2i*b2r|a3i*b3r
+                    tmp_imag.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
 
-            accumulator.val[0] = vadd_s16(accumulator.val[0], c_val.val[0]);
-            accumulator.val[1] = vadd_s16(accumulator.val[1], c_val.val[1]);
+                    c_val.val[0] = vqsub_s16(tmp_real.val[0], tmp_real.val[1]);
+                    c_val.val[1] = vqadd_s16(tmp_imag.val[0], tmp_imag.val[1]);
 
-            a_ptr += 4;
-            b_ptr += 4;
+                    accumulator.val[0] = vqadd_s16(accumulator.val[0], c_val.val[0]);
+                    accumulator.val[1] = vqadd_s16(accumulator.val[1], c_val.val[1]);
+
+                    a_ptr += 4;
+                    b_ptr += 4;
+                }
+
+            vst2_s16((int16_t*)accum_result, accumulator);
+            for (unsigned int i = 0; i < 4; ++i)
+                {
+                    dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(accum_result[i])), sat_adds16i(lv_cimag(dotProduct), lv_cimag(accum_result[i])));
+                }
+
+            *out = dotProduct;
         }
-
-    vst2_s16((int16_t*)accum_result, accumulator);
-    *out = accum_result[0] + accum_result[1] + accum_result[2] + accum_result[3];
 
     // tail case
     for(number = quarter_points * 4; number < num_points; ++number)

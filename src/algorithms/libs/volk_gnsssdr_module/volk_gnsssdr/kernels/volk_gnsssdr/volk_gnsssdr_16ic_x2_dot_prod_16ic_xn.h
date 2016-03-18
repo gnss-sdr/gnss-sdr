@@ -84,6 +84,25 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic(lv_16sc_t* resu
 #endif /*LV_HAVE_GENERIC*/
 
 
+#ifdef LV_HAVE_GENERIC
+
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_generic_sat(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
+{
+    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+        {
+            result[n_vec] = lv_cmake(0,0);
+            for (unsigned int n = 0; n < num_points; n++)
+                {
+                    lv_16sc_t tmp = lv_cmake(sat_adds16i(sat_muls16i(lv_creal(in_common[n]), lv_creal(in_a[n_vec][n])), - sat_muls16i(lv_cimag(in_common[n]), lv_cimag(in_a[n_vec][n]))),
+                                             sat_adds16i(sat_muls16i(lv_creal(in_common[n]), lv_cimag(in_a[n_vec][n])), sat_muls16i(lv_cimag(in_common[n]), lv_creal(in_a[n_vec][n]))));
+                    result[n_vec] = lv_cmake(sat_adds16i(lv_creal(result[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(result[n_vec]), lv_cimag(tmp)));
+                }
+        }
+}
+
+#endif /*LV_HAVE_GENERIC*/
+
+
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
@@ -318,11 +337,11 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon(lv_16sc_t* result,
                             // a0i*b0r|a1i*b1r|a2i*b2r|a3i*b3r
                             tmp_imag.val[1] = vmul_s16(a_val.val[1], b_val.val[0]);
 
-                            c_val.val[0] = vsub_s16(tmp_real.val[0], tmp_real.val[1]);
-                            c_val.val[1] = vadd_s16(tmp_imag.val[0], tmp_imag.val[1]);
+                            c_val.val[0] = vqsub_s16(tmp_real.val[0], tmp_real.val[1]);
+                            c_val.val[1] = vqadd_s16(tmp_imag.val[0], tmp_imag.val[1]);
 
-                            accumulator[n_vec].val[0] = vadd_s16(accumulator[n_vec].val[0], c_val.val[0]);
-                            accumulator[n_vec].val[1] = vadd_s16(accumulator[n_vec].val[1], c_val.val[1]);
+                            accumulator[n_vec].val[0] = vqadd_s16(accumulator[n_vec].val[0], c_val.val[0]);
+                            accumulator[n_vec].val[1] = vqadd_s16(accumulator[n_vec].val[1], c_val.val[1]);
                         }
                     _in_common += 4;
                 }
@@ -398,8 +417,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_neon_vma(lv_16sc_t* res
                             tmp.val[0] = vmls_s16(tmp.val[0], a_val.val[1], b_val.val[1]);
                             tmp.val[1] = vmla_s16(tmp.val[1], a_val.val[0], b_val.val[1]);
 
-                            accumulator[n_vec].val[0] = vadd_s16(accumulator[n_vec].val[0], tmp.val[0]);
-                            accumulator[n_vec].val[1] = vadd_s16(accumulator[n_vec].val[1], tmp.val[1]);
+                            accumulator[n_vec].val[0] = vqadd_s16(accumulator[n_vec].val[0], tmp.val[0]);
+                            accumulator[n_vec].val[1] = vqadd_s16(accumulator[n_vec].val[1], tmp.val[1]);
                         }
                     _in_common += 4;
                 }

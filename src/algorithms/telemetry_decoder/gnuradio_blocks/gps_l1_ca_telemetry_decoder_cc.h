@@ -108,6 +108,7 @@ private:
 
     // symbols
     std::deque<double> d_symbol_history;
+    std::deque<int> d_correlation_length_ms_history;
     double d_symbol_accumulator;
     short int d_symbol_accumulator_counter;
 

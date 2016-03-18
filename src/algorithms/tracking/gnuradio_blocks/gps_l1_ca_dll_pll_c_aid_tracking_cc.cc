@@ -90,7 +90,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::forecast (int noutput_items,
 void gps_l1_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index(pmt::pmt_t msg)
 {
   //pmt::print(msg);
-  DLOG(INFO) << "Extended correlation for Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)<< std::endl;
+  DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)<< std::endl;
   if (d_enable_extended_integration==false) //avoid re-setting preamble indicator
   {
 	  d_preamble_index=pmt::to_long(msg);
@@ -380,7 +380,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 			if (d_enable_extended_integration==true)
 			{
 				long int symbol_diff=d_symbol_counter-d_preamble_index;
-				if (symbol_diff % d_extend_correlation_ms == 0)
+				if (symbol_diff>0 and symbol_diff % d_extend_correlation_ms == 0)
 				{
 					// compute coherent integration and enable tracking loop
 		            // perform coherent integration using correlator output history
@@ -400,7 +400,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 							d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
 							d_carrier_loop_filter.set_params(10.0, d_pll_bw_narrow_hz,2);
 		            		d_preamble_synchronized=true;
-		            		std::cout<<"dll="<<d_dll_bw_hz<<" dll_n="<<d_dll_bw_narrow_hz<<" pll="<<d_pll_bw_hz<<" pll_n="<<d_pll_bw_narrow_hz<<std::endl;
+		            		std::cout<<"Enabled extended correlator for CH "<< d_channel <<" : Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+		            				<<" dll_narrow_bw="<<d_dll_bw_narrow_hz<<" pll_narrow_bw="<<d_pll_bw_narrow_hz<<std::endl;
 
 		            }
 					// UPDATE INTEGRATION TIME
@@ -411,8 +412,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 					if(d_preamble_synchronized==true)
 					{
 						// continue extended coherent correlation
-						//TODO: Take into account the extended correlation to update the accumulated carrier phase for carrier phase observables!!
-
 						//remnant carrier phase [rads]
 						d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + d_carrier_phase_step_rad * static_cast<double>(d_correlation_length_samples), GPS_TWO_PI);
 
@@ -572,8 +571,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 	            }
 	            *out[0] = current_synchro_data;
 			}else{
-				//todo: fill synchronization data to produce output while coherent integration is running
-	            current_synchro_data.Flag_valid_symbol_output = false;
 	            current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs[1]).real());
 	            current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs[1]).imag());
 	            // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!)
@@ -584,12 +581,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 	            current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;// todo: project the carrier doppler
 	            current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
 	            current_synchro_data.Flag_valid_pseudorange = false;
-	            if (d_preamble_synchronized==true)
-	            {
-	            	current_synchro_data.correlation_length_ms=d_extend_correlation_ms;
-	            }else{
-	            	current_synchro_data.correlation_length_ms=1;
-	            }
+	            current_synchro_data.Flag_valid_symbol_output = false;
+	            current_synchro_data.correlation_length_ms=1;
 	            *out[0] = current_synchro_data;
 			}
 

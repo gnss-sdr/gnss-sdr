@@ -82,6 +82,7 @@ const int GPS_WORD_LENGTH = 4;                      //!< CRC + GPS WORD (-2 -1 0
 const int GPS_SUBFRAME_LENGTH = 40;                 //!< GPS_WORD_LENGTH x 10 = 40 bytes
 const int GPS_SUBFRAME_BITS = 300;                  //!< Number of bits per subframe in the NAV message [bits]
 const int GPS_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [seconds]
+const int GPS_SUBFRAME_MS = 6000;                 //!< Subframe duration [seconds]
 const int GPS_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
 
 // GPS NAVIGATION MESSAGE STRUCTURE

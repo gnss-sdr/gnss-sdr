@@ -76,10 +76,10 @@ void load_random_data(void *data, volk_gnsssdr_type_t type, unsigned int n)
                         else ((uint32_t *)data)[i] = (uint32_t) scaled_rand;
                         break;
                     case 2:
-                        // 16 bits dot product saturates very fast even with moderate length vectors
-                    	// we produce here only 4 bits input range
-                        if(type.is_signed) ((int16_t *)data)[i] = (int16_t)((int16_t) scaled_rand % 16);
-                        else ((uint16_t *)data)[i] = (uint16_t) (int16_t)((int16_t) scaled_rand % 16);
+                        // 16 bit multiplication saturates very fast
+                    	// we produce here only 3 bits input range
+                        if(type.is_signed) ((int16_t *)data)[i] = (int16_t)((int16_t) scaled_rand % 8);
+                        else ((uint16_t *)data)[i] = (uint16_t) (int16_t)((int16_t) scaled_rand % 8);
                         break;
                     case 1:
                         if(type.is_signed) ((int8_t *)data)[i] = (int8_t) scaled_rand;

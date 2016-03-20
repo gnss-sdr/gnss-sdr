@@ -463,7 +463,6 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t* out, const floa
     for(;number < neon_iters; number++)
         {
             x = four_phases_reg;
-            __builtin_prefetch(aPtr + 8);
 
             sign_mask_sin = vcltq_f32(x, vdupq_n_f32(0));
             x = vabsq_f32(x);

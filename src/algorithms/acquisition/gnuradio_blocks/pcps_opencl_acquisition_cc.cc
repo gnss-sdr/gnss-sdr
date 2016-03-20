@@ -56,11 +56,11 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include "gnss_signal_processing.h"
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "control_message_factory.h"
 #include "fft_base_kernels.h"
 #include "fft_internal.h"
-
+#include "GPS_L1_CA.h" //GPS_TWO_PI
 
 
 using google::LogMessage;
@@ -315,9 +315,9 @@ void pcps_opencl_acquisition_cc::init()
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
 
-            int doppler= -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index],
-                                 d_freq + doppler, d_fs_in, d_fft_size);
+            int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
+            float phase_step_rad = static_cast<float>(GPS_TWO_PI) * (d_freq + doppler) / static_cast<float>(d_fs_in);
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], - phase_step_rad, d_fft_size);
 
             if (d_opencl == 0)
                 {

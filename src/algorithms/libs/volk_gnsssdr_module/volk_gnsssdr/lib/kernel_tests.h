@@ -61,6 +61,8 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
     // ... or more tolerance *****  ADDED BY GNSS-SDR
     volk_gnsssdr_test_params_t test_params_int16 = volk_gnsssdr_test_params_t(16, test_params.scalar(),
                 test_params.vlen(), test_params.iter(), test_params.benchmark_mode(), test_params.kernel_regex());
+    volk_gnsssdr_test_params_t test_params_inacc2 = volk_gnsssdr_test_params_t(2e-1, test_params.scalar(),
+                test_params.vlen(), test_params.iter(), test_params.benchmark_mode(), test_params.kernel_regex());
 
     std::vector<volk_gnsssdr_test_case_t> test_cases = boost::assign::list_of
 
@@ -76,6 +78,7 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
         (VOLK_INIT_TEST(volk_gnsssdr_8u_x2_multiply_8u, test_params_more_iters))
         (VOLK_INIT_TEST(volk_gnsssdr_64f_accumulator_64f, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_32f_sincos_32fc, test_params_inacc))
+        (VOLK_INIT_TEST(volk_gnsssdr_s32f_sincos_32fc, test_params_inacc2))
         (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_8ic, test_params))
         (VOLK_INIT_TEST(volk_gnsssdr_32fc_convert_16ic, test_params_more_iters))
         (VOLK_INIT_TEST(volk_gnsssdr_16ic_x2_dot_prod_16ic, test_params))

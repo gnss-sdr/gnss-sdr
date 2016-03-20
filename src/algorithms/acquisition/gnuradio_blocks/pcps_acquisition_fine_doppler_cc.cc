@@ -36,7 +36,7 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include "nco_lib.h"
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "concurrent_map.h"
 #include "gnss_signal_processing.h"
 #include "gps_sdr_signal_processing.h"
@@ -184,14 +184,16 @@ void pcps_acquisition_fine_doppler_cc::forecast (int noutput_items,
 void pcps_acquisition_fine_doppler_cc::reset_grid()
 {
     d_well_count = 0;
-    for (int i=0; i<d_num_doppler_points; i++)
+    for (int i = 0; i < d_num_doppler_points; i++)
         {
-            for (unsigned int j=0; j < d_fft_size; j++)
+            for (unsigned int j = 0; j < d_fft_size; j++)
                 {
                     d_grid_data[i][j] = 0.0;
                 }
         }
 }
+
+
 void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
 {
     // create the carrier Doppler wipeoff signals
@@ -200,13 +202,12 @@ void pcps_acquisition_fine_doppler_cc::update_carrier_wipeoff()
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_points];
     for (int doppler_index = 0; doppler_index < d_num_doppler_points; doppler_index++)
         {
-
             doppler_hz = d_config_doppler_min + d_doppler_step*doppler_index;
             // doppler search steps
             // compute the carrier doppler wipe-off signal and store it
             phase_step_rad = static_cast<float>(GPS_TWO_PI) * ( d_freq + doppler_hz ) / static_cast<float>(d_fs_in);
             d_grid_doppler_wipeoffs[doppler_index] = new gr_complex[d_fft_size];
-            fxp_nco(d_grid_doppler_wipeoffs[doppler_index], d_fft_size,0, phase_step_rad);
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], - phase_step_rad, d_fft_size);
         }
 }
 

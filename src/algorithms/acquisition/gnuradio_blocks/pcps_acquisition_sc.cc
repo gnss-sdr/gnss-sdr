@@ -41,7 +41,6 @@
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <gnuradio/fxpt.h>  // fixed point sine and cosine
 #include "GPS_L1_CA.h" //GPS_TWO_PI
 
 using google::LogMessage;
@@ -177,18 +176,8 @@ void pcps_acquisition_sc::set_local_code(std::complex<float> * code)
 
 void pcps_acquisition_sc::update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq)
 {
-    float sin_f, cos_f;
-    float phase_step_rad= GPS_TWO_PI * freq/ static_cast<float>(d_fs_in);
-
-    int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
-    int phase_rad_i = 0;
-
-    for(int i = 0; i < correlator_length_samples; i++)
-        {
-            gr::fxpt::sincos(phase_rad_i, &sin_f, &cos_f);
-            carrier_vector[i] = gr_complex(cos_f, -sin_f);
-            phase_rad_i += phase_step_rad_i;
-        }
+    float phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(d_fs_in);
+    volk_gnsssdr_s32f_sincos_32fc(carrier_vector, - phase_step_rad, correlator_length_samples);
 }
 
 void pcps_acquisition_sc::init()

@@ -543,7 +543,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t* out, const floa
             *bPtr++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );
             _phase += phase_inc;
         }
-    (*phase) = _phase:
+    (*phase) = _phase;
 }
 
 #endif /* LV_HAVE_NEON  */

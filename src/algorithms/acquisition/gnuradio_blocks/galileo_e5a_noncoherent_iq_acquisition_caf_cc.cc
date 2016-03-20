@@ -295,8 +295,9 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = GALILEO_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
-
-            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], - phase_step_rad, d_fft_size);
+            float _phase[1];
+            _phase[0] = 0;
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], - phase_step_rad, _phase, d_fft_size);
         }
 
     /* CAF Filtering to resolve doppler ambiguity. Phase and quadrature must be processed

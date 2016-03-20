@@ -187,8 +187,9 @@ void pcps_tong_acquisition_cc::init()
 
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
             float phase_step_rad = GPS_TWO_PI * (d_freq + doppler) / static_cast<float>(d_fs_in);
-
-            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], - phase_step_rad, d_fft_size);
+            float _phase[1];
+            _phase[0] = 0;
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], - phase_step_rad, _phase, d_fft_size);
 
             d_grid_data[doppler_index] = static_cast<float*>(volk_malloc(d_fft_size * sizeof(float), volk_get_alignment()));
 

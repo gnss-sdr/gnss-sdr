@@ -177,7 +177,9 @@ void pcps_acquisition_sc::set_local_code(std::complex<float> * code)
 void pcps_acquisition_sc::update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq)
 {
     float phase_step_rad = GPS_TWO_PI * freq / static_cast<float>(d_fs_in);
-    volk_gnsssdr_s32f_sincos_32fc(carrier_vector, - phase_step_rad, correlator_length_samples);
+    float _phase[1];
+    _phase[0] = 0;
+    volk_gnsssdr_s32f_sincos_32fc(carrier_vector, - phase_step_rad, _phase, correlator_length_samples);
 }
 
 void pcps_acquisition_sc::init()

@@ -537,7 +537,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t* out, const floa
             four_phases_reg = vaddq_f32(four_phases_reg, four_phases_inc_reg);
         }
 
-    _phase = phase_inc * (neon_iters * 4);
+    _phase = _phase + phase_inc * (neon_iters * 4);
     for(number = neon_iters * 4; number < num_points; number++)
         {
             *bPtr++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );

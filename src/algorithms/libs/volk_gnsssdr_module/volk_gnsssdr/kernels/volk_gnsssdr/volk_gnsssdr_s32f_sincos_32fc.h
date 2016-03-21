@@ -42,15 +42,17 @@
  *
  * <b>Dispatcher Prototype</b>
  * \code
- * void volk_gnsssdr_s32f_sincos_32fc(lv_32fc_t* out, const float phase_inc, unsigned int num_points)
+ * void volk_gnsssdr_s32f_sincos_32fc(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
  * \endcode
  *
  * \b Inputs
  * \li phase_inc:      Phase increment per sample, in radians.
+ * \li phase:          Pointer to a float containing the initial phase, in radians.
  * \li num_points:     Number of components in \p in to be computed.
  *
  * \b Outputs
  * \li out:            Vector of the form lv_32fc_t out[n] = lv_cmake(cos(in[n]), sin(in[n]))
+ * \li phase:          Pointer to a float containing the final phase, in radians.
  *
  */
 
@@ -67,13 +69,13 @@
 #include <emmintrin.h>
 /* Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier  */
 /* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
-static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t* out, const float phase_inc, unsigned int num_points)
+static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
 {
     lv_32fc_t* bPtr = out;
 
     const unsigned int sse_iters = num_points / 4;
     unsigned int number = 0;
-    float _phase;
+    float _phase = (*phase);
 
     __m128 sine, cosine, aux, x, four_phases_reg;
     __m128 xmm1, xmm2, xmm3 = _mm_setzero_ps(), sign_bit_sin, y;
@@ -101,7 +103,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t* out, const fl
     static const float _ps_0p5[4] __attribute__((aligned(16))) = { 0.5f, 0.5f, 0.5f, 0.5f };
     static const float _ps_1[4] __attribute__((aligned(16))) = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    float four_phases[4] __attribute__((aligned(16))) = { 0.0f, phase_inc, 2 * phase_inc, 3 * phase_inc };
+    float four_phases[4] __attribute__((aligned(16))) = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc };
     float four_phases_inc[4] __attribute__((aligned(16))) = { 4 * phase_inc, 4 * phase_inc, 4 * phase_inc, 4 * phase_inc };
     four_phases_reg = _mm_load_ps(four_phases);
     const __m128 four_phases_inc_reg = _mm_load_ps(four_phases_inc);
@@ -207,12 +209,13 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t* out, const fl
             four_phases_reg = _mm_add_ps(four_phases_reg, four_phases_inc_reg);
         }
 
-    _phase = phase_inc * (sse_iters * 4);
+    _phase = _phase + phase_inc * (sse_iters * 4);
     for(number = sse_iters * 4; number < num_points; number++)
         {
-            *bPtr++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );
+            *bPtr++ = lv_cmake((float)cos((_phase)), (float)sin((_phase)) );
             _phase += phase_inc;
         }
+    (*phase) = _phase;
 }
 
 #endif /* LV_HAVE_SSE2  */
@@ -222,13 +225,14 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t* out, const fl
 #include <emmintrin.h>
 /* Adapted from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h, original code from Julien Pommier  */
 /* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
-static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t* out, const float phase_inc, unsigned int num_points)
+static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
 {
     lv_32fc_t* bPtr = out;
 
     const unsigned int sse_iters = num_points / 4;
     unsigned int number = 0;
-    float _phase;
+
+    float _phase = (*phase);
 
     __m128 sine, cosine, aux, x, four_phases_reg;
     __m128 xmm1, xmm2, xmm3 = _mm_setzero_ps(), sign_bit_sin, y;
@@ -256,7 +260,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t* out, const fl
     static const float _ps_0p5[4] __attribute__((aligned(16))) = { 0.5f, 0.5f, 0.5f, 0.5f };
     static const float _ps_1[4] __attribute__((aligned(16))) = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    float four_phases[4] __attribute__((aligned(16))) = { 0.0f, phase_inc, 2 * phase_inc, 3 * phase_inc };
+    float four_phases[4] __attribute__((aligned(16))) = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc };
     float four_phases_inc[4] __attribute__((aligned(16))) = { 4 * phase_inc, 4 * phase_inc, 4 * phase_inc, 4 * phase_inc };
     four_phases_reg = _mm_load_ps(four_phases);
     const __m128 four_phases_inc_reg = _mm_load_ps(four_phases_inc);
@@ -362,26 +366,29 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t* out, const fl
             four_phases_reg = _mm_add_ps(four_phases_reg, four_phases_inc_reg);
         }
 
-    _phase = phase_inc * (sse_iters * 4);
+    _phase = _phase + phase_inc * (sse_iters * 4);
     for(number = sse_iters * 4; number < num_points; number++)
         {
             *bPtr++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );
             _phase += phase_inc;
         }
+    (*phase) = _phase;
 }
 
 #endif /* LV_HAVE_SSE2  */
 
+
 #ifdef LV_HAVE_GENERIC
 
-static inline void volk_gnsssdr_s32f_sincos_32fc_generic(lv_32fc_t* out, const float phase_inc, unsigned int num_points)
+static inline void volk_gnsssdr_s32f_sincos_32fc_generic(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
 {
-    float _phase = 0.0;
+    float _phase = (*phase);
     for(unsigned int i = 0; i < num_points; i++)
         {
             *out++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );
             _phase += phase_inc;
         }
+    (*phase) = _phase;
 }
 
 #endif /* LV_HAVE_GENERIC  */
@@ -390,7 +397,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic(lv_32fc_t* out, const f
 #ifdef LV_HAVE_GENERIC
 #include <volk_gnsssdr/volk_gnsssdr_sine_table.h>
 #include <stdint.h>
-static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, const float phase_inc, unsigned int num_points)
+static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
 {
     float _in, s, c;
     int32_t x, sin_index, cos_index, d;
@@ -401,7 +408,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, co
     const int32_t Nbits = 10;
     const int32_t diffbits = bitlength - Nbits;
     uint32_t ux;
-    float _phase = 0.0;
+    float _phase = (*phase);
     for(unsigned int i = 0; i < num_points; i++)
         {
             _in = _phase;
@@ -420,6 +427,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, co
             *out++ = lv_cmake((float)c, (float)s );
             _phase += phase_inc;
         }
+    (*phase) = _phase;
 }
 
 #endif /* LV_HAVE_GENERIC  */
@@ -429,12 +437,13 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, co
 #include <arm_neon.h>
 /* Adapted from http://gruntthepeon.free.fr/ssemath/neon_mathfun.h, original code from Julien Pommier  */
 /* Based on algorithms from the cephes library http://www.netlib.org/cephes/   */
-static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t* out, const float phase_inc, unsigned int num_points)
+static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
 {
     lv_32fc_t* bPtr = out;
     const unsigned int neon_iters = num_points / 4;
+    float _phase = (*phase);
 
-    __VOLK_ATTR_ALIGNED(16) float32_t four_phases[4] = { 0.0f , phase_inc, 2 * phase_inc,  3 * phase_inc };
+    __VOLK_ATTR_ALIGNED(16) float32_t four_phases[4] = {  _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc };
     float four_inc = 4 * phase_inc;
     __VOLK_ATTR_ALIGNED(16) float32_t four_phases_inc[4] = { four_inc, four_inc, four_inc, four_inc };
 
@@ -453,7 +462,6 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t* out, const floa
     const float32_t c_cephes_FOPI = 1.27323954473516;
 
     unsigned int number = 0;
-    float _phase;
 
     float32x4_t x, xmm1, xmm2, xmm3, y, y1, y2, ys, yc, z;
     float32x4x2_t result;
@@ -529,12 +537,13 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t* out, const floa
             four_phases_reg = vaddq_f32(four_phases_reg, four_phases_inc_reg);
         }
 
-    _phase = phase_inc * (neon_iters * 4);
+    _phase = _phase + phase_inc * (neon_iters * 4);
     for(number = neon_iters * 4; number < num_points; number++)
         {
             *bPtr++ = lv_cmake((float)cos(_phase), (float)sin(_phase) );
             _phase += phase_inc;
         }
+    (*phase) = _phase;
 }
 
 #endif /* LV_HAVE_NEON  */

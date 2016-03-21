@@ -336,14 +336,67 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon_vma(lv_16sc_t* out, c
             tmp.val[0] = vmls_s16(tmp.val[0], a_val.val[1], b_val.val[1]);
             tmp.val[1] = vmla_s16(tmp.val[1], a_val.val[0], b_val.val[1]);
 
-            accumulator.val[0] = vadd_s16(accumulator.val[0], tmp.val[0]);
-            accumulator.val[1] = vadd_s16(accumulator.val[1], tmp.val[1]);
+            accumulator.val[0] = vqadd_s16(accumulator.val[0], tmp.val[0]);
+            accumulator.val[1] = vqadd_s16(accumulator.val[1], tmp.val[1]);
 
             a_ptr += 4;
             b_ptr += 4;
         }
 
     vst2_s16((int16_t*)accum_result, accumulator);
+    *out = accum_result[0] + accum_result[1] + accum_result[2] + accum_result[3];
+
+    // tail case
+    for(number = quarter_points * 4; number < num_points; ++number)
+        {
+            *out += (*a_ptr++) * (*b_ptr++);
+        }
+}
+
+#endif /* LV_HAVE_NEON */
+
+
+#ifdef LV_HAVE_NEON
+#include <arm_neon.h>
+
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon_optvma(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+{
+    unsigned int quarter_points = num_points / 4;
+    unsigned int number;
+
+    lv_16sc_t* a_ptr = (lv_16sc_t*) in_a;
+    lv_16sc_t* b_ptr = (lv_16sc_t*) in_b;
+    // for 2-lane vectors, 1st lane holds the real part,
+    // 2nd lane holds the imaginary part
+    int16x4x2_t a_val, b_val, accumulator1, accumulator2;
+
+    __VOLK_ATTR_ALIGNED(16) lv_16sc_t accum_result[4];
+    accumulator1.val[0] = vdup_n_s16(0);
+    accumulator1.val[1] = vdup_n_s16(0);
+    accumulator2.val[0] = vdup_n_s16(0);
+    accumulator2.val[1] = vdup_n_s16(0);
+
+    for(number = 0; number < quarter_points; ++number)
+        {
+            a_val = vld2_s16((int16_t*)a_ptr); // a0r|a1r|a2r|a3r || a0i|a1i|a2i|a3i
+            b_val = vld2_s16((int16_t*)b_ptr); // b0r|b1r|b2r|b3r || b0i|b1i|b2i|b3i
+            __builtin_prefetch(a_ptr + 8);
+            __builtin_prefetch(b_ptr + 8);
+
+            // use 2 accumulators to remove inter-instruction data dependencies
+            accumulator1.val[0] = vmla_s16(accumulator1.val[0], a_val.val[0], b_val.val[0]);
+            accumulator1.val[1] = vmla_s16(accumulator1.val[1], a_val.val[0], b_val.val[1]);
+            accumulator2.val[0] = vmls_s16(accumulator2.val[0], a_val.val[1], b_val.val[1]);
+            accumulator2.val[1] = vmla_s16(accumulator2.val[1], a_val.val[1], b_val.val[0]);
+
+            a_ptr += 4;
+            b_ptr += 4;
+        }
+
+    accumulator1.val[0] = vqadd_s16(accumulator1.val[0], accumulator2.val[0]);
+    accumulator1.val[1] = vqadd_s16(accumulator1.val[1], accumulator2.val[1]);
+
+    vst2_s16((int16_t*)accum_result, accumulator1);
     *out = accum_result[0] + accum_result[1] + accum_result[2] + accum_result[3];
 
     // tail case

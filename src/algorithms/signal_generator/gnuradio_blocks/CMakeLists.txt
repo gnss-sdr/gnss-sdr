@@ -27,6 +27,7 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
      ${GNURADIO_RUNTIME_INCLUDE_DIRS}
+     ${VOLK_GNSSSDR_INCLUDE_DIRS}
 )
 
 file(GLOB SIGNAL_GENERATOR_BLOCK_HEADERS "*.h")
@@ -35,5 +36,11 @@ source_group(Headers FILES ${SIGNAL_GENERATOR_BLOCK_HEADERS})
 target_link_libraries(signal_generator_blocks gnss_system_parameters gnss_sp_libs
                                               ${GNURADIO_RUNTIME_LIBRARIES}
                                               ${GNURADIO_FFT_LIBRARIES}
-                                              ${VOLK_LIBRARIES} ${ORC_LIBRARIES}
+                                              ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
 )
+
+if(VOLK_GNSSSDR_FOUND)
+    # add_dependencies(signal_generator_blocks glog-${glog_RELEASE})
+else(VOLK_GNSSSDR_FOUND)
+    add_dependencies(signal_generator_blocks volk_gnsssdr_module)
+endif()

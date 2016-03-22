@@ -85,7 +85,7 @@ public:
      * \brief Function which tells the scheduler how many input items
      *        are required to produce noutput_items output items.
      */
-    //void forecast (int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
     friend gps_l1_ca_telemetry_decoder_cc_sptr
@@ -100,9 +100,6 @@ private:
     // class private vars
 
     int *d_preambles_symbols;
-    unsigned int d_samples_per_bit;
-    long unsigned int d_sample_counter;
-    long unsigned int d_preamble_index;
     unsigned int d_stat;
     bool d_flag_frame_sync;
 
@@ -133,8 +130,6 @@ private:
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;
-
-    //std::deque<double> d_prn_start_sample_history;
 
     double d_preamble_time_seconds;
 

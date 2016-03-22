@@ -93,7 +93,7 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index(pmt::pmt_t 
   DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)<< std::endl;
   if (d_enable_extended_integration==false) //avoid re-setting preamble indicator
   {
-	  d_preamble_index=pmt::to_long(msg);
+	  d_preamble_timestamp_s=pmt::to_double(msg);
 	  d_enable_extended_integration=true;
 	  d_preamble_synchronized=false;
   }
@@ -117,9 +117,9 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
 	// create asynchronous message ports
-	this->message_port_register_in(pmt::mp("preamble_index"));
+	this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
 
-	this->set_msg_handler(pmt::mp("preamble_index"),
+	this->set_msg_handler(pmt::mp("preamble_timestamp_s"),
 			boost::bind(&gps_l1_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index, this, _1));
 
 
@@ -173,8 +173,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
 
     // sample synchronization
     d_sample_counter = 0; //(from trk to tlm)
-    // symbol synchronization (from tlm to trk)
-    d_symbol_counter =0;
+
     //d_sample_counter_seconds = 0;
     d_acq_sample_stamp = 0;
 
@@ -351,7 +350,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
     	            current_synchro_data.Flag_valid_symbol_output = false;
                     *out[0] = current_synchro_data;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
-                    d_symbol_counter++;
                     return 1;
                 }
 
@@ -379,7 +377,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
             bool enable_dll_pll;
 			if (d_enable_extended_integration==true)
 			{
-				long int symbol_diff=d_symbol_counter-d_preamble_index;
+				long int symbol_diff=round(1000.0*((static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in)-d_preamble_timestamp_s));
 				if (symbol_diff>0 and symbol_diff % d_extend_correlation_ms == 0)
 				{
 					// compute coherent integration and enable tracking loop
@@ -638,6 +636,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
 
             current_synchro_data.System = {'G'};
             current_synchro_data.Flag_valid_pseudorange = false;
+            current_synchro_data.correlation_length_ms=1;
             *out[0] = current_synchro_data;
         }
 
@@ -703,7 +702,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
         {
             LOG(WARNING) << "noutput_items = 0";
         }
-    d_symbol_counter++;
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

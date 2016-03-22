@@ -126,7 +126,7 @@ void Channel::connect(gr::top_block_sptr top_block)
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
-    top_block->msg_connect(nav_->get_left_block(),pmt::mp("preamble_index"),trk_->get_right_block(),pmt::mp("preamble_index"));
+    top_block->msg_connect(nav_->get_left_block(),pmt::mp("preamble_timestamp_s"),trk_->get_right_block(),pmt::mp("preamble_timestamp_s"));
     DLOG(INFO) << "MSG FEEDBACK CHANNEL telemetry_decoder -> tracking";
 
     connected_ = true;

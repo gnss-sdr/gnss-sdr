@@ -174,8 +174,7 @@ private:
     std::deque<gr_complex> d_E_history;
     std::deque<gr_complex> d_P_history;
     std::deque<gr_complex> d_L_history;
-    long int d_preamble_index;
-    long int d_symbol_counter;
+    double d_preamble_timestamp_s;
     int d_extend_correlation_ms;
     bool d_enable_extended_integration;
     bool d_preamble_synchronized;

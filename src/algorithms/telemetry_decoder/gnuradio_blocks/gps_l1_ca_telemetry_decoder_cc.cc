@@ -29,17 +29,10 @@
  * -------------------------------------------------------------------------
  */
 
-/*!
- * \todo Clean this code and move the telemetry definitions to GPS_L1_CA system definitions file
- */
-
-
 #include "gps_l1_ca_telemetry_decoder_cc.h"
 #include <iostream>
-#include <bitset>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
-#include <pmt/pmt.h>
 #include <glog/logging.h>
 #include "control_message_factory.h"
 #include "gnss_synchro.h"
@@ -49,15 +42,17 @@
 #endif
 
 using google::LogMessage;
-/*!
- * \todo name and move the magic numbers to GPS_L1_CA.h
- */
+
 gps_l1_ca_telemetry_decoder_cc_sptr
 gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
 {
     return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, queue, dump));
 }
 
+void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
+{
+	ninput_items_required[0] = GPS_CA_PREAMBLE_LENGTH_SYMBOLS; //set the required sample history
+}
 
 gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
         Gnss_Satellite satellite,
@@ -66,29 +61,25 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
         gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-	// create asynchronous message ports
-	this->message_port_register_out(pmt::mp("preamble_index"));
-
+	this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    d_samples_per_bit = ( GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS ) / GPS_CA_TELEMETRY_RATE_BITS_SECOND;
-    //d_preamble_duration_seconds = (1.0 / GPS_CA_TELEMETRY_RATE_BITS_SECOND) * GPS_CA_PREAMBLE_LENGTH_BITS;
-    //std::cout<<"d_preamble_duration_seconds="<<d_preamble_duration_seconds<<"\r\n";
+
     // set the preamble
     unsigned short int preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS] = GPS_PREAMBLE;
 
     memcpy((unsigned short int*)this->d_preambles_bits, (unsigned short int*)preambles_bits, GPS_CA_PREAMBLE_LENGTH_BITS*sizeof(unsigned short int));
 
-    // preamble bits to sampled symbols (reversed)
-    d_preambles_symbols = (signed int*)malloc(sizeof(signed int) * GPS_CA_PREAMBLE_LENGTH_BITS * d_samples_per_bit);
+    // preamble bits to sampled symbols
+    d_preambles_symbols = (signed int*)malloc(sizeof(signed int) * GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
     int n = 0;
     for (int i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
         {
-            for (unsigned int j = 0; j < d_samples_per_bit; j++)
+            for (unsigned int j = 0; j < GPS_CA_TELEMETRY_SYMBOLS_PER_BIT; j++)
                 {
-                    if (d_preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS-i-1] == 1)
+                    if (d_preambles_bits[i] == 1)
                         {
                             d_preambles_symbols[n] = 1;
                         }
@@ -99,10 +90,7 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
                     n++;
                 }
         }
-    d_sample_counter = 0;
-    //d_preamble_code_phase_seconds = 0;
     d_stat = 0;
-    d_preamble_index = 0;
     d_symbol_accumulator = 0;
     d_symbol_accumulator_counter = 0;
     d_frame_bit_index = 0;
@@ -121,7 +109,6 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     d_channel = 0;
     Prn_timestamp_at_preamble_ms = 0.0;
     flag_PLL_180_deg_phase_locked = false;
-    //set_history(d_samples_per_bit*8); // At least a history of 8 bits are needed to correlate with the preamble
 }
 
 
@@ -130,8 +117,6 @@ gps_l1_ca_telemetry_decoder_cc::~gps_l1_ca_telemetry_decoder_cc()
     delete d_preambles_symbols;
     d_dump_file.close();
 }
-
-
 
 bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
 {
@@ -160,52 +145,29 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
     int corr_value = 0;
-    int preamble_diff = 0;
+    int preamble_diff_ms = 0;
 
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
-    d_sample_counter++; //count for the processed samples
 
     // ########### Output the tracking data to navigation and PVT ##########
     const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
 
-    // record last symbols (clipped to +1,-1) and its correlation length to perform preamble correlation
-    if (in[0]->Flag_valid_symbol_output==true)
-    {
-    	d_symbol_history.push_front(in[0]->Prompt_I);
-    	d_correlation_length_ms_history.push_front(in[0]->correlation_length_ms);
-        if (static_cast<int>(d_symbol_history.size())>GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
+    //******* preamble correlation ********
+    for (unsigned int i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
         {
-        	d_symbol_history.pop_back();
-        	d_correlation_length_ms_history.pop_back();
-        }
-
-		if (d_symbol_history.size()==GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
-		{
-
-			//******* preamble correlation (in reverse order due to the variable correlator length)
-			int input_symbol_index=0;
-			int preamble_index=0;
-			do{
-				if (d_symbol_history.at(input_symbol_index) < 0)	// symbols clipping
+			if (in[0][i].Flag_valid_symbol_output==true)
+			{
+				if (in[0][i].Prompt_I < 0)	// symbols clipping
 					{
-						//symbol weight expansion using its tracking correlation length
-						corr_value -= d_preambles_symbols[preamble_index]*d_correlation_length_ms_history.at(input_symbol_index);
+						corr_value -= d_preambles_symbols[i]*in[0][i].correlation_length_ms;
 					}
 				else
 					{
-						//symbol weight expansion using its tracking correlation length
-						corr_value += d_preambles_symbols[preamble_index]*d_correlation_length_ms_history.at(input_symbol_index);
+						corr_value += d_preambles_symbols[i]*in[0][i].correlation_length_ms;
 					}
-				preamble_index+=d_correlation_length_ms_history.at(input_symbol_index);
-				input_symbol_index++;
-			}while(preamble_index<GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
-
-		}
-
-    }
-
-    consume_each(1); //always consume one by one tracking output
-
+			}
+        	if (corr_value>=GPS_CA_PREAMBLE_LENGTH_SYMBOLS) break;
+        }
     d_flag_preamble = false;
 
     //******* frame sync ******************
@@ -214,30 +176,28 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     	if (d_stat == 0)
     	{
     		d_GPS_FSM.Event_gps_word_preamble();
-    		d_preamble_index = d_sample_counter;//record the preamble sample stamp
-    		DLOG(INFO)  << "Preamble detection for SAT " << this->d_satellite <<" d_sample_counter="<<d_sample_counter<<std::endl;
-    		d_symbol_accumulator = 0; //sync the symbol to bits integrator
-    		d_symbol_accumulator_counter = GPS_CA_TELEMETRY_SYMBOLS_PER_BIT-in[0]->correlation_length_ms;
-    		d_frame_bit_index = 7;
+            d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;//record the preamble sample stamp
+    		DLOG(INFO)  << "Preamble detection for SAT " << this->d_satellite << "in[0][0].Tracking_timestamp_secs="<<round(in[0][0].Tracking_timestamp_secs * 1000.0) <<std::endl;
+    		 //sync the symbol to bits integrator
+    		d_symbol_accumulator = 0;
+    		d_symbol_accumulator_counter = 0;
+    		d_frame_bit_index = 0;
     		d_stat = 1; // enter into frame pre-detection status
     	}
     	else if (d_stat == 1) //check 6 seconds of preamble separation
     	{
-    		preamble_diff = d_sample_counter - d_preamble_index;
-    		if (abs(preamble_diff - GPS_SUBFRAME_MS) < 1)
+            preamble_diff_ms = round((in[0][0].Tracking_timestamp_secs - d_preamble_time_seconds)*1000.0);
+    		if (abs(preamble_diff_ms - GPS_SUBFRAME_MS) < 1)
     		{
-    			//DLOG(INFO)<<"preamble! corr lenght="<<in[0]->correlation_length_ms<<" d_sample_counter="<<d_sample_counter<<std::endl;
+    			DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite  << "in[0][0].Tracking_timestamp_secs="<<round(in[0][0].Tracking_timestamp_secs * 1000.0) <<std::endl;
     			d_GPS_FSM.Event_gps_word_preamble();
     			d_flag_preamble = true;
-    			d_preamble_index = d_sample_counter;  //record the preamble sample stamp (t_P)
-    			d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;// - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble
-        		d_symbol_accumulator_counter = GPS_CA_TELEMETRY_SYMBOLS_PER_BIT-in[0]->correlation_length_ms;
-    			d_frame_bit_index = 7;
+    			d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;//record the PRN start sample index associated to the preamble
     			if (!d_flag_frame_sync)
     			{
     				//send asynchronous message to tracking to inform of frame sync and extend correlation time
-    				pmt::pmt_t value = pmt::from_long(d_preamble_index-1);
-    				this->message_port_pub(pmt::mp("preamble_index"),value);
+    				pmt::pmt_t value = pmt::from_double(d_preamble_time_seconds-0.001);
+    				this->message_port_pub(pmt::mp("preamble_timestamp_s"),value);
 
     				d_flag_frame_sync = true;
     				if (corr_value < 0)
@@ -252,9 +212,9 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     				DLOG(INFO)  << " Frame sync SAT " << this->d_satellite << " with preamble start at " << d_preamble_time_seconds << " [s]";
     			}
     		}else{
-    			if (preamble_diff > GPS_SUBFRAME_MS+1)
+    			if (preamble_diff_ms > GPS_SUBFRAME_MS+1)
     			{
-    				DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff= " << preamble_diff<<" d_sample_counter="<<d_sample_counter<<std::endl;
+    				DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff_ms= " << preamble_diff_ms<<std::endl;
     				d_stat = 0; //lost of frame sync
     				d_flag_frame_sync = false;
     				flag_TOW_set = false;
@@ -264,26 +224,25 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     }
 
     //******* SYMBOL TO BIT *******
-    if (in[0]->Flag_valid_symbol_output==true)
+
+    if (in[0][0].Flag_valid_symbol_output==true)
     {
 		// extended correlation to bit period is enabled in tracking!
-		d_symbol_accumulator += in[0]->Prompt_I; // accumulate the input value in d_symbol_accumulator
-		d_symbol_accumulator_counter+=in[0]->correlation_length_ms;
+		d_symbol_accumulator += in[0][0].Prompt_I; // accumulate the input value in d_symbol_accumulator
+		d_symbol_accumulator_counter+=in[0][0].correlation_length_ms;
     }
-
-    if (d_symbol_accumulator_counter >= GPS_CA_TELEMETRY_SYMBOLS_PER_BIT )
+    if (d_symbol_accumulator_counter == 20)
         {
-			if (d_symbol_accumulator > 0)
-				{ //symbol to bit
-					d_GPS_frame_4bytes += 1; //insert the telemetry bit in LSB
-				}
-			d_symbol_accumulator = 0;
-			d_symbol_accumulator_counter = 0;
+            if (d_symbol_accumulator > 0)
+                { //symbol to bit
+                    d_GPS_frame_4bytes += 1; //insert the telemetry bit in LSB
+                }
+            d_symbol_accumulator = 0;
+            d_symbol_accumulator_counter = 0;
             //******* bits to words ******
             d_frame_bit_index++;
-            if (d_frame_bit_index == GPS_WORD_BITS)
+            if (d_frame_bit_index == 30)
                 {
-                //std::cout<<"word bits = "<<std::bitset<32>(d_GPS_frame_4bytes)<<std::endl;
                     d_frame_bit_index = 0;
                     // parity check
                     // Each word in wordbuff is composed of:
@@ -325,6 +284,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                 }
         }
     // output the frame
+    consume_each(1); //one by one
     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
     //1. Copy the current tracking output
     current_synchro_data = in[0][0];
@@ -359,8 +319,8 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
 
     if (flag_PLL_180_deg_phase_locked == true)
         {
-			//correct the accumulated phase for the costas loop phase shift, if required
-			current_synchro_data.Carrier_phase_rads += GPS_PI;
+            //correct the accumulated phase for the costas loop phase shift, if required
+            current_synchro_data.Carrier_phase_rads += GPS_PI;
         }
 
     if(d_dump == true)
@@ -376,7 +336,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
                     tmp_double = d_TOW_at_Preamble;
                     d_dump_file.write((char*)&tmp_double, sizeof(double));
             }
-            catch (std::ifstream::failure e)
+            catch (const std::ifstream::failure & e)
             {
                     LOG(WARNING) << "Exception writing observables dump file " << e.what();
             }
@@ -412,7 +372,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_decimation(int decimation)
 void gps_l1_ca_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    DLOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
+    LOG(INFO) << "Setting decoder Finite State Machine to satellite "  << d_satellite;
     d_GPS_FSM.i_satellite_PRN = d_satellite.get_PRN();
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
@@ -435,7 +395,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            DLOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
+                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
                                       << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (std::ifstream::failure e)

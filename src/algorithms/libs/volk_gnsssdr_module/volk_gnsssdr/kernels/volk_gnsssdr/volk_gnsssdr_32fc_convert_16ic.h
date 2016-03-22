@@ -69,20 +69,22 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector
 
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
+    float aux;
 
-    float min_val = SHRT_MIN;
-    float max_val = SHRT_MAX;
+    const float min_val = (float)SHRT_MIN;
+    const float max_val = (float)SHRT_MAX;
 
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
     __m128 ret1, ret2;
-    __m128 vmin_val = _mm_set_ps1(min_val);
-    __m128 vmax_val = _mm_set_ps1(max_val);
+    const __m128 vmin_val = _mm_set_ps1(min_val);
+    const __m128 vmax_val = _mm_set_ps1(max_val);
 
     for(unsigned int i = 0; i < sse_iters; i++)
         {
             inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            __builtin_prefetch(inputVectorPtr + 8);
 
             // Clip
             ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
@@ -99,11 +101,12 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse2(lv_16sc_t* outputVector
 
     for(unsigned int i = sse_iters * 8; i < num_points * 2; i++)
         {
-            if(inputVectorPtr[i] > max_val)
-                inputVectorPtr[i] = max_val;
-            else if(inputVectorPtr[i] < min_val)
-                inputVectorPtr[i] = min_val;
-            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
+            aux = *inputVectorPtr++;
+            if(aux > max_val)
+                aux = max_val;
+            else if(aux < min_val)
+                aux = min_val;
+            *outputVectorPtr++ = (int16_t)rintf(aux);
         }
 }
 #endif /* LV_HAVE_SSE2 */
@@ -118,20 +121,22 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector,
 
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
+    float aux;
 
-    float min_val = SHRT_MIN;
-    float max_val = SHRT_MAX;
+    const float min_val = (float)SHRT_MIN;
+    const float max_val = (float)SHRT_MAX;
 
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2; // is __m128i defined in xmmintrin.h?
     __m128 ret1, ret2;
-    __m128 vmin_val = _mm_set_ps1(min_val);
-    __m128 vmax_val = _mm_set_ps1(max_val);
+    const __m128 vmin_val = _mm_set_ps1(min_val);
+    const __m128 vmax_val = _mm_set_ps1(max_val);
 
     for(unsigned int i = 0;i < sse_iters; i++)
         {
             inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            __builtin_prefetch(inputVectorPtr + 8);
 
             // Clip
             ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
@@ -148,11 +153,12 @@ static inline void volk_gnsssdr_32fc_convert_16ic_u_sse(lv_16sc_t* outputVector,
 
     for(unsigned int i = sse_iters * 8; i < num_points*2; i++)
         {
-            if(inputVectorPtr[i] > max_val)
-                inputVectorPtr[i] = max_val;
-            else if(inputVectorPtr[i] < min_val)
-                inputVectorPtr[i] = min_val;
-            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
+            aux = *inputVectorPtr++;
+            if(aux > max_val)
+                aux = max_val;
+            else if(aux < min_val)
+                aux = min_val;
+            *outputVectorPtr++ = (int16_t)rintf(aux);
         }
 }
 #endif /* LV_HAVE_SSE */
@@ -167,20 +173,22 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector
 
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
+    float aux;
 
-    float min_val = SHRT_MIN;
-    float max_val = SHRT_MAX;
+    const float min_val = (float)SHRT_MIN;
+    const float max_val = (float)SHRT_MAX;
 
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
     __m128 ret1, ret2;
-    __m128 vmin_val = _mm_set_ps1(min_val);
-    __m128 vmax_val = _mm_set_ps1(max_val);
+    const __m128 vmin_val = _mm_set_ps1(min_val);
+    const __m128 vmax_val = _mm_set_ps1(max_val);
 
     for(unsigned int i = 0; i < sse_iters; i++)
         {
             inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            __builtin_prefetch(inputVectorPtr + 8);
 
             // Clip
             ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
@@ -197,11 +205,12 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector
 
     for(unsigned int i = sse_iters * 8; i < num_points * 2; i++)
         {
-            if(inputVectorPtr[i] > max_val)
-                inputVectorPtr[i] = max_val;
-            else if(inputVectorPtr[i] < min_val)
-                inputVectorPtr[i] = min_val;
-            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
+            aux = *inputVectorPtr++;
+            if(aux > max_val)
+                aux = max_val;
+            else if(aux < min_val)
+                aux = min_val;
+            *outputVectorPtr++ = (int16_t)rintf(aux);
         }
 }
 #endif /* LV_HAVE_SSE2 */
@@ -212,24 +221,25 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse2(lv_16sc_t* outputVector
 
 static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector, const lv_32fc_t* inputVector, unsigned int num_points)
 {
-    const unsigned int sse_iters = num_points/4;
+    const unsigned int sse_iters = num_points / 4;
+    const float min_val = (float)SHRT_MIN;
+    const float max_val = (float)SHRT_MAX;
+    float aux;
 
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
 
-    float min_val = SHRT_MIN;
-    float max_val = SHRT_MAX;
-
     __m128 inputVal1, inputVal2;
     __m128i intInputVal1, intInputVal2;
     __m128 ret1, ret2;
-    __m128 vmin_val = _mm_set_ps1(min_val);
-    __m128 vmax_val = _mm_set_ps1(max_val);
+    const __m128 vmin_val = _mm_set_ps1(min_val);
+    const __m128 vmax_val = _mm_set_ps1(max_val);
 
     for(unsigned int i = 0;i < sse_iters; i++)
         {
             inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
+            __builtin_prefetch(inputVectorPtr + 8);
 
             // Clip
             ret1 = _mm_max_ps(_mm_min_ps(inputVal1, vmax_val), vmin_val);
@@ -246,11 +256,12 @@ static inline void volk_gnsssdr_32fc_convert_16ic_a_sse(lv_16sc_t* outputVector,
 
     for(unsigned int i = sse_iters * 8; i < num_points * 2; i++)
         {
-            if(inputVectorPtr[i] > max_val)
-                inputVectorPtr[i] = max_val;
-            else if(inputVectorPtr[i] < min_val)
-                inputVectorPtr[i] = min_val;
-            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
+            aux = *inputVectorPtr++;
+            if(aux > max_val)
+                aux = max_val;
+            else if(aux < min_val)
+                aux = min_val;
+            *outputVectorPtr++ = (int16_t)rintf(aux);
         }
 }
 #endif /* LV_HAVE_SSE */
@@ -266,8 +277,12 @@ static inline void volk_gnsssdr_32fc_convert_16ic_neon(lv_16sc_t* outputVector, 
     float32_t* inputVectorPtr = (float32_t*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
 
-    float32x4_t min_val = vmovq_n_f32(SHRT_MIN);
-    float32x4_t max_val = vmovq_n_f32(SHRT_MAX);
+    const float min_val_f = (float)SHRT_MIN;
+    const float max_val_f = (float)SHRT_MAX;
+    float32_t aux;
+
+    const float32x4_t min_val = vmovq_n_f32(min_val_f);
+    const float32x4_t max_val = vmovq_n_f32(max_val_f);
     float32x4_t half = vdupq_n_f32(0.5f);
     float32x4_t ret1, ret2, a, b, sign, PlusHalf, Round;
 
@@ -275,10 +290,11 @@ static inline void volk_gnsssdr_32fc_convert_16ic_neon(lv_16sc_t* outputVector, 
     int16x4_t intInputVal1, intInputVal2;
     int16x8_t res;
 
-    for(unsigned int i = 0;i < neon_iters; i++)
+    for(unsigned int i = 0; i < neon_iters; i++)
         {
             a = vld1q_f32((const float32_t*)(inputVectorPtr)); inputVectorPtr += 4;
             b = vld1q_f32((const float32_t*)(inputVectorPtr)); inputVectorPtr += 4;
+            __builtin_prefetch(inputVectorPtr + 8);
 
             ret1 = vmaxq_f32(vminq_f32(a, max_val), min_val);
             ret2 = vmaxq_f32(vminq_f32(b, max_val), min_val);
@@ -304,11 +320,12 @@ static inline void volk_gnsssdr_32fc_convert_16ic_neon(lv_16sc_t* outputVector, 
 
     for(unsigned int i = neon_iters * 8; i < num_points * 2; i++)
         {
-            if(inputVectorPtr[i] > SHRT_MAX)
-                inputVectorPtr[i] = (int16_t)SHRT_MAX;
-            else if(inputVectorPtr[i] < SHRT_MIN)
-                inputVectorPtr[i] = (int16_t)SHRT_MIN;
-            *outputVectorPtr++ = (int16_t)rintf(*inputVectorPtr++);
+            aux = *inputVectorPtr++;
+            if(aux > max_val_f)
+                aux = max_val_f;
+            else if(aux < min_val_f)
+                aux = min_val_f;
+            *outputVectorPtr++ = (int16_t)rintf(aux);
         }
 }
 
@@ -321,16 +338,18 @@ static inline void volk_gnsssdr_32fc_convert_16ic_generic(lv_16sc_t* outputVecto
 {
     float* inputVectorPtr = (float*)inputVector;
     int16_t* outputVectorPtr = (int16_t*)outputVector;
-    float min_val = SHRT_MIN;
-    float max_val = SHRT_MAX;
+    const float min_val = (float)SHRT_MIN;
+    const float max_val = (float)SHRT_MAX;
+    float aux;
 
-    for(unsigned int i = 0; i < num_points*2; i++)
+    for(unsigned int i = 0; i < num_points * 2; i++)
         {
-            if(inputVectorPtr[i] > max_val)
-                inputVectorPtr[i] = max_val;
-            else if(inputVectorPtr[i] < min_val)
-                inputVectorPtr[i] = min_val;
-            outputVectorPtr[i] = (int16_t)rintf(inputVectorPtr[i]);
+            aux = *inputVectorPtr++;
+            if(aux > max_val)
+                aux = max_val;
+            else if(aux < min_val)
+                aux = min_val;
+           *outputVectorPtr++ = (int16_t)rintf(aux);
         }
 }
 #endif /* LV_HAVE_GENERIC */

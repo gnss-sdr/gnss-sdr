@@ -81,7 +81,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_generic(lv_16sc_t* result,
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
-    __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
+    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, result;
 
     mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
     mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
@@ -134,7 +134,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
-    __m128i a,b,c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
+    __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
 
     mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
     mask_real = _mm_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
@@ -179,6 +179,115 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_sse2(lv_16sc_t* out, con
         }
 }
 #endif /* LV_HAVE_SSE2 */
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_avx2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+{
+    unsigned int number = 0;
+    const unsigned int avx2_points = num_points / 8;
+
+    const lv_16sc_t* _in_a = in_a;
+    const lv_16sc_t* _in_b = in_b;
+    lv_16sc_t* _out = out;
+
+    __m256i a, b, c, c_sr,  real, imag, imag1, imag2, b_sl, a_sl, result;
+
+    const __m256i mask_imag = _mm256_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
+    const __m256i mask_real = _mm256_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
+
+    for(;number < avx2_points; number++)
+        {
+            a = _mm256_loadu_si256((__m256i*)_in_a); // Load the ar + ai, br + bi as ar,ai,br,bi
+            b = _mm256_loadu_si256((__m256i*)_in_b); // Load the cr + ci, dr + di as cr,ci,dr,di
+            c = _mm256_mullo_epi16(a, b);
+
+            c_sr = _mm256_srli_si256(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+            real = _mm256_subs_epi16(c, c_sr);
+            real = _mm256_and_si256(real, mask_real); // a3.r*b3.r-a3.i*b3.i , 0,  a3.r*b3.r- a3.i*b3.i
+
+            b_sl = _mm256_slli_si256(b, 2); // b3.r, b2.i ....
+            a_sl = _mm256_slli_si256(a, 2); // a3.r, a2.i ....
+
+            imag1 = _mm256_mullo_epi16(a, b_sl); // a3.i*b3.r, ....
+            imag2 = _mm256_mullo_epi16(b, a_sl); // b3.i*a3.r, ....
+
+            imag = _mm256_adds_epi16(imag1, imag2);
+            imag = _mm256_and_si256(imag, mask_imag); // a3.i*b3.r+b3.i*a3.r, 0, ...
+
+            result = _mm256_or_si256(real, imag);
+
+            _mm256_storeu_si256((__m256i*)_out, result);
+
+            _in_a += 8;
+            _in_b += 8;
+            _out += 8;
+        }
+
+    number = avx2_points * 8;
+    for(;number < num_points; number++)
+        {
+            *_out++ = (*_in_a++) * (*_in_b++);
+        }
+}
+#endif /* LV_HAVE_AVX2  */
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_avx2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+{
+    unsigned int number = 0;
+    const unsigned int avx2_points = num_points / 8;
+
+    const lv_16sc_t* _in_a = in_a;
+    const lv_16sc_t* _in_b = in_b;
+    lv_16sc_t* _out = out;
+
+    __m256i a, b, c, c_sr,  real, imag, imag1, imag2, b_sl, a_sl, result;
+
+    const __m256i mask_imag = _mm256_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
+    const __m256i mask_real = _mm256_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
+
+    for(;number < avx2_points; number++)
+        {
+            a = _mm256_load_si256((__m256i*)_in_a); // Load the ar + ai, br + bi as ar,ai,br,bi
+            b = _mm256_load_si256((__m256i*)_in_b); // Load the cr + ci, dr + di as cr,ci,dr,di
+            c = _mm256_mullo_epi16(a, b);
+
+            c_sr = _mm256_srli_si256(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+            real = _mm256_subs_epi16(c, c_sr);
+            real = _mm256_and_si256(real, mask_real); // a3.r*b3.r-a3.i*b3.i , 0,  a3.r*b3.r- a3.i*b3.i
+
+            b_sl = _mm256_slli_si256(b, 2); // b3.r, b2.i ....
+            a_sl = _mm256_slli_si256(a, 2); // a3.r, a2.i ....
+
+            imag1 = _mm256_mullo_epi16(a, b_sl); // a3.i*b3.r, ....
+            imag2 = _mm256_mullo_epi16(b, a_sl); // b3.i*a3.r, ....
+
+            imag = _mm256_adds_epi16(imag1, imag2);
+            imag = _mm256_and_si256(imag, mask_imag); // a3.i*b3.r+b3.i*a3.r, 0, ...
+
+            result = _mm256_or_si256(real, imag);
+
+            _mm256_store_si256((__m256i*)_out, result);
+
+            _in_a += 8;
+            _in_b += 8;
+            _out += 8;
+        }
+
+    number = avx2_points * 8;
+    for(;number < num_points; number++)
+        {
+            *_out++ = (*_in_a++) * (*_in_b++);
+        }
+}
+#endif /* LV_HAVE_AVX2  */
+
 
 
 #ifdef LV_HAVE_NEON

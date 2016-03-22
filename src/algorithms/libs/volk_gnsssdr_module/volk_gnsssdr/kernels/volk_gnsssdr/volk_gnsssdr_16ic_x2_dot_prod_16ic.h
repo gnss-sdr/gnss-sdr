@@ -233,6 +233,156 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_sse2(lv_16sc_t* out, con
 #endif /* LV_HAVE_SSE2 */
 
 
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_u_axv2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+{
+    lv_16sc_t dotProduct = lv_cmake((int16_t)0, (int16_t)0);
+
+    const unsigned int avx_iters = num_points / 8;
+
+    const lv_16sc_t* _in_a = in_a;
+    const lv_16sc_t* _in_b = in_b;
+    lv_16sc_t* _out = out;
+    unsigned int i;
+
+    if (avx_iters > 0)
+        {
+            __m256i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, realcacc, imagcacc, result;
+            __VOLK_ATTR_ALIGNED(32) lv_16sc_t dotProductVector[8];
+
+            realcacc = _mm256_setzero_si256();
+            imagcacc = _mm256_setzero_si256();
+
+            mask_imag = _mm256_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
+            mask_real = _mm256_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
+
+            for(unsigned int number = 0; number < avx_iters; number++)
+                {
+                    a = _mm256_loadu_si256((__m256i*)_in_a);
+                    __builtin_prefetch(_in_a + 16);
+                    b = _mm256_loadu_si256((__m256i*)_in_b);
+                    __builtin_prefetch(_in_b + 16);
+                    c = _mm256_mullo_epi16(a, b);
+
+                    c_sr = _mm256_srli_si256(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                    real = _mm256_subs_epi16(c, c_sr);
+
+                    b_sl = _mm256_slli_si256(b, 2);
+                    a_sl = _mm256_slli_si256(a, 2);
+
+                    imag1 = _mm256_mullo_epi16(a, b_sl);
+                    imag2 = _mm256_mullo_epi16(b, a_sl);
+
+                    imag = _mm256_adds_epi16(imag1, imag2); //with saturation arithmetic!
+
+                    realcacc = _mm256_adds_epi16(realcacc, real);
+                    imagcacc = _mm256_adds_epi16(imagcacc, imag);
+
+                    _in_a += 8;
+                    _in_b += 8;
+                }
+
+            realcacc = _mm256_and_si256(realcacc, mask_real);
+            imagcacc = _mm256_and_si256(imagcacc, mask_imag);
+
+            result = _mm256_or_si256(realcacc, imagcacc);
+
+            _mm256_storeu_si256((__m256i*)dotProductVector, result); // Store the results back into the dot product vector
+
+            for (i = 0; i < 8; ++i)
+                {
+                    dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])), sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                }
+        }
+
+    for (i = 0; i < (num_points % 8); ++i)
+        {
+            lv_16sc_t tmp = (*_in_a++) * (*_in_b++);
+            dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(tmp)), sat_adds16i(lv_cimag(dotProduct), lv_cimag(tmp)));
+        }
+
+    *_out = dotProduct;
+}
+#endif /* LV_HAVE_AVX2 */
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_a_axv2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
+{
+    lv_16sc_t dotProduct = lv_cmake((int16_t)0, (int16_t)0);
+
+    const unsigned int avx_iters = num_points / 8;
+
+    const lv_16sc_t* _in_a = in_a;
+    const lv_16sc_t* _in_b = in_b;
+    lv_16sc_t* _out = out;
+    unsigned int i;
+
+    if (avx_iters > 0)
+        {
+            __m256i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, realcacc, imagcacc, result;
+            __VOLK_ATTR_ALIGNED(32) lv_16sc_t dotProductVector[8];
+
+            realcacc = _mm256_setzero_si256();
+            imagcacc = _mm256_setzero_si256();
+
+            mask_imag = _mm256_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
+            mask_real = _mm256_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
+
+            for(unsigned int number = 0; number < avx_iters; number++)
+                {
+                    a = _mm256_load_si256((__m256i*)_in_a);
+                    __builtin_prefetch(_in_a + 16);
+                    b = _mm256_load_si256((__m256i*)_in_b);
+                    __builtin_prefetch(_in_b + 16);
+                    c = _mm256_mullo_epi16(a, b);
+
+                    c_sr = _mm256_srli_si256(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                    real = _mm256_subs_epi16(c, c_sr);
+
+                    b_sl = _mm256_slli_si256(b, 2);
+                    a_sl = _mm256_slli_si256(a, 2);
+
+                    imag1 = _mm256_mullo_epi16(a, b_sl);
+                    imag2 = _mm256_mullo_epi16(b, a_sl);
+
+                    imag = _mm256_adds_epi16(imag1, imag2); //with saturation arithmetic!
+
+                    realcacc = _mm256_adds_epi16(realcacc, real);
+                    imagcacc = _mm256_adds_epi16(imagcacc, imag);
+
+                    _in_a += 8;
+                    _in_b += 8;
+                }
+
+            realcacc = _mm256_and_si256(realcacc, mask_real);
+            imagcacc = _mm256_and_si256(imagcacc, mask_imag);
+
+            result = _mm256_or_si256(realcacc, imagcacc);
+
+            _mm256_store_si256((__m256i*)dotProductVector, result); // Store the results back into the dot product vector
+
+            for (i = 0; i < 8; ++i)
+                {
+                    dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])), sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                }
+        }
+
+    for (i = 0; i < (num_points % 8); ++i)
+        {
+            lv_16sc_t tmp = (*_in_a++) * (*_in_b++);
+            dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(tmp)), sat_adds16i(lv_cimag(dotProduct), lv_cimag(tmp)));
+        }
+
+    *_out = dotProduct;
+}
+#endif /* LV_HAVE_AVX2 */
+
+
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
@@ -385,8 +535,8 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_neon_optvma(lv_16sc_t* out
 
             // use 2 accumulators to remove inter-instruction data dependencies
             accumulator1.val[0] = vmla_s16(accumulator1.val[0], a_val.val[0], b_val.val[0]);
-            accumulator1.val[1] = vmla_s16(accumulator1.val[1], a_val.val[0], b_val.val[1]);
             accumulator2.val[0] = vmls_s16(accumulator2.val[0], a_val.val[1], b_val.val[1]);
+            accumulator1.val[1] = vmla_s16(accumulator1.val[1], a_val.val[0], b_val.val[1]);
             accumulator2.val[1] = vmla_s16(accumulator2.val[1], a_val.val[1], b_val.val[0]);
 
             a_ptr += 4;

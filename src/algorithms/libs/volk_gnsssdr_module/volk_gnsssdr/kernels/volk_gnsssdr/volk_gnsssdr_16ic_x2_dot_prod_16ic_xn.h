@@ -292,6 +292,190 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_sse2(lv_16sc_t* resul
 #endif /* LV_HAVE_SSE2 */
 
 
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+{
+    lv_16sc_t dotProduct = lv_cmake(0,0);
+
+    const unsigned int sse_iters = num_points / 8;
+
+    const lv_16sc_t** _in_a = in_a;
+    const lv_16sc_t* _in_common = in_common;
+    lv_16sc_t* _out = result;
+
+    if (sse_iters > 0)
+        {
+            __VOLK_ATTR_ALIGNED(32) lv_16sc_t dotProductVector[8];
+
+            __m256i* realcacc = (__m256i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256i), volk_gnsssdr_get_alignment());
+            __m256i* imagcacc = (__m256i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256i), volk_gnsssdr_get_alignment());
+
+            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                {
+                    realcacc[n_vec] = _mm256_setzero_si256();
+                    imagcacc[n_vec] = _mm256_setzero_si256();
+                }
+
+            __m256i a, b, c, c_sr, mask_imag, mask_real, real, imag;
+
+            mask_imag = _mm256_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
+            mask_real = _mm256_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
+
+            for(unsigned int number = 0; number < sse_iters; number++)
+                {
+                    b = _mm256_load_si256((__m256i*)_in_common);
+                    __builtin_prefetch(_in_common + 16);
+                    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                        {
+                            a = _mm256_load_si256((__m256i*)&(_in_a[n_vec][number*8]));
+
+                            c = _mm256_mullo_epi16(a, b);
+
+                            c_sr = _mm256_srli_si256(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                            real = _mm256_subs_epi16(c, c_sr);
+
+                            c_sr = _mm256_slli_si256(b, 2); // b3.r, b2.i ....
+                            c = _mm256_mullo_epi16(a, c_sr); // a3.i*b3.r, ....
+
+                            c_sr = _mm256_slli_si256(a, 2); // a3.r, a2.i ....
+                            imag = _mm256_mullo_epi16(b, c_sr); // b3.i*a3.r, ....
+
+                            imag = _mm256_adds_epi16(c, imag);
+
+                            realcacc[n_vec] = _mm256_adds_epi16(realcacc[n_vec], real);
+                            imagcacc[n_vec] = _mm256_adds_epi16(imagcacc[n_vec], imag);
+                        }
+                    _in_common += 8;
+                }
+
+            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                {
+                    realcacc[n_vec] = _mm256_and_si256(realcacc[n_vec], mask_real);
+                    imagcacc[n_vec] = _mm256_and_si256(imagcacc[n_vec], mask_imag);
+
+                    a = _mm256_or_si256(realcacc[n_vec], imagcacc[n_vec]);
+
+                    _mm256_store_si256((__m256i*)dotProductVector, a); // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0,0);
+                    for (int i = 0; i < 8; ++i)
+                        {
+                            dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
+                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                        }
+                    _out[n_vec] = dotProduct;
+                }
+            volk_gnsssdr_free(realcacc);
+            volk_gnsssdr_free(imagcacc);
+        }
+
+    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+        {
+            for(unsigned int n  = sse_iters * 8; n < num_points; n++)
+                {
+                    lv_16sc_t tmp = in_common[n] * in_a[n_vec][n];
+
+                    _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
+                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                }
+        }
+}
+#endif /* LV_HAVE_AVX2 */
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+
+static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_16sc_t** in_a,  int num_a_vectors, unsigned int num_points)
+{
+    lv_16sc_t dotProduct = lv_cmake(0,0);
+
+    const unsigned int sse_iters = num_points / 8;
+
+    const lv_16sc_t** _in_a = in_a;
+    const lv_16sc_t* _in_common = in_common;
+    lv_16sc_t* _out = result;
+
+    if (sse_iters > 0)
+        {
+            __VOLK_ATTR_ALIGNED(32) lv_16sc_t dotProductVector[8];
+
+            __m256i* realcacc = (__m256i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256i), volk_gnsssdr_get_alignment());
+            __m256i* imagcacc = (__m256i*)volk_gnsssdr_malloc(num_a_vectors * sizeof(__m256i), volk_gnsssdr_get_alignment());
+
+            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                {
+                    realcacc[n_vec] = _mm256_setzero_si256();
+                    imagcacc[n_vec] = _mm256_setzero_si256();
+                }
+
+            __m256i a, b, c, c_sr, mask_imag, mask_real, real, imag;
+
+            mask_imag = _mm256_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
+            mask_real = _mm256_set_epi8(0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255);
+
+            for(unsigned int number = 0; number < sse_iters; number++)
+                {
+                    b = _mm256_loadu_si256((__m256i*)_in_common);
+                    __builtin_prefetch(_in_common + 16);
+                    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                        {
+                            a = _mm256_loadu_si256((__m256i*)&(_in_a[n_vec][number*8]));
+
+                            c = _mm256_mullo_epi16(a, b);
+
+                            c_sr = _mm256_srli_si256(c, 2); // Shift a right by imm8 bytes while shifting in zeros, and store the results in dst.
+                            real = _mm256_subs_epi16(c, c_sr);
+
+                            c_sr = _mm256_slli_si256(b, 2); // b3.r, b2.i ....
+                            c = _mm256_mullo_epi16(a, c_sr); // a3.i*b3.r, ....
+
+                            c_sr = _mm256_slli_si256(a, 2); // a3.r, a2.i ....
+                            imag = _mm256_mullo_epi16(b, c_sr); // b3.i*a3.r, ....
+
+                            imag = _mm256_adds_epi16(c, imag);
+
+                            realcacc[n_vec] = _mm256_adds_epi16(realcacc[n_vec], real);
+                            imagcacc[n_vec] = _mm256_adds_epi16(imagcacc[n_vec], imag);
+                        }
+                    _in_common += 8;
+                }
+
+            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+                {
+                    realcacc[n_vec] = _mm256_and_si256(realcacc[n_vec], mask_real);
+                    imagcacc[n_vec] = _mm256_and_si256(imagcacc[n_vec], mask_imag);
+
+                    a = _mm256_or_si256(realcacc[n_vec], imagcacc[n_vec]);
+
+                    _mm256_store_si256((__m256i*)dotProductVector, a); // Store the results back into the dot product vector
+                    dotProduct = lv_cmake(0,0);
+                    for (int i = 0; i < 8; ++i)
+                        {
+                            dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
+                                    sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
+                        }
+                    _out[n_vec] = dotProduct;
+                }
+            volk_gnsssdr_free(realcacc);
+            volk_gnsssdr_free(imagcacc);
+        }
+
+    for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+        {
+            for(unsigned int n  = sse_iters * 8; n < num_points; n++)
+                {
+                    lv_16sc_t tmp = in_common[n] * in_a[n_vec][n];
+
+                    _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)),
+                            sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
+                }
+        }
+}
+#endif /* LV_HAVE_AVX2 */
+
+
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 

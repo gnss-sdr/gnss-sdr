@@ -1370,9 +1370,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
                     _phase_real = vsubq_f32(tmp32_real.val[0], tmp32_real.val[1]);
                     _phase_imag = vaddq_f32(tmp32_imag.val[0], tmp32_imag.val[1]);
 
-                    vst1q_f32((float32_t*)__phase_real, _phase_real);
-                    vst1q_f32((float32_t*)__phase_imag, _phase_imag);
-
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4])); //load (2 byte imag, 2 byte real) x 4 into 128 bits reg
@@ -1584,9 +1581,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_vma(lv_16s
 
                         }
 
-                    vst1q_f32((float32_t*)__phase_real, _phase_real);
-                    vst1q_f32((float32_t*)__phase_imag, _phase_imag);
-
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {
                             a_val = vld2_s16((int16_t*)&(_in_a[n_vec][number*4]));
@@ -1764,9 +1758,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_optvma(lv_
                             _phase_real = vld1q_f32(____phase_real);
                             _phase_imag = vld1q_f32(____phase_imag);
                         }
-
-                    vst1q_f32((float32_t*)__phase_real, _phase_real);
-                    vst1q_f32((float32_t*)__phase_imag, _phase_imag);
 
                     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
                         {

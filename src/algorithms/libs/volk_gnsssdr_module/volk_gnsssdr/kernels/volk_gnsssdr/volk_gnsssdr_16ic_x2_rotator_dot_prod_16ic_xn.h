@@ -930,7 +930,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_avx2(lv_16sc_
 
     volk_gnsssdr_free(realcacc);
     volk_gnsssdr_free(imagcacc);
-
+    _mm256_zeroupper();
 
     _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
@@ -1241,7 +1241,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_avx2_reload(l
                 }
             _out[n_vec] = dotProduct;
         }
-
+    _mm256_zeroupper();
     volk_gnsssdr_free(realcacc);
     volk_gnsssdr_free(imagcacc);
 

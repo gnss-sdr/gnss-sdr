@@ -37,7 +37,8 @@
  *
  * \b Overview
  *
- * Computes the sine and cosine of a vector of floats, providing the output in a complex vector (cosine, sine)
+ * VOLK_GNSSSDR kernel that computes the sine and cosine of a vector
+ * of floats, providing the output in a complex vector (cosine, sine)
  *
  * <b>Dispatcher Prototype</b>
  * \code
@@ -133,12 +134,13 @@ static inline void volk_gnsssdr_32f_sincos_32fc_u_sse4_1(lv_32fc_t* out, const f
             cosine = _mm_sub_ps(cosine, _mm_and_ps(_mm_mul_ps(cosine, _mm_set1_ps(2.0f)), condition3));
 
             cplxValue = _mm_unpacklo_ps(cosine, sine);
-
             _mm_storeu_ps((float*)bPtr, cplxValue);
             bPtr += 2;
+
             cplxValue = _mm_unpackhi_ps(cosine, sine);
             _mm_storeu_ps((float*)bPtr, cplxValue);
             bPtr += 2;
+
             aPtr += 4;
         }
 
@@ -226,12 +228,13 @@ static inline void volk_gnsssdr_32f_sincos_32fc_a_sse4_1(lv_32fc_t* out, const f
             cosine = _mm_sub_ps(cosine, _mm_and_ps(_mm_mul_ps(cosine, _mm_set1_ps(2.0f)), condition3));
 
             cplxValue = _mm_unpacklo_ps(cosine, sine);
-
             _mm_store_ps((float*)bPtr, cplxValue);
             bPtr += 2;
+
             cplxValue = _mm_unpackhi_ps(cosine, sine);
             _mm_store_ps((float*)bPtr, cplxValue);
             bPtr += 2;
+
             aPtr += 4;
         }
 
@@ -587,7 +590,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, con
             _in = *in++;
             d = (int32_t)floor(_in / TWO_PI + 0.5);
             _in -= d * TWO_PI;
-            x = (int32_t) ((float) _in * TWO_TO_THE_31_DIV_PI);
+            x = (int32_t) ((float)_in * TWO_TO_THE_31_DIV_PI);
 
             ux = x;
             sin_index = ux >> diffbits;

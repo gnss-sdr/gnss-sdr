@@ -369,6 +369,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_a_avx2(lv_16sc_t* resul
             volk_gnsssdr_free(realcacc);
             volk_gnsssdr_free(imagcacc);
         }
+    _mm256_zeroupper();
 
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
@@ -461,6 +462,7 @@ static inline void volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_u_avx2(lv_16sc_t* resul
             volk_gnsssdr_free(realcacc);
             volk_gnsssdr_free(imagcacc);
         }
+    _mm256_zeroupper();
 
     for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {

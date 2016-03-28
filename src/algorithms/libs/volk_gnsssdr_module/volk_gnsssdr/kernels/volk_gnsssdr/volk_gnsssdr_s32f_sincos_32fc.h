@@ -588,7 +588,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_avx2(lv_32fc_t* out, const fl
 
             eight_phases_reg = _mm256_add_ps(eight_phases_reg, eight_phases_inc_reg);
         }
-
+    _mm256_zeroupper();
     _phase = _phase + phase_inc * (avx_iters * 8);
     for(number = avx_iters * 8; number < num_points; number++)
         {
@@ -756,7 +756,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t* out, const fl
 
             eight_phases_reg = _mm256_add_ps(eight_phases_reg, eight_phases_inc_reg);
         }
-
+    _mm256_zeroupper();
     _phase = _phase + phase_inc * (avx_iters * 8);
     for(number = avx_iters * 8; number < num_points; number++)
         {

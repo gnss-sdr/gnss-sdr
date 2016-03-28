@@ -45,6 +45,7 @@ class cpu_multicorrelator_16sc
 {
 public:
     cpu_multicorrelator_16sc();
+    ~cpu_multicorrelator_16sc();
     bool init(int max_signal_length_samples, int n_correlators);
     bool set_local_code_and_taps(int code_length_chips, const lv_16sc_t* local_code_in, float *shifts_chips);
     bool set_input_output_vectors(lv_16sc_t* corr_out, const lv_16sc_t* sig_in);
@@ -55,18 +56,14 @@ public:
 private:
     // Allocate the device input vectors
     const lv_16sc_t *d_sig_in;
-    //lv_16sc_t *d_nco_in;
     float *d_tmp_code_phases_chips;
     lv_16sc_t **d_local_codes_resampled;
-    //lv_16sc_t *d_sig_doppler_wiped;
     const lv_16sc_t *d_local_code_in;
     lv_16sc_t *d_corr_out;
     float *d_shifts_chips;
     int d_code_length_chips;
     int d_n_correlators;
-    bool update_local_code();
-    bool update_local_carrier();
 };
 
 
-#endif /* CPU_MULTICORRELATOR_H_ */
+#endif /* GNSS_SDR_CPU_MULTICORRELATOR_H_ */

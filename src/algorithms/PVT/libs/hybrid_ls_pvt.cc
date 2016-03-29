@@ -60,7 +60,7 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "PVT lib dump enabled Log file: " << d_dump_filename.c_str();
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure &e)
                     {
                             LOG(WARNING) << "Exception opening PVT lib dump file " << e.what();
                     }
@@ -98,8 +98,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     int GPS_week = 0;
     double utc = 0.0;
     double GST = 0.0;
-    double utc_tx_corrected = 0.0; //utc computed at tx_time_corrected, added for Galileo constellation (in GPS utc is directly computed at TX_time_corrected_s)
-    double TX_time_corrected_s;
+    //double utc_tx_corrected = 0.0; //utc computed at tx_time_corrected, added for Galileo constellation (in GPS utc is directly computed at TX_time_corrected_s)
+    double TX_time_corrected_s = 0.0;
     double SV_clock_bias_s = 0.0;
 
     d_flag_averaging = flag_averaging;
@@ -251,7 +251,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                     utc = gps_utc_model.utc_time(TX_time_corrected_s, GPS_week);
                 }
             // get time string Gregorian calendar
-            boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
+            double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
+            boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek * static_cast<double>(GPS_week));
             // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             d_position_UTC_time = p_time;

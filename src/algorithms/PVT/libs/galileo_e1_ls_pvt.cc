@@ -57,7 +57,7 @@ galileo_e1_ls_pvt::galileo_e1_ls_pvt(int nchannels, std::string dump_filename, b
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "PVT lib dump enabled Log file: " << d_dump_filename.c_str();
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure &e)
                     {
                             LOG(WARNING) << "Exception opening PVT lib dump file " << e.what();
                     }
@@ -164,7 +164,7 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
             DLOG(INFO) << "obs="<< obs;
             DLOG(INFO) << "W=" << W;
 
-            mypos = galileo_e1_ls_pvt::leastSquarePos(satpos, obs, W);
+            mypos = leastSquarePos(satpos, obs, W);
 
             // Compute Gregorian time
             utc = galileo_utc_model.GST_to_UTC_time(GST, Galileo_week_number);
@@ -176,7 +176,8 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
 
             DLOG(INFO) << "Galileo Position at TOW=" << galileo_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
-            galileo_e1_ls_pvt::cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
+            cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
+            d_rx_dt_m = mypos(3)/GALILEO_C_m_s; // Convert RX time offset from meters to seconds
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
                 {
@@ -185,10 +186,10 @@ bool galileo_e1_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map
                 }
             DLOG(INFO) << "Galileo Position at " << boost::posix_time::to_simple_string(p_time)
                       << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                      << " [deg], Height= " << d_height_m << " [m]";
+                      << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_m << " [s]";
 
             // ###### Compute DOPs ########
-            galileo_e1_ls_pvt::compute_DOP();
+            compute_DOP();
 
             // ######## LOG FILE #########
             if(d_flag_dump_enabled == true)

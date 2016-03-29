@@ -239,8 +239,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             DLOG(INFO) << "obs="<< obs;
             DLOG(INFO) << "W=" << W;
 
-            mypos = hybrid_ls_pvt::leastSquarePos(satpos, obs, W);
-
+            mypos = leastSquarePos(satpos, obs, W);
+            d_rx_dt_m = mypos(3)/GPS_C_m_s; // Convert RX time offset from meters to seconds
             // Compute GST and Gregorian time
             if( GST != 0.0)
                 {
@@ -257,24 +257,20 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             d_position_UTC_time = p_time;
             DLOG(INFO) << "HYBRID Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
-            hybrid_ls_pvt::cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
+            cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
                 {
                     b_valid_position = false;
                     LOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
                     << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                    << " [deg], Height= " << d_height_m << " [m]";
-
-                    //std::cout << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
-                    //          << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-                    //          << " [deg], Height= " << d_height_m << " [m]" << std::endl;
+                    << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << mypos(3) << " [s]";
                     return false;
                 }
 
             LOG(INFO) << "Hybrid Position at " << boost::posix_time::to_simple_string(p_time)
             << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-            << " [deg], Height= " << d_height_m << " [m]";
+            << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_m << " [s]";
 
             // ###### Compute DOPs ########
             hybrid_ls_pvt::compute_DOP();
@@ -318,7 +314,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                 }
 
             // MOVING AVERAGE PVT
-            hybrid_ls_pvt::pos_averaging(flag_averaging);
+            pos_averaging(flag_averaging);
         }
     else
         {

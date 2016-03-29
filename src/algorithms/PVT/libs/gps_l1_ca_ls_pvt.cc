@@ -58,7 +58,7 @@ gps_l1_ca_ls_pvt::gps_l1_ca_ls_pvt(int nchannels, std::string dump_filename, boo
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "PVT lib dump enabled Log file: " << d_dump_filename.c_str();
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure &e)
                     {
                             LOG(WARNING) << "Exception opening PVT lib dump file " << e.what();
                     }
@@ -167,11 +167,12 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
             DLOG(INFO) << "obs=" << obs;
             DLOG(INFO) << "W=" << W;
 
-            mypos = gps_l1_ca_ls_pvt::leastSquarePos(satpos, obs, W);
-
+            mypos = leastSquarePos(satpos, obs, W);
             DLOG(INFO) << "(new)Position at TOW=" << GPS_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
-            gps_l1_ca_ls_pvt::cart2geo(mypos(0), mypos(1), mypos(2), 4);
+            cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
+
+            d_rx_dt_m = mypos(3)/GPS_C_m_s; // Convert RX time offset from meters to seconds
 
             //ToDo: Find an Observables/PVT random bug with some satellite configurations that gives an erratic PVT solution (i.e. height>50 km)
             if (d_height_m > 50000)
@@ -188,10 +189,10 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
 
             LOG(INFO) << "(new)Position at " << boost::posix_time::to_simple_string(p_time)
             << " is Lat = " << d_latitude_d << " [deg], Long = " << d_longitude_d
-            << " [deg], Height= " << d_height_m << " [m]";
+            << " [deg], Height= " << d_height_m << " [m]" << " RX time offset= " << d_rx_dt_m << " [s]";
 
             // ###### Compute DOPs ########
-            gps_l1_ca_ls_pvt::compute_DOP();
+            compute_DOP();
 
             // ######## LOG FILE #########
             if(d_flag_dump_enabled == true)
@@ -225,14 +226,14 @@ bool gps_l1_ca_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map,
                             tmp_double = d_height_m;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure &e)
                     {
                             LOG(WARNING) << "Exception writing PVT LS dump file " << e.what();
                     }
                 }
 
             // MOVING AVERAGE PVT
-            gps_l1_ca_ls_pvt::pos_averaging(flag_averaging);
+            pos_averaging(flag_averaging);
         }
     else
         {

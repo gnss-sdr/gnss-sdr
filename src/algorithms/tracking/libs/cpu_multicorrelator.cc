@@ -35,8 +35,29 @@
 #include "cpu_multicorrelator.h"
 #include <cmath>
 #include <iostream>
-#include <gnuradio/fxpt.h>  // fixed point sine and cosine
 #include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
+
+
+cpu_multicorrelator::cpu_multicorrelator()
+{
+    d_sig_in = NULL;
+    d_local_code_in = NULL;
+    d_shifts_chips = NULL;
+    d_corr_out = NULL;
+    d_local_codes_resampled = NULL;
+    d_code_length_chips = 0;
+    d_n_correlators = 0;
+}
+
+
+cpu_multicorrelator::~cpu_multicorrelator()
+{
+    if(d_local_codes_resampled != NULL)
+        {
+            cpu_multicorrelator::free();
+        }
+}
 
 
 bool cpu_multicorrelator::init(
@@ -47,13 +68,7 @@ bool cpu_multicorrelator::init(
     // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(std::complex<float>);
 
-    // NCO signal
-    d_nco_in = static_cast<std::complex<float>*>(volk_malloc(size, volk_get_alignment()));
-
-    // Doppler-free signal
-    d_sig_doppler_wiped = static_cast<std::complex<float>*>(volk_malloc(size, volk_get_alignment()));
-
-    d_local_codes_resampled = new std::complex<float>*[n_correlators];
+    d_local_codes_resampled = static_cast<std::complex<float>**>(volk_malloc(n_correlators * sizeof(std::complex<float>), volk_get_alignment()));
     for (int n = 0; n < n_correlators; n++)
         {
             d_local_codes_resampled[n] = static_cast<std::complex<float>*>(volk_malloc(size, volk_get_alignment()));
@@ -86,8 +101,7 @@ bool cpu_multicorrelator::set_input_output_vectors(std::complex<float>* corr_out
 }
 
 
-
-void cpu_multicorrelator::update_local_code(int correlator_length_samples,float rem_code_phase_chips, float code_phase_step_chips)
+void cpu_multicorrelator::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
 {
     float local_code_chip_index;
     for (int current_correlator_tap = 0; current_correlator_tap < d_n_correlators; current_correlator_tap++)
@@ -95,7 +109,7 @@ void cpu_multicorrelator::update_local_code(int correlator_length_samples,float 
             for (int n = 0; n < correlator_length_samples; n++)
                 {
                     // resample code for current tap
-                    local_code_chip_index = std::fmod(code_phase_step_chips*static_cast<float>(n)+ d_shifts_chips[current_correlator_tap] - rem_code_phase_chips, d_code_length_chips);
+                    local_code_chip_index = std::fmod(code_phase_step_chips * static_cast<float>(n) + d_shifts_chips[current_correlator_tap] - rem_code_phase_chips, d_code_length_chips);
                     //Take into account that in multitap correlators, the shifts can be negative!
                     if (local_code_chip_index < 0.0) local_code_chip_index += d_code_length_chips;
                     d_local_codes_resampled[current_correlator_tap][n] = d_local_code_in[static_cast<int>(round(local_code_chip_index))];
@@ -104,20 +118,6 @@ void cpu_multicorrelator::update_local_code(int correlator_length_samples,float 
 }
 
 
-void cpu_multicorrelator::update_local_carrier(int correlator_length_samples, float rem_carr_phase_rad, float phase_step_rad)
-{
-    float sin_f, cos_f;
-    int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
-    int phase_rad_i = gr::fxpt::float_to_fixed(rem_carr_phase_rad);
-
-    for(int i = 0; i < correlator_length_samples; i++)
-        {
-            gr::fxpt::sincos(phase_rad_i, &sin_f, &cos_f);
-            d_nco_in[i] = std::complex<float>(cos_f, -sin_f);
-            phase_rad_i += phase_step_rad_i;
-        }
-}
-
 bool cpu_multicorrelator::Carrier_wipeoff_multicorrelator_resampler(
         float rem_carrier_phase_in_rad,
         float phase_step_rad,
@@ -125,44 +125,24 @@ bool cpu_multicorrelator::Carrier_wipeoff_multicorrelator_resampler(
         float code_phase_step_chips,
         int signal_length_samples)
 {
-    //update_local_carrier(signal_length_samples, rem_carrier_phase_in_rad, phase_step_rad); //replaced by VOLK phase rotator
-    //volk_32fc_x2_multiply_32fc(d_sig_doppler_wiped, d_sig_in, d_nco_in, signal_length_samples); //replaced by VOLK phase rotator
-
+    update_local_code(signal_length_samples, rem_code_phase_chips, code_phase_step_chips);
+    // Regenerate phase at each call in order to avoid numerical issues
     lv_32fc_t phase_offset_as_complex[1];
     phase_offset_as_complex[0] = lv_cmake(std::cos(rem_carrier_phase_in_rad), -std::sin(rem_carrier_phase_in_rad));
-    volk_32fc_s32fc_x2_rotator_32fc(d_sig_doppler_wiped, d_sig_in, std::exp(lv_32fc_t(0, -phase_step_rad)), phase_offset_as_complex, signal_length_samples);
-    update_local_code(signal_length_samples,rem_code_phase_chips, code_phase_step_chips);
-    for (int current_correlator_tap = 0; current_correlator_tap < d_n_correlators; current_correlator_tap++)
-        {
-            volk_32fc_x2_dot_prod_32fc(&d_corr_out[current_correlator_tap], d_sig_doppler_wiped, d_local_codes_resampled[current_correlator_tap], signal_length_samples);
-        }
+    // call VOLK_GNSSSDR kernel
+    volk_gnsssdr_32fc_x2_rotator_dot_prod_32fc_xn(d_corr_out, d_sig_in, std::exp(lv_32fc_t(0, - phase_step_rad)), phase_offset_as_complex, (const lv_32fc_t**)d_local_codes_resampled, d_n_correlators, signal_length_samples);
     return true;
 }
 
 
-cpu_multicorrelator::cpu_multicorrelator()
-{
-    d_sig_in = NULL;
-    d_nco_in = NULL;
-    d_sig_doppler_wiped = NULL;
-    d_local_code_in = NULL;
-    d_shifts_chips = NULL;
-    d_corr_out = NULL;
-    d_local_codes_resampled = NULL;
-    d_code_length_chips = 0;
-    d_n_correlators = 0;
-}
-
 bool cpu_multicorrelator::free()
 {
     // Free memory
-    if (d_sig_doppler_wiped != NULL) volk_free(d_sig_doppler_wiped);
-    if (d_nco_in != NULL) volk_free(d_nco_in);
     for (int n = 0; n < d_n_correlators; n++)
         {
             volk_free(d_local_codes_resampled[n]);
         }
-    delete d_local_codes_resampled;
+    volk_free(d_local_codes_resampled);
     return true;
 }
 

@@ -225,7 +225,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_avx2(lv_16sc_t* out, con
             _in_b += 8;
             _out += 8;
         }
-
+    _mm256_zeroupper();
     number = avx2_points * 8;
     for(;number < num_points; number++)
         {
@@ -279,7 +279,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_avx2(lv_16sc_t* out, con
             _in_b += 8;
             _out += 8;
         }
-
+    _mm256_zeroupper();
     number = avx2_points * 8;
     for(;number < num_points; number++)
         {

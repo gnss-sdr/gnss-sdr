@@ -433,6 +433,342 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, co
 #endif /* LV_HAVE_GENERIC  */
 
 
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+/* Based on algorithms from the cephes library http://www.netlib.org/cephes/
+ * Adapted to AVX2 by Carles Fernandez, based on original SSE2 code by Julien Pommier*/
+static inline void volk_gnsssdr_s32f_sincos_32fc_a_avx2(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
+{
+    lv_32fc_t* bPtr = out;
+
+    const unsigned int avx_iters = num_points / 8;
+    unsigned int number = 0;
+
+    float _phase = (*phase);
+
+    __m256 sine, cosine, x, eight_phases_reg;
+    __m256 xmm1, xmm2, xmm3 = _mm256_setzero_ps(), sign_bit_sin, y;
+    __m256i emm0, emm2, emm4;
+    __m128 aux, c1, s1;
+
+    /* declare some AXX2 constants */
+    static const int _ps_inv_sign_mask[8] __attribute__((aligned(32))) = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
+    static const int _ps_sign_mask[8] __attribute__((aligned(32))) = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
+
+    static const float _ps_cephes_FOPI[8] __attribute__((aligned(32))) = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
+    static const int _pi32_1[8]  __attribute__((aligned(32))) = { 1, 1, 1, 1, 1, 1, 1, 1 };
+    static const int _pi32_inv1[8]  __attribute__((aligned(32))) = { ~1, ~1, ~1, ~1, ~1, ~1, ~1, ~1 };
+    static const int _pi32_2[8]  __attribute__((aligned(32))) = { 2, 2, 2, 2, 2, 2, 2, 2 };
+    static const int _pi32_4[8]  __attribute__((aligned(32))) = { 4, 4, 4, 4, 4, 4, 4, 4 };
+
+    static const float _ps_minus_cephes_DP1[8] __attribute__((aligned(32))) = { -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
+    static const float _ps_minus_cephes_DP2[8] __attribute__((aligned(32))) = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
+    static const float _ps_minus_cephes_DP3[8] __attribute__((aligned(32))) = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
+    static const float _ps_coscof_p0[8] __attribute__((aligned(32))) = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
+    static const float _ps_coscof_p1[8] __attribute__((aligned(32))) = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
+    static const float _ps_coscof_p2[8] __attribute__((aligned(32))) = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
+    static const float _ps_sincof_p0[8] __attribute__((aligned(32))) = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
+    static const float _ps_sincof_p1[8] __attribute__((aligned(32))) = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
+    static const float _ps_sincof_p2[8] __attribute__((aligned(32))) = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
+    static const float _ps_0p5[8] __attribute__((aligned(32))) = { 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
+    static const float _ps_1[8] __attribute__((aligned(32))) = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+
+    float eight_phases[8] __attribute__((aligned(32))) = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc, _phase + 4 * phase_inc, _phase + 5 * phase_inc, _phase + 6 * phase_inc, _phase + 7 * phase_inc };
+    float eight_phases_inc[8] __attribute__((aligned(32))) = { 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc };
+    eight_phases_reg = _mm256_load_ps(eight_phases);
+    const __m256 eight_phases_inc_reg = _mm256_load_ps(eight_phases_inc);
+
+    for(;number < avx_iters; number++)
+        {
+            x = eight_phases_reg;
+
+            sign_bit_sin = x;
+            /* take the absolute value */
+            x = _mm256_and_ps(x, *(__m256*)_ps_inv_sign_mask);
+            /* extract the sign bit (upper one) */
+            sign_bit_sin = _mm256_and_ps(sign_bit_sin, *(__m256*)_ps_sign_mask);
+
+            /* scale by 4/Pi */
+            y = _mm256_mul_ps(x, *(__m256*)_ps_cephes_FOPI);
+
+            /* store the integer part of y in emm2 */
+            emm2 = _mm256_cvttps_epi32(y);
+
+            /* j=(j+1) & (~1) (see the cephes sources) */
+            emm2 = _mm256_add_epi32(emm2, *(__m256i *)_pi32_1);
+            emm2 = _mm256_and_si256(emm2, *(__m256i *)_pi32_inv1);
+            y = _mm256_cvtepi32_ps(emm2);
+
+            emm4 = emm2;
+
+            /* get the swap sign flag for the sine */
+            emm0 = _mm256_and_si256(emm2, *(__m256i *)_pi32_4);
+            emm0 = _mm256_slli_epi32(emm0, 29);
+            __m256 swap_sign_bit_sin = _mm256_castsi256_ps(emm0);
+
+            /* get the polynom selection mask for the sine*/
+            emm2 = _mm256_and_si256(emm2, *(__m256i *)_pi32_2);
+            emm2 = _mm256_cmpeq_epi32(emm2, _mm256_setzero_si256());
+            __m256 poly_mask = _mm256_castsi256_ps(emm2);
+
+            /* The magic pass: "Extended precision modular arithmetic”
+               x = ((x - y * DP1) - y * DP2) - y * DP3; */
+            xmm1 = *(__m256*)_ps_minus_cephes_DP1;
+            xmm2 = *(__m256*)_ps_minus_cephes_DP2;
+            xmm3 = *(__m256*)_ps_minus_cephes_DP3;
+            xmm1 = _mm256_mul_ps(y, xmm1);
+            xmm2 = _mm256_mul_ps(y, xmm2);
+            xmm3 = _mm256_mul_ps(y, xmm3);
+            x = _mm256_add_ps(x, xmm1);
+            x = _mm256_add_ps(x, xmm2);
+            x = _mm256_add_ps(x, xmm3);
+
+            emm4 = _mm256_sub_epi32(emm4, *(__m256i *)_pi32_2);
+            emm4 = _mm256_andnot_si256(emm4, *(__m256i *)_pi32_4);
+            emm4 = _mm256_slli_epi32(emm4, 29);
+            __m256 sign_bit_cos = _mm256_castsi256_ps(emm4);
+
+            sign_bit_sin = _mm256_xor_ps(sign_bit_sin, swap_sign_bit_sin);
+
+            /* Evaluate the first polynom  (0 <= x <= Pi/4) */
+            __m256 z = _mm256_mul_ps(x, x);
+            y = *(__m256*)_ps_coscof_p0;
+
+            y = _mm256_mul_ps(y, z);
+            y = _mm256_add_ps(y, *(__m256*)_ps_coscof_p1);
+            y = _mm256_mul_ps(y, z);
+            y = _mm256_add_ps(y, *(__m256*)_ps_coscof_p2);
+            y = _mm256_mul_ps(y, z);
+            y = _mm256_mul_ps(y, z);
+            __m256 tmp = _mm256_mul_ps(z, *(__m256*)_ps_0p5);
+            y = _mm256_sub_ps(y, tmp);
+            y = _mm256_add_ps(y, *(__m256*)_ps_1);
+
+            /* Evaluate the second polynom  (Pi/4 <= x <= 0) */
+            __m256 y2 = *(__m256*)_ps_sincof_p0;
+            y2 = _mm256_mul_ps(y2, z);
+            y2 = _mm256_add_ps(y2, *(__m256*)_ps_sincof_p1);
+            y2 = _mm256_mul_ps(y2, z);
+            y2 = _mm256_add_ps(y2, *(__m256*)_ps_sincof_p2);
+            y2 = _mm256_mul_ps(y2, z);
+            y2 = _mm256_mul_ps(y2, x);
+            y2 = _mm256_add_ps(y2, x);
+
+            /* select the correct result from the two polynoms */
+            xmm3 = poly_mask;
+            __m256 ysin2 = _mm256_and_ps(xmm3, y2);
+            __m256 ysin1 = _mm256_andnot_ps(xmm3, y);
+            y2 = _mm256_sub_ps(y2, ysin2);
+            y = _mm256_sub_ps(y, ysin1);
+
+            xmm1 = _mm256_add_ps(ysin1, ysin2);
+            xmm2 = _mm256_add_ps(y, y2);
+
+            /* update the sign */
+            sine = _mm256_xor_ps(xmm1, sign_bit_sin);
+            cosine = _mm256_xor_ps(xmm2, sign_bit_cos);
+
+            /* write the output */
+            s1 = _mm256_extractf128_ps(sine, 0);
+            c1 = _mm256_extractf128_ps(cosine, 0);
+            aux = _mm_unpacklo_ps(c1, s1);
+            _mm_store_ps((float*)bPtr, aux);
+            bPtr += 2;
+            aux = _mm_unpackhi_ps(c1, s1);
+            _mm_store_ps((float*)bPtr, aux);
+            bPtr += 2;
+            s1 = _mm256_extractf128_ps(sine, 1);
+            c1 = _mm256_extractf128_ps(cosine, 1);
+            aux = _mm_unpacklo_ps(c1, s1);
+            _mm_store_ps((float*)bPtr, aux);
+            bPtr += 2;
+            aux = _mm_unpackhi_ps(c1, s1);
+            _mm_store_ps((float*)bPtr, aux);
+            bPtr += 2;
+
+            eight_phases_reg = _mm256_add_ps(eight_phases_reg, eight_phases_inc_reg);
+        }
+    _mm256_zeroupper();
+    _phase = _phase + phase_inc * (avx_iters * 8);
+    for(number = avx_iters * 8; number < num_points; number++)
+        {
+            out[number] = lv_cmake((float)cos(_phase), (float)sin(_phase) );
+            _phase += phase_inc;
+        }
+    (*phase) = _phase;
+}
+
+#endif /* LV_HAVE_AVX2  */
+
+
+#ifdef LV_HAVE_AVX2
+#include <immintrin.h>
+/* Based on algorithms from the cephes library http://www.netlib.org/cephes/
+ * Adapted to AVX2 by Carles Fernandez, based on original SSE2 code by Julien Pommier*/
+static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t* out, const float phase_inc, float* phase, unsigned int num_points)
+{
+    lv_32fc_t* bPtr = out;
+
+    const unsigned int avx_iters = num_points / 8;
+    unsigned int number = 0;
+
+    float _phase = (*phase);
+
+    __m256 sine, cosine, x, eight_phases_reg;
+    __m256 xmm1, xmm2, xmm3 = _mm256_setzero_ps(), sign_bit_sin, y;
+    __m256i emm0, emm2, emm4;
+    __m128 aux, c1, s1;
+
+    /* declare some AXX2 constants */
+    static const int _ps_inv_sign_mask[8] __attribute__((aligned(32))) = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
+    static const int _ps_sign_mask[8] __attribute__((aligned(32))) = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
+
+    static const float _ps_cephes_FOPI[8] __attribute__((aligned(32))) = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
+    static const int _pi32_1[8]  __attribute__((aligned(32))) = { 1, 1, 1, 1, 1, 1, 1, 1 };
+    static const int _pi32_inv1[8]  __attribute__((aligned(32))) = { ~1, ~1, ~1, ~1, ~1, ~1, ~1, ~1 };
+    static const int _pi32_2[8]  __attribute__((aligned(32))) = { 2, 2, 2, 2, 2, 2, 2, 2 };
+    static const int _pi32_4[8]  __attribute__((aligned(32))) = { 4, 4, 4, 4, 4, 4, 4, 4 };
+
+    static const float _ps_minus_cephes_DP1[8] __attribute__((aligned(32))) = { -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
+    static const float _ps_minus_cephes_DP2[8] __attribute__((aligned(32))) = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
+    static const float _ps_minus_cephes_DP3[8] __attribute__((aligned(32))) = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
+    static const float _ps_coscof_p0[8] __attribute__((aligned(32))) = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
+    static const float _ps_coscof_p1[8] __attribute__((aligned(32))) = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
+    static const float _ps_coscof_p2[8] __attribute__((aligned(32))) = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
+    static const float _ps_sincof_p0[8] __attribute__((aligned(32))) = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
+    static const float _ps_sincof_p1[8] __attribute__((aligned(32))) = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
+    static const float _ps_sincof_p2[8] __attribute__((aligned(32))) = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
+    static const float _ps_0p5[8] __attribute__((aligned(32))) = { 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
+    static const float _ps_1[8] __attribute__((aligned(32))) = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+
+    float eight_phases[8] __attribute__((aligned(32))) = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc, _phase + 4 * phase_inc, _phase + 5 * phase_inc, _phase + 6 * phase_inc, _phase + 7 * phase_inc };
+    float eight_phases_inc[8] __attribute__((aligned(32))) = { 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc };
+    eight_phases_reg = _mm256_load_ps(eight_phases);
+    const __m256 eight_phases_inc_reg = _mm256_load_ps(eight_phases_inc);
+
+    for(;number < avx_iters; number++)
+        {
+            x = eight_phases_reg;
+
+            sign_bit_sin = x;
+            /* take the absolute value */
+            x = _mm256_and_ps(x, *(__m256*)_ps_inv_sign_mask);
+            /* extract the sign bit (upper one) */
+            sign_bit_sin = _mm256_and_ps(sign_bit_sin, *(__m256*)_ps_sign_mask);
+
+            /* scale by 4/Pi */
+            y = _mm256_mul_ps(x, *(__m256*)_ps_cephes_FOPI);
+
+            /* store the integer part of y in emm2 */
+            emm2 = _mm256_cvttps_epi32(y);
+
+            /* j=(j+1) & (~1) (see the cephes sources) */
+            emm2 = _mm256_add_epi32(emm2, *(__m256i *)_pi32_1);
+            emm2 = _mm256_and_si256(emm2, *(__m256i *)_pi32_inv1);
+            y = _mm256_cvtepi32_ps(emm2);
+
+            emm4 = emm2;
+
+            /* get the swap sign flag for the sine */
+            emm0 = _mm256_and_si256(emm2, *(__m256i *)_pi32_4);
+            emm0 = _mm256_slli_epi32(emm0, 29);
+            __m256 swap_sign_bit_sin = _mm256_castsi256_ps(emm0);
+
+            /* get the polynom selection mask for the sine*/
+            emm2 = _mm256_and_si256(emm2, *(__m256i *)_pi32_2);
+            emm2 = _mm256_cmpeq_epi32(emm2, _mm256_setzero_si256());
+            __m256 poly_mask = _mm256_castsi256_ps(emm2);
+
+            /* The magic pass: "Extended precision modular arithmetic”
+               x = ((x - y * DP1) - y * DP2) - y * DP3; */
+            xmm1 = *(__m256*)_ps_minus_cephes_DP1;
+            xmm2 = *(__m256*)_ps_minus_cephes_DP2;
+            xmm3 = *(__m256*)_ps_minus_cephes_DP3;
+            xmm1 = _mm256_mul_ps(y, xmm1);
+            xmm2 = _mm256_mul_ps(y, xmm2);
+            xmm3 = _mm256_mul_ps(y, xmm3);
+            x = _mm256_add_ps(x, xmm1);
+            x = _mm256_add_ps(x, xmm2);
+            x = _mm256_add_ps(x, xmm3);
+
+            emm4 = _mm256_sub_epi32(emm4, *(__m256i *)_pi32_2);
+            emm4 = _mm256_andnot_si256(emm4, *(__m256i *)_pi32_4);
+            emm4 = _mm256_slli_epi32(emm4, 29);
+            __m256 sign_bit_cos = _mm256_castsi256_ps(emm4);
+
+            sign_bit_sin = _mm256_xor_ps(sign_bit_sin, swap_sign_bit_sin);
+
+            /* Evaluate the first polynom  (0 <= x <= Pi/4) */
+            __m256 z = _mm256_mul_ps(x, x);
+            y = *(__m256*)_ps_coscof_p0;
+
+            y = _mm256_mul_ps(y, z);
+            y = _mm256_add_ps(y, *(__m256*)_ps_coscof_p1);
+            y = _mm256_mul_ps(y, z);
+            y = _mm256_add_ps(y, *(__m256*)_ps_coscof_p2);
+            y = _mm256_mul_ps(y, z);
+            y = _mm256_mul_ps(y, z);
+            __m256 tmp = _mm256_mul_ps(z, *(__m256*)_ps_0p5);
+            y = _mm256_sub_ps(y, tmp);
+            y = _mm256_add_ps(y, *(__m256*)_ps_1);
+
+            /* Evaluate the second polynom  (Pi/4 <= x <= 0) */
+            __m256 y2 = *(__m256*)_ps_sincof_p0;
+            y2 = _mm256_mul_ps(y2, z);
+            y2 = _mm256_add_ps(y2, *(__m256*)_ps_sincof_p1);
+            y2 = _mm256_mul_ps(y2, z);
+            y2 = _mm256_add_ps(y2, *(__m256*)_ps_sincof_p2);
+            y2 = _mm256_mul_ps(y2, z);
+            y2 = _mm256_mul_ps(y2, x);
+            y2 = _mm256_add_ps(y2, x);
+
+            /* select the correct result from the two polynoms */
+            xmm3 = poly_mask;
+            __m256 ysin2 = _mm256_and_ps(xmm3, y2);
+            __m256 ysin1 = _mm256_andnot_ps(xmm3, y);
+            y2 = _mm256_sub_ps(y2, ysin2);
+            y = _mm256_sub_ps(y, ysin1);
+
+            xmm1 = _mm256_add_ps(ysin1, ysin2);
+            xmm2 = _mm256_add_ps(y, y2);
+
+            /* update the sign */
+            sine = _mm256_xor_ps(xmm1, sign_bit_sin);
+            cosine = _mm256_xor_ps(xmm2, sign_bit_cos);
+
+            /* write the output */
+            s1 = _mm256_extractf128_ps(sine, 0);
+            c1 = _mm256_extractf128_ps(cosine, 0);
+            aux = _mm_unpacklo_ps(c1, s1);
+            _mm_storeu_ps((float*)bPtr, aux);
+            bPtr += 2;
+            aux = _mm_unpackhi_ps(c1, s1);
+            _mm_storeu_ps((float*)bPtr, aux);
+            bPtr += 2;
+            s1 = _mm256_extractf128_ps(sine, 1);
+            c1 = _mm256_extractf128_ps(cosine, 1);
+            aux = _mm_unpacklo_ps(c1, s1);
+            _mm_storeu_ps((float*)bPtr, aux);
+            bPtr += 2;
+            aux = _mm_unpackhi_ps(c1, s1);
+            _mm_storeu_ps((float*)bPtr, aux);
+            bPtr += 2;
+
+            eight_phases_reg = _mm256_add_ps(eight_phases_reg, eight_phases_inc_reg);
+        }
+    _mm256_zeroupper();
+    _phase = _phase + phase_inc * (avx_iters * 8);
+    for(number = avx_iters * 8; number < num_points; number++)
+        {
+            out[number] = lv_cmake((float)cos(_phase), (float)sin(_phase) );
+            _phase += phase_inc;
+        }
+    (*phase) = _phase;
+}
+
+#endif /* LV_HAVE_AVX2  */
+
+
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 /* Adapted from http://gruntthepeon.free.fr/ssemath/neon_mathfun.h, original code from Julien Pommier  */

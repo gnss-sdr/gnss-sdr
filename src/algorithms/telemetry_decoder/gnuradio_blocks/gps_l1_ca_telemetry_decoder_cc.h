@@ -100,13 +100,12 @@ private:
     // class private vars
 
     int *d_preambles_symbols;
-    unsigned int d_samples_per_bit;
-    long unsigned int d_sample_counter;
-    long unsigned int d_preamble_index;
     unsigned int d_stat;
     bool d_flag_frame_sync;
 
     // symbols
+    std::deque<double> d_symbol_history;
+    std::deque<int> d_correlation_length_ms_history;
     double d_symbol_accumulator;
     short int d_symbol_accumulator_counter;
 
@@ -132,16 +131,10 @@ private:
     Gnss_Satellite d_satellite;
     int d_channel;
 
-    //std::deque<double> d_prn_start_sample_history;
-
     double d_preamble_time_seconds;
 
     double d_TOW_at_Preamble;
     double d_TOW_at_current_symbol;
-    std::deque<double> d_symbol_TOW_queue_s;
-    // Doppler and Phase accumulator queue for interpolation in Observables
-    std::deque<double> d_carrier_doppler_queue_hz;
-    std::deque<double> d_acc_carrier_phase_queue_rads;
 
     double Prn_timestamp_at_preamble_ms;
     bool flag_TOW_set;

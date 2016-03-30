@@ -105,6 +105,8 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
         gr::block("Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+	// Telemetry bit synchronization message port input
+	this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -290,16 +292,6 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_code()
     memcpy(d_prompt_code,&d_early_code[early_late_spc_samples],d_current_prn_length_samples* sizeof(gr_complex));
     memcpy(d_late_code,&d_early_code[early_late_spc_samples*2],d_current_prn_length_samples* sizeof(gr_complex));
 
-    //    for (int i=0; i<d_current_prn_length_samples; i++)
-    //        {
-    //            associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
-    //            d_early_code[i] = d_ca_code[associated_chip_index];
-    //            associated_chip_index = 1 + round(fmod(tcode_chips, code_length_chips));
-    //            d_prompt_code[i] = d_ca_code[associated_chip_index];
-    //            associated_chip_index = 1 + round(fmod(tcode_chips + d_early_late_spc_chips, code_length_chips));
-    //            d_late_code[i] = d_ca_code[associated_chip_index];
-    //            tcode_chips = tcode_chips + code_phase_step_chips;
-    //        }
 }
 
 
@@ -555,6 +547,8 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_tracking = true;
+            current_synchro_data.Flag_valid_symbol_output = true;
+            current_synchro_data.correlation_length_ms=1;
              current_synchro_data.Flag_valid_pseudorange = false;
             *out[0] = current_synchro_data;
         }
@@ -583,6 +577,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
 
             Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
             d_acquisition_gnss_synchro->Flag_valid_pseudorange = false;
+            d_acquisition_gnss_synchro->Flag_valid_symbol_output = false;
             *out[0] = *d_acquisition_gnss_synchro;
         }
 

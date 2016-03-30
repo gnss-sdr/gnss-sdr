@@ -99,6 +99,8 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
         gr::block("Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+	// Telemetry bit synchronization message port input
+	this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -451,6 +453,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_pseudorange = false;
+            current_synchro_data.Flag_valid_symbol_output = true;
+            current_synchro_data.correlation_length_ms=1;
             *out[0] = current_synchro_data;
 
             // ########## DEBUG OUTPUT
@@ -505,6 +509,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
 
             current_synchro_data.System = {'G'};
             current_synchro_data.Flag_valid_pseudorange = false;
+            current_synchro_data.Flag_valid_symbol_output = false;
             *out[0] = current_synchro_data;
         }
 

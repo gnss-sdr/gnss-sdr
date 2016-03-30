@@ -108,6 +108,9 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
         gr::block("Galileo_E1_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+	// Telemetry bit synchronization message port input
+	this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
+
     this->set_relative_rate(1.0/vector_length);
     // initialize internal vars
     d_queue = queue;

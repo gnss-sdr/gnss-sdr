@@ -102,7 +102,8 @@ gps_l2_m_dll_pll_tracking_cc::gps_l2_m_dll_pll_tracking_cc(
         float early_late_space_chips) :
         gr::block("gps_l2_m_dll_pll_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
-{
+{	// Telemetry bit synchronization message port input
+	this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -311,8 +312,6 @@ void gps_l2_m_dll_pll_tracking_cc::update_local_carrier()
             d_carr_sign[i] = gr_complex(cos(phase_rad), -sin(phase_rad));
             phase_rad += phase_step_rad;
         }
-    //d_rem_carr_phase_rad = fmod(phase_rad, GPS_L2_TWO_PI);
-    //d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + d_rem_carr_phase_rad;
 }
 
 
@@ -414,7 +413,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
                     current_synchro_data.CN0_dB_hz = 0.0;
                     current_synchro_data.Flag_valid_tracking = false;
                     current_synchro_data.Flag_valid_pseudorange = false;
-
+                    current_synchro_data.Flag_valid_symbol_output = false;
                     *out[0] = current_synchro_data;
 
                     return 1;
@@ -499,11 +498,6 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
             current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
             current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
 
-            // Tracking_timestamp_secs is aligned with the NEXT PRN start sample (Hybridization problem!)
-            //compute remnant code phase samples BEFORE the Tracking timestamp
-            //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
-            //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples)/static_cast<double>(d_fs_in);
-
             // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!, but some glitches??)
             current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in);
             //compute remnant code phase samples AFTER the Tracking timestamp
@@ -516,6 +510,8 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_tracking = true;
+            current_synchro_data.Flag_valid_symbol_output = true;
+            current_synchro_data.correlation_length_ms=1;
             *out[0] = current_synchro_data;
 
             // ########## DEBUG OUTPUT
@@ -570,6 +566,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items, gr_vector_int
             *d_Late = gr_complex(0,0);
 
             current_synchro_data.Flag_valid_pseudorange = false;
+            current_synchro_data.Flag_valid_symbol_output = false;
             *out[0] = current_synchro_data;
         }
 

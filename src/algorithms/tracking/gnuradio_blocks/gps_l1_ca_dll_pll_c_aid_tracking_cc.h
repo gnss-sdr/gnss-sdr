@@ -39,13 +39,16 @@
 
 #include <fstream>
 #include <map>
+#include <deque>
 #include <string>
 #include <gnuradio/block.h>
 #include <gnuradio/msg_queue.h>
+#include <pmt/pmt.h>
 #include "concurrent_queue.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
+#include "tracking_loop_filter.h"
 #include "cpu_multicorrelator.h"
 
 class gps_l1_ca_dll_pll_c_aid_tracking_cc;
@@ -62,6 +65,9 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_cc(long if_freq,
                                    std::string dump_filename,
                                    float pll_bw_hz,
                                    float dll_bw_hz,
+                                   float pll_bw_narrow_hz,
+                                   float dll_bw_narrow_hz,
+                                   int extend_correlation_ms,
                                    float early_late_space_chips);
 
 
@@ -94,6 +100,9 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
+            float pll_bw_narrow_hz,
+            float dll_bw_narrow_hz,
+            int extend_correlation_ms,
             float early_late_space_chips);
 
     gps_l1_ca_dll_pll_c_aid_tracking_cc(long if_freq,
@@ -104,6 +113,9 @@ private:
             std::string dump_filename,
             float pll_bw_hz,
             float dll_bw_hz,
+            float pll_bw_narrow_hz,
+            float dll_bw_narrow_hz,
+            int extend_correlation_ms,
             float early_late_space_chips);
 
     // tracking configuration vars
@@ -130,8 +142,10 @@ private:
     double d_rem_code_phase_samples;
     double d_rem_code_phase_chips;
     double d_rem_carrier_phase_rad;
+    int d_rem_code_phase_integer_samples;
 
     // PLL and DLL filter library
+    //Tracking_2nd_DLL_filter d_code_loop_filter;
     Tracking_2nd_DLL_filter d_code_loop_filter;
     Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
@@ -140,6 +154,10 @@ private:
     double d_acq_carrier_doppler_hz;
 
     // tracking vars
+    float d_dll_bw_hz;
+    float d_pll_bw_hz;
+    float d_dll_bw_narrow_hz;
+    float d_pll_bw_narrow_hz;
     double d_code_freq_chips;
     double d_code_phase_step_chips;
     double d_carrier_doppler_hz;
@@ -147,6 +165,21 @@ private:
     double d_acc_carrier_phase_cycles;
     double d_code_phase_samples;
     double d_pll_to_dll_assist_secs_Ti;
+    double d_code_error_chips_Ti;
+    double d_code_error_filt_chips_s;
+    double d_code_error_filt_chips_Ti;
+    double d_carr_phase_error_secs_Ti;
+
+    // symbol history to detect bit transition
+    std::deque<gr_complex> d_E_history;
+    std::deque<gr_complex> d_P_history;
+    std::deque<gr_complex> d_L_history;
+    double d_preamble_timestamp_s;
+    int d_extend_correlation_ms;
+    bool d_enable_extended_integration;
+    bool d_preamble_synchronized;
+    int d_correlation_symbol_counter;
+    void msg_handler_preamble_index(pmt::pmt_t msg);
 
     //Integration period in samples
     int d_correlation_length_samples;

@@ -211,6 +211,11 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
     d_enable_extended_integration = false;
     d_preamble_synchronized = false;
     d_correlation_symbol_counter = 0;
+    d_rem_code_phase_integer_samples = 0.0;
+    d_code_error_chips_Ti = 0.0;
+    d_code_error_filt_chips_s = 0.0;
+    d_carr_phase_error_secs_Ti = 0.0;
+    d_preamble_timestamp_s = 0.0;
     //set_min_output_buffer((long int)300);
 }
 

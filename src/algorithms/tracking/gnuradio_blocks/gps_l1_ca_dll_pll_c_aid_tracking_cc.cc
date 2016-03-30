@@ -210,6 +210,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
     d_carrier_phase_step_rad = 0.0;
     d_enable_extended_integration = false;
     d_preamble_synchronized = false;
+    d_correlation_symbol_counter = 0;
     //set_min_output_buffer((long int)300);
 }
 

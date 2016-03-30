@@ -40,11 +40,11 @@
 
 cpu_multicorrelator::cpu_multicorrelator()
 {
-    d_sig_in = NULL;
-    d_local_code_in = NULL;
-    d_shifts_chips = NULL;
-    d_corr_out = NULL;
-    d_local_codes_resampled = NULL;
+    d_sig_in = nullptr;
+    d_local_code_in = nullptr;
+    d_shifts_chips = nullptr;
+    d_corr_out = nullptr;
+    d_local_codes_resampled = nullptr;
     d_code_length_chips = 0;
     d_n_correlators = 0;
 }
@@ -52,7 +52,7 @@ cpu_multicorrelator::cpu_multicorrelator()
 
 cpu_multicorrelator::~cpu_multicorrelator()
 {
-    if(d_local_codes_resampled != NULL)
+    if(d_local_codes_resampled != nullptr)
         {
             cpu_multicorrelator::free();
         }
@@ -67,7 +67,7 @@ bool cpu_multicorrelator::init(
     // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(std::complex<float>);
 
-    d_local_codes_resampled = static_cast<std::complex<float>**>(volk_gnsssdr_malloc(n_correlators * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
+    d_local_codes_resampled = static_cast<std::complex<float>**>(volk_gnsssdr_malloc(n_correlators * sizeof(std::complex<float>*), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < n_correlators; n++)
         {
             d_local_codes_resampled[n] = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(size, volk_gnsssdr_get_alignment()));
@@ -133,11 +133,15 @@ bool cpu_multicorrelator::Carrier_wipeoff_multicorrelator_resampler(
 bool cpu_multicorrelator::free()
 {
     // Free memory
-    for (int n = 0; n < d_n_correlators; n++)
+    if (d_local_codes_resampled != nullptr)
         {
-            volk_gnsssdr_free(d_local_codes_resampled[n]);
+            for (int n = 0; n < d_n_correlators; n++)
+                {
+                    volk_gnsssdr_free(d_local_codes_resampled[n]);
+                }
+            volk_gnsssdr_free(d_local_codes_resampled);
+            d_local_codes_resampled = nullptr;
         }
-    volk_gnsssdr_free(d_local_codes_resampled);
     return true;
 }
 

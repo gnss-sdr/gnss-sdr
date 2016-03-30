@@ -102,8 +102,9 @@ gps_l2_m_dll_pll_tracking_cc::gps_l2_m_dll_pll_tracking_cc(
         float early_late_space_chips) :
         gr::block("gps_l2_m_dll_pll_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
-{	// Telemetry bit synchronization message port input
-	this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
+{
+    // Telemetry bit synchronization message port input
+    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;

@@ -34,9 +34,9 @@
 #include <fstream>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gps_sdr_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
-#include "nco_lib.h"
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
@@ -271,7 +271,9 @@ gr_vector_void_star &output_items)
     for (unsigned int sat = 0; sat < num_sats_; sat++)
         {
             float phase_step_rad = -static_cast<float>(GPS_TWO_PI) * doppler_Hz_[sat] / static_cast<float>(fs_in_);
-            fxp_nco(complex_phase_, vector_length_, start_phase_rad_[sat], phase_step_rad);
+            float _phase[1];
+            _phase[0] = -start_phase_rad_[sat];
+            volk_gnsssdr_s32f_sincos_32fc(complex_phase_, -phase_step_rad, _phase, vector_length_);
             start_phase_rad_[sat] += vector_length_ * phase_step_rad;
 
             out_idx = 0;

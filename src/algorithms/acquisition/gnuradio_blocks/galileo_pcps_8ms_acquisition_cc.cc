@@ -34,7 +34,7 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include "gnss_signal_processing.h"
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "control_message_factory.h"
 
 using google::LogMessage;
@@ -157,7 +157,7 @@ void galileo_pcps_8ms_acquisition_cc::init()
     d_gnss_synchro->Acq_samplestamp_samples = 0;
     d_mag = 0.0;
     d_input_power = 0.0;
-
+    const double GALILEO_TWO_PI = 6.283185307179600;
     // Count the number of bins
     d_num_doppler_bins = 0;
     for (int doppler = static_cast<int>(-d_doppler_max);
@@ -169,11 +169,14 @@ void galileo_pcps_8ms_acquisition_cc::init()
 
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = new gr_complex*[d_num_doppler_bins];
-    for (unsigned int doppler_index=0; doppler_index < d_num_doppler_bins; doppler_index++)
+    for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             d_grid_doppler_wipeoffs[doppler_index] = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));
             int doppler = -static_cast<int>(d_doppler_max) + d_doppler_step * doppler_index;
-            complex_exp_gen_conj(d_grid_doppler_wipeoffs[doppler_index], d_freq + doppler, d_fs_in, d_fft_size);
+            float phase_step_rad = static_cast<float>(GALILEO_TWO_PI) * (d_freq + doppler) / static_cast<float>(d_fs_in);
+            float _phase[1];
+            _phase[0] = 0;
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], - phase_step_rad, _phase, d_fft_size);
         }
 }
 

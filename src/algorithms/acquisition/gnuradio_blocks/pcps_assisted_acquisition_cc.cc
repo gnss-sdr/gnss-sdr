@@ -35,7 +35,7 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
-#include "nco_lib.h"
+#include <volk_gnsssdr/volk_gnsssdr.h>
 #include "concurrent_map.h"
 #include "gnss_signal_processing.h"
 #include "control_message_factory.h"
@@ -252,7 +252,9 @@ void pcps_assisted_acquisition_cc::redefine_grid()
             // compute the carrier doppler wipe-off signal and store it
             phase_step_rad = static_cast<float>(GPS_TWO_PI) * doppler_hz / static_cast<float>(d_fs_in);
             d_grid_doppler_wipeoffs[doppler_index] = new gr_complex[d_fft_size];
-            fxp_nco(d_grid_doppler_wipeoffs[doppler_index], d_fft_size, 0, phase_step_rad);
+            float _phase[1];
+            _phase[0] = 0;
+            volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index], - phase_step_rad, _phase, d_fft_size);
         }
 }
 

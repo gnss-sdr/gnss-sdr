@@ -47,7 +47,7 @@ bool cpu_multicorrelator_16sc::init(
     d_n_correlators = n_correlators;
     d_tmp_code_phases_chips = static_cast<float*>(volk_gnsssdr_malloc(n_correlators * sizeof(float), volk_gnsssdr_get_alignment()));
 
-    d_local_codes_resampled = static_cast<lv_16sc_t**>(volk_gnsssdr_malloc(n_correlators * sizeof(lv_16sc_t), volk_gnsssdr_get_alignment()));
+    d_local_codes_resampled = static_cast<lv_16sc_t**>(volk_gnsssdr_malloc(n_correlators * sizeof(lv_16sc_t*), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < n_correlators; n++)
         {
             d_local_codes_resampled[n] = static_cast<lv_16sc_t*>(volk_gnsssdr_malloc(size, volk_gnsssdr_get_alignment()));
@@ -114,11 +114,12 @@ bool cpu_multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
 
 cpu_multicorrelator_16sc::cpu_multicorrelator_16sc()
 {
-    d_sig_in = NULL;
-    d_local_code_in = NULL;
-    d_shifts_chips = NULL;
-    d_corr_out = NULL;
-    d_local_codes_resampled = NULL;
+    d_sig_in = nullptr;
+    d_local_code_in = nullptr;
+    d_shifts_chips = nullptr;
+    d_corr_out = nullptr;
+    d_local_codes_resampled = nullptr;
+    d_tmp_code_phases_chips = nullptr;
     d_code_length_chips = 0;
     d_n_correlators = 0;
 }
@@ -126,7 +127,7 @@ cpu_multicorrelator_16sc::cpu_multicorrelator_16sc()
 
 cpu_multicorrelator_16sc::~cpu_multicorrelator_16sc()
 {
-    if(d_local_codes_resampled != NULL)
+    if(d_local_codes_resampled != nullptr)
         {
             cpu_multicorrelator_16sc::free();
         }
@@ -136,12 +137,20 @@ cpu_multicorrelator_16sc::~cpu_multicorrelator_16sc()
 bool cpu_multicorrelator_16sc::free()
 {
     // Free memory
-    if (d_tmp_code_phases_chips != NULL) volk_gnsssdr_free(d_tmp_code_phases_chips);
-    for (int n = 0; n < d_n_correlators; n++)
+    if (d_tmp_code_phases_chips != nullptr)
         {
-            volk_gnsssdr_free(d_local_codes_resampled[n]);
+            volk_gnsssdr_free(d_tmp_code_phases_chips);
+            d_tmp_code_phases_chips = nullptr;
         }
-    volk_gnsssdr_free(d_local_codes_resampled);
+    if (d_local_codes_resampled != nullptr)
+        {
+            for (int n = 0; n < d_n_correlators; n++)
+                {
+                    volk_gnsssdr_free(d_local_codes_resampled[n]);
+                }
+            volk_gnsssdr_free(d_local_codes_resampled);
+            d_local_codes_resampled = nullptr;
+        }
     return true;
 }
 

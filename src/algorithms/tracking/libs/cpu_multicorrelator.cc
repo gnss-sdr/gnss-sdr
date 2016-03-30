@@ -35,7 +35,6 @@
 #include "cpu_multicorrelator.h"
 #include <cmath>
 #include <iostream>
-#include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
 
@@ -68,10 +67,10 @@ bool cpu_multicorrelator::init(
     // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(std::complex<float>);
 
-    d_local_codes_resampled = static_cast<std::complex<float>**>(volk_malloc(n_correlators * sizeof(std::complex<float>), volk_get_alignment()));
+    d_local_codes_resampled = static_cast<std::complex<float>**>(volk_gnsssdr_malloc(n_correlators * sizeof(std::complex<float>), volk_gnsssdr_get_alignment()));
     for (int n = 0; n < n_correlators; n++)
         {
-            d_local_codes_resampled[n] = static_cast<std::complex<float>*>(volk_malloc(size, volk_get_alignment()));
+            d_local_codes_resampled[n] = static_cast<std::complex<float>*>(volk_gnsssdr_malloc(size, volk_gnsssdr_get_alignment()));
         }
     d_n_correlators = n_correlators;
     return true;
@@ -100,23 +99,17 @@ bool cpu_multicorrelator::set_input_output_vectors(std::complex<float>* corr_out
     return true;
 }
 
-void cpu_multicorrelator::update_local_code(int correlator_length_samples,float rem_code_phase_chips, float code_phase_step_chips)
+
+void cpu_multicorrelator::update_local_code(int correlator_length_samples, float rem_code_phase_chips, float code_phase_step_chips)
 {
-    int local_code_chip_index;
-    for (int current_correlator_tap = 0; current_correlator_tap < d_n_correlators; current_correlator_tap++)
-
-	{
-		for (int n = 0; n < correlator_length_samples; n++)
-		{
-		   // resample code for current tap
-		   local_code_chip_index = floor(code_phase_step_chips*static_cast<float>(n) + d_shifts_chips[current_correlator_tap]- rem_code_phase_chips);
-		   local_code_chip_index = local_code_chip_index % d_code_length_chips;
-		   //Take into account that in multitap correlators, the shifts can be negative!
-		   if (local_code_chip_index < 0) local_code_chip_index += d_code_length_chips;
-		   d_local_codes_resampled[current_correlator_tap][n] = d_local_code_in[local_code_chip_index];
-		}
-	}
-
+    volk_gnsssdr_32fc_xn_resampler_32fc_xn(d_local_codes_resampled,
+            d_local_code_in,
+            rem_code_phase_chips,
+            code_phase_step_chips,
+            d_shifts_chips,
+            correlator_length_samples,
+            d_n_correlators,
+            d_code_length_chips);
 }
 
 
@@ -142,9 +135,9 @@ bool cpu_multicorrelator::free()
     // Free memory
     for (int n = 0; n < d_n_correlators; n++)
         {
-            volk_free(d_local_codes_resampled[n]);
+            volk_gnsssdr_free(d_local_codes_resampled[n]);
         }
-    volk_free(d_local_codes_resampled);
+    volk_gnsssdr_free(d_local_codes_resampled);
     return true;
 }
 

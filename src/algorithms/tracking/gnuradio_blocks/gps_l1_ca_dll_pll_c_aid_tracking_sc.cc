@@ -102,8 +102,8 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
         gr::block("gps_l1_ca_dll_pll_c_aid_tracking_sc", gr::io_signature::make(1, 1, sizeof(lv_16sc_t)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-	// Telemetry bit synchronization message port input
-	this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
+    // Telemetry bit synchronization message port input
+    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -116,8 +116,8 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
     // Initialize tracking  ==========================================
     d_pll_bw_hz=pll_bw_hz;
     d_dll_bw_hz=dll_bw_hz;
-    d_pll_bw_narrow_hz=pll_bw_narrow_hz;
-    d_dll_bw_narrow_hz=dll_bw_narrow_hz;
+    d_pll_bw_narrow_hz = pll_bw_narrow_hz;
+    d_dll_bw_narrow_hz = dll_bw_narrow_hz;
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
     d_carrier_loop_filter.set_params(10.0, pll_bw_hz,2);
 
@@ -269,7 +269,6 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     std::cout << "Tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
-
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
@@ -339,11 +338,9 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items, gr_vec
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
-
-            multicorrelator_cpu_16sc.set_input_output_vectors(d_correlator_outs_16sc,in);
+            multicorrelator_cpu_16sc.set_input_output_vectors(d_correlator_outs_16sc, in);
             multicorrelator_cpu_16sc.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad, d_carrier_phase_step_rad, d_rem_code_phase_chips, d_code_phase_step_chips, d_correlation_length_samples);
 
-            //std::cout<<std::endl;
             // UPDATE INTEGRATION TIME
             CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in);
 
@@ -383,11 +380,11 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items, gr_vec
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples - dll_code_error_secs_Ti * static_cast<double>(d_fs_in);
 
             d_correlation_length_samples = round(K_blk_samples); //round to a discrete samples
-            old_d_rem_code_phase_samples=d_rem_code_phase_samples;
+            old_d_rem_code_phase_samples = d_rem_code_phase_samples;
             d_rem_code_phase_samples = K_blk_samples - static_cast<double>(d_correlation_length_samples); //rounding error < 1 sample
 
             // UPDATE REMNANT CARRIER PHASE
-            CORRECTED_INTEGRATION_TIME_S=(static_cast<double>(d_correlation_length_samples)/static_cast<double>(d_fs_in));
+            CORRECTED_INTEGRATION_TIME_S = (static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in));
             //remnant carrier phase [rad]
             d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S, GPS_TWO_PI);
             // UPDATE CARRIER PHASE ACCUULATOR
@@ -453,7 +450,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items, gr_vec
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_pseudorange = false;
             current_synchro_data.Flag_valid_symbol_output = true;
-            current_synchro_data.correlation_length_ms=1;
+            current_synchro_data.correlation_length_ms = 1;
             *out[0] = current_synchro_data;
 
             // ########## DEBUG OUTPUT
@@ -577,6 +574,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items, gr_vec
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 
+
 void gps_l1_ca_dll_pll_c_aid_tracking_sc::set_channel(unsigned int channel)
 {
     d_channel = channel;
@@ -602,10 +600,12 @@ void gps_l1_ca_dll_pll_c_aid_tracking_sc::set_channel(unsigned int channel)
         }
 }
 
+
 void gps_l1_ca_dll_pll_c_aid_tracking_sc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
 {
     d_channel_internal_queue = channel_internal_queue;
 }
+
 
 void gps_l1_ca_dll_pll_c_aid_tracking_sc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {

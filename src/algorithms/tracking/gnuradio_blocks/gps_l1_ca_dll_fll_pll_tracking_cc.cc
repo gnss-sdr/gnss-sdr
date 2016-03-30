@@ -72,7 +72,6 @@ gps_l1_ca_dll_fll_pll_tracking_cc_sptr gps_l1_ca_dll_fll_pll_make_tracking_cc(
         float dll_bw_hz,
         float early_late_space_chips)
 {
-
     return gps_l1_ca_dll_fll_pll_tracking_cc_sptr(new Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(if_freq,
             fs_in, vector_length, queue, dump, dump_filename, order, fll_bw_hz, pll_bw_hz,dll_bw_hz,
             early_late_space_chips));
@@ -105,8 +104,8 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc(
         gr::block("Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-	// Telemetry bit synchronization message port input
-	this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
+    // Telemetry bit synchronization message port input
+    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -289,9 +288,8 @@ void Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::update_local_code()
             tcode_chips = tcode_chips + code_phase_step_chips;
         }
 
-    memcpy(d_prompt_code,&d_early_code[early_late_spc_samples],d_current_prn_length_samples* sizeof(gr_complex));
-    memcpy(d_late_code,&d_early_code[early_late_spc_samples*2],d_current_prn_length_samples* sizeof(gr_complex));
-
+    memcpy(d_prompt_code, &d_early_code[early_late_spc_samples], d_current_prn_length_samples * sizeof(gr_complex));
+    memcpy(d_late_code, &d_early_code[early_late_spc_samples*2], d_current_prn_length_samples * sizeof(gr_complex));
 }
 
 
@@ -329,7 +327,6 @@ Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::~Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc()
 
     delete[] d_Prompt_buffer;
 }
-
 
 
 
@@ -433,7 +430,7 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             if (d_FLL_wait == 1)
                 {
                     d_Prompt_prev = *d_Prompt;
-                    d_FLL_discriminator_hz=0.0;
+                    d_FLL_discriminator_hz = 0.0;
                     d_FLL_wait = 0;
                 }
             else
@@ -548,29 +545,29 @@ int Gps_L1_Ca_Dll_Fll_Pll_Tracking_cc::general_work (int noutput_items, gr_vecto
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_tracking = true;
             current_synchro_data.Flag_valid_symbol_output = true;
-            current_synchro_data.correlation_length_ms=1;
+            current_synchro_data.correlation_length_ms = 1;
              current_synchro_data.Flag_valid_pseudorange = false;
             *out[0] = current_synchro_data;
         }
     else
         {
-			// ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-			/*!
-			 *  \todo The stop timer has to be moved to the signal source!
-			 */
-			// stream to collect cout calls to improve thread safety
-			std::stringstream tmp_str_stream;
-			if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-			{
-				d_last_seg = floor(d_sample_counter / d_fs_in);
+            // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
+            /*!
+             *  \todo The stop timer has to be moved to the signal source!
+             */
+            // stream to collect cout calls to improve thread safety
+            std::stringstream tmp_str_stream;
+            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
+                {
+                    d_last_seg = floor(d_sample_counter / d_fs_in);
 
-				if (d_channel == 0)
-				{
-					// debug: Second counter in channel 0
-					tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-					std::cout << tmp_str_stream.rdbuf() << std::flush;
-				}
-			}
+                    if (d_channel == 0)
+                        {
+                            // debug: Second counter in channel 0
+                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
+                            std::cout << tmp_str_stream.rdbuf() << std::flush;
+                        }
+                }
             *d_Early  = gr_complex(0,0);
             *d_Prompt = gr_complex(0,0);
             *d_Late   = gr_complex(0,0);

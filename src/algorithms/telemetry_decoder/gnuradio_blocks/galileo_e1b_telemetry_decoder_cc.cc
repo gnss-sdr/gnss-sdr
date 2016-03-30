@@ -120,8 +120,8 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
            gr::block("galileo_e1b_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
 	   gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-	// Telemetry Bit transition synchronization port out
-	this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
+    // Telemetry Bit transition synchronization port out
+    this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;

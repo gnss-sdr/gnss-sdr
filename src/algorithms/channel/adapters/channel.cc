@@ -119,12 +119,17 @@ void Channel::connect(gr::top_block_sptr top_block)
     trk_->connect(top_block);
     nav_->connect(top_block);
 
+    //Synchronous ports
     top_block->connect(pass_through_->get_right_block(), 0, acq_->get_left_block(), 0);
     DLOG(INFO) << "pass_through_ -> acquisition";
     top_block->connect(pass_through_->get_right_block(), 0, trk_->get_left_block(), 0);
     DLOG(INFO) << "pass_through_ -> tracking";
     top_block->connect(trk_->get_right_block(), 0, nav_->get_left_block(), 0);
     DLOG(INFO) << "tracking -> telemetry_decoder";
+
+    // Message ports
+    top_block->msg_connect(nav_->get_left_block(),pmt::mp("preamble_timestamp_s"),trk_->get_right_block(),pmt::mp("preamble_timestamp_s"));
+    DLOG(INFO) << "MSG FEEDBACK CHANNEL telemetry_decoder -> tracking";
     connected_ = true;
 }
 

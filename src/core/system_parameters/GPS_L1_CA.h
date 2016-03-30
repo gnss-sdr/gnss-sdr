@@ -74,12 +74,15 @@ const int GPS_L1_CA_HISTORY_DEEP = 100;
 
 #define GPS_PREAMBLE {1, 0, 0, 0, 1, 0, 1, 1}
 const int GPS_CA_PREAMBLE_LENGTH_BITS = 8;
+const int GPS_CA_PREAMBLE_LENGTH_SYMBOLS = 160;
 const int GPS_CA_TELEMETRY_RATE_BITS_SECOND = 50;   //!< NAV message bit rate [bits/s]
-const int GPS_CA_TELEMETRY_RATE_SYMBOLS_SECOND = GPS_CA_TELEMETRY_RATE_BITS_SECOND*20;   //!< NAV message bit rate [symbols/s]
+const int GPS_CA_TELEMETRY_SYMBOLS_PER_BIT = 20;
+const int GPS_CA_TELEMETRY_RATE_SYMBOLS_SECOND = GPS_CA_TELEMETRY_RATE_BITS_SECOND*GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;   //!< NAV message bit rate [symbols/s]
 const int GPS_WORD_LENGTH = 4;                      //!< CRC + GPS WORD (-2 -1 0 ... 29) Bits = 4 bytes
 const int GPS_SUBFRAME_LENGTH = 40;                 //!< GPS_WORD_LENGTH x 10 = 40 bytes
 const int GPS_SUBFRAME_BITS = 300;                  //!< Number of bits per subframe in the NAV message [bits]
 const int GPS_SUBFRAME_SECONDS = 6;                 //!< Subframe duration [seconds]
+const int GPS_SUBFRAME_MS = 6000;                 //!< Subframe duration [seconds]
 const int GPS_WORD_BITS = 30;                       //!< Number of bits per word in the NAV message [bits]
 
 // GPS NAVIGATION MESSAGE STRUCTURE

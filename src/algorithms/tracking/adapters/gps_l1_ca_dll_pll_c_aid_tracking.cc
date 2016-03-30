@@ -60,7 +60,9 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
     std::string dump_filename;
     std::string default_item_type = "gr_complex";
     float pll_bw_hz;
+    float pll_bw_narrow_hz;
     float dll_bw_hz;
+    float dll_bw_narrow_hz;
     float early_late_space_chips;
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     //vector_length = configuration->property(role + ".vector_length", 2048);
@@ -69,6 +71,11 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+    pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", 20.0);
+    dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", 2.0);
+    int extend_correlation_ms;
+    extend_correlation_ms = configuration->property(role + ".extend_correlation_ms", 1);
+
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     std::string default_dump_filename = "./track_ch";
     dump_filename = configuration->property(role + ".dump_filename",
@@ -88,6 +95,9 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
                     dump_filename,
                     pll_bw_hz,
                     dll_bw_hz,
+                    pll_bw_narrow_hz,
+                    dll_bw_narrow_hz,
+                    extend_correlation_ms,
                     early_late_space_chips);
             DLOG(INFO) << "tracking(" << tracking_cc->unique_id() << ")";
     }else if(item_type_.compare("cshort") == 0)
@@ -102,6 +112,8 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
                 dump_filename,
                 pll_bw_hz,
                 dll_bw_hz,
+                pll_bw_narrow_hz,
+                dll_bw_narrow_hz,
                 early_late_space_chips);
         DLOG(INFO) << "tracking(" << tracking_sc->unique_id() << ")";
     }else

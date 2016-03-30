@@ -104,6 +104,8 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
         gr::block("Gps_L1_Ca_Dll_Pll_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    // Telemetry bit synchronization message port input
+    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -309,8 +311,6 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::update_local_carrier()
             d_carr_sign[i] = std::complex<float>(cos_f, -sin_f);
             phase_rad_i += phase_step_rad_i;
         }
-    //d_rem_carr_phase_rad = fmod(phase_rad, GPS_TWO_PI);
-    //d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + d_rem_carr_phase_rad;
 }
 
 
@@ -362,11 +362,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
-                    //d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / static_cast<double>(d_fs_in));
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
-                    //std::cout<<" samples_offset="<<samples_offset<<"\r\n";
                     // Fill the acquisition data
                     current_synchro_data = *d_acquisition_gnss_synchro;
                     *out[0] = current_synchro_data;
@@ -493,11 +490,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
             current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
 
-            // Tracking_timestamp_secs is aligned with the NEXT PRN start sample (Hybridization problem!)
-            //compute remnant code phase samples BEFORE the Tracking timestamp
-            //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
-            //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples)/static_cast<double>(d_fs_in);
-
             // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!, but some glitches??)
             current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
             //compute remnant code phase samples AFTER the Tracking timestamp
@@ -510,6 +502,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_pseudorange = false;
+            current_synchro_data.Flag_valid_symbol_output = true;
+            current_synchro_data.correlation_length_ms=1;
             *out[0] = current_synchro_data;
 
             // ########## DEBUG OUTPUT
@@ -563,6 +557,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
 
             current_synchro_data.System = {'G'};
             current_synchro_data.Flag_valid_pseudorange = false;
+            current_synchro_data.Flag_valid_symbol_output = false;
             *out[0] = current_synchro_data;
         }
 
@@ -616,7 +611,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_in
                 tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                 d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
-            catch (std::ifstream::failure e)
+            catch (const std::ifstream::failure &e)
             {
                     LOG(WARNING) << "Exception writing trk dump file " << e.what();
             }
@@ -651,7 +646,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure &e)
                     {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
                     }

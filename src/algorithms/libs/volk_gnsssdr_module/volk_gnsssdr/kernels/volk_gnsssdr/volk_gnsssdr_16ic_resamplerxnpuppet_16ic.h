@@ -45,7 +45,7 @@
 static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_generic(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float code_phase_step_chips = 0.1;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
     int num_out_vectors = 3;
     float* rem_code_phase_chips = (float*)volk_gnsssdr_malloc(sizeof(float) * num_out_vectors, volk_gnsssdr_get_alignment());
 
@@ -73,7 +73,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_generic(lv_16sc_t* r
 static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float code_phase_step_chips = 0.1;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
     int num_out_vectors = 3;
     float * rem_code_phase_chips = (float*)volk_gnsssdr_malloc(sizeof(float) * num_out_vectors, volk_gnsssdr_get_alignment());
     lv_16sc_t** result_aux =  (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
@@ -100,7 +100,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_sse2(lv_16sc_t* re
 static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float code_phase_step_chips = 0.1;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
     int num_out_vectors = 3;
     float * rem_code_phase_chips = (float*)volk_gnsssdr_malloc(sizeof(float) * num_out_vectors, volk_gnsssdr_get_alignment());
     lv_16sc_t** result_aux =  (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
@@ -127,7 +127,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_u_sse2(lv_16sc_t* re
 static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     float code_phase_step_chips = 0.1;
-    int code_length_chips = 1023;
+    int code_length_chips = 2046;
     int num_out_vectors = 3;
     float * rem_code_phase_chips = (float*)volk_gnsssdr_malloc(sizeof(float) * num_out_vectors, volk_gnsssdr_get_alignment());
     lv_16sc_t** result_aux =  (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());

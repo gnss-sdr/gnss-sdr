@@ -106,6 +106,8 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
         gr::block("Gps_L1_Ca_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    // Telemetry bit synchronization message port input
+    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -434,7 +436,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
                     current_synchro_data.CN0_dB_hz = 0.0;
                     current_synchro_data.Flag_valid_tracking = false;
                     current_synchro_data.Flag_valid_pseudorange = false;
-
+                    current_synchro_data.Flag_valid_symbol_output = true;
                     *out[0] = current_synchro_data;
 
                     return 1;
@@ -547,6 +549,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
             current_synchro_data.Code_phase_secs = (double)d_code_phase_samples * (1/(float)d_fs_in);
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_pseudorange = false;
+            current_synchro_data.Flag_valid_symbol_output = true;
+            current_synchro_data.correlation_length_ms=1;
             *out[0] = current_synchro_data;
 
             // ########## DEBUG OUTPUT

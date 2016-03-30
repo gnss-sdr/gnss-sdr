@@ -90,10 +90,10 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::forecast (int noutput_items,
 void gps_l1_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index(pmt::pmt_t msg)
 {
     //pmt::print(msg);
-    DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)<< std::endl;
-    if (d_enable_extended_integration==false) //avoid re-setting preamble indicator
+    DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
+    if (d_enable_extended_integration == false) //avoid re-setting preamble indicator
         {
-            d_preamble_timestamp_s=pmt::to_double(msg);
+            d_preamble_timestamp_s = pmt::to_double(msg);
             d_enable_extended_integration = true;
             d_preamble_synchronized = false;
         }

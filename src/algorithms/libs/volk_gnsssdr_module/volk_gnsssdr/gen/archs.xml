@@ -88,6 +88,7 @@
         <param>12</param>
     </check>
     <flag compiler="gnu">-mfma</flag>
+    <flag compiler="msvc">/arch:AVX2</flag>
     <alignment>32</alignment>
 </arch>
 

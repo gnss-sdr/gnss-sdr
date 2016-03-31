@@ -291,7 +291,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_avx(lv_32fc_t** resu
 
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
-
+#include <volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h>
 static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_neon(lv_32fc_t** result, const lv_32fc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
 {
     lv_32fc_t** _result = result;

@@ -82,29 +82,29 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_sse2(lv_32fc_t* out, const fl
     __m128i emm0, emm2, emm4;
 
     /* declare some SSE constants */
-    static const int _ps_inv_sign_mask[4] __attribute__((aligned(16))) = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
-    static const int _ps_sign_mask[4] __attribute__((aligned(16))) = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
+    static const int _ps_inv_sign_mask[4] = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
+    static const int _ps_sign_mask[4] = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
 
-    static const float _ps_cephes_FOPI[4] __attribute__((aligned(16))) = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
-    static const int _pi32_1[4]  __attribute__((aligned(16))) = { 1, 1, 1, 1 };
-    static const int _pi32_inv1[4]  __attribute__((aligned(16))) = { ~1, ~1, ~1, ~1 };
-    static const int _pi32_2[4]  __attribute__((aligned(16))) = { 2, 2, 2, 2};
-    static const int _pi32_4[4]  __attribute__((aligned(16))) = { 4, 4, 4, 4};
+    static const float _ps_cephes_FOPI[4] = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
+    static const int _pi32_1[4]  = { 1, 1, 1, 1 };
+    static const int _pi32_inv1[4]  = { ~1, ~1, ~1, ~1 };
+    static const int _pi32_2[4]  = { 2, 2, 2, 2};
+    static const int _pi32_4[4]  = { 4, 4, 4, 4};
 
-    static const float _ps_minus_cephes_DP1[4] __attribute__((aligned(16))) = { -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
-    static const float _ps_minus_cephes_DP2[4] __attribute__((aligned(16))) = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
-    static const float _ps_minus_cephes_DP3[4] __attribute__((aligned(16))) = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
-    static const float _ps_coscof_p0[4] __attribute__((aligned(16))) = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
-    static const float _ps_coscof_p1[4] __attribute__((aligned(16))) = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
-    static const float _ps_coscof_p2[4] __attribute__((aligned(16))) = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
-    static const float _ps_sincof_p0[4] __attribute__((aligned(16))) = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
-    static const float _ps_sincof_p1[4] __attribute__((aligned(16))) = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
-    static const float _ps_sincof_p2[4] __attribute__((aligned(16))) = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
-    static const float _ps_0p5[4] __attribute__((aligned(16))) = { 0.5f, 0.5f, 0.5f, 0.5f };
-    static const float _ps_1[4] __attribute__((aligned(16))) = { 1.0f, 1.0f, 1.0f, 1.0f };
+    static const float _ps_minus_cephes_DP1[4] = { -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
+    static const float _ps_minus_cephes_DP2[4] = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
+    static const float _ps_minus_cephes_DP3[4] = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
+    static const float _ps_coscof_p0[4] = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
+    static const float _ps_coscof_p1[4] = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
+    static const float _ps_coscof_p2[4] = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
+    static const float _ps_sincof_p0[4] = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
+    static const float _ps_sincof_p1[4] = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
+    static const float _ps_sincof_p2[4] = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
+    static const float _ps_0p5[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
+    static const float _ps_1[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    float four_phases[4] __attribute__((aligned(16))) = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc };
-    float four_phases_inc[4] __attribute__((aligned(16))) = { 4 * phase_inc, 4 * phase_inc, 4 * phase_inc, 4 * phase_inc };
+    float four_phases[4] = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc };
+    float four_phases_inc[4] = { 4 * phase_inc, 4 * phase_inc, 4 * phase_inc, 4 * phase_inc };
     four_phases_reg = _mm_load_ps(four_phases);
     const __m128 four_phases_inc_reg = _mm_load_ps(four_phases_inc);
 
@@ -239,29 +239,29 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_sse2(lv_32fc_t* out, const fl
     __m128i emm0, emm2, emm4;
 
     /* declare some SSE constants */
-    static const int _ps_inv_sign_mask[4] __attribute__((aligned(16))) = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
-    static const int _ps_sign_mask[4] __attribute__((aligned(16))) = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
+    __VOLK_ATTR_ALIGNED(16) static const int _ps_inv_sign_mask[4] = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
+    __VOLK_ATTR_ALIGNED(16) static const int _ps_sign_mask[4] = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
 
-    static const float _ps_cephes_FOPI[4] __attribute__((aligned(16))) = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
-    static const int _pi32_1[4]  __attribute__((aligned(16))) = { 1, 1, 1, 1 };
-    static const int _pi32_inv1[4]  __attribute__((aligned(16))) = { ~1, ~1, ~1, ~1 };
-    static const int _pi32_2[4]  __attribute__((aligned(16))) = { 2, 2, 2, 2};
-    static const int _pi32_4[4]  __attribute__((aligned(16))) = { 4, 4, 4, 4};
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_cephes_FOPI[4] = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
+    __VOLK_ATTR_ALIGNED(16) static const int _pi32_1[4]  = { 1, 1, 1, 1 };
+    __VOLK_ATTR_ALIGNED(16) static const int _pi32_inv1[4]  = { ~1, ~1, ~1, ~1 };
+    __VOLK_ATTR_ALIGNED(16) static const int _pi32_2[4]  = { 2, 2, 2, 2};
+    __VOLK_ATTR_ALIGNED(16) static const int _pi32_4[4]  = { 4, 4, 4, 4};
 
-    static const float _ps_minus_cephes_DP1[4] __attribute__((aligned(16))) = { -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
-    static const float _ps_minus_cephes_DP2[4] __attribute__((aligned(16))) = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
-    static const float _ps_minus_cephes_DP3[4] __attribute__((aligned(16))) = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
-    static const float _ps_coscof_p0[4] __attribute__((aligned(16))) = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
-    static const float _ps_coscof_p1[4] __attribute__((aligned(16))) = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
-    static const float _ps_coscof_p2[4] __attribute__((aligned(16))) = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
-    static const float _ps_sincof_p0[4] __attribute__((aligned(16))) = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
-    static const float _ps_sincof_p1[4] __attribute__((aligned(16))) = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
-    static const float _ps_sincof_p2[4] __attribute__((aligned(16))) = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
-    static const float _ps_0p5[4] __attribute__((aligned(16))) = { 0.5f, 0.5f, 0.5f, 0.5f };
-    static const float _ps_1[4] __attribute__((aligned(16))) = { 1.0f, 1.0f, 1.0f, 1.0f };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_minus_cephes_DP1[4] = { -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_minus_cephes_DP2[4] = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_minus_cephes_DP3[4] = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_coscof_p0[4] = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_coscof_p1[4] = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_coscof_p2[4] = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_sincof_p0[4] = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_sincof_p1[4] = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_sincof_p2[4] = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_0p5[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
+    __VOLK_ATTR_ALIGNED(16) static const float _ps_1[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    float four_phases[4] __attribute__((aligned(16))) = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc };
-    float four_phases_inc[4] __attribute__((aligned(16))) = { 4 * phase_inc, 4 * phase_inc, 4 * phase_inc, 4 * phase_inc };
+    __VOLK_ATTR_ALIGNED(16) float four_phases[4] = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc };
+    __VOLK_ATTR_ALIGNED(16) float four_phases_inc[4] = { 4 * phase_inc, 4 * phase_inc, 4 * phase_inc, 4 * phase_inc };
     four_phases_reg = _mm_load_ps(four_phases);
     const __m128 four_phases_inc_reg = _mm_load_ps(four_phases_inc);
 
@@ -452,29 +452,29 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_a_avx2(lv_32fc_t* out, const fl
     __m128 aux, c1, s1;
 
     /* declare some AXX2 constants */
-    static const int _ps_inv_sign_mask[8] __attribute__((aligned(32))) = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
-    static const int _ps_sign_mask[8] __attribute__((aligned(32))) = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
+    __VOLK_ATTR_ALIGNED(32) static const int _ps_inv_sign_mask[8] = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
+    __VOLK_ATTR_ALIGNED(32) static const int _ps_sign_mask[8] = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
 
-    static const float _ps_cephes_FOPI[8] __attribute__((aligned(32))) = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
-    static const int _pi32_1[8]  __attribute__((aligned(32))) = { 1, 1, 1, 1, 1, 1, 1, 1 };
-    static const int _pi32_inv1[8]  __attribute__((aligned(32))) = { ~1, ~1, ~1, ~1, ~1, ~1, ~1, ~1 };
-    static const int _pi32_2[8]  __attribute__((aligned(32))) = { 2, 2, 2, 2, 2, 2, 2, 2 };
-    static const int _pi32_4[8]  __attribute__((aligned(32))) = { 4, 4, 4, 4, 4, 4, 4, 4 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_cephes_FOPI[8] = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
+    __VOLK_ATTR_ALIGNED(32) static const int _pi32_1[8]  = { 1, 1, 1, 1, 1, 1, 1, 1 };
+    __VOLK_ATTR_ALIGNED(32) static const int _pi32_inv1[8]  = { ~1, ~1, ~1, ~1, ~1, ~1, ~1, ~1 };
+    __VOLK_ATTR_ALIGNED(32) static const int _pi32_2[8]  = { 2, 2, 2, 2, 2, 2, 2, 2 };
+    __VOLK_ATTR_ALIGNED(32) static const int _pi32_4[8]  = { 4, 4, 4, 4, 4, 4, 4, 4 };
 
-    static const float _ps_minus_cephes_DP1[8] __attribute__((aligned(32))) = { -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
-    static const float _ps_minus_cephes_DP2[8] __attribute__((aligned(32))) = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
-    static const float _ps_minus_cephes_DP3[8] __attribute__((aligned(32))) = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
-    static const float _ps_coscof_p0[8] __attribute__((aligned(32))) = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
-    static const float _ps_coscof_p1[8] __attribute__((aligned(32))) = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
-    static const float _ps_coscof_p2[8] __attribute__((aligned(32))) = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
-    static const float _ps_sincof_p0[8] __attribute__((aligned(32))) = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
-    static const float _ps_sincof_p1[8] __attribute__((aligned(32))) = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
-    static const float _ps_sincof_p2[8] __attribute__((aligned(32))) = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
-    static const float _ps_0p5[8] __attribute__((aligned(32))) = { 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
-    static const float _ps_1[8] __attribute__((aligned(32))) = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_minus_cephes_DP1[8] = { -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_minus_cephes_DP2[8] = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_minus_cephes_DP3[8] = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_coscof_p0[8] = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_coscof_p1[8] = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_coscof_p2[8] = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_sincof_p0[8] = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_sincof_p1[8] = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_sincof_p2[8] = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_0p5[8] = { 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_1[8] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 
-    float eight_phases[8] __attribute__((aligned(32))) = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc, _phase + 4 * phase_inc, _phase + 5 * phase_inc, _phase + 6 * phase_inc, _phase + 7 * phase_inc };
-    float eight_phases_inc[8] __attribute__((aligned(32))) = { 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc };
+    __VOLK_ATTR_ALIGNED(32) float eight_phases[8] = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc, _phase + 4 * phase_inc, _phase + 5 * phase_inc, _phase + 6 * phase_inc, _phase + 7 * phase_inc };
+    __VOLK_ATTR_ALIGNED(32) float eight_phases_inc[8] = { 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc };
     eight_phases_reg = _mm256_load_ps(eight_phases);
     const __m256 eight_phases_inc_reg = _mm256_load_ps(eight_phases_inc);
 
@@ -620,29 +620,29 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t* out, const fl
     __m128 aux, c1, s1;
 
     /* declare some AXX2 constants */
-    static const int _ps_inv_sign_mask[8] __attribute__((aligned(32))) = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
-    static const int _ps_sign_mask[8] __attribute__((aligned(32))) = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
+    __VOLK_ATTR_ALIGNED(32) static const int _ps_inv_sign_mask[8] = { ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000, ~0x80000000 };
+    __VOLK_ATTR_ALIGNED(32) static const int _ps_sign_mask[8] = { (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000, (int)0x80000000 };
 
-    static const float _ps_cephes_FOPI[8] __attribute__((aligned(32))) = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
-    static const int _pi32_1[8]  __attribute__((aligned(32))) = { 1, 1, 1, 1, 1, 1, 1, 1 };
-    static const int _pi32_inv1[8]  __attribute__((aligned(32))) = { ~1, ~1, ~1, ~1, ~1, ~1, ~1, ~1 };
-    static const int _pi32_2[8]  __attribute__((aligned(32))) = { 2, 2, 2, 2, 2, 2, 2, 2 };
-    static const int _pi32_4[8]  __attribute__((aligned(32))) = { 4, 4, 4, 4, 4, 4, 4, 4 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_cephes_FOPI[8] = { 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516, 1.27323954473516 };
+    __VOLK_ATTR_ALIGNED(32) static const int _pi32_1[8]  = { 1, 1, 1, 1, 1, 1, 1, 1 };
+    __VOLK_ATTR_ALIGNED(32) static const int _pi32_inv1[8]  = { ~1, ~1, ~1, ~1, ~1, ~1, ~1, ~1 };
+    __VOLK_ATTR_ALIGNED(32) static const int _pi32_2[8]  = { 2, 2, 2, 2, 2, 2, 2, 2 };
+    __VOLK_ATTR_ALIGNED(32) static const int _pi32_4[8]  = { 4, 4, 4, 4, 4, 4, 4, 4 };
 
-    static const float _ps_minus_cephes_DP1[8] __attribute__((aligned(32))) = { -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
-    static const float _ps_minus_cephes_DP2[8] __attribute__((aligned(32))) = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
-    static const float _ps_minus_cephes_DP3[8] __attribute__((aligned(32))) = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
-    static const float _ps_coscof_p0[8] __attribute__((aligned(32))) = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
-    static const float _ps_coscof_p1[8] __attribute__((aligned(32))) = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
-    static const float _ps_coscof_p2[8] __attribute__((aligned(32))) = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
-    static const float _ps_sincof_p0[8] __attribute__((aligned(32))) = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
-    static const float _ps_sincof_p1[8] __attribute__((aligned(32))) = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
-    static const float _ps_sincof_p2[8] __attribute__((aligned(32))) = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
-    static const float _ps_0p5[8] __attribute__((aligned(32))) = { 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
-    static const float _ps_1[8] __attribute__((aligned(32))) = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_minus_cephes_DP1[8] = { -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625, -0.78515625 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_minus_cephes_DP2[8] = { -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4, -2.4187564849853515625e-4 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_minus_cephes_DP3[8] = { -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8, -3.77489497744594108e-8 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_coscof_p0[8] = { 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005, 2.443315711809948E-005 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_coscof_p1[8] = { -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003, -1.388731625493765E-003 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_coscof_p2[8] = { 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002, 4.166664568298827E-002 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_sincof_p0[8] = { -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4, -1.9515295891E-4 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_sincof_p1[8] = { 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3, 8.3321608736E-3 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_sincof_p2[8] = { -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1, -1.6666654611E-1 };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_0p5[8] = { 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
+    __VOLK_ATTR_ALIGNED(32) static const float _ps_1[8] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 
-    float eight_phases[8] __attribute__((aligned(32))) = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc, _phase + 4 * phase_inc, _phase + 5 * phase_inc, _phase + 6 * phase_inc, _phase + 7 * phase_inc };
-    float eight_phases_inc[8] __attribute__((aligned(32))) = { 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc };
+    __VOLK_ATTR_ALIGNED(32) float eight_phases[8] = { _phase, _phase + phase_inc, _phase + 2 * phase_inc, _phase + 3 * phase_inc, _phase + 4 * phase_inc, _phase + 5 * phase_inc, _phase + 6 * phase_inc, _phase + 7 * phase_inc };
+    __VOLK_ATTR_ALIGNED(32) float eight_phases_inc[8] = { 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc, 8 * phase_inc };
     eight_phases_reg = _mm256_load_ps(eight_phases);
     const __m256 eight_phases_inc_reg = _mm256_load_ps(eight_phases_inc);
 

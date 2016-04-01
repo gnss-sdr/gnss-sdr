@@ -66,14 +66,8 @@
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
-//#pragma STDC FENV_ACCESS ON
 
 #ifdef LV_HAVE_GENERIC
-
-//int round_int( float r ) {
-//    return (r > 0.0) ? (r + 0.5) : (r - 0.5);
-//}
-
 
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips, float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
@@ -91,7 +85,6 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** re
                     result[current_vector][n] = local_code[local_code_chip_index];
                 }
         }
-    //std::cout<<std::endl;
 }
 
 #endif /*LV_HAVE_GENERIC*/
@@ -102,7 +95,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** re
 
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
-    _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
+    _MM_SET_ROUNDING_MODE(_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
     unsigned int number;
     const unsigned int quarterPoints = num_output_samples / 4;
 
@@ -195,7 +188,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** res
 
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_sse2(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
-    _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
+    _MM_SET_ROUNDING_MODE(_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
     unsigned int number;
     const unsigned int quarterPoints = num_output_samples / 4;
 

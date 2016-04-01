@@ -116,7 +116,7 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_sse3(lv_32fc_t* re
        result_aux[n] = (lv_32fc_t*)volk_gnsssdr_malloc(sizeof(lv_32fc_t) * num_points, volk_gnsssdr_get_alignment());
     }
 
-    volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_sse3(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_sse3(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((lv_32fc_t*)result, (lv_32fc_t*)result_aux[0], sizeof(lv_32fc_t) * num_points);
 
@@ -146,7 +146,7 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_sse4_1(lv_32fc_t* 
        result_aux[n] = (lv_32fc_t*)volk_gnsssdr_malloc(sizeof(lv_32fc_t) * num_points, volk_gnsssdr_get_alignment());
     }
 
-    volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_sse4_1(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_sse4_1(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((lv_32fc_t*)result, (lv_32fc_t*)result_aux[0], sizeof(lv_32fc_t) * num_points);
 
@@ -233,7 +233,7 @@ static inline void volk_gnsssdr_32fc_resamplerxnpuppet_32fc_u_avx(lv_32fc_t* res
        result_aux[n] = (lv_32fc_t*)volk_gnsssdr_malloc(sizeof(lv_32fc_t) * num_points, volk_gnsssdr_get_alignment());
     }
 
-    volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_avx(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+    volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_avx(result_aux, local_code, rem_code_phase_chips, code_phase_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
 
     memcpy((lv_32fc_t*)result, (lv_32fc_t*)result_aux[0], sizeof(lv_32fc_t) * num_points);
 

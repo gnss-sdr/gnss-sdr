@@ -159,6 +159,15 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_sse3(lv_32fc_t** res
 #endif 
 
 
+#ifdef LV_HAVE_SSE3
+#include <pmmintrin.h>
+static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_sse3(lv_32fc_t** result, const lv_32fc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+{
+    volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_sse3(result, local_code, rem_code_phase_chips, code_phase_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+}
+#endif
+
+
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
 static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_sse4_1(lv_32fc_t** result, const lv_32fc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
@@ -221,6 +230,15 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_sse4_1(lv_32fc_t** r
 }
 
 #endif 
+
+
+#ifdef LV_HAVE_SSE4_1
+#include <smmintrin.h>
+static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_sse4_1(lv_32fc_t** result, const lv_32fc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+{
+    volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_sse4_1(result, local_code, rem_code_phase_chips, code_phase_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+}
+#endif
 
 
 #ifdef LV_HAVE_AVX
@@ -286,6 +304,15 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_avx(lv_32fc_t** resu
     _mm256_zeroupper();
 }
 
+#endif
+
+
+#ifdef LV_HAVE_AVX
+#include <immintrin.h>
+static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_avx(lv_32fc_t** result, const lv_32fc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, float* shifts_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_points)
+{
+    volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_avx(result, local_code, rem_code_phase_chips, code_phase_step_chips, shifts_chips, code_length_chips, num_out_vectors, num_points);
+}
 #endif
 
 

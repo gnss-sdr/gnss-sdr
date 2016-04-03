@@ -335,7 +335,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_neon(lv_32fc_t** resul
     const float32x4_t code_length_chips_reg_f = vdupq_n_f32((float)code_length_chips);
     const int32x4_t code_length_chips_reg_i = vdupq_n_s32((int32_t)code_length_chips);
     int32x4_t local_code_chip_index_reg, aux_i, negatives, i;
-    float32x4_t aux, aux2, shifts_chips_reg, fi, c, j, cTrunc, base, indexn;
+    float32x4_t aux, aux2, shifts_chips_reg, fi, c, j, cTrunc, base, indexn, reciprocal;
     __VOLK_ATTR_ALIGNED(16) const float vec[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
     uint32x4_t igx;
     for (int current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
@@ -345,6 +345,8 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_neon(lv_32fc_t** resul
             indexn = vld1q_f32((float*)vec);
             for(unsigned int n = 0; n < neon_iters; n++)
                 {
+                    __builtin_prefetch(&_result[current_correlator_tap][4 * n + 3], 1, 0);
+                    __builtin_prefetch(&local_code_chip_index[4]);
                     aux = vmulq_f32(code_phase_step_chips_reg, indexn);
                     aux = vaddq_f32(aux, aux2);
                     // floor
@@ -354,7 +356,10 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_neon(lv_32fc_t** resul
                     j = vcvtq_f32_s32(vandq_s32(vreinterpretq_s32_u32(igx), ones));
                     aux = vsubq_f32(fi, j);
                     // fmod
-                    c = vdivq_f32(aux, code_length_chips_reg_f);
+                    reciprocal = vrecpeq_f32(code_length_chips_reg_f);
+                    reciprocal = vmulq_f32(vrecpsq_f32(code_length_chips_reg_f, reciprocal), reciprocal);
+                    reciprocal = vmulq_f32(vrecpsq_f32(code_length_chips_reg_f, reciprocal), reciprocal); // this refinement is required!
+                    c = vmulq_f32(aux, reciprocal);
                     i =  vcvtq_s32_f32(c);
                     cTrunc = vcvtq_f32_s32(i);
                     base = vmulq_f32(cTrunc, code_length_chips_reg_f);
@@ -364,6 +369,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_neon(lv_32fc_t** resul
                     negatives = vreinterpretq_s32_u32(vcltq_s32(local_code_chip_index_reg, zeros));
                     aux_i = vandq_s32(code_length_chips_reg_i, negatives);
                     local_code_chip_index_reg = vaddq_s32(local_code_chip_index_reg, aux_i);
+
                     vst1q_s32((int32_t*)local_code_chip_index, local_code_chip_index_reg);
 
                     for(unsigned int k = 0; k < 4; ++k)
@@ -374,6 +380,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_neon(lv_32fc_t** resul
                 }
             for(unsigned int n = neon_iters * 4; n < num_points; n++)
                 {
+                    __builtin_prefetch(&_result[current_correlator_tap][n], 1, 0);
                     // resample code for current tap
                     local_code_chip_index_ = (int32_t)floor(code_phase_step_chips * (float)n + shifts_chips[current_correlator_tap] - rem_code_phase_chips);
                     local_code_chip_index_ = local_code_chip_index_ % code_length_chips;

@@ -382,8 +382,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
             bool enable_dll_pll;
             if (d_enable_extended_integration == true)
                 {
-                    long int symbol_diff = round(1000.0*((static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in)-d_preamble_timestamp_s));
-                    if (symbol_diff>0 and symbol_diff % d_extend_correlation_ms == 0)
+                    long int symbol_diff = round(1000.0 * ((static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in) - d_preamble_timestamp_s));
+                    if (symbol_diff > 0 and symbol_diff % d_extend_correlation_ms == 0)
                         {
                             // compute coherent integration and enable tracking loop
                             // perform coherent integration using correlator output history
@@ -404,12 +404,13 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items, gr_vec
                                     d_carrier_loop_filter.set_params(10.0, d_pll_bw_narrow_hz,2);
                                     d_preamble_synchronized = true;
                                     std::cout << "Enabled extended correlator for CH "<< d_channel <<" : Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                              <<" dll_narrow_bw=" << d_dll_bw_narrow_hz << " pll_narrow_bw=" << d_pll_bw_narrow_hz << std::endl;
+                                              <<" pll_bw = " << d_pll_bw_hz << " [Hz], pll_narrow_bw = " << d_pll_bw_narrow_hz << " [Hz]" << std::endl
+                                              << "Enabled extended correlator for CH "<< d_channel <<" : Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+                                              <<" dll_bw = " << d_dll_bw_hz << " [Hz], dll_narrow_bw = " << d_dll_bw_narrow_hz << " [Hz]" << std::endl;
                                 }
                             // UPDATE INTEGRATION TIME
                             CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms) * GPS_L1_CA_CODE_PERIOD;
                             enable_dll_pll = true;
-
                         }
                     else
                         {

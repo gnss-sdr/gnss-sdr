@@ -66,14 +66,8 @@
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
-//#pragma STDC FENV_ACCESS ON
 
 #ifdef LV_HAVE_GENERIC
-
-//int round_int( float r ) {
-//    return (r > 0.0) ? (r + 0.5) : (r - 0.5);
-//}
-
 
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips, float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
@@ -91,7 +85,6 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** re
                     result[current_vector][n] = local_code[local_code_chip_index];
                 }
         }
-    //std::cout<<std::endl;
 }
 
 #endif /*LV_HAVE_GENERIC*/
@@ -102,25 +95,25 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_generic(lv_16sc_t** re
 
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
-    _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
+    _MM_SET_ROUNDING_MODE(_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
     unsigned int number;
     const unsigned int quarterPoints = num_output_samples / 4;
 
     lv_16sc_t** _result = result;
-    __attribute__((aligned(16))) int local_code_chip_index[4];
+    __VOLK_ATTR_ALIGNED(16) int local_code_chip_index[4];
     float tmp_rem_code_phase_chips;
     __m128 _rem_code_phase,_code_phase_step_chips;
     __m128i _code_length_chips,_code_length_chips_minus1;
     __m128 _code_phase_out,_code_phase_out_with_offset;
 
     _code_phase_step_chips = _mm_load1_ps(&code_phase_step_chips); //load float to all four float values in m128 register
-    __attribute__((aligned(16))) int four_times_code_length_chips_minus1[4];
+    __VOLK_ATTR_ALIGNED(16) int four_times_code_length_chips_minus1[4];
     four_times_code_length_chips_minus1[0] = code_length_chips - 1;
     four_times_code_length_chips_minus1[1] = code_length_chips - 1;
     four_times_code_length_chips_minus1[2] = code_length_chips - 1;
     four_times_code_length_chips_minus1[3] = code_length_chips - 1;
 
-    __attribute__((aligned(16))) int four_times_code_length_chips[4];
+    __VOLK_ATTR_ALIGNED(16) int four_times_code_length_chips[4];
     four_times_code_length_chips[0] = code_length_chips;
     four_times_code_length_chips[1] = code_length_chips;
     four_times_code_length_chips[2] = code_length_chips;
@@ -133,9 +126,9 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** res
 
     __m128i zero = _mm_setzero_si128();
 
-    __attribute__((aligned(16))) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
+    __VOLK_ATTR_ALIGNED(16) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
     __m128 _4output_index = _mm_load_ps(init_idx_float);
-    __attribute__((aligned(16))) float init_4constant_float[4] = { 4.0f, 4.0f, 4.0f, 4.0f };
+    __VOLK_ATTR_ALIGNED(16) float init_4constant_float[4] = { 4.0f, 4.0f, 4.0f, 4.0f };
     __m128 _4constant_float = _mm_load_ps(init_4constant_float);
 
     int current_vector = 0;
@@ -195,25 +188,25 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_sse2(lv_16sc_t** res
 
 static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_sse2(lv_16sc_t** result, const lv_16sc_t* local_code, float* rem_code_phase_chips ,float code_phase_step_chips, unsigned int code_length_chips, int num_out_vectors, unsigned int num_output_samples)
 {
-    _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
+    _MM_SET_ROUNDING_MODE(_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
     unsigned int number;
     const unsigned int quarterPoints = num_output_samples / 4;
 
     lv_16sc_t** _result = result;
-    __attribute__((aligned(16))) int local_code_chip_index[4];
+    __VOLK_ATTR_ALIGNED(16) int local_code_chip_index[4];
     float tmp_rem_code_phase_chips;
     __m128 _rem_code_phase,_code_phase_step_chips;
     __m128i _code_length_chips,_code_length_chips_minus1;
     __m128 _code_phase_out,_code_phase_out_with_offset;
 
     _code_phase_step_chips = _mm_load1_ps(&code_phase_step_chips); //load float to all four float values in m128 register
-    __attribute__((aligned(16))) int four_times_code_length_chips_minus1[4];
+    __VOLK_ATTR_ALIGNED(16) int four_times_code_length_chips_minus1[4];
     four_times_code_length_chips_minus1[0] = code_length_chips - 1;
     four_times_code_length_chips_minus1[1] = code_length_chips - 1;
     four_times_code_length_chips_minus1[2] = code_length_chips - 1;
     four_times_code_length_chips_minus1[3] = code_length_chips - 1;
 
-    __attribute__((aligned(16))) int four_times_code_length_chips[4];
+    __VOLK_ATTR_ALIGNED(16) int four_times_code_length_chips[4];
     four_times_code_length_chips[0] = code_length_chips;
     four_times_code_length_chips[1] = code_length_chips;
     four_times_code_length_chips[2] = code_length_chips;
@@ -226,9 +219,9 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_sse2(lv_16sc_t** res
 
     __m128i zero = _mm_setzero_si128();
 
-    __attribute__((aligned(16))) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
+    __VOLK_ATTR_ALIGNED(16) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
     __m128 _4output_index = _mm_loadu_ps(init_idx_float);
-    __attribute__((aligned(16))) float init_4constant_float[4] = { 4.0f, 4.0f, 4.0f, 4.0f };
+    __VOLK_ATTR_ALIGNED(16) float init_4constant_float[4] = { 4.0f, 4.0f, 4.0f, 4.0f };
     __m128 _4constant_float = _mm_loadu_ps(init_4constant_float);
 
     int current_vector = 0;
@@ -294,7 +287,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_neon(lv_16sc_t** resul
     float32x4_t half = vdupq_n_f32(0.5f);
 
     lv_16sc_t** _result = result;
-    __attribute__((aligned(16))) int local_code_chip_index[4];
+    __VOLK_ATTR_ALIGNED(16) int local_code_chip_index[4];
     float tmp_rem_code_phase_chips;
     float32x4_t _rem_code_phase, _code_phase_step_chips;
     int32x4_t _code_length_chips, _code_length_chips_minus1;
@@ -302,13 +295,13 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_neon(lv_16sc_t** resul
     float32x4_t sign, PlusHalf, Round;
 
     _code_phase_step_chips = vld1q_dup_f32(&code_phase_step_chips); //load float to all four float values in float32x4_t register
-    __attribute__((aligned(16))) int four_times_code_length_chips_minus1[4];
+    __VOLK_ATTR_ALIGNED(16) int four_times_code_length_chips_minus1[4];
     four_times_code_length_chips_minus1[0] = code_length_chips - 1;
     four_times_code_length_chips_minus1[1] = code_length_chips - 1;
     four_times_code_length_chips_minus1[2] = code_length_chips - 1;
     four_times_code_length_chips_minus1[3] = code_length_chips - 1;
 
-    __attribute__((aligned(16))) int four_times_code_length_chips[4];
+    __VOLK_ATTR_ALIGNED(16) int four_times_code_length_chips[4];
     four_times_code_length_chips[0] = code_length_chips;
     four_times_code_length_chips[1] = code_length_chips;
     four_times_code_length_chips[2] = code_length_chips;
@@ -321,9 +314,9 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_neon(lv_16sc_t** resul
     uint32x4_t negative_indexes, overflow_indexes;
     int32x4_t zero = vmovq_n_s32(0);
 
-    __attribute__((aligned(16))) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
+    __VOLK_ATTR_ALIGNED(16) float init_idx_float[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
     float32x4_t _4output_index = vld1q_f32(init_idx_float);
-    __attribute__((aligned(16))) float init_4constant_float[4] = { 4.0f, 4.0f, 4.0f, 4.0f };
+    __VOLK_ATTR_ALIGNED(16) float init_4constant_float[4] = { 4.0f, 4.0f, 4.0f, 4.0f };
     float32x4_t _4constant_float = vld1q_f32(init_4constant_float);
 
     int current_vector = 0;

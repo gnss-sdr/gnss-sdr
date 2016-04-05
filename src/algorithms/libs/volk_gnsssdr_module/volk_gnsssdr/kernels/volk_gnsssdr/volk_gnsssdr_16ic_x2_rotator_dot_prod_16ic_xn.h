@@ -203,11 +203,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
     // phase rotation registers
     __m128 pa, pb, two_phase_acc_reg, two_phase_inc_reg;
     __m128i pc1, pc2;
-    __attribute__((aligned(16))) lv_32fc_t two_phase_inc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_inc[2];
     two_phase_inc[0] = phase_inc * phase_inc;
     two_phase_inc[1] = phase_inc * phase_inc;
     two_phase_inc_reg = _mm_load_ps((float*) two_phase_inc);
-    __attribute__((aligned(16))) lv_32fc_t two_phase_acc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
     two_phase_acc[1] = (*phase) * phase_inc;
     two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
@@ -376,11 +376,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3_reload(l
     // phase rotation registers
     __m128 pa, pb, two_phase_acc_reg, two_phase_inc_reg;
     __m128i pc1, pc2;
-    __attribute__((aligned(16))) lv_32fc_t two_phase_inc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_inc[2];
     two_phase_inc[0] = phase_inc * phase_inc;
     two_phase_inc[1] = phase_inc * phase_inc;
     two_phase_inc_reg = _mm_load_ps((float*) two_phase_inc);
-    __attribute__((aligned(16))) lv_32fc_t two_phase_acc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
     two_phase_acc[1] = (*phase) * phase_inc;
     two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
@@ -619,11 +619,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_u_sse3(lv_16sc_
     // phase rotation registers
     __m128 pa, pb, two_phase_acc_reg, two_phase_inc_reg;
     __m128i pc1, pc2;
-    __attribute__((aligned(16))) lv_32fc_t two_phase_inc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_inc[2];
     two_phase_inc[0] = phase_inc * phase_inc;
     two_phase_inc[1] = phase_inc * phase_inc;
     two_phase_inc_reg = _mm_loadu_ps((float*) two_phase_inc);
-    __attribute__((aligned(16))) lv_32fc_t two_phase_acc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
     two_phase_acc[1] = (*phase) * phase_inc;
     two_phase_acc_reg = _mm_loadu_ps((float*)two_phase_acc);
@@ -780,11 +780,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_avx2(lv_16sc_
 
     __m128 a, b, two_phase_acc_reg, two_phase_inc_reg;
     __m128i c1, c2, result1, result2;
-    __attribute__((aligned(16))) lv_32fc_t two_phase_inc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_inc[2];
     two_phase_inc[0] = phase_inc * phase_inc;
     two_phase_inc[1] = phase_inc * phase_inc;
     two_phase_inc_reg = _mm_load_ps((float*) two_phase_inc);
-    __attribute__((aligned(16))) lv_32fc_t two_phase_acc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
     two_phase_acc[1] = (*phase) * phase_inc;
     two_phase_acc_reg = _mm_load_ps((float*) two_phase_acc);
@@ -985,11 +985,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_avx2_reload(l
 
     __m128 a, b, two_phase_acc_reg, two_phase_inc_reg;
     __m128i c1, c2, result1, result2;
-    __attribute__((aligned(16))) lv_32fc_t two_phase_inc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_inc[2];
     two_phase_inc[0] = phase_inc * phase_inc;
     two_phase_inc[1] = phase_inc * phase_inc;
     two_phase_inc_reg = _mm_load_ps((float*) two_phase_inc);
-    __attribute__((aligned(16))) lv_32fc_t two_phase_acc[2];
+    __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
     two_phase_acc[1] = (*phase) * phase_inc;
     two_phase_acc_reg = _mm_load_ps((float*) two_phase_acc);

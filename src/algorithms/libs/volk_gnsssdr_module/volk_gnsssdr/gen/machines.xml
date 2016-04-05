@@ -14,23 +14,23 @@
 </machine>
 
 <machine name="sse3">
-<archs>generic 32|64 mmx sse sse2 sse3 orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 orc|</archs>
 </machine>
 
 <machine name="ssse3">
-<archs>generic 32|64 mmx sse sse2 sse3 ssse3 orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 orc|</archs>
 </machine>
 
 <machine name="sse4_a">
-<archs>generic 32|64 mmx sse sse2 sse3 sse4_a popcount orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 sse4_a popcount orc|</archs>
 </machine>
 
 <machine name="sse4_1">
-<archs>generic 32|64 mmx sse sse2 sse3 ssse3 sse4_1 orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 orc|</archs>
 </machine>
 
 <machine name="sse4_2">
-<archs>generic 32|64 mmx sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount orc|</archs>
+<archs>generic 32|64| mmx| sse sse2 sse3 ssse3 sse4_1 sse4_2 popcount orc|</archs>
 </machine>
 
 <!-- trailing | bar means generate without either for MSVC -->

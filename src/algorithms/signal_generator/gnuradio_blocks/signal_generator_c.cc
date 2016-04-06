@@ -250,9 +250,9 @@ signal_generator_c::~signal_generator_c()
 }
 
 
-int signal_generator_c::general_work (int noutput_items,
-                   gr_vector_int &ninput_items,
-gr_vector_const_void_star &input_items,
+int signal_generator_c::general_work (int noutput_items __attribute__((unused)),
+                   gr_vector_int &ninput_items __attribute__((unused)),
+gr_vector_const_void_star &input_items __attribute__((unused)),
 gr_vector_void_star &output_items)
 {
     gr_complex *out = (gr_complex *) output_items[0];
@@ -386,11 +386,6 @@ gr_vector_void_star &output_items)
                 {
                     out[out_idx] += gr_complex(random_->gasdev(),random_->gasdev());
                 }
-        }
-
-    if((noutput_items == 0) || (ninput_items.size() != 0) || input_items[0] == 0)
-        {
-            // do nothing
         }
 
     // Tell runtime system how many output items we produced.

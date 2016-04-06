@@ -57,7 +57,7 @@ gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<g
 
 gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        boost::shared_ptr<gr::msg_queue> queue,
+        boost::shared_ptr<gr::msg_queue> queue __attribute__((unused)),
         bool dump) :
                 gr::block("gps_l2_m_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -110,7 +110,7 @@ void gps_l2_m_telemetry_decoder_cc::set_decimation(int decimation)
 }
 
 
-int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
     // get pointers on in- and output gnss-synchro objects
@@ -118,7 +118,7 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_in
     Gnss_Synchro *out = (Gnss_Synchro *) output_items[0];            // output
 
     // store the time stamp of the first sample in the processed sample block
-    double sample_stamp = in[0].Tracking_timestamp_secs;
+    //double sample_stamp = in[0].Tracking_timestamp_secs;
 
     bool flag_new_cnav_frame = false;
     int last_frame_preamble_start = 0;
@@ -152,7 +152,8 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_in
                             // and obtain the bits by decoding the symbols (viterbi decoder)
                             // they can be already aligned or shifted by one position
                             std::vector<int> bits;
-                            bool symbol_alignment = d_symbol_aligner_and_decoder.get_bits(d_sample_buf, bits);
+
+                            //bool symbol_alignment = d_symbol_aligner_and_decoder.get_bits(d_sample_buf, bits);
 
                             //std::stringstream ss;
                             //for (std::vector<int>::const_iterator bit_it = bits.begin(); bit_it < bits.end(); ++bit_it)
@@ -260,10 +261,6 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_in
         }
 
     d_average_count++;
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     if (d_average_count == d_decimation_output_factor)
         {
             d_average_count = 0;

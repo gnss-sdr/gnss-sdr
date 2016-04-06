@@ -274,7 +274,7 @@ galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
 }
 
 
-int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
     //
@@ -340,16 +340,6 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
                     // **** Attempt Preamble correlation ****
                     bool corr_flag=true;
                     int corr_sign = 0; // sequence can be found inverted
-                    //	corr_sign = d_preamble_bits[0] * d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-                    //	for (int i = 1; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
-                    //	     {
-                    //	         if ((d_preamble_bits[i] * d_page_symbols[i + d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS]) != corr_sign)
-                    //	             {
-                    //                    //exit for if one bit doesn't correlate
-                    //                    corr_flag = false;
-                    //                    break;
-                    //               }
-                    //	     }
                     // check if the preamble starts positive correlated or negative correlated
                     if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)	// symbols clipping
                         {
@@ -583,10 +573,6 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
     d_sample_counter++; //count for the processed samples
     //3. Make the output (copy the object contents to the GNURadio reserved memory)
     *out[0] = current_synchro_data;
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     return 1;
 }
 

@@ -135,8 +135,8 @@ bool galileo_e1_pvt_cc::pseudoranges_pairCompare_min(const std::pair<int,Gnss_Sy
 
 
 
-int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items  __attribute__((unused)))
 {
     d_sample_counter++;
 
@@ -344,11 +344,6 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
         }
 
     consume_each(1); //one by one
-    output_items.clear();  // removes a warning
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     return 1;
 }
 

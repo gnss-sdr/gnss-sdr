@@ -49,7 +49,7 @@ gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<
     return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, queue, dump));
 }
 
-void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &ninput_items_required)
+void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
     ninput_items_required[0] = GPS_CA_PREAMBLE_LENGTH_SYMBOLS; //set the required sample history
 }
@@ -142,7 +142,7 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
 }
 
 
-int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
     int corr_value = 0;
@@ -348,10 +348,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
     //todo: implement averaging
 
     d_average_count++;
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     if (d_average_count == d_decimation_output_factor)
         {
             d_average_count = 0;

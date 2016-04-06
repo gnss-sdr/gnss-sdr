@@ -233,7 +233,7 @@ void pcps_tong_acquisition_cc::set_state(int state)
 
 int pcps_tong_acquisition_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+        gr_vector_void_star &output_items __attribute__((unused)))
 {
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
@@ -434,6 +434,5 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
         }
     }
 
-    output_items.clear();  // removes a warning
     return noutput_items;
 }

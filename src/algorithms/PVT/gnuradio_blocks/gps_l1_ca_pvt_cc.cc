@@ -153,8 +153,8 @@ bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const st
 
 
 
-int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items __attribute__((unused)))
 {
     d_sample_counter++;
 
@@ -381,7 +381,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                                     d_dump_file.write((char*)&d_rx_time, sizeof(double));
                                 }
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure & e)
                     {
                             LOG(WARNING) << "Exception writing observables dump file " << e.what();
                     }
@@ -389,11 +389,6 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
         }
 
     consume_each(1); //one by one
-    output_items.clear();  // removes a warning
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     return 1;
 }
 

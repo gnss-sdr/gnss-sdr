@@ -290,7 +290,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
 
 
 
-int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
     int corr_value = 0;
@@ -494,10 +494,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
         }
     //todo: implement averaging
     d_average_count++;
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
+
     if (d_average_count == d_decimation_output_factor)
         {
             d_average_count = 0;

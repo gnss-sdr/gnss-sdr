@@ -175,7 +175,6 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
     d_enable_tracking = false;
     d_pull_in = false;
-    d_last_seg = 0;
 
     d_current_prn_length_samples = (int)d_vector_length;
 
@@ -420,52 +419,9 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_pseudorange = false;
             *out[0] = current_synchro_data;
-
-            // ########## DEBUG OUTPUT
-            /*!
-             *  \todo The stop timer has to be moved to the signal source!
-             */
-            // debug: Second counter in channel 0
-            if (d_channel == 0)
-                {
-                    if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                        {
-                            d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                            LOG(INFO) << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                      << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
-                        }
-                }
-            else
-                {
-                    if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                        {
-                            d_last_seg = floor(d_sample_counter / d_fs_in);
-                            LOG(INFO) << "Tracking CH " << d_channel
-                                      <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                      << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
-                        }
-                }
         }
     else
         {
-            // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-            /*!
-             *  \todo The stop timer has to be moved to the signal source!
-             */
-            // stream to collect cout calls to improve thread safety
-            std::stringstream tmp_str_stream;
-            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                {
-                    d_last_seg = floor(d_sample_counter / d_fs_in);
-
-                    if (d_channel == 0)
-                        {
-                            // debug: Second counter in channel 0
-                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-                            std::cout << tmp_str_stream.rdbuf() << std::flush;
-                        }
-                }
             *d_Early = gr_complex(0,0);
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);

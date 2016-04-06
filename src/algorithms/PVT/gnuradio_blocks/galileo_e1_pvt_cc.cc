@@ -102,6 +102,8 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
     b_rtcm_writing_started = false;
     rp = std::make_shared<Rinex_Printer>();
 
+    d_last_status_print_seg=0;
+
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {
@@ -134,6 +136,18 @@ bool galileo_e1_pvt_cc::pseudoranges_pairCompare_min(const std::pair<int,Gnss_Sy
 }
 
 
+void galileo_e1_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
+{
+    // Print the current receiver status using std::cout every second
+	int current_rx_seg=floor(channels_synchronization_data[0][0].Tracking_timestamp_secs);
+    if ( current_rx_seg!= d_last_status_print_seg)
+		{
+			d_last_status_print_seg = current_rx_seg;
+			std::cout << "Current input signal time = " << current_rx_seg << " [s]" << std::endl<< std::flush;
+			//DLOG(INFO) << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+			//          << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+		}
+}
 
 int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items  __attribute__((unused)))
@@ -143,6 +157,8 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
     std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
 
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
+
+    print_receiver_status(in);
 
     for (unsigned int i = 0; i < d_nchannels; i++)
         {

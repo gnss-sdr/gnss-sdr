@@ -159,7 +159,6 @@ gps_l2_m_dll_pll_tracking_cc::gps_l2_m_dll_pll_tracking_cc(
 
     d_enable_tracking = false;
     d_pull_in = false;
-    d_last_seg = 0;
 
     d_current_prn_length_samples = static_cast<int>(d_vector_length);
 
@@ -446,53 +445,9 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
             current_synchro_data.Flag_valid_symbol_output = true;
             *out[0] = current_synchro_data;
 
-            // ########## DEBUG OUTPUT
-            /*!
-             *  \todo The stop timer has to be moved to the signal source!
-             */
-            // debug: Second counter in channel 0
-            if (d_channel == 0)
-                {
-                    if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                        {
-                            d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                            std::cout  << "GPS L2C M Tracking CH " << d_channel <<  ": Satellite "
-                            		<< Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz] "<<"Doppler="<<d_carrier_doppler_hz<<" [Hz]"<< std::endl;
-                            //if (d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
-                        }
-                }
-            else
-                {
-                    if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                        {
-                            d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout  << "GPS L2C M Tracking CH " << d_channel <<  ": Satellite "
-                            << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                            << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz] "<<"Doppler="<<d_carrier_doppler_hz<<" [Hz]"<< std::endl;
-                            //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
-                        }
-                }
         }
     else
         {
-            // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-            /*!
-             *  \todo The stop timer has to be moved to the signal source!
-             */
-            // stream to collect cout calls to improve thread safety
-            std::stringstream tmp_str_stream;
-            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                {
-                    d_last_seg = floor(d_sample_counter / d_fs_in);
-
-                    if (d_channel == 0)
-                        {
-                            // debug: Second counter in channel 0
-                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-                            std::cout << tmp_str_stream.rdbuf() << std::flush;
-                        }
-                }
             for (int n = 0; n < d_n_correlator_taps; n++)
                 {
                     d_correlator_outs[n] = gr_complex(0,0);

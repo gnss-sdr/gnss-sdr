@@ -103,6 +103,9 @@ private:
     bool b_rinex_header_updated;
     bool b_rtcm_writing_started;
 
+    void print_receiver_status(Gnss_Synchro** channels_synchronization_data);
+    int d_last_status_print_seg; //for status printer
+
     unsigned int d_nchannels;
     std::string d_dump_filename;
     std::ofstream d_dump_file;

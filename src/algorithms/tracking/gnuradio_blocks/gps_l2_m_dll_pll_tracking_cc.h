@@ -114,7 +114,6 @@ private:
 
     Gnss_Synchro* d_acquisition_gnss_synchro;
     unsigned int d_channel;
-    int d_last_seg;
     long d_if_freq;
     long d_fs_in;
 

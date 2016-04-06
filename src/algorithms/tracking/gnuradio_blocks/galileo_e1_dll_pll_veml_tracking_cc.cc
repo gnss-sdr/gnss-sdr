@@ -42,7 +42,7 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk/volk.h>
 #include "galileo_e1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
@@ -129,11 +129,11 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_gnsssdr_malloc((2*Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_ca_code = static_cast<gr_complex*>(volk_malloc((2*Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 5; // Very-Early, Early, Prompt, Late, Very-Late
-    d_correlator_outs = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0,0);
@@ -145,7 +145,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_Late = &d_correlator_outs[3];
     d_Very_Late = &d_correlator_outs[4];
 
-    d_local_code_shift_chips = static_cast<float*>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
+    d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps * sizeof(float), volk_get_alignment()));
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = - d_very_early_late_spc_chips * 2.0;
     d_local_code_shift_chips[1] = - d_very_early_late_spc_chips;
@@ -253,9 +253,9 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 {
     d_dump_file.close();
 
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_correlator_outs);
-    volk_gnsssdr_free(d_ca_code);
+    volk_free(d_local_code_shift_chips);
+    volk_free(d_correlator_outs);
+    volk_free(d_ca_code);
 
     delete[] d_Prompt_buffer;
     multicorrelator_cpu.free();
@@ -526,7 +526,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, gr_vec
                     tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
-            catch (std::ifstream::failure e)
+            catch (const std::ifstream::failure &e)
             {
                     LOG(WARNING) << "Exception writing trk dump file " << e.what() << std::endl;
             }
@@ -560,7 +560,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::set_channel(unsigned int channel)
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure &e)
                     {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
                     }

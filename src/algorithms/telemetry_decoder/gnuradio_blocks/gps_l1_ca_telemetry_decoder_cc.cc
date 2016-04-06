@@ -234,7 +234,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_i
             d_symbol_accumulator += in[0][0].Prompt_I; // accumulate the input value in d_symbol_accumulator
             d_symbol_accumulator_counter += in[0][0].correlation_length_ms;
         }
-    if (d_symbol_accumulator_counter == 20)
+    if (d_symbol_accumulator_counter >= 20)
         {
             if (d_symbol_accumulator > 0)
                 { //symbol to bit

@@ -46,7 +46,7 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
-#include "correlator.h"
+#include "cpu_multicorrelator.h"
 
 class Galileo_E5a_Dll_Pll_Tracking_cc;
 
@@ -114,8 +114,6 @@ private:
             float dll_bw_init_hz,
             int ti_ms,
             float early_late_space_chips);
-    void update_local_code();
-    void update_local_carrier();
     void acquire_secondary();
     // tracking configuration vars
     boost::shared_ptr<gr::msg_queue> d_queue;
@@ -141,22 +139,23 @@ private:
     gr_complex* d_codeQ;
     gr_complex* d_codeI;
 
-    gr_complex* d_early_code;
-    gr_complex* d_late_code;
-    gr_complex* d_prompt_code;
-    gr_complex* d_prompt_data_code;
-    gr_complex* d_carr_sign;
-
     gr_complex d_Early;
     gr_complex d_Prompt;
     gr_complex d_Late;
     gr_complex d_Prompt_data;
+
+    gr_complex* d_Single_Early;
+    gr_complex* d_Single_Prompt;
+    gr_complex* d_Single_Late;
+    gr_complex* d_Single_Prompt_data;
+
 
     float tmp_E;
     float tmp_P;
     float tmp_L;
     // remaining code phase and carrier phase between tracking loops
     double d_rem_code_phase_samples;
+    double d_rem_code_phase_chips;
     double d_rem_carr_phase_rad;
 
     // PLL and DLL filter library
@@ -167,7 +166,11 @@ private:
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
     // correlator
-    Correlator d_correlator;
+    int d_n_correlator_taps;
+    float* d_local_code_shift_chips;
+    gr_complex* d_correlator_outs;
+    cpu_multicorrelator multicorrelator_cpu_I;
+    cpu_multicorrelator multicorrelator_cpu_Q;
 
     // tracking vars
     double d_code_freq_chips;
@@ -176,6 +179,9 @@ private:
     double d_code_phase_samples;
     double d_acc_code_phase_secs;
     double d_code_error_filt_secs;
+    double d_code_phase_step_chips;
+    double d_carrier_phase_step_rad;
+
 
     //PRN period in samples
     int d_current_prn_length_samples;

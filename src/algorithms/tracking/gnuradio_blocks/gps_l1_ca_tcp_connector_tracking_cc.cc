@@ -299,7 +299,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::~Gps_L1_Ca_Tcp_Connector_Tracking_cc()
     multicorrelator_cpu.free();
 }
 
-int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
@@ -585,10 +585,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items, gr_vec
     consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
     d_sample_counter_seconds = d_sample_counter_seconds + ( ((double)d_current_prn_length_samples) / (double)d_fs_in );
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
+
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

@@ -50,7 +50,6 @@
 #include "gen_signal_source.h"
 #include "gnss_sdr_valve.h"
 #include "pass_through.h"
-#include "file_output_filter.h"
 
 #include "gnss_block_factory.h"
 

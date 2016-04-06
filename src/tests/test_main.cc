@@ -84,7 +84,6 @@ DECLARE_string(log_dir);
 #include "formats/rtcm_test.cc"
 #include "gnss_block/gnss_block_factory_test.cc"
 #include "gnss_block/rtcm_printer_test.cc"
-#include "gnss_block/file_output_filter_test.cc"
 #include "gnss_block/file_signal_source_test.cc"
 #include "gnss_block/fir_filter_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"

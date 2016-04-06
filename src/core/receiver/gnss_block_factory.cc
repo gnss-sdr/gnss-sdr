@@ -49,8 +49,6 @@
 #include "spir_file_signal_source.h"
 #include "rtl_tcp_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
-#include "null_sink_output_filter.h"
-#include "file_output_filter.h"
 #include "channel.h"
 
 #include "signal_conditioner.h"
@@ -268,15 +266,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
 }
 
 
-
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetOutputFilter(std::shared_ptr<ConfigurationInterface> configuration,
-        boost::shared_ptr<gr::msg_queue> queue)
-{
-    std::string default_implementation = "Null_Sink_Output_Filter";
-    std::string implementation = configuration->property("OutputFilter.implementation", default_implementation);
-    LOG(INFO) << "Getting OutputFilter with implementation " << implementation;
-    return GetBlock(configuration, "OutputFilter", implementation, 1, 0, queue);
-}
 
 //********* GPS CHANNEL *****************
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_GPS(
@@ -1416,19 +1405,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
         {
             std::unique_ptr<GNSSBlockInterface> block_(new HybridPvt(configuration.get(), role, in_streams,
                     out_streams, queue));
-            block = std::move(block_);
-        }
-    // OUTPUT FILTERS --------------------------------------------------------------
-    else if (implementation.compare("Null_Sink_Output_Filter") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new NullSinkOutputFilter(configuration.get(), role, in_streams,
-                    out_streams));
-            block = std::move(block_);
-        }
-    else if (implementation.compare("File_Output_Filter") == 0)
-        {
-            std::unique_ptr<GNSSBlockInterface> block_(new FileOutputFilter(configuration.get(), role, in_streams,
-                    out_streams));
             block = std::move(block_);
         }
     else

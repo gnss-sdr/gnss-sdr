@@ -1180,19 +1180,6 @@ $ gnss-sdr --RTCM_Port=12345 --RTCM_Ref_Station_ID=10
 
 In order to get well-formatted GeoJSON, KML and RINEX files, always terminate ```gnss-sdr``` execution by pressing key ```q``` and then key ```ENTER```. Those files will be automatically deleted if no position fix have been obtained during the execution of the software receiver.
 
-#### Output filter
-
-Implements a sink for the signal stream.
-
-~~~~~~ 
-;######### OUTPUT_FILTER CONFIG ############
-OutputFilter.implementation=Null_Sink_Output_Filter
-OutputFilter.filename=data/gnss-sdr.dat
-OutputFilter.item_type=gr_complex
-~~~~~~ 
-
-   
-
 
 About the software license
 ==========================

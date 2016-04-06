@@ -148,7 +148,6 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
             d_correlator_outs[n] = gr_complex(0,0);
         }
 
-    std::cout<<"1"<<std::endl;
     // map memory pointers of correlator outputs
     d_Single_Early = &d_correlator_outs[0];
     d_Single_Prompt = &d_correlator_outs[1];
@@ -162,7 +161,6 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
 
     multicorrelator_cpu_Q.init(2 * d_vector_length, d_n_correlator_taps);
 
-    std::cout<<"1"<<std::endl;
     // correlator I single output for data (scalar)
     d_Single_Prompt_data=static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
     *d_Single_Prompt_data = gr_complex(0,0);
@@ -212,8 +210,6 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     d_state = 0;
 
     systemName["E"] = std::string("Galileo");
-
-    std::cout<<"end constructor"<<std::endl;
 }
 
 
@@ -318,7 +314,6 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
             << " Code Phase correction [samples]=" << delay_correction_samples
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 
-    std::cout<<"end start trk"<<std::endl;
 }
 
 

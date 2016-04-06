@@ -58,7 +58,7 @@ hybrid_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queu
 
 hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :
 		                		                        gr::block("hybrid_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
-		                		                        gr::io_signature::make(1, 1, sizeof(gr_complex)))
+		                		                        gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
 
     d_output_rate_ms = output_rate_ms;

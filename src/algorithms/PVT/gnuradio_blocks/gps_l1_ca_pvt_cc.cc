@@ -72,7 +72,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         bool flag_rtcm_tty_port,
         std::string rtcm_dump_devname) :
              gr::block("gps_l1_ca_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
-             gr::io_signature::make(1, 1, sizeof(gr_complex)) )
+             gr::io_signature::make(0, 0, sizeof(gr_complex)) )
 {
     d_output_rate_ms = output_rate_ms;
     d_display_rate_ms = display_rate_ms;

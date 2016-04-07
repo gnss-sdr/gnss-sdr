@@ -130,7 +130,7 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__
     // decode only if enough samples in buffer
     if(d_sample_buf.size() >= d_block_size)
         {
-            if (in[0].Flag_valid_tracking == false) // check if the tracking is locked
+            if (in[0].Flag_valid_symbol_output == false) // check if the tracking is locked
                 {
                     //LOG(INFO)<< "Discarting channel "<<d_channel<<" tracking not ready!"<<std::endl;
                     d_flag_valid_word = false;

@@ -50,7 +50,7 @@ public:
     double Acq_delay_samples;                  //!< Set by Acquisition processing block
     double Acq_doppler_hz;                     //!< Set by Acquisition processing block
     unsigned long int Acq_samplestamp_samples; //!< Set by Acquisition processing block
-    bool Flag_valid_acquisition;
+    bool Flag_valid_acquisition; //!< Set by Acquisition processing block
     //Tracking
     double Prompt_I;                //!< Set by Tracking processing block
     double Prompt_Q;                //!< Set by Tracking processing block
@@ -59,9 +59,8 @@ public:
     double Carrier_phase_rads;      //!< Set by Tracking processing block
     double Code_phase_secs;         //!< Set by Tracking processing block
     double Tracking_timestamp_secs; //!< Set by Tracking processing block
-    bool Flag_valid_tracking;
 
-    bool Flag_valid_symbol_output;
+    bool Flag_valid_symbol_output; //!< Set by Tracking processing block
     int correlation_length_ms; //!< Set by Tracking processing block
 
     //Telemetry Decoder

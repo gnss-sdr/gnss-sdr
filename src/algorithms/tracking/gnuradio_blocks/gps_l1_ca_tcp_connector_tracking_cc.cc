@@ -308,9 +308,17 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
     float code_nco;
 
     tcp_packet_data tcp_data;
+	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+	Gnss_Synchro current_synchro_data;
+	// Block input data and block output stream pointers
+	const gr_complex* in = (gr_complex*) input_items[0];
+	Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
     if (d_enable_tracking == true)
         {
+
+    		// Fill the acquisition data
+            current_synchro_data = *d_acquisition_gnss_synchro;
             /*
              * Receiver signal alignment
              */
@@ -325,6 +333,9 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
                     acq_trk_shif_correction_samples = d_next_prn_length_samples - fmod((float)acq_to_trk_delay_samples, (float)d_next_prn_length_samples);
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     // /todo: Check if the sample counter sent to the next block as a time reference should be incremented AFTER sended or BEFORE
+
+                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+                    *out[0] = current_synchro_data;
                     d_sample_counter_seconds = d_sample_counter_seconds + (((double)samples_offset) / (double)d_fs_in);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
@@ -332,13 +343,6 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
                     return 1;
                 }
 
-            // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            Gnss_Synchro current_synchro_data;
-            // Fill the acquisition data
-            current_synchro_data = *d_acquisition_gnss_synchro;
-
-            const gr_complex* in = (gr_complex*) input_items[0]; //PRN start block alignement
-            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
             // Update the prn length based on code freq (variable) and
             // sampling frequency (fixed)
@@ -465,10 +469,8 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
             current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.Code_phase_secs = (double)d_code_phase_samples * (1/(float)d_fs_in);
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
-            current_synchro_data.Flag_valid_pseudorange = false;
             current_synchro_data.Flag_valid_symbol_output = true;
             current_synchro_data.correlation_length_ms=1;
-            *out[0] = current_synchro_data;
         }
     else
         {
@@ -476,16 +478,15 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
             *d_Early = gr_complex(0,0);
             *d_Prompt = gr_complex(0,0);
             *d_Late = gr_complex(0,0);
-            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output streams pointer
             // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            d_acquisition_gnss_synchro->Flag_valid_pseudorange = false;
-            *out[0] = *d_acquisition_gnss_synchro;
-
+            current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter + (double)d_rem_code_phase_samples)/(double)d_fs_in;
             //! When tracking is disabled an array of 1's is sent to maintain the TCP connection
             boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> tx_variables_array = {{1,1,1,1,1,1,1,1,0}};
             d_tcp_com.send_receive_tcp_packet_gps_l1_ca(tx_variables_array, &tcp_data);
         }
 
+    //assign the GNURadio block output data
+    *out[0] = current_synchro_data;
     if(d_dump)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
@@ -591,9 +592,5 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::set_channel_queue(concurrent_queue<int
 void Gps_L1_Ca_Tcp_Connector_Tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
-    //	Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    //DLOG(INFO) << "Tracking code phase set to " << d_acq_code_phase_samples;
-    //DLOG(INFO) << "Tracking carrier doppler set to " << d_acq_carrier_doppler_hz;
-    //DLOG(INFO) << "Tracking Satellite set to " << d_satellite;
 
 }

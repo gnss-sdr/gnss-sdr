@@ -337,6 +337,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
     double old_d_rem_code_phase_samples;
     if (d_enable_tracking == true)
         {
+			// Fill the acquisition data
+			current_synchro_data = *d_acquisition_gnss_synchro;
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
@@ -346,19 +348,14 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_correlation_length_samples - fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_correlation_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+
+                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+                    *out[0] = current_synchro_data;
                     d_sample_counter += samples_offset; //count for the processed samples
                     d_pull_in = false;
-                    // Fill the acquisition data
-                    current_synchro_data = *d_acquisition_gnss_synchro;
-                    current_synchro_data.correlation_length_ms = 1;
-                    current_synchro_data.Flag_valid_symbol_output = false;
-                    *out[0] = current_synchro_data;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     return 1;
                 }
-
-            // Fill the acquisition data
-            current_synchro_data = *d_acquisition_gnss_synchro;
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
@@ -568,7 +565,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                     current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-                    current_synchro_data.Flag_valid_pseudorange = false;
                     current_synchro_data.Flag_valid_symbol_output = true;
                     if (d_preamble_synchronized == true)
                         {
@@ -578,7 +574,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                         {
                             current_synchro_data.correlation_length_ms = 1;
                         }
-                    *out[0] = current_synchro_data;
                 }
             else
                 {
@@ -591,10 +586,6 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                     current_synchro_data.Carrier_phase_rads = GPS_TWO_PI * d_acc_carrier_phase_cycles;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;// todo: project the carrier doppler
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-                    current_synchro_data.Flag_valid_pseudorange = false;
-                    current_synchro_data.Flag_valid_symbol_output = false;
-                    current_synchro_data.correlation_length_ms = 1;
-                    *out[0] = current_synchro_data;
                 }
         }
     else
@@ -605,11 +596,10 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                 }
 
             current_synchro_data.System = {'G'};
-            current_synchro_data.Flag_valid_pseudorange = false;
-            current_synchro_data.correlation_length_ms = 1;
-            *out[0] = current_synchro_data;
+            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
         }
-
+    //assign the GNURadio block output data
+    *out[0] = current_synchro_data;
     if(d_dump)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file

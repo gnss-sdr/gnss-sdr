@@ -270,8 +270,17 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
     double code_error_chips = 0.0;
     double code_error_filt_chips = 0.0;
 
+
+    // Block input data and block output stream pointers
+    const gr_complex* in = (gr_complex*) input_items[0];
+    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+    Gnss_Synchro current_synchro_data;
+
     if (d_enable_tracking == true)
         {
+			// Fill the acquisition data
+			current_synchro_data = *d_acquisition_gnss_synchro;
             if (d_pull_in == true)
                 {
                     /*
@@ -283,20 +292,13 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_current_prn_length_samples - std::fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_current_prn_length_samples));
                     samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+                    *out[0] = current_synchro_data;
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     return 1;
                 }
-
-            // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-            Gnss_Synchro current_synchro_data;
-            // Fill the acquisition data
-            current_synchro_data = *d_acquisition_gnss_synchro;
-
-            // Block input data and block output stream pointers
-            const gr_complex* in = (gr_complex*) input_items[0];
-            Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
@@ -396,36 +398,29 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
 
             current_synchro_data.Prompt_I = static_cast<double>((*d_Prompt).real());
             current_synchro_data.Prompt_Q = static_cast<double>((*d_Prompt).imag());
-
-            // Tracking_timestamp_secs is aligned with the NEXT PRN start sample (Hybridization problem!)
-            //compute remnant code phase samples BEFORE the Tracking timestamp
-            //d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
-            //current_synchro_data.Tracking_timestamp_secs = ((double)d_sample_counter +
-            //        (double)d_current_prn_length_samples + (double)d_rem_code_phase_samples) / static_cast<double>(d_fs_in);
-
-            // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!, but some glitches??)
+            // Tracking_timestamp_secs is aligned with the CURRENT PRN start sample (Hybridization OK!)
             current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
             //compute remnant code phase samples AFTER the Tracking timestamp
             d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
-
             // This tracking block aligns the Tracking_timestamp_secs with the start sample of the PRN, thus, Code_phase_secs=0
             current_synchro_data.Code_phase_secs = 0;
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-            current_synchro_data.Flag_valid_pseudorange = false;
-            *out[0] = current_synchro_data;
+            current_synchro_data.Flag_valid_symbol_output = true;
+            current_synchro_data.correlation_length_ms=4;
+
         }
     else
     {
     	*d_Early = gr_complex(0,0);
     	*d_Prompt = gr_complex(0,0);
     	*d_Late = gr_complex(0,0);
-    	Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0]; //block output stream pointer
     	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-        d_acquisition_gnss_synchro->Flag_valid_pseudorange = false;
-    	*out[0] = *d_acquisition_gnss_synchro;
+    	current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
     }
+    //assign the GNURadio block output data
+    *out[0] = current_synchro_data;
 
     if(d_dump)
         {
@@ -535,8 +530,4 @@ void galileo_e1_dll_pll_veml_tracking_cc::set_channel_queue(concurrent_queue<int
 void galileo_e1_dll_pll_veml_tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
-    //  Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    //DLOG(INFO) << "Tracking code phase set to " << d_acq_code_phase_samples;
-    //DLOG(INFO) << "Tracking carrier doppler set to " << d_acq_carrier_doppler_hz;
-    //DLOG(INFO) << "Tracking Satellite set to " << d_satellite;
 }

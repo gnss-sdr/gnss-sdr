@@ -400,8 +400,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             d_Prompt = gr_complex(0,0);
             d_Late = gr_complex(0,0);
             d_Prompt_data = gr_complex(0,0);
-            d_acquisition_gnss_synchro->Flag_valid_pseudorange = false;
-
+        	current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
             *out[0] = *d_acquisition_gnss_synchro;
 
             break;
@@ -425,9 +424,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             current_synchro_data.Carrier_phase_rads = 0.0;
             current_synchro_data.Code_phase_secs = 0.0;
             current_synchro_data.CN0_dB_hz = 0.0;
-            current_synchro_data.Flag_valid_tracking = false;
-            current_synchro_data.Flag_valid_pseudorange = false;
-
             *out[0] = current_synchro_data;
             consume_each(samples_offset); //shift input to perform alignment with local replica
             return 1;
@@ -646,7 +642,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-                    current_synchro_data.Flag_valid_tracking = false;
 
                 }
             else
@@ -658,7 +653,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                     current_synchro_data.Carrier_phase_rads = 0.0;
                     current_synchro_data.Code_phase_secs = 0.0;
                     current_synchro_data.CN0_dB_hz = 0.0;
-                    current_synchro_data.Flag_valid_tracking = false;
 
                 }
             *out[0] = current_synchro_data;

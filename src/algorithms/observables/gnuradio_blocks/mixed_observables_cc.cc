@@ -194,7 +194,7 @@ int mixed_observables_cc::general_work (int noutput_items, gr_vector_int &ninput
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].PRN;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
-                            tmp_double = (double)(current_gnss_synchro[i].Flag_valid_tracking==true);
+                            tmp_double = (double)(current_gnss_synchro[i].Flag_valid_symbol_output==true);
                             d_dump_file.write((char*)&tmp_double, sizeof(double));
                             tmp_double = current_gnss_synchro[i].Prompt_I;
                             d_dump_file.write((char*)&tmp_double, sizeof(double));

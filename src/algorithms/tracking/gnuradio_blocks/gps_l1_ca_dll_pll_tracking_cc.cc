@@ -309,10 +309,9 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                     acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     acq_trk_shif_correction_samples = d_current_prn_length_samples - fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
                     samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+                    current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
                     d_sample_counter = d_sample_counter + samples_offset; //count for the processed samples
                     d_pull_in = false;
-                    current_synchro_data.correlation_length_ms = 1;
-                    current_synchro_data.Flag_valid_symbol_output = false;
                     *out[0] = current_synchro_data;
                     consume_each(samples_offset); //shift input to perform alignment with local replica
                     return 1;
@@ -428,10 +427,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_rad;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-            current_synchro_data.Flag_valid_pseudorange = false;
             current_synchro_data.Flag_valid_symbol_output = true;
             current_synchro_data.correlation_length_ms=1;
-            *out[0] = current_synchro_data;
 
         }
     else
@@ -441,13 +438,12 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                     d_correlator_outs[n] = gr_complex(0,0);
                 }
 
+            current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
             current_synchro_data.System = {'G'};
-            current_synchro_data.Flag_valid_pseudorange = false;
-            current_synchro_data.Flag_valid_symbol_output = false;
-            current_synchro_data.correlation_length_ms=1;
-            *out[0] = current_synchro_data;
         }
 
+    //assign the GNURadio block output data
+    *out[0] = current_synchro_data;
     if(d_dump)
         {
 			// MULTIPLEXED FILE RECORDING - Record results to file

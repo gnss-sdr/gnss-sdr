@@ -211,6 +211,7 @@ void gps_l2_m_dll_pll_tracking_cc::start_tracking()
     double T_prn_mod_seconds;
     double T_prn_mod_samples;
     d_code_freq_chips = radial_velocity * GPS_L2_M_CODE_RATE_HZ;
+    d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
     T_chip_mod_seconds = 1/d_code_freq_chips;
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L2_M_CODE_LENGTH_CHIPS;
     T_prn_mod_samples = T_prn_mod_seconds * static_cast<float>(d_fs_in);
@@ -232,6 +233,7 @@ void gps_l2_m_dll_pll_tracking_cc::start_tracking()
     //d_acq_code_phase_samples = corrected_acq_phase_samples;
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
+    d_carrier_phase_step_rad = GPS_L2_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(); // initialize the carrier filter
@@ -249,6 +251,7 @@ void gps_l2_m_dll_pll_tracking_cc::start_tracking()
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0;
     d_rem_carr_phase_rad = 0;
+    d_rem_code_phase_chips = 0.0;
     d_acc_carrier_phase_rad = 0;
     d_acc_code_phase_secs = 0;
 

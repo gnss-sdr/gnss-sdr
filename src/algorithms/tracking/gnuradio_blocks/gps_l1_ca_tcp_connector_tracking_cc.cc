@@ -225,6 +225,7 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     float T_prn_mod_seconds;
     float T_prn_mod_samples;
     d_code_freq_hz = radial_velocity * GPS_L1_CA_CODE_RATE_HZ;
+    d_code_phase_step_chips = static_cast<double>(d_code_freq_hz) / static_cast<double>(d_fs_in);
     T_chip_mod_seconds = 1/d_code_freq_hz;
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
     T_prn_mod_samples = T_prn_mod_seconds * (float)d_fs_in;

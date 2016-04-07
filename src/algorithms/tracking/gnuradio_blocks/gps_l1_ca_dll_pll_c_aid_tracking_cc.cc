@@ -191,7 +191,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
 
-    set_relative_rate(1.0 / (static_cast<double>(d_vector_length) * 2.0));
+    set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 
     d_channel_internal_queue = 0;
     d_acquisition_gnss_synchro = 0;
@@ -360,7 +360,11 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
             multicorrelator_cpu.set_input_output_vectors(d_correlator_outs,in);
-            multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad, d_carrier_phase_step_rad, d_rem_code_phase_chips, d_code_phase_step_chips, d_correlation_length_samples);
+            multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
+            		d_carrier_phase_step_rad,
+            		d_rem_code_phase_chips,
+            		d_code_phase_step_chips,
+            		d_correlation_length_samples);
 
             // ####### coherent intergration extension
             // keep the last symbols
@@ -399,9 +403,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                                     d_code_loop_filter.set_DLL_BW(d_dll_bw_narrow_hz);
                                     d_carrier_loop_filter.set_params(10.0, d_pll_bw_narrow_hz,2);
                                     d_preamble_synchronized = true;
-                                    std::cout << "Enabled extended correlator for CH "<< d_channel <<" : Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+                                    std::cout << "Enabled "<<d_extend_correlation_ms<<" [ms] extended correlator for CH "<< d_channel <<" : Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
                                               <<" pll_bw = " << d_pll_bw_hz << " [Hz], pll_narrow_bw = " << d_pll_bw_narrow_hz << " [Hz]" << std::endl
-                                              << "Enabled extended correlator for CH "<< d_channel <<" : Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
                                               <<" dll_bw = " << d_dll_bw_hz << " [Hz], dll_narrow_bw = " << d_dll_bw_narrow_hz << " [Hz]" << std::endl;
                                 }
                             // UPDATE INTEGRATION TIME

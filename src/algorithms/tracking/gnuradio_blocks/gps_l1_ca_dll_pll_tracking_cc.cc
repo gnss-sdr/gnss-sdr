@@ -114,6 +114,8 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     d_vector_length = vector_length;
     d_dump_filename = dump_filename;
 
+    d_current_prn_length_samples = static_cast<int>(d_vector_length);
+
     // Initialize tracking  ==========================================
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
     d_carrier_loop_filter.set_PLL_BW(pll_bw_hz);
@@ -138,7 +140,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     d_local_code_shift_chips[1] = 0.0;
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
-    multicorrelator_cpu.init(2 * d_vector_length, d_n_correlator_taps);
+    multicorrelator_cpu.init(2 * d_current_prn_length_samples, d_n_correlator_taps);
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -157,7 +159,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     d_pull_in = false;
 
 
-    d_current_prn_length_samples = static_cast<int>(d_vector_length);
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
@@ -180,7 +181,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     d_code_phase_samples = 0.0;
     d_acc_code_phase_secs = 0.0;
 
-    set_relative_rate(1.0/((double)d_vector_length*2));
+    set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 }
 
 
@@ -206,6 +207,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     double T_prn_mod_seconds;
     double T_prn_mod_samples;
     d_code_freq_chips = radial_velocity * GPS_L1_CA_CODE_RATE_HZ;
+    d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
     T_chip_mod_seconds = 1/d_code_freq_chips;
     T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
     T_prn_mod_samples = T_prn_mod_seconds * static_cast<double>(d_fs_in);
@@ -227,6 +229,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_acq_code_phase_samples = corrected_acq_phase_samples;
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
+    d_carrier_phase_step_rad = GPS_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(); // initialize the carrier filter
@@ -244,6 +247,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0;
     d_rem_carr_phase_rad = 0.0;
+    d_rem_code_phase_chips = 0.0;
     d_acc_carrier_phase_rad = 0.0;
     d_acc_code_phase_secs = 0.0;
 

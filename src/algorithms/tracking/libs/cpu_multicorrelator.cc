@@ -84,6 +84,7 @@ bool cpu_multicorrelator::set_local_code_and_taps(
 		float *shifts_chips
 		)
 {
+
     d_local_code_in = local_code_in;
     d_shifts_chips = shifts_chips;
     d_code_length_chips = code_length_chips;
@@ -107,9 +108,10 @@ void cpu_multicorrelator::update_local_code(int correlator_length_samples, float
             rem_code_phase_chips,
             code_phase_step_chips,
             d_shifts_chips,
-            correlator_length_samples,
+            d_code_length_chips,
             d_n_correlators,
-            d_code_length_chips);
+            correlator_length_samples);
+
 }
 
 

@@ -57,7 +57,7 @@ sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr
 
 sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        boost::shared_ptr<gr::msg_queue> queue,
+        boost::shared_ptr<gr::msg_queue> queue __attribute__((unused)),
         bool dump) :
                 gr::block("sbas_l1_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -93,7 +93,7 @@ void sbas_l1_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &n
 
 
 
-int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
 {
     VLOG(FLOW) << "general_work(): " << "noutput_items=" << noutput_items << "\toutput_items real size=" << output_items.size() <<  "\tninput_items size=" << ninput_items.size() << "\tinput_items real size=" << input_items.size() << "\tninput_items[0]=" << ninput_items[0];
@@ -182,10 +182,6 @@ int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items, gr_vector_int
             current_synchro_data[i].Flag_valid_word = false; // indicate to observable block that this synchro object isn't valid for pseudorange computation
         }
     consume_each(noutput_items); // tell scheduler input items consumed
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     return noutput_items; // tell scheduler output items produced
 }
 

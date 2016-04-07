@@ -53,7 +53,6 @@ More details on GNSS-SDR signal processing blocks:
     </ul>
 \li \ref observables
 \li \ref pvt
-\li \ref output_filter
 
 
 \section overview Overview
@@ -125,7 +124,6 @@ This will create a folder named gnss-sdr with the following structure:
  |-------input_filter
  |-------libs
  |-------observables
- |-------output_filter
  |-------resampler
  |-------signal_source
  |-------telemetry_decoder
@@ -585,9 +583,6 @@ PVT.dump=false ; Enable or disable the PVT internal binary data file logging [tr
 PVT.dump_filename=./PVT ; Log path and filename without extension.
 \endverbatim
 
-\subsection output_filter Output filter
-
-(To be completed)
 
 \section license About the software license
 GNSS-SDR is released under the <a href="http://www.gnu.org/licenses/gpl.html" target="_blank">General Public License (GPL) v3</a>, thus securing practical usability, inspection, 

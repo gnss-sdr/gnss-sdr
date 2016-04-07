@@ -40,7 +40,6 @@
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "channel_interface.h"
-#include "null_sink_output_filter.h"
 #include "pass_through.h"
 #include "file_signal_source.h"
 
@@ -69,8 +68,6 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
     config->set_property("TelemetryDecoder_GPS.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-    config->set_property("OutputFilter.item_type", "gr_complex");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -106,8 +103,6 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStop)
     config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
-    config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-    config->set_property("OutputFilter.item_type", "gr_complex");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -142,8 +137,6 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopGalileoE1B)
     config->set_property("TelemetryDecoder_1B.implementation", "Galileo_E1B_Telemetry_Decoder");
     config->set_property("Observables.implementation", "Galileo_E1B_Observables");
     config->set_property("PVT.implementation", "GALILEO_E1_PVT");
-    config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-    config->set_property("OutputFilter.item_type", "gr_complex");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 
@@ -292,8 +285,6 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
 
     config->set_property("Observables.implementation", "Hybrid_Observables");
     config->set_property("PVT.implementation", "Hybrid_PVT");
-    config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-    config->set_property("OutputFilter.item_type", "gr_complex");
 
     std::shared_ptr<GNSSFlowgraph> flowgraph = std::make_shared<GNSSFlowgraph>(config, gr::msg_queue::make(0));
 

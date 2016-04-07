@@ -363,38 +363,3 @@ TEST(GNSS_Block_Factory_Test, InstantiateWrongPvt)
     EXPECT_EQ(nullptr, pvt);
 }
 
-
-
-TEST(GNSS_Block_Factory_Test, InstantiateNullSinkOutputFilter)
-{
-    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
-    std::unique_ptr<GNSSBlockFactory> factory;
-    std::unique_ptr<GNSSBlockInterface> output_filter = factory->GetOutputFilter(configuration, queue);
-    EXPECT_STREQ("OutputFilter", output_filter->role().c_str());
-    EXPECT_STREQ("Null_Sink_Output_Filter", output_filter->implementation().c_str());
-}
-
-
-TEST(GNSS_Block_Factory_Test, InstantiateFileOutputFilter)
-{
-    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("OutputFilter.implementation", "File_Output_Filter");
-    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
-    std::unique_ptr<GNSSBlockFactory> factory;
-    std::unique_ptr<GNSSBlockInterface> output_filter = factory->GetOutputFilter(configuration, queue);
-    EXPECT_STREQ("OutputFilter", output_filter->role().c_str());
-    EXPECT_STREQ("File_Output_Filter", output_filter->implementation().c_str());
-}
-
-
-TEST(GNSS_Block_Factory_Test, InstantiateWrongOutputFilter)
-{
-    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
-    configuration->set_property("OutputFilter.implementation", "Pepito");
-    gr::msg_queue::sptr queue = gr::msg_queue::make(0);
-    std::unique_ptr<GNSSBlockFactory> factory;
-    std::unique_ptr<GNSSBlockInterface> output_filter = factory->GetOutputFilter(configuration, queue);
-    EXPECT_EQ(nullptr, output_filter);
-}

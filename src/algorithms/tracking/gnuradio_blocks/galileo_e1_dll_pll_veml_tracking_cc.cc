@@ -42,7 +42,7 @@
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <volk/volk.h>
 #include "galileo_e1_signal_processing.h"
 #include "tracking_discriminators.h"
 #include "lock_detectors.h"
@@ -129,11 +129,11 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_gnsssdr_malloc((2*Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_ca_code = static_cast<gr_complex*>(volk_malloc((2*Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 5; // Very-Early, Early, Prompt, Late, Very-Late
-    d_correlator_outs = static_cast<gr_complex*>(volk_gnsssdr_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_gnsssdr_get_alignment()));
+    d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0,0);
@@ -145,7 +145,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_Late = &d_correlator_outs[3];
     d_Very_Late = &d_correlator_outs[4];
 
-    d_local_code_shift_chips = static_cast<float*>(volk_gnsssdr_malloc(d_n_correlator_taps * sizeof(float), volk_gnsssdr_get_alignment()));
+    d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps * sizeof(float), volk_get_alignment()));
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = - d_very_early_late_spc_chips * 2.0;
     d_local_code_shift_chips[1] = - d_very_early_late_spc_chips;
@@ -172,7 +172,6 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     d_enable_tracking = false;
     d_pull_in = false;
-    d_last_seg = 0;
 
     d_current_prn_length_samples = static_cast<int>(d_vector_length);
 
@@ -253,9 +252,9 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 {
     d_dump_file.close();
 
-    volk_gnsssdr_free(d_local_code_shift_chips);
-    volk_gnsssdr_free(d_correlator_outs);
-    volk_gnsssdr_free(d_ca_code);
+    volk_free(d_local_code_shift_chips);
+    volk_free(d_correlator_outs);
+    volk_free(d_ca_code);
 
     delete[] d_Prompt_buffer;
     multicorrelator_cpu.free();
@@ -263,7 +262,7 @@ galileo_e1_dll_pll_veml_tracking_cc::~galileo_e1_dll_pll_veml_tracking_cc()
 
 
 
-int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     double carr_error_hz = 0.0;
@@ -416,49 +415,9 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, gr_vec
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_pseudorange = false;
             *out[0] = current_synchro_data;
-
-            // ########## DEBUG OUTPUT
-            /*!
-             *  \todo The stop timer has to be moved to the signal source!
-             */
-            // stream to collect cout calls to improve thread safety
-            std::stringstream tmp_str_stream;
-            if (std::floor(d_sample_counter / d_fs_in) != d_last_seg)
-                {
-                    d_last_seg = std::floor(d_sample_counter / d_fs_in);
-
-                    if (d_channel == 0)
-                        {
-                            // debug: Second counter in channel 0
-                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-                            std::cout << tmp_str_stream.rdbuf() << std::flush;
-                        }
-
-                    tmp_str_stream << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                   << ", Doppler=" << d_carrier_doppler_hz << " [Hz] CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
-                    LOG(INFO) << tmp_str_stream.rdbuf() << std::flush;
-                    //if (d_channel == 0 || d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
-                }
         }
     else
     {
-    	// ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-    	/*!
-    	 *  \todo The stop timer has to be moved to the signal source!
-    	 */
-    	// stream to collect cout calls to improve thread safety
-    	std::stringstream tmp_str_stream;
-    	if (std::floor(d_sample_counter / d_fs_in) != d_last_seg)
-    	{
-    		d_last_seg = std::floor(d_sample_counter / d_fs_in);
-
-    		if (d_channel == 0)
-    		{
-    			// debug: Second counter in channel 0
-    			tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-    			std::cout << tmp_str_stream.rdbuf() << std::flush;
-    		}
-    	}
     	*d_Early = gr_complex(0,0);
     	*d_Prompt = gr_complex(0,0);
     	*d_Late = gr_complex(0,0);
@@ -526,7 +485,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, gr_vec
                     tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
             }
-            catch (std::ifstream::failure e)
+            catch (const std::ifstream::failure &e)
             {
                     LOG(WARNING) << "Exception writing trk dump file " << e.what() << std::endl;
             }
@@ -534,10 +493,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items, gr_vec
     consume_each(d_current_prn_length_samples); // this is required for gr_block derivates
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
 
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 
@@ -560,7 +515,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::set_channel(unsigned int channel)
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure &e)
                     {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
                     }

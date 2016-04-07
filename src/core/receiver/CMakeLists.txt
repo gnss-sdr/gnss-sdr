@@ -49,7 +49,6 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/signal_source/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/channel/libs
      ${CMAKE_SOURCE_DIR}/src/algorithms/conditioner/adapters
@@ -144,6 +143,5 @@ target_link_libraries(gnss_rx ${Boost_LIBRARIES}
                               obs_adapters
                               pvt_adapters
                               pvt_lib
-                              out_adapters
                               rx_core_lib
 )

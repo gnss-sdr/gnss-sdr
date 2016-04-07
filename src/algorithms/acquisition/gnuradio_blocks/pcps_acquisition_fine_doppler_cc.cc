@@ -427,7 +427,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 
 int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
         gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items)
+        gr_vector_void_star &output_items __attribute__((unused)))
 {
 
     /*!
@@ -525,6 +525,5 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     //DLOG(INFO)<<"d_sample_counter="<<d_sample_counter<<std::endl;
     d_sample_counter += d_fft_size; // sample counter
     consume_each(d_fft_size);
-    output_items.clear();  // removes a warning
     return noutput_items;
 }

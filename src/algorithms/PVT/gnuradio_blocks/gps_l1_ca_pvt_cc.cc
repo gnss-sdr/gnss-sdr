@@ -72,7 +72,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         bool flag_rtcm_tty_port,
         std::string rtcm_dump_devname) :
              gr::block("gps_l1_ca_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
-             gr::io_signature::make(1, 1, sizeof(gr_complex)) )
+             gr::io_signature::make(0, 0, sizeof(gr_complex)) )
 {
     d_output_rate_ms = output_rate_ms;
     d_display_rate_ms = display_rate_ms;
@@ -115,6 +115,8 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     d_last_sample_nav_output = 0;
     d_rx_time = 0.0;
 
+    d_last_status_print_seg = 0;
+
     b_rinex_header_writen = false;
     b_rinex_header_updated = false;
     b_rinex_sbs_header_writen = false;
@@ -131,7 +133,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "PVT dump enabled Log file: " << d_dump_filename.c_str();
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure & e)
                     {
                             LOG(INFO) << "Exception opening PVT dump file " << e.what();
                     }
@@ -152,9 +154,21 @@ bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const st
 }
 
 
+void gps_l1_ca_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
+{
+    // Print the current receiver status using std::cout every second
+	int current_rx_seg=floor(channels_synchronization_data[0][0].Tracking_timestamp_secs);
+    if ( current_rx_seg!= d_last_status_print_seg)
+		{
+			d_last_status_print_seg = current_rx_seg;
+			std::cout << "Current input signal time = " << current_rx_seg << " [s]" << std::endl<< std::flush;
+			//DLOG(INFO) << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+			//          << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+		}
+}
 
-int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items __attribute__((unused)))
 {
     d_sample_counter++;
 
@@ -162,6 +176,8 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
 
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
     //Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; //Get the output pointer
+
+    print_receiver_status(in);
 
     // ############ 1. READ EPHEMERIS FROM GLOBAL MAP ####
     d_ls_pvt->gps_ephemeris_map = global_gps_ephemeris_map.get_map_copy();
@@ -381,7 +397,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
                                     d_dump_file.write((char*)&d_rx_time, sizeof(double));
                                 }
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure & e)
                     {
                             LOG(WARNING) << "Exception writing observables dump file " << e.what();
                     }
@@ -389,11 +405,6 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_ite
         }
 
     consume_each(1); //one by one
-    output_items.clear();  // removes a warning
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     return 1;
 }
 

@@ -79,8 +79,6 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages)
     config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
     config->set_property("PVT.item_type", "gr_complex");
-    config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-    config->set_property("OutputFilter.item_type", "gr_complex");
 
     std::shared_ptr<ControlThread> control_thread = std::make_shared<ControlThread>(config);
 
@@ -146,8 +144,6 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("Observables.item_type", "gr_complex");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
     config->set_property("PVT.item_type", "gr_complex");
-    config->set_property("OutputFilter.implementation", "Null_Sink_Output_Filter");
-    config->set_property("OutputFilter.item_type", "gr_complex");
 
     std::unique_ptr<ControlThread> control_thread2(new ControlThread(config));
 

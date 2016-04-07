@@ -105,7 +105,7 @@ void GNSSFlowgraph::connect()
 {
     /* Connects the blocks in the flowgraph
      *
-     * Signal Source > Signal conditioner >> Channels >> Observables >> PVT > Output filter
+     * Signal Source > Signal conditioner >> Channels >> Observables >> PVT
      */
     LOG(INFO) << "Connecting flowgraph";
     if (connected_)
@@ -180,19 +180,6 @@ void GNSSFlowgraph::connect()
     catch (std::exception& e)
     {
             LOG(WARNING) << "Can't connect PVT block internally";
-            LOG(ERROR) << e.what();
-            top_block_->disconnect_all();
-            return;
-    }
-
-    // Signal Source > Signal conditioner >> Channels >> Observables > PVT > Output Filter
-    try
-    {
-            output_filter_->connect(top_block_);
-    }
-    catch (std::exception& e)
-    {
-            LOG(WARNING) << "Can't connect output filter block internally";
             LOG(ERROR) << e.what();
             top_block_->disconnect_all();
             return;
@@ -348,19 +335,6 @@ void GNSSFlowgraph::connect()
             return;
     }
 
-    try
-    {
-            top_block_->connect(pvt_->get_right_block(), 0, output_filter_->get_left_block(), 0);
-    }
-    catch (std::exception& e)
-    {
-            LOG(WARNING) << "Can't connect PVT to output filter";
-            LOG(ERROR) << e.what();
-            top_block_->disconnect_all();
-            return;
-    }
-
-    DLOG(INFO) << "PVT connected to output filter";
     connected_ = true;
     LOG(INFO) << "Flowgraph connected";
     top_block_->dump();
@@ -546,7 +520,6 @@ void GNSSFlowgraph::init()
 
     observables_ = block_factory_->GetObservables(configuration_, queue_);
     pvt_ = block_factory_->GetPVT(configuration_, queue_);
-    output_filter_ = block_factory_->GetOutputFilter(configuration_, queue_);
 
     std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
 

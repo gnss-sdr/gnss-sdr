@@ -130,7 +130,6 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/src/algorithms/input_filter/gnuradio_blocks
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/acquisition/gnuradio_blocks
-     ${CMAKE_SOURCE_DIR}/src/algorithms/output_filter/adapters
      ${CMAKE_SOURCE_DIR}/src/algorithms/PVT/libs
      ${GLOG_INCLUDE_DIRS}
      ${GFlags_INCLUDE_DIRS}
@@ -178,7 +177,6 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
                                 gnss_system_parameters  
                                 signal_generator_blocks
                                 signal_generator_adapters
-                                out_adapters
                                 pvt_gr_blocks
                                 ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                 ${GNSS_SDR_TEST_OPTIONAL_LIBS}
@@ -250,7 +248,6 @@ add_executable(gnss_block_test
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_signal_source_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/fir_filter_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/flowgraph/pass_through_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gnss_block_factory_test.cc   
 )
 if(NOT ${ENABLE_PACKAGING})
@@ -269,7 +266,6 @@ target_link_libraries(gnss_block_test ${Boost_LIBRARIES}
                                       gnss_rx
                                       gnss_system_parameters
                                       # signal_generator_blocks
-                                      out_adapters
                                       ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                       )
 
@@ -300,7 +296,6 @@ target_link_libraries(gnuradio_block_test ${Boost_LIBRARIES}
                                       gnss_rx
                                       gnss_system_parameters
                                       # signal_generator_blocks
-                                      out_adapters
                                       ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                       )
 
@@ -329,7 +324,6 @@ endif(NOT ${GTEST_DIR_LOCAL})
 #                                gnss_rx
 #                                gnss_system_parameters
 #                                signal_generator_blocks
-#                                out_adapters
 #                                ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
 #                                )                                     
 # add_test(acq_test acq_test)
@@ -355,7 +349,6 @@ target_link_libraries(trk_test ${Boost_LIBRARIES}
                                gnss_rx
                                gnss_system_parameters
                                signal_generator_blocks
-                               out_adapters
                                ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
                                )
                                       

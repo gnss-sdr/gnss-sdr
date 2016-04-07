@@ -156,7 +156,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
 
     d_enable_tracking = false;
     d_pull_in = false;
-    d_last_seg = 0;
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
@@ -290,7 +289,7 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::~Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc()
 
 
 
-int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // Block input data and block output stream pointers
@@ -457,51 +456,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
             current_synchro_data.correlation_length_ms=1;
             *out[0] = current_synchro_data;
 
-            // ########## DEBUG OUTPUT
-            /*!
-             *  \todo The stop timer has to be moved to the signal source!
-             */
-            // debug: Second counter in channel 0
-            if (d_channel == 0)
-                {
-                    if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                        {
-                            d_last_seg = floor(d_sample_counter / d_fs_in);
-                            std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                            DLOG(INFO) << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                              << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
-                            //if (d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
-                        }
-                }
-            else
-                {
-                    if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                        {
-                            d_last_seg = floor(d_sample_counter / d_fs_in);
-                            DLOG(INFO) << "Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                               << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]";
-                        }
-                }
         }
     else
         {
-            // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-            /*!
-             *  \todo The stop timer has to be moved to the signal source!
-             */
-            // stream to collect cout calls to improve thread safety
-            std::stringstream tmp_str_stream;
-            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                {
-                    d_last_seg = floor(d_sample_counter / d_fs_in);
 
-                    if (d_channel == 0)
-                        {
-                            // debug: Second counter in channel 0
-                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-                            std::cout << tmp_str_stream.rdbuf() << std::flush;
-                        }
-                }
             for (int n = 0; n < d_n_correlator_taps; n++)
                 {
                     d_correlator_outs[n] = gr_complex(0,0);
@@ -571,10 +529,6 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items, gr_vecto
     consume_each(d_correlation_length_samples); // this is necessary in gr::block derivates
     d_sample_counter += d_correlation_length_samples; //count for the processed samples
 
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 

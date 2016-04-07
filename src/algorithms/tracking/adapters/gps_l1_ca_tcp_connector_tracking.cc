@@ -59,8 +59,6 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     std::string dump_filename;
     std::string item_type;
     std::string default_item_type = "gr_complex";
-    float pll_bw_hz;
-    float dll_bw_hz;
     float early_late_space_chips;
     size_t port_ch0;
     item_type = configuration->property(role + ".item_type",default_item_type);
@@ -68,8 +66,6 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     fs_in = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     f_if = configuration->property(role + ".if", 0);
     dump = configuration->property(role + ".dump", false);
-    pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
-    dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     port_ch0 = configuration->property(role + ".port_ch0", 2060);
     std::string default_dump_filename = "./track_ch";
@@ -87,8 +83,6 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
                     queue_,
                     dump,
                     dump_filename,
-                    pll_bw_hz,
-                    dll_bw_hz,
                     early_late_space_chips,
                     port_ch0);
         }

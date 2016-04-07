@@ -64,7 +64,6 @@ public:
     size_t item_size(){ return 0; }
 
     GNSSBlockInterface *signal_generator(){ return signal_generator_; }
-    GNSSBlockInterface *output_filter(){ return filter_; }
 
 private:
     GNSSBlockInterface *signal_generator_;

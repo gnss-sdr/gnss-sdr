@@ -137,20 +137,34 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the E5a primary code replicas sampled 1x/chip
-    d_codeQ = new gr_complex[static_cast<int>(Galileo_E5a_CODE_LENGTH_CHIPS) + 2];
-    d_codeI = new gr_complex[static_cast<int>(Galileo_E5a_CODE_LENGTH_CHIPS) + 2];
+    d_codeQ = static_cast<gr_complex*>(volk_malloc(Galileo_E5a_CODE_LENGTH_CHIPS * sizeof(gr_complex), volk_get_alignment()));
+    d_codeI = static_cast<gr_complex*>(volk_malloc(Galileo_E5a_CODE_LENGTH_CHIPS * sizeof(gr_complex), volk_get_alignment()));
 
-    d_early_code  = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_late_code   = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_prompt_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_prompt_data_code = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
-    d_carr_sign = static_cast<gr_complex*>(volk_malloc(2 * d_vector_length * sizeof(gr_complex), volk_get_alignment()));
+    // correlator Q outputs (scalar)
+    d_n_correlator_taps = 3; //  Early, Prompt, Late
+    d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
+    for (int n = 0; n < d_n_correlator_taps; n++)
+        {
+            d_correlator_outs[n] = gr_complex(0,0);
+        }
 
-    // correlator outputs (complex number)
-    d_Early  = gr_complex(0, 0);
-    d_Prompt = gr_complex(0, 0);
-    d_Late   = gr_complex(0, 0);
-    d_Prompt_data = gr_complex(0, 0);
+    // map memory pointers of correlator outputs
+    d_Single_Early = &d_correlator_outs[0];
+    d_Single_Prompt = &d_correlator_outs[1];
+    d_Single_Late = &d_correlator_outs[2];
+
+    d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps * sizeof(float), volk_get_alignment()));
+    // Set TAPs delay values [chips]
+    d_local_code_shift_chips[0] = - d_early_late_spc_chips;
+    d_local_code_shift_chips[1] = 0.0;
+    d_local_code_shift_chips[2] = d_early_late_spc_chips;
+
+    multicorrelator_cpu_Q.init(2 * d_vector_length, d_n_correlator_taps);
+
+    // correlator I single output for data (scalar)
+    d_Single_Prompt_data=static_cast<gr_complex*>(volk_malloc(sizeof(gr_complex), volk_get_alignment()));
+    *d_Single_Prompt_data = gr_complex(0,0);
+    multicorrelator_cpu_I.init(2 * d_vector_length, 1); // single correlator for data channel
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -164,7 +178,6 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     // sample synchronization
     d_sample_counter = 0;
     d_acq_sample_stamp = 0;
-    d_last_seg = 0;
     d_first_transition = false;
 
     d_secondary_lock = false;
@@ -203,14 +216,18 @@ Galileo_E5a_Dll_Pll_Tracking_cc::~Galileo_E5a_Dll_Pll_Tracking_cc ()
 {
     d_dump_file.close();
 
-    volk_free(d_prompt_code);
-    volk_free(d_late_code);
-    volk_free(d_early_code);
-    volk_free(d_carr_sign);
-    volk_free(d_prompt_data_code);
     delete[] d_codeI;
     delete[] d_codeQ;
     delete[] d_Prompt_buffer;
+
+    d_dump_file.close();
+
+    volk_free(d_local_code_shift_chips);
+    volk_free(d_correlator_outs);
+    volk_free(d_Single_Prompt_data);
+
+    multicorrelator_cpu_Q.free();
+    multicorrelator_cpu_I.free();
 }
 
 
@@ -268,14 +285,10 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
     // generate local reference ALWAYS starting at chip 1 (1 sample per chip)
     char sig[3];
     strcpy(sig,"5Q");
-    galileo_e5_a_code_gen_complex_primary(&d_codeQ[1], d_acquisition_gnss_synchro->PRN, sig);
-    d_codeQ[0] = d_codeQ[static_cast<int>(Galileo_E5a_CODE_LENGTH_CHIPS)];
-    d_codeQ[static_cast<int>(Galileo_E5a_CODE_LENGTH_CHIPS) + 1] = d_codeQ[1];
+    galileo_e5_a_code_gen_complex_primary(d_codeQ, d_acquisition_gnss_synchro->PRN, sig);
 
     strcpy(sig,"5I");
-    galileo_e5_a_code_gen_complex_primary(&d_codeI[1], d_acquisition_gnss_synchro->PRN, sig);
-    d_codeI[0] = d_codeI[static_cast<int>(Galileo_E5a_CODE_LENGTH_CHIPS)];
-    d_codeI[static_cast<int>(Galileo_E5a_CODE_LENGTH_CHIPS) + 1] = d_codeI[1];
+    galileo_e5_a_code_gen_complex_primary(d_codeI, d_acquisition_gnss_synchro->PRN, sig);
 
     d_carrier_lock_fail_counter = 0;
     d_rem_code_phase_samples = 0;
@@ -299,6 +312,7 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::start_tracking()
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
             << " Code Phase correction [samples]=" << delay_correction_samples
             << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
+
 }
 
 
@@ -355,57 +369,7 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
 }
 
 
-void Galileo_E5a_Dll_Pll_Tracking_cc::update_local_code()
-{
-    double tcode_chips;
-    double rem_code_phase_chips;
-    int associated_chip_index;
-    int associated_chip_index_data;
-    int code_length_chips = static_cast<int>(Galileo_E5a_CODE_LENGTH_CHIPS);
-    double code_phase_step_chips;
-    int early_late_spc_samples;
-    int epl_loop_length_samples;
-
-    // unified loop for E, P, L code vectors
-    code_phase_step_chips = d_code_freq_chips / static_cast<double>(d_fs_in);
-    rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
-    tcode_chips = -rem_code_phase_chips;
-
-    // Alternative EPL code generation (40% of speed improvement!)
-    early_late_spc_samples = round(d_early_late_spc_chips / code_phase_step_chips);
-    epl_loop_length_samples = d_current_prn_length_samples + early_late_spc_samples * 2;
-
-    for (int i = 0; i < epl_loop_length_samples; i++)
-        {
-            associated_chip_index = 1 + round(fmod(tcode_chips - d_early_late_spc_chips, code_length_chips));
-            associated_chip_index_data = 1 + round(fmod(tcode_chips, code_length_chips));
-            d_early_code[i] = d_codeQ[associated_chip_index];
-            d_prompt_data_code[i] = d_codeI[associated_chip_index_data];
-            tcode_chips = tcode_chips + code_phase_step_chips;
-        }
-    memcpy(d_prompt_code, &d_early_code[early_late_spc_samples], d_current_prn_length_samples * sizeof(gr_complex));
-    memcpy(d_late_code, &d_early_code[early_late_spc_samples * 2], d_current_prn_length_samples * sizeof(gr_complex));
-
-}
-
-
-void Galileo_E5a_Dll_Pll_Tracking_cc::update_local_carrier()
-{
-    float sin_f, cos_f;
-    float phase_step_rad = static_cast<float>(2.0 * GALILEO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in));
-    int phase_step_rad_i = gr::fxpt::float_to_fixed(phase_step_rad);
-    int phase_rad_i = gr::fxpt::float_to_fixed(d_rem_carr_phase_rad);
-
-    for(int i = 0; i < d_current_prn_length_samples; i++)
-        {
-            gr::fxpt::sincos(phase_rad_i, &sin_f, &cos_f);
-            d_carr_sign[i] = std::complex<float>(cos_f, -sin_f);
-            phase_rad_i += phase_step_rad_i;
-        }
-}
-
-
-int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
+int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars
@@ -431,23 +395,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
     {
     case 0:
         {
-            // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-            /*!
-             *  \todo The stop timer has to be moved to the signal source!
-             */
-            // stream to collect cout calls to improve thread safety
-            std::stringstream tmp_str_stream;
-            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                {
-                    d_last_seg = floor(d_sample_counter / d_fs_in);
 
-                    if (d_channel == 0)
-                        {
-                            // debug: Second counter in channel 0
-                            tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-                            std::cout << tmp_str_stream.rdbuf() << std::flush;
-                        }
-                }
             d_Early = gr_complex(0,0);
             d_Prompt = gr_complex(0,0);
             d_Late = gr_complex(0,0);
@@ -512,59 +460,50 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
             //Generate local code and carrier replicas (using \hat{f}_d(k-1))
             if (d_integration_counter == 0)
                 {
-                    update_local_code();
-                    update_local_carrier();
                     // Reset accumulated values
                     d_Early = gr_complex(0,0);
                     d_Prompt = gr_complex(0,0);
                     d_Late = gr_complex(0,0);
                 }
-            gr_complex single_early;
-            gr_complex single_prompt;
-            gr_complex single_late;
 
             // perform carrier wipe-off and compute Early, Prompt and Late
             // correlation of 1 primary code
-            d_correlator.Carrier_wipeoff_and_EPL_volk_IQ(d_current_prn_length_samples,
-                    in,
-                    d_carr_sign,
-                    d_early_code,
-                    d_prompt_code,
-                    d_late_code,
-                    d_prompt_data_code,
-                    &single_early,
-                    &single_prompt,
-                    &single_late,
-                    &d_Prompt_data);
+
+            multicorrelator_cpu_Q.set_local_code_and_taps(d_current_prn_length_samples, d_codeQ, d_local_code_shift_chips);
+            multicorrelator_cpu_I.set_local_code_and_taps(d_current_prn_length_samples, d_codeI, &d_local_code_shift_chips[1]);
+
+
+            // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
+            // perform carrier wipe-off and compute Early, Prompt and Late correlation
+            multicorrelator_cpu_Q.set_input_output_vectors(d_correlator_outs,in);
+            multicorrelator_cpu_I.set_input_output_vectors(d_Single_Prompt_data,in);
+
+            double carr_phase_step_rad = GALILEO_TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+            double code_phase_step_chips = d_code_freq_chips / (static_cast<double>(d_fs_in));
+            double rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
+            multicorrelator_cpu_Q.Carrier_wipeoff_multicorrelator_resampler(
+            		d_rem_carr_phase_rad,
+            		carr_phase_step_rad,
+            		rem_code_phase_chips,
+            		code_phase_step_chips,
+            		d_current_prn_length_samples);
+
+            multicorrelator_cpu_I.Carrier_wipeoff_multicorrelator_resampler(
+            		d_rem_carr_phase_rad,
+            		carr_phase_step_rad,
+            		rem_code_phase_chips,
+            		code_phase_step_chips,
+            		d_current_prn_length_samples);
+
 
             // Accumulate results (coherent integration since there are no bit transitions in pilot signal)
-            d_Early += single_early * sec_sign_Q;
-            d_Prompt += single_prompt * sec_sign_Q;
-            d_Late += single_late * sec_sign_Q;
+            d_Early += (*d_Single_Early) * sec_sign_Q;
+            d_Prompt += (*d_Single_Prompt) * sec_sign_Q;
+            d_Late += (*d_Single_Late) * sec_sign_Q;
+            d_Prompt_data=(*d_Single_Prompt_data);
             d_Prompt_data *= sec_sign_I;
             d_integration_counter++;
 
-            // check for samples consistency (this should be done before in the receiver / here only if the source is a file)
-            if (std::isnan((d_Prompt).real()) == true or std::isnan((d_Prompt).imag()) == true ) // or std::isinf(in[i].real())==true or std::isinf(in[i].imag())==true)
-                {
-                    const int samples_available = ninput_items[0];
-                    d_sample_counter = d_sample_counter + samples_available;
-                    LOG(WARNING) << "Detected NaN samples at sample number " << d_sample_counter;
-                    consume_each(samples_available);
-
-                    // make an output to not stop the rest of the processing blocks
-                    current_synchro_data.Prompt_I = 0.0;
-                    current_synchro_data.Prompt_Q = 0.0;
-                    current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
-                    current_synchro_data.Carrier_phase_rads = 0.0;
-                    current_synchro_data.Code_phase_secs = 0.0;
-                    current_synchro_data.CN0_dB_hz = 0.0;
-                    current_synchro_data.Flag_valid_tracking = false;
-
-                    *out[0] = current_synchro_data;
-
-                    return 1;
-                }
             // ################## PLL ##########################################################
             // PLL discriminator
             if (d_integration_counter == d_current_ti_ms)
@@ -709,33 +648,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
                     current_synchro_data.Flag_valid_tracking = false;
 
-                    // ########## DEBUG OUTPUT
-                    /*!
-                     *  \todo The stop timer has to be moved to the signal source!
-                     */
-                    // debug: Second counter in channel 0
-                    if (d_channel == 0)
-                        {
-                            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                                {
-                                    d_last_seg = floor(d_sample_counter / d_fs_in);
-                                    std::cout << "Current input signal time = " << d_last_seg << " [s]" << std::endl;
-                                    std::cout  << "Galileo E5 Tracking CH " << d_channel <<  ": Satellite "
-                                            << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz] "<<"Doppler="<<d_carrier_doppler_hz<<" [Hz]"<< std::endl;
-                                    //if (d_last_seg==5) d_carrier_lock_fail_counter=500; //DEBUG: force unlock!
-                                }
-                        }
-                    else
-                        {
-                            if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                                {
-                                    d_last_seg = floor(d_sample_counter / d_fs_in);
-                                    std::cout  << "Galileo E5 Tracking CH " << d_channel <<  ": Satellite "
-                                            << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-                                            << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz] "<<"Doppler="<<d_carrier_doppler_hz<<" [Hz]"<< std::endl;
-                                    //std::cout<<"TRK CH "<<d_channel<<" Carrier_lock_test="<<d_carrier_lock_test<< std::endl;
-                                }
-                        }
                 }
             else
                 {
@@ -748,23 +660,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
                     current_synchro_data.CN0_dB_hz = 0.0;
                     current_synchro_data.Flag_valid_tracking = false;
 
-                    // ########## DEBUG OUTPUT (TIME ONLY for channel 0 when tracking is disabled)
-                    /*!
-                     *  \todo The stop timer has to be moved to the signal source!
-                     */
-                    // stream to collect cout calls to improve thread safety
-                    std::stringstream tmp_str_stream;
-                    if (floor(d_sample_counter / d_fs_in) != d_last_seg)
-                        {
-                            d_last_seg = floor(d_sample_counter / d_fs_in);
-
-                            if (d_channel == 0)
-                                {
-                                    // debug: Second counter in channel 0
-                                    tmp_str_stream << "Current input signal time = " << d_last_seg << " [s]" << std::endl << std::flush;
-                                    std::cout << tmp_str_stream.rdbuf() << std::flush;
-                                }
-                        }
                 }
             *out[0] = current_synchro_data;
             break;
@@ -823,7 +718,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
 
             }
-            catch (std::ifstream::failure e)
+            catch (const std::ifstream::failure & e)
             {
                     LOG(WARNING) << "Exception writing trk dump file " << e.what();
             }
@@ -832,10 +727,6 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items, gr_vector_
     d_secondary_delay = (d_secondary_delay + 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
     d_sample_counter += d_current_prn_length_samples; //count for the processed samples
     consume_each(d_current_prn_length_samples); // this is necessary in gr::block derivates
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     return 1; //output tracking result ALWAYS even in the case of d_enable_tracking==false
 }
 
@@ -857,7 +748,7 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure &e)
                     {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
                     }

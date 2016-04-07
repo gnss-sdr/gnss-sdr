@@ -54,7 +54,7 @@ galileo_e1_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> 
 
 galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :
 		                		                gr::block("galileo_e1_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
-		                		                        gr::io_signature::make(1, 1, sizeof(gr_complex)))
+		                		                        gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
 
     d_output_rate_ms = output_rate_ms;
@@ -102,6 +102,8 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
     b_rtcm_writing_started = false;
     rp = std::make_shared<Rinex_Printer>();
 
+    d_last_status_print_seg=0;
+
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
         {
@@ -134,15 +136,29 @@ bool galileo_e1_pvt_cc::pseudoranges_pairCompare_min(const std::pair<int,Gnss_Sy
 }
 
 
+void galileo_e1_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
+{
+    // Print the current receiver status using std::cout every second
+	int current_rx_seg=floor(channels_synchronization_data[0][0].Tracking_timestamp_secs);
+    if ( current_rx_seg!= d_last_status_print_seg)
+		{
+			d_last_status_print_seg = current_rx_seg;
+			std::cout << "Current input signal time = " << current_rx_seg << " [s]" << std::endl<< std::flush;
+			//DLOG(INFO) << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+			//          << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+		}
+}
 
-int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items  __attribute__((unused)))
 {
     d_sample_counter++;
 
     std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
 
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
+
+    print_receiver_status(in);
 
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
@@ -344,11 +360,6 @@ int galileo_e1_pvt_cc::general_work (int noutput_items, gr_vector_int &ninput_it
         }
 
     consume_each(1); //one by one
-    output_items.clear();  // removes a warning
-    if((noutput_items == 0) || (ninput_items[0] == 0))
-        {
-            LOG(WARNING) << "noutput_items = 0";
-        }
     return 1;
 }
 

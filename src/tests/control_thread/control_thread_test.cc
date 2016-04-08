@@ -136,7 +136,7 @@ TEST(Control_Thread_Test, InstantiateRunControlMessages2)
     config->set_property("Acquisition_GPS.threshold", "1");
     config->set_property("Acquisition_GPS.doppler_max", "5000");
     config->set_property("Acquisition_GPS.doppler_min", "-5000");
-    config->set_property("Tracking_GPS.implementation", "GPS_L1_CA_DLL_FLL_PLL_Tracking");
+    config->set_property("Tracking_GPS.implementation", "GPS_L1_CA_DLL_PLL_C_Aid_Tracking");
     config->set_property("Tracking_GPS.item_type", "gr_complex");
     config->set_property("TelemetryDecoder_GPS.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("TelemetryDecoder_GPS.item_type", "gr_complex");

@@ -67,10 +67,10 @@ public:
         return role_;
     }
 
-    //! Returns "gps_l1_ca_dll_pll_c_aid_tracking"
+    //! Returns "GPS_L1_CA_DLL_PLL_C_Aid_Tracking"
     std::string implementation()
     {
-        return "gps_l1_ca_dll_pll_c_aid_tracking";
+        return "GPS_L1_CA_DLL_PLL_C_Aid_Tracking";
     }
     size_t item_size()
     {

@@ -126,26 +126,26 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_ca_code = static_cast<gr_complex*>(volk_malloc((GPS_L1_CA_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
 
     // correlator outputs (scalar)
-	d_n_correlator_taps = 3; // Very-Early, Early, Prompt, Late, Very-Late
-	d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
-	for (int n = 0; n < d_n_correlator_taps; n++)
-		{
-			d_correlator_outs[n] = gr_complex(0,0);
-		}
-	// map memory pointers of correlator outputs
-	d_Early = &d_correlator_outs[0];
-	d_Prompt = &d_correlator_outs[1];
-	d_Late = &d_correlator_outs[2];
+    d_n_correlator_taps = 3; // Very-Early, Early, Prompt, Late, Very-Late
+    d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
+    for (int n = 0; n < d_n_correlator_taps; n++)
+       {
+          d_correlator_outs[n] = gr_complex(0,0);
+       }
+    // map memory pointers of correlator outputs
+    d_Early = &d_correlator_outs[0];
+    d_Prompt = &d_correlator_outs[1];
+    d_Late = &d_correlator_outs[2];
 
-	d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps * sizeof(float), volk_get_alignment()));
-	// Set TAPs delay values [chips]
-	d_local_code_shift_chips[0] = - d_early_late_spc_chips;
-	d_local_code_shift_chips[1] = 0.0;
-	d_local_code_shift_chips[2] = d_early_late_spc_chips;
+    d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps * sizeof(float), volk_get_alignment()));
+    // Set TAPs delay values [chips]
+    d_local_code_shift_chips[0] = - d_early_late_spc_chips;
+    d_local_code_shift_chips[1] = 0.0;
+    d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
-	d_correlation_length_samples=d_vector_length;
+    d_correlation_length_samples=d_vector_length;
 
-	multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
+    multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
 
     //--- Perform initializations ------------------------------
     // define initial code frequency basis of NCO
@@ -309,16 +309,15 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
     float code_nco;
 
     tcp_packet_data tcp_data;
-	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-	Gnss_Synchro current_synchro_data;
-	// Block input data and block output stream pointers
-	const gr_complex* in = (gr_complex*) input_items[0];
-	Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+    Gnss_Synchro current_synchro_data;
+    // Block input data and block output stream pointers
+    const gr_complex* in = (gr_complex*) input_items[0];
+    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
     if (d_enable_tracking == true)
         {
-
-    		// Fill the acquisition data
+            // Fill the acquisition data
             current_synchro_data = *d_acquisition_gnss_synchro;
             /*
              * Receiver signal alignment
@@ -362,7 +361,6 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
             		rem_code_phase_chips,
             		d_code_phase_step_chips,
             		d_current_prn_length_samples);
-
 
             //! Variable used for control
             d_control_id++;
@@ -487,6 +485,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
         }
 
     //assign the GNURadio block output data
+    current_synchro_data.System = {'G'};
     *out[0] = current_synchro_data;
     if(d_dump)
         {

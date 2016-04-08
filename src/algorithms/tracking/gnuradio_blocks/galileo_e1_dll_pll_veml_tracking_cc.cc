@@ -270,7 +270,6 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
     double code_error_chips = 0.0;
     double code_error_filt_chips = 0.0;
 
-
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0];
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
@@ -279,8 +278,8 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
 
     if (d_enable_tracking == true)
         {
-			// Fill the acquisition data
-			current_synchro_data = *d_acquisition_gnss_synchro;
+            // Fill the acquisition data
+            current_synchro_data = *d_acquisition_gnss_synchro;
             if (d_pull_in == true)
                 {
                     /*
@@ -420,6 +419,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
     	current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
     }
     //assign the GNURadio block output data
+    current_synchro_data.System = {'E'};
     *out[0] = current_synchro_data;
 
     if(d_dump)

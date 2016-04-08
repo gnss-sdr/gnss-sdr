@@ -78,7 +78,6 @@ gps_l2_m_dll_pll_make_tracking_cc(
 }
 
 
-
 void gps_l2_m_dll_pll_tracking_cc::forecast (int noutput_items,
         gr_vector_int &ninput_items_required)
 {
@@ -185,6 +184,10 @@ gps_l2_m_dll_pll_tracking_cc::gps_l2_m_dll_pll_tracking_cc(
     d_code_phase_samples = 0.0;
     d_acc_code_phase_secs = 0.0;
 
+    d_rem_code_phase_chips = 0.0;
+    d_code_phase_step_chips = 0.0;
+    d_carrier_phase_step_rad = 0.0;
+
     LOG(INFO) << "d_vector_length" << d_vector_length;
 }
 
@@ -220,7 +223,7 @@ void gps_l2_m_dll_pll_tracking_cc::start_tracking()
 
     double T_prn_true_seconds = GPS_L2_M_CODE_LENGTH_CHIPS / GPS_L2_M_CODE_RATE_HZ;
     double T_prn_true_samples = T_prn_true_seconds * static_cast<float>(d_fs_in);
-    double T_prn_diff_seconds=  T_prn_true_seconds - T_prn_mod_seconds;
+    double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
     double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
     double corrected_acq_phase_samples, delay_correction_samples;
     corrected_acq_phase_samples = fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<float>(d_fs_in)), T_prn_true_samples);
@@ -306,8 +309,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
 
     if (d_enable_tracking == true)
         {
-
-    		// Fill the acquisition data
+            // Fill the acquisition data
             current_synchro_data = *d_acquisition_gnss_synchro;
             // Receiver signal alignment
             if (d_pull_in == true)
@@ -328,7 +330,7 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
-            multicorrelator_cpu.set_input_output_vectors(d_correlator_outs,in);
+            multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, in);
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carr_phase_rad,
             		d_carrier_phase_step_rad,
             		d_rem_code_phase_chips,
@@ -452,16 +454,16 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
 
     if(d_dump)
         {
-			// MULTIPLEXED FILE RECORDING - Record results to file
-			float prompt_I;
-			float prompt_Q;
-			float tmp_E, tmp_P, tmp_L;
-			double tmp_double;
-			prompt_I = d_correlator_outs[1].real();
-			prompt_Q = d_correlator_outs[1].imag();
-			tmp_E = std::abs<float>(d_correlator_outs[0]);
-			tmp_P = std::abs<float>(d_correlator_outs[1]);
-			tmp_L = std::abs<float>(d_correlator_outs[2]);
+            // MULTIPLEXED FILE RECORDING - Record results to file
+            float prompt_I;
+            float prompt_Q;
+            float tmp_E, tmp_P, tmp_L;
+            double tmp_double;
+            prompt_I = d_correlator_outs[1].real();
+            prompt_Q = d_correlator_outs[1].imag();
+            tmp_E = std::abs<float>(d_correlator_outs[0]);
+            tmp_P = std::abs<float>(d_correlator_outs[1]);
+            tmp_L = std::abs<float>(d_correlator_outs[2]);
             try
             {
                     // EPR
@@ -526,11 +528,11 @@ void gps_l2_m_dll_pll_tracking_cc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (std::ifstream::failure& e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }
                 }
         }

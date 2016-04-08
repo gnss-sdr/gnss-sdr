@@ -41,7 +41,6 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
-#include <gnuradio/fxpt.h>  // fixed point sine and cosine
 #include <glog/logging.h>
 #include <volk/volk.h>
 #include "gps_sdr_signal_processing.h"
@@ -158,8 +157,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     d_enable_tracking = false;
     d_pull_in = false;
 
-
-
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
     d_Prompt_buffer = new gr_complex[CN0_ESTIMATION_SAMPLES];
@@ -180,6 +177,9 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     d_acc_carrier_phase_rad = 0.0;
     d_code_phase_samples = 0.0;
     d_acc_code_phase_secs = 0.0;
+    d_rem_code_phase_chips = 0.0;
+    d_code_phase_step_chips = 0.0;
+    d_carrier_phase_step_rad = 0.0;
 
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 }
@@ -192,7 +192,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
      */
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
-    d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+    d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
     long int acq_trk_diff_samples;
     double acq_trk_diff_seconds;
@@ -299,11 +299,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
-
     if (d_enable_tracking == true)
         {
-			// Fill the acquisition data
-			current_synchro_data = *d_acquisition_gnss_synchro;
+            // Fill the acquisition data
+            current_synchro_data = *d_acquisition_gnss_synchro;
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
@@ -323,7 +322,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
-            multicorrelator_cpu.set_input_output_vectors(d_correlator_outs,in);
+            multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, in);
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carr_phase_rad,
             		d_carrier_phase_step_rad,
             		d_rem_code_phase_chips,
@@ -432,8 +431,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_symbol_output = true;
-            current_synchro_data.correlation_length_ms=1;
-
+            current_synchro_data.correlation_length_ms = 1;
         }
     else
         {
@@ -450,19 +448,18 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
     *out[0] = current_synchro_data;
     if(d_dump)
         {
-			// MULTIPLEXED FILE RECORDING - Record results to file
-			float prompt_I;
-			float prompt_Q;
-			float tmp_E, tmp_P, tmp_L;
-			double tmp_double;
-			prompt_I = d_correlator_outs[1].real();
-			prompt_Q = d_correlator_outs[1].imag();
-			tmp_E = std::abs<float>(d_correlator_outs[0]);
-			tmp_P = std::abs<float>(d_correlator_outs[1]);
-			tmp_L = std::abs<float>(d_correlator_outs[2]);
+            // MULTIPLEXED FILE RECORDING - Record results to file
+            float prompt_I;
+            float prompt_Q;
+            float tmp_E, tmp_P, tmp_L;
+            double tmp_double;
+            prompt_I = d_correlator_outs[1].real();
+            prompt_Q = d_correlator_outs[1].imag();
+            tmp_E = std::abs<float>(d_correlator_outs[0]);
+            tmp_P = std::abs<float>(d_correlator_outs[1]);
+            tmp_L = std::abs<float>(d_correlator_outs[2]);
             try
             {
-
                 // EPR
                 d_dump_file.write(reinterpret_cast<char*>(&tmp_E), sizeof(float));
                 d_dump_file.write(reinterpret_cast<char*>(&tmp_P), sizeof(float));
@@ -527,20 +524,22 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << std::endl;
+                            LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                     }
                     catch (const std::ifstream::failure &e)
                     {
-                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what() << std::endl;
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }
                 }
         }
 }
 
+
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
 {
     d_channel_internal_queue = channel_internal_queue;
 }
+
 
 void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {

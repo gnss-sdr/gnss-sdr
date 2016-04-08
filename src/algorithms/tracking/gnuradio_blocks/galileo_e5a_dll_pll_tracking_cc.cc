@@ -208,6 +208,10 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     d_acc_code_phase_secs = 0;
     d_state = 0;
 
+    d_rem_code_phase_chips = 0.0;
+    d_code_phase_step_chips = 0.0;
+    d_carrier_phase_step_rad = 0.0;
+
     systemName["E"] = std::string("Galileo");
 }
 

@@ -108,8 +108,8 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
         gr::block("Galileo_E1_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
-	// Telemetry bit synchronization message port input
-	this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
+    // Telemetry bit synchronization message port input
+    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
 
     this->set_relative_rate(1.0/vector_length);
     // initialize internal vars
@@ -157,8 +157,8 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_local_code_shift_chips[3] = d_very_early_late_spc_chips;
     d_local_code_shift_chips[4] = d_very_early_late_spc_chips * 2.0;
 
-    d_correlation_length_samples=d_vector_length;
-
+    d_correlation_length_samples = d_vector_length;
+ 
     multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
 
     //--- Perform initializations ------------------------------
@@ -268,15 +268,15 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
     float code_error_filt_chips;
 
     tcp_packet_data tcp_data;
-	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-	Gnss_Synchro current_synchro_data;
-	// Block input data and block output stream pointers
-	const gr_complex* in = (gr_complex*) input_items[0];
-	Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
+    // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+    Gnss_Synchro current_synchro_data;
+    // Block input data and block output stream pointers
+    const gr_complex* in = (gr_complex*) input_items[0];
+    Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
     if (d_enable_tracking == true)
         {
-			// Fill the acquisition data
-			current_synchro_data = *d_acquisition_gnss_synchro;
+            // Fill the acquisition data
+            current_synchro_data = *d_acquisition_gnss_synchro;
             if (d_pull_in == true)
                 {
                     /*
@@ -418,8 +418,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             current_synchro_data.Carrier_Doppler_hz = (double)d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = (double)d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_symbol_output = true;
-            current_synchro_data.correlation_length_ms=4;
-
+            current_synchro_data.correlation_length_ms = 4;
         }
     else
         {
@@ -433,6 +432,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             d_tcp_com.send_receive_tcp_packet_galileo_e1(tx_variables_array, &tcp_data);
         }
     //assign the GNURadio block output data
+    current_synchro_data.System = {'E'};
     *out[0] = current_synchro_data;
     if(d_dump)
         {
@@ -441,7 +441,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             float prompt_Q;
             float tmp_VE, tmp_E, tmp_P, tmp_L, tmp_VL;
             float tmp_float;
-            tmp_float=0;
+            tmp_float = 0;
             double tmp_double;
             prompt_I = (*d_Prompt).real();
             prompt_Q = (*d_Prompt).imag();

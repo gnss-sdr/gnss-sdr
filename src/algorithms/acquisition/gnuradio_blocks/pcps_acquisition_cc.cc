@@ -39,7 +39,6 @@
 #include <glog/logging.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include "gnss_signal_processing.h"
 #include "control_message_factory.h"
 #include "GPS_L1_CA.h" //GPS_TWO_PI
 

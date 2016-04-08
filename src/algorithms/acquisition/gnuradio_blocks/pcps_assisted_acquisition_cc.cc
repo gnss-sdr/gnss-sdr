@@ -37,7 +37,6 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "concurrent_map.h"
-#include "gnss_signal_processing.h"
 #include "control_message_factory.h"
 #include "gps_acq_assist.h"
 #include "GPS_L1_CA.h"

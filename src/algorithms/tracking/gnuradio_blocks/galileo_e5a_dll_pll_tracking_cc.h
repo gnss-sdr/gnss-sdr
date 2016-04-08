@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e5a_dll_fll_pll_tracking_cc.h
+ * \file galileo_e5a_dll_pll_tracking_cc.h
  * \brief Implementation of a code DLL + carrier PLL
  *  tracking block for Galileo E5a signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com

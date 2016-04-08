@@ -1,5 +1,5 @@
 /*!
- * \file galileo_e5a_dll_fll_pll_tracking_cc.h
+ * \file galileo_e5a_dll_pll_tracking_cc.h
  * \brief Implementation of a code DLL + carrier PLL
  *  tracking block for Galileo E5a signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
@@ -40,7 +40,6 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <gnuradio/io_signature.h>
-#include <gnuradio/fxpt.h>  // fixed point sine and cosine
 #include <glog/logging.h>
 #include <volk/volk.h>
 #include "galileo_e5_signal_processing.h"

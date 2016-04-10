@@ -269,7 +269,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
 
     tcp_packet_data tcp_data;
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-    Gnss_Synchro current_synchro_data;
+    Gnss_Synchro current_synchro_data = Gnss_Synchro();
     // Block input data and block output stream pointers
     const gr_complex* in = (gr_complex*) input_items[0];
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
@@ -433,7 +433,12 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
         }
     //assign the GNURadio block output data
     current_synchro_data.System = {'E'};
+    std::string str_aux = "1B";
+    const char * str = str_aux.c_str(); // get a C style null terminated string
+    std::memcpy((void*)current_synchro_data.Signal, str, 3);
+
     *out[0] = current_synchro_data;
+
     if(d_dump)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file

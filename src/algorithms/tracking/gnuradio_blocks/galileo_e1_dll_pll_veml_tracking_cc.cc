@@ -129,11 +129,11 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
-    d_ca_code = static_cast<gr_complex*>(volk_malloc((2*Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
+    d_ca_code = static_cast<gr_complex*>(volk_malloc((2 * Galileo_E1_B_CODE_LENGTH_CHIPS) * sizeof(gr_complex), volk_get_alignment()));
 
     // correlator outputs (scalar)
     d_n_correlator_taps = 5; // Very-Early, Early, Prompt, Late, Very-Late
-    d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps*sizeof(gr_complex), volk_get_alignment()));
+    d_correlator_outs = static_cast<gr_complex*>(volk_malloc(d_n_correlator_taps * sizeof(gr_complex), volk_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0,0);
@@ -153,7 +153,7 @@ galileo_e1_dll_pll_veml_tracking_cc::galileo_e1_dll_pll_veml_tracking_cc(
     d_local_code_shift_chips[3] = d_very_early_late_spc_chips;
     d_local_code_shift_chips[4] = d_very_early_late_spc_chips * 2.0;
 
-    d_correlation_length_samples=d_vector_length;
+    d_correlation_length_samples = d_vector_length;
 
     multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
 
@@ -204,7 +204,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
 {
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
-    d_acq_sample_stamp =  d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+    d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(); // initialize the carrier filter
@@ -218,7 +218,7 @@ void galileo_e1_dll_pll_veml_tracking_cc::start_tracking()
                                         2 * Galileo_E1_CODE_CHIP_RATE_HZ,
                                         0);
 
-    multicorrelator_cpu.set_local_code_and_taps(static_cast<int>(2*Galileo_E1_B_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
+    multicorrelator_cpu.set_local_code_and_taps(static_cast<int>(2 * Galileo_E1_B_CODE_LENGTH_CHIPS), d_ca_code, d_local_code_shift_chips);
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
             d_correlator_outs[n] = gr_complex(0,0);
@@ -274,7 +274,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
     const gr_complex* in = (gr_complex*) input_items[0];
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-    Gnss_Synchro current_synchro_data;
+    Gnss_Synchro current_synchro_data = Gnss_Synchro();
 
     if (d_enable_tracking == true)
         {
@@ -407,7 +407,7 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
             current_synchro_data.Flag_valid_symbol_output = true;
-            current_synchro_data.correlation_length_ms=4;
+            current_synchro_data.correlation_length_ms = 4;
 
         }
     else
@@ -420,6 +420,9 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
     }
     //assign the GNURadio block output data
     current_synchro_data.System = {'E'};
+    std::string str_aux = "1B";
+    const char * str = str_aux.c_str(); // get a C style null terminated string
+    std::memcpy((void*)current_synchro_data.Signal, str, 3);
     *out[0] = current_synchro_data;
 
     if(d_dump)

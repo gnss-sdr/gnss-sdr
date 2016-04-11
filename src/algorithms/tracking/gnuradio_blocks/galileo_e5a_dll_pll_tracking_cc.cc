@@ -404,7 +404,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             d_Late = gr_complex(0,0);
             d_Prompt_data = gr_complex(0,0);
         	current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
-            *out[0] = *d_acquisition_gnss_synchro;
+            *out[0] = current_synchro_data;
 
             break;
         }
@@ -468,8 +468,8 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             // perform carrier wipe-off and compute Early, Prompt and Late
             // correlation of 1 primary code
 
-            multicorrelator_cpu_Q.set_local_code_and_taps(d_current_prn_length_samples, d_codeQ, d_local_code_shift_chips);
-            multicorrelator_cpu_I.set_local_code_and_taps(d_current_prn_length_samples, d_codeI, &d_local_code_shift_chips[1]);
+            multicorrelator_cpu_Q.set_local_code_and_taps(Galileo_E5a_CODE_LENGTH_CHIPS, d_codeQ, d_local_code_shift_chips);
+            multicorrelator_cpu_I.set_local_code_and_taps(Galileo_E5a_CODE_LENGTH_CHIPS, d_codeI, &d_local_code_shift_chips[1]);
 
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################

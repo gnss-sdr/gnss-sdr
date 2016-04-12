@@ -42,10 +42,6 @@
 
 using google::LogMessage;
 
-extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-extern concurrent_map<Gps_Iono> global_gps_iono_map;
-extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-
 extern concurrent_queue<Sbas_Raw_Msg> global_sbas_raw_msg_queue;
 extern concurrent_map<Sbas_Ionosphere_Correction> global_sbas_iono_map;
 extern concurrent_map<Sbas_Satellite_Correction> global_sbas_sat_corr_map;
@@ -57,6 +53,44 @@ gps_l1_ca_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> q
     return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
 }
 
+
+void gps_l1_ca_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
+{
+    try {
+       if( pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>) )
+       {
+           // ### GPS EPHEMERIS ###
+           std::shared_ptr<Gps_Ephemeris> gps_eph;
+           gps_eph=  boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
+           LOG(INFO) << "Ephemeris record has arrived from SAT ID "
+                     << gps_eph->i_satellite_PRN << " (Block "
+                     <<  gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
+                     << "inserted with Toe="<< gps_eph->d_Toe<<" and GPS Week="
+                     << gps_eph->i_GPS_week;
+           // update/insert new ephemeris record to the global ephemeris map
+           d_ls_pvt->gps_ephemeris_map[gps_eph->i_satellite_PRN]=*gps_eph;
+       }else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>) )
+       {
+           // ### IONO ###
+           std::shared_ptr<Gps_Iono> gps_iono;
+           gps_iono=  boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
+           d_ls_pvt->gps_iono=*gps_iono;
+           LOG(INFO) << "New IONO record has arrived ";
+       }else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>) )
+       {
+           // ### UTC MODEL ###
+           std::shared_ptr<Gps_Utc_Model> gps_utc_model;
+           gps_utc_model=  boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
+           d_ls_pvt->gps_utc_model=*gps_utc_model;
+           LOG(INFO) << "New UTC record has arrived ";
+       }
+
+    }
+    catch(boost::bad_any_cast& e)
+    {
+       DLOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+    }
+}
 
 gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         boost::shared_ptr<gr::msg_queue> queue,
@@ -81,6 +115,11 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     d_nchannels = nchannels;
     d_dump_filename = dump_filename;
     std::string dump_ls_pvt_filename = dump_filename;
+
+    // GPS Ephemeris data message port in
+    this->message_port_register_in(pmt::mp("telemetry"));
+    this->set_msg_handler(pmt::mp("telemetry"),
+            boost::bind(&gps_l1_ca_pvt_cc::msg_handler_telemetry, this, _1));
 
     //initialize kml_printer
     std::string kml_dump_filename;
@@ -171,16 +210,12 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items __attribute__((unused)))
 {
     d_sample_counter++;
-
     std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
-
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
-    //Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; //Get the output pointer
 
     print_receiver_status(in);
 
-    // ############ 1. READ EPHEMERIS FROM GLOBAL MAP ####
-    d_ls_pvt->gps_ephemeris_map = global_gps_ephemeris_map.get_map_copy();
+    // ############ 1. READ EPHEMERIS ####
 
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
@@ -197,46 +232,6 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                     d_rtcm_printer->lock_time(gps_ephemeris_iter->second, 0.0, in[i][0]);
                 }
         }
-
-    // ############ READ UTC_MODEL/IONO FROM GLOBAL MAPS ####
-    if (global_gps_utc_model_map.size() > 0)
-        {
-            // UTC MODEL data is shared for all the GPS satellites. Read always at a locked channel
-            signed int i = 0;
-            while(true)
-                {
-                    if (in[i][0].Flag_valid_pseudorange == true)
-                        {
-                            global_gps_utc_model_map.read(i, d_ls_pvt->gps_utc_model);
-                            break;
-                        }
-                    i++;
-                    if (i == (signed int)d_nchannels - 1)
-                        {
-                            break;
-                        }
-                }
-        }
-
-    if (global_gps_iono_map.size() > 0)
-        {
-            // IONO data is shared for all the GPS satellites. Read always at a locked channel
-            signed int i = 0;
-            while(true)
-                {
-                    if (in[i][0].Flag_valid_pseudorange == true)
-                        {
-                            global_gps_iono_map.read(i, d_ls_pvt->gps_iono);
-                            break;
-                        }
-                    i++;
-                    if (i == (signed int)d_nchannels - 1)
-                        {
-                            break;
-                        }
-                }
-        }
-
     // update SBAS data collections
     if (global_sbas_iono_map.size() > 0)
         {

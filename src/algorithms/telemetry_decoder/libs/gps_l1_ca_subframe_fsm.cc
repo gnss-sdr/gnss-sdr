@@ -238,11 +238,10 @@ GpsL1CaSubframeFsm::GpsL1CaSubframeFsm()
     d_nav.reset();
     i_channel_ID = 0;
     i_satellite_PRN = 0;
-    d_ephemeris_queue = 0;
-    d_iono_queue = 0;
-    d_utc_model_queue = 0;
     d_almanac_queue = 0;
     d_preamble_time_ms = 0;
+    d_subframe_ID=0;
+    d_flag_new_subframe=false;
     initiate(); //start the FSM
 }
 
@@ -254,53 +253,24 @@ void GpsL1CaSubframeFsm::gps_word_to_subframe(int position)
     std::memcpy(&d_subframe[position*GPS_WORD_LENGTH], &d_GPS_frame_4bytes, sizeof(char)*GPS_WORD_LENGTH);
 }
 
-
-
+void GpsL1CaSubframeFsm::clear_flag_new_subframe()
+{
+    d_flag_new_subframe=false;
+}
 void GpsL1CaSubframeFsm::gps_subframe_to_nav_msg()
 {
-    int subframe_ID;
+    //int subframe_ID;
     // NEW GPS SUBFRAME HAS ARRIVED!
-    subframe_ID = d_nav.subframe_decoder(this->d_subframe); //decode the subframe
+    d_subframe_ID = d_nav.subframe_decoder(this->d_subframe); //decode the subframe
     std::cout << "NAV Message: received subframe "
-              << subframe_ID << " from satellite "
+              << d_subframe_ID << " from satellite "
               << Gnss_Satellite(std::string("GPS"), i_satellite_PRN) << std::endl;
-
     d_nav.i_satellite_PRN = i_satellite_PRN;
     d_nav.i_channel_ID = i_channel_ID;
     d_nav.d_subframe_timestamp_ms = this->d_preamble_time_ms;
 
-    switch (subframe_ID)
-    {
-    case 3: //we have a new set of ephemeris data for the current SV
-        if (d_nav.satellite_validation() == true)
-            {
-                // get ephemeris object for this SV (mandatory)
-                Gps_Ephemeris ephemeris = d_nav.get_ephemeris();
-                d_ephemeris_queue->push(ephemeris);
-            }
-        break;
-    case 4: // Possible IONOSPHERE and UTC model update (page 18)
-        if (d_nav.flag_iono_valid == true)
-            {
-                Gps_Iono iono = d_nav.get_iono(); //notice that the read operation will clear the valid flag
-                d_iono_queue->push(iono);
-            }
-        if (d_nav.flag_utc_model_valid == true)
-            {
-                Gps_Utc_Model utc_model = d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
-                d_utc_model_queue->push(utc_model);
-            }
-        break;
-    case 5:
-        // get almanac (if available)
-        //TODO: implement almanac reader in navigation_message
-        break;
-    default:
-        break;
-    }
+    d_flag_new_subframe=true;
 }
-
-
 
 void GpsL1CaSubframeFsm::Event_gps_word_valid()
 {

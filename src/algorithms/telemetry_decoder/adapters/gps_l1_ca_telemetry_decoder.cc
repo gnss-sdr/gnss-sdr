@@ -40,10 +40,6 @@
 #include "gps_utc_model.h"
 #include "configuration_interface.h"
 
-
-extern concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
-extern concurrent_queue<Gps_Iono> global_gps_iono_queue;
-extern concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
 extern concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
 
 
@@ -68,10 +64,7 @@ GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(ConfigurationInterface* configu
     telemetry_decoder_ = gps_l1_ca_make_telemetry_decoder_cc(satellite_, queue_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     // set the navigation msg queue;
-    telemetry_decoder_->set_ephemeris_queue(&global_gps_ephemeris_queue);
-    telemetry_decoder_->set_iono_queue(&global_gps_iono_queue);
     telemetry_decoder_->set_almanac_queue(&global_gps_almanac_queue);
-    telemetry_decoder_->set_utc_model_queue(&global_gps_utc_model_queue);
 
     //decimation factor
     int decimation_factor = configuration->property(role + ".decimation_factor", 1);

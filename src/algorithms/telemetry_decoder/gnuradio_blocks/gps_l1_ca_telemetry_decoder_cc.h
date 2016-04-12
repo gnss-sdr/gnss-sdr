@@ -70,10 +70,7 @@ public:
     /*!
      * \brief Set the satellite data queue
      */
-    void set_ephemeris_queue(concurrent_queue<Gps_Ephemeris> *ephemeris_queue){d_GPS_FSM.d_ephemeris_queue = ephemeris_queue;} //!< Set the ephemeris data queue
-    void set_iono_queue(concurrent_queue<Gps_Iono> *iono_queue){d_GPS_FSM.d_iono_queue = iono_queue;}                          //!< Set the iono data queue
     void set_almanac_queue(concurrent_queue<Gps_Almanac> *almanac_queue){d_GPS_FSM.d_almanac_queue = almanac_queue;}           //!< Set the almanac data queue
-    void set_utc_model_queue(concurrent_queue<Gps_Utc_Model> *utc_model_queue){d_GPS_FSM.d_utc_model_queue = utc_model_queue;} //!< Set the UTC model data queue
 
     /*!
      * \brief This is where all signal processing takes place
@@ -142,6 +139,7 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+
 };
 
 #endif

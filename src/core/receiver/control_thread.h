@@ -124,24 +124,14 @@ private:
     void init();
 
     // Read {ephemeris, iono, utc, ref loc, ref time} assistance from a local XML file previously recorded
-    bool read_assistance_from_XML();
+    //bool read_assistance_from_XML();
 
     // Save {ephemeris, iono, utc, ref loc, ref time} assistance to a local XML file
-    bool save_assistance_to_XML();
+    //bool save_assistance_to_XML();
 
     void read_control_messages();
 
     void process_control_messages();
-
-    /*
-     * Blocking function that reads the GPS ephemeris queue and updates the shared ephemeris map, accessible from the PVT block
-     */
-    void gps_ephemeris_data_collector();
-
-    /*
-     * Blocking function that reads the UTC model queue and updates the shared map, accessible from the PVT block
-     */
-    void gps_utc_model_data_collector();
 
     /*
      * \brief Blocking function that reads the ref location queue and updates the shared map
@@ -152,11 +142,6 @@ private:
      * \brief Blocking function that reads the ref time queue and updates the shared map
      */
     void gps_ref_time_data_collector();
-
-    /*
-     * Blocking function that reads the iono model queue and updates the shared map, accessible from the PVT block
-     */
-    void gps_iono_data_collector();
 
     /*
      * Blocking function that reads the GPS assistance queue
@@ -195,9 +180,6 @@ private:
     unsigned int applied_actions_;
     boost::thread keyboard_thread_;
 
-    boost::thread gps_ephemeris_data_collector_thread_;
-    boost::thread gps_iono_data_collector_thread_;
-    boost::thread gps_utc_model_data_collector_thread_;
     boost::thread gps_acq_assist_data_collector_thread_;
     boost::thread gps_ref_location_data_collector_thread_;
     boost::thread gps_ref_time_data_collector_thread_;

@@ -325,6 +325,7 @@ void GNSSFlowgraph::connect()
             for (unsigned int i = 0; i < channels_count_; i++)
                 {
                     top_block_->connect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
+                    top_block_->msg_connect(channels_.at(i)->get_right_block(),pmt::mp("telemetry"),pvt_->get_left_block(),pmt::mp("telemetry"));
                 }
     }
     catch (std::exception& e)

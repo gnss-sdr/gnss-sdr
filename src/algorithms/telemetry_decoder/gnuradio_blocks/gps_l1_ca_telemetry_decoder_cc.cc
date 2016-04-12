@@ -63,6 +63,8 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
 {
     // Telemetry Bit transition synchronization port out
     this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
+    // Ephemeris data port out
+    this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -199,7 +201,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                                     // send asynchronous message to tracking to inform of frame sync and extend correlation time
                                     pmt::pmt_t value = pmt::from_double(d_preamble_time_seconds - 0.001);
                                     this->message_port_pub(pmt::mp("preamble_timestamp_s"), value);
-
                                     d_flag_frame_sync = true;
                                     if (corr_value < 0)
                                         {
@@ -271,6 +272,44 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                             memcpy(&d_GPS_FSM.d_GPS_frame_4bytes, &d_GPS_frame_4bytes, sizeof(char)*4);
                             d_GPS_FSM.d_preamble_time_ms = d_preamble_time_seconds * 1000.0;
                             d_GPS_FSM.Event_gps_word_valid();
+                            // send TLM data to PVT using asynchronous message queues
+                            if (d_GPS_FSM.d_flag_new_subframe==true)
+                            {
+                                switch (d_GPS_FSM.d_subframe_ID)
+                                {
+                                case 3: //we have a new set of ephemeris data for the current SV
+                                    if (d_GPS_FSM.d_nav.satellite_validation() == true)
+                                        {
+                                            // get ephemeris object for this SV (mandatory)
+                                            std::shared_ptr<Gps_Ephemeris> tmp_obj= std::make_shared<Gps_Ephemeris>();
+                                            *tmp_obj = d_GPS_FSM.d_nav.get_ephemeris();
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    break;
+                                case 4: // Possible IONOSPHERE and UTC model update (page 18)
+                                    if (d_GPS_FSM.d_nav.flag_iono_valid == true)
+                                        {
+                                            std::shared_ptr<Gps_Iono> tmp_obj= std::make_shared<Gps_Iono>();
+                                            *tmp_obj = d_GPS_FSM.d_nav.get_iono(); //notice that the read operation will clear the valid flag
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    if (d_GPS_FSM.d_nav.flag_utc_model_valid == true)
+                                        {
+                                            std::shared_ptr<Gps_Utc_Model> tmp_obj= std::make_shared<Gps_Utc_Model>();
+                                            *tmp_obj =  d_GPS_FSM.d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                        }
+                                    break;
+                                case 5:
+                                    // get almanac (if available)
+                                    //TODO: implement almanac reader in navigation_message
+                                    break;
+                                default:
+                                    break;
+                                }
+                                d_GPS_FSM.clear_flag_new_subframe();
+                            }
+
                             d_flag_parity = true;
                         }
                     else
@@ -397,7 +436,7 @@ void gps_l1_ca_telemetry_decoder_cc::set_channel(int channel)
                             LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
                                     << " Log file: " << d_dump_filename.c_str();
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure &e)
                     {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                     }

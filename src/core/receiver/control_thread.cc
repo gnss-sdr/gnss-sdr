@@ -56,19 +56,11 @@
 #include "file_configuration.h"
 #include "control_message_factory.h"
 
-
-
-extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-extern concurrent_map<Gps_Iono> global_gps_iono_map;
-extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
 extern concurrent_map<Gps_Almanac> global_gps_almanac_map;
 extern concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern concurrent_map<Gps_Ref_Time> global_gps_ref_time_map;
 extern concurrent_map<Gps_Ref_Location> global_gps_ref_location_map;
 
-extern concurrent_queue<Gps_Ephemeris> global_gps_ephemeris_queue;
-extern concurrent_queue<Gps_Iono> global_gps_iono_queue;
-extern concurrent_queue<Gps_Utc_Model> global_gps_utc_model_queue;
 extern concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
 extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 extern concurrent_queue<Gps_Ref_Location> global_gps_ref_location_queue;
@@ -78,13 +70,11 @@ extern concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
 extern concurrent_map<Galileo_Iono> global_galileo_iono_map;
 extern concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
 extern concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
-//extern concurrent_map<Galileo_Acq_Assist> global_gps_acq_assist_map;
 
 extern concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
 extern concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
 extern concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
 extern concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
-//extern concurrent_queue<Galileo_Acq_Assist> global_gps_acq_assist_queue;
 
 
 using google::LogMessage;
@@ -112,7 +102,7 @@ ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configurati
 ControlThread::~ControlThread()
 {
     // save navigation data to files
-    if (save_assistance_to_XML() == true) {}
+   // if (save_assistance_to_XML() == true) {}
 }
 
 
@@ -154,9 +144,7 @@ void ControlThread::run()
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
 
     //start the GNSS SV data collector thread
-    gps_ephemeris_data_collector_thread_ = boost::thread(&ControlThread::gps_ephemeris_data_collector, this);
-    gps_iono_data_collector_thread_ = boost::thread(&ControlThread::gps_iono_data_collector, this);
-    gps_utc_model_data_collector_thread_ = boost::thread(&ControlThread::gps_utc_model_data_collector, this);
+
     gps_acq_assist_data_collector_thread_= boost::thread(&ControlThread::gps_acq_assist_data_collector, this);
     gps_ref_location_data_collector_thread_ = boost::thread(&ControlThread::gps_ref_location_data_collector, this);
     gps_ref_time_data_collector_thread_ = boost::thread(&ControlThread::gps_ref_time_data_collector, this);
@@ -176,9 +164,6 @@ void ControlThread::run()
     flowgraph_->stop();
     stop_ = true;
     // sending empty data to terminate the threads
-    global_gps_ephemeris_queue.push(Gps_Ephemeris());
-    global_gps_iono_queue.push(Gps_Iono());
-    global_gps_utc_model_queue.push(Gps_Utc_Model());
     global_gps_almanac_queue.push(Gps_Almanac());
     global_gps_acq_assist_queue.push(Gps_Acq_Assist());
     global_gps_ref_location_queue.push(Gps_Ref_Location());
@@ -189,9 +174,6 @@ void ControlThread::run()
     global_galileo_almanac_queue.push(Galileo_Almanac());
 
     // Join GPS threads
-    gps_ephemeris_data_collector_thread_.join();
-    gps_iono_data_collector_thread_.join();
-    gps_utc_model_data_collector_thread_.join();
     gps_acq_assist_data_collector_thread_.join();
     gps_ref_location_data_collector_thread_.join();
     gps_ref_time_data_collector_thread_.join();
@@ -228,167 +210,167 @@ void ControlThread::set_control_queue(boost::shared_ptr<gr::msg_queue> control_q
 /*
  * Returns true if reading was successful
  */
-bool ControlThread::read_assistance_from_XML()
-{
-    // return variable (true == succeeded)
-    bool ret = false;
-    // getting names from the config file, if available
-    std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
-    std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
-    std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
-    std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
-    std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
-
-    std::cout << "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
-    if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
-        {
-            std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
-            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
-                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
-                    gps_eph_iter++)
-                {
-                    std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
-                    global_gps_ephemeris_queue.push(gps_eph_iter->second);
-                }
-            ret = true;
-        }
-    else
-        {
-            std::cout << "ERROR: SUPL client error reading XML" << std::endl;
-            std::cout << "Disabling SUPL assistance..." << std::endl;
-        }
-    // Only look for {utc, iono, ref time, ref location} if SUPL is enabled
-    bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
-    if (enable_gps_supl_assistance == true)
-        {
-            // Try to read UTC model from XML
-            if (supl_client_acquisition_.load_utc_xml(utc_xml_filename) == true)
-                {
-                    LOG(INFO) << "SUPL: Read XML UTC model";
-                    global_gps_utc_model_queue.push(supl_client_acquisition_.gps_utc);
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: couldn't read UTC model XML";
-                }
-
-            // Try to read Iono model from XML
-            if (supl_client_acquisition_.load_iono_xml(iono_xml_filename) == true)
-                {
-                    LOG(INFO) << "SUPL: Read XML IONO model";
-                    global_gps_iono_queue.push(supl_client_acquisition_.gps_iono);
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: couldn't read IONO model XML";
-                }
-
-            // Try to read Ref Time from XML
-            if (supl_client_acquisition_.load_ref_time_xml(ref_time_xml_filename) == true)
-                {
-                    LOG(INFO) << "SUPL: Read XML Ref Time";
-                    global_gps_ref_time_queue.push(supl_client_acquisition_.gps_time);
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: couldn't read Ref Time XML";
-                }
-
-            // Try to read Ref Location from XML
-            if (supl_client_acquisition_.load_ref_location_xml(ref_location_xml_filename) == true)
-                {
-                    LOG(INFO) << "SUPL: Read XML Ref Location";
-                    global_gps_ref_location_queue.push(supl_client_acquisition_.gps_ref_loc);
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: couldn't read Ref Location XML";
-                }
-        }
-
-    return ret;
-}
+//bool ControlThread::read_assistance_from_XML()
+//{
+//    // return variable (true == succeeded)
+//    bool ret = false;
+//    // getting names from the config file, if available
+//    std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
+//    std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
+//    std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
+//    std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
+//    std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
+//
+//    std::cout << "SUPL: Try read GPS ephemeris from XML file " << eph_xml_filename << std::endl;
+//    if (supl_client_ephemeris_.load_ephemeris_xml(eph_xml_filename) == true)
+//        {
+//            std::map<int,Gps_Ephemeris>::iterator gps_eph_iter;
+//            for(gps_eph_iter = supl_client_ephemeris_.gps_ephemeris_map.begin();
+//                    gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.end();
+//                    gps_eph_iter++)
+//                {
+//                    std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
+//                    global_gps_ephemeris_queue.push(gps_eph_iter->second);
+//                }
+//            ret = true;
+//        }
+//    else
+//        {
+//            std::cout << "ERROR: SUPL client error reading XML" << std::endl;
+//            std::cout << "Disabling SUPL assistance..." << std::endl;
+//        }
+//    // Only look for {utc, iono, ref time, ref location} if SUPL is enabled
+//    bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
+//    if (enable_gps_supl_assistance == true)
+//        {
+//            // Try to read UTC model from XML
+//            if (supl_client_acquisition_.load_utc_xml(utc_xml_filename) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Read XML UTC model";
+//                    global_gps_utc_model_queue.push(supl_client_acquisition_.gps_utc);
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: couldn't read UTC model XML";
+//                }
+//
+//            // Try to read Iono model from XML
+//            if (supl_client_acquisition_.load_iono_xml(iono_xml_filename) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Read XML IONO model";
+//                    global_gps_iono_queue.push(supl_client_acquisition_.gps_iono);
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: couldn't read IONO model XML";
+//                }
+//
+//            // Try to read Ref Time from XML
+//            if (supl_client_acquisition_.load_ref_time_xml(ref_time_xml_filename) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Read XML Ref Time";
+//                    global_gps_ref_time_queue.push(supl_client_acquisition_.gps_time);
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: couldn't read Ref Time XML";
+//                }
+//
+//            // Try to read Ref Location from XML
+//            if (supl_client_acquisition_.load_ref_location_xml(ref_location_xml_filename) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Read XML Ref Location";
+//                    global_gps_ref_location_queue.push(supl_client_acquisition_.gps_ref_loc);
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: couldn't read Ref Location XML";
+//                }
+//        }
+//
+//    return ret;
+//}
 
 
 // Returns true if reading was successful
-bool ControlThread::save_assistance_to_XML()
-{
-    // return variable (true == succeeded)
-    bool ret = false;
-    // getting names from the config file, if available
-    std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
-    std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
-    std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
-    std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
-    std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
-
-    LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename;
-    std::map<int, Gps_Ephemeris> eph_copy = global_gps_ephemeris_map.get_map_copy();
-    if (supl_client_ephemeris_.save_ephemeris_map_xml(eph_xml_filename, eph_copy) == true)
-        {
-            LOG(INFO) << "SUPL: Successfully saved ephemeris XML file";
-            ret = true;
-        }
-    else
-        {
-            LOG(INFO) << "SUPL: Error while trying to save ephemeris XML file. Maybe an empty map?";
-            ret = false;
-        }
-    // Only try to save {utc, iono, ref time, ref location} if SUPL is enabled
-    bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
-    if (enable_gps_supl_assistance == true)
-        {
-            // try to save utc model xml file
-            std::map<int, Gps_Utc_Model> utc_copy = global_gps_utc_model_map.get_map_copy();
-            if (supl_client_acquisition_.save_utc_map_xml(utc_xml_filename, utc_copy) == true)
-                {
-                    LOG(INFO) << "SUPL: Successfully saved UTC Model XML file";
-                    //ret = true;
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: Error while trying to save utc XML file";
-                    //ret = false;
-                }
-            // try to save iono model xml file
-            std::map<int, Gps_Iono> iono_copy = global_gps_iono_map.get_map_copy();
-            if (supl_client_acquisition_.save_iono_map_xml(iono_xml_filename, iono_copy) == true)
-                {
-                    LOG(INFO) << "SUPL: Successfully saved IONO Model XML file";
-                    //ret = true;
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: Error while trying to save iono XML file";
-                    //ret = false;
-                }
-            // try to save ref time xml file
-            std::map<int, Gps_Ref_Time> ref_time_copy = global_gps_ref_time_map.get_map_copy();
-            if (supl_client_acquisition_.save_ref_time_map_xml(ref_time_xml_filename, ref_time_copy) == true)
-                {
-                    LOG(INFO) << "SUPL: Successfully saved Ref Time XML file";
-                    //ret = true;
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: Error while trying to save ref time XML file";
-                    //ref = false;
-                }
-            // try to save ref location xml file
-            std::map<int, Gps_Ref_Location> ref_location_copy = global_gps_ref_location_map.get_map_copy();
-            if (supl_client_acquisition_.save_ref_location_map_xml(ref_location_xml_filename, ref_location_copy) == true)
-                {
-                    LOG(INFO) << "SUPL: Successfully saved Ref Location XML file";
-                    //ref = true;
-                }
-            else
-                {
-                    LOG(INFO) << "SUPL: Error while trying to save ref location XML file";
-                    //ret = false;
-                }
-        }
-    return ret;
-}
+//bool ControlThread::save_assistance_to_XML()
+//{
+//    // return variable (true == succeeded)
+//    bool ret = false;
+//    // getting names from the config file, if available
+//    std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
+//    std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
+//    std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
+//    std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
+//    std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
+//
+//    LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename;
+//    std::map<int, Gps_Ephemeris> eph_copy = global_gps_ephemeris_map.get_map_copy();
+//    if (supl_client_ephemeris_.save_ephemeris_map_xml(eph_xml_filename, eph_copy) == true)
+//        {
+//            LOG(INFO) << "SUPL: Successfully saved ephemeris XML file";
+//            ret = true;
+//        }
+//    else
+//        {
+//            LOG(INFO) << "SUPL: Error while trying to save ephemeris XML file. Maybe an empty map?";
+//            ret = false;
+//        }
+//    // Only try to save {utc, iono, ref time, ref location} if SUPL is enabled
+//    bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
+//    if (enable_gps_supl_assistance == true)
+//        {
+//            // try to save utc model xml file
+//            std::map<int, Gps_Utc_Model> utc_copy = global_gps_utc_model_map.get_map_copy();
+//            if (supl_client_acquisition_.save_utc_map_xml(utc_xml_filename, utc_copy) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Successfully saved UTC Model XML file";
+//                    //ret = true;
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: Error while trying to save utc XML file";
+//                    //ret = false;
+//                }
+//            // try to save iono model xml file
+//            std::map<int, Gps_Iono> iono_copy = global_gps_iono_map.get_map_copy();
+//            if (supl_client_acquisition_.save_iono_map_xml(iono_xml_filename, iono_copy) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Successfully saved IONO Model XML file";
+//                    //ret = true;
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: Error while trying to save iono XML file";
+//                    //ret = false;
+//                }
+//            // try to save ref time xml file
+//            std::map<int, Gps_Ref_Time> ref_time_copy = global_gps_ref_time_map.get_map_copy();
+//            if (supl_client_acquisition_.save_ref_time_map_xml(ref_time_xml_filename, ref_time_copy) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Successfully saved Ref Time XML file";
+//                    //ret = true;
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: Error while trying to save ref time XML file";
+//                    //ref = false;
+//                }
+//            // try to save ref location xml file
+//            std::map<int, Gps_Ref_Location> ref_location_copy = global_gps_ref_location_map.get_map_copy();
+//            if (supl_client_acquisition_.save_ref_location_map_xml(ref_location_xml_filename, ref_location_copy) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Successfully saved Ref Location XML file";
+//                    //ref = true;
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: Error while trying to save ref location XML file";
+//                    //ret = false;
+//                }
+//        }
+//    return ret;
+//}
 
 
 void ControlThread::init()
@@ -441,7 +423,7 @@ void ControlThread::init()
             if (SUPL_read_gps_assistance_xml == true)
                 {
                     // read assistance from file
-                    if (read_assistance_from_XML()) {}
+                    //if (read_assistance_from_XML()) {}
                 }
             else
                 {
@@ -458,7 +440,10 @@ void ControlThread::init()
                                     gps_eph_iter++)
                                 {
                                     std::cout << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first << std::endl;
-                                    global_gps_ephemeris_map.write(gps_eph_iter->second.i_satellite_PRN, gps_eph_iter->second);
+                                    //TODO: Now the ephemeris are transported from telemetry decoder to PVT using msg queues.
+                                    // in order to assist the receiver, it is needed to produce a GNURadio message from this thread to the PVT message queue
+                                    // global queues or maps are deprecated in this version
+                                    //global_gps_ephemeris_map.write(gps_eph_iter->second.i_satellite_PRN, gps_eph_iter->second);
                                 }
                             //Save ephemeris to XML file
                             std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
@@ -475,11 +460,11 @@ void ControlThread::init()
                         {
                             std::cout << "ERROR: SUPL client for Ephemeris returned " << error << std::endl;
                             std::cout << "Please check internet connection and SUPL server configuration" << error << std::endl;
-                            std::cout << "Trying to read ephemeris from XML file" << std::endl;
-                            if (read_assistance_from_XML() == false)
-                                {
-                                    std::cout << "ERROR: Could not read Ephemeris file: Disabling SUPL assistance.." << std::endl;
-                                }
+                            //std::cout << "Trying to read ephemeris from XML file" << std::endl;
+                            //if (read_assistance_from_XML() == false)
+                            //    {
+                            //        std::cout << "ERROR: Could not read Ephemeris file: Disabling SUPL assistance.." << std::endl;
+                            //    }
                         }
 
                     // Request almanac , IONO and UTC Model
@@ -499,12 +484,14 @@ void ControlThread::init()
                             if (supl_client_ephemeris_.gps_iono.valid == true)
                                 {
                                     std::cout << "SUPL: Received GPS Iono" << std::endl;
-                                    global_gps_iono_map.write(0, supl_client_ephemeris_.gps_iono);
+                                    //TODO: use msg queues
+                                    //global_gps_iono_map.write(0, supl_client_ephemeris_.gps_iono);
                                 }
                             if (supl_client_ephemeris_.gps_utc.valid == true)
 			        {
                                     std::cout << "SUPL: Received GPS UTC Model" << std::endl;
-                                    global_gps_utc_model_map.write(0, supl_client_ephemeris_.gps_utc);
+                                    //TODO: use msg queues
+                                    //global_gps_utc_model_map.write(0, supl_client_ephemeris_.gps_utc);
                                 }
                         }
                     else
@@ -635,55 +622,6 @@ void ControlThread::gps_acq_assist_data_collector()
         }
 }
 
-
-void ControlThread::gps_ephemeris_data_collector()
-{
-    // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
-    Gps_Ephemeris gps_eph;
-    Gps_Ephemeris gps_eph_old;
-    while(stop_ == false)
-        {
-            global_gps_ephemeris_queue.wait_and_pop(gps_eph);
-            if(gps_eph.i_satellite_PRN == 0) break;
-
-            // DEBUG MESSAGE
-            LOG(INFO) << "Ephemeris record has arrived from SAT ID "
-                      << gps_eph.i_satellite_PRN << " (Block "
-                      <<  gps_eph.satelliteBlock[gps_eph.i_satellite_PRN] << ")";
-            // insert new ephemeris record to the global ephemeris map
-            if (global_gps_ephemeris_map.read(gps_eph.i_satellite_PRN, gps_eph_old))
-                {
-                    // Check the EPHEMERIS timestamp. If it is newer, then update the ephemeris
-                    if (gps_eph.i_GPS_week > gps_eph_old.i_GPS_week)
-                        {
-                            std::cout << "Ephemeris record updated (GPS week=" << gps_eph.i_GPS_week << std::endl;
-                            global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN, gps_eph);
-                        }
-                    else
-                        {
-                            if (gps_eph.d_Toe > gps_eph_old.d_Toe)
-                                {
-                                    LOG(INFO) << "Ephemeris record updated (Toe=" << gps_eph.d_Toe;
-                                    global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN, gps_eph);
-                                }
-                            else
-                                {
-                                    LOG(INFO) << "Not updating the existing ephemeris";
-                                }
-                        }
-                }
-            else
-                {
-                    // insert new ephemeris record
-                    LOG(INFO) << "New Ephemeris record inserted with Toe="
-                              << gps_eph.d_Toe<<" and GPS Week="
-                              << gps_eph.i_GPS_week;
-                    global_gps_ephemeris_map.write(gps_eph.i_satellite_PRN, gps_eph);
-                }
-        }
-}
-
-
 void ControlThread::galileo_ephemeris_data_collector()
 {
     // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
@@ -734,23 +672,6 @@ void ControlThread::galileo_ephemeris_data_collector()
                 }
         }
 
-}
-
-
-void ControlThread::gps_iono_data_collector()
-{
-    // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
-    Gps_Iono gps_iono;
-    while(stop_ == false)
-        {
-            global_gps_iono_queue.wait_and_pop(gps_iono);
-            if(gps_iono.valid == true)
-                {
-                    LOG(INFO) << "New IONO record has arrived ";
-                }
-            // there is no timestamp for the iono data, new entries must always be added
-            global_gps_iono_map.write(0, gps_iono);
-        }
 }
 
 
@@ -812,40 +733,6 @@ void ControlThread::galileo_iono_data_collector()
                     // insert new ephemeris record
                     LOG(INFO) << "New IONO record inserted in global map";
                     global_galileo_iono_map.write(0, galileo_iono);
-                }
-        }
-}
-
-
-void ControlThread::gps_utc_model_data_collector()
-{
-    // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
-    Gps_Utc_Model gps_utc;
-    Gps_Utc_Model gps_utc_old;
-    while(stop_ == false)
-        {
-            global_gps_utc_model_queue.wait_and_pop(gps_utc);
-            LOG(INFO) << "New UTC MODEL record has arrived with A0=" << gps_utc.d_A0;
-            // insert new utc record to the global utc model map
-            if (global_gps_utc_model_map.read(0, gps_utc_old))
-                {
-                    if (gps_utc.i_WN_T > gps_utc_old.i_WN_T)
-                        {
-                            global_gps_utc_model_map.write(0, gps_utc);
-                        }
-                    else if ((gps_utc.i_WN_T == gps_utc_old.i_WN_T) and (gps_utc.d_t_OT > gps_utc_old.d_t_OT))
-                        {
-                            global_gps_utc_model_map.write(0, gps_utc);
-                        }
-                    else
-                        {
-                            LOG(INFO) << "Not updating the existing utc model";
-                        }
-                }
-            else
-                {
-                    // insert new utc model record
-                    global_gps_utc_model_map.write(0, gps_utc);
                 }
         }
 }

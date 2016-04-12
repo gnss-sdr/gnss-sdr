@@ -96,6 +96,9 @@ private:
                       bool flag_rtcm_server,
                       bool flag_rtcm_tty_port,
                       std::string rtcm_dump_devname);
+
+    void msg_handler_telemetry(pmt::pmt_t msg);
+
     boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool b_rinex_header_writen;
@@ -122,6 +125,7 @@ private:
     double d_rx_time;
     double d_TOW_at_curr_symbol_constellation;
     std::shared_ptr<hybrid_ls_pvt> d_ls_pvt;
+    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
     bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b);
 
 public:

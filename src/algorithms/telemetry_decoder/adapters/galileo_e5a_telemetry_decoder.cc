@@ -45,12 +45,6 @@
 #include "configuration_interface.h"
 
 
-extern concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
-extern concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
-extern concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
-extern concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
-
-
 using google::LogMessage;
 
 GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* configuration,
@@ -71,12 +65,6 @@ GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(ConfigurationInterface* c
     // make telemetry decoder object
     telemetry_decoder_ = galileo_e5a_make_telemetry_decoder_cc(satellite_, queue_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-    // set the navigation msg queue;
-    telemetry_decoder_->set_ephemeris_queue(&global_galileo_ephemeris_queue);
-    telemetry_decoder_->set_iono_queue(&global_galileo_iono_queue);
-    telemetry_decoder_->set_almanac_queue(&global_galileo_almanac_queue);
-    telemetry_decoder_->set_utc_model_queue(&global_galileo_utc_model_queue);
-
     DLOG(INFO) << "global navigation message queue assigned to telemetry_decoder ("<< telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
 }

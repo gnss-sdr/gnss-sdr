@@ -62,12 +62,6 @@ public:
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
 
-    // queues to communicate broadcasted SBAS data to other blocks of GNSS-SDR
-    void set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue);                 //!< Set raw msg queue
-    void set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue);         //!< Set iono queue
-    void set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue);  //!< Set sat correction queue
-    void set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue);           //!< Set SBAS ephemeis queue
-
     /*!
      * \brief This is where all signal processing takes place
      */

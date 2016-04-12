@@ -98,10 +98,6 @@ class Sbas_Telemetry_Data
 {
 public:
     int update(Sbas_Raw_Msg sbas_raw_msg);
-    void set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue);
-    void set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue);
-    void set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue);
-    void set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue);
 
     /*!
      * Default constructor
@@ -117,11 +113,6 @@ private:
     std::map<int, Long_Term_Correction> emitted_long_term_corrections;
 
     Sbas_Time_Relation mt12_time_ref;
-
-    concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue;
-    concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue;
-    concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue;
-    concurrent_queue<Sbas_Ephemeris> *ephemeris_queue;
 
     int decode_mt12(Sbas_Raw_Msg sbas_raw_msg);
 

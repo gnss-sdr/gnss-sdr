@@ -53,11 +53,6 @@ Sbas_Telemetry_Data::Sbas_Telemetry_Data()
     level_trace = 0;    // level of trace
     tick_trace = 0;     // tick time at traceopen (ms)
 
-    raw_msg_queue = nullptr;
-    iono_queue = nullptr;
-    sat_corr_queue = nullptr;
-    ephemeris_queue = nullptr;
-
     d_nav.sbssat.iodp = -1; // make sure that in any case iodp is not equal to the received one
     prn_mask_changed();     // invalidate all satellite corrections
 
@@ -67,31 +62,6 @@ Sbas_Telemetry_Data::Sbas_Telemetry_Data()
             igp_mask_changed(band);
         }
 }
-
-
-void Sbas_Telemetry_Data::set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue)
-{
-    this->raw_msg_queue = raw_msg_queue;
-}
-
-
-void Sbas_Telemetry_Data::set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue)
-{
-    this->iono_queue = iono_queue;
-}
-
-
-void Sbas_Telemetry_Data::set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue)
-{
-    this->sat_corr_queue = sat_corr_queue;
-}
-
-
-void Sbas_Telemetry_Data::set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue)
-{
-    this->ephemeris_queue = ephemeris_queue;
-}
-
 
 Sbas_Telemetry_Data::~Sbas_Telemetry_Data()
 {
@@ -151,7 +121,8 @@ int Sbas_Telemetry_Data::update(Sbas_Raw_Msg sbas_raw_msg)
     }
 
     // send it to raw message queue
-    if(raw_msg_queue != nullptr) raw_msg_queue->push(sbas_raw_msg);
+    //TODO: update to new GNURadio msg queue
+    //if(raw_msg_queue != nullptr) raw_msg_queue->push(sbas_raw_msg);
     return parsing_result;
 }
 
@@ -201,7 +172,8 @@ void Sbas_Telemetry_Data::updated_sbas_ephemeris(Sbas_Raw_Msg msg)
     seph.print(ss);
     VLOG(FLOW) << ss.str();
 
-    if(ephemeris_queue != nullptr) ephemeris_queue->push(seph);
+    //todo_Update to new GNURadio msg queue
+    //if(ephemeris_queue != nullptr) ephemeris_queue->push(seph);
 }
 
 
@@ -242,7 +214,8 @@ void Sbas_Telemetry_Data::received_iono_correction()
     VLOG(EVENT) << ss.str();
 
     // send to SBAS ionospheric correction queue
-    if(iono_queue != nullptr) iono_queue->push(iono_corr);
+    //todo_Update to new GNURadio msg queue
+    //if(iono_queue != nullptr) iono_queue->push(iono_corr);
 }
 
 
@@ -376,7 +349,8 @@ void Sbas_Telemetry_Data::updated_satellite_corrections()
 
                     if(fast_correction_updated || long_term_correction_updated)
                         {
-                            if(sat_corr_queue != nullptr) sat_corr_queue->push(sbas_satelite_correction);
+                            //todo_Update to new GNURadio msg queue
+                            //if(sat_corr_queue != nullptr) sat_corr_queue->push(sbas_satelite_correction);
                         }
                 }
             VLOG(FLOW) << ss.str(); ss.str("");

@@ -115,15 +115,6 @@ private:
     // navigation message vars
     Galileo_Navigation_Message d_nav;
 
-    // Galileo ephemeris queue
-    concurrent_queue<Galileo_Ephemeris> *d_ephemeris_queue;
-    // ionospheric parameters queue
-    concurrent_queue<Galileo_Iono> *d_iono_queue;
-    // UTC model parameters queue
-    concurrent_queue<Galileo_Utc_Model> *d_utc_model_queue;
-    // Almanac queue
-    concurrent_queue<Galileo_Almanac> *d_almanac_queue;
-
     boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     Gnss_Satellite d_satellite;

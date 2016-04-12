@@ -42,11 +42,6 @@
 
 using google::LogMessage;
 
-extern concurrent_queue<Sbas_Raw_Msg> global_sbas_raw_msg_queue;
-extern concurrent_map<Sbas_Ionosphere_Correction> global_sbas_iono_map;
-extern concurrent_map<Sbas_Satellite_Correction> global_sbas_sat_corr_map;
-extern concurrent_map<Sbas_Ephemeris> global_sbas_ephemeris_map;
-
 gps_l1_ca_pvt_cc_sptr
 gps_l1_ca_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
 {
@@ -62,7 +57,7 @@ void gps_l1_ca_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
            // ### GPS EPHEMERIS ###
            std::shared_ptr<Gps_Ephemeris> gps_eph;
            gps_eph=  boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
-           LOG(INFO) << "Ephemeris record has arrived from SAT ID "
+           DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
                      << gps_eph->i_satellite_PRN << " (Block "
                      <<  gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
                      << "inserted with Toe="<< gps_eph->d_Toe<<" and GPS Week="
@@ -71,19 +66,69 @@ void gps_l1_ca_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
            d_ls_pvt->gps_ephemeris_map[gps_eph->i_satellite_PRN]=*gps_eph;
        }else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>) )
        {
-           // ### IONO ###
+           // ### GPS IONO ###
            std::shared_ptr<Gps_Iono> gps_iono;
            gps_iono=  boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
            d_ls_pvt->gps_iono=*gps_iono;
-           LOG(INFO) << "New IONO record has arrived ";
+           DLOG(INFO) << "New IONO record has arrived ";
        }else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>) )
        {
-           // ### UTC MODEL ###
+           // ### GPS UTC MODEL ###
            std::shared_ptr<Gps_Utc_Model> gps_utc_model;
            gps_utc_model=  boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
            d_ls_pvt->gps_utc_model=*gps_utc_model;
-           LOG(INFO) << "New UTC record has arrived ";
+           DLOG(INFO) << "New UTC record has arrived ";
+       }else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Sbas_Ionosphere_Correction>) )
+       {
+           // ### SBAS IONO ###
+           std::shared_ptr<Sbas_Ionosphere_Correction> sbas_iono;
+           sbas_iono=  boost::any_cast<std::shared_ptr<Sbas_Ionosphere_Correction>>(pmt::any_ref(msg));
+           d_ls_pvt->sbas_iono=*sbas_iono;
+           DLOG(INFO) << "New SBAS IONO record has arrived ";
        }
+
+       //TODO: add SBAS correction maps here
+       //d_ls_pvt->sbas_sat_corr_map = global_sbas_sat_corr_map.get_map_copy();
+       //d_ls_pvt->sbas_ephemeris_map = global_sbas_ephemeris_map.get_map_copy();
+
+       else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Sbas_Raw_Msg>) )
+              {
+           std::shared_ptr<Sbas_Raw_Msg> sbas_raw_msg_ptr;
+           sbas_raw_msg_ptr=  boost::any_cast<std::shared_ptr<Sbas_Raw_Msg>>(pmt::any_ref(msg));
+           Sbas_Raw_Msg sbas_raw_msg=*sbas_raw_msg_ptr;
+           // read SBAS raw messages directly from queue and write them into rinex file
+           // create the header of not yet done
+           if(!b_rinex_sbs_header_writen)
+               {
+                   rp->rinex_sbs_header(rp->sbsFile);
+                   b_rinex_sbs_header_writen = true;
+               }
+
+           // Define the RX time of the SBAS message by using the GPS time.
+           // It has only an effect if there has not been yet a SBAS MT12 available
+           // when the message was received.
+           if(sbas_raw_msg.get_rx_time_obj().is_related() == false
+                   && gnss_pseudoranges_map.size() > 0
+                   && d_ls_pvt->gps_ephemeris_map.size() > 0)
+               {
+                   // doesn't matter which channel/satellite we choose
+                   Gnss_Synchro gs = gnss_pseudoranges_map.begin()->second;
+                   Gps_Ephemeris eph = d_ls_pvt->gps_ephemeris_map.begin()->second;
+
+                   double relative_rx_time = gs.Tracking_timestamp_secs;
+                   int gps_week = eph.i_GPS_week;
+                   double gps_sec = gs.d_TOW_at_current_symbol;
+
+                   Sbas_Time_Relation time_rel(relative_rx_time, gps_week, gps_sec);
+                   sbas_raw_msg.relate(time_rel);
+               }
+
+           // send the message to the rinex logger if it has a valid GPS time stamp
+           if(sbas_raw_msg.get_rx_time_obj().is_related())
+               {
+                   rp->log_rinex_sbs(rp->sbsFile, sbas_raw_msg);
+               }
+          }
 
     }
     catch(boost::bad_any_cast& e)
@@ -180,18 +225,14 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         }
 }
 
-
-
 gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc()
 {}
-
 
 
 bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b)
 {
     return (a.second.Pseudorange_m) < (b.second.Pseudorange_m);
 }
-
 
 void gps_l1_ca_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
 {
@@ -209,14 +250,13 @@ void gps_l1_ca_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchroniza
 int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items __attribute__((unused)))
 {
+    gnss_pseudoranges_map.clear();
     d_sample_counter++;
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
 
     print_receiver_status(in);
 
-    // ############ 1. READ EPHEMERIS ####
-
+    // ############ 1. READ PSEUDORANGES ####
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
             std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
@@ -232,52 +272,6 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                     d_rtcm_printer->lock_time(gps_ephemeris_iter->second, 0.0, in[i][0]);
                 }
         }
-    // update SBAS data collections
-    if (global_sbas_iono_map.size() > 0)
-        {
-            // SBAS ionospheric correction is shared for all the GPS satellites. Read always at ID=0
-            global_sbas_iono_map.read(0, d_ls_pvt->sbas_iono);
-        }
-    d_ls_pvt->sbas_sat_corr_map = global_sbas_sat_corr_map.get_map_copy();
-    d_ls_pvt->sbas_ephemeris_map = global_sbas_ephemeris_map.get_map_copy();
-
-    // read SBAS raw messages directly from queue and write them into rinex file
-    Sbas_Raw_Msg sbas_raw_msg;
-    while (global_sbas_raw_msg_queue.try_pop(sbas_raw_msg))
-        {
-            // create the header of not yet done
-            if(!b_rinex_sbs_header_writen)
-                {
-                    rp->rinex_sbs_header(rp->sbsFile);
-                    b_rinex_sbs_header_writen = true;
-                }
-
-            // Define the RX time of the SBAS message by using the GPS time.
-            // It has only an effect if there has not been yet a SBAS MT12 available
-            // when the message was received.
-            if(sbas_raw_msg.get_rx_time_obj().is_related() == false
-                    && gnss_pseudoranges_map.size() > 0
-                    && d_ls_pvt->gps_ephemeris_map.size() > 0)
-                {
-                    // doesn't matter which channel/satellite we choose
-                    Gnss_Synchro gs = gnss_pseudoranges_map.begin()->second;
-                    Gps_Ephemeris eph = d_ls_pvt->gps_ephemeris_map.begin()->second;
-
-                    double relative_rx_time = gs.Tracking_timestamp_secs;
-                    int gps_week = eph.i_GPS_week;
-                    double gps_sec = gs.d_TOW_at_current_symbol;
-
-                    Sbas_Time_Relation time_rel(relative_rx_time, gps_week, gps_sec);
-                    sbas_raw_msg.relate(time_rel);
-                }
-
-            // send the message to the rinex logger if it has a valid GPS time stamp
-            if(sbas_raw_msg.get_rx_time_obj().is_related())
-                {
-                    rp->log_rinex_sbs(rp->sbsFile, sbas_raw_msg);
-                }
-        }
-
     // ############ 2 COMPUTE THE PVT ################################
     if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
         {

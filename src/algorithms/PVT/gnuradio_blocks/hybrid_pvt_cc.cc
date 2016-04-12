@@ -40,19 +40,89 @@
 
 using google::LogMessage;
 
-extern concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
-extern concurrent_map<Galileo_Iono> global_galileo_iono_map;
-extern concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
-extern concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
-
-extern concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-extern concurrent_map<Gps_Iono> global_gps_iono_map;
-extern concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-
 hybrid_pvt_cc_sptr
 hybrid_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
 {
     return hybrid_pvt_cc_sptr(new hybrid_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
+}
+
+
+
+void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
+{
+    try {
+       if( pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>) )
+       {
+           // ### GPS EPHEMERIS ###
+           std::shared_ptr<Gps_Ephemeris> gps_eph;
+           gps_eph=  boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
+           DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
+                     << gps_eph->i_satellite_PRN << " (Block "
+                     <<  gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
+                     << "inserted with Toe="<< gps_eph->d_Toe<<" and GPS Week="
+                     << gps_eph->i_GPS_week;
+           // update/insert new ephemeris record to the global ephemeris map
+           d_ls_pvt->gps_ephemeris_map[gps_eph->i_satellite_PRN]=*gps_eph;
+       }
+       else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>) )
+       {
+           // ### GPS IONO ###
+           std::shared_ptr<Gps_Iono> gps_iono;
+           gps_iono=  boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
+           d_ls_pvt->gps_iono=*gps_iono;
+           DLOG(INFO) << "New IONO record has arrived ";
+       }
+       else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>) )
+       {
+           // ### GPS UTC MODEL ###
+           std::shared_ptr<Gps_Utc_Model> gps_utc_model;
+           gps_utc_model=  boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
+           d_ls_pvt->gps_utc_model=*gps_utc_model;
+           DLOG(INFO) << "New UTC record has arrived ";
+       }
+       if( pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>) )
+       {
+           // ### Galileo EPHEMERIS ###
+           std::shared_ptr<Galileo_Ephemeris> galileo_eph;
+           galileo_eph=  boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+           // insert new ephemeris record
+           DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
+                     << ", GALILEO Week Number =" << galileo_eph->WN_5
+                     << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
+           // update/insert new ephemeris record to the global ephemeris map
+           d_ls_pvt->galileo_ephemeris_map[galileo_eph->i_satellite_PRN]=*galileo_eph;
+       }
+       else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>) )
+       {
+           // ### Galileo IONO ###
+           std::shared_ptr<Galileo_Iono> galileo_iono;
+           galileo_iono=  boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
+           d_ls_pvt->galileo_iono=*galileo_iono;
+           DLOG(INFO) << "New IONO record has arrived ";
+       }
+       else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>) )
+       {
+           // ### Galileo UTC MODEL ###
+           std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
+           galileo_utc_model=  boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
+           d_ls_pvt->galileo_utc_model=*galileo_utc_model;
+           DLOG(INFO) << "New UTC record has arrived ";
+       }
+       else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>) )
+       {
+           // ### Galileo Almanac ###
+           std::shared_ptr<Galileo_Almanac> galileo_almanac;
+           galileo_almanac=  boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
+           // update/insert new ephemeris record to the global ephemeris map
+           d_ls_pvt->galileo_almanac=*galileo_almanac;
+           DLOG(INFO) << "New Galileo Almanac has arrived ";
+       }
+
+    }
+    catch(boost::bad_any_cast& e)
+    {
+       DLOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+    }
 }
 
 
@@ -68,6 +138,11 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_q
     d_nchannels = nchannels;
     d_dump_filename = dump_filename;
     std::string dump_ls_pvt_filename = dump_filename;
+
+    // GPS Ephemeris data message port in
+    this->message_port_register_in(pmt::mp("telemetry"));
+    this->set_msg_handler(pmt::mp("telemetry"),
+            boost::bind(&hybrid_pvt_cc::msg_handler_telemetry, this, _1));
 
     //initialize kml_printer
     std::string kml_dump_filename;
@@ -158,7 +233,7 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
     d_sample_counter++;
     bool arrived_galileo_almanac = false;
 
-    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+    gnss_pseudoranges_map.clear();
 
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0]; //Get the input pointer
 
@@ -174,116 +249,6 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                     d_rx_time = in[i][0].d_TOW_hybrid_at_current_symbol; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges)
                 }
         }
-
-    // ############ 1. READ GALILEO EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
-
-    if (global_galileo_ephemeris_map.size() > 0)
-        {
-            d_ls_pvt->galileo_ephemeris_map = global_galileo_ephemeris_map.get_map_copy();
-        }
-
-    if (global_galileo_utc_model_map.size() > 0)
-        {
-            // UTC MODEL data is shared for all the Galileo satellites. Read always at a locked channel
-            signed int i = 0;
-            while(true)
-                {
-                    if (in[i][0].Flag_valid_pseudorange == true)
-                        {
-                            global_galileo_utc_model_map.read(i, d_ls_pvt->galileo_utc_model);
-                            break;
-                        }
-                    i++;
-                    if (i == (signed int)d_nchannels - 1)
-                        {
-                            break;
-                        }
-                }
-        }
-
-    if (global_galileo_iono_map.size() > 0)
-        {
-            // IONO data is shared for all Galileo satellites. Read always at a locked channel
-            signed int i = 0;
-            while(true)
-                {
-                    if (in[i][0].Flag_valid_pseudorange == true)
-                        {
-                            global_galileo_iono_map.read(i, d_ls_pvt->galileo_iono);
-                            break;
-                        }
-                    i++;
-                    if (i == (signed int)d_nchannels - 1)
-                        {
-                            break;
-                        }
-                }
-        }
-
-    if (global_galileo_almanac_map.size() > 0)
-        {
-            //  data is shared for all Galileo satellites. Read always at a locked channel
-            signed int i = 0;
-            while(true)
-                {
-                    if (in[i][0].Flag_valid_pseudorange == true)
-                        {
-                            arrived_galileo_almanac = global_galileo_almanac_map.read(i, d_ls_pvt->galileo_almanac);
-                            break;
-                        }
-                    i++;
-                    if (i == (signed int)d_nchannels - 1)
-                        {
-                            break;
-                        }
-                }
-        }
-
-    // ############ 1. READ GPS EPHEMERIS/UTC_MODE/IONO FROM GLOBAL MAPS ####
-
-    if (global_gps_ephemeris_map.size() > 0)
-        {
-            d_ls_pvt->gps_ephemeris_map = global_gps_ephemeris_map.get_map_copy();
-        }
-
-    if (global_gps_utc_model_map.size() > 0)
-        {
-            // UTC MODEL data is shared for all the GPS satellites. Read always at a locked channel
-            signed int i = 0;
-            while(true)
-                {
-                    if (in[i][0].Flag_valid_pseudorange == true)
-                        {
-                            global_gps_utc_model_map.read(i, d_ls_pvt->gps_utc_model);
-                            break;
-                        }
-                    i++;
-                    if (i == (signed int)d_nchannels - 1)
-                        {
-                            break;
-                        }
-                }
-        }
-
-    if (global_gps_iono_map.size() > 0)
-        {
-            // IONO data is shared for all the GPS satellites. Read always at a locked channel
-            signed int i = 0;
-            while(true)
-                {
-                    if (in[i][0].Flag_valid_pseudorange == true)
-                        {
-                            global_gps_iono_map.read(i, d_ls_pvt->gps_iono);
-                            break;
-                        }
-                    i++;
-                    if (i == (signed int)d_nchannels - 1)
-                        {
-                            break;
-                        }
-                }
-        }
-
 
     // ############ 2 COMPUTE THE PVT ################################
     // ToDo: relax this condition because the receiver should work even with NO GALILEO SATELLITES

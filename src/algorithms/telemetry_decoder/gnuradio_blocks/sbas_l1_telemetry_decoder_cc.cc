@@ -65,6 +65,8 @@ sbas_l1_telemetry_decoder_cc::sbas_l1_telemetry_decoder_cc(
 {
     // Telemetry Bit transition synchronization port out
     this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
+    // Ephemeris data port out
+    this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
@@ -519,26 +521,3 @@ void sbas_l1_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_b
                 << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
 
-
-void sbas_l1_telemetry_decoder_cc::set_raw_msg_queue(concurrent_queue<Sbas_Raw_Msg> *raw_msg_queue)
-{
-    sbas_telemetry_data.set_raw_msg_queue(raw_msg_queue);
-}
-
-
-void sbas_l1_telemetry_decoder_cc::set_iono_queue(concurrent_queue<Sbas_Ionosphere_Correction> *iono_queue)
-{
-    sbas_telemetry_data.set_iono_queue(iono_queue);
-}
-
-
-void sbas_l1_telemetry_decoder_cc::set_sat_corr_queue(concurrent_queue<Sbas_Satellite_Correction> *sat_corr_queue)
-{
-    sbas_telemetry_data.set_sat_corr_queue(sat_corr_queue);
-}
-
-
-void sbas_l1_telemetry_decoder_cc::set_ephemeris_queue(concurrent_queue<Sbas_Ephemeris> *ephemeris_queue)
-{
-    sbas_telemetry_data.set_ephemeris_queue(ephemeris_queue);
-}

@@ -41,14 +41,6 @@
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 
-
-
-extern concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
-extern concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
-extern concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
-extern concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
-
-
 using google::LogMessage;
 
 GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
@@ -69,11 +61,6 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* c
     // make telemetry decoder object
     telemetry_decoder_ = galileo_e1b_make_telemetry_decoder_cc(satellite_, queue_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-    // set the navigation msg queue;
-    telemetry_decoder_->set_ephemeris_queue(&global_galileo_ephemeris_queue);
-    telemetry_decoder_->set_iono_queue(&global_galileo_iono_queue);
-    telemetry_decoder_->set_almanac_queue(&global_galileo_almanac_queue);
-    telemetry_decoder_->set_utc_model_queue(&global_galileo_utc_model_queue);
 
     //decimation factor
     int decimation_factor = configuration->property(role + ".decimation_factor", 1);

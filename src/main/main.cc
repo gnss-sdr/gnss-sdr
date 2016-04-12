@@ -78,55 +78,19 @@ using google::LogMessage;
 
 DECLARE_string(log_dir);
 
-/*!
-* \todo make this queue generic for all the GNSS systems (javi)
-*/
-
 /*
 * Concurrent queues that communicates the Telemetry Decoder
 * to the Observables modules
 */
 
 // For GPS NAVIGATION (L1)
-concurrent_queue<Gps_Almanac> global_gps_almanac_queue;
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_queue<Gps_Ref_Location> global_gps_ref_location_queue;
 concurrent_queue<Gps_Ref_Time> global_gps_ref_time_queue;
 
-concurrent_map<Gps_Ephemeris> global_gps_ephemeris_map;
-concurrent_map<Gps_Iono> global_gps_iono_map;
-concurrent_map<Gps_Utc_Model> global_gps_utc_model_map;
-concurrent_map<Gps_Almanac> global_gps_almanac_map;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 concurrent_map<Gps_Ref_Time> global_gps_ref_time_map;
 concurrent_map<Gps_Ref_Location> global_gps_ref_location_map;
-
-// For GPS NAVIGATION (L2)
-concurrent_queue<Gps_CNAV_Ephemeris> global_gps_cnav_ephemeris_queue;
-concurrent_map<Gps_CNAV_Ephemeris> global_gps_cnav_ephemeris_map;
-concurrent_queue<Gps_CNAV_Iono> global_gps_cnav_iono_queue;
-concurrent_map<Gps_CNAV_Iono> global_gps_cnav_iono_map;
-
-// For GALILEO NAVIGATION
-concurrent_queue<Galileo_Ephemeris> global_galileo_ephemeris_queue;
-concurrent_queue<Galileo_Iono> global_galileo_iono_queue;
-concurrent_queue<Galileo_Utc_Model> global_galileo_utc_model_queue;
-concurrent_queue<Galileo_Almanac> global_galileo_almanac_queue;
-
-concurrent_map<Galileo_Ephemeris> global_galileo_ephemeris_map;
-concurrent_map<Galileo_Iono> global_galileo_iono_map;
-concurrent_map<Galileo_Utc_Model> global_galileo_utc_model_map;
-concurrent_map<Galileo_Almanac> global_galileo_almanac_map;
-
-// For SBAS CORRECTIONS
-concurrent_queue<Sbas_Raw_Msg> global_sbas_raw_msg_queue;
-concurrent_queue<Sbas_Ionosphere_Correction> global_sbas_iono_queue;
-concurrent_queue<Sbas_Satellite_Correction> global_sbas_sat_corr_queue;
-concurrent_queue<Sbas_Ephemeris> global_sbas_ephemeris_queue;
-
-concurrent_map<Sbas_Ionosphere_Correction> global_sbas_iono_map;
-concurrent_map<Sbas_Satellite_Correction> global_sbas_sat_corr_map;
-concurrent_map<Sbas_Ephemeris> global_sbas_ephemeris_map;
 
 int main(int argc, char** argv)
 {

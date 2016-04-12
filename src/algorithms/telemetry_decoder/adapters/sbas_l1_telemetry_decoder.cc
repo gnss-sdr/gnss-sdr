@@ -41,12 +41,6 @@
 #include "configuration_interface.h"
 #include "sbas_l1_telemetry_decoder_cc.h"
 
-extern concurrent_queue<Sbas_Raw_Msg> global_sbas_raw_msg_queue;
-extern concurrent_queue<Sbas_Ionosphere_Correction> global_sbas_iono_queue;
-extern concurrent_queue<Sbas_Satellite_Correction> global_sbas_sat_corr_queue;
-extern concurrent_queue<Sbas_Ephemeris> global_sbas_ephemeris_queue;
-
-
 using google::LogMessage;
 
 SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configuration,
@@ -68,11 +62,6 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(ConfigurationInterface* configura
     telemetry_decoder_ = sbas_l1_make_telemetry_decoder_cc(satellite_, queue_, dump_); // TODO fix me
     channel_ = 0;
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-    // set the queues;
-    telemetry_decoder_->set_raw_msg_queue(&global_sbas_raw_msg_queue);
-    telemetry_decoder_->set_iono_queue(&global_sbas_iono_queue);
-    telemetry_decoder_->set_sat_corr_queue(&global_sbas_sat_corr_queue);
-    telemetry_decoder_->set_ephemeris_queue(&global_sbas_ephemeris_queue);
 }
 
 

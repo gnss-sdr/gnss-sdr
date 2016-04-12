@@ -127,6 +127,8 @@ private:
     double d_rx_time;
     std::shared_ptr<gps_l1_ca_ls_pvt> d_ls_pvt;
 
+    std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
+
 public:
     ~gps_l1_ca_pvt_cc (); //!< Default destructor
 

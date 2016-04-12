@@ -122,6 +122,8 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
 {
     // Telemetry Bit transition synchronization port out
     this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
+    // Ephemeris data port out
+    this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -168,10 +170,6 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     d_CRC_error_counter = 0;
     flag_even_word_arrived = 0;
     d_flag_preamble = false;
-    d_ephemeris_queue = 0;
-    d_utc_model_queue = 0;
-    d_almanac_queue = 0;
-    d_iono_queue = 0;
     d_channel = 0;
     Prn_timestamp_at_preamble_ms = 0.0;
     flag_TOW_set = false;
@@ -251,38 +249,41 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
         {
-            // get ephemeris object for this SV
-            Galileo_Ephemeris ephemeris = d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
-            //std::cout<<"New Galileo Ephemeris received for SV "<<d_satellite.get_PRN()<<std::endl;
-            d_ephemeris_queue->push(ephemeris);
+            // get object for this SV (mandatory)
+            std::shared_ptr<Galileo_Ephemeris> tmp_obj= std::make_shared<Galileo_Ephemeris>();
+            *tmp_obj = d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_iono_and_GST() == true)
         {
-            Galileo_Iono iono = d_nav.get_iono(); //notice that the read operation will clear the valid flag
-            //std::cout<<"New Galileo IONO model (and UTC) received for SV "<<d_satellite.get_PRN()<<std::endl;
-            d_iono_queue->push(iono);
+            // get object for this SV (mandatory)
+            std::shared_ptr<Galileo_Iono> tmp_obj= std::make_shared<Galileo_Iono>();
+            *tmp_obj = d_nav.get_iono(); //notice that the read operation will clear the valid flag
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_utc_model() == true)
         {
-            Galileo_Utc_Model utc_model = d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
-            //std::cout<<"New Galileo UTC model received for SV "<<d_satellite.get_PRN()<<std::endl;
-            d_utc_model_queue->push(utc_model);
+            // get object for this SV (mandatory)
+            std::shared_ptr<Galileo_Utc_Model> tmp_obj= std::make_shared<Galileo_Utc_Model>();
+            *tmp_obj = d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_almanac() == true)
         {
-            Galileo_Almanac almanac = d_nav.get_almanac();
-            d_almanac_queue->push(almanac);
+            std::shared_ptr<Galileo_Almanac> tmp_obj= std::make_shared<Galileo_Almanac>();
+            *tmp_obj = d_nav.get_almanac();
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             //debug
             std::cout << "Galileo almanac received!" << std::endl;
             LOG(INFO) << "GPS_to_Galileo time conversion:";
-            LOG(INFO) << "A0G=" << almanac.A_0G_10;
-            LOG(INFO) << "A1G=" << almanac.A_1G_10;
-            LOG(INFO) << "T0G=" << almanac.t_0G_10;
-            LOG(INFO) << "WN_0G_10=" << almanac.WN_0G_10;
+            LOG(INFO) << "A0G=" << tmp_obj->A_0G_10;
+            LOG(INFO) << "A1G=" << tmp_obj->A_1G_10;
+            LOG(INFO) << "T0G=" << tmp_obj->t_0G_10;
+            LOG(INFO) << "WN_0G_10=" << tmp_obj->WN_0G_10;
             LOG(INFO) << "Current parameters:";
             LOG(INFO) << "d_TOW_at_current_symbol=" << d_TOW_at_current_symbol;
             LOG(INFO) << "d_nav.WN_0=" << d_nav.WN_0;
-            delta_t = almanac.A_0G_10 + almanac.A_1G_10 * (d_TOW_at_current_symbol - almanac.t_0G_10 + 604800 * (fmod((d_nav.WN_0 - almanac.WN_0G_10), 64)));
+            delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (d_TOW_at_current_symbol - tmp_obj->t_0G_10 + 604800 * (fmod((d_nav.WN_0 - tmp_obj->WN_0G_10), 64)));
             LOG(INFO) << "delta_t=" << delta_t << "[s]";
         }
 }
@@ -550,28 +551,5 @@ void galileo_e1b_telemetry_decoder_cc::set_channel(int channel)
         }
 }
 
-
-void galileo_e1b_telemetry_decoder_cc::set_ephemeris_queue(concurrent_queue<Galileo_Ephemeris> *ephemeris_queue)
-{
-    d_ephemeris_queue = ephemeris_queue;
-}
-
-
-void galileo_e1b_telemetry_decoder_cc::set_iono_queue(concurrent_queue<Galileo_Iono> *iono_queue)
-{
-    d_iono_queue = iono_queue;
-}
-
-
-void galileo_e1b_telemetry_decoder_cc::set_almanac_queue(concurrent_queue<Galileo_Almanac> *almanac_queue)
-{
-    d_almanac_queue = almanac_queue;
-}
-
-
-void galileo_e1b_telemetry_decoder_cc::set_utc_model_queue(concurrent_queue<Galileo_Utc_Model> *utc_model_queue)
-{
-    d_utc_model_queue = utc_model_queue;
-}
 
 

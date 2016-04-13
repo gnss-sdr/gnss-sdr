@@ -43,9 +43,9 @@
 using google::LogMessage;
 
 gps_l1_ca_pvt_cc_sptr
-gps_l1_ca_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
+gps_l1_ca_make_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
 {
-    return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
+    return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
 }
 
 
@@ -140,7 +140,6 @@ void gps_l1_ca_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
 }
 
 gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump, std::string dump_filename,
         int averaging_depth,
         bool flag_averaging,
@@ -157,7 +156,6 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
 {
     d_output_rate_ms = output_rate_ms;
     d_display_rate_ms = display_rate_ms;
-    d_queue = queue;
     d_dump = dump;
     d_nchannels = nchannels;
     d_dump_filename = dump_filename;

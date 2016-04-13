@@ -41,9 +41,9 @@
 using google::LogMessage;
 
 galileo_e1_pvt_cc_sptr
-galileo_e1_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
+galileo_e1_make_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
 {
-    return galileo_e1_pvt_cc_sptr(new galileo_e1_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
+    return galileo_e1_pvt_cc_sptr(new galileo_e1_pvt_cc(nchannels, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
 }
 
 
@@ -93,14 +93,13 @@ void galileo_e1_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
         LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
      }
 }
-galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :
+galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :
 		                		                gr::block("galileo_e1_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
 		                		                        gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
 
     d_output_rate_ms = output_rate_ms;
     d_display_rate_ms = display_rate_ms;
-    d_queue = queue;
     d_dump = dump;
     d_nchannels = nchannels;
     d_dump_filename = dump_filename;

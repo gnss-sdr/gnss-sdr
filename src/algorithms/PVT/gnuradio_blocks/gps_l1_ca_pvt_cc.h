@@ -33,7 +33,6 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
@@ -47,7 +46,6 @@ class gps_l1_ca_pvt_cc;
 typedef boost::shared_ptr<gps_l1_ca_pvt_cc> gps_l1_ca_pvt_cc_sptr;
 
 gps_l1_ca_pvt_cc_sptr gps_l1_ca_make_pvt_cc(unsigned int n_channels,
-                                            boost::shared_ptr<gr::msg_queue> queue,
                                             bool dump,
                                             std::string dump_filename,
                                             int averaging_depth,
@@ -69,7 +67,6 @@ class gps_l1_ca_pvt_cc : public gr::block
 {
 private:
     friend gps_l1_ca_pvt_cc_sptr gps_l1_ca_make_pvt_cc(unsigned int nchannels,
-                                                       boost::shared_ptr<gr::msg_queue> queue,
                                                        bool dump,
                                                        std::string dump_filename,
                                                        int averaging_depth,
@@ -83,7 +80,6 @@ private:
                                                        bool flag_rtcm_tty_port,
                                                        std::string rtcm_dump_devname);
     gps_l1_ca_pvt_cc(unsigned int nchannels,
-                     boost::shared_ptr<gr::msg_queue> queue,
                      bool dump,
                      std::string dump_filename,
                      int averaging_depth,
@@ -99,7 +95,6 @@ private:
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
-    boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool b_rinex_header_writen;
     bool b_rinex_sbs_header_writen;

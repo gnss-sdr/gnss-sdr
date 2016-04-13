@@ -1392,19 +1392,19 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_PVT") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaPvt(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("GALILEO_E1_PVT") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1Pvt(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Hybrid_PVT") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new HybridPvt(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else

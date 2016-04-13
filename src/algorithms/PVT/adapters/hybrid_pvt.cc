@@ -41,12 +41,10 @@ using google::LogMessage;
 HybridPvt::HybridPvt(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
-        unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
+        unsigned int out_streams) :
                 role_(role),
                 in_streams_(in_streams),
-                out_streams_(out_streams),
-                queue_(queue)
+                out_streams_(out_streams)
 {
     // dump parameters
     std::string default_dump_filename = "./pvt.dat";
@@ -82,7 +80,7 @@ HybridPvt::HybridPvt(ConfigurationInterface* configuration,
     bool flag_rtcm_server;
     flag_rtcm_server = configuration->property(role + ".flag_rtcm_server", false);
     // make PVT object
-    pvt_ = hybrid_make_pvt_cc(in_streams_, queue_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname);
+    pvt_ = hybrid_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 

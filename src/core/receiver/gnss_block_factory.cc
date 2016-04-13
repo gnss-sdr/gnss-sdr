@@ -1213,7 +1213,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaPcpsAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("GPS_L1_CA_PCPS_Assisted_Acquisition") == 0)
@@ -1259,7 +1259,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1PcpsAmbiguousAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Galileo_E1_PCPS_8ms_Ambiguous_Acquisition") == 0)
@@ -1435,7 +1435,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     if (implementation.compare("GPS_L1_CA_PCPS_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GpsL1CaPcpsAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("GPS_L1_CA_PCPS_Assisted_Acquisition") == 0)
@@ -1481,13 +1481,13 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
     else if (implementation.compare("GPS_L2_M_PCPS_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GpsL2MPcpsAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Galileo_E1_PCPS_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<AcquisitionInterface> block_(new GalileoE1PcpsAmbiguousAcquisition(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Galileo_E1_PCPS_8ms_Ambiguous_Acquisition") == 0)

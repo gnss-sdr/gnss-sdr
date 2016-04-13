@@ -45,9 +45,8 @@ using google::LogMessage;
 
 GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
         ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        gr::msg_queue::sptr queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+        unsigned int in_streams, unsigned int out_streams) :
+    role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -90,14 +89,14 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
             item_size_ = sizeof(lv_16sc_t);
             acquisition_sc_ = pcps_make_acquisition_sc(sampled_ms_, max_dwells_,
                     shift_resolution_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, use_CFAR_algorithm_flag_,  queue_, dump_, dump_filename_);
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
 
         }else{
                 item_size_ = sizeof(gr_complex);
                 acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
                         shift_resolution_, if_, fs_in_, code_length_, code_length_,
-                        bit_transition_flag_, use_CFAR_algorithm_flag_, queue_, dump_, dump_filename_);
+                        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
                 DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 

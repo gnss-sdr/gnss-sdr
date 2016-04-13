@@ -148,7 +148,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, Instantiate)
 {
     init();
     queue = gr::msg_queue::make(0);
-    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
 TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
@@ -160,7 +160,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
     queue = gr::msg_queue::make(0);
 
     init();
-    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -194,7 +194,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     double expected_doppler_hz = 1200;//3000;
     init();
     start_queue();
-    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
 
 
     ASSERT_NO_THROW( {

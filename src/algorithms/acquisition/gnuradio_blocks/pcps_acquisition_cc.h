@@ -53,7 +53,6 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
 #include "concurrent_queue.h"
@@ -68,7 +67,7 @@ pcps_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-                         gr::msg_queue::sptr queue, bool dump,
+                         bool dump,
                          std::string dump_filename);
 
 /*!
@@ -85,14 +84,14 @@ private:
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-            gr::msg_queue::sptr queue, bool dump,
+            bool dump,
             std::string dump_filename);
 
     pcps_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-            gr::msg_queue::sptr queue, bool dump,
+            bool dump,
             std::string dump_filename);
 
     void update_local_carrier(gr_complex* carrier_vector, int correlator_length_samples, float freq);
@@ -125,7 +124,6 @@ private:
     float d_test_statistics;
     bool d_bit_transition_flag;
     bool d_use_CFAR_algorithm_flag;
-    gr::msg_queue::sptr d_queue;
     concurrent_queue<int> *d_channel_internal_queue;
     std::ofstream d_dump_file;
     bool d_active;

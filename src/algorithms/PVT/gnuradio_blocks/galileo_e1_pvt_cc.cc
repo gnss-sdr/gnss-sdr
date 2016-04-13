@@ -40,60 +40,69 @@
 
 using google::LogMessage;
 
-galileo_e1_pvt_cc_sptr
-galileo_e1_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
+galileo_e1_pvt_cc_sptr galileo_e1_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename,
+        int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename,
+        std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
 {
-    return galileo_e1_pvt_cc_sptr(new galileo_e1_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
+    return galileo_e1_pvt_cc_sptr(new galileo_e1_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth,
+            flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname,
+            flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
 }
 
 
 void galileo_e1_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
 {
     try {
-        if( pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>) )
-        {
-            // ### Galileo EPHEMERIS ###
-            std::shared_ptr<Galileo_Ephemeris> galileo_eph;
-            galileo_eph=  boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
-            // insert new ephemeris record
-            DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
-                      << ", GALILEO Week Number =" << galileo_eph->WN_5
-                      << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
-            // update/insert new ephemeris record to the global ephemeris map
-            d_ls_pvt->galileo_ephemeris_map[galileo_eph->i_satellite_PRN]=*galileo_eph;
-        }else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>) )
-        {
-            // ### Galileo IONO ###
-            std::shared_ptr<Galileo_Iono> galileo_iono;
-            galileo_iono=  boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
-            d_ls_pvt->galileo_iono=*galileo_iono;
-            DLOG(INFO) << "New IONO record has arrived ";
-        }else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>) )
-        {
-            // ### Galileo UTC MODEL ###
-            std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
-            galileo_utc_model=  boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
-            d_ls_pvt->galileo_utc_model=*galileo_utc_model;
-            DLOG(INFO) << "New UTC record has arrived ";
-        }else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>) )
-        {
-            // ### Galileo Almanac ###
-            std::shared_ptr<Galileo_Almanac> galileo_almanac;
-            galileo_almanac=  boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
-            // update/insert new ephemeris record to the global ephemeris map
-            d_ls_pvt->galileo_almanac=*galileo_almanac;
-            DLOG(INFO) << "New Galileo Almanac has arrived ";
-        }
+            if( pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>) )
+                {
+                    // ### Galileo EPHEMERIS ###
+                    std::shared_ptr<Galileo_Ephemeris> galileo_eph;
+                    galileo_eph = boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    // insert new ephemeris record
+                    DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
+                            << ", GALILEO Week Number =" << galileo_eph->WN_5
+                            << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_ls_pvt->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>) )
+                {
+                    // ### Galileo IONO ###
+                    std::shared_ptr<Galileo_Iono> galileo_iono;
+                    galileo_iono = boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
+                    d_ls_pvt->galileo_iono = *galileo_iono;
+                    DLOG(INFO) << "New IONO record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>) )
+                {
+                    // ### Galileo UTC MODEL ###
+                    std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
+                    galileo_utc_model = boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
+                    d_ls_pvt->galileo_utc_model = *galileo_utc_model;
+                    DLOG(INFO) << "New UTC record has arrived ";
+                }
+            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>) )
+                {
+                    // ### Galileo Almanac ###
+                    std::shared_ptr<Galileo_Almanac> galileo_almanac;
+                    galileo_almanac = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
+                    // update/insert new ephemeris record to the global ephemeris map
+                    d_ls_pvt->galileo_almanac = *galileo_almanac;
+                    DLOG(INFO) << "New Galileo Almanac has arrived ";
+                }
 
-     }
-     catch(boost::bad_any_cast& e)
-     {
-        DLOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
-     }
+    }
+    catch(boost::bad_any_cast& e)
+    {
+            DLOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+    }
 }
-galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :
-		                		                gr::block("galileo_e1_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
-		                		                        gr::io_signature::make(0, 0, sizeof(gr_complex)))
+
+
+galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth,
+        bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname,
+        bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :
+    gr::block("galileo_e1_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)), gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
 
     d_output_rate_ms = output_rate_ms;
@@ -146,7 +155,7 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<g
     b_rtcm_writing_started = false;
     rp = std::make_shared<Rinex_Printer>();
 
-    d_last_status_print_seg=0;
+    d_last_status_print_seg = 0;
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)

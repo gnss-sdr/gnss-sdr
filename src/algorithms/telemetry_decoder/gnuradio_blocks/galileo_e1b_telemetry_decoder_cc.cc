@@ -250,28 +250,28 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Ephemeris> tmp_obj= std::make_shared<Galileo_Ephemeris>();
-            *tmp_obj = d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
+            std::shared_ptr<Galileo_Ephemeris> tmp_obj= std::make_shared<Galileo_Ephemeris>(d_nav.get_ephemeris());
+            //*tmp_obj = d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_iono_and_GST() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Iono> tmp_obj= std::make_shared<Galileo_Iono>();
-            *tmp_obj = d_nav.get_iono(); //notice that the read operation will clear the valid flag
+            std::shared_ptr<Galileo_Iono> tmp_obj= std::make_shared<Galileo_Iono>(d_nav.get_iono());
+            //*tmp_obj = d_nav.get_iono(); //notice that the read operation will clear the valid flag
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Utc_Model> tmp_obj= std::make_shared<Galileo_Utc_Model>();
-            *tmp_obj = d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+            std::shared_ptr<Galileo_Utc_Model> tmp_obj= std::make_shared<Galileo_Utc_Model>(d_nav.get_utc_model());
+            //*tmp_obj = d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_almanac() == true)
         {
-            std::shared_ptr<Galileo_Almanac> tmp_obj= std::make_shared<Galileo_Almanac>();
-            *tmp_obj = d_nav.get_almanac();
+            std::shared_ptr<Galileo_Almanac> tmp_obj= std::make_shared<Galileo_Almanac>(d_nav.get_almanac());
+            //*tmp_obj = d_nav.get_almanac();
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             //debug
             std::cout << "Galileo almanac received!" << std::endl;
@@ -407,10 +407,10 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
     //2. Add the telemetry decoder information
     if (this->d_flag_preamble == true and d_nav.flag_TOW_set == true)
         //update TOW at the preamble instant
-    	// JAVI: 30/06/2014
-    	// TOW, in Galileo, is referred to the START of the PAGE PART, that is, THE FIRST SYMBOL OF THAT PAGE, NOT THE PREAMBLE.
-    	// thus, no correction should be done. d_TOW_at_Preamble should be renamed to d_TOW_at_page_start.
-    	// Since we detected the preamble, then, we are in the last symbol of that preamble, or just at the start of the first page symbol.
+        // JAVI: 30/06/2014
+        // TOW, in Galileo, is referred to the START of the PAGE PART, that is, THE FIRST SYMBOL OF THAT PAGE, NOT THE PREAMBLE.
+        // thus, no correction should be done. d_TOW_at_Preamble should be renamed to d_TOW_at_page_start.
+        // Since we detected the preamble, then, we are in the last symbol of that preamble, or just at the start of the first page symbol.
         //flag preamble is true after the all page (even and odd) is received. I/NAV page period is 2 SECONDS
         {
             Prn_timestamp_at_preamble_ms = in[0][0].Tracking_timestamp_secs * 1000.0;

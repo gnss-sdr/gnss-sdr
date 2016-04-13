@@ -216,7 +216,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                         }
                     else
                         {
-                            if (preamble_diff_ms > GPS_SUBFRAME_MS+1)
+                            if (preamble_diff_ms > GPS_SUBFRAME_MS + 1)
                                 {
                                     DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite << " preamble_diff_ms= " << preamble_diff_ms;
                                     d_stat = 0; // lost of frame sync
@@ -273,42 +273,42 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                             d_GPS_FSM.d_preamble_time_ms = d_preamble_time_seconds * 1000.0;
                             d_GPS_FSM.Event_gps_word_valid();
                             // send TLM data to PVT using asynchronous message queues
-                            if (d_GPS_FSM.d_flag_new_subframe==true)
-                            {
-                                switch (d_GPS_FSM.d_subframe_ID)
+                            if (d_GPS_FSM.d_flag_new_subframe == true)
                                 {
-                                case 3: //we have a new set of ephemeris data for the current SV
-                                    if (d_GPS_FSM.d_nav.satellite_validation() == true)
-                                        {
-                                            // get ephemeris object for this SV (mandatory)
-                                            std::shared_ptr<Gps_Ephemeris> tmp_obj= std::make_shared<Gps_Ephemeris>();
-                                            *tmp_obj = d_GPS_FSM.d_nav.get_ephemeris();
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                        }
-                                    break;
-                                case 4: // Possible IONOSPHERE and UTC model update (page 18)
-                                    if (d_GPS_FSM.d_nav.flag_iono_valid == true)
-                                        {
-                                            std::shared_ptr<Gps_Iono> tmp_obj= std::make_shared<Gps_Iono>();
-                                            *tmp_obj = d_GPS_FSM.d_nav.get_iono(); //notice that the read operation will clear the valid flag
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                        }
-                                    if (d_GPS_FSM.d_nav.flag_utc_model_valid == true)
-                                        {
-                                            std::shared_ptr<Gps_Utc_Model> tmp_obj= std::make_shared<Gps_Utc_Model>();
-                                            *tmp_obj =  d_GPS_FSM.d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                                        }
-                                    break;
-                                case 5:
-                                    // get almanac (if available)
-                                    //TODO: implement almanac reader in navigation_message
-                                    break;
-                                default:
-                                    break;
+                                    switch (d_GPS_FSM.d_subframe_ID)
+                                    {
+                                    case 3: //we have a new set of ephemeris data for the current SV
+                                        if (d_GPS_FSM.d_nav.satellite_validation() == true)
+                                            {
+                                                // get ephemeris object for this SV (mandatory)
+                                                std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_GPS_FSM.d_nav.get_ephemeris());
+                                                // *tmp_obj = d_GPS_FSM.d_nav.get_ephemeris();
+                                                this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            }
+                                        break;
+                                    case 4: // Possible IONOSPHERE and UTC model update (page 18)
+                                        if (d_GPS_FSM.d_nav.flag_iono_valid == true)
+                                            {
+                                                std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>( d_GPS_FSM.d_nav.get_iono());
+                                                // *tmp_obj = d_GPS_FSM.d_nav.get_iono(); //notice that the read operation will clear the valid flag
+                                                this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            }
+                                        if (d_GPS_FSM.d_nav.flag_utc_model_valid == true)
+                                            {
+                                                std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_GPS_FSM.d_nav.get_utc_model());
+                                                //*tmp_obj =  d_GPS_FSM.d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+                                                this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            }
+                                        break;
+                                    case 5:
+                                        // get almanac (if available)
+                                        //TODO: implement almanac reader in navigation_message
+                                        break;
+                                    default:
+                                        break;
+                                    }
+                                    d_GPS_FSM.clear_flag_new_subframe();
                                 }
-                                d_GPS_FSM.clear_flag_new_subframe();
-                            }
 
                             d_flag_parity = true;
                         }

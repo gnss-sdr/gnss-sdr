@@ -107,7 +107,12 @@ public:
     {
         return running_;
     }
-
+    /*!
+     * \brief Sends a GNURadio asyncronous message from telemetry to PVT
+     *
+     * It is used to assist the receiver with external ephemeris data
+     */
+    bool send_telemetry_msg(pmt::pmt_t msg);
 private:
     void init(); // Populates the SV PRN list available for acquisition and tracking
     void set_signals_list();

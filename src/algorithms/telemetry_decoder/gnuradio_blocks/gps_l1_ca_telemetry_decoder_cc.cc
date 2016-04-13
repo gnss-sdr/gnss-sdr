@@ -281,22 +281,19 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                                     if (d_GPS_FSM.d_nav.satellite_validation() == true)
                                         {
                                             // get ephemeris object for this SV (mandatory)
-                                            std::shared_ptr<Gps_Ephemeris> tmp_obj= std::make_shared<Gps_Ephemeris>();
-                                            *tmp_obj = d_GPS_FSM.d_nav.get_ephemeris();
+                                            std::shared_ptr<Gps_Ephemeris> tmp_obj= std::make_shared<Gps_Ephemeris>(d_GPS_FSM.d_nav.get_ephemeris());
                                             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                         }
                                     break;
                                 case 4: // Possible IONOSPHERE and UTC model update (page 18)
                                     if (d_GPS_FSM.d_nav.flag_iono_valid == true)
                                         {
-                                            std::shared_ptr<Gps_Iono> tmp_obj= std::make_shared<Gps_Iono>();
-                                            *tmp_obj = d_GPS_FSM.d_nav.get_iono(); //notice that the read operation will clear the valid flag
+                                            std::shared_ptr<Gps_Iono> tmp_obj= std::make_shared<Gps_Iono>(d_GPS_FSM.d_nav.get_iono());
                                             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                         }
                                     if (d_GPS_FSM.d_nav.flag_utc_model_valid == true)
                                         {
-                                            std::shared_ptr<Gps_Utc_Model> tmp_obj= std::make_shared<Gps_Utc_Model>();
-                                            *tmp_obj =  d_GPS_FSM.d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+                                            std::shared_ptr<Gps_Utc_Model> tmp_obj= std::make_shared<Gps_Utc_Model>(d_GPS_FSM.d_nav.get_utc_model());
                                             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                         }
                                     break;

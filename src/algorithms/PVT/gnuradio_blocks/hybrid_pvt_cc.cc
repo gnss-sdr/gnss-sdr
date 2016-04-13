@@ -116,12 +116,14 @@ void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
            // update/insert new ephemeris record to the global ephemeris map
            d_ls_pvt->galileo_almanac=*galileo_almanac;
            DLOG(INFO) << "New Galileo Almanac has arrived ";
+       }else{
+           LOG(WARNING) << "msg_handler_telemetry unknown object type!";
        }
 
     }
     catch(boost::bad_any_cast& e)
     {
-       DLOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+       LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
     }
 }
 

@@ -92,9 +92,6 @@ private:
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
     void align_samples();
 
-    concurrent_queue<Gps_CNAV_Iono> *d_iono_queue;
-    concurrent_queue<Gps_CNAV_Ephemeris> *d_ephemeris_queue;
-
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;

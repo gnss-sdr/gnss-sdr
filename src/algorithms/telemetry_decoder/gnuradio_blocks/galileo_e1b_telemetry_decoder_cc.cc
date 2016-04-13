@@ -250,28 +250,25 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Ephemeris> tmp_obj= std::make_shared<Galileo_Ephemeris>();
-            *tmp_obj = d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
+            std::shared_ptr<Galileo_Ephemeris> tmp_obj= std::make_shared<Galileo_Ephemeris>( d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+
         }
     if (d_nav.have_new_iono_and_GST() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Iono> tmp_obj= std::make_shared<Galileo_Iono>();
-            *tmp_obj = d_nav.get_iono(); //notice that the read operation will clear the valid flag
+            std::shared_ptr<Galileo_Iono> tmp_obj= std::make_shared<Galileo_Iono>(d_nav.get_iono());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Utc_Model> tmp_obj= std::make_shared<Galileo_Utc_Model>();
-            *tmp_obj = d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+            std::shared_ptr<Galileo_Utc_Model> tmp_obj= std::make_shared<Galileo_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_almanac() == true)
         {
-            std::shared_ptr<Galileo_Almanac> tmp_obj= std::make_shared<Galileo_Almanac>();
-            *tmp_obj = d_nav.get_almanac();
+            std::shared_ptr<Galileo_Almanac> tmp_obj= std::make_shared<Galileo_Almanac>(d_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             //debug
             std::cout << "Galileo almanac received!" << std::endl;

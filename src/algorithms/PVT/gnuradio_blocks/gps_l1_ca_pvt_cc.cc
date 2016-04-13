@@ -128,12 +128,14 @@ void gps_l1_ca_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                {
                    rp->log_rinex_sbs(rp->sbsFile, sbas_raw_msg);
                }
+          }else{
+              LOG(WARNING) << "msg_handler_telemetry unknown object type!";
           }
 
     }
     catch(boost::bad_any_cast& e)
     {
-       DLOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+       LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
     }
 }
 

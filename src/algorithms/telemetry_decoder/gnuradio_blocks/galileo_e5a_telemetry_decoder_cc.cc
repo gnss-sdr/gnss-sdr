@@ -170,22 +170,18 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
         {
-            // get ephemeris object for this SV
-            Galileo_Ephemeris ephemeris = d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
-            //std::cout<<"New Galileo Ephemeris received for SV "<<d_satellite.get_PRN()<<std::endl;
-            d_ephemeris_queue->push(ephemeris);
+            std::shared_ptr<Galileo_Ephemeris> tmp_obj= std::make_shared<Galileo_Ephemeris>(d_nav.get_ephemeris());
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_iono_and_GST() == true)
         {
-            Galileo_Iono iono = d_nav.get_iono(); //notice that the read operation will clear the valid flag
-            //std::cout<<"New Galileo IONO model (and UTC) received for SV "<<d_satellite.get_PRN()<<std::endl;
-            d_iono_queue->push(iono);
+            std::shared_ptr<Galileo_Iono> tmp_obj= std::make_shared<Galileo_Iono>(d_nav.get_iono());
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_utc_model() == true)
         {
-            Galileo_Utc_Model utc_model = d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
-            //std::cout<<"New Galileo UTC model received for SV "<<d_satellite.get_PRN()<<std::endl;
-            d_utc_model_queue->push(utc_model);
+            std::shared_ptr<Galileo_Utc_Model> tmp_obj= std::make_shared<Galileo_Utc_Model>(d_nav.get_utc_model());
+            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
 
 }
@@ -260,10 +256,6 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     d_sign_init = 0;
 
     d_flag_preamble = false;
-    d_ephemeris_queue = 0;
-    d_iono_queue = 0;
-    d_utc_model_queue = 0;
-    d_almanac_queue = 0;
     d_channel = 0;
     Prn_timestamp_at_preamble_ms = 0;
     flag_TOW_set = false;
@@ -611,28 +603,4 @@ void galileo_e5a_telemetry_decoder_cc::set_channel(int channel)
                     }
                 }
         }
-}
-
-
-void galileo_e5a_telemetry_decoder_cc::set_ephemeris_queue(concurrent_queue<Galileo_Ephemeris> *ephemeris_queue)
-{
-    d_ephemeris_queue = ephemeris_queue;
-}
-
-
-void galileo_e5a_telemetry_decoder_cc::set_iono_queue(concurrent_queue<Galileo_Iono> *iono_queue)
-{
-    d_iono_queue = iono_queue;
-}
-
-
-void galileo_e5a_telemetry_decoder_cc::set_almanac_queue(concurrent_queue<Galileo_Almanac> *almanac_queue)
-{
-    d_almanac_queue = almanac_queue;
-}
-
-
-void galileo_e5a_telemetry_decoder_cc::set_utc_model_queue(concurrent_queue<Galileo_Utc_Model> *utc_model_queue)
-{
-    d_utc_model_queue = utc_model_queue;
 }

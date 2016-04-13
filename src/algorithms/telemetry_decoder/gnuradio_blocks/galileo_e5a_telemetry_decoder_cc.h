@@ -68,10 +68,6 @@ public:
     ~galileo_e5a_telemetry_decoder_cc();
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
-    void set_ephemeris_queue(concurrent_queue<Galileo_Ephemeris> *ephemeris_queue); //!< Set the satellite data queue
-    void set_iono_queue(concurrent_queue<Galileo_Iono> *iono_queue);                //!< Set the iono data queue
-    void set_almanac_queue(concurrent_queue<Galileo_Almanac> *almanac_queue);       //!< Set the almanac data queue
-    void set_utc_model_queue(concurrent_queue<Galileo_Utc_Model> *utc_model_queue); //!< Set the UTC model queue
     /*!
      * \brief This is where all signal processing takes place
      */
@@ -116,15 +112,6 @@ private:
 
     // navigation message vars
     Galileo_Fnav_Message d_nav;
-
-    // Galileo ephemeris queue
-    concurrent_queue<Galileo_Ephemeris> *d_ephemeris_queue;
-    // ionospheric parameters queue
-    concurrent_queue<Galileo_Iono> *d_iono_queue;
-    // UTC model parameters queue
-    concurrent_queue<Galileo_Utc_Model> *d_utc_model_queue;
-    // Almanac queue
-    concurrent_queue<Galileo_Almanac> *d_almanac_queue;
 
     boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;

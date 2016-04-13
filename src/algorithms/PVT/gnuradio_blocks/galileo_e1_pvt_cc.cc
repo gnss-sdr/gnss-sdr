@@ -83,12 +83,14 @@ void galileo_e1_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
             // update/insert new ephemeris record to the global ephemeris map
             d_ls_pvt->galileo_almanac=*galileo_almanac;
             DLOG(INFO) << "New Galileo Almanac has arrived ";
+        }else{
+            LOG(WARNING) << "msg_handler_telemetry unknown object type!";
         }
 
      }
      catch(boost::bad_any_cast& e)
      {
-        DLOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+        LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
      }
 }
 galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :

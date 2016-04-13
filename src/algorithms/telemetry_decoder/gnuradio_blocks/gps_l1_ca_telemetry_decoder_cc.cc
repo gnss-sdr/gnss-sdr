@@ -44,9 +44,9 @@
 using google::LogMessage;
 
 gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
+gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 {
-    return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, queue, dump));
+    return gps_l1_ca_telemetry_decoder_cc_sptr(new gps_l1_ca_telemetry_decoder_cc(satellite, dump));
 }
 
 void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
@@ -56,7 +56,6 @@ void gps_l1_ca_telemetry_decoder_cc::forecast (int noutput_items __attribute__((
 
 gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump) :
         gr::block("gps_navigation_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
         gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -66,7 +65,6 @@ gps_l1_ca_telemetry_decoder_cc::gps_l1_ca_telemetry_decoder_cc(
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
-    d_queue = queue;
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
 
@@ -282,7 +280,6 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                                             {
                                                 // get ephemeris object for this SV (mandatory)
                                                 std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_GPS_FSM.d_nav.get_ephemeris());
-                                                // *tmp_obj = d_GPS_FSM.d_nav.get_ephemeris();
                                                 this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                             }
                                         break;
@@ -290,13 +287,11 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                                         if (d_GPS_FSM.d_nav.flag_iono_valid == true)
                                             {
                                                 std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>( d_GPS_FSM.d_nav.get_iono());
-                                                // *tmp_obj = d_GPS_FSM.d_nav.get_iono(); //notice that the read operation will clear the valid flag
                                                 this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                             }
                                         if (d_GPS_FSM.d_nav.flag_utc_model_valid == true)
                                             {
                                                 std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_GPS_FSM.d_nav.get_utc_model());
-                                                //*tmp_obj =  d_GPS_FSM.d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
                                                 this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                             }
                                         break;

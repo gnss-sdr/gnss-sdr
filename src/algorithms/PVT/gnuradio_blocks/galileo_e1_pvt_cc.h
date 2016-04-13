@@ -35,7 +35,6 @@
 #include <string>
 #include <utility>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include "nmea_printer.h"
 #include "kml_printer.h"
 #include "rinex_printer.h"
@@ -49,7 +48,6 @@ class galileo_e1_pvt_cc;
 typedef boost::shared_ptr<galileo_e1_pvt_cc> galileo_e1_pvt_cc_sptr;
 
 galileo_e1_pvt_cc_sptr galileo_e1_make_pvt_cc(unsigned int n_channels,
-                                              boost::shared_ptr<gr::msg_queue> queue,
                                               bool dump,
                                               std::string dump_filename,
                                               int averaging_depth,
@@ -70,7 +68,6 @@ class galileo_e1_pvt_cc : public gr::block
 {
 private:
     friend galileo_e1_pvt_cc_sptr galileo_e1_make_pvt_cc(unsigned int nchannels,
-                                                         boost::shared_ptr<gr::msg_queue> queue,
                                                          bool dump,
                                                          std::string dump_filename,
                                                          int averaging_depth,
@@ -84,7 +81,6 @@ private:
                                                          bool flag_rtcm_tty_port,
                                                          std::string rtcm_dump_devname);
     galileo_e1_pvt_cc(unsigned int nchannels,
-                      boost::shared_ptr<gr::msg_queue> queue,
                       bool dump, std::string dump_filename,
                       int averaging_depth,
                       bool flag_averaging,
@@ -99,7 +95,6 @@ private:
 
     void msg_handler_telemetry(pmt::pmt_t msg);
 
-    boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool b_rinex_header_writen;
     bool b_rinex_header_updated;

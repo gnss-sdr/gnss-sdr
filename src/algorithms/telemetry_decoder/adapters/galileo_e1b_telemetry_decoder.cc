@@ -46,12 +46,10 @@ using google::LogMessage;
 GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
-        unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
+        unsigned int out_streams) :
         role_(role),
         in_streams_(in_streams),
-        out_streams_(out_streams),
-        queue_(queue)
+        out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./navigation.dat";
@@ -59,7 +57,7 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(ConfigurationInterface* c
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
-    telemetry_decoder_ = galileo_e1b_make_telemetry_decoder_cc(satellite_, queue_, dump_); // TODO fix me
+    telemetry_decoder_ = galileo_e1b_make_telemetry_decoder_cc(satellite_, dump_); // TODO fix me
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
 
     //decimation factor

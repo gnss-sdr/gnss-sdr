@@ -34,7 +34,6 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include <deque>
 #include "GPS_L1_CA.h"
 #include "gps_l1_ca_subframe_fsm.h"
@@ -48,7 +47,7 @@ class gps_l1_ca_telemetry_decoder_cc;
 typedef boost::shared_ptr<gps_l1_ca_telemetry_decoder_cc> gps_l1_ca_telemetry_decoder_cc_sptr;
 
 gps_l1_ca_telemetry_decoder_cc_sptr
-gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200E
@@ -60,17 +59,10 @@ public:
     ~gps_l1_ca_telemetry_decoder_cc();
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
-
-
     /*!
      * \brief Set decimation factor to average the GPS synchronization estimation output from the tracking module.
      */
     void set_decimation(int decimation);
-
-    /*!
-     * \brief Set the satellite data queue
-     */
-    void set_almanac_queue(concurrent_queue<Gps_Almanac> *almanac_queue){d_GPS_FSM.d_almanac_queue = almanac_queue;}           //!< Set the almanac data queue
 
     /*!
      * \brief This is where all signal processing takes place
@@ -86,9 +78,9 @@ public:
 
 private:
     friend gps_l1_ca_telemetry_decoder_cc_sptr
-    gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    gps_l1_ca_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
-    gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    gps_l1_ca_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
     bool gps_word_parityCheck(unsigned int gpsword);
 
@@ -123,7 +115,6 @@ private:
     Gps_Navigation_Message d_nav;
     GpsL1CaSubframeFsm d_GPS_FSM;
 
-    boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;

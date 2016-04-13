@@ -37,7 +37,6 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 
 
 class galileo_e1_observables_cc;
@@ -45,7 +44,7 @@ class galileo_e1_observables_cc;
 typedef boost::shared_ptr<galileo_e1_observables_cc> galileo_e1_observables_cc_sptr;
 
 galileo_e1_observables_cc_sptr
-galileo_e1_make_observables_cc(unsigned int n_channels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+galileo_e1_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
 /*!
  * \brief This class implements a block that computes Galileo observables
@@ -60,8 +59,8 @@ public:
 
 private:
     friend galileo_e1_observables_cc_sptr
-    galileo_e1_make_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
-    galileo_e1_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+    galileo_e1_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+    galileo_e1_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
     //Tracking observable history
     std::vector<std::deque<double>> d_acc_carrier_phase_queue_rads;
@@ -69,7 +68,6 @@ private:
     std::vector<std::deque<double>> d_symbol_TOW_queue_s;
 
     // class private vars
-    boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool d_flag_averaging;
     unsigned int d_nchannels;

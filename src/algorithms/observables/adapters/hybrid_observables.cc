@@ -39,12 +39,10 @@ using google::LogMessage;
 HybridObservables::HybridObservables(ConfigurationInterface* configuration,
         std::string role,
         unsigned int in_streams,
-        unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
+        unsigned int out_streams) :
                     role_(role),
                     in_streams_(in_streams),
-                    out_streams_(out_streams),
-                    queue_(queue)
+                    out_streams_(out_streams)
 {
     int output_rate_ms;
     output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
@@ -54,7 +52,7 @@ HybridObservables::HybridObservables(ConfigurationInterface* configuration,
     flag_averaging = configuration->property(role + ".flag_averaging", false);
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-    observables_ = hybrid_make_observables_cc(in_streams_, queue_, dump_, dump_filename_, output_rate_ms, flag_averaging);
+    observables_ = hybrid_make_observables_cc(in_streams_, dump_, dump_filename_, output_rate_ms, flag_averaging);
     DLOG(INFO) << "pseudorange(" << observables_->unique_id() << ")";
 }
 

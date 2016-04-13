@@ -49,13 +49,13 @@ pcps_acquisition_sc_sptr pcps_make_acquisition_sc(
                                  unsigned int doppler_max, long freq, long fs_in,
                                  int samples_per_ms, int samples_per_code,
                                  bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-                                 gr::msg_queue::sptr queue, bool dump,
+                                 bool dump,
                                  std::string dump_filename)
 {
 
     return pcps_acquisition_sc_sptr(
             new pcps_acquisition_sc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                                     samples_per_code, bit_transition_flag, use_CFAR_algorithm_flag, queue, dump, dump_filename));
+                                     samples_per_code, bit_transition_flag, use_CFAR_algorithm_flag, dump, dump_filename));
 }
 
 pcps_acquisition_sc::pcps_acquisition_sc(
@@ -63,7 +63,7 @@ pcps_acquisition_sc::pcps_acquisition_sc(
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag, bool use_CFAR_algorithm_flag,
-                         gr::msg_queue::sptr queue, bool dump,
+                         bool dump,
                          std::string dump_filename) :
     gr::block("pcps_acquisition_sc",
     gr::io_signature::make(1, 1, sizeof(lv_16sc_t) * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )),
@@ -72,7 +72,6 @@ pcps_acquisition_sc::pcps_acquisition_sc(
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    d_queue = queue;
     d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;

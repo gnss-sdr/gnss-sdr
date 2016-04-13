@@ -361,7 +361,7 @@ void GpsL1CaPcpsAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
     delete acquisition;
 }
 
@@ -375,7 +375,7 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
-    acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -404,7 +404,7 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResults)
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
-    acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -501,7 +501,7 @@ TEST_F(GpsL1CaPcpsAcquisitionGSoC2013Test, ValidationOfResultsProbabilities)
     config_2();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
-    acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsAcquisition(config.get(), "Acquisition", 1, 1);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);

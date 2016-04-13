@@ -41,11 +41,10 @@
 using google::LogMessage;
 
 hybrid_pvt_cc_sptr
-hybrid_make_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
+hybrid_make_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
 {
-    return hybrid_pvt_cc_sptr(new hybrid_pvt_cc(nchannels, queue, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
+    return hybrid_pvt_cc_sptr(new hybrid_pvt_cc(nchannels, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
 }
-
 
 
 void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
@@ -55,88 +54,93 @@ void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                 {
                     // ### GPS EPHEMERIS ###
                     std::shared_ptr<Gps_Ephemeris> gps_eph;
-                    gps_eph = boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
+                    gps_eph=  boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
                     DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
                             << gps_eph->i_satellite_PRN << " (Block "
                             <<  gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
                             << "inserted with Toe="<< gps_eph->d_Toe<<" and GPS Week="
                             << gps_eph->i_GPS_week;
                     // update/insert new ephemeris record to the global ephemeris map
-                    d_ls_pvt->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
+                    d_ls_pvt->gps_ephemeris_map[gps_eph->i_satellite_PRN]=*gps_eph;
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>) )
                 {
                     // ### GPS IONO ###
                     std::shared_ptr<Gps_Iono> gps_iono;
-                    gps_iono = boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
-                    d_ls_pvt->gps_iono = *gps_iono;
+                    gps_iono=  boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
+                    d_ls_pvt->gps_iono=*gps_iono;
                     DLOG(INFO) << "New IONO record has arrived ";
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>) )
                 {
                     // ### GPS UTC MODEL ###
                     std::shared_ptr<Gps_Utc_Model> gps_utc_model;
-                    gps_utc_model = boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
-                    d_ls_pvt->gps_utc_model = *gps_utc_model;
+                    gps_utc_model=  boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
+                    d_ls_pvt->gps_utc_model=*gps_utc_model;
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
+
             if( pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>) )
                 {
                     // ### Galileo EPHEMERIS ###
                     std::shared_ptr<Galileo_Ephemeris> galileo_eph;
-                    galileo_eph = boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    galileo_eph=  boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
                     // insert new ephemeris record
                     DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
                             << ", GALILEO Week Number =" << galileo_eph->WN_5
                             << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
                     // update/insert new ephemeris record to the global ephemeris map
-                    d_ls_pvt->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;
+                    d_ls_pvt->galileo_ephemeris_map[galileo_eph->i_satellite_PRN]=*galileo_eph;
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>) )
                 {
                     // ### Galileo IONO ###
                     std::shared_ptr<Galileo_Iono> galileo_iono;
-                    galileo_iono = boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
-                    d_ls_pvt->galileo_iono = *galileo_iono;
+                    galileo_iono=  boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
+                    d_ls_pvt->galileo_iono=*galileo_iono;
                     DLOG(INFO) << "New IONO record has arrived ";
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>) )
                 {
                     // ### Galileo UTC MODEL ###
                     std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
-                    galileo_utc_model = boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
-                    d_ls_pvt->galileo_utc_model = *galileo_utc_model;
+                    galileo_utc_model=  boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
+                    d_ls_pvt->galileo_utc_model=*galileo_utc_model;
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>) )
                 {
                     // ### Galileo Almanac ###
                     std::shared_ptr<Galileo_Almanac> galileo_almanac;
-                    galileo_almanac = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
+                    galileo_almanac=  boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
                     // update/insert new ephemeris record to the global ephemeris map
-                    d_ls_pvt->galileo_almanac = *galileo_almanac;
+                    d_ls_pvt->galileo_almanac=*galileo_almanac;
                     DLOG(INFO) << "New Galileo Almanac has arrived ";
+                }
+            else
+                {
+                    LOG(WARNING) << "msg_handler_telemetry unknown object type!";
                 }
 
     }
     catch(boost::bad_any_cast& e)
     {
-            DLOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
     }
 }
 
 
-hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename,
+
+hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename,
         int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
         std::string nmea_dump_filename, std::string nmea_dump_devname,
         bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :
                 gr::block("hybrid_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
-                        gr::io_signature::make(0, 0, sizeof(gr_complex)))
-{
+                gr::io_signature::make(0, 0, sizeof(gr_complex)))
 
+{
     d_output_rate_ms = output_rate_ms;
     d_display_rate_ms = display_rate_ms;
-    d_queue = queue;
     d_dump = dump;
     d_nchannels = nchannels;
     d_dump_filename = dump_filename;
@@ -144,8 +148,7 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_q
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
-    this->set_msg_handler(pmt::mp("telemetry"),
-            boost::bind(&hybrid_pvt_cc::msg_handler_telemetry, this, _1));
+    this->set_msg_handler(pmt::mp("telemetry"), boost::bind(&hybrid_pvt_cc::msg_handler_telemetry, this, _1));
 
     //initialize kml_printer
     std::string kml_dump_filename;
@@ -183,7 +186,7 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_q
     b_rinex_header_updated = false;
     rp = std::make_shared<Rinex_Printer>();
 
-    d_last_status_print_seg=0;
+    d_last_status_print_seg = 0;
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)
@@ -220,15 +223,16 @@ bool hybrid_pvt_cc::pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchr
 void hybrid_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronization_data)
 {
     // Print the current receiver status using std::cout every second
-	int current_rx_seg=floor(channels_synchronization_data[0][0].Tracking_timestamp_secs);
-    if ( current_rx_seg!= d_last_status_print_seg)
-		{
-			d_last_status_print_seg = current_rx_seg;
-			std::cout << "Current input signal time = " << current_rx_seg << " [s]" << std::endl<< std::flush;
-			//DLOG(INFO) << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
-			//          << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
-		}
+    int current_rx_seg = floor(channels_synchronization_data[0][0].Tracking_timestamp_secs);
+    if ( current_rx_seg != d_last_status_print_seg)
+        {
+            d_last_status_print_seg = current_rx_seg;
+            std::cout << "Current input signal time = " << current_rx_seg << " [s]" << std::endl << std::flush;
+            //DLOG(INFO) << "GPS L1 C/A Tracking CH " << d_channel <<  ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN)
+            //          << ", CN0 = " << d_CN0_SNV_dB_Hz << " [dB-Hz]" << std::endl;
+        }
 }
+
 
 int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items __attribute__((unused)))

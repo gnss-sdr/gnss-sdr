@@ -34,7 +34,6 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 
 
 class mixed_observables_cc;
@@ -42,7 +41,7 @@ class mixed_observables_cc;
 typedef boost::shared_ptr<mixed_observables_cc> mixed_observables_cc_sptr;
 
 mixed_observables_cc_sptr
-mixed_make_observables_cc(unsigned int n_channels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+mixed_make_observables_cc(unsigned int n_channels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
 /*!
  * \brief This class implements a block that computes MIXED observables (Multi-frequency and Multi-system)
@@ -56,11 +55,10 @@ public:
 
 private:
     friend mixed_observables_cc_sptr
-    mixed_make_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
-    mixed_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+    mixed_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
+    mixed_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging);
 
     // class private vars
-    boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     bool d_flag_averaging;
     unsigned int d_nchannels;

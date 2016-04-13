@@ -39,7 +39,6 @@
 #include <vector>
 #include <boost/crc.hpp>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include "gnss_satellite.h"
 #include "viterbi_decoder.h"
 #include "sbas_telemetry_data.h"
@@ -49,7 +48,7 @@ class sbas_l1_telemetry_decoder_cc;
 typedef boost::shared_ptr<sbas_l1_telemetry_decoder_cc> sbas_l1_telemetry_decoder_cc_sptr;
 
 sbas_l1_telemetry_decoder_cc_sptr
-sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
@@ -76,8 +75,8 @@ public:
 
 private:
     friend sbas_l1_telemetry_decoder_cc_sptr
-    sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
-    sbas_l1_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    sbas_l1_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    sbas_l1_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
     void align_samples();

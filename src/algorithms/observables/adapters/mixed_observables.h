@@ -33,7 +33,6 @@
 #define GNSS_SDR_MIXED_OBSERVABLES_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include "observables_interface.h"
 #include "mixed_observables_cc.h"
 
@@ -49,8 +48,7 @@ public:
     MixedObservables(ConfigurationInterface* configuration,
                        std::string role,
                        unsigned int in_streams,
-                       unsigned int out_streams,
-                       boost::shared_ptr<gr::msg_queue> queue);
+                       unsigned int out_streams);
     virtual ~MixedObservables();
     std::string role()
     {
@@ -85,7 +83,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif

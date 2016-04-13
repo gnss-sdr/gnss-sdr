@@ -48,9 +48,9 @@ using google::LogMessage;
 
 
 galileo_e1b_telemetry_decoder_cc_sptr
-galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
+galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 {
-    return galileo_e1b_telemetry_decoder_cc_sptr(new galileo_e1b_telemetry_decoder_cc(satellite, queue, dump));
+    return galileo_e1b_telemetry_decoder_cc_sptr(new galileo_e1b_telemetry_decoder_cc(satellite, dump));
 }
 
 
@@ -115,7 +115,6 @@ void galileo_e1b_telemetry_decoder_cc::deinterleaver(int rows, int cols, double 
 
 galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump) :
            gr::block("galileo_e1b_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
 	   gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -125,7 +124,6 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
-    d_queue = queue;
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing GALILEO E1B TELEMETRY PROCESSING";
@@ -250,28 +248,26 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Ephemeris> tmp_obj= std::make_shared<Galileo_Ephemeris>(d_nav.get_ephemeris());
-            //*tmp_obj = d_nav.get_ephemeris();//notice that the read operation will clear the valid flag
+            std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_nav.get_ephemeris());
+
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+
         }
     if (d_nav.have_new_iono_and_GST() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Iono> tmp_obj= std::make_shared<Galileo_Iono>(d_nav.get_iono());
-            //*tmp_obj = d_nav.get_iono(); //notice that the read operation will clear the valid flag
+            std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_nav.get_iono());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Utc_Model> tmp_obj= std::make_shared<Galileo_Utc_Model>(d_nav.get_utc_model());
-            //*tmp_obj = d_nav.get_utc_model(); //notice that the read operation will clear the valid flag
+            std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_nav.have_new_almanac() == true)
         {
             std::shared_ptr<Galileo_Almanac> tmp_obj= std::make_shared<Galileo_Almanac>(d_nav.get_almanac());
-            //*tmp_obj = d_nav.get_almanac();
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             //debug
             std::cout << "Galileo almanac received!" << std::endl;
@@ -399,7 +395,9 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
                         }
                 }
         }
+
     consume_each(1); //one by one
+
     // UPDATE GNSS SYNCHRO DATA
     Gnss_Synchro current_synchro_data; //structure to save the synchronization information and send the output object to the next block
     //1. Copy the current tracking output
@@ -443,7 +441,6 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
                     d_TOW_at_current_symbol = d_TOW_at_current_symbol + GALILEO_E1_CODE_PERIOD;// + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
 
                 }
-
         }
     else //if there is not a new preamble, we define the TOW of the current symbol
         {

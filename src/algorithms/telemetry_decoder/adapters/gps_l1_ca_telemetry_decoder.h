@@ -34,7 +34,6 @@
 #define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include "telemetry_decoder_interface.h"
 #include "gps_l1_ca_telemetry_decoder_cc.h"
 
@@ -50,8 +49,7 @@ public:
     GpsL1CaTelemetryDecoder(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
-            unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GpsL1CaTelemetryDecoder();
     std::string role()
@@ -89,7 +87,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif

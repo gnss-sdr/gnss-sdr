@@ -48,16 +48,15 @@ using google::LogMessage;
 
 
 gps_l2_m_telemetry_decoder_cc_sptr
-gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
+gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 {
-    return gps_l2_m_telemetry_decoder_cc_sptr(new gps_l2_m_telemetry_decoder_cc(satellite, queue, dump));
+    return gps_l2_m_telemetry_decoder_cc_sptr(new gps_l2_m_telemetry_decoder_cc(satellite, dump));
 }
 
 
 
 gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        boost::shared_ptr<gr::msg_queue> queue __attribute__((unused)),
         bool dump) :
                 gr::block("gps_l2_m_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
@@ -78,8 +77,6 @@ gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
     d_flag_invert_buffer_symbols = false;
     d_flag_invert_input_symbols = false;
     d_channel = 0;
-    d_iono_queue = 0;
-    d_ephemeris_queue = 0;
     d_flag_valid_word = false;
     d_TOW_at_current_symbol = 0;
     d_TOW_at_Preamble = 0;
@@ -203,15 +200,16 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__
                                             if (d_CNAV_Message.have_new_ephemeris() == true)
                                                 {
                                                     // get ephemeris object for this SV
-                                                    Gps_CNAV_Ephemeris ephemeris = d_CNAV_Message.get_ephemeris(); //notice that the read operation will clear the valid flag
-                                                    std::cout << "New GPS CNAV Ephemeris received for SV " << ephemeris.i_satellite_PRN << std::endl;
-                                                    d_ephemeris_queue->push(ephemeris);
+                                                    std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj= std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
+                                                    std::cout << "New GPS CNAV Ephemeris received for SV " << tmp_obj->i_satellite_PRN << std::endl;
+                                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+
                                                 }
                                             if (d_CNAV_Message.have_new_iono() == true)
                                                 {
-                                                    Gps_CNAV_Iono iono = d_CNAV_Message.get_iono(); //notice that the read operation will clear the valid flag
+                                                    std::shared_ptr<Gps_CNAV_Iono> tmp_obj= std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
                                                     std::cout << "New GPS CNAV IONO model received for SV " << d_satellite.get_PRN() << std::endl;
-                                                    d_iono_queue->push(iono);
+                                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                                                 }
                                         }
                                     break;
@@ -434,7 +432,6 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::reset()
 
 }
 
-
 void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::vector<msg_candiate_int_t> & msg_candidates, std::vector<msg_candiate_int_t> & valid_msgs)
 {
     std::vector <unsigned char> tmp_msg;
@@ -459,7 +456,6 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::get_valid_frames(const std::ve
                 }
         }
 }
-
 
 
 void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes)
@@ -487,8 +483,6 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_back_and_convert_to_b
     //            << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
 
-
-
 void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_bytes(const std::vector<int> & msg_candidate, std::vector<unsigned char> & bytes)
 {
     //std::stringstream ss;
@@ -515,14 +509,3 @@ void gps_l2_m_telemetry_decoder_cc::crc_verifier::zerropad_front_and_convert_to_
     //            << std::setfill(' ') << std::resetiosflags(std::ios::hex);
 }
 
-
-void gps_l2_m_telemetry_decoder_cc::set_iono_queue(concurrent_queue<Gps_CNAV_Iono> *iono_queue)
-{
-	d_iono_queue = iono_queue;
-}
-
-
-void gps_l2_m_telemetry_decoder_cc::set_ephemeris_queue(concurrent_queue<Gps_CNAV_Ephemeris> *ephemeris_queue)
-{
-	d_ephemeris_queue = ephemeris_queue;
-}

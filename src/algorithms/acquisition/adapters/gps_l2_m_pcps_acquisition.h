@@ -35,7 +35,6 @@
 #define GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include "gnss_synchro.h"
@@ -57,7 +56,7 @@ class GpsL2MPcpsAcquisition: public AcquisitionInterface
 public:
     GpsL2MPcpsAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GpsL2MPcpsAcquisition();
 
@@ -168,7 +167,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
     concurrent_queue<int> *channel_internal_queue_;
 
     float calculate_threshold(float pfa);

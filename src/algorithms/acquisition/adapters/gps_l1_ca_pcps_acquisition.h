@@ -61,7 +61,7 @@ class GpsL1CaPcpsAcquisition: public AcquisitionInterface
 public:
     GpsL1CaPcpsAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsAcquisition();
 

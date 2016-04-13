@@ -357,6 +357,14 @@ void GNSSFlowgraph::wait()
 }
 
 
+bool GNSSFlowgraph::send_telemetry_msg(pmt::pmt_t msg)
+{
+    //push ephemeris to PVT telemetry msg in port using a channel out port
+    // it uses the first channel as a message produces (it is already connected to PVT)
+    channels_.at(0)->get_right_block()->message_port_pub(pmt::mp("telemetry"), msg);
+    return true;
+}
+
 /*
  * Applies an action to the flowgraph
  *

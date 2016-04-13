@@ -125,7 +125,7 @@ private:
             std::shared_ptr<ConfigurationInterface> configuration,
             std::string role,
             std::string implementation, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 };
 
 #endif /*GNSS_SDR_BLOCK_FACTORY_H_*/

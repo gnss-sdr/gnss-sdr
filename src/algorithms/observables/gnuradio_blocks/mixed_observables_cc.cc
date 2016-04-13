@@ -46,18 +46,17 @@ using google::LogMessage;
 
 
 mixed_observables_cc_sptr
-mixed_make_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging)
+mixed_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging)
 {
-    return mixed_observables_cc_sptr(new mixed_observables_cc(nchannels, queue, dump, dump_filename, output_rate_ms, flag_averaging));
+    return mixed_observables_cc_sptr(new mixed_observables_cc(nchannels, dump, dump_filename, output_rate_ms, flag_averaging));
 }
 
 
-mixed_observables_cc::mixed_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
+mixed_observables_cc::mixed_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
 		                        gr::block("mixed_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
 		                        gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
-    d_queue = queue;
     d_dump = dump;
     d_nchannels = nchannels;
     d_output_rate_ms = output_rate_ms;

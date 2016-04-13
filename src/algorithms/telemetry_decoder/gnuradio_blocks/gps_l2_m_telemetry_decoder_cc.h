@@ -39,7 +39,6 @@
 #include <vector>
 #include <boost/crc.hpp>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include "gnss_satellite.h"
 #include "viterbi_decoder.h"
 #include "gps_cnav_navigation_message.h"
@@ -53,7 +52,7 @@ class gps_l2_m_telemetry_decoder_cc;
 typedef boost::shared_ptr<gps_l2_m_telemetry_decoder_cc> gps_l2_m_telemetry_decoder_cc_sptr;
 
 gps_l2_m_telemetry_decoder_cc_sptr
-gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and corrections data defined in RTCA MOPS DO-229
@@ -65,11 +64,6 @@ public:
     ~gps_l2_m_telemetry_decoder_cc();
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
-
-    // queues to communicate broadcasted CNAV data to other blocks of GNSS-SDR
-    void set_iono_queue(concurrent_queue<Gps_CNAV_Iono> *iono_queue);                //!< Set iono queue
-    void set_ephemeris_queue(concurrent_queue<Gps_CNAV_Ephemeris> *ephemeris_queue); //!< Set ephemeris queue
-
     void set_decimation(int decimation);
 
     /*!
@@ -86,14 +80,11 @@ public:
 
 private:
     friend gps_l2_m_telemetry_decoder_cc_sptr
-    gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
-    gps_l2_m_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    gps_l2_m_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
     void align_samples();
-
-    concurrent_queue<Gps_CNAV_Iono> *d_iono_queue;
-    concurrent_queue<Gps_CNAV_Ephemeris> *d_ephemeris_queue;
 
     bool d_dump;
     Gnss_Satellite d_satellite;

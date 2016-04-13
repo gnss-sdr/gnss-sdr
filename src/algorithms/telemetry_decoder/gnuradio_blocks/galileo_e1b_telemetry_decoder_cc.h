@@ -35,7 +35,6 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include "Galileo_E1.h"
 #include "concurrent_queue.h"
 #include "gnss_satellite.h"
@@ -51,7 +50,7 @@ class galileo_e1b_telemetry_decoder_cc;
 
 typedef boost::shared_ptr<galileo_e1b_telemetry_decoder_cc> galileo_e1b_telemetry_decoder_cc_sptr;
 
-galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+galileo_e1b_telemetry_decoder_cc_sptr galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
 /*!
  * \brief This class implements a block that decodes the INAV data defined in Galileo ICD
@@ -64,11 +63,6 @@ public:
     void set_satellite(Gnss_Satellite satellite);  //!< Set satellite PRN
     void set_channel(int channel);                 //!< Set receiver's channel
     int flag_even_word_arrived;
-    void set_ephemeris_queue(concurrent_queue<Galileo_Ephemeris> *ephemeris_queue); //!< Set the satellite data queue
-    void set_iono_queue(concurrent_queue<Galileo_Iono> *iono_queue);                //!< Set the iono data queue
-    void set_almanac_queue(concurrent_queue<Galileo_Almanac> *almanac_queue);       //!< Set the almanac data queue
-    void set_utc_model_queue(concurrent_queue<Galileo_Utc_Model> *utc_model_queue); //!< Set the UTC model queue
-
     /*!
      * \brief Set decimation factor to average the GPS synchronization estimation output from the tracking module.
      */
@@ -88,8 +82,8 @@ public:
 
 private:
     friend galileo_e1b_telemetry_decoder_cc_sptr
-    galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
-    galileo_e1b_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump);
+    galileo_e1b_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
+    galileo_e1b_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump);
 
     void viterbi_decoder(double *page_part_symbols, int *page_part_bits);
 
@@ -115,7 +109,6 @@ private:
     // navigation message vars
     Galileo_Navigation_Message d_nav;
 
-    boost::shared_ptr<gr::msg_queue> d_queue;
     bool d_dump;
     Gnss_Satellite d_satellite;
     int d_channel;

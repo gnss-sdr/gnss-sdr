@@ -38,7 +38,6 @@
 #define GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include "telemetry_decoder_interface.h"
 #include "galileo_e5a_telemetry_decoder_cc.h"
 
@@ -54,8 +53,7 @@ public:
     GalileoE5aTelemetryDecoder(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
-            unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GalileoE5aTelemetryDecoder();
     std::string role()
@@ -95,7 +93,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_TELEMETRY_DECODER_H_ */

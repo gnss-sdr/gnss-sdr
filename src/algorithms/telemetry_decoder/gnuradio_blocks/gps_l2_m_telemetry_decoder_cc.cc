@@ -48,16 +48,15 @@ using google::LogMessage;
 
 
 gps_l2_m_telemetry_decoder_cc_sptr
-gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
+gps_l2_m_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 {
-    return gps_l2_m_telemetry_decoder_cc_sptr(new gps_l2_m_telemetry_decoder_cc(satellite, queue, dump));
+    return gps_l2_m_telemetry_decoder_cc_sptr(new gps_l2_m_telemetry_decoder_cc(satellite, dump));
 }
 
 
 
 gps_l2_m_telemetry_decoder_cc::gps_l2_m_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        boost::shared_ptr<gr::msg_queue> queue __attribute__((unused)),
         bool dump) :
                 gr::block("gps_l2_m_telemetry_decoder_cc",
                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),

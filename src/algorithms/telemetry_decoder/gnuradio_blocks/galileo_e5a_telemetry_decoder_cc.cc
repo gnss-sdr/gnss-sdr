@@ -51,9 +51,9 @@ using google::LogMessage;
 
 
 galileo_e5a_telemetry_decoder_cc_sptr
-galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, boost::shared_ptr<gr::msg_queue> queue, bool dump)
+galileo_e5a_make_telemetry_decoder_cc(Gnss_Satellite satellite, bool dump)
 {
-    return galileo_e5a_telemetry_decoder_cc_sptr(new galileo_e5a_telemetry_decoder_cc(satellite, queue, dump));
+    return galileo_e5a_telemetry_decoder_cc_sptr(new galileo_e5a_telemetry_decoder_cc(satellite, dump));
 }
 
 
@@ -188,7 +188,6 @@ void galileo_e5a_telemetry_decoder_cc::decode_word(double *page_symbols,int fram
 
 galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
         Gnss_Satellite satellite,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump) :
                    gr::block("galileo_e5a_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
                            gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -198,7 +197,6 @@ galileo_e5a_telemetry_decoder_cc::galileo_e5a_telemetry_decoder_cc(
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // initialize internal vars
-    d_queue = queue;
     d_dump = dump;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "GALILEO E5A TELEMETRY PROCESSING: satellite " << d_satellite;

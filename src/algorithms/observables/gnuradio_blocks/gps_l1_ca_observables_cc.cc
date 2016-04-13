@@ -47,18 +47,17 @@ using google::LogMessage;
 
 
 gps_l1_ca_observables_cc_sptr
-gps_l1_ca_make_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging)
+gps_l1_ca_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging)
 {
-    return gps_l1_ca_observables_cc_sptr(new gps_l1_ca_observables_cc(nchannels, queue, dump, dump_filename, output_rate_ms, flag_averaging));
+    return gps_l1_ca_observables_cc_sptr(new gps_l1_ca_observables_cc(nchannels, dump, dump_filename, output_rate_ms, flag_averaging));
 }
 
 
-gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, boost::shared_ptr<gr::msg_queue> queue, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
+gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
 		                        gr::block("gps_l1_ca_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
 		                        gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
-    d_queue = queue;
     d_dump = dump;
     d_nchannels = nchannels;
     d_output_rate_ms = output_rate_ms;
@@ -83,7 +82,7 @@ gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, boost
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str() << std::endl;
                     }
-                    catch (std::ifstream::failure e)
+                    catch (const std::ifstream::failure & e)
                     {
                             LOG(WARNING) << "Exception opening observables dump file " << e.what() << std::endl;
                     }

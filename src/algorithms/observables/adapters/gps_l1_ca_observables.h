@@ -34,7 +34,6 @@
 #define GNSS_SDR_GPS_L1_CA_OBSERVABLES_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include "observables_interface.h"
 #include "gps_l1_ca_observables_cc.h"
 
@@ -50,8 +49,7 @@ public:
     GpsL1CaObservables(ConfigurationInterface* configuration,
                        std::string role,
                        unsigned int in_streams,
-                       unsigned int out_streams,
-                       boost::shared_ptr<gr::msg_queue> queue);
+                       unsigned int out_streams);
     virtual ~GpsL1CaObservables();
     std::string role()
     {
@@ -86,7 +84,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif

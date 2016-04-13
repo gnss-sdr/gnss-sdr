@@ -1366,26 +1366,26 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("GPS_L1_CA_Observables") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GpsL1CaObservables(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
 
     else if (implementation.compare("Galileo_E1B_Observables") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new GalileoE1Observables(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Hybrid_Observables") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new HybridObservables(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Mixed_Observables") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new MixedObservables(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     // PVT -------------------------------------------------------------------------

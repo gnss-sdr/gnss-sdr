@@ -52,9 +52,9 @@ $ python setup.py build
 $ sudo python setup.py install
 $ pybombs recipes add gr-recipes https://github.com/gnuradio/gr-recipes.git
 $ pybombs recipes add gr-etcetera https://github.com/gnuradio/gr-etcetera.git
-$ sudo pybombs prefix init /usr/local -a myprefix
+$ pybombs prefix init /usr/local -a myprefix
 $ pybombs config default_prefix myprefix
-$ sudo pybombs install gnuradio gr-osmosdr armadillo glog
+$ pybombs install gnuradio gr-osmosdr armadillo glog
 ~~~~~~
 
 Other installation and configuration options are available from https://github.com/gnuradio/pybombs

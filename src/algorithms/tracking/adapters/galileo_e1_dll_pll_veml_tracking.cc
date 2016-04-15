@@ -100,7 +100,6 @@ GalileoE1DllPllVemlTracking::GalileoE1DllPllVemlTracking(
         }
 
     channel_ = 0;
-    channel_internal_queue_ = 0;
 
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
@@ -122,17 +121,6 @@ void GalileoE1DllPllVemlTracking::set_channel(unsigned int channel)
     tracking_->set_channel(channel);
 }
 
-/*
- * Set tracking channel internal queue
- */
-void GalileoE1DllPllVemlTracking::set_channel_queue(
-        concurrent_queue<int> *channel_internal_queue)
-{
-    channel_internal_queue_ = channel_internal_queue;
-
-    tracking_->set_channel_queue(channel_internal_queue_);
-
-}
 
 void GalileoE1DllPllVemlTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {

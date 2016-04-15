@@ -187,7 +187,6 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
     systemName["E"] = std::string("Galileo");
 
-    d_channel_internal_queue = 0;
     d_acquisition_gnss_synchro = 0;
     d_channel = 0;
     d_next_rem_code_phase_samples = 0;
@@ -539,12 +538,6 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::set_channel(unsigned int channel)
         }
 }
 
-
-
-void Galileo_E1_Tcp_Connector_Tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-{
-    d_channel_internal_queue = channel_internal_queue;
-}
 
 
 void Galileo_E1_Tcp_Connector_Tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)

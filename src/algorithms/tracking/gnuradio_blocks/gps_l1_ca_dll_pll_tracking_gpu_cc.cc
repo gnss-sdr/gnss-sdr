@@ -170,7 +170,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
 
     set_relative_rate(1.0 / (static_cast<double>(d_vector_length) * 2.0));
 
-    d_channel_internal_queue = 0;
     d_acquisition_gnss_synchro = 0;
     d_channel = 0;
     d_acq_code_phase_samples = 0.0;
@@ -557,10 +556,6 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_channel(unsigned int channel)
         }
 }
 
-void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-{
-    d_channel_internal_queue = channel_internal_queue;
-}
 
 void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {

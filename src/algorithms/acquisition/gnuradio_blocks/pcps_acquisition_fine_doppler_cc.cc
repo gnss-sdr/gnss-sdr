@@ -104,7 +104,6 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
-    d_channel_internal_queue = 0;
     d_well_count = 0;
     d_channel = 0;
 }
@@ -503,7 +502,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 
         d_active = false;
         // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
-        d_channel_internal_queue->push(1); // 1-> positive acquisition
+        this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
         d_state = 0;
         break;
     case 5: // Negative_Acq
@@ -519,7 +518,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 
         d_active = false;
         // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
-        d_channel_internal_queue->push(2); // 2-> negative acquisition
+        this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
         d_state = 0;
         break;
     default:

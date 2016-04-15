@@ -54,13 +54,8 @@
 #include "sbas_satellite_correction.h"
 
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_queue<Gps_Ref_Location> global_gps_ref_location_queue;
-concurrent_queue<Gps_Ref_Time> global_gps_ref_time_queue;
 
-concurrent_map<Gps_Almanac> global_gps_almanac_map;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
-concurrent_map<Gps_Ref_Location> global_gps_ref_location_map;
-concurrent_map<Gps_Ref_Time> global_gps_ref_time_map;
 
 
 int main(int argc, char **argv)

@@ -28,29 +28,73 @@
  *
  * -------------------------------------------------------------------------
  */
-
 #include "channel.h"
+#include <memory>
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
+#include "channel_interface.h"
 #include "acquisition_interface.h"
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 #include "configuration_interface.h"
 
-
-
 using google::LogMessage;
 
+void Channel::msg_handler_events(pmt::pmt_t msg)
+{
+    try {
+        long int message=pmt::to_long(msg);
+        switch (message)
+        {
+        case 1: //positive acquisition
+            DLOG(INFO) << "Channel " << channel_ << " ACQ SUCCESS satellite " <<
+                gnss_synchro_.System << " " << gnss_synchro_.PRN;
+            channel_fsm_.Event_valid_acquisition();
+            break;
+        case 2: //negative acquisition
+            DLOG(INFO) << "Channel " << channel_
+                << " ACQ FAILED satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
+            if (repeat_ == true)
+                {
+                    channel_fsm_.Event_failed_acquisition_repeat();
+                }
+            else
+                {
+                    channel_fsm_.Event_failed_acquisition_no_repeat();
+                }
+            break;
+        case 3: // tracking loss of lock event
+            channel_fsm_.Event_failed_tracking_standby();
+            break;
+        default:
+            LOG(WARNING) << "Default case, invalid message.";
+            break;
+        }
+    }catch(boost::bad_any_cast& e)
+    {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+    }
+}
 // Constructor
 Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
         GNSSBlockInterface *pass_through, AcquisitionInterface *acq,
         TrackingInterface *trk, TelemetryDecoderInterface *nav,
         std::string role, std::string implementation, boost::shared_ptr<gr::msg_queue> queue) :
-                pass_through_(pass_through), acq_(acq), trk_(trk), nav_(nav),
-                role_(role), implementation_(implementation), channel_(channel),
-                queue_(queue)
+        gr::block("galileo_e1_pvt_cc", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
-    stop_ = false;
+
+    this->message_port_register_in(pmt::mp("events"));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&Channel::msg_handler_events, this, _1));
+
+    pass_through_=pass_through;
+    acq_=acq;
+    trk_=trk;
+    nav_=nav;
+    role_=role;
+    implementation_=implementation;
+    channel_=channel;
+    queue_=queue;
+
     acq_->set_channel(channel_);
     trk_->set_channel(channel_);
     nav_->set_channel(channel_);
@@ -82,30 +126,19 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     repeat_ = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".repeat_satellite", false);
     DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_;
 
-    acq_->set_channel_queue(&channel_internal_queue_);
-    trk_->set_channel_queue(&channel_internal_queue_);
-
     channel_fsm_.set_acquisition(acq_);
     channel_fsm_.set_tracking(trk_);
     channel_fsm_.set_channel(channel_);
     channel_fsm_.set_queue(queue_);
 
     connected_ = false;
-    message_ = 0;
     gnss_signal_ = Gnss_Signal();
 }
-
 
 // Destructor
 Channel::~Channel()
 {
-    delete acq_;
-    delete trk_;
-    delete nav_;
-    delete pass_through_;
 }
-
-
 
 void Channel::connect(gr::top_block_sptr top_block)
 {
@@ -130,9 +163,13 @@ void Channel::connect(gr::top_block_sptr top_block)
     // Message ports
     top_block->msg_connect(nav_->get_left_block(),pmt::mp("preamble_timestamp_s"),trk_->get_right_block(),pmt::mp("preamble_timestamp_s"));
     DLOG(INFO) << "MSG FEEDBACK CHANNEL telemetry_decoder -> tracking";
+
+    //std::cout<<"has port: "<<trk_->get_right_block()->has_msg_port(pmt::mp("events"))<<std::endl;
+    top_block->msg_connect(acq_->get_right_block(),pmt::mp("events"), gr::basic_block_sptr(this),pmt::mp("events"));
+    top_block->msg_connect(trk_->get_right_block(),pmt::mp("events"), gr::basic_block_sptr(this),pmt::mp("events"));
+
     connected_ = true;
 }
-
 
 
 void Channel::disconnect(gr::top_block_sptr top_block)
@@ -152,20 +189,15 @@ void Channel::disconnect(gr::top_block_sptr top_block)
     connected_ = false;
 }
 
-
-
 gr::basic_block_sptr Channel::get_left_block()
 {
     return pass_through_->get_left_block();
 }
 
-
-
 gr::basic_block_sptr Channel::get_right_block()
 {
     return nav_->get_right_block();
 }
-
 
 
 void Channel::set_signal(const Gnss_Signal& gnss_signal)
@@ -181,90 +213,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
     nav_->set_satellite(gnss_signal_.get_satellite());
 }
 
-
-
 void Channel::start_acquisition()
 {
     channel_fsm_.Event_start_acquisition();
 }
-
-
-
-void Channel::start()
-{
-    ch_thread_ = std::thread(&Channel::run, this);
-}
-
-
-
-void Channel::run()
-{
-    while (!stop_)
-        {
-            channel_internal_queue_.wait_and_pop(message_);
-            process_channel_messages();
-        }
-}
-
-
-
-void Channel::standby()
-{
-    channel_fsm_.Event_failed_tracking_standby();
-}
-
-
-
-/*
- * Set stop_ to true and blocks the calling thread until
- * the thread of the constructor has completed
- */
-void Channel::stop()
-{
-    stop_ = true;
-    channel_internal_queue_.push(0); //message to stop channel
-    /* When the std::thread object that represents a thread of execution
-     * is destroyed the thread becomes detached. Once a thread is detached,
-     * it will continue executing until the invocation of the function or
-     * callable object supplied on construction has completed,
-     * or the program is terminated. In order to wait for a thread of
-     * execution to finish, the join() member function of
-     * the std::thread object must be used. join() will block the calling
-     * thread until the thread represented by the std::thread object
-     * has completed.
-     */
-    ch_thread_.join();
-}
-
-
-
-void Channel::process_channel_messages()
-{
-    switch (message_)
-    {
-    case 0:
-        DLOG(INFO) << "Stop channel " << channel_;
-        break;
-    case 1:
-        DLOG(INFO) << "Channel " << channel_ << " ACQ SUCCESS satellite " <<
-            gnss_synchro_.System << " " << gnss_synchro_.PRN;
-        channel_fsm_.Event_valid_acquisition();
-        break;
-    case 2:
-        DLOG(INFO) << "Channel " << channel_
-            << " ACQ FAILED satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
-        if (repeat_ == true)
-            {
-                channel_fsm_.Event_failed_acquisition_repeat();
-            }
-        else
-            {
-                channel_fsm_.Event_failed_acquisition_no_repeat();
-            }
-        break;
-    default:
-        LOG(WARNING) << "Default case, invalid message.";
-        break;
-    }
-}
-

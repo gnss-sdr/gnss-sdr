@@ -59,7 +59,6 @@ public:
     virtual void set_threshold(float threshold) = 0;
     virtual void set_doppler_max(unsigned int doppler_max) = 0;
     virtual void set_doppler_step(unsigned int doppler_step) = 0;
-    virtual void set_channel_queue(concurrent_queue<int> *channel_internal_queue) = 0;
     virtual void init() = 0;
     virtual void set_local_code() = 0;
     virtual signed int mag() = 0;

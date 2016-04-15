@@ -122,7 +122,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
     this->set_msg_handler(pmt::mp("preamble_timestamp_s"),
             boost::bind(&gps_l1_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index, this, _1));
 
-
+    this->message_port_register_out(pmt::mp("events"));
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -193,7 +193,6 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
 
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 
-    d_channel_internal_queue = 0;
     d_acquisition_gnss_synchro = 0;
     d_channel = 0;
     d_acq_code_phase_samples = 0.0;
@@ -549,11 +548,14 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
                                 {
                                     std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                                     LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                                    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                                    if (d_queue != gr::msg_queue::sptr())
-                                        {
-                                            d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-                                        }
+                                    pmt::pmt_t value = pmt::from_long(3);//3 -> loss of lock
+                                    this->message_port_pub(pmt::mp("events"), value);
+
+                                    //std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+                                    //if (d_queue != gr::msg_queue::sptr())
+                                    //    {
+                                    //        d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
+                                    //    }
                                     d_carrier_lock_fail_counter = 0;
                                     d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                                 }
@@ -690,11 +692,6 @@ void gps_l1_ca_dll_pll_c_aid_tracking_cc::set_channel(unsigned int channel)
         }
 }
 
-
-void gps_l1_ca_dll_pll_c_aid_tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-{
-    d_channel_internal_queue = channel_internal_queue;
-}
 
 
 void gps_l1_ca_dll_pll_c_aid_tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)

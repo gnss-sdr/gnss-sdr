@@ -83,7 +83,6 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     threshold_ = 0.0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
-    channel_internal_queue_ = 0;
 }
 
 
@@ -118,14 +117,6 @@ void GpsL1CaPcpsAcquisitionFineDoppler::set_doppler_step(unsigned int doppler_st
 {
     doppler_step_ = doppler_step;
     acquisition_cc_->set_doppler_step(doppler_step_);
-}
-
-
-void GpsL1CaPcpsAcquisitionFineDoppler::set_channel_queue(
-        concurrent_queue<int> *channel_internal_queue)
-{
-    channel_internal_queue_ = channel_internal_queue;
-    acquisition_cc_->set_channel_queue(channel_internal_queue_);
 }
 
 

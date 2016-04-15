@@ -130,7 +130,6 @@ private:
     float d_input_power;
     float d_test_statistics;
     boost::shared_ptr<gr::msg_queue> d_queue;
-    concurrent_queue<int> *d_channel_internal_queue;
     std::ofstream d_dump_file;
     int d_state;
     bool d_active;
@@ -219,15 +218,6 @@ public:
      */
     void set_doppler_step(unsigned int doppler_step);
 
-
-    /*!
-     * \brief Set tracking channel internal queue.
-     * \param channel_internal_queue - Channel's internal blocks information queue.
-     */
-    void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-    {
-        d_channel_internal_queue = channel_internal_queue;
-    }
 
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.

@@ -128,7 +128,6 @@ private:
     unsigned int applied_actions_;
     std::string config_file_;
     std::shared_ptr<ConfigurationInterface> configuration_;
-    std::shared_ptr<GNSSBlockFactory> block_factory_;
 
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_source_;
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;

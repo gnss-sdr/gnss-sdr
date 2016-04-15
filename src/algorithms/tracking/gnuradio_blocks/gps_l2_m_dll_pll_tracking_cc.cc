@@ -174,7 +174,6 @@ gps_l2_m_dll_pll_tracking_cc::gps_l2_m_dll_pll_tracking_cc(
     set_relative_rate(1.0/((double)d_vector_length*2));
     //set_min_output_buffer((long int)300);
 
-    d_channel_internal_queue = 0;
     d_acquisition_gnss_synchro = 0;
     d_channel = 0;
     d_acq_code_phase_samples = 0.0;
@@ -538,12 +537,6 @@ void gps_l2_m_dll_pll_tracking_cc::set_channel(unsigned int channel)
         }
 }
 
-
-
-void gps_l2_m_dll_pll_tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-{
-    d_channel_internal_queue = channel_internal_queue;
-}
 
 
 void gps_l2_m_dll_pll_tracking_cc::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)

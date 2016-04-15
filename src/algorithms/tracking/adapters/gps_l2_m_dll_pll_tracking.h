@@ -93,11 +93,6 @@ public:
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
 
-    /*!
-     * \brief Set tracking channel internal queue
-     */
-    void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
-
     void start_tracking();
 
 private:
@@ -108,7 +103,6 @@ private:
     unsigned int in_streams_;
     unsigned int out_streams_;
     boost::shared_ptr<gr::msg_queue> queue_;
-    concurrent_queue<int> *channel_internal_queue_;
 };
 
 #endif // GNSS_SDR_gps_l2_m_dll_pll_tracking_H_

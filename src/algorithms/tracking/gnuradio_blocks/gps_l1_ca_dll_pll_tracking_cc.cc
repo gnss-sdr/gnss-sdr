@@ -105,6 +105,9 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
 {
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
+
+    this->message_port_register_out(pmt::mp("events"));
+
     // initialize internal vars
     d_queue = queue;
     d_dump = dump;
@@ -168,7 +171,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
 
-    d_channel_internal_queue = 0;
     d_acquisition_gnss_synchro = 0;
     d_channel = 0;
     d_acq_code_phase_samples = 0.0;
@@ -406,11 +408,13 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                            if (d_queue != gr::msg_queue::sptr())
-                                {
-                                    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-                                }
+                            pmt::pmt_t value = pmt::from_long(3);//3 -> loss of lock
+                            this->message_port_pub(pmt::mp("events"), value);
+//                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+//                            if (d_queue != gr::msg_queue::sptr())
+//                                {
+//                                    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
+//                                }
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }
@@ -532,12 +536,6 @@ void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
                     }
                 }
         }
-}
-
-
-void Gps_L1_Ca_Dll_Pll_Tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-{
-    d_channel_internal_queue = channel_internal_queue;
 }
 
 

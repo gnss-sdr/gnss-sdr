@@ -127,7 +127,6 @@ pcps_acquisition_sc::pcps_acquisition_sc(
     d_dump_filename = dump_filename;
 
     d_gnss_synchro = 0;
-    d_channel_internal_queue = 0;
     d_grid_doppler_wipeoffs = 0;
 }
 
@@ -454,7 +453,7 @@ int pcps_acquisition_sc::general_work(int noutput_items,
             consume_each(ninput_items[0]);
 
             acquisition_message = 1;
-            d_channel_internal_queue->push(acquisition_message);
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
 
             break;
         }
@@ -478,7 +477,7 @@ int pcps_acquisition_sc::general_work(int noutput_items,
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
             consume_each(ninput_items[0]);
             acquisition_message = 2;
-            d_channel_internal_queue->push(acquisition_message);
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
 
             break;
         }

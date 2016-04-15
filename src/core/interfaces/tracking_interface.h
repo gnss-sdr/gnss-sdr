@@ -57,7 +57,6 @@ public:
     virtual void start_tracking() = 0;
     virtual void set_gnss_synchro(Gnss_Synchro* gnss_synchro) = 0;
     virtual void set_channel(unsigned int channel) = 0;
-    virtual void set_channel_queue(concurrent_queue<int> *channel_internal_queue) = 0;
 };
 
 #endif /* GNSS_SDR_TRACKING_INTERFACE_H_ */

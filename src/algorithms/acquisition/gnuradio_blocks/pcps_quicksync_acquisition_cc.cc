@@ -129,7 +129,6 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
-    d_channel_internal_queue = 0;
     d_channel = 0;
     //d_code_folded = 0;
 
@@ -549,7 +548,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             consume_each(ninput_items[0]);
 
             acquisition_message = 1;
-            d_channel_internal_queue->push(acquisition_message);
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
             //DLOG(INFO) << "END CASE 2";
             break;
         }
@@ -578,7 +577,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             consume_each(ninput_items[0]);
 
             acquisition_message = 2;
-            d_channel_internal_queue->push(acquisition_message);
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
             //DLOG(INFO) << "END CASE 3";
             break;
         }

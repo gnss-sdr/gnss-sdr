@@ -119,7 +119,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     doppler_max_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
-    channel_internal_queue_ = 0;
 }
 
 
@@ -201,23 +200,6 @@ void GpsL1CaPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
         }
 
 }
-
-
-void GpsL1CaPcpsAcquisition::set_channel_queue(
-        concurrent_queue<int> *channel_internal_queue)
-{
-    channel_internal_queue_ = channel_internal_queue;
-
-    if (item_type_.compare("cshort") == 0)
-        {
-            acquisition_sc_->set_channel_queue(channel_internal_queue_);
-        }
-    else
-        {
-            acquisition_cc_->set_channel_queue(channel_internal_queue_);
-        }
-}
-
 
 void GpsL1CaPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {

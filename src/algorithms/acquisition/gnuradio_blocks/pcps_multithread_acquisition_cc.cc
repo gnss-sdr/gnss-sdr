@@ -118,7 +118,6 @@ pcps_multithread_acquisition_cc::pcps_multithread_acquisition_cc(
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
-    d_channel_internal_queue = 0;
     d_channel = 0;
 }
 
@@ -444,7 +443,7 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
 
             acquisition_message = 1;
-            d_channel_internal_queue->push(acquisition_message);
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
 
             break;
         }
@@ -468,7 +467,7 @@ int pcps_multithread_acquisition_cc::general_work(int noutput_items,
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
 
             acquisition_message = 2;
-            d_channel_internal_queue->push(acquisition_message);
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
 
             break;
         }

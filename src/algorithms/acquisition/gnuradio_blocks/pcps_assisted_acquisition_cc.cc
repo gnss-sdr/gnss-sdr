@@ -107,7 +107,6 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
-    d_channel_internal_queue = 0;
     d_well_count = 0;
     d_channel = 0;
 }
@@ -463,7 +462,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         DLOG(INFO) << "input signal power " << d_input_power;
         d_active = false;
         // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCESS 2=ACQ_FAIL
-        d_channel_internal_queue->push(1); // 1-> positive acquisition
+        this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
         free_grid_memory();
         // consume samples to not block the GNU Radio flowgraph
         d_sample_counter += ninput_items[0]; // sample counter
@@ -481,7 +480,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         DLOG(INFO) << "input signal power " << d_input_power;
         d_active = false;
         // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCESS 2=ACQ_FAIL
-        d_channel_internal_queue->push(2); // 2-> negative acquisition
+        this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
         free_grid_memory();
         // consume samples to not block the GNU Radio flowgraph
         d_sample_counter += ninput_items[0]; // sample counter

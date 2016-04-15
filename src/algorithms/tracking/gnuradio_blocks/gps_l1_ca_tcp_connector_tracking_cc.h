@@ -75,7 +75,6 @@ public:
     void set_channel(unsigned int channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
-    void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
     /*
      * \brief just like gr_block::general_work, only this arranges to call consume_each for you
@@ -108,7 +107,6 @@ private:
 
     // tracking configuration vars
     boost::shared_ptr<gr::msg_queue> d_queue;
-    concurrent_queue<int> *d_channel_internal_queue;
     unsigned int d_vector_length;
     bool d_dump;
 

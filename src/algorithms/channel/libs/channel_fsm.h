@@ -64,6 +64,7 @@ public:
     void start_acquisition();
     void start_tracking();
     void request_satellite();
+    void notify_stop_tracking();
 
     //FSM EVENTS
     void Event_start_acquisition();

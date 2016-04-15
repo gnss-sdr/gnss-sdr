@@ -92,8 +92,14 @@ public:
 
     channel_tracking_fsm_S2(my_context ctx) : my_base(ctx)
     {
-        //std::cout << "Enter Channel_tracking_S2 " << std::endl;
+       //std::cout << "Enter Channel_tracking_S2 " << std::endl;
         context<ChannelFsm> ().start_tracking();
+    }
+
+    ~channel_tracking_fsm_S2()
+    {
+        //std::cout << "Exit Channel_tracking_S2 " << std::endl;
+        context<ChannelFsm> ().notify_stop_tracking();
     }
 
 };
@@ -223,3 +229,11 @@ void ChannelFsm::request_satellite()
         }
 }
 
+void ChannelFsm::notify_stop_tracking()
+{
+    std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
+    if (queue_ != gr::msg_queue::make())
+        {
+            queue_->handle(cmf->GetQueueMessage(channel_, 2));
+        }
+}

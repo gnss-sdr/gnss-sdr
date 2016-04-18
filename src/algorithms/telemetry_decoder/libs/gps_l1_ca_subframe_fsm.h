@@ -71,8 +71,6 @@ public:
     int i_channel_ID;              //!< Channel id
     unsigned int i_satellite_PRN;  //!< Satellite PRN number
 
-    concurrent_queue<Gps_Almanac> *d_almanac_queue;     //!< Almanac queue
-
     Gps_Navigation_Message d_nav; //!< GPS L1 C/A navigation message object
 
     // GPS SV and System parameters

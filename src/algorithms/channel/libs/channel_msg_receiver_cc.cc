@@ -1,0 +1,94 @@
+/*!
+ * \file channel_msg_receiver_cc.cc
+ * \brief GNURadio block that receives asynchronous channel messages from acquisition and tracking blocks
+ * \author Javier Arribas, 2016. jarribas(at)cttc.es
+ *
+ * -------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2016  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * GNSS-SDR is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * GNSS-SDR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * -------------------------------------------------------------------------
+ */
+
+
+#include "channel_msg_receiver_cc.h"
+#include <gnuradio/gr_complex.h>
+#include <gnuradio/io_signature.h>
+#include <glog/logging.h>
+
+using google::LogMessage;
+
+
+channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(ChannelFsm* channel_fsm,  bool repeat)
+{
+    return channel_msg_receiver_cc_sptr(new channel_msg_receiver_cc(channel_fsm, repeat));
+}
+
+void channel_msg_receiver_cc::msg_handler_events(pmt::pmt_t msg)
+{
+    try {
+        long int message=pmt::to_long(msg);
+        switch (message)
+        {
+        case 1: //positive acquisition
+            //DLOG(INFO) << "Channel " << channel_ << " ACQ SUCCESS satellite " <<
+            //    gnss_synchro_.System << " " << gnss_synchro_.PRN;
+            d_channel_fsm->Event_valid_acquisition();
+            break;
+        case 2: //negative acquisition
+            //DLOG(INFO) << "Channel " << channel_
+            //    << " ACQ FAILED satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
+            if (d_repeat == true)
+                {
+                    d_channel_fsm->Event_failed_acquisition_repeat();
+                }
+            else
+                {
+                    d_channel_fsm->Event_failed_acquisition_no_repeat();
+                }
+            break;
+        case 3: // tracking loss of lock event
+            d_channel_fsm->Event_failed_tracking_standby();
+            break;
+        default:
+            LOG(WARNING) << "Default case, invalid message.";
+            break;
+        }
+    }catch(boost::bad_any_cast& e)
+    {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+    }
+}
+
+channel_msg_receiver_cc::channel_msg_receiver_cc(ChannelFsm* channel_fsm, bool repeat) :
+    gr::block("channel_msg_receiver_cc", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+{
+
+    this->message_port_register_in(pmt::mp("events"));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&channel_msg_receiver_cc::msg_handler_events, this, _1));
+
+    d_channel_fsm=channel_fsm;
+    d_repeat=repeat;
+}
+
+channel_msg_receiver_cc::~channel_msg_receiver_cc()
+{}
+

@@ -84,7 +84,6 @@ public:
     void set_channel(unsigned int channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
     void start_tracking();
-    void set_channel_queue(concurrent_queue<int> *channel_internal_queue);
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,
             gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
@@ -119,7 +118,6 @@ private:
 
     // tracking configuration vars
     boost::shared_ptr<gr::msg_queue> d_queue;
-    concurrent_queue<int> *d_channel_internal_queue;
     unsigned int d_vector_length;
     bool d_dump;
 

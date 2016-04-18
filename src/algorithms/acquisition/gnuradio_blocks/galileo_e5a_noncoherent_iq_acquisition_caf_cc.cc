@@ -162,7 +162,6 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_code_phase = 0;
     d_doppler_freq = 0;
     d_test_statistics = 0;
-    d_channel_internal_queue = 0;
     d_CAF_vector = 0;
     d_CAF_vector_I = 0;
     d_CAF_vector_Q = 0;
@@ -783,7 +782,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
             d_state = 0;
 
             acquisition_message = 1;
-            d_channel_internal_queue->push(acquisition_message);
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
             d_sample_counter += ninput_items[0]; // sample counter
             consume_each(ninput_items[0]);
             break;
@@ -807,7 +806,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
             d_sample_counter += ninput_items[0]; // sample counter
             consume_each(ninput_items[0]);
             acquisition_message = 2;
-            d_channel_internal_queue->push(acquisition_message);
+            this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
             break;
         }
     }

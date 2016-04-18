@@ -100,7 +100,6 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
             LOG(WARNING) << item_type << " unknown tracking item type.";
         }
     channel_ = 0;
-    channel_internal_queue_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
@@ -123,17 +122,6 @@ void GalileoE1TcpConnectorTracking::set_channel(unsigned int channel)
     tracking_->set_channel(channel);
 }
 
-/*
- * Set tracking channel internal queue
- */
-void GalileoE1TcpConnectorTracking::set_channel_queue(
-        concurrent_queue<int> *channel_internal_queue)
-{
-    channel_internal_queue_ = channel_internal_queue;
-
-    tracking_->set_channel_queue(channel_internal_queue_);
-
-}
 
 void GalileoE1TcpConnectorTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {

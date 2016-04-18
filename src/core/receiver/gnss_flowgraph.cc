@@ -35,6 +35,7 @@
 #include "gnss_flowgraph.h"
 #include "unistd.h"
 
+#include <memory>
 #include <algorithm>
 #include <exception>
 #include <iostream>
@@ -90,12 +91,12 @@ void GNSSFlowgraph::start()
 
 void GNSSFlowgraph::stop()
 {
-    for (unsigned int i = 0; i < channels_count_; i++)
-        {
-            channels_.at(i)->stop();
-            LOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
-        }
-    LOG(INFO) << "Threads finished. Return to main program.";
+//    for (unsigned int i = 0; i < channels_count_; i++)
+//        {
+//            channels_.at(i)->stop_channel();
+//            LOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
+//        }
+//    LOG(INFO) << "Threads finished. Return to main program.";
     top_block_->stop();
     running_ = false;
 }
@@ -303,7 +304,7 @@ void GNSSFlowgraph::connect()
                 }
             channels_.at(i)->set_signal(available_GNSS_signals_.front());
             LOG(INFO) << "Channel " << i << " assigned to " << available_GNSS_signals_.front();
-            channels_.at(i)->start();
+            //channels_.at(i)->start_channel();
 
             if (channels_state_[i] == 1)
                 {
@@ -340,8 +341,6 @@ void GNSSFlowgraph::connect()
     LOG(INFO) << "Flowgraph connected";
     top_block_->dump();
 }
-
-
 
 
 void GNSSFlowgraph::wait()
@@ -389,16 +388,8 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             }
         channels_.at(who)->set_signal(available_GNSS_signals_.front());
         available_GNSS_signals_.pop_front();
-        //todo: This is a provisional bug fix to avoid random channel state machine deadlock caused by an incorrect sequence of events
-        //      Correct sequence: start_acquisition() is triggered after the negative acquisition driven by the process_channel_messages() thread inside channel class
-        //      Incorrect sequence: due to thread concurrency, some times start_acquisition is triggered BEFORE the last negative_acquisition notification, thus producing a deadlock
-        //      a short delay here (5ms) apparently reduces the chances to enter in this deadlock
-        usleep(5000);
         channels_.at(who)->start_acquisition();
-
         break;
-        // TODO: Tracking messages
-
     case 1:
         LOG(INFO) << "Channel " << who << " ACQ SUCCESS satellite " << channels_.at(who)->get_signal().get_satellite();
         channels_state_[who] = 2;
@@ -438,7 +429,6 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
         else
             {
                 channels_state_[who] = 0;
-                channels_.at(who)->standby();
                 available_GNSS_signals_.push_back( channels_.at(who)->get_signal() );
             }
 
@@ -478,7 +468,7 @@ void GNSSFlowgraph::init()
     /*
      * Instantiates the receiver blocks
      */
-    std::shared_ptr<GNSSBlockFactory> block_factory_ = std::make_shared<GNSSBlockFactory>();
+    std::unique_ptr<GNSSBlockFactory> block_factory_(new GNSSBlockFactory());
 
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
     sources_count_ = configuration_->property("Receiver.sources_count", 1);
@@ -532,6 +522,7 @@ void GNSSFlowgraph::init()
 
     std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
 
+    //todo:check smart pointer coherence...
     channels_count_ = channels->size();
     for (unsigned int i = 0; i < channels_count_; i++)
         {

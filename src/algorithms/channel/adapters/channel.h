@@ -35,14 +35,14 @@
 #ifndef GNSS_SDR_CHANNEL_H_
 #define GNSS_SDR_CHANNEL_H_
 
+#include <memory>
 #include <string>
-#include <thread>
 #include <gnuradio/msg_queue.h>
+#include <gnuradio/block.h>
 #include "channel_interface.h"
 #include "channel_fsm.h"
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
-
+#include "channel_msg_receiver_cc.h"
 
 class ConfigurationInterface;
 class AcquisitionInterface;
@@ -57,6 +57,7 @@ class TelemetryDecoderInterface;
  */
 class Channel: public ChannelInterface
 {
+
 public:
     //! Constructor
     Channel(ConfigurationInterface *configuration, unsigned int channel,
@@ -81,15 +82,12 @@ public:
     TelemetryDecoderInterface* telemetry(){ return nav_; }
     void start_acquisition();                   //!< Start the State Machine
     void set_signal(const Gnss_Signal& gnss_signal_);  //!< Sets the channel GNSS signal
-    void start();                               //!< Start the thread
-    void standby();
-    /*!
-     * \brief Set stop_ to true and blocks the calling thread until
-     * the thread of the constructor has completed
-     */
-    void stop();
+
+    void msg_handler_events(pmt::pmt_t msg);
+
 
 private:
+    channel_msg_receiver_cc_sptr chennel_msg_rx;
     GNSSBlockInterface *pass_through_;
     AcquisitionInterface *acq_;
     TrackingInterface *trk_;
@@ -100,15 +98,9 @@ private:
     Gnss_Synchro gnss_synchro_;
     Gnss_Signal gnss_signal_;
     bool connected_;
-    bool stop_;
-    int message_;
     bool repeat_;
     ChannelFsm channel_fsm_;
     boost::shared_ptr<gr::msg_queue> queue_;
-    concurrent_queue<int> channel_internal_queue_;
-    std::thread ch_thread_;
-    void run();
-    void process_channel_messages();
 };
 
 #endif /*GNSS_SDR_CHANNEL_H_*/

@@ -94,7 +94,6 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     threshold_ = 0.0;
     doppler_max_ = 5000;
     doppler_step_ = 250;
-    channel_internal_queue_ = 0;
     channel_ = 0;
     bit_transition_flag_ = false;
 }
@@ -160,17 +159,6 @@ void GpsL1CaPcpsTongAcquisition::set_doppler_step(unsigned int doppler_step)
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
 
-}
-
-
-void GpsL1CaPcpsTongAcquisition::set_channel_queue(
-        concurrent_queue<int> *channel_internal_queue)
-{
-    channel_internal_queue_ = channel_internal_queue;
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            acquisition_cc_->set_channel_queue(channel_internal_queue_);
-        }
 }
 
 

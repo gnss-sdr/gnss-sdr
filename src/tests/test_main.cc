@@ -86,29 +86,29 @@ DECLARE_string(log_dir);
 #include "gnss_block/rtcm_printer_test.cc"
 #include "gnss_block/file_signal_source_test.cc"
 #include "gnss_block/fir_filter_test.cc"
-#include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
-#include "gnss_block/gps_l2_m_pcps_acquisition_test.cc"
-#include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
+//#include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
+//#include "gnss_block/gps_l2_m_pcps_acquisition_test.cc"
+//#include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 //#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
-#if OPENCL_BLOCKS_TEST
-#include "gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
-#endif
-#include "gnss_block/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc"
-#include "gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
-#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc"
-#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
-#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc"
-#include "gnss_block/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
-#include "gnss_block/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
-#include "gnss_block/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
-#include "gnss_block/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc"
+//#if OPENCL_BLOCKS_TEST
+//#include "gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
+//#endif
+//#include "gnss_block/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc"
+//#include "gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
+//#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc"
+//#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"
+//#include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_gsoc2013_test.cc"
+//#include "gnss_block/galileo_e1_pcps_8ms_ambiguous_acquisition_gsoc2013_test.cc"
+//#include "gnss_block/galileo_e1_pcps_tong_ambiguous_acquisition_gsoc2013_test.cc"
+//#include "gnss_block/galileo_e1_pcps_cccwsr_ambiguous_acquisition_gsoc2013_test.cc"
+//#include "gnss_block/galileo_e1_pcps_quicksync_ambiguous_acquisition_gsoc2014_test.cc"
 #include "gnss_block/galileo_e1_dll_pll_veml_tracking_test.cc"
 #include "gnuradio_block/gnss_sdr_valve_test.cc"
 #include "gnuradio_block/direct_resampler_conditioner_cc_test.cc"
 
 //#include "gnss_block/galileo_e5a_pcps_acquisition_test.cc"
 //#include "gnss_block/galileo_e5a_pcps_acquisition_test_2.cc"
-#include "gnss_block/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
+//#include "gnss_block/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc"
 #include "gnss_block/galileo_e5a_tracking_test.cc"
 #include "gnss_block/gps_l2_m_dll_pll_tracking_test.cc"
 
@@ -116,13 +116,7 @@ DECLARE_string(log_dir);
 // For GPS NAVIGATION (L1)
 
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
-concurrent_queue<Gps_Ref_Location> global_gps_ref_location_queue;
-concurrent_queue<Gps_Ref_Time> global_gps_ref_time_queue;
-
-concurrent_map<Gps_Almanac> global_gps_almanac_map;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
-concurrent_map<Gps_Ref_Location> global_gps_ref_location_map;
-concurrent_map<Gps_Ref_Time> global_gps_ref_time_map;
 
 
 int main(int argc, char **argv)

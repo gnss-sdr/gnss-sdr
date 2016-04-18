@@ -74,7 +74,6 @@ protected:
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
-    concurrent_queue<int> channel_internal_queue;
     bool stop;
     int message;
 };
@@ -124,10 +123,6 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     ASSERT_NO_THROW( {
         tracking->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro." << std::endl;
-
-    ASSERT_NO_THROW( {
-        tracking->set_channel_queue(&channel_internal_queue);
-    }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
         tracking->connect(top_block);

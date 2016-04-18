@@ -122,7 +122,6 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
             LOG(WARNING) << item_type_ << " unknown tracking item type.";
         }
     channel_ = 0;
-    channel_internal_queue_ = 0;
 }
 
 
@@ -161,28 +160,6 @@ void GpsL1CaDllPllCAidTracking::set_channel(unsigned int channel)
     else if (item_type_.compare("cshort") == 0)
         {
             tracking_sc->set_channel(channel);
-        }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unknown tracking item type";
-        }
-}
-
-/*
- * Set tracking channel internal queue
- */
-void GpsL1CaDllPllCAidTracking::set_channel_queue(
-        concurrent_queue<int> *channel_internal_queue)
-{
-    channel_internal_queue_ = channel_internal_queue;
-
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            tracking_cc->set_channel_queue(channel_internal_queue_);
-        }
-    else if (item_type_.compare("cshort") == 0)
-        {
-            tracking_sc->set_channel_queue(channel_internal_queue_);
         }
     else
         {

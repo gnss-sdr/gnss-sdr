@@ -238,7 +238,6 @@ GpsL1CaSubframeFsm::GpsL1CaSubframeFsm()
     d_nav.reset();
     i_channel_ID = 0;
     i_satellite_PRN = 0;
-    d_almanac_queue = 0;
     d_preamble_time_ms = 0;
     d_subframe_ID=0;
     d_flag_new_subframe=false;

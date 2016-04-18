@@ -95,7 +95,6 @@ GpsL1CaDllPllTracking::GpsL1CaDllPllTracking(
             LOG(WARNING) << item_type << " unknown tracking item type.";
         }
     channel_ = 0;
-    channel_internal_queue_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
 }
 
@@ -117,17 +116,6 @@ void GpsL1CaDllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
     tracking_->set_channel(channel);
-}
-
-
-/*
- * Set tracking channel internal queue
- */
-void GpsL1CaDllPllTracking::set_channel_queue(
-        concurrent_queue<int> *channel_internal_queue)
-{
-    channel_internal_queue_ = channel_internal_queue;
-    tracking_->set_channel_queue(channel_internal_queue_);
 }
 
 

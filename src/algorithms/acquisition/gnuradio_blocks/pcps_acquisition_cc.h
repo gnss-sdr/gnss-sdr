@@ -55,7 +55,6 @@
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
 
 class pcps_acquisition_cc;
@@ -124,7 +123,6 @@ private:
     float d_test_statistics;
     bool d_bit_transition_flag;
     bool d_use_CFAR_algorithm_flag;
-    concurrent_queue<int> *d_channel_internal_queue;
     std::ofstream d_dump_file;
     bool d_active;
     int d_state;
@@ -219,15 +217,6 @@ public:
      void set_doppler_step(unsigned int doppler_step)
      {
          d_doppler_step = doppler_step;
-     }
-
-     /*!
-      * \brief Set tracking channel internal queue.
-      * \param channel_internal_queue - Channel's internal blocks information queue.
-      */
-     void set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-     {
-         d_channel_internal_queue = channel_internal_queue;
      }
 
      /*!

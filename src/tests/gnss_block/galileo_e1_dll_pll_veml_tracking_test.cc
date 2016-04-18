@@ -73,7 +73,6 @@ protected:
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
-    concurrent_queue<int> channel_internal_queue;
     bool stop;
     int message;
 };
@@ -133,11 +132,6 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ConnectAndRun)
     }) << "Failure setting gnss_synchro." << std::endl;
 
     ASSERT_NO_THROW( {
-        tracking->set_channel_queue(&channel_internal_queue);
-    }) << "Failure setting channel_internal_queue." << std::endl;
-
-
-    ASSERT_NO_THROW( {
         tracking->connect(top_block);
         gr::analog::sig_source_c::sptr source = gr::analog::sig_source_c::make(fs_in, gr::analog::GR_SIN_WAVE, 1000, 1, gr_complex(0));
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
@@ -193,10 +187,6 @@ TEST_F(GalileoE1DllPllVemlTrackingInternalTest, ValidationOfResults)
     ASSERT_NO_THROW( {
         tracking->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro." << std::endl;
-
-    ASSERT_NO_THROW( {
-        tracking->set_channel_queue(&channel_internal_queue);
-    }) << "Failure setting channel_internal_queue." << std::endl;
 
     ASSERT_NO_THROW( {
         tracking->connect(top_block);

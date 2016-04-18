@@ -16,7 +16,10 @@
 # along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(CHANNEL_FSM_SOURCES channel_fsm.cc )
+set(CHANNEL_FSM_SOURCES 
+    channel_fsm.cc 
+    channel_msg_receiver_cc.cc
+    )
 
 include_directories(
      $(CMAKE_CURRENT_SOURCE_DIR)

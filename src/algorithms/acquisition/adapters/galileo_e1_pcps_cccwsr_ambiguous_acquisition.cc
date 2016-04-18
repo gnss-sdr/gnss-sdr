@@ -108,7 +108,6 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::GalileoE1PcpsCccwsrAmbiguousAcquisition
     threshold_ = 0.0;
     doppler_max_ = 5000;
     doppler_step_ = 250;
-    channel_internal_queue_ = 0;
     channel_ = 0;
 }
 
@@ -180,19 +179,6 @@ GalileoE1PcpsCccwsrAmbiguousAcquisition::set_doppler_step(unsigned int doppler_s
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
 }
-
-
-void
-GalileoE1PcpsCccwsrAmbiguousAcquisition::set_channel_queue(
-        concurrent_queue<int> *channel_internal_queue)
-{
-    channel_internal_queue_ = channel_internal_queue;
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            acquisition_cc_->set_channel_queue(channel_internal_queue_);
-        }
-}
-
 
 void
 GalileoE1PcpsCccwsrAmbiguousAcquisition::set_gnss_synchro(

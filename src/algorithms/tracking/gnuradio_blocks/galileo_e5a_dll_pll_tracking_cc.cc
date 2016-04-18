@@ -193,7 +193,6 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     d_carrier_lock_fail_counter = 0;
     d_carrier_lock_threshold = CARRIER_LOCK_THRESHOLD;
 
-    d_channel_internal_queue = 0;
     d_acquisition_gnss_synchro = 0;
     d_channel = 0;
     tmp_E = 0;
@@ -751,13 +750,6 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::set_channel(unsigned int channel)
                     }
                 }
         }
-}
-
-
-
-void Galileo_E5a_Dll_Pll_Tracking_cc::set_channel_queue(concurrent_queue<int> *channel_internal_queue)
-{
-    d_channel_internal_queue = channel_internal_queue;
 }
 
 

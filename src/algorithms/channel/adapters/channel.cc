@@ -37,54 +37,16 @@
 #include "tracking_interface.h"
 #include "telemetry_decoder_interface.h"
 #include "configuration_interface.h"
+#include "channel_msg_receiver_cc.h"
 
 using google::LogMessage;
 
-void Channel::msg_handler_events(pmt::pmt_t msg)
-{
-    try {
-        long int message=pmt::to_long(msg);
-        switch (message)
-        {
-        case 1: //positive acquisition
-            DLOG(INFO) << "Channel " << channel_ << " ACQ SUCCESS satellite " <<
-                gnss_synchro_.System << " " << gnss_synchro_.PRN;
-            channel_fsm_.Event_valid_acquisition();
-            break;
-        case 2: //negative acquisition
-            DLOG(INFO) << "Channel " << channel_
-                << " ACQ FAILED satellite " << gnss_synchro_.System << " " << gnss_synchro_.PRN;
-            if (repeat_ == true)
-                {
-                    channel_fsm_.Event_failed_acquisition_repeat();
-                }
-            else
-                {
-                    channel_fsm_.Event_failed_acquisition_no_repeat();
-                }
-            break;
-        case 3: // tracking loss of lock event
-            channel_fsm_.Event_failed_tracking_standby();
-            break;
-        default:
-            LOG(WARNING) << "Default case, invalid message.";
-            break;
-        }
-    }catch(boost::bad_any_cast& e)
-    {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
-    }
-}
 // Constructor
 Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
         GNSSBlockInterface *pass_through, AcquisitionInterface *acq,
         TrackingInterface *trk, TelemetryDecoderInterface *nav,
-        std::string role, std::string implementation, boost::shared_ptr<gr::msg_queue> queue) :
-        gr::block("galileo_e1_pvt_cc", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+        std::string role, std::string implementation, boost::shared_ptr<gr::msg_queue> queue)
 {
-
-    this->message_port_register_in(pmt::mp("events"));
-    this->set_msg_handler(pmt::mp("events"), boost::bind(&Channel::msg_handler_events, this, _1));
 
     pass_through_=pass_through;
     acq_=acq;
@@ -133,11 +95,15 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     connected_ = false;
     gnss_signal_ = Gnss_Signal();
+
+    chennel_msg_rx= channel_msg_receiver_make_cc(&channel_fsm_, repeat_);
+
 }
 
 // Destructor
 Channel::~Channel()
 {
+    channel_fsm_.terminate();
 }
 
 void Channel::connect(gr::top_block_sptr top_block)
@@ -165,8 +131,8 @@ void Channel::connect(gr::top_block_sptr top_block)
     DLOG(INFO) << "MSG FEEDBACK CHANNEL telemetry_decoder -> tracking";
 
     //std::cout<<"has port: "<<trk_->get_right_block()->has_msg_port(pmt::mp("events"))<<std::endl;
-    top_block->msg_connect(acq_->get_right_block(),pmt::mp("events"), gr::basic_block_sptr(this),pmt::mp("events"));
-    top_block->msg_connect(trk_->get_right_block(),pmt::mp("events"), gr::basic_block_sptr(this),pmt::mp("events"));
+    top_block->msg_connect(acq_->get_right_block(),pmt::mp("events"), chennel_msg_rx,pmt::mp("events"));
+    top_block->msg_connect(trk_->get_right_block(),pmt::mp("events"), chennel_msg_rx,pmt::mp("events"));
 
     connected_ = true;
 }

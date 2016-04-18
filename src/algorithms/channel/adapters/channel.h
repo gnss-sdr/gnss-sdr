@@ -42,7 +42,7 @@
 #include "channel_interface.h"
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
-
+#include "channel_msg_receiver_cc.h"
 
 class ConfigurationInterface;
 class AcquisitionInterface;
@@ -55,7 +55,7 @@ class TelemetryDecoderInterface;
  * their interaction through a Finite State Machine
  *
  */
-class Channel: public ChannelInterface, public gr::block
+class Channel: public ChannelInterface
 {
 
 public:
@@ -87,6 +87,7 @@ public:
 
 
 private:
+    channel_msg_receiver_cc_sptr chennel_msg_rx;
     GNSSBlockInterface *pass_through_;
     AcquisitionInterface *acq_;
     TrackingInterface *trk_;
@@ -97,8 +98,6 @@ private:
     Gnss_Synchro gnss_synchro_;
     Gnss_Signal gnss_signal_;
     bool connected_;
-    //bool stop_;
-    //int message_;
     bool repeat_;
     ChannelFsm channel_fsm_;
     boost::shared_ptr<gr::msg_queue> queue_;

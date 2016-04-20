@@ -125,6 +125,14 @@ private:
     std::map<int,Gnss_Synchro> gnss_pseudoranges_map;
 
 public:
+
+    /*!
+     * \brief Get latest set of GPS L1 ephemeris from PVT block
+     *
+     * It is used to save the assistance data at the receiver shutdown
+     */
+    std::map<int,Gps_Ephemeris> get_GPS_L1_ephemeris_map();
+
     ~gps_l1_ca_pvt_cc (); //!< Default destructor
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,

@@ -57,7 +57,7 @@ void gps_l1_ca_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                     // ### GPS EPHEMERIS ###
                     std::shared_ptr<Gps_Ephemeris> gps_eph;
                     gps_eph = boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
-                    DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
+                    LOG(INFO) << "Ephemeris record has arrived from SAT ID "
                             << gps_eph->i_satellite_PRN << " (Block "
                             <<  gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
                             << "inserted with Toe="<< gps_eph->d_Toe<<" and GPS Week="
@@ -143,6 +143,11 @@ void gps_l1_ca_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
     }
 }
 
+
+std::map<int,Gps_Ephemeris> gps_l1_ca_pvt_cc::get_GPS_L1_ephemeris_map()
+{
+    return d_ls_pvt->gps_ephemeris_map;
+}
 
 gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         bool dump, std::string dump_filename,

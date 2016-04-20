@@ -127,7 +127,6 @@ private:
     bool read_assistance_from_XML();
 
     // Save {ephemeris, iono, utc, ref loc, ref time} assistance to a local XML file
-    //bool save_assistance_to_XML();
 
     void read_control_messages();
 
@@ -138,6 +137,13 @@ private:
      */
     void gps_acq_assist_data_collector();
     
+
+    /*
+     * Read initial GNSS assistance from SUPL server or local XML files
+     */
+    void assist_GNSS();
+
+
     void apply_action(unsigned int what);
     std::shared_ptr<GNSSFlowgraph> flowgraph_;
     std::shared_ptr<ConfigurationInterface> configuration_;

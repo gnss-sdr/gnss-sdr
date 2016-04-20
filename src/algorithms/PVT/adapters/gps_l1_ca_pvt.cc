@@ -33,6 +33,9 @@
 
 #include "gps_l1_ca_pvt.h"
 #include <glog/logging.h>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/serialization/map.hpp>
 #include "configuration_interface.h"
 
 using google::LogMessage;
@@ -79,14 +82,119 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     bool flag_rtcm_server;
     flag_rtcm_server = configuration->property(role + ".flag_rtcm_server", false);
 
+
+    // getting names from the config file, if available
+    // default filename for assistance data
+    const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
+    const std::string utc_default_xml_filename = "./gps_utc_model.xml";
+    const std::string iono_default_xml_filename = "./gps_iono.xml";
+    const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
+    const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
+    eph_xml_filename_= configuration->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
+    //std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
+    //std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
+    //std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
+    //std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
+
     // make PVT object
     pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname );
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
+
+
+}
+
+bool GpsL1CaPvt::save_assistance_to_XML()
+{
+    // return variable (true == succeeded)
+    bool ret = false;
+
+    LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
+
+    std::map<int,Gps_Ephemeris> eph_map=pvt_->get_GPS_L1_ephemeris_map();
+    if (eph_map.size() > 0)
+        {
+            try
+                {
+                    std::ofstream ofs(eph_xml_filename_.c_str(), std::ofstream::trunc | std::ofstream::out);
+                    boost::archive::xml_oarchive xml(ofs);
+                    xml << boost::serialization::make_nvp("GNSS-SDR_ephemeris_map", eph_map);
+                    ofs.close();
+                    LOG(INFO) << "Saved GPS L1 Ephemeris map data";
+                }
+            catch (std::exception& e)
+                {
+                    LOG(ERROR) << e.what();
+                    return false;
+                }
+            return true;
+        }
+    else
+        {
+            LOG(WARNING) << "Failed to save Ephemeris, map is empty";
+            return false;
+        }
+    // Only try to save {utc, iono, ref time, ref location} if SUPL is enabled
+//    bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
+//    if (enable_gps_supl_assistance == true)
+//        {
+//            // try to save utc model xml file
+//            std::map<int, Gps_Utc_Model> utc_copy = global_gps_utc_model_map.get_map_copy();
+//            if (supl_client_acquisition_.save_utc_map_xml(utc_xml_filename, utc_copy) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Successfully saved UTC Model XML file";
+//                    //ret = true;
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: Error while trying to save utc XML file";
+//                    //ret = false;
+//                }
+//            // try to save iono model xml file
+//            std::map<int, Gps_Iono> iono_copy = global_gps_iono_map.get_map_copy();
+//            if (supl_client_acquisition_.save_iono_map_xml(iono_xml_filename, iono_copy) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Successfully saved IONO Model XML file";
+//                    //ret = true;
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: Error while trying to save iono XML file";
+//                    //ret = false;
+//                }
+//            // try to save ref time xml file
+//            std::map<int, Gps_Ref_Time> ref_time_copy = global_gps_ref_time_map.get_map_copy();
+//            if (supl_client_acquisition_.save_ref_time_map_xml(ref_time_xml_filename, ref_time_copy) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Successfully saved Ref Time XML file";
+//                    //ret = true;
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: Error while trying to save ref time XML file";
+//                    //ref = false;
+//                }
+//            // try to save ref location xml file
+//            std::map<int, Gps_Ref_Location> ref_location_copy = global_gps_ref_location_map.get_map_copy();
+//            if (supl_client_acquisition_.save_ref_location_map_xml(ref_location_xml_filename, ref_location_copy) == true)
+//                {
+//                    LOG(INFO) << "SUPL: Successfully saved Ref Location XML file";
+//                    //ref = true;
+//                }
+//            else
+//                {
+//                    LOG(INFO) << "SUPL: Error while trying to save ref location XML file";
+//                    //ret = false;
+//                }
+//        }
+    return ret;
 }
 
 
+
 GpsL1CaPvt::~GpsL1CaPvt()
-{}
+{
+    save_assistance_to_XML();
+}
 
 
 void GpsL1CaPvt::connect(gr::top_block_sptr top_block)

@@ -88,6 +88,9 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
+
+    std::string eph_xml_filename_;
+    bool save_assistance_to_XML();
 };
 
 #endif

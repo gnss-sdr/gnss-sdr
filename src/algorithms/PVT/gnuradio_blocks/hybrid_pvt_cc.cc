@@ -131,6 +131,11 @@ void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
 
 
 
+std::map<int,Gps_Ephemeris> hybrid_pvt_cc::get_GPS_L1_ephemeris_map()
+{
+    return d_ls_pvt->gps_ephemeris_map;
+}
+
 hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename,
         int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
         std::string nmea_dump_filename, std::string nmea_dump_devname,

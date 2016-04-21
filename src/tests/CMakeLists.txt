@@ -172,6 +172,7 @@ target_link_libraries(run_tests ${CLANG_FLAGS}
                                 ${GNURADIO_ANALOG_LIBRARIES} 
                                 ${ARMADILLO_LIBRARIES}
                                 ${VOLK_LIBRARIES}
+                                channel_fsm
                                 gnss_sp_libs 
                                 gnss_rx
                                 gnss_system_parameters  

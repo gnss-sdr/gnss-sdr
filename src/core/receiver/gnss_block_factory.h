@@ -83,21 +83,12 @@ public:
             boost::shared_ptr<gr::msg_queue> queue);
 
 private:
-    // DEPRECATED
-    std::unique_ptr<GNSSBlockInterface> GetChannel_GPS(std::shared_ptr<ConfigurationInterface> configuration,
-            std::string acq, std::string trk, std::string tlm, int channel,
-            boost::shared_ptr<gr::msg_queue> queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_1C(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
             boost::shared_ptr<gr::msg_queue> queue);
 
     std::unique_ptr<GNSSBlockInterface> GetChannel_2S(std::shared_ptr<ConfigurationInterface> configuration,
-            std::string acq, std::string trk, std::string tlm, int channel,
-            boost::shared_ptr<gr::msg_queue> queue);
-
-    //DEPRECATED
-    std::unique_ptr<GNSSBlockInterface> GetChannel_Galileo(std::shared_ptr<ConfigurationInterface> configuration,
             std::string acq, std::string trk, std::string tlm, int channel,
             boost::shared_ptr<gr::msg_queue> queue);
 

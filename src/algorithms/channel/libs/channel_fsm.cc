@@ -81,6 +81,10 @@ public:
         //std::cout << "Enter Channel_Acq_S1 " << std::endl;
         context<ChannelFsm> ().start_acquisition();
     }
+    ~channel_acquiring_fsm_S1()
+    {
+        //std::cout << "Exit Channel_Acq_S1 " << std::endl;
+    }
 };
 
 
@@ -145,6 +149,7 @@ ChannelFsm::ChannelFsm(AcquisitionInterface *acquisition) :
 void ChannelFsm::Event_start_acquisition()
 {
     this->process_event(Ev_channel_start_acquisition());
+    //std::cout<<"Ev_channel_start_acquisition launched"<<std::endl;
 }
 
 
@@ -202,16 +207,6 @@ void ChannelFsm::start_acquisition()
 
 void ChannelFsm::start_tracking()
 {
-    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
-    //<< " passing prn code phase " << acq_->prn_code_phase();
-    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
-    //<< " passing doppler freq shift " << acq_->doppler_freq_shift();
-    //LOG_AT_LEVEL(INFO) << "Channel " << channel_
-    //<< " passing acquisition sample stamp "
-    //<< acq_->get_sample_stamp();
-    //trk_->set_prn_code_phase(acq_->prn_code_phase());
-    //trk_->set_doppler_freq_shift(acq_->doppler_freq_shift());
-    //trk_->set_acq_sample_stamp(acq_->get_sample_stamp());
     trk_->start_tracking();
     std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
     if (queue_ != gr::msg_queue::make())

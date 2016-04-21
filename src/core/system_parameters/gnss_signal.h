@@ -48,6 +48,7 @@ private:
     std::string signal;
 public:
     Gnss_Signal();
+    Gnss_Signal(const std::string& signal_);
     Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_);
     ~Gnss_Signal();
     std::string get_signal_str() const; //!<  Get the satellite signal {"1C" for GPS L1 C/A, "2S" for GPS L2C (M), "1B" for Galileo E1B, "5X" for Galileo E5a}

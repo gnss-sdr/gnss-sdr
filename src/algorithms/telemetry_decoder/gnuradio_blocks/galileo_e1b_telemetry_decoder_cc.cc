@@ -463,8 +463,6 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
             current_synchro_data.Flag_valid_word = false;
         }
 
-    DLOG(INFO) << "delta_t = " << delta_t;
-
     current_synchro_data.d_TOW = d_TOW_at_Preamble;
     current_synchro_data.d_TOW_at_current_symbol = d_TOW_at_current_symbol;
     current_synchro_data.d_TOW_hybrid_at_current_symbol = current_synchro_data.d_TOW_at_current_symbol - delta_t; //delta_t = t_gal - t_gps  ---->  t_gps = t_gal -delta_t

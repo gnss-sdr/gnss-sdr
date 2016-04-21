@@ -109,7 +109,7 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
 {
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
-
+    this->message_port_register_out(pmt::mp("events"));
     this->set_relative_rate(1.0 / vector_length);
     // initialize internal vars
     d_queue = queue;
@@ -586,11 +586,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                                         {
                                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                                            if (d_queue != gr::msg_queue::sptr())
-                                                {
-                                                    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-                                                }
+                                            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));//3 -> loss of lock
                                             d_carrier_lock_fail_counter = 0;
                                             d_state = 0; // TODO: check if disabling tracking is consistent with the channel state machine
                                         }
@@ -615,11 +611,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
                                         {
                                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-                                            if (d_queue != gr::msg_queue::sptr())
-                                                {
-                                                    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-                                                }
+                                            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));//3 -> loss of lock
                                             d_carrier_lock_fail_counter = 0;
                                             d_state = 0;
                                         }

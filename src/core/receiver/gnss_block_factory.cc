@@ -300,7 +300,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "1C" + appendix1, queue));
+            "Channel", "1C", queue));
 
     return channel_;
 }
@@ -355,7 +355,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "2S" + appendix1, queue));
+            "Channel", "2S", queue));
 
     return channel_;
 }
@@ -411,7 +411,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "1B" + appendix1, queue));
+            "Channel", "1B", queue));
 
     return channel_;
 }
@@ -467,7 +467,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
             acq_.release(),
             trk_.release(),
             tlm_.release(),
-            "Channel", "5X" + appendix1, queue));
+            "Channel", "5X", queue));
 
     return channel_;
 }
@@ -505,14 +505,14 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
         {
             //(i.e. Acquisition_1C0.implementation=xxxx)
             std::string acquisition_implementation_specific = configuration->property(
-                            "Acquisition_1C" + boost::lexical_cast<std::string>(i) + ".implementation",
+                            "Acquisition_1C" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                             acquisition_implementation);
             //(i.e. Tracking_1C0.implementation=xxxx)
             std::string tracking_implementation_specific  = configuration->property(
-                            "Tracking_1C" + boost::lexical_cast<std::string>(i) + ".implementation",
+                            "Tracking_1C" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                             tracking_implementation);
             std::string  telemetry_decoder_implementation_specific = configuration->property(
-                            "TelemetryDecoder_1C" + boost::lexical_cast<std::string>(i) + ".implementation",
+                            "TelemetryDecoder_1C" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                             telemetry_decoder_implementation);
 
             // Push back the channel to the vector of channels
@@ -534,14 +534,14 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
         {
             //(i.e. Acquisition_1C0.implementation=xxxx)
             std::string acquisition_implementation_specific = configuration->property(
-                            "Acquisition_2S" + boost::lexical_cast<std::string>(i) + ".implementation",
+                            "Acquisition_2S" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                             acquisition_implementation);
             //(i.e. Tracking_1C0.implementation=xxxx)
             std::string tracking_implementation_specific  = configuration->property(
-                            "Tracking_2S" + boost::lexical_cast<std::string>(i) + ".implementation",
+                            "Tracking_2S" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                             tracking_implementation);
             std::string  telemetry_decoder_implementation_specific = configuration->property(
-                            "TelemetryDecoder_2S" + boost::lexical_cast<std::string>(i) + ".implementation",
+                            "TelemetryDecoder_2S" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                             telemetry_decoder_implementation);
 
             // Push back the channel to the vector of channels
@@ -564,14 +564,14 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
            {
                //(i.e. Acquisition_1C0.implementation=xxxx)
                std::string acquisition_implementation_specific = configuration->property(
-                               "Acquisition_1B" + boost::lexical_cast<std::string>(i) + ".implementation",
+                               "Acquisition_1B" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                                acquisition_implementation);
                //(i.e. Tracking_1C0.implementation=xxxx)
                std::string tracking_implementation_specific  = configuration->property(
-                               "Tracking_1B" + boost::lexical_cast<std::string>(i) + ".implementation",
+                               "Tracking_1B" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                                tracking_implementation);
                std::string  telemetry_decoder_implementation_specific = configuration->property(
-                               "TelemetryDecoder_1B" + boost::lexical_cast<std::string>(i) + ".implementation",
+                               "TelemetryDecoder_1B" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                                telemetry_decoder_implementation);
 
                // Push back the channel to the vector of channels
@@ -594,14 +594,14 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
            {
                //(i.e. Acquisition_1C0.implementation=xxxx)
                std::string acquisition_implementation_specific = configuration->property(
-                               "Acquisition_5X" + boost::lexical_cast<std::string>(i) + ".implementation",
+                               "Acquisition_5X" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                                acquisition_implementation);
                //(i.e. Tracking_1C0.implementation=xxxx)
                std::string tracking_implementation_specific  = configuration->property(
-                               "Tracking_5X" + boost::lexical_cast<std::string>(i) + ".implementation",
+                               "Tracking_5X" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                                tracking_implementation);
                std::string  telemetry_decoder_implementation_specific = configuration->property(
-                               "TelemetryDecoder_5X" + boost::lexical_cast<std::string>(i) + ".implementation",
+                               "TelemetryDecoder_5X" + boost::lexical_cast<std::string>(channel_absolute_id) + ".implementation",
                                telemetry_decoder_implementation);
 
                // Push back the channel to the vector of channels

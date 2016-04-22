@@ -293,7 +293,6 @@ void GNSSFlowgraph::connect()
             }
 
             std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str(); // use channel's implicit signal!
-            std::cout<<"gnss_signal "<<gnss_signal<<std::endl;
             while (gnss_signal.compare(available_GNSS_signals_.front().get_signal_str()) != 0 )
                 {
                     available_GNSS_signals_.push_back(available_GNSS_signals_.front());
@@ -718,13 +717,12 @@ void GNSSFlowgraph::set_signals_list()
         }
 
         //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
-
-        std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-            for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-            != available_GNSS_signals_.end(); available_gnss_list_iter++)
-            {
-              std::cout << *available_gnss_list_iter << std::endl;
-            }
+//        std::list<Gnss_Signal>::iterator available_gnss_list_iter;
+//            for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
+//            != available_GNSS_signals_.end(); available_gnss_list_iter++)
+//            {
+//              std::cout << *available_gnss_list_iter << std::endl;
+//            }
 }
 
 

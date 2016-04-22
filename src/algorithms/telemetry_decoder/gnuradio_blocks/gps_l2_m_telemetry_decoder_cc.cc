@@ -116,9 +116,6 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__
     const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
     Gnss_Synchro *out = (Gnss_Synchro *) output_items[0];            // output
 
-    // store the time stamp of the first sample in the processed sample block
-    //double sample_stamp = in[0].Tracking_timestamp_secs;
-
     bool flag_new_cnav_frame = false;
     int last_frame_preamble_start = 0;
     // copy correlation samples into samples vector
@@ -131,7 +128,7 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__
         {
             if (in[0].Flag_valid_symbol_output == false) // check if the tracking is locked
                 {
-                    //LOG(INFO)<< "Discarting channel "<<d_channel<<" tracking not ready!"<<std::endl;
+                    LOG(INFO)<< "Discarting channel "<<d_channel<<" tracking not ready!"<<std::endl;
                     d_flag_valid_word = false;
                 }
             else
@@ -152,14 +149,14 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__
                             // they can be already aligned or shifted by one position
                             std::vector<int> bits;
 
-                            //bool symbol_alignment = d_symbol_aligner_and_decoder.get_bits(d_sample_buf, bits);
+                            d_symbol_aligner_and_decoder.get_bits(d_sample_buf, bits);
 
                             //std::stringstream ss;
                             //for (std::vector<int>::const_iterator bit_it = bits.begin(); bit_it < bits.end(); ++bit_it)
                             //    {
                             //        ss << *bit_it;
                             //    }
-                            // LOG(INFO) << "get_bits=" << ss.str() << std::endl;
+                            //LOG(INFO) << "get_bits=" << ss.str() << std::endl;
 
                             // search for preambles
                             // and extract the corresponding message candidates
@@ -187,12 +184,14 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__
                                     d_flag_invert_input_symbols = d_flag_invert_buffer_symbols;
                                     std::vector<int> tmp_msg;
                                     std::string msg;
+                                    //todo: now the symbol buffer size is two CNAV frames because the preamble is not detected.
+                                    //      Use the first valid frame to realign the bufer symbols with the preamble start and not miss a frame
                                     LOG(INFO) << valid_msgs.size() << " GOOD L2C CNAV FRAME DETECTED! CH " <<this->d_channel;
                                     for (unsigned int i = 0;i < valid_msgs.size(); i++)
                                         {
                                             tmp_msg = valid_msgs.at(i).second;
                                             d_CNAV_Message.decode_page(tmp_msg);
-                                            //std::cout << "Valid CNAV frame with relative preamble start at " << valid_msgs.at(i).first << std::endl;
+                                            std::cout << "Valid CNAV frame with relative preamble start at " << valid_msgs.at(i).first << std::endl;
                                             flag_new_cnav_frame = true;
                                             d_flag_valid_word = true;
                                             last_frame_preamble_start = valid_msgs.at(i).first;

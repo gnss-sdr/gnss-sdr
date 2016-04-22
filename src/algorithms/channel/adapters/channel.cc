@@ -94,7 +94,8 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     channel_fsm_.set_queue(queue_);
 
     connected_ = false;
-    gnss_signal_ = Gnss_Signal();
+
+    gnss_signal_ = Gnss_Signal(implementation_);
 
     chennel_msg_rx= channel_msg_receiver_make_cc(&channel_fsm_, repeat_);
 

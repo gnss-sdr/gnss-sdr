@@ -76,7 +76,6 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    //d_queue = queue;
     d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
@@ -447,14 +446,11 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
             d_active = false;
             d_state = 0;
-
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
             consume_each(ninput_items[0]);
 
             acquisition_message = 1;
-
             this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
-
 
             break;
         }
@@ -478,7 +474,6 @@ int pcps_acquisition_cc::general_work(int noutput_items,
             d_sample_counter += d_fft_size * ninput_items[0]; // sample counter
             consume_each(ninput_items[0]);
             acquisition_message = 2;
-
             this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
 
             break;

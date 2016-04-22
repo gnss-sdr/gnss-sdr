@@ -70,6 +70,7 @@ pcps_multithread_acquisition_cc::pcps_multithread_acquisition_cc(
     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
     gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms))
 {
+    this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
     d_state = 0;

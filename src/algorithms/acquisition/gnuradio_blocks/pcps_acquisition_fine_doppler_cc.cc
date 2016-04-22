@@ -65,6 +65,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
 		                gr::io_signature::make(1, 1, sizeof(gr_complex)),
 		                gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
+    this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
     d_queue = queue;

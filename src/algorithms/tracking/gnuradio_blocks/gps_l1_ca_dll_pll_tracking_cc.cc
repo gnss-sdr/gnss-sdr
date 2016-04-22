@@ -105,7 +105,6 @@ Gps_L1_Ca_Dll_Pll_Tracking_cc::Gps_L1_Ca_Dll_Pll_Tracking_cc(
 {
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
-
     this->message_port_register_out(pmt::mp("events"));
 
     // initialize internal vars
@@ -408,13 +407,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!" << std::endl;
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
-                            pmt::pmt_t value = pmt::from_long(3);//3 -> loss of lock
-                            this->message_port_pub(pmt::mp("events"), value);
-//                            std::unique_ptr<ControlMessageFactory> cmf(new ControlMessageFactory());
-//                            if (d_queue != gr::msg_queue::sptr())
-//                                {
-//                                    d_queue->handle(cmf->GetQueueMessage(d_channel, 2));
-//                                }
+                            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));//3 -> loss of lock
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false; // TODO: check if disabling tracking is consistent with the channel state machine
                         }

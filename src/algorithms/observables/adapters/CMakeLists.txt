@@ -20,7 +20,6 @@ set(OBS_ADAPTER_SOURCES
 	gps_l1_ca_observables.cc
 	galileo_e1_observables.cc
 	hybrid_observables.cc
-	mixed_observables.cc
 )
 
 include_directories(

@@ -47,14 +47,20 @@ file(GLOB FRONT_END_CAL_HEADERS "*.h")
 add_library(front_end_cal_lib ${FRONT_END_CAL_SOURCES} ${FRONT_END_CAL_HEADERS})
 source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
 
-target_link_libraries(front_end_cal_lib ${Boost_LIBRARIES}
+target_link_libraries(front_end_cal_lib ${MAC_LIBRARIES}
+                                        ${Boost_LIBRARIES}
                                         ${GNURADIO_RUNTIME_LIBRARIES}
                                         ${GNURADIO_BLOCKS_LIBRARIES}
+                                        ${GNURADIO_FFT_LIBRARIES}
+                                        ${GNURADIO_FILTER_LIBRARIES}
                                         ${GFlags_LIBS}
                                         ${GLOG_LIBRARIES}
                                         ${ARMADILLO_LIBRARIES}
                                         ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                        ${GNSS_SDR_OPTIONAL_LIBS}
+                                        rx_core_lib
                                         gnss_rx
+                                        channel_fsm
                                         gnss_sp_libs
 )
     
@@ -70,18 +76,24 @@ add_custom_command(TARGET front-end-cal POST_BUILD
                                    ${CMAKE_SOURCE_DIR}/install/$<TARGET_FILE_NAME:front-end-cal>)
 
 
-target_link_libraries(front-end-cal  ${GNURADIO_RUNTIME_LIBRARIES}
-                                     ${GNURADIO_BLOCKS_LIBRARIES}
-                                     ${Boost_LIBRARIES}
-                                     ${GFlags_LIBS}
-                                     ${GLOG_LIBRARIES}
-                                     ${ARMADILLO_LIBRARIES}
-                                     gnss_rx
-                                     gnss_sp_libs
-                                     front_end_cal_lib
-                                     ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+target_link_libraries(front-end-cal    ${MAC_LIBRARIES}
+                                       ${Boost_LIBRARIES}
+                                       ${GNURADIO_RUNTIME_LIBRARIES}
+                                       ${GNURADIO_BLOCKS_LIBRARIES}
+                                       ${GNURADIO_FFT_LIBRARIES}
+                                       ${GNURADIO_FILTER_LIBRARIES}
+                                       ${GFlags_LIBS}
+                                       ${GLOG_LIBRARIES}
+                                       ${ARMADILLO_LIBRARIES}
+                                       ${VOLK_GNSSSDR_LIBRARIES} ${ORC_LIBRARIES}
+                                       ${GNSS_SDR_OPTIONAL_LIBS}
+                                       rx_core_lib
+                                       gnss_rx
+                                       gnss_sp_libs
+                                       front_end_cal_lib
 )
 
+                               
 install(TARGETS front-end-cal
         RUNTIME DESTINATION bin
         COMPONENT "front-end-cal"

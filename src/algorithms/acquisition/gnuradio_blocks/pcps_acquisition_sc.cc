@@ -69,6 +69,7 @@ pcps_acquisition_sc::pcps_acquisition_sc(
     gr::io_signature::make(1, 1, sizeof(lv_16sc_t) * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )),
     gr::io_signature::make(0, 0, 0))
 {
+    this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
     d_state = 0;

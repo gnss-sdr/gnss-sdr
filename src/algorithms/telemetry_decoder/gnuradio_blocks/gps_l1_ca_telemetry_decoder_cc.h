@@ -85,7 +85,7 @@ private:
     bool gps_word_parityCheck(unsigned int gpsword);
 
     // constants
-    unsigned short int d_preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS];
+    //unsigned short int d_preambles_bits[GPS_CA_PREAMBLE_LENGTH_BITS];
     // class private vars
 
     int *d_preambles_symbols;

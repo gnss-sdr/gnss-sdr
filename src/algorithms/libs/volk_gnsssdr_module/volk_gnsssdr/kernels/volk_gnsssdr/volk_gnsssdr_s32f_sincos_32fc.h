@@ -38,7 +38,9 @@
  * \b Overview
  *
  * VOLK_GNSSSDR kernel that computes the sine and cosine with a fixed
- * phase increment \p phase_inc per sample, providing the output in a complex vector (cosine, sine)
+ * phase increment \p phase_inc per sample, providing the output in a complex vector (cosine, sine).
+ * WARNING: it is not IEEE compliant, but the max absolute error on sines is 2^-24 on the range [-8192, 8192].
+ *          As a rule of thumb, keep initial phase + phase_inc * num_points within that range.
  *
  * <b>Dispatcher Prototype</b>
  * \code

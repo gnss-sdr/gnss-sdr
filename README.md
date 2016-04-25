@@ -16,7 +16,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 GNU/Linux 
 ----------
 
- * Tested distributions: Ubuntu 14.04 LTS, 14.10, 15.04 and 15.10, Debian 8.0 "jessie", Linaro 15.03 
+ * Tested distributions: Ubuntu from 14.04 LTS to 16.04 LTS, Debian 8.0 "jessie", Linaro 15.03 
  * Known to work but not continually tested: Arch Linux, Fedora, and openSUSE
  * Supported microprocessor architectures: 
    * i386: Intel x86 instruction set (32-bit microprocessors). 
@@ -37,7 +37,20 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev
 ~~~~~~
 
-Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). Alternatively, if you need to manually build and install those libraries, please keep reading.
+Alternatively, and starting from Ubuntu 16.04 LTS, you can install all required dependencies by adding the line
+
+~~~~~~
+deb-src http://us.archive.ubuntu.com/ubuntu/ xenial universe
+~~~~~~
+
+at your ```/etc/apt/sources.list``` file and doing:
+
+~~~~~~ 
+$ sudo apt-get update 
+$ sudo apt-get build-dep gnss-sdr
+~~~~~~ 
+
+Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). Otherwise, if you need to manually build and install those libraries, please keep reading.
 
 Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT ```libuhd-dev```, ```gnuradio-dev``` and ```gr-osmosdr``` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS.
 

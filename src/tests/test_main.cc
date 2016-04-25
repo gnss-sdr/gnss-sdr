@@ -34,6 +34,7 @@
 #include <queue>
 #include <memory>
 #include <boost/thread.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/filesystem.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>

@@ -54,29 +54,29 @@ void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                 {
                     // ### GPS EPHEMERIS ###
                     std::shared_ptr<Gps_Ephemeris> gps_eph;
-                    gps_eph=  boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
+                    gps_eph = boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
                     DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
                             << gps_eph->i_satellite_PRN << " (Block "
                             <<  gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
                             << "inserted with Toe="<< gps_eph->d_Toe<<" and GPS Week="
                             << gps_eph->i_GPS_week;
                     // update/insert new ephemeris record to the global ephemeris map
-                    d_ls_pvt->gps_ephemeris_map[gps_eph->i_satellite_PRN]=*gps_eph;
+                    d_ls_pvt->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>) )
                 {
                     // ### GPS IONO ###
                     std::shared_ptr<Gps_Iono> gps_iono;
-                    gps_iono=  boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
-                    d_ls_pvt->gps_iono=*gps_iono;
+                    gps_iono = boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
+                    d_ls_pvt->gps_iono = *gps_iono;
                     DLOG(INFO) << "New IONO record has arrived ";
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>) )
                 {
                     // ### GPS UTC MODEL ###
                     std::shared_ptr<Gps_Utc_Model> gps_utc_model;
-                    gps_utc_model=  boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
-                    d_ls_pvt->gps_utc_model=*gps_utc_model;
+                    gps_utc_model = boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
+                    d_ls_pvt->gps_utc_model = *gps_utc_model;
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
 
@@ -84,37 +84,37 @@ void hybrid_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
                 {
                     // ### Galileo EPHEMERIS ###
                     std::shared_ptr<Galileo_Ephemeris> galileo_eph;
-                    galileo_eph=  boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    galileo_eph = boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
                     // insert new ephemeris record
                     DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
                             << ", GALILEO Week Number =" << galileo_eph->WN_5
                             << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
                     // update/insert new ephemeris record to the global ephemeris map
-                    d_ls_pvt->galileo_ephemeris_map[galileo_eph->i_satellite_PRN]=*galileo_eph;
+                    d_ls_pvt->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>) )
                 {
                     // ### Galileo IONO ###
                     std::shared_ptr<Galileo_Iono> galileo_iono;
-                    galileo_iono=  boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
-                    d_ls_pvt->galileo_iono=*galileo_iono;
+                    galileo_iono = boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
+                    d_ls_pvt->galileo_iono = *galileo_iono;
                     DLOG(INFO) << "New IONO record has arrived ";
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>) )
                 {
                     // ### Galileo UTC MODEL ###
                     std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
-                    galileo_utc_model=  boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
-                    d_ls_pvt->galileo_utc_model=*galileo_utc_model;
+                    galileo_utc_model = boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
+                    d_ls_pvt->galileo_utc_model = *galileo_utc_model;
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
             else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>) )
                 {
                     // ### Galileo Almanac ###
                     std::shared_ptr<Galileo_Almanac> galileo_almanac;
-                    galileo_almanac=  boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
+                    galileo_almanac = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
                     // update/insert new ephemeris record to the global ephemeris map
-                    d_ls_pvt->galileo_almanac=*galileo_almanac;
+                    d_ls_pvt->galileo_almanac = *galileo_almanac;
                     DLOG(INFO) << "New Galileo Almanac has arrived ";
                 }
             else

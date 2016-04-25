@@ -87,7 +87,7 @@ public:
 
 
 private:
-    channel_msg_receiver_cc_sptr chennel_msg_rx;
+    channel_msg_receiver_cc_sptr channel_msg_rx;
     GNSSBlockInterface *pass_through_;
     AcquisitionInterface *acq_;
     TrackingInterface *trk_;

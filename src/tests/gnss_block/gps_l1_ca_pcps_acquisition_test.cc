@@ -112,8 +112,6 @@ protected:
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
-        stop = false;
-        message = 0;
         gnss_synchro = Gnss_Synchro();
     }
 
@@ -128,9 +126,6 @@ protected:
     std::shared_ptr<InMemoryConfiguration> config;
     Gnss_Synchro gnss_synchro;
     size_t item_size;
-    bool stop;
-    int message;
-    boost::thread ch_thread;
 };
 
 
@@ -273,5 +268,4 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 
-    ch_thread.join();
 }

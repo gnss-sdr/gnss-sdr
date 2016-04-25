@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition_test.cc
+ * \file gps_l2_m_pcps_acquisition_test.cc
  * \brief  This class implements an acquisition test for
  * GpsL1CaPcpsAcquisition class based on some input parameters.
  * \author Javier Arribas, 2015 (jarribas@cttc.es)
@@ -37,6 +37,7 @@
 #include <cstring>
 #include <iostream>
 #include <boost/chrono.hpp>
+#include <boost/make_shared.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
@@ -186,7 +187,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ConnectAndRun)
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
-        boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
+        boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
         msg_rx->rx_message=&message; // set message pointer to get last acquisition message
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
@@ -213,7 +214,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     double expected_doppler_hz = 1200;//3000;
     init();
     std::shared_ptr<GpsL2MPcpsAcquisition> acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
-    boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
+    boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
     msg_rx->rx_message=&message; // set message pointer to get last acquisition message
 
     ASSERT_NO_THROW( {

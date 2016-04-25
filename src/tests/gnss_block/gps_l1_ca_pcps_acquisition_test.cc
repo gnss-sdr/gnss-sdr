@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <boost/chrono.hpp>
+#include <boost/make_shared.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>

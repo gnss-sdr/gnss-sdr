@@ -1,6 +1,6 @@
 /*!
  * \file channel_msg_receiver_cc.h
- * \brief GNURadio block that receives asynchronous channel messages from acquisition and tracking blocks
+ * \brief GNU Radio block that receives asynchronous channel messages from acquisition and tracking blocks
  * \author Javier Arribas, 2016. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -41,7 +41,7 @@ typedef boost::shared_ptr<channel_msg_receiver_cc> channel_msg_receiver_cc_sptr;
 channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(ChannelFsm* channel_fsm, bool repeat);
 
 /*!
- * \brief This class implements a block that computes the PVT solution with Galileo E1 signals
+ * \brief GNU Radio block that receives asynchronous channel messages from acquisition and tracking blocks
  */
 class channel_msg_receiver_cc : public gr::block
 {

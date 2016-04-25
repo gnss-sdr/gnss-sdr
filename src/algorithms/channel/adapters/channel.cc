@@ -48,14 +48,14 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
         std::string role, std::string implementation, boost::shared_ptr<gr::msg_queue> queue)
 {
 
-    pass_through_=pass_through;
-    acq_=acq;
-    trk_=trk;
-    nav_=nav;
-    role_=role;
-    implementation_=implementation;
-    channel_=channel;
-    queue_=queue;
+    pass_through_ = pass_through;
+    acq_ = acq;
+    trk_ = trk;
+    nav_ = nav;
+    role_ = role;
+    implementation_ = implementation;
+    channel_ = channel;
+    queue_ = queue;
 
     acq_->set_channel(channel_);
     trk_->set_channel(channel_);
@@ -97,7 +97,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
 
     gnss_signal_ = Gnss_Signal(implementation_);
 
-    chennel_msg_rx= channel_msg_receiver_make_cc(&channel_fsm_, repeat_);
+    channel_msg_rx = channel_msg_receiver_make_cc(&channel_fsm_, repeat_);
 
 }
 
@@ -128,12 +128,12 @@ void Channel::connect(gr::top_block_sptr top_block)
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
     // Message ports
-    top_block->msg_connect(nav_->get_left_block(),pmt::mp("preamble_timestamp_s"),trk_->get_right_block(),pmt::mp("preamble_timestamp_s"));
+    top_block->msg_connect(nav_->get_left_block(), pmt::mp("preamble_timestamp_s"), trk_->get_right_block(), pmt::mp("preamble_timestamp_s"));
     DLOG(INFO) << "MSG FEEDBACK CHANNEL telemetry_decoder -> tracking";
 
     //std::cout<<"has port: "<<trk_->get_right_block()->has_msg_port(pmt::mp("events"))<<std::endl;
-    top_block->msg_connect(acq_->get_right_block(),pmt::mp("events"), chennel_msg_rx,pmt::mp("events"));
-    top_block->msg_connect(trk_->get_right_block(),pmt::mp("events"), chennel_msg_rx,pmt::mp("events"));
+    top_block->msg_connect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
+    top_block->msg_connect(trk_->get_right_block(), pmt::mp("events"), channel_msg_rx, pmt::mp("events"));
 
     connected_ = true;
 }
@@ -156,10 +156,12 @@ void Channel::disconnect(gr::top_block_sptr top_block)
     connected_ = false;
 }
 
+
 gr::basic_block_sptr Channel::get_left_block()
 {
     return pass_through_->get_left_block();
 }
+
 
 gr::basic_block_sptr Channel::get_right_block()
 {
@@ -179,6 +181,7 @@ void Channel::set_signal(const Gnss_Signal& gnss_signal)
     acq_->set_local_code();
     nav_->set_satellite(gnss_signal_.get_satellite());
 }
+
 
 void Channel::start_acquisition()
 {

@@ -57,15 +57,13 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopOldNotation)
     std::string filename = path + "signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
     config->set_property("SignalSource.filename", filename);
     config->set_property("SignalConditioner.implementation", "Pass_Through");
-    config->set_property("Channels_GPS.count", "1");
+    config->set_property("Channels_1C.count", "1");
     config->set_property("Channels.in_acquisition", "1");
-    config->set_property("Channel.system", "GPS");
-    config->set_property("Channel.signal", "1C");
-    config->set_property("Acquisition_GPS.implementation", "GPS_L1_CA_PCPS_Acquisition");
-    config->set_property("Acquisition_GPS.threshold", "1");
-    config->set_property("Acquisition_GPS.doppler_max", "5000");
-    config->set_property("Tracking_GPS.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
-    config->set_property("TelemetryDecoder_GPS.implementation", "GPS_L1_CA_Telemetry_Decoder");
+    config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
+    config->set_property("Acquisition_1C.threshold", "1");
+    config->set_property("Acquisition_1C.doppler_max", "5000");
+    config->set_property("Tracking_1C.implementation", "GPS_L1_CA_DLL_PLL_Tracking");
+    config->set_property("TelemetryDecoder_1C.implementation", "GPS_L1_CA_Telemetry_Decoder");
     config->set_property("Observables.implementation", "GPS_L1_CA_Observables");
     config->set_property("PVT.implementation", "GPS_L1_CA_PVT");
 
@@ -165,22 +163,6 @@ TEST(GNSSFlowgraph, InstantiateConnectStartStopHybrid)
     config->set_property("Channels_1C.count", "8");
     config->set_property("Channels_1B.count", "8");
     config->set_property("Channels.in_acquisition", "1");
-
-    config->set_property("Channel0.signal", "1C");
-    config->set_property("Channel1.signal", "1C");
-    config->set_property("Channel2.signal", "1C");
-    config->set_property("Channel3.signal", "1C");
-    config->set_property("Channel4.signal", "1C");
-    config->set_property("Channel5.signal", "1C");
-    config->set_property("Channel7.signal", "1C");
-    config->set_property("Channel8.signal", "1B");
-    config->set_property("Channel9.signal", "1B");
-    config->set_property("Channel10.signal", "1B");
-    config->set_property("Channel11.signal", "1B");
-    config->set_property("Channel12.signal", "1B");
-    config->set_property("Channel13.signal", "1B");
-    config->set_property("Channel14.signal", "1B");
-    config->set_property("Channel15.signal", "1B");
 
     config->set_property("Acquisition_1C0.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition_1C0.threshold", "1");

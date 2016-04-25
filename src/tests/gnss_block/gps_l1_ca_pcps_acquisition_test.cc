@@ -68,7 +68,7 @@ private:
     GpsL1CaPcpsAcquisitionTest_msg_rx();
 
 public:
-    int* rx_message;
+    int rx_message;
     ~GpsL1CaPcpsAcquisitionTest_msg_rx(); //!< Default destructor
 
 };
@@ -82,11 +82,11 @@ void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try {
         long int message=pmt::to_long(msg);
-        *rx_message=message;
+        rx_message=message;
     }catch(boost::bad_any_cast& e)
     {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
-            *rx_message = 0;
+            rx_message = 0;
     }
 }
 
@@ -96,7 +96,7 @@ GpsL1CaPcpsAcquisitionTest_msg_rx::GpsL1CaPcpsAcquisitionTest_msg_rx() :
 
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
-
+    rx_message=0;
 }
 
 GpsL1CaPcpsAcquisitionTest_msg_rx::~GpsL1CaPcpsAcquisitionTest_msg_rx()
@@ -166,13 +166,11 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ConnectAndRun)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    int message=0;
 
     top_block = gr::make_top_block("Acquisition test");
     init();
     boost::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = boost::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
     boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
-    msg_rx->rx_message=&message; // set message pointer to get last acquisition message
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -206,9 +204,8 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     double expected_doppler_hz = 1680;
     init();
     std::shared_ptr<GpsL1CaPcpsAcquisition> acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 1);
-    int message=0;
+
     boost::shared_ptr<GpsL1CaPcpsAcquisitionTest_msg_rx> msg_rx = GpsL1CaPcpsAcquisitionTest_msg_rx_make();
-    msg_rx->rx_message=&message; // set message pointer to get last acquisition message
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -260,7 +257,7 @@ TEST_F(GpsL1CaPcpsAcquisitionTest, ValidationOfResults)
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 
-    ASSERT_EQ(1, *(msg_rx->rx_message)) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+    ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     double delay_error_samples = std::abs(expected_delay_samples - gnss_synchro.Acq_delay_samples);
     float delay_error_chips = (float)(delay_error_samples * 1023 / 4000);

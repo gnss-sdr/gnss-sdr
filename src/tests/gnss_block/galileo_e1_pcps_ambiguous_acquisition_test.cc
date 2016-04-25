@@ -66,7 +66,7 @@ private:
     GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx();
 
 public:
-    int* rx_message;
+    int rx_message;
     ~GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx(); //!< Default destructor
 
 };
@@ -80,11 +80,11 @@ void GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t
 {
     try {
         long int message=pmt::to_long(msg);
-        *rx_message=message;
+        rx_message=message;
     }catch(boost::bad_any_cast& e)
     {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
-            *rx_message = 0;
+            rx_message = 0;
     }
 }
 
@@ -94,7 +94,7 @@ GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsAmbiguousAcquisitionT
 
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::msg_handler_events, this, _1));
-
+    rx_message = 0;
 }
 
 GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx()
@@ -164,14 +164,12 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ConnectAndRun)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    int message=0;
     top_block = gr::make_top_block("Acquisition test");
     queue = gr::msg_queue::make(0);
     init();
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
     std::shared_ptr<AcquisitionInterface> acquisition = std::dynamic_pointer_cast<AcquisitionInterface>(acq_);
     boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
-    msg_rx->rx_message=&message; // set message pointer to get last acquisition message
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -198,7 +196,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    int message=0;
+
     double expected_delay_samples = 2920; //18250;
     double expected_doppler_hz = -632;
     init();
@@ -207,7 +205,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     std::shared_ptr<GNSSBlockInterface> acq_ = factory->GetBlock(config, "Acquisition", "Galileo_E1_PCPS_Ambiguous_Acquisition", 1, 1, queue);
     std::shared_ptr<GalileoE1PcpsAmbiguousAcquisition> acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
     boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx> msg_rx = GpsL2MPcpsAcquisitionTest_msg_rx_make();
-    msg_rx->rx_message=&message; // set message pointer to get last acquisition message
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(gnss_synchro.Channel_ID);
@@ -256,7 +253,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
 
     unsigned long int nsamples = gnss_synchro.Acq_samplestamp_samples;
     std::cout <<  "Acquired " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
-    ASSERT_EQ(1, *(msg_rx->rx_message)) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+    ASSERT_EQ(1, msg_rx->rx_message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
 
     std::cout << "Delay: " << gnss_synchro.Acq_delay_samples << std::endl;
     std::cout << "Doppler: " << gnss_synchro.Acq_doppler_hz << std::endl;

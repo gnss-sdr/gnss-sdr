@@ -65,7 +65,7 @@ private:
     GpsL2MDllPllTrackingTest_msg_rx();
 
 public:
-    int* rx_message;
+    int rx_message;
     ~GpsL2MDllPllTrackingTest_msg_rx(); //!< Default destructor
 
 };
@@ -79,11 +79,11 @@ void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
     try {
         long int message=pmt::to_long(msg);
-        *rx_message=message;
+        rx_message=message;
     }catch(boost::bad_any_cast& e)
     {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
-            *rx_message = 0;
+            rx_message = 0;
     }
 }
 
@@ -93,7 +93,7 @@ GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() :
 
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
-
+    rx_message = 0;
 }
 
 GpsL2MDllPllTrackingTest_msg_rx::~GpsL2MDllPllTrackingTest_msg_rx()
@@ -154,14 +154,12 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
     long long int end = 0;
     int fs_in = 5000000;
     int nsamples = fs_in*9;
-    int message=0;
 
     init();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Tracking test");
     std::shared_ptr<TrackingInterface> tracking = std::make_shared<GpsL2MDllPllTracking>(config.get(), "Tracking_2S", 1, 1, queue);
     boost::shared_ptr<GpsL2MDllPllTrackingTest_msg_rx> msg_rx = GpsL2MDllPllTrackingTest_msg_rx_make();
-    msg_rx->rx_message=&message; // set message pointer to get last message
 
     gnss_synchro.Acq_delay_samples = 1;
     gnss_synchro.Acq_doppler_hz = 1200;

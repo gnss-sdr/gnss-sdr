@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
         kernel_expression = boost::xpressive::sregex::compile(kernel_regex);
     }
     catch (boost::xpressive::regex_error& error) {
-        std::cerr << "Error occured while compiling regex" << std::endl << std::endl;
+        std::cerr << "Error occurred while compiling regex" << std::endl << std::endl;
         return 1;
     }
 

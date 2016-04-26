@@ -37,13 +37,13 @@ $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time
        libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev
 ~~~~~~
 
-Alternatively, and starting from Ubuntu 16.04 LTS, you can install all required dependencies by adding the line
+Alternatively, and starting from Ubuntu 16.04 LTS, you can install all the required dependencies by adding the line
 
 ~~~~~~
 deb-src http://us.archive.ubuntu.com/ubuntu/ xenial universe
 ~~~~~~
 
-at your ```/etc/apt/sources.list``` file and doing:
+to your ```/etc/apt/sources.list``` file and doing:
 
 ~~~~~~ 
 $ sudo apt-get update 

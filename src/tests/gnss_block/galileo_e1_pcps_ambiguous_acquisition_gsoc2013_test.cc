@@ -58,9 +58,12 @@ concurrent_queue<int> channel_internal_queue;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx;
 
+
 typedef boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx> GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr;
 
+
 GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_make();
+
 
 class GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx : public gr::block
 {
@@ -75,31 +78,35 @@ public:
 
 };
 
+
 GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_make()
 {
     return GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_sptr(new GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx());
 }
 
+
 void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
-    try {
-        long int message=pmt::to_long(msg);
-        rx_message=message;
-        channel_internal_queue.push(rx_message);
-    }catch(boost::bad_any_cast& e)
+    try
+    {
+            long int message = pmt::to_long(msg);
+            rx_message = message;
+            channel_internal_queue.push(rx_message);
+    }
+    catch(boost::bad_any_cast& e)
     {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
             rx_message = 0;
     }
 }
 
+
 GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx() :
     gr::block("GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
-
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_events, this, _1));
-    rx_message=0;
+    rx_message = 0;
 }
 
 GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx()
@@ -122,8 +129,7 @@ protected:
     }
 
     ~GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test()
-    {
-    }
+    {}
 
     void init();
     void config_1();
@@ -182,6 +188,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::init()
     Pfa_p = 0;
     Pfa_a = 0;
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
 {
@@ -253,6 +260,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_1()
     config->set_property("Acquisition.doppler_step", "250");
     config->set_property("Acquisition.dump", "false");
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
 {
@@ -343,11 +351,13 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::config_2()
     config->set_property("Acquisition.dump", "false");
 }
 
+
 void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::start_queue()
 {
     stop = false;
     ch_thread = boost::thread(&GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::wait_message, this);
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::wait_message()
 {
@@ -372,6 +382,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::wait_message()
             process_message();
         }
 }
+
 
 void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::process_message()
 {
@@ -412,6 +423,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::process_message()
         }
 }
 
+
 void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test::stop_queue()
 {
     stop = true;
@@ -446,7 +458,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
-        top_block->msg_connect(acquisition->get_right_block(),pmt::mp("events"), msg_rx,pmt::mp("events"));
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     EXPECT_NO_THROW( {
@@ -460,6 +472,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ConnectAndRun)
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
 }
 
+
 TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
 {
     config_1();
@@ -469,7 +482,6 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
     acquisition = std::dynamic_pointer_cast<GalileoE1PcpsAmbiguousAcquisition>(acq_);
 
     boost::shared_ptr<GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx> msg_rx = GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx_make();
-
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -504,7 +516,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResults)
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-        top_block->msg_connect(acquisition->get_right_block(),pmt::mp("events"), msg_rx,pmt::mp("events"));
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     // i = 0 --> satellite in acquisition is visible
@@ -590,7 +602,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test, ValidationOfResultsProbabi
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-        top_block->msg_connect(acquisition->get_right_block(),pmt::mp("events"), msg_rx,pmt::mp("events"));
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     std::cout << "Probability of false alarm (target) = " << 0.1 << std::endl;

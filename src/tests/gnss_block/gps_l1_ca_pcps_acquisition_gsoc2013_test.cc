@@ -54,6 +54,8 @@
 #include "pass_through.h"
 
 
+concurrent_queue<int> channel_internal_queue;
+
 class GpsL1CaPcpsAcquisitionGSoC2013Test: public ::testing::Test
 {
 protected:

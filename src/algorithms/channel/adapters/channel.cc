@@ -29,15 +29,15 @@
  * -------------------------------------------------------------------------
  */
 #include "channel.h"
-#include <memory>
+//#include <memory>
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
-#include "channel_interface.h"
-#include "acquisition_interface.h"
-#include "tracking_interface.h"
-#include "telemetry_decoder_interface.h"
+//#include "channel_interface.h"
+//#include "acquisition_interface.h"
+//#include "tracking_interface.h"
+//#include "telemetry_decoder_interface.h"
 #include "configuration_interface.h"
-#include "channel_msg_receiver_cc.h"
+//#include "channel_msg_receiver_cc.h"
 
 using google::LogMessage;
 

@@ -53,11 +53,11 @@ pcps_acquisition_cc_sptr pcps_make_acquisition_cc(
                                  bool dump,
                                  std::string dump_filename)
 {
-
     return pcps_acquisition_cc_sptr(
             new pcps_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                                     samples_per_code, bit_transition_flag, use_CFAR_algorithm_flag, dump, dump_filename));
+                    samples_per_code, bit_transition_flag, use_CFAR_algorithm_flag, dump, dump_filename));
 }
+
 
 pcps_acquisition_cc::pcps_acquisition_cc(
                          unsigned int sampled_ms, unsigned int max_dwells,
@@ -70,7 +70,6 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )),
     gr::io_signature::make(0, 0, sizeof(gr_complex) * sampled_ms * samples_per_ms * ( bit_transition_flag ? 2 : 1 )) )
 {
-
     this->message_port_register_out(pmt::mp("events"));
 
     d_sample_counter = 0;    // SAMPLE COUNTER

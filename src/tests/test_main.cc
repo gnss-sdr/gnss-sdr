@@ -89,7 +89,7 @@ DECLARE_string(log_dir);
 #include "gnss_block/fir_filter_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_acquisition_test.cc"
 #include "gnss_block/gps_l2_m_pcps_acquisition_test.cc"
-//#include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
+#include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 //#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
 //#if OPENCL_BLOCKS_TEST
 //#include "gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
@@ -117,6 +117,7 @@ DECLARE_string(log_dir);
 concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 concurrent_map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
+concurrent_queue<int> channel_internal_queue;
 
 int main(int argc, char **argv)
 {

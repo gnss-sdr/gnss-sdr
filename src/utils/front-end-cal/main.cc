@@ -100,6 +100,61 @@ GpsL1CaPcpsAcquisitionFineDoppler *acquisition;
 Gnss_Synchro *gnss_synchro;
 std::vector<Gnss_Synchro> gnss_sync_vector;
 
+
+// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+class FrontEndCal_msg_rx;
+
+typedef boost::shared_ptr<FrontEndCal_msg_rx> FrontEndCal_msg_rx_sptr;
+
+FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
+
+class FrontEndCal_msg_rx : public gr::block
+{
+private:
+    friend FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
+    void msg_handler_events(pmt::pmt_t msg);
+    FrontEndCal_msg_rx();
+
+public:
+    int rx_message;
+    ~FrontEndCal_msg_rx(); //!< Default destructor
+
+};
+
+FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make()
+{
+    return FrontEndCal_msg_rx_sptr(new FrontEndCal_msg_rx());
+}
+
+void FrontEndCal_msg_rx::msg_handler_events(pmt::pmt_t msg)
+{
+    try {
+        long int message=pmt::to_long(msg);
+        rx_message=message;
+        channel_internal_queue.push(rx_message);
+    }catch(boost::bad_any_cast& e)
+    {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+            rx_message = 0;
+    }
+}
+
+FrontEndCal_msg_rx::FrontEndCal_msg_rx() :
+    gr::block("FrontEndCal_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+{
+
+    this->message_port_register_in(pmt::mp("events"));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&FrontEndCal_msg_rx::msg_handler_events, this, _1));
+    rx_message=0;
+}
+
+FrontEndCal_msg_rx::~FrontEndCal_msg_rx()
+{}
+
+
+// ###########################################################
+
+
 void wait_message()
 {
     while (!stop)
@@ -320,6 +375,9 @@ int main(int argc, char** argv)
     gr::block_sptr source;
     source = gr::blocks::file_source::make(sizeof(gr_complex), "tmp_capture.dat");
 
+    boost::shared_ptr<FrontEndCal_msg_rx> msg_rx = FrontEndCal_msg_rx_make();
+
+
     //gr_basic_block_sptr head = gr_make_head(sizeof(gr_complex), nsamples);
     //gr_head_sptr head_sptr = boost::dynamic_pointer_cast<gr_head>(head);
     //head_sptr->set_length(nsamples);
@@ -329,6 +387,7 @@ int main(int argc, char** argv)
     {
             acquisition->connect(top_block);
             top_block->connect(source, 0, acquisition->get_left_block(), 0);
+            top_block->msg_connect(acquisition->get_right_block(),pmt::mp("events"), msg_rx,pmt::mp("events"));
     }
     catch(const std::exception & e)
     {

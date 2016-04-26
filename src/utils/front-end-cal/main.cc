@@ -141,7 +141,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     }
     catch(const boost::exception_ptr & e)
     {
-            std::cout << "Exception catched in creating source " << e << std::endl;
+            std::cout << "Exception caught in creating source " << e << std::endl;
             return 0;
     }
 
@@ -152,7 +152,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     }
     catch(const boost::exception_ptr & e)
     {
-            std::cout << "Exception catched in creating signal conditioner " << e << std::endl;
+            std::cout << "Exception caught in creating signal conditioner " << e << std::endl;
             return 0;
     }
     gr::block_sptr sink;
@@ -285,11 +285,11 @@ int main(int argc, char** argv)
     }
     catch(const boost::bad_lexical_cast & e)
     {
-            std::cout << "Exception catched while capturing samples (bad lexical cast)" << std::endl;
+            std::cout << "Exception caught while capturing samples (bad lexical cast)" << std::endl;
     }
     catch(const boost::io::too_few_args & e)
     {
-            std::cout << "Exception catched while capturing samples (too few args)" << std::endl;
+            std::cout << "Exception caught while capturing samples (too few args)" << std::endl;
     }
 
     // 4. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
@@ -365,7 +365,7 @@ int main(int argc, char** argv)
             }
             catch(const boost::thread_resource_error & e)
             {
-                    LOG(INFO) << "Exception catched (thread resource error)";
+                    LOG(INFO) << "Exception caught (thread resource error)";
             }
             top_block->run();
             if (start_msg == true)
@@ -486,11 +486,11 @@ int main(int argc, char** argv)
             }
             catch(const std::logic_error & e)
             {
-                    std::cout << "Logic error catched: " << e.what() << std::endl;
+                    std::cout << "Logic error caught: " << e.what() << std::endl;
             }
             catch(const boost::lock_error & e)
             {
-                    std::cout << "Exception catched while reading ephemeris" << std::endl;
+                    std::cout << "Exception caught while reading ephemeris" << std::endl;
             }
             catch(int ex)
             {
@@ -535,11 +535,11 @@ int main(int argc, char** argv)
             }
             catch(const std::logic_error & e)
             {
-                    std::cout << "Logic error catched: " << e.what() << std::endl;
+                    std::cout << "Logic error caught: " << e.what() << std::endl;
             }
             catch(const boost::lock_error & e)
             {
-                    std::cout << "Exception catched while reading ephemeris" << std::endl;
+                    std::cout << "Exception caught while reading ephemeris" << std::endl;
             }
             catch(int ex)
             {

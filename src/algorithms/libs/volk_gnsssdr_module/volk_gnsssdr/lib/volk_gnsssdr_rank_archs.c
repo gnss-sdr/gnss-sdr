@@ -54,7 +54,7 @@ int volk_gnsssdr_get_index(
         }
     //TODO return -1;
     //something terrible should happen here
-    printf("Volk warning: no arch found, returning generic impl\n");
+    fprintf(stderr, "VOLK_GNSSSDR warning: no arch found, returning generic impl\n");
     return volk_gnsssdr_get_index(impl_names, n_impls, "generic"); //but we'll fake it for now
 }
 

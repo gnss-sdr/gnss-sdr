@@ -50,7 +50,7 @@ struct volk_gnsssdr_machine *get_machine(void)
       }
     }
     machine = max_machine;
-    printf("Using Volk machine: %s\n", machine->name);
+    //printf("Using Volk machine: %s\n", machine->name);
     __alignment = machine->alignment;
     __alignment_mask = (intptr_t)(__alignment-1);
     return machine;

@@ -1,5 +1,5 @@
 /*!
- * \file volk_gnsssdr_16ic_resampler_16ic.h
+ * \file volk_gnsssdr_16ic_resampler_fast_16ic.h
  * \brief VOLK_GNSSSDR kernel: resamples a 16 bits complex vector.
  * \authors <ul>
  *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
@@ -34,7 +34,7 @@
  */
 
 /*!
- * \page volk_gnsssdr_16ic_resampler_16ic
+ * \page volk_gnsssdr_16ic_resampler_fast_16ic
  *
  * \b Overview
  *
@@ -42,7 +42,7 @@
  *
  * <b>Dispatcher Prototype</b>
  * \code
- * void volk_gnsssdr_16ic_resampler_16ic(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)
+ * void volk_gnsssdr_16ic_resampler_fast_16ic(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)
  * \endcode
  *
  * \b Inputs
@@ -57,8 +57,8 @@
  *
  */
 
-#ifndef INCLUDED_volk_gnsssdr_16ic_resampler_16ic_H
-#define INCLUDED_volk_gnsssdr_16ic_resampler_16ic_H
+#ifndef INCLUDED_volk_gnsssdr_16ic_resampler_fast_16ic_H
+#define INCLUDED_volk_gnsssdr_16ic_resampler_fast_16ic_H
 
 #include <math.h>
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
@@ -72,7 +72,7 @@
 //    return (r > 0.0) ? (r + 0.5) : (r - 0.5);
 //}
 
-static inline void volk_gnsssdr_16ic_resampler_16ic_generic(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)
+static inline void volk_gnsssdr_16ic_resampler_fast_16ic_generic(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)
 {
     int local_code_chip_index;
     //fesetround(FE_TONEAREST);
@@ -92,7 +92,7 @@ static inline void volk_gnsssdr_16ic_resampler_16ic_generic(lv_16sc_t* result, c
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-static inline void volk_gnsssdr_16ic_resampler_16ic_a_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
+static inline void volk_gnsssdr_16ic_resampler_fast_16ic_a_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
 {
     _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
     unsigned int number;
@@ -175,7 +175,7 @@ static inline void volk_gnsssdr_16ic_resampler_16ic_a_sse2(lv_16sc_t* result, co
 #ifdef LV_HAVE_SSE2
 #include <emmintrin.h>
 
-static inline void volk_gnsssdr_16ic_resampler_16ic_u_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
+static inline void volk_gnsssdr_16ic_resampler_fast_16ic_u_sse2(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
 {
     _MM_SET_ROUNDING_MODE (_MM_ROUND_NEAREST);//_MM_ROUND_NEAREST, _MM_ROUND_DOWN, _MM_ROUND_UP, _MM_ROUND_TOWARD_ZERO
     unsigned int number;
@@ -257,7 +257,7 @@ static inline void volk_gnsssdr_16ic_resampler_16ic_u_sse2(lv_16sc_t* result, co
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-static inline void volk_gnsssdr_16ic_resampler_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
+static inline void volk_gnsssdr_16ic_resampler_fast_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)//, int* scratch_buffer, float* scratch_buffer_float)
 {
     unsigned int number;
     const unsigned int quarterPoints = num_output_samples / 4;
@@ -337,4 +337,4 @@ static inline void volk_gnsssdr_16ic_resampler_16ic_neon(lv_16sc_t* result, cons
 
 #endif /* LV_HAVE_NEON */
 
-#endif /*INCLUDED_volk_gnsssdr_16ic_resampler_16ic_H*/
+#endif /*INCLUDED_volk_gnsssdr_16ic_resampler_fast_16ic_H*/

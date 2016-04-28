@@ -85,7 +85,7 @@ void cpu_multicorrelator_16sc::update_local_code(int correlator_length_samples, 
             d_tmp_code_phases_chips[n] = d_shifts_chips[n] - rem_code_phase_chips;
         }
 
-    volk_gnsssdr_16ic_xn_resampler_16ic_xn(d_local_codes_resampled,
+    volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn(d_local_codes_resampled,
             d_local_code_in,
             d_tmp_code_phases_chips,
             code_phase_step_chips,

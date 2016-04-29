@@ -71,27 +71,31 @@ public:
 
 };
 
+
 GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_make()
 {
     return GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx_sptr(new GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx());
 }
 
+
 void GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
-    try {
-        long int message=pmt::to_long(msg);
-        rx_message=message;
-    }catch(boost::bad_any_cast& e)
+    try
     {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+            long int message = pmt::to_long(msg);
+            rx_message = message;
+    }
+    catch(boost::bad_any_cast& e)
+    {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
     }
 }
 
-GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx() :
-    gr::block("GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
-{
 
+GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx() :
+            gr::block("GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+{
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;

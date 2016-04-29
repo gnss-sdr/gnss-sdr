@@ -83,20 +83,21 @@ GpsL2MPcpsAcquisitionTest_msg_rx_sptr GpsL2MPcpsAcquisitionTest_msg_rx_make()
 
 void GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
-    try {
-        long int message=pmt::to_long(msg);
-        rx_message=message;
-    }catch(boost::bad_any_cast& e)
+    try
     {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+            long int message = pmt::to_long(msg);
+            rx_message = message;
+    }
+    catch(boost::bad_any_cast& e)
+    {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
     }
 }
 
 GpsL2MPcpsAcquisitionTest_msg_rx::GpsL2MPcpsAcquisitionTest_msg_rx() :
-    gr::block("GpsL2MPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+            gr::block("GpsL2MPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
-
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
@@ -251,7 +252,7 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     	//top_block->connect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
     	top_block->connect(file_source, 0, valve , 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
-        top_block->msg_connect(acquisition->get_right_block(),pmt::mp("events"), msg_rx,pmt::mp("events"));
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
 

@@ -52,7 +52,63 @@
 #include "pass_through.h"
 
 #include "gnss_block_factory.h"
-z
+
+
+// ######## GNURADIO BLOCK MESSAGE RECEVER #########
+class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx;
+
+typedef boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx> GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr;
+
+GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(concurrent_queue<int>& queue);
+
+
+class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx : public gr::block
+{
+private:
+    friend GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(concurrent_queue<int>& queue);
+    void msg_handler_events(pmt::pmt_t msg);
+    GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx(concurrent_queue<int>& queue);
+    concurrent_queue<int>& channel_internal_queue;
+public:
+    int rx_message;
+    ~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx(); //!< Default destructor
+};
+
+
+GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(concurrent_queue<int>& queue)
+{
+    return GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr(new GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx(queue));
+}
+
+
+void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
+{
+    try
+    {
+            long int message = pmt::to_long(msg);
+            rx_message = message;
+            channel_internal_queue.push(rx_message);
+    }
+    catch(boost::bad_any_cast& e)
+    {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
+            rx_message = 0;
+    }
+}
+
+
+GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx(concurrent_queue<int>& queue) :
+    gr::block("GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+{
+    this->message_port_register_in(pmt::mp("events"));
+    this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::msg_handler_events, this, _1));
+    rx_message = 0;
+}
+
+GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx::~GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx()
+{}
+
+
 class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest: public ::testing::Test
 {
 protected:
@@ -77,6 +133,7 @@ protected:
     void process_message();
     void stop_queue();
 
+    concurrent_queue<int> channel_internal_queue;
     gr::msg_queue::sptr queue;
     gr::top_block_sptr top_block;
     //std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
@@ -598,6 +655,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     top_block = gr::make_top_block("Acquisition test");
     //int nsamples = floor(fs_in*integration_time_ms*1e-3);
     acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1, queue);
+    boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx> msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
 
     //unsigned int skiphead_sps = 28000+32000; // 32 Msps
     //    unsigned int skiphead_sps = 0;
@@ -639,6 +697,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
         signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
      }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     acquisition->reset();

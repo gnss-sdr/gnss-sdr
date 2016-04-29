@@ -52,7 +52,6 @@
 #include "gps_l1_ca_pcps_acquisition.h"
 
 
-
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsAcquisitionTest_msg_rx;
 
@@ -66,38 +65,41 @@ private:
     friend GpsL1CaPcpsAcquisitionTest_msg_rx_sptr GpsL1CaPcpsAcquisitionTest_msg_rx_make();
     void msg_handler_events(pmt::pmt_t msg);
     GpsL1CaPcpsAcquisitionTest_msg_rx();
-
 public:
     int rx_message;
     ~GpsL1CaPcpsAcquisitionTest_msg_rx(); //!< Default destructor
-
 };
+
 
 GpsL1CaPcpsAcquisitionTest_msg_rx_sptr GpsL1CaPcpsAcquisitionTest_msg_rx_make()
 {
     return GpsL1CaPcpsAcquisitionTest_msg_rx_sptr(new GpsL1CaPcpsAcquisitionTest_msg_rx());
 }
 
+
 void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
-    try {
-        long int message=pmt::to_long(msg);
-        rx_message=message;
-    }catch(boost::bad_any_cast& e)
+    try
     {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+            long int message = pmt::to_long(msg);
+            rx_message = message;
+    }
+    catch(boost::bad_any_cast& e)
+    {
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
     }
 }
 
+
 GpsL1CaPcpsAcquisitionTest_msg_rx::GpsL1CaPcpsAcquisitionTest_msg_rx() :
     gr::block("GpsL1CaPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
-
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_events, this, _1));
-    rx_message=0;
+    rx_message = 0;
 }
+
 
 GpsL1CaPcpsAcquisitionTest_msg_rx::~GpsL1CaPcpsAcquisitionTest_msg_rx()
 {}

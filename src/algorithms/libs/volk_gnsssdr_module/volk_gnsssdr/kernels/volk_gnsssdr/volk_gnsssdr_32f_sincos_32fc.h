@@ -2,6 +2,7 @@
  * \file volk_gnsssdr_32f_sincos_32fc.h
  * \brief VOLK_GNSSSDR kernel: Computes the sine and cosine of a vector of floats.
  * \authors <ul>
+ *          <li> Julien Pommier, 2007
  *          <li> Carles Fernandez-Prades, 2016. cfernandez(at)cttc.es
  *          </ul>
  *
@@ -9,27 +10,25 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2007  Julien Pommier
  *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
+ *  This software is provided 'as-is', without any express or implied
+ *  warranty.  In no event will the authors be held liable for any damages
+ *  arising from the use of this software.
  *
- * This file is part of GNSS-SDR.
+ *  Permission is granted to anyone to use this software for any purpose,
+ *  including commercial applications, and to alter it and redistribute it
+ *  freely, subject to the following restrictions:
  *
- * GNSS-SDR is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *  1. The origin of this software must not be misrepresented; you must not
+ *     claim that you wrote the original software. If you use this software
+ *     in a product, an acknowledgment in the product documentation would be
+ *     appreciated but is not required.
+ *  2. Altered source versions must be plainly marked as such, and must not be
+ *     misrepresented as being the original software.
+ *  3. This notice may not be removed or altered from any source distribution.
  *
- * GNSS-SDR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNSS-SDR. If not, see <http://www.gnu.org/licenses/>.
- *
- * -------------------------------------------------------------------------
+ *  (this is the zlib license)
  */
 
 /*!
@@ -38,7 +37,8 @@
  * \b Overview
  *
  * VOLK_GNSSSDR kernel that computes the sine and cosine of a vector
- * of floats, providing the output in a complex vector (cosine, sine)
+ * of floats, providing the output in a complex vector (cosine, sine).
+ * WARNING: it is not IEEE compliant, but the max absolute error on sines is 2^-24 on the range [-8192, 8192].
  *
  * <b>Dispatcher Prototype</b>
  * \code
@@ -63,7 +63,7 @@
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
-/* Adapted from the original VOLK.
+/* Adapted from the original VOLK for comparison purposes.
  *  In turn based on algorithms from:
  *   Naoki Shibata, "Efficient Evaluation Methods of Elementary Functions Suitable for SIMD Computation,"
  *   Computer Science Research and Development, May 2010, Volume 25, Issue 1, pp 25-32. DOI 10.1007/s00450-010-0108-2  */
@@ -157,7 +157,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_u_sse4_1(lv_32fc_t* out, const f
 
 #ifdef LV_HAVE_SSE4_1
 #include <smmintrin.h>
-/* Adapted from the original VOLK.
+/* Adapted from the original VOLK for comparison purposes.
  *  In turn based on algorithms from:
  *   Naoki Shibata, "Efficient Evaluation Methods of Elementary Functions Suitable for SIMD Computation,"
  *   Computer Science Research and Development, May 2010, Volume 25, Issue 1, pp 25-32. DOI 10.1007/s00450-010-0108-2  */

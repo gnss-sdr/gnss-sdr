@@ -91,9 +91,9 @@ DECLARE_string(log_dir);
 #include "gnss_block/gps_l2_m_pcps_acquisition_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 //#include "gnss_block/gps_l1_ca_pcps_multithread_acquisition_gsoc2013_test.cc"
-//#if OPENCL_BLOCKS_TEST
-//#include "gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
-//#endif
+#if OPENCL_BLOCKS_TEST
+#include "gnss_block/gps_l1_ca_pcps_opencl_acquisition_gsoc2013_test.cc"
+#endif
 #include "gnss_block/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc"
 #include "gnss_block/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
 #include "gnss_block/galileo_e1_pcps_ambiguous_acquisition_test.cc"

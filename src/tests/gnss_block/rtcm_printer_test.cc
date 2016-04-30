@@ -37,9 +37,6 @@
 //#include "gps_ephemeris.h"
 
 
-
-
-
 TEST(Rtcm_Printer_Test, Instantiate)
 {
     std::string filename = "hello.rtcm";
@@ -48,6 +45,7 @@ TEST(Rtcm_Printer_Test, Instantiate)
     bool flag_rtcm_server = false;
     std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
 }
+
 
 TEST(Rtcm_Printer_Test, Run)
 {
@@ -75,9 +73,22 @@ TEST(Rtcm_Printer_Test, Run)
     std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
 
     std::string reference_msg = "D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98";
+
+    /* Convert the reference message to binary data */
+    std::string reference_msg_binary;
+    unsigned char c[1];
+    for(unsigned int i = 0; i < reference_msg.length(); i++)
+        {
+            unsigned long int n;
+            std::istringstream(reference_msg.substr(i,1)) >> std::hex >> n;
+            c[0] = (unsigned char)n;
+            std::string ret(c, c+1);
+            reference_msg_binary += ret;
+        }
+
     std::string testing_msg = RTCM_printer->print_MT1005_test();
 
-    EXPECT_EQ(reference_msg, testing_msg);
+    EXPECT_EQ(0, reference_msg_binary.compare(testing_msg));
 }
 
 

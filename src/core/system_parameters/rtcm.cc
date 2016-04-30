@@ -148,7 +148,7 @@ std::string Rtcm::add_CRC (const std::string & message_without_crc) const
 
     // 3) Builds the complete message
     std::string complete_message = message_without_crc + crc_frame.to_string();
-    return bin_to_hex(complete_message);
+    return bin_to_binary_data(complete_message);
 }
 
 
@@ -156,7 +156,7 @@ bool Rtcm::check_CRC(const std::string & message) const
 {
     boost::crc_optimal<24, 0x1864CFBu, 0x0, 0x0, false, false> CRC_RTCM_CHECK;
     // Convert message to binary
-    std::string message_bin = Rtcm::hex_to_bin(message);
+    std::string message_bin = Rtcm::binary_data_to_bin(message);
     // Check CRC
     std::string crc = message_bin.substr(message_bin.length() - 24, 24);
     std::bitset<24> read_crc =  std::bitset<24>(crc);
@@ -177,6 +177,53 @@ bool Rtcm::check_CRC(const std::string & message) const
         {
             return false;
         }
+}
+
+
+std::string Rtcm::bin_to_binary_data(const std::string& s) const
+{
+    std::string s_aux;
+    int remainder = static_cast<int>(std::fmod(s.length(), 4));
+    unsigned char c[s.length()];
+    unsigned int k = 0;
+    if (remainder != 0)
+        {
+            s_aux.assign(s, 0 , remainder);
+            boost::dynamic_bitset<> rembits(s_aux);
+            unsigned long int n = rembits.to_ulong();
+            c[0] = (unsigned char)n;
+            k++;
+        }
+
+    unsigned int start = std::max(remainder, 0);
+    for(unsigned int i = start; i < s.length() - 1; i = i + 4)
+        {
+            s_aux.assign(s, i, 4);
+            std::bitset<4> bs(s_aux);
+            unsigned n = bs.to_ulong();
+            c[k] = (unsigned char)n;
+            k++;
+        }
+
+    std::string ret(c, c + k / sizeof(c[0]));
+    return ret;
+}
+
+
+std::string Rtcm::binary_data_to_bin(const std::string& s) const
+{
+    std::string s_aux;
+    std::stringstream ss;
+
+    for(unsigned int i = 0; i < s.length(); i++)
+        {
+            unsigned char val = static_cast<unsigned char>(s.at(i));
+            std::bitset<4> bs(val);
+            ss << bs;
+        }
+
+    s_aux = ss.str();
+    return s_aux;
 }
 
 
@@ -842,7 +889,7 @@ std::string Rtcm::print_MT1005( unsigned int ref_id, double ecef_x, double ecef_
 int Rtcm::read_MT1005(const std::string & message, unsigned int & ref_id, double & ecef_x, double & ecef_y, double & ecef_z, bool & gps, bool & glonass, bool & galileo)
 {
     // Convert message to binary
-    std::string message_bin = Rtcm::hex_to_bin(message);
+    std::string message_bin = Rtcm::binary_data_to_bin(message);
 
     if(!Rtcm::check_CRC(message) )
         {
@@ -1118,7 +1165,7 @@ std::string Rtcm::print_MT1019(const Gps_Ephemeris & gps_eph)
 int Rtcm::read_MT1019(const std::string & message, Gps_Ephemeris & gps_eph)
 {
     // Convert message to binary
-    std::string message_bin = Rtcm::hex_to_bin(message);
+    std::string message_bin = Rtcm::binary_data_to_bin(message);
 
     if(!Rtcm::check_CRC(message) )
         {
@@ -1400,7 +1447,7 @@ std::string Rtcm::print_MT1045(const Galileo_Ephemeris & gal_eph)
 int Rtcm::read_MT1045(const std::string & message, Galileo_Ephemeris & gal_eph)
 {
     // Convert message to binary
-    std::string message_bin = Rtcm::hex_to_bin(message);
+    std::string message_bin = Rtcm::binary_data_to_bin(message);
 
     if(!Rtcm::check_CRC(message) )
         {

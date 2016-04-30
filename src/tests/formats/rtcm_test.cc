@@ -155,13 +155,25 @@ TEST(Rtcm_Test, Bin_to_int)
 }
 
 
+TEST(Rtcm_Test, Bin_to_binary_data)
+{
+    auto rtcm = std::make_shared<Rtcm>();
+    std::string bin_str("01011010");
+    std::string data_str = rtcm->bin_to_binary_data(bin_str);
+    std::string recovered_str = rtcm->binary_data_to_bin(data_str);
+    EXPECT_EQ(0, recovered_str.compare(bin_str));
+}
+
+
 TEST(Rtcm_Test, Check_CRC)
 {
     auto rtcm = std::make_shared<Rtcm>();
     bool expected_true = true;
     bool expected_false = false;
-    EXPECT_EQ(expected_true, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98"));
-    EXPECT_EQ(expected_false, rtcm->check_CRC("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B99"));
+    std::string good_crc = rtcm->bin_to_binary_data(rtcm->hex_to_bin("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98"));
+    std::string bad_crc = rtcm->bin_to_binary_data(rtcm->hex_to_bin("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B99"));
+    EXPECT_EQ(expected_true, rtcm->check_CRC(good_crc));
+    EXPECT_EQ(expected_false, rtcm->check_CRC(bad_crc));
 
     EXPECT_EQ(expected_true, rtcm->check_CRC(rtcm->print_MT1005_test()));
     EXPECT_EQ(expected_true, rtcm->check_CRC(rtcm->print_MT1005_test()));  // Run twice to check that CRC has no memory
@@ -264,10 +276,10 @@ TEST(Rtcm_Test, MT1029)
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
     std::string m1029 = rtcm->print_MT1029(ref_id, gps_eph,  obs_time, s_test);
     std::string encoded_text = m1029.substr(24, 60);
-    std::string expected_encoded_text("5554462D3820D0BFD180D0BED0B2D0B5D180D0BAD0B02077C3B672746572");
+    std::string expected_encoded_text(rtcm->bin_to_binary_data(rtcm->hex_to_bin("5554462D3820D0BFD180D0BED0B2D0B5D180D0BAD0B02077C3B672746572")));
     EXPECT_EQ(0, expected_encoded_text.compare(encoded_text));
 
-    std::string characters_to_follow = m1029.substr(22, 2);
+    std::string characters_to_follow = rtcm->bin_to_hex(rtcm->binary_data_to_bin(m1029.substr(22, 2)));
     std::string expected_characters_to_follow("1E");
     EXPECT_EQ(0, expected_characters_to_follow.compare(characters_to_follow));
 }
@@ -368,7 +380,7 @@ TEST(Rtcm_Test, MSMCell)
             divergence_free,
             more_messages);
 
-    std::string MSM1_bin = rtcm->hex_to_bin(MSM1);
+    std::string MSM1_bin = rtcm->binary_data_to_bin(MSM1);
     unsigned int Nsat = 4;
     unsigned int Nsig = 3;
     unsigned int size_header = 14;
@@ -392,7 +404,7 @@ TEST(Rtcm_Test, MSMCell)
              smooth_int,
              divergence_free,
              more_messages);
-    std::string MSM1_bin_2 = rtcm->hex_to_bin(MSM1_2);
+    std::string MSM1_bin_2 = rtcm->binary_data_to_bin(MSM1_2);
     EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010101100")); // check cell mask
 
     Gnss_Synchro gnss_synchro6;
@@ -419,7 +431,7 @@ TEST(Rtcm_Test, MSMCell)
                 smooth_int,
                 divergence_free,
                 more_messages);
-    std::string MSM1_bin_3 = rtcm->hex_to_bin(MSM1_3);
+    std::string MSM1_bin_3 = rtcm->binary_data_to_bin(MSM1_3);
     EXPECT_EQ(0, MSM1_bin_3.substr(size_header + size_msg_length + 169, (Nsat-1) * Nsig).compare("001010111")); // check cell mask
 }
 
@@ -489,7 +501,7 @@ TEST(Rtcm_Test, MSM1)
 
     EXPECT_EQ(expected_true, rtcm->check_CRC(MSM1));
 
-    std::string MSM1_bin = rtcm->hex_to_bin(MSM1);
+    std::string MSM1_bin = rtcm->binary_data_to_bin(MSM1);
     unsigned int Nsat = 3;
     unsigned int Nsig = 2;
     unsigned int size_header = 14;
@@ -533,7 +545,7 @@ TEST(Rtcm_Test, MSM1)
             smooth_int,
             divergence_free,
             more_messages);
-    std::string MSM1_bin2 = rtcm->hex_to_bin(MSM1_2);
+    std::string MSM1_bin2 = rtcm->binary_data_to_bin(MSM1_2);
     int read_psrng4_s_2 = rtcm->bin_to_int( MSM1_bin2.substr(size_header + size_msg_length + 169 + (Nsat * Nsig) + 30 + 15 * 3, 15));
     EXPECT_EQ(psrng4_s, read_psrng4_s_2);
 }

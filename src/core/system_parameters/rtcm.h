@@ -266,6 +266,9 @@ public:
     std::string bin_to_hex(const std::string & s) const;        //<! Returns a string of hexadecimal symbols from a string of binary symbols
     std::string hex_to_bin(const std::string & s) const;        //<! Returns a string of binary symbols from a string of hexadecimal symbols
 
+    std::string bin_to_binary_data(const std::string& s) const; //<! Returns a string of binary data from a string of binary symbols
+    std::string binary_data_to_bin(const std::string& s) const; //<! Returns a string of binary symbols from a string of binary data
+
     unsigned long int bin_to_uint(const std::string & s) const; //<! Returns an unsigned long int from a string of binary symbols
     long int bin_to_int(const std::string & s) const;           //<! Returns a long int from a string of binary symbols
     double bin_to_double(const std::string & s) const;          //<! Returns double from a string of binary symbols

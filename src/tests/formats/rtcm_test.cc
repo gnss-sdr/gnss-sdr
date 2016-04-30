@@ -230,7 +230,10 @@ TEST(Rtcm_Test, MT1005)
     EXPECT_DOUBLE_EQ(-4850729.7108, ecef_y);
     EXPECT_DOUBLE_EQ(3975521.4643, ecef_z);
 
-    rtcm->read_MT1005("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98", ref_id, ecef_x, ecef_y, ecef_z, gps, glonass, galileo);
+    gps = false;
+    ecef_x = 0.0;
+
+    rtcm->read_MT1005(rtcm->bin_to_binary_data(rtcm->hex_to_bin("D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98")), ref_id, ecef_x, ecef_y, ecef_z, gps, glonass, galileo);
 
     EXPECT_EQ(expected_true, gps);
     EXPECT_EQ(expected_false, glonass);

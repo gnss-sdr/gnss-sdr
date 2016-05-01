@@ -158,8 +158,14 @@ TEST(Rtcm_Test, Bin_to_int)
 TEST(Rtcm_Test, Bin_to_binary_data)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    std::string bin_str("01011010");
+    std::string bin_str("11011010");
     std::string data_str = rtcm->bin_to_binary_data(bin_str);
+
+    std::string test_binary = data_str.substr(0,1);
+    std::string test_bin = rtcm->binary_data_to_bin(test_binary);
+    std::string test_hex = rtcm->bin_to_hex(test_bin);
+    EXPECT_EQ(0, test_hex.compare("D"));
+
     std::string recovered_str = rtcm->binary_data_to_bin(data_str);
     EXPECT_EQ(0, recovered_str.compare(bin_str));
 }
@@ -266,7 +272,7 @@ TEST(Rtcm_Test, MT1019)
     EXPECT_DOUBLE_EQ(4, gps_eph_read.d_IODC);
     EXPECT_DOUBLE_EQ( 2.0 * E_LSB, gps_eph_read.d_e_eccentricity);
     EXPECT_EQ(expected_true, gps_eph_read.b_fit_interval_flag);
-    EXPECT_EQ(1, rtcm->read_MT1019("FFFFFFFFFFF", gps_eph_read));
+    EXPECT_EQ(1, rtcm->read_MT1019(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gps_eph_read));
 }
 
 
@@ -306,7 +312,7 @@ TEST(Rtcm_Test, MT1045)
     EXPECT_EQ(expected_true, gal_eph_read.E5a_DVS);
     EXPECT_DOUBLE_EQ( 53.0 * OMEGA_dot_3_LSB, gal_eph_read.OMEGA_dot_3);
     EXPECT_EQ(5, gal_eph_read.i_satellite_PRN);
-    EXPECT_EQ(1, rtcm->read_MT1045("FFFFFFFFFFF", gal_eph_read));
+    EXPECT_EQ(1, rtcm->read_MT1045(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gal_eph_read));
 }
 
 
@@ -571,7 +577,7 @@ TEST(Rtcm_Test, InstantiateServer)
     EXPECT_EQ(expected1, rtcm->bin_to_uint("00101010"));
     rtcm->run_server();
     std::string test4_bin = rtcm->hex_to_bin(test3);
-    std::string s("Testing");
+    std::string s = rtcm->bin_to_binary_data(test4_bin);
     rtcm->send_message(s);
     rtcm->stop_server();
     EXPECT_EQ(0, test4_bin.compare("11111111"));

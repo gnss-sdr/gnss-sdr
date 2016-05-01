@@ -84,7 +84,7 @@ void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
     }
     catch(boost::bad_any_cast& e)
     {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
+            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
             rx_message = 0;
     }
 }

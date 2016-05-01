@@ -158,13 +158,13 @@ TEST(Rtcm_Test, Bin_to_int)
 TEST(Rtcm_Test, Bin_to_binary_data)
 {
     auto rtcm = std::make_shared<Rtcm>();
-    std::string bin_str("11011010");
+    std::string bin_str("1101101011010110");
     std::string data_str = rtcm->bin_to_binary_data(bin_str);
 
     std::string test_binary = data_str.substr(0,1);
     std::string test_bin = rtcm->binary_data_to_bin(test_binary);
     std::string test_hex = rtcm->bin_to_hex(test_bin);
-    EXPECT_EQ(0, test_hex.compare("D"));
+    EXPECT_EQ(0, test_hex.compare("DA"));
 
     std::string recovered_str = rtcm->binary_data_to_bin(data_str);
     EXPECT_EQ(0, recovered_str.compare(bin_str));
@@ -283,12 +283,12 @@ TEST(Rtcm_Test, MT1029)
     unsigned int ref_id = 23;
     double obs_time = 0;
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
-    std::string m1029 = rtcm->print_MT1029(ref_id, gps_eph,  obs_time, s_test);
+    std::string m1029 = rtcm->bin_to_hex(rtcm->binary_data_to_bin(rtcm->print_MT1029(ref_id, gps_eph,  obs_time, s_test)));
     std::string encoded_text = m1029.substr(24, 60);
-    std::string expected_encoded_text(rtcm->bin_to_binary_data(rtcm->hex_to_bin("5554462D3820D0BFD180D0BED0B2D0B5D180D0BAD0B02077C3B672746572")));
+    std::string expected_encoded_text("5554462D3820D0BFD180D0BED0B2D0B5D180D0BAD0B02077C3B672746572");
     EXPECT_EQ(0, expected_encoded_text.compare(encoded_text));
 
-    std::string characters_to_follow = rtcm->bin_to_hex(rtcm->binary_data_to_bin(m1029.substr(22, 2)));
+    std::string characters_to_follow = m1029.substr(22, 2);
     std::string expected_characters_to_follow("1E");
     EXPECT_EQ(0, expected_characters_to_follow.compare(characters_to_follow));
 }

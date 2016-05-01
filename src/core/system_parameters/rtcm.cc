@@ -183,7 +183,7 @@ bool Rtcm::check_CRC(const std::string & message) const
 std::string Rtcm::bin_to_binary_data(const std::string& s) const
 {
     std::string s_aux;
-    int remainder = static_cast<int>(std::fmod(s.length(), 4));
+    int remainder = static_cast<int>(std::fmod(s.length(), 8));
     unsigned char c[s.length()];
     unsigned int k = 0;
     if (remainder != 0)
@@ -191,17 +191,20 @@ std::string Rtcm::bin_to_binary_data(const std::string& s) const
             s_aux.assign(s, 0 , remainder);
             boost::dynamic_bitset<> rembits(s_aux);
             unsigned long int n = rembits.to_ulong();
-            c[0] = (unsigned char)n;
+            c[0] = static_cast<unsigned char>(n);
             k++;
         }
 
     unsigned int start = std::max(remainder, 0);
-    for(unsigned int i = start; i < s.length() - 1; i = i + 4)
+    for(unsigned int i = start; i < s.length() - 1; i = i + 8)
         {
             s_aux.assign(s, i, 4);
             std::bitset<4> bs(s_aux);
             unsigned n = bs.to_ulong();
-            c[k] = (unsigned char)n;
+            s_aux.assign(s, i + 4 , 4);
+            std::bitset<4> bs2(s_aux);
+            unsigned n2 = bs2.to_ulong();
+            c[k] = static_cast<unsigned char>(n * 16) + static_cast<unsigned char>(n2);
             k++;
         }
 
@@ -218,7 +221,7 @@ std::string Rtcm::binary_data_to_bin(const std::string& s) const
     for(unsigned int i = 0; i < s.length(); i++)
         {
             unsigned char val = static_cast<unsigned char>(s.at(i));
-            std::bitset<4> bs(val);
+            std::bitset<8> bs(val);
             ss << bs;
         }
 

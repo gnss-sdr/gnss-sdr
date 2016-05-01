@@ -68,7 +68,6 @@ private:
 public:
     int rx_message;
     ~GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx(); //!< Default destructor
-
 };
 
 
@@ -100,6 +99,7 @@ GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::GalileoE1PcpsAmbiguousAcquisitionT
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
 }
+
 
 GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx::~GalileoE1PcpsAmbiguousAcquisitionTest_msg_rx()
 {}
@@ -240,7 +240,7 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
         const char * file_name = file.c_str();
         gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
         top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
-        top_block->msg_connect(acquisition->get_right_block(),pmt::mp("events"), msg_rx,pmt::mp("events"));
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     acquisition->init();

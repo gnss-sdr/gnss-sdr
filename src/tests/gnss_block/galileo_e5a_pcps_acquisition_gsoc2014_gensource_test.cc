@@ -254,7 +254,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
 
-    config->set_property("SignalSource.dump", "true");
+    config->set_property("SignalSource.dump", "false");
     config->set_property("SignalSource.dump_filename", "../data/signal_source.dat");
 
     config->set_property("InputFilter.implementation", "Fir_Filter");
@@ -291,7 +291,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("Acquisition_Galileo.doppler_step", "250");
     //    config->set_property("Acquisition_Galileo.doppler_step", "500");
     config->set_property("Acquisition_Galileo.bit_transition_flag", "false");
-    config->set_property("Acquisition_Galileo.dump", "true");
+    config->set_property("Acquisition_Galileo.dump", "false");
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
@@ -337,7 +337,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_2()
     config->set_property("Acquisition_Galileo.doppler_max", "10000");
     config->set_property("Acquisition_Galileo.doppler_step", "250");
     config->set_property("Acquisition_Galileo.bit_transition_flag", "false");
-    config->set_property("Acquisition_Galileo.dump", "true");
+    config->set_property("Acquisition_Galileo.dump", "false");
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
@@ -424,7 +424,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     config->set_property("SignalSource.data_flag", "true");
     config->set_property("SignalSource.BW_BB", "0.97");
 
-    config->set_property("SignalSource.dump", "true");
+    config->set_property("SignalSource.dump", "false");
     config->set_property("SignalSource.dump_filename", "../data/signal_source.dat");
 
     config->set_property("InputFilter.implementation", "Fir_Filter");
@@ -459,7 +459,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     config->set_property("Acquisition_Galileo.doppler_max", "10000");
     config->set_property("Acquisition_Galileo.doppler_step", "250");
     config->set_property("Acquisition_Galileo.bit_transition_flag", "false");
-    config->set_property("Acquisition_Galileo.dump", "true");
+    config->set_property("Acquisition_Galileo.dump", "false");
     config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
 }
 
@@ -558,22 +558,20 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::process_message()
         }
 }
 
+
 void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::stop_queue()
 {
     stop = true;
 }
-/*
+
+
 TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, Instantiate)
 {
     config_1();
-//    acquisition = new GalileoE5aPilot_3msAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    acquisition = new GalileoE5a3msNoncoherentIQAcquisition(config.get(), "Acquisition", 1, 1, queue);
-
-    delete acquisition;
-
+    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1, queue);
 }
- */
-/*
+
+
 TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
 {
     config_1();
@@ -582,10 +580,10 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
     struct timeval tv;
     long long int begin = 0;
     long long int end = 0;
-    //acquisition = new GalileoE5aPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    //acquisition = new GalileoE5aPilot_3msAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    acquisition = new GalileoE5a3msNoncoherentIQAcquisition(config.get(), "Acquisition", 1, 1, queue);
-
+    acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1, queue);
+    boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx> msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
+    queue = gr::msg_queue::make(0);
+    top_block = gr::make_top_block("Acquisition test");
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -593,6 +591,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         top_block->connect(source, 0, valve, 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
+        top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test."<< std::endl;
 
     EXPECT_NO_THROW( {
@@ -604,10 +603,8 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ConnectAndRun)
     }) << "Failure running the top_block."<< std::endl;
 
     std::cout <<  "Processed " << nsamples << " samples in " << (end - begin) << " microseconds" << std::endl;
-
-    delete acquisition;
 }
- */
+
 /*
 TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, SOURCEValidation)
 {
@@ -653,13 +650,8 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
     config_1();
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
-    //int nsamples = floor(fs_in*integration_time_ms*1e-3);
     acquisition = std::make_shared<GalileoE5aNoncoherentIQAcquisitionCaf>(config.get(), "Acquisition", 1, 1, queue);
     boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx> msg_rx = GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(channel_internal_queue);
-
-    //unsigned int skiphead_sps = 28000+32000; // 32 Msps
-    //    unsigned int skiphead_sps = 0;
-    //    unsigned int skiphead_sps = 84000;
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(0);
@@ -698,27 +690,31 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
         signal_source->connect(top_block);
         top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
-     }) << "Failure connecting the blocks of acquisition test." << std::endl;
+    }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     acquisition->reset();
     acquisition->init();
+
     // USING SIGNAL FROM FILE SOURCE
-    /*
-    ASSERT_NO_THROW( {
-	//noiseless sim
-	//std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11_long.dat";
-	// real
-	std::string file =  "/home/marc/E5a_acquisitions/32MS_complex.dat";
+    //unsigned int skiphead_sps = 28000+32000; // 32 Msps
+    //    unsigned int skiphead_sps = 0;
+    //    unsigned int skiphead_sps = 84000;
 
-	const char * file_name = file.c_str();
-	gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
-
-	gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);
-	top_block->connect(file_source, 0, skip_head, 0);
-	top_block->connect(skip_head, 0, acquisition->get_left_block(), 0);
-
-//	top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;  */
+    // ASSERT_NO_THROW( {
+    //   //noiseless sim
+    //   //std::string file =  "/home/marc/E5a_acquisitions/sim_32M_sec94_PRN11_long.dat";
+    //   // real
+    // std::string file =  "/home/marc/E5a_acquisitions/32MS_complex.dat";
+    //
+    // const char * file_name = file.c_str();
+    // gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
+    //
+    // gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);
+    // top_block->connect(file_source, 0, skip_head, 0);
+    // top_block->connect(skip_head, 0, acquisition->get_left_block(), 0);
+    //
+    //   // top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
+    //  }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
     // i = 0 --> satellite in acquisition is visible
     // i = 1 --> satellite in acquisition is not visible
@@ -730,34 +726,14 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             {
             case 0:
                 {
-                    gnss_synchro.PRN = 19; //real
-                    //gnss_synchro.PRN = 11; //sim
-                    //break;
+                    gnss_synchro.PRN = 19; // present
                 }
-                //        	case 1:
-                //        	    {
-                //        		gnss_synchro.PRN = 11;
-                //        		break;
-                //        	    }
-                //        	case 2:
-                //        	    {
-                //        		gnss_synchro.PRN = 12;
-                //        		break;
-                //        	    }
-                //        	case 3:
-                //        	    {
-                //        		gnss_synchro.PRN = 20;
-                //        		break;
-                //        	    }
+            case 1:
+                {
+                    gnss_synchro.PRN = 11;
+                }
             }
-            //            if (i == 0)
-            //                {
-            //                    gnss_synchro.PRN = 11;// This satellite is visible
-            //                }
-            //            else if (i == 1)
-            //                {
-            //                    gnss_synchro.PRN = 19; // This satellite is not visible
-            //                }
+
             start_queue();
 
             acquisition->reset();
@@ -776,245 +752,22 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
             //std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
             //std::cout << gnss_synchro.Acq_doppler_hz << "acq doppler" <<std::endl;
             //std::cout << gnss_synchro.Acq_samplestamp_samples << "acq samples" <<std::endl;
-            //            if (i == 0)
-            //            {
-            //                EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-            //                if (message == 1)
-            //                    {
-            //                	std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
-            //                        EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-            //                    }
-            //
-            //            }
-            //            else if (i == 1)
-            //            {
-            //                EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
-            //            }
+            if (i == 0)
+                {
+                    EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
+                    if (message == 1)
+                        {
+                            //std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
+                            EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
+                        }
+
+                }
+            else if (i == 1)
+                {
+                    EXPECT_EQ(2, message) << "Acquisition failure. Expected message: 2=ACQ FAIL.";
+                }
         }
 }
 
-/*
-TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfResults)
-{
-    config_1();
 
-    int nsamples = floor(fs_in*integration_time_ms*1e-3);
-    //acquisition = new GalileoE5aPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    acquisition = new GalileoE5aPilot_3msAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    //acquisition = new GalileoE5ax2msPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    //unsigned int skiphead_sps = 12000000*4; // 12 Msps
-    unsigned int skiphead_sps = 37500000; // 12 Msps
-    //unsigned int skiphead_sps = 10; // 12 Msps
-
-    ASSERT_NO_THROW( {
-        acquisition->set_channel(0);
-    }) << "Failure setting channel."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
-
-    acquisition->init();
-
-    ASSERT_NO_THROW( {
-	//std::string path = std::string(TEST_PATH);
-	//std::string file =  "/home/marc/E5a_acquisitions/signal_source_5X_primary.dat";
-	//std::string file =  "/home/marc/E5a_acquisitions/Tiered_sink_4sat_stup4.dat";
-	//std::string file =  "/home/marc/E5a_acquisitions/Tiered_4sat_down_upsampled12M_stup2.dat";
-	//std::string file =  "/home/marc/E5a_acquisitions/Tiered_stup4_down-upsampl12.dat";
-	//std::string file =  "/home/marc/E5a_acquisitions/Tiered_sim_4sat_stup4_2s_up.dat";
-//	std::string file =  "/home/marc/E5a_acquisitions/Tiered_sink_4sat_setup5_down-upsampled12M.dat";
-	std::string file =  "/home/marc/E5a_acquisitions/32Ms_complex.dat";
-	//std::string file =  "/home/marc/E5a_acquisitions/galileo_E5_8M_r2_upsampled_12.dat";
-
-	const char * file_name = file.c_str();
-	gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
-	gr::blocks::skiphead::sptr skip_head = gr::blocks::skiphead::make(sizeof(gr_complex), skiphead_sps);
-
-	top_block->connect(file_source, 0, skip_head, 0);
-	top_block->connect(skip_head, 0, acquisition->get_left_block(), 0);
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
-
-    for (unsigned int i = 0; i < 5; i++)
-        {
-            init();
-
-            switch (i)
-            {
-            case 0:
-        	gnss_synchro.PRN = 10;
-        	break;
-            case 1:
-        	gnss_synchro.PRN = 19;
-        	break;
-            case 2:
-        	gnss_synchro.PRN = 12;
-        	break;
-            case 3:
-        	gnss_synchro.PRN = 20;
-        	break;
-            case 4:
-        	gnss_synchro.PRN = 11;
-        	break;
-            }
-
-            acquisition->set_local_code();
-
-            start_queue();
-
-            EXPECT_NO_THROW( {
-                top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
-
-        }
-
-    delete acquisition;
-}
- */
-/*
-TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, FourSatsGen)
-{
-    config_3();
-
-    int nsamples = floor(fs_in*integration_time_ms*1e-3);
-//    acquisition = new GalileoE5aPcpsAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    acquisition = new GalileoE5aPilot_3msAcquisition(config.get(), "Acquisition", 1, 1, queue);
-    ASSERT_NO_THROW( {
-        acquisition->set_channel(0);
-    }) << "Failure setting channel."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->set_gnss_synchro(&gnss_synchro);
-    }) << "Failure setting gnss_synchro."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_max(config->property("Acquisition.doppler_max", 10000));
-    }) << "Failure setting doppler_max."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->set_doppler_step(config->property("Acquisition.doppler_step", 500));
-    }) << "Failure setting doppler_step."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->set_threshold(config->property("Acquisition.threshold", 0.0));
-    }) << "Failure setting threshold."<< std::endl;
-
-    ASSERT_NO_THROW( {
-        acquisition->connect(top_block);
-    }) << "Failure connecting acquisition to the top_block."<< std::endl;
-
-    acquisition->init();
-
-    ASSERT_NO_THROW( {
-	std::string filename_ = "../data/Tiered_sink_4sat.dat";
-	boost::shared_ptr<gr::blocks::file_sink> file_sink_;
-
-        boost::shared_ptr<GenSignalSource> signal_source;
-        SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);
-
-        FirFilter* filter = new FirFilter(config.get(), "InputFilter", 1, 1, queue);
-        signal_source.reset(new GenSignalSource(signal_generator, filter, "SignalSource", queue));
-        signal_source->connect(top_block);
-        //
-        file_sink_=gr::blocks::file_sink::make(sizeof(gr_complex), filename_.c_str());
-
-        top_block->connect(signal_source->get_right_block(), 0, acquisition->get_left_block(), 0);
-        top_block->connect(signal_source->get_right_block(), 0, file_sink_, 0);
-
-    }) << "Failure connecting the blocks of acquisition test." << std::endl;
-
-//    ASSERT_NO_THROW( {
-//	//std::string path = std::string(TEST_PATH);
-//	//std::string file =  "/home/marc/E5a_acquisitions/signal_source_5X_primary.dat";
-//	std::string file =  "/home/marc/E5a_acquisitions/Tiered_sink_test.dat";
-//	//std::string file =  "/home/marc/E5a_acquisitions/galileo_E5_8M_r2_upsampled_12.dat";
-//	const char * file_name = file.c_str();
-//	gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(gr_complex), file_name, false);
-//	top_block->connect(file_source, 0, acquisition->get_left_block(), 0);
-//    }) << "Failure connecting the blocks of acquisition test." << std::endl;
-
-    // all satellite visibles but with different CN0
-    for (unsigned int i = 0; i < 4; i++)
-        {
-            init();
-            sat=i;
-
-            switch (i)
-            {
-            case 0:
-        	gnss_synchro.PRN = 11;
-        	break;
-            case 1:
-        	gnss_synchro.PRN = 12;
-        	break;
-            case 2:
-        	gnss_synchro.PRN = 19;
-        	break;
-            case 3:
-        	gnss_synchro.PRN = 20;
-        	break;
-            }
-
-            acquisition->set_local_code();
-
-            start_queue();
-
-            EXPECT_NO_THROW( {
-                top_block->run(); // Start threads and wait
-            }) << "Failure running he top_block."<< std::endl;
-
-            switch (i)
-            {
-            case 0:
-        	//EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                if (message == 1)
-                    {
-                	std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
-                	EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                    }
-        	break;
-            case 1:
-        	//EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                if (message == 1)
-                    {
-                	std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
-                	EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                    }
-        	break;
-            case 2:
-        	//EXPECT_EQ(1, message) << "Acquisition failure. Expected message: 1=ACQ SUCCESS.";
-                if (message == 1)
-                    {
-                	std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
-                	EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                    }
-        	break;
-            case 3:
-                if (message == 1)
-                    {
-                	std::cout << gnss_synchro.Acq_delay_samples << "acq delay" <<std::endl;
-                	EXPECT_EQ((unsigned int) 1, correct_estimation_counter) << "Acquisition failure. Incorrect parameters estimation.";
-                    }
-        	break;
-            }
-        }
-    delete acquisition;
-}
- */
 

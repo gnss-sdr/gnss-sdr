@@ -87,7 +87,7 @@ void GalileoE5aTrackingTest::init()
 
     config->set_property("GNSS-SDR.internal_fs_hz", "32000000");
     config->set_property("Tracking_Galileo.item_type", "gr_complex");
-    config->set_property("Tracking_Galileo.dump", "true");
+    config->set_property("Tracking_Galileo.dump", "false");
     config->set_property("Tracking_Galileo.dump_filename", "../data/e5a_tracking_ch_");
     config->set_property("Tracking_Galileo.implementation", "Galileo_E5a_DLL_PLL_Tracking");
     config->set_property("Tracking_Galileo.early_late_space_chips", "0.5");

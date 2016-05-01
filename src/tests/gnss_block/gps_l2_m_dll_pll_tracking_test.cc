@@ -77,10 +77,12 @@ GpsL2MDllPllTrackingTest_msg_rx_sptr GpsL2MDllPllTrackingTest_msg_rx_make()
 
 void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 {
-    try {
-        long int message=pmt::to_long(msg);
-        rx_message=message;
-    }catch(boost::bad_any_cast& e)
+    try
+    {
+            long int message = pmt::to_long(msg);
+            rx_message = message;
+    }
+    catch(boost::bad_any_cast& e)
     {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
             rx_message = 0;
@@ -88,9 +90,8 @@ void GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
 }
 
 GpsL2MDllPllTrackingTest_msg_rx::GpsL2MDllPllTrackingTest_msg_rx() :
-    gr::block("GpsL2MDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+            gr::block("GpsL2MDllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
 {
-
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"), boost::bind(&GpsL2MDllPllTrackingTest_msg_rx::msg_handler_events, this, _1));
     rx_message = 0;
@@ -138,7 +139,7 @@ void GpsL2MDllPllTrackingTest::init()
 
     config->set_property("GNSS-SDR.internal_fs_hz", "5000000");
     config->set_property("Tracking_2S.item_type", "gr_complex");
-    config->set_property("Tracking_2S.dump", "true");
+    config->set_property("Tracking_2S.dump", "false");
     config->set_property("Tracking_2S.dump_filename", "../data/L2m_tracking_ch_");
     config->set_property("Tracking_2S.implementation", "GPS_L2_M_DLL_PLL_Tracking");
     config->set_property("Tracking_2S.early_late_space_chips", "0.5");
@@ -188,7 +189,7 @@ TEST_F(GpsL2MDllPllTrackingTest, ValidationOfResults)
         top_block->connect(file_source, 0, valve, 0);
         top_block->connect(valve, 0, tracking->get_left_block(), 0);
         top_block->connect(tracking->get_right_block(), 0, sink, 0);
-        top_block->msg_connect(tracking->get_right_block(),pmt::mp("events"), msg_rx,pmt::mp("events"));
+        top_block->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of tracking test." << std::endl;
 
     tracking->start_tracking();

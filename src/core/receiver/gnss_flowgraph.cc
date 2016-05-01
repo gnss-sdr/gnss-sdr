@@ -66,6 +66,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
 GNSSFlowgraph::~GNSSFlowgraph()
 {}
 
+
 void GNSSFlowgraph::start()
 {
     if (running_)
@@ -91,12 +92,12 @@ void GNSSFlowgraph::start()
 
 void GNSSFlowgraph::stop()
 {
-//    for (unsigned int i = 0; i < channels_count_; i++)
-//        {
-//            channels_.at(i)->stop_channel();
-//            LOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
-//        }
-//    LOG(INFO) << "Threads finished. Return to main program.";
+    //    for (unsigned int i = 0; i < channels_count_; i++)
+    //        {
+    //            channels_.at(i)->stop_channel();
+    //            LOG(INFO) << "Channel " << i << " in state " << channels_state_[i];
+    //        }
+    //    LOG(INFO) << "Threads finished. Return to main program.";
     top_block_->stop();
     running_ = false;
 }
@@ -575,49 +576,50 @@ void GNSSFlowgraph::set_signals_list()
     std::string sv_list = configuration_->property("Galileo.prns", std::string("") );
 
     if( sv_list.length() > 0 )
-    {
-        // Reset the available prns:
-        std::set< unsigned int > tmp_set;
-        boost::tokenizer<> tok( sv_list );
-        std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
-                boost::lexical_cast<unsigned int, std::string> );
-
-        if( tmp_set.size() > 0 )
         {
-            available_galileo_prn = tmp_set;
+            // Reset the available prns:
+            std::set< unsigned int > tmp_set;
+            boost::tokenizer<> tok( sv_list );
+            std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
+                    boost::lexical_cast<unsigned int, std::string> );
+
+            if( tmp_set.size() > 0 )
+                {
+                    available_galileo_prn = tmp_set;
+                }
         }
-    }
 
     sv_list = configuration_->property("GPS.prns", std::string("") );
 
     if( sv_list.length() > 0 )
-    {
-        // Reset the available prns:
-        std::set< unsigned int > tmp_set;
-        boost::tokenizer<> tok( sv_list );
-        std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
-                boost::lexical_cast<unsigned int, std::string> );
-
-        if( tmp_set.size() > 0 )
         {
-            available_gps_prn = tmp_set;
+            // Reset the available prns:
+            std::set< unsigned int > tmp_set;
+            boost::tokenizer<> tok( sv_list );
+            std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
+                    boost::lexical_cast<unsigned int, std::string> );
+
+            if( tmp_set.size() > 0 )
+                {
+                    available_gps_prn = tmp_set;
+                }
         }
-    }
+
     sv_list = configuration_->property("SBAS.prns", std::string("") );
 
     if( sv_list.length() > 0 )
-    {
-        // Reset the available prns:
-        std::set< unsigned int > tmp_set;
-        boost::tokenizer<> tok( sv_list );
-        std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
-                boost::lexical_cast<unsigned int, std::string> );
-
-        if( tmp_set.size() > 0 )
         {
-            available_sbas_prn = tmp_set;
+            // Reset the available prns:
+            std::set< unsigned int > tmp_set;
+            boost::tokenizer<> tok( sv_list );
+            std::transform( tok.begin(), tok.end(), std::inserter( tmp_set, tmp_set.begin() ),
+                    boost::lexical_cast<unsigned int, std::string> );
+
+            if( tmp_set.size() > 0 )
+                {
+                    available_sbas_prn = tmp_set;
+                }
         }
-    }
 
     if (configuration_->property("Channels_1C.count", 0) > 0 )
         {
@@ -694,7 +696,7 @@ void GNSSFlowgraph::set_signals_list()
      */
     std::list<Gnss_Signal>::iterator gnss_it = available_GNSS_signals_.begin();
 
-    // Preassignation if not defined at ChannelX.signal=1C ...? In what order?
+    // Pre-assignation if not defined at ChannelX.signal=1C ...? In what order?
 
     for (unsigned int i = 0; i < total_channels; i++)
         {
@@ -716,13 +718,13 @@ void GNSSFlowgraph::set_signals_list()
                 }
         }
 
-        //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
-//        std::list<Gnss_Signal>::iterator available_gnss_list_iter;
-//            for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
-//            != available_GNSS_signals_.end(); available_gnss_list_iter++)
-//            {
-//              std::cout << *available_gnss_list_iter << std::endl;
-//            }
+    //    **** FOR DEBUGGING THE LIST OF GNSS SIGNALS ****
+    //    std::list<Gnss_Signal>::iterator available_gnss_list_iter;
+    //    for (available_gnss_list_iter = available_GNSS_signals_.begin(); available_gnss_list_iter
+    //    != available_GNSS_signals_.end(); available_gnss_list_iter++)
+    //        {
+    //            std::cout << *available_gnss_list_iter << std::endl;
+    //        }
 }
 
 
@@ -732,8 +734,7 @@ void GNSSFlowgraph::set_channels_state()
     if (max_acq_channels_ > channels_count_)
         {
             max_acq_channels_ = channels_count_;
-            LOG(WARNING) << "Channels_in_acquisition is bigger than number of channels. Variable acq_channels_count_ is set to "
-                         << channels_count_;
+            LOG(WARNING) << "Channels_in_acquisition is bigger than number of channels. Variable acq_channels_count_ is set to " << channels_count_;
         }
     channels_state_.reserve(channels_count_);
     for (unsigned int i = 0; i < channels_count_; i++)

@@ -483,10 +483,10 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
 
     unsigned int channel_absolute_id = 0;
 
-    unsigned int Channels_1C_count=configuration->property("Channels_1C.count", 0);
-    unsigned int Channels_2S_count=configuration->property("Channels_2S.count", 0);
-    unsigned int Channels_1B_count=configuration->property("Channels_1B.count", 0);
-    unsigned int Channels_5X_count=configuration->property("Channels_5X.count", 0);
+    unsigned int Channels_1C_count = configuration->property("Channels_1C.count", 0);
+    unsigned int Channels_2S_count = configuration->property("Channels_2S.count", 0);
+    unsigned int Channels_1B_count = configuration->property("Channels_1B.count", 0);
+    unsigned int Channels_5X_count = configuration->property("Channels_5X.count", 0);
 
     unsigned int total_channels = Channels_1C_count +
             Channels_2S_count +

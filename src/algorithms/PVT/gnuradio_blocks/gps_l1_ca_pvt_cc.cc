@@ -329,6 +329,13 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                                 }
                             if(b_rtcm_writing_started)
                                 {
+                                    if((d_sample_counter % 5000) == 0)
+                                        {
+                                            for(std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin(); gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end(); gps_ephemeris_iter++ )
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
+                                                }
+                                        }
                                     if((d_sample_counter % 1000) == 0)
                                         {
                                             std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
@@ -338,24 +345,19 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                                                     d_rtcm_printer->Print_Rtcm_MSM(4, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, 0, 0);
                                                 }
                                         }
-                                    if((d_sample_counter % 5000) == 0)
-                                        {
-                                            std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
-                                            gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
-                                            if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
-                                                {
-                                                    d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
-                                                }
-                                        }
                                 }
 
                             if(!b_rtcm_writing_started) // the first time
                                 {
-                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
-                                    gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
-                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                    for(std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin(); gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end(); gps_ephemeris_iter++ )
                                         {
                                             d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
+                                        }
+
+                                    std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
+
+                                    if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                        {
                                             d_rtcm_printer->Print_Rtcm_MSM(4, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, 0, 0);
                                         }
                                     b_rtcm_writing_started = true;

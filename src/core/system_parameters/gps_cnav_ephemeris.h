@@ -50,7 +50,7 @@ public:
 
     //Message Types 10 and 11 Parameters (1 of 2)
     int i_GPS_week;          //!< GPS week number, aka WN [week]
-    int i_URA;	             //!< ED Accuracy Index
+    int i_URA;               //!< ED Accuracy Index
     int i_signal_health;     //!< Signal health (L1/L2/L5)
     double d_Top;            //!< Data predict time of week
     double d_DELTA_A;        //!< Semi-major axis difference at reference time

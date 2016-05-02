@@ -60,9 +60,8 @@ cpu_multicorrelator::~cpu_multicorrelator()
 
 
 bool cpu_multicorrelator::init(
-		int max_signal_length_samples,
-		int n_correlators
-		)
+        int max_signal_length_samples,
+        int n_correlators)
 {
     // ALLOCATE MEMORY FOR INTERNAL vectors
     size_t size = max_signal_length_samples * sizeof(std::complex<float>);
@@ -79,12 +78,10 @@ bool cpu_multicorrelator::init(
 
 
 bool cpu_multicorrelator::set_local_code_and_taps(
-		int code_length_chips,
-		const std::complex<float>* local_code_in,
-		float *shifts_chips
-		)
+        int code_length_chips,
+        const std::complex<float>* local_code_in,
+        float *shifts_chips)
 {
-
     d_local_code_in = local_code_in;
     d_shifts_chips = shifts_chips;
     d_code_length_chips = code_length_chips;
@@ -111,7 +108,6 @@ void cpu_multicorrelator::update_local_code(int correlator_length_samples, float
             d_code_length_chips,
             d_n_correlators,
             correlator_length_samples);
-
 }
 
 

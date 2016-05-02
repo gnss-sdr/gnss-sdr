@@ -283,9 +283,9 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
     expected_doppler_hz = 750;
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
-	
+    
     /*Unset this flag to eliminates data logging for the Validation of results
-	probabilities test*/
+    probabilities test*/
     dump_test_results = false;
     
     num_of_realizations = 100;
@@ -374,9 +374,9 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
     expected_doppler_hz = 750;
     max_doppler_error_hz = 2/(3*integration_time_ms*1e-3);
     max_delay_error_chips = 0.50;
-	
-	/*Unset this flag to eliminates data logging for the Validation of results
-	probabilities test*/
+    
+    /*Unset this flag to eliminates data logging for the Validation of results
+    probabilities test*/
     dump_test_results = true;
     
     num_of_realizations = 1;

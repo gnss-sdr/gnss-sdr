@@ -104,7 +104,7 @@ unpack_2bit_samples::unpack_2bit_samples( bool big_endian_bytes,
     : sync_interpolator("unpack_2bit_samples",
                         gr::io_signature::make(1, 1, item_size),
                         gr::io_signature::make(1, 1, sizeof(char)),
-            	        4*item_size ), // we make 4 bytes out for every byte in
+                        4*item_size ), // we make 4 bytes out for every byte in
       big_endian_bytes_(big_endian_bytes),
       item_size_(item_size),
       big_endian_items_(big_endian_items),

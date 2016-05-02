@@ -47,7 +47,7 @@ class ConfigurationInterface;
 class Gn3sSignalSource: public GNSSBlockInterface
 {
 public:
-	Gn3sSignalSource(ConfigurationInterface* configuration,
+    Gn3sSignalSource(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
             unsigned int out_stream, gr::msg_queue::sptr queue);
 

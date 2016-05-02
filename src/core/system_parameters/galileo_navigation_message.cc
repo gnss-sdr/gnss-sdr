@@ -55,7 +55,7 @@ void Galileo_Navigation_Message::reset()
     flag_iono_and_GST = false;   // flag indicating that ionospheric parameters (word 5) have been received
     flag_utc_model = false;      // flag indicating that utc model parameters (word 6) have been received
 
-    flag_all_almanac = false;	 // flag indicating that all almanac have been received
+    flag_all_almanac = false;     // flag indicating that all almanac have been received
     flag_almanac_1 = false;      // flag indicating that almanac 1/4 (word 7) have been received
     flag_almanac_2 = false;      // flag indicating that almanac 2/4 (word 8) have been received
     flag_almanac_3 = false;      // flag indicating that almanac 3/4 (word 9) have been received
@@ -87,46 +87,46 @@ void Galileo_Navigation_Message::reset()
 
 
     /*Word type 3: Ephemeris (3/4) and SISA*/
-    IOD_nav_3 = 0;  		//
-    OMEGA_dot_3 = 0;		// Rate of right ascension [semi-circles/sec]
-    delta_n_3 = 0;		// Mean motion difference from computed value  [semi-circles/sec]
-    C_uc_3 = 0;			// Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    C_us_3 = 0;			// Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-    C_rc_3 = 0;			// Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    C_rs_3 = 0;			// Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    SISA_3 = 0;			//
+    IOD_nav_3 = 0;          //
+    OMEGA_dot_3 = 0;        // Rate of right ascension [semi-circles/sec]
+    delta_n_3 = 0;          // Mean motion difference from computed value  [semi-circles/sec]
+    C_uc_3 = 0;             // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+    C_us_3 = 0;             // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    C_rc_3 = 0;             // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+    C_rs_3 = 0;             // Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    SISA_3 = 0;             //
 
 
     /*Word type 4: Ephemeris (4/4) and Clock correction parameters*/
-    IOD_nav_4 = 0;		//
-    SV_ID_PRN_4 = 0;	        //
-    C_ic_4 = 0;		        // Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
-    C_is_4 = 0;		        // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+    IOD_nav_4 = 0;             //
+    SV_ID_PRN_4 = 0;           //
+    C_ic_4 = 0;                // Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
+    C_is_4 = 0;                // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
     /*Clock correction parameters*/
-    t0c_4 = 0;			//
-    af0_4 = 0;			//
-    af1_4 = 0;			//
-    af2_4 = 0;			//
+    t0c_4 = 0;            //
+    af0_4 = 0;            //
+    af1_4 = 0;            //
+    af2_4 = 0;            //
     spare_4 = 0;
 
     /*Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST*/
     /*Ionospheric correction*/
     /*Az*/
-    ai0_5 = 0;		//
-    ai1_5 = 0;		//
-    ai2_5 = 0;		//
+    ai0_5 = 0;        //
+    ai1_5 = 0;        //
+    ai2_5 = 0;        //
     /*Ionospheric disturbance flag*/
-    Region1_flag_5 = 0;	// Region1_flag_5;
-    Region2_flag_5 = 0;	//
-    Region3_flag_5 = 0;	//
-    Region4_flag_5 = 0;	//
-    Region5_flag_5 = 0;	//
-    BGD_E1E5a_5 = 0;	//
-    BGD_E1E5b_5 = 0;	//
+    Region1_flag_5 = 0;    // Region1_flag_5;
+    Region2_flag_5 = 0;    //
+    Region3_flag_5 = 0;    //
+    Region4_flag_5 = 0;    //
+    Region5_flag_5 = 0;    //
+    BGD_E1E5a_5 = 0;    //
+    BGD_E1E5b_5 = 0;    //
     E5b_HS_5 = 0;
     E1B_HS_5 = 0;
-    E5b_DVS_5 = 0;	//
-    E1B_DVS_5 = 0;	//
+    E5b_DVS_5 = 0;    //
+    E1B_DVS_5 = 0;    //
     /*GST*/
     WN_5 = 0;
     TOW_5 = 0;
@@ -400,7 +400,7 @@ void Galileo_Navigation_Message::split_page(std::string page_string, int flag_ev
                     std::string nominal = "0";
 
                     //if (Page_type_even.compare(nominal) != 0)
-                    //		std::cout << "Alert frame "<< std::endl;
+                    //        std::cout << "Alert frame "<< std::endl;
                     //else std::cout << "Nominal Page" << std::endl;
 
                     std::string Data_k = page_INAV.substr (2,112);
@@ -424,7 +424,7 @@ void Galileo_Navigation_Message::split_page(std::string page_string, int flag_ev
                     std::bitset<24> checksum(CRC_data);
 
                     //if (Tail_odd.compare(correct_tail) != 0)
-                    //		std::cout << "Tail odd is not correct!" << std::endl;
+                    //        std::cout << "Tail odd is not correct!" << std::endl;
                     //else std::cout<<"Tail odd is correct!"<<std::endl;
 
                     if (CRC_test(TLM_word_for_CRC_bits, checksum.to_ulong()) == true)
@@ -451,7 +451,7 @@ void Galileo_Navigation_Message::split_page(std::string page_string, int flag_ev
             std::string tail_Even =  page_string.substr (114,6);
             //std::cout << "tail_even_string: " << tail_Even <<std::endl;
             //if (tail_Even.compare(correct_tail) != 0)
-            //	 std::cout << "Tail even is not correct!" << std::endl;
+            //     std::cout << "Tail even is not correct!" << std::endl;
             //else std::cout<<"Tail even is correct!"<< std::endl;
         }
 }
@@ -541,11 +541,11 @@ Galileo_Ephemeris Galileo_Navigation_Message::get_ephemeris()
     ephemeris.omega_2 = omega_2;    // Argument of perigee [semi-circles]
     ephemeris.OMEGA_dot_3 = OMEGA_dot_3; // Rate of right ascension [semi-circles/sec]
     ephemeris.iDot_2 = iDot_2;      // Rate of inclination angle [semi-circles/sec]
-    ephemeris.C_uc_3 = C_uc_3;	    // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    ephemeris.C_us_3 = C_us_3;	    // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-    ephemeris.C_rc_3 = C_rc_3;	    // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    ephemeris.C_rs_3 = C_rs_3;	    // Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    ephemeris.C_ic_4 = C_ic_4;      // Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
+    ephemeris.C_uc_3 = C_uc_3;      // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+    ephemeris.C_us_3 = C_us_3;      // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    ephemeris.C_rc_3 = C_rc_3;      // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+    ephemeris.C_rs_3 = C_rs_3;      // Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    ephemeris.C_ic_4 = C_ic_4;      // Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
     ephemeris.C_is_4 = C_is_4;      // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
     ephemeris.t0e_1 = t0e_1;        // Ephemeris reference time [s]
 
@@ -579,16 +579,16 @@ Galileo_Iono Galileo_Navigation_Message::get_iono()
     Galileo_Iono iono;
     /*Ionospheric correction*/
     /*Az*/
-    iono.ai0_5 = ai0_5;		// Effective Ionisation Level 1st order parameter [sfu]
-    iono.ai1_5 = ai1_5;		// Effective Ionisation Level 2st order parameter [sfu/degree]
-    iono.ai2_5 = ai2_5;		// Effective Ionisation Level 3st order parameter [sfu/degree]
+    iono.ai0_5 = ai0_5;        // Effective Ionisation Level 1st order parameter [sfu]
+    iono.ai1_5 = ai1_5;        // Effective Ionisation Level 2st order parameter [sfu/degree]
+    iono.ai2_5 = ai2_5;        // Effective Ionisation Level 3st order parameter [sfu/degree]
 
     /*Ionospheric disturbance flag*/
-    iono.Region1_flag_5 = Region1_flag_5;	// Ionospheric Disturbance Flag for region 1
-    iono.Region2_flag_5 = Region2_flag_5;	// Ionospheric Disturbance Flag for region 2
-    iono.Region3_flag_5 = Region3_flag_5;	// Ionospheric Disturbance Flag for region 3
-    iono.Region4_flag_5 = Region4_flag_5;	// Ionospheric Disturbance Flag for region 4
-    iono.Region5_flag_5 = Region5_flag_5;	// Ionospheric Disturbance Flag for region 5
+    iono.Region1_flag_5 = Region1_flag_5;    // Ionospheric Disturbance Flag for region 1
+    iono.Region2_flag_5 = Region2_flag_5;    // Ionospheric Disturbance Flag for region 2
+    iono.Region3_flag_5 = Region3_flag_5;    // Ionospheric Disturbance Flag for region 3
+    iono.Region4_flag_5 = Region4_flag_5;    // Ionospheric Disturbance Flag for region 4
+    iono.Region5_flag_5 = Region5_flag_5;    // Ionospheric Disturbance Flag for region 5
 
     /*GST*/
     // This is the ONLY page containing the Week Number (WN)

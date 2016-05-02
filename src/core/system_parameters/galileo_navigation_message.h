@@ -73,7 +73,7 @@ public:
     bool flag_iono_and_GST;   //!< Flag indicating that ionospheric and GST parameters (word 5) have been received
     bool flag_TOW_5;
     bool flag_TOW_6;
-    bool flag_TOW_set; 	      //!< it is true when page 5 or page 6 arrives
+    bool flag_TOW_set;        //!< it is true when page 5 or page 6 arrives
     bool flag_utc_model;      //!< Flag indicating that utc model parameters (word 6) have been received
 
     bool flag_all_almanac;    //!< Flag indicating that all almanac have been received
@@ -105,8 +105,8 @@ public:
     double iDot_2;            //!< Rate of inclination angle [semi-circles/sec]
 
     /*Word type 3: Ephemeris (3/4) and SISA*/
-    int IOD_nav_3;  		//
-    double OMEGA_dot_3;	      //!< Rate of right ascension [semi-circles/sec]
+    int IOD_nav_3;            //
+    double OMEGA_dot_3;       //!< Rate of right ascension [semi-circles/sec]
     double delta_n_3;         //!< Mean motion difference from computed value  [semi-circles/sec]
     double C_uc_3;            //!< Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
     double C_us_3;            //!< Amplitude of the sine harmonic correction term to the argument of latitude [radians]
@@ -115,8 +115,8 @@ public:
     double SISA_3;
 
     /*Word type 4: Ephemeris (4/4) and Clock correction parameters*/
-    int IOD_nav_4;	       //
-    int SV_ID_PRN_4;	       //
+    int IOD_nav_4;             //
+    int SV_ID_PRN_4;           //
     double C_ic_4;             //!<Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
     double C_is_4;             //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
     /*Clock correction parameters*/

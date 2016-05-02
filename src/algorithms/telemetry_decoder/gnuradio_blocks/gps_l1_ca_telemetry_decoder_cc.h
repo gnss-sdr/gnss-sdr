@@ -29,7 +29,7 @@
  */
 
 #ifndef GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
-#define	GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
+#define GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_CC_H
 
 #include <fstream>
 #include <string>
@@ -130,7 +130,6 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-
 };
 
 #endif

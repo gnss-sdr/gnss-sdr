@@ -235,7 +235,7 @@ void hybrid_pvt_cc::print_receiver_status(Gnss_Synchro** channels_synchronizatio
 
 
 int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items __attribute__((unused)))
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items __attribute__((unused)))
 {
     d_sample_counter++;
     bool arrived_galileo_almanac = false;

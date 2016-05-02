@@ -267,7 +267,7 @@ private:
 
     typedef struct {        /* SBAS long term satellite error correction type */
         //gtime_t t0;         /* correction time */
-        double trx;	    /* time when message was received */
+        double trx;        /* time when message was received */
         int tapp;           /* time of applicability (when vel=1 sent as t0) */
         int vel;            /* use velocity if vel=1 */
         bool valid;

@@ -44,13 +44,13 @@
 using google::LogMessage;
 
 //DEFINE_string(two_bit_cpx_signal_source, "-",
-//		"If defined, path to the file containing the NSR (byte to 2-bit packed) signal samples (overrides the configuration file)");
+//        "If defined, path to the file containing the NSR (byte to 2-bit packed) signal samples (overrides the configuration file)");
 
 
 TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
-		                role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+                        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -104,7 +104,7 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
             << std::endl;
 
             LOG(WARNING) << "file_signal_source: Unable to open the samples file "
-                         << filename_.c_str() << ", exiting the program.";
+                    << filename_.c_str() << ", exiting the program.";
             throw(e);
     }
 
@@ -172,12 +172,8 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(ConfigurationInterface* con
 }
 
 
-
-
 TwoBitCpxFileSignalSource::~TwoBitCpxFileSignalSource()
 {}
-
-
 
 
 void TwoBitCpxFileSignalSource::connect(gr::top_block_sptr top_block)
@@ -302,18 +298,12 @@ void TwoBitCpxFileSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-
-
-
 gr::basic_block_sptr TwoBitCpxFileSignalSource::get_left_block()
 {
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     //return gr_block_sptr();
     return gr::blocks::file_source::sptr();
 }
-
-
-
 
 
 gr::basic_block_sptr TwoBitCpxFileSignalSource::get_right_block()

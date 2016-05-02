@@ -136,7 +136,7 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc::gps_l1_ca_dll_pll_c_aid_tracking_sc(
     d_correlator_outs_16sc = static_cast<lv_16sc_t*>(volk_malloc(d_n_correlator_taps*sizeof(lv_16sc_t), volk_get_alignment()));
     for (int n = 0; n < d_n_correlator_taps; n++)
         {
-    		d_correlator_outs_16sc[n] = lv_16sc_t(0,0);
+            d_correlator_outs_16sc[n] = lv_16sc_t(0,0);
         }
 
     d_local_code_shift_chips = static_cast<float*>(volk_malloc(d_n_correlator_taps*sizeof(float), volk_get_alignment()));
@@ -314,7 +314,7 @@ int gps_l1_ca_dll_pll_c_aid_tracking_sc::general_work (int noutput_items __attri
     double old_d_rem_code_phase_samples;
     if (d_enable_tracking == true)
         {
-    		// Fill the acquisition data
+            // Fill the acquisition data
             current_synchro_data = *d_acquisition_gnss_synchro;
             // Receiver signal alignment
             if (d_pull_in == true)

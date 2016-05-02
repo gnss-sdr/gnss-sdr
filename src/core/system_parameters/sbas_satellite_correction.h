@@ -39,7 +39,7 @@ struct Fast_Correction
     double d_prc;
     double d_rrc;
     double d_dt;
-    int d_udre;	     // UDRE
+    int d_udre;         // UDRE
     int d_ai;
     int d_tlat;
 };

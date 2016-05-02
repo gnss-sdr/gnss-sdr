@@ -143,7 +143,7 @@ bool gps_l1_ca_telemetry_decoder_cc::gps_word_parityCheck(unsigned int gpsword)
 
 
 int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     int corr_value = 0;
     int preamble_diff_ms = 0;
@@ -180,7 +180,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                     d_GPS_FSM.Event_gps_word_preamble();
                     //record the preamble sample stamp
                     d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs; // record the preamble sample stamp
- 					DLOG(INFO)  << "Preamble detection for SAT " << this->d_satellite << "in[0][0].Tracking_timestamp_secs=" << round(in[0][0].Tracking_timestamp_secs * 1000.0);
+                    DLOG(INFO)  << "Preamble detection for SAT " << this->d_satellite << "in[0][0].Tracking_timestamp_secs=" << round(in[0][0].Tracking_timestamp_secs * 1000.0);
                     //sync the symbol to bits integrator
                     d_symbol_accumulator = 0;                    d_symbol_accumulator_counter = 0;
                     d_frame_bit_index = 0;
@@ -191,7 +191,7 @@ int gps_l1_ca_telemetry_decoder_cc::general_work (int noutput_items __attribute_
                     preamble_diff_ms = round((in[0][0].Tracking_timestamp_secs - d_preamble_time_seconds) * 1000.0);
                     if (abs(preamble_diff_ms - GPS_SUBFRAME_MS) < 1)
                         {
-                        	DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite  << "in[0][0].Tracking_timestamp_secs=" << round(in[0][0].Tracking_timestamp_secs * 1000.0);
+                            DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite  << "in[0][0].Tracking_timestamp_secs=" << round(in[0][0].Tracking_timestamp_secs * 1000.0);
                             d_GPS_FSM.Event_gps_word_preamble();
                             d_flag_preamble = true;
                             d_preamble_time_seconds = in[0][0].Tracking_timestamp_secs;// - d_preamble_duration_seconds; //record the PRN start sample index associated to the preamble

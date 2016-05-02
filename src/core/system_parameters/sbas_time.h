@@ -88,9 +88,9 @@ private:
 /*!
  * \brief Sbas_Time relates the relative sample stamp time scale with the absolute GPS time scale.
  * There are three different states for a Sbas_Time object:
- * 	- only relative time (sample stamp) is known
- * 	- only absolute time (gps time) is known
- * 	- absolute and relative time and their relation is known
+ *     - only relative time (sample stamp) is known
+ *     - only absolute time (gps time) is known
+ *     - absolute and relative time and their relation is known
  */
 class Sbas_Time
 {
@@ -113,34 +113,34 @@ public:
         e_state = RELATIVE;
     }
     /*
-	Sbas_Time(int gps_week, double gps_sec)
-	{
-		i_gps_week = gps_week;
-		d_gps_sec = gps_sec;
-		d_time_stamp_sec = 0;
-		e_state = ABSOLUTE;
-	}*/
+    Sbas_Time(int gps_week, double gps_sec)
+    {
+        i_gps_week = gps_week;
+        d_gps_sec = gps_sec;
+        d_time_stamp_sec = 0;
+        e_state = ABSOLUTE;
+    }*/
     Sbas_Time(double time_stamp_sec, Sbas_Time_Relation relation)
     {
         if(relation.is_valid())
-            {	// construct a RELATED object
+            {    // construct a RELATED object
                 d_time_stamp_sec = time_stamp_sec;
                 relation.to_gps_time(d_time_stamp_sec, i_gps_week, d_gps_sec);
                 e_state = RELATED;
             }
         else
-            {	// construct a RELATIVE object
+            {    // construct a RELATIVE object
                 *this = Sbas_Time(time_stamp_sec);
                 VLOG(FLOW) << "<<R>> create RELATIVE time (invalid relation): time_stamp_sec=" << time_stamp_sec;
             }
     }
     /*Sbas_Time(int gps_week, double gps_sec, Sbas_Time_Relation relation)
-	{
-		i_gps_week = gps_week;
-		d_gps_sec = gps_sec;
-		relation.to_sample_stamp(gps_week, gps_sec, d_time_stamp_sec);
-		e_state = RELATED;
-	}*/
+    {
+        i_gps_week = gps_week;
+        d_gps_sec = gps_sec;
+        relation.to_sample_stamp(gps_week, gps_sec, d_time_stamp_sec);
+        e_state = RELATED;
+    }*/
 
     void relate(Sbas_Time_Relation sbas_time_realtion)
     {

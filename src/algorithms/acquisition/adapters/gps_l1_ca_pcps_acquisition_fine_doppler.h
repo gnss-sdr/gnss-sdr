@@ -51,7 +51,7 @@ class ConfigurationInterface;
 class GpsL1CaPcpsAcquisitionFineDoppler: public AcquisitionInterface
 {
 public:
-	GpsL1CaPcpsAcquisitionFineDoppler(ConfigurationInterface* configuration,
+    GpsL1CaPcpsAcquisitionFineDoppler(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
             unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
 

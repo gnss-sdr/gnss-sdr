@@ -137,7 +137,7 @@ ChannelFsm::ChannelFsm()
 
 
 ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) :
-	        acq_(acquisition)
+            acq_(acquisition)
 {
     trk_ = nullptr;
     channel_ = 0;
@@ -177,7 +177,7 @@ void ChannelFsm::Event_failed_tracking_standby()
 }
 
 //void ChannelFsm::Event_failed_tracking_reacq() {
-//	this->process_event(Ev_channel_failed_tracking_reacq());
+//    this->process_event(Ev_channel_failed_tracking_reacq());
 //}
 
 void ChannelFsm::set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition)

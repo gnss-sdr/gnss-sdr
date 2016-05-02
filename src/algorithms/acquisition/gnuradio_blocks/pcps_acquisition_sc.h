@@ -95,9 +95,8 @@ private:
             std::string dump_filename);
 
     void update_local_carrier(gr_complex* carrier_vector,
-    		int correlator_length_samples,
-    		float freq);
-
+            int correlator_length_samples,
+            float freq);
 
     long d_fs_in;
     long d_freq;

@@ -54,8 +54,8 @@ gps_l1_ca_make_observables_cc(unsigned int nchannels, bool dump, std::string dum
 
 
 gps_l1_ca_observables_cc::gps_l1_ca_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
-		                        gr::block("gps_l1_ca_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-		                        gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
+                                gr::block("gps_l1_ca_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+                                gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_dump = dump;
@@ -111,7 +111,7 @@ bool pairCompare_gnss_synchro_d_TOW_at_current_symbol(const std::pair<int,Gnss_S
 
 
 int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+        gr_vector_const_void_star &input_items,    gr_vector_void_star &output_items)
 {
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0];   // Get the input pointer
     Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; // Get the output pointer
@@ -219,8 +219,8 @@ int gps_l1_ca_observables_cc::general_work (int noutput_items, gr_vector_int &ni
                             dopper_vec_hz = arma::vec(std::vector<double>(d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].begin(), d_carrier_doppler_queue_hz[gnss_synchro_iter->second.Channel_ID].end()));
 
                             desired_symbol_TOW[0] = symbol_TOW_vec_s[GPS_L1_CA_HISTORY_DEEP - 1] + delta_rx_time_ms / 1000.0;
-                            //	arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
-                            //	arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
+                            //    arma::interp1(symbol_TOW_vec_s,dopper_vec_hz,desired_symbol_TOW,dopper_vec_interp_hz);
+                            //    arma::interp1(symbol_TOW_vec_s,acc_phase_vec_rads,desired_symbol_TOW,acc_phase_vec_interp_rads);
 
                             // Curve fitting to cuadratic function
                             arma::mat A = arma::ones<arma::mat> (GPS_L1_CA_HISTORY_DEEP, 2);

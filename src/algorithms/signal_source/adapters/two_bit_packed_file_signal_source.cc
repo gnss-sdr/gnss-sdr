@@ -46,13 +46,13 @@
 using google::LogMessage;
 
 //DEFINE_string(two_bit_packed_signal_source, "-",
-//		"If defined, path to the file containing the NSR (byte to 2-bit packed) signal samples (overrides the configuration file)");
+//        "If defined, path to the file containing the NSR (byte to 2-bit packed) signal samples (overrides the configuration file)");
 
 
 TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
-		                role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+                        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "byte";
@@ -100,7 +100,6 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
             LOG(WARNING) << item_type_  << " unrecognized item type. Using byte.";
             item_size_ = sizeof(char);
         }
-
 
     if( sample_type_.compare("real") == 0 )
     {
@@ -236,12 +235,8 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(ConfigurationInterfac
 }
 
 
-
-
 TwoBitPackedFileSignalSource::~TwoBitPackedFileSignalSource()
 {}
-
-
 
 
 void TwoBitPackedFileSignalSource::connect(gr::top_block_sptr top_block)
@@ -274,10 +269,6 @@ void TwoBitPackedFileSignalSource::connect(gr::top_block_sptr top_block)
         DLOG(INFO) << "connected valve to file sink";
     }
 }
-
-
-
-
 
 
 void TwoBitPackedFileSignalSource::disconnect(gr::top_block_sptr top_block)
@@ -319,9 +310,6 @@ gr::basic_block_sptr TwoBitPackedFileSignalSource::get_left_block()
     //return gr_block_sptr();
     return gr::blocks::file_source::sptr();
 }
-
-
-
 
 
 gr::basic_block_sptr TwoBitPackedFileSignalSource::get_right_block()

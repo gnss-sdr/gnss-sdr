@@ -336,8 +336,8 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
     double old_d_rem_code_phase_samples;
     if (d_enable_tracking == true)
         {
-			// Fill the acquisition data
-			current_synchro_data = *d_acquisition_gnss_synchro;
+            // Fill the acquisition data
+            current_synchro_data = *d_acquisition_gnss_synchro;
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
@@ -360,10 +360,10 @@ int gps_l1_ca_dll_pll_c_aid_tracking_cc::general_work (int noutput_items __attri
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
             multicorrelator_cpu.set_input_output_vectors(d_correlator_outs,in);
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
-            		d_carrier_phase_step_rad,
-            		d_rem_code_phase_chips,
-            		d_code_phase_step_chips,
-            		d_correlation_length_samples);
+                    d_carrier_phase_step_rad,
+                    d_rem_code_phase_chips,
+                    d_code_phase_step_chips,
+                    d_correlation_length_samples);
 
             // ####### coherent intergration extension
             // keep the last symbols

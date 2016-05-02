@@ -124,7 +124,7 @@ private:
     unsigned int work_counter_;
 
 public:
-    ~signal_generator_c ();	// public destructor
+    ~signal_generator_c();    // public destructor
 
     // Where all the action really happens
 

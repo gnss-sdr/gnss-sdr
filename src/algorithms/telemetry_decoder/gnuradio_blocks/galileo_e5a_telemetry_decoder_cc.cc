@@ -3,7 +3,7 @@
  * \brief Implementation of a Galileo FNAV message demodulator block
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
- * 		<ul>
+ *          <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          </ul>
  *
@@ -267,18 +267,18 @@ galileo_e5a_telemetry_decoder_cc::~galileo_e5a_telemetry_decoder_cc()
 
 
 int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+        gr_vector_const_void_star &input_items,    gr_vector_void_star &output_items)
 {
     //
     const Gnss_Synchro **in = (const Gnss_Synchro **)  &input_items[0]; //Get the input samples pointer
     Gnss_Synchro **out = (Gnss_Synchro **) &output_items[0];
 
-    /* Terminology: 	Prompt: output from tracking Prompt correlator (Prompt samples)
-     * 			Symbol: encoded navigation bits. 1 symbol = 20 samples in E5a
-     * 			Bit: decoded navigation bits forming words as described in Galileo ICD
-     * States: 	0 Receiving dummy samples.
-     * 		1 Preamble not locked
-     * 		3 Preamble lock
+    /* Terminology:     Prompt: output from tracking Prompt correlator (Prompt samples)
+     *             Symbol: encoded navigation bits. 1 symbol = 20 samples in E5a
+     *             Bit: decoded navigation bits forming words as described in Galileo ICD
+     * States:     0 Receiving dummy samples.
+     *         1 Preamble not locked
+     *         3 Preamble lock
      */
     switch (d_state)
     {
@@ -325,7 +325,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                         {
                             d_page_symbols[d_symbol_counter] = -1;
                         }
-                    //			d_page_symbols[d_symbol_counter] = d_current_symbol_float/(float)GALILEO_FNAV_CODES_PER_SYMBOL;
+                    //            d_page_symbols[d_symbol_counter] = d_current_symbol_float/(float)GALILEO_FNAV_CODES_PER_SYMBOL;
                     d_current_symbol = 0;
                     d_symbol_counter++;
                     d_prompt_counter = 0;
@@ -333,7 +333,7 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                     bool corr_flag=true;
                     int corr_sign = 0; // sequence can be found inverted
                     // check if the preamble starts positive correlated or negative correlated
-                    if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)	// symbols clipping
+                    if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)    // symbols clipping
                         {
                             corr_sign=-d_preamble_bits[0];
                         }
@@ -399,18 +399,18 @@ int galileo_e5a_telemetry_decoder_cc::general_work (int noutput_items __attribut
                             // **** Attempt Preamble correlation ****
                             bool corr_flag = true;
                             int corr_sign = 0; // sequence can be found inverted
-                            //	corr_sign = d_preamble_bits[0] * d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
-                            //	for (int i = 1; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
-                            //	   {
-                            //	      if ((d_preamble_bits[i] * d_page_symbols[i + d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS]) != corr_sign)
-                            //	          {
-                            //	              //exit for if one bit doesn't correlate
+                            //    corr_sign = d_preamble_bits[0] * d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS];
+                            //    for (int i = 1; i < GALILEO_FNAV_PREAMBLE_LENGTH_BITS; i++)
+                            //       {
+                            //          if ((d_preamble_bits[i] * d_page_symbols[i + d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS]) != corr_sign)
+                            //              {
+                            //                  //exit for if one bit doesn't correlate
                             //                corr_flag = false;
-                            //	              break;
-                            //	          }
+                            //                  break;
+                            //              }
                             //     }
                             // check if the preamble starts positive correlated or negative correlated
-                            if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)	// symbols clipping
+                            if (d_page_symbols[d_symbol_counter - GALILEO_FNAV_PREAMBLE_LENGTH_BITS] < 0)    // symbols clipping
                                 {
                                     corr_sign=-d_preamble_bits[0];
                                 }

@@ -125,14 +125,14 @@ void GpsL2MDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GpsL2MDllPllTracking::connect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to connect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GpsL2MDllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to disconnect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 gr::basic_block_sptr GpsL2MDllPllTracking::get_left_block()

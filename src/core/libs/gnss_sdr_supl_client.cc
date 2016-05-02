@@ -172,19 +172,20 @@ int gnss_sdr_supl_client::get_assistance(int i_mcc, int i_mns, int i_lac, int i_
     if (err == 0)
         {
             read_supl_data();
-	    if (supl_ctx_free(&ctx)) {} // clean it up before leaving
+            if (supl_ctx_free(&ctx)) {} // clean it up before leaving
         }
     else
         {
-	  /*
-	   * If supl_get_assist() fails, the connection remains open
-	   * and the memory/files are not released.
-	   */
-	  supl_close(&ctx);
+            /*
+             * If supl_get_assist() fails, the connection remains open
+             * and the memory/files are not released.
+             */
+            supl_close(&ctx);
         }
     delete [] cstr;
     return err;
 }
+
 
 void gnss_sdr_supl_client::read_supl_data()
 {

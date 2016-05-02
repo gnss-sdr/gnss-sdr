@@ -29,7 +29,7 @@
  */
 
 #ifndef GNSS_SDR_GALILEO_E1_PVT_CC_H
-#define	GNSS_SDR_GALILEO_E1_PVT_CC_H
+#define GNSS_SDR_GALILEO_E1_PVT_CC_H
 
 #include <fstream>
 #include <string>

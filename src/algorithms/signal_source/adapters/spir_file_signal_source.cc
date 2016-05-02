@@ -50,7 +50,7 @@ DEFINE_string(spir_signal_source, "-",
 SpirFileSignalSource::SpirFileSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
-	role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "../data/my_capture.dat";
     std::string default_item_type = "int";

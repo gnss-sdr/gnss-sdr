@@ -1312,8 +1312,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int,Gps_Ephe
     std::map<int,Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
 
     for(gps_ephemeris_iter = eph_map.begin();
-    		gps_ephemeris_iter != eph_map.end();
-    		gps_ephemeris_iter++)
+            gps_ephemeris_iter != eph_map.end();
+            gps_ephemeris_iter++)
     {
             // -------- SV / EPOCH / SV CLK
             boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, gps_ephemeris_iter->second.d_Toc);
@@ -2815,7 +2815,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
             // Add extra 0 if seconds are < 10
             if (seconds < 10)
             {
-            	line +=std::string(1, '0');
+                line += std::string(1, '0');
             }
             line += Rinex_Printer::asString(seconds, 7);
             line += std::string(2, ' ');

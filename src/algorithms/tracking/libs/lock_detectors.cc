@@ -52,7 +52,7 @@
 /*
  * Signal-to-Noise (SNR) (\f$\rho\f$) estimator using the Signal-to-Noise Variance (SNV) estimator:
  * \f{equation}
- * 	\hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\hat{P}_s}{\hat{P}_{tot}-\hat{P}_s},
+ *     \hat{\rho}=\frac{\hat{P}_s}{\hat{P}_n}=\frac{\hat{P}_s}{\hat{P}_{tot}-\hat{P}_s},
  * \f}
  *  where \f$\hat{P}_s=\left(\frac{1}{N}\sum^{N-1}_{i=0}|Re(Pc(i))|\right)^2\f$ is the estimation of the signal power,
  * \f$\hat{P}_{tot}=\frac{1}{N}\sum^{N-1}_{i=0}|Pc(i)|^2\f$ is the estimator of the total power, \f$|\cdot|\f$ is the absolute value,
@@ -60,22 +60,22 @@
  *
  * The SNR value is converted to CN0 [dB-Hz], taking to account the receiver bandwidth and the PRN code gain, using the following formula:
  * \f{equation}
- * 	CN0_{dB}=10*log(\hat{\rho})+10*log(\frac{f_s}{2})-10*log(L_{PRN}),
+ *     CN0_{dB}=10*log(\hat{\rho})+10*log(\frac{f_s}{2})-10*log(L_{PRN}),
  * \f}
  * where \f$f_s\f$ is the sampling frequency and \f$L_{PRN}\f$ is the PRN sequence length.
  *
  */
 float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, double code_length)
 {
-	double SNR = 0;
-	double SNR_dB_Hz = 0;
+    double SNR = 0;
+    double SNR_dB_Hz = 0;
     double Psig = 0;
     double Ptot = 0;
     for (int i=0; i<length; i++)
         {
             Psig += std::abs(static_cast<double>(Prompt_buffer[i].real()));
             Ptot += static_cast<double>(Prompt_buffer[i].imag()) * static_cast<double>(Prompt_buffer[i].imag())
-            		+ static_cast<double>(Prompt_buffer[i].real()) * static_cast<double>(Prompt_buffer[i].real());
+                    + static_cast<double>(Prompt_buffer[i].real()) * static_cast<double>(Prompt_buffer[i].real());
         }
     Psig = Psig / static_cast<double>(length);
     Psig = Psig * Psig;
@@ -89,7 +89,7 @@ float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, doubl
 /*
  * The estimate of the cosine of twice the carrier phase error is given by
  * \f{equation}
- * 	\cos(2\phi)=\frac{NBD}{NBP},
+ *     \cos(2\phi)=\frac{NBD}{NBP},
  * \f}
  *  where \f$NBD=(\sum^{N-1}_{i=0}Im(Pc(i)))^2-(\sum^{N-1}_{i=0}Re(Pc(i)))^2\f$,
  *  \f$NBP=(\sum^{N-1}_{i=0}Im(Pc(i)))^2+(\sum^{N-1}_{i=0}Re(Pc(i)))^2\f$, and

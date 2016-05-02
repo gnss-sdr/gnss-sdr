@@ -41,53 +41,55 @@ beamformer_sptr make_beamformer()
     return beamformer_sptr(new beamformer());
 }
 
-beamformer::beamformer()
-	: gr::sync_block("beamformer",
-            		gr::io_signature::make(GNSS_SDR_BEAMFORMER_CHANNELS, GNSS_SDR_BEAMFORMER_CHANNELS,sizeof(gr_complex)),
-            		gr::io_signature::make(1, 1,sizeof(gr_complex)))
-{
 
-	//initialize weight vector
+beamformer::beamformer()
+: gr::sync_block("beamformer",
+        gr::io_signature::make(GNSS_SDR_BEAMFORMER_CHANNELS, GNSS_SDR_BEAMFORMER_CHANNELS,sizeof(gr_complex)),
+        gr::io_signature::make(1, 1,sizeof(gr_complex)))
+{
+    //initialize weight vector
 
     if (posix_memalign((void**)&weight_vector, 16, GNSS_SDR_BEAMFORMER_CHANNELS * sizeof(gr_complex)) == 0){};
 
-    for (int i=0;i<GNSS_SDR_BEAMFORMER_CHANNELS;i++)
-    {
-    	weight_vector[i]=gr_complex(1,0);
-    }
+    for (int i = 0; i< GNSS_SDR_BEAMFORMER_CHANNELS; i++)
+        {
+            weight_vector[i]=gr_complex(1,0);
+        }
 }
+
 
 beamformer::~beamformer()
 {
-	free(weight_vector);
+    free(weight_vector);
 }
+
 
 int beamformer::work(int noutput_items,gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
 {
     gr_complex *out = (gr_complex *) output_items[0];
-	  // channel output buffers
-	//  gr_complex *ch1 = (gr_complex *) input_items[0];
-	//  gr_complex *ch2 = (gr_complex *) input_items[1];
-	//  gr_complex *ch3 = (gr_complex *) input_items[2];
-	//  gr_complex *ch4 = (gr_complex *) input_items[3];
-	//  gr_complex *ch5 = (gr_complex *) input_items[4];
-	//  gr_complex *ch6 = (gr_complex *) input_items[5];
-	//  gr_complex *ch7 = (gr_complex *) input_items[6];
-	//  gr_complex *ch8 = (gr_complex *) input_items[7];
+    // channel output buffers
+    //  gr_complex *ch1 = (gr_complex *) input_items[0];
+    //  gr_complex *ch2 = (gr_complex *) input_items[1];
+    //  gr_complex *ch3 = (gr_complex *) input_items[2];
+    //  gr_complex *ch4 = (gr_complex *) input_items[3];
+    //  gr_complex *ch5 = (gr_complex *) input_items[4];
+    //  gr_complex *ch6 = (gr_complex *) input_items[5];
+    //  gr_complex *ch7 = (gr_complex *) input_items[6];
+    //  gr_complex *ch8 = (gr_complex *) input_items[7];
 
-	// NON-VOLK beamforming operation
+    // NON-VOLK beamforming operation
     //TODO: Implement VOLK SIMD-accelerated beamformer!
-	gr_complex sum;
-	for(int n=0;n<noutput_items;n++)
-	{
-		sum=gr_complex(0,0);
-		for (int i=0;i<GNSS_SDR_BEAMFORMER_CHANNELS;i++)
-		{
-			sum=sum+((gr_complex *) input_items[i])[n]*weight_vector[i];
-		}
-		out[n]=sum;
-	}
+    gr_complex sum;
+    for(int n = 0; n < noutput_items; n++)
+        {
+            sum = gr_complex(0,0);
+            for (int i = 0; i < GNSS_SDR_BEAMFORMER_CHANNELS; i++)
+                {
+                    sum = sum + ((gr_complex*)input_items[i])[n] * weight_vector[i];
+                }
+            out[n] = sum;
+        }
 
     return noutput_items;
 }

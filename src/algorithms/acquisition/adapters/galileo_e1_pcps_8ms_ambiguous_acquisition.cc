@@ -117,8 +117,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::~GalileoE1Pcps8msAmbiguousAcquisition()
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::set_channel(unsigned int channel)
+void GalileoE1Pcps8msAmbiguousAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
     if (item_type_.compare("gr_complex") == 0)
@@ -128,34 +127,31 @@ GalileoE1Pcps8msAmbiguousAcquisition::set_channel(unsigned int channel)
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::set_threshold(float threshold)
+void GalileoE1Pcps8msAmbiguousAcquisition::set_threshold(float threshold)
 {
+    float pfa = configuration_->property(role_+ boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-	float pfa = configuration_->property(role_+ boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    if(pfa == 0.0) pfa = configuration_->property(role_ + ".pfa", 0.0);
 
-	if(pfa==0.0) pfa = configuration_->property(role_+".pfa", 0.0);
-
-	if(pfa==0.0)
+    if(pfa == 0.0)
         {
             threshold_ = threshold;
         }
-	else
+    else
         {
             threshold_ = calculate_threshold(pfa);
         }
 
-	DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
+    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
-	if (item_type_.compare("gr_complex") == 0)
+    if (item_type_.compare("gr_complex") == 0)
         {
             acquisition_cc_->set_threshold(threshold_);
         }
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_max(unsigned int doppler_max)
+void GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
 
@@ -166,8 +162,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_max(unsigned int doppler_max)
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step)
+void GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
     if (item_type_.compare("gr_complex") == 0)
@@ -177,8 +172,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::set_gnss_synchro(
+void GalileoE1Pcps8msAmbiguousAcquisition::set_gnss_synchro(
         Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
@@ -189,8 +183,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::set_gnss_synchro(
 }
 
 
-signed int
-GalileoE1Pcps8msAmbiguousAcquisition::mag()
+signed int GalileoE1Pcps8msAmbiguousAcquisition::mag()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -203,16 +196,14 @@ GalileoE1Pcps8msAmbiguousAcquisition::mag()
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::init()
+void GalileoE1Pcps8msAmbiguousAcquisition::init()
 {
     acquisition_cc_->init();
     set_local_code();
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::set_local_code()
+void GalileoE1Pcps8msAmbiguousAcquisition::set_local_code()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -238,8 +229,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::set_local_code()
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::reset()
+void GalileoE1Pcps8msAmbiguousAcquisition::reset()
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -268,8 +258,7 @@ float GalileoE1Pcps8msAmbiguousAcquisition::calculate_threshold(float pfa)
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
+void GalileoE1Pcps8msAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {
@@ -278,8 +267,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
 }
 
 
-void
-GalileoE1Pcps8msAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
+void GalileoE1Pcps8msAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
         {

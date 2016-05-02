@@ -4,7 +4,7 @@
  *         as described in Galileo OS SIS ICD Issue 1.1 (Sept. 2010)
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
- * 		<ul>
+ *         <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          </ul>
  *
@@ -56,7 +56,7 @@ void Galileo_Fnav_Message::reset()
     flag_TOW_2 = false;
     flag_TOW_3 = false;
     flag_TOW_4 = false;
-    flag_TOW_set = false; 	      //!< it is true when page 1,2,3 or 4 arrives
+    flag_TOW_set = false;        //!< it is true when page 1,2,3 or 4 arrives
     flag_utc_model = false;      //!< Flag indicating that utc model parameters (word 4) have been received
 
     flag_all_almanac = false;    //!< Flag indicating that all almanac have been received
@@ -178,18 +178,20 @@ Galileo_Fnav_Message::Galileo_Fnav_Message()
 {
     reset();
 }
+
 //int Galileo_Fnav_Message::toInt(std::string bitString)
 //{
 //    int tempInt;
 //    int num=0;
 //    int sLength = bitString.length();
 //    for(int i=0; i<sLength; i++)
-//	{
-//	    num |= (1 << (sLength-1-i))*tempInt;
-//	}
+//    {
+//        num |= (1 << (sLength-1-i))*tempInt;
+//    }
 //
 //    return num;
 //}
+
 void Galileo_Fnav_Message::split_page(std::string page_string)
 {
     std::string message_word = page_string.substr(0, 214);
@@ -203,10 +205,11 @@ void Galileo_Fnav_Message::split_page(std::string page_string)
             decode_page(message_word);
         }
     else
-	{
-	    flag_CRC_test = false;
-	}
+        {
+            flag_CRC_test = false;
+        }
 }
+
 
 bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, boost::uint32_t checksum)
 {
@@ -237,213 +240,215 @@ bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> b
             return false;
         }
 }
+
+
 void Galileo_Fnav_Message::decode_page(std::string data)
 {
     std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> data_bits(data);
     page_type = read_navigation_unsigned(data_bits, FNAV_PAGE_TYPE_bit);
     switch(page_type)
     {
-	case 1: // SVID, Clock correction, SISA, Ionospheric correction, BGD, GST, Signal health and Data validity status
-	    FNAV_SV_ID_PRN_1 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_SV_ID_PRN_1_bit));
-	    FNAV_IODnav_1  =static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODnav_1_bit));
-	    FNAV_t0c_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0c_1_bit));
-	    FNAV_t0c_1 *= FNAV_t0c_1_LSB;
-	    FNAV_af0_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af0_1_bit));
-	    FNAV_af0_1 *= FNAV_af0_1_LSB;
-	    FNAV_af1_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_1_bit));
-	    FNAV_af1_1 *= FNAV_af1_1_LSB;
-	    FNAV_af2_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af2_1_bit));
-	    FNAV_af2_1 *= FNAV_af2_1_LSB;
-	    FNAV_SISA_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_SISA_1_bit));
-	    FNAV_ai0_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_ai0_1_bit));
-	    FNAV_ai0_1 *= FNAV_ai0_1_LSB;
-	    FNAV_ai1_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_ai1_1_bit));
-	    FNAV_ai1_1 *= FNAV_ai1_1_LSB;
-	    FNAV_ai2_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_ai2_1_bit));
-	    FNAV_ai2_1 *= FNAV_ai2_1_LSB;
-	    FNAV_region1_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region1_1_bit));
-	    FNAV_region2_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region2_1_bit));
-	    FNAV_region3_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region3_1_bit));
-	    FNAV_region4_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region4_1_bit));
-	    FNAV_region5_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region5_1_bit));
-	    FNAV_BGD_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_BGD_1_bit));
-	    FNAV_BGD_1 *= FNAV_BGD_1_LSB;
-	    FNAV_E5ahs_1 = static_cast<unsigned int>(read_navigation_unsigned(data_bits, FNAV_E5ahs_1_bit));
-	    FNAV_WN_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_1_bit));
-	    FNAV_TOW_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_1_bit));
-	    FNAV_E5advs_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_E5advs_1_bit));
+    case 1: // SVID, Clock correction, SISA, Ionospheric correction, BGD, GST, Signal health and Data validity status
+        FNAV_SV_ID_PRN_1 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_SV_ID_PRN_1_bit));
+        FNAV_IODnav_1  =static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODnav_1_bit));
+        FNAV_t0c_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0c_1_bit));
+        FNAV_t0c_1 *= FNAV_t0c_1_LSB;
+        FNAV_af0_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af0_1_bit));
+        FNAV_af0_1 *= FNAV_af0_1_LSB;
+        FNAV_af1_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_1_bit));
+        FNAV_af1_1 *= FNAV_af1_1_LSB;
+        FNAV_af2_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af2_1_bit));
+        FNAV_af2_1 *= FNAV_af2_1_LSB;
+        FNAV_SISA_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_SISA_1_bit));
+        FNAV_ai0_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_ai0_1_bit));
+        FNAV_ai0_1 *= FNAV_ai0_1_LSB;
+        FNAV_ai1_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_ai1_1_bit));
+        FNAV_ai1_1 *= FNAV_ai1_1_LSB;
+        FNAV_ai2_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_ai2_1_bit));
+        FNAV_ai2_1 *= FNAV_ai2_1_LSB;
+        FNAV_region1_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region1_1_bit));
+        FNAV_region2_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region2_1_bit));
+        FNAV_region3_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region3_1_bit));
+        FNAV_region4_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region4_1_bit));
+        FNAV_region5_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_region5_1_bit));
+        FNAV_BGD_1 = static_cast<double>(read_navigation_signed(data_bits, FNAV_BGD_1_bit));
+        FNAV_BGD_1 *= FNAV_BGD_1_LSB;
+        FNAV_E5ahs_1 = static_cast<unsigned int>(read_navigation_unsigned(data_bits, FNAV_E5ahs_1_bit));
+        FNAV_WN_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_1_bit));
+        FNAV_TOW_1 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_1_bit));
+        FNAV_E5advs_1 = static_cast<bool>(read_navigation_unsigned(data_bits, FNAV_E5advs_1_bit));
 
-	    flag_TOW_1 = true;
-	    flag_TOW_set = true;
-	    flag_iono_and_GST  =  true; //set to false externally
-	    break;
-	case 2: // Ephemeris (1/3) and GST
-	    FNAV_IODnav_2 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODnav_2_bit));
-	    FNAV_M0_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_M0_2_bit));
-	    FNAV_M0_2 *= FNAV_M0_2_LSB;
-	    FNAV_omegadot_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_omegadot_2_bit));
-	    FNAV_omegadot_2 *= FNAV_omegadot_2_LSB;
-	    FNAV_e_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_e_2_bit));
-	    FNAV_e_2 *= FNAV_e_2_LSB;
-	    FNAV_a12_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_a12_2_bit));
-	    FNAV_a12_2 *= FNAV_a12_2_LSB;
-	    FNAV_omega0_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_omega0_2_bit));
-	    FNAV_omega0_2 *= FNAV_omega0_2_LSB;
-	    FNAV_idot_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_idot_2_bit));
-	    FNAV_idot_2 *= FNAV_idot_2_LSB;
-	    FNAV_WN_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_2_bit));
-	    FNAV_TOW_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_2_bit));
+        flag_TOW_1 = true;
+        flag_TOW_set = true;
+        flag_iono_and_GST  =  true; //set to false externally
+        break;
+    case 2: // Ephemeris (1/3) and GST
+        FNAV_IODnav_2 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODnav_2_bit));
+        FNAV_M0_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_M0_2_bit));
+        FNAV_M0_2 *= FNAV_M0_2_LSB;
+        FNAV_omegadot_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_omegadot_2_bit));
+        FNAV_omegadot_2 *= FNAV_omegadot_2_LSB;
+        FNAV_e_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_e_2_bit));
+        FNAV_e_2 *= FNAV_e_2_LSB;
+        FNAV_a12_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_a12_2_bit));
+        FNAV_a12_2 *= FNAV_a12_2_LSB;
+        FNAV_omega0_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_omega0_2_bit));
+        FNAV_omega0_2 *= FNAV_omega0_2_LSB;
+        FNAV_idot_2 = static_cast<double>(read_navigation_signed(data_bits, FNAV_idot_2_bit));
+        FNAV_idot_2 *= FNAV_idot_2_LSB;
+        FNAV_WN_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_2_bit));
+        FNAV_TOW_2 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_2_bit));
 
-	    flag_TOW_2 = true;
-	    flag_TOW_set = true;
-	    flag_ephemeris_1 = true;
-	    break;
-	case 3: // Ephemeris (2/3) and GST
-	    FNAV_IODnav_3 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODnav_3_bit));
-	    FNAV_i0_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_i0_3_bit));
-	    FNAV_i0_3 *= FNAV_i0_3_LSB;
-	    FNAV_w_3=static_cast<double>(read_navigation_signed(data_bits, FNAV_w_3_bit));
-	    FNAV_w_3 *= FNAV_w_3_LSB;
-	    FNAV_deltan_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_deltan_3_bit));
-	    FNAV_deltan_3 *= FNAV_deltan_3_LSB;
-	    FNAV_Cuc_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Cuc_3_bit));
-	    FNAV_Cuc_3 *= FNAV_Cuc_3_LSB;
-	    FNAV_Cus_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Cus_3_bit));
-	    FNAV_Cus_3 *= FNAV_Cus_3_LSB;
-	    FNAV_Crc_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Crc_3_bit));
-	    FNAV_Crc_3 *= FNAV_Crc_3_LSB;
-	    FNAV_Crs_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Crs_3_bit));
-	    FNAV_Crs_3 *= FNAV_Crs_3_LSB;
-	    FNAV_t0e_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0e_3_bit));
-	    FNAV_t0e_3 *= FNAV_t0e_3_LSB;
-	    FNAV_WN_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_3_bit));
-	    FNAV_TOW_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_3_bit));
+        flag_TOW_2 = true;
+        flag_TOW_set = true;
+        flag_ephemeris_1 = true;
+        break;
+    case 3: // Ephemeris (2/3) and GST
+        FNAV_IODnav_3 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODnav_3_bit));
+        FNAV_i0_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_i0_3_bit));
+        FNAV_i0_3 *= FNAV_i0_3_LSB;
+        FNAV_w_3=static_cast<double>(read_navigation_signed(data_bits, FNAV_w_3_bit));
+        FNAV_w_3 *= FNAV_w_3_LSB;
+        FNAV_deltan_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_deltan_3_bit));
+        FNAV_deltan_3 *= FNAV_deltan_3_LSB;
+        FNAV_Cuc_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Cuc_3_bit));
+        FNAV_Cuc_3 *= FNAV_Cuc_3_LSB;
+        FNAV_Cus_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Cus_3_bit));
+        FNAV_Cus_3 *= FNAV_Cus_3_LSB;
+        FNAV_Crc_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Crc_3_bit));
+        FNAV_Crc_3 *= FNAV_Crc_3_LSB;
+        FNAV_Crs_3 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Crs_3_bit));
+        FNAV_Crs_3 *= FNAV_Crs_3_LSB;
+        FNAV_t0e_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0e_3_bit));
+        FNAV_t0e_3 *= FNAV_t0e_3_LSB;
+        FNAV_WN_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN_3_bit));
+        FNAV_TOW_3 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_3_bit));
 
-	    flag_TOW_3 = true;
-	    flag_TOW_set = true;
-	    flag_ephemeris_2 = true;
-	    break;
-	case 4: // Ephemeris (3/3),  GST-UTC conversion,  GST-GPS conversion and TOW
-	    FNAV_IODnav_4 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODnav_4_bit));
-	    FNAV_Cic_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_Cic_4_bit));
-	    FNAV_Cic_4 *= FNAV_Cic_4_LSB;
-	    FNAV_Cis_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_Cis_4_bit));
-	    FNAV_Cis_4 *= FNAV_Cis_4_LSB;
-	    FNAV_A0_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_A0_4_bit));
-	    FNAV_A0_4 *= FNAV_A0_4_LSB;
-	    FNAV_A1_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_A1_4_bit));
-	    FNAV_A1_4 *= FNAV_A1_4_LSB;
-	    FNAV_deltatls_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltatls_4_bit));
-	    FNAV_t0t_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0t_4_bit));
-	    FNAV_t0t_4 *= FNAV_t0t_4_LSB;
-	    FNAV_WNot_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WNot_4_bit));
-	    FNAV_WNlsf_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WNlsf_4_bit));
-	    FNAV_DN_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_DN_4_bit));
-	    FNAV_deltatlsf_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltatlsf_4_bit));
-	    FNAV_t0g_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0g_4_bit));
-	    FNAV_t0g_4 *= FNAV_t0g_4_LSB;
-	    FNAV_A0g_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A0g_4_bit));
-	    FNAV_A0g_4 *= FNAV_A0g_4_LSB;
-	    FNAV_A1g_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A1g_4_bit));
-	    FNAV_A1g_4 *= FNAV_A1g_4_LSB;
-	    FNAV_WN0g_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN0g_4_bit));
-	    FNAV_TOW_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_4_bit));
+        flag_TOW_3 = true;
+        flag_TOW_set = true;
+        flag_ephemeris_2 = true;
+        break;
+    case 4: // Ephemeris (3/3),  GST-UTC conversion,  GST-GPS conversion and TOW
+        FNAV_IODnav_4 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODnav_4_bit));
+        FNAV_Cic_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_Cic_4_bit));
+        FNAV_Cic_4 *= FNAV_Cic_4_LSB;
+        FNAV_Cis_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_Cis_4_bit));
+        FNAV_Cis_4 *= FNAV_Cis_4_LSB;
+        FNAV_A0_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_A0_4_bit));
+        FNAV_A0_4 *= FNAV_A0_4_LSB;
+        FNAV_A1_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_A1_4_bit));
+        FNAV_A1_4 *= FNAV_A1_4_LSB;
+        FNAV_deltatls_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltatls_4_bit));
+        FNAV_t0t_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0t_4_bit));
+        FNAV_t0t_4 *= FNAV_t0t_4_LSB;
+        FNAV_WNot_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WNot_4_bit));
+        FNAV_WNlsf_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WNlsf_4_bit));
+        FNAV_DN_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_DN_4_bit));
+        FNAV_deltatlsf_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltatlsf_4_bit));
+        FNAV_t0g_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0g_4_bit));
+        FNAV_t0g_4 *= FNAV_t0g_4_LSB;
+        FNAV_A0g_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A0g_4_bit));
+        FNAV_A0g_4 *= FNAV_A0g_4_LSB;
+        FNAV_A1g_4 = static_cast<double>(read_navigation_signed(data_bits, FNAV_A1g_4_bit));
+        FNAV_A1g_4 *= FNAV_A1g_4_LSB;
+        FNAV_WN0g_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WN0g_4_bit));
+        FNAV_TOW_4 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_TOW_4_bit));
 
-	    flag_TOW_4 = true;
-	    flag_TOW_set = true;
-	    flag_ephemeris_3 = true;
-	    flag_utc_model = true; //set to false externally
-	    break;
-	case 5: // Almanac (SVID1 and SVID2(1/2)), Week Number and almanac reference time
-	    FNAV_IODa_5 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODa_5_bit));
-	    FNAV_WNa_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WNa_5_bit));
-	    FNAV_t0a_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0a_5_bit));
-	    FNAV_t0a_5 *= FNAV_t0a_5_LSB;
-	    FNAV_SVID1_5 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_SVID1_5_bit));
-	    FNAV_Deltaa12_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Deltaa12_1_5_bit));
-	    FNAV_Deltaa12_1_5 *= FNAV_Deltaa12_5_LSB;
-	    FNAV_e_1_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_e_1_5_bit));
-	    FNAV_e_1_5 *= FNAV_e_5_LSB;
-	    FNAV_w_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_w_1_5_bit));
-	    FNAV_w_1_5 *= FNAV_w_5_LSB;
-	    FNAV_deltai_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltai_1_5_bit));
-	    FNAV_deltai_1_5 *= FNAV_deltai_5_LSB;
-	    FNAV_Omega0_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega0_1_5_bit));
-	    FNAV_Omega0_1_5 *= FNAV_Omega0_5_LSB;
-	    FNAV_Omegadot_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omegadot_1_5_bit));
-	    FNAV_Omegadot_1_5 *= FNAV_Omegadot_5_LSB;
-	    FNAV_M0_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_M0_1_5_bit));
-	    FNAV_M0_1_5 *= FNAV_M0_5_LSB;
-	    FNAV_af0_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af0_1_5_bit));
-	    FNAV_af0_1_5 *= FNAV_af0_5_LSB;
-	    FNAV_af1_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_1_5_bit));
-	    FNAV_af1_1_5 *= FNAV_af1_5_LSB;
-	    FNAV_E5ahs_1_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_1_5_bit));
-	    FNAV_SVID2_5 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_SVID2_5_bit));
-	    FNAV_Deltaa12_2_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Deltaa12_2_5_bit));
-	    FNAV_Deltaa12_2_5 *= FNAV_Deltaa12_5_LSB;
-	    FNAV_e_2_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_e_2_5_bit));
-	    FNAV_e_2_5 *= FNAV_e_5_LSB;
-	    FNAV_w_2_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_w_2_5_bit));
-	    FNAV_w_2_5 *= FNAV_w_5_LSB;
-	    FNAV_deltai_2_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltai_2_5_bit));
-	    FNAV_deltai_2_5 *= FNAV_deltai_5_LSB;
-	    //TODO check this
-	    // Omega0_2 must be decoded when the two pieces are joined
-	    omega0_1 = data.substr(210, 4);
-	    //omega_flag=true;
-	    //
-	    //FNAV_Omega012_2_5=static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega012_2_5_bit);
+        flag_TOW_4 = true;
+        flag_TOW_set = true;
+        flag_ephemeris_3 = true;
+        flag_utc_model = true; //set to false externally
+        break;
+    case 5: // Almanac (SVID1 and SVID2(1/2)), Week Number and almanac reference time
+        FNAV_IODa_5 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODa_5_bit));
+        FNAV_WNa_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_WNa_5_bit));
+        FNAV_t0a_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_t0a_5_bit));
+        FNAV_t0a_5 *= FNAV_t0a_5_LSB;
+        FNAV_SVID1_5 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_SVID1_5_bit));
+        FNAV_Deltaa12_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Deltaa12_1_5_bit));
+        FNAV_Deltaa12_1_5 *= FNAV_Deltaa12_5_LSB;
+        FNAV_e_1_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_e_1_5_bit));
+        FNAV_e_1_5 *= FNAV_e_5_LSB;
+        FNAV_w_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_w_1_5_bit));
+        FNAV_w_1_5 *= FNAV_w_5_LSB;
+        FNAV_deltai_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltai_1_5_bit));
+        FNAV_deltai_1_5 *= FNAV_deltai_5_LSB;
+        FNAV_Omega0_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega0_1_5_bit));
+        FNAV_Omega0_1_5 *= FNAV_Omega0_5_LSB;
+        FNAV_Omegadot_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omegadot_1_5_bit));
+        FNAV_Omegadot_1_5 *= FNAV_Omegadot_5_LSB;
+        FNAV_M0_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_M0_1_5_bit));
+        FNAV_M0_1_5 *= FNAV_M0_5_LSB;
+        FNAV_af0_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af0_1_5_bit));
+        FNAV_af0_1_5 *= FNAV_af0_5_LSB;
+        FNAV_af1_1_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_1_5_bit));
+        FNAV_af1_1_5 *= FNAV_af1_5_LSB;
+        FNAV_E5ahs_1_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_1_5_bit));
+        FNAV_SVID2_5 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_SVID2_5_bit));
+        FNAV_Deltaa12_2_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Deltaa12_2_5_bit));
+        FNAV_Deltaa12_2_5 *= FNAV_Deltaa12_5_LSB;
+        FNAV_e_2_5 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_e_2_5_bit));
+        FNAV_e_2_5 *= FNAV_e_5_LSB;
+        FNAV_w_2_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_w_2_5_bit));
+        FNAV_w_2_5 *= FNAV_w_5_LSB;
+        FNAV_deltai_2_5 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltai_2_5_bit));
+        FNAV_deltai_2_5 *= FNAV_deltai_5_LSB;
+        //TODO check this
+        // Omega0_2 must be decoded when the two pieces are joined
+        omega0_1 = data.substr(210, 4);
+        //omega_flag=true;
+        //
+        //FNAV_Omega012_2_5=static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega012_2_5_bit);
 
-	    flag_almanac_1 = true;
-	    break;
-	case 6: // Almanac (SVID2(2/2) and SVID3)
-	    FNAV_IODa_6 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODa_6_bit));
+        flag_almanac_1 = true;
+        break;
+    case 6: // Almanac (SVID2(2/2) and SVID3)
+        FNAV_IODa_6 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_IODa_6_bit));
 
-            /* Don't worry about omega pieces. If page 5 has not been received, all_ephemeris
-	     * flag will be set to false and the data won't be recorded.*/
-	    std::string omega0_2 = data.substr(10, 12);
-	    std::string Omega0 = omega0_1 + omega0_2;
-            std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> omega_bits(Omega0);
-	    const std::vector<std::pair<int, int>> om_bit({{0, 12}});
-	    FNAV_Omega0_2_6 = static_cast<double>(read_navigation_signed(omega_bits, om_bit));
-	    FNAV_Omega0_2_6 *= FNAV_Omega0_5_LSB;
-	    //
-	    FNAV_Omegadot_2_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omegadot_2_6_bit));
-	    FNAV_Omegadot_2_6 *= FNAV_Omegadot_5_LSB;
-	    FNAV_M0_2_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_M0_2_6_bit));
-	    FNAV_M0_2_6 *= FNAV_M0_5_LSB;
-	    FNAV_af0_2_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af0_2_6_bit));
-	    FNAV_af0_2_6 *= FNAV_af0_5_LSB;
-	    FNAV_af1_2_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_2_6_bit));
-	    FNAV_af1_2_6 *= FNAV_af1_5_LSB;
-	    FNAV_E5ahs_2_6 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_2_6_bit));
-	    FNAV_SVID3_6 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_SVID3_6_bit));
-	    FNAV_Deltaa12_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Deltaa12_3_6_bit));
-	    FNAV_Deltaa12_3_6 *= FNAV_Deltaa12_5_LSB;
-	    FNAV_e_3_6 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_e_3_6_bit));
-	    FNAV_e_3_6 *= FNAV_e_5_LSB;
-	    FNAV_w_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_w_3_6_bit));
-	    FNAV_w_3_6 *= FNAV_w_5_LSB;
-	    FNAV_deltai_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltai_3_6_bit));
-	    FNAV_deltai_3_6 *= FNAV_deltai_5_LSB;
-	    FNAV_Omega0_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega0_3_6_bit));
-	    FNAV_Omega0_3_6 *= FNAV_Omega0_5_LSB;
-	    FNAV_Omegadot_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omegadot_3_6_bit));
-	    FNAV_Omegadot_3_6 *= FNAV_Omegadot_5_LSB;
-	    FNAV_M0_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_M0_3_6_bit));
-	    FNAV_M0_3_6 *= FNAV_M0_5_LSB;
-	    FNAV_af0_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af0_3_6_bit));
-	    FNAV_af0_3_6 *= FNAV_af0_5_LSB;
-	    FNAV_af1_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_3_6_bit));
-	    FNAV_af1_3_6 *= FNAV_af1_5_LSB;
-	    FNAV_E5ahs_3_6 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_3_6_bit));
+        /* Don't worry about omega pieces. If page 5 has not been received, all_ephemeris
+         * flag will be set to false and the data won't be recorded.*/
+        std::string omega0_2 = data.substr(10, 12);
+        std::string Omega0 = omega0_1 + omega0_2;
+        std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> omega_bits(Omega0);
+        const std::vector<std::pair<int, int>> om_bit({{0, 12}});
+        FNAV_Omega0_2_6 = static_cast<double>(read_navigation_signed(omega_bits, om_bit));
+        FNAV_Omega0_2_6 *= FNAV_Omega0_5_LSB;
+        //
+        FNAV_Omegadot_2_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omegadot_2_6_bit));
+        FNAV_Omegadot_2_6 *= FNAV_Omegadot_5_LSB;
+        FNAV_M0_2_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_M0_2_6_bit));
+        FNAV_M0_2_6 *= FNAV_M0_5_LSB;
+        FNAV_af0_2_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af0_2_6_bit));
+        FNAV_af0_2_6 *= FNAV_af0_5_LSB;
+        FNAV_af1_2_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_2_6_bit));
+        FNAV_af1_2_6 *= FNAV_af1_5_LSB;
+        FNAV_E5ahs_2_6 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_2_6_bit));
+        FNAV_SVID3_6 = static_cast<int>(read_navigation_unsigned(data_bits, FNAV_SVID3_6_bit));
+        FNAV_Deltaa12_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Deltaa12_3_6_bit));
+        FNAV_Deltaa12_3_6 *= FNAV_Deltaa12_5_LSB;
+        FNAV_e_3_6 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_e_3_6_bit));
+        FNAV_e_3_6 *= FNAV_e_5_LSB;
+        FNAV_w_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_w_3_6_bit));
+        FNAV_w_3_6 *= FNAV_w_5_LSB;
+        FNAV_deltai_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_deltai_3_6_bit));
+        FNAV_deltai_3_6 *= FNAV_deltai_5_LSB;
+        FNAV_Omega0_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omega0_3_6_bit));
+        FNAV_Omega0_3_6 *= FNAV_Omega0_5_LSB;
+        FNAV_Omegadot_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_Omegadot_3_6_bit));
+        FNAV_Omegadot_3_6 *= FNAV_Omegadot_5_LSB;
+        FNAV_M0_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_M0_3_6_bit));
+        FNAV_M0_3_6 *= FNAV_M0_5_LSB;
+        FNAV_af0_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af0_3_6_bit));
+        FNAV_af0_3_6 *= FNAV_af0_5_LSB;
+        FNAV_af1_3_6 = static_cast<double>(read_navigation_signed(data_bits, FNAV_af1_3_6_bit));
+        FNAV_af1_3_6 *= FNAV_af1_5_LSB;
+        FNAV_E5ahs_3_6 = static_cast<double>(read_navigation_unsigned(data_bits, FNAV_E5ahs_3_6_bit));
 
-	    flag_almanac_2 = true;
-	    break;
+        flag_almanac_2 = true;
+        break;
     }
-
 }
+
 
 unsigned long int Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int,int>> parameter)
 {
@@ -601,20 +606,20 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris()
     ephemeris.SV_ID_PRN_4 = FNAV_SV_ID_PRN_1;
     ephemeris.i_satellite_PRN = FNAV_SV_ID_PRN_1;
     ephemeris.M0_1 = FNAV_M0_2;          // Mean anomaly at reference time [semi-circles]
-    ephemeris.delta_n_3 = FNAV_deltan_3;// Mean motion difference from computed value  [semi-circles/sec]
+    ephemeris.delta_n_3 = FNAV_deltan_3; // Mean motion difference from computed value  [semi-circles/sec]
     ephemeris.e_1 = FNAV_e_2;            // Eccentricity
-    ephemeris.A_1 =  FNAV_a12_2;           // Square root of the semi-major axis [metres^1/2]
-    ephemeris.OMEGA_0_2 = FNAV_omega0_2;// Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-    ephemeris.i_0_2 = FNAV_i0_3;        // Inclination angle at reference time  [semi-circles]
-    ephemeris.omega_2 = FNAV_w_3;    // Argument of perigee [semi-circles]
+    ephemeris.A_1 =  FNAV_a12_2;         // Square root of the semi-major axis [metres^1/2]
+    ephemeris.OMEGA_0_2 = FNAV_omega0_2; // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+    ephemeris.i_0_2 = FNAV_i0_3;         // Inclination angle at reference time  [semi-circles]
+    ephemeris.omega_2 = FNAV_w_3;        // Argument of perigee [semi-circles]
     ephemeris.OMEGA_dot_3 = FNAV_omegadot_2; // Rate of right ascension [semi-circles/sec]
     ephemeris.iDot_2 = FNAV_idot_2;      // Rate of inclination angle [semi-circles/sec]
-    ephemeris.C_uc_3 = FNAV_Cuc_3;	    // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    ephemeris.C_us_3 = FNAV_Cus_3;	    // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-    ephemeris.C_rc_3 = FNAV_Crc_3;	    // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    ephemeris.C_rs_3 = FNAV_Crs_3;	    // Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    ephemeris.C_ic_4 = FNAV_Cic_4;      // Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
-    ephemeris.C_is_4 = FNAV_Cis_4;      // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+    ephemeris.C_uc_3 = FNAV_Cuc_3;       // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+    ephemeris.C_us_3 = FNAV_Cus_3;       // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    ephemeris.C_rc_3 = FNAV_Crc_3;       // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+    ephemeris.C_rs_3 = FNAV_Crs_3;       // Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    ephemeris.C_ic_4 = FNAV_Cic_4;       // Amplitude of the cosine harmonic correction     term to the angle of inclination [radians]
+    ephemeris.C_is_4 = FNAV_Cis_4;       // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
     ephemeris.t0e_1 = FNAV_t0e_3;        // Ephemeris reference time [s]
 
     /*Clock correction parameters*/
@@ -640,16 +645,16 @@ Galileo_Iono Galileo_Fnav_Message::get_iono()
     Galileo_Iono iono;
     /*Ionospheric correction*/
     /*Az*/
-    iono.ai0_5 = FNAV_ai0_1;		// Effective Ionisation Level 1st order parameter [sfu]
-    iono.ai1_5 = FNAV_ai1_1;		// Effective Ionisation Level 2st order parameter [sfu/degree]
-    iono.ai2_5 = FNAV_ai2_1;		// Effective Ionisation Level 3st order parameter [sfu/degree]
+    iono.ai0_5 = FNAV_ai0_1;        // Effective Ionisation Level 1st order parameter [sfu]
+    iono.ai1_5 = FNAV_ai1_1;        // Effective Ionisation Level 2st order parameter [sfu/degree]
+    iono.ai2_5 = FNAV_ai2_1;        // Effective Ionisation Level 3st order parameter [sfu/degree]
 
     /*Ionospheric disturbance flag*/
-    iono.Region1_flag_5 = FNAV_region1_1;	// Ionospheric Disturbance Flag for region 1
-    iono.Region2_flag_5 = FNAV_region2_1;	// Ionospheric Disturbance Flag for region 2
-    iono.Region3_flag_5 = FNAV_region3_1;	// Ionospheric Disturbance Flag for region 3
-    iono.Region4_flag_5 = FNAV_region4_1;	// Ionospheric Disturbance Flag for region 4
-    iono.Region5_flag_5 = FNAV_region5_1;	// Ionospheric Disturbance Flag for region 5
+    iono.Region1_flag_5 = FNAV_region1_1;    // Ionospheric Disturbance Flag for region 1
+    iono.Region2_flag_5 = FNAV_region2_1;    // Ionospheric Disturbance Flag for region 2
+    iono.Region3_flag_5 = FNAV_region3_1;    // Ionospheric Disturbance Flag for region 3
+    iono.Region4_flag_5 = FNAV_region4_1;    // Ionospheric Disturbance Flag for region 4
+    iono.Region5_flag_5 = FNAV_region5_1;    // Ionospheric Disturbance Flag for region 5
 
     /*GST*/
     iono.TOW_5 = FNAV_TOW_1;

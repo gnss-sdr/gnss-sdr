@@ -40,10 +40,8 @@ tcp_communication::tcp_communication() : tcp_socket_(io_service_)
 {}
 
 
-
 tcp_communication::~tcp_communication()
 {}
-
 
 
 int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
@@ -54,10 +52,10 @@ int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
             boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), d_port_);
             boost::asio::ip::tcp::acceptor acceptor(io_service_, endpoint);
 
-	    	if (d_port_ == d_port_ch0_)
-    		{
-	    		std::cout << "Server ready. Listening for TCP connections..." << std::endl;
-    		}
+            if (d_port_ == d_port_ch0_)
+                {
+                    std::cout << "Server ready. Listening for TCP connections..." << std::endl;
+                }
 
             // Reuse the IP address for each connection
             acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -78,12 +76,11 @@ int tcp_communication::listen_tcp_connection(size_t d_port_, size_t d_port_ch0_)
 }
 
 
-
 void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, NUM_TX_VARIABLES_GALILEO_E1> buf, tcp_packet_data *tcp_data_)
 {
-	int controlc = 0;
-	boost::array<float, NUM_RX_VARIABLES> readbuf;
-	float d_control_id_ = buf.data()[0];
+    int controlc = 0;
+    boost::array<float, NUM_RX_VARIABLES> readbuf;
+    float d_control_id_ = buf.data()[0];
 
     try
     {
@@ -92,17 +89,17 @@ void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
 
             // Read the received TCP packet
             tcp_socket_.read_some(boost::asio::buffer(readbuf));
-    	
-    		//! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
-	    	if (d_control_id_ != readbuf.data()[0])
-    		{
-    			throw "Packet error!";
-    		}
 
-			// Recover the variables received
-    		tcp_data_->proc_pack_code_error = readbuf.data()[1];
-    		tcp_data_->proc_pack_carr_error = readbuf.data()[2];
-    		tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
+            //! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
+            if (d_control_id_ != readbuf.data()[0])
+                {
+                    throw "Packet error!";
+                }
+
+            // Recover the variables received
+            tcp_data_->proc_pack_code_error = readbuf.data()[1];
+            tcp_data_->proc_pack_carr_error = readbuf.data()[2];
+            tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
     }
 
     catch(std::exception& e)
@@ -112,12 +109,13 @@ void tcp_communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
     }
     return;
 }
+
 
 void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NUM_TX_VARIABLES_GPS_L1_CA> buf, tcp_packet_data *tcp_data_)
 {
-	int controlc = 0;
-	boost::array<float, NUM_RX_VARIABLES> readbuf;
-	float d_control_id_ = buf.data()[0];
+    int controlc = 0;
+    boost::array<float, NUM_RX_VARIABLES> readbuf;
+    float d_control_id_ = buf.data()[0];
 
     try
     {
@@ -127,16 +125,16 @@ void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
             // Read the received TCP packet
             tcp_socket_.read_some(boost::asio::buffer(readbuf));
 
-    		//! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
-	    	if (d_control_id_ != readbuf.data()[0])
-    		{
-    			throw "Packet error!";
-    		}
+            //! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
+            if (d_control_id_ != readbuf.data()[0])
+                {
+                    throw "Packet error!";
+                }
 
-			// Recover the variables received
-    		tcp_data_->proc_pack_code_error = readbuf.data()[1];
-    		tcp_data_->proc_pack_carr_error = readbuf.data()[2];
-    		tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
+            // Recover the variables received
+            tcp_data_->proc_pack_code_error = readbuf.data()[1];
+            tcp_data_->proc_pack_carr_error = readbuf.data()[2];
+            tcp_data_->proc_pack_carrier_doppler_hz = readbuf.data()[3];
     }
 
     catch(std::exception& e)
@@ -146,6 +144,7 @@ void tcp_communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
     }
     return;
 }
+
 
 void tcp_communication::close_tcp_connection(size_t d_port_)
 {

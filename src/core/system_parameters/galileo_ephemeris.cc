@@ -41,25 +41,25 @@ Galileo_Ephemeris::Galileo_Ephemeris()
     SV_ID_PRN_4 = 0;
     M0_1 = 0;           // Mean anomaly at reference time [semi-circles]
     delta_n_3 = 0;      // Mean motion difference from computed value  [semi-circles/sec]
-    e_1 = 0;	        // Eccentricity
+    e_1 = 0;            // Eccentricity
     A_1 = 0;            // Square root of the semi-major axis [metres^1/2]
     OMEGA_0_2 = 0;      // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
     i_0_2 = 0;          // Inclination angle at reference time  [semi-circles]
     omega_2 = 0;        // Argument of perigee [semi-circles]
-    OMEGA_dot_3 = 0;	// Rate of right ascension [semi-circles/sec]
+    OMEGA_dot_3 = 0;    // Rate of right ascension [semi-circles/sec]
     iDot_2 = 0;         // Rate of inclination angle [semi-circles/sec]
-    C_uc_3 = 0;	        // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    C_us_3 = 0;	        // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    C_uc_3 = 0;            // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+    C_us_3 = 0;            // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
     C_rc_3 = 0;         // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    C_rs_3 = 0;	        // Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    C_ic_4 = 0;	        // Amplitude of the cosine harmonic correction 	term to the angle of inclination [radians]
+    C_rs_3 = 0;            // Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    C_ic_4 = 0;            // Amplitude of the cosine harmonic correction     term to the angle of inclination [radians]
     C_is_4 = 0;         // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-    t0e_1 = 0; 	        // Ephemeris reference time [s]
+    t0e_1 = 0;             // Ephemeris reference time [s]
     /*Clock correction parameters*/
     t0c_4 = 0;          // Clock correction data reference Time of Week [sec]
     af0_4 = 0;          // SV clock bias correction coefficient [s]
     af1_4 = 0;          // SV clock drift correction coefficient [s/s]
-    af2_4 = 0;	        // SV clock drift rate correction coefficient [s/s^2]
+    af2_4 = 0;            // SV clock drift rate correction coefficient [s/s^2]
     /*GST*/
     WN_5 = 0;
     TOW_5 = 0;
@@ -95,33 +95,33 @@ double Galileo_Ephemeris::Galileo_System_Time(double WN, double TOW)
     /* GALIELO SYSTEM TIME, ICD 5.1.2
      * input parameter:
      * WN: The Week Number is an integer counter that gives the sequential week number
-	   from the origin of the Galileo time. It covers 4096 weeks (about 78 years).
-	   Then the counter is reset to zero to cover additional period modulo 4096
+       from the origin of the Galileo time. It covers 4096 weeks (about 78 years).
+       Then the counter is reset to zero to cover additional period modulo 4096
 
-	   TOW: The Time of Week is defined as the number of seconds that have occurred since
-	   the transition from the previous week. The TOW covers an entire week from 0 to
-	   604799 seconds and is reset to zero at the end of each week
+       TOW: The Time of Week is defined as the number of seconds that have occurred since
+       the transition from the previous week. The TOW covers an entire week from 0 to
+       604799 seconds and is reset to zero at the end of each week
 
-	   WN and TOW are received in page 5
+       WN and TOW are received in page 5
 
-	   output:
-	   t: it is the transmitted time in Galileo System Time (expressed in seconds)
+       output:
+       t: it is the transmitted time in Galileo System Time (expressed in seconds)
 
-	   The GST start epoch shall be 00:00 UT on Sunday 22nd August 1999 (midnight between 21st and 22nd August).
-	   At the start epoch, GST shall be ahead of UTC by thirteen (13)
-	   leap seconds. Since the next leap second was inserted at 01.01.2006, this implies that
+       The GST start epoch shall be 00:00 UT on Sunday 22nd August 1999 (midnight between 21st and 22nd August).
+       At the start epoch, GST shall be ahead of UTC by thirteen (13)
+       leap seconds. Since the next leap second was inserted at 01.01.2006, this implies that
        as of 01.01.2006 GST is ahead of UTC by fourteen (14) leap seconds.
 
        The epoch denoted in the navigation messages by TOW and WN
-	   will be measured relative to the leading edge of the first chip of the
-	   first code sequence of the first page symbol. The transmission timing of the navigation
-	   message provided through the TOW is synchronised to each satellite’s version of Galileo System Time (GST).
+       will be measured relative to the leading edge of the first chip of the
+       first code sequence of the first page symbol. The transmission timing of the navigation
+       message provided through the TOW is synchronised to each satellite’s version of Galileo System Time (GST).
      *
      */
     double t = 0;
     double sec_in_day = 86400;
     double day_in_week = 7;
-    t = WN*sec_in_day*day_in_week + TOW; // second from the origin of the Galileo time
+    t = WN * sec_in_day * day_in_week + TOW; // second from the origin of the Galileo time
     return t;
 }
 

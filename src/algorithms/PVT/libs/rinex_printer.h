@@ -49,7 +49,7 @@
  */
 
 #ifndef GNSS_SDR_RINEX_PRINTER_H_
-#define	GNSS_SDR_RINEX_PRINTER_H_
+#define GNSS_SDR_RINEX_PRINTER_H_
 
 #include <string>
 #include <fstream>

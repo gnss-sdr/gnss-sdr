@@ -58,14 +58,14 @@ void Sbas_Satellite_Correction::print_fast_correction(std::ostream &out)
     out << "<<S>> Fast PRN" << d_prn << ":";
     if(fcorr.d_tof.is_related())
     {
-    	int gps_week;
-    	double gps_sec;
-    	fcorr.d_tof.get_gps_time(gps_week, gps_sec);
-    	out << "  d_t0=(week=" <<  gps_week << ",sec=" << gps_sec << ")";
+        int gps_week;
+        double gps_sec;
+        fcorr.d_tof.get_gps_time(gps_week, gps_sec);
+        out << "  d_t0=(week=" <<  gps_week << ",sec=" << gps_sec << ")";
     }
     else
     {
-    	out << "  d_t0=" <<  fcorr.d_tof.get_time_stamp();
+        out << "  d_t0=" <<  fcorr.d_tof.get_time_stamp();
     }
     out << "  d_prc=" <<  fcorr.d_prc;
     out << "  d_rrc=" <<  fcorr.d_rrc;

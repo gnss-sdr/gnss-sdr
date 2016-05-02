@@ -4,7 +4,7 @@
  * to a TelemetryDecoderInterface
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
- * 		<ul>
+ *         <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          </ul>
  *

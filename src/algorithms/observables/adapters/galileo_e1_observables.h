@@ -47,10 +47,10 @@ class ConfigurationInterface;
 class GalileoE1Observables : public ObservablesInterface
 {
 public:
-	GalileoE1Observables(ConfigurationInterface* configuration,
-                       std::string role,
-                       unsigned int in_streams,
-                       unsigned int out_streams);
+    GalileoE1Observables(ConfigurationInterface* configuration,
+            std::string role,
+            unsigned int in_streams,
+            unsigned int out_streams);
     virtual ~GalileoE1Observables();
     std::string role()
     {

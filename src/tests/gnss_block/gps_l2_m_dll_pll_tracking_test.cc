@@ -107,7 +107,7 @@ GpsL2MDllPllTrackingTest_msg_rx::~GpsL2MDllPllTrackingTest_msg_rx()
 class GpsL2MDllPllTrackingTest: public ::testing::Test
 {
 protected:
-	GpsL2MDllPllTrackingTest()
+    GpsL2MDllPllTrackingTest()
     {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();

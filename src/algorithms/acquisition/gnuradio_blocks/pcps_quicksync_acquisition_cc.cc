@@ -134,6 +134,7 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     // DLOG(INFO) << "END CONSTRUCTOR";
 }
 
+
 pcps_quicksync_acquisition_cc::~pcps_quicksync_acquisition_cc()
 {
     //DLOG(INFO) << "START DESTROYER";
@@ -478,8 +479,8 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                             std::streamsize n =  sizeof(float) * (d_fft_size); // complex file write
                             filename.str("");
                             filename << "../data/test_statistics_" << d_gnss_synchro->System
-                                     << "_" << d_gnss_synchro->Signal << "_sat_"
-                                     << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
+                                    << "_" << d_gnss_synchro->Signal << "_sat_"
+                                    << d_gnss_synchro->PRN << "_doppler_" <<  doppler << ".dat";
                             d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
                             d_dump_file.write((char*)d_magnitude_folded, n); //write directly |abs(x)|^2 in this Doppler bin?
                             d_dump_file.close();
@@ -562,7 +563,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             DLOG(INFO) << "test statistics value " << d_test_statistics;
             DLOG(INFO) << "test statistics threshold " << d_threshold;
             DLOG(INFO) << "folding factor "<<d_folding_factor;
-            DLOG(INFO) << "possible delay	corr output";
+            DLOG(INFO) << "possible delay    corr output";
             for (int i = 0; i < static_cast<int>(d_folding_factor); i++) DLOG(INFO) << d_possible_delay[i] << "\t\t\t" << d_corr_output_f[i];
             DLOG(INFO) << "code phase " << d_gnss_synchro->Acq_delay_samples;
             DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;

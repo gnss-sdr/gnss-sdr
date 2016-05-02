@@ -325,10 +325,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute__
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
             multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, in);
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carr_phase_rad,
-            		d_carrier_phase_step_rad,
-            		d_rem_code_phase_chips,
-            		d_code_phase_step_chips,
-            		d_current_prn_length_samples);
+                    d_carrier_phase_step_rad,
+                    d_rem_code_phase_chips,
+                    d_code_phase_step_chips,
+                    d_current_prn_length_samples);
 
             // ################## PLL ##########################################################
             // PLL discriminator

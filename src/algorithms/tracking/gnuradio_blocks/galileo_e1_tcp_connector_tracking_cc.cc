@@ -303,11 +303,11 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attr
             double code_phase_step_half_chips = (2.0 * d_code_freq_chips) / (static_cast<double>(d_fs_in));
             double rem_code_phase_half_chips = d_rem_code_phase_samples * (2.0*d_code_freq_chips / d_fs_in);
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
-            		d_rem_carr_phase_rad,
-            		carr_phase_step_rad,
-            		rem_code_phase_half_chips,
-            		code_phase_step_half_chips,
-            		d_correlation_length_samples);
+                    d_rem_carr_phase_rad,
+                    carr_phase_step_rad,
+                    rem_code_phase_half_chips,
+                    code_phase_step_half_chips,
+                    d_correlation_length_samples);
 
             // ################## TCP CONNECTOR ##########################################################
             //! Variable used for control

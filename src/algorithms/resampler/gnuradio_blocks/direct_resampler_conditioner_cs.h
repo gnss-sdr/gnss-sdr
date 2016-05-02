@@ -30,7 +30,7 @@
  */
 
 #ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H
-#define	GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H
+#define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H
 
 #include <gnuradio/block.h>
 #include <volk/volk.h>

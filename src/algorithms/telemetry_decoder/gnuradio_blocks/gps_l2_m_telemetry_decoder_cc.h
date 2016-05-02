@@ -29,7 +29,7 @@
  */
 
 #ifndef GNSS_SDR_GPS_L2_M_TELEMETRY_DECODER_CC_H
-#define	GNSS_SDR_GPS_L2_M_TELEMETRY_DECODER_CC_H
+#define GNSS_SDR_GPS_L2_M_TELEMETRY_DECODER_CC_H
 
 #include <algorithm> // for copy
 #include <deque>

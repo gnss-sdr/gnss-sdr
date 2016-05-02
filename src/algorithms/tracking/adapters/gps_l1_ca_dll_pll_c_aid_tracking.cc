@@ -100,23 +100,25 @@ GpsL1CaDllPllCAidTracking::GpsL1CaDllPllCAidTracking(
                     extend_correlation_ms,
                     early_late_space_chips);
             DLOG(INFO) << "tracking(" << tracking_cc->unique_id() << ")";
-    }else if(item_type_.compare("cshort") == 0)
-    	{
-        item_size_ = sizeof(lv_16sc_t);
-        tracking_sc = gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
-                f_if,
-                fs_in,
-                vector_length,
-                queue_,
-                dump,
-                dump_filename,
-                pll_bw_hz,
-                dll_bw_hz,
-                pll_bw_narrow_hz,
-                dll_bw_narrow_hz,
-                early_late_space_chips);
-        DLOG(INFO) << "tracking(" << tracking_sc->unique_id() << ")";
-    }else
+        }
+    else if(item_type_.compare("cshort") == 0)
+        {
+            item_size_ = sizeof(lv_16sc_t);
+            tracking_sc = gps_l1_ca_dll_pll_c_aid_make_tracking_sc(
+                    f_if,
+                    fs_in,
+                    vector_length,
+                    queue_,
+                    dump,
+                    dump_filename,
+                    pll_bw_hz,
+                    dll_bw_hz,
+                    pll_bw_narrow_hz,
+                    dll_bw_narrow_hz,
+                    early_late_space_chips);
+            DLOG(INFO) << "tracking(" << tracking_sc->unique_id() << ")";
+        }
+    else
         {
             item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type_ << " unknown tracking item type.";
@@ -185,14 +187,14 @@ void GpsL1CaDllPllCAidTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GpsL1CaDllPllCAidTracking::connect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to connect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GpsL1CaDllPllCAidTracking::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to disconnect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 gr::basic_block_sptr GpsL1CaDllPllCAidTracking::get_left_block()

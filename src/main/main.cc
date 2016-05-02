@@ -69,8 +69,8 @@
 #include "sbas_time.h"
 
 #if CUDA_GPU_ACCEL
-	// For the CUDA runtime routines (prefixed with "cuda_")
-	#include <cuda_runtime.h>
+    // For the CUDA runtime routines (prefixed with "cuda_")
+    #include <cuda_runtime.h>
 #endif
 
 

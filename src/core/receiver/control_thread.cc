@@ -62,7 +62,7 @@ extern concurrent_queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 using google::LogMessage;
 
 DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"),
-		"File containing the configuration parameters");
+        "File containing the configuration parameters");
 
 ControlThread::ControlThread()
 {
@@ -443,7 +443,7 @@ void ControlThread::init()
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
                             if (supl_client_ephemeris_.gps_utc.valid == true)
-			        {
+                    {
                                     std::cout << "SUPL: Received GPS UTC Model" << std::endl;
                                     std::shared_ptr<Gps_Utc_Model> tmp_obj= std::make_shared<Gps_Utc_Model>(supl_client_ephemeris_.gps_utc);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));

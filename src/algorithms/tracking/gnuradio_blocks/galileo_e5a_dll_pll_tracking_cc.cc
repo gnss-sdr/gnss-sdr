@@ -4,7 +4,7 @@
  *  tracking block for Galileo E5a signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
- * 		<ul>
+ *          <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          </ul>
@@ -323,51 +323,51 @@ void Galileo_E5a_Dll_Pll_Tracking_cc::acquire_secondary()
     // 1. Transform replica to 1 and -1
     int sec_code_signed[Galileo_E5a_Q_SECONDARY_CODE_LENGTH];
     for (unsigned int i = 0; i < Galileo_E5a_Q_SECONDARY_CODE_LENGTH; i++)
-	{
-	    if (Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(i) == '0')
-		{
-		    sec_code_signed[i] = 1;
-		}
-	    else
-		{
-		    sec_code_signed[i] = -1;
-		}
-	}
+        {
+            if (Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1].at(i) == '0')
+                {
+                    sec_code_signed[i] = 1;
+                }
+            else
+                {
+                    sec_code_signed[i] = -1;
+                }
+        }
     // 2. Transform buffer to 1 and -1
     int in_corr[CN0_ESTIMATION_SAMPLES];
     for (unsigned int i = 0; i < CN0_ESTIMATION_SAMPLES; i++)
-	{
-	    if (d_Prompt_buffer[i].real() >0)
-		{
-		    in_corr[i] = 1;
-		}
-	    else
-		{
-		    in_corr[i] = -1;
-		}
-	}
+        {
+            if (d_Prompt_buffer[i].real() >0)
+                {
+                    in_corr[i] = 1;
+                }
+            else
+                {
+                    in_corr[i] = -1;
+                }
+        }
     // 3. Serial search
     int out_corr;
     int current_best_ = 0;
     for (unsigned int i = 0; i < Galileo_E5a_Q_SECONDARY_CODE_LENGTH; i++)
-	{
-	    out_corr = 0;
-	    for (unsigned int j = 0; j < CN0_ESTIMATION_SAMPLES; j++)
-		{
-		    //reverse replica sign since i*i=-1 (conjugated complex)
-		    out_corr += in_corr[j] * -sec_code_signed[(j+i) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH];
-		}
-	    if (abs(out_corr) > current_best_)
-		{
-		    current_best_ = abs(out_corr);
-		    d_secondary_delay = i;
-		}
-	}
+        {
+            out_corr = 0;
+            for (unsigned int j = 0; j < CN0_ESTIMATION_SAMPLES; j++)
+                {
+                    //reverse replica sign since i*i=-1 (conjugated complex)
+                    out_corr += in_corr[j] * -sec_code_signed[(j + i) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH];
+                }
+            if (abs(out_corr) > current_best_)
+                {
+                    current_best_ = abs(out_corr);
+                    d_secondary_delay = i;
+                }
+        }
     if (current_best_ == CN0_ESTIMATION_SAMPLES) // all bits correlate
-	{
-	    d_secondary_lock = true;
-	    d_secondary_delay = (d_secondary_delay + CN0_ESTIMATION_SAMPLES - 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
-	}
+        {
+            d_secondary_lock = true;
+            d_secondary_delay = (d_secondary_delay + CN0_ESTIMATION_SAMPLES - 1) % Galileo_E5a_Q_SECONDARY_CODE_LENGTH;
+        }
 }
 
 
@@ -388,10 +388,10 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
     // Fill the acquisition data
     current_synchro_data = *d_acquisition_gnss_synchro;
 
-    /* States: 	0 Tracking not enabled
-     * 		1 Pull-in of primary code (alignment).
-     * 		3 Tracking algorithm. Correlates EPL each loop and accumulates the result
-     * 					until it reaches integration time.
+    /* States:     0 Tracking not enabled
+     *         1 Pull-in of primary code (alignment).
+     *         3 Tracking algorithm. Correlates EPL each loop and accumulates the result
+     *                     until it reaches integration time.
      */
     switch (d_state)
     {
@@ -402,7 +402,7 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             d_Prompt = gr_complex(0,0);
             d_Late = gr_complex(0,0);
             d_Prompt_data = gr_complex(0,0);
-        	current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
+            current_synchro_data.Tracking_timestamp_secs = static_cast<double>(d_sample_counter) / static_cast<double>(d_fs_in);
             *out[0] = current_synchro_data;
 
             break;
@@ -440,8 +440,8 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             // Secondary code Chip
             if (d_secondary_lock)
                 {
-                    //			sec_sign_Q = gr_complex((Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(d_secondary_delay)=='0' ? 1 : -1),0);
-                    //			sec_sign_I = gr_complex((Galileo_E5a_I_SECONDARY_CODE.at(d_secondary_delay%Galileo_E5a_I_SECONDARY_CODE_LENGTH)=='0' ? 1 : -1),0);
+                    //            sec_sign_Q = gr_complex((Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(d_secondary_delay)=='0' ? 1 : -1),0);
+                    //            sec_sign_I = gr_complex((Galileo_E5a_I_SECONDARY_CODE.at(d_secondary_delay%Galileo_E5a_I_SECONDARY_CODE_LENGTH)=='0' ? 1 : -1),0);
                     sec_sign_Q = gr_complex((Galileo_E5a_Q_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN-1].at(d_secondary_delay) == '0' ? -1 : 1), 0);
                     sec_sign_I = gr_complex((Galileo_E5a_I_SECONDARY_CODE.at(d_secondary_delay % Galileo_E5a_I_SECONDARY_CODE_LENGTH) == '0' ? -1 : 1), 0);
                 }
@@ -480,18 +480,18 @@ int Galileo_E5a_Dll_Pll_Tracking_cc::general_work (int noutput_items __attribute
             double code_phase_step_chips = d_code_freq_chips / (static_cast<double>(d_fs_in));
             double rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_chips / d_fs_in);
             multicorrelator_cpu_Q.Carrier_wipeoff_multicorrelator_resampler(
-            		d_rem_carr_phase_rad,
-            		carr_phase_step_rad,
-            		rem_code_phase_chips,
-            		code_phase_step_chips,
-            		d_current_prn_length_samples);
+                    d_rem_carr_phase_rad,
+                    carr_phase_step_rad,
+                    rem_code_phase_chips,
+                    code_phase_step_chips,
+                    d_current_prn_length_samples);
 
             multicorrelator_cpu_I.Carrier_wipeoff_multicorrelator_resampler(
-            		d_rem_carr_phase_rad,
-            		carr_phase_step_rad,
-            		rem_code_phase_chips,
-            		code_phase_step_chips,
-            		d_current_prn_length_samples);
+                    d_rem_carr_phase_rad,
+                    carr_phase_step_rad,
+                    rem_code_phase_chips,
+                    code_phase_step_chips,
+                    d_current_prn_length_samples);
 
 
             // Accumulate results (coherent integration since there are no bit transitions in pilot signal)

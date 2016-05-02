@@ -55,8 +55,8 @@ hybrid_make_observables_cc(unsigned int nchannels, bool dump, std::string dump_f
 
 
 hybrid_observables_cc::hybrid_observables_cc(unsigned int nchannels, bool dump, std::string dump_filename, int output_rate_ms, bool flag_averaging) :
-		                        gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-		                        gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
+                                gr::block("hybrid_observables_cc", gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+                                gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)))
 {
     // initialize internal vars
     d_dump = dump;
@@ -111,7 +111,7 @@ bool Hybrid_pairCompare_gnss_synchro_d_TOW_at_current_symbol(const std::pair<int
 
 
 int hybrid_observables_cc::general_work (int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+        gr_vector_const_void_star &input_items,    gr_vector_void_star &output_items)
 {
     Gnss_Synchro **in = (Gnss_Synchro **)  &input_items[0];   // Get the input pointer
     Gnss_Synchro **out = (Gnss_Synchro **)  &output_items[0]; // Get the output pointer

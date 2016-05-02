@@ -4,7 +4,7 @@
  *  Galileo E5a data and pilot Signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
- * 		<ul>
+ *          <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
@@ -363,11 +363,11 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
      */
 
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
-    /* States: 	0 Stop Channel
-     * 		1 Load the buffer until it reaches fft_size
-     * 		2 Acquisition algorithm
-     * 		3 Positive acquisition
-     * 		4 Negative acquisition
+    /* States:     0 Stop Channel
+     *         1 Load the buffer until it reaches fft_size
+     *         2 Acquisition algorithm
+     *         3 Positive acquisition
+     *         4 Negative acquisition
      */
     switch (d_state)
     {

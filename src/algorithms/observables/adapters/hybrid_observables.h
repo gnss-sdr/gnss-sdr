@@ -47,10 +47,10 @@ class ConfigurationInterface;
 class HybridObservables : public ObservablesInterface
 {
 public:
-	HybridObservables(ConfigurationInterface* configuration,
-                       std::string role,
-                       unsigned int in_streams,
-                       unsigned int out_streams);
+    HybridObservables(ConfigurationInterface* configuration,
+            std::string role,
+            unsigned int in_streams,
+            unsigned int out_streams);
     virtual ~HybridObservables();
     std::string role()
     {

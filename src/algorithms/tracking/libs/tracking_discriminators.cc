@@ -39,7 +39,7 @@
 /*
  * FLL four quadrant arctan discriminator:
  * \f{equation}
- * 	\frac{\phi_2-\phi_1}{t_2-t1}=\frac{ATAN2(cross,dot)}{t_1-t_2},
+ *     \frac{\phi_2-\phi_1}{t_2-t1}=\frac{ATAN2(cross,dot)}{t_1-t_2},
  * \f}
  * where \f$cross=I_{PS1}Q_{PS2}-I_{PS2}Q_{PS1}\f$ and \f$dot=I_{PS1}I_{PS2}+Q_{PS1}Q_{PS2}\f$,
  * \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively at sample time \f$t_1\f$, and
@@ -58,7 +58,7 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
 /*
  * PLL four quadrant arctan discriminator:
  * \f{equation}
- * 	\phi=ATAN2(Q_{PS},I_{PS}),
+ *     \phi=ATAN2(Q_{PS},I_{PS}),
  * \f}
  * where \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively. The output is in [radians].
  */
@@ -71,7 +71,7 @@ double pll_four_quadrant_atan(gr_complex prompt_s1)
 /*
  * PLL Costas loop two quadrant arctan discriminator:
  * \f{equation}
- * 	\phi=ATAN\left(\frac{Q_{PS}}{I_{PS}}\right),
+ *     \phi=ATAN\left(\frac{Q_{PS}}{I_{PS}}\right),
  * \f}
  * where \f$I_{PS1},Q_{PS1}\f$ are the inphase and quadrature prompt correlator outputs respectively. The output is in [radians].
  */
@@ -91,7 +91,7 @@ double pll_cloop_two_quadrant_atan(gr_complex prompt_s1)
 /*
  * DLL Noncoherent Early minus Late envelope normalized discriminator:
  * \f{equation}
- * 	error=\frac{1}{2}\frac{E-L}{E+L},
+ *     error=\frac{1}{2}\frac{E-L}{E+L},
  * \f}
  * where \f$E=\sqrt{I_{ES}^2+Q_{ES}^2}\f$ is the Early correlator output absolute value and
  * \f$L=\sqrt{I_{LS}^2+Q_{LS}^2}\f$ is the Late correlator output absolute value. The output is in [chips].

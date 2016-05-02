@@ -116,8 +116,8 @@ void galileo_e1b_telemetry_decoder_cc::deinterleaver(int rows, int cols, double 
 galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
         Gnss_Satellite satellite,
         bool dump) :
-           gr::block("galileo_e1b_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-	   gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+                   gr::block("galileo_e1b_telemetry_decoder_cc", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // Telemetry Bit transition synchronization port out
     this->message_port_register_out(pmt::mp("preamble_timestamp_s"));
@@ -176,15 +176,11 @@ galileo_e1b_telemetry_decoder_cc::galileo_e1b_telemetry_decoder_cc(
 }
 
 
-
-
 galileo_e1b_telemetry_decoder_cc::~galileo_e1b_telemetry_decoder_cc()
 {
     delete d_preambles_symbols;
     d_dump_file.close();
 }
-
-
 
 
 void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int frame_length)
@@ -288,7 +284,7 @@ void galileo_e1b_telemetry_decoder_cc::decode_word(double *page_part_symbols,int
 
 
 int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     int corr_value = 0;
     int preamble_diff = 0;
@@ -303,7 +299,7 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
     //******* preamble correlation ********
     for (int i = 0; i < d_symbols_per_preamble; i++)
         {
-            if (in[0][i].Prompt_I < 0)	// symbols clipping
+            if (in[0][i].Prompt_I < 0)    // symbols clipping
                 {
                     corr_value -= d_preambles_symbols[i];
                 }
@@ -439,7 +435,6 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items __attribut
                     //this page has no timing information
                     d_TOW_at_Preamble = d_TOW_at_Preamble + GALILEO_INAV_PAGE_SECONDS;
                     d_TOW_at_current_symbol = d_TOW_at_current_symbol + GALILEO_E1_CODE_PERIOD;// + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD;
-
                 }
         }
     else //if there is not a new preamble, we define the TOW of the current symbol
@@ -511,6 +506,7 @@ void galileo_e1b_telemetry_decoder_cc::set_decimation(int decimation)
 {
     d_decimation_output_factor = decimation;
 }
+
 
 void galileo_e1b_telemetry_decoder_cc::set_satellite(Gnss_Satellite satellite)
 {

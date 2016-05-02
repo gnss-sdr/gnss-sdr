@@ -4,9 +4,9 @@
  *         as described in Galileo OS SIS ICD Issue 1.1 (Sept. 2010)
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
- * 		<ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
- *          </ul>
+ * <ul>
+ * <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ * </ul>
  *
  *
  * -------------------------------------------------------------------------
@@ -92,7 +92,7 @@ public:
     bool flag_TOW_2;
     bool flag_TOW_3;
     bool flag_TOW_4;
-    bool flag_TOW_set; 	      //!< it is true when page 1,2,3 or 4 arrives
+    bool flag_TOW_set;           //!< it is true when page 1,2,3 or 4 arrives
     bool flag_utc_model;      //!< Flag indicating that utc model parameters (word 4) have been received
 
     bool flag_all_almanac;    //!< Flag indicating that all almanac have been received

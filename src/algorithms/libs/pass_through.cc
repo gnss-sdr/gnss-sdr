@@ -109,16 +109,16 @@ Pass_Through::~Pass_Through()
 
 void Pass_Through::connect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	DLOG(INFO) << "nothing to connect internally";
+    if(top_block) { /* top_block is not null */};
+    DLOG(INFO) << "nothing to connect internally";
 }
 
 
 
 void Pass_Through::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	// Nothing to disconnect
+    if(top_block) { /* top_block is not null */};
+    // Nothing to disconnect
 }
 
 

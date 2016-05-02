@@ -80,7 +80,7 @@ float cn0_svn_estimator(gr_complex* Prompt_buffer, int length, long fs_in, doubl
  *
  * The Carrier Phase Lock Detector block uses the estimate of the cosine of twice the carrier phase error is given by
  * \f{equation}
- * 	C2\phi=\frac{NBD}{NBP},
+ *     C2\phi=\frac{NBD}{NBP},
  * \f}
  *  where \f$NBD=(\sum^{N-1}_{i=0}|Im(Pc(i))|)^2+(\sum^{N-1}_{i=0}|Re(Pc(i))|)^2\f$,
  *  \f$NBP=\sum^{N-1}_{i=0}Im(Pc(i))^2-\sum^{N-1}_{i=0}Re(Pc(i))^2\f$, and

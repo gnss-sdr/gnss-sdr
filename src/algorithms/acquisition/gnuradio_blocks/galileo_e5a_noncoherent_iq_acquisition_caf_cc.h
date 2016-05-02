@@ -4,7 +4,7 @@
  *  Galileo E5a data and pilot Signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
- * 		<ul>
+ *          <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          <li> Marc Molina, 2013. marc.molina.pena@gmail.com
@@ -53,7 +53,7 @@ typedef boost::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc> galileo_
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr
 galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(unsigned int sampled_ms,
-			 unsigned int max_dwells,
+             unsigned int max_dwells,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag,
@@ -74,8 +74,8 @@ class galileo_e5a_noncoherentIQ_acquisition_caf_cc: public gr::block
 private:
     friend galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr
     galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
-	    unsigned int sampled_ms,
-	    unsigned int max_dwells,
+            unsigned int sampled_ms,
+            unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag,
@@ -86,8 +86,8 @@ private:
             int Zero_padding_);
 
     galileo_e5a_noncoherentIQ_acquisition_caf_cc(
-	    unsigned int sampled_ms,
-	    unsigned int max_dwells,
+            unsigned int sampled_ms,
+            unsigned int max_dwells,
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag,

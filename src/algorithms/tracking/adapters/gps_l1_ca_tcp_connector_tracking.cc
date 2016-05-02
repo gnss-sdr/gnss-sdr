@@ -2,7 +2,7 @@
  * \file gps_l1_ca_tcp_connector_tracking.cc
  * \brief Implementation of an adapter of a TCP connector block based on code DLL + carrier PLL
  * \author David Pubill, 2012. dpubill(at)cttc.es
- * 		   Luis Esteve, 2012. luis(at)epsilon-formacion.com
+ *            Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *         Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * Code DLL + carrier PLL according to the algorithms described in:
@@ -123,14 +123,14 @@ void GpsL1CaTcpConnectorTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GpsL1CaTcpConnectorTracking::connect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to connect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GpsL1CaTcpConnectorTracking::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to disconnect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 gr::basic_block_sptr GpsL1CaTcpConnectorTracking::get_left_block()

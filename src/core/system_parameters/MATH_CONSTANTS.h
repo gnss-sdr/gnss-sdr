@@ -58,7 +58,7 @@ const double TWO_N9 = (0.001953125);              //!< 2^-9
 const double TWO_N10 = (0.0009765625);            //!< 2^-10
 const double TWO_N11 = (4.882812500000000e-004);  //!< 2^-11
 const double TWO_N14 = (0.00006103515625);        //!< 2^-14
-const double TWO_N15 = (0.00003051757813);	  //!< 2^-15
+const double TWO_N15 = (0.00003051757813);        //!< 2^-15
 const double TWO_N16 = (0.0000152587890625);      //!< 2^-16
 const double TWO_N19 = (1.907348632812500e-006);  //!< 2^-19
 const double TWO_N20 = (9.536743164062500e-007);  //!< 2^-20
@@ -71,19 +71,19 @@ const double TWO_N30 = (9.313225746154785e-010);  //!< 2^-30
 const double TWO_N31 = (4.656612873077393e-010);  //!< 2^-31
 const double TWO_N32 = (2.328306436538696e-010);  //!< 2^-32
 const double TWO_N33 = (1.164153218269348e-010);  //!< 2^-33
-const double TWO_N34 = (5.82076609134674e-011);	  //!< 2^-34
-const double TWO_N35 = (2.91038304567337e-011);	  //!< 2^-35
+const double TWO_N34 = (5.82076609134674e-011);   //!< 2^-34
+const double TWO_N35 = (2.91038304567337e-011);   //!< 2^-35
 
 const double TWO_N38 = (3.637978807091713e-012);  //!< 2^-38
 const double TWO_N43 = (1.136868377216160e-013);  //!< 2^-43
-const double TWO_N44 = (5.684341886080802e-14);  //!< 2^-44
+const double TWO_N44 = (5.684341886080802e-14);   //!< 2^-44
 const double TWO_N46 = (1.4210854715202e-014);    //!< 2^-46
-const double TWO_N48 = (3.552713678800501e-15);    //!< 2^-46
+const double TWO_N48 = (3.552713678800501e-15);   //!< 2^-46
 
 const double TWO_N50 = (8.881784197001252e-016);  //!< 2^-50
 const double TWO_N51 = (4.44089209850063e-016);   //!< 2^-51
 const double TWO_N55 = (2.775557561562891e-017);  //!< 2^-55
-const double TWO_N57 = (6.938893903907228e-18);  //!< 2^-57
+const double TWO_N57 = (6.938893903907228e-18);   //!< 2^-57
 const double TWO_N59 = (1.73472347597681e-018);   //!< 2^-59
 const double TWO_N60 = (8.673617379884036e-19);   //!< 2^-60
 

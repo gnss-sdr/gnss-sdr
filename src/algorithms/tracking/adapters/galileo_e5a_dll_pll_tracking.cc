@@ -6,7 +6,7 @@
  *  Galileo E5a data and pilot Signals
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \based on work from:
- * 		<ul>
+ *          <ul>
  *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *          </ul>
@@ -137,14 +137,14 @@ void GalileoE5aDllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 
 void GalileoE5aDllPllTracking::connect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to connect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to connect, now the tracking uses gr_sync_decimator
 }
 
 void GalileoE5aDllPllTracking::disconnect(gr::top_block_sptr top_block)
 {
-	if(top_block) { /* top_block is not null */};
-	//nothing to disconnect, now the tracking uses gr_sync_decimator
+    if(top_block) { /* top_block is not null */};
+    //nothing to disconnect, now the tracking uses gr_sync_decimator
 }
 
 gr::basic_block_sptr GalileoE5aDllPllTracking::get_left_block()

@@ -38,7 +38,7 @@
 
 struct byte_2bit_struct
 {
-  signed two_bit_sample:2;  // <- 2 bits wide only
+    signed two_bit_sample:2;  // <- 2 bits wide only
 };
 
 
@@ -48,9 +48,9 @@ unpack_byte_2bit_cpx_samples_sptr make_unpack_byte_2bit_cpx_samples()
 }
 
 unpack_byte_2bit_cpx_samples::unpack_byte_2bit_cpx_samples() : sync_interpolator("unpack_byte_2bit_cpx_samples",
-                                                                         gr::io_signature::make(1, 1, sizeof(signed char)),
-                                                                         gr::io_signature::make(1, 1, sizeof(short)),
-            	                                                         4)
+        gr::io_signature::make(1, 1, sizeof(signed char)),
+        gr::io_signature::make(1, 1, sizeof(short)),
+        4)
 {}
 
 unpack_byte_2bit_cpx_samples::~unpack_byte_2bit_cpx_samples()

@@ -309,11 +309,11 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
             double code_phase_step_half_chips = (2.0 * d_code_freq_chips) / (static_cast<double>(d_fs_in));
             double rem_code_phase_half_chips = d_rem_code_phase_samples * (2.0*d_code_freq_chips / d_fs_in);
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(
-            		d_rem_carr_phase_rad,
-            		carr_phase_step_rad,
-            		rem_code_phase_half_chips,
-            		code_phase_step_half_chips,
-            		d_correlation_length_samples);
+                    d_rem_carr_phase_rad,
+                    carr_phase_step_rad,
+                    rem_code_phase_half_chips,
+                    code_phase_step_half_chips,
+                    d_correlation_length_samples);
 
             // ################## PLL ##########################################################
             // PLL discriminator
@@ -410,11 +410,11 @@ int galileo_e1_dll_pll_veml_tracking_cc::general_work (int noutput_items __attri
         }
     else
     {
-    	*d_Early = gr_complex(0,0);
-    	*d_Prompt = gr_complex(0,0);
-    	*d_Late = gr_complex(0,0);
-    	// GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
-    	current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
+        *d_Early = gr_complex(0,0);
+        *d_Prompt = gr_complex(0,0);
+        *d_Late = gr_complex(0,0);
+        // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
+        current_synchro_data.Tracking_timestamp_secs = (static_cast<double>(d_sample_counter) + static_cast<double>(d_rem_code_phase_samples)) / static_cast<double>(d_fs_in);
     }
     //assign the GNURadio block output data
     current_synchro_data.System = {'E'};

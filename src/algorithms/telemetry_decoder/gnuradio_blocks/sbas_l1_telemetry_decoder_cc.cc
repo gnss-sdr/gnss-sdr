@@ -40,10 +40,10 @@
 using google::LogMessage;
 
 // logging levels
-#define EVENT 2 	// logs important events which don't occur every block
-#define FLOW 3  	// logs the function calls of block processing functions
+#define EVENT 2     // logs important events which don't occur every block
+#define FLOW 3      // logs the function calls of block processing functions
 #define SAMP_SYNC 4 // about 1 log entry per sample -> high output
-#define LMORE 5 	//
+#define LMORE 5     //
 
 
 
@@ -95,12 +95,12 @@ void sbas_l1_telemetry_decoder_cc::forecast (int noutput_items, gr_vector_int &n
 
 
 int sbas_l1_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+        gr_vector_const_void_star &input_items,    gr_vector_void_star &output_items)
 {
     VLOG(FLOW) << "general_work(): " << "noutput_items=" << noutput_items << "\toutput_items real size=" << output_items.size() <<  "\tninput_items size=" << ninput_items.size() << "\tinput_items real size=" << input_items.size() << "\tninput_items[0]=" << ninput_items[0];
     // get pointers on in- and output gnss-synchro objects
     const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
-    Gnss_Synchro *out = (Gnss_Synchro *) output_items[0]; 	// output
+    Gnss_Synchro *out = (Gnss_Synchro *) output_items[0];     // output
 
     // store the time stamp of the first sample in the processed sample block
     double sample_stamp = in[0].Tracking_timestamp_secs;

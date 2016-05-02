@@ -110,7 +110,7 @@ void gps_l2_m_telemetry_decoder_cc::set_decimation(int decimation)
 
 
 int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-        gr_vector_const_void_star &input_items,	gr_vector_void_star &output_items)
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // get pointers on in- and output gnss-synchro objects
     const Gnss_Synchro *in = (const Gnss_Synchro *)  input_items[0]; // input
@@ -128,7 +128,7 @@ int gps_l2_m_telemetry_decoder_cc::general_work (int noutput_items __attribute__
         {
             if (in[0].Flag_valid_symbol_output == false) // check if the tracking is locked
                 {
-                    LOG(INFO)<< "Discarting channel "<<d_channel<<" tracking not ready!"<<std::endl;
+                    LOG(INFO) << "Discarting channel " << d_channel << " tracking not ready!" << std::endl;
                     d_flag_valid_word = false;
                 }
             else

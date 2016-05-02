@@ -29,7 +29,7 @@
 
 
 #ifndef GNSS_SDR_GPS_L1_CA_OBSERVABLES_CC_H
-#define	GNSS_SDR_GPS_L1_CA_OBSERVABLES_CC_H
+#define    GNSS_SDR_GPS_L1_CA_OBSERVABLES_CC_H
 
 #include <deque>
 #include <fstream>

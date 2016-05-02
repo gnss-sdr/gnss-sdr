@@ -287,7 +287,7 @@ void Sbas_Telemetry_Data::updated_satellite_corrections()
                     fcorr.d_prc = fcorr_rtklib.prc;
                     fcorr.d_rrc = fcorr_rtklib.rrc;
                     fcorr.d_dt = fcorr_rtklib.dt;
-                    fcorr.d_udre = fcorr_rtklib.udre;	// UDRE
+                    fcorr.d_udre = fcorr_rtklib.udre;    // UDRE
                     fcorr.d_ai = fcorr_rtklib.ai;
                     fcorr.d_tlat = d_nav.sbssat.tlat;
 

@@ -50,7 +50,7 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
     //dump_ = configuration->property(role + ".dump", false);
     //dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    dump_=false;
+    dump_ = false;
 
     std::string default_ethernet_dev = "eth0";
     eth_device_ = configuration->property(role + ".ethernet_dev", default_ethernet_dev);
@@ -88,7 +88,7 @@ RawArraySignalSource::RawArraySignalSource(ConfigurationInterface* configuration
         }
     if (dump_)
         {
-    	//TODO: multichannel recorder
+            //TODO: multichannel recorder
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
         }
@@ -109,7 +109,7 @@ void RawArraySignalSource::connect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-    	//TODO: multichannel recorder
+            //TODO: multichannel recorder
             top_block->connect(raw_array_source_, 0, file_sink_, 0);
             DLOG(INFO) << "connected raw_array_source_ to file sink";
         }
@@ -125,7 +125,7 @@ void RawArraySignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
         {
-    	//TODO: multichannel recorder
+            //TODO: multichannel recorder
             top_block->disconnect(raw_array_source_, 0, file_sink_, 0);
         }
 }

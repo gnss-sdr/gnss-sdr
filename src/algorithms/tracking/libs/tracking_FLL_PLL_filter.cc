@@ -39,8 +39,8 @@ void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int o
     /*
      * Filter design (Kaplan 2nd ed., Pag. 181 Fig. 181)
      */
-    d_order=order;
-    if (d_order==3)
+    d_order = order;
+    if (d_order == 3)
         {
             /*
              *  3rd order PLL with 2nd order FLL assist
@@ -73,7 +73,7 @@ void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int o
 
 void Tracking_FLL_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
 {
-    if (d_order==3)
+    if (d_order == 3)
         {
             d_pll_x = 2.0 * d_acq_carrier_doppler_hz;
             d_pll_w = 0;
@@ -92,7 +92,7 @@ void Tracking_FLL_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
 float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float PLL_discriminator, float correlation_time_s)
 {
     float carrier_error_hz;
-    if (d_order==3)
+    if (d_order == 3)
         {
             /*
              *  3rd order PLL with 2nd order FLL assist
@@ -111,16 +111,15 @@ float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float 
             carrier_error_hz = 0.5 * (pll_w_new + d_pll_w) + d_pll_a2 * d_pll_w0p * PLL_discriminator;
             d_pll_w = pll_w_new;
             /*std::cout<<" d_pll_w = "<<carrier_error_hz<<
-			   ", pll_w_new = "<<pll_w_new
-			   <<", PLL_discriminator=" <<PLL_discriminator
-			   <<" FLL_discriminator ="<<FLL_discriminator
-			   <<" correlation_time_s = "<<correlation_time_s<<"\r\n";*/
+               ", pll_w_new = "<<pll_w_new
+               <<", PLL_discriminator=" <<PLL_discriminator
+               <<" FLL_discriminator ="<<FLL_discriminator
+               <<" correlation_time_s = "<<correlation_time_s<<"\r\n";*/
         }
 
     return carrier_error_hz;
 
 }
-
 
 
 Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter ()
@@ -137,6 +136,7 @@ Tracking_FLL_PLL_filter::Tracking_FLL_PLL_filter ()
     d_pll_b3 = 0;
     d_pll_w0p = 0;
 }
+
 
 Tracking_FLL_PLL_filter::~Tracking_FLL_PLL_filter ()
 {}

@@ -34,11 +34,11 @@
 #include <glog/logging.h>
 
 // logging
-#define EVENT 2 // logs important events which don't occur every block
-#define FLOW 3  // logs the function calls of block processing functions
-#define BLOCK 4	// once per block
-#define SAMPLE 5 // about one log entry per sample
-#define LMORE 6 // many entries per sample / very specific stuff
+#define EVENT 2    // logs important events which don't occur every block
+#define FLOW 3     // logs the function calls of block processing functions
+#define BLOCK 4    // once per block
+#define SAMPLE 5   // about one log entry per sample
+#define LMORE 6    // many entries per sample / very specific stuff
 
 
 const float MAXLOG = 1e7;  /* Define infinity */
@@ -95,10 +95,10 @@ void Viterbi_Decoder::reset()
 /* Function decode_block()
  Description: Uses the Viterbi algorithm to perform hard-decision decoding of a convolutional code.
  Input parameters:
- r[]	The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
- LL	The number of data bits to be decoded (doesn't include the mm zero-tail-bits)
+ r[]    The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
+ LL    The number of data bits to be decoded (doesn't include the mm zero-tail-bits)
  Output parameters:
- output_u_int[]	Hard decisions on the data bits (without the mm zero-tail-bits)
+ output_u_int[]    Hard decisions on the data bits (without the mm zero-tail-bits)
  */
 float Viterbi_Decoder::decode_block(const double input_c[], int output_u_int[], const int LL)
 {
@@ -359,12 +359,12 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
  Description: Computes the branch metric used for decoding.
 
  Output parameters:
- (returned float) 	The metric between the hypothetical symbol and the recevieved vector
+ (returned float)     The metric between the hypothetical symbol and the recevieved vector
 
  Input parameters:
- rec_array			The received vector, of length nn
- symbol				The hypothetical symbol
- nn					The length of the received vector
+ rec_array            The received vector, of length nn
+ symbol                The hypothetical symbol
+ nn                    The length of the received vector
 
  This function is used by siso()  */
 float
@@ -412,15 +412,15 @@ Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, const int
  Takes in one input bit at a time, and produces a n-bit output.
 
  Input parameters:
- input		The input data bit (i.e. a 0 or 1).
- state_in	The starting state of the encoder (an int from 0 to 2^m-1).
- g[]			An n-element vector containing the code generators in binary form.
- KK			The constraint length of the convolutional code.
- nn			number of symbols bits per input bits (rate 1/nn)
+ input        The input data bit (i.e. a 0 or 1).
+ state_in    The starting state of the encoder (an int from 0 to 2^m-1).
+ g[]            An n-element vector containing the code generators in binary form.
+ KK            The constraint length of the convolutional code.
+ nn            number of symbols bits per input bits (rate 1/nn)
 
  Output parameters:
- output_p[]		An n-element vector containing the encoded bits.
- state_out_p[]	An integer containing the final state of the encoder
+ output_p[]        An n-element vector containing the encoded bits.
+ state_out_p[]    An integer containing the final state of the encoder
  (i.e. the state after encoding this bit)
 
  This function is used by rsc_encode(), nsc_transit(), rsc_transit(), and nsc_transit() */

@@ -216,7 +216,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     //fs_in = 20.47e6;
 
     //    unsigned int delay_samples = (delay_chips_[sat] % codelen)
-    //                	      * samples_per_code_[sat] / codelen;
+    //                          * samples_per_code_[sat] / codelen;
     expected_delay_chips = round(14000*((double)10230000/(double)fs_in));
     expected_doppler_hz = 2800;
     //expected_doppler_hz = 0;
@@ -627,8 +627,8 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, SOURCEValidationTOFILE)
 {
     config_1();
     ASSERT_NO_THROW( {
-	std::string filename_ = "../data/Tiered_sinknull.dat";
-	boost::shared_ptr<gr::blocks::file_sink> file_sink_;
+    std::string filename_ = "../data/Tiered_sinknull.dat";
+    boost::shared_ptr<gr::blocks::file_sink> file_sink_;
 
         boost::shared_ptr<GenSignalSource> signal_source;
         SignalGenerator* signal_generator = new SignalGenerator(config.get(), "SignalSource", 0, 1, queue);

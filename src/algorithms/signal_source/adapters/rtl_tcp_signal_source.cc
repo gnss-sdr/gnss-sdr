@@ -80,13 +80,13 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             // 1. Make the gr block
             try
             {
-	       std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
-	       LOG (INFO) << "Connecting to " << address_ << ":" << port_;
-	       signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
+                    std::cout << "Connecting to " << address_ << ":" << port_ << std::endl;
+                    LOG (INFO) << "Connecting to " << address_ << ":" << port_;
+                    signal_source_ = rtl_tcp_make_signal_source_c (address_, port_, flip_iq_);
             }
             catch( boost::exception & e )
             {
-	       DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
+                    DLOG(FATAL) << "Boost exception: " << boost::diagnostic_information(e);
             }
 
             // 2 set sampling rate
@@ -99,25 +99,25 @@ RtlTcpSignalSource::RtlTcpSignalSource(ConfigurationInterface* configuration,
             signal_source_->set_agc_mode(true);
 
             if (this->AGC_enabled_ == true)
-            {
-                std::cout << "AGC enabled" << std::endl;
-                LOG(INFO) << "AGC enabled";
-                signal_source_->set_agc_mode(true);
-            }
+                {
+                    std::cout << "AGC enabled" << std::endl;
+                    LOG(INFO) << "AGC enabled";
+                    signal_source_->set_agc_mode(true);
+                }
             else
-            {
-                std::cout << "AGC disabled" << std::endl;
-                LOG(INFO) << "AGC disabled";
-                signal_source_->set_agc_mode(false);
+                {
+                    std::cout << "AGC disabled" << std::endl;
+                    LOG(INFO) << "AGC disabled";
+                    signal_source_->set_agc_mode(false);
 
-                std::cout << "Setting gain to " << gain_ << std::endl;
-                LOG(INFO) << "Setting gain to " << gain_;
-                signal_source_->set_gain(gain_);
+                    std::cout << "Setting gain to " << gain_ << std::endl;
+                    LOG(INFO) << "Setting gain to " << gain_;
+                    signal_source_->set_gain(gain_);
 
-                std::cout << "Setting IF gain to " << if_gain_ << std::endl;
-                LOG(INFO) << "Setting IF gain to " << if_gain_;
-                signal_source_->set_if_gain(if_gain_);
-            }
+                    std::cout << "Setting IF gain to " << if_gain_ << std::endl;
+                    LOG(INFO) << "Setting IF gain to " << if_gain_;
+                    signal_source_->set_if_gain(if_gain_);
+                }
         }
     else
         {
@@ -145,43 +145,58 @@ RtlTcpSignalSource::~RtlTcpSignalSource()
 {}
 
 
-void RtlTcpSignalSource::connect(gr::top_block_sptr top_block) {
-   if ( samples_ ) {
-      top_block->connect (signal_source_, 0, valve_, 0);
-      DLOG(INFO) << "connected rtl tcp source to valve";
-      if ( dump_ ) {
-	 top_block->connect(valve_, 0, file_sink_, 0);
-	 DLOG(INFO) << "connected valve to file sink";
-      }
-   }
-   else if ( dump_ ) {
-	 top_block->connect(signal_source_, 0, file_sink_, 0);
-	 DLOG(INFO) << "connected rtl tcp source to file sink";
-   }
+void RtlTcpSignalSource::connect(gr::top_block_sptr top_block)
+{
+    if ( samples_ )
+        {
+            top_block->connect (signal_source_, 0, valve_, 0);
+            DLOG(INFO) << "connected rtl tcp source to valve";
+            if ( dump_ )
+                {
+                    top_block->connect(valve_, 0, file_sink_, 0);
+                    DLOG(INFO) << "connected valve to file sink";
+                }
+        }
+    else if ( dump_ )
+        {
+            top_block->connect(signal_source_, 0, file_sink_, 0);
+            DLOG(INFO) << "connected rtl tcp source to file sink";
+        }
 }
 
-void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block) {
-   if ( samples_ ) {
-      top_block->disconnect (signal_source_, 0, valve_, 0);
-      if ( dump_ ) {
-	 top_block->disconnect(valve_, 0, file_sink_, 0);
-      }
-   }
-   else if ( dump_ ) {
-	 top_block->disconnect(signal_source_, 0, file_sink_, 0);
-   }
+
+void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block)
+{
+    if ( samples_ )
+        {
+            top_block->disconnect (signal_source_, 0, valve_, 0);
+            if ( dump_ )
+                {
+                    top_block->disconnect(valve_, 0, file_sink_, 0);
+                }
+        }
+    else if ( dump_ )
+        {
+            top_block->disconnect(signal_source_, 0, file_sink_, 0);
+        }
 }
 
-gr::basic_block_sptr RtlTcpSignalSource::get_left_block() {
+
+gr::basic_block_sptr RtlTcpSignalSource::get_left_block()
+{
     LOG(WARNING) << "Trying to get signal source left block.";
     return gr::basic_block_sptr();
 }
 
-gr::basic_block_sptr RtlTcpSignalSource::get_right_block() {
-   if (samples_ != 0) {
-      return valve_;
-   }
-   else {
-     return signal_source_;
-   }
+
+gr::basic_block_sptr RtlTcpSignalSource::get_right_block()
+{
+    if (samples_ != 0)
+        {
+            return valve_;
+        }
+    else
+        {
+            return signal_source_;
+        }
 }

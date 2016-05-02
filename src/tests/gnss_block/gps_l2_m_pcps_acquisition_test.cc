@@ -249,16 +249,16 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
         //gr::blocks::char_to_short::sptr gr_char_to_short_ = gr::blocks::char_to_short::make();
         boost::shared_ptr<gr::block> valve = gnss_sdr_make_valve(sizeof(gr_complex), nsamples, queue);
         //top_block->connect(file_source, 0, gr_char_to_short_, 0);
-    	//top_block->connect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
-    	top_block->connect(file_source, 0, valve , 0);
+        //top_block->connect(gr_char_to_short_, 0, gr_interleaved_short_to_complex_ , 0);
+        top_block->connect(file_source, 0, valve , 0);
         top_block->connect(valve, 0, acquisition->get_left_block(), 0);
         top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
     }) << "Failure connecting the blocks of acquisition test." << std::endl;
 
 
     ASSERT_NO_THROW( {
-    	acquisition->set_state(1); // Ensure that acquisition starts at the first sample
-    	acquisition->init();
+        acquisition->set_state(1); // Ensure that acquisition starts at the first sample
+        acquisition->init();
     }) << "Failure set_state and init acquisition test" << std::endl;
 
     EXPECT_NO_THROW( {

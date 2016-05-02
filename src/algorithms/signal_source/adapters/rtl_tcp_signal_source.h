@@ -51,7 +51,7 @@ class ConfigurationInterface;
 class RtlTcpSignalSource: public GNSSBlockInterface
 {
 public:
-	RtlTcpSignalSource(ConfigurationInterface* configuration,
+    RtlTcpSignalSource(ConfigurationInterface* configuration,
             std::string role, unsigned int in_stream,
             unsigned int out_stream, boost::shared_ptr<gr::msg_queue> queue);
 

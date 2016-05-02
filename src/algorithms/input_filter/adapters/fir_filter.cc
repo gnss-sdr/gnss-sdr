@@ -202,16 +202,16 @@ void FirFilter::connect(gr::top_block_sptr top_block)
                 }
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-    		&& (output_item_type_.compare("gr_complex") == 0))
+            && (output_item_type_.compare("gr_complex") == 0))
         {
             top_block->connect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
-    	    top_block->connect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
-    	    top_block->connect(fir_filter_fff_1_, 0, float_to_complex_, 0);
-    	    top_block->connect(fir_filter_fff_2_, 0, float_to_complex_, 1);
-    	    if (dump_)
-    	        {
-    		        top_block->connect(float_to_complex_, 0, file_sink_, 0);
-    	        }
+            top_block->connect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
+            top_block->connect(fir_filter_fff_1_, 0, float_to_complex_, 0);
+            top_block->connect(fir_filter_fff_2_, 0, float_to_complex_, 1);
+            if (dump_)
+                {
+                    top_block->connect(float_to_complex_, 0, file_sink_, 0);
+                }
         }
     else
         {
@@ -272,16 +272,16 @@ void FirFilter::disconnect(gr::top_block_sptr top_block)
                 }
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-    		&& (output_item_type_.compare("gr_complex") == 0))
+            && (output_item_type_.compare("gr_complex") == 0))
         {
             top_block->disconnect(cshort_to_float_x2_, 0, fir_filter_fff_1_, 0);
-    	    top_block->disconnect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
-    	    top_block->disconnect(fir_filter_fff_1_, 0, float_to_complex_, 0);
-    	    top_block->disconnect(fir_filter_fff_2_, 0, float_to_complex_, 1);
-    	    if (dump_)
-    	        {
-    		        top_block->disconnect(float_to_complex_, 0, file_sink_, 0);
-    	        }
+            top_block->disconnect(cshort_to_float_x2_, 1, fir_filter_fff_2_, 0);
+            top_block->disconnect(fir_filter_fff_1_, 0, float_to_complex_, 0);
+            top_block->disconnect(fir_filter_fff_2_, 0, float_to_complex_, 1);
+            if (dump_)
+                {
+                    top_block->disconnect(float_to_complex_, 0, file_sink_, 0);
+                }
         }
     else
         {
@@ -314,7 +314,7 @@ gr::basic_block_sptr FirFilter::get_left_block()
             return cbyte_to_float_x2_;
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-    		&& (output_item_type_.compare("gr_complex") == 0))
+            && (output_item_type_.compare("gr_complex") == 0))
         {
             return cshort_to_float_x2_;
         }
@@ -350,7 +350,7 @@ gr::basic_block_sptr FirFilter::get_right_block()
             return char_x2_cbyte_;
         }
     else if ((taps_item_type_.compare("float") == 0) && (input_item_type_.compare("cshort") == 0)
-      		&& (output_item_type_.compare("gr_complex") == 0))
+              && (output_item_type_.compare("gr_complex") == 0))
         {
             return float_to_complex_;
         }

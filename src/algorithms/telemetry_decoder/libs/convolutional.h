@@ -49,7 +49,7 @@ const float MAXLOG = 1e7;  /* Define infinity */
 
 /*!
  * \brief Determines if a symbol has odd (1) or even (0) parity
- *	Output parameters:
+ *    Output parameters:
  * \return (returned int): The symbol's parity = 1 for odd and 0 for even
  *
  * \param[in] symbol  The integer-valued symbol
@@ -82,7 +82,7 @@ static int parity_counter(int symbol, int length)
  * \param[in]  KK        The constraint length of the convolutional code.
  * \param[out] output_p[]     An n-element vector containing the encoded bits.
  * \param[out] state_out_p[]  An integer containing the final state of the encoder
- *					(i.e. the state after encoding this bit)
+ *                               (i.e. the state after encoding this bit)
  *
  * This function is used by nsc_transit()
  */
@@ -193,7 +193,7 @@ static void Viterbi(int output_u_int[],
     float *prev_section, *next_section;
     int *prev_bit;
     int *prev_state;
-    float *metric_c;	/* Set of all possible branch metrics */
+    float *metric_c;    /* Set of all possible branch metrics */
     float *rec_array;   /* Received values for one trellis section */
     float max_val;
 
@@ -222,7 +222,7 @@ static void Viterbi(int output_u_int[],
     for (t = 0; t < LL + mm; t++)
         {
             for (i = 0; i < nn; i++)
-        	    rec_array[i] = static_cast<float>(input_c[nn*t + i]);
+                rec_array[i] = static_cast<float>(input_c[nn*t + i]);
 
             /* precompute all possible branch metrics */
             for (i = 0; i < number_symbols; i++)

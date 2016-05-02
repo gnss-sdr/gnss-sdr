@@ -35,7 +35,7 @@
  */
 
 #ifndef GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
-#define	GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
+#define GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
 
 #include <fstream>
 #include <queue>

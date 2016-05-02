@@ -59,15 +59,15 @@ public:
      * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ref time data on disk file.
      */
     void serialize(Archive& archive, const unsigned int version)
-        {
-	    using boost::serialization::make_nvp;
-	    if(version){};
-	    archive & make_nvp("valid", valid);
-	    archive & make_nvp("d_TOW", d_TOW);
-	    archive & make_nvp("d_Week", d_Week);
-	    archive & make_nvp("d_tv_sec", d_tv_sec);
-	    archive & make_nvp("d_tv_usec", d_tv_usec);
-        }
+    {
+        using boost::serialization::make_nvp;
+        if(version){};
+        archive & make_nvp("valid", valid);
+        archive & make_nvp("d_TOW", d_TOW);
+        archive & make_nvp("d_Week", d_Week);
+        archive & make_nvp("d_tv_sec", d_tv_sec);
+        archive & make_nvp("d_tv_usec", d_tv_usec);
+    }
 };
 
 #endif

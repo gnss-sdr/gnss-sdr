@@ -116,35 +116,35 @@ void GpsL1CaPcpsOpenClAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
     if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_channel(channel_);
-    }
+        {
+            acquisition_cc_->set_channel(channel_);
+        }
 }
 
 
 void GpsL1CaPcpsOpenClAcquisition::set_threshold(float threshold)
 {
-	float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
 
-	if(pfa==0.0)
+    if(pfa == 0.0)
         {
-                 pfa = configuration_->property(role_+".pfa", 0.0);
+            pfa = configuration_->property(role_ + ".pfa", 0.0);
         }
-	if(pfa==0.0)
-		{
-			threshold_ = threshold;
-		}
-	else
-		{
-			threshold_ = calculate_threshold(pfa);
-		}
+    if(pfa == 0.0)
+        {
+            threshold_ = threshold;
+        }
+    else
+        {
+            threshold_ = calculate_threshold(pfa);
+        }
 
-	DLOG(INFO) <<"Channel "<<channel_<<" Threshold = " << threshold_;
+    DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
     if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_threshold(threshold_);
-    }
+        {
+            acquisition_cc_->set_threshold(threshold_);
+        }
 }
 
 
@@ -152,9 +152,9 @@ void GpsL1CaPcpsOpenClAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
     if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_doppler_max(doppler_max_);
-    }
+        {
+            acquisition_cc_->set_doppler_max(doppler_max_);
+        }
 }
 
 
@@ -202,53 +202,53 @@ void GpsL1CaPcpsOpenClAcquisition::init()
 void GpsL1CaPcpsOpenClAcquisition::set_local_code()
 {
     if (item_type_.compare("gr_complex") == 0)
-    {
-        std::complex<float>* code = new std::complex<float>[code_length_];
+        {
+            std::complex<float>* code = new std::complex<float>[code_length_];
 
-        gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
+            gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
 
-        for (unsigned int i = 0; i < sampled_ms_; i++)
-            {
-                memcpy(&(code_[i*code_length_]), code,
-                       sizeof(gr_complex)*code_length_);
-            }
+            for (unsigned int i = 0; i < sampled_ms_; i++)
+                {
+                    memcpy(&(code_[i*code_length_]), code,
+                            sizeof(gr_complex)*code_length_);
+                }
 
-        acquisition_cc_->set_local_code(code_);
+            acquisition_cc_->set_local_code(code_);
 
-        delete[] code;
-    }
+            delete[] code;
+        }
 }
 
 
 void GpsL1CaPcpsOpenClAcquisition::reset()
 {
     if (item_type_.compare("gr_complex") == 0)
-    {
-        acquisition_cc_->set_active(true);
-    }
+        {
+            acquisition_cc_->set_active(true);
+        }
 }
 
 
 float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa)
 {
-	//Calculate the threshold
+    //Calculate the threshold
 
-	unsigned int frequency_bins = 0;
-	for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
-	{
-	 	frequency_bins++;
-	}
+    unsigned int frequency_bins = 0;
+    for (int doppler = (int)(-doppler_max_); doppler <= (int)doppler_max_; doppler += doppler_step_)
+        {
+            frequency_bins++;
+        }
 
-	DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
+    DLOG(INFO) << "Channel " << channel_ << "  Pfa = " << pfa;
 
-	unsigned int ncells = vector_length_ * frequency_bins;
-	double exponent = 1 / static_cast<double>(ncells);
-	double val = pow(1.0 - pfa, exponent);
-	double lambda = double(vector_length_);
-	boost::math::exponential_distribution<double> mydist (lambda);
-	float threshold = (float)quantile(mydist,val);
+    unsigned int ncells = vector_length_ * frequency_bins;
+    double exponent = 1 / static_cast<double>(ncells);
+    double val = pow(1.0 - pfa, exponent);
+    double lambda = double(vector_length_);
+    boost::math::exponential_distribution<double> mydist (lambda);
+    float threshold = (float)quantile(mydist,val);
 
-	return threshold;
+    return threshold;
 }
 
 
@@ -258,16 +258,15 @@ void GpsL1CaPcpsOpenClAcquisition::connect(gr::top_block_sptr top_block)
         {
             top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
-
 }
 
 
 void GpsL1CaPcpsOpenClAcquisition::disconnect(gr::top_block_sptr top_block)
 {
     if (item_type_.compare("gr_complex") == 0)
-    {
-        top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
-    }
+        {
+            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
+        }
 }
 
 

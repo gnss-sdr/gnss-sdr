@@ -96,17 +96,17 @@ bool Kml_Printer::set_headers(std::string filename,  bool time_tag_name)
             kml_file << std::setprecision(14);
             kml_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
                     << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl
-                    << "	<Document>" << std::endl
-                    << "	<name>GNSS Track</name>" << std::endl
-                    << "	<description>GNSS-SDR Receiver position log file created at " << asctime (timeinfo)
-                    << "	</description>" << std::endl
+                    << "    <Document>" << std::endl
+                    << "    <name>GNSS Track</name>" << std::endl
+                    << "    <description>GNSS-SDR Receiver position log file created at " << asctime (timeinfo)
+                    << "    </description>" << std::endl
                     << "<Style id=\"yellowLineGreenPoly\">" << std::endl
                     << " <LineStyle>" << std::endl
-                    << " 	<color>7f00ffff</color>" << std::endl
-                    << "		<width>1</width>" << std::endl
-                    << "	</LineStyle>" << std::endl
+                    << "     <color>7f00ffff</color>" << std::endl
+                    << "        <width>1</width>" << std::endl
+                    << "    </LineStyle>" << std::endl
                     << "<PolyStyle>" << std::endl
-                    << "	<color>7f00ff00</color>" << std::endl
+                    << "    <color>7f00ff00</color>" << std::endl
                     << "</PolyStyle>" << std::endl
                     << "</Style>" << std::endl
                     << "<Placemark>" << std::endl

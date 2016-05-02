@@ -58,9 +58,9 @@ bool cpu_multicorrelator_16sc::init(
 
 
 bool cpu_multicorrelator_16sc::set_local_code_and_taps(
-		int code_length_chips,
-		const lv_16sc_t* local_code_in,
-		float *shifts_chips)
+        int code_length_chips,
+        const lv_16sc_t* local_code_in,
+        float *shifts_chips)
 {
     d_local_code_in = local_code_in;
     d_shifts_chips = shifts_chips;

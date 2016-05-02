@@ -279,14 +279,14 @@ void gps_l2_m_dll_pll_tracking_cc::start_tracking()
 
 gps_l2_m_dll_pll_tracking_cc::~gps_l2_m_dll_pll_tracking_cc()
 {
-	d_dump_file.close();
+    d_dump_file.close();
 
-	volk_free(d_local_code_shift_chips);
-	volk_free(d_correlator_outs);
-	volk_free(d_ca_code);
+    volk_free(d_local_code_shift_chips);
+    volk_free(d_correlator_outs);
+    volk_free(d_ca_code);
 
-	delete[] d_Prompt_buffer;
-	multicorrelator_cpu.free();
+    delete[] d_Prompt_buffer;
+    multicorrelator_cpu.free();
 }
 
 
@@ -332,10 +332,10 @@ int gps_l2_m_dll_pll_tracking_cc::general_work (int noutput_items __attribute__(
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
             multicorrelator_cpu.set_input_output_vectors(d_correlator_outs, in);
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carr_phase_rad,
-            		d_carrier_phase_step_rad,
-            		d_rem_code_phase_chips,
-            		d_code_phase_step_chips,
-            		d_current_prn_length_samples);
+                    d_carrier_phase_step_rad,
+                    d_rem_code_phase_chips,
+                    d_code_phase_step_chips,
+                    d_current_prn_length_samples);
 
             // ################## PLL ##########################################################
             // PLL discriminator

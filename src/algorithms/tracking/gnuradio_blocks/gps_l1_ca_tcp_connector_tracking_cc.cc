@@ -209,9 +209,9 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::start_tracking()
     // of the receiver operation when is connecting to simulink server.
     //    if (d_sample_counter<d_acq_sample_stamp)
     //    {
-    //    	acq_trk_diff_samples=0; //disable the correction
+    //        acq_trk_diff_samples=0; //disable the correction
     //    }else{
-    //    	acq_trk_diff_samples = d_sample_counter - d_acq_sample_stamp;//-d_vector_length;
+    //        acq_trk_diff_samples = d_sample_counter - d_acq_sample_stamp;//-d_vector_length;
     //    }
     acq_trk_diff_samples = (long int)d_sample_counter - (long int)d_acq_sample_stamp;
     std::cout << "acq_trk_diff_samples=" << acq_trk_diff_samples << std::endl;
@@ -357,10 +357,10 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work (int noutput_items __attri
             double rem_code_phase_chips = d_rem_code_phase_samples * (d_code_freq_hz / d_fs_in);
 
             multicorrelator_cpu.Carrier_wipeoff_multicorrelator_resampler(d_rem_carr_phase_rad,
-            		carr_phase_step_rad,
-            		rem_code_phase_chips,
-            		d_code_phase_step_chips,
-            		d_current_prn_length_samples);
+                    carr_phase_step_rad,
+                    rem_code_phase_chips,
+                    d_code_phase_step_chips,
+                    d_current_prn_length_samples);
 
             //! Variable used for control
             d_control_id++;

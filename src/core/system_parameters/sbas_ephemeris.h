@@ -51,7 +51,7 @@ public:
     double d_vel[3];      //!<  Satellite velocity (m/s) (ECEF)
     double d_acc[3];      //!<  Satellite acceleration (m/s^2) (ECEF)
     double d_af0;         //!<  Satellite clock-offset (s)
-    double d_af1;     	  //!<  Satellite drift (s/s)
+    double d_af1;           //!<  Satellite drift (s/s)
 };
 
 

@@ -44,10 +44,7 @@ gnss_sdr_valve::gnss_sdr_valve (size_t sizeof_stream_item,
 {}
 
 
-
-boost::shared_ptr<gr::block> gnss_sdr_make_valve (size_t sizeof_stream_item,
-        unsigned long long nitems,
-        gr::msg_queue::sptr queue)
+boost::shared_ptr<gr::block> gnss_sdr_make_valve (size_t sizeof_stream_item, unsigned long long nitems, gr::msg_queue::sptr queue)
 {
     boost::shared_ptr<gnss_sdr_valve> valve_(new gnss_sdr_valve(sizeof_stream_item, nitems, queue));
     return valve_;
@@ -61,11 +58,10 @@ int gnss_sdr_valve::work (int noutput_items,
 {
     if (d_ncopied_items >= d_nitems)
         {
-
             ControlMessageFactory* cmf = new ControlMessageFactory();
             d_queue->handle(cmf->GetQueueMessage(200,0));
             delete cmf;
-            return -1;	// Done!
+            return -1;    // Done!
         }
     unsigned long long n = std::min(d_nitems - d_ncopied_items, (long long unsigned int)noutput_items);
     if (n == 0) return 0;

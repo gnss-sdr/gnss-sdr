@@ -61,9 +61,9 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
         int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
         long fs_in, int samples_per_ms, boost::shared_ptr<gr::msg_queue> queue, bool dump,
         std::string dump_filename) :
-		        gr::block("pcps_acquisition_fine_doppler_cc",
-		                gr::io_signature::make(1, 1, sizeof(gr_complex)),
-		                gr::io_signature::make(0, 0, sizeof(gr_complex)))
+                gr::block("pcps_acquisition_fine_doppler_cc",
+                        gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                        gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;    // SAMPLE COUNTER
@@ -393,32 +393,32 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
             DLOG(INFO) <<  "Error estimating fine frequency Doppler";
             //debug log
             //
-            //		std::cout<<"FFT maximum present at "<<fftFreqBins[tmp_index_freq]<<" [Hz]"<<std::endl;
-            //		std::stringstream filename;
-            //		std::streamsize n = sizeof(gr_complex) * (d_fft_size);
+            //        std::cout<<"FFT maximum present at "<<fftFreqBins[tmp_index_freq]<<" [Hz]"<<std::endl;
+            //        std::stringstream filename;
+            //        std::streamsize n = sizeof(gr_complex) * (d_fft_size);
             //
-            //		filename.str("");
-            //		filename << "../data/code_prn_" << d_gnss_synchro->PRN << ".dat";
-            //		d_dump_file.open(filename.str().c_str(), std::ios::out
-            //				| std::ios::binary);
-            //		d_dump_file.write((char*)code_replica, n); //write directly |abs(x)|^2 in this Doppler bin?
-            //		d_dump_file.close();
+            //        filename.str("");
+            //        filename << "../data/code_prn_" << d_gnss_synchro->PRN << ".dat";
+            //        d_dump_file.open(filename.str().c_str(), std::ios::out
+            //                | std::ios::binary);
+            //        d_dump_file.write((char*)code_replica, n); //write directly |abs(x)|^2 in this Doppler bin?
+            //        d_dump_file.close();
             //
-            //		filename.str("");
-            //		filename << "../data/signal_prn_" << d_gnss_synchro->PRN << ".dat";
-            //		d_dump_file.open(filename.str().c_str(), std::ios::out
-            //				| std::ios::binary);
-            //		d_dump_file.write((char*)in, n); //write directly |abs(x)|^2 in this Doppler bin?
-            //		d_dump_file.close();
+            //        filename.str("");
+            //        filename << "../data/signal_prn_" << d_gnss_synchro->PRN << ".dat";
+            //        d_dump_file.open(filename.str().c_str(), std::ios::out
+            //                | std::ios::binary);
+            //        d_dump_file.write((char*)in, n); //write directly |abs(x)|^2 in this Doppler bin?
+            //        d_dump_file.close();
             //
             //
-            //		n = sizeof(float) * (fft_size_extended);
-            //		filename.str("");
-            //		filename << "../data/fft_prn_" << d_gnss_synchro->PRN << ".dat";
-            //		d_dump_file.open(filename.str().c_str(), std::ios::out
-            //				| std::ios::binary);
-            //		d_dump_file.write((char*)p_tmp_vector, n); //write directly |abs(x)|^2 in this Doppler bin?
-            //		d_dump_file.close();
+            //        n = sizeof(float) * (fft_size_extended);
+            //        filename.str("");
+            //        filename << "../data/fft_prn_" << d_gnss_synchro->PRN << ".dat";
+            //        d_dump_file.open(filename.str().c_str(), std::ios::out
+            //                | std::ios::binary);
+            //        d_dump_file.write((char*)p_tmp_vector, n); //write directly |abs(x)|^2 in this Doppler bin?
+            //        d_dump_file.close();
         }
 
 
@@ -436,17 +436,17 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 {
 
     /*!
-     * TODO: 	High sensitivity acquisition algorithm:
-     * 			State Mechine:
-     * 			S0. StandBy. If d_active==1 -> S1
-     * 			S1. ComputeGrid. Perform the FFT acqusition doppler and delay grid.
-     * 				Accumulate the search grid matrix (#doppler_bins x #fft_size)
-     * 				Compare maximum to threshold and decide positive or negative
-     * 				If T>=gamma -> S4 else
-     * 				If d_well_count<max_dwells -> S2
-     * 				else -> S5.
-     * 			S4. Positive_Acq: Send message and stop acq -> S0
-     * 			S5. Negative_Acq: Send message and stop acq -> S0
+     * TODO:     High sensitivity acquisition algorithm:
+     *             State Mechine:
+     *             S0. StandBy. If d_active==1 -> S1
+     *             S1. ComputeGrid. Perform the FFT acqusition doppler and delay grid.
+     *                 Accumulate the search grid matrix (#doppler_bins x #fft_size)
+     *                 Compare maximum to threshold and decide positive or negative
+     *                 If T>=gamma -> S4 else
+     *                 If d_well_count<max_dwells -> S2
+     *                 else -> S5.
+     *             S4. Positive_Acq: Send message and stop acq -> S0
+     *             S5. Negative_Acq: Send message and stop acq -> S0
      */
 
     switch (d_state)

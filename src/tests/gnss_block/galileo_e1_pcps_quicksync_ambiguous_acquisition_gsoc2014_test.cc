@@ -290,7 +290,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_2()
     max_delay_error_chips = 0.50;
 
     /*Unset this flag to eliminates data logging for the Validation of results
-	probabilities test*/
+    probabilities test*/
     dump_test_results = true;
 
     num_of_realizations = 100;

@@ -310,8 +310,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items __attribu
     double old_d_rem_code_phase_samples;
     if (d_enable_tracking == true)
         {
-
-    		// Fill the acquisition data
+            // Fill the acquisition data
             current_synchro_data = *d_acquisition_gnss_synchro;
             // Receiver signal alignment
             if (d_pull_in == true)
@@ -338,10 +337,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items __attribu
             memcpy(in_gpu, in, sizeof(gr_complex) * d_correlation_length_samples);
             cudaProfilerStart();
             multicorrelator_gpu->Carrier_wipeoff_multicorrelator_resampler_cuda( static_cast<float>(d_rem_carrier_phase_rad),
-            		static_cast<float>(d_carrier_phase_step_rad),
-            		static_cast<float>(d_code_phase_step_chips),
-            		static_cast<float>(d_rem_code_phase_chips),
-            		d_correlation_length_samples, d_n_correlator_taps);
+                    static_cast<float>(d_carrier_phase_step_rad),
+                    static_cast<float>(d_code_phase_step_chips),
+                    static_cast<float>(d_rem_code_phase_chips),
+                    d_correlation_length_samples, d_n_correlator_taps);
             cudaProfilerStop();
             //std::cout<<"c_out[0]="<<d_correlator_outs[0]<<"c_out[1]="<<d_correlator_outs[1]<<"c_out[2]="<<d_correlator_outs[2]<<std::endl;
 
@@ -388,7 +387,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work (int noutput_items __attribu
             d_rem_code_phase_samples = K_blk_samples - static_cast<double>(d_correlation_length_samples); //rounding error < 1 sample
 
             // UPDATE REMNANT CARRIER PHASE
-            CORRECTED_INTEGRATION_TIME_S=(static_cast<double>(d_correlation_length_samples)/static_cast<double>(d_fs_in));
+            CORRECTED_INTEGRATION_TIME_S = (static_cast<double>(d_correlation_length_samples)/static_cast<double>(d_fs_in));
             //remnant carrier phase [rad]
             d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S, GPS_TWO_PI);
             // UPDATE CARRIER PHASE ACCUULATOR

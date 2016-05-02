@@ -46,13 +46,13 @@ using google::LogMessage;
 
 
 DEFINE_string(signal_source, "-",
-		"If defined, path to the file containing the signal samples (overrides the configuration file)");
+        "If defined, path to the file containing the signal samples (overrides the configuration file)");
 
 
 FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         std::string role, unsigned int in_streams, unsigned int out_streams,
         boost::shared_ptr<gr::msg_queue> queue) :
-		                role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+                        role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
 {
     std::string default_filename = "./example_capture.dat";
     std::string default_item_type = "short";
@@ -99,11 +99,11 @@ FileSignalSource::FileSignalSource(ConfigurationInterface* configuration,
         }
     else if (item_type_.compare("byte") == 0)
         {
-    		item_size_ = sizeof(int8_t);
+            item_size_ = sizeof(int8_t);
         }
     else if (item_type_.compare("ibyte") == 0)
         {
-    		item_size_ = sizeof(int8_t);
+            item_size_ = sizeof(int8_t);
             is_complex = true;
         }
     else

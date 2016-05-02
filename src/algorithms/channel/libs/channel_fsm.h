@@ -55,10 +55,10 @@ class ChannelFsm: public sc::state_machine<ChannelFsm, channel_idle_fsm_S0>
 {
 public:
     ChannelFsm();
-    ChannelFsm(AcquisitionInterface *acquisition);
+    ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition);
 
-    void set_acquisition(AcquisitionInterface *acquisition);
-    void set_tracking(TrackingInterface *tracking);
+    void set_acquisition(std::shared_ptr<AcquisitionInterface> acquisition);
+    void set_tracking(std::shared_ptr<TrackingInterface> tracking);
     void set_queue(boost::shared_ptr<gr::msg_queue> queue);
     void set_channel(unsigned int channel);
     void start_acquisition();
@@ -75,8 +75,8 @@ public:
     void Event_failed_tracking_standby();
 
 private:
-    AcquisitionInterface *acq_;
-    TrackingInterface *trk_;
+    std::shared_ptr<AcquisitionInterface> acq_;
+    std::shared_ptr<TrackingInterface> trk_;
     boost::shared_ptr<gr::msg_queue> queue_;
     unsigned int channel_;
 };

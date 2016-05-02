@@ -37,8 +37,8 @@ using google::LogMessage;
 
 // Constructor
 ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configuration,
-        GNSSBlockInterface *data_type_adapt, GNSSBlockInterface *in_filt,
-        GNSSBlockInterface *res, std::string role, std::string implementation,
+        std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
+        std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation,
         boost::shared_ptr<gr::msg_queue> queue) : data_type_adapt_(data_type_adapt),
                 in_filt_(in_filt), res_(res), role_(role), implementation_(implementation),
                 queue_(queue)
@@ -50,17 +50,12 @@ ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configura
 
 // Destructor
 ArraySignalConditioner::~ArraySignalConditioner()
-{
-    delete data_type_adapt_;
-    delete in_filt_;
-    delete res_;
-}
-
+{}
 
 
 void ArraySignalConditioner::connect(gr::top_block_sptr top_block)
 {
-	// note: the array signal conditioner do not have data type adapter, and must use the array input filter (multichannel)
+    // note: the array signal conditioner do not have data type adapter, and must use the array input filter (multichannel)
     if (connected_)
         {
             LOG(WARNING) << "Array Signal conditioner already connected internally";
@@ -69,7 +64,6 @@ void ArraySignalConditioner::connect(gr::top_block_sptr top_block)
     //data_type_adapt_->connect(top_block);
     in_filt_->connect(top_block);
     res_->connect(top_block);
-
 
     //top_block->connect(data_type_adapt_->get_right_block(), 0, in_filt_->get_left_block(), 0);
     //DLOG(INFO) << "data_type_adapter -> input_filter";

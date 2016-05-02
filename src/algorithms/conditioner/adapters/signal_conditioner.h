@@ -51,8 +51,8 @@ class SignalConditioner: public GNSSBlockInterface
 public:
     //! Constructor
     SignalConditioner(ConfigurationInterface *configuration,
-            GNSSBlockInterface *data_type_adapt, GNSSBlockInterface *in_filt,
-            GNSSBlockInterface *res, std::string role, std::string implementation,
+            std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
+            std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation,
             boost::shared_ptr<gr::msg_queue> queue);
 
     //! Virtual destructor
@@ -68,14 +68,14 @@ public:
     std::string implementation(){ return "Signal_Conditioner"; }
     size_t item_size(){ return 0; }
 
-    GNSSBlockInterface *data_type_adapter(){ return data_type_adapt_; }
-    GNSSBlockInterface *input_filter(){ return in_filt_; }
-    GNSSBlockInterface *resampler(){ return res_; }
+    std::shared_ptr<GNSSBlockInterface> data_type_adapter(){ return data_type_adapt_; }
+    std::shared_ptr<GNSSBlockInterface> input_filter(){ return in_filt_; }
+    std::shared_ptr<GNSSBlockInterface> resampler(){ return res_; }
 
 private:
-    GNSSBlockInterface *data_type_adapt_;
-    GNSSBlockInterface *in_filt_;
-    GNSSBlockInterface *res_;
+    std::shared_ptr<GNSSBlockInterface> data_type_adapt_;
+    std::shared_ptr<GNSSBlockInterface> in_filt_;
+    std::shared_ptr<GNSSBlockInterface> res_;
     std::string role_;
     std::string implementation_;
     bool connected_;

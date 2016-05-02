@@ -199,21 +199,21 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
     if(signal_conditioner.compare("Array_Signal_Conditioner") == 0)
         {
             //instantiate the array version
-            std::unique_ptr<GNSSBlockInterface> conditioner_(new ArraySignalConditioner(configuration.get(), GetBlock(configuration,
-                    role_datatypeadapter, data_type_adapter, 1, 1, queue).release(), GetBlock(
-                            configuration,role_inputfilter, input_filter, 1, 1, queue).release(),
-                            GetBlock(configuration,role_resampler, resampler, 1, 1, queue).release(),
-                            role_conditioner, "Signal_Conditioner", queue));
+            std::unique_ptr<GNSSBlockInterface> conditioner_(new ArraySignalConditioner(configuration.get(), 
+                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1, queue)), 
+                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1, queue)),
+                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1, queue)),
+                role_conditioner, "Signal_Conditioner", queue));
             return conditioner_;
         }
     else
         {
             //single-antenna version
-            std::unique_ptr<GNSSBlockInterface> conditioner_(new SignalConditioner(configuration.get(), GetBlock(configuration,
-                    role_datatypeadapter, data_type_adapter, 1, 1, queue).release(), GetBlock(
-                            configuration,role_inputfilter, input_filter, 1, 1, queue).release(),
-                            GetBlock(configuration,role_resampler, resampler, 1, 1, queue).release(),
-                            role_conditioner, "Signal_Conditioner", queue));
+            std::unique_ptr<GNSSBlockInterface> conditioner_(new SignalConditioner(configuration.get(),
+                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1, queue)), 
+                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1, queue)),
+                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1, queue)),
+                role_conditioner, "Signal_Conditioner", queue));
             return conditioner_;
         }
 }
@@ -296,10 +296,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1C"+ appendix2, trk, 1, 1, queue);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1C" + appendix3, tlm, 1, 1);
 
-    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
-            acq_.release(),
-            trk_.release(),
-            tlm_.release(),
+    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, std::move(pass_through_),
+            std::move(acq_),
+            std::move(trk_),
+            std::move(tlm_),
             "Channel", "1C", queue));
 
     return channel_;
@@ -351,10 +351,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_2S(
 
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_2S" + appendix3, tlm, 1, 1);
 
-    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
-            acq_.release(),
-            trk_.release(),
-            tlm_.release(),
+    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, std::move(pass_through_),
+            std::move(acq_),
+            std::move(trk_),
+            std::move(tlm_),
             "Channel", "2S", queue));
 
     return channel_;
@@ -407,10 +407,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1B(
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_1B" + appendix2, trk, 1, 1, queue);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_1B" + appendix3, tlm, 1, 1);
 
-    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
-            acq_.release(),
-            trk_.release(),
-            tlm_.release(),
+    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, std::move(pass_through_),
+            std::move(acq_),
+            std::move(trk_),
+            std::move(tlm_),
             "Channel", "1B", queue));
 
     return channel_;
@@ -463,10 +463,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_5X(
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_5X" + appendix2, trk, 1, 1, queue);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_5X" + appendix3, tlm, 1, 1);
 
-    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, pass_through_.release(),
-            acq_.release(),
-            trk_.release(),
-            tlm_.release(),
+    std::unique_ptr<GNSSBlockInterface> channel_(new Channel(configuration.get(), channel, std::move(pass_through_),
+            std::move(acq_),
+            std::move(trk_),
+            std::move(tlm_),
             "Channel", "5X", queue));
 
     return channel_;

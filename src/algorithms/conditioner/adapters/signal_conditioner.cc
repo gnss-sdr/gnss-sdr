@@ -37,8 +37,8 @@ using google::LogMessage;
 
 // Constructor
 SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
-        GNSSBlockInterface *data_type_adapt, GNSSBlockInterface *in_filt,
-        GNSSBlockInterface *res, std::string role, std::string implementation,
+        std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
+        std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation,
         boost::shared_ptr<gr::msg_queue> queue) : data_type_adapt_(data_type_adapt),
                 in_filt_(in_filt), res_(res), role_(role), implementation_(implementation),
                 queue_(queue)
@@ -50,11 +50,7 @@ SignalConditioner::SignalConditioner(ConfigurationInterface *configuration,
 
 // Destructor
 SignalConditioner::~SignalConditioner()
-{
-    delete data_type_adapt_;
-    delete in_filt_;
-    delete res_;
-}
+{}
 
 
 void SignalConditioner::connect(gr::top_block_sptr top_block)

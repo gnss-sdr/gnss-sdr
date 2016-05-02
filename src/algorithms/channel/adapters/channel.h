@@ -61,8 +61,8 @@ class Channel: public ChannelInterface
 public:
     //! Constructor
     Channel(ConfigurationInterface *configuration, unsigned int channel,
-            GNSSBlockInterface *pass_through, AcquisitionInterface *acq,
-            TrackingInterface *trk, TelemetryDecoderInterface *nav,
+            std::shared_ptr<GNSSBlockInterface> pass_through, std::shared_ptr<AcquisitionInterface> acq,
+            std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
             std::string role, std::string implementation,
             boost::shared_ptr<gr::msg_queue> queue);
     //! Virtual destructor
@@ -77,9 +77,9 @@ public:
     std::string implementation(){ return implementation_; }
     size_t item_size(){ return 0; }
     Gnss_Signal get_signal() const { return gnss_signal_; }
-    AcquisitionInterface* acquisition(){ return acq_; }
-    TrackingInterface* tracking(){ return trk_; }
-    TelemetryDecoderInterface* telemetry(){ return nav_; }
+    std::shared_ptr<AcquisitionInterface> acquisition(){ return acq_; }
+    std::shared_ptr<TrackingInterface> tracking(){ return trk_; }
+    std::shared_ptr<TelemetryDecoderInterface> telemetry(){ return nav_; }
     void start_acquisition();                   //!< Start the State Machine
     void set_signal(const Gnss_Signal& gnss_signal_);  //!< Sets the channel GNSS signal
 
@@ -88,10 +88,10 @@ public:
 
 private:
     channel_msg_receiver_cc_sptr channel_msg_rx;
-    GNSSBlockInterface *pass_through_;
-    AcquisitionInterface *acq_;
-    TrackingInterface *trk_;
-    TelemetryDecoderInterface *nav_;
+    std::shared_ptr<GNSSBlockInterface> pass_through_;
+    std::shared_ptr<AcquisitionInterface> acq_;
+    std::shared_ptr<TrackingInterface> trk_;
+    std::shared_ptr<TelemetryDecoderInterface> nav_;
     std::string role_;
     std::string implementation_;
     unsigned int channel_;

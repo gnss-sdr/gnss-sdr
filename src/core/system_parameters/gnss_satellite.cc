@@ -261,7 +261,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 block_ = std::string("IIF");   //Plane E
                 break;
             case 4 :
-                block_ = std::string("IIA");   //Plane D
+                block_ = std::string("Unknown");
                 break;
             case 5 :
                 block_ = std::string("IIR-M"); //Plane E
@@ -273,13 +273,13 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 block_ = std::string("IIR-M"); //Plane A
                 break;
             case 8 :
-                block_ = std::string("IIA*");   // Decommissed
+                block_ = std::string("IIF");   //Plane C
                 break;
             case 9 :
                 block_ = std::string("IIF");   //Plane F
                 break;
             case 10 :
-                block_ = std::string("IIA");   //Plane E
+                block_ = std::string("IIF");   //Plane E
                 break;
             case 11 :
                 block_ = std::string("IIR");   //Plane D
@@ -345,7 +345,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 block_ = std::string("IIR-M"); //Plane A
                 break;
             case 32 :
-                block_ = std::string("IIA");   //Plane E
+                block_ = std::string("IIF");   //Plane F
                 break;
             default :
                 block_ = std::string("Unknown");
@@ -504,13 +504,13 @@ std::string Gnss_Satellite::what_block(const std::string& system_, unsigned int 
                 block_ = std::string("IOV-FM3"); // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3), launched on October 12, 2012
                 break;
             case 20 :
-                block_ = std::string("IOV-FM4"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4), launched on October 12, 2012. Unavailable.
+                block_ = std::string("IOV-FM4**"); // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4), launched on October 12, 2012. Unavailable: Payload power problem.
                 break;
             case 18 :
-                block_ = std::string("FOC-FM1"); // Galileo Full Operational Capability (FOC) satellite FM1, launched into incorrect orbit on August 22, 2014.
+                block_ = std::string("FOC-FM1*"); // Galileo Full Operational Capability (FOC) satellite FM1, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in December, 2014.
                 break;
             case 14 :
-                block_ = std::string("FOC-FM2"); // Galileo Full Operational Capability (FOC) satellite FM2, launched into incorrect orbit on August 22, 2014.
+                block_ = std::string("FOC-FM2*"); // Galileo Full Operational Capability (FOC) satellite FM2, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in March, 2015.
                 break;
             case 22 :
                 block_ = std::string("FOC-FM4"); // Galileo Full Operational Capability (FOC) satellite FM4, launched on March 27, 2015.

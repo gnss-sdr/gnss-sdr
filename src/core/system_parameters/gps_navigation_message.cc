@@ -33,6 +33,7 @@ m * \file gps_navigation_message.cc
 #include "gps_navigation_message.h"
 #include <cmath>
 #include <iostream>
+#include <gnss_satellite.h>
 
 
 void Gps_Navigation_Message::reset()
@@ -136,44 +137,12 @@ void Gps_Navigation_Message::reset()
     d_satvel_Y = 0;
     d_satvel_Z = 0;
 
-    //Plane A (info from http://www.navcen.uscg.gov/?Do=constellationStatus)
-    satelliteBlock[9] = "IIA";
-    satelliteBlock[31] = "IIR-M";
-    satelliteBlock[8] = "IIA";
-    satelliteBlock[7] = "IIR-M";
-    satelliteBlock[27] = "IIA";
-    //Plane B
-    satelliteBlock[16] = "IIR";
-    satelliteBlock[25] = "IIF";
-    satelliteBlock[28] = "IIR";
-    satelliteBlock[12] = "IIR-M";
-    satelliteBlock[30] = "IIA";
-    //Plane C
-    satelliteBlock[29] = "IIR-M";
-    satelliteBlock[3] = "IIA";
-    satelliteBlock[19] = "IIR";
-    satelliteBlock[17] = "IIR-M";
-    satelliteBlock[6] = "IIA";
-    //Plane D
-    satelliteBlock[2] = "IIR";
-    satelliteBlock[1] = "IIF";
-    satelliteBlock[21] = "IIR";
-    satelliteBlock[4] = "IIA";
-    satelliteBlock[11] = "IIR";
-    satelliteBlock[24] = "IIA"; // Decommissioned from active service on 04 Nov 2011
-    //Plane E
-    satelliteBlock[20] = "IIR";
-    satelliteBlock[22] = "IIR";
-    satelliteBlock[5] = "IIR-M";
-    satelliteBlock[18] = "IIR";
-    satelliteBlock[32] = "IIA";
-    satelliteBlock[10] = "IIA";
-    //Plane F
-    satelliteBlock[14] = "IIR";
-    satelliteBlock[15] = "IIR-M";
-    satelliteBlock[13] = "IIR";
-    satelliteBlock[23] = "IIR";
-    satelliteBlock[26] = "IIA";
+    auto gnss_sat = Gnss_Satellite();
+    std::string _system ("GPS");
+    for(unsigned int i = 1; i < 33; i++)
+        {
+            satelliteBlock[i] = gnss_sat.what_block(_system, i);
+        }
 }
 
 

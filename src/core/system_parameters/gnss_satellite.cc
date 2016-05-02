@@ -77,8 +77,9 @@ void Gnss_Satellite::reset()
 
 std::ostream& operator<<(std::ostream &out, const Gnss_Satellite &sat) // output
 {
-    //std::string psystem = sat::get_system()
-    out << sat.get_system() << " PRN " << sat.get_PRN() << " (Block " << sat.get_block() << ")";
+    std::string tag("");
+    if(sat.get_system().compare("Galileo") == 0) tag = "E";
+    out << sat.get_system() << " PRN " << tag << sat.get_PRN() << " (Block " << sat.get_block() << ")";
     return out;
 }
 

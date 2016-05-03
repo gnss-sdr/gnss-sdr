@@ -124,6 +124,13 @@ private:
     bool pseudoranges_pairCompare_min(const std::pair<int,Gnss_Synchro>& a, const std::pair<int,Gnss_Synchro>& b);
 
 public:
+    /*!
+     * \brief Get latest set of GPS L1 ephemeris from PVT block
+     *
+     * It is used to save the assistance data at the receiver shutdown
+     */
+    std::map<int,Gps_Ephemeris> get_GPS_L1_ephemeris_map();
+    
     ~hybrid_pvt_cc (); //!< Default destructor
 
     int general_work (int noutput_items, gr_vector_int &ninput_items,

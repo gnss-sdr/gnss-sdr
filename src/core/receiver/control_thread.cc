@@ -121,6 +121,9 @@ void ControlThread::run()
             LOG(ERROR) << "Unable to start flowgraph";
             return;
         }
+
+    //launch GNSS assistance process AFTER the flowgraph is running because the GNURadio asynchronous queues must be already running to transport msgs
+    assist_GNSS();
     // start the keyboard_listener thread
     keyboard_thread_ = boost::thread(&ControlThread::keyboard_listener, this);
 
@@ -247,98 +250,8 @@ bool ControlThread::read_assistance_from_XML()
     return ret;
 }
 
-
-//todo: The save assistance function needs to be moved to the PVT block because now the global maps are deprecated, and PVT is the only block that have all the information
-//bool ControlThread::save_assistance_to_XML()
-//{
-//    // return variable (true == succeeded)
-//    bool ret = false;
-//    // getting names from the config file, if available
-//    std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
-//    std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
-//    std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
-//    std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
-//    std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
-//
-//    LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename;
-//    std::map<int, Gps_Ephemeris> eph_copy = global_gps_ephemeris_map.get_map_copy();
-//    if (supl_client_ephemeris_.save_ephemeris_map_xml(eph_xml_filename, eph_copy) == true)
-//        {
-//            LOG(INFO) << "SUPL: Successfully saved ephemeris XML file";
-//            ret = true;
-//        }
-//    else
-//        {
-//            LOG(INFO) << "SUPL: Error while trying to save ephemeris XML file. Maybe an empty map?";
-//            ret = false;
-//        }
-//    // Only try to save {utc, iono, ref time, ref location} if SUPL is enabled
-//    bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
-//    if (enable_gps_supl_assistance == true)
-//        {
-//            // try to save utc model xml file
-//            std::map<int, Gps_Utc_Model> utc_copy = global_gps_utc_model_map.get_map_copy();
-//            if (supl_client_acquisition_.save_utc_map_xml(utc_xml_filename, utc_copy) == true)
-//                {
-//                    LOG(INFO) << "SUPL: Successfully saved UTC Model XML file";
-//                    //ret = true;
-//                }
-//            else
-//                {
-//                    LOG(INFO) << "SUPL: Error while trying to save utc XML file";
-//                    //ret = false;
-//                }
-//            // try to save iono model xml file
-//            std::map<int, Gps_Iono> iono_copy = global_gps_iono_map.get_map_copy();
-//            if (supl_client_acquisition_.save_iono_map_xml(iono_xml_filename, iono_copy) == true)
-//                {
-//                    LOG(INFO) << "SUPL: Successfully saved IONO Model XML file";
-//                    //ret = true;
-//                }
-//            else
-//                {
-//                    LOG(INFO) << "SUPL: Error while trying to save iono XML file";
-//                    //ret = false;
-//                }
-//            // try to save ref time xml file
-//            std::map<int, Gps_Ref_Time> ref_time_copy = global_gps_ref_time_map.get_map_copy();
-//            if (supl_client_acquisition_.save_ref_time_map_xml(ref_time_xml_filename, ref_time_copy) == true)
-//                {
-//                    LOG(INFO) << "SUPL: Successfully saved Ref Time XML file";
-//                    //ret = true;
-//                }
-//            else
-//                {
-//                    LOG(INFO) << "SUPL: Error while trying to save ref time XML file";
-//                    //ref = false;
-//                }
-//            // try to save ref location xml file
-//            std::map<int, Gps_Ref_Location> ref_location_copy = global_gps_ref_location_map.get_map_copy();
-//            if (supl_client_acquisition_.save_ref_location_map_xml(ref_location_xml_filename, ref_location_copy) == true)
-//                {
-//                    LOG(INFO) << "SUPL: Successfully saved Ref Location XML file";
-//                    //ref = true;
-//                }
-//            else
-//                {
-//                    LOG(INFO) << "SUPL: Error while trying to save ref location XML file";
-//                    //ret = false;
-//                }
-//        }
-//    return ret;
-//}
-
-
-void ControlThread::init()
+void ControlThread::assist_GNSS()
 {
-    // Instantiates a control queue, a GNSS flowgraph, and a control message factory
-    control_queue_ = gr::msg_queue::make(0);
-    flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
-    control_message_factory_ = std::make_shared<ControlMessageFactory>();
-    stop_ = false;
-    processed_control_messages_ = 0;
-    applied_actions_ = 0;
-
     //######### GNSS Assistance #################################
     // GNSS Assistance configuration
     bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
@@ -379,7 +292,9 @@ void ControlThread::init()
             if (SUPL_read_gps_assistance_xml == true)
                 {
                     // read assistance from file
-                    //if (read_assistance_from_XML()) {}
+                    if (read_assistance_from_XML()) {
+                        std::cout<<"GPS assistance data loaded from local XML file."<<std::endl;
+                    }
                 }
             else
                 {
@@ -414,11 +329,11 @@ void ControlThread::init()
                         {
                             std::cout << "ERROR: SUPL client for Ephemeris returned " << error << std::endl;
                             std::cout << "Please check internet connection and SUPL server configuration" << error << std::endl;
-                            //std::cout << "Trying to read ephemeris from XML file" << std::endl;
-                            //if (read_assistance_from_XML() == false)
-                            //    {
-                            //        std::cout << "ERROR: Could not read Ephemeris file: Disabling SUPL assistance.." << std::endl;
-                            //    }
+                            std::cout << "Trying to read ephemeris from XML file" << std::endl;
+                            if (read_assistance_from_XML() == false)
+                                {
+                                    std::cout << "ERROR: Could not read Ephemeris file: Disabling SUPL assistance.." << std::endl;
+                                }
                         }
 
                     // Request almanac , IONO and UTC Model
@@ -491,6 +406,17 @@ void ControlThread::init()
                         }
                 }
         }
+}
+void ControlThread::init()
+{
+    // Instantiates a control queue, a GNSS flowgraph, and a control message factory
+    control_queue_ = gr::msg_queue::make(0);
+    flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
+    control_message_factory_ = std::make_shared<ControlMessageFactory>();
+    stop_ = false;
+    processed_control_messages_ = 0;
+    applied_actions_ = 0;
+    
 }
 
 

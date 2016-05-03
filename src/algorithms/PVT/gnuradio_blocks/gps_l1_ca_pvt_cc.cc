@@ -144,6 +144,11 @@ void gps_l1_ca_pvt_cc::msg_handler_telemetry(pmt::pmt_t msg)
 }
 
 
+std::map<int,Gps_Ephemeris> gps_l1_ca_pvt_cc::get_GPS_L1_ephemeris_map()
+{
+    return d_ls_pvt->gps_ephemeris_map;
+}
+
 gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         bool dump, std::string dump_filename,
         int averaging_depth,

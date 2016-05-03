@@ -2338,7 +2338,7 @@ std::string Rtcm::print_MSM_7( const Gps_Ephemeris & gps_eph,
     if(gps_eph.i_satellite_PRN != 0) msg_number = 1077;
     if(gps_cnav_eph.i_satellite_PRN != 0) msg_number = 1077;
     if(gal_eph.i_satellite_PRN != 0) msg_number = 1097;
-    if(((gps_eph.i_satellite_PRN != 0) ||(gps_cnav_eph.i_satellite_PRN != 0) ) && (gal_eph.i_satellite_PRN != 0))
+    if(((gps_eph.i_satellite_PRN != 0) || (gps_cnav_eph.i_satellite_PRN != 0) ) && (gal_eph.i_satellite_PRN != 0))
         {
             LOG(WARNING) << "MSM messages for observables from different systems are not defined"; //print two messages?
         }
@@ -3835,7 +3835,10 @@ int Rtcm::set_DF399(const Gnss_Synchro & gnss_synchro)
             lambda = GPS_C_m_s / 1.207140e9; // Galileo_E1b_FREQ_HZ;
         }
 
-    double rough_phase_range_ms = std::round(- gnss_synchro.Carrier_Doppler_hz / lambda);
+    double rough_phase_range_ms = std::round(- gnss_synchro.Carrier_Doppler_hz * lambda );
+    //std::cout << rough_phase_range_ms << std::endl;
+    if(rough_phase_range_ms < - 8191) rough_phase_range_ms = -8191;
+    if(rough_phase_range_ms > 8191) rough_phase_range_ms = 8191;
     DF399 = std::bitset<14>(static_cast<int>(rough_phase_range_ms));
     return 0;
 }
@@ -3980,7 +3983,7 @@ int Rtcm::set_DF404(const Gnss_Synchro & gnss_synchro)
             lambda = GPS_C_m_s / 1.207140e9; // Galileo_E1b_FREQ_HZ;
         }
 
-    double phrr = std::round(- gnss_synchro.Carrier_Doppler_hz / lambda);
+    double phrr = std::round(- gnss_synchro.Carrier_Doppler_hz * lambda);
 
     if(phrr == 0.0)
           {

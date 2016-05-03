@@ -289,7 +289,6 @@ private:
     // Generation of messages content
     //
     std::bitset<64> get_MT1001_4_header(unsigned int msg_number,
-            const Gps_Ephemeris & gps_eph,
             double obs_time,
             const std::map<int, Gnss_Synchro> & pseudoranges,
             unsigned int ref_id,
@@ -304,9 +303,7 @@ private:
 
     std::bitset<152> get_MT1005_test();
 
-    std::string get_MSM_header(unsigned int msg_number, const Gps_Ephemeris & gps_eph,
-            const Gps_CNAV_Ephemeris & gps_cnav_eph,
-            const Galileo_Ephemeris & gal_eph,
+    std::string get_MSM_header(unsigned int msg_number,
             double obs_time,
             const std::map<int, Gnss_Synchro> & pseudoranges,
             unsigned int ref_id,
@@ -794,8 +791,7 @@ private:
     int set_DF003(unsigned int ref_station_ID);
 
     std::bitset<30> DF004;
-    int set_DF004(const Gps_Ephemeris & gps_eph, double obs_time);
-    int set_DF004(const Gps_CNAV_Ephemeris & gps_eph, double obs_time);
+    int set_DF004(double obs_time);
 
     std::bitset<1> DF005;
     int set_DF005(bool sync_flag);
@@ -979,7 +975,7 @@ private:
     int set_DF142(const Gps_Ephemeris & gps_eph);
 
     std::bitset<30> DF248;
-    int set_DF248(const Galileo_Ephemeris & gal_eph, double obs_time);
+    int set_DF248(double obs_time);
 
     // Contents of Galileo F/NAV Satellite Ephemeris Data, Message Type 1045
     std::bitset<6> DF252;

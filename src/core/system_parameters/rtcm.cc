@@ -397,7 +397,7 @@ std::string Rtcm::build_message(const std::string & data) const
 //
 // ********************************************************
 
-std::bitset<64> Rtcm::get_MT1001_4_header(unsigned int msg_number, const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges,
+std::bitset<64> Rtcm::get_MT1001_4_header(unsigned int msg_number, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges,
         unsigned int ref_id, unsigned int smooth_int, bool sync_flag, bool divergence_free)
 {
     unsigned int reference_station_id = ref_id; // Max: 4095
@@ -407,7 +407,7 @@ std::bitset<64> Rtcm::get_MT1001_4_header(unsigned int msg_number, const Gps_Eph
     unsigned int smoothing_interval = smooth_int;
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF003(reference_station_id);
-    Rtcm::set_DF004(gps_eph, obs_time);
+    Rtcm::set_DF004(obs_time);
     Rtcm::set_DF005(synchronous_GNSS_flag);
     Rtcm::set_DF006(pseudoranges_);
     Rtcm::set_DF007(divergence_free_smoothing_indicator);
@@ -469,7 +469,7 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
                 }
         }
 
-    std::bitset<64> header = Rtcm::get_MT1001_4_header(1001, gps_eph, obs_time, pseudorangesL1, ref_id, smooth_int, sync_flag, divergence_free);
+    std::bitset<64> header = Rtcm::get_MT1001_4_header(1001, obs_time, pseudorangesL1, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
     for(pseudoranges_iter = pseudorangesL1.begin();
@@ -519,7 +519,7 @@ std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, c
                 }
         }
 
-    std::bitset<64> header = Rtcm::get_MT1001_4_header(1002, gps_eph, obs_time, pseudorangesL1, ref_id, smooth_int, sync_flag, divergence_free);
+    std::bitset<64> header = Rtcm::get_MT1001_4_header(1002, obs_time, pseudorangesL1, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
     for(pseudoranges_iter = pseudorangesL1.begin();
@@ -623,7 +623,7 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
                 }
         }
 
-    std::bitset<64> header = Rtcm::get_MT1001_4_header(1003, ephL1, obs_time, pseudorangesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
+    std::bitset<64> header = Rtcm::get_MT1001_4_header(1003, obs_time, pseudorangesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
     for(common_pseudoranges_iter = common_pseudoranges.begin();
@@ -733,7 +733,7 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephem
                 }
         }
 
-    std::bitset<64> header = Rtcm::get_MT1001_4_header(1004, ephL1, obs_time, pseudorangesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
+    std::bitset<64> header = Rtcm::get_MT1001_4_header(1004, obs_time, pseudorangesL1_with_L2, ref_id, smooth_int, sync_flag, divergence_free);
     std::string data = header.to_string();
 
     for(common_pseudoranges_iter = common_pseudoranges.begin();
@@ -1600,8 +1600,7 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
             msg_number = 1071;
         }
 
-    std::string header = Rtcm::get_MSM_header(msg_number, gps_eph, gps_cnav_eph,
-             gal_eph,
+    std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
              pseudoranges,
              ref_id,
@@ -1626,9 +1625,7 @@ std::string Rtcm::print_MSM_1( const Gps_Ephemeris & gps_eph,
 }
 
 
-std::string Rtcm::get_MSM_header(unsigned int msg_number, const Gps_Ephemeris & gps_eph,
-        const Gps_CNAV_Ephemeris & gps_cnav_eph,
-        const Galileo_Ephemeris & gal_eph,
+std::string Rtcm::get_MSM_header(unsigned int msg_number,
         double obs_time,
         const std::map<int, Gnss_Synchro> & pseudoranges,
         unsigned int ref_id,
@@ -1640,18 +1637,7 @@ std::string Rtcm::get_MSM_header(unsigned int msg_number, const Gps_Ephemeris & 
 {
     Rtcm::set_DF002(msg_number);
     Rtcm::set_DF003(ref_id);
-    if(gps_eph.i_satellite_PRN != 0)
-        {
-            Rtcm::set_DF004(gps_eph, obs_time);
-        }
-    else if(gps_cnav_eph.i_satellite_PRN != 0)
-        {
-            Rtcm::set_DF004(gps_cnav_eph, obs_time);
-        }
-    else
-        {
-            Rtcm::set_DF248(gal_eph, obs_time);
-        }
+    Rtcm::set_DF004(obs_time);
     Rtcm::set_DF393(more_messages);
     Rtcm::set_DF409(0); // Issue of Data Station. 0: not utilized
     std::bitset<7> DF001_ = std::bitset<7>("0000000");
@@ -1664,14 +1650,7 @@ std::string Rtcm::get_MSM_header(unsigned int msg_number, const Gps_Ephemeris & 
     Rtcm::set_DF395(pseudoranges);
 
     std::string header = DF002.to_string() + DF003.to_string();
-    if(gps_eph.i_satellite_PRN != 0)
-        {
-            header += DF004.to_string();
-        }
-    else
-        {
-            header += DF248.to_string();
-        }
+    header += DF004.to_string();
     header = header + DF393.to_string() +
             DF409.to_string() +
             DF001_.to_string() +
@@ -1786,8 +1765,7 @@ std::string Rtcm::print_MSM_2( const Gps_Ephemeris & gps_eph,
             msg_number = 1072;
         }
 
-    std::string header = Rtcm::get_MSM_header(msg_number, gps_eph, gps_cnav_eph,
-             gal_eph,
+    std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
              pseudoranges,
              ref_id,
@@ -1882,8 +1860,7 @@ std::string Rtcm::print_MSM_3( const Gps_Ephemeris & gps_eph,
             msg_number = 1073;
         }
 
-    std::string header = Rtcm::get_MSM_header(msg_number, gps_eph, gps_cnav_eph,
-             gal_eph,
+    std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
              pseudoranges,
              ref_id,
@@ -1980,8 +1957,7 @@ std::string Rtcm::print_MSM_4( const Gps_Ephemeris & gps_eph,
             msg_number = 1074;
         }
 
-    std::string header = Rtcm::get_MSM_header(msg_number, gps_eph, gps_cnav_eph,
-             gal_eph,
+    std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
              pseudoranges,
              ref_id,
@@ -2121,8 +2097,7 @@ std::string Rtcm::print_MSM_5( const Gps_Ephemeris & gps_eph,
             msg_number = 1075;
         }
 
-    std::string header = Rtcm::get_MSM_header(msg_number, gps_eph, gps_cnav_eph,
-             gal_eph,
+    std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
              pseudoranges,
              ref_id,
@@ -2272,8 +2247,7 @@ std::string Rtcm::print_MSM_6( const Gps_Ephemeris & gps_eph,
             msg_number = 1076;
         }
 
-    std::string header = Rtcm::get_MSM_header(msg_number, gps_eph, gps_cnav_eph,
-             gal_eph,
+    std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
              pseudoranges,
              ref_id,
@@ -2374,8 +2348,7 @@ std::string Rtcm::print_MSM_7( const Gps_Ephemeris & gps_eph,
             msg_number = 1076;
         }
 
-    std::string header = Rtcm::get_MSM_header(msg_number, gps_eph, gps_cnav_eph,
-             gal_eph,
+    std::string header = Rtcm::get_MSM_header(msg_number,
              obs_time,
              pseudoranges,
              ref_id,
@@ -2776,24 +2749,10 @@ int Rtcm::set_DF003(unsigned int ref_station_ID)
 }
 
 
-int Rtcm::set_DF004(const Gps_Ephemeris & gps_eph, double obs_time)
+int Rtcm::set_DF004(double obs_time)
 {
     // TOW in milliseconds from the beginning of the GPS week, measured in GPS time
-    unsigned long int tow = static_cast<unsigned long int>(std::round((obs_time + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
-    if(tow > 604799999)
-        {
-            LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";
-            tow = 604799999;
-        }
-    DF004 = std::bitset<30>(tow);
-    return 0;
-}
-
-
-int Rtcm::set_DF004(const Gps_CNAV_Ephemeris & gps_eph, double obs_time)
-{
-    // TOW in milliseconds from the beginning of the GPS week, measured in GPS time
-    unsigned long int tow = static_cast<unsigned long int>(std::round((obs_time + 604800 * static_cast<double>(gps_eph.i_GPS_week % 1024)) * 1000));
+    unsigned long int tow = static_cast<unsigned long int>(std::round(obs_time * 1000));
     if(tow > 604799999)
         {
             LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";
@@ -3331,10 +3290,10 @@ int Rtcm::set_DF137(const Gps_Ephemeris & gps_eph)
 }
 
 
-int Rtcm::set_DF248(const Galileo_Ephemeris & gal_eph, double obs_time)
+int Rtcm::set_DF248(double obs_time)
 {
     // TOW in milliseconds from the beginning of the Galileo week, measured in Galileo time
-    unsigned long int tow = static_cast<unsigned long int>(std::round((obs_time + 604800 * static_cast<double>(gal_eph.WN_5)) * 1000));
+    unsigned long int tow = static_cast<unsigned long int>(std::round(obs_time * 1000));
     if(tow > 604799999)
         {
             LOG(WARNING) << "To large TOW! Set to the last millisecond of the week";

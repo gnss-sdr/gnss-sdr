@@ -3853,7 +3853,11 @@ int Rtcm::set_DF400(const Gnss_Synchro & gnss_synchro)
 
     psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
 
-    if(std::fabs(psrng_s) > 292.7)
+    if (psrng_s == 0)
+        {
+            fine_pseudorange = -16384;
+        }
+    else if(std::fabs(psrng_s) > 292.7)
         {
             fine_pseudorange = -16384; // 4000h: invalid value 
         }
@@ -3900,6 +3904,15 @@ int Rtcm::set_DF401(const Gnss_Synchro & gnss_synchro)
         }
 
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI ) * lambda - rough_range_m;
+
+    /* Substract phase - pseudorange integer cycle offset */
+    /* TODO: check LLI! */
+    double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI; // ?
+    if(std::fabs(phrng_m - cp) > 1171.0)
+        { 
+            cp = std::round(phrng_m / lambda) * lambda;
+        }
+    phrng_m -= cp;
 
     if(phrng_m == 0.0)
         {
@@ -4059,6 +4072,16 @@ int Rtcm::set_DF406(const Gnss_Synchro & gnss_synchro)
         }
 
     phrng_m = (gnss_synchro.Carrier_phase_rads / GPS_TWO_PI ) * lambda - rough_range_m;
+    
+    /* Substract phase - pseudorange integer cycle offset */
+    /* TODO: check LLI! */
+    double cp = gnss_synchro.Carrier_phase_rads / GPS_TWO_PI; // ?
+    if(std::fabs(phrng_m - cp) > 1171.0)
+        {
+            cp = std::round(phrng_m / lambda) * lambda;
+        }
+    phrng_m -= cp;
+
     if(phrng_m == 0.0)
         {
             fine_phaserange_ex = - 8388608;

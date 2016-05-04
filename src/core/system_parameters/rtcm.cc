@@ -2593,6 +2593,8 @@ unsigned int Rtcm::lock_time(const Gps_Ephemeris & eph, double obs_time, const G
         }
     boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN];
     lock_time_in_seconds = static_cast<unsigned int>(lock_duration.total_seconds());
+    // Debug:
+    // std::cout << "lock time PRN " << gnss_synchro.PRN << ": " << lock_time_in_seconds <<  "  current time: " << current_time << std::endl;
     return lock_time_in_seconds;
 }
 
@@ -2606,7 +2608,7 @@ unsigned int Rtcm::lock_time(const Gps_CNAV_Ephemeris & eph, double obs_time, co
         {
             Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN] = current_time;
         }
-    boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L1_last_lock_time[65 - gnss_synchro.PRN];
+    boost::posix_time::time_duration lock_duration = current_time - Rtcm::gps_L2_last_lock_time[65 - gnss_synchro.PRN];
     lock_time_in_seconds = static_cast<unsigned int>(lock_duration.total_seconds());
     return lock_time_in_seconds;
 }

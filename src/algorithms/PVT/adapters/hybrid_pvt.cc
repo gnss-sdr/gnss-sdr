@@ -90,7 +90,7 @@ HybridPvt::HybridPvt(ConfigurationInterface* configuration,
     const std::string iono_default_xml_filename = "./gps_iono.xml";
     const std::string ref_time_default_xml_filename = "./gps_ref_time.xml";
     const std::string ref_location_default_xml_filename = "./gps_ref_location.xml";
-    eph_xml_filename_= configuration->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
+    eph_xml_filename_ = configuration->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
     //std::string utc_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_utc_model.xml", utc_default_xml_filename);
     //std::string iono_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_iono_xml", iono_default_xml_filename);
     //std::string ref_time_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_time_xml", ref_time_default_xml_filename);
@@ -104,12 +104,9 @@ HybridPvt::HybridPvt(ConfigurationInterface* configuration,
 
 bool HybridPvt::save_assistance_to_XML()
 {
-    // return variable (true == succeeded)
-    bool ret = false;
-
     LOG(INFO) << "SUPL: Try to save GPS ephemeris to XML file " << eph_xml_filename_;
-
-    std::map<int,Gps_Ephemeris> eph_map=pvt_->get_GPS_L1_ephemeris_map();
+    std::map<int,Gps_Ephemeris> eph_map = pvt_->get_GPS_L1_ephemeris_map();
+    
     if (eph_map.size() > 0)
         {
             try
@@ -122,10 +119,10 @@ bool HybridPvt::save_assistance_to_XML()
                 }
             catch (std::exception& e)
                 {
-                    LOG(ERROR) << e.what();
+                    LOG(WARNING) << e.what();
                     return false;
                 }
-            return true;
+            return true;     // return variable (true == succeeded)
         }
     else
         {
@@ -134,10 +131,12 @@ bool HybridPvt::save_assistance_to_XML()
         }
 }
 
+
 HybridPvt::~HybridPvt()
 {
     save_assistance_to_XML();
 }
+
 
 void HybridPvt::connect(gr::top_block_sptr top_block)
 {
@@ -162,6 +161,6 @@ gr::basic_block_sptr HybridPvt::get_left_block()
 
 gr::basic_block_sptr HybridPvt::get_right_block()
 {
-    return pvt_;
+    return pvt_; // this is a sink, nothing downstream
 }
 

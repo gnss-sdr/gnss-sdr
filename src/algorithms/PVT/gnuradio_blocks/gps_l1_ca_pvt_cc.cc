@@ -271,19 +271,21 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
     // ############ 1. READ PSEUDORANGES ####
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
-            std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
-            gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
                     gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
                     d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
-                    d_rtcm_printer->lock_time(gps_ephemeris_iter->second, d_rx_time, in[i][0]); // keep track of locking time
-                }
-            else
-                {
-                    d_rtcm_printer->lock_time(gps_ephemeris_iter->second, 0.0, in[i][0]);
+                    if(d_ls_pvt->gps_ephemeris_map.size() > 0)
+                        {
+                            std::map<int,Gps_Ephemeris>::iterator tmp_eph_iter = d_ls_pvt->gps_ephemeris_map.find(in[i][0].PRN);
+                            if(tmp_eph_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                {
+                                    d_rtcm_printer->lock_time(d_ls_pvt->gps_ephemeris_map.find(in[i][0].PRN)->second, d_rx_time, in[i][0]); // keep track of locking time
+                                }
+                        }
                 }
         }
+
     // ############ 2 COMPUTE THE PVT ################################
     if (gnss_pseudoranges_map.size() > 0 and d_ls_pvt->gps_ephemeris_map.size() > 0)
         {

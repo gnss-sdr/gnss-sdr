@@ -1,6 +1,6 @@
 /*!
  * \file channel.cc
- * \brief Implementation of a GPS_L1_CA_Channel with a Finite State Machine
+ * \brief Implementation of a GNSS_Channel with a Finite State Machine
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
  *         Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *

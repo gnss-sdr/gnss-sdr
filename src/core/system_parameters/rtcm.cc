@@ -3835,11 +3835,11 @@ int Rtcm::set_DF399(const Gnss_Synchro & gnss_synchro)
             lambda = GPS_C_m_s / 1.207140e9; // Galileo_E1b_FREQ_HZ;
         }
 
-    double rough_phase_range_ms = std::round(- gnss_synchro.Carrier_Doppler_hz * lambda );
-    //std::cout << rough_phase_range_ms << std::endl;
-    if(rough_phase_range_ms < - 8191) rough_phase_range_ms = -8191;
-    if(rough_phase_range_ms > 8191) rough_phase_range_ms = 8191;
-    DF399 = std::bitset<14>(static_cast<int>(rough_phase_range_ms));
+    double rough_phase_range_rate_ms = std::round(- gnss_synchro.Carrier_Doppler_hz * lambda );
+    if(rough_phase_range_rate_ms < - 8191) rough_phase_range_rate_ms = -8192;
+    if(rough_phase_range_rate_ms > 8191) rough_phase_range_rate_ms = -8192;
+
+    DF399 = std::bitset<14>(static_cast<int>(rough_phase_range_rate_ms));
     return 0;
 }
 
@@ -3853,13 +3853,9 @@ int Rtcm::set_DF400(const Gnss_Synchro & gnss_synchro)
 
     psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
 
-    if(psrng_s == 0.0)
+    if(std::fabs(psrng_s) > 292.7)
         {
-            fine_pseudorange = - 16384;
-        }
-    else if(std::fabs(psrng_s) > 292.7)
-        {
-            fine_pseudorange = - 16384;
+            fine_pseudorange = -16384; // 4000h: invalid value 
         }
     else
         {
@@ -3983,7 +3979,8 @@ int Rtcm::set_DF404(const Gnss_Synchro & gnss_synchro)
             lambda = GPS_C_m_s / 1.207140e9; // Galileo_E1b_FREQ_HZ;
         }
 
-    double phrr = std::round(- gnss_synchro.Carrier_Doppler_hz * lambda);
+    double rough_phase_range_rate = std::round(- gnss_synchro.Carrier_Doppler_hz * lambda );
+    double phrr = (- gnss_synchro.Carrier_Doppler_hz * lambda - rough_phase_range_rate);
 
     if(phrr == 0.0)
           {

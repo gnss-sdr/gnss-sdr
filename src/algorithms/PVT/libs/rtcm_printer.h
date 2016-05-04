@@ -73,7 +73,9 @@ public:
             bool more_messages);
 
     std::string print_MT1005_test(); //<!  For testing purposes
-    unsigned int lock_time(const Gps_Ephemeris& gps_eph, double obs_time, const Gnss_Synchro & gnss_synchro);
+    unsigned int lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro);
+    unsigned int lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro);
+    unsigned int lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro);
 
 private:
     std::string rtcm_filename; // String with the RTCM log filename

@@ -109,7 +109,6 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, bool dump, std::str
         bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :
     gr::block("galileo_e1_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)), gr::io_signature::make(0, 0, sizeof(gr_complex)))
 {
-
     d_output_rate_ms = output_rate_ms;
     d_display_rate_ms = display_rate_ms;
     d_dump = dump;
@@ -217,12 +216,21 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
 
     print_receiver_status(in);
 
+    // ############ 1. READ PSEUDORANGES ####
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
                     gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
                     d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
+                    if(d_ls_pvt->galileo_ephemeris_map.size() > 0)
+                        {
+                            std::map<int,Galileo_Ephemeris>::iterator tmp_eph_iter = d_ls_pvt->galileo_ephemeris_map.find(in[i][0].PRN);
+                            if(tmp_eph_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                {
+                                    d_rtcm_printer->lock_time(d_ls_pvt->galileo_ephemeris_map.find(in[i][0].PRN)->second, d_rx_time, in[i][0]); // keep track of locking time
+                                }
+                        }
                 }
         }
 
@@ -277,35 +285,35 @@ int galileo_e1_pvt_cc::general_work (int noutput_items __attribute__((unused)), 
 
                             if(b_rtcm_writing_started)
                                 {
-                                    if((d_sample_counter % (1000 / 4) ) == 0) // every second
+                                    if((d_sample_counter % (5000 / 4) ) == 0) // every 5 seconds
                                         {
-                                            std::map<int, Galileo_Ephemeris>::iterator gal_ephemeris_iter;
-                                            gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
-                                            if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
-                                                {
-                                                    d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, false, false );
-                                                    // gps_eph, gps_cnav_eph, gal_eph, obs_time, pseudoranges, ref_id, clock_steering_indicator, external_clock_indicator, smooth_int, divergence_free, more messages
-                                                }
-                                        }
-                                    if((d_sample_counter % (120000 / 4)) == 0) // every 2 minutes
-                                        {
-                                            std::map<int, Galileo_Ephemeris>::iterator gal_ephemeris_iter;
-                                            gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
-                                            if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                            for(std::map<int,Galileo_Ephemeris>::iterator gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin(); gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end(); gal_ephemeris_iter++ )
                                                 {
                                                     d_rtcm_printer->Print_Rtcm_MT1045(gal_ephemeris_iter->second);
                                                 }
                                         }
+                                    if((d_sample_counter % (1000 / 4) ) == 0) // every second
+                                        {
+                                            std::map<int,Galileo_Ephemeris>::iterator gal_ephemeris_iter;
+                                            gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+                                            if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, 0, 0);
+                                                }
+                                        }
                                 }
-
                             if(!b_rtcm_writing_started) // the first time
                                 {
-                                    std::map<int,Galileo_Ephemeris>::iterator gal_ephemeris_iter;
-                                    gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
-                                    if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                    for(std::map<int,Galileo_Ephemeris>::iterator gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin(); gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end(); gal_ephemeris_iter++ )
                                         {
                                             d_rtcm_printer->Print_Rtcm_MT1045(gal_ephemeris_iter->second);
-                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, false, false );
+                                        }
+
+                                    std::map<int,Galileo_Ephemeris>::iterator gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin();
+
+                                    if (gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                        {
+                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_ephemeris_iter->second, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, 0, 0);
                                         }
                                     b_rtcm_writing_started = true;
                                 }

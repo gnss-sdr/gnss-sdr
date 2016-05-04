@@ -306,7 +306,19 @@ std::string Rtcm_Printer::print_MT1005_test()
 }
 
 
-unsigned int Rtcm_Printer::lock_time(const Gps_Ephemeris& gps_eph, double obs_time, const Gnss_Synchro & gnss_synchro)
+unsigned int Rtcm_Printer::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro)
 {
-    return rtcm->lock_time(gps_eph, obs_time, gnss_synchro);
+    return rtcm->lock_time(eph, obs_time, gnss_synchro);
+}
+
+
+unsigned int Rtcm_Printer::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro)
+{
+    return rtcm->lock_time(eph, obs_time, gnss_synchro);
+}
+
+
+unsigned int Rtcm_Printer::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro & gnss_synchro)
+{
+    return rtcm->lock_time(eph, obs_time, gnss_synchro);
 }

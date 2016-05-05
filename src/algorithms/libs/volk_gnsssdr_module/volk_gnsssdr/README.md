@@ -40,6 +40,14 @@ $ volk_gnsssdr_profile
 
 From now on, GNSS-SDR (and any other program of your own that makes use of VOLK_GNSSSDR) will benefit from the acceleration provided by SIMD instructions available in your processor.
 
+This figure shows the role of some VOLK_GNSSSDR kernels in the context of a GNSS baseband processor:
+
+![](./docs/images/VOLK_GNSSSDR_Usage_Example.png)
+
+
+
+
+
 ___
 
 VOLK_GNSSSDR was originally created by Andres Cecilia Luque in the framework of the [Summer Of Code In Space (SOCIS 2014)](http://sophia.estec.esa.int/socis2014/?q=about "SOCIS 2014 webpage") program organized by the European Space Agency, and then evolved and maintained by Carles Fernandez-Prades and Javier Arribas. This software is released under the GNU General Public License version 3, see the file COPYING.

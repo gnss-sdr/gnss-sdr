@@ -4204,7 +4204,7 @@ int Rtcm::set_DF418(int carrier_smoothing_interval_s)
 }
 
 
-int Rtcm::set_DF420(const Gnss_Synchro & gnss_synchro)
+int Rtcm::set_DF420(const Gnss_Synchro & gnss_synchro  __attribute__((unused)))
 {
     // todo: read the value from gnss_synchro
     bool half_cycle_ambiguity_indicator = true;

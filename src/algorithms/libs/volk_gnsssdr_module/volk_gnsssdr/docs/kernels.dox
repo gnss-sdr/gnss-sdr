@@ -2,8 +2,11 @@
 
 \li \subpage volk_gnsssdr_32fc_convert_16ic
 \li \subpage volk_gnsssdr_32fc_convert_8ic
+\li \subpage volk_gnsssdr_s32f_sincos_32fc
+\li \subpage volk_gnsssdr_32f_sincos_32fc
 \li \subpage volk_gnsssdr_16ic_convert_32fc
-\li \subpage volk_gnsssdr_16ic_resampler_16ic
+\li \subpage volk_gnsssdr_16ic_resampler_fast_16ic
+\li \subpage volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn
 \li \subpage volk_gnsssdr_16ic_xn_resampler_16ic_xn
 \li \subpage volk_gnsssdr_16ic_s32fc_x2_rotator_16ic
 \li \subpage volk_gnsssdr_16ic_x2_multiply_16ic

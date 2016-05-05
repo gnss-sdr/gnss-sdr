@@ -46,10 +46,16 @@ This figure shows the role of some VOLK_GNSSSDR kernels in the context of a GNSS
 
 
 
+If you use VOLK_GNSSSDR in your research and/or software, please cite the following paper:
+
+ * C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, *Accelerating GNSS Software Receivers*, in Proc. of the ION GNSS+ 2016 Conference, Portland, Oregon, Sept. 12-16, 2016.
+
+Citations are useful for the continued development and maintenance of the library.
+
 
 
 ___
 
-VOLK_GNSSSDR was originally created by Andres Cecilia Luque in the framework of the [Summer Of Code In Space (SOCIS 2014)](http://sophia.estec.esa.int/socis2014/?q=about "SOCIS 2014 webpage") program organized by the European Space Agency, and then evolved and maintained by Carles Fernandez-Prades and Javier Arribas. This software is released under the GNU General Public License version 3, see the file COPYING.
+VOLK_GNSSSDR was originally created by Andres Cecilia Luque in the framework of the [Summer Of Code In Space (SOCIS 2014)](http://sophia.estec.esa.int/socis2014/?q=about "SOCIS 2014 webpage") program organized by the European Space Agency, and then evolved and maintained by Carles Fern&aacute;ndez-Prades and Javier Arribas. This software is released under the GNU General Public License version 3, see the file COPYING.
 
 This project is managed by [Centre Tecnologic de Telecomunicacions de Catalunya](http://www.cttc.es "CTTC webpage").

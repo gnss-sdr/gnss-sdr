@@ -39,25 +39,30 @@
 #include <boost/crc.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/dynamic_bitset.hpp>
-#include <gflags/gflags.h>
 #include <glog/logging.h>
 #include "Galileo_E1.h"
 
-
 using google::LogMessage;
-
-DEFINE_int32(RTCM_Ref_Station_ID, 1234, "Reference Station ID in RTCM messages");
-DEFINE_int32(RTCM_Port, 2101 , "TCP port of the RTCM message server");
-// 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA)
-// https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
 
 
 Rtcm::Rtcm()
 {
+    // 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA)
+    // https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
+    unsigned short _default_port = 2101;
+    unsigned short _default_station_id = 1234;
+    Rtcm::Rtcm(_default_port, _default_station_id);
+}
+
+
+Rtcm::Rtcm(unsigned short port, unsigned short station_id)
+{
+    RTCM_port = port;
+    RTCM_Station_ID = station_id;
     preamble = std::bitset<8>("11010011");
     reserved_field = std::bitset<6>("000000");
     rtcm_message_queue = std::make_shared< concurrent_queue<std::string> >();
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), FLAGS_RTCM_Port);
+    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), RTCM_port);
     servers.emplace_back(io_service, endpoint);
     server_is_running = false;
 }
@@ -80,10 +85,10 @@ Rtcm::~Rtcm()
 // *****************************************************************************************************
 void Rtcm::run_server()
 {
-    std::cout << "Starting a TCP Server on port " << FLAGS_RTCM_Port << std::endl;
+    std::cout << "Starting a TCP Server on port " << RTCM_port << std::endl;
     try
     {
-            std::thread tq([&]{ std::make_shared<Queue_Reader>(io_service, rtcm_message_queue, FLAGS_RTCM_Port)->do_read_queue(); });
+            std::thread tq([&]{ std::make_shared<Queue_Reader>(io_service, rtcm_message_queue, RTCM_port)->do_read_queue(); });
             tq.detach();
 
             std::thread t([&]{ io_service.run(); });
@@ -105,7 +110,7 @@ void Rtcm::stop_service()
 
 void Rtcm::stop_server()
 {
-    std::cout << "Stopping TCP Server on port " << FLAGS_RTCM_Port << std::endl;
+    std::cout << "Stopping TCP Server on port " << RTCM_port << std::endl;
     rtcm_message_queue->push("Goodbye"); // this terminates tq
     Rtcm::stop_service();
     servers.front().close_server();
@@ -448,7 +453,7 @@ std::bitset<58> Rtcm::get_MT1001_sat_content(const Gps_Ephemeris & eph, double o
 
 std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
 {
-    unsigned int ref_id = static_cast<unsigned int>(FLAGS_RTCM_Ref_Station_ID);
+    unsigned int ref_id = static_cast<unsigned int>(RTCM_Station_ID);
     unsigned int smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -498,7 +503,7 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
 
 std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
 {
-    unsigned int ref_id = static_cast<unsigned int>(FLAGS_RTCM_Ref_Station_ID);
+    unsigned int ref_id = static_cast<unsigned int>(RTCM_Station_ID);
     unsigned int smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -570,7 +575,7 @@ std::bitset<74> Rtcm::get_MT1002_sat_content(const Gps_Ephemeris & eph, double o
 
 std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
 {
-    unsigned int ref_id = static_cast<unsigned int>(FLAGS_RTCM_Ref_Station_ID);
+    unsigned int ref_id = static_cast<unsigned int>(RTCM_Station_ID);
     unsigned int smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -680,7 +685,7 @@ std::bitset<101> Rtcm::get_MT1003_sat_content(const Gps_Ephemeris & ephL1, const
 
 std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
 {
-    unsigned int ref_id = static_cast<unsigned int>(FLAGS_RTCM_Ref_Station_ID);
+    unsigned int ref_id = static_cast<unsigned int>(RTCM_Station_ID);
     unsigned int smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;

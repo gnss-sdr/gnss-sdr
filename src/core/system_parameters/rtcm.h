@@ -84,6 +84,7 @@ class Rtcm
 {
 public:
     Rtcm(); //<! Default constructor
+    Rtcm(unsigned short port, unsigned short station_id); //<! Constructor that sets non-default TCP port of the RTCM message server and RTCM Station ID
     ~Rtcm();
 
     /*!
@@ -346,6 +347,8 @@ private:
     //
     // Classes for TCP communication
     //
+    unsigned short RTCM_port;
+    unsigned short RTCM_Station_ID;
     class Rtcm_Message
     {
     public:

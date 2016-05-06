@@ -40,6 +40,7 @@
  * \b Overview
  *
  * Resamples a complex vector (16-bit integer each component), providing \p num_out_vectors outputs.
+ * WARNING: \p phase cannot reach more that twice the length of \p local_code, either positive or negative.
  *
  * <b>Dispatcher Prototype</b>
  * \code
@@ -81,7 +82,6 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_generic(lv_16sc_t
                     local_code_chip_index = round(code_phase_step_chips * (float)(n) + rem_code_phase_chips[current_vector] - 0.5f);
                     if (local_code_chip_index < 0.0) local_code_chip_index += code_length_chips;
                     if (local_code_chip_index > (code_length_chips - 1)) local_code_chip_index -= code_length_chips;
-                    //std::cout<<"g["<<n<<"]="<<code_phase_step_chips*static_cast<float>(n) + rem_code_phase_chips-0.5f<<","<<local_code_chip_index<<" ";
                     result[current_vector][n] = local_code[local_code_chip_index];
                 }
         }
@@ -176,9 +176,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_a_sse2(lv_16sc_t*
                     if (local_code_chip_index[0] > (code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
                     _result[current_vector][number] = local_code[local_code_chip_index[0]];
                 }
-
         }
-
 }
 #endif /* LV_HAVE_SSE2 */
 
@@ -269,9 +267,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_u_sse2(lv_16sc_t*
                     if (local_code_chip_index[0] > (code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
                     _result[current_vector][number] = local_code[local_code_chip_index[0]];
                 }
-
         }
-
 }
 
 #endif /* LV_HAVE_SSE2 */

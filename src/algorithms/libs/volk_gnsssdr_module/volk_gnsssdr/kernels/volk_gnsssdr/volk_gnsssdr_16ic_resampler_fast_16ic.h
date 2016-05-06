@@ -39,6 +39,7 @@
  * \b Overview
  *
  * Resamples a complex vector (16-bit integer each component).
+ * WARNING: \p phase cannot reach more that twice the length of \p local_code, either positive or negative.
  *
  * <b>Dispatcher Prototype</b>
  * \code
@@ -64,13 +65,8 @@
 #include <volk_gnsssdr/volk_gnsssdr_common.h>
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 
-//#pragma STDC FENV_ACCESS ON
 
 #ifdef LV_HAVE_GENERIC
-
-//int round_int( float r ) {
-//    return (r > 0.0) ? (r + 0.5) : (r - 0.5);
-//}
 
 static inline void volk_gnsssdr_16ic_resampler_fast_16ic_generic(lv_16sc_t* result, const lv_16sc_t* local_code, float rem_code_phase_chips, float code_phase_step_chips, int code_length_chips, unsigned int num_output_samples)
 {
@@ -132,7 +128,6 @@ static inline void volk_gnsssdr_16ic_resampler_fast_16ic_a_sse2(lv_16sc_t* resul
     __VOLK_ATTR_ALIGNED(16) float init_4constant_float[4] = { 4.0f, 4.0f, 4.0f, 4.0f };
     __m128 _4constant_float = _mm_load_ps(init_4constant_float);
 
-
     for(number = 0; number < quarterPoints; number++)
         {
             _code_phase_out = _mm_mul_ps(_code_phase_step_chips, _4output_index); //compute the code phase point with the phase step
@@ -156,7 +151,6 @@ static inline void volk_gnsssdr_16ic_resampler_fast_16ic_a_sse2(lv_16sc_t* resul
             *_result++ = local_code[local_code_chip_index[3]];
 
             _4output_index = _mm_add_ps(_4output_index, _4constant_float);
-
         }
 
     for(number = quarterPoints * 4; number < num_output_samples; number++)
@@ -166,7 +160,6 @@ static inline void volk_gnsssdr_16ic_resampler_fast_16ic_a_sse2(lv_16sc_t* resul
             if (local_code_chip_index[0] > (code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
             *_result++ = local_code[local_code_chip_index[0]];
         }
-
 }
 
 #endif /* LV_HAVE_SSE2 */
@@ -238,7 +231,6 @@ static inline void volk_gnsssdr_16ic_resampler_fast_16ic_u_sse2(lv_16sc_t* resul
             *_result++ = local_code[local_code_chip_index[3]];
 
             _4output_index = _mm_add_ps(_4output_index, _4constant_float);
-
         }
 
     for(number = quarterPoints * 4; number < num_output_samples; number++)
@@ -248,7 +240,6 @@ static inline void volk_gnsssdr_16ic_resampler_fast_16ic_u_sse2(lv_16sc_t* resul
             if (local_code_chip_index[0] > (code_length_chips - 1)) local_code_chip_index[0] -= code_length_chips;
             *_result++ = local_code[local_code_chip_index[0]];
         }
-
 }
 
 #endif /* LV_HAVE_SSE2 */

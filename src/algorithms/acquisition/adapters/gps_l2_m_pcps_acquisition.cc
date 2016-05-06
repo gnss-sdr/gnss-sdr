@@ -56,9 +56,9 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration_->property(role + ".ifreq", 0);
+    if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
-    shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
+    doppler_max_ = configuration->property(role + ".doppler_max", 5000);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     use_CFAR_algorithm_flag_=configuration_->property(role + ".use_CFAR_algorithm", true); //will be false in future versions
@@ -86,7 +86,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     //         {
     item_size_ = sizeof(gr_complex);
     acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
-            shift_resolution_, if_, fs_in_, code_length_, code_length_,
+            doppler_max_, if_, fs_in_, code_length_, code_length_,
             bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
@@ -106,18 +106,11 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
         }
-    //}
-    //else
-    // {
-    //     LOG(WARNING) << item_type_
-    //             << " unknown acquisition item type";
-    // }
 
-    gnss_synchro_ = 0;
-    threshold_ = 0.0;
-    doppler_max_ = 5000;
-    doppler_step_ = 250;
     channel_ = 0;
+    threshold_ = 0.0;
+    doppler_step_ = 0;
+    gnss_synchro_ = 0;
 }
 
 

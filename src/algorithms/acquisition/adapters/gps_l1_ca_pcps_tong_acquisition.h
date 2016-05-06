@@ -94,8 +94,7 @@ public:
      */
     void set_threshold(float threshold);
 
-    /*!    bit_transition_flag_ = configuration_->property("Acquisition.bit_transition_flag", false);
-
+    /*!
      * \brief Set maximum Doppler off grid search
      */
     void set_doppler_max(unsigned int doppler_max);
@@ -138,7 +137,6 @@ private:
     std::string item_type_;
     unsigned int vector_length_;
     unsigned int code_length_;
-    bool bit_transition_flag_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;

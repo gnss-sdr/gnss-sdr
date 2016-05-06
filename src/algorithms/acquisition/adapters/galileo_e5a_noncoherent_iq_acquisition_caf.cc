@@ -60,9 +60,9 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 32000000);
-    if_ = configuration_->property(role + ".ifreq", 0);
+    if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
-    shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
+    doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     CAF_window_hz_ = configuration_->property(role + ".CAF_window_hz",0);
     Zero_padding = configuration_->property(role + ".Zero_padding",0);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
@@ -80,8 +80,8 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         }
 
     max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
+    bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     //--- Find number of samples per spreading code (1ms)-------------------------
     code_length_ = round(fs_in_ / Galileo_E5a_CODE_CHIP_RATE_HZ * Galileo_E5a_CODE_LENGTH_CHIPS);
@@ -101,20 +101,19 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(sampled_ms_, max_dwells_,
-                    shift_resolution_, if_, fs_in_, code_length_, code_length_,
-                    bit_transition_flag_, queue_, dump_, dump_filename_, both_signal_components, CAF_window_hz_,Zero_padding);
+                    doppler_max_, if_, fs_in_, code_length_, code_length_, bit_transition_flag_, queue_,
+                    dump_, dump_filename_, both_signal_components, CAF_window_hz_,Zero_padding);
         }
     else
         {
             item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type_  << " unknown acquisition item type";
         }
-    gnss_synchro_ = 0;
-    threshold_ = 0.0;
-    doppler_max_ = 5000;
-    doppler_step_ = 250;
+
     channel_ = 0;
-    bit_transition_flag_ = false;
+    threshold_ = 0.0;
+    doppler_step_ = 0;
+    gnss_synchro_ = 0;
 }
 
 

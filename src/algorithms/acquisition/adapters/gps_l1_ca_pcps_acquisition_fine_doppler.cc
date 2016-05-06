@@ -53,13 +53,14 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration->property(role + ".ifreq", 0);
+    if_ = configuration->property(role + ".if", 0);
     dump_ = configuration->property(role + ".dump", false);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     doppler_min_ = configuration->property(role + ".doppler_min", -5000);
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
     max_dwells_= configuration->property(role + ".max_dwells", 1);
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
+ 
 
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_
@@ -79,6 +80,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
             item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
+
     channel_ = 0;
     threshold_ = 0.0;
     doppler_step_ = 0;

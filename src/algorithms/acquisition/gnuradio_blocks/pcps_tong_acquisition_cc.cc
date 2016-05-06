@@ -16,7 +16,7 @@
  *  <li> If the test statistics exceeds the threshold, increment the Tong counter.
  *  <li>   Otherwise, decrement the Tong counter.
  *  <li> If the Tong counter is equal to a given maximum value, declare positive
- *  <li>   acquisition. If the Tong counter is equa to zero, declare negative
+ *  <li>   acquisition. If the Tong counter is equal to zero, declare negative
  *  <li>   acquisition. Otherwise, process the next block.
  *  </ol>
  *

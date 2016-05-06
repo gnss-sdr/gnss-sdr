@@ -194,6 +194,7 @@ TEST(Rtcm_Test, MT1001)
     gnss_synchro.PRN = 2;
     std::string sys = "G";
     bool expected_true = true;
+    unsigned short station_id = 1234;
 
     std::string sig = "1C";
     gnss_synchro.System = *sys.c_str();
@@ -203,7 +204,7 @@ TEST(Rtcm_Test, MT1001)
     std::map<int, Gnss_Synchro> pseudoranges;
     pseudoranges.insert(std::pair<int, Gnss_Synchro>(1, gnss_synchro));
 
-    std::string MT1001 = rtcm->print_MT1001(gps_eph, obs_time, pseudoranges);
+    std::string MT1001 = rtcm->print_MT1001(gps_eph, obs_time, pseudoranges, station_id);
     EXPECT_EQ(expected_true, rtcm->check_CRC(MT1001));
 }
 
@@ -487,7 +488,7 @@ TEST(Rtcm_Test, MSM1)
     pseudoranges.insert(std::pair<int, Gnss_Synchro>(3, gnss_synchro3));
     pseudoranges.insert(std::pair<int, Gnss_Synchro>(4, gnss_synchro4));
 
-    unsigned int ref_id = 1234;
+    unsigned short ref_id = 1234;
     unsigned int clock_steering_indicator = 0;
     unsigned int external_clock_indicator = 0;
     int smooth_int = 0;

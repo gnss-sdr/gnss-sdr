@@ -55,7 +55,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration->property(role + ".ifreq", 0);
+    if_ = configuration->property(role + ".if", 0);
     dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     doppler_min_ = configuration->property(role + ".doppler_min", -5000);
@@ -82,11 +82,11 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
             item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-    gnss_synchro_ = 0;
-    threshold_ = 0.0;
-    doppler_max_ = 5000;
-    doppler_step_ = 250;
+
     channel_ = 0;
+    threshold_ = 0.0;
+    doppler_step_ = 0;
+    gnss_synchro_ = 0;
 }
 
 

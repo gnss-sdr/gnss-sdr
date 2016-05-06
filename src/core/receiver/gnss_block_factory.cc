@@ -255,7 +255,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel_1C(
         std::string acq, std::string trk, std::string tlm, int channel,
         boost::shared_ptr<gr::msg_queue> queue)
 {
-
+    //"appendix" is added to the "role" with the aim of Acquisition, Tracking and Telemetry Decoder adapters
+    //can find their specific configurations when they read the config 
     //TODO: REMOVE APPENDIX!! AND CHECK ALTERNATIVE MECHANISM TO GET PARTICULARIZED PARAMETERS
     LOG(INFO) << "Instantiating Channel " << channel << " with Acquisition Implementation: "
               << acq << ", Tracking Implementation: " << trk  << ", Telemetry Decoder implementation: " << tlm;
@@ -497,9 +498,10 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
     //**************** GPS L1 C/A  CHANNELS **********************
 
     LOG(INFO) << "Getting " << Channels_1C_count << " GPS L1 C/A channels";
+    acquisition_implementation = configuration->property("Acquisition_1C.implementation", default_implementation);
     tracking_implementation  = configuration->property("Tracking_1C.implementation", default_implementation);
     telemetry_decoder_implementation = configuration->property("TelemetryDecoder_1C.implementation", default_implementation);
-    acquisition_implementation = configuration->property("Acquisition_1C.implementation", default_implementation);
+    
 
     for (unsigned int i = 0; i < Channels_1C_count; i++)
         {
@@ -554,7 +556,7 @@ std::unique_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> GNSSBlockFacto
              channel_absolute_id++;
         }
 
-    //**************** GALILEO E1 B (I/NAV OS) **********************
+    //**************** GALILEO E1 B (I/NAV OS) CHANNELS **********************
 
     LOG(INFO) << "Getting " << Channels_1B_count << " GALILEO E1 B (I/NAV OS) channels";
        tracking_implementation  = configuration->property("Tracking_1B.implementation", default_implementation);

@@ -59,6 +59,8 @@ galileo_e1_pvt_cc_sptr galileo_e1_make_pvt_cc(unsigned int n_channels,
                                               std::string nmea_dump_devname,
                                               bool flag_rtcm_server,
                                               bool flag_rtcm_tty_port,
+                                              unsigned short rtcm_tcp_port,
+                                              unsigned short rtcm_station_id,
                                               std::string rtcm_dump_devname);
 
 /*!
@@ -79,6 +81,8 @@ private:
                                                          std::string nmea_dump_devname,
                                                          bool flag_rtcm_server,
                                                          bool flag_rtcm_tty_port,
+                                                         unsigned short rtcm_tcp_port,
+                                                         unsigned short rtcm_station_id,
                                                          std::string rtcm_dump_devname);
     galileo_e1_pvt_cc(unsigned int nchannels,
                       bool dump, std::string dump_filename,
@@ -91,6 +95,8 @@ private:
                       std::string nmea_dump_devname,
                       bool flag_rtcm_server,
                       bool flag_rtcm_tty_port,
+                      unsigned short rtcm_tcp_port,
+                      unsigned short rtcm_station_id,
                       std::string rtcm_dump_devname);
 
     void msg_handler_telemetry(pmt::pmt_t msg);

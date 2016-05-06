@@ -58,9 +58,9 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration_->property(role + ".ifreq", 0);
+    if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
-    shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
+    doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
@@ -88,14 +88,14 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
         {
             item_size_ = sizeof(lv_16sc_t);
             acquisition_sc_ = pcps_make_acquisition_sc(sampled_ms_, max_dwells_,
-                    shift_resolution_, if_, fs_in_, code_length_, code_length_,
+                    doppler_max_, if_, fs_in_, code_length_, code_length_,
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
             DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
 
         }else{
                 item_size_ = sizeof(gr_complex);
                 acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
-                        shift_resolution_, if_, fs_in_, code_length_, code_length_,
+                        doppler_max_, if_, fs_in_, code_length_, code_length_,
                         bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
                 DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
@@ -114,9 +114,9 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
         }
+
     channel_ = 0;
     threshold_ = 0.0;
-    doppler_max_ = 0;
     doppler_step_ = 0;
     gnss_synchro_ = 0;
 }

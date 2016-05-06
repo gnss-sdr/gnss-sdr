@@ -48,7 +48,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_filename, bool time_tag_name = true);
+    Rtcm_Printer(std::string filename, bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port, unsigned short rtcm_station_id, std::string rtcm_dump_filename, bool time_tag_name = true);
 
     /*!
      * \brief Default destructor.
@@ -65,7 +65,6 @@ public:
             const Galileo_Ephemeris & gal_eph,
             double obs_time,
             const std::map<int, Gnss_Synchro> & pseudoranges,
-            unsigned int ref_id,
             unsigned int clock_steering_indicator,
             unsigned int external_clock_indicator,
             int smooth_int,
@@ -81,6 +80,8 @@ private:
     std::string rtcm_filename; // String with the RTCM log filename
     std::ofstream rtcm_file_descriptor; // Output file stream for RTCM log file
     std::string rtcm_devname;
+    unsigned short port;
+    unsigned short station_id;
     int rtcm_dev_descriptor; // RTCM serial device descriptor (i.e. COM port)
     int init_serial (std::string serial_device); //serial port control
     void close_serial ();

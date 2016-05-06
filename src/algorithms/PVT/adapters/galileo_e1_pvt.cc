@@ -79,8 +79,10 @@ GalileoE1Pvt::GalileoE1Pvt(ConfigurationInterface* configuration,
     rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);
     bool flag_rtcm_server;
     flag_rtcm_server = configuration->property(role + ".flag_rtcm_server", false);
+    unsigned short rtcm_tcp_port = configuration->property(role + ".rtcm_tcp_port", 2101);
+    unsigned short rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
     // make PVT object
-    pvt_ = galileo_e1_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname);
+    pvt_ = galileo_e1_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 

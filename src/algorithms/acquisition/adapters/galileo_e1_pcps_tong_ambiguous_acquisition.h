@@ -137,7 +137,6 @@ private:
     std::string item_type_;
     unsigned int vector_length_;
     unsigned int code_length_;
-    bool bit_transition_flag_;
     unsigned int channel_;
     float threshold_;
     unsigned int doppler_max_;

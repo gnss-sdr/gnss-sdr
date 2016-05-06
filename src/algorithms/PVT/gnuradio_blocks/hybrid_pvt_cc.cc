@@ -41,9 +41,37 @@
 using google::LogMessage;
 
 hybrid_pvt_cc_sptr
-hybrid_make_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
+hybrid_make_pvt_cc(unsigned int nchannels,
+        bool dump,
+        std::string dump_filename,
+        int averaging_depth,
+        bool flag_averaging,
+        int output_rate_ms,
+        int display_rate_ms,
+        bool flag_nmea_tty_port,
+        std::string nmea_dump_filename,
+        std::string nmea_dump_devname,
+        bool flag_rtcm_server,
+        bool flag_rtcm_tty_port,
+        unsigned short rtcm_tcp_port,
+        unsigned short rtcm_station_id,
+        std::string rtcm_dump_devname)
 {
-    return hybrid_pvt_cc_sptr(new hybrid_pvt_cc(nchannels, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
+    return hybrid_pvt_cc_sptr(new hybrid_pvt_cc(nchannels,
+            dump,
+            dump_filename,
+            averaging_depth,
+            flag_averaging,
+            output_rate_ms,
+            display_rate_ms,
+            flag_nmea_tty_port,
+            nmea_dump_filename,
+            nmea_dump_devname,
+            flag_rtcm_server,
+            flag_rtcm_tty_port,
+            rtcm_tcp_port,
+            rtcm_station_id,
+            rtcm_dump_devname));
 }
 
 
@@ -139,7 +167,8 @@ std::map<int,Gps_Ephemeris> hybrid_pvt_cc::get_GPS_L1_ephemeris_map()
 hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename,
         int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
         std::string nmea_dump_filename, std::string nmea_dump_devname,
-        bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname) :
+        bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port,
+        unsigned short rtcm_station_id, std::string rtcm_dump_devname) :
                 gr::block("hybrid_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
                 gr::io_signature::make(0, 0, sizeof(gr_complex)))
 
@@ -173,7 +202,7 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     //initialize rtcm_printer
     std::string rtcm_dump_filename;
     rtcm_dump_filename = d_dump_filename;
-    d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname);
+    d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname);
 
     d_dump_filename.append("_raw.dat");
     dump_ls_pvt_filename.append("_ls_pvt.dat");

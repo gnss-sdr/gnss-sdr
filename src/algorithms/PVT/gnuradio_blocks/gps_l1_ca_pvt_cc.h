@@ -57,6 +57,8 @@ gps_l1_ca_pvt_cc_sptr gps_l1_ca_make_pvt_cc(unsigned int n_channels,
                                             std::string nmea_dump_devname,
                                             bool flag_rtcm_server,
                                             bool flag_rtcm_tty_port,
+                                            unsigned short rtcm_tcp_port,
+                                            unsigned short rtcm_station_id,
                                             std::string rtcm_dump_devname
 );
 
@@ -78,6 +80,8 @@ private:
                                                        std::string nmea_dump_devname,
                                                        bool flag_rtcm_server,
                                                        bool flag_rtcm_tty_port,
+                                                       unsigned short rtcm_tcp_port,
+                                                       unsigned short rtcm_station_id,
                                                        std::string rtcm_dump_devname);
     gps_l1_ca_pvt_cc(unsigned int nchannels,
                      bool dump,
@@ -91,6 +95,8 @@ private:
                      std::string nmea_dump_devname,
                      bool flag_rtcm_server,
                      bool flag_rtcm_tty_port,
+                     unsigned short rtcm_tcp_port,
+                     unsigned short rtcm_station_id,
                      std::string rtcm_dump_devname);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
@@ -100,6 +106,8 @@ private:
     bool b_rinex_sbs_header_writen;
     bool b_rinex_header_updated;
     bool b_rtcm_writing_started;
+    unsigned short d_rtcm_tcp_port;
+    unsigned short d_rtcm_station_id;
 
     void print_receiver_status(Gnss_Synchro** channels_synchronization_data);
     int d_last_status_print_seg; //for status printer

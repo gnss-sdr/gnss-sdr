@@ -54,9 +54,9 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
-    if_ = configuration_->property(role + ".ifreq", 0);
+    if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
-    shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
+    doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 1);
 
     tong_init_val_ = configuration->property(role + ".tong_init_val", 1);
@@ -75,7 +75,7 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, shift_resolution_, if_, fs_in_,
+            acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_, if_, fs_in_,
                                     code_length_, code_length_, tong_init_val_, tong_max_val_,
                                     queue_, dump_, dump_filename_);
 
@@ -90,12 +90,10 @@ GpsL1CaPcpsTongAcquisition::GpsL1CaPcpsTongAcquisition(
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 
-    gnss_synchro_ = 0;
-    threshold_ = 0.0;
-    doppler_max_ = 5000;
-    doppler_step_ = 250;
     channel_ = 0;
-    bit_transition_flag_ = false;
+    threshold_ = 0.0;
+    doppler_step_ = 0;
+    gnss_synchro_ = 0;
 }
 
 

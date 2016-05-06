@@ -83,29 +83,28 @@
 class Rtcm
 {
 public:
-    Rtcm(); //<! Default constructor
-    Rtcm(unsigned short port, unsigned short station_id); //<! Constructor that sets non-default TCP port of the RTCM message server and RTCM Station ID
+    Rtcm(unsigned short port = 2101); //<! Default constructor that sets TCP port of the RTCM message server and RTCM Station ID. 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA). See https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
     ~Rtcm();
 
     /*!
      * \brief Prints message type 1001 (L1-Only GPS RTK Observables)
      */
-    std::string print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id);
 
     /*!
      * \brief Prints message type 1002 (Extended L1-Only GPS RTK Observables)
      */
-    std::string print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id);
 
     /*!
      * \brief Prints message type 1003 (L1 & L2 GPS RTK Observables)
      */
-    std::string print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id);
 
     /*!
      * \brief Prints message type 1004 (Extended L1 & L2 GPS RTK Observables)
      */
-    std::string print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges);
+    std::string print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id);
 
     /*!
      * \brief Prints message type 1005 (Stationary Antenna Reference Point)
@@ -348,7 +347,7 @@ private:
     // Classes for TCP communication
     //
     unsigned short RTCM_port;
-    unsigned short RTCM_Station_ID;
+    //unsigned short RTCM_Station_ID;
     class Rtcm_Message
     {
     public:

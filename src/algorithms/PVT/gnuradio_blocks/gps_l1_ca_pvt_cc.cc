@@ -43,9 +43,36 @@
 using google::LogMessage;
 
 gps_l1_ca_pvt_cc_sptr
-gps_l1_ca_make_pvt_cc(unsigned int nchannels, bool dump, std::string dump_filename, int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port, std::string nmea_dump_filename, std::string nmea_dump_devname, bool flag_rtcm_server, bool flag_rtcm_tty_port, std::string rtcm_dump_devname)
+gps_l1_ca_make_pvt_cc(unsigned int nchannels,
+        bool dump, std::string dump_filename,
+        int averaging_depth,
+        bool flag_averaging,
+        int output_rate_ms,
+        int display_rate_ms,
+        bool flag_nmea_tty_port,
+        std::string nmea_dump_filename,
+        std::string nmea_dump_devname,
+        bool flag_rtcm_server,
+        bool flag_rtcm_tty_port,
+        unsigned short rtcm_tcp_port,
+        unsigned short rtcm_station_id,
+        std::string rtcm_dump_devname)
 {
-    return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels, dump, dump_filename, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
+    return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels,
+            dump,
+            dump_filename,
+            averaging_depth,
+            flag_averaging,
+            output_rate_ms,
+            display_rate_ms,
+            flag_nmea_tty_port,
+            nmea_dump_filename,
+            nmea_dump_devname,
+            flag_rtcm_server,
+            flag_rtcm_tty_port,
+            rtcm_tcp_port,
+            rtcm_station_id,
+            rtcm_dump_devname));
 }
 
 
@@ -160,6 +187,8 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         std::string nmea_dump_devname,
         bool flag_rtcm_server,
         bool flag_rtcm_tty_port,
+        unsigned short rtcm_tcp_port,
+        unsigned short rtcm_station_id,
         std::string rtcm_dump_devname) :
              gr::block("gps_l1_ca_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
              gr::io_signature::make(0, 0, sizeof(gr_complex)) )
@@ -194,7 +223,9 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     //initialize rtcm_printer
     std::string rtcm_dump_filename;
     rtcm_dump_filename = d_dump_filename;
-    d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname);
+    d_rtcm_tcp_port = rtcm_tcp_port;
+    d_rtcm_station_id = rtcm_station_id;
+    d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, flag_rtcm_server, flag_rtcm_tty_port, d_rtcm_tcp_port, d_rtcm_station_id, rtcm_dump_devname);
     b_rtcm_writing_started = false;
 
     d_dump_filename.append("_raw.dat");
@@ -349,7 +380,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                                             gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();
                                             if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                                 {
-                                                    d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, 0, 0);
+                                                    d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_pseudoranges_map, 0, 0, 0, 0, 0);
                                                 }
                                         }
                                 }
@@ -365,7 +396,7 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
 
                                     if (gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end())
                                         {
-                                            d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_pseudoranges_map, 1234, 0, 0, 0, 0, 0);
+                                            d_rtcm_printer->Print_Rtcm_MSM(7, gps_ephemeris_iter->second, {}, {}, d_rx_time, gnss_pseudoranges_map, 0, 0, 0, 0, 0);
                                         }
                                     b_rtcm_writing_started = true;
                                 }

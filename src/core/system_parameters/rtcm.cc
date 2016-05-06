@@ -45,20 +45,9 @@
 using google::LogMessage;
 
 
-Rtcm::Rtcm()
-{
-    // 2101 is the standard RTCM port according to the Internet Assigned Numbers Authority (IANA)
-    // https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
-    unsigned short _default_port = 2101;
-    unsigned short _default_station_id = 1234;
-    Rtcm::Rtcm(_default_port, _default_station_id);
-}
-
-
-Rtcm::Rtcm(unsigned short port, unsigned short station_id)
+Rtcm::Rtcm(unsigned short port)
 {
     RTCM_port = port;
-    RTCM_Station_ID = station_id;
     preamble = std::bitset<8>("11010011");
     reserved_field = std::bitset<6>("000000");
     rtcm_message_queue = std::make_shared< concurrent_queue<std::string> >();
@@ -451,9 +440,9 @@ std::bitset<58> Rtcm::get_MT1001_sat_content(const Gps_Ephemeris & eph, double o
 }
 
 
-std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(RTCM_Station_ID);
+    unsigned int ref_id = static_cast<unsigned int>(station_id);
     unsigned int smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -501,9 +490,9 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris & gps_eph, double obs_time, c
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::print_MT1002(const Gps_Ephemeris & gps_eph, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(RTCM_Station_ID);
+    unsigned int ref_id = static_cast<unsigned int>(station_id);
     unsigned int smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -573,9 +562,9 @@ std::bitset<74> Rtcm::get_MT1002_sat_content(const Gps_Ephemeris & eph, double o
 //
 // ********************************************************
 
-std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::print_MT1003(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(RTCM_Station_ID);
+    unsigned int ref_id = static_cast<unsigned int>(station_id);
     unsigned int smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;
@@ -683,9 +672,9 @@ std::bitset<101> Rtcm::get_MT1003_sat_content(const Gps_Ephemeris & ephL1, const
 //
 // ******************************************************************
 
-std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges)
+std::string Rtcm::print_MT1004(const Gps_Ephemeris & ephL1, const Gps_CNAV_Ephemeris & ephL2, double obs_time, const std::map<int, Gnss_Synchro> & pseudoranges, unsigned short station_id)
 {
-    unsigned int ref_id = static_cast<unsigned int>(RTCM_Station_ID);
+    unsigned int ref_id = static_cast<unsigned int>(station_id);
     unsigned int smooth_int = 0;
     bool sync_flag = false;
     bool divergence_free = false;

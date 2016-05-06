@@ -55,9 +55,9 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
             default_item_type);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
-    if_ = configuration_->property(role + ".ifreq", 0);
+    if_ = configuration_->property(role + ".if", 0);
     dump_ = configuration_->property(role + ".dump", false);
-    shift_resolution_ = configuration_->property(role + ".doppler_max", 15);
+    doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
     sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
 
     if (sampled_ms_ % 4 != 0)
@@ -90,7 +90,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = galileo_pcps_8ms_make_acquisition_cc(sampled_ms_, max_dwells_,
-                    shift_resolution_, if_, fs_in_, samples_per_ms, code_length_,
+                    doppler_max_, if_, fs_in_, samples_per_ms, code_length_,
                     queue_, dump_, dump_filename_);
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
             DLOG(INFO) << "stream_to_vector("
@@ -103,11 +103,11 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
             item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-    gnss_synchro_ = 0;
-    threshold_ = 0.0;
-    doppler_max_ = 5000;
-    doppler_step_ = 250;
+        
     channel_ = 0;
+    threshold_ = 0.0;
+    doppler_step_ = 0;
+    gnss_synchro_ = 0;
 }
 
 

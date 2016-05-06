@@ -64,12 +64,7 @@ Channel::Channel(ConfigurationInterface *configuration, unsigned int channel,
     acq_->set_gnss_synchro(&gnss_synchro_);
     trk_->set_gnss_synchro(&gnss_synchro_);
 
-    // IMPORTANT: Do not change the order between set_doppler_max, set_doppler_step and set_threshold
-    unsigned int doppler_max = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_max", 0);
-    if(doppler_max == 0) doppler_max = configuration->property("Acquisition_" + implementation_+ ".doppler_max", 0);
-    DLOG(INFO) << "Channel "<< channel_ << " Doppler_max = " << doppler_max;
-
-    acq_->set_doppler_max(doppler_max);
+    // IMPORTANT: Do not change the order between set_doppler_step and set_threshold
 
     unsigned int doppler_step = configuration->property("Acquisition_" + implementation_ + boost::lexical_cast<std::string>(channel_) + ".doppler_step" ,0);
     if(doppler_step == 0) doppler_step = configuration->property("Acquisition_" + implementation_+".doppler_step", 500);

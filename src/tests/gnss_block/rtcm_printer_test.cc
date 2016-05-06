@@ -43,7 +43,9 @@ TEST(Rtcm_Printer_Test, Instantiate)
     bool flag_rtcm_tty_port = false;
     std::string rtcm_dump_devname = "/dev/pts/4";
     bool flag_rtcm_server = false;
-    std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
+    unsigned short rtcm_tcp_port = 2101;
+    unsigned short rtcm_station_id = 1234;
+    std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname));
 }
 
 
@@ -69,8 +71,10 @@ TEST(Rtcm_Printer_Test, Run)
     bool flag_rtcm_tty_port = false;
     std::string rtcm_dump_devname = "/dev/pts/4";
     bool flag_rtcm_server = false;
+    unsigned short rtcm_tcp_port = 2101;
+    unsigned short rtcm_station_id = 1234;
 
-    std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_dump_devname));
+    std::unique_ptr<Rtcm_Printer> RTCM_printer(new Rtcm_Printer(filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname));
 
     std::string reference_msg = "D300133ED7D30202980EDEEF34B4BD62AC0941986F33360B98";
 

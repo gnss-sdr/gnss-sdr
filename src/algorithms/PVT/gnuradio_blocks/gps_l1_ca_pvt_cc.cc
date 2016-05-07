@@ -32,6 +32,7 @@
 #include <iostream>
 #include <map>
 #include <utility>
+#include <boost/math/common_factor_rt.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
@@ -235,7 +236,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         }
     else
         {
-            d_rtcm_MT1019_rate_ms = 5000;  // default value if not set
+            d_rtcm_MT1019_rate_ms = boost::math::lcm(5000, d_output_rate_ms);  // default value if not set
         }
     if(rtcm_msg_rate_ms.find(1071) != rtcm_msg_rate_ms.end()) // whatever between 1071 and 1077
         {
@@ -243,7 +244,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         }
     else
         {
-            d_rtcm_MSM_rate_ms = 1000;  // default value if not set
+            d_rtcm_MSM_rate_ms = boost::math::lcm(1000, d_output_rate_ms);  // default value if not set
         }
     b_rtcm_writing_started = false;
 

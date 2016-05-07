@@ -61,6 +61,7 @@ galileo_e1_pvt_cc_sptr galileo_e1_make_pvt_cc(unsigned int n_channels,
                                               bool flag_rtcm_tty_port,
                                               unsigned short rtcm_tcp_port,
                                               unsigned short rtcm_station_id,
+                                              std::map<int,int> rtcm_msg_rate_ms,
                                               std::string rtcm_dump_devname);
 
 /*!
@@ -83,6 +84,7 @@ private:
                                                          bool flag_rtcm_tty_port,
                                                          unsigned short rtcm_tcp_port,
                                                          unsigned short rtcm_station_id,
+                                                         std::map<int,int> rtcm_msg_rate_ms,
                                                          std::string rtcm_dump_devname);
     galileo_e1_pvt_cc(unsigned int nchannels,
                       bool dump, std::string dump_filename,
@@ -97,6 +99,7 @@ private:
                       bool flag_rtcm_tty_port,
                       unsigned short rtcm_tcp_port,
                       unsigned short rtcm_station_id,
+                      std::map<int,int> rtcm_msg_rate_ms,
                       std::string rtcm_dump_devname);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
@@ -118,6 +121,8 @@ private:
     int d_display_rate_ms;
     long unsigned int d_sample_counter;
     long unsigned int d_last_sample_nav_output;
+    int d_rtcm_MT1045_rate_ms;
+    int d_rtcm_MSM_rate_ms;
 
     std::shared_ptr<Rinex_Printer> rp;
     std::shared_ptr<Kml_Printer> d_kml_dump;

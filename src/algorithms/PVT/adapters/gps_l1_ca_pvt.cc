@@ -32,11 +32,11 @@
 
 
 #include "gps_l1_ca_pvt.h"
-#include <glog/logging.h>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/math/common_factor_rt.hpp>
 #include <boost/serialization/map.hpp>
+#include <glog/logging.h>
 #include "configuration_interface.h"
 
 using google::LogMessage;
@@ -104,9 +104,26 @@ GpsL1CaPvt::GpsL1CaPvt(ConfigurationInterface* configuration,
     //std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);
 
     // make PVT object
-    pvt_ = gps_l1_ca_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname );
+    pvt_ = gps_l1_ca_make_pvt_cc(in_streams_,
+            dump_,
+            dump_filename_,
+            averaging_depth,
+            flag_averaging,
+            output_rate_ms,
+            display_rate_ms,
+            flag_nmea_tty_port,
+            nmea_dump_filename,
+            nmea_dump_devname,
+            flag_rtcm_server,
+            flag_rtcm_tty_port,
+            rtcm_tcp_port,
+            rtcm_station_id,
+            rtcm_msg_rate_ms,
+            rtcm_dump_devname );
+
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
+
 
 bool GpsL1CaPvt::save_assistance_to_XML()
 {

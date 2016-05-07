@@ -87,6 +87,13 @@ unsigned int InMemoryConfiguration::property(std::string property_name, unsigned
 }
 
 
+unsigned short InMemoryConfiguration::property(std::string property_name, unsigned short default_value)
+{
+    std::string empty = "";
+    return converter_->convert(property(property_name, empty), default_value);
+}
+
+
 float InMemoryConfiguration::property(std::string property_name, float default_value)
 {
     std::string empty = "";

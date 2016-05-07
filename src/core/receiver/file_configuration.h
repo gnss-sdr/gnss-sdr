@@ -66,6 +66,7 @@ public:
     long property(std::string property_name, long default_value);
     int property(std::string property_name, int default_value);
     unsigned int property(std::string property_name, unsigned int default_value);
+    unsigned short property(std::string property_name, unsigned short default_value);
     float property(std::string property_name, float default_value);
     double property(std::string property_name, double default_value);
     void set_property(std::string property_name, std::string value);

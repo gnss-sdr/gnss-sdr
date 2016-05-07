@@ -113,6 +113,22 @@ unsigned int StringConverter::convert(const std::string& value, unsigned int def
 }
 
 
+unsigned short StringConverter::convert(const std::string& value, unsigned short default_value)
+{
+    std::stringstream stream(value);
+
+    unsigned short result;
+    stream >> result;
+
+    if(stream.fail())
+        {
+            return default_value;
+        }
+    else
+        {
+            return result;
+        }
+}
 
 
 float StringConverter::convert(const std::string& value, float default_value)

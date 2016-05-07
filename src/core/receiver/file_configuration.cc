@@ -134,6 +134,21 @@ unsigned int FileConfiguration::property(std::string property_name, unsigned int
 
 
 
+unsigned short FileConfiguration::property(std::string property_name, unsigned short default_value)
+{
+    if(overrided_->is_present(property_name))
+        {
+            return overrided_->property(property_name, default_value);
+        }
+    else
+        {
+            std::string empty = "";
+            return converter_->convert(property(property_name, empty), default_value);
+        }
+}
+
+
+
 float FileConfiguration::property(std::string property_name, float default_value)
 {
     if(overrided_->is_present(property_name))

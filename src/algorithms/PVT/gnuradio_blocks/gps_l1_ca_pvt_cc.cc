@@ -56,6 +56,7 @@ gps_l1_ca_make_pvt_cc(unsigned int nchannels,
         bool flag_rtcm_tty_port,
         unsigned short rtcm_tcp_port,
         unsigned short rtcm_station_id,
+        std::map<int,int> rtcm_msg_rate_ms,
         std::string rtcm_dump_devname)
 {
     return gps_l1_ca_pvt_cc_sptr(new gps_l1_ca_pvt_cc(nchannels,
@@ -72,6 +73,7 @@ gps_l1_ca_make_pvt_cc(unsigned int nchannels,
             flag_rtcm_tty_port,
             rtcm_tcp_port,
             rtcm_station_id,
+            rtcm_msg_rate_ms,
             rtcm_dump_devname));
 }
 
@@ -189,6 +191,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
         bool flag_rtcm_tty_port,
         unsigned short rtcm_tcp_port,
         unsigned short rtcm_station_id,
+        std::map<int,int> rtcm_msg_rate_ms,
         std::string rtcm_dump_devname) :
              gr::block("gps_l1_ca_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
              gr::io_signature::make(0, 0, sizeof(gr_complex)) )
@@ -226,6 +229,22 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
     d_rtcm_tcp_port = rtcm_tcp_port;
     d_rtcm_station_id = rtcm_station_id;
     d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, flag_rtcm_server, flag_rtcm_tty_port, d_rtcm_tcp_port, d_rtcm_station_id, rtcm_dump_devname);
+    if(rtcm_msg_rate_ms.find(1019) != rtcm_msg_rate_ms.end())
+        {
+            d_rtcm_MT1019_rate_ms = rtcm_msg_rate_ms[1019];
+        }
+    else
+        {
+            d_rtcm_MT1019_rate_ms = 5000;  // default value if not set
+        }
+    if(rtcm_msg_rate_ms.find(1071) != rtcm_msg_rate_ms.end()) // whatever between 1071 and 1077
+        {
+            d_rtcm_MSM_rate_ms = rtcm_msg_rate_ms[1071];
+        }
+    else
+        {
+            d_rtcm_MSM_rate_ms = 1000;  // default value if not set
+        }
     b_rtcm_writing_started = false;
 
     d_dump_filename.append("_raw.dat");
@@ -265,6 +284,7 @@ gps_l1_ca_pvt_cc::gps_l1_ca_pvt_cc(unsigned int nchannels,
                 }
         }
 }
+
 
 gps_l1_ca_pvt_cc::~gps_l1_ca_pvt_cc()
 {}
@@ -367,14 +387,14 @@ int gps_l1_ca_pvt_cc::general_work (int noutput_items __attribute__((unused)), g
                                 }
                             if(b_rtcm_writing_started)
                                 {
-                                    if((d_sample_counter % 5000) == 0)
+                                    if((d_sample_counter % d_rtcm_MT1019_rate_ms) == 0)
                                         {
                                             for(std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin(); gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end(); gps_ephemeris_iter++ )
                                                 {
                                                     d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
                                                 }
                                         }
-                                    if((d_sample_counter % 1000) == 0)
+                                    if((d_sample_counter % d_rtcm_MSM_rate_ms) == 0)
                                         {
                                             std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter;
                                             gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin();

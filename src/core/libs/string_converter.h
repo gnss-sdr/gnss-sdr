@@ -49,6 +49,7 @@ public:
     long convert(const std::string& value, long default_value);
     int convert(const std::string& value, int default_value);
     unsigned int convert(const std::string& value, unsigned int default_value);
+    unsigned short convert(const std::string& value, unsigned short default_value);
     float convert(const std::string& value, float default_value);
     double convert(const std::string& value, double default_value);
 };

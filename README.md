@@ -241,7 +241,7 @@ $ make doc-clean
 
 will remove the content of previously-generated documentation.
 
-GNSS-SDR comes with a library with some specific Vector-Optimized Library of Kernels (VOLK) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ``volk_gnsssdr_profile`` that is installed into $PREFIX/bin. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to $HOME/.volk_gnsssdr/volk_gnsssdr_config the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's VOLK library, so if you still have not run ```volk_profile```, this is a good moment to do so.  
+GNSS-SDR comes with a library which is a module of the Vector-Optimized Library of Kernels (so called [VOLK_GNSSSDR](./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/README.md)) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ```volk_gnsssdr_profile``` that is installed into ```$PREFIX/bin```. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to ```$HOME/.volk_gnsssdr/volk_gnsssdr_config``` the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's [VOLK](http://libvolk.org/) library, so if you still have not run ```volk_profile```, this is a good moment to do so. 
 
 
 
@@ -456,7 +456,7 @@ and can be viewed doing:
 $ open ../docs/html/index.html
 ~~~~~~ 
 
-GNSS-SDR comes with a library with some specific Vector-Optimized Library of Kernels (VOLK) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ``volk_gnsssdr_profile`` that is installed into $PREFIX/bin. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to $HOME/.volk_gnsssdr/volk_gnsssdr_config the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's VOLK library, so if you still have not run ```volk_profile```, this is a good moment to do so.
+GNSS-SDR comes with a library which is a module of the Vector-Optimized Library of Kernels (so called [VOLK_GNSSSDR](./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/README.md)) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ```volk_gnsssdr_profile``` that is installed into ```$PREFIX/bin```. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to ```$HOME/.volk_gnsssdr/volk_gnsssdr_config``` the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's [VOLK](http://libvolk.org/) library, so if you still have not run ```volk_profile```, this is a good moment to do so.
 
 ###### Other package managers 
 

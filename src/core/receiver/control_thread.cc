@@ -419,6 +419,10 @@ void ControlThread::init()
     stop_ = false;
     processed_control_messages_ = 0;
     applied_actions_ = 0;
+    supl_mcc = 0;
+    supl_mns = 0;
+    supl_lac = 0;
+    supl_ci = 0;
 }
 
 

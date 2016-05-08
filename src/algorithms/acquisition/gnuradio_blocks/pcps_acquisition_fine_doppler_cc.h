@@ -92,7 +92,7 @@ private:
             int doppler_offset);
 
     int compute_and_accumulate_grid(gr_vector_const_void_star &input_items);
-    int estimate_Doppler(gr_vector_const_void_star &input_items, int available_samples);
+    int estimate_Doppler(gr_vector_const_void_star &input_items);
     float estimate_input_power(gr_vector_const_void_star &input_items);
     double search_maximum();
     void reset_grid();

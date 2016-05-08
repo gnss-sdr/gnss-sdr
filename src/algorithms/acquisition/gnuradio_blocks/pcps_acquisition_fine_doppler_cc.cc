@@ -323,7 +323,7 @@ int pcps_acquisition_fine_doppler_cc::compute_and_accumulate_grid(gr_vector_cons
     return d_fft_size;
 }
 
-int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star &input_items, int available_samples)
+int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star &input_items)
 {
 
     // Direct FFT
@@ -487,7 +487,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     case 3: // Fine doppler estimation
         //DLOG(INFO) <<"S3"<<std::endl;
         DLOG(INFO) << "Performing fine Doppler estimation";
-        estimate_Doppler(input_items, ninput_items[0]); //disabled in repo
+        estimate_Doppler(input_items); //disabled in repo
         d_state = 4;
         break;
     case 4: // Positive_Acq

@@ -141,7 +141,6 @@ private:
     float threshold_;
     unsigned int doppler_max_;
     unsigned int doppler_step_;
-    unsigned int shift_resolution_;
     unsigned int sampled_ms_;
     unsigned int tong_init_val_;
     unsigned int tong_max_val_;

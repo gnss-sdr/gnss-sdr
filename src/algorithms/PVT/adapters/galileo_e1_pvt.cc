@@ -83,7 +83,7 @@ GalileoE1Pvt::GalileoE1Pvt(ConfigurationInterface* configuration,
     int rtcm_MSM_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
     std::map<int,int> rtcm_msg_rate_ms;
     rtcm_msg_rate_ms[1045] = rtcm_MT1045_rate_ms;
-    for (int k = 1071; k < 1078; k++) // All GPS MSM
+    for (int k = 1091; k < 1098; k++) // All Galileo MSM
         {
             rtcm_msg_rate_ms[k] = rtcm_MSM_rate_ms;
         }

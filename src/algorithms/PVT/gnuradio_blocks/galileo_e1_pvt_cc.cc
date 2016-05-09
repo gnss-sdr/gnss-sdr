@@ -152,9 +152,9 @@ galileo_e1_pvt_cc::galileo_e1_pvt_cc(unsigned int nchannels, bool dump, std::str
         {
             d_rtcm_MT1045_rate_ms = boost::math::lcm(5000, d_output_rate_ms);  // default value if not set
         }
-    if(rtcm_msg_rate_ms.find(1071) != rtcm_msg_rate_ms.end()) // whatever between 1071 and 1077
+    if(rtcm_msg_rate_ms.find(1091) != rtcm_msg_rate_ms.end()) // whatever between 1091 and 1097
         {
-            d_rtcm_MSM_rate_ms = rtcm_msg_rate_ms[1071];
+            d_rtcm_MSM_rate_ms = rtcm_msg_rate_ms[1091];
         }
     else
         {

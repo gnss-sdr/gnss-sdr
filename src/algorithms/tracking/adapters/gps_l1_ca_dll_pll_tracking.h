@@ -39,7 +39,6 @@
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include "tracking_interface.h"
 #include "gps_l1_ca_dll_pll_tracking_cc.h"
 
@@ -55,8 +54,7 @@ public:
     GpsL1CaDllPllTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
-            unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GpsL1CaDllPllTracking();
 
@@ -81,7 +79,6 @@ public:
     gr::basic_block_sptr get_left_block();
     gr::basic_block_sptr get_right_block();
 
-
     /*!
      * \brief Set tracking channel unique ID
      */
@@ -93,7 +90,6 @@ public:
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
 
-
     void start_tracking();
 
 private:
@@ -103,7 +99,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_H_

@@ -62,7 +62,6 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -73,7 +72,7 @@ gps_l1_ca_dll_pll_c_aid_make_tracking_cc(
         float early_late_space_chips)
 {
     return gps_l1_ca_dll_pll_c_aid_tracking_cc_sptr(new gps_l1_ca_dll_pll_c_aid_tracking_cc(if_freq,
-            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz,pll_bw_narrow_hz, dll_bw_narrow_hz, extend_correlation_ms, early_late_space_chips));
+            fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz,pll_bw_narrow_hz, dll_bw_narrow_hz, extend_correlation_ms, early_late_space_chips));
 }
 
 
@@ -104,7 +103,6 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -124,7 +122,6 @@ gps_l1_ca_dll_pll_c_aid_tracking_cc::gps_l1_ca_dll_pll_c_aid_tracking_cc(
 
     this->message_port_register_out(pmt::mp("events"));
     // initialize internal vars
-    d_queue = queue;
     d_dump = dump;
     d_if_freq = if_freq;
     d_fs_in = fs_in;

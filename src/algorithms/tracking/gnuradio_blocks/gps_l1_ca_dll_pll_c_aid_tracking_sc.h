@@ -38,15 +38,12 @@
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H
 
 #include <fstream>
-#include <queue>
 #include <map>
 #include <string>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include <volk/volk.h>
-#include "concurrent_queue.h"
 #include "gps_sdr_signal_processing.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
@@ -62,7 +59,6 @@ gps_l1_ca_dll_pll_c_aid_tracking_sc_sptr
 gps_l1_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
                                    long fs_in, unsigned
                                    int vector_length,
-                                   boost::shared_ptr<gr::msg_queue> queue,
                                    bool dump,
                                    std::string dump_filename,
                                    float pll_bw_hz,
@@ -95,7 +91,6 @@ private:
     gps_l1_ca_dll_pll_c_aid_make_tracking_sc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -107,7 +102,6 @@ private:
     gps_l1_ca_dll_pll_c_aid_tracking_sc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -117,7 +111,6 @@ private:
             float early_late_space_chips);
 
     // tracking configuration vars
-    boost::shared_ptr<gr::msg_queue> d_queue;
     unsigned int d_vector_length;
     bool d_dump;
 

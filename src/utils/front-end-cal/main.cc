@@ -206,7 +206,7 @@ bool front_end_capture(std::shared_ptr<ConfigurationInterface> configuration)
     std::shared_ptr<GNSSBlockInterface> conditioner;
     try
     {
-            conditioner = block_factory.GetSignalConditioner(configuration,queue);
+            conditioner = block_factory.GetSignalConditioner(configuration);
     }
     catch(const boost::exception_ptr & e)
     {
@@ -352,8 +352,6 @@ int main(int argc, char** argv)
 
     // 4. Setup GNU Radio flowgraph (file_source -> Acquisition_10m)
     gr::top_block_sptr top_block;
-    boost::shared_ptr<gr::msg_queue> queue;
-    queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
     // Satellite signal definition
@@ -380,7 +378,6 @@ int main(int argc, char** argv)
 
     boost::shared_ptr<FrontEndCal_msg_rx> msg_rx = FrontEndCal_msg_rx_make();
 
-
     //gr_basic_block_sptr head = gr_make_head(sizeof(gr_complex), nsamples);
     //gr_head_sptr head_sptr = boost::dynamic_pointer_cast<gr_head>(head);
     //head_sptr->set_length(nsamples);
@@ -390,7 +387,7 @@ int main(int argc, char** argv)
     {
             acquisition->connect(top_block);
             top_block->connect(source, 0, acquisition->get_left_block(), 0);
-            top_block->msg_connect(acquisition->get_right_block(),pmt::mp("events"), msg_rx,pmt::mp("events"));
+            top_block->msg_connect(acquisition->get_right_block(), pmt::mp("events"), msg_rx,pmt::mp("events"));
     }
     catch(const std::exception & e)
     {

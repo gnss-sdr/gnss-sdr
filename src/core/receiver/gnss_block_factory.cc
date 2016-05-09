@@ -152,7 +152,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalSource(
 
 
 std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
-        std::shared_ptr<ConfigurationInterface> configuration, boost::shared_ptr<gr::msg_queue> queue, int ID)
+        std::shared_ptr<ConfigurationInterface> configuration, int ID)
 {
     std::string default_implementation = "Pass_Through";
     //backwards compatibility for old conf files
@@ -169,8 +169,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
             role_resampler = "Resampler" + boost::lexical_cast<std::string>(ID);
         }
 
-    std::string signal_conditioner = configuration->property(
-            role_conditioner + ".implementation", default_implementation);
+    std::string signal_conditioner = configuration->property(role_conditioner + ".implementation", default_implementation);
 
     std::string data_type_adapter;
     std::string input_filter;
@@ -183,12 +182,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         }
     else
         {
-            data_type_adapter = configuration->property(
-                    role_datatypeadapter + ".implementation", default_implementation);
-            input_filter = configuration->property(
-                    role_inputfilter + ".implementation", default_implementation);
-            resampler = configuration->property(
-                    role_resampler + ".implementation", default_implementation);
+            data_type_adapter = configuration->property(role_datatypeadapter + ".implementation", default_implementation);
+            input_filter = configuration->property(role_inputfilter + ".implementation", default_implementation);
+            resampler = configuration->property(role_resampler + ".implementation", default_implementation);
         }
 
     LOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
@@ -200,9 +196,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             //instantiate the array version
             std::unique_ptr<GNSSBlockInterface> conditioner_(new ArraySignalConditioner(configuration.get(), 
-                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1, queue)), 
-                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1, queue)),
-                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1, queue)),
+                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1)),
+                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1)),
+                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1)),
                 role_conditioner, "Signal_Conditioner"));
             return conditioner_;
         }
@@ -210,9 +206,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             //single-antenna version
             std::unique_ptr<GNSSBlockInterface> conditioner_(new SignalConditioner(configuration.get(),
-                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1, queue)), 
-                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1, queue)),
-                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1, queue)),
+                std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1)),
+                std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1)),
+                std::move(GetBlock(configuration, role_resampler, resampler, 1, 1)),
                 role_conditioner, "Signal_Conditioner"));
             return conditioner_;
         }
@@ -220,8 +216,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
 
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared_ptr<ConfigurationInterface> configuration,
-        boost::shared_ptr<gr::msg_queue> queue)
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared_ptr<ConfigurationInterface> configuration)
 {
     std::string default_implementation = "GPS_L1_CA_Observables";
     std::string implementation = configuration->property("Observables.implementation", default_implementation);
@@ -230,13 +225,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(std::shared
     Galileo_channels += configuration->property("Channels_5X.count", 0);
     unsigned int GPS_channels = configuration->property("Channels_1C.count", 0);
     GPS_channels += configuration->property("Channels_2S.count", 0);
-    return GetBlock(configuration, "Observables", implementation, Galileo_channels + GPS_channels, Galileo_channels + GPS_channels, queue);
+    return GetBlock(configuration, "Observables", implementation, Galileo_channels + GPS_channels, Galileo_channels + GPS_channels);
 }
 
 
 
-std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<ConfigurationInterface> configuration,
-        boost::shared_ptr<gr::msg_queue> queue)
+std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<ConfigurationInterface> configuration)
 {
     std::string default_implementation = "Pass_Through";
     std::string implementation = configuration->property("PVT.implementation", default_implementation);
@@ -245,7 +239,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(std::shared_ptr<Con
     Galileo_channels += configuration->property("Channels_5X.count", 0);
     unsigned int GPS_channels =configuration->property("Channels_1C.count", 0);
     GPS_channels += configuration->property("Channels_2S.count", 0);
-    return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels, 1, queue);
+    return GetBlock(configuration, "PVT", implementation, Galileo_channels + GPS_channels, 1);
 }
 
 
@@ -921,8 +915,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     out_streams));
             block = std::move(block_);
         }
-
-
     else if (implementation.compare("Galileo_E1_PCPS_QuickSync_Ambiguous_Acquisition") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_( new GalileoE1PcpsQuickSyncAmbiguousAcquisition(configuration.get(), role, in_streams,
@@ -1053,7 +1045,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else
         {
             // Log fatal. This causes execution to stop.
-            LOG(ERROR) << role<<"."<<implementation << ": Undefined implementation for block";
+            LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
     return std::move(block);
 }
@@ -1235,7 +1227,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else
         {
             // Log fatal. This causes execution to stop.
-            LOG(ERROR) << role<<"."<<implementation << ": Undefined implementation for block";
+            LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
     return std::move(block);
 }
@@ -1283,7 +1275,7 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
     else
         {
             // Log fatal. This causes execution to stop.
-            LOG(ERROR) << role<<"."<<implementation << ": Undefined implementation for block";
+            LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
         }
     return std::move(block);
 }

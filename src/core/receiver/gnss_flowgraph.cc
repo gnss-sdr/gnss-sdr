@@ -485,7 +485,7 @@ void GNSSFlowgraph::init()
                     std::cout << "RF Channels " << RF_Channels << std::endl;
                     for (int j = 0; j < RF_Channels; j++)
                         {
-                            sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, queue_, signal_conditioner_ID));
+                            sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, signal_conditioner_ID));
                             signal_conditioner_ID++;
                         }
                 }
@@ -502,19 +502,19 @@ void GNSSFlowgraph::init()
                 {
                     for (int j = 0; j < RF_Channels; j++)
                         {
-                            sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, queue_, signal_conditioner_ID));
+                            sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, signal_conditioner_ID));
                             signal_conditioner_ID++;
                         }
                 }
             else
                 {
                     //old config file, single signal source and single channel, not specified
-                    sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, queue_, -1));
+                    sig_conditioner_.push_back(block_factory_->GetSignalConditioner(configuration_, -1));
                 }
         }
 
-    observables_ = block_factory_->GetObservables(configuration_, queue_);
-    pvt_ = block_factory_->GetPVT(configuration_, queue_);
+    observables_ = block_factory_->GetObservables(configuration_);
+    pvt_ = block_factory_->GetPVT(configuration_);
 
     std::shared_ptr<std::vector<std::unique_ptr<GNSSBlockInterface>>> channels = block_factory_->GetChannels(configuration_, queue_);
 

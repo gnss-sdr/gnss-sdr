@@ -38,10 +38,9 @@ using google::LogMessage;
 // Constructor
 ArraySignalConditioner::ArraySignalConditioner(ConfigurationInterface *configuration,
         std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
-        std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation,
-        boost::shared_ptr<gr::msg_queue> queue) : data_type_adapt_(data_type_adapt),
-                in_filt_(in_filt), res_(res), role_(role), implementation_(implementation),
-                queue_(queue)
+        std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation) :
+                data_type_adapt_(data_type_adapt),
+                in_filt_(in_filt), res_(res), role_(role), implementation_(implementation)
 {
     connected_ = false;
     if(configuration){ };

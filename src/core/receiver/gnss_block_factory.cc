@@ -203,7 +203,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
                 std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1, queue)), 
                 std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1, queue)),
                 std::move(GetBlock(configuration, role_resampler, resampler, 1, 1, queue)),
-                role_conditioner, "Signal_Conditioner", queue));
+                role_conditioner, "Signal_Conditioner"));
             return conditioner_;
         }
     else
@@ -213,7 +213,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
                 std::move(GetBlock(configuration, role_datatypeadapter, data_type_adapter, 1, 1, queue)), 
                 std::move(GetBlock(configuration, role_inputfilter, input_filter, 1, 1, queue)),
                 std::move(GetBlock(configuration, role_resampler, resampler, 1, 1, queue)),
-                role_conditioner, "Signal_Conditioner", queue));
+                role_conditioner, "Signal_Conditioner"));
             return conditioner_;
         }
 }

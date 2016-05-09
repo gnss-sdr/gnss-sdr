@@ -53,8 +53,7 @@ public:
     //! Constructor
     ArraySignalConditioner(ConfigurationInterface *configuration,
             std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
-            std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation,
-            boost::shared_ptr<gr::msg_queue> queue);
+            std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation);
 
     //! Virtual destructor
     virtual ~ArraySignalConditioner();
@@ -81,7 +80,6 @@ private:
     std::string implementation_;
     bool connected_;
     //bool stop_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif /*GNSS_SDR_SIGNAL_CONDITIONER_H_*/

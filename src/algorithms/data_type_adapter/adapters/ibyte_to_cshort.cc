@@ -37,24 +37,20 @@
 using google::LogMessage;
 
 IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
+        unsigned int in_streams, unsigned int out_streams) :
                 config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams), queue_(queue)
+                out_streams_(out_streams)
 {
-
     std::string default_input_item_type = "byte";
     std::string default_output_item_type = "cshort";
     std::string default_dump_filename = "../data/input_filter.dat";
 
     DLOG(INFO) << "role " << role_;
 
-    input_item_type_ = config_->property(role_ + ".input_item_type",
-                                         default_input_item_type);
+    input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
 
     dump_ = config_->property(role_ + ".dump", false);
-    dump_filename_ = config_->property(role_ + ".dump_filename",
-                                       default_dump_filename);
+    dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
 
     size_t item_size = sizeof(lv_16sc_t);
 
@@ -67,7 +63,6 @@ IbyteToCshort::IbyteToCshort(ConfigurationInterface* configuration, std::string 
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
-
 }
 
 

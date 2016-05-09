@@ -43,7 +43,6 @@
 #include <gnuradio/blocks/float_to_short.h>
 #include <gnuradio/filter/fir_filter_ccf.h>
 #include <gnuradio/filter/fir_filter_fff.h>
-#include <gnuradio/msg_queue.h>
 #include "gnss_block_interface.h"
 #include "complex_byte_to_float_x2.h"
 #include "byte_x2_to_complex_byte.h"
@@ -67,8 +66,7 @@ public:
     FirFilter(ConfigurationInterface* configuration,
               std::string role,
               unsigned int in_streams,
-              unsigned int out_streams,
-              boost::shared_ptr<gr::msg_queue> queue);
+              unsigned int out_streams);
 
     //! Destructor
     virtual ~FirFilter();
@@ -103,7 +101,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
     gr::blocks::file_sink::sptr file_sink_;
     void init();
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;

@@ -34,7 +34,6 @@
 #include <string>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/msg_queue.h>
 #include "gnss_synchro.h"
 #include "gnss_block_interface.h"
 
@@ -50,7 +49,7 @@ class IbyteToComplex: public GNSSBlockInterface
 public:
     IbyteToComplex(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~IbyteToComplex();
 
@@ -83,7 +82,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
     gr::blocks::file_sink::sptr file_sink_;
 };
 

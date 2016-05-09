@@ -39,10 +39,9 @@
 using google::LogMessage;
 
 FirFilter::FirFilter(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
+        unsigned int in_streams, unsigned int out_streams) :
                 config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams), queue_(queue)
+                out_streams_(out_streams)
 {
     size_t item_size;
     (*this).init();

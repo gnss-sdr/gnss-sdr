@@ -128,7 +128,7 @@ TEST_F(Fir_Filter_Test, Instantiate_gr_complex_gr_complex)
 {
     init();
     configure_gr_complex_gr_complex();
-    std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1, queue));
+    std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
     if (filter) res = 1;
     ASSERT_EQ(1, res);
@@ -138,7 +138,7 @@ TEST_F(Fir_Filter_Test, Instantiate_cshort_cshort)
 {
     init();
     configure_cshort_cshort();
-    std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1, queue));
+    std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
     if (filter) res = 1;
     ASSERT_EQ(1, res);
@@ -148,7 +148,7 @@ TEST_F(Fir_Filter_Test, Instantiate_cbyte_cbyte)
 {
     init();
     configure_cbyte_cbyte();
-    std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1, queue));
+    std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
     if (filter) res = 1;
     ASSERT_EQ(1, res);
@@ -158,7 +158,7 @@ TEST_F(Fir_Filter_Test, Instantiate_cbyte_gr_complex)
 {
     init();
     configure_cbyte_gr_complex();
-    std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1, queue));
+    std::unique_ptr<FirFilter> filter(new FirFilter(config.get(), "InputFilter", 1, 1));
     int res = 0;
     if (filter) res = 1;
     ASSERT_EQ(1, res);
@@ -174,7 +174,7 @@ TEST_F(Fir_Filter_Test, ConnectAndRun)
 
     init();
     configure_gr_complex_gr_complex();
-    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
+    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
     item_size = sizeof(gr_complex);
     ASSERT_NO_THROW( {
         filter->connect(top_block);
@@ -207,7 +207,7 @@ TEST_F(Fir_Filter_Test, ConnectAndRunGrcomplex)
 
     init();
     configure_gr_complex_gr_complex();
-    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
+    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
     std::shared_ptr<InMemoryConfiguration> config2 = std::make_shared<InMemoryConfiguration>();
 
     config2->set_property("Test_Source.samples", std::to_string(nsamples));
@@ -250,7 +250,7 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCshorts)
 
     init();
     configure_cshort_cshort();
-    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
+    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
     std::shared_ptr<InMemoryConfiguration> config2 = std::make_shared<InMemoryConfiguration>();
 
     config2->set_property("Test_Source.samples", std::to_string(nsamples));
@@ -297,7 +297,7 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbytes)
 
     init();
     configure_cbyte_cbyte();
-    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
+    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
     std::shared_ptr<InMemoryConfiguration> config2 = std::make_shared<InMemoryConfiguration>();
 
     config2->set_property("Test_Source.samples", std::to_string(nsamples));
@@ -343,7 +343,7 @@ TEST_F(Fir_Filter_Test, ConnectAndRunCbyteGrcomplex)
 
     init();
     configure_cbyte_gr_complex();
-    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1, queue);
+    std::shared_ptr<FirFilter> filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
     std::shared_ptr<InMemoryConfiguration> config2 = std::make_shared<InMemoryConfiguration>();
 
     config2->set_property("Test_Source.samples", std::to_string(nsamples));

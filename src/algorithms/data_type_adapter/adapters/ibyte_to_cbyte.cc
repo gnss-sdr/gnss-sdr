@@ -37,10 +37,9 @@
 using google::LogMessage;
 
 IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
+        unsigned int in_streams, unsigned int out_streams) :
                 config_(configuration), role_(role), in_streams_(in_streams),
-                out_streams_(out_streams), queue_(queue)
+                out_streams_(out_streams)
 {
     std::string default_input_item_type = "byte";
     std::string default_output_item_type = "lv_8sc_t";
@@ -64,7 +63,6 @@ IbyteToCbyte::IbyteToCbyte(ConfigurationInterface* configuration, std::string ro
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
-
 }
 
 

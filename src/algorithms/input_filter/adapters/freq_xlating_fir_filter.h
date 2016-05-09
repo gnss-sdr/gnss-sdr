@@ -42,7 +42,6 @@
 #include <gnuradio/blocks/complex_to_float.h>
 #include <gnuradio/blocks/char_to_short.h>
 #include <gnuradio/blocks/float_to_short.h>
-#include <gnuradio/msg_queue.h>
 #include "gnss_block_interface.h"
 #include "short_x2_to_cshort.h"
 #include "complex_float_to_complex_byte.h"
@@ -66,7 +65,7 @@ class FreqXlatingFirFilter: public GNSSBlockInterface
 public:
     FreqXlatingFirFilter(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~FreqXlatingFirFilter();
     std::string role()
@@ -105,7 +104,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
     gr::blocks::file_sink::sptr file_sink_;
     gr::blocks::complex_to_float::sptr complex_to_float_;
     gr::blocks::char_to_short::sptr gr_char_to_short_;

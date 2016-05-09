@@ -34,7 +34,6 @@
 #include <string>
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/msg_queue.h>
 #include "gnss_block_interface.h"
 
 
@@ -49,7 +48,7 @@ class IshortToComplex: public GNSSBlockInterface
 public:
     IshortToComplex(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~IshortToComplex();
 
@@ -82,7 +81,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
     gr::blocks::file_sink::sptr file_sink_;
 };
 

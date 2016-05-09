@@ -782,37 +782,37 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Byte_To_Short") == 0)
         {
             std::unique_ptr<GNSSBlockInterface>block_(new ByteToShort(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Ibyte_To_Cbyte") == 0)
         {
             std::unique_ptr<GNSSBlockInterface>block_(new IbyteToCbyte(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Ibyte_To_Cshort") == 0)
         {
             std::unique_ptr<GNSSBlockInterface>block_(new IbyteToCshort(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Ibyte_To_Complex") == 0)
         {
             std::unique_ptr<GNSSBlockInterface>block_(new IbyteToComplex(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Ishort_To_Cshort") == 0)
         {
             std::unique_ptr<GNSSBlockInterface>block_(new IshortToCshort(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Ishort_To_Complex") == 0)
         {
             std::unique_ptr<GNSSBlockInterface>block_(new IshortToComplex(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
 
@@ -820,13 +820,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
     else if (implementation.compare("Fir_Filter") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new FirFilter(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Freq_Xlating_Fir_Filter") == 0)
         {
             std::unique_ptr<GNSSBlockInterface> block_(new FreqXlatingFirFilter(configuration.get(), role, in_streams,
-                    out_streams, queue));
+                    out_streams));
             block = std::move(block_);
         }
     else if (implementation.compare("Beamformer_Filter") == 0)

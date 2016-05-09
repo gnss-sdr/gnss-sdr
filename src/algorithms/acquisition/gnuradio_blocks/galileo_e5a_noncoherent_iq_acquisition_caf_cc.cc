@@ -51,7 +51,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
         unsigned int doppler_max, long freq, long fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
-        gr::msg_queue::sptr queue, bool dump,
+        bool dump,
         std::string dump_filename,
         bool both_signal_components_,
         int CAF_window_hz_,
@@ -60,7 +60,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
 
     return galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr(
             new galileo_e5a_noncoherentIQ_acquisition_caf_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                    samples_per_code, bit_transition_flag, queue, dump, dump_filename, both_signal_components_, CAF_window_hz_, Zero_padding_));
+                    samples_per_code, bit_transition_flag, dump, dump_filename, both_signal_components_, CAF_window_hz_, Zero_padding_));
 }
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisition_caf_cc(
@@ -69,7 +69,7 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
         unsigned int doppler_max, long freq, long fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
-        gr::msg_queue::sptr queue, bool dump,
+        bool dump,
         std::string dump_filename,
         bool both_signal_components_,
         int CAF_window_hz_,
@@ -82,7 +82,6 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    d_queue = queue;
     d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
@@ -359,7 +358,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
      * 4. OPTIONAL: CAF filter to avoid doppler ambiguity
      * 5. Record the maximum peak and the associated synchronization parameters
      * 6. Compute the test statistics and compare to the threshold
-     * 7. Declare positive or negative acquisition using a message queue
+     * 7. Declare positive or negative acquisition using a message port
      */
 
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
@@ -768,7 +767,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
         }
     case 3:
         {
-            // 7.1- Declare positive acquisition using a message queue
+            // 7.1- Declare positive acquisition using a message port
             DLOG(INFO) << "positive acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;
@@ -790,7 +789,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
         }
     case 4:
         {
-            // 7.2- Declare negative acquisition using a message queue
+            // 7.2- Declare negative acquisition using a message port
             DLOG(INFO) << "negative acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;

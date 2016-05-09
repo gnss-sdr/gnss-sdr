@@ -39,7 +39,6 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <gtest/gtest.h>
 #include "gnss_block_interface.h"
@@ -364,7 +363,7 @@ void GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test::stop_queue()
 TEST_F(GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test, Instantiate)
 {
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsMultithreadAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsMultithreadAcquisition>(config.get(), "Acquisition", 1, 1);
 }
 
 TEST_F(GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test, ConnectAndRun)
@@ -377,7 +376,7 @@ TEST_F(GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test, ConnectAndRun)
     top_block = gr::make_top_block("Acquisition test");
 
     config_1();
-    acquisition = std::make_shared<GpsL1CaPcpsMultithreadAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsMultithreadAcquisition>(config.get(), "Acquisition", 1, 1);
 
     ASSERT_NO_THROW( {
         acquisition->connect(top_block);
@@ -404,7 +403,7 @@ TEST_F(GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test, ValidationOfResults)
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
-    acquisition = std::make_shared<GpsL1CaPcpsMultithreadAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsMultithreadAcquisition>(config.get(), "Acquisition", 1, 1);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);
@@ -486,7 +485,7 @@ TEST_F(GpsL1CaPcpsMultithreadAcquisitionGSoC2013Test, ValidationOfResultsProbabi
     queue = gr::msg_queue::make(0);
     top_block = gr::make_top_block("Acquisition test");
 
-    acquisition = std::make_shared<GpsL1CaPcpsMultithreadAcquisition>(config.get(), "Acquisition", 1, 1, queue);
+    acquisition = std::make_shared<GpsL1CaPcpsMultithreadAcquisition>(config.get(), "Acquisition", 1, 1);
 
     ASSERT_NO_THROW( {
         acquisition->set_channel(1);

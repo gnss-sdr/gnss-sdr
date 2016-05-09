@@ -42,9 +42,8 @@ using google::LogMessage;
 
 GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
         ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+        unsigned int in_streams, unsigned int out_streams) :
+    role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -61,7 +60,6 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
     max_dwells_= configuration->property(role + ".max_dwells", 1);
  
-
     //--- Find number of samples per spreading code -------------------------
     vector_length_ = round(fs_in_
             / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
@@ -72,7 +70,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
         {
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(max_dwells_,sampled_ms_,
-                    doppler_max_, doppler_min_, if_, fs_in_, vector_length_, queue_,
+                    doppler_max_, doppler_min_, if_, fs_in_, vector_length_,
                     dump_, dump_filename_);
         }
     else

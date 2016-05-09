@@ -41,7 +41,6 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/analog/sig_source_c.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/null_sink.h>
 #include "gnss_block_interface.h"
 #include "in_memory_configuration.h"

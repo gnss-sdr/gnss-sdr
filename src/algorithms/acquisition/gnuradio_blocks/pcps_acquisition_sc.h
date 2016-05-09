@@ -9,7 +9,7 @@
  *  <li> Perform the FFT-based circular convolution (parallel time search)
  *  <li> Record the maximum peak and the associated synchronization parameters
  *  <li> Compute the test statistics and compare to the threshold
- *  <li> Declare positive or negative acquisition using a message queue
+ *  <li> Declare positive or negative acquisition using a message port
  *  </ol>
  *
  * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -55,7 +55,6 @@
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
 
 class pcps_acquisition_sc;

@@ -245,7 +245,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
      * 3. Perform the FFT-based circular convolution (parallel time search)
      * 4. Record the maximum peak and the associated synchronization parameters
      * 5. Compute the test statistics and compare to the threshold
-     * 6. Declare positive or negative acquisition using a message queue
+     * 6. Declare positive or negative acquisition using a message port
      */
 
     int acquisition_message = -1; //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
@@ -432,7 +432,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
     case 2:
         {
-            // 6.1- Declare positive acquisition using a message queue
+            // 6.1- Declare positive acquisition using a message port
             DLOG(INFO) << "positive acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;
@@ -456,7 +456,7 @@ int pcps_acquisition_cc::general_work(int noutput_items,
 
     case 3:
         {
-            // 6.2- Declare negative acquisition using a message queue
+            // 6.2- Declare negative acquisition using a message port
             DLOG(INFO) << "negative acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;

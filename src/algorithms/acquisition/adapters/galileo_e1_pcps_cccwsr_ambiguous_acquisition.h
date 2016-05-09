@@ -33,7 +33,6 @@
 #define GNSS_SDR_GALILEO_E1_PCPS_CCCWSR_AMBIGUOUS_ACQUISITION_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
@@ -51,7 +50,7 @@ class GalileoE1PcpsCccwsrAmbiguousAcquisition: public AcquisitionInterface
 public:
     GalileoE1PcpsCccwsrAmbiguousAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GalileoE1PcpsCccwsrAmbiguousAcquisition();
 
@@ -151,7 +150,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
     float calculate_threshold(float pfa);
 };
 

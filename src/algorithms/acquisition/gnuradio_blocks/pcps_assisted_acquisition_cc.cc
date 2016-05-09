@@ -47,19 +47,19 @@ using google::LogMessage;
 
 pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
         int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
-        long fs_in, int samples_per_ms, boost::shared_ptr<gr::msg_queue> queue, bool dump,
+        long fs_in, int samples_per_ms, bool dump,
         std::string dump_filename)
 {
     return pcps_assisted_acquisition_cc_sptr(
             new pcps_assisted_acquisition_cc(max_dwells, sampled_ms, doppler_max, doppler_min, freq,
-                    fs_in, samples_per_ms, queue, dump, dump_filename));
+                    fs_in, samples_per_ms, dump, dump_filename));
 }
 
 
 
 pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
         int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
-        long fs_in, int samples_per_ms, boost::shared_ptr<gr::msg_queue> queue, bool dump,
+        long fs_in, int samples_per_ms, bool dump,
         std::string dump_filename) :
                 gr::block("pcps_assisted_acquisition_cc",
                         gr::io_signature::make(1, 1, sizeof(gr_complex)),
@@ -68,7 +68,6 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
-    d_queue = queue;
     d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
@@ -461,7 +460,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
         DLOG(INFO) << "input signal power " << d_input_power;
         d_active = false;
-        // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCESS 2=ACQ_FAIL
+        // Send message to channel port //0=STOP_CHANNEL 1=ACQ_SUCCESS 2=ACQ_FAIL
         this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
         free_grid_memory();
         // consume samples to not block the GNU Radio flowgraph
@@ -479,7 +478,7 @@ int pcps_assisted_acquisition_cc::general_work(int noutput_items,
         DLOG(INFO) << "doppler " << d_gnss_synchro->Acq_doppler_hz;
         DLOG(INFO) << "input signal power " << d_input_power;
         d_active = false;
-        // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCESS 2=ACQ_FAIL
+        // Send message to channel port //0=STOP_CHANNEL 1=ACQ_SUCCESS 2=ACQ_FAIL
         this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
         free_grid_memory();
         // consume samples to not block the GNU Radio flowgraph

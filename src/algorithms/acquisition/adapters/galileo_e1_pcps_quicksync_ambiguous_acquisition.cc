@@ -41,9 +41,8 @@ using google::LogMessage;
 
 GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcquisition(
         ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
-               role_(role), in_streams_(in_streams), out_streams_(out_streams), queue_(queue)
+        unsigned int in_streams, unsigned int out_streams) :
+               role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     configuration_ = configuration;
     std::string default_item_type = "gr_complex";
@@ -124,7 +123,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
                     sampled_ms_, max_dwells_, doppler_max_, if_, fs_in_,
-                    samples_per_ms, code_length_, bit_transition_flag_, queue_,
+                    samples_per_ms, code_length_, bit_transition_flag_,
                     dump_, dump_filename_);
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_,
                     vector_length_);

@@ -35,10 +35,8 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
 
 class galileo_pcps_8ms_acquisition_cc;
@@ -49,8 +47,7 @@ galileo_pcps_8ms_acquisition_cc_sptr
 galileo_pcps_8ms_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                              unsigned int doppler_max, long freq, long fs_in,
                              int samples_per_ms, int samples_per_code,
-                             gr::msg_queue::sptr queue, bool dump,
-                             std::string dump_filename);
+                             bool dump, std::string dump_filename);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition for
@@ -63,15 +60,13 @@ private:
     galileo_pcps_8ms_make_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                                  unsigned int doppler_max, long freq, long fs_in,
                                  int samples_per_ms, int samples_per_code,
-                                 gr::msg_queue::sptr queue, bool dump,
-                                 std::string dump_filename);
+                                 bool dump, std::string dump_filename);
 
 
     galileo_pcps_8ms_acquisition_cc(unsigned int sampled_ms, unsigned int max_dwells,
                             unsigned int doppler_max, long freq, long fs_in,
                             int samples_per_ms, int samples_per_code,
-                            gr::msg_queue::sptr queue, bool dump,
-                            std::string dump_filename);
+                            bool dump, std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
             int doppler_offset);
@@ -103,7 +98,6 @@ private:
     float* d_magnitude;
     float d_input_power;
     float d_test_statistics;
-    gr::msg_queue::sptr d_queue;
     std::ofstream d_dump_file;
     bool d_active;
     int d_state;

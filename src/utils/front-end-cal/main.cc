@@ -367,7 +367,7 @@ int main(int argc, char** argv)
     long fs_in_ = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
 
     GNSSBlockFactory block_factory;
-    acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1, queue);
+    acquisition = new GpsL1CaPcpsAcquisitionFineDoppler(configuration.get(), "Acquisition", 1, 1);
 
     acquisition->set_channel(1);
     acquisition->set_gnss_synchro(gnss_synchro);

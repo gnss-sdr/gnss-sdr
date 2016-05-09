@@ -54,10 +54,8 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
 
 class pcps_tong_acquisition_cc;
@@ -68,7 +66,7 @@ pcps_tong_acquisition_cc_sptr
 pcps_tong_make_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
                               long freq, long fs_in, int samples_per_ms,
                               int samples_per_code, unsigned int tong_init_val,
-                              unsigned int tong_max_val, gr::msg_queue::sptr queue,
+                              unsigned int tong_max_val,
                               bool dump, std::string dump_filename);
 
 /*!
@@ -82,13 +80,13 @@ private:
     pcps_tong_make_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
             long freq, long fs_in, int samples_per_ms,
             int samples_per_code, unsigned int tong_init_val,
-            unsigned int tong_max_val, gr::msg_queue::sptr queue,
+            unsigned int tong_max_val,
             bool dump, std::string dump_filename);
 
     pcps_tong_acquisition_cc(unsigned int sampled_ms, unsigned int doppler_max,
             long freq, long fs_in, int samples_per_ms,
             int samples_per_code, unsigned int tong_init_val,
-            unsigned int tong_max_val, gr::msg_queue::sptr queue,
+            unsigned int tong_max_val,
             bool dump, std::string dump_filename);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
@@ -123,7 +121,6 @@ private:
     float* d_magnitude;
     float d_input_power;
     float d_test_statistics;
-    gr::msg_queue::sptr d_queue;
     std::ofstream d_dump_file;
     bool d_active;
     int d_state;

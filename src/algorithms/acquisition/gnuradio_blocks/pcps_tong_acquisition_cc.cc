@@ -63,19 +63,19 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
                               unsigned int sampled_ms, unsigned int doppler_max,
                               long freq, long fs_in, int samples_per_ms,
                               int samples_per_code, unsigned int tong_init_val,
-                              unsigned int tong_max_val, gr::msg_queue::sptr queue,
+                              unsigned int tong_max_val,
                               bool dump, std::string dump_filename)
 {
     return pcps_tong_acquisition_cc_sptr(
             new pcps_tong_acquisition_cc(sampled_ms, doppler_max, freq, fs_in, samples_per_ms, samples_per_code,
-                                    tong_init_val, tong_max_val, queue, dump, dump_filename));
+                                    tong_init_val, tong_max_val, dump, dump_filename));
 }
 
 pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
                          unsigned int sampled_ms, unsigned int doppler_max,
                          long freq, long fs_in, int samples_per_ms,
                          int samples_per_code, unsigned int tong_init_val,
-                         unsigned int tong_max_val, gr::msg_queue::sptr queue,
+                         unsigned int tong_max_val,
                          bool dump, std::string dump_filename) :
     gr::block("pcps_tong_acquisition_cc",
     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
@@ -85,7 +85,6 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
     d_state = 0;
-    d_queue = queue;
     d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
@@ -391,7 +390,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
 
     case 2:
         {
-            // 6.1- Declare positive acquisition using a message queue
+            // 6.1- Declare positive acquisition using a message port
             DLOG(INFO) << "positive acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;
@@ -416,7 +415,7 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
 
     case 3:
         {
-            // 6.2- Declare negative acquisition using a message queue
+            // 6.2- Declare negative acquisition using a message port
             DLOG(INFO) << "negative acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;

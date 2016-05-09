@@ -10,7 +10,7 @@
  *  <li> Perform the FFT-based circular convolution (parallel time search)
  *  <li> Record the maximum peak and the associated synchronization parameters
  *  <li> Compute the test statistics and compare to the threshold
- *  <li> Declare positive or negative acquisition using a message queue
+ *  <li> Declare positive or negative acquisition using a message port
  *  </ol>
  *
  * Kay Borre book: K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
@@ -70,13 +70,13 @@ pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
                                  unsigned int doppler_max, long freq, long fs_in,
                                  int samples_per_ms, int samples_per_code,
                                  bool bit_transition_flag,
-                                 gr::msg_queue::sptr queue, bool dump,
+                                 bool dump,
                                  std::string dump_filename)
 {
 
     return pcps_opencl_acquisition_cc_sptr(
             new pcps_opencl_acquisition_cc(sampled_ms, max_dwells, doppler_max, freq, fs_in, samples_per_ms,
-                                     samples_per_code, bit_transition_flag, queue, dump, dump_filename));
+                                     samples_per_code, bit_transition_flag, dump, dump_filename));
 }
 
 pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
@@ -84,7 +84,7 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag,
-                         gr::msg_queue::sptr queue, bool dump,
+                         bool dump,
                          std::string dump_filename) :
     gr::block("pcps_opencl_acquisition_cc",
     gr::io_signature::make(1, 1, sizeof(gr_complex) * sampled_ms * samples_per_ms),
@@ -95,7 +95,6 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_active = false;
     d_state = 0;
     d_core_working = false;
-    d_queue = queue;
     d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
@@ -780,7 +779,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
 
     case 2:
         {
-            // Declare positive acquisition using a message queue
+            // Declare positive acquisition using a message port
             DLOG(INFO) << "positive acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;
@@ -804,7 +803,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
 
     case 3:
         {
-            // Declare negative acquisition using a message queue
+            // Declare negative acquisition using a message port
             DLOG(INFO) << "negative acquisition";
             DLOG(INFO) << "satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN;
             DLOG(INFO) << "sample_stamp " << d_sample_counter;

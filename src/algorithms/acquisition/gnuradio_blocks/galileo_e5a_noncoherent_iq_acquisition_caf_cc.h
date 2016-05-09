@@ -41,10 +41,8 @@
 #include <fstream>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/fft/fft.h>
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
 
 class galileo_e5a_noncoherentIQ_acquisition_caf_cc;
@@ -57,7 +55,7 @@ galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(unsigned int sampled_ms,
                          unsigned int doppler_max, long freq, long fs_in,
                          int samples_per_ms, int samples_per_code,
                          bool bit_transition_flag,
-                         gr::msg_queue::sptr queue, bool dump,
+                         bool dump,
                          std::string dump_filename,
                          bool both_signal_components_,
                          int CAF_window_hz_,
@@ -79,7 +77,7 @@ private:
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag,
-            gr::msg_queue::sptr queue, bool dump,
+            bool dump,
             std::string dump_filename,
             bool both_signal_components_,
             int CAF_window_hz_,
@@ -91,7 +89,7 @@ private:
             unsigned int doppler_max, long freq, long fs_in,
             int samples_per_ms, int samples_per_code,
             bool bit_transition_flag,
-            gr::msg_queue::sptr queue, bool dump,
+            bool dump,
             std::string dump_filename,
             bool both_signal_components_,
             int CAF_window_hz_,
@@ -135,7 +133,6 @@ private:
     float d_input_power;
     float d_test_statistics;
     bool d_bit_transition_flag;
-    gr::msg_queue::sptr d_queue;
     std::ofstream d_dump_file;
     bool d_active;
     int d_state;

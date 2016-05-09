@@ -37,7 +37,6 @@
 #define GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include "gnss_synchro.h"
@@ -168,7 +167,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 
     float calculate_threshold(float pfa);
 };

@@ -42,12 +42,9 @@ using google::LogMessage;
 
 GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
         ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
-    role_(role), in_streams_(in_streams), out_streams_(out_streams),
-        queue_(queue)
+        unsigned int in_streams, unsigned int out_streams) :
+    role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
-
     std::string default_item_type = "gr_complex";
     std::string default_dump_filename = "./data/acquisition.dat";
 
@@ -72,8 +69,8 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     if (item_type_.compare("gr_complex") == 0)
         {
             item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_assisted_acquisition_cc(max_dwells_,sampled_ms_,
-                    doppler_max_, doppler_min_, if_, fs_in_, vector_length_, queue_,
+            acquisition_cc_ = pcps_make_assisted_acquisition_cc(max_dwells_, sampled_ms_,
+                    doppler_max_, doppler_min_, if_, fs_in_, vector_length_,
                     dump_, dump_filename_);
 
         }

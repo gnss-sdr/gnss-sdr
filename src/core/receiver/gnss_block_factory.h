@@ -104,7 +104,7 @@ private:
             std::shared_ptr<ConfigurationInterface> configuration,
             std::string role,
             std::string implementation, unsigned int in_streams,
-            unsigned int out_streams, gr::msg_queue::sptr queue);
+            unsigned int out_streams);
 
     std::unique_ptr<TrackingInterface> GetTrkBlock(
             std::shared_ptr<ConfigurationInterface> configuration,

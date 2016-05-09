@@ -33,7 +33,6 @@
 #define GNSS_SDR_GPS_L1_CA_TONG_ACQUISITION_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include <gnuradio/blocks/stream_to_vector.h>
 #include "gnss_synchro.h"
 #include "acquisition_interface.h"
@@ -51,7 +50,7 @@ class GpsL1CaPcpsTongAcquisition: public AcquisitionInterface
 public:
     GpsL1CaPcpsTongAcquisition(ConfigurationInterface* configuration,
             std::string role, unsigned int in_streams,
-            unsigned int out_streams, boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GpsL1CaPcpsTongAcquisition();
 
@@ -153,7 +152,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 
     float calculate_threshold(float pfa);
 };

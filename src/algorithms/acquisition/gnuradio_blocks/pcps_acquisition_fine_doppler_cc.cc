@@ -46,20 +46,20 @@ using google::LogMessage;
 
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(
         int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
-        long fs_in, int samples_per_ms, boost::shared_ptr<gr::msg_queue> queue, bool dump,
+        long fs_in, int samples_per_ms, bool dump,
         std::string dump_filename)
 {
 
     return pcps_acquisition_fine_doppler_cc_sptr(
             new pcps_acquisition_fine_doppler_cc(max_dwells, sampled_ms, doppler_max, doppler_min, freq,
-                    fs_in, samples_per_ms, queue, dump, dump_filename));
+                    fs_in, samples_per_ms, dump, dump_filename));
 }
 
 
 
 pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
         int max_dwells, unsigned int sampled_ms, int doppler_max, int doppler_min, long freq,
-        long fs_in, int samples_per_ms, boost::shared_ptr<gr::msg_queue> queue, bool dump,
+        long fs_in, int samples_per_ms, bool dump,
         std::string dump_filename) :
                 gr::block("pcps_acquisition_fine_doppler_cc",
                         gr::io_signature::make(1, 1, sizeof(gr_complex)),
@@ -68,7 +68,6 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0;    // SAMPLE COUNTER
     d_active = false;
-    d_queue = queue;
     d_freq = freq;
     d_fs_in = fs_in;
     d_samples_per_ms = samples_per_ms;
@@ -431,7 +430,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 
 
 int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
-        gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
+        gr_vector_int &ninput_items __attribute__((unused)), gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items __attribute__((unused)))
 {
 
@@ -502,7 +501,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
         DLOG(INFO) << "input signal power " << d_input_power;
 
         d_active = false;
-        // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+        // Send message to channel port //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
         this->message_port_pub(pmt::mp("events"), pmt::from_long(1));
         d_state = 0;
         break;
@@ -518,7 +517,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
         DLOG(INFO) << "input signal power " << d_input_power;
 
         d_active = false;
-        // Send message to channel queue //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
+        // Send message to channel port //0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
         this->message_port_pub(pmt::mp("events"), pmt::from_long(2));
         d_state = 0;
         break;

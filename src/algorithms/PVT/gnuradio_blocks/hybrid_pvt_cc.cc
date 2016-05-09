@@ -33,6 +33,7 @@
 #include <iostream>
 #include <map>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/math/common_factor_rt.hpp>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
 #include <glog/logging.h>
@@ -55,6 +56,7 @@ hybrid_make_pvt_cc(unsigned int nchannels,
         bool flag_rtcm_tty_port,
         unsigned short rtcm_tcp_port,
         unsigned short rtcm_station_id,
+        std::map<int,int> rtcm_msg_rate_ms,
         std::string rtcm_dump_devname)
 {
     return hybrid_pvt_cc_sptr(new hybrid_pvt_cc(nchannels,
@@ -71,6 +73,7 @@ hybrid_make_pvt_cc(unsigned int nchannels,
             flag_rtcm_tty_port,
             rtcm_tcp_port,
             rtcm_station_id,
+            rtcm_msg_rate_ms,
             rtcm_dump_devname));
 }
 
@@ -168,7 +171,7 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
         int averaging_depth, bool flag_averaging, int output_rate_ms, int display_rate_ms, bool flag_nmea_tty_port,
         std::string nmea_dump_filename, std::string nmea_dump_devname,
         bool flag_rtcm_server, bool flag_rtcm_tty_port, unsigned short rtcm_tcp_port,
-        unsigned short rtcm_station_id, std::string rtcm_dump_devname) :
+        unsigned short rtcm_station_id, std::map<int,int> rtcm_msg_rate_ms, std::string rtcm_dump_devname) :
                 gr::block("hybrid_pvt_cc", gr::io_signature::make(nchannels, nchannels,  sizeof(Gnss_Synchro)),
                 gr::io_signature::make(0, 0, sizeof(gr_complex)))
 
@@ -203,6 +206,39 @@ hybrid_pvt_cc::hybrid_pvt_cc(unsigned int nchannels, bool dump, std::string dump
     std::string rtcm_dump_filename;
     rtcm_dump_filename = d_dump_filename;
     d_rtcm_printer = std::make_shared<Rtcm_Printer>(rtcm_dump_filename, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname);
+    if(rtcm_msg_rate_ms.find(1019) != rtcm_msg_rate_ms.end())
+        {
+            d_rtcm_MT1019_rate_ms = rtcm_msg_rate_ms[1019];
+        }
+    else
+        {
+            d_rtcm_MT1019_rate_ms = boost::math::lcm(5000, d_output_rate_ms);  // default value if not set
+        }
+    if(rtcm_msg_rate_ms.find(1045) != rtcm_msg_rate_ms.end())
+        {
+            d_rtcm_MT1045_rate_ms = rtcm_msg_rate_ms[1045];
+        }
+    else
+        {
+            d_rtcm_MT1045_rate_ms = boost::math::lcm(5000, d_output_rate_ms);  // default value if not set
+        }
+    if(rtcm_msg_rate_ms.find(1077) != rtcm_msg_rate_ms.end()) // whatever between 1071 and 1077
+        {
+            d_rtcm_MT1077_rate_ms = rtcm_msg_rate_ms[1077];
+        }
+    else
+        {
+            d_rtcm_MT1077_rate_ms = boost::math::lcm(1000, d_output_rate_ms);  // default value if not set
+        }
+    if(rtcm_msg_rate_ms.find(1097) != rtcm_msg_rate_ms.end()) // whatever between 1071 and 1077
+        {
+            d_rtcm_MT1097_rate_ms = rtcm_msg_rate_ms[1097];
+        }
+    else
+        {
+            d_rtcm_MT1097_rate_ms = boost::math::lcm(1000, d_output_rate_ms);  // default value if not set
+        }
+    b_rtcm_writing_started = false;
 
     d_dump_filename.append("_raw.dat");
     dump_ls_pvt_filename.append("_ls_pvt.dat");
@@ -273,6 +309,8 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
 {
     d_sample_counter++;
     bool arrived_galileo_almanac = false;
+    unsigned int gps_channel = 0;
+    unsigned int gal_channel = 0;
 
     gnss_pseudoranges_map.clear();
 
@@ -280,14 +318,31 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
 
     print_receiver_status(in);
 
+    // ############ 1. READ PSEUDORANGES ####
     for (unsigned int i = 0; i < d_nchannels; i++)
         {
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
-                    gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map
+                    gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map. PROBLEM: sats with the same PRN!!
                     //d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
                     d_TOW_at_curr_symbol_constellation = in[i][0].d_TOW_at_current_symbol; // d_TOW_at_current_symbol not corrected by delta t (just for debug)
                     d_rx_time = in[i][0].d_TOW_hybrid_at_current_symbol; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges)
+                    if(d_ls_pvt->gps_ephemeris_map.size() > 0)
+                        {
+                            std::map<int,Gps_Ephemeris>::iterator tmp_eph_iter = d_ls_pvt->gps_ephemeris_map.find(in[i][0].PRN);
+                            if(tmp_eph_iter != d_ls_pvt->gps_ephemeris_map.end())
+                                {
+                                    d_rtcm_printer->lock_time(d_ls_pvt->gps_ephemeris_map.find(in[i][0].PRN)->second, d_rx_time, in[i][0]); // keep track of locking time
+                                }
+                        }
+                    if(d_ls_pvt->galileo_ephemeris_map.size() > 0)
+                        {
+                            std::map<int,Galileo_Ephemeris>::iterator tmp_eph_iter = d_ls_pvt->galileo_ephemeris_map.find(in[i][0].PRN);
+                            if(tmp_eph_iter != d_ls_pvt->galileo_ephemeris_map.end())
+                                {
+                                    d_rtcm_printer->lock_time(d_ls_pvt->galileo_ephemeris_map.find(in[i][0].PRN)->second, d_rx_time, in[i][0]); // keep track of locking time
+                                }
+                        }
                 }
         }
 
@@ -348,6 +403,26 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
                                             rp->update_nav_header(rp->navMixFile, d_ls_pvt->gps_iono,  d_ls_pvt->gps_utc_model, d_ls_pvt->galileo_iono, d_ls_pvt->galileo_utc_model, d_ls_pvt->galileo_almanac);
                                             b_rinex_header_updated = true;
                                         }
+                                }
+
+                            if(!b_rtcm_writing_started) // the first time
+                                {
+                                    if(d_rtcm_MT1019_rate_ms != 0) // allows deactivating messages by setting rate = 0
+                                        {
+                                            for(std::map<int,Gps_Ephemeris>::iterator gps_ephemeris_iter = d_ls_pvt->gps_ephemeris_map.begin(); gps_ephemeris_iter != d_ls_pvt->gps_ephemeris_map.end(); gps_ephemeris_iter++ )
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MT1019(gps_ephemeris_iter->second);
+                                                }
+                                        }
+                                    if(d_rtcm_MT1045_rate_ms != 0)
+                                        {
+                                            for(std::map<int,Galileo_Ephemeris>::iterator gal_ephemeris_iter = d_ls_pvt->galileo_ephemeris_map.begin(); gal_ephemeris_iter != d_ls_pvt->galileo_ephemeris_map.end(); gal_ephemeris_iter++ )
+                                                {
+                                                    d_rtcm_printer->Print_Rtcm_MT1045(gal_ephemeris_iter->second);
+                                                }
+                                        }
+                                    // TODO: print observables...
+                                    // b_rtcm_writing_started = true;
                                 }
                         }
                 }

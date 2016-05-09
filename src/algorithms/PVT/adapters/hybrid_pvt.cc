@@ -35,6 +35,7 @@
 #include <glog/logging.h>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/math/common_factor_rt.hpp>
 #include <boost/serialization/map.hpp>
 #include "configuration_interface.h"
 
@@ -57,34 +58,44 @@ HybridPvt::HybridPvt(ConfigurationInterface* configuration,
     DLOG(INFO) << "role " << role;
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
+
     // moving average depth parameters
-    int averaging_depth;
-    averaging_depth = configuration->property(role + ".averaging_depth", 10);
-    bool flag_averaging;
-    flag_averaging = configuration->property(role + ".flag_averaging", false);
+    int averaging_depth = configuration->property(role + ".averaging_depth", 10);
+    bool flag_averaging = configuration->property(role + ".flag_averaging", false);
+
     // output rate
-    int output_rate_ms;
-    output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
+    int output_rate_ms = configuration->property(role + ".output_rate_ms", 500);
+
     // display rate
-    int display_rate_ms;
-    display_rate_ms = configuration->property(role + ".display_rate_ms", 500);
+    int display_rate_ms = configuration->property(role + ".display_rate_ms", 500);
+
     // NMEA Printer settings
-    bool flag_nmea_tty_port;
-    flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
-    std::string nmea_dump_filename;
-    nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
-    std::string nmea_dump_devname;
-    nmea_dump_devname = configuration->property(role + ".nmea_dump_devname", default_nmea_dump_devname);
+    bool flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
+    std::string nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
+    std::string nmea_dump_devname = configuration->property(role + ".nmea_dump_devname", default_nmea_dump_devname);
+
     // RTCM Printer settings
-    bool flag_rtcm_tty_port;
-    flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
-    std::string rtcm_dump_devname;
-    rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);
-    bool flag_rtcm_server;
-    flag_rtcm_server = configuration->property(role + ".flag_rtcm_server", false);
+    bool flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
+    std::string rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);
+    bool flag_rtcm_server = configuration->property(role + ".flag_rtcm_server", false);
     unsigned short rtcm_tcp_port = configuration->property(role + ".rtcm_tcp_port", 2101);
     unsigned short rtcm_station_id = configuration->property(role + ".rtcm_station_id", 1234);
-    
+    // RTCM message rates: least common multiple with output_rate_ms
+    int rtcm_MT1019_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), output_rate_ms);
+    int rtcm_MT1045_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), output_rate_ms);
+    int rtcm_MSM_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), output_rate_ms);
+    int rtcm_MT1077_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
+    int rtcm_MT1097_rate_ms = boost::math::lcm(configuration->property(role + ".rtcm_MT1097_rate_ms", rtcm_MSM_rate_ms), output_rate_ms);
+    std::map<int,int> rtcm_msg_rate_ms;
+    rtcm_msg_rate_ms[1045] = rtcm_MT1045_rate_ms;
+    for (int k = 1071; k < 1078; k++) // All GPS MSM
+        {
+            rtcm_msg_rate_ms[k] = rtcm_MT1077_rate_ms;
+        }
+    for (int k = 1091; k < 1098; k++) // All Galileo MSM
+        {
+            rtcm_msg_rate_ms[k] = rtcm_MT1097_rate_ms;
+        }
     // getting names from the config file, if available
     // default filename for assistance data
     const std::string eph_default_xml_filename = "./gps_ephemeris.xml";
@@ -99,7 +110,7 @@ HybridPvt::HybridPvt(ConfigurationInterface* configuration,
     //std::string ref_location_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ref_location_xml", ref_location_default_xml_filename);    
     
     // make PVT object
-    pvt_ = hybrid_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_dump_devname);
+    pvt_ = hybrid_make_pvt_cc(in_streams_, dump_, dump_filename_, averaging_depth, flag_averaging, output_rate_ms, display_rate_ms, flag_nmea_tty_port, nmea_dump_filename, nmea_dump_devname, flag_rtcm_server, flag_rtcm_tty_port, rtcm_tcp_port, rtcm_station_id, rtcm_msg_rate_ms, rtcm_dump_devname);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
 }
 

@@ -61,6 +61,7 @@ hybrid_pvt_cc_sptr hybrid_make_pvt_cc(unsigned int n_channels,
                                               bool flag_rtcm_tty_port,
                                               unsigned short rtcm_tcp_port,
                                               unsigned short rtcm_station_id,
+                                              std::map<int,int> rtcm_msg_rate_ms,
                                               std::string rtcm_dump_devname);
 
 /*!
@@ -83,6 +84,7 @@ private:
                                                          bool flag_rtcm_tty_port,
                                                          unsigned short rtcm_tcp_port,
                                                          unsigned short rtcm_station_id,
+                                                         std::map<int,int> rtcm_msg_rate_ms,
                                                          std::string rtcm_dump_devname);
     hybrid_pvt_cc(unsigned int nchannels,
                       bool dump, std::string dump_filename,
@@ -97,6 +99,7 @@ private:
                       bool flag_rtcm_tty_port,
                       unsigned short rtcm_tcp_port,
                       unsigned short rtcm_station_id,
+                      std::map<int,int> rtcm_msg_rate_ms,
                       std::string rtcm_dump_devname);
 
     void msg_handler_telemetry(pmt::pmt_t msg);
@@ -104,6 +107,11 @@ private:
     bool d_dump;
     bool b_rinex_header_writen;
     bool b_rinex_header_updated;
+    bool b_rtcm_writing_started;
+    int d_rtcm_MT1045_rate_ms;
+    int d_rtcm_MT1019_rate_ms;
+    int d_rtcm_MT1077_rate_ms;
+    int d_rtcm_MT1097_rate_ms;
 
     void print_receiver_status(Gnss_Synchro** channels_synchronization_data);
     int d_last_status_print_seg; //for status printer

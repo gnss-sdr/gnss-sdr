@@ -69,7 +69,6 @@ galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -79,7 +78,7 @@ galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking
         size_t port_ch0)
 {
     return galileo_e1_tcp_connector_tracking_cc_sptr(new Galileo_E1_Tcp_Connector_Tracking_cc(if_freq,
-            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, very_early_late_space_chips, port_ch0));
+            fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, early_late_space_chips, very_early_late_space_chips, port_ch0));
 }
 
 
@@ -97,7 +96,6 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz __attribute__((unused)),
@@ -113,7 +111,6 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     this->message_port_register_out(pmt::mp("events"));
     this->set_relative_rate(1.0/vector_length);
     // initialize internal vars
-    d_queue = queue;
     d_dump = dump;
     d_if_freq = if_freq;
     d_fs_in = fs_in;

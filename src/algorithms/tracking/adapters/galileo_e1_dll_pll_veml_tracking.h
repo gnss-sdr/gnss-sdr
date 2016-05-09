@@ -37,8 +37,8 @@
 #ifndef GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
 #define GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_
 
+
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include "tracking_interface.h"
 #include "galileo_e1_dll_pll_veml_tracking_cc.h"
 
@@ -55,8 +55,7 @@ public:
     GalileoE1DllPllVemlTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
-            unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GalileoE1DllPllVemlTracking();
 
@@ -103,7 +102,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif // GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_H_

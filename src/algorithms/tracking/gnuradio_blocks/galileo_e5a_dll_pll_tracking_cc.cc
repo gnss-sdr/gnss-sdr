@@ -66,7 +66,6 @@ galileo_e5a_dll_pll_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -77,7 +76,7 @@ galileo_e5a_dll_pll_make_tracking_cc(
         float early_late_space_chips)
 {
     return galileo_e5a_dll_pll_tracking_cc_sptr(new Galileo_E5a_Dll_Pll_Tracking_cc(if_freq,
-            fs_in, vector_length, queue, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_init_hz, dll_bw_init_hz, ti_ms, early_late_space_chips));
+            fs_in, vector_length, dump, dump_filename, pll_bw_hz, dll_bw_hz, pll_bw_init_hz, dll_bw_init_hz, ti_ms, early_late_space_chips));
 }
 
 
@@ -95,7 +94,6 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float pll_bw_hz,
@@ -112,7 +110,6 @@ Galileo_E5a_Dll_Pll_Tracking_cc::Galileo_E5a_Dll_Pll_Tracking_cc(
     this->message_port_register_out(pmt::mp("events"));
     this->set_relative_rate(1.0 / vector_length);
     // initialize internal vars
-    d_queue = queue;
     d_dump = dump;
     d_if_freq = if_freq;
     d_fs_in = fs_in;

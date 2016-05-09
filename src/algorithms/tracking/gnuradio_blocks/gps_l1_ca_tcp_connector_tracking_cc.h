@@ -41,8 +41,6 @@
 #include <map>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
 #include "cpu_multicorrelator.h"
 #include "tcp_communication.h"
@@ -57,7 +55,6 @@ gps_l1_ca_tcp_connector_tracking_cc_sptr
 gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
                                    long fs_in, unsigned
                                    int vector_length,
-                                   boost::shared_ptr<gr::msg_queue> queue,
                                    bool dump,
                                    std::string dump_filename,
                                    float early_late_space_chips,
@@ -90,7 +87,6 @@ private:
     gps_l1_ca_tcp_connector_make_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float early_late_space_chips,
@@ -99,14 +95,12 @@ private:
     Gps_L1_Ca_Tcp_Connector_Tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float early_late_space_chips,
             size_t port_ch0);
 
     // tracking configuration vars
-    boost::shared_ptr<gr::msg_queue> d_queue;
     unsigned int d_vector_length;
     bool d_dump;
 

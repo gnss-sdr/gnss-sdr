@@ -40,7 +40,6 @@
 #define GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include "tracking_interface.h"
 #include "galileo_e5a_dll_pll_tracking_cc.h"
 
@@ -56,8 +55,7 @@ public:
     GalileoE5aDllPllTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
-            unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GalileoE5aDllPllTracking();
 
@@ -102,7 +100,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif /* GNSS_SDR_GALILEO_E5A_DLL_PLL_TRACKING_H_ */

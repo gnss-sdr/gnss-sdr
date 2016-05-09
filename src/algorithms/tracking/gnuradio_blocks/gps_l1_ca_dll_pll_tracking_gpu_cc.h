@@ -40,8 +40,6 @@
 #include <map>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
@@ -54,9 +52,8 @@ typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_gpu_cc(long if_freq,
-                                   long fs_in, unsigned
-                                   int vector_length,
-                                   boost::shared_ptr<gr::msg_queue> queue,
+                                   long fs_in, 
+                                   unsigned int vector_length,
                                    bool dump,
                                    std::string dump_filename,
                                    float pll_bw_hz,
@@ -85,9 +82,8 @@ public:
 private:
     friend gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
     gps_l1_ca_dll_pll_make_tracking_gpu_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
+            long fs_in,
+            unsigned int vector_length,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -95,9 +91,8 @@ private:
             float early_late_space_chips);
 
     Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(long if_freq,
-            long fs_in, unsigned
-            int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
+            long fs_in, 
+            unsigned int vector_length,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -107,7 +102,6 @@ private:
     void update_local_carrier();
 
     // tracking configuration vars
-    boost::shared_ptr<gr::msg_queue> d_queue;
     unsigned int d_vector_length;
     bool d_dump;
 

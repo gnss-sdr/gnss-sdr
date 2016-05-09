@@ -45,10 +45,8 @@ using google::LogMessage;
 
 GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
         ConfigurationInterface* configuration, std::string role,
-        unsigned int in_streams, unsigned int out_streams,
-        boost::shared_ptr<gr::msg_queue> queue) :
-                role_(role), in_streams_(in_streams), out_streams_(out_streams),
-                queue_(queue)
+        unsigned int in_streams, unsigned int out_streams) :
+                role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     //################# CONFIGURATION PARAMETERS ########################
@@ -80,7 +78,6 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
                     f_if,
                     fs_in,
                     vector_length,
-                    queue_,
                     dump,
                     dump_filename,
                     early_late_space_chips,

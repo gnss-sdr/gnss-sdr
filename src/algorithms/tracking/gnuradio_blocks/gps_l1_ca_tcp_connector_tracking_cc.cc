@@ -8,7 +8,7 @@
  * Code DLL + carrier PLL according to the algorithms described in:
  * [1] K.Borre, D.M.Akos, N.Bertelsen, P.Rinder, and S.H.Jensen,
  * A Software-Defined GPS and Galileo Receiver. A Single-Frequency
- * Approach, Birkha user, 2007
+ * Approach, Birkhauser, 2007
  *
  * -------------------------------------------------------------------------
  *
@@ -67,14 +67,13 @@ gps_l1_ca_tcp_connector_make_tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float early_late_space_chips,
         size_t port_ch0)
 {
     return gps_l1_ca_tcp_connector_tracking_cc_sptr(new Gps_L1_Ca_Tcp_Connector_Tracking_cc(if_freq,
-            fs_in, vector_length, queue, dump, dump_filename, early_late_space_chips, port_ch0));
+            fs_in, vector_length, dump, dump_filename, early_late_space_chips, port_ch0));
 }
 
 
@@ -94,7 +93,6 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
         long if_freq,
         long fs_in,
         unsigned int vector_length,
-        boost::shared_ptr<gr::msg_queue> queue,
         bool dump,
         std::string dump_filename,
         float early_late_space_chips,
@@ -106,7 +104,6 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->message_port_register_out(pmt::mp("events"));
     // initialize internal vars
-    d_queue = queue;
     d_dump = dump;
     d_if_freq = if_freq;
     d_fs_in = fs_in;

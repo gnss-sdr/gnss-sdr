@@ -39,7 +39,6 @@
 #define GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include "tracking_interface.h"
 #include "gps_l1_ca_tcp_connector_tracking_cc.h"
 
@@ -57,8 +56,7 @@ public:
   GpsL1CaTcpConnectorTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
-            unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GpsL1CaTcpConnectorTracking();
 
@@ -107,7 +105,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif // GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_H_

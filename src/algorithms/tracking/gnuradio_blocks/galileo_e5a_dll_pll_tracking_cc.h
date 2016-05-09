@@ -41,8 +41,6 @@
 #include <map>
 #include <string>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
@@ -57,7 +55,6 @@ galileo_e5a_dll_pll_tracking_cc_sptr
 galileo_e5a_dll_pll_make_tracking_cc(long if_freq,
                                    long fs_in, unsigned
                                    int vector_length,
-                                   boost::shared_ptr<gr::msg_queue> queue,
                                    bool dump,
                                    std::string dump_filename,
                                    float pll_bw_hz,
@@ -91,7 +88,6 @@ private:
     galileo_e5a_dll_pll_make_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -104,7 +100,6 @@ private:
     Galileo_E5a_Dll_Pll_Tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -115,7 +110,6 @@ private:
             float early_late_space_chips);
     void acquire_secondary();
     // tracking configuration vars
-    boost::shared_ptr<gr::msg_queue> d_queue;
     unsigned int d_vector_length;
     int d_current_ti_ms;
     int d_ti_ms;

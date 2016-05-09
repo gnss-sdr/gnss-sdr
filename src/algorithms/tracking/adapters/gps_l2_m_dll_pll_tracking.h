@@ -39,7 +39,6 @@
 #define GNSS_SDR_gps_l2_m_dll_pll_tracking_H_
 
 #include <string>
-#include <gnuradio/msg_queue.h>
 #include "tracking_interface.h"
 #include "gps_l2_m_dll_pll_tracking_cc.h"
 
@@ -55,8 +54,7 @@ public:
     GpsL2MDllPllTracking(ConfigurationInterface* configuration,
             std::string role,
             unsigned int in_streams,
-            unsigned int out_streams,
-            boost::shared_ptr<gr::msg_queue> queue);
+            unsigned int out_streams);
 
     virtual ~GpsL2MDllPllTracking();
 
@@ -102,7 +100,6 @@ private:
     std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    boost::shared_ptr<gr::msg_queue> queue_;
 };
 
 #endif // GNSS_SDR_gps_l2_m_dll_pll_tracking_H_

@@ -36,8 +36,6 @@
 #include <string>
 #include <map>
 #include <gnuradio/block.h>
-#include <gnuradio/msg_queue.h>
-#include "concurrent_queue.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
@@ -51,7 +49,6 @@ galileo_e1_dll_pll_veml_tracking_cc_sptr
 galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
                                    long fs_in, unsigned
                                    int vector_length,
-                                   boost::shared_ptr<gr::msg_queue> queue,
                                    bool dump,
                                    std::string dump_filename,
                                    float pll_bw_hz,
@@ -87,7 +84,6 @@ private:
     galileo_e1_dll_pll_veml_make_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -98,7 +94,6 @@ private:
     galileo_e1_dll_pll_veml_tracking_cc(long if_freq,
             long fs_in, unsigned
             int vector_length,
-            boost::shared_ptr<gr::msg_queue> queue,
             bool dump,
             std::string dump_filename,
             float pll_bw_hz,
@@ -111,7 +106,6 @@ private:
     void update_local_carrier();
 
     // tracking configuration vars
-    boost::shared_ptr<gr::msg_queue> d_queue;
     unsigned int d_vector_length;
     bool d_dump;
 

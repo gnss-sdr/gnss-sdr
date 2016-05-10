@@ -69,18 +69,12 @@ hybrid_ls_pvt::hybrid_ls_pvt(int nchannels, std::string dump_filename, bool flag
 }
 
 
-
-
 hybrid_ls_pvt::~hybrid_ls_pvt()
 {
     d_dump_file.close();
     delete[] d_Gal_ephemeris;
     delete[] d_GPS_ephemeris;
 }
-
-
-
-
 
 
 bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, double hybrid_current_time, bool flag_averaging)
@@ -115,10 +109,8 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
             gnss_pseudoranges_iter != gnss_pseudoranges_map.end();
             gnss_pseudoranges_iter++)
         {
-
-            if (gnss_pseudoranges_iter->second.System == 'E')
+            if(gnss_pseudoranges_iter->second.System == 'E')
                 {
-                    //std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
                     // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
                     galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_pseudoranges_iter->second.PRN);
                     if (galileo_ephemeris_iter != galileo_ephemeris_map.end())
@@ -130,7 +122,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
 
                             // COMMON RX TIME PVT ALGORITHM
                             double Rx_time = hybrid_current_time;
-                            double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GALILEO_C_m_s;
+                            double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m / GALILEO_C_m_s;
 
                             // 2- compute the clock drift using the clock model (broadcast) for this SV
                             SV_clock_bias_s = galileo_ephemeris_iter->second.sv_clock_drift(Tx_time);
@@ -144,7 +136,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             satpos(2,obs_counter) = galileo_ephemeris_iter->second.d_satpos_Z;
 
                             // 5- fill the observations vector with the corrected pseudoranges
-                            obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s*GALILEO_C_m_s;
+                            obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GALILEO_C_m_s;
                             d_visible_satellites_IDs[valid_obs] = galileo_ephemeris_iter->second.i_satellite_PRN;
                             d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
                             valid_obs++;
@@ -170,7 +162,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                         }
                 }
 
-            else if (gnss_pseudoranges_iter->second.System == 'G')
+            else if(gnss_pseudoranges_iter->second.System == 'G')
                 {
                     //std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
                     // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
@@ -185,7 +177,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             // COMMON RX TIME PVT ALGORITHM MODIFICATION (Like RINEX files)
                             // first estimate of transmit time
                             double Rx_time = hybrid_current_time;
-                            double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m/GPS_C_m_s;
+                            double Tx_time = Rx_time - gnss_pseudoranges_iter->second.Pseudorange_m / GPS_C_m_s;
 
                             // 2- compute the clock drift using the clock model (broadcast) for this SV
                             SV_clock_bias_s = gps_ephemeris_iter->second.sv_clock_drift(Tx_time);
@@ -199,7 +191,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             satpos(2, obs_counter) = gps_ephemeris_iter->second.d_satpos_Z;
 
                             // 5- fill the observations vector with the corrected pseudorranges
-                            obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s*GPS_C_m_s;
+                            obs(obs_counter) = gnss_pseudoranges_iter->second.Pseudorange_m + SV_clock_bias_s * GPS_C_m_s;
                             d_visible_satellites_IDs[valid_obs] = gps_ephemeris_iter->second.i_satellite_PRN;
                             d_visible_satellites_CN0_dB[valid_obs] = gnss_pseudoranges_iter->second.CN0_dB_hz;
                             valid_obs++;
@@ -232,15 +224,16 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
     d_valid_GAL_obs = valid_obs_GALILEO_counter;
     LOG(INFO) << "HYBRID PVT: valid observations=" << valid_obs;
 
-    if (valid_obs >= 4)
+    if(valid_obs >= 4)
         {
             arma::vec mypos;
             DLOG(INFO) << "satpos=" << satpos;
-            DLOG(INFO) << "obs="<< obs;
+            DLOG(INFO) << "obs=" << obs;
             DLOG(INFO) << "W=" << W;
 
             mypos = leastSquarePos(satpos, obs, W);
             d_rx_dt_m = mypos(3)/GPS_C_m_s; // Convert RX time offset from meters to seconds
+            double secondsperweek = 604800.0;
             // Compute GST and Gregorian time
             if( GST != 0.0)
                 {
@@ -248,14 +241,15 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                 }
             else
                 {
-                    utc = gps_utc_model.utc_time(TX_time_corrected_s, GPS_week);
+                    utc = gps_utc_model.utc_time(TX_time_corrected_s, GPS_week) + secondsperweek * static_cast<double>(GPS_week);
                 }
+
             // get time string Gregorian calendar
-            double secondsperweek = 604800.0; // number of seconds in one week (7*24*60*60)
-            boost::posix_time::time_duration t = boost::posix_time::seconds(utc + secondsperweek * static_cast<double>(GPS_week));
+            boost::posix_time::time_duration t = boost::posix_time::seconds(utc);
             // 22 August 1999 00:00 last Galileo start GST epoch (ICD sec 5.1.2)
             boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
             d_position_UTC_time = p_time;
+
             DLOG(INFO) << "HYBRID Position at TOW=" << hybrid_current_time << " in ECEF (X,Y,Z) = " << mypos;
 
             cart2geo(static_cast<double>(mypos(0)), static_cast<double>(mypos(1)), static_cast<double>(mypos(2)), 4);
@@ -310,7 +304,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                     }
                     catch (const std::ifstream::failure& e)
                     {
-                            LOG(WARNING) << "Exception writing PVT LS dump file "<< e.what();
+                            LOG(WARNING) << "Exception writing PVT LS dump file " << e.what();
                     }
                 }
 

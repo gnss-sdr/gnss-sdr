@@ -323,7 +323,7 @@ int hybrid_pvt_cc::general_work (int noutput_items __attribute__((unused)), gr_v
         {
             if (in[i][0].Flag_valid_pseudorange == true)
                 {
-                    gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(in[i][0].PRN, in[i][0])); // store valid pseudoranges in a map. PROBLEM: sats with the same PRN!!
+                    gnss_pseudoranges_map.insert(std::pair<int,Gnss_Synchro>(i, in[i][0])); // store valid pseudoranges in a map.
                     //d_rx_time = in[i][0].d_TOW_at_current_symbol; // all the channels have the same RX timestamp (common RX time pseudoranges)
                     d_TOW_at_curr_symbol_constellation = in[i][0].d_TOW_at_current_symbol; // d_TOW_at_current_symbol not corrected by delta t (just for debug)
                     d_rx_time = in[i][0].d_TOW_hybrid_at_current_symbol; // hybrid rx time, all the channels have the same RX timestamp (common RX time pseudoranges)

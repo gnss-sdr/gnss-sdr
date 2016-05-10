@@ -120,7 +120,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                 {
                     //std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
                     // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
-                    galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_pseudoranges_iter->first);
+                    galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_pseudoranges_iter->second.PRN);
                     if (galileo_ephemeris_iter != galileo_ephemeris_map.end())
                         {
                             /*!
@@ -166,7 +166,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             // no valid pseudorange for the current SV
                             W(obs_counter, obs_counter) = 0; // SV de-activated
                             obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
-                            DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->first;
+                            DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->second.PRN;
                         }
                 }
 
@@ -174,7 +174,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                 {
                     //std::cout << "Satellite System: " << gnss_pseudoranges_iter->second.System <<std::endl;
                     // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
-                    gps_ephemeris_iter = gps_ephemeris_map.find(gnss_pseudoranges_iter->first);
+                    gps_ephemeris_iter = gps_ephemeris_map.find(gnss_pseudoranges_iter->second.PRN);
                     if (gps_ephemeris_iter != gps_ephemeris_map.end())
                         {
                             /*!
@@ -218,7 +218,7 @@ bool hybrid_ls_pvt::get_PVT(std::map<int,Gnss_Synchro> gnss_pseudoranges_map, do
                             // no valid pseudorange for the current SV
                             W(obs_counter, obs_counter) = 0; // SV de-activated
                             obs(obs_counter) = 1;            // to avoid algorithm problems (divide by zero)
-                            DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->first;
+                            DLOG(INFO) << "No ephemeris data for SV " << gnss_pseudoranges_iter->second.PRN;
                         }
                 }
             obs_counter++;

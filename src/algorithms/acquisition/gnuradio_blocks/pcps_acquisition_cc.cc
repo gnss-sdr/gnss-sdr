@@ -90,7 +90,7 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     d_bit_transition_flag = bit_transition_flag;
     d_use_CFAR_algorithm_flag = use_CFAR_algorithm_flag;
     d_threshold = 0.0;
-    d_doppler_step = 250;
+    d_doppler_step = 0;
     d_code_phase = 0;
     d_test_statistics = 0.0;
     d_channel = 0;
@@ -111,7 +111,7 @@ pcps_acquisition_cc::pcps_acquisition_cc(
     if( d_bit_transition_flag )
         {
             d_fft_size *= 2;
-            d_max_dwells = 1;
+            d_max_dwells = 1; //Activation of d_bit_transition_flag invalidates the value of d_max_dwells
         }
 
     d_fft_codes = static_cast<gr_complex*>(volk_malloc(d_fft_size * sizeof(gr_complex), volk_get_alignment()));

@@ -66,14 +66,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     use_CFAR_algorithm_flag_=configuration_->property(role + ".use_CFAR_algorithm", true); //will be false in future versions
 
-    if (!bit_transition_flag_)
-        {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-        }
-    else
-        {
-            max_dwells_ = 2;
-        }
+    max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
@@ -81,6 +74,11 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     code_length_ = round(fs_in_ / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
 
     vector_length_ = code_length_ * sampled_ms_;
+
+    if( bit_transition_flag_ )
+        {
+            vector_length_ *= 2;
+        }
 
     code_ = new gr_complex[vector_length_];
 
@@ -102,13 +100,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
 
     stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
     DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-    //now is supported natively by the acquisition (_sc variant)
-    //    if (item_type_.compare("cshort") == 0)
-    //        {
-    //            cshort_to_float_x2_ = make_cshort_to_float_x2();
-    //            float_to_complex_ = gr::blocks::float_to_complex::make();
-    //        }
-
+    
     if (item_type_.compare("cbyte") == 0)
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();

@@ -69,14 +69,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     use_CFAR_algorithm_flag_ = configuration_->property(role + ".use_CFAR_algorithm", true); //will be false in future versions
 
-    if (!bit_transition_flag_)
-        {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-        }
-    else
-        {
-            max_dwells_ = 2;
-        }
+    max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 

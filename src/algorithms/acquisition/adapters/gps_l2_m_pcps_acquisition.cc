@@ -63,14 +63,7 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
     bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
     use_CFAR_algorithm_flag_=configuration_->property(role + ".use_CFAR_algorithm", true); //will be false in future versions
 
-    if (!bit_transition_flag_)
-        {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
-        }
-    else
-        {
-            max_dwells_ = 2;
-        }
+    max_dwells_ = configuration_->property(role + ".max_dwells", 1);
 
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
@@ -79,6 +72,11 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
             / (GPS_L2_M_CODE_RATE_HZ / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS)));
 
     vector_length_ = code_length_;
+
+    if( bit_transition_flag_ )
+        {
+            vector_length_ *= 2;
+        }
 
     code_ = new gr_complex[vector_length_];
 

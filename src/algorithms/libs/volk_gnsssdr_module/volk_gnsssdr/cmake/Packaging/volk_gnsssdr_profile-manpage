@@ -1,6 +1,6 @@
 .\" Manpage for volk_gnsssdr_profile
 .\" Contact carles.fernandez@cttc.es to correct errors or typos.
-.TH volk_gnsssdr_profile 1 "02 Sep 2015" "0.0.6" "volk_gnsssdr_profile man page"
+.TH volk_gnsssdr_profile 1 "11 May 2016" "0.0.7" "volk_gnsssdr_profile man page"
 .SH NAME
 \fBvolk_gnsssdr_profile\fR \- Profiler application for libvolk_gnsssdr functions.
 .SH SYNOPSIS
@@ -18,7 +18,17 @@ Processors providing SIMD instruction sets compute with multiple processing elem
 .TP
 \fB-b\fR [ \fB--benchmark\fR ] [ \fB=arg(=1)\fR ] (\fB=0\fR) Run all kernels (benchmark mode).
 .TP
+\fB-t\fR [ \fB--tol\fR ] <arg> (\fB=9.99999997e-07\fR) Set the default error tolerance for tests.
+.TP
+\fB-v\fR [ \fB--vlen\fR ] <arg> (\fB=8111\fR) Set the default vector length for tests.
+.TP
+\fB-i\fR [ \fB--iter\fR ] <arg> (\fB=1987\fR) Set the default number of test iterations per kernel.
+.TP
 \fB-R\fR [ \fB--tests-regex\fR ] <arg> Run tests matching regular expression.
+.TP
+\fB-u\fR [ \fB--update\fR ] [ \fB=arg(=1)\fR ] (\fB=0\fR) Run only kernels missing from config; use -R to further restrict the candidates.
+.TP
+\fB-n\fR [ \fB--dry-run\fR ] [ \fB=arg(=1)\fR ] (\fB=0\fR) Dry run. Respect other options, but do not write to file.
 .TP
 \fB-j\fR [ \fB--json\fR ] \fI<arg>\fR JSON output file.
 .SH SEE ALSO
@@ -26,7 +36,7 @@ Processors providing SIMD instruction sets compute with multiple processing elem
 \.TP
 Check http://gnss-sdr.org for more information.
 .SH HISTORY
-This library was originally developed by Andres Cecilia Luque in the framework of the Summer of Code in Space program (SOCIS 2014) by the European Space Agency (ESA), and then integrated into \fBgnss-sdr\fR. This software is based on the VOLK library available at https://gnuradio.org/redmine/projects/gnuradio/wiki/Volk
+This library was originally developed by Andres Cecilia Luque in the framework of the Summer of Code in Space program (SOCIS 2014) by the European Space Agency (ESA), and then integrated into \fBgnss-sdr\fR. This software is based on the VOLK library http://libvolk.org/
 .SH BUGS
 No known bugs.
 .SH AUTHOR

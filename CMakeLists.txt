@@ -718,7 +718,7 @@ if(OS_IS_LINUX)
                        /usr/lib/gcc/arm-linux-gnueabi/4.9
                        /usr/lib/gcc/x86_64-linux-gnu/5
                        /usr/lib/gcc/i686-linux-gnu/5
-                       /usr/lib/gcc/arm-linux-gnueabi/5/
+                       /usr/lib/gcc/arm-linux-gnueabi/5
                        /usr/lib/gcc/arm-linux-gnueabihf/5                       
                        /usr/lib/gcc/aarch64-linux-gnu/5
                 )

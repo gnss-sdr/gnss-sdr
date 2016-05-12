@@ -85,20 +85,29 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
 
     code_ = new gr_complex[vector_length_];
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_.compare("cshort") == 0 )
         {
-            item_size_ = sizeof(gr_complex);
-            acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+            item_size_ = sizeof(lv_16sc_t);
+            acquisition_sc_ = pcps_make_acquisition_sc(sampled_ms_, max_dwells_,
                     doppler_max_, if_, fs_in_, samples_per_ms, code_length_,
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
-            stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-            DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
+            DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
+
+        }else{
+                item_size_ = sizeof(gr_complex);
+                acquisition_cc_ = pcps_make_acquisition_cc(sampled_ms_, max_dwells_,
+                        doppler_max_, if_, fs_in_, samples_per_ms, code_length_,
+                        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+                DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
-    else
+
+    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
+    
+    if (item_type_.compare("cbyte") == 0)
         {
-            item_size_ = sizeof(gr_complex);
-            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+            cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
+            float_to_complex_ = gr::blocks::float_to_complex::make();
         }
 
     channel_ = 0;
@@ -117,7 +126,11 @@ GalileoE1PcpsAmbiguousAcquisition::~GalileoE1PcpsAmbiguousAcquisition()
 void GalileoE1PcpsAmbiguousAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_channel(channel_);
+        }
+    else
         {
             acquisition_cc_->set_channel(channel_);
         }
@@ -141,7 +154,11 @@ void GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
 
     DLOG(INFO) << "Channel " << channel_ << " Threshold = " << threshold_;
 
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_threshold(threshold_);
+        }
+    else
         {
             acquisition_cc_->set_threshold(threshold_);
         }
@@ -151,7 +168,12 @@ void GalileoE1PcpsAmbiguousAcquisition::set_threshold(float threshold)
 void GalileoE1PcpsAmbiguousAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
-    if (item_type_.compare("gr_complex") == 0)
+
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_doppler_max(doppler_max_);
+        }
+    else
         {
             acquisition_cc_->set_doppler_max(doppler_max_);
         }
@@ -161,7 +183,12 @@ void GalileoE1PcpsAmbiguousAcquisition::set_doppler_max(unsigned int doppler_max
 void GalileoE1PcpsAmbiguousAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-    if (item_type_.compare("gr_complex") == 0)
+
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_doppler_step(doppler_step_);
+        }
+    else
         {
             acquisition_cc_->set_doppler_step(doppler_step_);
         }
@@ -171,7 +198,12 @@ void GalileoE1PcpsAmbiguousAcquisition::set_doppler_step(unsigned int doppler_st
 void GalileoE1PcpsAmbiguousAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-    if (item_type_.compare("gr_complex") == 0)
+
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_gnss_synchro(gnss_synchro_);
+        }
+    else
         {
             acquisition_cc_->set_gnss_synchro(gnss_synchro_);
         }
@@ -180,52 +212,68 @@ void GalileoE1PcpsAmbiguousAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_sync
 
 signed int GalileoE1PcpsAmbiguousAcquisition::mag()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_.compare("cshort") == 0)
         {
-            return acquisition_cc_->mag();
+            return acquisition_sc_->mag();
         }
     else
         {
-            return 0;
+            return acquisition_cc_->mag();
         }
 }
 
 
 void GalileoE1PcpsAmbiguousAcquisition::init()
 {
-    acquisition_cc_->init();
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->init();
+        }
+    else
+        {
+            acquisition_cc_->init();
+        }
+
     set_local_code();
 }
 
 
 void GalileoE1PcpsAmbiguousAcquisition::set_local_code()
 {
-    if (item_type_.compare("gr_complex") == 0)
-        {
-            bool cboc = configuration_->property(
+    bool cboc = configuration_->property(
                     "Acquisition" + boost::lexical_cast<std::string>(channel_)
                     + ".cboc", false);
 
-            std::complex<float> * code = new std::complex<float>[code_length_];
+    std::complex<float> * code = new std::complex<float>[code_length_];
 
-            galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
+    galileo_e1_code_gen_complex_sampled(code, gnss_synchro_->Signal,
                     cboc, gnss_synchro_->PRN, fs_in_, 0, false);
 
-            for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
-                {
-                    memcpy(&(code_[i*code_length_]), code, sizeof(gr_complex)*code_length_);
-                }
-
-            acquisition_cc_->set_local_code(code_);
-
-            delete[] code;
+    for (unsigned int i = 0; i < sampled_ms_ / 4; i++)
+        {
+            memcpy(&(code_[i*code_length_]), code, sizeof(gr_complex)*code_length_);
         }
+
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_local_code(code_);
+        }
+    else
+        {
+            acquisition_cc_->set_local_code(code_);
+        }
+
+    delete[] code;
 }
 
 
 void GalileoE1PcpsAmbiguousAcquisition::reset()
 {
-    if (item_type_.compare("gr_complex") == 0)
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_active(true);
+        }
+    else
         {
             acquisition_cc_->set_active(true);
         }
@@ -234,7 +282,14 @@ void GalileoE1PcpsAmbiguousAcquisition::reset()
 
 void GalileoE1PcpsAmbiguousAcquisition::set_state(int state)
 {
-    acquisition_cc_->set_state(state);
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_state(state);
+        }
+    else
+        {
+            acquisition_cc_->set_state(state);
+        }
 }
 
 
@@ -265,6 +320,21 @@ void GalileoE1PcpsAmbiguousAcquisition::connect(gr::top_block_sptr top_block)
         {
             top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
+    else if (item_type_.compare("cshort") == 0)
+        {
+            top_block->connect(stream_to_vector_, 0, acquisition_sc_, 0);
+        }
+    else if (item_type_.compare("cbyte") == 0)
+        {
+            top_block->connect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
+            top_block->connect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
+            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
+            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
+        }
+    else
+        {
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+        }
 }
 
 
@@ -274,17 +344,57 @@ void GalileoE1PcpsAmbiguousAcquisition::disconnect(gr::top_block_sptr top_block)
         {
             top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
         }
+    else if (item_type_.compare("cshort") == 0)
+        {
+            top_block->disconnect(stream_to_vector_, 0, acquisition_sc_, 0);
+        }
+    else if (item_type_.compare("cbyte") == 0)
+        {
+            // Since a byte-based acq implementation is not available,
+            // we just convert cshorts to gr_complex
+            top_block->disconnect(cbyte_to_float_x2_, 0, float_to_complex_, 0);
+            top_block->disconnect(cbyte_to_float_x2_, 1, float_to_complex_, 1);
+            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
+            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
+        }
+    else
+        {
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+        }
 }
 
 
 gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_left_block()
 {
-    return stream_to_vector_;
+    if (item_type_.compare("gr_complex") == 0)
+        {
+            return stream_to_vector_;
+        }
+    else if (item_type_.compare("cshort") == 0)
+        {
+            return stream_to_vector_;
+        }
+    else if (item_type_.compare("cbyte") == 0)
+        {
+            return cbyte_to_float_x2_;
+        }
+    else
+        {
+            LOG(WARNING) << item_type_ << " unknown acquisition item type";
+            return nullptr;
+        }
 }
 
 
 gr::basic_block_sptr GalileoE1PcpsAmbiguousAcquisition::get_right_block()
 {
-    return acquisition_cc_;
+    if (item_type_.compare("cshort") == 0)
+        {
+            return acquisition_sc_;
+        }
+    else
+        {
+            return acquisition_cc_;
+        }
 }
 

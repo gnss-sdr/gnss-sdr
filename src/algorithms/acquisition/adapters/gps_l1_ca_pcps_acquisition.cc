@@ -88,7 +88,7 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
             acquisition_sc_ = pcps_make_acquisition_sc(sampled_ms_, max_dwells_,
                     doppler_max_, if_, fs_in_, code_length_, code_length_,
                     bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
-            DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
+            DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
 
         }else{
                 item_size_ = sizeof(gr_complex);

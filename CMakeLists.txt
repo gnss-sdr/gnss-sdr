@@ -670,6 +670,7 @@ if(OS_IS_LINUX)
     #############################################
     find_library(GFORTRAN NAMES gfortran
                  PATHS /usr/lib
+                       /usr/lib64
                        /usr/local/lib
                        /usr/local/lib/i386
                        /usr/lib/gcc/x86_64-linux-gnu

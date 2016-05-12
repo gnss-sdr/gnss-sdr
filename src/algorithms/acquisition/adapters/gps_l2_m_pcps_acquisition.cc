@@ -80,25 +80,25 @@ GpsL2MPcpsAcquisition::GpsL2MPcpsAcquisition(
 
     code_ = new gr_complex[vector_length_];
 
-    // if (item_type_.compare("gr_complex") == 0 )
-    //         {
-    item_size_ = sizeof(gr_complex);
-    acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
-            doppler_max_, if_, fs_in_, code_length_, code_length_,
-            bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
-
-    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
-
-    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
-    DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
-    //        }
-
-    if (item_type_.compare("cshort") == 0)
+    if (item_type_.compare("cshort") == 0 )
         {
-            cshort_to_float_x2_ = make_cshort_to_float_x2();
-            float_to_complex_ = gr::blocks::float_to_complex::make();
+            item_size_ = sizeof(lv_16sc_t);
+            acquisition_sc_ = pcps_make_acquisition_sc(1, max_dwells_,
+                    doppler_max_, if_, fs_in_, code_length_, code_length_,
+                    bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+            DLOG(INFO) << "acquisition(" << acquisition_sc_->unique_id() << ")";
+
+        }else{
+                item_size_ = sizeof(gr_complex);
+                acquisition_cc_ = pcps_make_acquisition_cc(1, max_dwells_,
+                        doppler_max_, if_, fs_in_, code_length_, code_length_,
+                        bit_transition_flag_, use_CFAR_algorithm_flag_, dump_, dump_filename_);
+                DLOG(INFO) << "acquisition(" << acquisition_cc_->unique_id() << ")";
         }
 
+    stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
+    DLOG(INFO) << "stream_to_vector(" << stream_to_vector_->unique_id() << ")";
+    
     if (item_type_.compare("cbyte") == 0)
         {
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
@@ -274,10 +274,7 @@ void GpsL2MPcpsAcquisition::connect(gr::top_block_sptr top_block)
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            top_block->connect(cshort_to_float_x2_, 0, float_to_complex_, 0);
-            top_block->connect(cshort_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->connect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->connect(stream_to_vector_, 0, acquisition_cc_, 0);
+            top_block->connect(stream_to_vector_, 0, acquisition_sc_, 0);
         }
     else if (item_type_.compare("cbyte") == 0)
         {
@@ -290,7 +287,6 @@ void GpsL2MPcpsAcquisition::connect(gr::top_block_sptr top_block)
         {
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-
 }
 
 
@@ -302,12 +298,7 @@ void GpsL2MPcpsAcquisition::disconnect(gr::top_block_sptr top_block)
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            // Since a short-based acq implementation is not available,
-            // we just convert cshorts to gr_complex
-            top_block->disconnect(cshort_to_float_x2_, 0, float_to_complex_, 0);
-            top_block->disconnect(cshort_to_float_x2_, 1, float_to_complex_, 1);
-            top_block->disconnect(float_to_complex_, 0, stream_to_vector_, 0);
-            top_block->disconnect(stream_to_vector_, 0, acquisition_cc_, 0);
+            top_block->disconnect(stream_to_vector_, 0, acquisition_sc_, 0);
         }
     else if (item_type_.compare("cbyte") == 0)
         {
@@ -333,7 +324,7 @@ gr::basic_block_sptr GpsL2MPcpsAcquisition::get_left_block()
         }
     else if (item_type_.compare("cshort") == 0)
         {
-            return cshort_to_float_x2_;
+            return stream_to_vector_;
         }
     else if (item_type_.compare("cbyte") == 0)
         {
@@ -349,6 +340,13 @@ gr::basic_block_sptr GpsL2MPcpsAcquisition::get_left_block()
 
 gr::basic_block_sptr GpsL2MPcpsAcquisition::get_right_block()
 {
-    return acquisition_cc_;
+    if (item_type_.compare("cshort") == 0)
+        {
+            return acquisition_sc_;
+        }
+    else
+        {
+            return acquisition_cc_;
+        }
 }
 

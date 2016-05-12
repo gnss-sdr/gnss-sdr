@@ -1,9 +1,9 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition.cc
+ * \file gps_l2_m_pcps_acquisition.cc
  * \brief Adapts a PCPS acquisition block to an AcquisitionInterface for
- *  GPS L1 C/A signals
+ *  GPS L2 M signals
  * \authors <ul>
- *          <li> Javier Arribas, 2011. jarribas(at)cttc.es
+ *          <li> Javier Arribas, 2015. jarribas(at)cttc.es
  *          </ul>
  *
  * -------------------------------------------------------------------------

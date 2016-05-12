@@ -226,14 +226,14 @@ You could be interested in creating the documentation by doing:
 $ make doc
 ~~~~~~ 
 
-from the gnss-sdr/build folder. This will generate HTML documentation that can be retrieved pointing your browser of preference to gnss-sdr/docs/html/index.html.
+from the gnss-sdr/build folder. This will generate HTML documentation that can be retrieved pointing your browser of preference to build/docs/html/index.html.
 If a LaTeX installation is detected in your system,
 
 ~~~~~~ 
 $ make pdfmanual
 ~~~~~~ 
 
-will create a PDF manual at gnss-sdr/docs/GNSS-SDR_manual.pdf. Finally,
+will create a PDF manual at build/docs/GNSS-SDR_manual.pdf. Finally,
 
 ~~~~~~ 
 $ make doc-clean
@@ -453,7 +453,7 @@ $ make doc
 and can be viewed doing:
 
 ~~~~~~ 
-$ open ../docs/html/index.html
+$ open ./docs/html/index.html
 ~~~~~~ 
 
 GNSS-SDR comes with a library which is a module of the Vector-Optimized Library of Kernels (so called [VOLK_GNSSSDR](./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/README.md)) and a profiler that will build a config file for the best SIMD architecture for your processor. Run ```volk_gnsssdr_profile``` that is installed into ```$PREFIX/bin```. This program tests all known VOLK kernels for each architecture supported by the processor. When finished, it will write to ```$HOME/.volk_gnsssdr/volk_gnsssdr_config``` the best architecture for the VOLK function. This file is read when using a function to know the best version of the function to execute. It mimics GNU Radio's [VOLK](http://libvolk.org/) library, so if you still have not run ```volk_profile```, this is a good moment to do so.

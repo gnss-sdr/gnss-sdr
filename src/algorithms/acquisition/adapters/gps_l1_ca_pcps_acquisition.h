@@ -43,7 +43,6 @@
 #include "acquisition_interface.h"
 #include "pcps_acquisition_cc.h"
 #include "pcps_acquisition_sc.h"
-#include "cshort_to_float_x2.h"
 #include "complex_byte_to_float_x2.h"
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
@@ -144,7 +143,6 @@ private:
     pcps_acquisition_sc_sptr acquisition_sc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;
     gr::blocks::float_to_complex::sptr float_to_complex_;
-    cshort_to_float_x2_sptr cshort_to_float_x2_;
     complex_byte_to_float_x2_sptr cbyte_to_float_x2_;
     size_t item_size_;
     std::string item_type_;

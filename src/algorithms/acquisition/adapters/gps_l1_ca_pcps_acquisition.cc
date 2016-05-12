@@ -55,7 +55,6 @@ GpsL1CaPcpsAcquisition::GpsL1CaPcpsAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
-    //float pfa =  configuration_->property(role + ".pfa", 0.0);
 
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     if_ = configuration_->property(role + ".if", 0);
@@ -238,8 +237,7 @@ void GpsL1CaPcpsAcquisition::init()
 
 void GpsL1CaPcpsAcquisition::set_local_code()
 {
-    // if (item_type_.compare("gr_complex") == 0)
-    //   {
+
     std::complex<float>* code = new std::complex<float>[code_length_];
 
     gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, fs_in_, 0);
@@ -261,7 +259,6 @@ void GpsL1CaPcpsAcquisition::set_local_code()
         }
 
     delete[] code;
-    //  }
 }
 
 

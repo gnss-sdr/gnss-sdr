@@ -121,10 +121,14 @@ GpsL2MPcpsAcquisition::~GpsL2MPcpsAcquisition()
 void GpsL2MPcpsAcquisition::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    //if (item_type_.compare("gr_complex") == 0)
-    //{
-    acquisition_cc_->set_channel(channel_);
-    //}
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_channel(channel_);
+        }
+    else
+        {
+            acquisition_cc_->set_channel(channel_);
+        }
 }
 
 
@@ -147,20 +151,29 @@ void GpsL2MPcpsAcquisition::set_threshold(float threshold)
 
     DLOG(INFO) << "Channel " << channel_ <<" Threshold = " << threshold_;
 
-    // if (item_type_.compare("gr_complex") == 0)
-    //    {
-    acquisition_cc_->set_threshold(threshold_);
-    //    }
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_threshold(threshold_);
+        }
+    else
+        {
+            acquisition_cc_->set_threshold(threshold_);
+        }
 }
 
 
 void GpsL2MPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 {
     doppler_max_ = doppler_max;
-    //   if (item_type_.compare("gr_complex") == 0)
-    //  {
-    acquisition_cc_->set_doppler_max(doppler_max_);
-    // }
+
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_doppler_max(doppler_max_);
+        }
+    else
+        {
+            acquisition_cc_->set_doppler_max(doppler_max_);
+        }
 }
 
 
@@ -169,51 +182,75 @@ void GpsL2MPcpsAcquisition::set_doppler_max(unsigned int doppler_max)
 void GpsL2MPcpsAcquisition::set_doppler_step(unsigned int doppler_step)
 {
     doppler_step_ = doppler_step;
-    //   if (item_type_.compare("gr_complex") == 0)
-    //      {
-    acquisition_cc_->set_doppler_step(doppler_step_);
-    //     }
 
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_doppler_step(doppler_step_);
+        }
+    else
+        {
+            acquisition_cc_->set_doppler_step(doppler_step_);
+        }
 }
 
 
 void GpsL2MPcpsAcquisition::set_gnss_synchro(Gnss_Synchro* gnss_synchro)
 {
     gnss_synchro_ = gnss_synchro;
-    // if (item_type_.compare("gr_complex") == 0)
-    // {
-    acquisition_cc_->set_gnss_synchro(gnss_synchro_);
-    // }
+
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_gnss_synchro(gnss_synchro_);
+        }
+    else
+        {
+            acquisition_cc_->set_gnss_synchro(gnss_synchro_);
+        }
 }
 
 
 signed int GpsL2MPcpsAcquisition::mag()
 {
-    // //    if (item_type_.compare("gr_complex") == 0)
-    //        {
-    return acquisition_cc_->mag();
-    //       }
-    //   else
-    //       {
-    //           return 0;
-    //      }
+    if (item_type_.compare("cshort") == 0)
+        {
+            return acquisition_sc_->mag();
+        }
+    else
+        {
+            return acquisition_cc_->mag();
+        }
 }
 
 
 void GpsL2MPcpsAcquisition::init()
 {
-    acquisition_cc_->init();
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->init();
+        }
+    else
+        {
+            acquisition_cc_->init();
+        }
+
     set_local_code();
 }
 
 
 void GpsL2MPcpsAcquisition::set_local_code()
 {
-    // if (item_type_.compare("gr_complex") == 0)
-    //   {
-    gps_l2c_m_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_);
-    acquisition_cc_->set_local_code(code_);
 
+    gps_l2c_m_code_gen_complex_sampled(code_, gnss_synchro_->PRN, fs_in_);
+    
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_local_code(code_);
+        }
+    else
+        {
+            acquisition_cc_->set_local_code(code_);
+        }
+        
 //    //debug
 //    std::ofstream d_dump_file;
 //    std::stringstream filename;
@@ -230,18 +267,26 @@ void GpsL2MPcpsAcquisition::set_local_code()
 
 void GpsL2MPcpsAcquisition::reset()
 {
-    //  if (item_type_.compare("gr_complex") == 0)
-    //  {
-    acquisition_cc_->set_active(true);
-    //  }
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_active(true);
+        }
+    else
+        {
+            acquisition_cc_->set_active(true);
+        }
 }
 
 void GpsL2MPcpsAcquisition::set_state(int state)
 {
-    //  if (item_type_.compare("gr_complex") == 0)
-    //  {
-    acquisition_cc_->set_state(state);
-    //  }
+    if (item_type_.compare("cshort") == 0)
+        {
+            acquisition_sc_->set_state(state);
+        }
+    else
+        {
+            acquisition_cc_->set_state(state);
+        }
 }
 
 

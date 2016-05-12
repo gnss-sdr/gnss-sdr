@@ -45,5 +45,5 @@ include_directories(
 file(GLOB PVT_LIB_HEADERS "*.h")
 add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
 source_group(Headers FILES ${PVT_LIB_HEADERS})
-add_dependencies(pvt_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})
+add_dependencies(pvt_lib armadillo-${armadillo_RELEASE} gflags-${gflags_RELEASE} glog-${glog_RELEASE})
 target_link_libraries(pvt_lib ${Boost_LIBRARIES} ${GFlags_LIBS} ${GLOG_LIBRARIES} ${ARMADILLO_LIBRARIES})

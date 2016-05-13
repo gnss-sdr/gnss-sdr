@@ -162,13 +162,17 @@ void pcps_acquisition_cc::set_local_code(std::complex<float> * code)
     // Here we want to create a buffer that looks like this:
     // [ 0 0 0 ... 0 c_0 c_1 ... c_L]
     // where c_i is the local code and there are L zeros and L chips
-    int offset = 0;
     if( d_bit_transition_flag )
         {
-            std::fill_n( d_fft_if->get_inbuf(), d_samples_per_code, gr_complex( 0.0, 0.0 ) );
-            offset = d_samples_per_code;
+            int offset = d_fft_size/2;
+            std::fill_n( d_fft_if->get_inbuf(), offset, gr_complex( 0.0, 0.0 ) );
+            memcpy(d_fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * offset);
+        } 
+    else 
+        {
+            memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
         }
-    memcpy(d_fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * d_samples_per_code);
+    
     d_fft_if->execute(); // We need the FFT of local code
     volk_32fc_conjugate_32fc(d_fft_codes, d_fft_if->get_outbuf(), d_fft_size);
 }

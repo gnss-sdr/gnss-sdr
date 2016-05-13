@@ -136,11 +136,10 @@ void GpsL1CaPcpsAcquisition::set_channel(unsigned int channel)
 
 void GpsL1CaPcpsAcquisition::set_threshold(float threshold)
 {
-    float pfa = configuration_->property(role_ + boost::lexical_cast<std::string>(channel_) + ".pfa", 0.0);
+    float pfa = configuration_->property(role_ + ".pfa", 0.0);
 
     if(pfa == 0.0)
         {
-            pfa = configuration_->property(role_ + ".pfa", 0.0);
             threshold_ = threshold;
         }
     else
@@ -247,7 +246,6 @@ void GpsL1CaPcpsAcquisition::set_local_code()
             memcpy(&(code_[i*code_length_]), code,
                     sizeof(gr_complex)*code_length_);
         }
-
 
     if (item_type_.compare("cshort") == 0)
         {

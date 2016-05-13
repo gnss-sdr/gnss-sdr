@@ -31,8 +31,8 @@
  */
 
 
-#ifndef GNSS_SDR_hybrid_observables_H_
-#define GNSS_SDR_hybrid_observables_H_
+#ifndef GNSS_SDR_HYBRID_OBSERVABLES_H_
+#define GNSS_SDR_HYBRID_OBSERVABLES_H_
 
 #include <string>
 #include "observables_interface.h"

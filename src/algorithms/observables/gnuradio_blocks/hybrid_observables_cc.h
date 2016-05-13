@@ -31,7 +31,7 @@
 
 
 #ifndef GNSS_SDR_HYBRID_OBSERVABLES_CC_H
-#define    GNSS_SDR_HYBRID_OBSERVABLES_CC_H
+#define GNSS_SDR_HYBRID_OBSERVABLES_CC_H
 
 #include <fstream>
 #include <string>

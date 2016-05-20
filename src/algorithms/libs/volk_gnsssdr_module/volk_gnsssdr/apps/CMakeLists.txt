@@ -55,9 +55,6 @@ add_executable(volk_gnsssdr_profile
 
 if(ENABLE_STATIC_LIBS)
     target_link_libraries(volk_gnsssdr_profile volk_gnsssdr_static ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
-    if(NOT APPLE)
-        set_target_properties(volk_gnsssdr_profile PROPERTIES LINK_FLAGS "-static")
-    endif(NOT APPLE)
 else(ENABLE_STATIC_LIBS)
     target_link_libraries(volk_gnsssdr_profile volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
     add_dependencies(volk_gnsssdr_profile volk_gnsssdr)

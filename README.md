@@ -95,7 +95,7 @@ $ cd /path/to/prefix
 $ . ./setup_env.sh
 ~~~~~~ 
 
-Now you are ready to use GNU Radio and to jump into building GNSS-SDR after installing Armadillo, GFlags and Glog. Actually, those are steps that PyBOMBS can do for you as well:
+Now you are ready to use GNU Radio and to jump into building GNSS-SDR after installing a few other dependencies. Actually, those are steps that PyBOMBS can do for you as well:
 
 ~~~~~~ 
 $ pybombs install gnss-sdr
@@ -103,10 +103,10 @@ $ pybombs install gnss-sdr
 
 By default, PyBOMBS installs the ‘next’ branch of GNSS-SDR development, which is the most recent version of the source code. This behaviour can be modified by altering the corresponding recipe at ```$HOME/.pybombs/recipes/gr-recipes/gnss-sdr.lwr``` 
 
-In case you do not want to use PyBOMBS and prefer to build and install GNSS-SDR step by step (i.e. cloning the repository and doing the usual ```cmake .. && make && make install``` dance), Armadillo, GFlags and Glog can be installed either by using PyBOMBS: 
+In case you do not want to use PyBOMBS and prefer to build and install GNSS-SDR step by step (i.e., cloning the repository and doing the usual ```cmake .. && make && make install``` dance), Armadillo, GFlags, Glog and GunTLS can be installed either by using PyBOMBS: 
 
 ~~~~~~ 
-$ pybombs install armadillo gflags glog
+$ pybombs install armadillo gflags glog gnutls
 ~~~~~~ 
 
 or manually as explained below, and then please follow instructions on how to [download the source code and build GNSS-SDR](#download-and-build-linux).
@@ -187,7 +187,9 @@ $ sudo apt-get install libgnutls-openssl-dev    # For Debian/Ubuntu/LinuxMint
 $ sudo yum install libgnutls-openssl-devel      # For Fedora/CentOS/RHEL
 ~~~~~~ 
 
-   
+In case the GnuTLS library with openssl extensions package is not available in your GNU/Linux distribution, GNSS-SDR can also work well with OpenSSL.
+
+
 
 ### <a name="download-and-build-linux">Clone GNSS-SDR's Git repository</a>:
 

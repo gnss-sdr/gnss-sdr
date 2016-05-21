@@ -27,7 +27,11 @@ GNU/Linux
 
 Older distribution releases might work as well, but you will need GCC 4.7 or newer.
 
-Before building GNSS-SDR, you need to install all the required dependencies. If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
+Before building GNSS-SDR, you need to install all the required dependencies. There are two alternatives here: through software packages or building them from the source code. It is in general not a good idea to mix both approaches.
+
+### Alternative 1: Install dependencies using software packages
+
+If you want to start building and running GNSS-SDR as quick and easy as possible, the best option is to install all the required dependencies as binary packages. If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying and pasting the following line in a terminal:
 
 ~~~~~~ 
 $ sudo apt-get install build-essential cmake git libboost-dev libboost-date-time-dev \
@@ -50,37 +54,67 @@ $ sudo apt-get update
 $ sudo apt-get build-dep gnss-sdr
 ~~~~~~ 
 
-Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). Otherwise, if you need to manually build and install those libraries, please keep reading.
+Once you have installed these packages, you can jump directly to [how to download the source code and build GNSS-SDR](#download-and-build-linux). 
 
 Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and install GNU Radio manually, as explained below, since GNSS-SDR requires gnuradio-dev >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the packages above BUT EXCEPT ```libuhd-dev```, ```gnuradio-dev``` and ```gr-osmosdr``` (and remove them if they are already installed in your machine), and install those dependencies using PyBOMBS.
 
-### Manual installation of GNU Radio
 
-Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/pybombs "Python Build Overlay Managed Bundle System wiki") (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
+### Alternative 2: Install dependencies using PyBOMBS
 
-~~~~~~
-$ git clone https://github.com/gnuradio/pybombs.git
-$ cd pybombs
-$ python setup.py build
-$ sudo python setup.py install
-$ pybombs recipes add gr-recipes https://github.com/gnuradio/gr-recipes.git
-$ pybombs recipes add gr-etcetera https://github.com/gnuradio/gr-etcetera.git
-$ sudo pybombs prefix init /usr/local -a myprefix
-$ pybombs config default_prefix myprefix
-$ pybombs install gnuradio gr-osmosdr armadillo glog
-~~~~~~
+This option is adequate if you are interested in development, in working with the most recent versions of software dependencies, want more fine tuning on the installed versions, or simply in building everything from the scratch just for the fun of it. In such cases, we recommend to use [PyBOMBS](http://gnuradio.org/pybombs "Python Build Overlay Managed Bundle System wiki") (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. Please take a look at the configuration options and general PyBOMBS usage at https://github.com/gnuradio/pybombs. Here we provide a quick step-by-step tutorial.
 
-Other installation and configuration options are available from https://github.com/gnuradio/pybombs
+Fist of all, install some basic packages:
 
-The last step can take some time (up to two hours to complete, depending on your system), and it downloads, builds and installs the latest versions of GNU Radio, related drivers and dependencies in your system.
+~~~~~~ 
+$ sudo apt-get install git python-pip python-mako
+~~~~~~ 
 
-In case you do not want to use PyBOMBS and prefer to build and install GNU Radio step by step, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide). Other GNSS-SDR dependencies can be built and installed manually as explained below.
+Download, build and install PyBOMBS:
 
-    
-    
+~~~~~~ 
+$ sudo pip install git+https://github.com/gnuradio/pybombs.git
+~~~~~~ 
+
+Add some software recipes (i.e., instructions on how to install software dependencies):
+
+~~~~~~ 
+$ pybombs recipes add gr-recipes git+https://github.com/gnuradio/gr-recipes.git
+$ pybombs recipes add gr-etcetera git+https://github.com/gnuradio/gr-etcetera.git
+~~~~~~ 
+
+Download, build and install GNU Radio, related drivers and some other extra modules into the directory ```/path/to/prefix``` (replace this path by your preferred one, for instance ```$HOME/sdr```):
+
+~~~~~~ 
+$ pybombs prefix init /path/to/prefix -a myprefix -R gnuradio-default
+~~~~~~ 
+
+This will perform a local installation of the dependencies under ```/path/to/prefix```, so they will not be visible when opening a new terminal. In order to make them available, you will need to set up the adequate environment variables:
+
+~~~~~~ 
+$ cd /path/to/prefix
+$ . ./setup_env.sh
+~~~~~~ 
+
+Now you are ready to use GNU Radio and to jump into building GNSS-SDR after installing Armadillo, GFlags and Glog. Actually, those are steps that PyBOMBS can do for you as well:
+
+~~~~~~ 
+$ pybombs install gnss-sdr
+~~~~~~ 
+
+By default, PyBOMBS installs the ‘next’ branch of GNSS-SDR development, which is the most recent version of the source code. This behaviour can be modified by altering the corresponding recipe at ```$HOME/.pybombs/recipes/gr-recipes/gnss-sdr.lwr``` 
+
+In case you do not want to use PyBOMBS and prefer to build and install GNSS-SDR step by step (i.e. cloning the repository and doing the usual ```cmake .. && make && make install``` dance), Armadillo, GFlags and Glog can be installed either by using PyBOMBS: 
+
+~~~~~~ 
+$ pybombs install armadillo gflags glog
+~~~~~~ 
+
+or manually as explained below, and then please follow instructions on how to [download the source code and build GNSS-SDR](#download-and-build-linux).
+
+
 ### Manual installation of other required dependencies
 
-#### Install the [Armadillo](http://arma.sourceforge.net/ "Armadillo's Homepage") C++ linear algebra library:
+#### Install [Armadillo](http://arma.sourceforge.net/ "Armadillo's Homepage"), a C++ linear algebra library:
 
 ~~~~~~
 $ sudo apt-get install libopenblas-dev liblapack-dev   # For Debian/Ubuntu/LinuxMint
@@ -1184,9 +1218,11 @@ PVT.dump_filename=./PVT
 $ gnss-sdr --RINEX_version=2
 ~~~~~~ 
 
-* **RTCM SC-104** provides standards that define the data structure for differential GNSS correction information for a variety of differential correction applications. Developed by the Radio Technical Commission for Maritime Services ([RTCM](http://www.rtcm.org/overview.php#Standards "Radio Technical Commission for Maritime Services")), they have become an industry standard for communication of correction information. GNSS-SDR implements RTCM version 3.2, defined in the document *RTCM 10403.2, Differential GNSS (Global Navigation Satellite Systems) Services - Version 3* (February 1, 2013), which can be [purchased online](https://ssl29.pair.com/dmarkle/puborder.php?show=3 "RTCM Online Publication Order Form"). By default, the generated RTCM binary messages are dumped into a text file in hexadecimal format. However, GNSS-SDR is equipped with a TCP/IP server, acting as an NTRIP source that can feed an NTRIP server. NTRIP (Networked Transport of RTCM via Internet Protocol) is an open standard protocol that can be freely download from [BKG](http://igs.bkg.bund.de/root_ftp/NTRIP/documentation/NtripDocumentation.pdf "Networked Transport of RTCM via Internet Protocol (Ntrip) Version 1.0"), and it is designed for disseminating differential correction data (*e.g.* in the RTCM-104 format) or other kinds of GNSS streaming data to stationary or mobile users over the Internet. The TCP/IP server can be enabled by setting ```PVT.flag_rtcm_server=true``` in the configuration file, and will be active during the execution of the software receiver. By default, the server will operate on port 2101 (which is the recommended port for RTCM services according to the Internet Assigned Numbers Authority, [IANA](http://www.iana.org/assignments/service-names-port-numbers "Service Name and Transport Protocol Port Number Registry")), and will identify the Reference Station with ID=1234. Both the port server and the Station ID can be changed by invoking GNSS-SDR with the following flags:
+* **RTCM SC-104** provides standards that define the data structure for differential GNSS correction information for a variety of differential correction applications. Developed by the Radio Technical Commission for Maritime Services ([RTCM](http://www.rtcm.org/overview.php#Standards "Radio Technical Commission for Maritime Services")), they have become an industry standard for communication of correction information. GNSS-SDR implements RTCM version 3.2, defined in the document *RTCM 10403.2, Differential GNSS (Global Navigation Satellite Systems) Services - Version 3* (February 1, 2013), which can be [purchased online](https://ssl29.pair.com/dmarkle/puborder.php?show=3 "RTCM Online Publication Order Form"). By default, the generated RTCM binary messages are dumped into a text file in hexadecimal format. However, GNSS-SDR is equipped with a TCP/IP server, acting as an NTRIP source that can feed an NTRIP server. NTRIP (Networked Transport of RTCM via Internet Protocol) is an open standard protocol that can be freely download from [BKG](http://igs.bkg.bund.de/root_ftp/NTRIP/documentation/NtripDocumentation.pdf "Networked Transport of RTCM via Internet Protocol (Ntrip) Version 1.0"), and it is designed for disseminating differential correction data (*e.g.* in the RTCM-104 format) or other kinds of GNSS streaming data to stationary or mobile users over the Internet. The TCP/IP server can be enabled by setting ```PVT.flag_rtcm_server=true``` in the configuration file, and will be active during the execution of the software receiver. By default, the server will operate on port 2101 (which is the recommended port for RTCM services according to the Internet Assigned Numbers Authority, [IANA](http://www.iana.org/assignments/service-names-port-numbers "Service Name and Transport Protocol Port Number Registry")), and will identify the Reference Station with ID=1234. This behaviour can be changed in the configuration file:
 ~~~~~~ 
-$ gnss-sdr --RTCM_Port=12345 --RTCM_Ref_Station_ID=10
+PVT.flag_rtcm_server=true
+PVT.rtcm_tcp_port=2102
+PVT.rtcm_station_id=1111
 ~~~~~~ 
 
 **Important note:**

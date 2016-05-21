@@ -13,6 +13,11 @@ If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-develope
 
 This section describes how to set up the compilation environment in GNU/Linux or [Mac OS X](#macosx), and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
 
+Android
+----------
+
+See https://github.com/Hoernchen/grand-build for a script which will build GNSS-SDR for Android.
+
 GNU/Linux 
 ----------
 

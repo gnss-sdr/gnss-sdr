@@ -13,10 +13,6 @@ If you have questions about GNSS-SDR, please [subscribe to the gnss-sdr-develope
 
 This section describes how to set up the compilation environment in GNU/Linux or [Mac OS X](#macosx), and to build GNSS-SDR. See also [our Building Guide](http://gnss-sdr.org/documentation/building-guide "GNSS-SDR's Building Guide").
 
-Android
-----------
-
-See https://github.com/Hoernchen/grand-build for a script which will build GNSS-SDR for Android.
 
 GNU/Linux 
 ----------
@@ -516,6 +512,14 @@ $ cmake -DCMAKE_PREFIX_PATH=/opt/local -DUSE_MACPORTS_PYTHON=/opt/local/bin/pyth
 changing ```/opt/local``` by the base directory in which your software is installed.
 
 The CMake script will create Makefiles that download, build and link Armadillo, Gflags, Glog and Google Test on the fly at compile time if they are not detected in your machine.
+
+
+Android
+----------
+
+In the framework of the [Google Summer of Code](https://summerofcode.withgoogle.com/) program [2016](https://summerofcode.withgoogle.com/organizations/4864875935301632/) there is a project working on a [GNSS-SDR Android port](https://summerofcode.withgoogle.com/projects/?sp-page=2#4871316700135424).
+
+See https://github.com/Hoernchen/grand-build for ongoing work on a script which will build GNSS-SDR for Android.
 
 
 Updating GNSS-SDR

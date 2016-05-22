@@ -63,10 +63,10 @@ Note for Ubuntu 14.04 LTS "trusty" users: you will need to build from source and
 
 This option is adequate if you are interested in development, in working with the most recent versions of software dependencies, want more fine tuning on the installed versions, or simply in building everything from the scratch just for the fun of it. In such cases, we recommend to use [PyBOMBS](http://gnuradio.org/pybombs "Python Build Overlay Managed Bundle System wiki") (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. Please take a look at the configuration options and general PyBOMBS usage at https://github.com/gnuradio/pybombs. Here we provide a quick step-by-step tutorial.
 
-Fist of all, install some basic packages:
+First of all, install some basic packages:
 
 ~~~~~~ 
-$ sudo apt-get install git python-pip python-mako
+$ sudo apt-get install git python-pip
 ~~~~~~ 
 
 Download, build and install PyBOMBS:

@@ -224,6 +224,37 @@ $ git checkout next
 
 More information about GNSS-SDR-specific Git usage and pointers to further readings can be found at out guide about [how to contribute to the source code](http://gnss-sdr.org/documentation/how-contribute-source-code "How to contribute to the source code").
 
+###  Good Git Practices 
+
+If you already cloned the repository before, download the latest changes and keep your reposi- tory in sync with the order of committed changes in the origin (this is required before submit- ting your changes back to origin):
+
+~~~~~~ 
+$ git pull --rebase
+~~~~~~ 
+
+Now that you are up to date, go to the next branch and create a new branch off from it:
+
+~~~~~~ 
+$ git checkout next
+$ git checkout -b my_feature
+~~~~~~ 
+
+Whenever you want to work on something, create a branch for it. Then, do your changes, stage modified and new files and do commits:
+
+~~~~~~ 
+... (change files , compile , test) ...
+$ git add file1.cc file1.h      # This is called file staging
+$ git commit -m "adding_stuff"  # Records staged files to the repository
+~~~~~~ 
+
+Note: A good practice would be try to include with the commit a brief and clear comment about all the changes. Moreover, the developer has to try to commit short changes in order to clarify the steps do it by him. 
+
+Once your changes are finished, you can return back to next and merge your work:
+
+~~~~~~ 
+$ git checkout next
+$ git merge my_feature
+~~~~~~ 
 
 ### Build and install GNSS-SDR
 
@@ -1081,7 +1112,7 @@ Tracking_1C.dump=false ; Enable internal binary data file logging [true] or [fal
 Tracking_1C.dump_filename=./tracking_ch_ ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
 ~~~~~~ 
 
-and, for Galileo E1B channels:
+for Galileo E1B channels:
 
 ~~~~~~ 
 ;######### TRACKING GALILEO E1B CONFIG ############
@@ -1094,6 +1125,19 @@ Tracking_1B.early_late_space_chips=0.15;
 Tracking_1B.very_early_late_space_chips=0.6;
 Tracking_1B.dump=false
 Tracking_1B.dump_filename=../data/veml_tracking_ch_
+~~~~~~ 
+
+[FURTHER DEVELOPMENT]
+~~~~~~ 
+;######### TRACKING BEIDOU B1I CONFIG ############
+Tracking_1I.implementation=BEIDOU_B1_DLL_PLL_Tracking
+Tracking_1I.item_type=gr_complex
+Tracking_1I.pll_bw_hz=TBC ; PLL loop filter bandwidth [Hz]
+Tracking_1I.dll_bw_hz=2.0 ; DLL loop filter bandwidth [Hz]
+Tracking_1I.order=3 ; PLL/DLL loop filter order [2] or [3]
+Tracking_1I.early_late_space_chips=TBC ; correlator early-late space [chips]. 
+Tracking_1I.dump=false ; Enable internal binary data file logging [true] or [false] 
+Tracking_1I.dump_filename=TBC ; Log path and filename. Notice that the tracking channel will add "x.dat" where x is the channel number.
 ~~~~~~ 
 
 #### Decoding of the navigation message

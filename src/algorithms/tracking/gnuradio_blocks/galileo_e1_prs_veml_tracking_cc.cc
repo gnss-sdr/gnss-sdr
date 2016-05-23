@@ -1708,7 +1708,8 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                     // AUX vars (for debug purposes)
                     //tmp_float = d_rem_code_phase_samples/static_cast< float >( d_fs_in )*Galileo_E1_CODE_CHIP_RATE_HZ;
                     tmp_float = d_code_phase_chips;
-                    d_dump_file.write(reinterpret_cast<char*>(&tmp_float), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_code_phase_chips), sizeof(double));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_subcarrier_phase_cycles), sizeof(double));
                     //tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
                     tmp_double = static_cast<double>( code_error_chips_veml );;
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
@@ -1749,6 +1750,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                     d_dump_file.write(reinterpret_cast<char*>(&tmp_double), sizeof(double));
                     d_dump_file.write(reinterpret_cast<char*>(&code_error_chips_veml_prs), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char*>(&code_error_filt_chips_veml_prs), sizeof(float));
+                    d_dump_file.write(reinterpret_cast<char*>(&d_subcarrier_phase_cycles_prs), sizeof(double));
             }
             catch (std::ifstream::failure e)
             {

@@ -38,6 +38,7 @@ include_directories(
 )
 
 file(GLOB DATATYPE_ADAPTER_HEADERS "*.h")
+list(SORT DATATYPE_ADAPTER_HEADERS)
 add_library(datatype_adapters ${DATATYPE_ADAPTER_SOURCES} ${DATATYPE_ADAPTER_HEADERS})
 source_group(Headers FILES ${DATATYPE_ADAPTER_HEADERS})
 add_dependencies(datatype_adapters glog-${glog_RELEASE})

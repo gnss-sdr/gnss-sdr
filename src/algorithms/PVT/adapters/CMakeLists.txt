@@ -37,6 +37,7 @@ include_directories(
 )
 
 file(GLOB PVT_ADAPTER_HEADERS "*.h")
+list(SORT PVT_ADAPTER_HEADERS)
 add_library(pvt_adapters ${PVT_ADAPTER_SOURCES} ${PVT_ADAPTER_HEADERS})
 source_group(Headers FILES ${PVT_ADAPTER_HEADERS})
 target_link_libraries(pvt_adapters pvt_gr_blocks ${ARMADILLO_LIBRARIES} ${GNURADIO_RUNTIME_LIBRARIES})

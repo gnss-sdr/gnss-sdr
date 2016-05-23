@@ -30,6 +30,7 @@ include_directories(
 )
 
 file(GLOB INPUT_FILTER_GR_BLOCKS_HEADERS "*.h")
+list(SORT INPUT_FILTER_GR_BLOCKS_HEADERS)
 add_library(input_filter_gr_blocks ${INPUT_FILTER_GR_BLOCKS_SOURCES} ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${INPUT_FILTER_GR_BLOCKS_HEADERS})
 target_link_libraries(input_filter_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

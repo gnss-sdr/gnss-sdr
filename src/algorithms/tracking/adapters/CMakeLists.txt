@@ -48,6 +48,7 @@ include_directories(
 )
 
 file(GLOB TRACKING_ADAPTER_HEADERS "*.h")
+list(SORT TRACKING_ADAPTER_HEADERS)
 add_library(tracking_adapters ${TRACKING_ADAPTER_SOURCES} ${TRACKING_ADAPTER_HEADERS})
 source_group(Headers FILES ${TRACKING_ADAPTER_HEADERS})
 target_link_libraries(tracking_adapters tracking_gr_blocks gnss_sp_libs)

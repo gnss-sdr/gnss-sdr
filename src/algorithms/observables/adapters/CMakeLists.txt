@@ -35,6 +35,7 @@ include_directories(
 )
 
 file(GLOB OBS_ADAPTER_HEADERS "*.h")
+list(SORT OBS_ADAPTER_HEADERS)
 add_library(obs_adapters ${OBS_ADAPTER_SOURCES} ${OBS_ADAPTER_HEADERS})
 source_group(Headers FILES ${OBS_ADAPTER_HEADERS})
 target_link_libraries(obs_adapters obs_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES})

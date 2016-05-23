@@ -38,6 +38,7 @@ include_directories(
 )
 
 file(GLOB TELEMETRY_DECODER_ADAPTER_HEADERS "*.h")
+list(SORT TELEMETRY_DECODER_ADAPTER_HEADERS)
 add_library(telemetry_decoder_adapters ${TELEMETRY_DECODER_ADAPTER_SOURCES} ${TELEMETRY_DECODER_ADAPTER_HEADERS})
 source_group(Headers FILES ${TELEMETRY_DECODER_ADAPTER_HEADERS})
 target_link_libraries(telemetry_decoder_adapters telemetry_decoder_gr_blocks gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES})

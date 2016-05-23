@@ -35,6 +35,7 @@ include_directories(
 )
 
 file(GLOB INPUT_FILTER_ADAPTER_HEADERS "*.h")
+list(SORT INPUT_FILTER_ADAPTER_HEADERS)
 add_library(input_filter_adapters ${INPUT_FILTER_ADAPTER_SOURCES} ${INPUT_FILTER_ADAPTER_HEADERS})
 source_group(Headers FILES ${INPUT_FILTER_ADAPTER_HEADERS})
 add_dependencies(input_filter_adapters glog-${glog_RELEASE} gnss_sp_libs)

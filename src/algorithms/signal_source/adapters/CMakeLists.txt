@@ -167,6 +167,7 @@ endif(ARCH_64BITS)
 add_definitions(-DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
 
 file(GLOB SIGNAL_SOURCE_ADAPTER_HEADERS "*.h")
+list(SORT SIGNAL_SOURCE_ADAPTER_HEADERS)
 add_library(signal_source_adapters ${SIGNAL_SOURCE_ADAPTER_SOURCES} ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_ADAPTER_HEADERS})
 target_link_libraries(signal_source_adapters signal_source_gr_blocks

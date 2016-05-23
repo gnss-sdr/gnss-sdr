@@ -34,6 +34,7 @@ include_directories(
 )
 
 file(GLOB CHANNEL_FSM_HEADERS "*.h")
+list(SORT CHANNEL_FSM_HEADERS)
 add_library(channel_fsm ${CHANNEL_FSM_SOURCES} ${CHANNEL_FSM_HEADERS})
 source_group(Headers FILES ${CHANNEL_FSM_HEADERS})
 add_dependencies(channel_fsm glog-${glog_RELEASE})

@@ -44,6 +44,7 @@ include_directories(
 )
 
 file(GLOB FRONT_END_CAL_HEADERS "*.h")
+list(SORT FRONT_END_CAL_HEADERS)
 add_library(front_end_cal_lib ${FRONT_END_CAL_SOURCES} ${FRONT_END_CAL_HEADERS})
 source_group(Headers FILES ${FRONT_END_CAL_HEADERS})
 

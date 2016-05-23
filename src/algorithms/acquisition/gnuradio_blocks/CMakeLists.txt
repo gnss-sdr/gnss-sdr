@@ -57,6 +57,7 @@ if(OPENCL_FOUND)
 endif(OPENCL_FOUND)
 
 file(GLOB ACQ_GR_BLOCKS_HEADERS "*.h")
+list(SORT ACQ_GR_BLOCKS_HEADERS)
 add_library(acq_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${ACQ_GR_BLOCKS_HEADERS}) 
 target_link_libraries(acq_gr_blocks gnss_sp_libs gnss_system_parameters ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_FFT_LIBRARIES} ${VOLK_LIBRARIES} ${VOLK_GNSSSDR_LIBRARIES} ${OPT_LIBRARIES})

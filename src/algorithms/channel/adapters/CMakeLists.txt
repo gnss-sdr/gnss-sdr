@@ -31,6 +31,7 @@ include_directories(
 )
 
 file(GLOB CHANNEL_ADAPTER_HEADERS "*.h")
+list(SORT CHANNEL_ADAPTER_HEADERS)
 add_library(channel_adapters ${CHANNEL_ADAPTER_SOURCES} ${CHANNEL_ADAPTER_HEADERS})
 source_group(Headers FILES ${CHANNEL_ADAPTER_HEADERS})
 target_link_libraries(channel_adapters channel_fsm ${GNURADIO_RUNTIME_LIBRARIES} ${Boost_LIBRARIES})

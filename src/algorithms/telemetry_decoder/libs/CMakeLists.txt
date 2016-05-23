@@ -33,6 +33,7 @@ include_directories(
 )
 
 file(GLOB TELEMETRY_DECODER_LIB_HEADERS "*.h")
+list(SORT TELEMETRY_DECODER_LIB_HEADERS)
 add_library(telemetry_decoder_lib ${TELEMETRY_DECODER_LIB_SOURCES} ${TELEMETRY_DECODER_LIB_HEADERS})
 source_group(Headers FILES ${TELEMETRY_DECODER_LIB_HEADERS})
 target_link_libraries(telemetry_decoder_lib gnss_system_parameters)

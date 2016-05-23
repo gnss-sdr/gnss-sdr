@@ -35,6 +35,7 @@ include_directories(
 )
 
 file(GLOB COND_ADAPTER_HEADERS "*.h")
+list(SORT COND_ADAPTER_HEADERS)
 add_library(conditioner_adapters ${COND_ADAPTER_SOURCES} ${COND_ADAPTER_HEADERS})
 source_group(Headers FILES ${COND_ADAPTER_HEADERS})
 add_dependencies(conditioner_adapters glog-${glog_RELEASE})

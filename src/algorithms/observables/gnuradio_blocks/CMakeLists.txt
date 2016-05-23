@@ -36,6 +36,7 @@ include_directories(
 )
 
 file(GLOB OBS_GR_BLOCKS_HEADERS "*.h")
+list(SORT OBS_GR_BLOCKS_HEADERS)
 add_library(obs_gr_blocks ${OBS_GR_BLOCKS_SOURCES} ${OBS_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${OBS_GR_BLOCKS_HEADERS})
 add_dependencies(obs_gr_blocks glog-${glog_RELEASE} armadillo-${armadillo_RELEASE})

@@ -36,6 +36,7 @@ include_directories(
 )
 
 file(GLOB PVT_GR_BLOCKS_HEADERS "*.h")
+list(SORT PVT_GR_BLOCKS_HEADERS)
 add_library(pvt_gr_blocks ${PVT_GR_BLOCKS_SOURCES} ${PVT_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${PVT_GR_BLOCKS_HEADERS})
 target_link_libraries(pvt_gr_blocks pvt_lib ${ARMADILLO_LIBRARIES})

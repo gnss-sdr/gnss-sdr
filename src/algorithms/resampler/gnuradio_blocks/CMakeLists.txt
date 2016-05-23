@@ -32,6 +32,7 @@ include_directories(
 )
 
 file(GLOB RESAMPLER_GR_BLOCKS_HEADERS "*.h")
+list(SORT RESAMPLER_GR_BLOCKS_HEADERS)
 add_library(resampler_gr_blocks ${RESAMPLER_GR_BLOCKS_SOURCES} ${RESAMPLER_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${RESAMPLER_GR_BLOCKS_HEADERS})
 add_dependencies(resampler_gr_blocks glog-${glog_RELEASE})

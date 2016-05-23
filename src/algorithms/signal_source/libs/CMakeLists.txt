@@ -26,5 +26,6 @@ include_directories(
 )
 
 file(GLOB SIGNAL_SOURCE_LIB_HEADERS "*.h")
+list(SORT SIGNAL_SOURCE_LIB_HEADERS)
 add_library(signal_source_lib ${SIGNAL_SOURCE_LIB_SOURCES} ${SIGNAL_SOURCE_LIB_HEADERS})
 source_group(Headers FILES ${SIGNAL_SOURCE_LIB_HEADERS})

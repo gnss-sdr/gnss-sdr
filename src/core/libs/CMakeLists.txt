@@ -41,6 +41,7 @@ include_directories(
 )
 
 file(GLOB CORE_LIBS_HEADERS "*.h")
+list(SORT CORE_LIBS_HEADERS)
 add_library(rx_core_lib ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
 source_group(Headers FILES ${CORE_LIBS_HEADERS})
 target_link_libraries(rx_core_lib supl_library) 

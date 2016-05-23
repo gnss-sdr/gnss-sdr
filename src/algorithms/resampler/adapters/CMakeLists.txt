@@ -29,6 +29,7 @@ include_directories(
 )
 
 file(GLOB RESAMPLER_ADAPTER_HEADERS "*.h")
+list(SORT RESAMPLER_ADAPTER_HEADERS)
 add_library(resampler_adapters ${RESAMPLER_ADAPTER_SOURCES} ${RESAMPLER_ADAPTER_HEADERS})
 source_group(Headers FILES ${RESAMPLER_ADAPTER_HEADERS})
 target_link_libraries(resampler_adapters resampler_gr_blocks)

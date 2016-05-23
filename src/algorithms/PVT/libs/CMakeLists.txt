@@ -43,6 +43,7 @@ include_directories(
      ${GLOG_INCLUDE_DIRS}
 )
 file(GLOB PVT_LIB_HEADERS "*.h")
+list(SORT PVT_LIB_HEADERS)
 add_library(pvt_lib ${PVT_LIB_SOURCES} ${PVT_LIB_HEADERS})
 source_group(Headers FILES ${PVT_LIB_HEADERS})
 add_dependencies(pvt_lib armadillo-${armadillo_RELEASE} glog-${glog_RELEASE})

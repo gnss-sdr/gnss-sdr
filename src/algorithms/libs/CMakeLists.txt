@@ -65,6 +65,7 @@ if(OPENCL_FOUND)
 endif(OPENCL_FOUND)
 
 file(GLOB GNSS_SPLIBS_HEADERS "*.h")
+list(SORT GNSS_SPLIBS_HEADERS)
 add_library(gnss_sp_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 source_group(Headers FILES ${GNSS_SPLIBS_HEADERS})
 

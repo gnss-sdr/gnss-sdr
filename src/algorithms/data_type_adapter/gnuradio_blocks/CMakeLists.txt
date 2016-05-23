@@ -30,6 +30,7 @@ include_directories(
 )
 
 file(GLOB DATA_TYPE_GR_BLOCKS_HEADERS "*.h")
+list(SORT DATA_TYPE_GR_BLOCKS_HEADERS)
 add_library(data_type_gr_blocks ${DATA_TYPE_GR_BLOCKS_SOURCES} ${DATA_TYPE_GR_BLOCKS_HEADERS})
 source_group(Headers FILES ${DATA_TYPE_GR_BLOCKS_HEADERS})
 target_link_libraries(data_type_gr_blocks ${GNURADIO_RUNTIME_LIBRARIES} ${VOLK_LIBRARIES})

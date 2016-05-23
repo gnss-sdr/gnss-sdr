@@ -55,6 +55,7 @@ include_directories(
 
 link_directories(${Boost_LIBRARY_DIR})
 file(GLOB SYSTEM_PARAMETERS_HEADERS "*.h")
+list(SORT SYSTEM_PARAMETERS_HEADERS)
 add_library(gnss_system_parameters ${SYSTEM_PARAMETERS_SOURCES} ${SYSTEM_PARAMETERS_HEADERS})
 source_group(Headers FILES ${SYSTEM_PARAMETERS_HEADERS})
 add_dependencies(gnss_system_parameters glog-${glog_RELEASE})

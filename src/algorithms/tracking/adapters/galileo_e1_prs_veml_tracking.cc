@@ -35,6 +35,7 @@
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "spirent_prs_code_generator.h"
+#include "file_long_code_generator.h"
 
 
 using google::LogMessage;
@@ -110,6 +111,31 @@ GalileoE1PrsVemlTracking::GalileoE1PrsVemlTracking(
         if( code_gen == 0 )
         {
             LOG(ERROR) << "Unable to create a SpirentPrsCodeGenerator";
+        }
+    }
+    else if( not code_type.compare("File") )
+    {
+        std::string code_file_name = configuration->property( role + ".prs_code_file", std::string(""));
+
+        if( code_file_name == "" )
+        {
+            LOG(ERROR) << "prs_code_file configuration property missing";
+        }
+
+        std::ifstream prs_code_file( code_file_name );
+
+        if( not prs_code_file.is_open() )
+        {
+            LOG(ERROR) << "Unable to open prs_code_file: " << code_file_name;
+        }
+
+        code_gen = boost::shared_ptr< LongCodeInterface>(
+                new FileLongCodeGenerator( 1, prs_code_file )
+            );
+
+        if( code_gen == 0 )
+        {
+            LOG(ERROR) << "Unable to create a FileLongCodeGenerator";
         }
     }
     else

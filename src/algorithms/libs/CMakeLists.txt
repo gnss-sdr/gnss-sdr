@@ -34,6 +34,7 @@ set(GNSS_SPLIBS_SOURCES
     gps_pcode.cc
     gps_pcode_generator.cc
     spirent_prs_code_generator.cc
+    file_long_code_generator.cc
 )
 
 

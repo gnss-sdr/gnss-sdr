@@ -252,7 +252,6 @@ add_executable(gnss_block_test
      ${CMAKE_CURRENT_SOURCE_DIR}/flowgraph/pass_through_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/file_output_filter_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/pcode_generation_test.cc
-     ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/spirent_prs_code_generation_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/gnss_block/gnss_block_factory_test.cc
 )
 if(NOT ${ENABLE_PACKAGING})
@@ -376,6 +375,8 @@ add_executable(arithmetic_test
      ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/code_resampler_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/subcarrier_resampler_test.cc
      ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/accumulate_array_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/spirent_prs_code_generation_test.cc
+     ${CMAKE_CURRENT_SOURCE_DIR}/arithmetic/file_long_code_generator_test.cc
 )
 if(NOT ${ENABLE_PACKAGING})
      set_property(TARGET arithmetic_test PROPERTY EXCLUDE_FROM_ALL TRUE)

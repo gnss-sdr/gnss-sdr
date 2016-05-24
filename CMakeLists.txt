@@ -321,18 +321,13 @@ endif(GTEST_DIR)
 if(UNIX AND EXISTS "/usr/lib64")
     list(APPEND BOOST_LIBRARYDIR "/usr/lib64") # Fedora 64-bit fix
 endif(UNIX AND EXISTS "/usr/lib64")
-if(GNURADIO_INSTALL_PREFIX)
-    if(EXISTS "${GNURADIO_INSTALL_PREFIX}/lib/libboost_thread-mt.so")
-        list(APPEND BOOST_LIBRARYDIR "${GNURADIO_INSTALL_PREFIX}/lib")     # Boost installed by PyBOMBS
-        list(APPEND BOOST_INCLUDEDIR "${GNURADIO_INSTALL_PREFIX}/include") # Boost installed by PyBOMBS
-    endif(EXISTS "${GNURADIO_INSTALL_PREFIX}/lib/libboost_thread-mt.so")
-endif(GNURADIO_INSTALL_PREFIX)
 set(Boost_ADDITIONAL_VERSIONS
     "1.45.0" "1.45" "1.46.0" "1.46"                 "1.48.0" "1.48" "1.49.0" "1.49"
     "1.50.0" "1.50" "1.51.0" "1.51"                 "1.53.0" "1.53" "1.54.0" "1.54"
     "1.55.0" "1.55" "1.56.0" "1.56" "1.57.0" "1.57" "1.58.0" "1.58" "1.59.0" "1.59"
     "1.60.0" "1.60" "1.61.0" "1.61" "1.62.0" "1.62" "1.63.0" "1.63" "1.64.0" "1.64"
     "1.65.0" "1.65" "1.66.0" "1.66" "1.67.0" "1.67" "1.68.0" "1.68" "1.69.0" "1.69"
+    "1.70.0" "1.70" "1.71.0" "1.71" "1.72.0" "1.72" "1.73.0" "1.73" "1.74.0" "1.74"
 )
 set(Boost_USE_MULTITHREAD ON)
 set(Boost_USE_STATIC_LIBS OFF)
@@ -343,7 +338,7 @@ endif(NOT Boost_FOUND)
 
 
 ################################################################################
-# GNU Radio - http://gnuradio.org/redmine/projects/gnuradio/wiki
+# GNU Radio - http://gnuradio.org
 ################################################################################
 set(GR_REQUIRED_COMPONENTS RUNTIME ANALOG BLOCKS FFT FILTER PMT)
 find_package(Gnuradio)
@@ -356,17 +351,16 @@ endif(PC_GNURADIO_RUNTIME_VERSION)
 if(NOT GNURADIO_RUNTIME_FOUND)
    message(STATUS "CMake cannot find GNU Radio >= 3.7.3")
    if(OS_IS_LINUX)
-       message("Go to http://gnuradio.org/redmine/projects/pybombs/wiki")
+       message("Go to https://github.com/gnuradio/pybombs")
        message("and follow the instructions to install GNU Radio in your system.")
        message(FATAL_ERROR "GNU Radio 3.7.3 or later is required to build gnss-sdr")
    endif(OS_IS_LINUX)
    if(OS_IS_MACOSX)
-       message("You can install it easily via Macports.")
-       message("Open a terminal and type:")
-       message("sudo port install gnuradio ")
-       message("Alternatively you can use homebrew.")
-       message("brew tap odrisci/gnuradio")
-       message("brew install gnuradio" )
+       message("You can install it easily via Macports:")
+       message("  sudo port install gnuradio ")
+       message("Alternatively, you can use homebrew:")
+       message("  brew tap odrisci/gnuradio")
+       message("  brew install gnuradio" )
        message(FATAL_ERROR "GNU Radio 3.7.3 or later is required to build gnss-sdr")
    endif(OS_IS_MACOSX)
 endif(NOT GNURADIO_RUNTIME_FOUND)

@@ -735,13 +735,21 @@ if(NOT ARMADILLO_FOUND)
      message(STATUS " Armadillo will be downloaded and built automatically ")
      message(STATUS " when doing 'make'. ")
 
-     set(armadillo_RELEASE 6.600.5)
-     set(armadillo_MD5 "649a6d0ed528c2e39c1102b43710103f")
+     if(CMAKE_VERSION VERSION_LESS 3.1)
+         # ExternalProject in CMake > 3.1 cannot open .xz files
+         set(armadillo_RELEASE 6.700.7)
+         set(armadillo_MD5 "8116185e1d7391eed3bf6c500f81b4d8")
+         set(ARMA_FILE_EXTENSION "gz")
+     else(CMAKE_VERSION VERSION_LESS 3.1)
+         set(armadillo_RELEASE 7.100.3)
+         set(armadillo_MD5 "d047c1c24f4031e0e9374a7104e33ec0")
+         set(ARMA_FILE_EXTENSION "xz")
+     endif(CMAKE_VERSION VERSION_LESS 3.1)
 
      ExternalProject_Add(
          armadillo-${armadillo_RELEASE}
          PREFIX ${CMAKE_CURRENT_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-         URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.gz
+         URL http://sourceforge.net/projects/arma/files/armadillo-${armadillo_RELEASE}.tar.${ARMA_FILE_EXTENSION}
          DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download/armadillo-${armadillo_RELEASE}
          URL_MD5 ${armadillo_MD5}
          CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DBUILD_SHARED_LIBS=OFF

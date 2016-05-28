@@ -222,8 +222,8 @@ double pcps_acquisition_fine_doppler_cc::search_maximum()
     float magt = 0.0;
     float fft_normalization_factor;
     int index_doppler = 0;
-    unsigned int tmp_intex_t;
-    unsigned int index_time = 0;
+    uint16_t tmp_intex_t;
+    uint16_t index_time = 0;
 
     for (int i=0;i<d_num_doppler_points;i++)
         {
@@ -359,7 +359,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler(gr_vector_const_void_star
 
     volk_32fc_magnitude_squared_32f(p_tmp_vector, fft_operator->get_outbuf(), fft_size_extended);
 
-    unsigned int tmp_index_freq = 0;
+    uint16_t tmp_index_freq = 0;
     volk_32f_index_max_16u(&tmp_index_freq, p_tmp_vector, fft_size_extended);
 
     //case even

@@ -242,9 +242,9 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
         {
             // initialize acquisition algorithm
             int doppler;
-            unsigned int indext = 0;
-            unsigned int indext_A = 0;
-            unsigned int indext_B = 0;
+            uint16_t indext = 0;
+            uint16_t indext_A = 0;
+            uint16_t indext_B = 0;
             float magt = 0.0;
             float magt_A = 0.0;
             float magt_B = 0.0;

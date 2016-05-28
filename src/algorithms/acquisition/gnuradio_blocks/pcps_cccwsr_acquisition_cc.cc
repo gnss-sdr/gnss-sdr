@@ -254,9 +254,9 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
         {
             // initialize acquisition algorithm
             int doppler;
-            unsigned int indext = 0;
-            unsigned int indext_plus = 0;
-            unsigned int indext_minus = 0;
+            uint16_t indext = 0;
+            uint16_t indext_plus = 0;
+            uint16_t indext_minus = 0;
             float magt = 0.0;
             float magt_plus = 0.0;
             float magt_minus = 0.0;

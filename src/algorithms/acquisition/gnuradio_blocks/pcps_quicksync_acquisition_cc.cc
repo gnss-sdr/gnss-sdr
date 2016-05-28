@@ -301,7 +301,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
             /* initialize acquisition  implementing the QuickSync algorithm*/
             //DLOG(INFO) << "START CASE 1";
             int doppler;
-            unsigned int indext = 0;
+            uint16_t indext = 0;
             float magt = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
 

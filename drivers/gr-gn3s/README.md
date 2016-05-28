@@ -23,43 +23,40 @@ $ sudo apt-get install gnuradio-dev libusb-dev
 
 - Semi-automatic installation of GNU Radio using PyBOMBS:
 
-Downloading, building and installing [GNU Radio](http://gnuradio.org/redmine/projects/gnuradio/wiki "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki "Python Build Overlay Managed Bundle System wiki") (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
+Downloading, building and installing [GNU Radio](http://gnuradio.org "GNU Radio's Homepage") and all its dependencies is not a simple task. We recommend to use [PyBOMBS](http://gnuradio.org/redmine/projects/pybombs/wiki "Python Build Overlay Managed Bundle System wiki") (Python Build Overlay Managed Bundle System), the GNU Radio install management system that automatically does all the work for you. In a terminal, type:
+
+First of all, install some basic packages:
 
 ~~~~~~ 
-$ git clone git://github.com/pybombs/pybombs 
-$ cd pybombs
-~~~~~~
+$ sudo apt-get install git python-pip
+~~~~~~ 
 
-Configure PyBOMBS:
+Download, build and install PyBOMBS:
 
-~~~~~~
-$ ./pybombs config 
-~~~~~~
+~~~~~~ 
+$ sudo pip install git+https://github.com/gnuradio/pybombs.git
+~~~~~~ 
 
-You can safely accept the default options but for ```prefix```. We recommend to put ```/usr/local``` there. After the configuration, you should get something similar to:
+Add some software recipes (i.e., instructions on how to install software dependencies):
 
-~~~~~~
-gituser = username
-prefix = /usr/local
-satisfy_order = deb,src  # For Debian/Ubuntu/LinuxMint
-satisfy_order = rpm,src  # For Fedora/CentOS/RHEL/openSUSE
-forcepkgs =
-forcebuild = gnuradio,uhd,gr-osmosdr,rtl-sdr,...
-timeout = 30
-cmakebuildtype = RelWithDebInfo
-builddocs = OFF
-cc = gcc
-cxx = g++
-makewidth = 4
-~~~~~~
+~~~~~~ 
+$ pybombs recipes add gr-recipes git+https://github.com/gnuradio/gr-recipes.git
+$ pybombs recipes add gr-etcetera git+https://github.com/gnuradio/gr-etcetera.git
+~~~~~~ 
 
-Then, you are ready to download and install GNU Radio and all their required dependencies by doing:
+Download, build and install GNU Radio, related drivers and some other extra modules into the directory ```/path/to/prefix``` (replace this path by your preferred one, for instance ```$HOME/sdr```):
 
-~~~~~~
-$ sudo ./pybombs install gnuradio
-~~~~~~
+~~~~~~ 
+$ pybombs prefix init /path/to/prefix -a myprefix -R gnuradio-default
+~~~~~~ 
 
-This can take some time (up to two hours to complete, depending on your system), and downloads, builds and installs the latest versions of the Universal Hardware Driver (UHD) and GNU Radio in your system, including all their dependencies. 
+This will perform a local installation of the dependencies under ```/path/to/prefix```, so they will not be visible when opening a new terminal. In order to make them available, you will need to set up the adequate environment variables:
+
+~~~~~~ 
+$ cd /path/to/prefix
+$ . ./setup_env.sh
+~~~~~~ 
+
 In case you do not want to use PyBOMBS and prefer to build and install GNU Radio step by step, follow instructions at the [GNU Radio Build Guide](http://gnuradio.org/redmine/projects/gnuradio/wiki/BuildGuide).
 
 

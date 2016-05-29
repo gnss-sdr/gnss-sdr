@@ -424,11 +424,19 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
 
             // initialize acquisition algorithm
             int doppler;
+#if VOLK_GT_122
             uint16_t indext = 0;
             uint16_t indext_IA = 0;
             uint16_t indext_IB = 0;
             uint16_t indext_QA = 0;
             uint16_t indext_QB = 0;
+#else
+            unsigned int indext = 0;
+            unsigned int indext_IA = 0;
+            unsigned int indext_IB = 0;
+            unsigned int indext_QA = 0;
+            unsigned int indext_QB = 0;
+#endif
             float magt = 0.0;
             float magt_IA = 0.0;
             float magt_IB = 0.0;

@@ -386,7 +386,11 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
 {
     // initialize acquisition algorithm
     int doppler;
+#if VOLK_GT_122
     uint16_t indext = 0;
+#else
+    unsigned int indext = 0;
+#endif
     float magt = 0.0;
     float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
     gr_complex* in = d_in_buffer[d_well_count];
@@ -508,7 +512,11 @@ void pcps_opencl_acquisition_cc::acquisition_core_opencl()
 {
     // initialize acquisition algorithm
     int doppler;
+#if VOLK_GT_122
     uint16_t indext = 0;
+#else
+    unsigned int indext = 0;
+#endif
     float magt = 0.0;
     float fft_normalization_factor = (static_cast<float>(d_fft_size_pow2) * static_cast<float>(d_fft_size)); //This works, but I am not sure why.
     gr_complex* in = d_in_buffer[d_well_count];

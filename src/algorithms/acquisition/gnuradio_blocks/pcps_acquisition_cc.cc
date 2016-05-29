@@ -284,7 +284,11 @@ int pcps_acquisition_cc::general_work(int noutput_items,
         {
             // initialize acquisition algorithm
             int doppler;
+#if VOLK_GT_122
+            uint16_t indext = 0;
+#else
             unsigned int indext = 0;
+#endif
             float magt = 0.0;
             const gr_complex *in = (const gr_complex *)input_items[0]; //Get the input samples pointer
 

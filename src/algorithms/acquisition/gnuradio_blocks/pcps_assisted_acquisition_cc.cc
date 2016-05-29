@@ -268,8 +268,13 @@ double pcps_assisted_acquisition_cc::search_maximum()
     float magt = 0.0;
     float fft_normalization_factor;
     int index_doppler = 0;
-    unsigned int tmp_intex_t;
+#if VOLK_GT_122
+    uint16_t tmp_intex_t;
+    uint16_t index_time = 0;
+#else
+    unsigned int tmp_intex_t = 0;
     unsigned int index_time = 0;
+#endif
 
     for (int i=0;i<d_num_doppler_points;i++)
         {

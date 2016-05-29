@@ -200,7 +200,11 @@ void pcps_multithread_acquisition_cc::acquisition_core()
 {
     // initialize acquisition algorithm
     int doppler;
+#if VOLK_GT_122
+    uint16_t indext = 0;
+#else
     unsigned int indext = 0;
+#endif
     float magt = 0.0;
     float fft_normalization_factor = (float)d_fft_size * (float)d_fft_size;
     gr_complex* in = d_in_buffer[d_well_count];

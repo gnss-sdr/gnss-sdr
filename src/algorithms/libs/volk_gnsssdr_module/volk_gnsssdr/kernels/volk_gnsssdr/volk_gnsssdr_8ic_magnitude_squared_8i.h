@@ -65,7 +65,8 @@
 static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_sse3(char* magnitudeVector, const lv_8sc_t* complexVector, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 16;
-
+    unsigned int number;
+    unsigned int i;
     const char* complexVectorPtr = (char*)complexVector;
     char* magnitudeVectorPtr = magnitudeVector;
 
@@ -77,7 +78,7 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_sse3(char* magnitudeV
     maska = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 14, 12, 10, 8, 6, 4, 2, 0);
     maskb = _mm_set_epi8(14, 12, 10, 8, 6, 4, 2, 0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
 
-    for(unsigned int number = 0;number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             avector = _mm_lddqu_si128((__m128i*)complexVectorPtr);
             avectorlo = _mm_unpacklo_epi8 (avector, zero);
@@ -104,7 +105,7 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_u_sse3(char* magnitudeV
             magnitudeVectorPtr += 16;
         }
 
-    for (unsigned int i = sse_iters * 16; i < num_points; ++i)
+    for (i = sse_iters * 16; i < num_points; ++i)
         {
             const char valReal = *complexVectorPtr++;
             const char valImag = *complexVectorPtr++;
@@ -160,8 +161,8 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_generic(char* magnitude
 {
     const char* complexVectorPtr = (char*)complexVector;
     char* magnitudeVectorPtr = magnitudeVector;
-
-    for(unsigned int number = 0; number < num_points; number++)
+    unsigned int number;
+    for(number = 0; number < num_points; number++)
         {
             const char real = *complexVectorPtr++;
             const char imag = *complexVectorPtr++;
@@ -180,6 +181,8 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
 
     const char* complexVectorPtr = (char*)complexVector;
     char* magnitudeVectorPtr = magnitudeVector;
+    unsigned int number;
+    unsigned int i;
 
     __m128i zero, result8;
     __m128i avector, avectorhi, avectorlo, avectorlomult, avectorhimult, aadded, maska;
@@ -189,7 +192,7 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
     maska = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 14, 12, 10, 8, 6, 4, 2, 0);
     maskb = _mm_set_epi8(14, 12, 10, 8, 6, 4, 2, 0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
 
-    for(unsigned int number = 0;number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             avector = _mm_load_si128((__m128i*)complexVectorPtr);
             avectorlo = _mm_unpacklo_epi8 (avector, zero);
@@ -216,7 +219,7 @@ static inline void volk_gnsssdr_8ic_magnitude_squared_8i_a_sse3(char* magnitudeV
             magnitudeVectorPtr += 16;
         }
 
-    for (unsigned int i = sse_iters * 16; i < num_points; ++i)
+    for (i = sse_iters * 16; i < num_points; ++i)
         {
             const char valReal = *complexVectorPtr++;
             const char valImag = *complexVectorPtr++;

@@ -71,8 +71,8 @@ static inline void volk_gnsssdr_32fc_convert_8ic_generic(lv_8sc_t* outputVector,
     const float min_val = (float)SCHAR_MIN;
     const float max_val = (float)SCHAR_MAX;
     float aux;
-
-    for(unsigned int i = 0; i < num_points * 2; i++)
+    unsigned int i;
+    for(i = 0; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val;
             if(aux > max_val)
@@ -98,6 +98,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
     const float min_val = (float)SCHAR_MIN;
     const float max_val = (float)SCHAR_MAX;
     float aux;
+    unsigned int i;
 
     __m128 inputVal1, inputVal2, inputVal3, inputVal4;
     __m128i intInputVal1, intInputVal2, intInputVal3, intInputVal4;
@@ -106,7 +107,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
     const __m128 vmin_val = _mm_set_ps1(min_val);
     const __m128 vmax_val = _mm_set_ps1(max_val);
 
-    for(unsigned int i = 0; i < sse_iters; i++)
+    for(i = 0; i < sse_iters; i++)
         {
             inputVal1 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_loadu_ps((float*)inputVectorPtr); inputVectorPtr += 4;
@@ -137,7 +138,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_u_sse2(lv_8sc_t* outputVector, 
             outputVectorPtr += 16;
         }
 
-    for(unsigned int i = sse_iters * 16; i < num_points * 2; i++)
+    for(i = sse_iters * 16; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val;
             if(aux > max_val)
@@ -163,6 +164,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
     const float min_val = (float)SCHAR_MIN;
     const float max_val = (float)SCHAR_MAX;
     float aux;
+    unsigned int i;
 
     __m128 inputVal1, inputVal2, inputVal3, inputVal4;
     __m128i intInputVal1, intInputVal2, intInputVal3, intInputVal4;
@@ -171,7 +173,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
     const __m128 vmin_val = _mm_set_ps1(min_val);
     const __m128 vmax_val = _mm_set_ps1(max_val);
 
-    for(unsigned int i = 0; i < sse_iters; i++)
+    for(i = 0; i < sse_iters; i++)
         {
             inputVal1 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
             inputVal2 = _mm_load_ps((float*)inputVectorPtr); inputVectorPtr += 4;
@@ -202,7 +204,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_a_sse2(lv_8sc_t* outputVector, 
             outputVectorPtr += 16;
         }
 
-    for(unsigned int i = sse_iters * 16; i < num_points * 2; i++)
+    for(i = sse_iters * 16; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val;
             if(aux > max_val)
@@ -227,6 +229,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
     const float32_t max_val_f = (float32_t)SCHAR_MAX;
     const float32_t min_val_f = (float32_t)SCHAR_MIN;
     float32_t aux;
+    unsigned int i;
 
     const float32x4_t min_val = vmovq_n_f32(min_val_f);
     const float32x4_t max_val = vmovq_n_f32(max_val_f);
@@ -240,7 +243,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
     int8x8_t res8_1, res8_2;
     int8x16_t outputVal;
 
-    for(unsigned int i = 0; i < neon_iters; i++)
+    for(i = 0; i < neon_iters; i++)
         {
             a = vld1q_f32((const float32_t*)inputVectorPtr); inputVectorPtr += 4;
             a = vmulq_f32(a, max_val);
@@ -290,7 +293,7 @@ static inline void volk_gnsssdr_32fc_convert_8ic_neon(lv_8sc_t* outputVector, co
             outputVectorPtr += 16;
         }
 
-    for(unsigned int i = neon_iters * 16; i < num_points * 2; i++)
+    for(i = neon_iters * 16; i < num_points * 2; i++)
         {
             aux = *inputVectorPtr++ * max_val_f;
             if(aux > max_val_f)

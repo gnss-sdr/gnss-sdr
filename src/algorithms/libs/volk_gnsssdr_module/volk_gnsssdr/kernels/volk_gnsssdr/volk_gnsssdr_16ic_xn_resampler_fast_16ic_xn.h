@@ -74,9 +74,11 @@ static inline void volk_gnsssdr_16ic_xn_resampler_fast_16ic_xn_generic(lv_16sc_t
 {
     int local_code_chip_index;
     //fesetround(FE_TONEAREST);
-    for (int current_vector = 0; current_vector < num_out_vectors; current_vector++)
+    int current_vector;
+    unsigned int n;
+    for (current_vector = 0; current_vector < num_out_vectors; current_vector++)
         {
-            for (unsigned int n = 0; n < num_output_samples; n++)
+            for (n = 0; n < num_output_samples; n++)
                 {
                     // resample code for current tap
                     local_code_chip_index = round(code_phase_step_chips * (float)(n) + rem_code_phase_chips[current_vector] - 0.5f);

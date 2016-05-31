@@ -80,7 +80,7 @@ static inline void volk_gnsssdr_16ic_resamplerfastxnpuppet_16ic_a_sse2(lv_16sc_t
     float * rem_code_phase_chips = (float*)volk_gnsssdr_malloc(sizeof(float) * num_out_vectors, volk_gnsssdr_get_alignment());
     lv_16sc_t** result_aux =  (lv_16sc_t**)volk_gnsssdr_malloc(sizeof(lv_16sc_t*) * num_out_vectors, volk_gnsssdr_get_alignment());
 
-    for(unsigned int n = 0; n < num_out_vectors; n++)
+    for(n = 0; n < num_out_vectors; n++)
     {
         rem_code_phase_chips[n] = -0.234; 
         result_aux[n] = (lv_16sc_t*)volk_gnsssdr_malloc(sizeof(lv_16sc_t) * num_points, volk_gnsssdr_get_alignment());

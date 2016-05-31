@@ -66,7 +66,8 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char* target, const char* sr
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
-
+            unsigned int number;
+            unsigned int i;
             char* inputPtr = (char*)src0;
             char max = src0[0];
             __VOLK_ATTR_ALIGNED(16) char maxValuesBuffer[16];
@@ -74,7 +75,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char* target, const char* sr
 
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm_loadu_si128((__m128i*)inputPtr);
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
@@ -84,7 +85,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char* target, const char* sr
 
             _mm_storeu_si128((__m128i*)maxValuesBuffer, maxValues);
 
-            for(unsigned int i = 0; i<16; ++i)
+            for(i = 0; i < 16; ++i)
                 {
                     if(maxValuesBuffer[i] > max)
                         {
@@ -92,7 +93,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse4_1(char* target, const char* sr
                         }
                 }
 
-            for(unsigned int i = sse_iters * 16; i< num_points; ++i)
+            for(i = sse_iters * 16; i < num_points; ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -114,7 +115,8 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char* target, const char* src0
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
-
+            unsigned int number;
+            unsigned int i;
             char* inputPtr = (char*)src0;
             char max = src0[0];
             unsigned short mask;
@@ -123,7 +125,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char* target, const char* src0
 
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm_loadu_si128((__m128i*)inputPtr);
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
@@ -133,7 +135,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char* target, const char* src0
                         {
                             _mm_storeu_si128((__m128i*)&currentValuesBuffer, currentValues);
                             mask = ~mask;
-                            int i = 0;
+                            i = 0;
                             while (mask > 0)
                                 {
                                     if ((mask & 1) == 1)
@@ -151,7 +153,7 @@ static inline void volk_gnsssdr_8i_max_s8i_u_sse2(char* target, const char* src0
                     inputPtr += 16;
                 }
 
-            for(unsigned int i = sse_iters * 16; i < num_points; ++i)
+            for(i = sse_iters * 16; i < num_points; ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -172,8 +174,8 @@ static inline void volk_gnsssdr_8i_max_s8i_generic(char* target, const char* src
     if(num_points > 0)
         {
             char max = src0[0];
-
-            for(unsigned int i = 1; i < num_points; ++i)
+            unsigned int i;
+            for(i = 1; i < num_points; ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -195,7 +197,8 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char* target, const char* sr
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
-
+            unsigned int number;
+            unsigned int i;
             char* inputPtr = (char*)src0;
             char max = src0[0];
             __VOLK_ATTR_ALIGNED(16) char maxValuesBuffer[16];
@@ -203,7 +206,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char* target, const char* sr
 
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm_load_si128((__m128i*)inputPtr);
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
@@ -213,7 +216,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char* target, const char* sr
 
             _mm_store_si128((__m128i*)maxValuesBuffer, maxValues);
 
-            for(unsigned int i = 0; i<16; ++i)
+            for(i = 0; i < 16; ++i)
                 {
                     if(maxValuesBuffer[i] > max)
                         {
@@ -221,7 +224,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse4_1(char* target, const char* sr
                         }
                 }
 
-            for(unsigned int i = sse_iters * 16; i < num_points; ++i)
+            for(i = sse_iters * 16; i < num_points; ++i)
                 {
                     if(src0[i] > max)
                         {
@@ -243,7 +246,8 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char* target, const char* src0
     if(num_points > 0)
         {
             const unsigned int sse_iters = num_points / 16;
-
+            unsigned int number;
+            unsigned int i;
             char* inputPtr = (char*)src0;
             char max = src0[0];
             unsigned short mask;
@@ -252,7 +256,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char* target, const char* src0
 
             maxValues = _mm_set1_epi8(max);
 
-            for(unsigned int number = 0; number < sse_iters; number++)
+            for(number = 0; number < sse_iters; number++)
                 {
                     currentValues  = _mm_load_si128((__m128i*)inputPtr);
                     compareResults = _mm_cmpgt_epi8(maxValues, currentValues);
@@ -280,7 +284,7 @@ static inline void volk_gnsssdr_8i_max_s8i_a_sse2(char* target, const char* src0
                     inputPtr += 16;
                 }
 
-            for(unsigned int i = sse_iters * 16; i < num_points; ++i)
+            for(i = sse_iters * 16; i < num_points; ++i)
                 {
                     if(src0[i] > max)
                         {

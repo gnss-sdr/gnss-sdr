@@ -139,6 +139,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic_reload(lv_16s
 static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
+    unsigned int number;
     __m128 a, b, two_phase_acc_reg, two_phase_inc_reg;
     __m128i c1, c2, result;
     __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_inc[2];
@@ -151,14 +152,13 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
     two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
 
     const lv_16sc_t* _in = inVector;
-
     lv_16sc_t* _out = outVector;
 
     __m128 yl, yh, tmp1, tmp2, tmp3;
     lv_16sc_t tmp16;
     lv_32fc_t tmp32;
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
             //complex 32fc multiplication b=a*two_phase_acc_reg
@@ -221,7 +221,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
     _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
 
-    for (unsigned int i = sse_iters * 4; i < num_points; ++i)
+    for (number = sse_iters * 4; number < num_points; ++number)
         {
             tmp16 = *_in++;
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
@@ -241,6 +241,8 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc
 {
     const unsigned int sse_iters = num_points / 4;
     const unsigned int ROTATOR_RELOAD = 512;
+    unsigned int n;
+    unsigned int j;
     __m128 a, b, two_phase_acc_reg, two_phase_inc_reg;
     __m128i c1, c2, result;
     __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_inc[2];
@@ -260,9 +262,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc
     lv_16sc_t tmp16;
     lv_32fc_t tmp32;
 
-    for (unsigned int n = 0; n < sse_iters / ROTATOR_RELOAD; n++)
+    for (n = 0; n < sse_iters / ROTATOR_RELOAD; n++)
         {
-            for (unsigned int j = 0; j < ROTATOR_RELOAD; j++)
+            for (j = 0; j < ROTATOR_RELOAD; j++)
                 {
                     a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
                     //complex 32fc multiplication b=a*two_phase_acc_reg
@@ -319,7 +321,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc
             two_phase_acc_reg = _mm_div_ps(two_phase_acc_reg, tmp2);
         }
 
-    for (unsigned int j = 0; j < sse_iters % ROTATOR_RELOAD; j++)
+    for (j = 0; j < sse_iters % ROTATOR_RELOAD; j++)
         {
             a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
             //complex 32fc multiplication b=a*two_phase_acc_reg
@@ -372,7 +374,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc
     _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
 
-    for (unsigned int i = sse_iters * 4; i < num_points; ++i)
+    for (n = sse_iters * 4; n < num_points; ++n)
         {
             tmp16 = *_in++;
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
@@ -391,6 +393,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc
 static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
+    unsigned int number;
     __m128 a, b, two_phase_acc_reg, two_phase_inc_reg;
     __m128i c1, c2, result;
     __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_inc[2];
@@ -410,7 +413,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
     lv_16sc_t tmp16;
     lv_32fc_t tmp32;
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
             //complex 32fc multiplication b=a*two_phase_acc_reg
@@ -473,7 +476,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
     _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
     (*phase) = two_phase_acc[0];
 
-    for (unsigned int i = sse_iters * 4; i < num_points; ++i)
+    for (number = sse_iters * 4; number < num_points; ++number)
         {
             tmp16 = *_in++;
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
@@ -492,6 +495,8 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc
 {
     const unsigned int sse_iters = num_points / 4;
      unsigned int ROTATOR_RELOAD = 512;
+     unsigned int n;
+     unsigned int j;
      __m128 a, b, two_phase_acc_reg, two_phase_inc_reg;
      __m128i c1, c2, result;
      __VOLK_ATTR_ALIGNED(16) lv_32fc_t two_phase_inc[2];
@@ -511,9 +516,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc
      lv_16sc_t tmp16;
      lv_32fc_t tmp32;
 
-     for (unsigned int n = 0; n < sse_iters / ROTATOR_RELOAD; n++)
+     for (n = 0; n < sse_iters / ROTATOR_RELOAD; n++)
          {
-             for (unsigned int j = 0; j < ROTATOR_RELOAD; j++)
+             for (j = 0; j < ROTATOR_RELOAD; j++)
                  {
                      a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
                      //complex 32fc multiplication b=a*two_phase_acc_reg
@@ -570,7 +575,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc
              two_phase_acc_reg = _mm_div_ps(two_phase_acc_reg, tmp2);
          }
 
-     for (unsigned int j = 0; j < sse_iters % ROTATOR_RELOAD; j++)
+     for (j = 0; j < sse_iters % ROTATOR_RELOAD; j++)
          {
              a = _mm_set_ps((float)(lv_cimag(_in[1])), (float)(lv_creal(_in[1])), (float)(lv_cimag(_in[0])), (float)(lv_creal(_in[0]))); // //load (2 byte imag, 2 byte real) x 2 into 128 bits reg
              //complex 32fc multiplication b=a*two_phase_acc_reg
@@ -623,7 +628,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc
      _mm_store_ps((float*)two_phase_acc, two_phase_acc_reg);
      (*phase) = two_phase_acc[0];
 
-     for (unsigned int i = sse_iters * 4; i < num_points; ++i)
+     for (n = sse_iters * 4; n < num_points; ++n)
          {
              tmp16 = *_in++;
              tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
@@ -773,6 +778,8 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
     unsigned int i = 0;
     const unsigned int neon_iters = num_points / 4;
     const unsigned int ROTATOR_RELOAD = 512;
+    unsigned int n;
+    unsigned int j;
 
     lv_16sc_t tmp16_;
     lv_32fc_t tmp32_;
@@ -809,9 +816,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
 
     if (neon_iters > 0)
         {
-            for (unsigned int n = 0; n < neon_iters / ROTATOR_RELOAD; n++)
+            for (n = 0; n < neon_iters / ROTATOR_RELOAD; n++)
                 {
-                    for (unsigned int j = 0; j < ROTATOR_RELOAD; j++)
+                    for (j = 0; j < ROTATOR_RELOAD; j++)
                         {
                             /* load 4 complex numbers (int 16 bits each component) */
                             tmp16 = vld2_s16((int16_t*)_in);
@@ -880,7 +887,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
                     _phase_imag = vld1q_f32(____phase_imag);
                 }
 
-            for (unsigned int j = 0; j < neon_iters % ROTATOR_RELOAD; j++)
+            for (j = 0; j < neon_iters % ROTATOR_RELOAD; j++)
                 {
                     /* load 4 complex numbers (int 16 bits each component) */
                     tmp16 = vld2_s16((int16_t*)_in);

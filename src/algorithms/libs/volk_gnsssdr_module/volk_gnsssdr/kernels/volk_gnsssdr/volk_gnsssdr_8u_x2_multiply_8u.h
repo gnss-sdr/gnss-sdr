@@ -65,13 +65,15 @@
 static inline void volk_gnsssdr_8u_x2_multiply_8u_u_sse3(unsigned char* cChar, const unsigned char* aChar, const unsigned char* bChar, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 16;
+    unsigned int number;
+    unsigned int i;
 
     __m128i x, y, x1, x2, y1, y2, mult1, x1_mult_y1, x2_mult_y2, tmp, tmp1, tmp2, totalc;
     unsigned char* c = cChar;
     const unsigned char* a = aChar;
     const unsigned char* b = bChar;
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             x = _mm_lddqu_si128((__m128i*)a);
             y = _mm_lddqu_si128((__m128i*)b);
@@ -100,7 +102,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_u_sse3(unsigned char* cChar, c
             c += 16;
         }
 
-    for (unsigned int i = sse_iters * 16; i < num_points ; ++i)
+    for (i = sse_iters * 16; i < num_points ; ++i)
         {
             *c++ = (*a++) * (*b++);
         }
@@ -114,8 +116,9 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_generic(unsigned char* cChar, 
     unsigned char* cPtr = cChar;
     const unsigned char* aPtr = aChar;
     const unsigned char* bPtr = bChar;
+    unsigned int number;
 
-    for(unsigned int number = 0; number < num_points; number++)
+    for(number = 0; number < num_points; number++)
         {
             *cPtr++ = (*aPtr++) * (*bPtr++);
         }
@@ -129,13 +132,14 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_generic(unsigned char* cChar, 
 static inline void volk_gnsssdr_8u_x2_multiply_8u_a_sse3(unsigned char* cChar, const unsigned char* aChar, const unsigned char* bChar, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 16;
-
+    unsigned int number;
+    unsigned int i;
     __m128i x, y, x1, x2, y1, y2, mult1, x1_mult_y1, x2_mult_y2, tmp, tmp1, tmp2, totalc;
     unsigned char* c = cChar;
     const unsigned char* a = aChar;
     const unsigned char* b = bChar;
 
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             x = _mm_load_si128((__m128i*)a);
             y = _mm_load_si128((__m128i*)b);
@@ -164,7 +168,7 @@ static inline void volk_gnsssdr_8u_x2_multiply_8u_a_sse3(unsigned char* cChar, c
             c += 16;
         }
 
-    for (unsigned int i = sse_iters * 16; i < num_points; ++i)
+    for (i = sse_iters * 16; i < num_points; ++i)
         {
             *c++ = (*a++) * (*b++);
         }

@@ -65,7 +65,8 @@
 
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_generic(lv_16sc_t* result, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
-    for (unsigned int n = 0; n < num_points; n++)
+    unsigned int n;
+    for (n = 0; n < num_points; n++)
         {
             //r*a.r - i*a.i, i*a.r + r*a.i
             result[n] = in_a[n] * in_b[n];
@@ -81,6 +82,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_generic(lv_16sc_t* result,
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
+    unsigned int number;
     __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1, imag2, b_sl, a_sl, result;
 
     mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
@@ -89,7 +91,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
     const lv_16sc_t* _in_a = in_a;
     const lv_16sc_t* _in_b = in_b;
     lv_16sc_t* _out = out;
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
             //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
@@ -120,7 +122,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
             _out += 4;
         }
 
-    for (unsigned int i = sse_iters * 4; i < num_points; ++i)
+    for (number = sse_iters * 4; number < num_points; ++number)
         {
             *_out++ = (*_in_a++) * (*_in_b++);
         }
@@ -134,6 +136,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_sse2(lv_16sc_t* out, con
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_sse2(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
+    unsigned int number;
     __m128i a, b, c, c_sr, mask_imag, mask_real, real, imag, imag1,imag2, b_sl, a_sl, result;
 
     mask_imag = _mm_set_epi8(255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0);
@@ -142,7 +145,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_sse2(lv_16sc_t* out, con
     const lv_16sc_t* _in_a = in_a;
     const lv_16sc_t* _in_b = in_b;
     lv_16sc_t* _out = out;
-    for(unsigned int number = 0; number < sse_iters; number++)
+    for(number = 0; number < sse_iters; number++)
         {
             //std::complex<T> memory structure: real part -> reinterpret_cast<cv T*>(a)[2*i]
             //imaginery part -> reinterpret_cast<cv T*>(a)[2*i + 1]
@@ -173,7 +176,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_u_sse2(lv_16sc_t* out, con
             _out += 4;
         }
 
-    for (unsigned int i = sse_iters * 4; i < num_points; ++i)
+    for (number = sse_iters * 4; number < num_points; ++number)
         {
             *_out++ = (*_in_a++) * (*_in_b++);
         }

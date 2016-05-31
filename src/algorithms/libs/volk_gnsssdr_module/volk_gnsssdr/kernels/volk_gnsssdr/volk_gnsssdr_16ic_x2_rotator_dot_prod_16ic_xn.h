@@ -185,6 +185,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
 
     const unsigned int sse_iters = num_points / 4;
     int n_vec;
+    int i;
     unsigned int number;
     unsigned int n;
     const lv_16sc_t** _in_a = in_a;
@@ -311,7 +312,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
 
             _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
-            for (int i = 0; i < 4; ++i)
+            for (i = 0; i < 4; ++i)
                 {
                     dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
                             sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
@@ -331,7 +332,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3(lv_16sc_
     //(*phase) = lv_cmake((float*)two_phase_acc[0], (float*)two_phase_acc[1]);
     (*phase) = two_phase_acc[0];
 
-    for(n  = sse_iters * 4; n < num_points; n++)
+    for(n = sse_iters * 4; n < num_points; n++)
         {
             tmp16 = in_common[n];  //printf("a_sse phase %i: %f,%f\n", n,lv_creal(*phase),lv_cimag(*phase));
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
@@ -360,6 +361,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3_reload(l
     const unsigned int sse_iters = num_points / 4;
     const unsigned int ROTATOR_RELOAD = 128;
     int n_vec;
+    int i;
     unsigned int number;
     unsigned int j;
     unsigned int n;
@@ -557,7 +559,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_sse3_reload(l
 
             _mm_store_si128((__m128i*)dotProductVector, a); // Store the results back into the dot product vector
             dotProduct = lv_cmake(0,0);
-            for (int i = 0; i < 4; ++i)
+            for (i = 0; i < 4; ++i)
                 {
                     dotProduct = lv_cmake(sat_adds16i(lv_creal(dotProduct), lv_creal(dotProductVector[i])),
                             sat_adds16i(lv_cimag(dotProduct), lv_cimag(dotProductVector[i])));
@@ -1648,7 +1650,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_vma(lv_16s
             tmp32_ = lv_cmake((float32_t)lv_creal(tmp16_), (float32_t)lv_cimag(tmp16_)) * (*phase);
             tmp16_ = lv_cmake((int16_t)rintf(lv_creal(tmp32_)), (int16_t)rintf(lv_cimag(tmp32_)));
             (*phase) *= phase_inc;
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp = tmp16_ * in_a[n_vec][n];
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));
@@ -1830,7 +1832,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_optvma(lv_
             tmp32_ = lv_cmake((float32_t)lv_creal(tmp16_), (float32_t)lv_cimag(tmp16_)) * (*phase);
             tmp16_ = lv_cmake((int16_t)rintf(lv_creal(tmp32_)), (int16_t)rintf(lv_cimag(tmp32_)));
             (*phase) *= phase_inc;
-            for (int n_vec = 0; n_vec < num_a_vectors; n_vec++)
+            for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
                 {
                     tmp = tmp16_ * in_a[n_vec][n];
                     _out[n_vec] = lv_cmake(sat_adds16i(lv_creal(_out[n_vec]), lv_creal(tmp)), sat_adds16i(lv_cimag(_out[n_vec]), lv_cimag(tmp)));

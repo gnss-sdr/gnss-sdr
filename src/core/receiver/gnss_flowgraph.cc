@@ -340,8 +340,34 @@ void GNSSFlowgraph::connect()
                     available_GNSS_signals_.pop_front();
                 }
             channels_.at(i)->set_signal(available_GNSS_signals_.front());
+
+
             LOG(INFO) << "Channel " << i << " assigned to " << available_GNSS_signals_.front();
             channels_.at(i)->start();
+            // If we have a message port on this channel, and we have been provided with
+            // an initial estimate of TOW, then use it here:
+            double TOW_at_start = configuration_->property(
+                    available_GNSS_signals_.front().get_satellite().get_system() +
+                    "Prn" +
+                    boost::lexical_cast<std::string>( 
+                        available_GNSS_signals_.front().get_satellite().get_PRN() ) +
+                    ".TOW_at_start", NAN );
+
+            if( !std::isnan( TOW_at_start ) )
+            {
+                bool has_gnss_message_port = channels_.at(i)->get_right_block()->has_msg_port(
+                        GNSS_MESSAGE_PORT_ID );
+                if( has_gnss_message_port )
+                {
+                    pmt::pmt_t msg = gnss_message::make( "TOW_ACQUIRED", 0.0 );
+
+                    msg = pmt::dict_add( msg, pmt::mp("TOW"),
+                            pmt::from_double( TOW_at_start ) );
+
+                    channels_.at(i)->get_right_block()->_post( GNSS_MESSAGE_PORT_ID,
+                            msg );
+                }
+            }
 
             if (channels_state_[i] == 1)
                 {

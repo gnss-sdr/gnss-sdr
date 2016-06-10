@@ -1321,8 +1321,6 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                                 d_very_early_late_code_spc_chips = d_final_very_early_late_code_space_chips;
                             }
 
-                            // Try to enable prs tracking:
-                            start_tracking_prs();
                         }
 
 
@@ -1410,6 +1408,8 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                                             LOG(INFO) << ss.str();
 
                                             std::cout << ss.str() << std::endl;;
+                                            // Try to enable prs tracking:
+                                            start_tracking_prs();
                                         }
                                     }
 
@@ -1847,7 +1847,9 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
 
     double code_periods_since_tow = std::floor( time_since_tow / Galileo_E1_CODE_PERIOD + 0.5);
 
-    double curr_tow = last_tow + code_periods_since_tow*Galileo_E1_CODE_PERIOD +
+    double last_tow_round = std::ceil( last_tow/Galileo_E1_CODE_PERIOD ) * Galileo_E1_CODE_PERIOD;
+
+    double curr_tow = last_tow_round + code_periods_since_tow*Galileo_E1_CODE_PERIOD +
         //std::fmod( d_code_phase_chips, Galileo_E1_B_CODE_LENGTH_CHIPS ) / Galileo_E1_CODE_CHIP_RATE_HZ;
         d_rem_code_phase_samples / static_cast<double>( d_fs_in );
 
@@ -1941,7 +1943,7 @@ void galileo_e1_prs_veml_tracking_cc::handle_gnss_message( pmt::pmt_t msg )
         log_str << ". TOW: " << d_last_tow;
         d_timestamp_last_tow = gnss_message::get_timestamp( msg );
 
-        if( !d_prs_tracking_enabled )
+        if( d_code_locked && !d_prs_tracking_enabled )
         {
             log_str << ". Enabling PRS tracking.";
             start_tracking_prs();

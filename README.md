@@ -299,7 +299,7 @@ and then import the created project file into Eclipse:
 Install the GNU Radio module:
 
 ~~~~~~   
-$ git clone http://github.com/gnss-sdr/gr-gn3s
+$ git clone https://github.com/gnss-sdr/gr-gn3s
 $ cd gr-gn3s/build
 $ cmake ../
 $ make
@@ -310,6 +310,7 @@ $ sudo ldconfig
 Then configure GNSS-SDR to build the GN3S_Signal_Source by:
 
 ~~~~~~ 
+$ cd gnss-sdr/build
 $ cmake -DENABLE_GN3S=ON ../
 $ make
 $ sudo make install

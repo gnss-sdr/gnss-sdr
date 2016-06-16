@@ -421,12 +421,14 @@ if(OS_IS_MACOSX)
 endif(OS_IS_MACOSX)
 if(NOT VOLK_GNSSSDR_FOUND)
     message(STATUS " volk_gnsssdr will be built along with gnss-sdr when doing 'make'")
+    set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
     set(VOLK_GNSSSDR_CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
                                 -DENABLE_STATIC_LIBS=ON
-                                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                                -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
+                                -DCMAKE_C_FLAGS=${C_FLAGS}
                                 ${STRIP_VOLK_GNSSSDR_PROFILE} 
                                 ${USE_THIS_PYTHON} )
     if(CMAKE_TOOLCHAIN_FILE)
@@ -741,8 +743,8 @@ if(NOT ARMADILLO_FOUND)
          set(armadillo_MD5 "8116185e1d7391eed3bf6c500f81b4d8")
          set(ARMA_FILE_EXTENSION "gz")
      else(CMAKE_VERSION VERSION_LESS 3.1)
-         set(armadillo_RELEASE 7.100.3)
-         set(armadillo_MD5 "d047c1c24f4031e0e9374a7104e33ec0")
+         set(armadillo_RELEASE 7.200.2)
+         set(armadillo_MD5 "b21585372d67a8876117fd515d8cf0a2")
          set(ARMA_FILE_EXTENSION "xz")
      endif(CMAKE_VERSION VERSION_LESS 3.1)
 

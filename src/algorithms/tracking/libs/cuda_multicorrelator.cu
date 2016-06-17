@@ -198,7 +198,7 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
 	//********* ZERO COPY VERSION ************
 	// Set flag to enable zero copy access
     // Optimal in shared memory devices (like Jetson K1)
-	cudaSetDeviceFlags(cudaDeviceMapHost);
+	//cudaSetDeviceFlags(cudaDeviceMapHost);
 
 	//******** CudaMalloc version ***********
 

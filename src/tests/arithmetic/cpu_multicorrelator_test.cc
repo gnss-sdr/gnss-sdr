@@ -46,14 +46,16 @@ void run_correlator_cpu(cpu_multicorrelator* correlator,
                     float d_carrier_phase_step_rad,
                     float d_code_phase_step_chips,
                     float d_rem_code_phase_chips,
-                    int correlation_size,
-                    int d_n_correlator_taps)
+                    int correlation_size)
 {
-    correlator->Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
-                                                               d_carrier_phase_step_rad,
-                                                               d_code_phase_step_chips,
-                                                               d_rem_code_phase_chips,
-                                                               correlation_size);
+    for(int k = 0; k < FLAGS_cpu_multicorrelator_iterations_test; k++)
+    {
+        correlator->Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
+                                                                   d_carrier_phase_step_rad,
+                                                                   d_code_phase_step_chips,
+                                                                   d_rem_code_phase_chips,
+                                                                   correlation_size);
+    }
 }
 
 TEST(CPU_multicorrelator_test, MeasureExecutionTime)
@@ -124,26 +126,22 @@ TEST(CPU_multicorrelator_test, MeasureExecutionTime)
                 std::cout<<"Running "<<current_max_threads<<" concurrent correlators"<<std::endl;
                 gettimeofday(&tv, NULL);
                 long long int begin = tv.tv_sec * 1000000 + tv.tv_usec;
-                for(int k = 0; k < FLAGS_cpu_multicorrelator_iterations_test; k++)
+                //create the concurrent correlator threads
+                for (int current_thread=0;current_thread<current_max_threads;current_thread++)
                 {
-                    //create the concurrent correlator threads
-                    for (int current_thread=0;current_thread<current_max_threads;current_thread++)
-                    {
-                        thread_pool.push_back(std::thread(run_correlator_cpu,
-                                correlator_pool[current_thread],
-                                d_rem_carrier_phase_rad,
-                                d_carrier_phase_step_rad,
-                                d_code_phase_step_chips,
-                                d_rem_code_phase_chips,
-                                correlation_sizes[correlation_sizes_idx],
-                                d_n_correlator_taps));
-                    }
-                    //wait the threads to finish they work and destroy the thread objects
-                    for(auto &t : thread_pool){
-                    t.join();
-                    }
-                    thread_pool.clear();
+                    thread_pool.push_back(std::thread(run_correlator_cpu,
+                            correlator_pool[current_thread],
+                            d_rem_carrier_phase_rad,
+                            d_carrier_phase_step_rad,
+                            d_code_phase_step_chips,
+                            d_rem_code_phase_chips,
+                            correlation_sizes[correlation_sizes_idx]));
                 }
+                //wait the threads to finish they work and destroy the thread objects
+                for(auto &t : thread_pool){
+                    t.join();
+                }
+                thread_pool.clear();
                 gettimeofday(&tv, NULL);
                 long long int end = tv.tv_sec * 1000000 + tv.tv_usec;
                 execution_times[correlation_sizes_idx] = static_cast<double>(end - begin) / (1000000.0 * static_cast<double>(FLAGS_cpu_multicorrelator_iterations_test));
@@ -162,6 +160,5 @@ TEST(CPU_multicorrelator_test, MeasureExecutionTime)
     for (int n=0;n<max_threads;n++)
     {
         correlator_pool[n]->free();
-        delete(correlator_pool[n]);
     }
 }

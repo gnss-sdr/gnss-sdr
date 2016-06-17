@@ -157,6 +157,7 @@ private:
     float *d_shifts_chips;
     int d_code_length_chips;
 
+    int selected_gps_device;
     int threadsPerBlock;
     int blocksPerGrid;
 

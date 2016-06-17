@@ -160,7 +160,8 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
           //cudaSetDevice(max_device);
 
           //set random device!
-          cudaSetDevice(rand() % num_devices); //generates a random number between 0 and num_devices to split the threads between GPUs
+	  selected_gps_device=rand() % num_devices;//generates a random number between 0 and num_devices to split the threads between GPUs
+          cudaSetDevice(selected_gps_device); 
 
           cudaGetDeviceProperties( &prop, max_device );
           //debug code
@@ -174,9 +175,8 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
           printf("deviceOverlap= %i \n",prop.deviceOverlap);
   	    printf("multiProcessorCount= %i \n",prop.multiProcessorCount);
     }else{
-    	    int whichDevice;
-    	    cudaGetDevice( &whichDevice );
-    	    cudaGetDeviceProperties( &prop, whichDevice );
+    	    cudaGetDevice( &selected_gps_device);
+    	    cudaGetDeviceProperties( &prop, selected_gps_device );
     	    //debug code
     	    if (prop.canMapHostMemory != 1) {
     	        printf( "Device can not map memory.\n" );
@@ -242,6 +242,8 @@ bool cuda_multicorrelator::set_local_code_and_taps(
 		int n_correlators
 		)
 {
+
+          cudaSetDevice(selected_gps_device);
 	//********* ZERO COPY VERSION ************
 //	// Get device pointer from host memory. No allocation or memcpy
 //	cudaError_t code;
@@ -276,6 +278,7 @@ bool cuda_multicorrelator::set_input_output_vectors(
 		)
 {
 
+         cudaSetDevice(selected_gps_device);
 	// Save CPU pointers
 	d_sig_in_cpu =sig_in;
 	d_corr_out_cpu = corr_out;
@@ -312,6 +315,7 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_resampler_cuda(
 		int n_correlators)
 	{
 
+    cudaSetDevice(selected_gps_device); 
 	// cudaMemCpy version
 	//size_t memSize = signal_length_samples * sizeof(std::complex<float>);
 	// input signal CPU -> GPU copy memory

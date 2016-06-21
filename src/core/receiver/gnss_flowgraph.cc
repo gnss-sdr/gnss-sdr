@@ -456,10 +456,10 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                 available_GNSS_signals_.pop_front();
             }
         channels_.at(who)->set_signal(available_GNSS_signals_.front());
-        available_GNSS_signals_.pop_front();
 
         channels_.at(who)->start_acquisition();
 
+        available_GNSS_signals_.pop_front();
         break;
         // TODO: Tracking messages
 
@@ -515,6 +515,34 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
     default:
         break;
     }
+    double TOW_at_start  = 0.0;
+    bool has_gnss_message_port = false;
+    Gnss_Satellite the_sat = channels_.at(who)->get_signal().get_satellite();
+    // If we have a message port on this channel, and we have been provided with
+    // an initial estimate of TOW, then use it here:
+    TOW_at_start = configuration_->property(
+            the_sat.get_system() +
+            "Prn" +
+            boost::lexical_cast<std::string>( 
+                the_sat.get_PRN() ) +
+            ".TOW_at_start", NAN );
+
+    if( !std::isnan( TOW_at_start ) )
+    {
+        has_gnss_message_port = channels_.at(who)->get_right_block()->has_msg_port(
+                GNSS_MESSAGE_PORT_ID );
+        if( has_gnss_message_port )
+        {
+            pmt::pmt_t msg = gnss_message::make( "TOW_ACQUIRED", 0.0 );
+
+            msg = pmt::dict_add( msg, pmt::mp("TOW"),
+                    pmt::from_double( TOW_at_start ) );
+
+            channels_.at(who)->get_right_block()->_post( GNSS_MESSAGE_PORT_ID,
+                    msg );
+        }
+    }
+
     DLOG(INFO) << "Number of available signals: " << available_GNSS_signals_.size();
 }
 

@@ -837,6 +837,9 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
             d_rem_carr_phase_rad = d_rem_carr_phase_rad + 2.0 * M_PI * (d_if_freq + d_carrier_doppler_hz )* T;
             d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, 2.0 * M_PI);
 
+            //carrier phase accumulator for (K) Doppler estimation
+            d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + 2.0 * M_PI * d_carrier_doppler_hz * T;
+
             if( d_rem_carr_phase_rad >= M_PI )
             {
                 d_rem_carr_phase_rad -= 2.0 * M_PI;
@@ -1019,8 +1022,6 @@ int galileo_e1_prs_codeless_tracking_cc::general_work (int noutput_items,gr_vect
             {
                 d_subcarrier_freq_cycles = Galileo_E1_SUB_CARRIER_A_RATE_HZ;
             }
-            //carrier phase accumulator for (K) Doppler estimation
-            d_acc_carrier_phase_rad = d_acc_carrier_phase_rad + GPS_TWO_PI * d_carrier_doppler_hz * Galileo_E1_CODE_PERIOD;
 
             // ################## DLL ##########################################################
             // DLL discriminator

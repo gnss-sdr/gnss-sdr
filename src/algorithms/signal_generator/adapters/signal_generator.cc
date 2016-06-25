@@ -36,6 +36,7 @@
 #include "Galileo_E1.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E5a.h"
+#include "BEIDOU_B1I.h"
 
 
 using google::LogMessage;
@@ -54,7 +55,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
     // Signal system (G/E/B)
     std::string default_system = "G";
     
-    // Signal system modulation (1C/5X/B1 ?)
+    // Signal system modulation (1C/5X/B1I)
     std::string default_signal = "1C";
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
@@ -99,6 +100,7 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
 
     // If Galileo signal is present -> vector duration = 100 ms (25 * 4 ms)
     // If there is only GPS signal (Galileo signal not present) -> vector duration = 1 ms
+    // TODO: If there is only BeiDou signal (Galileo and GPS signals not present) -> vector duration = 1 ms
     unsigned int vector_length = 0;
     if (std::find(system.begin(), system.end(), "E") != system.end())
         {
@@ -118,6 +120,11 @@ SignalGenerator::SignalGenerator(ConfigurationInterface* configuration,
         {
             vector_length = round((float)fs_in
                     / (GPS_L1_CA_CODE_RATE_HZ / GPS_L1_CA_CODE_LENGTH_CHIPS));
+        }
+    else if (std::find(system.begin(), system.end(), "B") != system.end())
+        {
+        vector_length = round((float)fs_in
+                              / (BEIDOU_B1I_CODE_RATE_HZ / BEIDOU_B1I_CODE_LENGTH_CHIPS));
         }
 
     if (item_type_.compare("gr_complex") == 0)

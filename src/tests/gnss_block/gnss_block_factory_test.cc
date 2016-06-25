@@ -259,6 +259,17 @@ TEST(GNSS_Block_Factory_Test, InstantiateGalileoE1DllPllVemlTracking)
     EXPECT_STREQ("Galileo_E1_DLL_PLL_VEML_Tracking", tracking->implementation().c_str());
 }
 
+TEST(GNSS_Block_Factory_Test, InstantiateBeiDouB1iDllPllTracking)
+{
+    std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
+    configuration->set_property("Tracking.implementation", "BeiDou_B1i_DLL_PLL_Tracking");
+    std::unique_ptr<GNSSBlockFactory> factory;
+    std::shared_ptr<GNSSBlockInterface> trk_ = factory->GetBlock(configuration, "Tracking", "BeiDou_B1i_DLL_PLL_Tracking", 1, 1);
+    std::shared_ptr<TrackingInterface> tracking = std::dynamic_pointer_cast<TrackingInterface>(trk_);
+    EXPECT_STREQ("Tracking", tracking->role().c_str());
+    EXPECT_STREQ("BeiDou_B1i_DLL_PLL_Tracking", tracking->implementation().c_str());
+}
+
 
 TEST(GNSS_Block_Factory_Test, InstantiateGpsL1CaTelemetryDecoder)
 {

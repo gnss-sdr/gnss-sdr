@@ -665,8 +665,7 @@ TEST_F(GalileoE5aPcpsAcquisitionGSoC2014GensourceTest, ValidationOfSIM)
         acquisition->set_doppler_max(config->property("Acquisition_Galileo.doppler_max", 10000));
     }) << "Failure setting doppler_max."<< std::endl;
 
-    ASSERT_NO
-    _THROW( {
+    ASSERT_NO_THROW( {
         acquisition->set_doppler_step(config->property("Acquisition_Galileo.doppler_step", 500));
     }) << "Failure setting doppler_step."<< std::endl;
 

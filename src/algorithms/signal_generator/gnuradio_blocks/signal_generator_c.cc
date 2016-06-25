@@ -36,11 +36,13 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include "gps_sdr_signal_processing.h"
+#include "beidou_sdr_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "GPS_L1_CA.h"
+#include "BEIDOU_B1I.h"
 
 /*
 * Create a new instance of signal_generator_c and return
@@ -169,6 +171,29 @@ void signal_generator_c::generate_codes()
                             memcpy(&(sampled_code_data_[sat][i * samples_per_code_[sat]]),
                                     code, sizeof(gr_complex) * samples_per_code_[sat]);
                         }
+                }
+            else if (system_[sat] == "B")
+                {
+                    // Generate one code-period of 1C signal
+                beidou_b1i_code_gen_complex_sampled(code, PRN_[sat], fs_in_,
+                                                   static_cast<int>(BEIDOU_B1I_CODE_LENGTH_CHIPS) - delay_chips_[sat]);
+                
+                    // Obtain the desired CN0 assuming that Pn = 1.
+                if (noise_flag_)
+                    {
+                    for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
+                        {
+                        code[i] *= sqrt(pow(10,CN0_dB_[sat] / 10) / BW_BB_);
+                        }
+                    }
+                
+                    // Concatenate "num_of_codes_per_vector_" codes
+                for (unsigned int i = 0; i < num_of_codes_per_vector_[sat]; i++)
+                    {
+                    memcpy(&(sampled_code_data_[sat][i * samples_per_code_[sat]]),
+                           code, sizeof(gr_complex) * samples_per_code_[sat]);
+                    }
+                
                 }
             else if (system_[sat] == "E")
                 {

@@ -269,7 +269,7 @@ double pcps_assisted_acquisition_cc::search_maximum()
     float fft_normalization_factor;
     int index_doppler = 0;
 #if VOLK_GT_122
-    uint16_t tmp_intex_t;
+    uint16_t tmp_intex_t = 0;
     uint16_t index_time = 0;
 #else
     unsigned int tmp_intex_t = 0;
@@ -278,6 +278,7 @@ double pcps_assisted_acquisition_cc::search_maximum()
 
     for (int i=0;i<d_num_doppler_points;i++)
         {
+            
             volk_32f_index_max_16u_a(&tmp_intex_t,d_grid_data[i],d_fft_size);
             if (d_grid_data[i][tmp_intex_t] > magt)
                 {

@@ -223,7 +223,7 @@ double pcps_acquisition_fine_doppler_cc::search_maximum()
     float fft_normalization_factor;
     int index_doppler = 0;
 #if VOLK_GT_122
-    uint16_t tmp_intex_t;
+    uint16_t tmp_intex_t = 0;
     uint16_t index_time = 0;
 #else
     unsigned int tmp_intex_t = 0;

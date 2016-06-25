@@ -247,7 +247,7 @@ void pcps_multithread_acquisition_cc::acquisition_core()
 
             // compute the inverse FFT
             d_ifft->execute();
-
+            
             // Search maximum
             volk_32fc_magnitude_squared_32f(d_magnitude, d_ifft->get_outbuf(), d_fft_size);
             volk_32f_index_max_16u(&indext, d_magnitude, d_fft_size);

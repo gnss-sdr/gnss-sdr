@@ -43,9 +43,9 @@ const double BEIDOU_C_m_s       = 299792458.0;      //!< The speed of light, [m/
 const double BEIDOU_C_m_ms      = 299792.4580;      //!< The speed of light, [m/ms]
 const double BEIDOU_PI          = 3.1415926535898;  //!< Pi as defined in ICD-BEIDOU
 const double BEIDOU_TWO_PI      = 6.283185307179586;//!< 2Pi
-const double OMEGA_EARTH_DOT    = 7.2921150e-5;     //!< Earth rotation rate, [rad/s]
-const double GM                 = 3.986004418e14;   //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
-const double F                  = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
+//const double OMEGA_EARTH_DOT    = 7.2921150e-5;     //!< Earth rotation rate, [rad/s]
+//const double GM                 = 3.986004418e14;   //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2]
+//const double F                  = -4.442807633e-10; //!< Constant, [s/(m)^(1/2)]
 
 
 // carrier and code frequencies

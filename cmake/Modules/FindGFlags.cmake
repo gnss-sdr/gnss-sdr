@@ -40,7 +40,7 @@ else(APPLE)
      /usr/lib/mips-linux-gnu
      /usr/lib/mips64el-linux-gnuabi64
      /usr/lib/powerpc-linux-gnu
-     /usr/lib/powerpc64-linux-gnu/
+     /usr/lib/powerpc64-linux-gnu
      /usr/lib/powerpc64le-linux-gnu
      /usr/lib/s390x-linux-gnu
      /usr/lib64

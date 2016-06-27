@@ -33,7 +33,7 @@ function [GNSS_tracking] = galileo_e1_prs_de_read_tracking_dump (filename, count
   %% open GNSS-SDR tracking binary log file .dat and return the contents
   %%
 
-  m = nargchk (1,2,nargin);
+  narginchk (1,2);
   num_float_vars=37;
   num_unsigned_long_int_vars=1;
   num_double_vars=2;
@@ -42,9 +42,9 @@ function [GNSS_tracking] = galileo_e1_prs_de_read_tracking_dump (filename, count
   float_size_bytes=4;
   skip_bytes_each_read=float_size_bytes*num_float_vars+unsigned_long_int_size_bytes*num_unsigned_long_int_vars+double_size_bytes*num_double_vars;
   bytes_shift=0;
-  if (m)
-    usage (m);
-  end
+%   if (m)
+%     usage (m);
+%   end
 
   if (nargin < 2)
     count = Inf;
@@ -289,7 +289,7 @@ function [GNSS_tracking] = galileo_e1_prs_de_read_tracking_dump (filename, count
     GNSS_tracking.subcarrier_error_prs=subcarrier_error_prs;
     GNSS_tracking.subcarrier_nco_prs=subcarrier_nco_prs;
     GNSS_tracking.code_phase_chips_prs=code_phase_chips_prs;
-    GNSS_tracking.subcarrier_phase_cyles_prs=subcarrier_phase_cycles_prs;
+    GNSS_tracking.subcarrier_phase_cycles_prs=subcarrier_phase_cycles_prs;
   end
   
 

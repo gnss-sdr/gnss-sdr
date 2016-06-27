@@ -470,6 +470,11 @@ int galileo_e1b_telemetry_decoder_cc::general_work (int noutput_items, gr_vector
 
             message_port_pub( GNSS_MESSAGE_PORT_ID, msg );
 
+            LOG(INFO) << "TOW_ACQUIRED for Galileo PRN: " << d_satellite.get_PRN()
+                      << " TOW: " << d_TOW_at_current_symbol
+                      << " PRN Time Stamp: " 
+                      << std::fixed << std::setprecision(8) << in[0][0].Tracking_timestamp_secs;
+
         }
     else //if there is not a new preamble, we define the TOW of the current symbol
         {

@@ -84,6 +84,7 @@ galileo_e1_prs_veml_make_tracking_cc(
         float initial_very_early_late_code_space_chips,
         float final_very_early_late_code_space_chips,
         bool aid_code_with_carrier,
+        bool aid_code_with_subcarrier,
         bool use_bump_jumping,
         unsigned int bump_jumping_threshold,
         float initial_divergence_bw_hz,
@@ -99,6 +100,7 @@ galileo_e1_prs_veml_make_tracking_cc(
             initial_very_early_late_code_space_chips,
             final_very_early_late_code_space_chips,
             aid_code_with_carrier,
+            aid_code_with_subcarrier,
             use_bump_jumping, bump_jumping_threshold,
             initial_divergence_bw_hz, final_divergence_bw_hz,
             prs_code_gen));
@@ -130,6 +132,7 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
         float initial_very_early_late_code_space_chips,
         float final_very_early_late_code_space_chips,
         bool aid_code_with_carrier,
+        bool aid_code_with_subcarrier,
         bool use_bump_jumping,
         unsigned int bump_jumping_threshold,
         float initial_divergence_bw_hz,
@@ -151,7 +154,8 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
                << "\t final_very_early_late_code_space_chips:   " << final_very_early_late_code_space_chips << std::endl
                << "\t initial_divergence_bw_hz:   " << initial_divergence_bw_hz << std::endl
                << "\t final_divergence_bw_hz:   " << final_divergence_bw_hz << std::endl
-               << "\t aid_code_with_carrier:   " << aid_code_with_carrier << std::endl;
+               << "\t aid_code_with_carrier:   " << aid_code_with_carrier << std::endl
+               << "\t aid_code_with_subcarrier:   " << aid_code_with_subcarrier << std::endl;
 
     // Create the gnss_message input port
     message_port_register_in( GNSS_MESSAGE_PORT_ID );
@@ -185,6 +189,7 @@ galileo_e1_prs_veml_tracking_cc::galileo_e1_prs_veml_tracking_cc(
     d_code_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, dll_initial_bw_hz, dll_loop_order, false);
     d_carrier_loop_filter = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, pll_initial_bw_hz, pll_loop_order, false);
     d_aid_code_with_carrier = aid_code_with_carrier;
+    d_aid_code_with_subcarrier = use_bump_jumping || aid_code_with_subcarrier;
 
     d_code_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, dll_initial_bw_hz, dll_loop_order, false);
     d_carrier_loop_filter_prs = Tracking_loop_filter(Galileo_E1_CODE_PERIOD, pll_initial_bw_hz, pll_loop_order, false);
@@ -365,7 +370,10 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking()
     d_carrier_loop_filter.initialize(d_acq_carrier_doppler_hz); // initialize the carrier filter
     float code_doppler_chips = d_acq_carrier_doppler_hz *( Galileo_E1_CODE_CHIP_RATE_HZ) / Galileo_E1_FREQ_HZ;
 
-    d_code_loop_filter.initialize(code_doppler_chips);    // initialize the code filter
+    d_code_loop_filter.initialize(
+            d_aid_code_with_carrier ?
+            0.0 :
+            code_doppler_chips);    // initialize the code filter
 
 
 
@@ -990,15 +998,25 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
             corr_slope = 1.0;
             code_error_chips_veml *= 2.0*( 1 - corr_slope*d_very_early_late_code_spc_chips) / corr_slope;
 
-            if( d_use_sa && d_subcarrier_locked )
+            if( d_use_bj or d_aid_code_with_subcarrier ){
+
+                d_code_freq_chips = d_subcarrier_freq_cycles /d_chips_to_cycles;
+            }
+            else if( d_aid_code_with_carrier )
             {
-                code_error_filt_chips_veml = d_divergence_loop_filter.apply( code_error_chips_veml );
-                d_code_freq_chips = d_subcarrier_freq_cycles/d_chips_to_cycles
-                    + code_error_filt_chips_veml;
+                d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ +
+                    d_carrier_doppler_hz*
+                    (Galileo_E1_CODE_CHIP_RATE_HZ/Galileo_E1_FREQ_HZ);
             }
             else
             {
-                d_code_freq_chips = d_subcarrier_freq_cycles/d_chips_to_cycles;
+                d_code_freq_chips = Galileo_E1_CODE_CHIP_RATE_HZ;
+            }
+
+            if( d_use_sa && d_subcarrier_locked )
+            {
+                code_error_filt_chips_veml = d_divergence_loop_filter.apply( code_error_chips_veml );
+                d_code_freq_chips +=code_error_filt_chips_veml;
             }
 
             if( d_use_bj && d_carrier_locked ){
@@ -1118,7 +1136,21 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                 corr_slope = 1.0;
                 code_error_chips_veml_prs *= 2.0*( 1 - corr_slope*d_very_early_late_code_spc_chips_prs) / corr_slope;
 
-                d_code_freq_chips_prs = d_subcarrier_freq_cycles_prs /d_chips_to_cycles_prs;
+                if( d_use_bj or d_aid_code_with_subcarrier ){
+
+                    d_code_freq_chips_prs = d_subcarrier_freq_cycles_prs /d_chips_to_cycles_prs;
+                }
+                else if( d_aid_code_with_carrier )
+                {
+                    d_code_freq_chips_prs = Galileo_E1_A_CODE_CHIP_RATE_HZ +
+                        d_carrier_doppler_hz_prs*
+                            (Galileo_E1_A_CODE_CHIP_RATE_HZ/Galileo_E1_FREQ_HZ);
+                }
+                else
+                {
+                    d_code_freq_chips_prs = Galileo_E1_A_CODE_CHIP_RATE_HZ;
+                }
+
 
                 if( d_use_sa && d_subcarrier_locked_prs )
                 {
@@ -1440,7 +1472,11 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                                     {
                                         d_divergence_loop_filter.set_noise_bandwidth(
                                                 d_initial_divergence_loop_filter_bandwidth );
-                                        d_divergence_loop_filter.initialize( 0.0 );
+                                        float init_freq = (
+                                                d_aid_code_with_subcarrier ?
+                                                0.0 :
+                                                d_subcarrier_freq_cycles );
+                                        d_divergence_loop_filter.initialize( init_freq );
                                     }
                                 }
 
@@ -1484,6 +1520,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                                                 if( d_use_sa )
                                                 {
+                                                    d_very_early_late_code_spc_chips_prs = d_initial_very_early_late_code_space_chips;
                                                     d_divergence_loop_filter_prs.set_noise_bandwidth(
                                                             d_initial_divergence_loop_filter_bandwidth );
                                                 }
@@ -1510,6 +1547,7 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
 
                                                 if( d_use_sa )
                                                 {
+                                                    d_very_early_late_code_spc_chips_prs = d_final_very_early_late_code_space_chips;
                                                     d_divergence_loop_filter_prs.set_noise_bandwidth(
                                                             d_final_divergence_loop_filter_bandwidth );
                                                 }
@@ -1557,7 +1595,12 @@ int galileo_e1_prs_veml_tracking_cc::general_work (int noutput_items,gr_vector_i
                                         {
                                             d_divergence_loop_filter_prs.set_noise_bandwidth(
                                                     d_initial_divergence_loop_filter_bandwidth );
-                                            d_divergence_loop_filter_prs.initialize( 0.0 );
+                                            float init_freq_prs = ( 
+                                                    d_aid_code_with_subcarrier ?
+                                                    0.0 :
+                                                    d_subcarrier_freq_cycles_prs/d_chips_to_cycles_prs
+                                                    );
+                                            d_divergence_loop_filter_prs.initialize( init_freq_prs );
                                         }
                                     }
 

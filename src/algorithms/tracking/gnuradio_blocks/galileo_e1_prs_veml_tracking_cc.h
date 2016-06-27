@@ -68,6 +68,7 @@ galileo_e1_prs_veml_make_tracking_cc(long if_freq,
                                    float initial_very_early_late_code_space_chips,
                                    float final_very_early_late_code_space_chips,
                                    bool aid_code_with_carrier,
+                                   bool aid_code_with_subcarrier,
                                    bool use_bump_jumping,
                                    unsigned int bump_jumping_threshold,
                                    float initial_divergence_bw_hz,
@@ -118,6 +119,7 @@ private:
             float initial_very_early_late_code_space_chips,
             float final_very_early_late_code_space_chips,
             bool aid_code_with_carrier,
+            bool aid_code_with_subcarrier,
             bool use_bump_jumping,
             unsigned int bump_jumping_threshold,
             float initial_divergence_bw_hz,
@@ -141,6 +143,7 @@ private:
             float initial_very_early_late_code_space_chips,
             float final_very_early_late_code_space_chips,
             bool aid_code_with_carrier,
+            bool aid_code_with_subcarrier,
             bool use_bump_jumping,
             unsigned int bump_jumping_threshold,
             float initial_divergence_bw_hz,
@@ -165,6 +168,7 @@ private:
     long d_fs_in;
 
     bool d_aid_code_with_carrier;
+    bool d_aid_code_with_subcarrier;
 
     float d_early_late_code_spc_cycles;
     float d_very_early_late_code_spc_chips;

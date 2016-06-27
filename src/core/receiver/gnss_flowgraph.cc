@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <exception>
 #include <iostream>
+#include <iomanip> // setprecision
 #include <set>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
@@ -351,10 +352,13 @@ void GNSSFlowgraph::connect()
                     "Prn" +
                     boost::lexical_cast<std::string>( 
                         available_GNSS_signals_.front().get_satellite().get_PRN() ) +
-                    ".TOW_at_start", NAN );
+                    ".TOW_at_start", static_cast< double >( NAN ) );
 
             if( !std::isnan( TOW_at_start ) )
             {
+                DLOG(INFO) << "Read TOW_at_start for PRN: " << 
+                   available_GNSS_signals_.front().get_satellite().get_PRN()
+                    << ". " << std::fixed << std::setprecision(12) << TOW_at_start;
                 bool has_gnss_message_port = channels_.at(i)->get_right_block()->has_msg_port(
                         GNSS_MESSAGE_PORT_ID );
                 if( has_gnss_message_port )
@@ -525,10 +529,12 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
             "Prn" +
             boost::lexical_cast<std::string>( 
                 the_sat.get_PRN() ) +
-            ".TOW_at_start", NAN );
+            ".TOW_at_start", static_cast< double>( NAN ) );
 
     if( !std::isnan( TOW_at_start ) )
     {
+        DLOG(INFO) << "Read TOW_at_start for PRN: " << the_sat.get_PRN()
+            << ". " << std::fixed << std::setprecision(12) << TOW_at_start;
         has_gnss_message_port = channels_.at(who)->get_right_block()->has_msg_port(
                 GNSS_MESSAGE_PORT_ID );
         if( has_gnss_message_port )

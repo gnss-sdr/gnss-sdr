@@ -1564,9 +1564,10 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
 
     double last_tow_round = std::ceil( last_tow/Galileo_E1_CODE_PERIOD ) * Galileo_E1_CODE_PERIOD;
 
-    double curr_tow = last_tow_round + code_periods_since_tow*Galileo_E1_CODE_PERIOD +
-        //std::fmod( d_code_phase_chips, Galileo_E1_B_CODE_LENGTH_CHIPS ) / Galileo_E1_CODE_CHIP_RATE_HZ;
-        d_rem_code_phase_samples / static_cast<double>( d_fs_in );
+    double curr_tow = std::floor( 
+            (d_last_tow + time_since_tow)/Galileo_E1_CODE_PERIOD 
+            + 0.5 ) * Galileo_E1_CODE_PERIOD
+        + d_rem_code_phase_samples/static_cast<double>(d_fs_in);
 
     // Handle week rollover:
     if( curr_tow > 604800.0 ){
@@ -1620,12 +1621,14 @@ void galileo_e1_prs_de_tracking_cc::start_tracking_prs()
     std::cout << "PRS tracking start on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << std::endl;
     LOG(INFO) << "Starting tracking of PRS for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 
-    DLOG(INFO) << "Starting params: current TOW estimate: " << curr_tow
+    DLOG(INFO) << "Starting params: current TOW estimate: " << std::fixed << std::setprecision(12) <<curr_tow
                << " Code phase " << d_integer_code_phase_chips_prs
                << std::setw(6) << std::fixed << d_fractional_code_phase_chips_prs << " chips."
                << " Subcarrier Phase " << ( d_subcarrier_phase_halfcycles_prs*2.0 ) << " cycles"
-               << " Last TOW: " << d_last_tow << " @ " << d_timestamp_last_tow
-               << " Correction: " << (curr_tow - d_last_tow);
+               << " Last TOW: " << std::fixed << std::setprecision(12) << d_last_tow 
+               << " @ " << d_timestamp_last_tow
+               << " Correction: " << (curr_tow - d_last_tow)
+               << " Current Time: " << d_sample_counter/static_cast<double>(d_fs_in);
     // enable tracking
     d_prs_tracking_enabled = true;
     d_prs_code_gen->set_prn( d_acquisition_gnss_synchro->PRN );
@@ -1652,7 +1655,7 @@ void galileo_e1_prs_de_tracking_cc::handle_gnss_message( pmt::pmt_t msg )
     if( gnss_message::get_message( msg ) == "TOW_ACQUIRED" ){
         d_tow_received = true;
         d_last_tow = pmt::to_double( pmt::dict_ref( msg, pmt::mp( "TOW" ), not_found ) ) ;
-        log_str << ". TOW: " << d_last_tow;
+        log_str << ". TOW: " << std::fixed << std::setprecision(12) << d_last_tow;
         d_timestamp_last_tow = gnss_message::get_timestamp( msg );
 
         if( d_code_locked and !d_prs_tracking_enabled )

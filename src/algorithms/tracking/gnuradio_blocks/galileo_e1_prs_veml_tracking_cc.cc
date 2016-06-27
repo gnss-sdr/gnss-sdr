@@ -1849,9 +1849,10 @@ void galileo_e1_prs_veml_tracking_cc::start_tracking_prs()
 
     double last_tow_round = std::ceil( last_tow/Galileo_E1_CODE_PERIOD ) * Galileo_E1_CODE_PERIOD;
 
-    double curr_tow = last_tow_round + code_periods_since_tow*Galileo_E1_CODE_PERIOD +
-        //std::fmod( d_code_phase_chips, Galileo_E1_B_CODE_LENGTH_CHIPS ) / Galileo_E1_CODE_CHIP_RATE_HZ;
-        d_rem_code_phase_samples / static_cast<double>( d_fs_in );
+    double curr_tow = std::floor( 
+            (d_last_tow + time_since_tow)/Galileo_E1_CODE_PERIOD 
+            + 0.5 ) * Galileo_E1_CODE_PERIOD
+        + d_rem_code_phase_samples/static_cast<double>(d_fs_in);
 
     // Handle week rollover:
     if( curr_tow > 604800.0 ){

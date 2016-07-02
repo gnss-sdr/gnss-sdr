@@ -265,8 +265,9 @@ message(STATUS "  Modify using: -DENABLE_TESTING=ON/OFF")
 # Option to enable post-build profiling using volk_profile, off by default
 ########################################################################
 OPTION(ENABLE_PROFILING "Launch system profiler after build" OFF)
-if(ENABLE_PROFILING)
-  if(DEFINED VOLK_CONFIGPATH)
+if(ENABLE_STATIC_LIBS)
+  set(ENABLE_STATIC_LIBS ON)
+  if(DEFINED VOLK_CONFIGPATH)  
     get_filename_component(VOLK_CONFIGPATH ${VOLK_CONFIGPATH} ABSOLUTE)
     set(VOLK_CONFIGPATH "${VOLK_CONFIGPATH}/volk_gnsssdr")
     message(STATUS "System profiling is enabled, using path: ${VOLK_CONFIGPATH}")

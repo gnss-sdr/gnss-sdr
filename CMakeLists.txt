@@ -46,6 +46,7 @@ option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and p
 option(ENABLE_GPROF "Enable the use of the GNU profiler tool 'gprof'" OFF)
 
 # Acceleration
+option(ENABLE_PROFILING "Enable execution of volk_gnsssdr_profile at the end of the building" OFF)
 option(ENABLE_OPENCL "Enable building of processing blocks implemented with OpenCL (experimental)" OFF)
 option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (experimental, requires CUDA SDK)" OFF)
 
@@ -427,6 +428,7 @@ if(NOT VOLK_GNSSSDR_FOUND)
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr_module/install
                                 -DENABLE_STATIC_LIBS=ON
+                                -DENABLE_PROFILING=${ENABLE_PROFILING}
                                 -DCMAKE_CXX_FLAGS=${CXX_FLAGS}
                                 -DCMAKE_C_FLAGS=${C_FLAGS}
                                 ${STRIP_VOLK_GNSSSDR_PROFILE} 

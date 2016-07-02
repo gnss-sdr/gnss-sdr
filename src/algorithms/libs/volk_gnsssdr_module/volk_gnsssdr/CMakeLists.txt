@@ -57,7 +57,7 @@ include(VolkVersion) #setup version info
 ########################################################################
 # Environment setup
 ########################################################################
-IF(NOT DEFINED BOOST_ROOT)
+IF(NOT DEFINED BOOST_ROOT AND NOT DEFINED ENV{BOOST_ROOT})
     SET(BOOST_ROOT ${CMAKE_INSTALL_PREFIX})
 ENDIF()
 

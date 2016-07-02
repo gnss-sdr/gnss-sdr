@@ -265,7 +265,7 @@ message(STATUS "  Modify using: -DENABLE_TESTING=ON/OFF")
 # Option to enable post-build profiling using volk_profile, off by default
 ########################################################################
 OPTION(ENABLE_PROFILING "Launch system profiler after build" OFF)
-if(ENABLE_STATIC_LIBS)
+if(ENABLE_PROFILING)
   set(ENABLE_STATIC_LIBS ON)
   if(DEFINED VOLK_CONFIGPATH)  
     get_filename_component(VOLK_CONFIGPATH ${VOLK_CONFIGPATH} ABSOLUTE)

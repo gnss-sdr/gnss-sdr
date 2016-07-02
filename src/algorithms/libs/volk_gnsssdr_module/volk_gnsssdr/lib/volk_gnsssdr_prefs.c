@@ -26,7 +26,17 @@ void volk_gnsssdr_get_config_path(char *path)
 {
     if (!path) return;
     const char *suffix = "/.volk_gnsssdr/volk_gnsssdr_config";
+    const char *suffix2 = "/volk_gnsssdr/volk_gnsssdr_config"; //non-hidden
     char *home = NULL;
+
+    //allows config redirection via env variable
+    home = getenv("VOLK_CONFIGPATH");
+    if(home!=NULL){
+        strncpy(path,home,512);
+        strcat(path,suffix2);
+        return;
+    }
+
     if (home == NULL) home = getenv("HOME");
     if (home == NULL) home = getenv("APPDATA");
     if (home == NULL)

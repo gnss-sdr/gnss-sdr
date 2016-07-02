@@ -75,13 +75,26 @@ install(
     COMPONENT "volk_gnsssdr"
 )
 
+# Launch volk_gnsssdr_profile if requested to do so
+if(ENABLE_PROFILING)
+   if(DEFINED VOLK_CONFIGPATH)
+        set( VOLK_CONFIG_ARG "-p${VOLK_CONFIGPATH}" )
+        set( VOLK_CONFIG "${VOLK_CONFIGPATH}/volk_gnsssdr_config" )
+   endif()
+message("++++++++++++++ ${VOLK_CONFIG}")
+   add_custom_command(OUTPUT ${VOLK_CONFIG}
+        COMMAND volk_gnsssdr_profile "${VOLK_CONFIG_ARG}"
+        DEPENDS volk_gnsssdr_profile
+        COMMENT "Launching profiler, this may take a few minutes..."
+    )
+    add_custom_target(volk-gnsssdr-profile-run ALL DEPENDS ${VOLK_CONFIG})
+   # target_link_libraries(volk-gnsssdr-profile-run  volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
+endif()
+
 # MAKE volk_gnsssdr-config-info
 add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc)
-
 target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${Boost_LIBRARIES} ${Clang_required_link} ${orc_lib})
-
 add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
-
 #install(
 #    TARGETS volk_gnsssdr-config-info
 #    DESTINATION bin

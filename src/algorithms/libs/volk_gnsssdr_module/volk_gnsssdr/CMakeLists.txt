@@ -260,6 +260,33 @@ else()
 endif()
 message(STATUS "  Modify using: -DENABLE_TESTING=ON/OFF")
 
+
+########################################################################
+# Option to enable post-build profiling using volk_profile, off by default
+########################################################################
+OPTION(ENABLE_PROFILING "Launch system profiler after build" OFF)
+if(ENABLE_PROFILING)
+  if(DEFINED VOLK_CONFIGPATH)
+    get_filename_component(VOLK_CONFIGPATH ${VOLK_CONFIGPATH} ABSOLUTE)
+    set(VOLK_CONFIGPATH "${VOLK_CONFIGPATH}/volk_gnsssdr")
+    message(STATUS "System profiling is enabled, using path: ${VOLK_CONFIGPATH}")
+  elseif(DEFINED ENV{VOLK_CONFIGPATH})
+    set(VOLK_CONFIGPATH "$ENV{VOLK_CONFIGPATH}/volk_gnsssdr")
+    message(STATUS "System profiling is enabled, using env path: $ENV{VOLK_CONFIGPATH}")
+  else()
+    message(STATUS "System profiling is enabled with default paths.")
+    if(DEFINED ENV{HOME})
+        set(VOLK_CONFIGPATH "$ENV{HOME}/.volk_gnsssdr")
+    elseif(DEFINED ENV{APPDATA})
+        set(VOLK_CONFIGPATH "$ENV{APPDATA}/.volk_gnsssdr")
+    endif()
+  endif()
+else()
+  message(STATUS "System profiling is disabled.")
+endif()
+message(STATUS "  Modify using: -DENABLE_PROFILING=ON/OFF")
+########################################################################
+ 
 ########################################################################
 # Setup the library
 ########################################################################

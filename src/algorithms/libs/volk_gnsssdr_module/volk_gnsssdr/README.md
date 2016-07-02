@@ -40,9 +40,19 @@ $ volk_gnsssdr_profile
 
 From now on, GNSS-SDR (and any other program of your own that makes use of VOLK_GNSSSDR) will benefit from the acceleration provided by SIMD instructions available in your processor.
 
+The execution of ```volk_gnsssdr_profile``` can be set automatically after building, leaving your system ready to use:
+
+~~~~~~
+$ cmake -DENABLE_PROFILING=ON ../
+$ make
+$ sudo make install
+~~~~~~
+
+
 This figure shows the role of some VOLK_GNSSSDR kernels in the context of a GNSS baseband processor:
 
 ![Example of VOLK_GNSSSDR usage.](./docs/images/VOLK_GNSSSDR_Usage_Example.png)
+
 
 
 If you use VOLK_GNSSSDR in your research and/or software, please cite the following paper:

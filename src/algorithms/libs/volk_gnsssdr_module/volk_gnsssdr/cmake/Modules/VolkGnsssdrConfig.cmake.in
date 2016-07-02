@@ -9,6 +9,7 @@ FIND_PATH(
     PATHS /usr/local/include
           /usr/include
           /opt/local/include
+          "@CMAKE_INSTALL_PREFIX@/include"
 )
 
 FIND_LIBRARY(
@@ -21,6 +22,7 @@ FIND_LIBRARY(
           /usr/lib
           /usr/lib64
           /opt/local/lib
+          "@CMAKE_INSTALL_PREFIX@/lib"
 )
 
 INCLUDE(FindPackageHandleStandardArgs)

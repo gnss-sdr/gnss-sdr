@@ -229,8 +229,13 @@ endif()
 ########################################################################
 
 configure_file(
-  ${PROJECT_SOURCE_DIR}/cmake/Modules/VolkConfigVersion.cmake.in
-  ${PROJECT_BINARY_DIR}/cmake/Modules/VolkConfigVersion.cmake
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake.in
+  ${CMAKE_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
+@ONLY)
+
+configure_file(
+  ${PROJECT_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake.in
+  ${PROJECT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake
 @ONLY)
 
 
@@ -244,8 +249,8 @@ endif(NOT CMAKE_MODULES_DIR)
 
 install(
     FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/VolkConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/VolkConfigVersion.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake
     DESTINATION ${CMAKE_MODULES_DIR}/volk_gnsssdr
     COMPONENT "volk_gnsssdr_devel"
 )
